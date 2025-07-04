@@ -24,20 +24,20 @@ import {
 } from "@torus-ts/ui/components/card";
 
 import type {
+  allPermissions,
   CustomGraphNode,
-  PermissionDetails,
 } from "../../permission-graph-types";
 import { formatDuration, formatScope } from "../../permission-graph-utils";
 
-interface PermissionDetailsProps {
+interface GraphSheetDetailsPermissionProps {
   selectedNode: CustomGraphNode;
-  permissionDetails?: PermissionDetails;
+  allPermissions?: allPermissions;
 }
 
 export function GraphSheetDetailsPermission({
   selectedNode,
-  permissionDetails,
-}: PermissionDetailsProps) {
+  allPermissions,
+}: GraphSheetDetailsPermissionProps) {
   const permissionData = selectedNode.permissionData;
 
   if (!permissionData) {
@@ -51,13 +51,15 @@ export function GraphSheetDetailsPermission({
   }
 
   // Find the detailed permission data from the API
-  const detailedPermission = permissionDetails?.find(
+  const detailedPermission = allPermissions?.find(
     (p) => p.permissions.permissionId === permissionData.permissionId,
   );
 
   const isIndefinite =
     detailedPermission?.permissions.durationType === "indefinite";
-  const remainingBlocks = detailedPermission?.remainingBlocks ?? 0;
+  const remainingBlocks = Number(
+    detailedPermission?.permissions.durationBlockNumber ?? 0,
+  );
 
   return (
     <div className="w-full space-y-6 py-8">

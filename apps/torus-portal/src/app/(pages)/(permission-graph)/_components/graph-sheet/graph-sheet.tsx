@@ -7,11 +7,11 @@ import {
 
 import { PermissionGraphOverview } from "../permission-graph-overview";
 import type {
+  allPermissions,
   CachedAgentData,
   ComputedWeightsList,
   CustomGraphData,
   CustomGraphNode,
-  PermissionDetails,
   SignalsList,
 } from "../permission-graph-types";
 import { AgentCardContainer } from "./graph-sheet-agent-card/agent-card-container";
@@ -22,7 +22,7 @@ import { GraphSheetDetailsSignal } from "./graph-sheet-details/graph-sheet-detai
 interface GraphSheetProps {
   selectedNode: CustomGraphNode | null;
   graphData: CustomGraphData | null;
-  permissionDetails?: PermissionDetails;
+  allPermissions?: allPermissions;
   allComputedWeights?: ComputedWeightsList;
   allSignals?: SignalsList;
   getCachedAgentData?: (nodeId: string) => CachedAgentData | null;
@@ -61,7 +61,7 @@ export function GraphSheet(props: GraphSheetProps) {
         ) : isPermissionNode ? (
           <GraphSheetDetailsPermission
             selectedNode={props.selectedNode}
-            permissionDetails={props.permissionDetails}
+            allPermissions={props.allPermissions}
           />
         ) : (
           <div className="w-full flex flex-col gap-4">
@@ -76,7 +76,7 @@ export function GraphSheet(props: GraphSheetProps) {
             <GraphSheetDetails
               selectedNode={props.selectedNode}
               graphData={props.graphData}
-              permissionDetails={props.permissionDetails}
+              allPermissions={props.allPermissions}
               getCachedAgentData={props.getCachedAgentData}
               setCachedAgentData={props.setCachedAgentData}
             />

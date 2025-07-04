@@ -1,14 +1,15 @@
-import type { AppRouter } from "@torus-ts/api";
 import type { inferProcedureOutput } from "@trpc/server";
-import type { LinkObject, NodeObject } from "r3f-forcegraph";
 import type { InferSelectModel } from "drizzle-orm";
-import type { 
-  permissionsSchema, 
-  emissionPermissionsSchema, 
-  namespacePermissionsSchema,
-  emissionStreamAllocationsSchema,
+import type { LinkObject, NodeObject } from "r3f-forcegraph";
+
+import type { AppRouter } from "@torus-ts/api";
+import type {
+  accumulatedStreamAmountsSchema,
   emissionDistributionTargetsSchema,
-  accumulatedStreamAmountsSchema
+  emissionPermissionsSchema,
+  emissionStreamAllocationsSchema,
+  namespacePermissionsSchema,
+  permissionsSchema,
 } from "@torus-ts/db/schema";
 
 export interface CustomGraphNode extends NodeObject {
@@ -18,7 +19,12 @@ export interface CustomGraphNode extends NodeObject {
   val?: number;
   fullAddress?: string;
   role?: string;
-  nodeType?: "allocator" | "root_agent" | "permission" | "target_agent" | "signal";
+  nodeType?:
+    | "allocator"
+    | "root_agent"
+    | "permission"
+    | "target_agent"
+    | "signal";
   signalData?: SignalData;
   permissionData?: PermissionNodeData;
   agentData?: AgentNodeData;
@@ -53,7 +59,11 @@ export interface SignalData {
 }
 
 export interface CustomGraphLink extends LinkObject {
-  linkType: "allocation" | "permission_ownership" | "permission_target" | "signal";
+  linkType:
+    | "allocation"
+    | "permission_ownership"
+    | "permission_target"
+    | "signal";
   id?: string;
   scope?: string;
   // Link Customization
@@ -80,11 +90,21 @@ export interface PermissionWithType extends CustomGraphLink {
 
 // Database types for the new permission structure
 export type PermissionData = InferSelectModel<typeof permissionsSchema>;
-export type EmissionPermissionData = InferSelectModel<typeof emissionPermissionsSchema>;
-export type NamespacePermissionData = InferSelectModel<typeof namespacePermissionsSchema>;
-export type StreamAllocationData = InferSelectModel<typeof emissionStreamAllocationsSchema>;
-export type DistributionTargetData = InferSelectModel<typeof emissionDistributionTargetsSchema>;
-export type AccumulatedStreamData = InferSelectModel<typeof accumulatedStreamAmountsSchema>;
+export type EmissionPermissionData = InferSelectModel<
+  typeof emissionPermissionsSchema
+>;
+export type NamespacePermissionData = InferSelectModel<
+  typeof namespacePermissionsSchema
+>;
+export type StreamAllocationData = InferSelectModel<
+  typeof emissionStreamAllocationsSchema
+>;
+export type DistributionTargetData = InferSelectModel<
+  typeof emissionDistributionTargetsSchema
+>;
+export type AccumulatedStreamData = InferSelectModel<
+  typeof accumulatedStreamAmountsSchema
+>;
 
 // The complete permission data structure from the new API
 export interface PermissionWithDetails {
@@ -94,16 +114,9 @@ export interface PermissionWithDetails {
 }
 
 // Type for the new permission API response
-export type PermissionDetailsBase = NonNullable<
+export type allPermissions = NonNullable<
   inferProcedureOutput<AppRouter["permission"]["allWithCompletePermissions"]>
 >;
-
-// Enhanced permission details with computed fields for graph display
-export type PermissionDetails = (PermissionDetailsBase[number] & {
-  remainingBlocks?: number;
-  permissionType?: "emission" | "namespace";
-  executionCount?: number;
-})[];
 
 export type ComputedWeightsList = NonNullable<
   inferProcedureOutput<AppRouter["computedAgentWeight"]["all"]>

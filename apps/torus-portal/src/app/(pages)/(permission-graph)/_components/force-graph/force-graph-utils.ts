@@ -1,10 +1,10 @@
 import { smallAddress } from "@torus-network/torus-utils/subspace";
 
 import type {
+  allPermissions,
   CustomGraphData,
   CustomGraphLink,
   CustomGraphNode,
-  PermissionDetails,
   SignalsList,
 } from "../permission-graph-types";
 import { GRAPH_CONSTANTS } from "./force-graph-constants";
@@ -14,13 +14,13 @@ function getDeterministicValue(seed: string, min: number, max: number): number {
   let hash = 0;
   for (let i = 0; i < seed.length; i++) {
     const char = seed.charCodeAt(i);
-    hash = ((hash << 5) - hash) + char;
+    hash = (hash << 5) - hash + char;
     hash = hash & hash; // Convert to 32bit integer
   }
-  
+
   // Normalize to 0-1 range
   const normalized = Math.abs(hash) / 2147483647;
-  
+
   return normalized * (max - min) + min;
 }
 
@@ -28,7 +28,7 @@ function getDeterministicParticleSpeed(seed: string): number {
   return getDeterministicValue(
     seed,
     GRAPH_CONSTANTS.PARTICLE_SPEED_MIN,
-    GRAPH_CONSTANTS.PARTICLE_SPEED_MAX
+    GRAPH_CONSTANTS.PARTICLE_SPEED_MAX,
   );
 }
 
@@ -36,21 +36,22 @@ function getDeterministicZ(seed: string, range: number): number {
   return getDeterministicValue(seed + "_z", -range / 2, range / 2);
 }
 
-export type PermissionDetail = PermissionDetails[number];
-
 export interface ComputedWeight {
   agentKey: string;
   percComputedWeight: number;
 }
 
+// Type for allWithCompletePermissions data
+export type AllPermission = allPermissions[number];
+
 export function createGraphData(
-  permissionDetails: PermissionDetail[] | undefined,
   computedWeights: ComputedWeight[] | undefined,
   allocatorAddress: string,
   signals?: SignalsList,
+  allPermissions?: AllPermission[],
 ): CustomGraphData | null {
   if (
-    (!permissionDetails || permissionDetails.length === 0) &&
+    (!allPermissions || allPermissions.length === 0) &&
     (!computedWeights || computedWeights.length === 0)
   ) {
     return null;
@@ -115,7 +116,9 @@ export function createGraphData(
         linkColor: GRAPH_CONSTANTS.COLORS.ALLOCATION_LINK,
         linkWidth: 2,
         linkDirectionalParticles: 2,
-        linkDirectionalParticleSpeed: getDeterministicParticleSpeed(agent.agentKey),
+        linkDirectionalParticleSpeed: getDeterministicParticleSpeed(
+          agent.agentKey,
+        ),
         linkDirectionalParticleResolution: GRAPH_CONSTANTS.PARTICLE_RESOLUTION,
       });
     });
@@ -126,13 +129,9 @@ export function createGraphData(
   const createdPermissionIds = new Set<string>();
 
   // If no computed weights, create root nodes from permission grantors as fallback
-  if (
-    rootNodeIds.size === 0 &&
-    permissionDetails &&
-    permissionDetails.length > 0
-  ) {
+  if (rootNodeIds.size === 0 && allPermissions && allPermissions.length > 0) {
     const grantorKeys = new Set<string>();
-    permissionDetails.forEach((permission) => {
+    allPermissions.forEach((permission) => {
       if (permission.permissions.grantorAccountId) {
         grantorKeys.add(permission.permissions.grantorAccountId);
       }
@@ -177,11 +176,11 @@ export function createGraphData(
     });
   }
 
-  if (permissionDetails && permissionDetails.length > 0) {
+  if (allPermissions && allPermissions.length > 0) {
     // Group permissions by permission ID to handle multiple distribution targets
-    const permissionMap = new Map<string, PermissionDetail[]>();
+    const permissionMap = new Map<string, AllPermission[]>();
 
-    permissionDetails.forEach((permission) => {
+    allPermissions.forEach((permission) => {
       const permissionId = permission.permissions.permissionId;
 
       if (!permissionMap.has(permissionId)) {
@@ -196,7 +195,12 @@ export function createGraphData(
         const permission = permissions[0]; // Use first entry for permission data
         if (!permission) return;
 
-        const permissionType = permission.permissionType ?? "emission";
+        // Determine permission type based on the presence of emission or namespace data
+        const permissionType = permission.emission_permissions
+          ? "emission"
+          : permission.namespace_permissions
+            ? "namespace"
+            : "emission"; // default to emission
 
         if (
           permission.permissions.grantorAccountId &&
@@ -247,7 +251,8 @@ export function createGraphData(
             linkDirectionalArrowLength: 4,
             linkDirectionalArrowRelPos: 1,
             linkDirectionalParticles: 1,
-            linkDirectionalParticleSpeed: getDeterministicParticleSpeed(permissionId),
+            linkDirectionalParticleSpeed:
+              getDeterministicParticleSpeed(permissionId),
             linkDirectionalParticleResolution:
               GRAPH_CONSTANTS.PARTICLE_RESOLUTION,
           });
@@ -344,7 +349,8 @@ export function createGraphData(
                 1,
                 Math.ceil((weight / 65535) * 3),
               ),
-              linkDirectionalParticleSpeed: getDeterministicParticleSpeed(targetId),
+              linkDirectionalParticleSpeed:
+                getDeterministicParticleSpeed(targetId),
               linkDirectionalParticleResolution:
                 GRAPH_CONSTANTS.PARTICLE_RESOLUTION,
             });
@@ -365,7 +371,9 @@ export function createGraphData(
               linkDirectionalArrowLength: 6,
               linkDirectionalArrowRelPos: 1,
               linkDirectionalParticles: 2,
-              linkDirectionalParticleSpeed: getDeterministicParticleSpeed(permission.permissions.granteeAccountId),
+              linkDirectionalParticleSpeed: getDeterministicParticleSpeed(
+                permission.permissions.granteeAccountId,
+              ),
               linkDirectionalParticleResolution:
                 GRAPH_CONSTANTS.PARTICLE_RESOLUTION,
             });
