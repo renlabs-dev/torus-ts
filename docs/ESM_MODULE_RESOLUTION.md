@@ -10,8 +10,8 @@ When using TypeScript with `moduleResolution: "NodeNext"` and ESM imports, TypeS
 
 ```ts
 // Required for ESM compatibility
-import { trySync } from "./try-catch.js";  // ✅ Correct
-import { trySync } from "./try-catch";     // ❌ Error in ESM mode
+import { trySync } from "./try-catch.js"; // ✅ Correct
+import { trySync } from "./try-catch"; // ❌ Error in ESM mode
 ```
 
 However, Next.js in development mode had trouble resolving these `.js` imports when the actual files were `.ts` files in the source directory.
@@ -47,7 +47,7 @@ Updated package exports to point to compiled `dist/` files instead of source `sr
       "default": "./dist/index.js"
     },
     "./typing": {
-      "types": "./dist/typing.d.ts", 
+      "types": "./dist/typing.d.ts",
       "default": "./dist/typing.js"
     }
   }
@@ -62,7 +62,7 @@ All relative imports in TypeScript files use `.js` extensions:
 // ✅ Correct ESM imports
 import type { Result } from "./result.js";
 import { trySync } from "./try-catch.js";
-export * from "./typing.js";
+export * from "./typing/index.js";
 
 // ❌ Avoid - not ESM compatible
 import type { Result } from "./result";
@@ -77,9 +77,9 @@ Removed packages from `transpilePackages` since they're now pre-built:
 // next.config.mjs
 const config = {
   transpilePackages: [
-    "@torus-ts/api",           // Still transpiled (not pre-built)
-    "@torus-ts/db",            // Still transpiled (not pre-built)
-    "@torus-ts/ui",            // Still transpiled (not pre-built)
+    "@torus-ts/api", // Still transpiled (not pre-built)
+    "@torus-ts/db", // Still transpiled (not pre-built)
+    "@torus-ts/ui", // Still transpiled (not pre-built)
     "@torus-ts/env-validation", // Still transpiled (not pre-built)
     // Removed: "@torus-network/torus-utils" - now pre-built
     // Removed: "@torus-network/sdk" - now pre-built
@@ -101,7 +101,7 @@ The turbo build system ensures packages build in the correct order based on depe
 ### Transpiled Packages (Use src/)
 
 - `@torus-ts/api` - Transpiled by Next.js during development
-- `@torus-ts/db` - Transpiled by Next.js during development  
+- `@torus-ts/db` - Transpiled by Next.js during development
 - `@torus-ts/ui` - Transpiled by Next.js during development
 - `@torus-ts/env-validation` - Transpiled by Next.js during development
 
@@ -112,7 +112,7 @@ The turbo build system ensures packages build in the correct order based on depe
 If you see errors like:
 
 ```txt
-Module not found: Can't resolve './typing.js'
+Module not found: Can't resolve './typing/index.js'
 ```
 
 **Solution**: Build the affected package:
@@ -137,7 +137,7 @@ Relative import paths need explicit file extensions in ECMAScript imports
 // Fix this
 import { helper } from "./helper";
 
-// To this  
+// To this
 import { helper } from "./helper.js";
 ```
 
@@ -192,7 +192,7 @@ When creating new publishable packages:
 As Node.js ESM support continues to mature, this configuration provides forward compatibility with:
 
 - Native ESM module resolution
-- Bundler-free development workflows  
+- Bundler-free development workflows
 - Standard package distribution formats
 
 ### Build Optimization

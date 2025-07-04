@@ -41,6 +41,7 @@
   "dependencies": {
     "@polkadot/api": "catalog:",
     "@polkadot/types": "catalog:",
+    "@polkadot/types-codec": "catalog:",
     "@polkadot/util-crypto": "catalog:",
     "@torus-network/torus-utils": "workspace:*",
     "@wagmi/core": "2.16.3",
