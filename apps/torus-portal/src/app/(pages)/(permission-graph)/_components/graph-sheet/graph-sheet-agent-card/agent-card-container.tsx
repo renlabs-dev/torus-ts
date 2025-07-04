@@ -1,20 +1,22 @@
 "use client";
 
-import { fetchAgentMetadata } from "@torus-network/sdk";
-import { Card } from "@torus-ts/ui/components/card";
+import { memo, useCallback, useEffect, useMemo, useState } from "react";
 
-import { useEffect, useState, useMemo, useCallback, memo } from "react";
+import { fetchAgentMetadata } from "@torus-network/sdk";
 import { smallAddress } from "@torus-network/torus-utils/subspace";
-import { api } from "~/trpc/react";
 import { tryAsync } from "@torus-network/torus-utils/try-catch";
 
 import { Button } from "@torus-ts/ui/components/button";
-import { AgentCard } from "./agent-card";
+import { Card } from "@torus-ts/ui/components/card";
+
+import { api } from "~/trpc/react";
+
 import type {
   CachedAgentData,
   ComputedWeightsList,
 } from "../../permission-graph-types";
 import { getAllocatorBaseUrl } from "../../permission-graph-utils";
+import { AgentCard } from "./agent-card";
 
 interface AgentCardContainerProps {
   nodeId: string;

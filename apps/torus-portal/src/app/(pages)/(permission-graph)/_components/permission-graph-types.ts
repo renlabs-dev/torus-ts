@@ -1,16 +1,7 @@
 import type { inferProcedureOutput } from "@trpc/server";
-import type { InferSelectModel } from "drizzle-orm";
 import type { LinkObject, NodeObject } from "r3f-forcegraph";
 
 import type { AppRouter } from "@torus-ts/api";
-import type {
-  accumulatedStreamAmountsSchema,
-  emissionDistributionTargetsSchema,
-  emissionPermissionsSchema,
-  emissionStreamAllocationsSchema,
-  namespacePermissionsSchema,
-  permissionsSchema,
-} from "@torus-ts/db/schema";
 
 export interface CustomGraphNode extends NodeObject {
   id: string;
@@ -82,35 +73,8 @@ export interface CustomGraphData {
   links: CustomGraphLink[];
 }
 
-export interface PermissionWithType extends CustomGraphLink {
+export interface CustomGraphLinkWithType extends CustomGraphLink {
   type: "incoming" | "outgoing";
-  permissionType?: "emission" | "namespace";
-  originalData?: PermissionWithDetails;
-}
-
-// Database types for the new permission structure
-export type PermissionData = InferSelectModel<typeof permissionsSchema>;
-export type EmissionPermissionData = InferSelectModel<
-  typeof emissionPermissionsSchema
->;
-export type NamespacePermissionData = InferSelectModel<
-  typeof namespacePermissionsSchema
->;
-export type StreamAllocationData = InferSelectModel<
-  typeof emissionStreamAllocationsSchema
->;
-export type DistributionTargetData = InferSelectModel<
-  typeof emissionDistributionTargetsSchema
->;
-export type AccumulatedStreamData = InferSelectModel<
-  typeof accumulatedStreamAmountsSchema
->;
-
-// The complete permission data structure from the new API
-export interface PermissionWithDetails {
-  permissions: PermissionData;
-  emission_permissions: EmissionPermissionData | null;
-  namespace_permissions: NamespacePermissionData | null;
 }
 
 // Type for the new permission API response
