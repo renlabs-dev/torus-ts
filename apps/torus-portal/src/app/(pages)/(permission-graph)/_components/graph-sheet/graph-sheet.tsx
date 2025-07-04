@@ -1,22 +1,23 @@
-import type {
-  CustomGraphData,
-  CustomGraphNode,
-  PermissionDetails,
-  CachedAgentData,
-  ComputedWeightsList,
-  SignalsList,
-} from "../permission-graph-types";
 import {
   Sheet,
   SheetContent,
   SheetHeader,
   SheetTitle,
 } from "@torus-ts/ui/components/sheet";
+
 import { PermissionGraphOverview } from "../permission-graph-overview";
+import type {
+  CachedAgentData,
+  ComputedWeightsList,
+  CustomGraphData,
+  CustomGraphNode,
+  PermissionDetails,
+  SignalsList,
+} from "../permission-graph-types";
 import { AgentCardContainer } from "./graph-sheet-agent-card/agent-card-container";
 import { GraphSheetDetails } from "./graph-sheet-details/graph-sheet-details";
-import { GraphSheetDetailsSignal } from "./graph-sheet-details/graph-sheet-details-signal";
 import { GraphSheetDetailsPermission } from "./graph-sheet-details/graph-sheet-details-permission";
+import { GraphSheetDetailsSignal } from "./graph-sheet-details/graph-sheet-details-signal";
 
 interface GraphSheetProps {
   selectedNode: CustomGraphNode | null;
@@ -47,14 +48,18 @@ export function GraphSheet(props: GraphSheetProps) {
       >
         <SheetHeader>
           <SheetTitle>
-            {isSignalNode ? "Signal details" : isPermissionNode ? "Permission details" : "Agent details"}
+            {isSignalNode
+              ? "Signal details"
+              : isPermissionNode
+                ? "Permission details"
+                : "Agent details"}
           </SheetTitle>
         </SheetHeader>
 
         {isSignalNode ? (
           <GraphSheetDetailsSignal selectedNode={props.selectedNode} />
         ) : isPermissionNode ? (
-          <GraphSheetDetailsPermission 
+          <GraphSheetDetailsPermission
             selectedNode={props.selectedNode}
             permissionDetails={props.permissionDetails}
           />

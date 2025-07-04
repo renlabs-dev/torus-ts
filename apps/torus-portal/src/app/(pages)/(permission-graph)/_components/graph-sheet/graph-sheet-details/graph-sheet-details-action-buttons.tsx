@@ -156,7 +156,7 @@ export function NodeJumpButton({
   const handleClick = (e: React.MouseEvent) => {
     e.preventDefault();
     const params = new URLSearchParams(searchParams.toString());
-    params.set("agent", address);
+    params.set("id", address);
     router.replace(`/?${params.toString()}`, { scroll: false });
   };
 

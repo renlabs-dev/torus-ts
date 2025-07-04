@@ -47,7 +47,7 @@ const PermissionGraphSearch = memo(function PermissionGraphSearch({
 
         if (matchingNode) {
           const params = new URLSearchParams(searchParams.toString());
-          params.set("agent", matchingNode);
+          params.set("id", matchingNode);
           router.replace(`/?${params.toString()}`, { scroll: false });
           setSearchQuery(""); // Clear search after selection
           setShowSuggestions(false);
@@ -64,7 +64,7 @@ const PermissionGraphSearch = memo(function PermissionGraphSearch({
   const handleSuggestionClick = useCallback(
     (node: string) => {
       const params = new URLSearchParams(searchParams.toString());
-      params.set("agent", node);
+      params.set("id", node);
       router.replace(`/?${params.toString()}`, { scroll: false });
       setSearchQuery(""); // Clear search after selection
       setShowSuggestions(false);
