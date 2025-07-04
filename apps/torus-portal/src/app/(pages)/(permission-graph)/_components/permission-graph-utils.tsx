@@ -3,8 +3,8 @@ import { CONSTANTS } from "@torus-network/sdk";
 import type {
   CachedAgentData,
   CustomGraphData,
+  CustomGraphLinkWithType,
   CustomGraphNode,
-  PermissionWithType,
 } from "./permission-graph-types";
 
 export const formatScope = (scope: string): string =>
@@ -50,8 +50,8 @@ export const getAllocatorBaseUrl = (override?: string): string => {
 export const getNodePermissions = (
   node: CustomGraphNode,
   graphData: CustomGraphData,
-): PermissionWithType[] => {
-  const permissionsMap = new Map<string, PermissionWithType>();
+): CustomGraphLinkWithType[] => {
+  const permissionsMap = new Map<string, CustomGraphLinkWithType>();
 
   graphData.links.forEach((link) => {
     const sourceId =

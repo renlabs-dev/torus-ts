@@ -18,10 +18,9 @@ import {
 
 import type {
   allPermissions,
-  CachedAgentData,
   CustomGraphData,
+  CustomGraphLinkWithType,
   CustomGraphNode,
-  PermissionWithType,
 } from "../../permission-graph-types";
 import { formatDuration, formatScope } from "../../permission-graph-utils";
 import { GraphSheetDetailsActionButtons } from "./graph-sheet-details-action-buttons";
@@ -29,12 +28,10 @@ import { GraphSheetDetailsLinkButtons } from "./graph-sheet-details-link-buttons
 import { GraphSheetDetailsSignalsAccordion } from "./graph-sheet-details-signals-accordion";
 
 interface NodeDetailsCardProps {
-  nodePermissions: PermissionWithType[];
+  nodePermissions: CustomGraphLinkWithType[];
   selectedNode?: CustomGraphNode;
   graphData: CustomGraphData | null;
   allPermissions?: allPermissions;
-  getCachedAgentData?: (nodeId: string) => CachedAgentData | null;
-  setCachedAgentData?: (nodeId: string, data: CachedAgentData) => void;
 }
 
 export function NodeDetailsCard({
