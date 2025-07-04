@@ -109,11 +109,11 @@ export default async function AgentPage({ params }: Readonly<AgentPageProps>) {
               >
                 <AgentIcon alt={`${mdl.name} icon`} icon={icon} />
               </Suspense>
-              <div className="flex w-fit flex-col gap-6 p-6 md:p-0 md:pt-6">
+              <div className="flex w-fit flex-col gap-6 p-6 md:p-0 md:pt-6 md:pr-6">
                 <h1 className="text-start text-3xl font-semibold">
                   {metadata.title}
                 </h1>
-                <p className="text-card-foreground">
+                <p className="text-card-foreground word-break-break-word">
                   {metadata.short_description}
                 </p>
               </div>
