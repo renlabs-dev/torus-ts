@@ -1,11 +1,11 @@
+import { CONSTANTS } from "@torus-network/sdk";
+
 import type {
   CachedAgentData,
   CustomGraphData,
   CustomGraphNode,
-  PermissionDetails,
   PermissionWithType,
 } from "./permission-graph-types";
-import { CONSTANTS } from "@torus-network/sdk";
 
 export const formatScope = (scope: string): string =>
   scope.charAt(0).toUpperCase() + scope.slice(1).toLowerCase();
@@ -62,7 +62,8 @@ export const getNodePermissions = (
 
     if (
       (sourceId === node.id || targetId === node.id) &&
-      (link.linkType === "permission_ownership" || link.linkType === "permission_target")
+      (link.linkType === "permission_ownership" ||
+        link.linkType === "permission_target")
     ) {
       if (!permissionsMap.has(key)) {
         permissionsMap.set(key, {
@@ -74,25 +75,6 @@ export const getNodePermissions = (
   });
 
   return Array.from(permissionsMap.values());
-};
-
-export const sortPermissions = (
-  permissions: PermissionWithType[],
-  permissionDetails: PermissionDetails,
-): PermissionWithType[] => {
-  return permissions.sort((a, b) => {
-    const detailsA = permissionDetails.find(
-      (p) => p.permissions.grantorAccountId === a.source && p.permissions.granteeAccountId === a.target,
-    );
-    const detailsB = permissionDetails.find(
-      (p) => p.permissions.grantorAccountId === b.source && p.permissions.granteeAccountId === b.target,
-    );
-
-    const idA = detailsA?.permissions.permissionId ?? "";
-    const idB = detailsB?.permissions.permissionId ?? "";
-
-    return Number(idA) - Number(idB);
-  });
 };
 
 export function lightenColor(color: string, amount: number): string {

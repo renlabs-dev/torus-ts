@@ -1,10 +1,11 @@
 // import { useMemo } from "react";
 import { smallAddress } from "@torus-network/torus-utils/subspace";
+
 import {
   Accordion,
+  AccordionContent,
   AccordionItem,
   AccordionTrigger,
-  AccordionContent,
 } from "@torus-ts/ui/components/accordion";
 import { Card } from "@torus-ts/ui/components/card";
 import { ScrollArea } from "@torus-ts/ui/components/scroll-area";
@@ -14,23 +15,24 @@ import {
   TabsList,
   TabsTrigger,
 } from "@torus-ts/ui/components/tabs";
-import { formatDuration, formatScope } from "../../permission-graph-utils";
+
 import type {
+  allPermissions,
   CachedAgentData,
   CustomGraphData,
   CustomGraphNode,
-  PermissionDetails,
   PermissionWithType,
 } from "../../permission-graph-types";
-import { GraphSheetDetailsLinkButtons } from "./graph-sheet-details-link-buttons";
+import { formatDuration, formatScope } from "../../permission-graph-utils";
 import { GraphSheetDetailsActionButtons } from "./graph-sheet-details-action-buttons";
+import { GraphSheetDetailsLinkButtons } from "./graph-sheet-details-link-buttons";
 import { GraphSheetDetailsSignalsAccordion } from "./graph-sheet-details-signals-accordion";
 
 interface NodeDetailsCardProps {
   nodePermissions: PermissionWithType[];
   selectedNode?: CustomGraphNode;
   graphData: CustomGraphData | null;
-  permissionDetails?: PermissionDetails;
+  allPermissions?: allPermissions;
   getCachedAgentData?: (nodeId: string) => CachedAgentData | null;
   setCachedAgentData?: (nodeId: string, data: CachedAgentData) => void;
 }
@@ -38,13 +40,13 @@ interface NodeDetailsCardProps {
 export function NodeDetailsCard({
   graphData,
   nodePermissions,
-  permissionDetails,
+  allPermissions,
   selectedNode,
 }: NodeDetailsCardProps) {
   if (!graphData) return null;
 
   const processedPermissions = nodePermissions.map((permission) => {
-    const details = permissionDetails?.find(
+    const details = allPermissions?.find(
       (p) =>
         p.permissions.grantorAccountId === permission.source &&
         p.permissions.granteeAccountId === permission.target,
@@ -92,13 +94,21 @@ export function NodeDetailsCard({
                       <span className="font-medium text-white">
                         {isOutgoing ? "← Granted " : "→ Received "}
                         Permission{" "}
-                        {smallAddress(String(details?.permissions.permissionId))}
+                        {smallAddress(
+                          String(details?.permissions.permissionId),
+                        )}
                       </span>
                     </div>
                     <GraphSheetDetailsLinkButtons
                       grantor_key={details?.permissions.grantorAccountId}
                       grantee_key={details?.permissions.granteeAccountId}
-                      scope={details?.permissionType?.toUpperCase() ?? "UNKNOWN"}
+                      scope={
+                        details?.emission_permissions
+                          ? "EMISSION"
+                          : details?.namespace_permissions
+                            ? "NAMESPACE"
+                            : "UNKNOWN"
+                      }
                     />
                   </div>
                 </AccordionTrigger>
@@ -122,7 +132,13 @@ export function NodeDetailsCard({
                         <div>
                           <span className="text-xs text-gray-500">Scope</span>
                           <div className="text-sm text-gray-300">
-                            {formatScope(details.permissionType ?? "")}
+                            {formatScope(
+                              details.emission_permissions
+                                ? "emission"
+                                : details.namespace_permissions
+                                  ? "namespace"
+                                  : "",
+                            )}
                           </div>
                         </div>
                         <div>
@@ -133,7 +149,9 @@ export function NodeDetailsCard({
                           </span>
                           <div className="text-sm text-gray-300">
                             {formatDuration(
-                              Number(details.remainingBlocks ?? 0),
+                              Number(
+                                details.permissions.durationBlockNumber ?? 0,
+                              ),
                             )}
                           </div>
                         </div>
