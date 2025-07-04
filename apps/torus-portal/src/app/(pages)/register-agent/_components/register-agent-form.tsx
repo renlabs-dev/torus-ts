@@ -66,7 +66,10 @@ const registerAgentSchema = z.object({
       `Max ${AGENT_SHORT_DESCRIPTION_MAX_LENGTH} characters`,
     ),
   title: z.string().min(1, "Agent title is required"),
-  body: z.string().min(1, "Agent description is required"),
+  body: z
+    .string()
+    .min(1, "Agent description is required")
+    .max(50_000, "Agent description must be less than 50,000 characters"),
   twitter: z.string().optional(),
   github: z.string().optional(),
   telegram: z.string().optional(),
