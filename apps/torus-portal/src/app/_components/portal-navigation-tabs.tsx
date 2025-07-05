@@ -1,81 +1,124 @@
 "use client";
 
 import React, { useCallback, useMemo } from "react";
-import { useRouter, usePathname } from "next/navigation";
+
+import {
+  Edit,
+  FolderPen,
+  FolderX,
+  Grid2x2Plus,
+  Network,
+  Plus,
+  Radio,
+  Shield,
+} from "lucide-react";
+import { usePathname, useRouter } from "next/navigation";
+
 import {
   Select,
   SelectContent,
+  SelectGroup,
   SelectItem,
+  SelectLabel,
+  SelectSeparator,
   SelectTrigger,
   SelectValue,
 } from "@torus-ts/ui/components/select";
-import {
-  Network,
-  Shield,
-  Plus,
-  Radio,
-  Edit,
-  Grid2x2Plus,
-  FolderPen,
-  FolderX,
-} from "lucide-react";
 
 export default function PortalNavigationTabs() {
   const router = useRouter();
   const pathname = usePathname();
 
-  const navigationItems = useMemo(
-    () => [
+  interface NavigationItem {
+    value: string;
+    label: string;
+    icon: React.ComponentType<{ size?: number }>;
+    path: string;
+  }
+
+  interface NavigationCategory {
+    label: string;
+    items: NavigationItem[];
+  }
+
+  const navigationCategories = useMemo(
+    (): NavigationCategory[] => [
       {
-        value: "permission-graph",
-        label: "Hypergraph",
-        icon: Network,
-        path: "/",
+        label: "Overview",
+        items: [
+          {
+            value: "permission-graph",
+            label: "Hypergraph",
+            icon: Network,
+            path: "/",
+          },
+        ],
       },
       {
-        value: "create-permission",
-        label: "Create Permission",
-        icon: Plus,
-        path: "/create-permission",
+        label: "Permission Management",
+        items: [
+          {
+            value: "create-permission",
+            label: "Create Permission",
+            icon: Plus,
+            path: "/create-permission",
+          },
+          {
+            value: "edit-permission",
+            label: "Edit Permission",
+            icon: Edit,
+            path: "/edit-permission",
+          },
+          {
+            value: "create-constraint",
+            label: "Create Constraint",
+            icon: Shield,
+            path: "/create-constraint",
+          },
+        ],
       },
       {
-        value: "edit-permission",
-        label: "Edit Permission",
-        icon: Edit,
-        path: "/edit-permission",
+        label: "Namespace Operations",
+        items: [
+          {
+            value: "create-namespace",
+            label: "Create Namespace",
+            icon: FolderPen,
+            path: "/create-namespace",
+          },
+          {
+            value: "delete-namespace",
+            label: "Delete Namespace",
+            icon: FolderX,
+            path: "/delete-namespace",
+          },
+        ],
       },
       {
-        value: "create-constraint",
-        label: "Create Constraint",
-        icon: Shield,
-        path: "/create-constraint",
-      },
-      {
-        value: "create-signal",
-        label: "Create Signal",
-        icon: Radio,
-        path: "/create-signal",
-      },
-      {
-        value: "register-agent",
-        label: "Register Agent",
-        icon: Grid2x2Plus,
-        path: "/register-agent",
-      },
-      {
-        value: "create-namespace",
-        label: "Create Namespace",
-        icon: FolderPen,
-        path: "/create-namespace",
-      },
-      {
-        value: "delete-namespace",
-        label: "Delete Namespace",
-        icon: FolderX,
-        path: "/delete-namespace",
+        label: "Network Operations",
+        items: [
+          {
+            value: "register-agent",
+            label: "Register Agent",
+            icon: Grid2x2Plus,
+            path: "/register-agent",
+          },
+          {
+            value: "create-signal",
+            label: "Create Signal",
+            icon: Radio,
+            path: "/create-signal",
+          },
+        ],
       },
     ],
     [],
+  );
+
+  // Flatten categories for easy lookup
+  const allNavigationItems = useMemo(
+    () => navigationCategories.flatMap((category) => category.items),
+    [navigationCategories],
   );
 
   const getCurrentTab = () => {
@@ -93,15 +136,17 @@ export default function PortalNavigationTabs() {
 
   const handleTabChange = useCallback(
     (value: string) => {
-      const item = navigationItems.find((item) => item.value === value);
+      const item = allNavigationItems.find((item) => item.value === value);
       if (item) {
         router.push(item.path);
       }
     },
-    [router, navigationItems],
+    [router, allNavigationItems],
   );
 
-  const currentItem = navigationItems.find((item) => item.value === currentTab);
+  const currentItem = allNavigationItems.find(
+    (item) => item.value === currentTab,
+  );
 
   return (
     <>
@@ -119,17 +164,27 @@ export default function PortalNavigationTabs() {
             </SelectValue>
           </SelectTrigger>
           <SelectContent>
-            {navigationItems.map((item) => {
-              const Icon = item.icon;
-              return (
-                <SelectItem key={item.value} value={item.value}>
-                  <div className="flex items-center gap-2">
-                    <Icon size={16} />
-                    {item.label}
-                  </div>
-                </SelectItem>
-              );
-            })}
+            {navigationCategories.map((category, categoryIndex) => (
+              <SelectGroup key={category.label}>
+                <SelectLabel className="px-2 py-1.5 text-sm font-medium text-muted-foreground">
+                  {category.label}
+                </SelectLabel>
+                {category.items.map((item) => {
+                  const Icon = item.icon;
+                  return (
+                    <SelectItem key={item.value} value={item.value}>
+                      <div className="flex items-center gap-2">
+                        <Icon size={16} />
+                        {item.label}
+                      </div>
+                    </SelectItem>
+                  );
+                })}
+                {categoryIndex < navigationCategories.length - 1 && (
+                  <SelectSeparator />
+                )}
+              </SelectGroup>
+            ))}
           </SelectContent>
         </Select>
       </div>
