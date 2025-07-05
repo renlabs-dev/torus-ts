@@ -34,6 +34,16 @@ const nodeColorLegend: NodeColorInfo[] = [
     title: "Connected to Allocator",
     description: "Nodes directly connected to the allocator",
   },
+  {
+    color: graphConstants.nodeConfig.nodeColors.emissionPermissionNode,
+    title: "Emission Permission",
+    description: "Permission nodes that control token emissions and distributions",
+  },
+  {
+    color: graphConstants.nodeConfig.nodeColors.namespacePermissionNode,
+    title: "Namespace Permission",
+    description: "Permission nodes that control access to specific namespaces",
+  },
   // Other nodes (not connected to allocator)
   {
     color: graphConstants.nodeConfig.nodeColors.both,
