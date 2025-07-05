@@ -5,6 +5,7 @@ import { memo, useMemo, useRef, useState } from "react";
 import { useFrame } from "@react-three/fiber";
 import dynamic from "next/dynamic";
 import type { GraphMethods, LinkObject, NodeObject } from "r3f-forcegraph";
+import * as THREE from "three";
 
 import type {
   CustomGraphData,
@@ -69,15 +70,49 @@ const ForceGraph = memo(
       };
     }, [props.graphData.nodes, props.graphData.links]);
 
+    const nodeThreeObject = useMemo(() => {
+      return (node: NodeObject) => {
+        const customNode = node as CustomGraphNode;
+        const color = getNodeColor(node, highlightState, props.userAddress);
+
+        const material = new THREE.MeshLambertMaterial({
+          color: color,
+          opacity: 1,
+        });
+
+        let geometry: THREE.BufferGeometry;
+
+        switch (customNode.nodeType) {
+          case "signal":
+            geometry = new THREE.TetrahedronGeometry(6, 0);
+            break;
+          case "permission":
+            geometry = new THREE.IcosahedronGeometry(5, 0);
+            break;
+          case "allocator":
+            geometry = new THREE.TorusKnotGeometry(10, 3, 300, 7, 4, 14);
+            break;
+          case "root_agent":
+            geometry = new THREE.SphereGeometry(9, 18, 18);
+            break;
+
+          case "target_agent":
+          default:
+            geometry = new THREE.SphereGeometry(9, 18, 18);
+            break;
+        }
+
+        return new THREE.Mesh(geometry, material);
+      };
+    }, [highlightState, props.userAddress]);
+
     return (
       <>
         <R3fForceGraph
           ref={fgRef}
           graphData={formatedData}
           nodeOpacity={1}
-          nodeColor={(node: NodeObject) =>
-            getNodeColor(node, highlightState, props.userAddress)
-          }
+          nodeThreeObject={nodeThreeObject}
           linkDirectionalParticleWidth={3}
           linkDirectionalParticles={(link: LinkObject) =>
             Number(link.linkDirectionalParticles) || 0
