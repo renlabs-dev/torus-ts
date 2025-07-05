@@ -32,7 +32,7 @@ export function ForceGraphCanvas({
       />
       <spotLight
         castShadow
-        color="orange"
+        color="blue"
         intensity={2}
         position={[-50, 50, 40]}
         angle={0.25}
@@ -49,7 +49,11 @@ export function ForceGraphCanvas({
         />
         <OrbitControls dampingFactor={0.01} enablePan={false} />
         <EffectComposer>
-          <Bloom intensity={2} luminanceThreshold={0} luminanceSmoothing={1} />
+          <Bloom
+            intensity={1}
+            luminanceThreshold={0}
+            luminanceSmoothing={1.5}
+          />
         </EffectComposer>
       </Suspense>
     </Canvas>

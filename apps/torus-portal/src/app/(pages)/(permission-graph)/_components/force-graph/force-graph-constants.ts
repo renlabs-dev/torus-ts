@@ -12,7 +12,7 @@ export const GRAPH_CONSTANTS = {
   SIGNAL_NODE_SIZE: 0.5,
 
   // Link constants
-  HIGHLIGHT_LINK_WIDTH_MULTIPLIER: 2,
+  HIGHLIGHT_LINK_WIDTH_MULTIPLIER: 1.5,
   HIGHLIGHT_PARTICLES_INCREASE: 2,
   MIN_PARTICLES: 1,
 
@@ -51,8 +51,7 @@ export const GRAPH_CONSTANTS = {
 
   // Link properties
   PERMISSION_LINK: {
-    directionalArrowLength: 6,
-    directionalArrowRelPos: 1,
+    particleWidth: 3,
     width: 1,
   },
 
@@ -62,7 +61,7 @@ export const GRAPH_CONSTANTS = {
   },
 
   SIGNAL_LINK: {
-    width: 0,
+    width: 1.2,
     particles: 0,
   },
 } as const;

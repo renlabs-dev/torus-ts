@@ -6,7 +6,6 @@ import { fetchAgentMetadata } from "@torus-network/sdk";
 import { smallAddress } from "@torus-network/torus-utils/subspace";
 import { tryAsync } from "@torus-network/torus-utils/try-catch";
 
-import { Button } from "@torus-ts/ui/components/button";
 import { Card } from "@torus-ts/ui/components/card";
 
 import { api } from "~/trpc/react";
@@ -15,7 +14,6 @@ import type {
   CachedAgentData,
   ComputedWeightsList,
 } from "../../permission-graph-types";
-import { getAllocatorBaseUrl } from "../../permission-graph-utils";
 import { AgentCard } from "./agent-card";
 
 interface AgentCardContainerProps {
@@ -52,13 +50,6 @@ export const AgentCardContainer = memo(
     }, [allComputedWeights, nodeId]);
 
     const agentQuery = api.agent.byKeyLastBlock.useQuery({ key: nodeId });
-
-    const handleGoToAllocator = useCallback(() => {
-      if (agentQuery.data) {
-        const href = `${getAllocatorBaseUrl()}${agentQuery.data.key}`;
-        window.open(href, "_blank");
-      }
-    }, [agentQuery.data]);
 
     const fetchMetadata = useCallback(async (metadataUri: string) => {
       const [metadataError, metadata] = await tryAsync(
@@ -250,10 +241,6 @@ export const AgentCardContainer = memo(
           currentBlock={currentBlock}
           agentWeight={weightFactor}
         />
-
-        <Button variant="outline" onClick={handleGoToAllocator}>
-          View Agent in Allocator.
-        </Button>
       </Card>
     );
   },
