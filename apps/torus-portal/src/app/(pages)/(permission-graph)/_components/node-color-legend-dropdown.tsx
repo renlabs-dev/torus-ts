@@ -18,52 +18,49 @@ interface NodeColorInfo {
 }
 
 const nodeColorLegend: NodeColorInfo[] = [
+  // Core Network
+  {
+    color: graphConstants.nodeConfig.nodeColors.allocator,
+    title: "Allocator",
+    description: "The primary allocator node in the network",
+    borderColor: "#000000",
+  },
   {
     color: graphConstants.nodeConfig.nodeColors.userNode,
     title: "Your Agent",
     description: "Your connected wallet's agent node",
   },
+  
+  // Network Participants (Blue family)
   {
-    color: graphConstants.nodeConfig.nodeColors.allocator,
-    title: "Allocator Main Node",
-    description: "The primary allocator in the network",
-    borderColor: "#000000",
+    color: graphConstants.nodeConfig.nodeColors.rootNode,
+    title: "Whitelisted Agent",
+    description: "Agents verified and whitelisted in the network",
   },
   {
-    color: graphConstants.nodeConfig.nodeColors.allocatedAgent,
-    title: "Connected to Allocator",
-    description: "Nodes directly connected to the allocator",
+    color: graphConstants.nodeConfig.nodeColors.targetNode,
+    title: "Target Agent",
+    description: "Agents that are targets of permissions",
   },
+  
+  // Permission System (Orange/Red family)
   {
     color: graphConstants.nodeConfig.nodeColors.emissionPermissionNode,
     title: "Emission Permission",
-    description: "Permission nodes that control token emissions and distributions",
+    description: "Controls token emissions and distributions",
   },
   {
     color: graphConstants.nodeConfig.nodeColors.namespacePermissionNode,
-    title: "Namespace Permission",
-    description: "Permission nodes that control access to specific namespaces",
+    title: "Namespace Permission", 
+    description: "Controls access to specific namespaces",
   },
-  // Other nodes (not connected to allocator)
-  {
-    color: graphConstants.nodeConfig.nodeColors.both,
-    title: "Grantor and Grantee",
-    description: "Nodes that both grant and receive permissions",
-  },
-  {
-    color: graphConstants.nodeConfig.nodeColors.grantor,
-    title: "Grantor",
-    description: "Nodes that grant permissions to others",
-  },
-  {
-    color: graphConstants.nodeConfig.nodeColors.grantee,
-    title: "Grantee",
-    description: "Nodes that receive permissions from others",
-  },
+  
+  
+  // Special
   {
     color: graphConstants.nodeConfig.nodeColors.signalNode,
     title: "Demand Signal",
-    description: "Signals requesting specific capabilities from agents",
+    description: "Signals requesting specific capabilities",
   },
 ];
 

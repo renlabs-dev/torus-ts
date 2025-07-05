@@ -33,19 +33,22 @@ export const graphConstants = {
   // Node configuration
   nodeConfig: {
     nodeColors: {
-      allocator: "#ffffff", // white
-      rootNode: "#93c5fd", // blue-300 (whitelisted agents)
-      permissionNode: "#f59e0b", // amber-500 (permission representations - legacy)
-      emissionPermissionNode: "#f59e0b", // amber-500 (emission permissions)
-      namespacePermissionNode: "#10b981", // emerald-500 (namespace permissions)
-      targetNode: "#38bdf8", // sky-500 (permission targets)
-      userNode: "#fde68a", // amber-300
-      signalNode: "#8b5cf6", // purple
-      allocatedAgent: "#93c5fd", // blue-300
-      grantor: "#7dd3fc", // sky-300
-      grantee: "#38bdf8", // sky-500
-      both: "#34d399", // emerald-400
-      default: "#64B5F6", // soft blue
+      // Core network node
+      allocator: "#ffffff", // white (stays as requested)
+
+      // Agent/Node group (Blue family - network participants)
+      rootNode: "#3b82f6", // blue-500 (whitelisted agents)
+      targetNode: "#10b981", // emerald-500 (permission targets)
+      userNode: "#0ea5e9", // sky-500 (user's agent)
+
+      // Permission group (Orange/Yellow family - permission types)
+      permissionNode: "#f97316", // orange-500 (legacy fallback)
+      emissionPermissionNode: "#f97316", // orange-500 (emission permissions)
+      namespacePermissionNode: "#eab308", // yellow-500 (namespace permissions)
+
+      // Special nodes
+      signalNode: "#8b5cf6", // violet-500 (demand signals)
+      default: "#6b7280", // gray-500 (fallback)
     },
     nodeSizes: {
       allocator: 200,
@@ -59,7 +62,7 @@ export const graphConstants = {
     nodeGeometry: {
       allocator: {
         type: "torusKnot",
-        radius: 10,
+        radius: 12,
         tubeRadius: 3,
         tubularSegments: 300,
         radialSegments: 7,
@@ -68,30 +71,30 @@ export const graphConstants = {
       },
       rootNode: {
         type: "sphere",
-        radius: 9,
+        radius: 10,
         widthSegments: 18,
         heightSegments: 18,
       },
       permissionNode: {
         type: "icosahedron",
-        radius: 5,
+        radius: 7,
         detail: 0,
       },
       targetNode: {
         type: "sphere",
-        radius: 9,
+        radius: 10,
         widthSegments: 18,
         heightSegments: 18,
       },
       userNode: {
         type: "sphere",
-        radius: 9,
+        radius: 10,
         widthSegments: 18,
         heightSegments: 18,
       },
       signalNode: {
         type: "tetrahedron",
-        radius: 6,
+        radius: 8,
         detail: 0,
       },
     },
@@ -104,15 +107,31 @@ export const graphConstants = {
   // Link configuration
   linkConfig: {
     linkColors: {
-      permissionLink: "#cbd5e1", // slate-300
-      allocationLink: "#FFFFFF", // white
-      signalLink: "#8b5cf6", // purple
-      permissionToTargetLink: "#f59e0b", // amber-500
+      // Source-based link colors (follow the source node color)
+      allocatorLink: "#ffffff", // white (from allocator)
+      rootNodeLink: "#3b82f6", // blue-500 (from whitelisted agents)
+      emissionPermissionLink: "#f97316", // orange-500 (from emission permissions)
+      namespacePermissionLink: "#eab308", // yellow-500 (from namespace permissions)
+      targetNodeLink: "#10b981", // emerald-500 (from target nodes)
+      userNodeLink: "#0ea5e9", // sky-500 (from user nodes)
+
+      // Special link types (exceptions)
+      signalLink: "#8b5cf6", // violet-500 (signals keep their own color)
+      defaultLink: "#6b7280", // gray-500 (fallback)
+
+      // Legacy colors (for backward compatibility)
+      permissionLink: "#f97316", // orange-500 (fallback to emission)
+      allocationLink: "#ffffff", // white (allocator links)
+      permissionToTargetLink: "#f97316", // orange-500 (fallback to emission)
     },
     linkWidths: {
       permissionLink: 1,
       allocationLink: 1,
       signalLink: 1,
+    },
+    arrowConfig: {
+      defaultArrowLength: 8,
+      defaultArrowRelPos: 1,
     },
     particleConfig: {
       permissionLink: {
