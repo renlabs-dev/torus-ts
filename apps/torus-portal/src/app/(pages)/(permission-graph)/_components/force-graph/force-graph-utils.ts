@@ -9,6 +9,33 @@ import type {
 } from "../permission-graph-types";
 import { graphConstants } from "./force-graph-constants";
 
+function getLinkColorFromSource(sourceId: string, linkType: string, permissionType?: string): string {
+  // Exception: signals keep their own color
+  if (linkType === "signal") {
+    return graphConstants.linkConfig.linkColors.signalLink;
+  }
+  
+  // Determine source node type and return matching link color
+  if (sourceId.includes("allocator") || linkType === "allocation") {
+    return graphConstants.linkConfig.linkColors.allocatorLink;
+  }
+  
+  if (sourceId.startsWith("permission-")) {
+    // For permission nodes, use the permission type to determine color
+    if (permissionType === "namespace") {
+      return graphConstants.linkConfig.linkColors.namespacePermissionLink;
+    }
+    return graphConstants.linkConfig.linkColors.emissionPermissionLink;
+  }
+  
+  if (sourceId.startsWith("signal-")) {
+    return graphConstants.linkConfig.linkColors.signalLink;
+  }
+  
+  // For root nodes and other agent nodes, use blue (root node color)
+  return graphConstants.linkConfig.linkColors.rootNodeLink;
+}
+
 function getDeterministicValue(seed: string, min: number, max: number): number {
   // Simple hash function to generate deterministic "random" values
   let hash = 0;
@@ -113,8 +140,10 @@ export function createGraphData(
         source: allocatorAddress,
         target: agent.agentKey,
         id: `allocation-${agent.agentKey}`,
-        linkColor: graphConstants.linkConfig.linkColors.allocationLink,
+        linkColor: getLinkColorFromSource(allocatorAddress, "allocation"),
         linkWidth: graphConstants.linkConfig.linkWidths.allocationLink,
+        linkDirectionalArrowLength: graphConstants.linkConfig.arrowConfig.defaultArrowLength,
+        linkDirectionalArrowRelPos: graphConstants.linkConfig.arrowConfig.defaultArrowRelPos,
         linkDirectionalParticles: 2,
         linkDirectionalParticleSpeed: getDeterministicParticleSpeed(
           agent.agentKey,
@@ -167,8 +196,10 @@ export function createGraphData(
         source: allocatorAddress,
         target: agentKey,
         id: `allocation-${agentKey}`,
-        linkColor: graphConstants.linkConfig.linkColors.allocationLink,
+        linkColor: getLinkColorFromSource(allocatorAddress, "allocation"),
         linkWidth: graphConstants.linkConfig.linkWidths.allocationLink,
+        linkDirectionalArrowLength: graphConstants.linkConfig.arrowConfig.defaultArrowLength,
+        linkDirectionalArrowRelPos: graphConstants.linkConfig.arrowConfig.defaultArrowRelPos,
         linkDirectionalParticles: 1,
         linkDirectionalParticleSpeed: getDeterministicParticleSpeed(agentKey),
         linkDirectionalParticleResolution: graphConstants.particleAnimation.resolution,
@@ -179,12 +210,20 @@ export function createGraphData(
   if (allPermissions && allPermissions.length > 0) {
     // Group permissions by permission ID to handle multiple distribution targets
     const permissionMap = new Map<string, AllPermission[]>();
+    const permissionTypes = new Map<string, string>(); // Store permission types
 
     allPermissions.forEach((permission) => {
       const permissionId = permission.permissions.permissionId;
 
       if (!permissionMap.has(permissionId)) {
         permissionMap.set(permissionId, []);
+        // Store permission type when first encountering this permission ID
+        const permissionType = permission.emission_permissions
+          ? "emission"
+          : permission.namespace_permissions
+            ? "namespace"
+            : "emission"; // default to emission
+        permissionTypes.set(permissionId, permissionType);
       }
       permissionMap.get(permissionId)?.push(permission);
     });
@@ -248,10 +287,10 @@ export function createGraphData(
             source: permission.permissions.grantorAccountId,
             target: `permission-${permissionId}`,
             id: `ownership-${permissionId}`,
-            linkColor: graphConstants.linkConfig.linkColors.permissionLink,
+            linkColor: getLinkColorFromSource(permission.permissions.grantorAccountId, "permission_ownership"),
             linkWidth: graphConstants.linkConfig.linkWidths.permissionLink,
-            linkDirectionalArrowLength: 4,
-            linkDirectionalArrowRelPos: 1,
+            linkDirectionalArrowLength: graphConstants.linkConfig.arrowConfig.defaultArrowLength,
+            linkDirectionalArrowRelPos: graphConstants.linkConfig.arrowConfig.defaultArrowRelPos,
             linkDirectionalParticles: 1,
             linkDirectionalParticleSpeed:
               getDeterministicParticleSpeed(permissionId),
@@ -343,10 +382,10 @@ export function createGraphData(
               source: `permission-${permissionId}`,
               target: targetId,
               id: `target-${permissionId}-${targetId}`,
-              linkColor: graphConstants.linkConfig.linkColors.permissionToTargetLink,
+              linkColor: getLinkColorFromSource(`permission-${permissionId}`, "permission_target", permissionTypes.get(permissionId)),
               linkWidth: graphConstants.linkConfig.linkWidths.permissionLink,
-              linkDirectionalArrowLength: 6,
-              linkDirectionalArrowRelPos: 1,
+              linkDirectionalArrowLength: graphConstants.linkConfig.arrowConfig.defaultArrowLength,
+              linkDirectionalArrowRelPos: graphConstants.linkConfig.arrowConfig.defaultArrowRelPos,
               linkDirectionalParticles: Math.max(
                 1,
                 Math.ceil((weight / 65535) * 3),
@@ -368,10 +407,10 @@ export function createGraphData(
               source: `permission-${permissionId}`,
               target: permission.permissions.granteeAccountId,
               id: `target-${permissionId}`,
-              linkColor: graphConstants.linkConfig.linkColors.permissionToTargetLink,
+              linkColor: getLinkColorFromSource(`permission-${permissionId}`, "permission_target", permissionTypes.get(permissionId)),
               linkWidth: graphConstants.linkConfig.linkWidths.permissionLink,
-              linkDirectionalArrowLength: 6,
-              linkDirectionalArrowRelPos: 1,
+              linkDirectionalArrowLength: graphConstants.linkConfig.arrowConfig.defaultArrowLength,
+              linkDirectionalArrowRelPos: graphConstants.linkConfig.arrowConfig.defaultArrowRelPos,
               linkDirectionalParticles: 2,
               linkDirectionalParticleSpeed: getDeterministicParticleSpeed(
                 permission.permissions.granteeAccountId,
@@ -407,7 +446,7 @@ export function createGraphData(
           target: `signal-${signal.id}`,
           id: `signal-link-${signal.id}`,
           linkDirectionalParticles: 0,
-          linkColor: graphConstants.linkConfig.linkColors.signalLink,
+          linkColor: getLinkColorFromSource(signal.agentKey, "signal"),
           linkWidth: graphConstants.linkConfig.linkWidths.signalLink,
         });
       }
