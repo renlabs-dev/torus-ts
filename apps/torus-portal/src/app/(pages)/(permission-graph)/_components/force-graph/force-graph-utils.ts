@@ -218,7 +218,9 @@ export function createGraphData(
           const permissionNode: CustomGraphNode = {
             id: `permission-${permissionId}`,
             name: permissionType.toUpperCase(),
-            color: graphConstants.nodeConfig.nodeColors.permissionNode,
+            color: permissionType === "namespace" 
+              ? graphConstants.nodeConfig.nodeColors.namespacePermissionNode
+              : graphConstants.nodeConfig.nodeColors.emissionPermissionNode,
             val: graphConstants.nodeConfig.nodeSizes.permissionNode,
             fullAddress: permissionId,
             role: `${permissionType} Permission`,

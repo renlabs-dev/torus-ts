@@ -35,7 +35,9 @@ export const graphConstants = {
     nodeColors: {
       allocator: "#ffffff", // white
       rootNode: "#93c5fd", // blue-300 (whitelisted agents)
-      permissionNode: "#f59e0b", // amber-500 (permission representations)
+      permissionNode: "#f59e0b", // amber-500 (permission representations - legacy)
+      emissionPermissionNode: "#f59e0b", // amber-500 (emission permissions)
+      namespacePermissionNode: "#10b981", // emerald-500 (namespace permissions)
       targetNode: "#38bdf8", // sky-500 (permission targets)
       userNode: "#fde68a", // amber-300
       signalNode: "#8b5cf6", // purple
