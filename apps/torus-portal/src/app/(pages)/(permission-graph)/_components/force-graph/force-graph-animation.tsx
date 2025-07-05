@@ -11,7 +11,7 @@ import type {
   CustomGraphData,
   CustomGraphNode,
 } from "../permission-graph-types";
-import { GRAPH_CONSTANTS } from "./force-graph-constants";
+import { graphConstants } from "./force-graph-constants";
 import { getLinkWidth, getNodeColor } from "./force-graph-highlight-utils";
 import { useGraphInteractions } from "./use-graph-interactions";
 
@@ -35,21 +35,21 @@ const ForceGraph = memo(
           const chargeForce = fgRef.current.d3Force("charge");
           if (chargeForce && typeof chargeForce.strength === "function") {
             // eslint-disable-next-line @typescript-eslint/no-unsafe-call
-            chargeForce.strength(GRAPH_CONSTANTS.CHARGE_STRENGTH);
+            chargeForce.strength(graphConstants.physics.chargeStrength);
           }
           setForcesConfigured(true);
         }
         const linkForce = fgRef.current.d3Force("link");
         if (linkForce && typeof linkForce.distance === "function") {
           // eslint-disable-next-line @typescript-eslint/no-unsafe-call
-          linkForce.distance(GRAPH_CONSTANTS.LINK_DISTANCE);
+          linkForce.distance(graphConstants.physics.linkDistance);
         }
 
         // Add center force to keep nodes from drifting too far
         const centerForce = fgRef.current.d3Force("center");
         if (centerForce && typeof centerForce.strength === "function") {
           // eslint-disable-next-line @typescript-eslint/no-unsafe-call
-          centerForce.strength(0.1);
+          centerForce.strength(graphConstants.physics.centerForceStrength);
         }
 
         fgRef.current.tickFrame();
@@ -83,23 +83,48 @@ const ForceGraph = memo(
         let geometry: THREE.BufferGeometry;
 
         switch (customNode.nodeType) {
-          case "signal":
-            geometry = new THREE.TetrahedronGeometry(6, 0);
+          case "signal": {
+            const config = graphConstants.nodeConfig.nodeGeometry.signalNode;
+            geometry = new THREE.TetrahedronGeometry(config.radius, config.detail);
             break;
-          case "permission":
-            geometry = new THREE.IcosahedronGeometry(5, 0);
+          }
+          case "permission": {
+            const config = graphConstants.nodeConfig.nodeGeometry.permissionNode;
+            geometry = new THREE.IcosahedronGeometry(config.radius, config.detail);
             break;
-          case "allocator":
-            geometry = new THREE.TorusKnotGeometry(10, 3, 300, 7, 4, 14);
+          }
+          case "allocator": {
+            const config = graphConstants.nodeConfig.nodeGeometry.allocator;
+            geometry = new THREE.TorusKnotGeometry(
+              config.radius,
+              config.tubeRadius,
+              config.tubularSegments,
+              config.radialSegments,
+              config.p,
+              config.q,
+            );
             break;
-          case "root_agent":
-            geometry = new THREE.SphereGeometry(9, 18, 18);
+          }
+          case "root_agent": {
+            const config = graphConstants.nodeConfig.nodeGeometry.rootNode;
+            geometry = new THREE.SphereGeometry(
+              config.radius,
+              config.widthSegments,
+              config.heightSegments,
+            );
             break;
+          }
 
           case "target_agent":
-          default:
-            geometry = new THREE.SphereGeometry(9, 18, 18);
+          default: {
+            const config = graphConstants.nodeConfig.nodeGeometry.targetNode;
+            geometry = new THREE.SphereGeometry(
+              config.radius,
+              config.widthSegments,
+              config.heightSegments,
+            );
             break;
+          }
         }
 
         return new THREE.Mesh(geometry, material);
@@ -111,14 +136,14 @@ const ForceGraph = memo(
         <R3fForceGraph
           ref={fgRef}
           graphData={formatedData}
-          nodeOpacity={1}
+          nodeOpacity={graphConstants.nodeConfig.rendering.opacity}
           nodeThreeObject={nodeThreeObject}
           linkDirectionalParticleWidth={3}
           linkDirectionalParticles={(link: LinkObject) =>
             Number(link.linkDirectionalParticles) || 0
           }
           linkDirectionalParticleSpeed={(link: LinkObject) =>
-            Number(link.linkDirectionalParticleSpeed) || 0.008
+            Number(link.linkDirectionalParticleSpeed) || graphConstants.particleAnimation.defaultSpeed
           }
           linkDirectionalArrowLength={(link: LinkObject) =>
             Number(link.linkDirectionalArrowLength)
@@ -129,7 +154,7 @@ const ForceGraph = memo(
           linkCurvature={(link: LinkObject) => Number(link.linkCurvature)}
           linkColor={(link: LinkObject) => String(link.linkColor)}
           linkWidth={(link: LinkObject) => getLinkWidth(link, highlightState)}
-          nodeResolution={24}
+          nodeResolution={graphConstants.nodeConfig.rendering.resolution}
           onNodeClick={handleNodeClick}
           onNodeHover={handleNodeHover}
           onLinkHover={handleLinkHover}

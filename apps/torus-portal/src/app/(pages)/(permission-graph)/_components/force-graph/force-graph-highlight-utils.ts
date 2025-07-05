@@ -1,6 +1,6 @@
 import type { NodeObject, LinkObject } from "r3f-forcegraph";
 import type { CustomGraphLink } from "../permission-graph-types";
-import { GRAPH_CONSTANTS } from "./force-graph-constants";
+import { graphConstants } from "./force-graph-constants";
 import { lightenColor } from "../permission-graph-utils";
 
 export interface HighlightState {
@@ -115,17 +115,17 @@ export function getNodeColor(
   userAddress?: string,
 ): string {
   const nodeId = String(node.id);
-  const baseColor = String(node.color ?? GRAPH_CONSTANTS.COLORS.DEFAULT);
+  const baseColor = String(node.color ?? graphConstants.nodeConfig.nodeColors.default);
 
   if (userAddress && nodeId.toLowerCase() === userAddress.toLowerCase()) {
-    return GRAPH_CONSTANTS.COLORS.USER_NODE;
+    return graphConstants.nodeConfig.nodeColors.userNode;
   }
 
   if (highlightState.highlightNodes.has(nodeId)) {
     const lightenAmount =
       nodeId === highlightState.hoverNode
-        ? GRAPH_CONSTANTS.HOVER_NODE_LIGHTEN_AMOUNT
-        : GRAPH_CONSTANTS.NEIGHBOR_NODE_LIGHTEN_AMOUNT;
+        ? graphConstants.highlightEffects.hoverNodeLightenAmount
+        : graphConstants.highlightEffects.neighborNodeLightenAmount;
     return lightenColor(baseColor, lightenAmount);
   }
 
@@ -140,7 +140,7 @@ export function getLinkWidth(
   const baseWidth = Number(link.linkWidth ?? 1);
 
   if (highlightState.highlightLinks.has(linkId)) {
-    return baseWidth * GRAPH_CONSTANTS.HIGHLIGHT_LINK_WIDTH_MULTIPLIER;
+    return baseWidth * graphConstants.highlightEffects.linkWidthMultiplier;
   }
 
   return baseWidth;

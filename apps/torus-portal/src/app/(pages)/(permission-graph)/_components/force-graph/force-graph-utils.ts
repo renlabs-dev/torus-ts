@@ -7,7 +7,7 @@ import type {
   CustomGraphNode,
   SignalsList,
 } from "../permission-graph-types";
-import { GRAPH_CONSTANTS } from "./force-graph-constants";
+import { graphConstants } from "./force-graph-constants";
 
 function getDeterministicValue(seed: string, min: number, max: number): number {
   // Simple hash function to generate deterministic "random" values
@@ -27,8 +27,8 @@ function getDeterministicValue(seed: string, min: number, max: number): number {
 function getDeterministicParticleSpeed(seed: string): number {
   return getDeterministicValue(
     seed,
-    GRAPH_CONSTANTS.PARTICLE_SPEED_MIN,
-    GRAPH_CONSTANTS.PARTICLE_SPEED_MAX,
+    graphConstants.particleAnimation.speedMin,
+    graphConstants.particleAnimation.speedMax,
   );
 }
 
@@ -64,8 +64,8 @@ export function createGraphData(
   const allocatorNode: CustomGraphNode = {
     id: allocatorAddress,
     name: "Allocator",
-    color: GRAPH_CONSTANTS.COLORS.ALLOCATOR,
-    val: GRAPH_CONSTANTS.ALLOCATOR_NODE_SIZE,
+    color: graphConstants.nodeConfig.nodeColors.allocator,
+    val: graphConstants.nodeConfig.nodeSizes.allocator,
     fullAddress: allocatorAddress,
     role: "Allocator",
     nodeType: "allocator",
@@ -90,8 +90,8 @@ export function createGraphData(
       const rootNode: CustomGraphNode = {
         id: agent.agentKey,
         name: smallAddress(agent.agentKey),
-        color: GRAPH_CONSTANTS.COLORS.ROOT_NODE,
-        val: GRAPH_CONSTANTS.ROOT_NODE_SIZE,
+        color: graphConstants.nodeConfig.nodeColors.rootNode,
+        val: graphConstants.nodeConfig.nodeSizes.rootNode,
         fullAddress: agent.agentKey,
         role: "Root Agent",
         nodeType: "root_agent",
@@ -113,13 +113,13 @@ export function createGraphData(
         source: allocatorAddress,
         target: agent.agentKey,
         id: `allocation-${agent.agentKey}`,
-        linkColor: GRAPH_CONSTANTS.COLORS.ALLOCATION_LINK,
-        linkWidth: 2,
+        linkColor: graphConstants.linkConfig.linkColors.allocationLink,
+        linkWidth: graphConstants.linkConfig.linkWidths.allocationLink,
         linkDirectionalParticles: 2,
         linkDirectionalParticleSpeed: getDeterministicParticleSpeed(
           agent.agentKey,
         ),
-        linkDirectionalParticleResolution: GRAPH_CONSTANTS.PARTICLE_RESOLUTION,
+        linkDirectionalParticleResolution: graphConstants.particleAnimation.resolution,
       });
     });
   }
@@ -144,8 +144,8 @@ export function createGraphData(
       const rootNode: CustomGraphNode = {
         id: agentKey,
         name: smallAddress(agentKey),
-        color: GRAPH_CONSTANTS.COLORS.ROOT_NODE,
-        val: GRAPH_CONSTANTS.ROOT_NODE_SIZE,
+        color: graphConstants.nodeConfig.nodeColors.rootNode,
+        val: graphConstants.nodeConfig.nodeSizes.rootNode,
         fullAddress: agentKey,
         role: "Root Agent",
         nodeType: "root_agent",
@@ -167,11 +167,11 @@ export function createGraphData(
         source: allocatorAddress,
         target: agentKey,
         id: `allocation-${agentKey}`,
-        linkColor: GRAPH_CONSTANTS.COLORS.ALLOCATION_LINK,
-        linkWidth: 2,
+        linkColor: graphConstants.linkConfig.linkColors.allocationLink,
+        linkWidth: graphConstants.linkConfig.linkWidths.allocationLink,
         linkDirectionalParticles: 1,
         linkDirectionalParticleSpeed: getDeterministicParticleSpeed(agentKey),
-        linkDirectionalParticleResolution: GRAPH_CONSTANTS.PARTICLE_RESOLUTION,
+        linkDirectionalParticleResolution: graphConstants.particleAnimation.resolution,
       });
     });
   }
@@ -218,8 +218,8 @@ export function createGraphData(
           const permissionNode: CustomGraphNode = {
             id: `permission-${permissionId}`,
             name: permissionType.toUpperCase(),
-            color: GRAPH_CONSTANTS.COLORS.PERMISSION_NODE,
-            val: GRAPH_CONSTANTS.PERMISSION_NODE_SIZE,
+            color: graphConstants.nodeConfig.nodeColors.permissionNode,
+            val: graphConstants.nodeConfig.nodeSizes.permissionNode,
             fullAddress: permissionId,
             role: `${permissionType} Permission`,
             nodeType: "permission",
@@ -246,15 +246,15 @@ export function createGraphData(
             source: permission.permissions.grantorAccountId,
             target: `permission-${permissionId}`,
             id: `ownership-${permissionId}`,
-            linkColor: GRAPH_CONSTANTS.COLORS.PERMISSION_LINK,
-            linkWidth: 1,
+            linkColor: graphConstants.linkConfig.linkColors.permissionLink,
+            linkWidth: graphConstants.linkConfig.linkWidths.permissionLink,
             linkDirectionalArrowLength: 4,
             linkDirectionalArrowRelPos: 1,
             linkDirectionalParticles: 1,
             linkDirectionalParticleSpeed:
               getDeterministicParticleSpeed(permissionId),
             linkDirectionalParticleResolution:
-              GRAPH_CONSTANTS.PARTICLE_RESOLUTION,
+              graphConstants.particleAnimation.resolution,
           });
 
           // Collect distribution targets from emissionDistributionTargetsSchema
@@ -293,8 +293,8 @@ export function createGraphData(
       const targetNode: CustomGraphNode = {
         id: agentId,
         name: smallAddress(agentId),
-        color: GRAPH_CONSTANTS.COLORS.TARGET_NODE,
-        val: GRAPH_CONSTANTS.TARGET_NODE_SIZE,
+        color: graphConstants.nodeConfig.nodeColors.targetNode,
+        val: graphConstants.nodeConfig.nodeSizes.targetNode,
         fullAddress: agentId,
         role: "Target Agent",
         nodeType: "target_agent",
@@ -341,8 +341,8 @@ export function createGraphData(
               source: `permission-${permissionId}`,
               target: targetId,
               id: `target-${permissionId}-${targetId}`,
-              linkColor: GRAPH_CONSTANTS.COLORS.PERMISSION_TO_TARGET_LINK,
-              linkWidth: Math.max(1, Math.ceil((weight / 65535) * 4)),
+              linkColor: graphConstants.linkConfig.linkColors.permissionToTargetLink,
+              linkWidth: graphConstants.linkConfig.linkWidths.permissionLink,
               linkDirectionalArrowLength: 6,
               linkDirectionalArrowRelPos: 1,
               linkDirectionalParticles: Math.max(
@@ -352,7 +352,7 @@ export function createGraphData(
               linkDirectionalParticleSpeed:
                 getDeterministicParticleSpeed(targetId),
               linkDirectionalParticleResolution:
-                GRAPH_CONSTANTS.PARTICLE_RESOLUTION,
+                graphConstants.particleAnimation.resolution,
             });
           });
 
@@ -366,8 +366,8 @@ export function createGraphData(
               source: `permission-${permissionId}`,
               target: permission.permissions.granteeAccountId,
               id: `target-${permissionId}`,
-              linkColor: GRAPH_CONSTANTS.COLORS.PERMISSION_TO_TARGET_LINK,
-              linkWidth: 2,
+              linkColor: graphConstants.linkConfig.linkColors.permissionToTargetLink,
+              linkWidth: graphConstants.linkConfig.linkWidths.permissionLink,
               linkDirectionalArrowLength: 6,
               linkDirectionalArrowRelPos: 1,
               linkDirectionalParticles: 2,
@@ -375,7 +375,7 @@ export function createGraphData(
                 permission.permissions.granteeAccountId,
               ),
               linkDirectionalParticleResolution:
-                GRAPH_CONSTANTS.PARTICLE_RESOLUTION,
+                graphConstants.particleAnimation.resolution,
             });
           }
         }
@@ -389,8 +389,8 @@ export function createGraphData(
       const signalNode: CustomGraphNode = {
         id: `signal-${signal.id}`,
         name: signal.title,
-        color: GRAPH_CONSTANTS.COLORS.SIGNAL,
-        val: GRAPH_CONSTANTS.SIGNAL_NODE_SIZE,
+        color: graphConstants.nodeConfig.nodeColors.signalNode,
+        val: graphConstants.nodeConfig.nodeSizes.signalNode,
         role: "Signal",
         nodeType: "signal",
         signalData: signal,
@@ -405,8 +405,8 @@ export function createGraphData(
           target: `signal-${signal.id}`,
           id: `signal-link-${signal.id}`,
           linkDirectionalParticles: 0,
-          linkColor: GRAPH_CONSTANTS.COLORS.SIGNAL_LINK,
-          linkWidth: GRAPH_CONSTANTS.SIGNAL_LINK.width,
+          linkColor: graphConstants.linkConfig.linkColors.signalLink,
+          linkWidth: graphConstants.linkConfig.linkWidths.signalLink,
         });
       }
     });
