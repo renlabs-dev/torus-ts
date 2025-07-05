@@ -8,7 +8,7 @@ import {
   DropdownMenuTrigger,
 } from "@torus-ts/ui/components/dropdown-menu";
 import { Button } from "@torus-ts/ui/components/button";
-import { GRAPH_CONSTANTS } from "./force-graph/force-graph-constants";
+import { graphConstants } from "./force-graph/force-graph-constants";
 
 interface NodeColorInfo {
   color: string;
@@ -19,39 +19,39 @@ interface NodeColorInfo {
 
 const nodeColorLegend: NodeColorInfo[] = [
   {
-    color: GRAPH_CONSTANTS.COLORS.USER_NODE,
+    color: graphConstants.nodeConfig.nodeColors.userNode,
     title: "Your Agent",
     description: "Your connected wallet's agent node",
   },
   {
-    color: GRAPH_CONSTANTS.COLORS.ALLOCATOR,
+    color: graphConstants.nodeConfig.nodeColors.allocator,
     title: "Allocator Main Node",
     description: "The primary allocator in the network",
     borderColor: "#000000",
   },
   {
-    color: GRAPH_CONSTANTS.COLORS.ALLOCATED_AGENT,
+    color: graphConstants.nodeConfig.nodeColors.allocatedAgent,
     title: "Connected to Allocator",
     description: "Nodes directly connected to the allocator",
   },
   // Other nodes (not connected to allocator)
   {
-    color: GRAPH_CONSTANTS.COLORS.BOTH,
+    color: graphConstants.nodeConfig.nodeColors.both,
     title: "Grantor and Grantee",
     description: "Nodes that both grant and receive permissions",
   },
   {
-    color: GRAPH_CONSTANTS.COLORS.GRANTOR,
+    color: graphConstants.nodeConfig.nodeColors.grantor,
     title: "Grantor",
     description: "Nodes that grant permissions to others",
   },
   {
-    color: GRAPH_CONSTANTS.COLORS.GRANTEE,
+    color: graphConstants.nodeConfig.nodeColors.grantee,
     title: "Grantee",
     description: "Nodes that receive permissions from others",
   },
   {
-    color: GRAPH_CONSTANTS.COLORS.SIGNAL,
+    color: graphConstants.nodeConfig.nodeColors.signalNode,
     title: "Demand Signal",
     description: "Signals requesting specific capabilities from agents",
   },
