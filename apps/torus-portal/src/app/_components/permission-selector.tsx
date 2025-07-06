@@ -223,24 +223,28 @@ export function PermissionSelector(props: PermissionSelectorProps) {
                   {(() => {
                     if (!userPermissions) return null;
 
-                    // Separate permissions by role
+                    // Separate permissions by role and deduplicate
                     const grantorPermissions = userPermissions.filter(
                       (item) =>
                         item.permissions.grantorAccountId ===
                         selectedAccount?.address,
                     );
-                    const granteePermissions = userPermissions.filter(
+                    
+                    // Filter out permissions where user is also grantor to avoid duplicates
+                    const granteeOnlyPermissions = userPermissions.filter(
                       (item) =>
                         item.permissions.granteeAccountId ===
-                        selectedAccount?.address,
+                          selectedAccount?.address &&
+                        item.permissions.grantorAccountId !==
+                          selectedAccount.address,
                     );
 
                     return (
                       <>
-                        {granteePermissions.length > 0 && (
+                        {granteeOnlyPermissions.length > 0 && (
                           <SelectGroup>
                             <SelectLabel>As Grantee</SelectLabel>
-                            {granteePermissions.map((item) => {
+                            {granteeOnlyPermissions.map((item) => {
                               const permissionId =
                                 item.permissions.permissionId;
                               const permissionType = getPermissionType(item);
@@ -267,6 +271,10 @@ export function PermissionSelector(props: PermissionSelectorProps) {
                               const permissionId =
                                 item.permissions.permissionId;
                               const permissionType = getPermissionType(item);
+                              const isBothRoles = 
+                                selectedAccount &&
+                                item.permissions.grantorAccountId === selectedAccount.address &&
+                                item.permissions.granteeAccountId === selectedAccount.address;
                               return (
                                 <SelectItem
                                   key={permissionId}
@@ -275,7 +283,7 @@ export function PermissionSelector(props: PermissionSelectorProps) {
                                   <div className="flex items-center gap-2">
                                     <span>{smallAddress(permissionId)}</span>
                                     <span className="text-xs text-muted-foreground">
-                                      ({permissionType})
+                                      ({permissionType}{isBothRoles ? " - Both Roles" : ""})
                                     </span>
                                   </div>
                                 </SelectItem>
