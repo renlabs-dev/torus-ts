@@ -1,9 +1,18 @@
 "use client";
 
+import { useCallback, useEffect, useMemo, useState } from "react";
+
 import { zodResolver } from "@hookform/resolvers/zod";
+import { Trash2, X } from "lucide-react";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+
+import type { SS58Address } from "@torus-network/sdk";
+
+import { useNamespaceEntriesOf } from "@torus-ts/query-provider/hooks";
 import { useTorus } from "@torus-ts/torus-provider";
 import type { TransactionResult } from "@torus-ts/torus-provider/types";
-import { useNamespaceEntriesOf } from "@torus-ts/query-provider/hooks";
+import { Button } from "@torus-ts/ui/components/button";
 import {
   Card,
   CardContent,
@@ -27,20 +36,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@torus-ts/ui/components/select";
-import { Button } from "@torus-ts/ui/components/button";
 import { TransactionStatus } from "@torus-ts/ui/components/transaction-status";
 import { useToast } from "@torus-ts/ui/hooks/use-toast";
-import { Trash2, X } from "lucide-react";
-import { useCallback, useState, useMemo, useEffect } from "react";
-import { useForm } from "react-hook-form";
-import { z } from "zod";
-import type { SS58Address } from "@torus-network/sdk";
 
 const deleteNamespaceSchema = z.object({
   selectedNamespace: z.string().min(1, "Please select a namespace path"),
-  segmentToDelete: z
-    .number()
-    .min(2, "You can only delete segments after the agent name"),
+  segmentToDelete: z.number().min(2, "Please select a segment to delete"),
 });
 
 type DeleteNamespaceFormData = z.infer<typeof deleteNamespaceSchema>;
@@ -91,6 +92,9 @@ export default function DeleteNamespaceForm({
     const pathLengths = new Map<string, number>();
 
     namespaceEntries.data.forEach((entry) => {
+      // Skip entries with only 2 segments (agent.name) - nothing to delete
+      if (entry.path.length <= 2) return;
+
       const baseKey = entry.path.slice(0, 3).join(".");
 
       if (
@@ -105,6 +109,9 @@ export default function DeleteNamespaceForm({
     const result = new Map<string, (typeof namespaceEntries.data)[0]>();
 
     namespaceEntries.data.forEach((entry) => {
+      // Skip entries with only 2 segments (agent.name) - nothing to delete
+      if (entry.path.length <= 2) return;
+
       const baseKey = entry.path.slice(0, 3).join(".");
       const maxLength = pathLengths.get(baseKey);
 
@@ -130,7 +137,23 @@ export default function DeleteNamespaceForm({
 
   const onSubmit = useCallback(
     async (data: DeleteNamespaceFormData) => {
-      if (!selectedPath || data.segmentToDelete < 2) return;
+      if (!selectedPath) {
+        toast({
+          title: "Error",
+          description: "Please select a namespace path",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      if (data.segmentToDelete < 2) {
+        toast({
+          title: "Error",
+          description: "Please select a segment to delete",
+          variant: "destructive",
+        });
+        return;
+      }
 
       const pathToDelete = selectedPath.path
         .slice(0, data.segmentToDelete + 1)
@@ -257,44 +280,70 @@ export default function DeleteNamespaceForm({
             />
 
             {selectedPath && (
-              <div className="space-y-4">
-                <div className="text-sm font-medium">Path Segments</div>
-                <div className="flex flex-wrap items-center p-4 border rounded-lg bg-muted/50">
-                  <div className="flex items-center font-mono text-sm mr-1">
-                    {selectedPath.path.slice(0, 2).join(".")}
-                    <span>.</span>
-                  </div>
-                  {selectedPath.path.slice(2).map((segment, sliceIndex) => {
-                    const index = sliceIndex + 2;
-                    return (
-                      <div key={index} className="flex items-center">
-                        <div className="flex items-center bg-background border rounded-lg">
-                          <span className="px-3 py-1 font-mono text-sm border-r">
-                            {segment}
-                          </span>
-                          <Button
-                            variant={
-                              watchedSegment === index ? "destructive" : "ghost"
-                            }
-                            size="sm"
-                            className="rounded-r-md"
-                            onClick={() => handleSegmentSelect(index)}
-                            disabled={
-                              transactionStatus.status === "PENDING" ||
-                              transactionStatus.status === "STARTING"
-                            }
-                          >
-                            <X className="h-3 w-3" />
-                          </Button>
+              <FormField
+                control={control}
+                name="segmentToDelete"
+                render={() => (
+                  <FormItem>
+                    <FormLabel>Select Segment to Delete</FormLabel>
+                    <FormControl>
+                      <div className="space-y-4">
+                        <div className="flex flex-wrap items-center p-4 border rounded-lg bg-muted/50">
+                          <div className="flex items-center font-mono text-sm mr-1">
+                            {selectedPath.path.slice(0, 2).join(".")}
+                            <span>.</span>
+                          </div>
+                          {selectedPath.path
+                            .slice(2)
+                            .map((segment, sliceIndex) => {
+                              const index = sliceIndex + 2;
+                              return (
+                                <div key={index} className="flex items-center">
+                                  <div className="flex items-center bg-background border rounded-lg">
+                                    <span className="px-3 py-1 font-mono text-sm border-r">
+                                      {segment}
+                                    </span>
+                                    <Button
+                                      variant={
+                                        watchedSegment === index
+                                          ? "destructive"
+                                          : "ghost"
+                                      }
+                                      size="sm"
+                                      className="rounded-r-md"
+                                      onClick={() => handleSegmentSelect(index)}
+                                      disabled={
+                                        transactionStatus.status ===
+                                          "PENDING" ||
+                                        transactionStatus.status === "STARTING"
+                                      }
+                                    >
+                                      <X className="h-3 w-3" />
+                                    </Button>
+                                  </div>
+                                  {index < selectedPath.path.length - 1 && (
+                                    <span className="mx-1 text-muted-foreground">
+                                      .
+                                    </span>
+                                  )}
+                                </div>
+                              );
+                            })}
                         </div>
-                        {index < selectedPath.path.length - 1 && (
-                          <span className="mx-1 text-muted-foreground">.</span>
-                        )}
                       </div>
-                    );
-                  })}
-                </div>
+                    </FormControl>
+                    <FormDescription>
+                      Click on a segment to select it for deletion. You can only
+                      delete segments after the agent name.
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            )}
 
+            {selectedPath && (
+              <div className="space-y-4">
                 <div className="space-y-2">
                   <div className="text-sm font-medium">Deletion Preview:</div>
                   <div className="flex items-center text-sm">
