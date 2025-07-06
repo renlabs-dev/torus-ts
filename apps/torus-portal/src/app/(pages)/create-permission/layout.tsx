@@ -21,10 +21,10 @@ export default function CreatePermissionLayout({
   const router = useRouter();
 
   // Determine active tab based on pathname
-  const activeTab = pathname.includes("/emission") ? "emission" : "namespace";
+  const activeTab = pathname.includes("/emission") ? "emission" : "capability";
 
   const handleTabChange = (value: string) => {
-    if (value === "namespace") {
+    if (value === "capability") {
       router.push("/create-permission");
     } else {
       router.push("/create-permission/emission");
@@ -39,7 +39,7 @@ export default function CreatePermissionLayout({
         className="w-full mx-4"
       >
         <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="namespace">Namespace Permission</TabsTrigger>
+          <TabsTrigger value="capability">Capability Permission</TabsTrigger>
           <TabsTrigger value="emission">Emission Permission</TabsTrigger>
         </TabsList>
 

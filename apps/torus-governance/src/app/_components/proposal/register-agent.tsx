@@ -511,7 +511,11 @@ export function RegisterAgent() {
                   {formValues.name && (
                     <div className="flex items-center gap-2 text-sm text-muted-foreground">
                       <Link
-                        // TODO: add link to namespace docs
+                        // TODO: add link to namespace docs || Capability Permission Docs
+                        // Every single namespace name has been changed to Capability Permission
+                        // as requested here: https://coda.io/d/RENLABS-CORE-DEVELOPMENT-DOCUMENTS_d5Vgr5OavNK/Text-change-requests_su4jQAlx
+                        // In the future we are going to have all the other names from namespace to Capability Permission
+                        // TODO : Change all namespace to Capability Permission
                         href={links.docs}
                         target="_blank"
                         rel="noopener noreferrer"
@@ -519,7 +523,8 @@ export function RegisterAgent() {
                       >
                         <Info className="h-4 w-4" />
                       </Link>
-                      Your name on the namespace: agent.{formValues.name}
+                      Your name on the capability permission: agent.
+                      {formValues.name}
                     </div>
                   )}
                 </FormItem>
