@@ -94,9 +94,9 @@ export function GrantNamespacePermissionFormComponent({
   return (
     <Card className="border-none w-full">
       <CardHeader>
-        <CardTitle>Grant Capability Permission</CardTitle>
+        <CardTitle>Delegate Capability Permission</CardTitle>
         <CardDescription>
-          Grant permission to access a specific capability permission path.
+          Delegate permission to access a specific capability permission path.
         </CardDescription>
       </CardHeader>
 
@@ -422,14 +422,14 @@ export function GrantNamespacePermissionFormComponent({
               {mutation.isPending ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Granting Permission...
+                  Awaiting Signature...
                 </>
               ) : !isAccountConnected ? (
                 "Connect Wallet to Continue"
               ) : namespaceOptions.length === 0 ? (
                 "Create a Capability Permission First"
               ) : (
-                "Grant Capability Permission"
+                "Delegate Capability Permission"
               )}
             </Button>
           </form>

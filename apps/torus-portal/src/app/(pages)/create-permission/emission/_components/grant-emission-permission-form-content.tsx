@@ -192,7 +192,7 @@ export function GrantEmissionPermissionFormComponent({
     <div className="pb-12 w-full mx-auto flex items-end justify-end">
       <Card className="border-0">
         <CardHeader>
-          <CardTitle>Grant Emission Permission</CardTitle>
+          <CardTitle>Delegate Emission Permission</CardTitle>
           <CardDescription>
             Create and configure a new emission permission, to delegate it to a
             set of agents{" "}
@@ -766,7 +766,7 @@ export function GrantEmissionPermissionFormComponent({
                     !form.formState.isValid
                   }
                 >
-                  {mutation.isPending ? "Creating..." : "Create Permission"}
+                  {mutation.isPending ? "Awaiting Signature..." : "Delegate Permission"}
                 </Button>
               </div>
             </CardContent>
