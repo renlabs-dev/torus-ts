@@ -10,7 +10,7 @@ export default function Page() {
   const [isSuccessDialogOpen, setIsSuccessDialogOpen] = useState(false);
   return (
     <>
-      <PortalFormContainer imageSrc="/form-bg-create-capability.svg">
+      <PortalFormContainer imageSrc="/form-bg-register-capability.svg">
         <CreateNamespaceForm onSuccess={() => setIsSuccessDialogOpen(true)} />
       </PortalFormContainer>
 
