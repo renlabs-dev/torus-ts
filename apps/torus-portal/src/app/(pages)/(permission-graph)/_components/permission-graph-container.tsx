@@ -41,7 +41,7 @@ export default function PermissionGraphContainer() {
     allPermissions,
   } = useGraphData();
 
-  const { selectedAccount } = useTorus();
+  const { selectedAccount, isInitialized } = useTorus();
 
   // Handle initial selected node from query params
   useEffect(() => {
@@ -96,15 +96,16 @@ export default function PermissionGraphContainer() {
     };
   }, []);
 
-  if (isLoading || !graphData)
+  if (isLoading || !graphData || !isInitialized) {
     return (
-      <div className="w-full min-h-full">
+      <div className="fixed inset-0 w-screen h-screen flex items-center justify-center animate-pulse">
         <Loading />
       </div>
     );
+  }
 
   return (
-    <div className="fixed inset-0 w-screen h-screen">
+    <div className="fixed inset-0 w-screen h-screen overflow-hidden">
       <div
         className="absolute bottom-2 left-2 right-2 md:bottom-[3.3em] z-50 flex flex-col
           sm:flex-row justify-between gap-2"
@@ -162,16 +163,18 @@ export default function PermissionGraphContainer() {
         onOpenChange={(isOpen) => {
           setIsSheetOpen(isOpen);
           if (!isOpen) {
-            // Clear query parameter when sheet closes
             const params = new URLSearchParams(searchParams.toString());
             params.delete("id");
             const newUrl = params.toString() ? `/?${params.toString()}` : "/";
             router.replace(newUrl, { scroll: false });
-            setSelectedNode(null);
+
+            setTimeout(() => {
+              setSelectedNode(null);
+            }, 300);
           }
         }}
       />
-      <div className="w-full h-full animate-fade animate-delay-1000">
+      <div className="absolute inset-0 w-full h-full animate-fade animate-delay-1000">
         <ForceGraphCanvas
           data={graphData}
           onNodeClick={handleNodeSelect}
