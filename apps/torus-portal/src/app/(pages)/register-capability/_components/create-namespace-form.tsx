@@ -72,7 +72,10 @@ const createNamespaceSchema = z
         },
       ),
     method: z.enum([...HTTP_METHODS, "custom"]),
-    customMethod: z.string().max(35, "Custom method must be 35 characters or less").optional(),
+    customMethod: z
+      .string()
+      .max(35, "Custom method must be 35 characters or less")
+      .optional(),
   })
   .refine(
     (data) => {
@@ -224,12 +227,20 @@ export default function CreateNamespaceForm({
             if (result.status === "SUCCESS" && result.finalized) {
               onSuccess?.();
               toast.success(
+<<<<<<<< HEAD:apps/torus-portal/src/app/(pages)/register-capability/_components/create-namespace-form.tsx
                 `Capability entry "${fullNamespacePath}" created successfully`,
+========
+                `Capability permission "${fullNamespacePath}" created successfully`,
+>>>>>>>> 7cc951f2 (Fix: change all labels to replace namespace with capability (#281)):apps/torus-portal/src/app/(pages)/create-capability/_components/create-namespace-form.tsx
               );
               form.reset();
             } else if (result.status === "ERROR") {
               toast.error(
+<<<<<<<< HEAD:apps/torus-portal/src/app/(pages)/register-capability/_components/create-namespace-form.tsx
                 result.message ?? "Failed to register capability permission",
+========
+                result.message ?? "Failed to create capability permission",
+>>>>>>>> 7cc951f2 (Fix: change all labels to replace namespace with capability (#281)):apps/torus-portal/src/app/(pages)/create-capability/_components/create-namespace-form.tsx
               );
             }
           },
@@ -238,6 +249,7 @@ export default function CreateNamespaceForm({
           },
         });
       } catch (error) {
+<<<<<<<< HEAD:apps/torus-portal/src/app/(pages)/register-capability/_components/create-namespace-form.tsx
         console.error("Error registering capability permission:", error);
         setTransactionStatus({
           status: "ERROR",
@@ -245,6 +257,15 @@ export default function CreateNamespaceForm({
           message: "Failed to register capability permission",
         });
         toast.error("Failed to register capability permission");
+========
+        console.error("Error creating capability permission:", error);
+        setTransactionStatus({
+          status: "ERROR",
+          finalized: true,
+          message: "Failed to create capability permission",
+        });
+        toast.error("Failed to create capability permission");
+>>>>>>>> 7cc951f2 (Fix: change all labels to replace namespace with capability (#281)):apps/torus-portal/src/app/(pages)/create-capability/_components/create-namespace-form.tsx
       }
     },
     [createNamespaceTransaction, onSuccess, toast, form, selectedPrefix],
@@ -253,10 +274,16 @@ export default function CreateNamespaceForm({
   return (
     <Card className="border-none w-full">
       <CardHeader>
+<<<<<<<< HEAD:apps/torus-portal/src/app/(pages)/register-capability/_components/create-namespace-form.tsx
         <CardTitle>Register Capability Permission</CardTitle>
         <CardDescription>
           Register a new agent capability by creating a namespace path for it on
           Torus.
+========
+        <CardTitle>Create Capability Permission</CardTitle>
+        <CardDescription>
+          Create a new capability permission on the Torus Network.
+>>>>>>>> 7cc951f2 (Fix: change all labels to replace namespace with capability (#281)):apps/torus-portal/src/app/(pages)/create-capability/_components/create-namespace-form.tsx
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -301,7 +328,9 @@ export default function CreateNamespaceForm({
                     )}
                   </div>
 
-                  <span className="text-muted-foreground font-mono hidden sm:block">.</span>
+                  <span className="text-muted-foreground font-mono hidden sm:block">
+                    .
+                  </span>
 
                   {/* Path Input */}
                   <div className="w-full sm:w-3/5 min-w-0 relative">
@@ -328,7 +357,10 @@ export default function CreateNamespaceForm({
                             maxLength={35}
                             className="w-full pr-12"
                           />
-                          <div className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-muted-foreground bg-background px-1 rounded">
+                          <div
+                            className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-muted-foreground
+                              bg-background px-1 rounded"
+                          >
                             {field.value.length}/35
                           </div>
                         </div>
@@ -387,14 +419,16 @@ export default function CreateNamespaceForm({
                         <ToggleGroupItem
                           key={method}
                           value={method}
-                          className="data-[state=on]:bg-primary data-[state=on]:text-primary-foreground text-xs sm:text-sm px-2 sm:px-3"
+                          className="data-[state=on]:bg-primary data-[state=on]:text-primary-foreground text-xs
+                            sm:text-sm px-2 sm:px-3"
                         >
                           {method.toUpperCase()}
                         </ToggleGroupItem>
                       ))}
                       <ToggleGroupItem
                         value="custom"
-                        className="data-[state=on]:bg-primary data-[state=on]:text-primary-foreground text-xs sm:text-sm px-2 sm:px-3"
+                        className="data-[state=on]:bg-primary data-[state=on]:text-primary-foreground text-xs
+                          sm:text-sm px-2 sm:px-3"
                       >
                         CUSTOM
                       </ToggleGroupItem>
@@ -429,15 +463,19 @@ export default function CreateNamespaceForm({
                           maxLength={35}
                           className="pr-12"
                         />
-                        <div className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-muted-foreground bg-background px-1 rounded">
+                        <div
+                          className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-muted-foreground
+                            bg-background px-1 rounded"
+                        >
                           {(field.value ?? "").length}/35
                         </div>
                       </div>
                     </FormControl>
                     <FormDescription>
-                      Enter a custom method name (max 35 characters). Must start and end with
-                      alphanumeric characters and contain only lowercase
-                      letters, numbers, hyphens, underscores, and plus signs.
+                      Enter a custom method name (max 35 characters). Must start
+                      and end with alphanumeric characters and contain only
+                      lowercase letters, numbers, hyphens, underscores, and plus
+                      signs.
                     </FormDescription>
                     <FormMessage />
                   </FormItem>
