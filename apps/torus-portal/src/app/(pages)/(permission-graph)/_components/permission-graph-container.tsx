@@ -163,12 +163,14 @@ export default function PermissionGraphContainer() {
         onOpenChange={(isOpen) => {
           setIsSheetOpen(isOpen);
           if (!isOpen) {
-            // Clear query parameter when sheet closes
             const params = new URLSearchParams(searchParams.toString());
             params.delete("id");
             const newUrl = params.toString() ? `/?${params.toString()}` : "/";
             router.replace(newUrl, { scroll: false });
-            setSelectedNode(null);
+
+            setTimeout(() => {
+              setSelectedNode(null);
+            }, 300);
           }
         }}
       />
