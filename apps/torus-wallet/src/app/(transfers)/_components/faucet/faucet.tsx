@@ -4,8 +4,9 @@ import { useState } from "react";
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import type { ApiPromise } from "@polkadot/api";
-import { tryAsync } from "@torus-network/torus-utils/try-catch";
 import { useForm } from "react-hook-form";
+
+import { tryAsync } from "@torus-network/torus-utils/try-catch";
 
 import { useTorus } from "@torus-ts/torus-provider";
 import { useToast } from "@torus-ts/ui/hooks/use-toast";
@@ -67,7 +68,7 @@ export function Faucet() {
           workResult,
           recipient,
         );
-        toast.success("+50 TOR added to your account.");
+        toast.success("+50 TORUS added to your account.");
         await accountFreeBalance.refetch();
       } catch (err) {
         if (err instanceof Error) {
