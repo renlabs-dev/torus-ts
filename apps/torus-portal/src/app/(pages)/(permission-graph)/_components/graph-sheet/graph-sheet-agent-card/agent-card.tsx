@@ -132,7 +132,7 @@ export function AgentCard(props: Readonly<PortalAgentCardProps>) {
           className={"flex items-center gap-1 text-xs sm:text-sm font-semibold"}
         >
           <Anvil size={14} />
-          <span>{formatWeight(agentWeight)}%</span>
+          <span>{formatWeight(agentWeight * 100)}%</span>
         </Label>
 
         <Label

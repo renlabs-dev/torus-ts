@@ -77,7 +77,8 @@ export function useAvailableStreams(
       assert(agentId != null, "agentId arg is required");
       return fetchAvailableStreamsForAgent(api, agentId);
     },
-    staleTime: 5 * 60 * 1000, // 5 minutes
+    staleTime: 0, // Always consider data stale, but cache it
     retry: 2,
+    refetchOnWindowFocus: false, // Don't refetch on window focus
   });
 }
