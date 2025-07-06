@@ -58,18 +58,21 @@ const HTTP_METHODS = ["get", "post", "patch", "delete", "put"] as const;
 
 const createNamespaceSchema = z
   .object({
-    path: z.string().refine(
-      (val) => {
-        if (val === "") return true;
-        const pathResult = namespacePathField().safeParse(val);
-        return pathResult.success;
-      },
-      {
-        message: "Must be a valid capability permission path or empty",
-      },
-    ),
+    path: z
+      .string()
+      .max(35, "Path must be 40 characters or less")
+      .refine(
+        (val) => {
+          if (val === "") return true;
+          const pathResult = namespacePathField().safeParse(val);
+          return pathResult.success;
+        },
+        {
+          message: "Must be a valid namespace path or empty",
+        },
+      ),
     method: z.enum([...HTTP_METHODS, "custom"]),
-    customMethod: z.string().optional(),
+    customMethod: z.string().max(35, "Custom method must be 35 characters or less").optional(),
   })
   .refine(
     (data) => {
@@ -261,8 +264,8 @@ export default function CreateNamespaceForm({
             <FormItem>
               <FormLabel>Capability Permission Path</FormLabel>
               <FormControl>
-                <div className="flex items-center gap-2">
-                  <div className="w-fit">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 w-full">
+                  <div className="w-full sm:w-2/5 min-w-0">
                     {!isAccountConnected ? (
                       <div className="text-sm text-muted-foreground p-3 border rounded-md h-10 flex items-center">
                         Connect wallet...
@@ -283,7 +286,7 @@ export default function CreateNamespaceForm({
                         value={selectedPrefix}
                         onValueChange={setSelectedPrefix}
                       >
-                        <SelectTrigger>
+                        <SelectTrigger className="w-full">
                           <SelectValue placeholder="Choose prefix..." />
                         </SelectTrigger>
                         <SelectContent>
@@ -297,33 +300,43 @@ export default function CreateNamespaceForm({
                     )}
                   </div>
 
-                  <span className="text-muted-foreground font-mono">.</span>
+                  <span className="text-muted-foreground font-mono hidden sm:block">.</span>
 
                   {/* Path Input */}
-                  <div className="w-full">
+                  <div className="w-full sm:w-3/5 min-w-0 relative">
+                    <div className="sm:hidden text-xs text-muted-foreground mb-1 font-mono">
+                      {selectedPrefix && `${selectedPrefix}.`}
+                    </div>
                     <FormField
                       control={control}
                       name="path"
                       render={({ field }) => (
-                        <Input
-                          {...field}
-                          placeholder={
-                            prefixOptions.length === 0
-                              ? "Agent registration required"
-                              : "capability permission path"
-                          }
-                          disabled={
-                            !isAccountConnected ||
-                            !selectedPrefix ||
-                            prefixOptions.length === 0
-                          }
-                        />
+                        <div className="relative w-full">
+                          <Input
+                            {...field}
+                            placeholder={
+                              prefixOptions.length === 0
+                                ? "Agent registration required"
+                                : "namespace path"
+                            }
+                            disabled={
+                              !isAccountConnected ||
+                              !selectedPrefix ||
+                              prefixOptions.length === 0
+                            }
+                            maxLength={35}
+                            className="w-full pr-12"
+                          />
+                          <div className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-muted-foreground bg-background px-1 rounded">
+                            {field.value.length}/35
+                          </div>
+                        </div>
                       )}
                     />
                   </div>
                 </div>
               </FormControl>
-              <FormDescription>
+              <FormDescription className="text-sm">
                 {prefixOptions.length === 0 &&
                 isAccountConnected &&
                 !namespaceEntries.isLoading ? (
@@ -333,9 +346,9 @@ export default function CreateNamespaceForm({
                   </span>
                 ) : (
                   <>
-                    Choose a prefix from existing capability permissions and
-                    optionally add a path extension. Leave the path empty to
-                    create a capability permission at the selected prefix level.
+                    Choose a prefix from existing namespaces and optionally add
+                    a path extension (max 35 characters). Leave the path empty
+                    to create a namespace at the selected prefix level.
                   </>
                 )}
               </FormDescription>
@@ -364,7 +377,7 @@ export default function CreateNamespaceForm({
                           }
                         }
                       }}
-                      className="justify-start flex-wrap"
+                      className="justify-start flex-wrap gap-1"
                       disabled={
                         !isAccountConnected || prefixOptions.length === 0
                       }
@@ -373,14 +386,14 @@ export default function CreateNamespaceForm({
                         <ToggleGroupItem
                           key={method}
                           value={method}
-                          className="data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"
+                          className="data-[state=on]:bg-primary data-[state=on]:text-primary-foreground text-xs sm:text-sm px-2 sm:px-3"
                         >
                           {method.toUpperCase()}
                         </ToggleGroupItem>
                       ))}
                       <ToggleGroupItem
                         value="custom"
-                        className="data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"
+                        className="data-[state=on]:bg-primary data-[state=on]:text-primary-foreground text-xs sm:text-sm px-2 sm:px-3"
                       >
                         CUSTOM
                       </ToggleGroupItem>
@@ -405,16 +418,23 @@ export default function CreateNamespaceForm({
                   <FormItem>
                     <FormLabel>Custom Method</FormLabel>
                     <FormControl>
-                      <Input
-                        {...field}
-                        placeholder="custom-action"
-                        disabled={
-                          !isAccountConnected || prefixOptions.length === 0
-                        }
-                      />
+                      <div className="relative">
+                        <Input
+                          {...field}
+                          placeholder="custom-action"
+                          disabled={
+                            !isAccountConnected || prefixOptions.length === 0
+                          }
+                          maxLength={35}
+                          className="pr-12"
+                        />
+                        <div className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-muted-foreground bg-background px-1 rounded">
+                          {(field.value ?? "").length}/35
+                        </div>
+                      </div>
                     </FormControl>
                     <FormDescription>
-                      Enter a custom method name. Must start and end with
+                      Enter a custom method name (max 35 characters). Must start and end with
                       alphanumeric characters and contain only lowercase
                       letters, numbers, hyphens, underscores, and plus signs.
                     </FormDescription>
@@ -424,13 +444,13 @@ export default function CreateNamespaceForm({
               />
             )}
 
-            <div className="rounded-md border border-border bg-muted p-4">
+            <div className="rounded-md border border-border bg-muted p-3 sm:p-4">
               <div className="flex items-center gap-2 text-sm font-medium">
-                <Info className="h-4 w-4" />
-                Full Capability Permission Path
+                <Info className="h-4 w-4 flex-shrink-0" />
+                Full Namespace Path
               </div>
               <div className="mt-2 text-sm text-muted-foreground">
-                <code className="rounded bg-background px-2 py-1 text-foreground">
+                <code className="rounded bg-background px-2 py-1 text-foreground break-all text-xs sm:text-sm">
                   {fullPath === "" ? "Type a path..." : fullPath}
                 </code>
               </div>
