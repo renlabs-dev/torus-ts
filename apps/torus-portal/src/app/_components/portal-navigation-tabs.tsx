@@ -88,19 +88,19 @@ export default function PortalNavigationTabs() {
         ],
       },
       {
-        label: "Namespace Operations",
+        label: "Capability Operations",
         items: [
           {
-            value: "create-namespace",
-            label: "Create Namespace",
+            value: "create-capability",
+            label: "Create Capability",
             icon: FolderPen,
-            path: "/create-namespace",
+            path: "/create-capability",
           },
           {
-            value: "delete-namespace",
-            label: "Delete Namespace",
+            value: "delete-capability",
+            label: "Delete Capability",
             icon: FolderX,
-            path: "/delete-namespace",
+            path: "/delete-capability",
           },
         ],
       },
@@ -138,8 +138,8 @@ export default function PortalNavigationTabs() {
     if (pathname === "/create-constraint") return "create-constraint";
     if (pathname === "/create-signal") return "create-signal";
     if (pathname === "/register-agent") return "register-agent";
-    if (pathname === "/create-namespace") return "create-namespace";
-    if (pathname === "/delete-namespace") return "delete-namespace";
+    if (pathname === "/create-capability") return "create-capability";
+    if (pathname === "/delete-capability") return "delete-capability";
     return "permission-graph";
   };
   const currentTab = getCurrentTab();
@@ -182,13 +182,14 @@ export default function PortalNavigationTabs() {
                   </SelectLabel>
                   {category.items.map((item) => {
                     const Icon = item.icon;
-                    
+
                     if (item.disabled && item.disabledTooltip) {
                       return (
                         <Tooltip key={item.value}>
                           <TooltipTrigger asChild>
-                            <div 
-                              className="relative flex cursor-not-allowed select-none items-center rounded-sm px-2 py-1.5 text-sm opacity-50 outline-none hover:bg-accent hover:text-accent-foreground"
+                            <div
+                              className="relative flex cursor-not-allowed select-none items-center rounded-sm px-2 py-1.5
+                                text-sm opacity-50 outline-none hover:bg-accent hover:text-accent-foreground"
                               onClick={(e) => e.preventDefault()}
                             >
                               <div className="flex items-center gap-2">
@@ -203,7 +204,7 @@ export default function PortalNavigationTabs() {
                         </Tooltip>
                       );
                     }
-                    
+
                     return (
                       <SelectItem key={item.value} value={item.value}>
                         <div className="flex items-center gap-2">

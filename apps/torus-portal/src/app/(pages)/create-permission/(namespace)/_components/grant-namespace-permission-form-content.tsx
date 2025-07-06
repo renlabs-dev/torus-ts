@@ -39,6 +39,11 @@ import type {
   GrantNamespacePermissionMutation,
 } from "./grant-namespace-permission-form-schema";
 
+// Every single namespace name has been changed to Capability Permission
+// as requested here: https://coda.io/d/RENLABS-CORE-DEVELOPMENT-DOCUMENTS_d5Vgr5OavNK/Text-change-requests_su4jQAlx
+// In the future we are going to have all the other names from namespace to Capability Permission
+// TODO : Change all namespace to Capability Permission
+
 interface GrantNamespacePermissionFormProps {
   form: GrantNamespacePermissionForm;
   mutation: GrantNamespacePermissionMutation;
@@ -84,9 +89,9 @@ export function GrantNamespacePermissionFormComponent({
   return (
     <Card className="border-none w-full">
       <CardHeader>
-        <CardTitle>Grant Namespace Permission</CardTitle>
+        <CardTitle>Grant Capability Permission</CardTitle>
         <CardDescription>
-          Grant permission to access a specific namespace path.
+          Grant permission to access a specific capability permission path.
         </CardDescription>
       </CardHeader>
 
@@ -110,7 +115,7 @@ export function GrantNamespacePermissionFormComponent({
                     />
                   </FormControl>
                   <FormDescription>
-                    The account that will receive the namespace permission.
+                    The account that will receive the capability permission.
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
@@ -123,24 +128,24 @@ export function GrantNamespacePermissionFormComponent({
               name="namespacePath"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Namespace Path</FormLabel>
+                  <FormLabel>Capability Permission Path</FormLabel>
                   <FormControl>
                     {!isAccountConnected ? (
                       <Input
                         {...field}
-                        placeholder="Connect wallet to see your namespaces"
+                        placeholder="Connect wallet to see your capability permissions"
                         disabled
                       />
                     ) : namespaceEntries.isLoading ? (
                       <Input
                         {...field}
-                        placeholder="Loading namespaces..."
+                        placeholder="Loading capability permissions..."
                         disabled
                       />
                     ) : namespaceOptions.length === 0 ? (
                       <Input
                         {...field}
-                        placeholder="No namespaces found - create a namespace first"
+                        placeholder="No capability permissions found - create a capability permission first"
                         disabled
                       />
                     ) : (
@@ -149,7 +154,7 @@ export function GrantNamespacePermissionFormComponent({
                         onValueChange={field.onChange}
                       >
                         <SelectTrigger>
-                          <SelectValue placeholder="Select a namespace..." />
+                          <SelectValue placeholder="Select a capability permission..." />
                         </SelectTrigger>
                         <SelectContent>
                           {namespaceOptions.map((path) => (
@@ -162,7 +167,7 @@ export function GrantNamespacePermissionFormComponent({
                     )}
                   </FormControl>
                   <FormDescription>
-                    Choose from your existing namespaces to grant access to.
+                    Choose from your existing capability permissions to grant access to.
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
@@ -416,9 +421,9 @@ export function GrantNamespacePermissionFormComponent({
               ) : !isAccountConnected ? (
                 "Connect Wallet to Continue"
               ) : namespaceOptions.length === 0 ? (
-                "Create a Namespace First"
+                "Create a Capability Permission First"
               ) : (
-                "Grant Namespace Permission"
+                "Grant Capability Permission"
               )}
             </Button>
           </form>

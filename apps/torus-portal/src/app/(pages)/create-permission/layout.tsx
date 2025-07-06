@@ -10,6 +10,11 @@ import {
 
 import PortalFormContainer from "~/app/_components/portal-form-container";
 
+// Every single namespace name has been changed to Capability Permission
+// as requested here: https://coda.io/d/RENLABS-CORE-DEVELOPMENT-DOCUMENTS_d5Vgr5OavNK/Text-change-requests_su4jQAlx
+// In the future we are going to have all the other names from namespace to Capability Permission
+// TODO : Change all namespace to Capability Permission
+
 interface CreatePermissionLayoutProps {
   children: React.ReactNode;
 }
@@ -21,10 +26,10 @@ export default function CreatePermissionLayout({
   const router = useRouter();
 
   // Determine active tab based on pathname
-  const activeTab = pathname.includes("/emission") ? "emission" : "namespace";
+  const activeTab = pathname.includes("/emission") ? "emission" : "capability";
 
   const handleTabChange = (value: string) => {
-    if (value === "namespace") {
+    if (value === "capability") {
       router.push("/create-permission");
     } else {
       router.push("/create-permission/emission");
@@ -39,7 +44,7 @@ export default function CreatePermissionLayout({
         className="w-full mx-4"
       >
         <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="namespace">Namespace Permission</TabsTrigger>
+          <TabsTrigger value="capability">Capability Permission</TabsTrigger>
           <TabsTrigger value="emission">Emission Permission</TabsTrigger>
         </TabsList>
 

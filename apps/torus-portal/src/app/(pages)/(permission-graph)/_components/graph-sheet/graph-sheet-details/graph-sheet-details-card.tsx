@@ -26,6 +26,11 @@ import { formatDuration, formatScope } from "../../permission-graph-utils";
 import { GraphSheetDetailsLinkButtons } from "./graph-sheet-details-link-buttons";
 import { GraphSheetDetailsSignalsAccordion } from "./graph-sheet-details-signals-accordion";
 
+// Every single namespace name has been changed to Capability Permission
+// as requested here: https://coda.io/d/RENLABS-CORE-DEVELOPMENT-DOCUMENTS_d5Vgr5OavNK/Text-change-requests_su4jQAlx
+// In the future we are going to have all the other names from namespace to Capability Permission
+// TODO : Change all namespace to Capability Permission
+
 interface NodeDetailsCardProps {
   nodePermissions: CustomGraphLinkWithType[];
   selectedNode?: CustomGraphNode;
@@ -132,7 +137,7 @@ export function NodeDetailsCard({
                         details?.emission_permissions
                           ? "EMISSION"
                           : details?.namespace_permissions
-                            ? "NAMESPACE"
+                            ? "CAPABILITY"
                             : "UNKNOWN"
                       }
                     />
@@ -149,7 +154,7 @@ export function NodeDetailsCard({
                               details.emission_permissions
                                 ? "emission"
                                 : details.namespace_permissions
-                                  ? "namespace"
+                                  ? "capability"
                                   : "",
                             )}
                           </div>

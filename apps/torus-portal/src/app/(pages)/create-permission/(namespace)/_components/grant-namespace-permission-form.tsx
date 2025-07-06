@@ -10,6 +10,11 @@ import { grantNamespacePermissionSchema } from "./grant-namespace-permission-for
 import type { GrantNamespacePermissionFormData } from "./grant-namespace-permission-form-schema";
 import { transformFormDataToSDK } from "./grant-namespace-permission-form-utils";
 
+// Every single namespace name has been changed to Capability Permission
+// as requested here: https://coda.io/d/RENLABS-CORE-DEVELOPMENT-DOCUMENTS_d5Vgr5OavNK/Text-change-requests_su4jQAlx
+// In the future we are going to have all the other names from namespace to Capability Permission
+// TODO : Change all namespace to Capability Permission
+
 interface GrantNamespacePermissionFormProps {
   onSuccess?: () => void;
 }
@@ -53,12 +58,9 @@ export default function GrantNamespacePermissionForm({
               form.reset();
             } else if (result.status === "ERROR") {
               setTransactionStatus("error");
-              toast({
-                title: "Error",
-                description:
-                  result.message ?? "Failed to grant namespace permission",
-                variant: "destructive",
-              });
+              toast.error(
+                result.message ?? "Failed to grant capability permission",
+              );
             }
           },
           refetchHandler: async () => {
@@ -68,11 +70,7 @@ export default function GrantNamespacePermissionForm({
       } catch (error) {
         console.error("Error granting permission:", error);
         setTransactionStatus("error");
-        toast({
-          title: "Error",
-          description: "Failed to grant namespace permission",
-          variant: "destructive",
-        });
+        toast.error("Failed to grant capability permission");
       }
     },
     [grantNamespacePermissionTransaction, toast, form, onSuccess],

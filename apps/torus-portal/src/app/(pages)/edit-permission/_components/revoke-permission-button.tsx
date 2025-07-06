@@ -71,7 +71,7 @@ export function RevokePermissionButton({
   const getPermissionType = () => {
     if (permissionData) {
       if (permissionData.emission_permissions) return "Emission";
-      if (permissionData.namespace_permissions) return "Namespace";
+      if (permissionData.namespace_permissions) return "Capability";
       return "Unknown";
     }
     // Legacy support for PermissionContract
@@ -81,7 +81,7 @@ export function RevokePermissionButton({
           return "Emission";
         },
         Namespace() {
-          return "Namespace";
+          return "Capability";
         },
         Curator() {
           return "Curator";
