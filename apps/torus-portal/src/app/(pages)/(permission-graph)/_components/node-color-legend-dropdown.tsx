@@ -90,7 +90,7 @@ export function NodeColorLegendDropdown() {
           className="h-8 animate-fade-up animate-delay-[600ms]"
         >
           <InfoIcon className="w-4 h-4 mr-2" />
-          Node Color Guide
+          Nodes Information
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="start" className="w-72">

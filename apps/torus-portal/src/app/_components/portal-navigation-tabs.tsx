@@ -24,6 +24,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@torus-ts/ui/components/select";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@torus-ts/ui/components/tooltip";
 
 export default function PortalNavigationTabs() {
   const router = useRouter();
@@ -34,6 +40,8 @@ export default function PortalNavigationTabs() {
     label: string;
     icon: React.ComponentType<{ size?: number }>;
     path: string;
+    disabled?: boolean;
+    disabledTooltip?: string;
   }
 
   interface NavigationCategory {
@@ -74,6 +82,8 @@ export default function PortalNavigationTabs() {
             label: "Create Constraint",
             icon: Shield,
             path: "/create-constraint",
+            disabled: true,
+            disabledTooltip: "Coming Soon",
           },
         ],
       },
@@ -123,7 +133,7 @@ export default function PortalNavigationTabs() {
 
   const getCurrentTab = () => {
     if (pathname === "/") return "permission-graph";
-    if (pathname === "/create-permission") return "create-permission";
+    if (pathname.startsWith("/create-permission")) return "create-permission";
     if (pathname === "/edit-permission") return "edit-permission";
     if (pathname === "/create-constraint") return "create-constraint";
     if (pathname === "/create-signal") return "create-signal";
@@ -137,7 +147,7 @@ export default function PortalNavigationTabs() {
   const handleTabChange = useCallback(
     (value: string) => {
       const item = allNavigationItems.find((item) => item.value === value);
-      if (item) {
+      if (item && !item.disabled) {
         router.push(item.path);
       }
     },
@@ -152,41 +162,65 @@ export default function PortalNavigationTabs() {
     <>
       {/* Mobile Select - Full width breaking out of parent constraints */}
       <div className="relative left-0 right-0 z-20">
-        <Select value={currentTab} onValueChange={handleTabChange}>
-          <SelectTrigger className="w-fit">
-            <SelectValue>
-              {currentItem && (
-                <div className="flex items-center gap-2">
-                  <currentItem.icon size={16} />
-                  {currentItem.label}
-                </div>
-              )}
-            </SelectValue>
-          </SelectTrigger>
-          <SelectContent>
-            {navigationCategories.map((category, categoryIndex) => (
-              <SelectGroup key={category.label}>
-                <SelectLabel className="px-2 py-1.5 text-sm font-medium text-muted-foreground">
-                  {category.label}
-                </SelectLabel>
-                {category.items.map((item) => {
-                  const Icon = item.icon;
-                  return (
-                    <SelectItem key={item.value} value={item.value}>
-                      <div className="flex items-center gap-2">
-                        <Icon size={16} />
-                        {item.label}
-                      </div>
-                    </SelectItem>
-                  );
-                })}
-                {categoryIndex < navigationCategories.length - 1 && (
-                  <SelectSeparator />
+        <TooltipProvider>
+          <Select value={currentTab} onValueChange={handleTabChange}>
+            <SelectTrigger className="w-fit">
+              <SelectValue>
+                {currentItem && (
+                  <div className="flex items-center gap-2">
+                    <currentItem.icon size={16} />
+                    {currentItem.label}
+                  </div>
                 )}
-              </SelectGroup>
-            ))}
-          </SelectContent>
-        </Select>
+              </SelectValue>
+            </SelectTrigger>
+            <SelectContent>
+              {navigationCategories.map((category, categoryIndex) => (
+                <SelectGroup key={category.label}>
+                  <SelectLabel className="px-2 py-1.5 text-sm font-medium text-muted-foreground">
+                    {category.label}
+                  </SelectLabel>
+                  {category.items.map((item) => {
+                    const Icon = item.icon;
+                    
+                    if (item.disabled && item.disabledTooltip) {
+                      return (
+                        <Tooltip key={item.value}>
+                          <TooltipTrigger asChild>
+                            <div 
+                              className="relative flex cursor-not-allowed select-none items-center rounded-sm px-2 py-1.5 text-sm opacity-50 outline-none hover:bg-accent hover:text-accent-foreground"
+                              onClick={(e) => e.preventDefault()}
+                            >
+                              <div className="flex items-center gap-2">
+                                <Icon size={16} />
+                                {item.label}
+                              </div>
+                            </div>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>{item.disabledTooltip}</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      );
+                    }
+                    
+                    return (
+                      <SelectItem key={item.value} value={item.value}>
+                        <div className="flex items-center gap-2">
+                          <Icon size={16} />
+                          {item.label}
+                        </div>
+                      </SelectItem>
+                    );
+                  })}
+                  {categoryIndex < navigationCategories.length - 1 && (
+                    <SelectSeparator />
+                  )}
+                </SelectGroup>
+              ))}
+            </SelectContent>
+          </Select>
+        </TooltipProvider>
       </div>
     </>
   );

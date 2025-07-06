@@ -2,12 +2,14 @@
 
 import { useCallback, useEffect } from "react";
 
-import type { SS58Address } from "@torus-network/sdk";
-import { checkSS58 } from "@torus-network/sdk";
 import { Loader2, Plus, Trash2, Wand2 } from "lucide-react";
 import { useFieldArray } from "react-hook-form";
 
+import type { SS58Address } from "@torus-network/sdk";
+import { checkSS58 } from "@torus-network/sdk";
+
 import { useTorus } from "@torus-ts/torus-provider";
+import { Badge } from "@torus-ts/ui/components/badge";
 import { Button } from "@torus-ts/ui/components/button";
 import {
   Card,
@@ -32,11 +34,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@torus-ts/ui/components/select";
+import { WalletConnectionWarning } from "@torus-ts/ui/components/wallet-connection-warning";
 
 import { useAvailableStreams } from "~/hooks/use-available-streams";
 
-import { Badge } from "@torus-ts/ui/components/badge";
-import { WalletConnectionWarning } from "@torus-ts/ui/components/wallet-connection-warning";
 import type {
   GrantEmissionPermissionForm,
   GrantEmissionPermissionFormData,
@@ -115,6 +116,11 @@ export function GrantEmissionPermissionFormComponent({
     });
   }, [availableStreams.data, streamFields.length, removeStream, appendStream]);
 
+  const handleRefreshStreams = useCallback(() => {
+    // Refetch the streams data from the API
+    void availableStreams.refetch();
+  }, [availableStreams]);
+
   // Automatically populate streams when allocation type changes to "Streams" and data is available
   useEffect(() => {
     if (
@@ -131,6 +137,38 @@ export function GrantEmissionPermissionFormComponent({
     availableStreams.data,
     streamFields.length,
     selectedAccount?.address,
+    handleAutoPopulateStreams,
+  ]);
+
+  // Automatically refresh streams when wallet changes
+  useEffect(() => {
+    if (selectedAccount?.address && availableStreams.data) {
+      // Refetch streams when the selected account changes
+      void availableStreams.refetch();
+    }
+  }, [selectedAccount?.address, availableStreams]);
+
+  // Automatically populate streams after successful refresh
+  useEffect(() => {
+    if (
+      allocationType === "Streams" &&
+      availableStreams.data &&
+      availableStreams.data.length > 0 &&
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+      !availableStreams.isLoading &&
+      selectedAccount?.address
+    ) {
+      // Only auto-populate if we don't have any streams or if we just refreshed
+      if (streamFields.length === 0) {
+        handleAutoPopulateStreams();
+      }
+    }
+  }, [
+    allocationType,
+    availableStreams.data,
+    availableStreams.isLoading,
+    selectedAccount?.address,
+    streamFields.length,
     handleAutoPopulateStreams,
   ]);
 
@@ -222,10 +260,9 @@ export function GrantEmissionPermissionFormComponent({
                         variant="outline"
                         size="sm"
                         className="w-full md:w-auto"
-                        onClick={handleAutoPopulateStreams}
+                        onClick={handleRefreshStreams}
                         disabled={
                           availableStreams.isLoading ||
-                          !availableStreams.data?.length ||
                           !selectedAccount?.address
                         }
                       >

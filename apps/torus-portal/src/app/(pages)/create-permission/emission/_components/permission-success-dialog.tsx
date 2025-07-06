@@ -1,4 +1,3 @@
-import Link from "next/link";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -27,9 +26,10 @@ export function PermissionSuccessDialog({
 
         <div className="py-4">
           <p className="mb-4">
-            Your emission permission has been granted successfully. Now you can
+            Your emission permission has been granted successfully.
+            {/* Your emission permission has been granted successfully. Now you can
             create constraints to define specific rules and conditions for this
-            permission.
+            permission. */}
           </p>
         </div>
 
@@ -38,13 +38,14 @@ export function PermissionSuccessDialog({
             onClick={onClose}
             className="bg-gray-200 text-gray-800 hover:bg-gray-300"
           >
-            I'll do that later
+            Got it!
+            {/* I'll do that later */}
           </AlertDialogAction>
-          <Link href="/create-constraint">
+          {/* <Link href="/create-constraint">
             <AlertDialogAction className="bg-green-600 text-white hover:bg-green-700">
               Create a Constraint →
             </AlertDialogAction>
-          </Link>
+          </Link> */}
         </div>
       </AlertDialogContent>
     </AlertDialog>
