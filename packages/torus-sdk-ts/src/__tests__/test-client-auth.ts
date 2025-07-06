@@ -26,8 +26,8 @@ async function createOldJWTToken(mnemonic: string) {
     addressInfo: {
       addressType: "ss58",
       metadata: {
-        prefix: 42
-      }
+        prefix: 42,
+      },
     },
     iat: yesterday,
     exp: nextYear,
