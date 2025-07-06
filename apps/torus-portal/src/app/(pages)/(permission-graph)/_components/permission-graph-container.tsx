@@ -105,7 +105,7 @@ export default function PermissionGraphContainer() {
   }
 
   return (
-    <div className="fixed inset-0 w-screen h-screen">
+    <div className="fixed inset-0 w-screen h-screen overflow-hidden">
       <div
         className="absolute bottom-2 left-2 right-2 md:bottom-[3.3em] z-50 flex flex-col
           sm:flex-row justify-between gap-2"
@@ -172,7 +172,7 @@ export default function PermissionGraphContainer() {
           }
         }}
       />
-      <div className="w-full h-full animate-fade animate-delay-1000">
+      <div className="absolute inset-0 w-full h-full animate-fade animate-delay-1000">
         <ForceGraphCanvas
           data={graphData}
           onNodeClick={handleNodeSelect}
