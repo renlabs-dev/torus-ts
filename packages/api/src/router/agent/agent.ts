@@ -1,11 +1,13 @@
-import { and, eq, inArray, isNull, max, sql } from "@torus-ts/db";
+import type { TRPCRouterRecord } from "@trpc/server";
+import { z } from "zod";
+
+import { and, eq, gte, inArray, isNull, max, sql } from "@torus-ts/db";
 import {
   agentSchema,
   computedAgentWeightSchema,
   penalizeAgentVotesSchema,
 } from "@torus-ts/db/schema";
-import type { TRPCRouterRecord } from "@trpc/server";
-import { z } from "zod";
+
 import { publicProcedure } from "../../trpc";
 
 export const agentRouter = {
@@ -31,12 +33,27 @@ export const agentRouter = {
       const { page, limit, search, orderBy } = input;
       const offset = (page - 1) * limit;
 
-      const lastBlockQuery = ctx.db
+      const agentsLastBlock = await ctx.db
+        .select({ value: max(agentSchema.atBlock) })
+        .from(agentSchema)
+        .limit(1);
+      console.log("[shadowheart] lastBlock eh esse: ", agentsLastBlock);
+      const weightsLastBlock = await ctx.db
         .select({ value: max(computedAgentWeightSchema.atBlock) })
-        .from(computedAgentWeightSchema);
-
-      const lastBlockResult = await lastBlockQuery;
-      const lastBlock = lastBlockResult[0]?.value;
+        .from(computedAgentWeightSchema)
+        .limit(1);
+      if (!agentsLastBlock[0]?.value || !weightsLastBlock[0]?.value) {
+        return {
+          agents: [],
+          pagination: {
+            totalCount: 0,
+            totalPages: 0,
+            currentPage: page,
+            pageSize: limit,
+            hasMore: false,
+          },
+        };
+      }
 
       let whereClause = and(
         eq(agentSchema.isWhitelisted, true),
@@ -77,23 +94,19 @@ export const agentRouter = {
           computedAgentWeightSchema,
           and(
             eq(agentSchema.key, computedAgentWeightSchema.agentKey),
-            lastBlock
-              ? eq(computedAgentWeightSchema.atBlock, lastBlock)
-              : sql`1=1`,
+            gte(computedAgentWeightSchema.atBlock, weightsLastBlock[0].value),
             isNull(computedAgentWeightSchema.deletedAt),
           ),
         )
-        .where(whereClause)
+        .where(
+          and(whereClause, gte(agentSchema.atBlock, agentsLastBlock[0].value)),
+        )
         .limit(limit)
         .offset(offset)
         .orderBy(orderByClause);
+      console.log("[shadowheart] agents: ", agents.length);
+      const totalCount = agents.length;
 
-      const countResult = await ctx.db
-        .select({ count: sql`count(*)` })
-        .from(agentSchema)
-        .where(whereClause);
-
-      const totalCount = Number(countResult[0]?.count ?? 0);
       const totalPages = Math.ceil(totalCount / limit);
 
       return {
@@ -117,21 +130,28 @@ export const agentRouter = {
   byKeyLastBlock: publicProcedure
     .input(z.object({ key: z.string() }))
     .query(async ({ ctx, input }) => {
-      const lastBlock = ctx.db
+      const lastBlock = await ctx.db
         .select({ value: max(agentSchema.atBlock) })
-        .from(agentSchema);
+        .from(agentSchema)
+        .limit(1);
+
+      if (!lastBlock[0]?.value) {
+        return null;
+      }
+
       const result = await ctx.db
         .select()
         .from(agentSchema)
         .where(
           and(
             isNull(agentSchema.deletedAt),
-            eq(agentSchema.atBlock, lastBlock),
+            eq(agentSchema.atBlock, lastBlock[0].value),
             eq(agentSchema.key, input.key),
           ),
         )
         .limit(1);
-      return result[0];
+      const indexededResult = result[0];
+      return indexededResult ?? null;
     }),
   allWithAggregatedPenalties: publicProcedure.query(async ({ ctx }) => {
     const agents = await ctx.db.query.agentSchema.findMany({

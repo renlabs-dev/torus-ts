@@ -1,4 +1,8 @@
-import type { CustomGraphNode } from "../../permission-graph-types";
+import { Calendar, Percent, User, Users } from "lucide-react";
+
+import { smallAddress } from "@torus-network/torus-utils/subspace";
+
+import { Badge } from "@torus-ts/ui/components/badge";
 import {
   Card,
   CardContent,
@@ -6,10 +10,9 @@ import {
   CardHeader,
   CardTitle,
 } from "@torus-ts/ui/components/card";
-import { Badge } from "@torus-ts/ui/components/badge";
-import { Calendar, User, Users, Percent } from "lucide-react";
-import { smallAddress } from "@torus-network/torus-utils/subspace";
 import { MarkdownView } from "@torus-ts/ui/components/markdown-view";
+
+import type { CustomGraphNode } from "../../permission-graph-types";
 
 interface SignalDetailsProps {
   selectedNode: CustomGraphNode;
@@ -51,7 +54,7 @@ export function GraphSheetDetailsSignal({ selectedNode }: SignalDetailsProps) {
             </CardTitle>
             <Badge variant="secondary" className="flex items-center gap-1">
               <Percent className="w-3 h-3" />
-              {signalData.proposedAllocation}%
+              {signalData.proposedAllocation}
             </Badge>
           </div>
           <CardDescription>

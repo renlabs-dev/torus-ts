@@ -1,15 +1,23 @@
-import { and, eq, isNull, max } from "@torus-ts/db";
-import { agentSchema, computedAgentWeightSchema } from "@torus-ts/db/schema";
 import type { TRPCRouterRecord } from "@trpc/server";
 import { z } from "zod";
+
+import { and, eq, gte, isNull, max } from "@torus-ts/db";
+import { agentSchema, computedAgentWeightSchema } from "@torus-ts/db/schema";
+
 import { publicProcedure } from "../../trpc";
 
 export const computedAgentWeightRouter = {
   // GET
   all: publicProcedure.query(async ({ ctx }) => {
-    const lastBlock = ctx.db
+    const lastBlock = await ctx.db
       .select({ value: max(computedAgentWeightSchema.atBlock) })
-      .from(computedAgentWeightSchema);
+      .from(computedAgentWeightSchema)
+      .limit(1);
+
+    if (!lastBlock[0]?.value) {
+      return [];
+    }
+
     return await ctx.db
       .select({
         agentKey: computedAgentWeightSchema.agentKey,
@@ -20,7 +28,7 @@ export const computedAgentWeightRouter = {
       .from(computedAgentWeightSchema)
       .where(
         and(
-          eq(computedAgentWeightSchema.atBlock, lastBlock),
+          gte(computedAgentWeightSchema.atBlock, lastBlock[0].value),
           isNull(computedAgentWeightSchema.deletedAt),
         ),
       )
@@ -34,12 +42,20 @@ export const computedAgentWeightRouter = {
   }),
   byAgentKey: publicProcedure
     .input(z.object({ agentKey: z.string() }))
-    .query(({ ctx, input }) => {
-      return ctx.db.query.computedAgentWeightSchema.findFirst({
+    .query(async ({ ctx, input }) => {
+      const result = await ctx.db.query.computedAgentWeightSchema.findFirst({
         where: and(
           eq(computedAgentWeightSchema.agentKey, input.agentKey),
           isNull(computedAgentWeightSchema.deletedAt),
         ),
       });
+
+      console.log(result);
+
+      if (!result) {
+        return null;
+      }
+
+      return result;
     }),
 } satisfies TRPCRouterRecord;
