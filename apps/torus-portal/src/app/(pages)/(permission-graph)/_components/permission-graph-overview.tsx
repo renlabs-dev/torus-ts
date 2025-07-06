@@ -1,6 +1,8 @@
-import { Card } from "@torus-ts/ui/components/card";
-import type { CustomGraphData } from "./permission-graph-types";
 import { memo } from "react";
+
+import { Card } from "@torus-ts/ui/components/card";
+
+import type { CustomGraphData } from "./permission-graph-types";
 
 interface PermissionGraphOverviewProps {
   graphData: CustomGraphData | null;
@@ -24,12 +26,12 @@ export const PermissionGraphOverview = memo(function PermissionGraphOverview({
         <div className="flex items-center justify-center gap-3">
           <div className="flex items-center gap-3">
             <Stat
-              label="Addresses"
+              label="Nodes"
               value={graphData ? graphData.nodes.length : 0}
             />
             <Bar />
             <Stat
-              label="Permissions"
+              label="Links"
               value={graphData ? graphData.links.length : 0}
             />
           </div>
