@@ -167,8 +167,7 @@ export function GrantNamespacePermissionFormComponent({
                     )}
                   </FormControl>
                   <FormDescription>
-                    Choose from your existing capability permissions to grant
-                    access to.
+                    Choose from your existing capability permissions to grant access to.
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
@@ -289,7 +288,7 @@ export function GrantNamespacePermissionFormComponent({
                             Irrevocable
                           </SelectItem>
                           <SelectItem value="RevocableByGrantor">
-                            Revocable by Delegator
+                            Revocable by Grantor
                           </SelectItem>
                           <SelectItem value="RevocableByArbiters">
                             Revocable by Arbiters

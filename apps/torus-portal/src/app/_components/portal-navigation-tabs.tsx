@@ -91,10 +91,10 @@ export default function PortalNavigationTabs() {
         label: "Capability Operations",
         items: [
           {
-            value: "register-capability",
-            label: "Register Capability",
+            value: "create-capability",
+            label: "Create Capability",
             icon: FolderPen,
-            path: "/register-capability",
+            path: "/create-capability",
           },
           {
             value: "delete-capability",
@@ -138,7 +138,7 @@ export default function PortalNavigationTabs() {
     if (pathname === "/create-constraint") return "create-constraint";
     if (pathname === "/create-signal") return "create-signal";
     if (pathname === "/register-agent") return "register-agent";
-    if (pathname === "/register-capability") return "register-capability";
+    if (pathname === "/create-capability") return "create-capability";
     if (pathname === "/delete-capability") return "delete-capability";
     return "permission-graph";
   };

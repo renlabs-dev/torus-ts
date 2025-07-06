@@ -226,12 +226,12 @@ export default function CreateNamespaceForm({
             if (result.status === "SUCCESS" && result.finalized) {
               onSuccess?.();
               toast.success(
-                `Capability entry "${fullNamespacePath}" created successfully`,
+                `Capability permission "${fullNamespacePath}" created successfully`,
               );
               form.reset();
             } else if (result.status === "ERROR") {
               toast.error(
-                result.message ?? "Failed to register capability permission",
+                result.message ?? "Failed to create capability permission",
               );
             }
           },
@@ -240,13 +240,13 @@ export default function CreateNamespaceForm({
           },
         });
       } catch (error) {
-        console.error("Error registering capability permission:", error);
+        console.error("Error creating capability permission:", error);
         setTransactionStatus({
           status: "ERROR",
           finalized: true,
-          message: "Failed to register capability permission",
+          message: "Failed to create capability permission",
         });
-        toast.error("Failed to register capability permission");
+        toast.error("Failed to create capability permission");
       }
     },
     [createNamespaceTransaction, onSuccess, toast, form, selectedPrefix],
@@ -255,10 +255,9 @@ export default function CreateNamespaceForm({
   return (
     <Card className="border-none w-full">
       <CardHeader>
-        <CardTitle>Register Capability Permission</CardTitle>
+        <CardTitle>Create Capability Permission</CardTitle>
         <CardDescription>
-          Register a new agent capability by creating a namespace path for it on
-          Torus.
+          Create a new capability permission on the Torus Network.
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -469,9 +468,8 @@ export default function CreateNamespaceForm({
                 </code>
               </div>
               <div className="mt-2 text-xs text-muted-foreground">
-                Namespace path for Capability has been created and can be used
-                for API requests. You can now delegate permission over the
-                capability to other agents.
+                This path will be created on the Torus Network and can be used
+                by agents to handle API requests.
               </div>
             </div>
 
