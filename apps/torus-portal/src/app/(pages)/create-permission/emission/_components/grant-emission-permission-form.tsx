@@ -89,7 +89,8 @@ export default function GrantEmissionPermissionForm({
         setTransactionStatus("error");
         toast({
           title: "Error",
-          description: "Failed to grant emission permission",
+          // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+          description: `Failed to grant permission: ${error}`,
           variant: "destructive",
         });
       }
