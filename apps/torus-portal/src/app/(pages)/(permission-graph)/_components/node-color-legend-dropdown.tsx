@@ -61,10 +61,15 @@ const nodeColorCategories: NodeCategory[] = [
         title: "Emission Permission",
         description: "Controls token emissions and distributions",
       },
+
+      // Every single namespace name has been changed to Capability Permission
+      // as requested here: https://coda.io/d/RENLABS-CORE-DEVELOPMENT-DOCUMENTS_d5Vgr5OavNK/Text-change-requests_su4jQAlx
+      // In the future we are going to have all the other names from namespace to Capability Permission
+      // TODO : Change all namespace to Capability Permission
       {
         color: graphConstants.nodeConfig.nodeColors.namespacePermissionNode,
-        title: "Namespace Permission",
-        description: "Controls access to specific namespaces",
+        title: "Capability Permission",
+        description: "Controls access to specific capabilities",
       },
     ],
   },

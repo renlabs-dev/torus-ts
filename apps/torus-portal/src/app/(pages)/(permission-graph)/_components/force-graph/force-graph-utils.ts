@@ -9,6 +9,11 @@ import type {
 } from "../permission-graph-types";
 import { graphConstants } from "./force-graph-constants";
 
+// Every single namespace name has been changed to Capability Permission
+// as requested here: https://coda.io/d/RENLABS-CORE-DEVELOPMENT-DOCUMENTS_d5Vgr5OavNK/Text-change-requests_su4jQAlx
+// In the future we are going to have all the other names from namespace to Capability Permission
+// TODO : Change all namespace to Capability Permission
+
 function getLinkColorFromSource(
   sourceId: string,
   linkType: string,
@@ -26,7 +31,7 @@ function getLinkColorFromSource(
 
   if (sourceId.startsWith("permission-")) {
     // For permission nodes, use the permission type to determine color
-    if (permissionType === "namespace") {
+    if (permissionType === "permission cababilities") {
       return graphConstants.linkConfig.linkColors.namespacePermissionLink;
     }
     return graphConstants.linkConfig.linkColors.emissionPermissionLink;
@@ -231,7 +236,7 @@ export function createGraphData(
         const permissionType = permission.emission_permissions
           ? "emission"
           : permission.namespace_permissions
-            ? "namespace"
+            ? "permission capabilities"
             : "emission"; // default to emission
         permissionTypes.set(permissionId, permissionType);
       }
@@ -248,7 +253,7 @@ export function createGraphData(
         const permissionType = permission.emission_permissions
           ? "emission"
           : permission.namespace_permissions
-            ? "namespace"
+            ? "permission capabilities"
             : "emission"; // default to emission
 
         if (
@@ -268,7 +273,7 @@ export function createGraphData(
             id: `permission-${permissionId}`,
             name: permissionType.toUpperCase(),
             color:
-              permissionType === "namespace"
+              permissionType === "permission capabilities"
                 ? graphConstants.nodeConfig.nodeColors.namespacePermissionNode
                 : graphConstants.nodeConfig.nodeColors.emissionPermissionNode,
             val: graphConstants.nodeConfig.nodeSizes.permissionNode,

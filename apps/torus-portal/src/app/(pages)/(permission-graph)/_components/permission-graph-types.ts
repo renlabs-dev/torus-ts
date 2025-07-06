@@ -23,7 +23,7 @@ export interface CustomGraphNode extends NodeObject {
 
 export interface PermissionNodeData {
   permissionId: string;
-  permissionType: "emission" | "namespace";
+  permissionType: "emission" | "permission capabilities";
   grantorAccountId: string;
   granteeAccountId: string;
   scope?: string;

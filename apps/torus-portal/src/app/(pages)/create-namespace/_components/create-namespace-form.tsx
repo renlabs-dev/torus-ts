@@ -7,6 +7,7 @@ import { Info } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
+
 import type { SS58Address } from "@torus-network/sdk";
 import {
   isValidNamespaceSegment,
@@ -50,6 +51,11 @@ import { useToast } from "@torus-ts/ui/hooks/use-toast";
 
 const HTTP_METHODS = ["get", "post", "patch", "delete", "put"] as const;
 
+// Every single namespace name has been changed to Capability Permission
+// as requested here: https://coda.io/d/RENLABS-CORE-DEVELOPMENT-DOCUMENTS_d5Vgr5OavNK/Text-change-requests_su4jQAlx
+// In the future we are going to have all the other names from namespace to Capability Permission
+// TODO : Change all namespace to Capability Permission
+
 const createNamespaceSchema = z
   .object({
     path: z.string().refine(
@@ -59,7 +65,7 @@ const createNamespaceSchema = z
         return pathResult.success;
       },
       {
-        message: "Must be a valid namespace path or empty",
+        message: "Must be a valid capability permission path or empty",
       },
     ),
     method: z.enum([...HTTP_METHODS, "custom"]),
@@ -77,7 +83,7 @@ const createNamespaceSchema = z
     },
     {
       message:
-        "Custom method is required and must be a valid namespace segment",
+        "Custom method is required and must be a valid capability permission segment",
       path: ["customMethod"],
     },
   );
@@ -190,11 +196,7 @@ export default function CreateNamespaceForm({
           data.method === "custom" ? data.customMethod : data.method;
 
         if (!method) {
-          toast({
-            title: "Error",
-            description: "Please specify a method",
-            variant: "destructive",
-          });
+          toast.error("Please specify a method");
           return;
         }
 
@@ -209,7 +211,7 @@ export default function CreateNamespaceForm({
         setTransactionStatus({
           status: "STARTING",
           finalized: false,
-          message: "Creating namespace...",
+          message: "Creating capability permission...",
         });
 
         await createNamespaceTransaction({
@@ -218,35 +220,28 @@ export default function CreateNamespaceForm({
             setTransactionStatus(result);
             if (result.status === "SUCCESS" && result.finalized) {
               onSuccess?.();
-              toast({
-                title: "Success",
-                description: `Namespace "${fullNamespacePath}" created successfully`,
-              });
+              toast.success(
+                `Capability permission "${fullNamespacePath}" created successfully`,
+              );
               form.reset();
             } else if (result.status === "ERROR") {
-              toast({
-                title: "Error",
-                description: result.message ?? "Failed to create namespace",
-                variant: "destructive",
-              });
+              toast.error(
+                result.message ?? "Failed to create capability permission",
+              );
             }
           },
           refetchHandler: async () => {
-            // Namespace list will be automatically updated
+            // Capability permission list will be automatically updated
           },
         });
       } catch (error) {
-        console.error("Error creating namespace:", error);
+        console.error("Error creating capability permission:", error);
         setTransactionStatus({
           status: "ERROR",
           finalized: true,
-          message: "Failed to create namespace",
+          message: "Failed to create capability permission",
         });
-        toast({
-          title: "Error",
-          description: "Failed to create namespace",
-          variant: "destructive",
-        });
+        toast.error("Failed to create capability permission");
       }
     },
     [createNamespaceTransaction, onSuccess, toast, form, selectedPrefix],
@@ -255,16 +250,16 @@ export default function CreateNamespaceForm({
   return (
     <Card className="border-none w-full">
       <CardHeader>
-        <CardTitle>Create Namespace</CardTitle>
+        <CardTitle>Create Capability Permission</CardTitle>
         <CardDescription>
-          Create a new namespace on the Torus Network.
+          Create a new capability permission on the Torus Network.
         </CardDescription>
       </CardHeader>
       <CardContent>
         <Form {...form}>
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
             <FormItem>
-              <FormLabel>Namespace Path</FormLabel>
+              <FormLabel>Capability Permission Path</FormLabel>
               <FormControl>
                 <div className="flex items-center gap-2">
                   <div className="w-fit">
@@ -315,7 +310,7 @@ export default function CreateNamespaceForm({
                           placeholder={
                             prefixOptions.length === 0
                               ? "Agent registration required"
-                              : "namespace path"
+                              : "capability permission path"
                           }
                           disabled={
                             !isAccountConnected ||
@@ -334,13 +329,13 @@ export default function CreateNamespaceForm({
                 !namespaceEntries.isLoading ? (
                   <span className="text-orange-600 font-medium">
                     You must be registered as an agent before creating
-                    namespaces. Please register your agent first.
+                    capability permissions. Please register your agent first.
                   </span>
                 ) : (
                   <>
-                    Choose a prefix from existing namespaces and optionally add
-                    a path extension. Leave the path empty to create a namespace
-                    at the selected prefix level.
+                    Choose a prefix from existing capability permissions and
+                    optionally add a path extension. Leave the path empty to
+                    create a capability permission at the selected prefix level.
                   </>
                 )}
               </FormDescription>
@@ -392,10 +387,10 @@ export default function CreateNamespaceForm({
                     </ToggleGroup>
                   </FormControl>
                   <FormDescription>
-                    Select the REST method that this namespace endpoint will
-                    handle. This is appended to the end of the path. The method
-                    suffix helps agent APIs recognize the functionality of the
-                    namespace.
+                    Select the REST method that this capability permission
+                    endpoint will handle. This is appended to the end of the
+                    path. The method suffix helps agent APIs recognize the
+                    functionality of the capability permission.
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
@@ -432,7 +427,7 @@ export default function CreateNamespaceForm({
             <div className="rounded-md border border-border bg-muted p-4">
               <div className="flex items-center gap-2 text-sm font-medium">
                 <Info className="h-4 w-4" />
-                Full Namespace Path
+                Full Capability Permission Path
               </div>
               <div className="mt-2 text-sm text-muted-foreground">
                 <code className="rounded bg-background px-2 py-1 text-foreground">
@@ -468,8 +463,8 @@ export default function CreateNamespaceForm({
                   ? "Agent Registration Required"
                   : transactionStatus.status === "PENDING" ||
                       transactionStatus.status === "STARTING"
-                    ? "Creating Namespace..."
-                    : "Create Namespace"}
+                    ? "Creating Capability Permission..."
+                    : "Create Capability Permission"}
             </Button>
           </form>
         </Form>
