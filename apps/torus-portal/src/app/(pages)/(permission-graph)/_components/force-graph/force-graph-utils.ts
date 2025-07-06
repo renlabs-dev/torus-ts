@@ -31,7 +31,7 @@ function getLinkColorFromSource(
 
   if (sourceId.startsWith("permission-")) {
     // For permission nodes, use the permission type to determine color
-    if (permissionType === "permission cababilities") {
+    if (permissionType === "capabilities") {
       return graphConstants.linkConfig.linkColors.namespacePermissionLink;
     }
     return graphConstants.linkConfig.linkColors.emissionPermissionLink;
