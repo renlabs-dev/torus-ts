@@ -10,6 +10,11 @@ import {
 import { Button } from "@torus-ts/ui/components/button";
 import { CheckCircle } from "lucide-react";
 
+// Every single namespace name has been changed to Capability Permission
+// as requested here: https://coda.io/d/RENLABS-CORE-DEVELOPMENT-DOCUMENTS_d5Vgr5OavNK/Text-change-requests_su4jQAlx
+// In the future we are going to have all the other names from namespace to Capability Permission
+// TODO : Change all namespace to Capability Permission
+
 interface NamespaceSuccessDialogProps {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;

@@ -10,6 +10,11 @@ import {
 
 import PortalFormContainer from "~/app/_components/portal-form-container";
 
+// Every single namespace name has been changed to Capability Permission
+// as requested here: https://coda.io/d/RENLABS-CORE-DEVELOPMENT-DOCUMENTS_d5Vgr5OavNK/Text-change-requests_su4jQAlx
+// In the future we are going to have all the other names from namespace to Capability Permission
+// TODO : Change all namespace to Capability Permission
+
 interface CreatePermissionLayoutProps {
   children: React.ReactNode;
 }
@@ -25,9 +30,9 @@ export default function CreatePermissionLayout({
 
   const handleTabChange = (value: string) => {
     if (value === "capability") {
-      router.push("/create-permission");
+      router.push("/create-capability");
     } else {
-      router.push("/create-permission/emission");
+      router.push("/create-capability/emission");
     }
   };
 
