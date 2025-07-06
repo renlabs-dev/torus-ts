@@ -343,7 +343,7 @@ export default function RegisterAgentForm() {
     if (uploading) {
       return "Uploading...";
     }
-    return "Register Agent/Module";
+    return "Register Agent";
   };
 
   const handleTabChange = useCallback(
@@ -463,9 +463,7 @@ export default function RegisterAgentForm() {
     <div className="w-full max-w-2xl p-6 min-h-[calc(100vh-4rem)] flex flex-col">
       <div className="mb-6">
         <h1 className="text-2xl font-bold mb-2">Register Agent</h1>
-        <p className="text-muted-foreground">
-          Register your agent or module on the Torus Network
-        </p>
+        <p className="text-muted-foreground">Register your agent to Torus</p>
       </div>
 
       <Form {...form}>
@@ -536,7 +534,12 @@ export default function RegisterAgentForm() {
                   name="agentApiUrl"
                   render={({ field }) => (
                     <FormItem className="flex flex-col">
-                      <FormLabel>Agent API URL</FormLabel>
+                      <FormLabel>
+                        Agent API URL{" "}
+                        <span className="text-sm text-gray-500">
+                          (Optional)
+                        </span>
+                      </FormLabel>
                       <FormControl>
                         <Input
                           {...field}
@@ -669,7 +672,12 @@ export default function RegisterAgentForm() {
                     name="twitter"
                     render={({ field }) => (
                       <FormItem className="flex flex-col flex-1">
-                        <FormLabel>X/Twitter</FormLabel>
+                        <FormLabel>
+                          X/Twitter{" "}
+                          <span className="text-sm text-gray-500">
+                            (Optional)
+                          </span>
+                        </FormLabel>
                         <FormControl>
                           <Input
                             {...field}
@@ -686,7 +694,12 @@ export default function RegisterAgentForm() {
                     name="github"
                     render={({ field }) => (
                       <FormItem className="flex flex-col flex-1">
-                        <FormLabel>Github</FormLabel>
+                        <FormLabel>
+                          Github{" "}
+                          <span className="text-sm text-gray-500">
+                            (Optional)
+                          </span>
+                        </FormLabel>
                         <FormControl>
                           <Input
                             {...field}
@@ -705,7 +718,12 @@ export default function RegisterAgentForm() {
                     name="discord"
                     render={({ field }) => (
                       <FormItem className="flex flex-col flex-1">
-                        <FormLabel>Discord</FormLabel>
+                        <FormLabel>
+                          Discord{" "}
+                          <span className="text-sm text-gray-500">
+                            (Optional)
+                          </span>
+                        </FormLabel>
                         <FormControl>
                           <Input
                             {...field}
@@ -722,7 +740,12 @@ export default function RegisterAgentForm() {
                     name="telegram"
                     render={({ field }) => (
                       <FormItem className="flex flex-col flex-1">
-                        <FormLabel>Telegram</FormLabel>
+                        <FormLabel>
+                          Telegram{" "}
+                          <span className="text-sm text-gray-500">
+                            (Optional)
+                          </span>
+                        </FormLabel>
                         <FormControl>
                           <Input
                             {...field}
@@ -740,7 +763,12 @@ export default function RegisterAgentForm() {
                   name="website"
                   render={({ field }) => (
                     <FormItem className="flex flex-col">
-                      <FormLabel>Website</FormLabel>
+                      <FormLabel>
+                        Website{" "}
+                        <span className="text-sm text-gray-500">
+                          (Optional)
+                        </span>
+                      </FormLabel>
                       <FormControl>
                         <Input
                           {...field}
@@ -920,7 +948,7 @@ export default function RegisterAgentForm() {
                   selectedAccount &&
                   estimatedFee !== 0n && (
                     <span className="text-sm text-red-400">
-                      You don't have enough balance to submit an application.
+                      You don't have enough balance to register an agent.
                     </span>
                   )}
               </div>
