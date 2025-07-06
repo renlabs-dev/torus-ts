@@ -185,7 +185,7 @@ export function GraphSheetDetailsPermission({
                 {smallAddress(permissionData.grantorAccountId)}
               </p>
               <p className="text-xs text-muted-foreground">
-                Account that granted this permission
+                Account that delegated this permission
               </p>
             </div>
           </div>

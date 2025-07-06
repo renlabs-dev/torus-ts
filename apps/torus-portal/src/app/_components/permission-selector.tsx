@@ -1,7 +1,32 @@
+// Every single grantor/grantee terminology has been changed to delegator/recipient
+// as requested here: https://coda.io/d/RENLABS-CORE-DEVELOPMENT-DOCUMENTS_d5Vgr5OavNK/Text-change-requests_su4jQAlx
+// This change affects UI labels, variable names, and function names throughout the codebase
+// TODO : Ensure all grantor/grantee references are updated to delegator/recipient
+
 "use client";
 
 import { useEffect } from "react";
+
+import { Copy } from "lucide-react";
+import type { Control } from "react-hook-form";
+
+import { smallAddress } from "@torus-network/torus-utils/subspace";
+
+import { useTorus } from "@torus-ts/torus-provider";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@torus-ts/ui/components/card";
 import { CopyButton } from "@torus-ts/ui/components/copy-button";
+import {
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@torus-ts/ui/components/form";
 import {
   Select,
   SelectContent,
@@ -11,24 +36,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@torus-ts/ui/components/select";
-import {
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@torus-ts/ui/components/form";
-import { useTorus } from "@torus-ts/torus-provider";
-import { Copy } from "lucide-react";
-import type { Control } from "react-hook-form";
-import { smallAddress } from "@torus-network/torus-utils/subspace";
+
 import { api as trpcApi } from "~/trpc/react";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@torus-ts/ui/components/card";
+
 import type { PermissionWithDetails } from "../(pages)/edit-permission/_components/revoke-permission-button";
 
 interface PermissionSelectorProps {
@@ -64,25 +74,25 @@ export function PermissionSelector(props: PermissionSelectorProps) {
     return "Unknown";
   };
 
-  // Prioritize grantor permissions for auto-selection
+  // Prioritize delegator permissions for auto-selection
   const getDefaultPermissionId = () => {
     if (!userPermissions?.length) return null;
 
-    // First try to find a grantor permission
-    const grantorPermission = userPermissions.find(
+    // First try to find a delegator permission
+    const delegatorPermission = userPermissions.find(
       (item) => item.permissions.grantorAccountId === selectedAccount?.address,
     );
 
-    if (grantorPermission) {
-      return grantorPermission.permissions.permissionId;
+    if (delegatorPermission) {
+      return delegatorPermission.permissions.permissionId;
     }
 
-    // Fall back to first grantee permission
-    const granteePermission = userPermissions.find(
+    // Fall back to first recipient permission
+    const recipientPermission = userPermissions.find(
       (item) => item.permissions.granteeAccountId === selectedAccount?.address,
     );
 
-    return granteePermission?.permissions.permissionId ?? null;
+    return recipientPermission?.permissions.permissionId ?? null;
   };
 
   const defaultPermissionId = getDefaultPermissionId();
@@ -159,11 +169,11 @@ export function PermissionSelector(props: PermissionSelectorProps) {
         value: permissionType,
       },
       {
-        label: "Grantor",
+        label: "Delegator",
         value: smallAddress(permission.grantorAccountId),
       },
       {
-        label: "Grantee",
+        label: "Recipient",
         value: smallAddress(permission.granteeAccountId),
       },
       {
@@ -175,9 +185,12 @@ export function PermissionSelector(props: PermissionSelectorProps) {
       },
       {
         label: "Revocation",
+        // Transform revocation type and update grantor/grantee terminology to delegator/recipient
         value: permission.revocationType
           .replace(/_/g, " ")
-          .replace(/\b\w/g, (l) => l.toUpperCase()),
+          .replace(/\b\w/g, (l) => l.toUpperCase())
+          .replace("Grantor", "Delegator")
+          .replace("Grantee", "Recipient"),
       },
       {
         label: "Created At",
@@ -224,14 +237,14 @@ export function PermissionSelector(props: PermissionSelectorProps) {
                     if (!userPermissions) return null;
 
                     // Separate permissions by role and deduplicate
-                    const grantorPermissions = userPermissions.filter(
+                    const delegatorPermissions = userPermissions.filter(
                       (item) =>
                         item.permissions.grantorAccountId ===
                         selectedAccount?.address,
                     );
 
-                    // Filter out permissions where user is also grantor to avoid duplicates
-                    const granteeOnlyPermissions = userPermissions.filter(
+                    // Filter out permissions where user is also delegator to avoid duplicates
+                    const recipientOnlyPermissions = userPermissions.filter(
                       (item) =>
                         item.permissions.granteeAccountId ===
                           selectedAccount?.address &&
@@ -241,10 +254,10 @@ export function PermissionSelector(props: PermissionSelectorProps) {
 
                     return (
                       <>
-                        {granteeOnlyPermissions.length > 0 && (
+                        {recipientOnlyPermissions.length > 0 && (
                           <SelectGroup>
-                            <SelectLabel>As Grantee</SelectLabel>
-                            {granteeOnlyPermissions.map((item) => {
+                            <SelectLabel>As Recipient</SelectLabel>
+                            {recipientOnlyPermissions.map((item) => {
                               const permissionId =
                                 item.permissions.permissionId;
                               const permissionType = getPermissionType(item);
@@ -264,10 +277,10 @@ export function PermissionSelector(props: PermissionSelectorProps) {
                             })}
                           </SelectGroup>
                         )}
-                        {grantorPermissions.length > 0 && (
+                        {delegatorPermissions.length > 0 && (
                           <SelectGroup>
-                            <SelectLabel>As Grantor</SelectLabel>
-                            {grantorPermissions.map((item) => {
+                            <SelectLabel>As Delegator</SelectLabel>
+                            {delegatorPermissions.map((item) => {
                               const permissionId =
                                 item.permissions.permissionId;
                               const permissionType = getPermissionType(item);

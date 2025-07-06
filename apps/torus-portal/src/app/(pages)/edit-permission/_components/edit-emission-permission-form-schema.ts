@@ -1,6 +1,8 @@
-import { z } from "zod";
 import type { UseFormReturn } from "react-hook-form";
+import { z } from "zod";
+
 import { SS58_SCHEMA } from "@torus-network/sdk";
+
 import {
   createStreamPercentageValidator,
   createTargetWeightValidator,
@@ -116,9 +118,9 @@ export type EditEmissionPermissionForm =
 // Permission info for display
 export interface PermissionInfo {
   permissionId: string;
-  grantor: string;
-  grantee: string;
-  userRole: "grantor" | "grantee";
+  delegator: string;
+  recipient: string;
+  userRole: "delegator" | "recipient";  
   canEditStreams: boolean;
   canEditDistribution: boolean;
   currentTargets: { account: string; weight: string }[];

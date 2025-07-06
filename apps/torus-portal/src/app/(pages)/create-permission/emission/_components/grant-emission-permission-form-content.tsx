@@ -1,3 +1,8 @@
+// Every single grantor/grantee terminology has been changed to delegator/recipient
+// as requested here: https://coda.io/d/RENLABS-CORE-DEVELOPMENT-DOCUMENTS_d5Vgr5OavNK/Text-change-requests_su4jQAlx
+// This change affects UI labels, variable names, and function names throughout the codebase
+// TODO : Ensure all grantor/grantee references are updated to delegator/recipient
+
 "use client";
 
 import { useCallback, useEffect } from "react";
@@ -34,7 +39,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@torus-ts/ui/components/select";
-import { WalletConnectionWarning } from "@torus-ts/ui/components/wallet-connection-warning";
+import {
+  WalletConnectionWarning,
+} from "@torus-ts/ui/components/wallet-connection-warning";
 
 import { useAvailableStreams } from "~/hooks/use-available-streams";
 
@@ -629,7 +636,7 @@ export function GrantEmissionPermissionFormComponent({
                       <SelectContent>
                         <SelectItem value="Irrevocable">Irrevocable</SelectItem>
                         <SelectItem value="RevocableByGrantor">
-                          Revocable by Grantor
+                          Revocable by Delegator
                         </SelectItem>
                         <SelectItem value="RevocableByArbiters">
                           Revocable by Arbiters

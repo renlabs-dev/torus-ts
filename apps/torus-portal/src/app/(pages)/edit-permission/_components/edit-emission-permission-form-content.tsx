@@ -1,11 +1,21 @@
+// Every single grantor/grantee terminology has been changed to delegator/recipient
+// as requested here: https://coda.io/d/RENLABS-CORE-DEVELOPMENT-DOCUMENTS_d5Vgr5OavNK/Text-change-requests_su4jQAlx
+// This change affects UI labels, variable names, and function names throughout the codebase
+// TODO : Ensure all grantor/grantee references are updated to delegator/recipient
+
 "use client";
 
 import { useCallback } from "react";
+
+import { AlertCircle, Loader2, Lock, Plus, Trash2, Wand2 } from "lucide-react";
+import { useFieldArray } from "react-hook-form";
+
 import type { SS58Address } from "@torus-network/sdk";
 import { checkSS58 } from "@torus-network/sdk";
-import { Loader2, Plus, Trash2, Wand2, Lock, AlertCircle } from "lucide-react";
-import { useFieldArray } from "react-hook-form";
+
 import { useTorus } from "@torus-ts/torus-provider";
+import { Alert, AlertDescription } from "@torus-ts/ui/components/alert";
+import { Badge } from "@torus-ts/ui/components/badge";
 import { Button } from "@torus-ts/ui/components/button";
 import { Card, CardContent } from "@torus-ts/ui/components/card";
 import {
@@ -24,10 +34,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@torus-ts/ui/components/select";
-import { Badge } from "@torus-ts/ui/components/badge";
-import { Alert, AlertDescription } from "@torus-ts/ui/components/alert";
 import { WalletConnectionWarning } from "@torus-ts/ui/components/wallet-connection-warning";
+
 import { useAvailableStreams } from "~/hooks/use-available-streams";
+
 import type {
   EditEmissionPermissionForm,
   EditEmissionPermissionFormData,
@@ -117,30 +127,32 @@ export function EditEmissionPermissionFormComponent({
         <div className="flex items-center gap-2 mb-2">
           <Badge
             variant={
-              permissionInfo.userRole === "grantor" ? "default" : "secondary"
+              permissionInfo.userRole === "delegator" ? "default" : "secondary"
             }
           >
-            {permissionInfo.userRole === "grantor" ? "Grantor" : "Grantee"}
+            {permissionInfo.userRole === "delegator"
+              ? "Delegator"
+              : "Recipient"}
           </Badge>
           <span className="text-sm">
             Permission: {permissionInfo.permissionId.substring(0, 16)}...
           </span>
         </div>
-        {permissionInfo.userRole === "grantor" ? (
+        {permissionInfo.userRole === "delegator" ? (
           canEditStreams && canEditDistribution ? (
             <p className="text-sm">
-              As grantor, you can edit all fields based on the permission's
+              As delegator, you can edit all fields based on the permission's
               revocation terms.
             </p>
           ) : (
             <p className="text-sm">
-              As grantor, your edit permissions are limited by the revocation
+              As delegator, your edit permissions are limited by the revocation
               terms. You can only edit targets.
             </p>
           )
         ) : (
           <p className="text-sm">
-            As grantee, you can only edit target accounts and their weights.
+            As recipient, you can only edit target accounts and their weights.
             Stream and distribution changes are not permitted.
           </p>
         )}
