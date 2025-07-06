@@ -69,7 +69,7 @@ export function GraphSheetDetailsPermission({
           <div className="flex items-center justify-between">
             <CardTitle className="flex items-center gap-2">
               <Shield className="w-5 h-5" />
-              {permissionData.permissionType.toUpperCase()} Permission
+              AGENT Permission
             </CardTitle>
             <Badge
               variant={
@@ -175,7 +175,7 @@ export function GraphSheetDetailsPermission({
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <User className="w-5 h-5" />
-            Permission Grantor
+            Delegator
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -197,7 +197,7 @@ export function GraphSheetDetailsPermission({
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <UserCheck className="w-5 h-5" />
-            Permission Grantee
+            Recipient
           </CardTitle>
         </CardHeader>
         <CardContent>
