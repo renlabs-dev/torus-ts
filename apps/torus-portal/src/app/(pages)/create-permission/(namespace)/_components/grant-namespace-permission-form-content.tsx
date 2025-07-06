@@ -167,7 +167,8 @@ export function GrantNamespacePermissionFormComponent({
                     )}
                   </FormControl>
                   <FormDescription>
-                    Choose from your existing capability permissions to grant access to.
+                    Choose from your existing capability permissions to grant
+                    access to.
                   </FormDescription>
                   <FormMessage />
                 </FormItem>

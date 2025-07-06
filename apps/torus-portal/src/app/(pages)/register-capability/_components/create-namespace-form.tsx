@@ -227,20 +227,12 @@ export default function CreateNamespaceForm({
             if (result.status === "SUCCESS" && result.finalized) {
               onSuccess?.();
               toast.success(
-<<<<<<<< HEAD:apps/torus-portal/src/app/(pages)/register-capability/_components/create-namespace-form.tsx
                 `Capability entry "${fullNamespacePath}" created successfully`,
-========
-                `Capability permission "${fullNamespacePath}" created successfully`,
->>>>>>>> 7cc951f2 (Fix: change all labels to replace namespace with capability (#281)):apps/torus-portal/src/app/(pages)/create-capability/_components/create-namespace-form.tsx
               );
               form.reset();
             } else if (result.status === "ERROR") {
               toast.error(
-<<<<<<<< HEAD:apps/torus-portal/src/app/(pages)/register-capability/_components/create-namespace-form.tsx
                 result.message ?? "Failed to register capability permission",
-========
-                result.message ?? "Failed to create capability permission",
->>>>>>>> 7cc951f2 (Fix: change all labels to replace namespace with capability (#281)):apps/torus-portal/src/app/(pages)/create-capability/_components/create-namespace-form.tsx
               );
             }
           },
@@ -249,7 +241,6 @@ export default function CreateNamespaceForm({
           },
         });
       } catch (error) {
-<<<<<<<< HEAD:apps/torus-portal/src/app/(pages)/register-capability/_components/create-namespace-form.tsx
         console.error("Error registering capability permission:", error);
         setTransactionStatus({
           status: "ERROR",
@@ -257,15 +248,6 @@ export default function CreateNamespaceForm({
           message: "Failed to register capability permission",
         });
         toast.error("Failed to register capability permission");
-========
-        console.error("Error creating capability permission:", error);
-        setTransactionStatus({
-          status: "ERROR",
-          finalized: true,
-          message: "Failed to create capability permission",
-        });
-        toast.error("Failed to create capability permission");
->>>>>>>> 7cc951f2 (Fix: change all labels to replace namespace with capability (#281)):apps/torus-portal/src/app/(pages)/create-capability/_components/create-namespace-form.tsx
       }
     },
     [createNamespaceTransaction, onSuccess, toast, form, selectedPrefix],
@@ -274,16 +256,10 @@ export default function CreateNamespaceForm({
   return (
     <Card className="border-none w-full">
       <CardHeader>
-<<<<<<<< HEAD:apps/torus-portal/src/app/(pages)/register-capability/_components/create-namespace-form.tsx
         <CardTitle>Register Capability Permission</CardTitle>
         <CardDescription>
           Register a new agent capability by creating a namespace path for it on
           Torus.
-========
-        <CardTitle>Create Capability Permission</CardTitle>
-        <CardDescription>
-          Create a new capability permission on the Torus Network.
->>>>>>>> 7cc951f2 (Fix: change all labels to replace namespace with capability (#281)):apps/torus-portal/src/app/(pages)/create-capability/_components/create-namespace-form.tsx
         </CardDescription>
       </CardHeader>
       <CardContent>
