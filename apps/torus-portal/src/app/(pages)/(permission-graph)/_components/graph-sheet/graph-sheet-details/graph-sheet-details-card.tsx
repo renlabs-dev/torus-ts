@@ -137,7 +137,7 @@ export function NodeDetailsCard({
                         details?.emission_permissions
                           ? "EMISSION"
                           : details?.namespace_permissions
-                            ? "CAPABILITY PERMISSION"
+                            ? "CAPABILITY"
                             : "UNKNOWN"
                       }
                     />
@@ -154,7 +154,7 @@ export function NodeDetailsCard({
                               details.emission_permissions
                                 ? "emission"
                                 : details.namespace_permissions
-                                  ? "capability permission"
+                                  ? "capability"
                                   : "",
                             )}
                           </div>

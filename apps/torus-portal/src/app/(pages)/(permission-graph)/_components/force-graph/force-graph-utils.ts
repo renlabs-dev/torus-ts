@@ -253,7 +253,7 @@ export function createGraphData(
         const permissionType = permission.emission_permissions
           ? "emission"
           : permission.namespace_permissions
-            ? "permission capabilities"
+            ? "capabilities"
             : "emission"; // default to emission
 
         if (
@@ -273,7 +273,7 @@ export function createGraphData(
             id: `permission-${permissionId}`,
             name: permissionType.toUpperCase(),
             color:
-              permissionType === "permission capabilities"
+              permissionType === "capabilities"
                 ? graphConstants.nodeConfig.nodeColors.namespacePermissionNode
                 : graphConstants.nodeConfig.nodeColors.emissionPermissionNode,
             val: graphConstants.nodeConfig.nodeSizes.permissionNode,

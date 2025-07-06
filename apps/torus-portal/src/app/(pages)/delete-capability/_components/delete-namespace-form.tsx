@@ -39,8 +39,13 @@ import {
 import { TransactionStatus } from "@torus-ts/ui/components/transaction-status";
 import { useToast } from "@torus-ts/ui/hooks/use-toast";
 
+// Every single namespace name has been changed to Capability Permission
+// as requested here: https://coda.io/d/RENLABS-CORE-DEVELOPMENT-DOCUMENTS_d5Vgr5OavNK/Text-change-requests_su4jQAlx
+// In the future we are going to have all the other names from namespace to Capability Permission
+// TODO : Change all namespace to Capability Permission
+
 const deleteNamespaceSchema = z.object({
-  selectedNamespace: z.string().min(1, "Please select a namespace path"),
+  selectedNamespace: z.string().min(1, "Please select a capability permission path"),
   segmentToDelete: z.number().min(2, "Please select a segment to delete"),
 });
 
@@ -138,20 +143,12 @@ export default function DeleteNamespaceForm({
   const onSubmit = useCallback(
     async (data: DeleteNamespaceFormData) => {
       if (!selectedPath) {
-        toast({
-          title: "Error",
-          description: "Please select a namespace path",
-          variant: "destructive",
-        });
+        toast.error("Please select a capability permission path");
         return;
       }
 
       if (data.segmentToDelete < 2) {
-        toast({
-          title: "Error",
-          description: "Please select a segment to delete",
-          variant: "destructive",
-        });
+        toast.error("Please select a segment to delete");
         return;
       }
 
@@ -163,7 +160,7 @@ export default function DeleteNamespaceForm({
         setTransactionStatus({
           status: "STARTING",
           finalized: false,
-          message: "Deleting namespace...",
+          message: "Deleting capability permission...",
         });
 
         await deleteNamespaceTransaction({
@@ -172,35 +169,28 @@ export default function DeleteNamespaceForm({
             setTransactionStatus(result);
             if (result.status === "SUCCESS" && result.finalized) {
               onSuccess?.();
-              toast({
-                title: "Success",
-                description: `Namespace "${pathToDelete}" deleted successfully`,
-              });
+              toast.success(
+                `Capability permission "${pathToDelete}" deleted successfully`,
+              );
               form.reset();
             } else if (result.status === "ERROR") {
-              toast({
-                title: "Error",
-                description: result.message ?? "Failed to delete namespace",
-                variant: "destructive",
-              });
+              toast.error(
+                result.message ?? "Failed to delete capability permission",
+              );
             }
           },
           refetchHandler: async () => {
-            // Namespace list will be automatically updated
+            // Capability permission list will be automatically updated
           },
         });
       } catch (error) {
-        console.error("Error deleting namespace:", error);
+        console.error("Error deleting capability permission:", error);
         setTransactionStatus({
           status: "ERROR",
           finalized: true,
-          message: "Failed to delete namespace",
+          message: "Failed to delete capability permission",
         });
-        toast({
-          title: "Error",
-          description: "Failed to delete namespace",
-          variant: "destructive",
-        });
+        toast.error("Failed to delete capability permission");
       }
     },
     [selectedPath, deleteNamespaceTransaction, onSuccess, toast, form],
@@ -219,10 +209,10 @@ export default function DeleteNamespaceForm({
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Trash2 className="h-5 w-5" />
-          Delete Namespace
+          Delete Capability Permission
         </CardTitle>
         <CardDescription>
-          Select a namespace path and choose where to cut it. The selected
+          Select a capability permission path and choose where to cut it. The selected
           segment and everything after it will be deleted. If you have any
           active permissions, you need to delete them first.
         </CardDescription>
@@ -236,19 +226,19 @@ export default function DeleteNamespaceForm({
               name="selectedNamespace"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Select Namespace Path</FormLabel>
+                  <FormLabel>Select Capability Permission Path</FormLabel>
                   <FormControl>
                     {!isAccountConnected ? (
                       <div className="text-sm text-muted-foreground p-4 border rounded-md">
-                        Connect your wallet to see your namespaces
+                        Connect your wallet to see your capability permissions
                       </div>
                     ) : namespaceEntries.isLoading ? (
                       <div className="text-sm text-muted-foreground p-4 border rounded-md">
-                        Loading your namespaces...
+                        Loading your capability permissions...
                       </div>
                     ) : maxPaths.length === 0 ? (
                       <div className="text-sm text-muted-foreground p-4 border rounded-md">
-                        No namespaces found. Create a namespace first.
+                        No capability permissions found. Create a capability permission first.
                       </div>
                     ) : (
                       <Select
@@ -256,7 +246,7 @@ export default function DeleteNamespaceForm({
                         onValueChange={field.onChange}
                       >
                         <SelectTrigger>
-                          <SelectValue placeholder="Choose a namespace path..." />
+                          <SelectValue placeholder="Choose a capability permission path..." />
                         </SelectTrigger>
                         <SelectContent>
                           {maxPaths.map((entry) => (
@@ -272,7 +262,7 @@ export default function DeleteNamespaceForm({
                     )}
                   </FormControl>
                   <FormDescription>
-                    Choose the namespace path to view its segments for deletion.
+                    Choose the capability permission path to view its segments for deletion.
                   </FormDescription>
                   <FormMessage />
                 </FormItem>

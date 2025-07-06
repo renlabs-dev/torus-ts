@@ -60,7 +60,7 @@ export function PermissionSelector(props: PermissionSelectorProps) {
   // Helper function to determine permission type
   const getPermissionType = (item: PermissionWithDetails | null) => {
     if (item?.emission_permissions) return "Emission";
-    if (item?.namespace_permissions) return "Namespace";
+    if (item?.namespace_permissions) return "Capability";
     return "Unknown";
   };
 
@@ -229,7 +229,7 @@ export function PermissionSelector(props: PermissionSelectorProps) {
                         item.permissions.grantorAccountId ===
                         selectedAccount?.address,
                     );
-                    
+
                     // Filter out permissions where user is also grantor to avoid duplicates
                     const granteeOnlyPermissions = userPermissions.filter(
                       (item) =>
@@ -271,10 +271,12 @@ export function PermissionSelector(props: PermissionSelectorProps) {
                               const permissionId =
                                 item.permissions.permissionId;
                               const permissionType = getPermissionType(item);
-                              const isBothRoles = 
+                              const isBothRoles =
                                 selectedAccount &&
-                                item.permissions.grantorAccountId === selectedAccount.address &&
-                                item.permissions.granteeAccountId === selectedAccount.address;
+                                item.permissions.grantorAccountId ===
+                                  selectedAccount.address &&
+                                item.permissions.granteeAccountId ===
+                                  selectedAccount.address;
                               return (
                                 <SelectItem
                                   key={permissionId}
@@ -283,7 +285,8 @@ export function PermissionSelector(props: PermissionSelectorProps) {
                                   <div className="flex items-center gap-2">
                                     <span>{smallAddress(permissionId)}</span>
                                     <span className="text-xs text-muted-foreground">
-                                      ({permissionType}{isBothRoles ? " - Both Roles" : ""})
+                                      ({permissionType}
+                                      {isBothRoles ? " - Both Roles" : ""})
                                     </span>
                                   </div>
                                 </SelectItem>

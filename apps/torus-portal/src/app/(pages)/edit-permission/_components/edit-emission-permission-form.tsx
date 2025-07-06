@@ -31,6 +31,12 @@ import {
   transformPermissionToFormData,
 } from "./edit-emission-permission-form-utils";
 import { PermissionSelector } from "~/app/_components/permission-selector";
+
+// Every single namespace name has been changed to Capability Permission
+// as requested here: https://coda.io/d/RENLABS-CORE-DEVELOPMENT-DOCUMENTS_d5Vgr5OavNK/Text-change-requests_su4jQAlx
+// In the future we are going to have all the other names from namespace to Capability Permission
+// TODO : Change all namespace to Capability Permission
+
 // eslint-disable-next-line @typescript-eslint/consistent-type-imports
 import {
   PermissionWithDetails,
@@ -141,17 +147,13 @@ export default function EditEmissionPermissionForm({
           },
         });
       } else {
-        // For namespace permissions, clear the edit form info since we can't edit them
+        // For capability permissions, clear the edit form info since we can't edit them
         setSelectedPermissionInfo(null);
         editForm.reset();
       }
     } catch (error) {
       console.error("Error processing permission:", error);
-      toast({
-        title: "Error",
-        description: "Failed to process permission data",
-        variant: "destructive",
-      });
+      toast.error("Failed to process permission data");
     }
   };
 
@@ -167,21 +169,16 @@ export default function EditEmissionPermissionForm({
             if (result.status === "SUCCESS" && result.finalized) {
               setTransactionStatus("success");
               onSuccess?.();
-              toast({
-                title: "Success",
-                description: "Permission updated successfully",
-              });
+              toast.success("Permission updated successfully");
               // Reset forms
               selectionForm.reset();
               editForm.reset();
               setSelectedPermissionInfo(null);
             } else if (result.status === "ERROR") {
               setTransactionStatus("error");
-              toast({
-                title: "Error",
-                description: result.message ?? "Failed to update permission",
-                variant: "destructive",
-              });
+              toast.error(
+                result.message ?? "Failed to update permission",
+              );
             }
           },
           refetchHandler: async () => {
@@ -191,11 +188,7 @@ export default function EditEmissionPermissionForm({
       } catch (error) {
         console.error("Error updating permission:", error);
         setTransactionStatus("error");
-        toast({
-          title: "Error",
-          description: "Failed to update emission permission",
-          variant: "destructive",
-        });
+        toast.error("Failed to update emission permission");
       }
     },
     [
@@ -273,14 +266,14 @@ export default function EditEmissionPermissionForm({
           />
         )}
 
-      {/* Info message for namespace permissions */}
+      {/* Info message for capability permissions */}
       {selectedPermissionData?.namespace_permissions && (
         <Card className="border-none w-full mt-4">
           <CardHeader>
-            <CardTitle>Namespace Permission</CardTitle>
+            <CardTitle>Capability Permission</CardTitle>
             <CardDescription>
-              Namespace permissions can only be revoked. Edit functionality is
-              not available for namespace permissions.
+              Capability permissions can only be revoked. Edit functionality is
+              not available for capability permissions.
             </CardDescription>
           </CardHeader>
         </Card>
