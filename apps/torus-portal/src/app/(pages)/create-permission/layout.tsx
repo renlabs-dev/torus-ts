@@ -30,9 +30,9 @@ export default function CreatePermissionLayout({
 
   const handleTabChange = (value: string) => {
     if (value === "capability") {
-      router.push("/create-capability");
+      router.push("/create-permission");
     } else {
-      router.push("/create-capability/emission");
+      router.push("/create-permission/emission");
     }
   };
 
