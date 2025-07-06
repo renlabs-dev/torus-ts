@@ -31,7 +31,7 @@ function getLinkColorFromSource(
 
   if (sourceId.startsWith("permission-")) {
     // For permission nodes, use the permission type to determine color
-    if (permissionType === "capability") {
+    if (permissionType === "capabilities") {
       return graphConstants.linkConfig.linkColors.namespacePermissionLink;
     }
     return graphConstants.linkConfig.linkColors.emissionPermissionLink;
@@ -236,7 +236,7 @@ export function createGraphData(
         const permissionType = permission.emission_permissions
           ? "emission"
           : permission.namespace_permissions
-            ? "capability"
+            ? "permission capabilities"
             : "emission"; // default to emission
         permissionTypes.set(permissionId, permissionType);
       }
@@ -253,7 +253,7 @@ export function createGraphData(
         const permissionType = permission.emission_permissions
           ? "emission"
           : permission.namespace_permissions
-            ? "capability"
+            ? "capabilities"
             : "emission"; // default to emission
 
         if (
@@ -273,7 +273,7 @@ export function createGraphData(
             id: `permission-${permissionId}`,
             name: permissionType.toUpperCase(),
             color:
-              permissionType === "capability"
+              permissionType === "capabilities"
                 ? graphConstants.nodeConfig.nodeColors.namespacePermissionNode
                 : graphConstants.nodeConfig.nodeColors.emissionPermissionNode,
             val: graphConstants.nodeConfig.nodeSizes.permissionNode,

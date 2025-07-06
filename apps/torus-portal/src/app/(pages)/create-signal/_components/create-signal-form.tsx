@@ -71,8 +71,8 @@ export default function CreateSignalForm() {
         <CardHeader>
           <CardTitle>Create Demand Signal</CardTitle>
           <CardDescription>
-            Make a demand signal to express your specific need and proposed
-            emission allocation to other agents.
+            Submit a demand signal to express your needs and proposed
+            allocation.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -166,8 +166,7 @@ export default function CreateSignalForm() {
 
               <div className="space-y-4">
                 <h3 className="text-lg font-medium">
-                  Contact Information{" "}
-                  <span className="text-sm text-gray-500">(Recommended)</span>
+                  Contact Information (Optional)
                 </h3>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

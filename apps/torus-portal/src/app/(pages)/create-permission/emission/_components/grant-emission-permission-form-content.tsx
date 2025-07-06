@@ -187,8 +187,8 @@ export function GrantEmissionPermissionFormComponent({
         <CardHeader>
           <CardTitle>Grant Emission Permission</CardTitle>
           <CardDescription>
-            Create and configure a new emission permission, to delegate it to a
-            set of agents{" "}
+            Create a new emission permission to grant allocation and
+            distribution rights{" "}
           </CardDescription>
         </CardHeader>
 
