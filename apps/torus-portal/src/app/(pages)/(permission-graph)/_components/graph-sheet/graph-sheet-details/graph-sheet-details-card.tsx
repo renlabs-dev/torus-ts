@@ -123,7 +123,7 @@ export function NodeDetailsCard({
                   <div className="flex flex-col gap-1 w-full pr-2">
                     <div className="flex items-center justify-between">
                       <span className="font-medium text-white">
-                        {isOutgoing ? "← Granted " : "→ Received "}
+                        {isOutgoing ? "← Delegated " : "→ Received "}
                         Permission{" "}
                         {smallAddress(
                           String(details?.permissions.permissionId),

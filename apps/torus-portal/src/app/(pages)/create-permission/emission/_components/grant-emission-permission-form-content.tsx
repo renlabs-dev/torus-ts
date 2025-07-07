@@ -1,3 +1,8 @@
+// Every single grantor/grantee terminology has been changed to delegator/recipient
+// as requested here: https://coda.io/d/RENLABS-CORE-DEVELOPMENT-DOCUMENTS_d5Vgr5OavNK/Text-change-requests_su4jQAlx
+// This change affects UI labels, variable names, and function names throughout the codebase
+// TODO : Ensure all grantor/grantee references are updated to delegator/recipient
+
 "use client";
 
 import { useCallback, useEffect } from "react";
@@ -34,7 +39,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@torus-ts/ui/components/select";
-import { WalletConnectionWarning } from "@torus-ts/ui/components/wallet-connection-warning";
+import {
+  WalletConnectionWarning,
+} from "@torus-ts/ui/components/wallet-connection-warning";
 
 import { useAvailableStreams } from "~/hooks/use-available-streams";
 
@@ -185,7 +192,7 @@ export function GrantEmissionPermissionFormComponent({
     <div className="pb-12 w-full mx-auto flex items-end justify-end">
       <Card className="border-0">
         <CardHeader>
-          <CardTitle>Grant Emission Permission</CardTitle>
+          <CardTitle>Delegate Emission Permission</CardTitle>
           <CardDescription>
             Create and configure a new emission permission, to delegate it to a
             set of agents{" "}
@@ -629,7 +636,7 @@ export function GrantEmissionPermissionFormComponent({
                       <SelectContent>
                         <SelectItem value="Irrevocable">Irrevocable</SelectItem>
                         <SelectItem value="RevocableByGrantor">
-                          Revocable by Grantor
+                          Revocable by Delegator
                         </SelectItem>
                         <SelectItem value="RevocableByArbiters">
                           Revocable by Arbiters
@@ -759,7 +766,7 @@ export function GrantEmissionPermissionFormComponent({
                     !form.formState.isValid
                   }
                 >
-                  {mutation.isPending ? "Creating..." : "Create Permission"}
+                  {mutation.isPending ? "Awaiting Signature..." : "Delegate Permission"}
                 </Button>
               </div>
             </CardContent>

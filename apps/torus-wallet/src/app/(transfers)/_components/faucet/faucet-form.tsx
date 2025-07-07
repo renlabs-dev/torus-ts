@@ -85,7 +85,7 @@ export function FaucetForm({
                   <LoaderCircle className="animate-spin" /> {loadMessage}{" "}
                 </>
               ) : (
-                <>Submit Faucet Request (50 TOR)</>
+                <>Submit Faucet Request (50 TORUS)</>
               )}
             </Button>
             <DropdownMenu>
@@ -101,13 +101,13 @@ export function FaucetForm({
 
               <DropdownMenuContent align="end" style={{ width }}>
                 <DropdownMenuItem onClick={async () => await onSubmit(2)}>
-                  Submit 2x Faucet Requests (100 TOR)
+                  Submit 2x Faucet Requests (100 TORUS)
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={async () => await onSubmit(10)}>
-                  Submit 10x Faucet Requests (500 TOR)
+                  Submit 10x Faucet Requests (500 TORUS)
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={async () => await onSubmit(20)}>
-                  Submit 20x Faucet Requests (1000 TOR)
+                  Submit 20x Faucet Requests (1000 TORUS)
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>

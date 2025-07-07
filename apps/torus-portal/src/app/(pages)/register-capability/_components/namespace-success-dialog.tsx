@@ -1,5 +1,8 @@
 "use client";
 
+import { CheckCircle } from "lucide-react";
+
+import { Button } from "@torus-ts/ui/components/button";
 import {
   Dialog,
   DialogContent,
@@ -7,8 +10,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@torus-ts/ui/components/dialog";
-import { Button } from "@torus-ts/ui/components/button";
-import { CheckCircle } from "lucide-react";
 
 // Every single namespace name has been changed to Capability Permission
 // as requested here: https://coda.io/d/RENLABS-CORE-DEVELOPMENT-DOCUMENTS_d5Vgr5OavNK/Text-change-requests_su4jQAlx
@@ -45,9 +46,8 @@ export function NamespaceSuccessDialog({
             Capability Permission Created Successfully!
           </DialogTitle>
           <DialogDescription className="text-center">
-            Your capability permission has been created on the Torus Network.
-            Agents can now use this capability permission to handle API
-            requests.
+            Your capability permission has been created on Torus. Agents can now
+            use this capability permission to handle API requests.
           </DialogDescription>
         </DialogHeader>
         <div className="flex justify-center mt-6">
