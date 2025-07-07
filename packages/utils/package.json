@@ -1,6 +1,6 @@
 {
   "name": "@torus-network/torus-utils",
-  "version": "0.1.7",
+  "version": "1.0.0",
   "private": false,
   "type": "module",
   "scripts": {
