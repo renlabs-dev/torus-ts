@@ -127,7 +127,7 @@ export function AgentCard(props: Readonly<PortalAgentCardProps>) {
               {title}
             </h2>
             {shortDescription && (
-              <p className="text-sm text-muted-foreground line-clamp-2 break-words">
+              <p className="text-sm text-muted-foreground line-clamp-2 break-all">
                 {shortDescription}
               </p>
             )}
