@@ -1412,17 +1412,7 @@ export default {
   /**
    * Lookup188: pallet_faucet::pallet::Call<T>
    **/
-  PalletFaucetCall: {
-    _enum: {
-      __Unused0: 'Null',
-      faucet: {
-        blockNumber: 'u64',
-        nonce: 'u64',
-        work: 'Bytes',
-        key: 'MultiAddress'
-      }
-    }
-  },
+  PalletFaucetCall: 'Null',
   /**
    * Lookup189: pallet_sudo::pallet::Error<T>
    **/
