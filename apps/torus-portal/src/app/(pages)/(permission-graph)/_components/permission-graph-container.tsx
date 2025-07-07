@@ -41,7 +41,7 @@ export default function PermissionGraphContainer() {
     allPermissions,
   } = useGraphData();
 
-  const { selectedAccount } = useTorus();
+  const { selectedAccount, isInitialized } = useTorus();
 
   // Handle initial selected node from query params
   useEffect(() => {
@@ -96,9 +96,9 @@ export default function PermissionGraphContainer() {
     };
   }, []);
 
-  if (isLoading || !graphData)
+  if (isLoading || !graphData || !isInitialized)
     return (
-      <div className="w-full min-h-full">
+      <div className="w-full min-h-screen flex items-center justify-center animate-pulse">
         <Loading />
       </div>
     );
