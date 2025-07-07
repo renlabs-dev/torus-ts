@@ -1506,16 +1506,7 @@ declare module '@polkadot/types/lookup' {
   }
 
   /** @name PalletFaucetCall (188) */
-  interface PalletFaucetCall extends Enum {
-    readonly isFaucet: boolean;
-    readonly asFaucet: {
-      readonly blockNumber: u64;
-      readonly nonce: u64;
-      readonly work: Bytes;
-      readonly key: MultiAddress;
-    } & Struct;
-    readonly type: 'Faucet';
-  }
+  type PalletFaucetCall = Null;
 
   /** @name PalletSudoError (189) */
   interface PalletSudoError extends Enum {
