@@ -55,7 +55,25 @@ export default function CreateSignalForm() {
     selectedAccount?.address as SS58Address,
   );
 
+  // Query for existing signals by this user
+  const existingSignals = api.signal.byCreatorId.useQuery(
+    { creatorId: selectedAccount?.address ?? "" },
+    {
+      enabled: !!selectedAccount?.address,
+    },
+  );
+
   const hasAgent = namespaceEntries.data && namespaceEntries.data.length > 0;
+
+  // Calculate total existing allocation
+  const totalExistingAllocation =
+    existingSignals.data?.reduce(
+      (total, signal) => total + signal.proposedAllocation,
+      0,
+    ) ?? 0;
+
+  // Calculate maximum allowed allocation for new signal
+  const maxAllowedAllocation = Math.max(0, 100 - totalExistingAllocation);
 
   const form = useForm<SignalFormData>({
     resolver: zodResolver(AGENT_DEMAND_SIGNAL_INSERT_SCHEMA),
@@ -71,12 +89,28 @@ export default function CreateSignalForm() {
   });
 
   const onSubmit = async (data: SignalFormData) => {
+    // Validate that the new allocation doesn't exceed the available amount
+    if (data.proposedAllocation > maxAllowedAllocation) {
+      toast.error(
+        `Cannot allocate ${data.proposedAllocation}%. Only ${maxAllowedAllocation}% is available.`,
+      );
+      return;
+    }
+
+    if (data.proposedAllocation + totalExistingAllocation > 100) {
+      toast.error("Total allocation cannot exceed 100%");
+      return;
+    }
+
     try {
       await createSignalMutation.mutateAsync(data);
       toast.success("Signal created successfully");
       form.reset();
+      // Refetch existing signals to update the display
+      await existingSignals.refetch();
     } catch (error) {
       console.error("Failed to create signal:", error);
+      toast.error("Failed to create signal");
     }
   };
 
@@ -188,21 +222,77 @@ export default function CreateSignalForm() {
                       <div>
                         <Slider
                           value={[field.value || 0]}
-                          onValueChange={([value]) => field.onChange(value)}
-                          max={100}
+                          onValueChange={([value]) =>
+                            field.onChange(
+                              Math.min(value ?? 0, maxAllowedAllocation),
+                            )
+                          }
+                          max={maxAllowedAllocation}
                           min={0}
                           step={1}
                           className="-mt-3 -mb-3"
                         />
-                        <div className="text-right text-md font-medium">
-                          {field.value || 0}%
+                        <div className="flex justify-between items-center text-sm">
+                          <span className="text-muted-foreground">
+                            Available: {maxAllowedAllocation}%
+                          </span>
+                          <span className="text-md font-medium">
+                            {field.value || 0}%
+                          </span>
                         </div>
+                        {totalExistingAllocation > 0 && (
+                          <div className="text-xs text-muted-foreground mt-1">
+                            You have already allocated {totalExistingAllocation}
+                            % across {existingSignals.data?.length} signal
+                            {existingSignals.data?.length !== 1 ? "s" : ""}
+                          </div>
+                        )}
                       </div>
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
+
+              {/* Display existing signals */}
+              {existingSignals.data && existingSignals.data.length > 0 && (
+                <div className="rounded-md border border-border bg-muted/30 p-4">
+                  <h4 className="text-sm font-medium mb-3">
+                    Your Existing Signals
+                  </h4>
+                  <div className="space-y-2">
+                    {existingSignals.data.map((signal, index) => (
+                      <div
+                        key={signal.id || index}
+                        className="flex justify-between items-center text-sm"
+                      >
+                        <span className="truncate flex-1 mr-2">
+                          {signal.title}:
+                        </span>
+                        <span className="font-medium">
+                          {signal.proposedAllocation}%
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="border-t mt-3 pt-3 flex justify-between items-center text-sm font-medium">
+                    <span>Total Allocated:</span>
+                    <span>{totalExistingAllocation}%</span>
+                  </div>
+                  {maxAllowedAllocation === 0 && (
+                    <div
+                      className="mt-3 p-3 bg-orange-50 dark:bg-orange-950/20 border border-orange-200
+                        dark:border-orange-800 rounded-md"
+                    >
+                      <p className="text-sm text-orange-700 dark:text-orange-300">
+                        You have allocated 100% of your available percentage.
+                        You cannot create new signals until you remove some
+                        existing ones.
+                      </p>
+                    </div>
+                  )}
+                </div>
+              )}
 
               <div className="space-y-4">
                 <h3 className="text-lg font-medium">
@@ -293,10 +383,19 @@ export default function CreateSignalForm() {
                 >
                   Reset
                 </Button>
-                <Button type="submit" disabled={createSignalMutation.isPending}>
+                <Button
+                  type="submit"
+                  disabled={
+                    createSignalMutation.isPending ||
+                    maxAllowedAllocation === 0 ||
+                    !hasAgent
+                  }
+                >
                   {createSignalMutation.isPending
                     ? "Creating..."
-                    : "Create Signal"}
+                    : maxAllowedAllocation === 0
+                      ? "No Allocation Available"
+                      : "Create Signal"}
                 </Button>
               </div>
             </form>
