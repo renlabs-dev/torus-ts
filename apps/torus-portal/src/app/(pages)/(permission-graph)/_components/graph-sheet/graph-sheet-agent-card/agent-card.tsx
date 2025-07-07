@@ -1,12 +1,15 @@
 "use client";
 
-import { Anvil, Globe, Cuboid, IdCard } from "lucide-react";
+import { Anvil, Cuboid, Globe, IdCard } from "lucide-react";
 import Link from "next/link";
-import { Icons } from "@torus-ts/ui/components//icons";
-import { Card } from "@torus-ts/ui/components/card";
-import { Label } from "@torus-ts/ui/components/label";
-import { CopyButton } from "@torus-ts/ui/components/copy-button";
+
 import { smallAddress } from "@torus-network/torus-utils/subspace";
+
+import { Card } from "@torus-ts/ui/components/card";
+import { CopyButton } from "@torus-ts/ui/components/copy-button";
+import { Icons } from "@torus-ts/ui/components/icons";
+import { Label } from "@torus-ts/ui/components/label";
+
 import { AgentCardImage } from "./agent-card-image";
 
 // Format weight to max 3 chars
@@ -26,6 +29,7 @@ interface PortalAgentCardProps {
   agentKey: string | null;
   currentBlock?: number | null;
   title: string;
+  shortDescription?: string;
   iconUrl: string | null;
   socialsList: Partial<Record<SocialKind, string>>;
   agentWeight: number;
@@ -84,7 +88,7 @@ export function buildSocials(
 }
 
 export function AgentCard(props: Readonly<PortalAgentCardProps>) {
-  const { agentKey, iconUrl, currentBlock, socialsList, title, agentWeight } =
+  const { agentKey, iconUrl, currentBlock, socialsList, title, shortDescription, agentWeight } =
     props;
 
   const socialsMapped = buildSocials(socialsList, socialsList.website);
@@ -114,13 +118,20 @@ export function AgentCard(props: Readonly<PortalAgentCardProps>) {
               })}
             </div>
           </div>
-          <h2
-            className={
-              "w-fit text-ellipsis text-base font-semibold md:max-w-fit"
-            }
-          >
-            {title}
-          </h2>
+          <div className="flex flex-col gap-1">
+            <h2
+              className={
+                "w-fit text-ellipsis text-base font-semibold md:max-w-fit"
+              }
+            >
+              {title}
+            </h2>
+            {shortDescription && (
+              <p className="text-sm text-muted-foreground line-clamp-2 break-words">
+                {shortDescription}
+              </p>
+            )}
+          </div>
         </div>
       </div>
 
