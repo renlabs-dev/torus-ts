@@ -3,6 +3,7 @@
 import React, { useCallback, useMemo } from "react";
 
 import {
+  ChevronDown,
   Edit,
   FolderPen,
   FolderX,
@@ -14,16 +15,16 @@ import {
 } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
 
+import { Button } from "@torus-ts/ui/components/button";
 import {
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectLabel,
-  SelectSeparator,
-  SelectTrigger,
-  SelectValue,
-} from "@torus-ts/ui/components/select";
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@torus-ts/ui/components/dropdown-menu";
 import {
   Tooltip,
   TooltipContent,
@@ -160,26 +161,32 @@ export default function PortalNavigationTabs() {
 
   return (
     <>
-      {/* Mobile Select - Full width breaking out of parent constraints */}
+      {/* Mobile Dropdown - Full width breaking out of parent constraints */}
       <div className="relative left-0 right-0 z-20">
         <TooltipProvider>
-          <Select value={currentTab} onValueChange={handleTabChange}>
-            <SelectTrigger className="w-fit">
-              <SelectValue>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="outline"
+                className="h-9 justify-between gap-2 px-3 text-sm font-medium hover:bg-accent/50"
+              >
                 {currentItem && (
-                  <div className="flex items-center gap-2">
-                    <currentItem.icon size={16} />
-                    {currentItem.label}
-                  </div>
+                  <>
+                    <div className="flex items-center gap-2">
+                      <currentItem.icon size={16} />
+                      {currentItem.label}
+                    </div>
+                    <ChevronDown size={14} className="opacity-50" />
+                  </>
                 )}
-              </SelectValue>
-            </SelectTrigger>
-            <SelectContent>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent className="w-56" align="start">
               {navigationCategories.map((category, categoryIndex) => (
-                <SelectGroup key={category.label}>
-                  <SelectLabel className="px-2 py-1.5 text-sm font-medium text-muted-foreground">
+                <DropdownMenuGroup key={category.label}>
+                  <DropdownMenuLabel className="px-2 py-1.5 text-sm font-medium text-muted-foreground">
                     {category.label}
-                  </SelectLabel>
+                  </DropdownMenuLabel>
                   {category.items.map((item) => {
                     const Icon = item.icon;
 
@@ -187,16 +194,16 @@ export default function PortalNavigationTabs() {
                       return (
                         <Tooltip key={item.value}>
                           <TooltipTrigger asChild>
-                            <div
-                              className="relative flex cursor-not-allowed select-none items-center rounded-sm px-2 py-1.5
-                                text-sm opacity-50 outline-none hover:bg-accent hover:text-accent-foreground"
+                            <DropdownMenuItem
+                              disabled
+                              className="cursor-not-allowed opacity-50"
                               onClick={(e) => e.preventDefault()}
                             >
                               <div className="flex items-center gap-2">
                                 <Icon size={16} />
                                 {item.label}
                               </div>
-                            </div>
+                            </DropdownMenuItem>
                           </TooltipTrigger>
                           <TooltipContent>
                             <p>{item.disabledTooltip}</p>
@@ -206,21 +213,24 @@ export default function PortalNavigationTabs() {
                     }
 
                     return (
-                      <SelectItem key={item.value} value={item.value}>
+                      <DropdownMenuItem
+                        key={item.value}
+                        onClick={() => handleTabChange(item.value)}
+                      >
                         <div className="flex items-center gap-2">
                           <Icon size={16} />
                           {item.label}
                         </div>
-                      </SelectItem>
+                      </DropdownMenuItem>
                     );
                   })}
                   {categoryIndex < navigationCategories.length - 1 && (
-                    <SelectSeparator />
+                    <DropdownMenuSeparator />
                   )}
-                </SelectGroup>
+                </DropdownMenuGroup>
               ))}
-            </SelectContent>
-          </Select>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </TooltipProvider>
       </div>
     </>

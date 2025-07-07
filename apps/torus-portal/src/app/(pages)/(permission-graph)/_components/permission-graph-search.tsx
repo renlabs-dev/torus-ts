@@ -1,10 +1,12 @@
 "use client";
 
-import { useState, useEffect, memo, useCallback, useMemo } from "react";
-import { Input } from "@torus-ts/ui/components/input";
-import { Button } from "@torus-ts/ui/components/button";
+import { memo, useCallback, useEffect, useMemo, useState } from "react";
+
 import { useRouter, useSearchParams } from "next/navigation";
+
+import { Button } from "@torus-ts/ui/components/button";
 import { Card } from "@torus-ts/ui/components/card";
+import { Input } from "@torus-ts/ui/components/input";
 
 interface PermissionGraphSearchProps {
   graphNodes?: string[];
@@ -83,7 +85,7 @@ const PermissionGraphSearch = memo(function PermissionGraphSearch({
             setSearchQuery(e.target.value);
             setShowNoResults(false); // Hide no results when typing
           }}
-          className="w-full bg-background"
+          className="w-96 bg-background"
         />
       </form>
 
