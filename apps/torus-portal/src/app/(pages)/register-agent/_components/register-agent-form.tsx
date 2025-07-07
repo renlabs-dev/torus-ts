@@ -1,18 +1,30 @@
 "use client";
 
+import { useCallback, useEffect, useMemo, useState } from "react";
+
 import { zodResolver } from "@hookform/resolvers/zod";
+import { FolderUp, Info } from "lucide-react";
+import Image from "next/image";
+import Link from "next/link";
+import { Controller, useForm } from "react-hook-form";
+import type { DropzoneState } from "shadcn-dropzone";
+import Dropzone from "shadcn-dropzone";
+import { z } from "zod";
+
 import type { SS58Address } from "@torus-network/sdk";
 import {
   AGENT_METADATA_SCHEMA,
   AGENT_SHORT_DESCRIPTION_MAX_LENGTH,
   checkSS58,
 } from "@torus-network/sdk";
+import { agentNameField } from "@torus-network/sdk/types/namespace";
 import { smallFilename } from "@torus-network/torus-utils/files";
 import type { CID } from "@torus-network/torus-utils/ipfs";
 import { cidToIpfsUri, PIN_FILE_RESULT } from "@torus-network/torus-utils/ipfs";
 import { formatToken, fromNano } from "@torus-network/torus-utils/subspace";
 import { tryAsync } from "@torus-network/torus-utils/try-catch";
-import { agentNameField } from "@torus-network/sdk/types/namespace";
+
+import { useFreeBalance } from "@torus-ts/query-provider/hooks";
 import { useTorus } from "@torus-ts/torus-provider";
 import type { TransactionResult } from "@torus-ts/torus-provider/types";
 import {
@@ -40,19 +52,10 @@ import {
 import { Textarea } from "@torus-ts/ui/components/text-area";
 import { TransactionStatus } from "@torus-ts/ui/components/transaction-status";
 import { useToast } from "@torus-ts/ui/hooks/use-toast";
-import MarkdownPreview from "@uiw/react-markdown-preview";
-import { FolderUp, Info } from "lucide-react";
-import Image from "next/image";
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { Controller, useForm } from "react-hook-form";
-import type { DropzoneState } from "shadcn-dropzone";
-import Dropzone from "shadcn-dropzone";
-import { z } from "zod";
-import Link from "next/link";
 import { getLinks } from "@torus-ts/ui/lib/data";
-import { env } from "~/env";
+
 import type { PinFileOnPinataResponse } from "~/app/api/files/route";
-import { useFreeBalance } from "@torus-ts/query-provider/hooks";
+import { env } from "~/env";
 
 const registerAgentSchema = z.object({
   agentKey: z.string().min(1, "Agent address is required"),
@@ -65,11 +68,10 @@ const registerAgentSchema = z.object({
       AGENT_SHORT_DESCRIPTION_MAX_LENGTH,
       `Max ${AGENT_SHORT_DESCRIPTION_MAX_LENGTH} characters`,
     ),
-  title: z.string().min(1, "Agent title is required"),
   body: z
     .string()
-    .min(1, "Agent description is required")
-    .max(50_000, "Agent description must be less than 50,000 characters"),
+    .max(3_000, "Agent description must be less than 3,000 characters")
+    .optional(),
   twitter: z.string().optional(),
   github: z.string().optional(),
   telegram: z.string().optional(),
@@ -101,7 +103,7 @@ const parseUrl = (url: string): string => {
 };
 
 type RegisterAgentFormData = z.infer<typeof registerAgentSchema>;
-type TabsViews = "agent-info" | "about" | "socials" | "register";
+type TabsViews = "agent-info" | "socials" | "register";
 
 export const strToFile = (
   str: string,
@@ -147,7 +149,6 @@ export default function RegisterAgentForm() {
       agentApiUrl: "",
       name: "",
       shortDescription: "",
-      title: "",
       body: "",
       twitter: "",
       github: "",
@@ -157,7 +158,7 @@ export default function RegisterAgentForm() {
       icon: undefined,
     },
   });
-  const { control, handleSubmit, getValues, trigger, watch } = form;
+  const { control, handleSubmit, getValues, watch, setValue } = form;
 
   const [estimatedFee, setEstimatedFee] = useState(0n);
   useEffect(() => {
@@ -218,14 +219,13 @@ export default function RegisterAgentForm() {
       github,
       telegram,
       discord,
-      title,
       shortDescription,
       body,
       name,
     } = getValues();
 
     const metadata = {
-      title,
+      title: name,
       short_description: shortDescription,
       description: body,
       website: website ? parseUrl(website) : undefined,
@@ -346,28 +346,13 @@ export default function RegisterAgentForm() {
     return "Register Agent";
   };
 
-  const handleTabChange = useCallback(
-    async (tab: TabsViews) => {
-      let isValid = true;
-
-      if (tab === "about") {
-        isValid = await trigger(["agentKey", "name", "shortDescription"]);
-      }
-
-      if (tab === "socials") {
-        isValid = await trigger(["title", "body"]);
-      }
-
-      if (isValid) {
-        setCurrentTab(tab);
-      }
-    },
-    [trigger],
-  );
+  const handleTabChange = useCallback((tab: TabsViews) => {
+    setCurrentTab(tab);
+  }, []);
 
   const formValues = watch();
 
-  const aboutViewDisabled = useMemo(
+  const socialsViewDisabled = useMemo(
     () =>
       !formValues.agentKey ||
       !formValues.name ||
@@ -383,22 +368,12 @@ export default function RegisterAgentForm() {
     ],
   );
 
-  const socialsViewDisabled = useMemo(
-    () => !formValues.title || !formValues.body || aboutViewDisabled,
-    [formValues.title, formValues.body, aboutViewDisabled],
-  );
-
   const registerViewDisabled = socialsViewDisabled;
 
   const links = getLinks(env("NEXT_PUBLIC_TORUS_CHAIN_ENV"));
 
   const renderTabButtons = () => {
-    const tabOrder: TabsViews[] = [
-      "agent-info",
-      "about",
-      "socials",
-      "register",
-    ];
+    const tabOrder: TabsViews[] = ["agent-info", "socials", "register"];
     const currentIndex = tabOrder.indexOf(currentTab);
 
     const buttons = [];
@@ -424,7 +399,6 @@ export default function RegisterAgentForm() {
     if (currentIndex < tabOrder.length - 1) {
       const nextTab = tabOrder[currentIndex + 1];
       const isDisabled =
-        (nextTab === "about" && aboutViewDisabled) ||
         (nextTab === "socials" && socialsViewDisabled) ||
         (nextTab === "register" && registerViewDisabled);
 
@@ -449,7 +423,13 @@ export default function RegisterAgentForm() {
           size="lg"
           variant="default"
           className="flex-1"
-          disabled={registerViewDisabled}
+          disabled={
+            registerViewDisabled ||
+            uploading ||
+            !isAccountConnected ||
+            transactionStatus.status === "STARTING" ||
+            transactionStatus.status === "PENDING"
+          }
         >
           {getButtonSubmitLabel({ uploading, isAccountConnected })}
         </Button>,
@@ -482,25 +462,18 @@ export default function RegisterAgentForm() {
                   1. Agent
                 </TabsTrigger>
                 <TabsTrigger
-                  value="about"
-                  disabled={aboutViewDisabled}
-                  className="w-full rounded-full"
-                >
-                  2. Metadata
-                </TabsTrigger>
-                <TabsTrigger
                   value="socials"
                   disabled={socialsViewDisabled}
                   className="w-full rounded-full"
                 >
-                  3. Socials
+                  2. Socials
                 </TabsTrigger>
                 <TabsTrigger
                   value="register"
                   disabled={registerViewDisabled}
                   className="w-full rounded-full"
                 >
-                  4. Register
+                  3. Register
                 </TabsTrigger>
               </TabsList>
 
@@ -512,12 +485,12 @@ export default function RegisterAgentForm() {
                   control={control}
                   name="agentKey"
                   render={({ field }) => (
-                    <FormItem className="flex flex-col">
-                      <FormLabel>Agent Address</FormLabel>
+                    <FormItem className="flex w-full flex-col gap-2 sm:flex-row">
                       <FormControl>
                         <Input
                           {...field}
-                          placeholder="5D5Fb...REBnt"
+                          placeholder="Agent address (SS58 e.g. 5D5F...EBnt)"
+                          className="w-full placeholder:text-sm"
                           type="text"
                           minLength={47}
                           maxLength={48}
@@ -525,6 +498,17 @@ export default function RegisterAgentForm() {
                           title="Paste the same address that you used in your agent/module application!"
                         />
                       </FormControl>
+                      <Button
+                        variant="outline"
+                        type="button"
+                        className="!m-0 w-full sm:w-fit"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          setValue("agentKey", selectedAccount?.address ?? "");
+                        }}
+                      >
+                        Paste my address
+                      </Button>
                       <FormMessage />
                     </FormItem>
                   )}
@@ -581,6 +565,7 @@ export default function RegisterAgentForm() {
                           >
                             <Info className="h-4 w-4" />
                           </Link>
+                          <Info className="h-4 w-4" />
                           Your name on the namespace: agent.{formValues.name}
                         </div>
                       )}
@@ -611,50 +596,31 @@ export default function RegisterAgentForm() {
                     </FormItem>
                   )}
                 />
-              </TabsContent>
-
-              <TabsContent
-                value="about"
-                className="animate-fade flex flex-col gap-6"
-              >
-                <FormField
-                  control={control}
-                  name="title"
-                  render={({ field }) => (
-                    <FormItem className="flex flex-col">
-                      <FormLabel>Agent Title</FormLabel>
-                      <FormControl>
-                        <Input
-                          {...field}
-                          placeholder="My Agent's Title"
-                          type="text"
-                          required
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
                 <FormField
                   control={control}
                   name="body"
                   render={({ field }) => (
                     <FormItem className="flex flex-col">
-                      <FormLabel>Agent Description</FormLabel>
+                      <FormLabel>
+                        Agent Description / Documentation{" "}
+                        <span className="text-sm text-gray-500">
+                          (Optional)
+                        </span>
+                      </FormLabel>
                       <FormControl>
                         <Textarea
                           {...field}
-                          placeholder="Describe your agent (Markdown supported, HTML tags are not supported)"
+                          value={field.value ?? ""}
+                          placeholder="Describe or document your agent (Markdown supported, HTML tags are not supported)"
                           rows={5}
-                          maxLength={50000}
-                          required
+                          maxLength={3000}
                         />
                       </FormControl>
                       <p className="text-xs text-muted-foreground mt-1">
                         {new Intl.NumberFormat("en-US").format(
-                          field.value.length,
+                          (field.value ?? "").length,
                         )}{" "}
-                        / 50,000 characters
+                        / 3,000 characters
                       </p>
                       <FormMessage />
                     </FormItem>
@@ -897,9 +863,10 @@ export default function RegisterAgentForm() {
                 className="animate-fade flex flex-col gap-6"
               >
                 <div className="flex flex-col gap-4 lg:flex-row">
-                  <div className="flex w-fit flex-col gap-2 lg:w-1/2">
+                  <div className="flex w-fit flex-col gap-2 lg:w-full">
                     <span>Agent Card Preview</span>
                     <AllocatorAgentItem
+                      shouldHideAllocation
                       agentKey={getValues("agentKey")}
                       iconUrl={
                         getValues("icon")
@@ -918,19 +885,6 @@ export default function RegisterAgentForm() {
                       shortDescription={getValues("shortDescription")}
                       title={getValues("name")}
                     />
-                  </div>
-                  <div className="flex w-full flex-col gap-2 lg:w-1/2">
-                    <span>Agent Expanded Preview</span>
-                    {getValues("body") && (
-                      <MarkdownPreview
-                        className="max-h-[44vh] w-full overflow-auto pb-4"
-                        source={`# ${getValues("title")}\n${getValues("body")}`}
-                        style={{
-                          backgroundColor: "transparent",
-                          color: "white",
-                        }}
-                      />
-                    )}
                   </div>
                 </div>
                 {transactionStatus.status && (
@@ -954,30 +908,33 @@ export default function RegisterAgentForm() {
               </div>
             </div>
           </div>
+
           <div className="w-full mb-12 space-y-4">
-            <Alert>
-              <Info className="h-4 w-4" />
-              <AlertTitle>
-                Info: The registration fee will be deducted from your connected
-                wallet.
-              </AlertTitle>
-              <AlertDescription className="flex flex-row gap-2 text-sm">
-                <span className="text-white">
-                  Application fee:{" "}
-                  {selectedAccount ? (
-                    <span className="text-muted-foreground">
-                      {estimatedFee
-                        ? `${fromNano(estimatedFee)} TORUS`
-                        : "Loading..."}
-                    </span>
-                  ) : (
-                    <span className="text-muted-foreground">
-                      connect your wallet to calculate the fee.
-                    </span>
-                  )}
-                </span>
-              </AlertDescription>
-            </Alert>
+            {currentTab === "register" && (
+              <Alert>
+                <Info className="h-4 w-4" />
+                <AlertTitle>
+                  Info: The registration fee will be deducted from your
+                  connected wallet.
+                </AlertTitle>
+                <AlertDescription className="flex flex-row gap-2 text-sm">
+                  <span className="text-white">
+                    Application fee:{" "}
+                    {selectedAccount ? (
+                      <span className="text-muted-foreground">
+                        {estimatedFee
+                          ? `${fromNano(estimatedFee)} TORUS`
+                          : "Loading..."}
+                      </span>
+                    ) : (
+                      <span className="text-muted-foreground">
+                        connect your wallet to calculate the fee.
+                      </span>
+                    )}
+                  </span>
+                </AlertDescription>
+              </Alert>
+            )}
             {renderTabButtons()}
           </div>
         </form>

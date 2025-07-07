@@ -1,18 +1,30 @@
 "use client";
 
+import { useCallback, useEffect, useMemo, useState } from "react";
+
 import { zodResolver } from "@hookform/resolvers/zod";
+import MarkdownPreview from "@uiw/react-markdown-preview";
+import { FolderUp, Info } from "lucide-react";
+import Image from "next/image";
+import Link from "next/link";
+import { Controller, useForm } from "react-hook-form";
+import type { DropzoneState } from "shadcn-dropzone";
+import Dropzone from "shadcn-dropzone";
+import { z } from "zod";
+
 import type { SS58Address } from "@torus-network/sdk";
 import {
   AGENT_METADATA_SCHEMA,
   AGENT_SHORT_DESCRIPTION_MAX_LENGTH,
   checkSS58,
 } from "@torus-network/sdk";
+import { agentNameField } from "@torus-network/sdk/types/namespace";
 import { smallFilename } from "@torus-network/torus-utils/files";
 import type { CID } from "@torus-network/torus-utils/ipfs";
 import { cidToIpfsUri, PIN_FILE_RESULT } from "@torus-network/torus-utils/ipfs";
 import { formatToken, fromNano } from "@torus-network/torus-utils/subspace";
 import { tryAsync } from "@torus-network/torus-utils/try-catch";
-import { agentNameField } from "@torus-network/sdk/types/namespace";
+
 import { useTorus } from "@torus-ts/torus-provider";
 import type { TransactionResult } from "@torus-ts/torus-provider/types";
 import {
@@ -40,18 +52,10 @@ import {
 import { Textarea } from "@torus-ts/ui/components/text-area";
 import { TransactionStatus } from "@torus-ts/ui/components/transaction-status";
 import { useToast } from "@torus-ts/ui/hooks/use-toast";
-import MarkdownPreview from "@uiw/react-markdown-preview";
+import { getLinks } from "@torus-ts/ui/lib/data";
+
 import type { PinFileOnPinataResponse } from "~/app/api/files/route";
 import { useGovernance } from "~/context/governance-provider";
-import { FolderUp, Info } from "lucide-react";
-import Image from "next/image";
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { Controller, useForm } from "react-hook-form";
-import type { DropzoneState } from "shadcn-dropzone";
-import Dropzone from "shadcn-dropzone";
-import { z } from "zod";
-import Link from "next/link";
-import { getLinks } from "@torus-ts/ui/lib/data";
 import { env } from "~/env";
 
 const registerAgentSchema = z.object({
@@ -828,6 +832,7 @@ export function RegisterAgent() {
               <div className="flex w-fit flex-col gap-2 lg:w-1/2">
                 <span>Agent Card Preview</span>
                 <AllocatorAgentItem
+                  shouldHideAllocation={true}
                   agentKey={getValues("agentKey")}
                   iconUrl={
                     getValues("icon")
