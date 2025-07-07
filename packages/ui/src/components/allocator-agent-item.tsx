@@ -1,6 +1,5 @@
 "use client";
 
-import { smallAddress } from "@torus-network/torus-utils/subspace";
 import {
   Anvil,
   ArrowRight,
@@ -11,11 +10,14 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { Icons } from "./icons";
-import { Card } from "./card";
-import { Label } from "./label";
-import { CopyButton } from "./copy-button";
+
+import { smallAddress } from "@torus-network/torus-utils/subspace";
+
 import { Button } from "./button";
+import { Card } from "./card";
+import { CopyButton } from "./copy-button";
+import { Icons } from "./icons";
+import { Label } from "./label";
 
 interface AgentCardProps {
   agentKey: string;
@@ -24,6 +26,7 @@ interface AgentCardProps {
   title: string;
   iconUrl: string | null;
   socialsList: Partial<Record<SocialKind, string>>;
+  shouldHideAllocation?: boolean;
 }
 
 interface SocialItem {
@@ -156,37 +159,41 @@ export function AllocatorAgentItem(props: Readonly<AgentCardProps>) {
 
       <div className="mt-4 flex flex-col gap-2">
         <p className="text-sm md:min-h-16">{shortDescription}</p>
-        <div>
-          <Label className="mt-2 flex items-center gap-1.5 text-sm font-semibold">
-            <span className="text-cyan-500">10%</span> Current Network
-            Allocation
-          </Label>
-          <div className="rounded-radius my-2 w-full bg-primary-foreground">
-            <div
-              className="rounded-radius bg-gradient-to-r from-blue-700 to-cyan-500 py-2"
-              style={{ width: `10%` }}
-            />
-          </div>
-        </div>
+        {!props.shouldHideAllocation && (
+          <>
+            <div>
+              <Label className="mt-2 flex items-center gap-1.5 text-sm font-semibold">
+                <span className="text-cyan-500">10%</span> Current Network
+                Allocation
+              </Label>
+              <div className="rounded-radius my-2 w-full bg-primary-foreground">
+                <div
+                  className="rounded-radius bg-gradient-to-r from-blue-700 to-cyan-500 py-2"
+                  style={{ width: `10%` }}
+                />
+              </div>
+            </div>
 
-        <div className="flex w-full flex-col gap-2 md:flex-row">
-          <Button
-            type="button"
-            variant="outline"
-            className={`flex w-fit items-center gap-2 border-cyan-500 bg-transparent text-cyan-500 transition duration-200 hover:bg-cyan-500/10 hover:text-cyan-500`}
-          >
-            <ChartPie className={`h-6 w-6`} />
-            Allocate
-          </Button>
+            <div className="flex w-full flex-col gap-2 md:flex-row">
+              <Button
+                type="button"
+                variant="outline"
+                className={`flex w-fit items-center gap-2 border-cyan-500 bg-transparent text-cyan-500 transition duration-200 hover:bg-cyan-500/10 hover:text-cyan-500`}
+              >
+                <ChartPie className={`h-6 w-6`} />
+                Allocate
+              </Button>
 
-          <Button
-            type="button"
-            variant="outline"
-            className="w-full border-gray-500"
-          >
-            View More <ArrowRight className="h-5 w-5" />
-          </Button>
-        </div>
+              <Button
+                type="button"
+                variant="outline"
+                className="w-full border-gray-500"
+              >
+                View More <ArrowRight className="h-5 w-5" />
+              </Button>
+            </div>
+          </>
+        )}
       </div>
     </Card>
   );

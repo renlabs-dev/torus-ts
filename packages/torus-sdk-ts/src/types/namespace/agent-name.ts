@@ -45,7 +45,7 @@ export const AGENT_NAME_REGEX = /^[a-z0-9]([a-z0-9-_]{0,61}[a-z0-9])?$/;
  */
 const errorMessages = {
   required: "Agent name is required",
-  tooLong: "Agent name cannot exceed 63 characters",
+  tooLong: "Agent name cannot exceed 30 characters",
   invalidStart: "Agent name must start with a lowercase letter or digit",
   invalidEnd: "Agent name must end with a lowercase letter or digit",
   uppercase: "Agent name cannot contain uppercase letters",
@@ -71,7 +71,7 @@ export const validateAgentName = (name: string): Result<AgentName, string> => {
   const e = (err: string) => makeErr(err);
 
   if (!name) return e(errorMessages.required);
-  if (name.length > 63) return e(errorMessages.tooLong);
+  if (name.length > 30) return e(errorMessages.tooLong);
   if (/[A-Z]/.test(name)) return e(errorMessages.uppercase);
   if (!/^[a-z0-9]/.test(name)) return e(errorMessages.invalidStart);
   if (!/[a-z0-9]$/.test(name)) return e(errorMessages.invalidEnd);
