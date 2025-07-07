@@ -11,7 +11,6 @@ import {
   Network,
   Plus,
   Radio,
-  Shield,
 } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
 
@@ -25,12 +24,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@torus-ts/ui/components/dropdown-menu";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@torus-ts/ui/components/tooltip";
 
 export default function PortalNavigationTabs() {
   const router = useRouter();
@@ -41,8 +34,6 @@ export default function PortalNavigationTabs() {
     label: string;
     icon: React.ComponentType<{ size?: number }>;
     path: string;
-    disabled?: boolean;
-    disabledTooltip?: string;
   }
 
   interface NavigationCategory {
@@ -78,14 +69,12 @@ export default function PortalNavigationTabs() {
             icon: Edit,
             path: "/edit-permission",
           },
-          {
-            value: "create-constraint",
-            label: "Create Constraint",
-            icon: Shield,
-            path: "/create-constraint",
-            disabled: true,
-            disabledTooltip: "Coming Soon",
-          },
+          // {
+          //   value: "create-constraint",
+          //   label: "Create Constraint",
+          //   icon: Shield,
+          //   path: "/create-constraint",
+          // },
         ],
       },
       {
@@ -148,7 +137,7 @@ export default function PortalNavigationTabs() {
   const handleTabChange = useCallback(
     (value: string) => {
       const item = allNavigationItems.find((item) => item.value === value);
-      if (item && !item.disabled) {
+      if (item) {
         router.push(item.path);
       }
     },
@@ -163,75 +152,51 @@ export default function PortalNavigationTabs() {
     <>
       {/* Mobile Dropdown - Full width breaking out of parent constraints */}
       <div className="relative left-0 right-0 z-20">
-        <TooltipProvider>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                variant="outline"
-                className="h-9 justify-between gap-2 px-3 text-sm font-medium hover:bg-accent/50"
-              >
-                {currentItem && (
-                  <>
-                    <div className="flex items-center gap-2">
-                      <currentItem.icon size={16} />
-                      {currentItem.label}
-                    </div>
-                    <ChevronDown size={14} className="opacity-50" />
-                  </>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              variant="outline"
+              className="h-9 justify-between gap-2 px-3 text-sm font-medium hover:bg-accent/50"
+            >
+              {currentItem && (
+                <>
+                  <div className="flex items-center gap-2">
+                    <currentItem.icon size={16} />
+                    {currentItem.label}
+                  </div>
+                  <ChevronDown size={14} className="opacity-50" />
+                </>
+              )}
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent className="w-56" align="start">
+            {navigationCategories.map((category, categoryIndex) => (
+              <DropdownMenuGroup key={category.label}>
+                <DropdownMenuLabel className="px-2 py-1.5 text-sm font-medium text-muted-foreground">
+                  {category.label}
+                </DropdownMenuLabel>
+                {category.items.map((item) => {
+                  const Icon = item.icon;
+
+                  return (
+                    <DropdownMenuItem
+                      key={item.value}
+                      onClick={() => handleTabChange(item.value)}
+                    >
+                      <div className="flex items-center gap-2">
+                        <Icon size={16} />
+                        {item.label}
+                      </div>
+                    </DropdownMenuItem>
+                  );
+                })}
+                {categoryIndex < navigationCategories.length - 1 && (
+                  <DropdownMenuSeparator />
                 )}
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-56" align="start">
-              {navigationCategories.map((category, categoryIndex) => (
-                <DropdownMenuGroup key={category.label}>
-                  <DropdownMenuLabel className="px-2 py-1.5 text-sm font-medium text-muted-foreground">
-                    {category.label}
-                  </DropdownMenuLabel>
-                  {category.items.map((item) => {
-                    const Icon = item.icon;
-
-                    if (item.disabled && item.disabledTooltip) {
-                      return (
-                        <Tooltip key={item.value}>
-                          <TooltipTrigger asChild>
-                            <DropdownMenuItem
-                              disabled
-                              className="cursor-not-allowed opacity-50"
-                              onClick={(e) => e.preventDefault()}
-                            >
-                              <div className="flex items-center gap-2">
-                                <Icon size={16} />
-                                {item.label}
-                              </div>
-                            </DropdownMenuItem>
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            <p>{item.disabledTooltip}</p>
-                          </TooltipContent>
-                        </Tooltip>
-                      );
-                    }
-
-                    return (
-                      <DropdownMenuItem
-                        key={item.value}
-                        onClick={() => handleTabChange(item.value)}
-                      >
-                        <div className="flex items-center gap-2">
-                          <Icon size={16} />
-                          {item.label}
-                        </div>
-                      </DropdownMenuItem>
-                    );
-                  })}
-                  {categoryIndex < navigationCategories.length - 1 && (
-                    <DropdownMenuSeparator />
-                  )}
-                </DropdownMenuGroup>
-              ))}
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </TooltipProvider>
+              </DropdownMenuGroup>
+            ))}
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
     </>
   );
