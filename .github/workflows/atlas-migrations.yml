@@ -143,7 +143,7 @@ jobs:
         run: atlas migrate apply --dry-run --env local --allow-dirty --url "${{ steps.shadow-db.outputs.db_url }}"
 
       - name: Apply migrations
-        run: atlas migrate apply --env local --url "${{ steps.shadow-db.outputs.db_url }}" --lock-timeout 120s
+        run: atlas migrate apply --env local --allow-dirty --url "${{ steps.shadow-db.outputs.db_url }}" --lock-timeout 120s
 
       - name: Delete DB
         if: always()
@@ -179,10 +179,10 @@ jobs:
           echo -e "\nCurrent migration status:" >> ./migration-artifacts/migrations-report.txt
           atlas migrate status --env local --url "${POSTGRES_URL}" >> ./migration-artifacts/migrations-report.txt
           echo -e "\nMigrations to be applied:" >> ./migration-artifacts/migrations-report.txt
-          atlas migrate apply --env local --dry-run --url "${POSTGRES_URL}" >> ./migration-artifacts/migrations-report.txt 2>&1
+          atlas migrate apply --env local --dry-run --allow-dirty --url "${POSTGRES_URL}" >> ./migration-artifacts/migrations-report.txt 2>&1
 
       - name: Apply migrations
-        run: atlas migrate apply --env local --url "${POSTGRES_URL}" --lock-timeout 120s
+        run: atlas migrate apply --env local --allow-dirty --url "${POSTGRES_URL}" --lock-timeout 120s
 
       - name: Update migrations report with final status
         run: |
