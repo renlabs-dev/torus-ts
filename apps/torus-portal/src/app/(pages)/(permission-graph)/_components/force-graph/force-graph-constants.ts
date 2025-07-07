@@ -52,7 +52,7 @@ export const graphConstants = {
       namespacePermissionNode: "#eab308", // yellow-500 (namespace permissions)
 
       // Special nodes
-      signalNode: "#8b5cf6", // violet-500 (demand signals)
+      signalNode: "#69ff5c", // violet-500 (demand signals)
       default: "#6b7280", // gray-500 (fallback)
     },
     nodeSizes: {
@@ -66,13 +66,10 @@ export const graphConstants = {
     },
     nodeGeometry: {
       allocator: {
-        type: "torusKnot",
-        radius: 12,
-        tubeRadius: 3,
-        tubularSegments: 300,
-        radialSegments: 7,
-        p: 4,
-        q: 14,
+        type: "sphere",
+        radius: 25,
+        widthSegments: 18,
+        heightSegments: 18,
       },
       rootNode: {
         type: "sphere",
@@ -121,7 +118,7 @@ export const graphConstants = {
       userNodeLink: "#0ea5e9", // sky-500 (from user nodes)
 
       // Special link types (exceptions)
-      signalLink: "#8b5cf6", // violet-500 (signals keep their own color)
+      signalLink: "#69ff5c", // violet-500 (signals keep their own color)
       defaultLink: "#6b7280", // gray-500 (fallback)
 
       // Legacy colors (for backward compatibility)

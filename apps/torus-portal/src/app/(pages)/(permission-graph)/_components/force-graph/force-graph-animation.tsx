@@ -85,23 +85,27 @@ const ForceGraph = memo(
         switch (customNode.nodeType) {
           case "signal": {
             const config = graphConstants.nodeConfig.nodeGeometry.signalNode;
-            geometry = new THREE.TetrahedronGeometry(config.radius, config.detail);
+            geometry = new THREE.TetrahedronGeometry(
+              config.radius,
+              config.detail,
+            );
             break;
           }
           case "permission": {
-            const config = graphConstants.nodeConfig.nodeGeometry.permissionNode;
-            geometry = new THREE.IcosahedronGeometry(config.radius, config.detail);
+            const config =
+              graphConstants.nodeConfig.nodeGeometry.permissionNode;
+            geometry = new THREE.IcosahedronGeometry(
+              config.radius,
+              config.detail,
+            );
             break;
           }
           case "allocator": {
             const config = graphConstants.nodeConfig.nodeGeometry.allocator;
-            geometry = new THREE.TorusKnotGeometry(
+            geometry = new THREE.SphereGeometry(
               config.radius,
-              config.tubeRadius,
-              config.tubularSegments,
-              config.radialSegments,
-              config.p,
-              config.q,
+              config.widthSegments,
+              config.heightSegments,
             );
             break;
           }
@@ -143,7 +147,8 @@ const ForceGraph = memo(
             Number(link.linkDirectionalParticles) || 0
           }
           linkDirectionalParticleSpeed={(link: LinkObject) =>
-            Number(link.linkDirectionalParticleSpeed) || graphConstants.particleAnimation.defaultSpeed
+            Number(link.linkDirectionalParticleSpeed) ||
+            graphConstants.particleAnimation.defaultSpeed
           }
           linkDirectionalArrowLength={(link: LinkObject) =>
             Number(link.linkDirectionalArrowLength)
