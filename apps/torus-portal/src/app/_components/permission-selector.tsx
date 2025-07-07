@@ -187,6 +187,7 @@ export function PermissionSelector(props: PermissionSelectorProps) {
         label: "Revocation",
         // Transform revocation type and update grantor/grantee terminology to delegator/recipient
         value: permission.revocationType
+          .replace("revocable_after", "Revocable after Block")
           .replace(/_/g, " ")
           .replace(/\b\w/g, (l) => l.toUpperCase())
           .replace("Grantor", "Delegator")
