@@ -1,6 +1,7 @@
 "use client";
 
 import { usePathname, useRouter } from "next/navigation";
+
 import {
   Tabs,
   TabsContent,
@@ -41,11 +42,11 @@ export default function CreatePermissionLayout({
       <Tabs
         value={activeTab}
         onValueChange={handleTabChange}
-        className="w-full mx-4"
+        className="w-full pt-6 md:pt-0 mx-4"
       >
         <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="capability">Capability Permission</TabsTrigger>
-          <TabsTrigger value="emission">Emission Permission</TabsTrigger>
+          <TabsTrigger value="capability">Capability</TabsTrigger>
+          <TabsTrigger value="emission">Emission</TabsTrigger>
         </TabsList>
 
         <TabsContent value={activeTab} className="mt-6">

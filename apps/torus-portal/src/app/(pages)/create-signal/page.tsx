@@ -13,7 +13,7 @@ import CreateSignalForm from "./_components/create-signal-form";
 export default function Page() {
   return (
     <PortalFormContainer imageSrc="/form-bg-signal.svg">
-      <div className="w-full max-w-4xl mx-auto px-4">
+      <div className="w-full max-w-4xl mx-auto px-4 pt-6 md:pt-0">
         <Tabs defaultValue="create" className="w-full">
           <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="create">Create Signal</TabsTrigger>
