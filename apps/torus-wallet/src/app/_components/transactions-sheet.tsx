@@ -1,17 +1,20 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
+
+import { ReceiptText } from "lucide-react";
+
 import { Button } from "@torus-ts/ui/components/button";
 import {
   Sheet,
   SheetContent,
   SheetHeader,
-  SheetSubTitle,
   SheetTitle,
   SheetTrigger,
 } from "@torus-ts/ui/components/sheet";
-import { ReceiptText } from "lucide-react";
+
 import { useWallet } from "~/context/wallet-provider";
+
 import { Transactions } from "./transactions/transactions";
 
 export function TransactionsSheet() {
@@ -39,27 +42,29 @@ export function TransactionsSheet() {
           <ReceiptText size={20} />
         </Button>
       </SheetTrigger>
-      <SheetContent className="z-[70] w-[335px] flex h-full flex-col gap-4">
+      <SheetContent className="z-[70] w-400px] flex h-full flex-col gap-4">
         <SheetHeader>
           <SheetTitle className="text-lg font-semibold">
             Transactions
           </SheetTitle>
 
-          <SheetSubTitle>View your recent transactions</SheetSubTitle>
+          <p>View your recent transactions</p>
         </SheetHeader>
-        {shouldRenderContent && selectedAccount && (
-          <Transactions selectedAccount={selectedAccount} />
-        )}
-        {shouldRenderContent && !selectedAccount && (
-          <div className="flex-1 flex items-center justify-center text-muted-foreground">
-            No account selected
-          </div>
-        )}
-        {isOpen && !shouldRenderContent && (
-          <div className="flex-1 flex items-center justify-center">
-            <div className="animate-spin h-6 w-6 border-2 border-current border-t-transparent rounded-full" />
-          </div>
-        )}
+        <div className="px-4">
+          {shouldRenderContent && selectedAccount && (
+            <Transactions selectedAccount={selectedAccount} />
+          )}
+          {shouldRenderContent && !selectedAccount && (
+            <div className="flex-1 flex items-center justify-center text-muted-foreground">
+              No account selected
+            </div>
+          )}
+          {isOpen && !shouldRenderContent && (
+            <div className="flex-1 flex items-center justify-center">
+              <div className="animate-spin h-6 w-6 border-2 border-current border-t-transparent rounded-full" />
+            </div>
+          )}
+        </div>
       </SheetContent>
     </Sheet>
   );

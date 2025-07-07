@@ -1,5 +1,7 @@
 "use client";
 
+import { useEffect, useState } from "react";
+
 import { useTorus } from "@torus-ts/torus-provider";
 import {
   Sheet,
@@ -8,10 +10,11 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@torus-ts/ui/components/sheet";
+
 import { useDelegateAgentStore } from "~/stores/delegateAgentStore";
 import useSubmitStore from "~/stores/submitStore";
 import { api } from "~/trpc/react";
-import { useEffect, useState } from "react";
+
 import { AllocationActions } from "./components/allocation-actions";
 import { AllocationAgentList } from "./components/allocation-agent-list";
 import { AllocationSheetTrigger } from "./components/allocation-sheet-trigger";
@@ -91,7 +94,9 @@ export function AllocationSheet() {
           <SheetTitle>Allocation Menu</SheetTitle>
         </SheetHeader>
 
-        <AllocationAgentList />
+        <div className="px-4">
+          <AllocationAgentList />
+        </div>
 
         <SheetFooter>
           <AllocationActions submitStatus={submitStatus} />

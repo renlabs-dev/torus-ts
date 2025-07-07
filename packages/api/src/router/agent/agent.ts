@@ -37,7 +37,6 @@ export const agentRouter = {
         .select({ value: max(agentSchema.atBlock) })
         .from(agentSchema)
         .limit(1);
-      console.log("[shadowheart] lastBlock eh esse: ", agentsLastBlock);
       const weightsLastBlock = await ctx.db
         .select({ value: max(computedAgentWeightSchema.atBlock) })
         .from(computedAgentWeightSchema)
@@ -104,7 +103,6 @@ export const agentRouter = {
         .limit(limit)
         .offset(offset)
         .orderBy(orderByClause);
-      console.log("[shadowheart] agents: ", agents.length);
       const totalCount = agents.length;
 
       const totalPages = Math.ceil(totalCount / limit);

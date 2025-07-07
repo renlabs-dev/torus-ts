@@ -62,7 +62,7 @@ export function GraphSheetDetailsPermission({
   );
 
   return (
-    <div className="w-full space-y-6 py-8">
+    <div className="w-full space-y-4 pb-8">
       {/* Main Permission Info */}
       <Card>
         <CardHeader>

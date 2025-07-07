@@ -43,7 +43,7 @@ export function GraphSheetDetailsSignal({ selectedNode }: SignalDetailsProps) {
   ].filter((social) => social.value);
 
   return (
-    <div className="w-full space-y-6 py-8">
+    <div className="w-full space-y-4 pb-8">
       {/* Main Signal Info */}
       <Card>
         <CardHeader>

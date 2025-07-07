@@ -2,13 +2,17 @@
 
 import { ArrowRight, Copy } from "lucide-react";
 import { DateTime } from "luxon";
-import { formatToken, smallAddress } from "@torus-network/torus-utils/subspace";
-import type { Transaction, TransactionType } from "~/store/transactions-store";
-import { TransactionStatusBadge } from "./transactions-item-status-badge";
 import { getExplorerLink } from "node_modules/@torus-ts/torus-provider/src/_components/toast-content-handler";
-import { env } from "~/env";
+
+import { formatToken, smallAddress } from "@torus-network/torus-utils/subspace";
+
 import { CopyButton } from "@torus-ts/ui/components/copy-button";
 import { cn } from "@torus-ts/ui/lib/utils";
+
+import { env } from "~/env";
+import type { Transaction, TransactionType } from "~/store/transactions-store";
+
+import { TransactionStatusBadge } from "./transactions-item-status-badge";
 
 interface TransactionItemProps {
   transaction: Transaction;
@@ -51,7 +55,7 @@ export function TransactionItem({
 
   return (
     <div
-      className="rounded-lg border bg-card p-2 shadow-sm flex flex-col gap-2 text-sm"
+      className="rounded-lg border bg-card p-3 shadow-sm flex flex-col gap-2 text-sm"
       role="region"
       aria-label={`Transaction ${getTransactionTypeDisplay(transaction.type)}`}
     >

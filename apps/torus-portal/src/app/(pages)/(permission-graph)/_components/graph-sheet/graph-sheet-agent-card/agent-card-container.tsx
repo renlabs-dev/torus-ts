@@ -242,7 +242,7 @@ export const AgentCardContainer = memo(
     }
 
     return (
-      <Card className="flex-1 flex flex-col gap-4 z-50 border-none w-full mt-4">
+      <Card className="flex-1 flex flex-col gap-4 z-50 border-none w-full">
         <AgentCard
           agentKey={fullAddress ?? nodeId}
           iconUrl={iconUrl ?? ""}

@@ -42,11 +42,11 @@ export function GraphSheet(props: GraphSheetProps) {
   return (
     <Sheet open={props.isOpen} onOpenChange={props.onOpenChange} modal={false}>
       <SheetContent
-        className="z-[100] w-full md:min-w-[30em] max-h-screen overflow-y-auto space-y-2"
+        className="z-[100] w-full md:min-w-[30em] max-h-screen overflow-y-auto space-y"
         onPointerDownOutside={(e) => e.preventDefault()}
         onInteractOutside={(e) => e.preventDefault()}
       >
-        <SheetHeader>
+        <SheetHeader className="-mb-2">
           <SheetTitle>
             {isSignalNode
               ? "Signal details"
@@ -55,33 +55,34 @@ export function GraphSheet(props: GraphSheetProps) {
                 : "Agent details"}
           </SheetTitle>
         </SheetHeader>
-
-        {isSignalNode ? (
-          <GraphSheetDetailsSignal selectedNode={props.selectedNode} />
-        ) : isPermissionNode ? (
-          <GraphSheetDetailsPermission
-            selectedNode={props.selectedNode}
-            allPermissions={props.allPermissions}
-          />
-        ) : (
-          <div className="w-full flex flex-col gap-4">
-            <AgentCardContainer
-              nodeId={props.selectedNode.id}
-              fullAddress={props.selectedNode.fullAddress}
-              allComputedWeights={props.allComputedWeights}
-              getCachedAgentData={props.getCachedAgentData}
-              setCachedAgentData={props.setCachedAgentData}
-            />
-
-            <GraphSheetDetails
+        <div className="px-4">
+          {isSignalNode ? (
+            <GraphSheetDetailsSignal selectedNode={props.selectedNode} />
+          ) : isPermissionNode ? (
+            <GraphSheetDetailsPermission
               selectedNode={props.selectedNode}
-              graphData={props.graphData}
               allPermissions={props.allPermissions}
-              getCachedAgentData={props.getCachedAgentData}
-              setCachedAgentData={props.setCachedAgentData}
             />
-          </div>
-        )}
+          ) : (
+            <div className="w-full flex flex-col gap-4">
+              <AgentCardContainer
+                nodeId={props.selectedNode.id}
+                fullAddress={props.selectedNode.fullAddress}
+                allComputedWeights={props.allComputedWeights}
+                getCachedAgentData={props.getCachedAgentData}
+                setCachedAgentData={props.setCachedAgentData}
+              />
+
+              <GraphSheetDetails
+                selectedNode={props.selectedNode}
+                graphData={props.graphData}
+                allPermissions={props.allPermissions}
+                getCachedAgentData={props.getCachedAgentData}
+                setCachedAgentData={props.setCachedAgentData}
+              />
+            </div>
+          )}
+        </div>
       </SheetContent>
     </Sheet>
   );
