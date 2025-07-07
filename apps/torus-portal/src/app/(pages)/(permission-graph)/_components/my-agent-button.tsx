@@ -1,8 +1,10 @@
 "use client";
 
-import { Button } from "@torus-ts/ui/components/button";
-import { useTorus } from "@torus-ts/torus-provider";
 import { User } from "lucide-react";
+
+import { useTorus } from "@torus-ts/torus-provider";
+import { Button } from "@torus-ts/ui/components/button";
+
 import type {
   CustomGraphData,
   CustomGraphNode,
@@ -40,7 +42,7 @@ export function MyAgentButton({ graphData, onNodeClick }: MyAgentButtonProps) {
       variant="outline"
       size="sm"
       onClick={handleClick}
-      className="h-9 animate-fade-down animate-delay-200"
+      className="h-9 animate-fade-down animate-delay-200 w-full md:w-fit"
     >
       <User className="w-4 h-4 mr-2" />
       View my agent

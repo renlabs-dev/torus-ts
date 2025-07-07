@@ -85,7 +85,7 @@ const PermissionGraphSearch = memo(function PermissionGraphSearch({
             setSearchQuery(e.target.value);
             setShowNoResults(false); // Hide no results when typing
           }}
-          className="w-96 bg-background"
+          className="w-full md:w-96 bg-background"
         />
       </form>
 
