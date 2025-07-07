@@ -1,17 +1,15 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
+import type { inferProcedureInput } from "@trpc/server";
 import { useForm } from "react-hook-form";
-import { api } from "~/trpc/react";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@torus-ts/ui/components/form";
-import { Textarea } from "@torus-ts/ui/components/text-area";
+
+import type { SS58Address } from "@torus-network/sdk";
+
+import type { AppRouter } from "@torus-ts/api";
+import { AGENT_DEMAND_SIGNAL_INSERT_SCHEMA } from "@torus-ts/db/validation";
+import { useNamespaceEntriesOf } from "@torus-ts/query-provider/hooks";
+import { useTorus } from "@torus-ts/torus-provider";
 import { Button } from "@torus-ts/ui/components/button";
 import {
   Card,
@@ -21,17 +19,26 @@ import {
   CardTitle,
 } from "@torus-ts/ui/components/card";
 import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@torus-ts/ui/components/form";
+import { Input } from "@torus-ts/ui/components/input";
+import { MarkdownView } from "@torus-ts/ui/components/markdown-view";
+import { Slider } from "@torus-ts/ui/components/slider";
+import {
   Tabs,
+  TabsContent,
   TabsList,
   TabsTrigger,
-  TabsContent,
 } from "@torus-ts/ui/components/tabs";
-import { MarkdownView } from "@torus-ts/ui/components/markdown-view";
-import type { AppRouter } from "@torus-ts/api";
-import type { inferProcedureInput } from "@trpc/server";
-import { Input } from "@torus-ts/ui/components/input";
-import { AGENT_DEMAND_SIGNAL_INSERT_SCHEMA } from "@torus-ts/db/validation";
+import { Textarea } from "@torus-ts/ui/components/text-area";
 import { useToast } from "@torus-ts/ui/hooks/use-toast";
+
+import { api } from "~/trpc/react";
 
 type SignalFormData = NonNullable<
   inferProcedureInput<AppRouter["signal"]["create"]>
@@ -39,8 +46,16 @@ type SignalFormData = NonNullable<
 
 export default function CreateSignalForm() {
   const { toast } = useToast();
+  const { api: torusApi, selectedAccount } = useTorus();
 
   const createSignalMutation = api.signal.create.useMutation();
+
+  const namespaceEntries = useNamespaceEntriesOf(
+    torusApi,
+    selectedAccount?.address as SS58Address,
+  );
+
+  const hasAgent = namespaceEntries.data && namespaceEntries.data.length > 0;
 
   const form = useForm<SignalFormData>({
     resolver: zodResolver(AGENT_DEMAND_SIGNAL_INSERT_SCHEMA),
@@ -66,8 +81,33 @@ export default function CreateSignalForm() {
   };
 
   return (
-    <div className="w-full max-w-2xl">
-      <Card className="border-0">
+    <div className="w-full max-w-2xl relative">
+      {!hasAgent && (
+        <div
+          className="absolute inset-0 z-10 flex items-center justify-center bg-background/80
+            backdrop-blur-sm rounded-lg"
+        >
+          <Card className="border border-border/50 shadow-lg">
+            <CardContent className="p-6">
+              <div className="text-center">
+                <h3 className="text-lg font-semibold mb-2">
+                  Agent Registration Required
+                </h3>
+                <p className="text-muted-foreground mb-4">
+                  You need to be a registered agent to create demand signals.
+                </p>
+                <p className="text-sm text-muted-foreground">
+                  Please register as an agent first to access this feature.
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
+      <Card
+        className={`border-0 ${!hasAgent ? "opacity-30 pointer-events-none" : ""}`}
+      >
         <CardHeader>
           <CardTitle>Create Demand Signal</CardTitle>
           <CardDescription>
@@ -87,7 +127,7 @@ export default function CreateSignalForm() {
                     <FormControl>
                       <Input
                         placeholder="Brief title for your demand signal"
-                        maxLength={100}
+                        maxLength={80}
                         {...field}
                       />
                     </FormControl>
@@ -110,7 +150,7 @@ export default function CreateSignalForm() {
                         </TabsList>
                         <TabsContent value="edit">
                           <Textarea
-                            maxLength={8000}
+                            maxLength={2000}
                             placeholder="Detailed description of your demand signal... (Markdown supported)"
                             className="min-h-[200px] resize-none"
                             {...field}
@@ -145,19 +185,19 @@ export default function CreateSignalForm() {
                   <FormItem>
                     <FormLabel>Proposed Allocation (%)</FormLabel>
                     <FormControl>
-                      <Input
-                        type="number"
-                        min="0"
-                        max="100"
-                        placeholder="0-100"
-                        {...field}
-                        onChange={(e) => {
-                          const n = parseInt(e.target.value, 10);
-                          // Send undefined to trigger “required” validation when empty,
-                          // otherwise the parsed number.
-                          field.onChange(Number.isFinite(n) ? n : undefined);
-                        }}
-                      />
+                      <div>
+                        <Slider
+                          value={[field.value || 0]}
+                          onValueChange={([value]) => field.onChange(value)}
+                          max={100}
+                          min={0}
+                          step={1}
+                          className="-mt-3 -mb-3"
+                        />
+                        <div className="text-right text-xs text-muted-foreground font-medium">
+                          {field.value || 0}%
+                        </div>
+                      </div>
                     </FormControl>
                     <FormMessage />
                   </FormItem>
