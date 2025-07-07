@@ -37,6 +37,11 @@ import { PermissionSelector } from "~/app/_components/permission-selector";
 // In the future we are going to have all the other names from namespace to Capability Permission
 // TODO : Change all namespace to Capability Permission
 
+// Every single grantor/grantee terminology has been changed to delegator/recipient
+// as requested here: https://coda.io/d/RENLABS-CORE-DEVELOPMENT-DOCUMENTS_d5Vgr5OavNK/Text-change-requests_su4jQAlx
+// This change affects UI labels, variable names, and function names throughout the codebase
+// TODO : Ensure all grantor/grantee references are updated to delegator/recipient
+
 // eslint-disable-next-line @typescript-eslint/consistent-type-imports
 import {
   PermissionWithDetails,

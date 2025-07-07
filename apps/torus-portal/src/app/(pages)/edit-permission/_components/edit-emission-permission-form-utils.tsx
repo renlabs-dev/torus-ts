@@ -1,9 +1,16 @@
+// Every single grantor/grantee terminology has been changed to delegator/recipient
+// as requested here: https://coda.io/d/RENLABS-CORE-DEVELOPMENT-DOCUMENTS_d5Vgr5OavNK/Text-change-requests_su4jQAlx
+// This change affects UI labels, variable names, and function names throughout the codebase
+// TODO : Ensure all grantor/grantee references are updated to delegator/recipient
+
+import { if_let, match } from "rustie";
+
 import type {
-  SS58Address,
   DistributionControl,
   PermissionContract,
+  SS58Address,
 } from "@torus-network/sdk";
-import { match, if_let } from "rustie";
+
 import type {
   EditEmissionPermissionFormData,
   PermissionInfo,
@@ -16,22 +23,21 @@ export function transformPermissionToFormData(
   userAddress: SS58Address,
 ): PermissionInfo {
   // Determine edit permissions based on role and revocation terms
-  const isGrantor = permission.grantor === userAddress;
+  const isDelegator = permission.grantor === userAddress;
 
   // Based on SDK comments at lines 726-738 in permission0.ts:
-  // If you call as a grantee: you can only provide the new_targets,
-  // whenever you want, no limits. if the grantee sends
+  // If you call as a recipient: you can only provide the new_targets,
+  // whenever you want, no limits. if the recipient sends
   // new_streams/new_distribution_control, the extrinsic fails.
-  // If you call as a grantor: you can send all the values,
-  // but only if the revocation term: is RevocableByGrantor
+  // If you call as a delegator: you can send all the values,
+  // but only if the revocation term: is RevocableByGrantor (delegator can revoke)
   // is RevocableAfter(N) and CurrentBlock > N
-  const canEditStreams = isGrantor
-    ? canGrantorEdit(permission, currentBlock)
+  const canEditStreams = isDelegator
+    ? canDelegatorEdit(permission, currentBlock)
     : false;
-  const canEditDistribution = isGrantor
-    ? canGrantorEdit(permission, currentBlock)
+  const canEditDistribution = isDelegator
+    ? canDelegatorEdit(permission, currentBlock)
     : false;
-
 
   // Extract current emission scope data
   const emissionScope = if_let(permission.scope, "Emission")(
@@ -68,9 +74,9 @@ export function transformPermissionToFormData(
 
   return {
     permissionId: "", // Will be set by caller
-    grantor: permission.grantor,
-    grantee: permission.grantee,
-    userRole: isGrantor ? "grantor" : "grantee",
+    delegator: permission.grantor, // TODO EDIT
+    recipient: permission.grantee, // TODO EDIT
+    userRole: isDelegator ? "delegator" : "recipient",
     canEditStreams,
     canEditDistribution,
     currentTargets,
@@ -79,8 +85,8 @@ export function transformPermissionToFormData(
   };
 }
 
-// Check if grantor can edit based on revocation terms
-function canGrantorEdit(
+// Check if delegator can edit based on revocation terms
+function canDelegatorEdit(
   permission: PermissionContract,
   currentBlock: bigint,
 ): boolean {
@@ -186,8 +192,8 @@ export function transformFormDataToUpdateSDK(
 
 // Helper to check if user has any editable permissions
 export function hasEditablePermissions(
-  grantorPermissions: readonly string[],
+  delegatorPermissions: readonly string[],
 ): boolean {
-  // Only grantors can edit permissions
-  return grantorPermissions.length > 0;
+  // Only delegators can edit permissions
+  return delegatorPermissions.length > 0;
 }

@@ -1,5 +1,7 @@
 import type { ProposalStatus } from "@torus-network/sdk";
+
 import { Card, CardHeader } from "@torus-ts/ui/components/card";
+
 import {
   calcProposalFavorablePercent,
   handleProposalVotesAgainst,
@@ -40,7 +42,7 @@ export const VoteData = (props: VoteDataProps) => {
         <div className="flex items-center gap-2 divide-x">
           <span className="text-xs">
             {handleProposalVotesInFavor(proposalStatus)}
-            <span className="text-muted-foreground"> TOR</span>
+            <span className="text-muted-foreground"> TORUS</span>
           </span>
           <span className="text-muted-foreground pl-2 text-sm font-semibold">
             {favorablePercent.toFixed(2)}%
@@ -60,7 +62,7 @@ export const VoteData = (props: VoteDataProps) => {
         <div className="flex items-center gap-2 divide-x">
           <span className="text-xs">
             {handleProposalVotesAgainst(proposalStatus)}
-            <span className="text-muted-foreground"> TOR</span>
+            <span className="text-muted-foreground"> TORUS</span>
           </span>
           <span className="text-muted-foreground pl-2 text-sm font-semibold">
             {againstPercent.toFixed(2)}%

@@ -26,8 +26,8 @@ export function PermissionSuccessDialog({
 
         <div className="py-4">
           <p className="mb-4">
-            Your emission permission has been granted successfully.
-            {/* Your emission permission has been granted successfully. Now you can
+            Your emission permission has been delegated successfully.
+            {/* Your emission permission has been delegated successfully. Now you can
             create constraints to define specific rules and conditions for this
             permission. */}
           </p>

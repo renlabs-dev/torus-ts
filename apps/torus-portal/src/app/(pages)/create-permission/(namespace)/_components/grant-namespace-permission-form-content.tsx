@@ -44,6 +44,11 @@ import type {
 // In the future we are going to have all the other names from namespace to Capability Permission
 // TODO : Change all namespace to Capability Permission
 
+// Every single grantor/grantee terminology has been changed to delegator/recipient
+// as requested here: https://coda.io/d/RENLABS-CORE-DEVELOPMENT-DOCUMENTS_d5Vgr5OavNK/Text-change-requests_su4jQAlx
+// This change affects UI labels, variable names, and function names throughout the codebase
+// TODO : Ensure all grantor/grantee references are updated to delegator/recipient
+
 interface GrantNamespacePermissionFormProps {
   form: GrantNamespacePermissionForm;
   mutation: GrantNamespacePermissionMutation;
@@ -89,9 +94,9 @@ export function GrantNamespacePermissionFormComponent({
   return (
     <Card className="border-none w-full">
       <CardHeader>
-        <CardTitle>Grant Capability Permission</CardTitle>
+        <CardTitle>Delegate Capability Permission</CardTitle>
         <CardDescription>
-          Grant permission to access a specific capability permission path.
+          Delegate permission to access a specific capability permission path.
         </CardDescription>
       </CardHeader>
 
@@ -100,13 +105,13 @@ export function GrantNamespacePermissionFormComponent({
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
             <WalletConnectionWarning isAccountConnected={isAccountConnected} />
 
-            {/* Grantee */}
+            {/* Recipient */}
             <FormField
               control={form.control}
               name="grantee"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Grantee</FormLabel>
+                  <FormLabel>Recipient</FormLabel>
                   <FormControl>
                     <Input
                       {...field}
@@ -417,14 +422,14 @@ export function GrantNamespacePermissionFormComponent({
               {mutation.isPending ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Granting Permission...
+                  Awaiting Signature...
                 </>
               ) : !isAccountConnected ? (
                 "Connect Wallet to Continue"
               ) : namespaceOptions.length === 0 ? (
                 "Create a Capability Permission First"
               ) : (
-                "Grant Capability Permission"
+                "Delegate Capability Permission"
               )}
             </Button>
           </form>

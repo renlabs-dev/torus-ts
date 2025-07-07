@@ -1,3 +1,8 @@
+// Every single grantor/grantee terminology has been changed to delegator/recipient
+// as requested here: https://coda.io/d/RENLABS-CORE-DEVELOPMENT-DOCUMENTS_d5Vgr5OavNK/Text-change-requests_su4jQAlx
+// This change affects UI labels, variable names, and function names throughout the codebase
+// TODO : Ensure all grantor/grantee references are updated to delegator/recipient
+
 "use client";
 
 import { useState } from "react";
@@ -98,10 +103,10 @@ export function RevokePermissionButton({
     // Use new database structure if available
     if (permissionData) {
       const perm = permissionData.permissions;
-      const isGrantor = perm.grantorAccountId === userAddress;
+      const isDelegator = perm.grantorAccountId === userAddress;
 
-      // Only grantors can revoke permissions, and only if revocation terms allow it
-      if (!isGrantor) return false;
+      // Only delegators can revoke permissions, and only if revocation terms allow it
+      if (!isDelegator) return false;
 
       switch (perm.revocationType) {
         case "revocable_by_grantor":
@@ -122,10 +127,10 @@ export function RevokePermissionButton({
 
     // Legacy support for PermissionContract
     if (permission) {
-      const isGrantor = permission.grantor === userAddress;
+      const isDelegator = permission.grantor === userAddress;
 
-      // Only grantors can revoke permissions, and only if revocation terms allow it
-      if (!isGrantor) return false;
+      // Only delegators can revoke permissions, and only if revocation terms allow it
+      if (!isDelegator) return false;
 
       return match(permission.revocation)({
         RevocableByGrantor() {
@@ -193,8 +198,8 @@ export function RevokePermissionButton({
     // Use new database structure if available
     if (permissionData) {
       const perm = permissionData.permissions;
-      const isGrantor = perm.grantorAccountId === userAddress;
-      if (!isGrantor) return "Only the grantor can revoke permissions";
+      const isDelegator = perm.grantorAccountId === userAddress;
+      if (!isDelegator) return "Only the delegator can revoke permissions";
 
       switch (perm.revocationType) {
         case "revocable_by_grantor":
@@ -218,8 +223,8 @@ export function RevokePermissionButton({
 
     // Legacy support for PermissionContract
     if (permission) {
-      const isGrantor = permission.grantor === userAddress;
-      if (!isGrantor) return "Only the grantor can revoke permissions";
+      const isDelegator = permission.grantor === userAddress;
+      if (!isDelegator) return "Only the delegator can revoke permissions";
 
       return match(permission.revocation)({
         RevocableByGrantor() {
@@ -281,12 +286,12 @@ export function RevokePermissionButton({
                   <br />
                   Type: {getPermissionType()}
                   <br />
-                  Grantor:{" "}
+                  Delegator:{" "}
                   {permissionData
                     ? permissionData.permissions.grantorAccountId
                     : permission?.grantor}
                   <br />
-                  Grantee:{" "}
+                  Recipient:{" "}
                   {permissionData
                     ? permissionData.permissions.granteeAccountId
                     : permission?.grantee}
