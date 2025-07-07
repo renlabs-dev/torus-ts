@@ -24,10 +24,6 @@ export function useGraphData() {
   const { data: allSignals, isLoading: isLoadingSignals } =
     trpcApi.signal.all.useQuery();
   const computedWeights: ComputedWeight[] | undefined = useMemo(() => {
-    console.log(
-      "[shadowheart] allComputedWeights: ",
-      allComputedWeights?.length,
-    );
     return allComputedWeights?.map((agent) => ({
       agentKey: agent.agentKey,
       percComputedWeight: agent.percComputedWeight,
