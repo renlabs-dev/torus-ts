@@ -140,7 +140,7 @@ jobs:
       - uses: ariga/setup-atlas@v0
 
       - name: Apply migrations (dry-run)
-        run: atlas migrate apply --dry-run --env local --alow-dirty --url "${{ steps.shadow-db.outputs.db_url }}"
+        run: atlas migrate apply --dry-run --env local --allow-dirty --url "${{ steps.shadow-db.outputs.db_url }}"
 
       - name: Apply migrations
         run: atlas migrate apply --env local --url "${{ steps.shadow-db.outputs.db_url }}" --lock-timeout 120s
