@@ -2,6 +2,7 @@ import type { Config } from "tailwindcss";
 import tailwindcssAnimate from "tailwindcss-animate";
 import tailwindcssAnimated from "tailwindcss-animated";
 import { fontFamily } from "tailwindcss/defaultTheme";
+import plugin from "tailwindcss/plugin";
 
 const config = {
   darkMode: ["class"],
@@ -72,7 +73,23 @@ const config = {
       },
     },
   },
-  plugins: [tailwindcssAnimate, tailwindcssAnimated],
+  plugins: [
+    tailwindcssAnimate,
+    tailwindcssAnimated,
+    plugin(function ({ addUtilities }) {
+      addUtilities({
+        ".no-scrollbar": {
+          "scrollbar-width": "none",
+          "&::-webkit-scrollbar": {
+            display: "none",
+          },
+        },
+        ".word-break-break-word": {
+          "word-break": "break-word",
+        },
+      });
+    }),
+  ],
 } satisfies Config;
 
 export default config;

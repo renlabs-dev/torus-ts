@@ -8,8 +8,8 @@ import '@polkadot/api-base/types/events';
 import type { ApiTypes, AugmentedEvent } from '@polkadot/api-base/types';
 import type { Bytes, Null, Option, Result, U8aFixed, Vec, bool, u128, u32, u64 } from '@polkadot/types-codec';
 import type { ITuple } from '@polkadot/types-codec/types';
-import type { AccountId32, H160, H256 } from '@polkadot/types/interfaces/runtime';
-import type { EthereumLog, EvmCoreErrorExitReason, FrameSupportDispatchDispatchInfo, FrameSupportTokensMiscBalanceStatus, PalletMultisigTimepoint, SpConsensusGrandpaAppPublic, SpRuntimeDispatchError, TorusRuntimeRuntimeTask } from '@polkadot/types/lookup';
+import type { AccountId32, H160, H256, Percent } from '@polkadot/types/interfaces/runtime';
+import type { EthereumLog, EvmCoreErrorExitReason, FrameSupportDispatchDispatchInfo, FrameSupportTokensMiscBalanceStatus, PalletMultisigTimepoint, PalletPermission0PermissionEnforcementReferendum, PalletTorus0NamespaceNamespaceOwnership, SpConsensusGrandpaAppPublic, SpRuntimeDispatchError, TorusRuntimeRuntimeTask } from '@polkadot/types/lookup';
 
 export type __AugmentedEvent<ApiType extends ApiTypes> = AugmentedEvent<ApiType>;
 
@@ -161,7 +161,22 @@ declare module '@polkadot/api-base/types/events' {
        **/
       [key: string]: AugmentedEvent<ApiType>;
     };
+    faucet: {
+      /**
+       * Tokens were successfully distributed by the faucet
+       * [account, amount]
+       **/
+      Faucet: AugmentedEvent<ApiType, [AccountId32, u128]>;
+      /**
+       * Generic event
+       **/
+      [key: string]: AugmentedEvent<ApiType>;
+    };
     governance: {
+      /**
+       * The agent freezing feature was toggled by a curator.
+       **/
+      AgentFreezingToggled: AugmentedEvent<ApiType, [curator: AccountId32, newState: bool], { curator: AccountId32, newState: bool }>;
       /**
        * An application has been accepted.
        **/
@@ -178,6 +193,14 @@ declare module '@polkadot/api-base/types/events' {
        * An application has expired.
        **/
       ApplicationExpired: AugmentedEvent<ApiType, [u32]>;
+      /**
+       * The namespace freezing feature was toggled by a curator.
+       **/
+      NamespaceFreezingToggled: AugmentedEvent<ApiType, [curator: AccountId32, newState: bool], { curator: AccountId32, newState: bool }>;
+      /**
+       * A penalty was applied to an agent.
+       **/
+      PenaltyApplied: AugmentedEvent<ApiType, [curator: AccountId32, agent: AccountId32, penalty: Percent], { curator: AccountId32, agent: AccountId32, penalty: Percent }>;
       /**
        * A proposal has been accepted.
        **/
@@ -255,6 +278,48 @@ declare module '@polkadot/api-base/types/events' {
        **/
       [key: string]: AugmentedEvent<ApiType>;
     };
+    permission0: {
+      /**
+       * Auto-distribution executed
+       **/
+      AutoDistributionExecuted: AugmentedEvent<ApiType, [grantor: AccountId32, grantee: AccountId32, permissionId: H256, streamId: Option<H256>, amount: u128], { grantor: AccountId32, grantee: AccountId32, permissionId: H256, streamId: Option<H256>, amount: u128 }>;
+      /**
+       * Enforcement authority set for permission
+       **/
+      EnforcementAuthoritySet: AugmentedEvent<ApiType, [permissionId: H256, controllersCount: u32, requiredVotes: u32], { permissionId: H256, controllersCount: u32, requiredVotes: u32 }>;
+      /**
+       * Vote for enforcement action
+       **/
+      EnforcementVoteCast: AugmentedEvent<ApiType, [permissionId: H256, voter: AccountId32, referendum: PalletPermission0PermissionEnforcementReferendum], { permissionId: H256, voter: AccountId32, referendum: PalletPermission0PermissionEnforcementReferendum }>;
+      /**
+       * Permission accumulation state toggled
+       **/
+      PermissionAccumulationToggled: AugmentedEvent<ApiType, [permissionId: H256, accumulating: bool, toggledBy: Option<AccountId32>], { permissionId: H256, accumulating: bool, toggledBy: Option<AccountId32> }>;
+      /**
+       * Permission was executed by enforcement authority
+       **/
+      PermissionEnforcementExecuted: AugmentedEvent<ApiType, [permissionId: H256, executedBy: Option<AccountId32>], { permissionId: H256, executedBy: Option<AccountId32> }>;
+      /**
+       * Permission executed (manual distribution) with ID
+       **/
+      PermissionExecuted: AugmentedEvent<ApiType, [grantor: AccountId32, grantee: AccountId32, permissionId: H256, streamId: Option<H256>, amount: u128], { grantor: AccountId32, grantee: AccountId32, permissionId: H256, streamId: Option<H256>, amount: u128 }>;
+      /**
+       * Permission expired with ID
+       **/
+      PermissionExpired: AugmentedEvent<ApiType, [grantor: AccountId32, grantee: AccountId32, permissionId: H256], { grantor: AccountId32, grantee: AccountId32, permissionId: H256 }>;
+      /**
+       * Permission granted from grantor to grantee with ID
+       **/
+      PermissionGranted: AugmentedEvent<ApiType, [grantor: AccountId32, grantee: AccountId32, permissionId: H256], { grantor: AccountId32, grantee: AccountId32, permissionId: H256 }>;
+      /**
+       * Permission revoked with ID
+       **/
+      PermissionRevoked: AugmentedEvent<ApiType, [grantor: AccountId32, grantee: AccountId32, revokedBy: Option<AccountId32>, permissionId: H256], { grantor: AccountId32, grantee: AccountId32, revokedBy: Option<AccountId32>, permissionId: H256 }>;
+      /**
+       * Generic event
+       **/
+      [key: string]: AugmentedEvent<ApiType>;
+    };
     sudo: {
       /**
        * The sudo key has been updated.
@@ -325,25 +390,36 @@ declare module '@polkadot/api-base/types/events' {
     };
     torus0: {
       /**
-       * Event created when a new agent account has been registered to the chain
+       * Event created when a new agent account has been registered to the
+       * chain
        **/
       AgentRegistered: AugmentedEvent<ApiType, [AccountId32]>;
       /**
-       * Event created when a agent account has been deregistered from the chain
+       * Event created when a agent account has been deregistered from the
+       * chain
        **/
       AgentUnregistered: AugmentedEvent<ApiType, [AccountId32]>;
       /**
-       * Event created when the agent's updated information is added to the network
+       * Event created when the agent's updated information is added to the
+       * network
        **/
       AgentUpdated: AugmentedEvent<ApiType, [AccountId32]>;
       /**
-       * Event created when stake has been transferred from the coldkey account onto the key
-       * staking account
+       * Namespace created
+       **/
+      NamespaceCreated: AugmentedEvent<ApiType, [owner: PalletTorus0NamespaceNamespaceOwnership, path: Bytes], { owner: PalletTorus0NamespaceNamespaceOwnership, path: Bytes }>;
+      /**
+       * Namespace deleted
+       **/
+      NamespaceDeleted: AugmentedEvent<ApiType, [owner: PalletTorus0NamespaceNamespaceOwnership, path: Bytes], { owner: PalletTorus0NamespaceNamespaceOwnership, path: Bytes }>;
+      /**
+       * Event created when stake has been transferred from the coldkey
+       * account onto the key staking account
        **/
       StakeAdded: AugmentedEvent<ApiType, [AccountId32, AccountId32, u128]>;
       /**
-       * Event created when stake has been removed from the key staking account onto the coldkey
-       * account
+       * Event created when stake has been removed from the key staking
+       * account onto the coldkey account
        **/
       StakeRemoved: AugmentedEvent<ApiType, [AccountId32, AccountId32, u128]>;
       /**

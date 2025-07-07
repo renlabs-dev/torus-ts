@@ -1,18 +1,19 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
-/* eslint-disable no-debugger */
+/* eslint-disable */
 
 import "@polkadot/api/augment";
-import { ApiPromise, WsProvider } from "@polkadot/api";
-import { IPFS_URI_SCHEMA } from "@torus-network/torus-utils/ipfs";
-import { parseTorusTokens } from "@torus-network/torus-utils/subspace";
-import { queryMinAllowedStake } from "./modules/subspace";
 
-// $ pnpm exec tsx src/main.ts
+import { ApiPromise, WsProvider } from "@polkadot/api";
+
+import { BasicLogger } from "@torus-network/torus-utils/logger";
+
+const log = BasicLogger.create({ name: "torus-sdk-ts.main" });
+
+// // $ pnpm exec tsx src/main.ts
 
 const NODE_URL = "wss://api.testnet.torus.network";
 
 async function connectToChainRpc(wsEndpoint: string) {
-  const wsProvider = new WsProvider(NODE_URL);
+  const wsProvider = new WsProvider(wsEndpoint);
   const api = await ApiPromise.create({ provider: wsProvider });
   if (!api.isConnected) {
     throw new Error("API not connected");
@@ -23,29 +24,51 @@ async function connectToChainRpc(wsEndpoint: string) {
 
 const api = await connectToChainRpc(NODE_URL);
 
-// ====
+// // ====
 
-// const r1 = IPFS_URI_SCHEMA.safeParse(
-//   "ipfs://QmPK1s3pNYLi9ERiq3BDxKa4XosgWwFRQUydHUtz4YgpqB",
-// );
+// Test queryNamespaceEntriesOf function
+import { queryNamespaceEntriesOf } from "./modules/torus0.js";
+import { SS58Address } from "./address.js";
 
-// const r2 = IPFS_URI_SCHEMA.safeParse(
-//   "ipfs://bafybeigdyrzt5sfp7udm7hu76uh7y26nf3efuylqabf3oclgtqy55fbzdi",
-// );
+async function testQueryNamespaceEntriesOf() {
+  console.log("Testing queryNamespaceEntriesOf function...");
 
-// console.log(r1, "\n", r1.error?.format());
+  // Test with a sample agent address (you can replace this with an actual agent address)
+  const testAgentAddress = "5E2X371Jg62WWmKVVhDNgfFNtjXTSKMQDGGWKgqimKUgZ9gX"; // Alice's address
 
-// console.log(r2.data, "\n", r2.error?.format());
+  try {
+    const result = await queryNamespaceEntriesOf(
+      api,
+      testAgentAddress as SS58Address,
+    );
+    console.log("✅ queryNamespaceEntriesOf succeeded");
+    console.log("📊 Result:", result);
 
-const x = parseTorusTokens("100.5");
-const y = parseTorusTokens("1.3");
-const r = x.plus(y);
+    // The result is now an array of NamespaceEntry records
+    console.log("📈 Number of namespace entries:", result.length);
 
-console.log(r.toString());
-console.log(r.toFixed(2));
+    // Log first few entries if any exist
+    if (result.length > 0) {
+      console.log("🔍 Sample namespace entries:");
+      result.slice(0, 3).forEach((entry, index) => {
+        console.log(`  Entry ${index + 1}:`, {
+          path: entry.path,
+          createdAt: entry.createdAt,
+          deposit: entry.deposit,
+        });
+      });
+    } else {
+      console.log("ℹ️ No namespace entries found for this agent");
+    }
+  } catch (error) {
+    console.error("❌ queryNamespaceEntriesOf failed:", error);
+    console.error("Stack:", (error as Error).stack);
+  }
+}
 
-debugger;
+// Run the test
+await testQueryNamespaceEntriesOf();
 
-api.consts.emission0.blockEmission.toBigInt();
-
-process.exit(0);
+// Disconnect when done
+await api.disconnect();
+console.log("API disconnected");

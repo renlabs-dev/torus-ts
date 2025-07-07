@@ -1,4 +1,7 @@
+import { useMemo } from "react";
+
 import { CONSTANTS } from "@torus-network/sdk";
+
 import {
   useGetTorusPrice,
   useIncentivesRatio,
@@ -6,8 +9,8 @@ import {
   useTreasuryEmissionFee,
 } from "@torus-ts/query-provider/hooks";
 import { useTorus } from "@torus-ts/torus-provider";
+
 import { api as extAPI } from "~/trpc/react";
-import { useMemo } from "react";
 
 interface AgentUsdCalculationResult {
   isLoading: boolean;
@@ -91,8 +94,7 @@ export function useWeeklyUsdCalculation(
   // Calculate tokens per week
   const tokensPerWeek = useMemo(() => {
     // Early return conditions
-    if (isLoading || isError || !computedWeightedAgents.computedWeight)
-      return 0;
+    if (isLoading || isError || computedWeightedAgents === null) return 0;
 
     // Constants and input parameters (keeping percentage values)
     const BLOCKS_PER_WEEK =

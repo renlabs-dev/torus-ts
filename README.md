@@ -17,7 +17,7 @@ Monorepo for the **Torus Network** TypesSript Ecosystem. It's managed with
 .vscode
   └─ Recommended extensions and settings for VSCode users
 apps
-  |─ torus-dao
+  |─ torus-governance
   |   └─ DAO & Governance Portal
   |─ torus-page
   |   └─ Landing Page
@@ -25,12 +25,11 @@ apps
   |   └─ Set weights to Agents
   |─ torus-wallet
   |   └─ Transactions & Staking
-  └─ torus-bridge
-      └─ Bridge between Base and Torus
-services
-  |─ torus-cache
+  |─ torus-bridge
+  |   └─ Bridge between Base and Torus
+  |─ torus-cache <!-- TODO: Move to services section -->
   |   └─ Blockchain data caching service
-  └─ torus-worker
+  └─ torus-worker <!-- TODO: Move to services section -->
       └─ Background services
 packages
   ├─ api
@@ -43,8 +42,8 @@ packages
   |   └─ Polkadot JS API provider
   ├─ query-provider
   |   └─ React Query provider
-  ├─ subspace
-  |   └─ Substrate client library
+  ├─ torus-sdk-ts
+  |   └─ Main Torus Network SDK
   ├─ ui
   |   └─ UI components library
   └─ utils
@@ -64,7 +63,7 @@ tooling
 
 - **Node.js** - `20.16.0` or higher.
 - **pnpm** - `9.7.1` or higher.
-- **just** - `20.10.7` or higher, [installation guide](https://github.com/baryshev/just).
+- **just** - `20.10.7` or higher, [installation guide](https://github.com/casey/just?tab=readme-ov-file#installation).
 - **Text editor** - We recommend using [VSCode](https://code.visualstudio.com/).
 
 ## Get it running
@@ -79,12 +78,57 @@ just install
 # There is an `.env.example` in the root directory you can use for reference
 cp .env.example .env
 
-# build the project (required for subspace package type system)
+# Build the project (required for SDK package type system)
 just build
 
-# Push the Drizzle schema to the database (required for allocator and dao)
+# Push the Drizzle schema to the database (required for allocator and governance)
 just db-push
 
 # Run the project
 just dev {{app-name}}
 ```
+
+## Chain Metadata & Type Generation
+
+The SDK requires TypeScript types generated from blockchain metadata for each network environment.
+
+### Generate Types
+
+```sh
+# For specific networks
+just gen-types testnet
+just gen-types mainnet
+just gen-types local
+
+# For custom endpoints
+just gen-types "https://custom-node.example.com"
+```
+
+### Networks
+
+- `mainnet` - `https://api.torus.network`
+- `testnet` - `https://api.testnet.torus.network` 
+- `local` - `http://localhost:9951`
+
+### Process
+
+1. Fetches metadata from network endpoint
+2. Saves to `./data/metadata/{network}.json`
+3. Generates TypeScript types in `packages/torus-sdk-ts/src/interfaces/`
+4. Rebuild with `just build` after generating new types
+
+### Generated Files
+
+- `augment-api-consts.ts` - Blockchain constants
+- `augment-api-errors.ts` - Runtime errors  
+- `augment-api-events.ts` - Blockchain events
+- `augment-api-query.ts` - Storage queries
+- `augment-api-rpc.ts` - RPC calls
+- `augment-api-runtime.ts` - Runtime API calls
+- `augment-api-tx.ts` - Transaction types
+- `augment-api.ts` - Main API augmentations
+- `augment-types.ts` - Type augmentations
+- `lookup.ts` - Type lookup registry
+- `types.ts` - Core type definitions
+
+Generated types provide full TypeScript support for blockchain interactions and must match the target network's runtime version.

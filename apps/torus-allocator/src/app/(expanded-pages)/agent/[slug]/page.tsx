@@ -27,18 +27,31 @@ export default async function AgentPage({ params }: Readonly<AgentPageProps>) {
 
   const agentKey = slug;
 
-  const [mdl, penalties] = await Promise.all([
-    api.agent.byKeyLastBlock({ key: agentKey }),
+  const [penaltiesError, penalties] = await tryAsync(
     api.penalty.byAgentKey({ agentKey }),
-  ]);
+  );
+  if (penaltiesError !== undefined) {
+    console.error("Error fetching agent penalties:", penaltiesError);
+    notFound();
+  }
+
+  const [mdlError, mdl] = await tryAsync(
+    api.agent.byKeyLastBlock({ key: agentKey }),
+  );
+  if (mdlError !== undefined) {
+    console.error("Error fetching agent metadata:", mdlError);
+    notFound();
+  }
 
   if (!mdl?.metadataUri) return notFound();
 
   const [agentMetadataError, agentMetadata] = await tryAsync(
-    fetchAgentMetadata(mdl.metadataUri, { fetchImages: true }),
+    fetchAgentMetadata(mdl.metadataUri, {
+      fetchImages: true,
+    }),
   );
   if (agentMetadataError !== undefined) {
-    console.error("Failed to fetch agent metadata:", agentMetadataError);
+    console.error("Error fetching agent metadata:", agentMetadataError);
     notFound();
   }
 
@@ -60,6 +73,7 @@ export default async function AgentPage({ params }: Readonly<AgentPageProps>) {
     console.error("Error fetching computed agent weight:", computedAgentError);
     notFound();
   }
+
   const globalWeight = computedAgentWeight.find((d) => d.agentKey === agentKey);
   const networkAllocation = globalWeight
     ? (globalWeight.percComputedWeight * 100).toFixed(2)
@@ -95,11 +109,11 @@ export default async function AgentPage({ params }: Readonly<AgentPageProps>) {
               >
                 <AgentIcon alt={`${mdl.name} icon`} icon={icon} />
               </Suspense>
-              <div className="flex w-fit flex-col gap-6 p-6 md:p-0 md:pt-6">
+              <div className="flex w-fit flex-col gap-6 p-6 md:p-0 md:pt-6 md:pr-6">
                 <h1 className="text-start text-3xl font-semibold">
-                  {mdl.name}
+                  {metadata.title}
                 </h1>
-                <p className="text-card-foreground">
+                <p className="text-card-foreground word-break-break-word">
                   {metadata.short_description}
                 </p>
               </div>

@@ -47,6 +47,10 @@
     "test": {
       "dependsOn": ["^build"],
       "outputs": []
+    },
+    "publish": {
+      "dependsOn": ["build", "test"],
+      "outputs": []
     }
   },
   "globalEnv": [
@@ -63,6 +67,7 @@
     "DISCORD_CLIENT_SECRET",
     "DISCORD_REDIRECT_URI",
     "DISCORD_REDIRECT_URL",
+    "DISCORD_BOT_SECRET",
     "NEXTAUTH_URL",
     "NEXTAUTH_SECRET",
     "AUTH_SECRET",
@@ -71,6 +76,7 @@
     "TORUS_CURATOR_MNEMONIC",
     "NEXT_PUBLIC_TORUS_RPC_URL",
     "NEXT_PUBLIC_TORUS_CACHE_URL",
+    "NEXT_PUBLIC_TORUS_ALLOCATOR_ADDRESS",
     "NEXT_PUBLIC_CHAIN_ENV",
     "NOTIFICATIONS_START_BLOCK"
   ],

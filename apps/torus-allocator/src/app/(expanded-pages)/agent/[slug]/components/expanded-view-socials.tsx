@@ -1,4 +1,4 @@
-import { buildSocials } from "~/app/_components/agent-item-card/components/socials-info";
+import { buildSocials } from "~/app/_components/agent-card/agent-card-socials-info";
 import Link from "next/link";
 
 interface ExpandedViewSocialsProps {

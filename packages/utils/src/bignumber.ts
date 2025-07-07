@@ -1,4 +1,4 @@
-import type BigNumber from "bignumber.js";
+import type { BigNumber } from "bignumber.js";
 import type { Equals } from "tsafe";
 import { assert } from "tsafe";
 import type { IsEqual } from "type-fest";

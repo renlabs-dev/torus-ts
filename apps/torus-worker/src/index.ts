@@ -7,6 +7,7 @@ import express from "express";
 import { z } from "zod";
 // import { log } from "./common";
 import { parseEnvOrExit } from "./common/env";
+// import { startAPIServer } from "./trpc/api";
 import { agentFetcherWorker } from "./workers/agent-fetcher";
 import { notifyNewApplicationsWorker } from "./workers/notify-dao-applications";
 import { processApplicationsWorker } from "./workers/process-dao-applications";
@@ -89,6 +90,13 @@ async function main() {
     "weight-aggregator": async () => {
       await weightAggregatorWorker(api);
     },
+    // Add a new worker type for the API server
+    // api: async () => {
+    //   // Start the tRPC API server
+    //   startAPIServer();
+    //   // Keep the process running
+    //   await new Promise(() => {});
+    // },
   };
 
   const workerTypeArg = process.argv[2];

@@ -1,0 +1,8 @@
+{
+  "extends": "@torus-ts/tsconfig/internal-package.json",
+  "compilerOptions": {
+    "outDir": "./dist"
+  },
+  "include": ["src"],
+  "exclude": ["src/**/*.test.ts", "src/**/*.spec.ts", "tests/**/*"]
+}

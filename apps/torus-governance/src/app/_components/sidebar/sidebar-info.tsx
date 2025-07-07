@@ -43,12 +43,12 @@ export const SidebarInfo = () => {
 
   async function handleCopyClick(value: string): Promise<void> {
     const [error, _] = await tryAsync(navigator.clipboard.writeText(value));
-    
+
     if (error !== undefined) {
       toast.error("Failed to copy treasury address.");
       return;
     }
-    
+
     toast.success("Treasury address copied to clipboard.");
   }
 

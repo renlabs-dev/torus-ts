@@ -1,5 +1,5 @@
-import { z } from "zod";
 import type { UseFormReturn } from "react-hook-form";
+import { z } from "zod";
 
 const validateUrl = (domains: string[]) => (val: string) => {
   if (!val) return true;
@@ -26,6 +26,9 @@ const ensureHttpsProtocol = (val: string | undefined): string => {
 
   return `https://${cleanedVal}`;
 };
+
+export const MAX_FILE_SIZE = 512_000; // 512KB
+export const ACCEPTED_FILE_TYPES = ["png", "jpg", "jpeg", "gif", "webp"];
 
 export const updateAgentSocialsSchema = z.object({
   twitter: z
@@ -66,8 +69,8 @@ export const updateAgentSchema = z.object({
   name: z
     .string()
     .trim()
-    .min(1, "Name is required")
-    .max(50, "Name cannot exceed 50 characters"),
+    .optional()
+    .describe("Agent name (immutable, cannot be changed)"),
   title: z
     .string()
     .trim()
@@ -82,7 +85,7 @@ export const updateAgentSchema = z.object({
     .string()
     .trim()
     .min(1, "Description is required")
-    .max(5000, "Description cannot exceed 5000 characters"),
+    .max(50_000, "Description must be less than 50,000 characters"),
   website: z
     .string()
     .trim()
@@ -97,12 +100,17 @@ export const updateAgentSchema = z.object({
       message: "Must be a valid URL",
     })
     .optional(),
-  imageUrl: z
-    .string()
-    .trim()
-    .refine((val) => !val || z.string().url().safeParse(val).success, {
-      message: "Must be a valid URL",
+  imageFile: z
+    .instanceof(File)
+    .refine((file) => file.size <= MAX_FILE_SIZE, {
+      message: `File size must be less than ${(MAX_FILE_SIZE / 1000).toFixed(0)}KB`,
     })
+    .refine(
+      (file) => ACCEPTED_FILE_TYPES.includes(file.type.split("/")[1] ?? ""),
+      {
+        message: `File must be ${ACCEPTED_FILE_TYPES.join(", ")} format`,
+      },
+    )
     .optional(),
   socials: updateAgentSocialsSchema,
 });
@@ -130,7 +138,7 @@ export interface MetadataType {
 export interface UpdateAgentMutation {
   isPending: boolean;
   mutate: (data: UpdateAgentFormData) => void;
-  handleImageChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  handleImageChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
 }
 
 export type UpdateAgentForm = UseFormReturn<UpdateAgentFormData>;

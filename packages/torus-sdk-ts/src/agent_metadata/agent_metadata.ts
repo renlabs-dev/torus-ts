@@ -1,12 +1,13 @@
 import type { AnyJson } from "@polkadot/types/types";
+import { CID } from "multiformats";
+import { z } from "zod";
+
 import { typed_non_null_entries } from "@torus-network/torus-utils";
 import {
   buildIpfsGatewayUrl,
   IPFS_URI_SCHEMA,
 } from "@torus-network/torus-utils/ipfs";
 import { tryAsync, trySync } from "@torus-network/torus-utils/try-catch";
-import { CID } from "multiformats";
-import { z } from "zod";
 
 export const AGENT_SHORT_DESCRIPTION_MAX_LENGTH = 201;
 
@@ -21,7 +22,9 @@ export const AGENT_METADATA_SCHEMA = z.object({
       AGENT_SHORT_DESCRIPTION_MAX_LENGTH,
       `Agent short description must be less than ${AGENT_SHORT_DESCRIPTION_MAX_LENGTH} characters long`,
     ),
-  description: z.string().nonempty("Agent description is required"),
+  description: z
+    .string()
+    .max(3000, "Agent description must be less than 3000 characters long"),
   website: z.string().optional(),
   images: z
     .object({

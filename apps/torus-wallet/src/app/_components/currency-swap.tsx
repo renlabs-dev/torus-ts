@@ -1,12 +1,17 @@
 "use client";
 
+import { useCallback, useEffect, useState } from "react";
+
+import { ArrowLeftRight } from "lucide-react";
+
+import { fromNano, toNano } from "@torus-network/torus-utils/subspace";
+
 import { Button } from "@torus-ts/ui/components/button";
 import { Input } from "@torus-ts/ui/components/input";
-import { ArrowLeftRight } from "lucide-react";
-import { useCallback, useEffect, useState } from "react";
+
 import { convertTORUSToUSD, convertUSDToTorus } from "~/utils/helpers";
+
 import { AmountButtons } from "./amount-buttons";
-import { fromNano, toNano } from "@torus-network/torus-utils/subspace";
 
 interface CurrencySwapProps {
   amount: string;
@@ -86,7 +91,7 @@ export function CurrencySwap({
             placeholder={`Amount of ${inputType}`}
             disabled={disabled}
             type="number"
-            label={inputType === "TORUS" ? "TOR" : "USD"}
+            label={inputType === "TORUS" ? "TORUS" : "USD"}
             min={fromNano(minAllowedStakeData)}
           />
         </div>
@@ -104,9 +109,9 @@ export function CurrencySwap({
         <div className="flex flex-col w-full sm:w-1/2">
           <Input
             value={displayAmount}
-            placeholder={`Amount of ${inputType === "TORUS" ? "USD" : "TOR"}`}
+            placeholder={`Amount of ${inputType === "TORUS" ? "USD" : "TORUS"}`}
             disabled={true}
-            label={inputType === "TORUS" ? "USD" : "TOR"}
+            label={inputType === "TORUS" ? "USD" : "TORUS"}
           />
         </div>
       </div>

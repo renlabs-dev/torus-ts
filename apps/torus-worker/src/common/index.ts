@@ -1,4 +1,6 @@
 import type { ApiPromise } from "@polkadot/api";
+import { match } from "rustie";
+
 import type {
   AgentApplication,
   Api,
@@ -13,15 +15,16 @@ import {
 } from "@torus-network/sdk";
 import { BasicLogger } from "@torus-network/torus-utils/logger";
 import { tryAsync } from "@torus-network/torus-utils/try-catch";
+
 import { applicationStatusValues } from "@torus-ts/db/schema";
-import { match } from "rustie";
+
 import type {
   ApplicationDB,
   CadreCandidate,
   NewApplication,
   NewProposal,
-  VotesByNumericId as VoteById,
   VotesByKey as VoteByKey,
+  VotesByNumericId as VoteById,
 } from "../db";
 import {
   addCadreMember,
@@ -36,6 +39,7 @@ import {
   refuseCadreApplication,
   removeCadreMember,
 } from "../db";
+import type { DiscordRoleManager } from "./discord-role";
 
 /**
  * @deprecated
@@ -404,11 +408,13 @@ export async function getPenaltyFactors(cadreThreshold: number) {
  * doesn't block the entire batch.
  *
  * @param votes - Aggregated vote counts for each candidate
- * @param vote_threshold - Minimum votes required for action
+ * @param voteThreshold - Minimum votes required for action
+ * @param discordDaoRoleManager - The Discord role manager instance
  */
 export async function processCadreVotes(
   votes: VoteByKey[],
-  vote_threshold: number,
+  voteThreshold: number,
+  discordDaoRoleManager: DiscordRoleManager | null,
 ) {
   const processVotesPromises = votes.map(async (vote_info) => {
     const {
@@ -418,11 +424,12 @@ export async function processCadreVotes(
       removeVotes,
     } = vote_info;
 
-    if (acceptVotes >= vote_threshold) {
+    const getCadreDiscordRes = await tryAsync(getCadreDiscord(applicatorKey));
+    if (log.ifResultIsErr(getCadreDiscordRes)) return;
+    const [_getCadreDiscordErr, cadreDiscord] = getCadreDiscordRes;
+
+    if (acceptVotes >= voteThreshold) {
       log.info(`Adding cadre member: ${applicatorKey}`);
-      const getCadreDiscordRes = await tryAsync(getCadreDiscord(applicatorKey));
-      if (log.ifResultIsErr(getCadreDiscordRes)) return;
-      const [_getCadreDiscordErr, cadreDiscord] = getCadreDiscordRes;
 
       if (cadreDiscord == null) {
         log.error(
@@ -435,23 +442,49 @@ export async function processCadreVotes(
         addCadreMember(applicatorKey, cadreDiscord),
       );
       if (log.ifResultIsErr(addCadreMemberRes)) {
-        // Already logged by ifResultIsErr
+        return;
       }
-    } else if (refuseVotes >= vote_threshold) {
+
+      if (discordDaoRoleManager == null) {
+        log.warn(
+          `Role assignment will be skipped for cadre member ${applicatorKey} because Discord role manager is not configured.`,
+        );
+      } else {
+        const assignRoleRes =
+          await discordDaoRoleManager.assignRole(cadreDiscord);
+        log.ifResultIsErr(assignRoleRes);
+      }
+    } else if (refuseVotes >= voteThreshold) {
       log.info(`Refusing cadre application: ${applicatorKey}`);
       const refuseCadreApplicationRes = await tryAsync(
         refuseCadreApplication(applicatorKey),
       );
-      if (log.ifResultIsErr(refuseCadreApplicationRes)) {
-        // Already logged by ifResultIsErr
-      }
-    } else if (removeVotes >= vote_threshold) {
+      log.ifResultIsErr(refuseCadreApplicationRes);
+    } else if (removeVotes >= voteThreshold) {
       log.info(`Removing cadre member: ${applicatorKey}`);
+
       const removeCadreMemberRes = await tryAsync(
         removeCadreMember(applicatorKey),
       );
       if (log.ifResultIsErr(removeCadreMemberRes)) {
-        // Already logged by ifResultIsErr
+        return;
+      }
+
+      if (cadreDiscord == null) {
+        log.error(
+          `No discord account found for cadre member: ${applicatorKey}`,
+        );
+        return;
+      }
+
+      if (discordDaoRoleManager == null) {
+        log.warn(
+          `Role removal will be skipped for cadre member ${applicatorKey} because Discord role manager is not configured.`,
+        );
+      } else {
+        const removeRoleRes =
+          await discordDaoRoleManager.removeRole(cadreDiscord);
+        log.ifResultIsErr(removeRoleRes);
       }
     }
   });

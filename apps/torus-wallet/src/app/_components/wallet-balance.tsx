@@ -1,18 +1,23 @@
 "use client";
 
+import { Suspense, useMemo } from "react";
+
+import { Copy, Lock, Scale, Unlock } from "lucide-react";
+import Image from "next/image";
+
 import { formatToken, smallAddress } from "@torus-network/torus-utils/subspace";
+
 import { Card } from "@torus-ts/ui/components/card";
 import { CopyButton } from "@torus-ts/ui/components/copy-button";
 import { Skeleton } from "@torus-ts/ui/components/skeleton";
+
 import { useWallet } from "~/context/wallet-provider";
-import { Copy, Lock, Scale, Unlock } from "lucide-react";
-import Image from "next/image";
-import { Suspense, useMemo } from "react";
+
 import { TorusAnimation } from "./torus-animation";
 
 const BALANCE_ICONS = {
-  free: <Lock size={16} />,
-  staked: <Unlock size={16} />,
+  free: <Unlock size={16} />,
+  staked: <Lock size={16} />,
   total: <Scale size={16} />,
 };
 
@@ -33,7 +38,7 @@ function BalanceItem({ amount, icon, label, isLoading }: BalanceItemProps) {
       {!isLoading ? (
         <p className="text-muted-foreground flex items-end gap-2 font-bold text-white">
           {formatToken(amount)}
-          <span>TOR</span>
+          <span>TORUS</span>
         </p>
       ) : (
         <Skeleton className="w-1/2 py-3" />

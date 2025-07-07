@@ -24,7 +24,7 @@ export function CustomButton({
       variant="outline"
       size="lg"
       asChild
-      className={`animate-fade-down bg-background animate-delay-300 w-28`}
+      className={"animate-fade-down bg-background animate-delay-300 w-28"}
     >
       <Link href={href} target="_blank">
         {children}

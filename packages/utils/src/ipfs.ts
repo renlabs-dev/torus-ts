@@ -1,8 +1,8 @@
 import { CID } from "multiformats/cid";
 import { z } from "zod";
 // import { assert_error } from "./";
-import type { OldResult } from "./typing";
-import { trySync } from "./try-catch";
+import type { OldResult } from "./typing.js";
+import { trySync } from "./try-catch.js";
 
 export { CID } from "multiformats/cid";
 

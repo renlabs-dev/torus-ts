@@ -1,6 +1,6 @@
 {
   "name": "@torus-network/torus-utils",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "private": false,
   "type": "module",
   "scripts": {
@@ -19,18 +19,66 @@
     "access": "public"
   },
   "exports": {
-    ".": "./src/index.ts",
-    "./auth": "./src/auth.ts",
-    "./ipfs": "./src/ipfs.ts",
-    "./subspace": "./src/subspace.ts",
-    "./typing": "./src/typing.ts",
-    "./collections": "./src/collections.ts",
-    "./env": "./src/env.ts",
-    "./files": "./src/files.ts",
-    "./bignumber": "./src/bignumber.ts",
-    "./try-catch": "./src/try-catch.ts",
-    "./mutation-handler": "./src/mutation-handler.ts",
-    "./logger": "./src/logger.ts"
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./auth": {
+      "types": "./dist/auth.d.ts",
+      "default": "./dist/auth.js"
+    },
+    "./ipfs": {
+      "types": "./dist/ipfs.d.ts",
+      "default": "./dist/ipfs.js"
+    },
+    "./subspace": {
+      "types": "./dist/subspace.d.ts",
+      "default": "./dist/subspace.js"
+    },
+    "./typing": {
+      "types": "./dist/typing.d.ts",
+      "default": "./dist/typing.js"
+    },
+    "./collections": {
+      "types": "./dist/collections.d.ts",
+      "default": "./dist/collections.js"
+    },
+    "./env": {
+      "types": "./dist/env.d.ts",
+      "default": "./dist/env.js"
+    },
+    "./error": {
+      "types": "./dist/error.d.ts",
+      "default": "./dist/error.js"
+    },
+    "./files": {
+      "types": "./dist/files.d.ts",
+      "default": "./dist/files.js"
+    },
+    "./bignumber": {
+      "types": "./dist/bignumber.d.ts",
+      "default": "./dist/bignumber.js"
+    },
+    "./result": {
+      "types": "./dist/result.d.ts",
+      "default": "./dist/result.js"
+    },
+    "./try-catch": {
+      "types": "./dist/try-catch.d.ts",
+      "default": "./dist/try-catch.js"
+    },
+    "./mutation-handler": {
+      "types": "./dist/mutation-handler.d.ts",
+      "default": "./dist/mutation-handler.js"
+    },
+    "./discord-bot-interaction": {
+      "types": "./dist/discord-bot-interaction.d.ts",
+      "default": "./dist/discord-bot-interaction.js"
+    },
+    "./logger": {
+      "types": "./dist/logger.d.ts",
+      "default": "./dist/logger.js"
+    }
   },
   "dependencies": {
     "@polkadot/util": "catalog:",

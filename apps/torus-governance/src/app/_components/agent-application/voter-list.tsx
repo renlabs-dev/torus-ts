@@ -18,6 +18,8 @@ interface VoterListProps {
         id: number;
         vote: "ACCEPT" | "REFUSE" | "REMOVE";
         applicationId: number;
+        userName?: string | null;
+        avatarUrl?: string | null;
       }[]
     | undefined;
   isLoading: boolean;
@@ -44,7 +46,6 @@ export function VoterList(props: Readonly<VoterListProps>) {
     };
 
     containerNode.addEventListener("scroll", handleScroll);
-
     handleScroll();
 
     return () => {
@@ -134,18 +135,27 @@ export function VoterList(props: Readonly<VoterListProps>) {
         className="relative flex max-h-72 w-full flex-col gap-2 overflow-auto pr-2"
         ref={setContainerNode}
       >
-        {voters.map(({ userKey: address, vote }) => (
-          <Button
-            variant="outline"
-            key={address}
-            className="animate-fade-down border-muted bg-card animate-delay-500 hover:bg-accent
-              hover:text-muted-foreground flex w-full items-center justify-between px-6 py-8"
-            onClick={() => handleCopyAddress(address)}
-          >
-            {smallAddress(address)}
-            <div className="flex flex-col items-end">{getVoteLabel(vote)}</div>
-          </Button>
-        ))}
+        {voters.map(({ userKey: address, vote, userName }) => {
+          return (
+            <Button
+              variant="outline"
+              key={address}
+              className="animate-fade-down border-muted bg-card animate-delay-500 hover:bg-accent
+                hover:text-muted-foreground flex w-full items-center justify-between px-6 py-8"
+              onClick={() => handleCopyAddress(address)}
+            >
+              <div className="flex items-center gap-3">
+                <span className="font-medium">{userName}</span>
+                <span className="text-sm text-muted-foreground">
+                  ({smallAddress(address)})
+                </span>
+              </div>
+              <div className="flex flex-col items-end">
+                {getVoteLabel(vote)}
+              </div>
+            </Button>
+          );
+        })}
         <span
           className={`fixed -bottom-5 flex w-full items-end justify-center
             ${isAtBottom ? "animate-fade h-0" : "animate-fade h-8"} bg-gradient-to-b

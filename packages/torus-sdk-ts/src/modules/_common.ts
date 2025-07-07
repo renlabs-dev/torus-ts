@@ -8,6 +8,21 @@ import type { z, ZodTypeAny } from "zod";
 
 export type Api = ApiDecoration<"promise"> | ApiPromise;
 
+// ==== Error ====
+
+export class SbQueryError extends Error {
+  constructor(message: string, options?: ErrorOptions) {
+    super(message, options);
+    this.name = "SbQueryError";
+  }
+
+  static from(error: Error): SbQueryError {
+    return new SbQueryError(error.message, { cause: error });
+  }
+}
+
+// ==== Storage maps ====
+
 export function handleMapValues<K extends Codec, T extends ZodTypeAny>(
   rawEntries: [K, Codec][],
   schema: T,

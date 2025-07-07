@@ -1,10 +1,11 @@
 import type {
+  Agent as TorusAgent,
   GovernanceItemType,
   SS58Address,
-  Agent as TorusAgent,
 } from "@torus-network/sdk";
 import { checkSS58 } from "@torus-network/sdk";
 import { getOrSetDefault } from "@torus-network/torus-utils/collections";
+
 import type { SQL, Table } from "@torus-ts/db";
 import {
   and,
@@ -26,8 +27,17 @@ import {
   cadreVoteSchema,
   candidacyStatusValues,
   computedAgentWeightSchema,
+  emissionDistributionTargetsSchema,
+  emissionPermissionsSchema,
+  emissionStreamAllocationsSchema,
   governanceNotificationSchema,
+  namespacePermissionPathsSchema,
+  namespacePermissionsSchema,
   penalizeAgentVotesSchema,
+  permissionEnforcementControllersSchema,
+  permissionHierarchiesSchema,
+  permissionRevocationArbitersSchema,
+  permissionsSchema,
   proposalSchema,
   userAgentWeightSchema,
   whitelistApplicationSchema,
@@ -40,6 +50,23 @@ export type Agent = typeof agentSchema.$inferInsert;
 export type AgentWeight = typeof computedAgentWeightSchema.$inferInsert;
 export type NewNotification = typeof governanceNotificationSchema.$inferInsert;
 export type NewProposal = typeof proposalSchema.$inferInsert;
+export type NewPermission = typeof permissionsSchema.$inferInsert;
+export type NewEmissionPermission =
+  typeof emissionPermissionsSchema.$inferInsert;
+export type NewNamespacePermission =
+  typeof namespacePermissionsSchema.$inferInsert;
+export type NewNamespacePermissionPath =
+  typeof namespacePermissionPathsSchema.$inferInsert;
+export type NewEmissionStreamAllocation =
+  typeof emissionStreamAllocationsSchema.$inferInsert;
+export type NewEmissionDistributionTarget =
+  typeof emissionDistributionTargetsSchema.$inferInsert;
+export type NewPermissionEnforcementController =
+  typeof permissionEnforcementControllersSchema.$inferInsert;
+export type NewPermissionRevocationArbiter =
+  typeof permissionRevocationArbitersSchema.$inferInsert;
+export type NewPermissionHierarchy =
+  typeof permissionHierarchiesSchema.$inferInsert;
 
 export type Transaction = Parameters<Parameters<typeof db.transaction>[0]>[0];
 export type NewApplication = typeof whitelistApplicationSchema.$inferInsert;
@@ -512,4 +539,145 @@ export async function getUserWeightMap(): Promise<
     userWeightMap.set(agentKey, BigInt(Math.round(weight)));
   }
   return weightMap;
+}
+
+export async function upsertPermissions(
+  permissions: {
+    permission: NewPermission;
+    emissionPermission?: NewEmissionPermission;
+    namespacePermission?: NewNamespacePermission;
+    namespacePaths?: NewNamespacePermissionPath[];
+    streamAllocations?: NewEmissionStreamAllocation[];
+    distributionTargets?: NewEmissionDistributionTarget[];
+    enforcementControllers?: NewPermissionEnforcementController[];
+    revocationArbiters?: NewPermissionRevocationArbiter[];
+    hierarchy?: NewPermissionHierarchy;
+  }[],
+) {
+  await db.transaction(async (tx) => {
+    for (const {
+      permission,
+      emissionPermission,
+      namespacePermission,
+      namespacePaths,
+      streamAllocations,
+      distributionTargets,
+      enforcementControllers,
+      revocationArbiters,
+      hierarchy,
+    } of permissions) {
+      await tx
+        .insert(permissionsSchema)
+        .values(permission)
+        .onConflictDoUpdate({
+          target: [permissionsSchema.permissionId],
+          set: {
+            lastExecutionBlock: permission.lastExecutionBlock,
+            executionCount: permission.executionCount,
+            grantorAccountId: permission.grantorAccountId,
+            granteeAccountId: permission.granteeAccountId,
+            durationType: permission.durationType,
+            durationBlockNumber: permission.durationBlockNumber,
+            revocationType: permission.revocationType,
+            revocationBlockNumber: permission.revocationBlockNumber,
+            revocationRequiredVotes: permission.revocationRequiredVotes,
+            enforcementType: permission.enforcementType,
+            enforcementRequiredVotes: permission.enforcementRequiredVotes,
+            createdAtBlock: permission.createdAtBlock,
+          },
+        });
+
+      if (emissionPermission) {
+        await tx
+          .insert(emissionPermissionsSchema)
+          .values(emissionPermission)
+          .onConflictDoNothing({
+            target: [emissionPermissionsSchema.permissionId],
+          });
+      }
+
+      // STEP 3: Insert namespace permission data (if namespace scope)
+      if (namespacePermission) {
+        await tx
+          .insert(namespacePermissionsSchema)
+          .values(namespacePermission)
+          .onConflictDoNothing({
+            target: [namespacePermissionsSchema.permissionId],
+          });
+      }
+
+      // STEP 4: Insert namespace paths
+      if (namespacePaths && namespacePaths.length > 0) {
+        await tx
+          .insert(namespacePermissionPathsSchema)
+          .values(namespacePaths)
+          .onConflictDoNothing({
+            target: [
+              namespacePermissionPathsSchema.permissionId,
+              namespacePermissionPathsSchema.namespacePath,
+            ],
+          });
+      }
+
+      if (streamAllocations && streamAllocations.length > 0) {
+        await tx
+          .insert(emissionStreamAllocationsSchema)
+          .values(streamAllocations)
+          .onConflictDoNothing({
+            target: [
+              emissionStreamAllocationsSchema.permissionId,
+              emissionStreamAllocationsSchema.streamId,
+            ],
+          });
+      }
+
+      if (distributionTargets && distributionTargets.length > 0) {
+        await tx
+          .insert(emissionDistributionTargetsSchema)
+          .values(distributionTargets)
+          .onConflictDoNothing({
+            target: [
+              emissionDistributionTargetsSchema.permissionId,
+              emissionDistributionTargetsSchema.targetAccountId,
+            ],
+          });
+      }
+
+      if (enforcementControllers && enforcementControllers.length > 0) {
+        await tx
+          .insert(permissionEnforcementControllersSchema)
+          .values(enforcementControllers)
+          .onConflictDoNothing({
+            target: [
+              permissionEnforcementControllersSchema.permissionId,
+              permissionEnforcementControllersSchema.accountId,
+            ],
+          });
+      }
+
+      if (revocationArbiters && revocationArbiters.length > 0) {
+        await tx
+          .insert(permissionRevocationArbitersSchema)
+          .values(revocationArbiters)
+          .onConflictDoNothing({
+            target: [
+              permissionRevocationArbitersSchema.permissionId,
+              permissionRevocationArbitersSchema.accountId,
+            ],
+          });
+      }
+
+      if (hierarchy) {
+        await tx
+          .insert(permissionHierarchiesSchema)
+          .values(hierarchy)
+          .onConflictDoNothing({
+            target: [
+              permissionHierarchiesSchema.childPermissionId,
+              permissionHierarchiesSchema.parentPermissionId,
+            ],
+          });
+      }
+    }
+  });
 }

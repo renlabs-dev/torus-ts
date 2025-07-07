@@ -1,7 +1,7 @@
 import { DateTime } from "luxon";
 import { assert, AssertionError } from "tsafe";
 
-export * from "./typing";
+export * from "./typing.js";
 
 // == Branded Types / Nominal Types ==
 

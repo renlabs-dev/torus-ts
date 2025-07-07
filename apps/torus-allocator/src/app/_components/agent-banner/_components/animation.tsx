@@ -18,7 +18,10 @@ import * as THREE from "three";
 import "./util";
 
 export const Animation = () => (
-  <div className="margin-0 padding-0 bg-accent/60 scrollbar-hide box-border h-72 w-full overflow-hidden">
+  <div
+    className="margin-0 padding-0 bg-accent/60 scrollbar-hide box-border h-72 w-full
+      overflow-hidden"
+  >
     <Canvas camera={{ position: [0, 0, 100], fov: 7 }}>
       <Clouds material={THREE.MeshBasicMaterial} position={[0, 0, -2]}>
         <Cloud segments={20} bounds={[10, 2, 2]} volume={10} color="#3e4e78" />

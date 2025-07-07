@@ -91,6 +91,10 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       NotEnoughStakeToSetWeights: AugmentedError<ApiType>;
       /**
+       * At the current state, agents cannot control their own weight.
+       **/
+      WeightControlNotEnabled: AugmentedError<ApiType>;
+      /**
        * Agent tried setting more than 2 ^ 32 weights.
        **/
       WeightSetTooLarge: AugmentedError<ApiType>;
@@ -171,6 +175,24 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       [key: string]: AugmentedError<ApiType>;
     };
+    faucet: {
+      /**
+       * The proof-of-work does not meet the required difficulty
+       **/
+      InvalidDifficulty: AugmentedError<ApiType>;
+      /**
+       * The seal (hash) is invalid for the given parameters
+       **/
+      InvalidSeal: AugmentedError<ApiType>;
+      /**
+       * The block number provided is invalid (too old or in the future)
+       **/
+      InvalidWorkBlock: AugmentedError<ApiType>;
+      /**
+       * Generic error
+       **/
+      [key: string]: AugmentedError<ApiType>;
+    };
     governance: {
       /**
        * Agent not found
@@ -217,7 +239,8 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       InsufficientStake: AugmentedError<ApiType>;
       /**
-       * An internal error occurred, probably relating to the size of the bounded sets.
+       * An internal error occurred, probably relating to the size of the
+       * bounded sets.
        **/
       InternalError: AugmentedError<ApiType>;
       /**
@@ -232,10 +255,6 @@ declare module '@polkadot/api-base/types/errors' {
        * Invalid params given to Emission proposal
        **/
       InvalidEmissionProposalData: AugmentedError<ApiType>;
-      /**
-       * Invalid maximum allowed agents in proposal
-       **/
-      InvalidMaxAllowedAgents: AugmentedError<ApiType>;
       /**
        * Invalid maximum allowed weights in proposal
        **/
@@ -261,7 +280,8 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       InvalidPenaltyPercentage: AugmentedError<ApiType>;
       /**
-       * Negative proposal cost when setting global or subnet governance configuration.
+       * Negative proposal cost when setting global or subnet governance
+       * configuration.
        **/
       InvalidProposalCost: AugmentedError<ApiType>;
       /**
@@ -269,7 +289,8 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       InvalidProposalData: AugmentedError<ApiType>;
       /**
-       * Negative expiration when setting global or subnet governance configuration.
+       * Negative expiration when setting global or subnet governance
+       * configuration.
        **/
       InvalidProposalExpiration: AugmentedError<ApiType>;
       /**
@@ -305,11 +326,13 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       NotVoted: AugmentedError<ApiType>;
       /**
-       * The account is not whitelisted and cannot be removed from the whitelist.
+       * The account is not whitelisted and cannot be removed from the
+       * whitelist.
        **/
       NotWhitelisted: AugmentedError<ApiType>;
       /**
-       * Proposal was either accepted, refused or expired and cannot accept votes.
+       * Proposal was either accepted, refused or expired and cannot accept
+       * votes.
        **/
       ProposalClosed: AugmentedError<ApiType>;
       /**
@@ -329,8 +352,8 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       ProposalNotFound: AugmentedError<ApiType>;
       /**
-       * The voter is delegating its voting power to their staked modules. Disable voting power
-       * delegation.
+       * The voter is delegating its voting power to their staked modules.
+       * Disable voting power delegation.
        **/
       VoterIsDelegatingVotingPower: AugmentedError<ApiType>;
       /**
@@ -436,6 +459,166 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       [key: string]: AugmentedError<ApiType>;
     };
+    permission0: {
+      /**
+       * Permission is a duplicate, revoke the previous one
+       **/
+      DuplicatePermission: AugmentedError<ApiType>;
+      /**
+       * A permission with the same exact parameters was
+       * already created in the current block
+       **/
+      DuplicatePermissionInBlock: AugmentedError<ApiType>;
+      /**
+       * Fixed amount emissions can only be triggered once, manually or at a block
+       **/
+      FixedAmountCanOnlyBeTriggeredOnce: AugmentedError<ApiType>;
+      /**
+       * Insufficient balance for operation
+       **/
+      InsufficientBalance: AugmentedError<ApiType>;
+      /**
+       * Invalid amount
+       **/
+      InvalidAmount: AugmentedError<ApiType>;
+      /**
+       * Curator flags provided are invalid.
+       **/
+      InvalidCuratorPermissions: AugmentedError<ApiType>;
+      /**
+       * Invalid distribution method
+       **/
+      InvalidDistributionMethod: AugmentedError<ApiType>;
+      /**
+       * Invalid distribution interval
+       **/
+      InvalidInterval: AugmentedError<ApiType>;
+      /**
+       * Invalid number of controllers or required votes
+       **/
+      InvalidNumberOfControllers: AugmentedError<ApiType>;
+      /**
+       * Revokers and required voters must be at least one, and required voters must
+       * be less than the number of revokers
+       **/
+      InvalidNumberOfRevokers: AugmentedError<ApiType>;
+      /**
+       * Invalid percentage (out of range)
+       **/
+      InvalidPercentage: AugmentedError<ApiType>;
+      /**
+       * Invalid emission weight set to target
+       **/
+      InvalidTargetWeight: AugmentedError<ApiType>;
+      /**
+       * Invalid threshold
+       **/
+      InvalidThreshold: AugmentedError<ApiType>;
+      /**
+       * Namespace creation was disabled by a curator.
+       **/
+      NamespaceCreationDisabled: AugmentedError<ApiType>;
+      /**
+       * Tried granting unknown namespace.
+       **/
+      NamespaceDoesNotExist: AugmentedError<ApiType>;
+      /**
+       * Namespace path provided contains illegal character or is malformatted.
+       **/
+      NamespacePathIsInvalid: AugmentedError<ApiType>;
+      /**
+       * No accumulated amount
+       **/
+      NoAccumulatedAmount: AugmentedError<ApiType>;
+      /**
+       * No targets specified
+       **/
+      NoTargetsSpecified: AugmentedError<ApiType>;
+      /**
+       * Not authorized to edit a stream emission permission.
+       **/
+      NotAuthorizedToEdit: AugmentedError<ApiType>;
+      /**
+       * Not authorized to revoke
+       **/
+      NotAuthorizedToRevoke: AugmentedError<ApiType>;
+      /**
+       * Not authorized to toggle permission state
+       **/
+      NotAuthorizedToToggle: AugmentedError<ApiType>;
+      /**
+       * Stream emission permission is not editable
+       **/
+      NotEditable: AugmentedError<ApiType>;
+      /**
+       * Not the grantee of the permission
+       **/
+      NotPermissionGrantee: AugmentedError<ApiType>;
+      /**
+       * Not the grantor of the permission
+       **/
+      NotPermissionGrantor: AugmentedError<ApiType>;
+      /**
+       * The agent is not registered
+       **/
+      NotRegisteredAgent: AugmentedError<ApiType>;
+      /**
+       * Parent permission not found
+       **/
+      ParentPermissionNotFound: AugmentedError<ApiType>;
+      /**
+       * Permissions can only be created through extrinsics
+       **/
+      PermissionCreationOutsideExtrinsic: AugmentedError<ApiType>;
+      /**
+       * Permission is in cooldown, wait a bit.
+       **/
+      PermissionInCooldown: AugmentedError<ApiType>;
+      /**
+       * Permission not found
+       **/
+      PermissionNotFound: AugmentedError<ApiType>;
+      /**
+       * Self-permission is not allowed
+       **/
+      SelfPermissionNotAllowed: AugmentedError<ApiType>;
+      /**
+       * Failed to insert into storage
+       **/
+      StorageError: AugmentedError<ApiType>;
+      /**
+       * Too many controllers
+       **/
+      TooManyControllers: AugmentedError<ApiType>;
+      /**
+       * Exceeded amount of total namespaces allowed in a single permission.
+       **/
+      TooManyNamespaces: AugmentedError<ApiType>;
+      /**
+       * Too many revokers
+       **/
+      TooManyRevokers: AugmentedError<ApiType>;
+      /**
+       * Too many streams
+       **/
+      TooManyStreams: AugmentedError<ApiType>;
+      /**
+       * Too many targets
+       **/
+      TooManyTargets: AugmentedError<ApiType>;
+      /**
+       * Total allocation exceeded 100%
+       **/
+      TotalAllocationExceeded: AugmentedError<ApiType>;
+      /**
+       * Unsupported permission type
+       **/
+      UnsupportedPermissionType: AugmentedError<ApiType>;
+      /**
+       * Generic error
+       **/
+      [key: string]: AugmentedError<ApiType>;
+    };
     sudo: {
       /**
        * Sender must be the Sudo account.
@@ -510,7 +693,8 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       AgentDoesNotExist: AugmentedError<ApiType>;
       /**
-       * Key is not present in Whitelist, it needs to be whitelisted by a Curator
+       * Key is not present in Whitelist, it needs to be whitelisted by a
+       * Curator
        **/
       AgentKeyNotWhitelisted: AugmentedError<ApiType>;
       /**
@@ -534,6 +718,14 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       AgentNameTooShort: AugmentedError<ApiType>;
       /**
+       * Agent Creation was disabled by a curator.
+       **/
+      AgentsFrozen: AugmentedError<ApiType>;
+      /**
+       * The agent already updated recently
+       **/
+      AgentUpdateOnCooldown: AugmentedError<ApiType>;
+      /**
        * The agent url is too long.
        **/
       AgentUrlTooLong: AugmentedError<ApiType>;
@@ -541,10 +733,6 @@ declare module '@polkadot/api-base/types/errors' {
        * The agent url is too short.
        **/
       AgentUrlTooShort: AugmentedError<ApiType>;
-      /**
-       * An arithmetic error occurred during calculation.
-       **/
-      ArithmeticError: AugmentedError<ApiType>;
       /**
        * Balance could not be removed from the account.
        **/
@@ -561,10 +749,6 @@ declare module '@polkadot/api-base/types/errors' {
        * Failed to convert between u128 and T::Balance.
        **/
       CouldNotConvertToBalance: AugmentedError<ApiType>;
-      /**
-       * The extrinsic panicked during execution.
-       **/
-      ExtrinsicPanicked: AugmentedError<ApiType>;
       /**
        * The agent metadata is invalid.
        **/
@@ -590,6 +774,10 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       InvalidMinBurn: AugmentedError<ApiType>;
       /**
+       * Invalid namespace path
+       **/
+      InvalidNamespacePath: AugmentedError<ApiType>;
+      /**
        * Invalid shares distribution.
        **/
       InvalidShares: AugmentedError<ApiType>;
@@ -602,16 +790,36 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       InvalidWeightControlFee: AugmentedError<ApiType>;
       /**
-       * Attempted to set max allowed agents to a value less than the current number of
-       * registered agents.
+       * Namespace already exists
        **/
-      MaxAllowedAgents: AugmentedError<ApiType>;
+      NamespaceAlreadyExists: AugmentedError<ApiType>;
+      /**
+       * The namespace is being delegated through a permission. Revoke that first.
+       **/
+      NamespaceBeingDelegated: AugmentedError<ApiType>;
+      /**
+       * Namespace depth exceeded
+       **/
+      NamespaceDepthExceeded: AugmentedError<ApiType>;
+      /**
+       * Cannot delete namespace with children
+       **/
+      NamespaceHasChildren: AugmentedError<ApiType>;
+      /**
+       * Namespace not found
+       **/
+      NamespaceNotFound: AugmentedError<ApiType>;
+      /**
+       * Namespace Creation was disabled by a curator.
+       **/
+      NamespacesFrozen: AugmentedError<ApiType>;
       /**
        * Insufficient balance to register.
        **/
       NotEnoughBalanceToRegisterAgent: AugmentedError<ApiType>;
       /**
-       * Insufficient balance in the cold key account to stake the requested amount.
+       * Insufficient balance in the cold key account to stake the requested
+       * amount.
        **/
       NotEnoughBalanceToStake: AugmentedError<ApiType>;
       /**
@@ -627,6 +835,14 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       NotEnoughStakeToWithdraw: AugmentedError<ApiType>;
       /**
+       * Not the owner of the namespace
+       **/
+      NotNamespaceOwner: AugmentedError<ApiType>;
+      /**
+       * Parent namespace not found
+       **/
+      ParentNamespaceNotFound: AugmentedError<ApiType>;
+      /**
        * Failed to add stake to the account.
        **/
       StakeNotAdded: AugmentedError<ApiType>;
@@ -639,19 +855,17 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       StakeTooSmall: AugmentedError<ApiType>;
       /**
-       * A step in the process panicked.
-       **/
-      StepPanicked: AugmentedError<ApiType>;
-      /**
        * The entity is still registered and cannot be modified.
        **/
       StillRegistered: AugmentedError<ApiType>;
       /**
-       * The number of agent registrations in this block exceeds the allowed limit.
+       * The number of agent registrations in this block exceeds the allowed
+       * limit.
        **/
       TooManyAgentRegistrationsThisBlock: AugmentedError<ApiType>;
       /**
-       * The number of agent registrations in this interval exceeds the allowed limit.
+       * The number of agent registrations in this interval exceeds the
+       * allowed limit.
        **/
       TooManyAgentRegistrationsThisInterval: AugmentedError<ApiType>;
       /**

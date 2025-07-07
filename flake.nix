@@ -1,6 +1,6 @@
 {
   inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs/nixos-24.11";
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-25.05";
     flake-utils.url = "github:numtide/flake-utils";
   };
 
@@ -24,8 +24,14 @@
           pkgs.just
           # Run Github actions locally
           pkgs.act
+
+          # Atlas Community does not have some features
+          # e.g. data.external_schema
+          ## Database migration tool
+          #pkgs.atlas
         ];
-      in {
+      in
+      {
         devShell = pkgs.mkShell {
           inherit nativeBuildInputs buildInputs;
           packages = shellPkgs;

@@ -1,7 +1,7 @@
-import { AsyncResultObj } from "./async-result";
-import type { Result } from "./result";
-import { empty, makeErr, makeOk } from "./result";
-import { BasicLogger } from "./logger";
+import { AsyncResultObj } from "./async-result.js";
+import type { Result } from "./result.js";
+import { empty, makeErr, makeOk } from "./result.js";
+import { BasicLogger } from "./logger.js";
 
 const log = BasicLogger.create({ name: "try-catch" });
 
@@ -30,7 +30,7 @@ export function isError(error: unknown): error is Error {
  * @returns An Error object
  *
  * @example
- * ```typescript
+ * ```ts
  * // Returns original error
  * ensureError(new Error('test')); // Error: test
  *
@@ -136,7 +136,7 @@ export function tryAsyncRaw<T, E>(
  * @returns An AsyncResultObj containing success or Error.
  *
  * @example
- * ```typescript
+ * ```ts
  * const result = await tryAsync(fetch('https://api.example.com/data'))
  *   .match({
  *     Ok: (data) => console.log('API data:', data),

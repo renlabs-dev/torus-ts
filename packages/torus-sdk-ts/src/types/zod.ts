@@ -15,9 +15,9 @@ import type { Option } from "@torus-network/torus-utils";
 import { match } from "rustie";
 import type { ZodRawShape, ZodType, ZodTypeAny, ZodTypeDef } from "zod";
 import { z } from "zod";
-import { SS58_SCHEMA } from "../address";
+import { SS58_SCHEMA } from "../address.js";
 
-export { sb_enum } from "./sb_enum";
+export { sb_enum } from "./sb_enum.js";
 
 // == Zod ==
 
@@ -66,24 +66,31 @@ export interface ToPrimitive {
   toPrimitive(disableAscii?: boolean): AnyJson;
 }
 
-export const sb_to_primitive = z.unknown().transform<AnyJson>((val, ctx) => {
+export const ToPrimitive_schema = z.custom<ToPrimitive>((val) => {
   if (!(typeof val === "object" && val !== null)) {
-    ctx.addIssue({
-      code: z.ZodIssueCode.invalid_type,
-      expected: "object",
-      received: typeof val,
-    });
-    return z.NEVER;
+    // ctx.addIssue({
+    //   code: z.ZodIssueCode.invalid_type,
+    //   expected: "object",
+    //   received: typeof val,
+    // });
+    // return z.NEVER;
+    return false;
   }
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
   if (!("toPrimitive" in val && typeof val.toPrimitive === "function")) {
-    ctx.addIssue({
-      code: z.ZodIssueCode.custom,
-      message: "toPrimitive not present, it's not a Codec",
-    });
-    return z.NEVER;
+    // ctx.addIssue({
+    //   code: z.ZodIssueCode.custom,
+    //   message: "toPrimitive not present, it's not a Codec",
+    // });
+    // return z.NEVER;
+    return false;
   }
-  return (val as ToPrimitive).toPrimitive();
-});
+  return true;
+}, "doesn't have .toPrimitive()");
+
+export const sb_to_primitive = ToPrimitive_schema.transform((val) =>
+  val.toPrimitive(),
+);
 
 // == Struct ==
 
@@ -155,7 +162,7 @@ export const sb_option_default = <
 
 export const sb_some = <T extends ZodTypeAny>(
   inner: T,
-): ZodType<z.output<T>, z.ZodTypeDef, polkadot_Option<Codec>> =>
+): ZodType<z.output<T>, z.ZodTypeDef, polkadot_Option<z.input<T>>> =>
   sb_option<T>(inner).transform(
     (val, ctx): z.output<T> =>
       // eslint-disable-next-line @typescript-eslint/no-unsafe-return
@@ -185,23 +192,26 @@ export interface ToBigInt {
   toBigInt(): bigint;
 }
 
-export const ToBigInt_schema = z.unknown().transform<ToBigInt>((val, ctx) => {
+export const ToBigInt_schema = z.custom<ToBigInt>((val) => {
   if (!(typeof val === "object" && val !== null)) {
-    ctx.addIssue({
-      code: z.ZodIssueCode.invalid_type,
-      expected: "object",
-      received: typeof val,
-    });
-    return z.NEVER;
+    // ctx.addIssue({
+    //   code: z.ZodIssueCode.invalid_type,
+    //   expected: "object",
+    //   received: typeof val,
+    // });
+    // return z.NEVER;
+    return false;
   }
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
   if (!("toBigInt" in val && typeof val.toBigInt === "function")) {
-    ctx.addIssue({
-      code: z.ZodIssueCode.custom,
-      message: "toBigInt not present, it's not a Codec conversible to BigInt",
-    });
-    return z.NEVER;
+    // ctx.addIssue({
+    //   code: z.ZodIssueCode.custom,
+    //   message: "toBigInt not present, it's not a Codec convertible to BigInt",
+    // });
+    // return z.NEVER;
+    return false;
   }
-  return val as ToBigInt;
+  return true;
 });
 
 export const sb_bigint = ToBigInt_schema.transform((val) => val.toBigInt());
@@ -277,7 +287,7 @@ export const sb_basic_enum = <
 
 export const GenericAccountId_schema = z.custom<GenericAccountId>(
   (val) => val instanceof GenericAccountId,
-  "not a substrate BaseAccountId",
+  "not a substrate GenericAccountId",
 );
 
 export const sb_address = GenericAccountId_schema.transform((val) =>
@@ -322,3 +332,53 @@ export const sb_array = <T, S extends ZodType<T, z.ZodTypeDef, unknown>>(
       });
       return xs;
     });
+
+export const sb_map = <
+  K,
+  V,
+  KS extends z.ZodType<K, z.ZodTypeDef, unknown>,
+  VS extends z.ZodType<V, z.ZodTypeDef, unknown>,
+>(
+  keySchema: KS,
+  valueSchema: VS,
+): z.ZodType<
+  Map<z.output<KS>, z.output<VS>>,
+  z.ZodTypeDef,
+  Map<unknown, unknown>
+> => {
+  return z
+    .custom<Map<unknown, unknown>>((val) => {
+      if (val instanceof Map) {
+        return true;
+      }
+      return false;
+    })
+    .transform((val, ctx) => {
+      const result = new Map<K, V>();
+      for (const [keyRaw, valueRaw] of val) {
+        const parsedKey = keySchema.safeParse(keyRaw);
+        if (parsedKey.success === false) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: `Error in map key: ${parsedKey.error.message}`,
+          });
+          return z.NEVER;
+        }
+        const parsedValue = valueSchema.safeParse(valueRaw);
+        if (parsedValue.success === false) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: `Error in map value: ${parsedValue.error.message}`,
+          });
+          return z.NEVER;
+        }
+
+        const key = parsedKey.data;
+        const value = parsedValue.data;
+
+        result.set(key, value);
+      }
+
+      return result;
+    });
+};

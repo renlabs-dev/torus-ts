@@ -7,64 +7,152 @@ dump-metadata name:
 	scripts/get-metadata.sh {{ name }} > ./data/metadata/{{ name }}.json
 
 gen-types name: (dump-metadata name)
-	(cd packages/subspace && just gen-types {{ name }})
+	(cd packages/torus-sdk-ts && just gen-types {{ name }})
 
 # == Dev ==
 
+# Install dependencies
 install:
   pnpm install
 
-fix: lint-fix format-fix
-
+# List all packages in the workspace
 ls:
   pnpm exec turbo ls
 
-build:
-  pnpm exec ./scripts/dev-helper with-env turbo run build
-
+# Run a development command for a package
 dev name *args:
   pnpm exec ./scripts/dev-helper dev {{name}} {{args}}
 
+# Run a development command for a package and watch for changes
 dev-watch name *args:
   pnpm exec ./scripts/dev-helper dev --watch {{name}} {{args}}
 
-typecheck:
-  pnpm exec turbo run typecheck
+build filter="*":
+  pnpm exec ./scripts/dev-helper with-env turbo run build -F "{{filter}}"
 
-format:
-  pnpm exec turbo run format --continue
+# Typecheck code (with TypeScript)
+typecheck filter="*":
+  pnpm exec turbo run typecheck --continue -F "{{filter}}"
 
+# Check code formatting (with Prettier)
+format filter="*":
+  pnpm exec turbo run format --continue -F "{{filter}}"
+
+# Format code (with Prettier)
 format-fix filter="*":
   pnpm exec turbo run format-fix --continue -F "{{filter}}"
 
-lint:
-  pnpm exec turbo run lint --continue
+# Lint code (with ESLint)
+lint filter="*":
+  pnpm exec turbo run lint --continue -F "{{filter}}"
 
-lint-fix:
-  pnpm exec turbo run lint-fix --continue
+# Fix linting issues (with ESLint)
+lint-fix filter="*":
+  pnpm exec turbo run lint-fix --continue -F "{{filter}}"
+
+# Run all code fixes
+fix: lint-fix format-fix
 
 lint-ws:
   pnpm exec pnpm dlx sherif@latest -r unordered-dependencies
 
-check-all:
-  pnpm exec turbo run typecheck lint
+check-all filter="*":
+  pnpm exec turbo run typecheck lint -F "{{filter}}"
 
-check name:
-  pnpm exec turbo run typecheck lint -F {{name}}
+check filter="*":
+  pnpm exec turbo run typecheck lint -F "{{filter}}"
 
 test filter="*":
-  pnpm exec turbo run test -F "{{filter}}"
+  pnpm exec turbo run test --continue -F "{{filter}}"
 
 create-package:
   pnpm turbo gen init
 
+# == Publishing ==
+
+publish:
+  pnpm run -F "@torus-network/sdk" -F "@torus-network/torus-utils" build
+  # how to bump / manage versions?
+  pnpm publish -F "@torus-network/sdk" -F "@torus-network/torus-utils" --no-git-checks
+
+changeset-add:
+  pnpm changeset add
+
+changeset-version:
+  pnpm changeset version
+
+
+# == Database Management with Atlas ==
+
+local-db-url := "postgres://postgres:postgres@localhost:5432/torus-ts-db?sslmode=disable"
+
+# Install Atlas CLI
+atlas-install:
+  curl -sSf https://atlasgo.sh | sh
+
+# Spawn a local development database
+db-dev-up:
+    @echo "Starting local development database..."
+    @docker --version > /dev/null || (echo "Docker is required but not installed" && exit 1)
+    docker compose up -d postgres
+    @echo "Waiting for database to be ready..."
+    while ! pg_isready -d "{{local-db-url}}"; do sleep 1; done
+    @echo "Database is ready!"
+
+# Spin down the local development database
+db-dev-down:
+    docker compose down postgres
+
+# Purge the local development database (removes all data)
+# This completely removes the database volume, so all data will be lost.
+db-dev-purge:
+    docker compose down -v postgres
+
+# Generate a new migration based on schema changes
+# Usage: just db-generate [name]
+db-generate *args:
+    @atlas version > /dev/null || (echo "Atlas is required but not installed" && exit 1)
+    atlas migrate diff {{args}} --env local
+
+# Apply all pending migrations (on local dev DB)
+db-apply:
+    @atlas version > /dev/null || (echo "Atlas is required but not installed" && exit 1)
+    atlas migrate apply --env local \
+        --url "{{local-db-url}}"
+
+# Lint all migration files
+db-lint:
+    @atlas version > /dev/null || (echo "Atlas is required but not installed" && exit 1)
+    git fetch origin main
+    atlas migrate lint --env local --git-base origin/main
+
+
+# Reset the local development database and apply all migrations
+# This will remove all data and reapply migrations from scratch.
+db-reset: db-dev-purge db-dev-up db-apply
+
+# Reset migrations not in base branch (useful for clean regeneration)
+db-migrations-reset base="dev":
+    git fetch origin
+    git restore --source=origin/{{base}} -- atlas/migrations/
+    git restore --source=origin/{{base}} -- atlas/migrations/atlas.sum
+
+# NOTE: The following commands are disabled due to issues with Atlas schema cleaning
+# See: https://t.torus.network/PoEmc
+# # Clean current dev DB schema
+# db-wipe:
+#     @atlas version > /dev/null || (echo "Atlas is required but not installed" && exit 1)
+#     atlas schema clean \
+#         --url "{{local-db-url}}"
+
+# # Full reset: clean DB and reapply all migrations
+# db-reset: db-wipe db-apply
+
+
 # -- DB --
 
-db-push:
-  pnpm exec scripts/dev-helper with-env turbo -F @torus-ts/db push
-
 db-dump:
-  cd packages/db; pnpm exec drizzle-kit export > drizzle/dump.sql
+  cd packages/db; pnpm exec drizzle-kit export --dialect postgresql --schema src/schema.ts > drizzle/dump.sql
 
 db-studio:
   pnpm exec scripts/dev-helper with-env turbo -F @torus-ts/db dev
@@ -93,6 +181,7 @@ clean-output:
       -name 'dist' -o \
       -name '.turbo' \
     \) -prune -exec rm -rf '{}' +
+
 
 # == Github Actions ==
 

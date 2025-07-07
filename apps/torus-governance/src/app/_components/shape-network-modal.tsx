@@ -1,11 +1,6 @@
 "use client";
 
 import { useTorus } from "@torus-ts/torus-provider";
-import {
-  Alert,
-  AlertDescription,
-  AlertTitle,
-} from "@torus-ts/ui/components/alert";
 import { Button } from "@torus-ts/ui/components/button";
 import {
   Dialog,
@@ -30,11 +25,13 @@ import {
   Grid2x2Check,
   Grid2x2Plus,
 } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { CreateAgentApplication } from "./agent-application/create-agent-application";
 import { CreateProposal } from "./proposal/create-proposal";
 import { CreateTransferDaoTreasuryProposal } from "./proposal/create-transfer-dao-treasury-proposal";
 import { RegisterAgent } from "./proposal/register-agent";
+import { trySync } from "@torus-network/torus-utils/try-catch";
+import { WalletConnectionWarning } from "@torus-ts/ui/components/wallet-connection-warning";
 
 type ViewType =
   | "whitelist-agent"
@@ -51,18 +48,19 @@ interface ViewSpec {
 }
 
 const viewList: Record<ViewType, ViewSpec> = {
-  "whitelist-agent": {
-    label: "Whitelist an agent",
-    description: "Submit an application to whitelist a new agent",
-    icon: <Grid2x2Plus className="h-4 w-4 text-purple-500" />,
-    component: <CreateAgentApplication />,
-  },
   "register-agent": {
     label: "Register an agent",
-    description: "Register a previously whitelisted agent",
+    description: "Register an agent on the network",
     icon: <Grid2x2Check className="h-4 w-4 text-green-500" />,
     component: <RegisterAgent />,
     separatorAfter: true,
+  },
+  "whitelist-agent": {
+    label: "Whitelist an agent",
+    description:
+      "Submit an application to whitelist and receive emissions from root",
+    icon: <Grid2x2Plus className="h-4 w-4 text-purple-500" />,
+    component: <CreateAgentApplication />,
   },
   "create-proposal": {
     label: "Create a proposal",
@@ -80,12 +78,35 @@ const viewList: Record<ViewType, ViewSpec> = {
 export function ShapeNetworkModal() {
   const { isAccountConnected } = useTorus();
   const { isInitialized } = useGovernance();
-  const [selectedView, setSelectedView] = useState<ViewType>("whitelist-agent");
+  const [selectedView, setSelectedView] = useState<ViewType>("register-agent");
+  const [isOpen, setIsOpen] = useState(false);
+
+  useEffect(() => {
+    const [shouldBeError, shouldBeOpen] = trySync(
+      () => sessionStorage.getItem("shapeNetworkModalOpen") === "true",
+    );
+    if (shouldBeError !== undefined) {
+      console.error("Error reading sessionStorage:", shouldBeError);
+      return;
+    }
+    if (shouldBeOpen) {
+      setIsOpen(true);
+      sessionStorage.removeItem("shapeNetworkModalOpen");
+    }
+  }, []);
+
+  // Save dialog state before any authentication
+  const handleOpenChange = (open: boolean) => {
+    if (!open) {
+      sessionStorage.removeItem("shapeNetworkModalOpen");
+    }
+    setIsOpen(open);
+  };
 
   const selectedFormAction = viewList[selectedView];
 
   return (
-    <Dialog>
+    <Dialog open={isOpen} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild disabled={!isInitialized}>
         <Button
           variant="outline"
@@ -106,14 +127,10 @@ export function ShapeNetworkModal() {
           </DialogTitle>
         </DialogHeader>
 
-        {!isAccountConnected && (
-          <Alert variant="destructive">
-            <AlertTitle>Wallet Required</AlertTitle>
-            <AlertDescription>
-              Please connect a wallet to {viewList[selectedView].label}
-            </AlertDescription>
-          </Alert>
-        )}
+        <WalletConnectionWarning
+          formType={viewList[selectedView].label}
+          isAccountConnected={isAccountConnected}
+        />
 
         <Select
           value={selectedView}

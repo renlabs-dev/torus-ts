@@ -47,10 +47,9 @@ function SelfButton({ disabled }: Readonly<{ disabled?: boolean }>) {
     if (disabled) return;
     if (address) void setFieldValue("recipient", address);
     else
-      toast({
-        title: "Uh oh! Something went wrong.",
-        description: `No account found for for chain ${chainDisplayName}, is your wallet connected?`,
-      });
+      toast.error(
+        `No account found for for chain ${chainDisplayName}, is your wallet connected?`,
+      );
   };
   return (
     <Button

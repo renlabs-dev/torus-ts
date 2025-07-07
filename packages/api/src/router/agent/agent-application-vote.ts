@@ -1,5 +1,9 @@
 import { and, eq, isNull, sql } from "@torus-ts/db";
-import { agentApplicationVoteSchema } from "@torus-ts/db/schema";
+import {
+  agentApplicationVoteSchema,
+  userDiscordInfoSchema,
+  cadreSchema,
+} from "@torus-ts/db/schema";
 import { AGENT_APPLICATION_VOTE_INSERT_SCHEMA } from "@torus-ts/db/validation";
 import type { TRPCRouterRecord } from "@trpc/server";
 import { z } from "zod";
@@ -20,13 +24,37 @@ export const agentApplicationVoteRouter = {
   byApplicationId: publicProcedure
     .input(AGENT_APPLICATION_VOTE_INSERT_SCHEMA.pick({ applicationId: true }))
     .query(({ ctx, input }) => {
-      return ctx.db.query.agentApplicationVoteSchema.findMany({
-        where: and(
-          eq(agentApplicationVoteSchema.applicationId, input.applicationId),
-          isNull(agentApplicationVoteSchema.deletedAt),
-        ),
-      });
+      return ctx.db
+        .select({
+          // Original vote fields
+          id: agentApplicationVoteSchema.id,
+          userKey: agentApplicationVoteSchema.userKey,
+          vote: agentApplicationVoteSchema.vote,
+          applicationId: agentApplicationVoteSchema.applicationId,
+          createdAt: agentApplicationVoteSchema.createdAt,
+          updatedAt: agentApplicationVoteSchema.updatedAt,
+          deletedAt: agentApplicationVoteSchema.deletedAt,
+          // Discord info from joined tables
+          userName: userDiscordInfoSchema.userName,
+          avatarUrl: userDiscordInfoSchema.avatarUrl,
+        })
+        .from(agentApplicationVoteSchema)
+        .leftJoin(
+          cadreSchema,
+          eq(agentApplicationVoteSchema.userKey, cadreSchema.userKey),
+        )
+        .leftJoin(
+          userDiscordInfoSchema,
+          eq(cadreSchema.discordId, userDiscordInfoSchema.discordId),
+        )
+        .where(
+          and(
+            eq(agentApplicationVoteSchema.applicationId, input.applicationId),
+            isNull(agentApplicationVoteSchema.deletedAt),
+          ),
+        );
     }),
+
   byUserKey: publicProcedure
     .input(z.object({ userKey: z.string() }))
     .query(({ ctx, input }) => {
