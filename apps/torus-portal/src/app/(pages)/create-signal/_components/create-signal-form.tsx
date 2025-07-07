@@ -194,7 +194,7 @@ export default function CreateSignalForm() {
                           step={1}
                           className="-mt-3 -mb-3"
                         />
-                        <div className="text-right text-xs text-muted-foreground font-medium">
+                        <div className="text-right text-md font-medium">
                           {field.value || 0}%
                         </div>
                       </div>
