@@ -4,11 +4,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import type { inferProcedureInput } from "@trpc/server";
 import { useForm } from "react-hook-form";
 
-import type { SS58Address } from "@torus-network/sdk";
-
 import type { AppRouter } from "@torus-ts/api";
 import { AGENT_DEMAND_SIGNAL_INSERT_SCHEMA } from "@torus-ts/db/validation";
-import { useNamespaceEntriesOf } from "@torus-ts/query-provider/hooks";
 import { useTorus } from "@torus-ts/torus-provider";
 import { Button } from "@torus-ts/ui/components/button";
 import {
@@ -46,14 +43,13 @@ type SignalFormData = NonNullable<
 
 export default function CreateSignalForm() {
   const { toast } = useToast();
-  const { api: torusApi, selectedAccount } = useTorus();
+  const { selectedAccount } = useTorus();
 
   const createSignalMutation = api.signal.create.useMutation();
 
-  const namespaceEntries = useNamespaceEntriesOf(
-    torusApi,
-    selectedAccount?.address as SS58Address,
-  );
+  // Query for computed agent weights to check if user is an agent
+  const { data: allComputedWeights, isLoading: isLoadingWeights } =
+    api.computedAgentWeight.all.useQuery();
 
   // Query for existing signals by this user
   const existingSignals = api.signal.byCreatorId.useQuery(
@@ -63,7 +59,11 @@ export default function CreateSignalForm() {
     },
   );
 
-  const hasAgent = namespaceEntries.data && namespaceEntries.data.length > 0;
+  // Check if the current user is an agent by looking for their address in computed weights
+  const userComputedWeight = allComputedWeights?.find(
+    (weight) => weight.agentKey === selectedAccount?.address,
+  );
+  const hasAgent = !!userComputedWeight;
 
   // Calculate total existing allocation
   const totalExistingAllocation =
@@ -115,8 +115,8 @@ export default function CreateSignalForm() {
   };
 
   return (
-    <div className="w-full max-w-2xl relative">
-      {!hasAgent && (
+    <div className="w-full relative">
+      {!hasAgent && !isLoadingWeights && (
         <div
           className="absolute inset-0 z-10 flex items-center justify-center bg-background/80
             backdrop-blur-sm rounded-lg"
@@ -140,7 +140,8 @@ export default function CreateSignalForm() {
       )}
 
       <Card
-        className={`border-0 ${!hasAgent ? "opacity-30 pointer-events-none" : ""}`}
+        className={`border-0
+          ${!hasAgent && !isLoadingWeights ? "opacity-30 pointer-events-none" : ""}`}
       >
         <CardHeader>
           <CardTitle>Create Demand Signal</CardTitle>
@@ -230,7 +231,7 @@ export default function CreateSignalForm() {
                           max={maxAllowedAllocation}
                           min={0}
                           step={1}
-                          className="-mt-3 -mb-3"
+                          className="-mt-3 -mb-2"
                         />
                         <div className="flex justify-between items-center text-sm">
                           <span className="text-muted-foreground">
@@ -388,7 +389,8 @@ export default function CreateSignalForm() {
                   disabled={
                     createSignalMutation.isPending ||
                     maxAllowedAllocation === 0 ||
-                    !hasAgent
+                    !hasAgent ||
+                    isLoadingWeights
                   }
                 >
                   {createSignalMutation.isPending
