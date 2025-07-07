@@ -92,6 +92,7 @@ export type SignalsList = NonNullable<
 
 export interface CachedAgentData {
   agentName: string;
+  shortDescription: string;
   iconBlob: Blob | null;
   socials: Record<string, string>;
   currentBlock: number;

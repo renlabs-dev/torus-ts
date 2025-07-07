@@ -39,6 +39,7 @@ export const AgentCardContainer = memo(
       [fullAddress],
     );
     const [agentName, setAgentName] = useState<string>(initialAgentName);
+    const [shortDescription, setShortDescription] = useState<string>("");
     const [currentBlock, setCurrentBlock] = useState<number>(0);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<Error | null>(null);
@@ -76,6 +77,7 @@ export const AgentCardContainer = memo(
       if (cachedData) {
         // Use cached data immediately
         setAgentName(cachedData.agentName);
+        setShortDescription(cachedData.shortDescription);
         setSocials(cachedData.socials);
         setCurrentBlock(cachedData.currentBlock);
         setWeightFactor(cachedData.weightFactor);
@@ -132,6 +134,7 @@ export const AgentCardContainer = memo(
         // No metadata, cache basic data and finish
         const cacheData: CachedAgentData = {
           agentName,
+          shortDescription: "",
           iconBlob: null,
           socials: {},
           currentBlock,
@@ -150,12 +153,18 @@ export const AgentCardContainer = memo(
         const metadata = await fetchMetadata(metadataUri);
         let iconBlob: Blob | null = null;
         const socials: Record<string, string> = {};
+        let shortDesc = "";
 
         if (metadata) {
           if (metadata.images.icon) {
             iconBlob = metadata.images.icon;
             const url = URL.createObjectURL(iconBlob);
             setIconUrl(url);
+          }
+
+          if (metadata.metadata.short_description) {
+            shortDesc = metadata.metadata.short_description;
+            setShortDescription(shortDesc);
           }
 
           if (metadata.metadata.website) {
@@ -176,6 +185,7 @@ export const AgentCardContainer = memo(
         // Cache the complete data with blob instead of URL
         const cacheData: CachedAgentData = {
           agentName,
+          shortDescription: shortDesc,
           iconBlob,
           socials,
           currentBlock,
@@ -238,6 +248,7 @@ export const AgentCardContainer = memo(
           iconUrl={iconUrl ?? ""}
           socialsList={socials}
           title={agentName}
+          shortDescription={shortDescription}
           currentBlock={currentBlock}
           agentWeight={weightFactor}
         />
