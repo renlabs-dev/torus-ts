@@ -45,7 +45,9 @@ import { useToast } from "@torus-ts/ui/hooks/use-toast";
 // TODO : Change all namespace to Capability Permission
 
 const deleteNamespaceSchema = z.object({
-  selectedNamespace: z.string().min(1, "Please select a capability permission path"),
+  selectedNamespace: z
+    .string()
+    .min(1, "Please select a capability permission path"),
   segmentToDelete: z.number().min(2, "Please select a segment to delete"),
 });
 
@@ -180,7 +182,8 @@ export default function DeleteNamespaceForm({
             }
           },
           refetchHandler: async () => {
-            // Capability permission list will be automatically updated
+            // Refetch namespace entries after successful deletion
+            await namespaceEntries.refetch();
           },
         });
       } catch (error) {
@@ -193,6 +196,7 @@ export default function DeleteNamespaceForm({
         toast.error("Failed to delete capability permission");
       }
     },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [selectedPath, deleteNamespaceTransaction, onSuccess, toast, form],
   );
 
@@ -212,9 +216,9 @@ export default function DeleteNamespaceForm({
           Delete Capability Permission
         </CardTitle>
         <CardDescription>
-          Select a capability permission path and choose where to cut it. The selected
-          segment and everything after it will be deleted. If you have any
-          active permissions, you need to delete them first.
+          Select a capability permission path and choose where to cut it. The
+          selected segment and everything after it will be deleted. If you have
+          any active permissions, you need to delete them first.
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -238,7 +242,8 @@ export default function DeleteNamespaceForm({
                       </div>
                     ) : maxPaths.length === 0 ? (
                       <div className="text-sm text-muted-foreground p-4 border rounded-md">
-                        No capability permissions found. Create a capability permission first.
+                        No capability permissions found. Create a capability
+                        permission first.
                       </div>
                     ) : (
                       <Select
@@ -262,7 +267,8 @@ export default function DeleteNamespaceForm({
                     )}
                   </FormControl>
                   <FormDescription>
-                    Choose the capability permission path to view its segments for deletion.
+                    Choose the capability permission path to view its segments
+                    for deletion.
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
