@@ -45,7 +45,7 @@ export default function GrantEmissionPermissionForm({
         type: "Indefinite",
       },
       revocation: {
-        type: "Irrevocable",
+        type: "RevocableByGrantor",
       },
       enforcement: {
         type: "ControlledBy",

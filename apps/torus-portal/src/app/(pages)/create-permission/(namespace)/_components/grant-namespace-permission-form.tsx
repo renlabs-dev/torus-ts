@@ -42,7 +42,7 @@ export default function GrantNamespacePermissionForm({
         type: "Indefinite",
       },
       revocation: {
-        type: "Irrevocable",
+        type: "RevocableByGrantor",
       },
     },
   });
