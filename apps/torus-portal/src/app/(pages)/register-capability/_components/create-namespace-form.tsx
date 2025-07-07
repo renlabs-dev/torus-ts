@@ -47,6 +47,7 @@ import {
   ToggleGroupItem,
 } from "@torus-ts/ui/components/toggle-group";
 import { TransactionStatus } from "@torus-ts/ui/components/transaction-status";
+import { WalletConnectionWarning } from "@torus-ts/ui/components/wallet-connection-warning";
 import { useToast } from "@torus-ts/ui/hooks/use-toast";
 
 const HTTP_METHODS = ["get", "post", "patch", "delete", "put"] as const;
@@ -261,6 +262,7 @@ export default function CreateNamespaceForm({
           Register a new agent capability by creating a namespace path for it on
           Torus.
         </CardDescription>
+        <WalletConnectionWarning isAccountConnected={isAccountConnected} />
       </CardHeader>
       <CardContent>
         <Form {...form}>

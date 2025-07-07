@@ -37,6 +37,7 @@ import {
   SelectValue,
 } from "@torus-ts/ui/components/select";
 import { TransactionStatus } from "@torus-ts/ui/components/transaction-status";
+import { WalletConnectionWarning } from "@torus-ts/ui/components/wallet-connection-warning";
 import { useToast } from "@torus-ts/ui/hooks/use-toast";
 
 // Every single namespace name has been changed to Capability Permission
@@ -220,6 +221,7 @@ export default function DeleteNamespaceForm({
           selected segment and everything after it will be deleted. If you have
           any active permissions, you need to delete them first.
         </CardDescription>
+        <WalletConnectionWarning isAccountConnected={isAccountConnected} />
       </CardHeader>
       <CardContent>
         <Form {...form}>

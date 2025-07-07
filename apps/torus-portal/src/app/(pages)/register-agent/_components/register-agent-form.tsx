@@ -51,6 +51,7 @@ import {
 } from "@torus-ts/ui/components/tabs";
 import { Textarea } from "@torus-ts/ui/components/text-area";
 import { TransactionStatus } from "@torus-ts/ui/components/transaction-status";
+import { WalletConnectionWarning } from "@torus-ts/ui/components/wallet-connection-warning";
 import { useToast } from "@torus-ts/ui/hooks/use-toast";
 import { getLinks } from "@torus-ts/ui/lib/data";
 
@@ -443,7 +444,10 @@ export default function RegisterAgentForm() {
     <div className="w-full max-w-2xl p-6 min-h-[calc(100vh-4rem)] flex flex-col">
       <div className="mb-6">
         <h1 className="text-2xl font-bold mb-2">Register Agent</h1>
-        <p className="text-muted-foreground">Register your agent to Torus</p>
+        <p className="text-muted-foreground pb-2">
+          Register your agent to Torus
+        </p>
+        <WalletConnectionWarning isAccountConnected={isAccountConnected} />
       </div>
 
       <Form {...form}>

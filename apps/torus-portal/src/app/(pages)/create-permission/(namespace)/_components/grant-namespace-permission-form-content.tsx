@@ -1,12 +1,14 @@
 "use client";
 
 import { useCallback } from "react";
-import type { SS58Address } from "@torus-network/sdk";
+
 import { Loader2, Plus, Trash2 } from "lucide-react";
 import { useFieldArray } from "react-hook-form";
 
-import { useTorus } from "@torus-ts/torus-provider";
+import type { SS58Address } from "@torus-network/sdk";
+
 import { useNamespaceEntriesOf } from "@torus-ts/query-provider/hooks";
+import { useTorus } from "@torus-ts/torus-provider";
 import { Button } from "@torus-ts/ui/components/button";
 import {
   Card,
@@ -18,11 +20,11 @@ import {
 import {
   Form,
   FormControl,
+  FormDescription,
   FormField,
   FormItem,
   FormLabel,
   FormMessage,
-  FormDescription,
 } from "@torus-ts/ui/components/form";
 import { Input } from "@torus-ts/ui/components/input";
 import {
@@ -33,6 +35,7 @@ import {
   SelectValue,
 } from "@torus-ts/ui/components/select";
 import { WalletConnectionWarning } from "@torus-ts/ui/components/wallet-connection-warning";
+
 import type {
   GrantNamespacePermissionForm,
   GrantNamespacePermissionFormData,
@@ -98,13 +101,12 @@ export function GrantNamespacePermissionFormComponent({
         <CardDescription>
           Delegate permission to access a specific capability permission path.
         </CardDescription>
+        <WalletConnectionWarning isAccountConnected={isAccountConnected} />
       </CardHeader>
 
       <CardContent>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-            <WalletConnectionWarning isAccountConnected={isAccountConnected} />
-
+          <form onSubmit={form.handleSubmit(onSubmit)}>
             {/* Recipient */}
             <FormField
               control={form.control}

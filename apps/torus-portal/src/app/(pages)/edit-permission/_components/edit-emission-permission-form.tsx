@@ -1,10 +1,15 @@
 "use client";
 
-import { useTorus } from "@torus-ts/torus-provider";
-import { useForm } from "react-hook-form";
+import { useCallback, useEffect, useState } from "react";
+
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useToast } from "@torus-ts/ui/hooks/use-toast";
-import { useCallback, useState, useEffect } from "react";
+import { useForm } from "react-hook-form";
+
+import type { PermissionContract, SS58Address } from "@torus-network/sdk";
+import { queryPermission } from "@torus-network/sdk";
+import { tryAsync } from "@torus-network/torus-utils/try-catch";
+
+import { useTorus } from "@torus-ts/torus-provider";
 import {
   Card,
   CardContent,
@@ -13,35 +18,33 @@ import {
   CardTitle,
 } from "@torus-ts/ui/components/card";
 import { Form } from "@torus-ts/ui/components/form";
-import { queryPermission } from "@torus-network/sdk";
-import type { SS58Address, PermissionContract } from "@torus-network/sdk";
-import { tryAsync } from "@torus-network/torus-utils/try-catch";
+import { WalletConnectionWarning } from "@torus-ts/ui/components/wallet-connection-warning";
+import { useToast } from "@torus-ts/ui/hooks/use-toast";
+
+import { PermissionSelector } from "~/app/_components/permission-selector";
+
 import { EditEmissionPermissionFormComponent } from "./edit-emission-permission-form-content";
+import type {
+  EditEmissionPermissionFormData,
+  PermissionInfo,
+  PermissionSelectionFormData,
+} from "./edit-emission-permission-form-schema";
 import {
   editEmissionPermissionSchema,
   permissionSelectionSchema,
-} from "./edit-emission-permission-form-schema";
-import type {
-  EditEmissionPermissionFormData,
-  PermissionSelectionFormData,
-  PermissionInfo,
 } from "./edit-emission-permission-form-schema";
 import {
   transformFormDataToUpdateSDK,
   transformPermissionToFormData,
 } from "./edit-emission-permission-form-utils";
-import { PermissionSelector } from "~/app/_components/permission-selector";
-
 // Every single namespace name has been changed to Capability Permission
 // as requested here: https://coda.io/d/RENLABS-CORE-DEVELOPMENT-DOCUMENTS_d5Vgr5OavNK/Text-change-requests_su4jQAlx
 // In the future we are going to have all the other names from namespace to Capability Permission
 // TODO : Change all namespace to Capability Permission
-
 // Every single grantor/grantee terminology has been changed to delegator/recipient
 // as requested here: https://coda.io/d/RENLABS-CORE-DEVELOPMENT-DOCUMENTS_d5Vgr5OavNK/Text-change-requests_su4jQAlx
 // This change affects UI labels, variable names, and function names throughout the codebase
 // TODO : Ensure all grantor/grantee references are updated to delegator/recipient
-
 // eslint-disable-next-line @typescript-eslint/consistent-type-imports
 import {
   PermissionWithDetails,
@@ -55,8 +58,12 @@ interface EditEmissionPermissionFormProps {
 export default function EditEmissionPermissionForm({
   onSuccess,
 }: EditEmissionPermissionFormProps) {
-  const { updateEmissionPermissionTransaction, api, selectedAccount } =
-    useTorus();
+  const {
+    updateEmissionPermissionTransaction,
+    api,
+    selectedAccount,
+    isAccountConnected,
+  } = useTorus();
   const { toast } = useToast();
 
   const [transactionStatus, setTransactionStatus] = useState<
@@ -181,9 +188,7 @@ export default function EditEmissionPermissionForm({
               setSelectedPermissionInfo(null);
             } else if (result.status === "ERROR") {
               setTransactionStatus("error");
-              toast.error(
-                result.message ?? "Failed to update permission",
-              );
+              toast.error(result.message ?? "Failed to update permission");
             }
           },
           refetchHandler: async () => {
@@ -220,6 +225,7 @@ export default function EditEmissionPermissionForm({
             Modify the selected permission. Available fields depend on the
             permission's type and revocation terms.
           </CardDescription>
+          <WalletConnectionWarning isAccountConnected={isAccountConnected} />
         </CardHeader>
         <CardContent>
           <Form {...selectionForm}>

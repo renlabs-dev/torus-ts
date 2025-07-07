@@ -79,15 +79,15 @@ export default function AllSignalsView() {
   }
 
   return (
-    <Card className="border-0 pb-12 w-full max-w-fit md:max-w-2xl mx-auto overflow-hidden">
-      <CardHeader className="px-4 sm:px-6">
+    <Card className="border-0 pb-12 w-full max-w-fit md:max-w-3xl overflow-hidden">
+      <CardHeader>
         <CardTitle>All Demand Signals</CardTitle>
         <CardDescription>
           View all demand signals ranked by their network weight allocation.
           Higher network weight allocations appear first.
         </CardDescription>
       </CardHeader>
-      <CardContent className="space-y-4 px-4 sm:px-6 overflow-hidden">
+      <CardContent className="space-y-4 overflow-hidden">
         {rankedSignals.map((signal, index) => (
           <Card
             key={signal.id || index}
