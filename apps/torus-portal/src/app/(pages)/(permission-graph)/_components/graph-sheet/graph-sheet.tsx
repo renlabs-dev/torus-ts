@@ -5,7 +5,6 @@ import {
   SheetTitle,
 } from "@torus-ts/ui/components/sheet";
 
-import { PermissionGraphOverview } from "../permission-graph-overview";
 import type {
   allPermissions,
   CachedAgentData,
@@ -14,10 +13,16 @@ import type {
   CustomGraphNode,
   SignalsList,
 } from "../permission-graph-types";
-import { AgentCardContainer } from "./graph-sheet-agent-card/agent-card-container";
+import {
+  AgentCardContainer,
+} from "./graph-sheet-agent-card/agent-card-container";
 import { GraphSheetDetails } from "./graph-sheet-details/graph-sheet-details";
-import { GraphSheetDetailsPermission } from "./graph-sheet-details/graph-sheet-details-permission";
-import { GraphSheetDetailsSignal } from "./graph-sheet-details/graph-sheet-details-signal";
+import {
+  GraphSheetDetailsPermission,
+} from "./graph-sheet-details/graph-sheet-details-permission";
+import {
+  GraphSheetDetailsSignal,
+} from "./graph-sheet-details/graph-sheet-details-signal";
 
 interface GraphSheetProps {
   selectedNode: CustomGraphNode | null;
@@ -33,7 +38,7 @@ interface GraphSheetProps {
 
 export function GraphSheet(props: GraphSheetProps) {
   if (!props.selectedNode) {
-    return <PermissionGraphOverview graphData={props.graphData} />;
+    return null;
   }
 
   const isSignalNode = props.selectedNode.nodeType === "signal";

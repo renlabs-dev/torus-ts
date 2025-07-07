@@ -120,7 +120,7 @@ export default function PermissionGraphContainer() {
           <span className="text-xs">Click on any node for detailed view.</span>
         </div>
       </div>
-      <div className="absolute top-[3.9rem] left-2 right-2 z-10">
+      <div className="absolute md:top-[3.8rem] top-[3.4rem] left-2 right-2 z-10">
         {/* Desktop layout */}
         <div className="hidden lg:flex items-center gap-2 w-full animate-fade-down">
           <div className="w-full">
