@@ -34,7 +34,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@torus-ts/ui/components/select";
-import { WalletConnectionWarning } from "@torus-ts/ui/components/wallet-connection-warning";
+import {
+  WalletConnectionWarning,
+} from "@torus-ts/ui/components/wallet-connection-warning";
 
 import type {
   GrantNamespacePermissionForm,
@@ -106,7 +108,11 @@ export function GrantNamespacePermissionFormComponent({
 
       <CardContent>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)}>
+          <form
+            id="namespace-permission-form"
+            onSubmit={form.handleSubmit(onSubmit)}
+            className="space-y-6"
+          >
             {/* Recipient */}
             <FormField
               control={form.control}
@@ -248,7 +254,7 @@ export function GrantNamespacePermissionFormComponent({
             </div>
 
             {/* Revocation */}
-            <div className="space-y-4">
+            <div className="space-y-4s">
               <FormField
                 control={form.control}
                 name="revocation.type"
@@ -410,33 +416,36 @@ export function GrantNamespacePermissionFormComponent({
                 />
               )}
             </div>
-
-            {/* Submit Button */}
-            <Button
-              type="submit"
-              className="w-full"
-              disabled={
-                !isAccountConnected ||
-                mutation.isPending ||
-                namespaceOptions.length === 0
-              }
-            >
-              {mutation.isPending ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Awaiting Signature...
-                </>
-              ) : !isAccountConnected ? (
-                "Connect Wallet to Continue"
-              ) : namespaceOptions.length === 0 ? (
-                "Create a Capability Permission First"
-              ) : (
-                "Delegate Capability Permission"
-              )}
-            </Button>
           </form>
         </Form>
       </CardContent>
+
+      {/* Submit Button - Sticky at bottom */}
+      <div className="sticky bottom-0 bg-card px-6 pt-4 mt-auto">
+        <Button
+          type="submit"
+          form="namespace-permission-form"
+          className="w-full"
+          disabled={
+            !isAccountConnected ||
+            mutation.isPending ||
+            namespaceOptions.length === 0
+          }
+        >
+          {mutation.isPending ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              Awaiting Signature...
+            </>
+          ) : !isAccountConnected ? (
+            "Connect Wallet to Continue"
+          ) : namespaceOptions.length === 0 ? (
+            "Create a Capability Permission First"
+          ) : (
+            "Delegate Capability Permission"
+          )}
+        </Button>
+      </div>
     </Card>
   );
 }
