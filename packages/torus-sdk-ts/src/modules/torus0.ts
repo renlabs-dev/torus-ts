@@ -1,9 +1,15 @@
 import { z } from "zod";
 
+import type { ApiPromise } from "@polkadot/api";
+import type { Result } from "@torus-network/torus-utils/result";
+import { makeErr, makeOk } from "@torus-network/torus-utils/result";
 import { tryAsync, trySync } from "@torus-network/torus-utils/try-catch";
 
 import type { SS58Address } from "../address.js";
-import { validateNamespacePath } from "../types/namespace/index.js";
+import {
+  namespacePathParser,
+  validateNamespacePath,
+} from "../types/namespace/index.js";
 import {
   sb_address,
   sb_bigint,
@@ -91,4 +97,90 @@ export async function queryNamespaceEntriesOf(
   }
 
   return namespaceEntries;
+}
+
+// ---- Namespace Path Creation Cost ----
+
+/**
+ * Queries the cost of creating a namespace path.
+ *
+ * This function calls the `torus0_namespacePathCreationCost` RPC method to
+ * determine the fee and deposit required to create a namespace path for a given
+ * account.
+ *
+ * **Note**: This RPC method is not automatically extracted by polkadot.js type
+ * generation for unknown reasons, so it's implemented manually here.
+ *
+ * @param api - The Substrate API instance
+ * @param accountId - The account that wants to create the namespace path
+ * @param namespacePath - The namespace path to create (e.g. "agent.my-app.config")
+ * @returns Result with fee and deposit amounts, or error if the operation fails
+ *
+ * @example
+ * ```ts
+ * const [error, costs] = await queryNamespacePathCreationCost(
+ *   api,
+ *   "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY",
+ *   "agent.my-app.config"
+ * );
+ * if (error !== undefined) {
+ *   console.error("Failed to get costs:", error);
+ * } else {
+ *   console.log(`Fee: ${costs.fee}, Deposit: ${costs.deposit}`);
+ * }
+ * ```
+ */
+export async function queryNamespacePathCreationCost(
+  api: ApiPromise,
+  accountId: SS58Address,
+  namespacePath: string,
+): Promise<Result<{ fee: bigint; deposit: bigint }, Error>> {
+  // Validate the namespace path first
+  const { data: path, error: pathError } =
+    namespacePathParser().safeParse(namespacePath);
+  if (pathError !== undefined) {
+    return makeErr(new Error(`Invalid namespace path: ${pathError.message}`));
+  }
+
+  // Call the RPC method manually since it's not auto-generated
+  // Note: Using provider send method because this RPC method is not auto-decorated
+  // Convert the validated path string to bytes as expected by the substrate RPC
+  const pathBytes = Array.from(new TextEncoder().encode(path));
+  const [rpcError, rpcResult] = await tryAsync(
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-call
+    (api as any)._rpcCore.provider.send("torus0_namespacePathCreationCost", [accountId, pathBytes]),
+  );
+  if (rpcError !== undefined) {
+    return makeErr(new Error(`RPC call failed: ${rpcError.message}`));
+  }
+
+  // Parse the result as a tuple of (Balance, Balance)
+  const [parseError, parsedResult] = trySync(() => {
+    if (!Array.isArray(rpcResult) || rpcResult.length !== 2) {
+      throw new Error(
+        "Expected RPC result to be a tuple of two Balance values",
+      );
+    }
+
+    // TODO: sb_ Zod parser for tuple
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+    const [feeHexRaw, depositHexRaw] = rpcResult;
+
+    const feeHex = sb_bigint.parse(feeHexRaw);
+    const depositHex = sb_bigint.parse(depositHexRaw);
+
+    // Convert hex strings to BigInt
+    const fee = BigInt(feeHex);
+    const deposit = BigInt(depositHex);
+
+    return { fee, deposit };
+  });
+
+  if (parseError !== undefined) {
+    return makeErr(
+      new Error(`Failed to parse RPC result: ${parseError.message}`),
+    );
+  }
+
+  return makeOk(parsedResult);
 }

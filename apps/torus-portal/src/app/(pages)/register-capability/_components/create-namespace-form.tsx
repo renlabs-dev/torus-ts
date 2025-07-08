@@ -7,11 +7,10 @@ import { Info } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
-
 import type { SS58Address } from "@torus-network/sdk";
 import {
   isValidNamespaceSegment,
-  namespacePathField,
+  namespacePathParser,
 } from "@torus-network/sdk/types/namespace";
 
 import { useNamespaceEntriesOf } from "@torus-ts/query-provider/hooks";
@@ -65,7 +64,7 @@ const createNamespaceSchema = z
       .refine(
         (val) => {
           if (val === "") return true;
-          const pathResult = namespacePathField().safeParse(val);
+          const pathResult = namespacePathParser().safeParse(val);
           return pathResult.success;
         },
         {
