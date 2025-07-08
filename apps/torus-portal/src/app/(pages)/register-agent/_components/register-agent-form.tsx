@@ -32,7 +32,9 @@ import {
   AlertDescription,
   AlertTitle,
 } from "@torus-ts/ui/components/alert";
-import { AllocatorAgentItem } from "@torus-ts/ui/components/allocator-agent-item";
+import {
+  AllocatorAgentItem,
+} from "@torus-ts/ui/components/allocator-agent-item";
 import { Button } from "@torus-ts/ui/components/button";
 import {
   Form,
@@ -51,7 +53,9 @@ import {
 } from "@torus-ts/ui/components/tabs";
 import { Textarea } from "@torus-ts/ui/components/text-area";
 import { TransactionStatus } from "@torus-ts/ui/components/transaction-status";
-import { WalletConnectionWarning } from "@torus-ts/ui/components/wallet-connection-warning";
+import {
+  WalletConnectionWarning,
+} from "@torus-ts/ui/components/wallet-connection-warning";
 import { useToast } from "@torus-ts/ui/hooks/use-toast";
 import { getLinks } from "@torus-ts/ui/lib/data";
 
@@ -569,7 +573,6 @@ export default function RegisterAgentForm() {
                           >
                             <Info className="h-4 w-4" />
                           </Link>
-                          <Info className="h-4 w-4" />
                           Your name on the namespace: agent.{formValues.name}
                         </div>
                       )}
