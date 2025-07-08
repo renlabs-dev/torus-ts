@@ -40,6 +40,14 @@
     --chart-secondary-3: 30 80% 55%;
     --chart-secondary-4: 280 65% 60%;
     --chart-secondary-5: 340 75% 55%;
+    --sidebar: 240 10% 6%;
+    --sidebar-foreground: 0 0% 98%;
+    --sidebar-primary: 0 0% 98%;
+    --sidebar-primary-foreground: 240 5.9% 10%;
+    --sidebar-accent: 240 2% 10%;
+    --sidebar-accent-foreground: 0 0% 98%;
+    --sidebar-border: 240 13% 17%;
+    --sidebar-ring: 240 4.9% 83.9%;
   }
 }
 
