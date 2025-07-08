@@ -6,7 +6,6 @@ import { Fira_Mono as FiraMono } from "next/font/google";
 
 import { ReactQueryProvider } from "@torus-ts/query-provider";
 import { TorusProvider } from "@torus-ts/torus-provider";
-import { Footer } from "@torus-ts/ui/components/footer";
 import { Layout } from "@torus-ts/ui/components/layout";
 import { Toaster } from "@torus-ts/ui/components/toaster";
 
@@ -44,7 +43,7 @@ export default function RootLayout({
             {/* <PortalHeader torusCacheUrl={env("NEXT_PUBLIC_TORUS_CACHE_URL")} /> */}
             {children}
             <Toaster />
-            <Footer torusChainEnv={env("NEXT_PUBLIC_TORUS_CHAIN_ENV")} />
+            {/* <Footer torusChainEnv={env("NEXT_PUBLIC_TORUS_CHAIN_ENV")} /> */}
 
             <GoogleAnalytics gaId="G-7YCMH64Q4J" />
           </TRPCReactProvider>
