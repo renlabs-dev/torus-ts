@@ -1,12 +1,13 @@
 import { describe, expect, it } from "vitest";
+
 import {
-  validateNamespaceSegment,
-  isValidNamespaceSegment,
-  namespaceSegmentField,
-  NAMESPACE_SEGMENT_REGEX,
-  validateNamespacePath,
   isValidNamespacePath,
-  namespacePathField,
+  isValidNamespaceSegment,
+  NAMESPACE_SEGMENT_REGEX,
+  namespacePathParser,
+  namespaceSegmentField,
+  validateNamespacePath,
+  validateNamespaceSegment,
 } from "../../../types/namespace/namespace-path.js";
 
 describe("NamespaceSegmentValidation", () => {
@@ -283,8 +284,8 @@ describe("NamespacePathValidation", () => {
     );
   });
 
-  describe("namespacePathField", () => {
-    const schema = namespacePathField();
+  describe("namespacePathParser", () => {
+    const schema = namespacePathParser();
 
     it.each(testCases.valid)(
       "should validate valid path '$path'",
