@@ -1,16 +1,21 @@
 import { useMemo } from "react";
+
+import { Calendar, ExternalLink, Percent, Users } from "lucide-react";
+
 import { smallAddress } from "@torus-network/torus-utils/subspace";
+
 import {
   Accordion,
+  AccordionContent,
   AccordionItem,
   AccordionTrigger,
-  AccordionContent,
 } from "@torus-ts/ui/components/accordion";
 import { Badge } from "@torus-ts/ui/components/badge";
-import { Calendar, Users, Percent, ExternalLink } from "lucide-react";
-import { api } from "~/trpc/react";
-import type { CustomGraphNode } from "../../permission-graph-types";
 import { MarkdownView } from "@torus-ts/ui/components/markdown-view";
+
+import { api } from "~/trpc/react";
+
+import type { CustomGraphNode } from "../../permission-graph-types";
 
 interface SignalsAccordionProps {
   selectedNode?: CustomGraphNode;
@@ -49,7 +54,7 @@ export function GraphSheetDetailsSignalsAccordion({
       {
         name: "Twitter",
         value: signal.twitter,
-        prefix: "https://twitter.com/",
+        prefix: "https://x.com/",
       },
     ].filter((social) => social.value);
 
