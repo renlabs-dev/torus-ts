@@ -231,19 +231,19 @@ export const isValidNamespacePath = (path: string): boolean => {
 };
 
 /**
- * Custom Zod field for required namespace path validation
+ * Custom Zod parser for namespace path validation
  *
  * @returns Zod schema for required namespace path field
  *
  * @example
  * ```typescript
  * const schema = z.object({
- *   path: namespacePathField(),
+ *   path: namespacePathParser(),
  *   // ... other fields
  * });
  * ```
  */
-export const namespacePathField = () =>
+export const namespacePathParser = () =>
   z.string().refine(
     (path) => isValidNamespacePath(path),
     (path) => ({
