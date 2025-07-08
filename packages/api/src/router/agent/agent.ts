@@ -54,40 +54,23 @@ export const agentRouter = {
         };
       }
 
-      let whereClause = and(
+      // Base query configuration for filtering
+      let baseWhereClause = and(
         eq(agentSchema.isWhitelisted, true),
         isNull(agentSchema.deletedAt),
+        gte(agentSchema.atBlock, agentsLastBlock[0].value),
       );
 
       if (search) {
-        whereClause = and(
-          whereClause,
+        baseWhereClause = and(
+          baseWhereClause,
           sql`(${agentSchema.name} ILIKE ${`%${search}%`} OR ${agentSchema.key} ILIKE ${`%${search}%`})`,
         );
       }
 
-      let orderByClause = sql`${computedAgentWeightSchema.percComputedWeight} desc nulls last`;
-
-      if (orderBy) {
-        const [field, direction = "asc"] = orderBy.split(".");
-        const column = agentSchema[field as keyof typeof agentSchema];
-        orderByClause = sql`${column} ${sql.raw(direction.toUpperCase())}`;
-      }
-
-      const agents = await ctx.db
-        .select({
-          id: agentSchema.id,
-          name: agentSchema.name,
-          key: agentSchema.key,
-          metadataUri: agentSchema.metadataUri,
-          apiUrl: agentSchema.apiUrl,
-          registrationBlock: agentSchema.registrationBlock,
-          isWhitelisted: agentSchema.isWhitelisted,
-          atBlock: agentSchema.atBlock,
-          weightFactor: agentSchema.weightFactor,
-          percComputedWeight: computedAgentWeightSchema.percComputedWeight,
-          computedWeight: computedAgentWeightSchema.computedWeight,
-        })
+      // Count query for total count
+      const countQuery = ctx.db
+        .select({ id: agentSchema.id })
         .from(agentSchema)
         .leftJoin(
           computedAgentWeightSchema,
@@ -97,18 +80,54 @@ export const agentRouter = {
             isNull(computedAgentWeightSchema.deletedAt),
           ),
         )
-        .where(
-          and(whereClause, gte(agentSchema.atBlock, agentsLastBlock[0].value)),
-        )
-        .limit(limit)
-        .offset(offset)
-        .orderBy(orderByClause);
-      const totalCount = agents.length;
+        .where(baseWhereClause);
 
+      let orderByClause = sql`${computedAgentWeightSchema.percComputedWeight} desc nulls last`;
+
+      if (orderBy) {
+        const [field, direction = "asc"] = orderBy.split(".");
+        const column = agentSchema[field as keyof typeof agentSchema];
+        orderByClause = sql`${column} ${sql.raw(direction.toUpperCase())}`;
+      }
+
+      // Run paginated query and total count query in parallel
+      const [agents, totalCountResult] = await Promise.all([
+        ctx.db
+          .select({
+            id: agentSchema.id,
+            name: agentSchema.name,
+            key: agentSchema.key,
+            metadataUri: agentSchema.metadataUri,
+            apiUrl: agentSchema.apiUrl,
+            registrationBlock: agentSchema.registrationBlock,
+            isWhitelisted: agentSchema.isWhitelisted,
+            atBlock: agentSchema.atBlock,
+            weightFactor: agentSchema.weightFactor,
+            percComputedWeight: computedAgentWeightSchema.percComputedWeight,
+            computedWeight: computedAgentWeightSchema.computedWeight,
+          })
+          .from(agentSchema)
+          .leftJoin(
+            computedAgentWeightSchema,
+            and(
+              eq(agentSchema.key, computedAgentWeightSchema.agentKey),
+              gte(computedAgentWeightSchema.atBlock, weightsLastBlock[0].value),
+              isNull(computedAgentWeightSchema.deletedAt),
+            ),
+          )
+          .where(baseWhereClause)
+          .limit(limit)
+          .offset(offset)
+          .orderBy(orderByClause),
+        ctx.db.select({ totalCount: sql<number>`count(*)` }).from(sql`${countQuery}`),
+      ]);
+
+      const totalCount = totalCountResult[0]?.totalCount ?? 0;
       const totalPages = Math.ceil(totalCount / limit);
 
       return {
         agents,
+        resultCount: agents.length,
         pagination: {
           totalCount,
           totalPages,
