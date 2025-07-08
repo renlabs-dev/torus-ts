@@ -38,7 +38,7 @@ export function GraphSheetDetailsSignal({ selectedNode }: SignalDetailsProps) {
     {
       name: "Twitter",
       value: signalData.twitter,
-      prefix: "https://twitter.com/",
+      prefix: "https://x.com/",
     },
   ].filter((social) => social.value);
 
