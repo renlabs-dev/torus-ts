@@ -280,7 +280,7 @@ export function GrantNamespacePermissionFormComponent({
                             case "RevocableByArbiters":
                               form.setValue("revocation", {
                                 type: "RevocableByArbiters",
-                                accounts: [],
+                                accounts: ["" as SS58Address],
                                 requiredVotes: "1",
                               });
                               break;
@@ -320,10 +320,13 @@ export function GrantNamespacePermissionFormComponent({
 
               {revocationType === "RevocableByArbiters" && (
                 <>
-                  <div className="space-y-2">
+                  <div className="space-y-2 py-6 flex items-start justify-between flex-col">
                     <FormLabel>Arbiters</FormLabel>
                     {arbiterFields.map((field, index) => (
-                      <div key={field.id} className="flex gap-2">
+                      <div
+                        key={field.id}
+                        className="flex gap-2 justify-between w-full"
+                      >
                         <FormField
                           control={form.control}
                           name={`revocation.accounts.${index}`}
@@ -343,13 +346,12 @@ export function GrantNamespacePermissionFormComponent({
                         <Button
                           type="button"
                           variant="outline"
-                          size="sm"
                           onClick={() => removeArbiter(index)}
                           disabled={
                             !isAccountConnected || arbiterFields.length <= 1
                           }
                         >
-                          <Trash2 className="h-4 w-4" />
+                          <Trash2 className="h-6 w-6" />
                         </Button>
                       </div>
                     ))}
