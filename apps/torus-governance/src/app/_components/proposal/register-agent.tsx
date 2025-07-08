@@ -32,7 +32,9 @@ import {
   AlertDescription,
   AlertTitle,
 } from "@torus-ts/ui/components/alert";
-import { AllocatorAgentItem } from "@torus-ts/ui/components/allocator-agent-item";
+import {
+  AllocatorAgentItem,
+} from "@torus-ts/ui/components/allocator-agent-item";
 import { Button } from "@torus-ts/ui/components/button";
 import {
   Form,
@@ -902,7 +904,7 @@ export function RegisterAgent() {
               </AlertTitle>
               <AlertDescription className="flex flex-row gap-2 text-sm">
                 <span className="text-white">
-                  Application fee:{" "}
+                  Fee:{" "}
                   {selectedAccount ? (
                     <span className="text-muted-foreground">
                       {estimatedFee

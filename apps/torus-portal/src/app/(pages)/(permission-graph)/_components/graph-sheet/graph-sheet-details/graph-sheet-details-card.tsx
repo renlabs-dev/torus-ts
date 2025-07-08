@@ -23,8 +23,12 @@ import type {
   CustomGraphNode,
 } from "../../permission-graph-types";
 import { formatDuration, formatScope } from "../../permission-graph-utils";
-import { GraphSheetDetailsLinkButtons } from "./graph-sheet-details-link-buttons";
-import { GraphSheetDetailsSignalsAccordion } from "./graph-sheet-details-signals-accordion";
+import {
+  GraphSheetDetailsLinkButtons,
+} from "./graph-sheet-details-link-buttons";
+import {
+  GraphSheetDetailsSignalsAccordion,
+} from "./graph-sheet-details-signals-accordion";
 
 // Every single namespace name has been changed to Capability Permission
 // as requested here: https://coda.io/d/RENLABS-CORE-DEVELOPMENT-DOCUMENTS_d5Vgr5OavNK/Text-change-requests_su4jQAlx
@@ -203,9 +207,9 @@ export function NodeDetailsCard({
           )}
         </Accordion>
       ) : (
-        <span className="text-gray-500 text-center mt-8">
+        <div className="text-gray-500 text-center mt-8">
           No permissions found for this agent
-        </span>
+        </div>
       )}
     </ScrollArea>
   );

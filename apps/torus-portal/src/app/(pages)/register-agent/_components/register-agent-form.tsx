@@ -926,7 +926,7 @@ export default function RegisterAgentForm() {
                 </AlertTitle>
                 <AlertDescription className="flex flex-row gap-2 text-sm">
                   <span className="text-white">
-                    Application fee:{" "}
+                    Fee:{" "}
                     {selectedAccount ? (
                       <span className="text-muted-foreground">
                         {estimatedFee
