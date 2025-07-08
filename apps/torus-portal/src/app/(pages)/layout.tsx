@@ -1,14 +1,16 @@
 import "@torus-ts/ui/globals.css";
+
 import { GoogleAnalytics } from "@next/third-parties/google";
+import type { Metadata } from "next";
+import { Fira_Mono as FiraMono } from "next/font/google";
+
+import { ReactQueryProvider } from "@torus-ts/query-provider";
 import { TorusProvider } from "@torus-ts/torus-provider";
 import { Footer } from "@torus-ts/ui/components/footer";
 import { Layout } from "@torus-ts/ui/components/layout";
 import { Toaster } from "@torus-ts/ui/components/toaster";
+
 import { env, EnvScript } from "~/env";
-import type { Metadata } from "next";
-import { Fira_Mono as FiraMono } from "next/font/google";
-import { PortalHeader } from "../_components/portal-header";
-import { ReactQueryProvider } from "@torus-ts/query-provider";
 import { TRPCReactProvider } from "~/trpc/react";
 
 const APP_NAME = "Torus Portal";
@@ -39,7 +41,7 @@ export default function RootLayout({
           torusCacheUrl={env("NEXT_PUBLIC_TORUS_CACHE_URL")}
         >
           <TRPCReactProvider>
-            <PortalHeader torusCacheUrl={env("NEXT_PUBLIC_TORUS_CACHE_URL")} />
+            {/* <PortalHeader torusCacheUrl={env("NEXT_PUBLIC_TORUS_CACHE_URL")} /> */}
             {children}
             <Toaster />
             <Footer torusChainEnv={env("NEXT_PUBLIC_TORUS_CHAIN_ENV")} />
