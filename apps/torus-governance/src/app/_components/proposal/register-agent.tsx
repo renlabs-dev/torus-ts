@@ -543,7 +543,7 @@ export function RegisterAgent() {
                 <FormItem className="flex flex-col">
                   <FormLabel>
                     Short Description{" "}
-                    <span className="text-muted-foreground text-sm">
+                    <span className="text-sm">
                       (Max {AGENT_SHORT_DESCRIPTION_MAX_LENGTH} characters)
                     </span>
                   </FormLabel>

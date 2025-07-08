@@ -493,30 +493,37 @@ export default function RegisterAgentForm() {
                   control={control}
                   name="agentKey"
                   render={({ field }) => (
-                    <FormItem className="flex w-full flex-col gap-2 sm:flex-row">
-                      <FormControl>
-                        <Input
-                          {...field}
-                          placeholder="Agent address (SS58 e.g. 5D5F...EBnt)"
-                          className="w-full placeholder:text-sm"
-                          type="text"
-                          minLength={47}
-                          maxLength={48}
-                          required
-                          title="Paste the same address that you used in your agent/module application!"
-                        />
-                      </FormControl>
-                      <Button
-                        variant="outline"
-                        type="button"
-                        className="!m-0 w-full sm:w-fit"
-                        onClick={(e) => {
-                          e.preventDefault();
-                          setValue("agentKey", selectedAccount?.address ?? "");
-                        }}
-                      >
-                        Paste my address
-                      </Button>
+                    <FormItem className="flex w-full flex-col gap-2">
+                      <FormLabel>Agent Address </FormLabel>
+                      <div className="flex w-full flex-row gap-2">
+                        <FormControl>
+                          <Input
+                            {...field}
+                            placeholder="SS58 e.g. 5D5F...EBnt"
+                            className="w-full placeholder:text-sm"
+                            type="text"
+                            minLength={47}
+                            maxLength={48}
+                            required
+                            title="Paste the same address that you used in your agent/module application!"
+                          />
+                        </FormControl>
+
+                        <Button
+                          variant="outline"
+                          type="button"
+                          className="!m-0 w-full sm:w-fit"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            setValue(
+                              "agentKey",
+                              selectedAccount?.address ?? "",
+                            );
+                          }}
+                        >
+                          Paste my address
+                        </Button>
+                      </div>
                       <FormMessage />
                     </FormItem>
                   )}
@@ -528,7 +535,7 @@ export default function RegisterAgentForm() {
                     <FormItem className="flex flex-col">
                       <FormLabel>
                         Agent API URL{" "}
-                        <span className="text-sm text-gray-500">
+                        <span className="text-sm text-muted-foreground">
                           (Optional)
                         </span>
                       </FormLabel>
@@ -610,7 +617,7 @@ export default function RegisterAgentForm() {
                     <FormItem className="flex flex-col">
                       <FormLabel>
                         Agent Description / Documentation{" "}
-                        <span className="text-sm text-gray-500">
+                        <span className="text-sm text-muted-foreground">
                           (Optional)
                         </span>
                       </FormLabel>
@@ -647,7 +654,7 @@ export default function RegisterAgentForm() {
                       <FormItem className="flex flex-col flex-1">
                         <FormLabel>
                           X/Twitter{" "}
-                          <span className="text-sm text-gray-500">
+                          <span className="text-sm text-muted-foreground">
                             (Optional)
                           </span>
                         </FormLabel>
@@ -669,7 +676,7 @@ export default function RegisterAgentForm() {
                       <FormItem className="flex flex-col flex-1">
                         <FormLabel>
                           Github{" "}
-                          <span className="text-sm text-gray-500">
+                          <span className="text-sm text-muted-foreground">
                             (Optional)
                           </span>
                         </FormLabel>
@@ -693,7 +700,7 @@ export default function RegisterAgentForm() {
                       <FormItem className="flex flex-col flex-1">
                         <FormLabel>
                           Discord{" "}
-                          <span className="text-sm text-gray-500">
+                          <span className="text-sm text-muted-foreground">
                             (Optional)
                           </span>
                         </FormLabel>
@@ -715,7 +722,7 @@ export default function RegisterAgentForm() {
                       <FormItem className="flex flex-col flex-1">
                         <FormLabel>
                           Telegram{" "}
-                          <span className="text-sm text-gray-500">
+                          <span className="text-sm text-muted-foreground">
                             (Optional)
                           </span>
                         </FormLabel>
@@ -738,7 +745,7 @@ export default function RegisterAgentForm() {
                     <FormItem className="flex flex-col">
                       <FormLabel>
                         Website{" "}
-                        <span className="text-sm text-gray-500">
+                        <span className="text-sm text-muted-foreground">
                           (Optional)
                         </span>
                       </FormLabel>
