@@ -3,10 +3,16 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import type { inferProcedureInput } from "@trpc/server";
 import { useForm } from "react-hook-form";
+import { Ban } from "lucide-react";
 
 import type { AppRouter } from "@torus-ts/api";
 import { AGENT_DEMAND_SIGNAL_INSERT_SCHEMA } from "@torus-ts/db/validation";
 import { useTorus } from "@torus-ts/torus-provider";
+import {
+  Alert,
+  AlertDescription,
+  AlertTitle,
+} from "@torus-ts/ui/components/alert";
 import { Button } from "@torus-ts/ui/components/button";
 import {
   Card,
@@ -40,6 +46,18 @@ import { api } from "~/trpc/react";
 type SignalFormData = NonNullable<
   inferProcedureInput<AppRouter["signal"]["create"]>
 >;
+
+function AgentRegistrationAlert() {
+  return (
+    <Alert variant="destructive" className="mb-6">
+      <Ban className="h-4 w-4" />
+      <AlertTitle>Agent Registration Required</AlertTitle>
+      <AlertDescription>
+        You need to be a registered agent to create demand signals. Please register as an agent first to access this feature.
+      </AlertDescription>
+    </Alert>
+  );
+}
 
 export default function CreateSignalForm() {
   const { toast } = useToast();
@@ -115,34 +133,10 @@ export default function CreateSignalForm() {
   };
 
   return (
-    <div className="w-full relative">
-      {!hasAgent && !isLoadingWeights && (
-        <div
-          className="absolute inset-0 z-10 flex items-center justify-center bg-background/80
-            backdrop-blur-sm rounded-lg"
-        >
-          <Card className="border border-border/50 shadow-lg">
-            <CardContent className="p-6">
-              <div className="text-center">
-                <h3 className="text-lg font-semibold mb-2">
-                  Agent Registration Required
-                </h3>
-                <p className="text-muted-foreground mb-4">
-                  You need to be a registered agent to create demand signals.
-                </p>
-                <p className="text-sm text-muted-foreground">
-                  Please register as an agent first to access this feature.
-                </p>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      )}
+    <div className="w-full">
+      {!hasAgent && !isLoadingWeights && <AgentRegistrationAlert />}
 
-      <Card
-        className={`border-0
-          ${!hasAgent && !isLoadingWeights ? "opacity-30 pointer-events-none" : ""}`}
-      >
+      <Card className="border-0">
         <CardHeader>
           <CardTitle>Create Demand Signal</CardTitle>
           <CardDescription>
