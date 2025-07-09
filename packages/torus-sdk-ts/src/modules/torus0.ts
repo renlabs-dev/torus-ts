@@ -1,6 +1,7 @@
 import { z } from "zod";
 
 import type { ApiPromise } from "@polkadot/api";
+import { strToByteArray } from "@torus-network/torus-utils";
 import type { Result } from "@torus-network/torus-utils/result";
 import { makeErr, makeOk } from "@torus-network/torus-utils/result";
 import { tryAsync, trySync } from "@torus-network/torus-utils/try-catch";
@@ -144,11 +145,16 @@ export async function queryNamespacePathCreationCost(
 
   // Call the RPC method manually since it's not auto-generated
   // Note: Using provider send method because this RPC method is not auto-decorated
+
   // Convert the validated path string to bytes as expected by the substrate RPC
-  const pathBytes = Array.from(new TextEncoder().encode(path));
+  const pathBytes = strToByteArray(path);
+
   const [rpcError, rpcResult] = await tryAsync(
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-call
-    (api as any)._rpcCore.provider.send("torus0_namespacePathCreationCost", [accountId, pathBytes]),
+    (api as any)._rpcCore.provider.send("torus0_namespacePathCreationCost", [
+      accountId,
+      pathBytes,
+    ]),
   );
   if (rpcError !== undefined) {
     return makeErr(new Error(`RPC call failed: ${rpcError.message}`));
@@ -158,20 +164,19 @@ export async function queryNamespacePathCreationCost(
   const [parseError, parsedResult] = trySync(() => {
     if (!Array.isArray(rpcResult) || rpcResult.length !== 2) {
       throw new Error(
-        "Expected RPC result to be a tuple of two Balance values",
+        `Expected RPC result to be a tuple of two Balance values, got: ${JSON.stringify(rpcResult)}`,
       );
     }
 
     // TODO: sb_ Zod parser for tuple
+
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-    const [feeHexRaw, depositHexRaw] = rpcResult;
+    const [feeRaw, depositRaw] = rpcResult;
 
-    const feeHex = sb_bigint.parse(feeHexRaw);
-    const depositHex = sb_bigint.parse(depositHexRaw);
-
-    // Convert hex strings to BigInt
-    const fee = BigInt(feeHex);
-    const deposit = BigInt(depositHex);
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+    const fee = BigInt(feeRaw);
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+    const deposit = BigInt(depositRaw);
 
     return { fee, deposit };
   });
