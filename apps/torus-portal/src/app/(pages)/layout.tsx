@@ -2,7 +2,7 @@ import "@torus-ts/ui/globals.css";
 
 import { GoogleAnalytics } from "@next/third-parties/google";
 import type { Metadata } from "next";
-import { Fira_Mono as FiraMono } from "next/font/google";
+import { Geist_Mono as GeistMono } from "next/font/google";
 
 import { ReactQueryProvider } from "@torus-ts/query-provider";
 import { TorusProvider } from "@torus-ts/torus-provider";
@@ -21,7 +21,7 @@ export const metadata: Metadata = {
   description: "The thermodynamic god's favorite Portal.",
 };
 
-export const firaMono = FiraMono({
+export const geistMono = GeistMono({
   subsets: ["latin"],
   display: "swap",
   weight: "400",
@@ -33,7 +33,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <Layout font={firaMono} headScripts={[EnvScript]}>
+    <Layout font={geistMono} headScripts={[EnvScript]} className="bg-sidebar">
       <ReactQueryProvider>
         <TorusProvider
           wsEndpoint={env("NEXT_PUBLIC_TORUS_RPC_URL")}
