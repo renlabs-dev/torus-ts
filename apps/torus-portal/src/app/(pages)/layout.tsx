@@ -12,6 +12,8 @@ import { Toaster } from "@torus-ts/ui/components/toaster";
 import { env, EnvScript } from "~/env";
 import { TRPCReactProvider } from "~/trpc/react";
 
+import SidebarContainer from "../_components/sidebar/sidebar-container";
+
 const APP_NAME = "Torus Portal";
 
 export const metadata: Metadata = {
@@ -41,7 +43,7 @@ export default function RootLayout({
         >
           <TRPCReactProvider>
             {/* <PortalHeader torusCacheUrl={env("NEXT_PUBLIC_TORUS_CACHE_URL")} /> */}
-            {children}
+            <SidebarContainer>{children}</SidebarContainer>
             <Toaster />
             {/* <Footer torusChainEnv={env("NEXT_PUBLIC_TORUS_CHAIN_ENV")} /> */}
 
