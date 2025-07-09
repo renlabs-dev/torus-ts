@@ -51,7 +51,7 @@ import {
   queryNamespaceEntriesOf,
   queryNamespacePathCreationCost,
 } from "./modules/torus0.js";
-import { SS58Address } from "./address.js";
+import type { SS58Address } from "./address.js";
 
 async function testQueryNamespaceEntriesOf() {
   console.log("Testing queryNamespaceEntriesOf function...");
@@ -145,7 +145,7 @@ async function testQueryNamespacePathCreationCostWithInvalidPath() {
 }
 
 // Run the tests
-await testQueryNamespaceEntriesOf();
+// await testQueryNamespaceEntriesOf();
 await testQueryNamespacePathCreationCost();
 await testQueryNamespacePathCreationCostWithInvalidPath();
 

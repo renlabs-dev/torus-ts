@@ -100,4 +100,25 @@ export function getCreationTime(
   return creationDate.toLocaleString(DateTime.DATETIME_SHORT);
 }
 
-// ==
+// == String ==
+
+/**
+ * Converts a string to an array of byte values (numbers).
+ *
+ * Uses the TextEncoder API to encode the input string as UTF-8 bytes,
+ * then converts the resulting Uint8Array to a regular number array.
+ *
+ * @param str - The string to convert to byte array
+ * @returns An array of numbers representing the UTF-8 byte values of the input string
+ *
+ * @example
+ * ```ts
+ * const bytes = strToByteArray("Hello");
+ * // Returns: [72, 101, 108, 108, 111]
+ * ```
+ */
+export const strToByteArray = (str: string): number[] => {
+  const encoder = new TextEncoder();
+  const bytesArray = Array.from(encoder.encode(str));
+  return bytesArray;
+};
