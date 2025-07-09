@@ -4,6 +4,9 @@ import {
   smallAddress,
   smallWalletName,
 } from "@torus-network/torus-utils/subspace";
+
+import { useIsMobile } from "@torus-ts/ui/hooks/use-mobile";
+
 import type { InjectedAccountWithMeta } from "./wallet-dropdown";
 
 interface WalletLabelProps {
@@ -17,6 +20,8 @@ export const WalletLabel = ({
   selectedAccount,
   shouldDisplayText,
 }: WalletLabelProps) => {
+  const isMobile = useIsMobile();
+
   if (!isInitialized) {
     return "Loading...";
   }
@@ -37,20 +42,12 @@ export const WalletLabel = ({
 
   if (meta.name) {
     return (
-      <span className="inline-flex items-center">
+      <span className="inline-flex items-center gap-2">
         <span className="max-w-[3rem] truncate sm:max-w-[5rem] md:max-w-[8rem] lg:max-w-[10rem]">
           {meta.name}
         </span>
-        <span className="hidden sm:inline md:hidden">
-          {" "}
-          | {smallAddress(address, 3)}
-        </span>
-        <span className="hidden md:inline lg:hidden">
-          {" "}
-          | {smallAddress(address, 5)}
-        </span>
-        <span className="hidden lg:inline"> | {smallAddress(address, 10)}</span>
-        <span className="sm:hidden"> | {smallAddress(address, 2)}</span>
+        <span>|</span>
+        <span>{smallAddress(address, isMobile ? 3 : 6)}</span>
       </span>
     );
   }

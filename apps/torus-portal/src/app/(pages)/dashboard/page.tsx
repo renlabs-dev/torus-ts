@@ -13,6 +13,7 @@ import {
   SidebarTrigger,
 } from "@torus-ts/ui/components/sidebar";
 
+import { PortalWalletDropdown } from "~/app/_components/portal-wallet-dropdown";
 import { AppSidebar } from "~/app/_components/sidebar/app-sidebar";
 
 export default function DashboardPage() {
@@ -20,7 +21,7 @@ export default function DashboardPage() {
     <SidebarProvider>
       <AppSidebar />
       <SidebarInset>
-        <header className="flex h-16 shrink-0 items-center gap-2">
+        <header className="flex h-16 shrink-0 items-center gap-2 justify-between">
           <div className="flex items-center gap-2 px-4">
             <SidebarTrigger className="-ml-1" />
             <Separator
@@ -40,6 +41,9 @@ export default function DashboardPage() {
                 </BreadcrumbItem>
               </BreadcrumbList>
             </Breadcrumb>
+          </div>
+          <div className="flex items-center gap-2 px-4">
+            <PortalWalletDropdown />
           </div>
         </header>
         <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
