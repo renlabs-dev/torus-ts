@@ -8,8 +8,6 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useTorus } from "@torus-ts/torus-provider";
 import { Loading } from "@torus-ts/ui/components/loading";
 
-import PortalNavigationTabs from "~/app/_components/portal-navigation-tabs";
-
 import { ForceGraphCanvas } from "./force-graph/force-graph-canvas";
 import { useGraphData } from "./force-graph/use-graph-data";
 import { GraphSheet } from "./graph-sheet/graph-sheet";
@@ -123,9 +121,6 @@ export default function PermissionGraphContainer() {
       <div className="absolute md:top-[3.8rem] top-[3.4rem] left-2 right-2 z-10">
         {/* Desktop layout */}
         <div className="hidden lg:flex items-center gap-2 w-full animate-fade-down">
-          <div className="w-full">
-            <PortalNavigationTabs />
-          </div>
           <PermissionGraphOverview graphData={graphData} />
           <MyAgentButton graphData={graphData} onNodeClick={handleNodeSelect} />
           <div className="flex-1">
@@ -144,7 +139,6 @@ export default function PermissionGraphContainer() {
             />
           </div>
           <div className="flex items-center gap-2 overflow-x-auto">
-            <PortalNavigationTabs />
             <PermissionGraphSearch
               graphNodes={graphData.nodes.map((node) => node.id)}
             />
