@@ -1,17 +1,20 @@
 "use client";
 
-import type { ReactNode } from "react";
+import React from "react";
+import { CheckCircle, XCircle } from "lucide-react";
 import { toast as sonnerToast } from "sonner";
 import { DEFAULT_DURATION } from "../components/toaster";
-import type { ToastProps } from "../components/toaster";
 
-type ToasterToast = ToastProps & {
+interface Toast {
+  title?: string | React.ReactNode;
+  description?: string | React.ReactNode;
+  variant?: "default" | "destructive";
+  duration?: number;
+}
+
+interface ToasterToast extends Toast {
   id: string;
-  title?: ReactNode;
-  description?: ReactNode;
-};
-
-type Toast = Omit<ToasterToast, "id">;
+}
 
 interface ToastReturn {
   id: string;
@@ -20,14 +23,26 @@ interface ToastReturn {
 }
 
 let count = 0;
+let currentToastId: string | null = null;
 
 function genId() {
   count = (count + 1) % Number.MAX_SAFE_INTEGER;
   return count.toString();
 }
 
+function dismissCurrentToast() {
+  if (currentToastId) {
+    sonnerToast.dismiss(currentToastId);
+    currentToastId = null;
+  }
+}
+
 function toast({ duration = DEFAULT_DURATION, ...props }: Toast): ToastReturn {
+  // Dismiss any existing toast before showing a new one
+  dismissCurrentToast();
+
   const id = genId();
+  currentToastId = id;
 
   const sonnerProps = { id, duration };
 
@@ -38,9 +53,17 @@ function toast({ duration = DEFAULT_DURATION, ...props }: Toast): ToastReturn {
     });
     return {
       id,
-      dismiss: () => sonnerToast.dismiss(id),
+      dismiss: () => {
+        sonnerToast.dismiss(id);
+        if (currentToastId === id) {
+          currentToastId = null;
+        }
+      },
       update: (props: ToasterToast) => {
         sonnerToast.dismiss(id);
+        if (currentToastId === id) {
+          currentToastId = null;
+        }
         return toast(props);
       },
     };
@@ -52,9 +75,17 @@ function toast({ duration = DEFAULT_DURATION, ...props }: Toast): ToastReturn {
   });
   return {
     id,
-    dismiss: () => sonnerToast.dismiss(id),
+    dismiss: () => {
+      sonnerToast.dismiss(id);
+      if (currentToastId === id) {
+        currentToastId = null;
+      }
+    },
     update: (props: ToasterToast) => {
       sonnerToast.dismiss(id);
+      if (currentToastId === id) {
+        currentToastId = null;
+      }
       return toast(props);
     },
   };
@@ -65,7 +96,12 @@ toast.success = (
   duration = DEFAULT_DURATION,
 ) => {
   return toast({
-    title: "Success!",
+    title: (
+      <div className="flex items-center gap-2">
+        <CheckCircle className="h-4 w-4 text-green-500" />
+        <span>Success!</span>
+      </div>
+    ),
     description,
     variant: "default",
     duration,
@@ -77,7 +113,12 @@ toast.error = (
   duration = DEFAULT_DURATION,
 ) => {
   return toast({
-    title: "Uh oh! Something went wrong.",
+    title: (
+      <div className="flex items-center gap-2">
+        <XCircle className="h-4 w-4 text-red-500" />
+        <span>Uh oh! Something went wrong.</span>
+      </div>
+    ),
     description,
     variant: "destructive",
     duration,
@@ -101,10 +142,13 @@ function useToast() {
     toast: toast as ToastFunction,
     dismiss: (toastId?: string) => {
       if (!toastId) {
-        sonnerToast.dismiss();
+        dismissCurrentToast();
         return;
       }
       sonnerToast.dismiss(toastId);
+      if (currentToastId === toastId) {
+        currentToastId = null;
+      }
     },
   };
 }

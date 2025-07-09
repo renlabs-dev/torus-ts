@@ -93,10 +93,5 @@ async function fetchMaxAmount(
     return undefined;
   }
 
-  toast({
-    title: "Maximum transfer amount calculated",
-    description: `Maximum transfer amount: 1`,
-  });
-
   return maxAmount;
 }
