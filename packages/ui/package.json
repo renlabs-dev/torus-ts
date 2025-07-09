@@ -39,7 +39,6 @@
     "@torus-network/torus-utils": "workspace:*",
     "@uiw/react-markdown-preview": "^5.1.1",
     "class-variance-authority": "^0.7.1",
-    "@radix-ui/react-toast": "^1.2.14",
     "clsx": "^2.1.1",
     "cmdk": "^1.0.0",
     "embla-carousel-react": "^8.6.0",
@@ -76,6 +75,6 @@
     "./tailwind.config": "./tailwind.config.ts",
     "./lib/*": "./src/lib/*.ts",
     "./components/*": "./src/components/*.tsx",
-    "./hooks/*": "./src/hooks/*.ts"
+    "./hooks/*": "./src/hooks/*.tsx"
   }
 }
