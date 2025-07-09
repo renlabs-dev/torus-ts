@@ -4,8 +4,6 @@ import Image from "next/image";
 
 import { ScrollArea } from "@torus-ts/ui/components/scroll-area";
 
-import PortalNavigationTabs from "./portal-navigation-tabs";
-
 interface PortalFormContainerProps {
   imageSrc: string;
   children: React.ReactNode;
@@ -14,10 +12,6 @@ interface PortalFormContainerProps {
 export default function PortalFormContainer(props: PortalFormContainerProps) {
   return (
     <main className="flex min-h-svh">
-      <div className="fixed top-[3.9rem] left-2 z-10 max-w-fit">
-        <PortalNavigationTabs />
-      </div>
-
       <div className="relative bg-card hidden lg:block w-[60%] animate-fade-down animate-delay-300">
         <Image
           src={props.imageSrc}

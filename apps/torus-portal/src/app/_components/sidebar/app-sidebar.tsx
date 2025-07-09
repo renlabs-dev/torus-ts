@@ -3,15 +3,14 @@
 import * as React from "react";
 
 import {
-  BookOpen,
-  Bot,
+  FolderPen,
   Frame,
+  Grid2x2Plus,
   LifeBuoy,
   Map,
   PieChart,
+  Plus,
   Send,
-  Settings2,
-  SquareTerminal,
 } from "lucide-react";
 import Link from "next/link";
 
@@ -31,94 +30,49 @@ import { NavProjects } from "./nav-projects";
 import { NavSecondary } from "./nav-secondary";
 
 const data = {
-  user: {
-    name: "shadcn",
-    email: "m@example.com",
-    avatar: "/avatars/shadcn.jpg",
-  },
   navMain: [
     {
-      title: "Playground",
-      url: "#",
-      icon: SquareTerminal,
+      title: "Permissions",
+      icon: Plus,
       isActive: true,
       items: [
         {
-          title: "History",
-          url: "#",
+          title: "Create Permission",
+          url: "/create-permission",
         },
         {
-          title: "Starred",
-          url: "#",
-        },
-        {
-          title: "Settings",
-          url: "#",
+          title: "Edit Permission",
+          url: "/edit-permission",
         },
       ],
     },
     {
-      title: "Models",
-      url: "#",
-      icon: Bot,
+      title: "Capabilitys",
+      icon: FolderPen,
+      isActive: true,
       items: [
         {
-          title: "Genesis",
-          url: "#",
+          title: "Register Capability",
+          url: "/register-capability",
         },
         {
-          title: "Explorer",
-          url: "#",
-        },
-        {
-          title: "Quantum",
-          url: "#",
+          title: "Delete Capability",
+          url: "/delete-capability",
         },
       ],
     },
     {
-      title: "Documentation",
-      url: "#",
-      icon: BookOpen,
+      title: "Network Operations",
+      icon: Grid2x2Plus,
+      isActive: true,
       items: [
         {
-          title: "Introduction",
-          url: "#",
+          title: "Register Agent",
+          url: "/register-agent",
         },
         {
-          title: "Get Started",
-          url: "#",
-        },
-        {
-          title: "Tutorials",
-          url: "#",
-        },
-        {
-          title: "Changelog",
-          url: "#",
-        },
-      ],
-    },
-    {
-      title: "Settings",
-      url: "#",
-      icon: Settings2,
-      items: [
-        {
-          title: "General",
-          url: "#",
-        },
-        {
-          title: "Team",
-          url: "#",
-        },
-        {
-          title: "Billing",
-          url: "#",
-        },
-        {
-          title: "Limits",
-          url: "#",
+          title: "Create Signal",
+          url: "/create-signal",
         },
       ],
     },
@@ -135,19 +89,19 @@ const data = {
       icon: Send,
     },
   ],
-  projects: [
+  test: [
     {
-      name: "Design Engineering",
+      name: "Testing",
       url: "#",
       icon: Frame,
     },
     {
-      name: "Sales & Marketing",
+      name: "Mfs",
       url: "#",
       icon: PieChart,
     },
     {
-      name: "Travel",
+      name: "Hello uwu",
       url: "#",
       icon: Map,
     },
@@ -156,7 +110,7 @@ const data = {
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   return (
-    <Sidebar variant="inset" {...props}>
+    <Sidebar variant="inset" collapsible="icon" {...props}>
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>
@@ -178,7 +132,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       </SidebarHeader>
       <SidebarContent>
         <NavMain items={data.navMain} />
-        <NavProjects projects={data.projects} />
+        <NavProjects projects={data.test} />
         <NavSecondary items={data.navSecondary} className="mt-auto" />
       </SidebarContent>
       <SidebarFooter>{/* TODO: Footer */}</SidebarFooter>
