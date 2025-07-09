@@ -8,8 +8,8 @@ import { BasicLogger } from "@torus-network/torus-utils/logger";
 
 const log = BasicLogger.create({ name: "torus-sdk-ts.main" });
 
-// TORUS token has 12 decimal places
-const TORUS_DECIMALS = 12;
+// TORUS token has 18 decimal places
+const TORUS_DECIMALS = 18;
 const TORUS_UNIT = BigInt(10 ** TORUS_DECIMALS);
 
 function formatTorus(amount: bigint): string {
