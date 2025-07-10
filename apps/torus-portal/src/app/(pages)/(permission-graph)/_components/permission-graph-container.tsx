@@ -13,7 +13,7 @@ import { useGraphData } from "./force-graph/use-graph-data";
 import { GraphSheet } from "./graph-sheet/graph-sheet";
 import { MyAgentButton } from "./my-agent-button";
 import { NodeColorLegendDropdown } from "./node-color-legend-dropdown";
-import PermissionGraphCommand from "./permission-graph-command";
+import { PermissionGraphCommand } from "./permission-graph-command";
 import { PermissionGraphOverview } from "./permission-graph-overview";
 import type {
   CachedAgentData,
@@ -119,9 +119,7 @@ export default function PermissionGraphContainer() {
     <main>
       <div className="absolute bottom-3 left-3 right-32 z-50 flex flex-row justify-between gap-2">
         <div className="flex items-center justify-between gap-2 w-full animate-fade-down">
-          <PermissionGraphCommand
-            graphNodes={graphData.nodes.map((node) => node.id)}
-          />
+          <PermissionGraphCommand graphData={graphData} />
           <PermissionGraphOverview graphData={graphData} />
           <MyAgentButton graphData={graphData} onNodeClick={handleNodeSelect} />
         </div>
