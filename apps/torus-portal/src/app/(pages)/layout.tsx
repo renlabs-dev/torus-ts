@@ -35,7 +35,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <Layout font={geistMono} headScripts={[EnvScript]} className="bg-sidebar">
+    <Layout font={geistMono} headScripts={[EnvScript]}>
       <ReactQueryProvider>
         <TorusProvider
           wsEndpoint={env("NEXT_PUBLIC_TORUS_RPC_URL")}

@@ -3,18 +3,13 @@
 import * as React from "react";
 
 import {
-  Edit3,
-  FolderPen,
-  Frame,
-  LifeBuoy,
-  Map,
+  CircleFadingPlus,
+  FilePen,
+  FilePlus,
   Network,
-  PieChart,
-  Plus,
-  Send,
-  Signal,
-  Trash2,
-  UserPlus,
+  PackagePlus,
+  PackageX,
+  Radio,
 } from "lucide-react";
 import Link from "next/link";
 
@@ -28,10 +23,14 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@torus-ts/ui/components/sidebar";
+import { getLinks } from "@torus-ts/ui/lib/data";
+
+import { env } from "~/env";
 
 import { NavMain } from "./nav-main";
-import { NavProjects } from "./nav-projects";
-import { NavSecondary } from "./nav-secondary";
+import { NavSocials } from "./nav-socials";
+
+const links = getLinks(env("NEXT_PUBLIC_TORUS_CHAIN_ENV"));
 
 const data = {
   navMain: [
@@ -51,12 +50,12 @@ const data = {
         {
           title: "Create Permission",
           url: "/create-permission",
-          icon: Plus,
+          icon: FilePlus,
         },
         {
           title: "Edit Permission",
           url: "/edit-permission",
-          icon: Edit3,
+          icon: FilePen,
         },
       ],
     },
@@ -66,12 +65,12 @@ const data = {
         {
           title: "Register Capability",
           url: "/register-capability",
-          icon: FolderPen,
+          icon: PackagePlus,
         },
         {
           title: "Delete Capability",
           url: "/delete-capability",
-          icon: Trash2,
+          icon: PackageX,
         },
       ],
     },
@@ -81,43 +80,41 @@ const data = {
         {
           title: "Register Agent",
           url: "/register-agent",
-          icon: UserPlus,
+          icon: CircleFadingPlus,
         },
         {
           title: "Create Signal",
           url: "/create-signal",
-          icon: Signal,
+          icon: Radio,
         },
       ],
     },
   ],
-  navSecondary: [
+  navSocials: [
     {
-      title: "Support",
-      url: "#",
-      icon: LifeBuoy,
+      title: "GitHub",
+      url: links.github,
+      icon: Icons.Github,
     },
     {
-      title: "Feedback",
-      url: "#",
-      icon: Send,
-    },
-  ],
-  test: [
-    {
-      name: "Testing",
-      url: "#",
-      icon: Frame,
+      title: "Twitter",
+      url: links.x,
+      icon: Icons.X,
     },
     {
-      name: "Mfs",
-      url: "#",
-      icon: PieChart,
+      title: "Discord",
+      url: links.discord,
+      icon: Icons.Discord,
     },
     {
-      name: "Hello uwu",
-      url: "#",
-      icon: Map,
+      title: "Telegram",
+      url: links.telegram,
+      icon: Icons.Telegram,
+    },
+    {
+      title: "Ren Labs",
+      url: links.ren_labs,
+      icon: Icons.LogoRenLabs,
     },
   ],
 };
@@ -146,8 +143,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       </SidebarHeader>
       <SidebarContent>
         <NavMain items={data.navMain} />
-        <NavProjects projects={data.test} />
-        <NavSecondary items={data.navSecondary} className="mt-auto" />
+        <NavSocials items={data.navSocials} className="mt-auto" />
       </SidebarContent>
       <SidebarFooter>{/* TODO: Footer */}</SidebarFooter>
     </Sidebar>
