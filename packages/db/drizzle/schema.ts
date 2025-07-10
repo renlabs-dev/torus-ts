@@ -287,6 +287,7 @@ export const comment = pgTable("comment", {
 ]);
 export const commentDigest = pgMaterializedView("comment_digest", {	id: integer(),
 	// TODO: failed to parse database type 'public.governance_item_type'
+	// Removed unknown
 	itemId: integer("item_id"),
 	userKey: varchar("user_key", { length: 256 }),
 	userName: text("user_name"),
