@@ -46,6 +46,7 @@ export default function SidebarContainer({
               </BreadcrumbList>
             </Breadcrumb>
           </div>
+          asd
           <div className="flex items-center gap-2 px-4">
             <PortalWalletDropdown />
           </div>

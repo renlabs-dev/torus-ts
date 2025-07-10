@@ -3,14 +3,18 @@
 import * as React from "react";
 
 import {
+  Edit3,
   FolderPen,
   Frame,
-  Grid2x2Plus,
   LifeBuoy,
   Map,
+  Network,
   PieChart,
   Plus,
   Send,
+  Signal,
+  Trash2,
+  UserPlus,
 } from "lucide-react";
 import Link from "next/link";
 
@@ -32,47 +36,57 @@ import { NavSecondary } from "./nav-secondary";
 const data = {
   navMain: [
     {
+      title: "Overview",
+      items: [
+        {
+          title: "Hypergraph",
+          url: "/",
+          icon: Network,
+        },
+      ],
+    },
+    {
       title: "Permissions",
-      icon: Plus,
-      isActive: true,
       items: [
         {
           title: "Create Permission",
           url: "/create-permission",
+          icon: Plus,
         },
         {
           title: "Edit Permission",
           url: "/edit-permission",
+          icon: Edit3,
         },
       ],
     },
     {
       title: "Capabilitys",
-      icon: FolderPen,
-      isActive: true,
       items: [
         {
           title: "Register Capability",
           url: "/register-capability",
+          icon: FolderPen,
         },
         {
           title: "Delete Capability",
           url: "/delete-capability",
+          icon: Trash2,
         },
       ],
     },
     {
       title: "Network Operations",
-      icon: Grid2x2Plus,
-      isActive: true,
       items: [
         {
           title: "Register Agent",
           url: "/register-agent",
+          icon: UserPlus,
         },
         {
           title: "Create Signal",
           url: "/create-signal",
+          icon: Signal,
         },
       ],
     },
@@ -110,17 +124,17 @@ const data = {
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   return (
-    <Sidebar variant="inset" collapsible="icon" {...props}>
+    <Sidebar collapsible="icon" {...props}>
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton size="lg" asChild>
               <Link href="/">
                 <div
-                  className="text-sidebar-primary-foreground flex aspect-square size-8 items-center
-                    justify-center rounded-lg"
+                  className="flex aspect-square size-8 items-center justify-center rounded-lg
+                    text-sidebar-primary-foreground"
                 >
-                  <Icons.Logo className="size-6" />
+                  <Icons.Logo className="size-5" />
                 </div>
                 <div className="grid flex-1 text-left text-base leading-tight">
                   <span className="truncate font-medium">Torus Portal</span>

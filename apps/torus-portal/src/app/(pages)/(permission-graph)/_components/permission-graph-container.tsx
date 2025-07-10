@@ -102,7 +102,7 @@ export default function PermissionGraphContainer() {
     );
 
   return (
-    <div className="fixed inset-0 w-screen h-screen overflow-hidden">
+    <main>
       <div
         className="absolute bottom-2 left-2 right-2 md:bottom-[3.3em] z-50 flex flex-col
           sm:flex-row justify-between gap-2"
@@ -118,7 +118,7 @@ export default function PermissionGraphContainer() {
           <span className="text-xs">Click on any node for detailed view.</span>
         </div>
       </div>
-      <div className="absolute md:top-[3.8rem] top-[3.4rem] left-2 right-2 z-10">
+      <div className="">
         {/* Desktop layout */}
         <div className="hidden lg:flex items-center gap-2 w-full animate-fade-down">
           <PermissionGraphOverview graphData={graphData} />
@@ -128,22 +128,6 @@ export default function PermissionGraphContainer() {
               graphNodes={graphData.nodes.map((node) => node.id)}
             />
           </div>
-        </div>
-
-        {/* Mobile/Tablet layout - stacked */}
-        <div className="flex flex-col gap-2 lg:hidden">
-          <div className="flex items-center gap-2 overflow-x-auto">
-            <MyAgentButton
-              graphData={graphData}
-              onNodeClick={handleNodeSelect}
-            />
-          </div>
-          <div className="flex items-center gap-2 overflow-x-auto">
-            <PermissionGraphSearch
-              graphNodes={graphData.nodes.map((node) => node.id)}
-            />
-          </div>
-          <PermissionGraphOverview graphData={graphData} />
         </div>
       </div>
       <GraphSheet
@@ -158,7 +142,6 @@ export default function PermissionGraphContainer() {
         onOpenChange={(isOpen) => {
           setIsSheetOpen(isOpen);
           if (!isOpen) {
-            // Clear query parameter when sheet closes
             const params = new URLSearchParams(searchParams.toString());
             params.delete("id");
             const newUrl = params.toString() ? `/?${params.toString()}` : "/";
@@ -170,13 +153,13 @@ export default function PermissionGraphContainer() {
           }
         }}
       />
-      <div className="absolute inset-0 w-full h-full animate-fade animate-delay-1000">
+      <div className="fixed inset-0 z-0">
         <ForceGraphCanvas
           data={graphData}
           onNodeClick={handleNodeSelect}
           userAddress={selectedAccount?.address}
         />
       </div>
-    </div>
+    </main>
   );
 }
