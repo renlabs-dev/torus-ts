@@ -1,4 +1,3 @@
-import type { AnyJson } from "@polkadot/types/types";
 import { typed_non_null_entries } from "@torus-network/torus-utils";
 import {
   buildIpfsGatewayUrl,
@@ -8,7 +7,7 @@ import { tryAsync, trySync } from "@torus-network/torus-utils/try-catch";
 import { CID } from "multiformats";
 import { z } from "zod";
 
-const AGENT_SHORT_DESCRIPTION_MAX_LENGTH = 201;
+export const AGENT_SHORT_DESCRIPTION_MAX_LENGTH = 201;
 
 const zUrl = z.string().url();
 const zIpfsOrUrl = z.union([IPFS_URI_SCHEMA, zUrl]);
@@ -115,7 +114,7 @@ export async function fetchAgentMetadata(
   );
 
   const images = (await Promise.all(imagePromises)).reduce(
-    (acc, curr) => ({ ...acc, ...curr }),
+    (acc, curr) => Object.assign(acc, curr),
     {},
   );
 
