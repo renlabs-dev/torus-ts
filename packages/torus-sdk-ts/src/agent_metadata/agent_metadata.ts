@@ -64,8 +64,8 @@ export async function fetchFromIpfsOrUrl<T>(
   return result;
 }
 
-const fetchJson = (url: string): Promise<AnyJson> =>
-  fetch(url).then((res) => res.json() as Promise<AnyJson>);
+const fetchJson = (url: string): Promise<AgentMetadata> =>
+  fetch(url).then((res) => res.json());
 
 const fetchBlob = (url: string): Promise<Blob> =>
   fetch(url).then((res) => res.blob());
@@ -91,7 +91,7 @@ export async function fetchAgentMetadata(
   { fetchImages = false }: { fetchImages?: boolean } = {},
 ): Promise<AgentMetadataResult> {
   const uriWithIpfs = uri.startsWith("ipfs://") ? uri : `ipfs://${uri}`;
-  const data = await fetchFromIpfsOrUrl(uriWithIpfs, fetchJson);
+  const data = await fetchFromIpfsOrUrl<AgentMetadata>(uriWithIpfs, fetchJson);
 
   const [parseError, parsed] = trySync(() =>
     AGENT_METADATA_SCHEMA.safeParse(data),
@@ -104,7 +104,7 @@ export async function fetchAgentMetadata(
     );
   }
 
-  const metadata = parsed?.data ?? (data as AgentMetadata);
+  const metadata = parsed?.data ?? data;
 
   if (!fetchImages || !metadata.images) {
     return { metadata, images: {} };
