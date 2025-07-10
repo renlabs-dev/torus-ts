@@ -24,11 +24,11 @@ export default function SidebarContainer({
   children: ReactNode;
 }) {
   return (
-    <SidebarProvider>
+    <SidebarProvider defaultOpen={false}>
       <AppSidebar />
       <SidebarInset>
         <header className="flex h-16 shrink-0 items-center gap-2 justify-between">
-          <div className="flex items-center gap-2 px-4">
+          <div className="flex items-center gap-2 px-4 z-[100]">
             <SidebarTrigger className="-ml-1" />
             <Separator
               orientation="vertical"
@@ -46,7 +46,6 @@ export default function SidebarContainer({
               </BreadcrumbList>
             </Breadcrumb>
           </div>
-          asd
           <div className="flex items-center gap-2 px-4">
             <PortalWalletDropdown />
           </div>
