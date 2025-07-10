@@ -1,7 +1,5 @@
 import { memo } from "react";
 
-import { Card } from "@torus-ts/ui/components/card";
-
 import type { CustomGraphData } from "./permission-graph-types";
 
 interface PermissionGraphOverviewProps {
@@ -39,7 +37,7 @@ export const PermissionGraphOverview = memo(function PermissionGraphOverview({
 
   return (
     <div className="flex flex-col sm:flex-row gap-2">
-      <Card className="h-9 w-full sm:w-auto flex items-center animate-fade-down animate-delay-200">
+      <div className="h-9 w-full sm:w-auto flex items-center animate-fade-down animate-delay-200">
         <div className="px-2 sm:px-4 w-full">
           <div className="flex items-center justify-center gap-3">
             <div className="flex items-center gap-3">
@@ -55,9 +53,9 @@ export const PermissionGraphOverview = memo(function PermissionGraphOverview({
             </div>
           </div>
         </div>
-      </Card>
+      </div>
 
-      <Card className="h-9 w-full sm:w-auto flex items-center animate-fade-down animate-delay-300">
+      <div className="h-9 w-full sm:w-auto flex items-center animate-fade-down animate-delay-300">
         <div className="px-2 sm:px-4 w-full">
           <div className="flex items-center justify-center gap-3">
             <div className="flex items-center gap-3">
@@ -69,7 +67,7 @@ export const PermissionGraphOverview = memo(function PermissionGraphOverview({
             </div>
           </div>
         </div>
-      </Card>
+      </div>
     </div>
   );
 });

@@ -13,8 +13,8 @@ import { useGraphData } from "./force-graph/use-graph-data";
 import { GraphSheet } from "./graph-sheet/graph-sheet";
 import { MyAgentButton } from "./my-agent-button";
 import { NodeColorLegendDropdown } from "./node-color-legend-dropdown";
+import PermissionGraphCommand from "./permission-graph-command";
 import { PermissionGraphOverview } from "./permission-graph-overview";
-import PermissionGraphSearch from "./permission-graph-search";
 import type {
   CachedAgentData,
   CustomGraphNode,
@@ -94,6 +94,20 @@ export default function PermissionGraphContainer() {
     };
   }, []);
 
+  function handleOnOpenChange(isOpen: boolean) {
+    setIsSheetOpen(isOpen);
+    if (!isOpen) {
+      const params = new URLSearchParams(searchParams.toString());
+      params.delete("id");
+      const newUrl = params.toString() ? `/?${params.toString()}` : "/";
+      router.replace(newUrl, { scroll: false });
+
+      setTimeout(() => {
+        setSelectedNode(null);
+      }, 300);
+    }
+  }
+
   if (isLoading || !graphData || !isInitialized)
     return (
       <div className="w-full min-h-screen flex items-center justify-center animate-pulse">
@@ -103,10 +117,14 @@ export default function PermissionGraphContainer() {
 
   return (
     <main>
-      <div
-        className="absolute bottom-2 left-2 right-2 md:bottom-[3.3em] z-50 flex flex-col
-          sm:flex-row justify-between gap-2"
-      >
+      <div className="absolute bottom-3 left-3 right-32 z-50 flex flex-row justify-between gap-2">
+        <div className="flex items-center justify-between gap-2 w-full animate-fade-down">
+          <PermissionGraphCommand
+            graphNodes={graphData.nodes.map((node) => node.id)}
+          />
+          <PermissionGraphOverview graphData={graphData} />
+          <MyAgentButton graphData={graphData} onNodeClick={handleNodeSelect} />
+        </div>
         <div className="flex items-center">
           <NodeColorLegendDropdown />
         </div>
@@ -118,18 +136,7 @@ export default function PermissionGraphContainer() {
           <span className="text-xs">Click on any node for detailed view.</span>
         </div>
       </div>
-      <div className="">
-        {/* Desktop layout */}
-        <div className="hidden lg:flex items-center gap-2 w-full animate-fade-down">
-          <PermissionGraphOverview graphData={graphData} />
-          <MyAgentButton graphData={graphData} onNodeClick={handleNodeSelect} />
-          <div className="flex-1">
-            <PermissionGraphSearch
-              graphNodes={graphData.nodes.map((node) => node.id)}
-            />
-          </div>
-        </div>
-      </div>
+
       <GraphSheet
         selectedNode={selectedNode}
         graphData={graphData}
@@ -139,27 +146,13 @@ export default function PermissionGraphContainer() {
         getCachedAgentData={getCachedAgentData}
         setCachedAgentData={setCachedAgentData}
         isOpen={isSheetOpen}
-        onOpenChange={(isOpen) => {
-          setIsSheetOpen(isOpen);
-          if (!isOpen) {
-            const params = new URLSearchParams(searchParams.toString());
-            params.delete("id");
-            const newUrl = params.toString() ? `/?${params.toString()}` : "/";
-            router.replace(newUrl, { scroll: false });
-
-            setTimeout(() => {
-              setSelectedNode(null);
-            }, 300);
-          }
-        }}
+        onOpenChange={handleOnOpenChange}
       />
-      <div className="fixed inset-0 z-0">
-        <ForceGraphCanvas
-          data={graphData}
-          onNodeClick={handleNodeSelect}
-          userAddress={selectedAccount?.address}
-        />
-      </div>
+      <ForceGraphCanvas
+        data={graphData}
+        onNodeClick={handleNodeSelect}
+        userAddress={selectedAccount?.address}
+      />
     </main>
   );
 }
