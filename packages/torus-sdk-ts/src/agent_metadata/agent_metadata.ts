@@ -1,17 +1,17 @@
 import type { AnyJson } from "@polkadot/types/types";
-import { CID } from "multiformats";
-import { z } from "zod";
-
 import { typed_non_null_entries } from "@torus-network/torus-utils";
 import {
   buildIpfsGatewayUrl,
   IPFS_URI_SCHEMA,
 } from "@torus-network/torus-utils/ipfs";
 import { tryAsync, trySync } from "@torus-network/torus-utils/try-catch";
+import { CID } from "multiformats";
+import { z } from "zod";
 
-export const AGENT_SHORT_DESCRIPTION_MAX_LENGTH = 201;
+const AGENT_SHORT_DESCRIPTION_MAX_LENGTH = 201;
 
-const z_url = z.string().url();
+const zUrl = z.string().url();
+const zIpfsOrUrl = z.union([IPFS_URI_SCHEMA, zUrl]);
 
 export const AGENT_METADATA_SCHEMA = z.object({
   title: z.string().nonempty("Agent title is required"),
@@ -20,71 +20,52 @@ export const AGENT_METADATA_SCHEMA = z.object({
     .nonempty("Agent short description is required")
     .max(
       AGENT_SHORT_DESCRIPTION_MAX_LENGTH,
-      `Agent short description must be less than ${AGENT_SHORT_DESCRIPTION_MAX_LENGTH} characters long`,
+      `Agent short description must be less than ${AGENT_SHORT_DESCRIPTION_MAX_LENGTH} characters`,
     ),
   description: z
     .string()
-    .max(3000, "Agent description must be less than 3000 characters long"),
-  website: z.string().optional(),
+    .max(3000, "Agent description must be less than 3000 characters"),
+  website: zUrl.optional(),
   images: z
     .object({
-      icon: z.union([IPFS_URI_SCHEMA, z_url]),
-      banner: z.union([IPFS_URI_SCHEMA, z_url]),
+      icon: zIpfsOrUrl,
+      banner: zIpfsOrUrl,
     })
     .partial()
     .optional()
-    .transform((images) =>
-      !images || Object.keys(images).length === 0 ? undefined : images,
-    ),
+    .transform((val) => (val && Object.keys(val).length > 0 ? val : undefined)),
   socials: z
     .object({
-      discord: z.string().optional(),
-      github: z.string().optional(),
-      telegram: z.string().optional(),
-      twitter: z.string().optional(),
+      discord: zUrl.optional(),
+      github: zUrl.optional(),
+      telegram: zUrl.optional(),
+      twitter: zUrl.optional(),
     })
     .partial()
     .optional(),
 });
 
 export type AgentMetadata = z.infer<typeof AGENT_METADATA_SCHEMA>;
-
 export type AgentMetadataImageName = keyof NonNullable<AgentMetadata["images"]>;
 
 export async function fetchFromIpfsOrUrl<T>(
   uri: string,
   fetcher: (url: string) => Promise<T>,
 ): Promise<T> {
-  let url: string = uri;
-  const problems: Error[] = [];
+  const [parseError, parsedCid] = trySync(() => IPFS_URI_SCHEMA.parse(uri));
+  const url = parseError ? uri : buildIpfsGatewayUrl(parsedCid);
 
-  // Parse the URI to check if it's a valid IPFS URI
-  const [parseError, parsedCid] = trySync(() => IPFS_URI_SCHEMA.safeParse(uri));
-
-  if (parseError !== undefined) {
-    problems.push(parseError);
-  } else if (parsedCid.success) {
-    url = buildIpfsGatewayUrl(parsedCid.data);
-  } else {
-    problems.push(parsedCid.error);
-  }
-
-  // Fetch from the determined URL
   const [fetchError, result] = await tryAsync(fetcher(url));
 
-  if (fetchError !== undefined) {
-    problems.push(fetchError);
-  }
-
-  if (result == null) {
-    throw new Error("Failed to fetch agent metadata:" + problems.join("; "));
+  if (fetchError) {
+    throw new Error(`Failed to fetch from ${uri}: ${fetchError.message}`);
   }
 
   return result;
 }
 
 const fetchJson = (url: string): Promise<AnyJson> =>
-  fetch(url).then((res) => res.json() as unknown as AnyJson);
+  fetch(url).then((res) => res.json() as Promise<AnyJson>);
 
 const fetchBlob = (url: string): Promise<Blob> =>
   fetch(url).then((res) => res.blob());
@@ -94,46 +75,49 @@ export interface AgentMetadataResult {
   images: Partial<Record<AgentMetadataImageName, Blob>>;
 }
 
+async function fetchImage(
+  name: AgentMetadataImageName,
+  pointer: CID | string,
+): Promise<Partial<Record<AgentMetadataImageName, Blob>>> {
+  const blob =
+    pointer instanceof CID
+      ? await fetchBlob(buildIpfsGatewayUrl(pointer))
+      : await fetchFromIpfsOrUrl(pointer, fetchBlob);
+  return { [name]: blob };
+}
+
 export async function fetchAgentMetadata(
   uri: string,
-  { fetchImages = false },
+  { fetchImages = false }: { fetchImages?: boolean } = {},
 ): Promise<AgentMetadataResult> {
   const uriWithIpfs = uri.startsWith("ipfs://") ? uri : `ipfs://${uri}`;
   const data = await fetchFromIpfsOrUrl(uriWithIpfs, fetchJson);
 
-  const parsed = AGENT_METADATA_SCHEMA.safeParse(data);
-  if (!parsed.success) {
-    throw new Error("Failed to parse agent metadata:" + parsed.error.message);
-  }
-  const metadata = parsed.data;
+  const [parseError, parsed] = trySync(() =>
+    AGENT_METADATA_SCHEMA.safeParse(data),
+  );
 
-  const fetchFile = async <Name extends string>(
-    name: Name,
-    pointer: CID | string,
-  ): Promise<Record<Name, Blob>> => {
-    const result =
-      pointer instanceof CID
-        ? await fetchBlob(buildIpfsGatewayUrl(pointer))
-        : await fetchFromIpfsOrUrl(pointer, fetchBlob);
-    return { [name]: result } as Record<Name, Blob>;
-  };
-
-  const imageUris = parsed.data.images;
-
-  if (fetchImages && imageUris) {
-    // const entries = typed_non_null_entries(imageUris);
-    const jobs = typed_non_null_entries(imageUris).map(([name, pointer]) =>
-      fetchFile(name, pointer),
+  if (parseError) {
+    console.error(
+      `Failed to parse agent metadata: ${parseError.message}`,
+      data,
     );
-    const imageResults = await Promise.all(jobs);
-
-    const images = imageResults.reduce((acc, curr) => ({ ...acc, ...curr }));
-
-    return {
-      metadata,
-      images,
-    };
   }
 
-  return { metadata, images: {} };
+  const metadata = parsed?.data ?? (data as AgentMetadata);
+
+  if (!fetchImages || !metadata.images) {
+    return { metadata, images: {} };
+  }
+
+  const imagePromises = typed_non_null_entries(metadata.images).map(
+    ([name, pointer]) => fetchImage(name, pointer),
+  );
+
+  const images = (await Promise.all(imagePromises)).reduce(
+    (acc, curr) => ({ ...acc, ...curr }),
+    {},
+  );
+
+  return { metadata, images };
 }
