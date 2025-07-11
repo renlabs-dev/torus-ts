@@ -150,6 +150,26 @@ export function PermissionGraphCommand({
         <CommandList>
           <CommandEmpty>No results found.</CommandEmpty>
 
+          {searchData.signals.length > 0 && (
+            <CommandGroup heading="Signals">
+              {searchData.signals.map((signal) => (
+                <CommandItem
+                  key={signal.id}
+                  value={signal.searchText}
+                  onSelect={() => handleSelect(signal.id)}
+                >
+                  <Radio className="mr-2 h-4 w-4" />
+                  <div className="flex flex-col">
+                    <span>{signal.name}</span>
+                    <span className="text-xs text-muted-foreground">
+                      From: {formatNodeDisplay(signal.agentKey)}
+                    </span>
+                  </div>
+                </CommandItem>
+              ))}
+            </CommandGroup>
+          )}
+
           {searchData.agents.length > 0 && (
             <CommandGroup heading="Agents">
               {searchData.agents.map((agent) => (
@@ -199,7 +219,7 @@ export function PermissionGraphCommand({
           )}
 
           {searchData.namespacePermissions.length > 0 && (
-            <CommandGroup heading="Namespace Permissions (Capabilities)">
+            <CommandGroup heading="Capabilities Permissions">
               {searchData.namespacePermissions.map((permission) => (
                 <CommandItem
                   key={`namespace-${permission.id}`}
@@ -214,26 +234,6 @@ export function PermissionGraphCommand({
                     </span>
                     <span className="text-xs text-muted-foreground">
                       {formatNodeDisplay(permission.id)}
-                    </span>
-                  </div>
-                </CommandItem>
-              ))}
-            </CommandGroup>
-          )}
-
-          {searchData.signals.length > 0 && (
-            <CommandGroup heading="Signals">
-              {searchData.signals.map((signal) => (
-                <CommandItem
-                  key={signal.id}
-                  value={signal.searchText}
-                  onSelect={() => handleSelect(signal.id)}
-                >
-                  <Radio className="mr-2 h-4 w-4" />
-                  <div className="flex flex-col">
-                    <span>{signal.name}</span>
-                    <span className="text-xs text-muted-foreground">
-                      From: {formatNodeDisplay(signal.agentKey)}
                     </span>
                   </div>
                 </CommandItem>

@@ -26,6 +26,7 @@ export function useGraphData() {
   const computedWeights: ComputedWeight[] | undefined = useMemo(() => {
     return allComputedWeights?.map((agent) => ({
       agentKey: agent.agentKey,
+      agentName: agent.agentName ?? "Unknown Agent Name",
       percComputedWeight: agent.percComputedWeight,
     }));
   }, [allComputedWeights]);
