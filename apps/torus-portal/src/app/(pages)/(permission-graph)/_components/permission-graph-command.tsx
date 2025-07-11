@@ -16,19 +16,16 @@ import {
   CommandList,
 } from "@torus-ts/ui/components/command";
 import { DialogTitle } from "@torus-ts/ui/components/dialog";
+import { useIsMobile } from "@torus-ts/ui/hooks/use-mobile";
 
-import type { ExtractedGraphData } from "./force-graph/force-graph-utils";
+import { useGraphData } from "./force-graph/use-graph-data";
 
-interface PermissionGraphCommandProps {
-  graphData: ExtractedGraphData | null;
-}
-
-export function PermissionGraphCommand({
-  graphData,
-}: PermissionGraphCommandProps) {
+export function PermissionGraphCommand() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [open, setOpen] = useState(false);
+  const isMobile = useIsMobile();
+  const { graphData } = useGraphData();
 
   const handleSelect = useCallback(
     (nodeId: string) => {
@@ -123,15 +120,18 @@ export function PermissionGraphCommand({
     return () => document.removeEventListener("keydown", down);
   }, []);
 
-  const title = "Search agents, permissions or signals...";
+  const title = isMobile
+    ? "Search..."
+    : "Search agents, permissions or signals...";
 
   return (
     <>
       <button
-        className="text-sm border p-2.5 gap-6 justify-between rounded flex items-center"
+        className="text-sm border p-2.5 gap-6 md:w-fit w-full justify-between rounded flex
+          items-center bg-background"
         onClick={() => setOpen(true)}
       >
-        <span className="flex items-center gap-2 text-muted-foreground">
+        <span className="flex items-center gap-2 text-muted-foreground text-nowrap">
           <Search className="w-4 h-4 text-muted-foreground" />
           {title}
         </span>
