@@ -73,6 +73,7 @@ function getDeterministicZ(seed: string, range: number): number {
 
 export interface ComputedWeight {
   agentKey: string;
+  agentName: string;
   percComputedWeight: number;
 }
 
@@ -133,12 +134,20 @@ export function createGraphData(
 
   const nodes: CustomGraphNode[] = [];
   const links: CustomGraphLink[] = [];
-  
+
   // Initialize data collectors for search component
   const extractedAgents: ExtractedGraphData["agents"] = [];
-  const extractedNamespacePermissions: ExtractedGraphData["permissions"]["namespace"] = [];
-  const extractedEmissionPermissions: ExtractedGraphData["permissions"]["emission"] = [];
+  const extractedNamespacePermissions: ExtractedGraphData["permissions"]["namespace"] =
+    [];
+  const extractedEmissionPermissions: ExtractedGraphData["permissions"]["emission"] =
+    [];
   const extractedSignals: ExtractedGraphData["signals"] = [];
+
+  // Create a lookup map for agent names from computed weights
+  const agentNameLookup = new Map<string, string>();
+  computedWeights?.forEach((agent) => {
+    agentNameLookup.set(agent.agentKey, agent.agentName);
+  });
 
   // 1. ALLOCATOR NODE (center)
   const allocatorNode: CustomGraphNode = {
@@ -158,7 +167,7 @@ export function createGraphData(
     agentData: { accountId: allocatorAddress, isWhitelisted: true },
   };
   nodes.push(allocatorNode);
-  
+
   // Extract allocator agent data
   extractedAgents.push({
     accountId: allocatorAddress,
@@ -177,7 +186,7 @@ export function createGraphData(
 
       const rootNode: CustomGraphNode = {
         id: agent.agentKey,
-        name: smallAddress(agent.agentKey),
+        name: agent.agentName,
         color: graphConstants.nodeConfig.nodeColors.rootNode,
         val: graphConstants.nodeConfig.nodeSizes.rootNode,
         fullAddress: agent.agentKey,
@@ -194,11 +203,11 @@ export function createGraphData(
       };
       nodes.push(rootNode);
       rootNodeIds.add(agent.agentKey);
-      
+
       // Extract root agent data
       extractedAgents.push({
         accountId: agent.agentKey,
-        name: smallAddress(agent.agentKey),
+        name: agent.agentName,
         role: "Root Agent",
         isWhitelisted: true,
         isAllocated: true,
@@ -243,9 +252,11 @@ export function createGraphData(
       const angle = (index * 2 * Math.PI) / grantorKeys.size;
       const radius = 200;
 
+      const agentName = agentNameLookup.get(agentKey) ?? "Unknown Agent Name";
+
       const rootNode: CustomGraphNode = {
         id: agentKey,
-        name: smallAddress(agentKey),
+        name: agentName,
         color: graphConstants.nodeConfig.nodeColors.rootNode,
         val: graphConstants.nodeConfig.nodeSizes.rootNode,
         fullAddress: agentKey,
@@ -262,11 +273,11 @@ export function createGraphData(
       };
       nodes.push(rootNode);
       rootNodeIds.add(agentKey);
-      
+
       // Extract root agent data (fallback case)
       extractedAgents.push({
         accountId: agentKey,
-        name: smallAddress(agentKey),
+        name: agentName,
         role: "Root Agent",
         isWhitelisted: true,
         isAllocated: false,
@@ -366,7 +377,7 @@ export function createGraphData(
             },
           };
           nodes.push(permissionNode);
-          
+
           // Extract permission data
           if (permissionType === "capability") {
             extractedNamespacePermissions.push({
@@ -374,31 +385,42 @@ export function createGraphData(
               grantorAccountId: permission.permissions.grantorAccountId,
               granteeAccountId: permission.permissions.granteeAccountId || "",
               scope: permissionType.toUpperCase(),
-              duration: permission.permissions.durationType === "indefinite"
-                ? null
-                : permission.permissions.durationBlockNumber?.toString() ?? null,
+              duration:
+                permission.permissions.durationType === "indefinite"
+                  ? null
+                  : (permission.permissions.durationBlockNumber?.toString() ??
+                    null),
             });
           } else {
             // Collect distribution targets for emission permissions
-            const distributionTargets: { targetAccountId: string; weight: number }[] = [];
+            const distributionTargets: {
+              targetAccountId: string;
+              weight: number;
+            }[] = [];
             permissions.forEach((perm) => {
               if (perm.emission_distribution_targets?.targetAccountId) {
                 distributionTargets.push({
-                  targetAccountId: perm.emission_distribution_targets.targetAccountId,
+                  targetAccountId:
+                    perm.emission_distribution_targets.targetAccountId,
                   weight: perm.emission_distribution_targets.weight,
                 });
               }
             });
-            
+
             extractedEmissionPermissions.push({
               id: permissionId,
               grantorAccountId: permission.permissions.grantorAccountId,
               granteeAccountId: permission.permissions.granteeAccountId || "",
               scope: permissionType.toUpperCase(),
-              duration: permission.permissions.durationType === "indefinite"
-                ? null
-                : permission.permissions.durationBlockNumber?.toString() ?? null,
-              distributionTargets: distributionTargets.length > 0 ? distributionTargets : undefined,
+              duration:
+                permission.permissions.durationType === "indefinite"
+                  ? null
+                  : (permission.permissions.durationBlockNumber?.toString() ??
+                    null),
+              distributionTargets:
+                distributionTargets.length > 0
+                  ? distributionTargets
+                  : undefined,
             });
           }
 
@@ -457,9 +479,11 @@ export function createGraphData(
       const angle = (index * 2 * Math.PI) / targetAgents.length;
       const radius = 600;
 
+      const agentName = agentNameLookup.get(agentId) ?? smallAddress(agentId);
+
       const targetNode: CustomGraphNode = {
         id: agentId,
-        name: smallAddress(agentId),
+        name: agentName,
         color: graphConstants.nodeConfig.nodeColors.targetNode,
         val: graphConstants.nodeConfig.nodeSizes.targetNode,
         fullAddress: agentId,
@@ -471,11 +495,11 @@ export function createGraphData(
         agentData: { accountId: agentId },
       };
       nodes.push(targetNode);
-      
+
       // Extract target agent data
       extractedAgents.push({
         accountId: agentId,
-        name: smallAddress(agentId),
+        name: agentName,
         role: "Target Agent",
       });
     });
@@ -582,7 +606,7 @@ export function createGraphData(
         signalData: signal,
       };
       nodes.push(signalNode);
-      
+
       // Extract signal data
       extractedSignals.push({
         id: signal.id,

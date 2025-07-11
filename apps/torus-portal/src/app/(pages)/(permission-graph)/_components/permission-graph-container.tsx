@@ -117,21 +117,23 @@ export default function PermissionGraphContainer() {
 
   return (
     <main>
-      <div className="absolute bottom-3 left-3 right-32 z-50 flex flex-row justify-between gap-2">
+      <div className="absolute bottom-3 left-3 right-3 z-50 flex flex-row justify-between gap-2">
         <div className="flex items-center justify-between gap-2 w-full animate-fade-down">
           <PermissionGraphCommand graphData={graphData} />
-          <PermissionGraphOverview graphData={graphData} />
           <MyAgentButton graphData={graphData} onNodeClick={handleNodeSelect} />
         </div>
-        <div className="flex items-center">
-          <NodeColorLegendDropdown />
+        <div className="flex items-center gap-2 w-full">
+          <PermissionGraphOverview graphData={graphData} />
         </div>
-        <div
-          className="flex items-center gap-2 bg-background/80 backdrop-blur-sm rounded-md px-2 py-1
-            animate-fade-up animate-delay-[800ms]"
-        >
-          <MousePointerClick className="w-4" />
-          <span className="text-xs">Click on any node for detailed view.</span>
+        <div className="flex items-center gap-4">
+          <NodeColorLegendDropdown />
+
+          <div className="flex items-center gap-1">
+            <MousePointerClick className="w-4" />
+            <span className="text-xs text-nowrap">
+              Click on any node for detailed view.
+            </span>
+          </div>
         </div>
       </div>
 
