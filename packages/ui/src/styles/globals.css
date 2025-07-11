@@ -91,7 +91,7 @@
 
 /* Handle */
 ::-webkit-scrollbar-thumb {
-  background: hsl(240 5% 64.9%);
+  background: hsl(240 6% 10%);
   border-radius: 2px;
 }
 

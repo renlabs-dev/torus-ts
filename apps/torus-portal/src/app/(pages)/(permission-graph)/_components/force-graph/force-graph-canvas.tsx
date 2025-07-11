@@ -22,7 +22,7 @@ export function ForceGraphCanvas({
   userAddress?: string;
 }) {
   return (
-    <div className="fixed inset-0 z-0">
+    <div className="fixed inset-0 z-0 animate-fade animate-delay-1000">
       <Canvas camera={{ position: [0, 0, 600], far: 8000 }} shadows>
         {/* <color attach="background" args={["#252530"]} /> */}
         <ambientLight intensity={1.01} />

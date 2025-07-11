@@ -178,9 +178,9 @@ export function NodeColorLegendDropdown() {
         <Button
           variant="link"
           size="sm"
-          className="h-8 animate-fade-up animate-delay-[600ms]"
+          className="h-8 animate-fade-up animate-delay-[900ms]"
         >
-          <InfoIcon className="w-4 h-4 mr-2" />
+          <InfoIcon className="w-4 h-4 mr-1" />
           Nodes Information
         </Button>
       </DropdownMenuTrigger>
