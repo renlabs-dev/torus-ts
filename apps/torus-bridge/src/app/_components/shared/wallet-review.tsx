@@ -4,14 +4,14 @@ import { Loading } from "@torus-ts/ui/components/loading";
 import { getTokenByIndex, useWarpCore } from "~/hooks/token";
 import { useIsApproveRequired } from "~/hooks/token/use-is-approve-required";
 import { useFeeQuotes } from "~/hooks/use-fee-quotes";
-import type { TransferFormValues } from "~/utils/types";
-import { useFormikContext } from "formik";
+import { useTransferFormContext } from "../transfer-token/_components/transfer-form-context";
 import React from "react";
 
 export function WalletTransactionReview({
   isReview,
 }: Readonly<{ isReview: boolean }>) {
-  const { values } = useFormikContext<TransferFormValues>();
+  const { watch } = useTransferFormContext();
+  const values = watch();
   const { amount, destination, tokenIndex } = values;
   const warpCore = useWarpCore();
   const originToken = getTokenByIndex(warpCore, tokenIndex);

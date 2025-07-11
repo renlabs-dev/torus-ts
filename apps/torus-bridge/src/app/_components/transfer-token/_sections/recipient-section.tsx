@@ -7,16 +7,20 @@ import { useDestinationBalance } from "~/hooks/balance/use-destination-balance";
 import { useChainDisplayName } from "~/hooks/chain/use-chain-display-name";
 import { useRecipientBalanceWatcher } from "~/hooks/use-balance-watcher";
 import { useMultiProvider } from "~/hooks/use-multi-provider";
-import type { TransferFormValues } from "~/utils/types";
-import { useFormikContext } from "formik";
+import { useTransferFormContext } from "../_components/transfer-form-context";
 import { TokenBalance } from "../_components/token-balance";
 
 export function RecipientSection({
   isReview,
 }: Readonly<{ isReview: boolean }>) {
-  const { values } = useFormikContext<TransferFormValues>();
+  const {
+    watch,
+    formState: { errors },
+  } = useTransferFormContext();
+  const values = watch();
   const { balance } = useDestinationBalance(values);
   useRecipientBalanceWatcher(values.recipient, balance);
+  const recipientError = errors.recipient?.message;
 
   return (
     <div className="mt-4">
@@ -25,12 +29,17 @@ export function RecipientSection({
         <TokenBalance label="Remote balance" balance={balance} />
       </div>
       <div className="flex w-full items-center gap-2">
-        <TextField
-          name="recipient"
-          placeholder="0x123456..."
-          className="w-full"
-          disabled={isReview}
-        />
+        <div className="flex-1">
+          <TextField
+            name="recipient"
+            placeholder="0x123456..."
+            className={`w-full ${recipientError ? "border-red-500" : ""}`}
+            disabled={isReview}
+          />
+          {recipientError && (
+            <p className="mt-1 text-sm text-red-500">{recipientError}</p>
+          )}
+        </div>
         <SelfButton disabled={isReview} />
       </div>
     </div>
@@ -38,14 +47,15 @@ export function RecipientSection({
 }
 
 function SelfButton({ disabled }: Readonly<{ disabled?: boolean }>) {
-  const { values, setFieldValue } = useFormikContext<TransferFormValues>();
+  const { watch, setValue } = useTransferFormContext();
+  const values = watch();
   const multiProvider = useMultiProvider();
   const chainDisplayName = useChainDisplayName(values.destination);
   const address = useAccountAddressForChain(multiProvider, values.destination);
   const { toast } = useToast();
   const onClick = () => {
     if (disabled) return;
-    if (address) void setFieldValue("recipient", address);
+    if (address) setValue("recipient", address);
     else
       toast.error(
         `No account found for for chain ${chainDisplayName}, is your wallet connected?`,

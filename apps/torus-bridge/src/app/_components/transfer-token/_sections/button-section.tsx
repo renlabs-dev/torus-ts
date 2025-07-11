@@ -1,25 +1,31 @@
+import { tryAsync } from "@torus-network/torus-utils/try-catch";
 import { Button } from "@torus-ts/ui/components/button";
+import type { FieldErrors } from "react-hook-form";
 import { ConnectAwareSubmitButton } from "~/app/_components/buttons/connect-aware-submit-button";
 import { useChainDisplayName } from "~/hooks/chain/use-chain-display-name";
 import { useIsAccountSanctioned } from "~/hooks/sanctioned/use-is-account-sanctioned";
 import { useTokenTransfer } from "~/hooks/use-token-transfer";
 import { useStore } from "~/utils/store";
 import type { TransferFormValues } from "~/utils/types";
-import { useFormikContext } from "formik";
-import { tryAsync } from "@torus-network/torus-utils/try-catch";
+import { useTransferFormContext } from "../_components/transfer-form-context";
 
 export function ButtonSection({
   isReview,
   isValidating,
   setIsReview,
   resetForm,
+  isValid,
+  errors,
 }: Readonly<{
   isReview: boolean;
   isValidating: boolean;
   resetForm: () => void;
   setIsReview: (b: boolean) => void;
+  isValid: boolean;
+  errors: FieldErrors<TransferFormValues>;
 }>) {
-  const { values } = useFormikContext<TransferFormValues>();
+  const { watch } = useTransferFormContext();
+  const values = watch();
   const chainDisplayName = useChainDisplayName(values.destination);
   const setTransferLoading = useStore((s) => s.setTransferLoading);
 
@@ -54,6 +60,8 @@ export function ButtonSection({
       <ConnectAwareSubmitButton
         chainName={values.origin}
         text={isValidating ? "Validating..." : "Continue"}
+        errors={errors}
+        disabled={!isValid}
       />
     );
   }
