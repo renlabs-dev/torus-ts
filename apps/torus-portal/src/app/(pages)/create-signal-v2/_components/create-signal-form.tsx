@@ -48,8 +48,6 @@ export function CreateSignalForm({
   async function onSubmit(
     data: z.infer<typeof AGENT_DEMAND_SIGNAL_INSERT_SCHEMA>,
   ) {
-    console.log("data", data);
-
     const { error } = await tryCatch(createSignalMutation.mutateAsync(data));
 
     if (error) {
@@ -59,14 +57,7 @@ export function CreateSignalForm({
       return;
     }
 
-    toast({
-      title: "You submitted the following values",
-      description: (
-        <pre className="mt-2 w-[320px] rounded-md bg-neutral-950 p-4">
-          <code className="text-white">{JSON.stringify(data, null, 2)}</code>
-        </pre>
-      ),
-    });
+    toast.success("Signal created successfully!");
   }
 
   return (
@@ -130,6 +121,81 @@ export function CreateSignalForm({
               Contact Information
             </span>
           </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <FormField
+              control={form.control}
+              name="discord"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Discord</FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder="Discord username (e.g., username)"
+                      {...field}
+                      value={field.value ?? ""}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="github"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>GitHub</FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder="GitHub username (e.g., octocat)"
+                      {...field}
+                      value={field.value ?? ""}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="telegram"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Telegram</FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder="Telegram username (e.g., @username)"
+                      {...field}
+                      value={field.value ?? ""}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="twitter"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Twitter</FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder="Twitter handle (e.g., @username)"
+                      {...field}
+                      value={field.value ?? ""}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+
           <Button variant="outline" className="w-full" type="submit">
             <Radio className="w-4 h-4 mr-1" />
             Create Signal
