@@ -2,8 +2,8 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import type { inferProcedureInput } from "@trpc/server";
-import { useForm } from "react-hook-form";
 import { Ban } from "lucide-react";
+import { useForm } from "react-hook-form";
 
 import type { AppRouter } from "@torus-ts/api";
 import { AGENT_DEMAND_SIGNAL_INSERT_SCHEMA } from "@torus-ts/db/validation";
@@ -53,7 +53,8 @@ function AgentRegistrationAlert() {
       <Ban className="h-4 w-4" />
       <AlertTitle>Agent Registration Required</AlertTitle>
       <AlertDescription>
-        You need to be a registered agent to create demand signals. Please register as an agent first to access this feature.
+        You need to be a registered agent to create demand signals. Please
+        register as an agent first to access this feature.
       </AlertDescription>
     </Alert>
   );
