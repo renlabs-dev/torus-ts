@@ -29,7 +29,7 @@ export function CreateSignalSliderField(props: CreateSignalSliderFieldProps) {
 
   return (
     <FormItem>
-      <FormLabel>Proposed Allocation (%)</FormLabel>
+      <FormLabel>Proposed Allocation</FormLabel>
       <FormControl>
         <Slider
           value={[props.field.value || 0]}

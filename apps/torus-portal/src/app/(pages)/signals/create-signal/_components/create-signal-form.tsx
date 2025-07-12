@@ -24,6 +24,7 @@ import { Input } from "@torus-ts/ui/components/input";
 import { useToast } from "@torus-ts/ui/hooks/use-toast";
 import { cn } from "@torus-ts/ui/lib/utils";
 
+import PortalFormHeader from "~/app/_components/portal-form-header";
 import { api } from "~/trpc/react";
 import { tryCatch } from "~/utils/try-catch";
 
@@ -95,13 +96,10 @@ export function CreateSignalForm({
         onSubmit={form.handleSubmit(onSubmit)}
         className={cn("flex flex-col gap-6", className)}
       >
-        <div className="flex flex-col items-center gap-2 text-center">
-          <h1 className="text-xl font-bold">Create Signal</h1>
-          <p className="text-muted-foreground text-sm text-balance">
-            Make a demand signal to express your specific need and proposed
-            emission allocation to other agents.
-          </p>
-        </div>
+        <PortalFormHeader
+          title="Create Signal"
+          description="Make a demand signal to express your specific need and proposed emission allocation to other agents."
+        />
 
         {!rootAgent.data?.agentKey && (
           <Alert variant="destructive">
@@ -109,7 +107,8 @@ export function CreateSignalForm({
             <AlertTitle>Agent emissions required!</AlertTitle>
             <AlertDescription>
               You need to be a root agent with emissions to create demand
-              signals. Please register as an agent first to access this feature.
+              signals. Please register and whitelist as an agent first to access
+              this feature.
             </AlertDescription>
           </Alert>
         )}
@@ -176,7 +175,7 @@ export function CreateSignalForm({
                   <FormLabel>Discord</FormLabel>
                   <FormControl>
                     <Input
-                      placeholder="Discord username (e.g., username)"
+                      placeholder="e.g. username"
                       {...field}
                       value={field.value ?? ""}
                     />
@@ -194,7 +193,7 @@ export function CreateSignalForm({
                   <FormLabel>GitHub</FormLabel>
                   <FormControl>
                     <Input
-                      placeholder="GitHub username (e.g., octocat)"
+                      placeholder="e.g. octocat"
                       {...field}
                       value={field.value ?? ""}
                     />
@@ -212,7 +211,7 @@ export function CreateSignalForm({
                   <FormLabel>Telegram</FormLabel>
                   <FormControl>
                     <Input
-                      placeholder="Telegram username (e.g., @username)"
+                      placeholder="e.g. @username"
                       {...field}
                       value={field.value ?? ""}
                     />
@@ -230,7 +229,7 @@ export function CreateSignalForm({
                   <FormLabel>Twitter</FormLabel>
                   <FormControl>
                     <Input
-                      placeholder="Twitter handle (e.g., @username)"
+                      placeholder="e.g. @username"
                       {...field}
                       value={field.value ?? ""}
                     />
