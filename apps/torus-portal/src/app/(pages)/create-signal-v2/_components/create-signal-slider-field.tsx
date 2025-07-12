@@ -52,17 +52,16 @@ export function CreateSignalSliderField({
       </FormControl>
       <div className="flex justify-between items-center text-sm">
         <span className="text-muted-foreground">
-          Available: {maxAllowedAllocation}%
+          Available: <span className="text-white">{maxAllowedAllocation}%</span>
         </span>
         <span className="text-md font-medium">{field.value || 0}%</span>
       </div>
-      {totalExistingAllocation && (
+      {totalExistingAllocation ? (
         <div className="text-xs text-muted-foreground mt-1">
           You have already allocated {totalExistingAllocation}% across{" "}
-          {existingSignals.data?.length} signal
-          {existingSignals.data?.length !== 1 ? "s" : ""}
+          {existingSignals.data?.length} signals
         </div>
-      )}
+      ) : null}
       <FormMessage />
     </FormItem>
   );

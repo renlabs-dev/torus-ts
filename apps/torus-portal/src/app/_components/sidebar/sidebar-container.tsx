@@ -27,8 +27,11 @@ export default function SidebarContainer({
     <SidebarProvider defaultOpen={false}>
       <AppSidebar />
       <SidebarInset>
-        <header className="flex h-16 shrink-0 items-center gap-2 justify-between">
-          <div className="flex items-center gap-2 px-4 z-50">
+        <header
+          className="sticky top-0 flex h-16 shrink-0 items-center gap-2 justify-between z-50
+            sm:bg-transparent bg-background"
+        >
+          <div className="flex items-center gap-2 px-4">
             <SidebarTrigger className="-ml-1" />
             <Separator
               orientation="vertical"
@@ -46,7 +49,7 @@ export default function SidebarContainer({
               </BreadcrumbList>
             </Breadcrumb>
           </div>
-          <div className="flex items-center gap-2 px-4 z-50">
+          <div className="flex items-center gap-2 px-4">
             <PortalWalletDropdown />
           </div>
         </header>
