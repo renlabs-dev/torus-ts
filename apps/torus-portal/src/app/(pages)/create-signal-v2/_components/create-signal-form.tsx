@@ -5,6 +5,7 @@ import { useForm } from "react-hook-form";
 import type { z } from "zod";
 
 import { AGENT_DEMAND_SIGNAL_INSERT_SCHEMA } from "@torus-ts/db/validation";
+import { useTorus } from "@torus-ts/torus-provider";
 import { Button } from "@torus-ts/ui/components/button";
 import {
   Form,
@@ -29,6 +30,12 @@ export function CreateSignalForm({
   ...props
 }: React.ComponentProps<"form">) {
   const { toast } = useToast();
+  const { selectedAccount, isAccountConnected } = useTorus();
+
+  const existingSignals = api.signal.byCreatorId.useQuery(
+    { creatorId: selectedAccount?.address ?? "" },
+    { enabled: isAccountConnected },
+  );
 
   const form = useForm<z.infer<typeof AGENT_DEMAND_SIGNAL_INSERT_SCHEMA>>({
     resolver: zodResolver(AGENT_DEMAND_SIGNAL_INSERT_SCHEMA),
@@ -57,7 +64,18 @@ export function CreateSignalForm({
       return;
     }
 
+    const currentValues = form.getValues();
+    form.reset({
+      title: "",
+      description: "",
+      proposedAllocation: 0,
+      discord: currentValues.discord,
+      github: currentValues.github,
+      telegram: currentValues.telegram,
+      twitter: currentValues.twitter,
+    });
     toast.success("Signal created successfully!");
+    void existingSignals.refetch();
   }
 
   return (
@@ -109,7 +127,12 @@ export function CreateSignalForm({
             <FormField
               control={form.control}
               name="proposedAllocation"
-              render={({ field }) => <CreateSignalSliderField field={field} />}
+              render={({ field }) => (
+                <CreateSignalSliderField
+                  field={field}
+                  existingSignals={existingSignals.data ?? []}
+                />
+              )}
             />
           </div>
 
@@ -196,9 +219,14 @@ export function CreateSignalForm({
             />
           </div>
 
-          <Button variant="outline" className="w-full" type="submit">
+          <Button
+            variant="outline"
+            className="w-full"
+            type="submit"
+            disabled={!isAccountConnected || createSignalMutation.isPending}
+          >
             <Radio className="w-4 h-4 mr-1" />
-            Create Signal
+            {createSignalMutation.isPending ? "Creating..." : "Create Signal"}
           </Button>
         </div>
       </form>
