@@ -10,6 +10,7 @@ import {
   PackagePlus,
   PackageX,
   Radio,
+  RadioTower,
 } from "lucide-react";
 import Link from "next/link";
 
@@ -84,8 +85,13 @@ const data = {
         },
         {
           title: "Create Signal",
-          url: "/create-signal",
+          url: "/signals/create-signal",
           icon: Radio,
+        },
+        {
+          title: "View Signals",
+          url: "/signals/signal-list",
+          icon: RadioTower,
         },
       ],
     },
