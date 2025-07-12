@@ -1,11 +1,16 @@
 "use client";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Radio } from "lucide-react";
+import { Ban, Radio } from "lucide-react";
 import { useForm } from "react-hook-form";
 import type { z } from "zod";
 
 import { AGENT_DEMAND_SIGNAL_INSERT_SCHEMA } from "@torus-ts/db/validation";
 import { useTorus } from "@torus-ts/torus-provider";
+import {
+  Alert,
+  AlertDescription,
+  AlertTitle,
+} from "@torus-ts/ui/components/alert";
 import { Button } from "@torus-ts/ui/components/button";
 import {
   Form,
@@ -34,6 +39,11 @@ export function CreateSignalForm({
 
   const existingSignals = api.signal.byCreatorId.useQuery(
     { creatorId: selectedAccount?.address ?? "" },
+    { enabled: isAccountConnected },
+  );
+
+  const rootAgent = api.computedAgentWeight.byAgentKey.useQuery(
+    { agentKey: selectedAccount?.address ?? "" },
     { enabled: isAccountConnected },
   );
 
@@ -92,6 +102,18 @@ export function CreateSignalForm({
             emission allocation to other agents.
           </p>
         </div>
+
+        {!rootAgent.data?.agentKey && (
+          <Alert variant="destructive">
+            <Ban className="h-4 w-4" />
+            <AlertTitle>Agent emissions required!</AlertTitle>
+            <AlertDescription>
+              You need to be a root agent with emissions to create demand
+              signals. Please register as an agent first to access this feature.
+            </AlertDescription>
+          </Alert>
+        )}
+
         <div className="grid gap-6">
           <div className="grid gap-3">
             <FormField
@@ -223,7 +245,11 @@ export function CreateSignalForm({
             variant="outline"
             className="w-full"
             type="submit"
-            disabled={!isAccountConnected || createSignalMutation.isPending}
+            disabled={
+              !isAccountConnected ||
+              createSignalMutation.isPending ||
+              !rootAgent.data?.agentKey
+            }
           >
             <Radio className="w-4 h-4 mr-1" />
             {createSignalMutation.isPending ? "Creating..." : "Create Signal"}
