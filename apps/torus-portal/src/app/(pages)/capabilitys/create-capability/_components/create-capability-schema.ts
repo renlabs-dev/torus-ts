@@ -12,6 +12,7 @@ export const HTTP_METHODS = [
   "delete",
   "put",
   "custom",
+  "none",
 ] as const;
 
 export const CREATE_CAPABILITY_SCHEMA = z
@@ -26,7 +27,7 @@ export const CREATE_CAPABILITY_SCHEMA = z
           return pathResult.success;
         },
         {
-          message: "Must be a valid namespace path or empty",
+          message: "Must be a valid capability path or empty",
         },
       ),
     method: z.enum([...HTTP_METHODS, "custom"]),
@@ -49,5 +50,17 @@ export const CREATE_CAPABILITY_SCHEMA = z
       message:
         "Custom method is required and must be a valid capability permission segment",
       path: ["customMethod"],
+    },
+  )
+  .refine(
+    (data) => {
+      if (data.method === "none") {
+        return data.path.trim().length > 0;
+      }
+      return true;
+    },
+    {
+      message: "Path is required when no REST method is selected",
+      path: ["path"],
     },
   );
