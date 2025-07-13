@@ -5,7 +5,8 @@
   "type": "module",
   "exports": {
     ".": "./src/torus-provider.tsx",
-    "./types": "./src/_types/index.ts"
+    "./types": "./src/_types/index.ts",
+    "./send-transaction": "./src/_components/send-transaction.tsx"
   },
   "license": "MIT",
   "scripts": {
@@ -25,7 +26,8 @@
     "@polkadot/extension-inject": "catalog:",
     "@polkadot-api/merkleize-metadata": "^1.1.13",
     "react": "catalog:react19",
-    "react-dom": "catalog:react19"
+    "react-dom": "catalog:react19",
+    "zod": "catalog:"
   },
   "devDependencies": {
     "@torus-ts/eslint-config": "workspace:*",

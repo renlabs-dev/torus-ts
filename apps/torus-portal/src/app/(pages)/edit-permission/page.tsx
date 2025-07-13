@@ -11,7 +11,7 @@ export const metadata: Metadata = {
 
 export default function EditPermissionPage() {
   return (
-    <PortalFormContainer imageSrc="/form-bg-permission-edit.svg">
+    <PortalFormContainer>
       <EditEmissionPermissionForm />
     </PortalFormContainer>
   );

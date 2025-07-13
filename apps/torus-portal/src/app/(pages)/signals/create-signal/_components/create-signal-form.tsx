@@ -1,16 +1,11 @@
 "use client";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Ban, Radio } from "lucide-react";
+import { Radio } from "lucide-react";
 import { useForm } from "react-hook-form";
 import type { z } from "zod";
 
 import { AGENT_DEMAND_SIGNAL_INSERT_SCHEMA } from "@torus-ts/db/validation";
 import { useTorus } from "@torus-ts/torus-provider";
-import {
-  Alert,
-  AlertDescription,
-  AlertTitle,
-} from "@torus-ts/ui/components/alert";
 import { Button } from "@torus-ts/ui/components/button";
 import {
   Form,
@@ -28,6 +23,7 @@ import PortalFormHeader from "~/app/_components/portal-form-header";
 import { api } from "~/trpc/react";
 import { tryCatch } from "~/utils/try-catch";
 
+import { AgentEmissionsWarning } from "./agent-emissions-warning";
 import { CreateSignalMarkdownField } from "./create-signal-markdown-field";
 import { CreateSignalSliderField } from "./create-signal-slider-field";
 
@@ -36,7 +32,7 @@ export function CreateSignalForm({
   ...props
 }: React.ComponentProps<"form">) {
   const { toast } = useToast();
-  const { selectedAccount, isAccountConnected } = useTorus();
+  const { selectedAccount, isAccountConnected, isInitialized } = useTorus();
 
   const existingSignals = api.signal.byCreatorId.useQuery(
     { creatorId: selectedAccount?.address ?? "" },
@@ -101,17 +97,12 @@ export function CreateSignalForm({
           description="Make a demand signal to express your specific need and proposed emission allocation to other agents."
         />
 
-        {!rootAgent.data?.agentKey && (
-          <Alert variant="destructive">
-            <Ban className="h-4 w-4" />
-            <AlertTitle>Agent emissions required!</AlertTitle>
-            <AlertDescription>
-              You need to be a root agent with emissions to create demand
-              signals. Please register and whitelist as an agent first to access
-              this feature.
-            </AlertDescription>
-          </Alert>
-        )}
+        <AgentEmissionsWarning
+          hasAgentKey={!!rootAgent.data?.agentKey}
+          isLoading={rootAgent.isLoading}
+          isAccountConnected={isAccountConnected}
+          isInitialized={isInitialized}
+        />
 
         <div className="grid gap-6">
           <div className="grid gap-3">

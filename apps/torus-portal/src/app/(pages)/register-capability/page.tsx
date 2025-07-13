@@ -2,15 +2,16 @@
 
 import { useState } from "react";
 
+import PortalFormContainer from "~/app/_components/portal-form-container";
+
 import CreateNamespaceForm from "./_components/create-namespace-form";
 import { NamespaceSuccessDialog } from "./_components/namespace-success-dialog";
-import PortalFormContainer from "~/app/_components/portal-form-container";
 
 export default function Page() {
   const [isSuccessDialogOpen, setIsSuccessDialogOpen] = useState(false);
   return (
     <>
-      <PortalFormContainer imageSrc="/form-bg-register-capability.svg">
+      <PortalFormContainer>
         <CreateNamespaceForm onSuccess={() => setIsSuccessDialogOpen(true)} />
       </PortalFormContainer>
 
