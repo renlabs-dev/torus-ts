@@ -1,10 +1,6 @@
-import { Ban } from "lucide-react";
-
 import {
-  Alert,
-  AlertDescription,
-  AlertTitle,
-} from "@torus-ts/ui/components/alert";
+  DestructiveAlertWithDescription,
+} from "@torus-ts/ui/components/destructive-alert-with-description";
 import {
   WalletConnectionWarning,
 } from "@torus-ts/ui/components/wallet-connection-warning";
@@ -24,15 +20,10 @@ export function AgentEmissionsWarning({
 }: AgentEmissionsWarningProps) {
   if (!hasAgentKey && !isLoading && isAccountConnected) {
     return (
-      <Alert variant="destructive" className="animate-fade">
-        <Ban className="h-4 w-4" />
-        <AlertTitle>Agent emissions required!</AlertTitle>
-        <AlertDescription>
-          You need to be a root agent with emissions to create demand
-          signals. Please register and whitelist as an agent first to access
-          this feature.
-        </AlertDescription>
-      </Alert>
+      <DestructiveAlertWithDescription
+        title="Agent emissions required!"
+        description="You need to be a agent with emissions to create demand signals. Please register and whitelist as an agent first to access this feature."
+      />
     );
   }
 
