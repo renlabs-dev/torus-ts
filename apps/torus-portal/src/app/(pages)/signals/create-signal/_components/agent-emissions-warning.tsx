@@ -22,7 +22,7 @@ export function AgentEmissionsWarning({
     return (
       <DestructiveAlertWithDescription
         title="Agent emissions required!"
-        description="You need to be a agent with emissions to create demand signals. Please register and whitelist as an agent first to access this feature."
+        description="You need to be a agent with emissions to create demand signals. Please register as an agent first to access this feature."
       />
     );
   }
