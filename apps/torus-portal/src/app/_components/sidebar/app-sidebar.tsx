@@ -61,11 +61,11 @@ const data = {
       ],
     },
     {
-      title: "Capabilitys",
+      title: "Capabilities",
       items: [
         {
-          title: "Register Capability",
-          url: "/register-capability",
+          title: "Create Capability",
+          url: "/capabilities/create-capability",
           icon: PackagePlus,
         },
         {
