@@ -38,7 +38,7 @@ export default function CreatePermissionLayout({
   };
 
   return (
-    <PortalFormContainer imageSrc="/form-bg-permission.svg">
+    <PortalFormContainer>
       <Tabs
         value={activeTab}
         onValueChange={handleTabChange}

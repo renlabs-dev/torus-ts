@@ -5,6 +5,7 @@ import type {
 } from "@polkadot/extension-inject/types";
 import { getSpecTypes } from "@polkadot/types-known";
 import { base64Encode } from "@polkadot/util-crypto";
+
 import { tryAsync, trySync } from "@torus-network/torus-utils/try-catch";
 
 async function getMetadata(api: ApiPromise, extension: InjectedExtension) {
@@ -57,6 +58,9 @@ async function getMetadata(api: ApiPromise, extension: InjectedExtension) {
   };
 }
 
+/**
+ * TODO: Refactor `updateMetadata`
+ */
 export async function updateMetadata(
   api: ApiPromise,
   extensions: InjectedExtension[],
