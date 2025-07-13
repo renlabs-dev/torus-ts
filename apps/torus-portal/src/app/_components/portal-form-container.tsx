@@ -12,7 +12,7 @@ export default function PortalFormContainer({
           <a
             target="_blank"
             href="https://discord.com/channels/1306654856286699590/1306654857046003716"
-            className="underline underline-offset-4"
+            className="underline underline-offset-4 hover:text-primary transition duration-200"
           >
             Get help in our Discord
           </a>

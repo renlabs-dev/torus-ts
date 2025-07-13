@@ -38,7 +38,6 @@ export function CreateCapabilityPrefixField({
 
     const prefixes = new Set<string>();
 
-    // Add agent.{agentName} prefixes
     namespaceEntries.data.forEach((entry) => {
       if (entry.path.length >= 2) {
         const agentName = entry.path[1];
@@ -46,7 +45,6 @@ export function CreateCapabilityPrefixField({
       }
     });
 
-    // Add deeper nested prefixes
     namespaceEntries.data.forEach((entry) => {
       if (entry.path.length >= 3) {
         for (let i = 3; i <= entry.path.length; i++) {
@@ -59,35 +57,27 @@ export function CreateCapabilityPrefixField({
     return Array.from(prefixes).sort();
   }, [namespaceEntries.data]);
 
-  // Set initial prefix when options are loaded
-  if (prefixOptions.length > 0 && !selectedPrefix) {
-    const basePrefix = prefixOptions.find((p) => p.split(".").length === 2);
-    const defaultPrefix = basePrefix ?? prefixOptions[0];
-    if (defaultPrefix) {
-      onValueChange(defaultPrefix);
-    }
-  }
-
   return (
     <FormItem>
       <FormLabel>Capability Permission Prefix</FormLabel>
       <FormControl>
         {!isAccountConnected ? (
-          <div className="text-sm text-muted-foreground p-3 border rounded-md h-10 flex items-center">
+          <div className="text-sm text-muted-foreground p-3 border h-10 flex items-center">
             Connect wallet...
           </div>
         ) : namespaceEntries.isLoading ? (
-          <div className="text-sm text-muted-foreground p-3 border rounded-md h-10 flex items-center">
+          <div className="text-sm text-muted-foreground p-3 border h-10 flex items-center">
             Loading namespaces...
           </div>
         ) : prefixOptions.length === 0 ? (
-          <div className="text-sm text-muted-foreground p-3 border rounded-md h-10 flex items-center">
-            Agent registration required
+          <div className="text-sm text-destructive p-3 border sm:h-10 flex items-center">
+            Registration required. Please register your agent before creating a
+            capability.
           </div>
         ) : (
           <Select value={selectedPrefix} onValueChange={onValueChange}>
             <SelectTrigger className="w-full">
-              <SelectValue placeholder="Select a prefix..." />
+              <SelectValue placeholder="Select capability" />
             </SelectTrigger>
             <SelectContent>
               {prefixOptions.map((prefix) => (

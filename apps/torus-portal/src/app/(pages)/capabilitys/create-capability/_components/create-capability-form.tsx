@@ -22,7 +22,9 @@ import {
   ToggleGroup,
   ToggleGroupItem,
 } from "@torus-ts/ui/components/toggle-group";
-import { WalletConnectionWarning } from "@torus-ts/ui/components/wallet-connection-warning";
+import {
+  WalletConnectionWarning,
+} from "@torus-ts/ui/components/wallet-connection-warning";
 import { useToast } from "@torus-ts/ui/hooks/use-toast";
 import { cn } from "@torus-ts/ui/lib/utils";
 
@@ -92,9 +94,10 @@ export function CreateCapabilityForm({
           description="Define a namespace path to create a new capability permission for your agent on Torus."
         />
 
-        {isInitialized && (
-          <WalletConnectionWarning isAccountConnected={isAccountConnected} />
-        )}
+        <WalletConnectionWarning
+          isAccountConnected={isAccountConnected}
+          isInitialized={isInitialized}
+        />
 
         <div className="grid gap-6">
           {/* Namespace Prefix Selector */}
