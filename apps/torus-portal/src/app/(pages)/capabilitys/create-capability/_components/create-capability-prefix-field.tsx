@@ -59,7 +59,7 @@ export function CreateCapabilityPrefixField({
 
   return (
     <FormItem>
-      <FormLabel>Capability Permission Prefix</FormLabel>
+      <FormLabel>Select a Capability Prefix</FormLabel>
       <FormControl>
         {!isAccountConnected ? (
           <div className="text-sm text-muted-foreground p-3 border h-10 flex items-center">
@@ -76,13 +76,17 @@ export function CreateCapabilityPrefixField({
           </div>
         ) : (
           <Select value={selectedPrefix} onValueChange={onValueChange}>
-            <SelectTrigger className="w-full">
+            <SelectTrigger className="w-full [&>span]:truncate [&>span]:max-w-full">
               <SelectValue placeholder="Select capability" />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent className="max-w-[90vw]">
               {prefixOptions.map((prefix) => (
-                <SelectItem key={prefix} value={prefix}>
-                  <span className="font-mono text-sm">{prefix}</span>
+                <SelectItem
+                  key={prefix}
+                  value={prefix}
+                  className="font-mono text-sm"
+                >
+                  {prefix}
                 </SelectItem>
               ))}
             </SelectContent>
