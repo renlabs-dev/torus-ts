@@ -10,11 +10,35 @@ import type {
 } from "@torus-network/sdk";
 import { queryPermission } from "@torus-network/sdk";
 
-import type { PermissionWithDetails } from "../../../edit-permission/_components/revoke-permission-button";
 import type {
   DistributionControlFormData,
   EditPermissionFormData,
 } from "./edit-permission-schema";
+import type { PermissionWithDetails } from "./revoke-permission-button";
+
+export function getPermissionType(
+  permissionData: PermissionWithDetails | null,
+): "emission" | "capability" | "unknown" {
+  if (!permissionData) return "unknown";
+
+  if (permissionData.emission_permissions) return "emission";
+  if (permissionData.namespace_permissions) return "capability";
+
+  return "unknown";
+}
+
+export function canEditPermission(
+  permissionData: PermissionWithDetails | null,
+  userAddress: string | undefined,
+): boolean {
+  if (!permissionData || !userAddress) return false;
+
+  // Only emission permissions can be edited
+  if (!permissionData.emission_permissions) return false;
+
+  // Only the grantor (delegator) can edit permissions
+  return permissionData.permissions.grantorAccountId === userAddress;
+}
 
 export function transformPermissionToFormData(
   permission: PermissionContract,
