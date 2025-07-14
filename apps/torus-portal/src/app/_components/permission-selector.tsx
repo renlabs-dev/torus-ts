@@ -39,7 +39,8 @@ import {
 
 import { api as trpcApi } from "~/trpc/react";
 
-import type { PermissionWithDetails } from "../(pages)/edit-permission/_components/revoke-permission-button";
+// TODO: Move this import to a more appropriate location
+import type { PermissionWithDetails } from "../(pages)/permissions/edit-permission/_components/revoke-permission-button";
 
 interface PermissionSelectorProps {
   control: Control<{
