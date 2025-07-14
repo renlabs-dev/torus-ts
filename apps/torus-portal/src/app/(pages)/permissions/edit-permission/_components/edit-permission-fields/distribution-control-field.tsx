@@ -96,7 +96,6 @@ export function DistributionControlField({
         }}
       />
 
-      {/* Additional fields for Automatic distribution */}
       {distributionType === "Automatic" && (
         <FormField
           control={control}
@@ -109,7 +108,7 @@ export function DistributionControlField({
                   {...field}
                   type="number"
                   placeholder="Enter threshold amount"
-                  value={field.value?.toString() || ""}
+                  value={field.value.toString() || ""}
                   onChange={(e) => {
                     const value = e.target.value;
                     field.onChange(value ? BigInt(value) : 0n);
@@ -135,7 +134,7 @@ export function DistributionControlField({
                   {...field}
                   type="number"
                   placeholder="Enter block number"
-                  value={field.value?.toString() || ""}
+                  value={field.value.toString() || ""}
                   onChange={(e) => {
                     const value = e.target.value;
                     field.onChange(value ? parseInt(value) : 0);
@@ -148,7 +147,6 @@ export function DistributionControlField({
         />
       )}
 
-      {/* Additional fields for Interval distribution */}
       {distributionType === "Interval" && (
         <FormField
           control={control}
@@ -161,7 +159,7 @@ export function DistributionControlField({
                   {...field}
                   type="number"
                   placeholder="Enter block interval"
-                  value={field.value?.toString() || ""}
+                  value={field.value.toString() || ""}
                   onChange={(e) => {
                     const value = e.target.value;
                     field.onChange(value ? parseInt(value) : 0);

@@ -52,7 +52,7 @@ export function transformPermissionToFormData(
         formData.newTargets = Array.from(emissionScope.targets.entries()).map(
           ([address, weight]) => ({
             address,
-            weight: Number(weight),
+            percentage: Number(weight), // SDK uses weight, but we display as percentage
           }),
         );
       }
@@ -141,9 +141,9 @@ export function prepareFormDataForSDK(data: EditPermissionFormData) {
   const { permissionId, newTargets, newStreams, newDistributionControl } = data;
 
   const sdkTargets = newTargets?.map(
-    ({ address, weight }): [SS58Address, number] => [
+    ({ address, percentage }): [SS58Address, number] => [
       address as SS58Address,
-      weight,
+      percentage, // SDK expects weight, but we use percentage (they're the same value)
     ],
   );
 

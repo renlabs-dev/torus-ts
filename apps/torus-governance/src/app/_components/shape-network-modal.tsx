@@ -1,5 +1,17 @@
 "use client";
 
+import { useEffect, useState } from "react";
+
+import {
+  ClipboardPlus,
+  Coins,
+  FileText,
+  Grid2x2Check,
+  Grid2x2Plus,
+} from "lucide-react";
+
+import { trySync } from "@torus-network/torus-utils/try-catch";
+
 import { useTorus } from "@torus-ts/torus-provider";
 import { Button } from "@torus-ts/ui/components/button";
 import {
@@ -17,21 +29,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@torus-ts/ui/components/select";
+import { WalletConnectionWarning } from "@torus-ts/ui/components/wallet-connection-warning";
+
 import { useGovernance } from "~/context/governance-provider";
-import {
-  ClipboardPlus,
-  Coins,
-  FileText,
-  Grid2x2Check,
-  Grid2x2Plus,
-} from "lucide-react";
-import { useState, useEffect } from "react";
+
 import { CreateAgentApplication } from "./agent-application/create-agent-application";
 import { CreateProposal } from "./proposal/create-proposal";
 import { CreateTransferDaoTreasuryProposal } from "./proposal/create-transfer-dao-treasury-proposal";
 import { RegisterAgent } from "./proposal/register-agent";
-import { trySync } from "@torus-network/torus-utils/try-catch";
-import { WalletConnectionWarning } from "@torus-ts/ui/components/wallet-connection-warning";
 
 type ViewType =
   | "whitelist-agent"
@@ -127,10 +132,7 @@ export function ShapeNetworkModal() {
           </DialogTitle>
         </DialogHeader>
 
-        <WalletConnectionWarning
-          formType={viewList[selectedView].label}
-          isAccountConnected={isAccountConnected}
-        />
+        <WalletConnectionWarning isAccountConnected={isAccountConnected} />
 
         <Select
           value={selectedView}
