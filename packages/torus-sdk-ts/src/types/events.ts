@@ -1,8 +1,7 @@
-import { z } from "zod";
+import type { z } from "zod";
 
-import { SS58_SCHEMA } from "./address.js";
 import { sb_h256 } from "./base.js";
-import { sb_bool, sb_option, sb_struct } from "./zod.js";
+import { sb_address, sb_bool, sb_option, sb_struct } from "./zod.js";
 
 /**
  * Schema for PermissionAccumulationToggled event data
@@ -11,7 +10,7 @@ import { sb_bool, sb_option, sb_struct } from "./zod.js";
 export const PermissionAccumulationToggledEvent = sb_struct({
   permission_id: sb_h256,
   accumulating: sb_bool,
-  toggled_by: sb_option(z.string().pipe(SS58_SCHEMA)),
+  toggled_by: sb_option(sb_address),
 });
 
 export type PermissionAccumulationToggledEvent = z.infer<
@@ -23,10 +22,10 @@ export type PermissionAccumulationToggledEvent = z.infer<
  * Event structure: { grantor: AccountId, grantee: AccountId, permission_id: PermissionId, revoked_by: AccountId }
  */
 export const PermissionRevokedEvent = sb_struct({
-  grantor: z.string().pipe(SS58_SCHEMA),
-  grantee: z.string().pipe(SS58_SCHEMA),
+  grantor: sb_address,
+  grantee: sb_address,
   permission_id: sb_h256,
-  revoked_by: z.string().pipe(SS58_SCHEMA),
+  revoked_by: sb_address,
 });
 
 export type PermissionRevokedEvent = z.infer<typeof PermissionRevokedEvent>;
@@ -36,8 +35,8 @@ export type PermissionRevokedEvent = z.infer<typeof PermissionRevokedEvent>;
  * Event structure: { grantor: AccountId, grantee: AccountId, permission_id: PermissionId }
  */
 export const PermissionExpiredEvent = sb_struct({
-  grantor: z.string().pipe(SS58_SCHEMA),
-  grantee: z.string().pipe(SS58_SCHEMA),
+  grantor: sb_address,
+  grantee: sb_address,
   permission_id: sb_h256,
 });
 

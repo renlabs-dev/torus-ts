@@ -14,11 +14,11 @@ import {
   sb_event_record,
   sb_extrinsic_status,
 } from "./extrinsics.js";
-
+import { storageUnitTests } from "./substrate/test-wrapers/tests-suit.js";
 const log = BasicLogger.create({ name: "torus-sdk-ts.main" });
-
 // // $ pnpm exec tsx src/main.ts
 
+// const NODE_URL = "wss://api-30.nodes.torus.network";
 const NODE_URL = "wss://api.testnet.torus.network";
 
 async function connectToChainRpc(wsEndpoint: string) {
@@ -33,7 +33,9 @@ async function connectToChainRpc(wsEndpoint: string) {
 
 const api = await connectToChainRpc(NODE_URL);
 
-// =============================================================================
+// ============================================================================
+// STORAGE WRAPPER TESTS
+// ============================================================================
 
 // Create test accounts
 const keyring = new Keyring({ type: "sr25519" });
@@ -166,12 +168,13 @@ await testTransaction("INVALID - Bad Nonce", invalidTx, alice, {
   nonce: 999999,
 });
 
-// ========================================================================
+// Run comprehensive tests for all 48 storage entries across 3 pallets
+await storageUnitTests(api);
 
 console.log("\n" + "=".repeat(70));
 console.log("✅ All tests completed!");
 console.log("=".repeat(70));
 
-// Disconnect
+// Disconnect when done
 await api.disconnect();
 console.log("\n🔌 API disconnected");

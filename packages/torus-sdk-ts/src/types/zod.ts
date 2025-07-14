@@ -9,12 +9,13 @@ import {
   Struct,
   Text,
 } from "@polkadot/types";
+import { AbstractInt } from "@polkadot/types-codec";
 import type { AnyJson, Codec } from "@polkadot/types/types";
 import { match } from "rustie";
 import type { Equals } from "tsafe";
 import { assert } from "tsafe";
 import type { Merge } from "type-fest";
-import type { ZodRawShape, ZodType, ZodTypeAny, ZodTypeDef } from "zod";
+import type { ZodRawShape, ZodType, ZodTypeDef } from "zod";
 import { z } from "zod";
 
 import type { Option } from "@torus-network/torus-utils";
@@ -233,9 +234,9 @@ export const Option_schema = z.custom<polkadot_Option<Codec>>(
   "not a substrate Option",
 );
 
-export const sb_option = <T extends ZodTypeAny>(
+export const sb_option = <T extends z.ZodType<unknown, z.ZodTypeDef, Codec>>(
   inner: T,
-): ZodType<Option<z.output<T>>, z.ZodTypeDef, polkadot_Option<Codec>> =>
+): ZodType<Option<z.output<T>>, z.ZodTypeDef, polkadot_Option<z.input<T>>> =>
   Option_schema.transform((val, ctx): Option<z.output<T>> => {
     type Out = z.output<T>;
     if (val.isNone) {
@@ -251,20 +252,19 @@ export const sb_option = <T extends ZodTypeAny>(
         });
         return z.NEVER;
       }
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       const value: Out = result.data;
       const some: Option<Out> = { Some: value };
       return some;
     }
-    throw new Error("Invalid Option");
+    throw new Error(`Invalid Option codec: ${String(val)}`);
   });
 
 export const sb_option_default = <
-  T extends ZodType<unknown, ZodTypeDef, unknown>,
+  T extends ZodType<unknown, ZodTypeDef, Codec>,
 >(
   inner: T,
   defaultValue: z.output<T>,
-): ZodType<z.output<T>, z.ZodTypeDef, polkadot_Option<Codec>> =>
+): ZodType<z.output<T>, z.ZodTypeDef, polkadot_Option<z.input<T>>> =>
   sb_option<T>(inner).transform((val, _ctx) => {
     const r = match(val)({
       Some: (value) => value,
@@ -273,12 +273,11 @@ export const sb_option_default = <
     return r;
   });
 
-export const sb_some = <T extends ZodTypeAny>(
+export const sb_some = <T extends z.ZodType<unknown, z.ZodTypeDef, Codec>>(
   inner: T,
 ): ZodType<z.output<T>, z.ZodTypeDef, polkadot_Option<z.input<T>>> =>
   sb_option<T>(inner).transform(
     (val, ctx): z.output<T> =>
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-return
       match(val)({
         None: () => {
           ctx.addIssue({
@@ -288,7 +287,6 @@ export const sb_some = <T extends ZodTypeAny>(
           });
           return z.NEVER;
         },
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         Some: (value) => value,
       }),
   );
@@ -305,31 +303,35 @@ export interface ToBigInt {
   toBigInt(): bigint;
 }
 
-export const ToBigInt_schema = z.custom<ToBigInt>((val) => {
-  if (!(typeof val === "object" && val !== null)) {
-    // ctx.addIssue({
-    //   code: z.ZodIssueCode.invalid_type,
-    //   expected: "object",
-    //   received: typeof val,
-    // });
-    // return z.NEVER;
-    return false;
-  }
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-  if (!("toBigInt" in val && typeof val.toBigInt === "function")) {
-    // ctx.addIssue({
-    //   code: z.ZodIssueCode.custom,
-    //   message: "toBigInt not present, it's not a Codec convertible to BigInt",
-    // });
-    // return z.NEVER;
-    return false;
-  }
-  return true;
-});
+// export const _ToBigInt_schema = z.unknown().transform<_ToBigInt>((val, ctx) => {
+//   if (!(typeof val === "object" && val !== null)) {
+//     ctx.addIssue({
+//       code: z.ZodIssueCode.invalid_type,
+//       expected: "object",
+//       received: typeof val,
+//     });
+//     return z.NEVER;
+//   }
+//   if (!("toBigInt" in val && typeof val.toBigInt === "function")) {
+//     ctx.addIssue({
+//       code: z.ZodIssueCode.custom,
+//       message: "toBigInt not present, it's not a Codec conversible to BigInt",
+//     });
+//     return z.NEVER;
+//   }
+//   return val as _ToBigInt;
+// });
 
-export const sb_bigint = ToBigInt_schema.transform((val) => val.toBigInt());
+// export const sb_bigint = _ToBigInt_schema.transform((val) => val.toBigInt());
 
-export const sb_number = ToBigInt_schema.transform((val, ctx): number => {
+export const AbstractInt_schema = z.custom<AbstractInt>(
+  (val) => val instanceof AbstractInt,
+  "not an AbstractInt",
+);
+
+export const sb_bigint = AbstractInt_schema.transform((val) => val.toBigInt());
+
+export const sb_number = AbstractInt_schema.transform((val, ctx): number => {
   const num = val.toBigInt();
   const result = Number(num);
   if (!Number.isSafeInteger(result)) {
@@ -382,6 +384,28 @@ export const sb_string = Text_schema.or(Bytes_schema).transform<string>(
   },
 );
 
+// Raw bytes without UTF-8 conversion - returns hex string
+export const sb_bytes = Bytes_schema.transform<string>((val) => val.toHex());
+
+/**
+ * Generic substrate codec schema - handles any substrate type with toHex method
+ *
+ * @deprecated This parser is weird. Should be removed or at least handled better.
+ */
+export const sb_substrate_type = z
+  .custom<{ toHex(): string }>((val) => {
+    return (
+      val !== null &&
+      val !== undefined &&
+      typeof val === "object" &&
+      "toHex" in val &&
+      typeof (val as { toHex?: unknown }).toHex === "function"
+    );
+  }, "not a substrate type with toHex method")
+  .transform((val) => {
+    return (val as { toHex(): string }).toHex();
+  });
+
 // == Enum ==
 
 export const Enum_schema = z.custom<Enum>(
@@ -410,8 +434,122 @@ export const sb_basic_enum = <
 
 export const GenericAccountId_schema = z.custom<GenericAccountId>(
   (val) => val instanceof GenericAccountId,
-  "not a substrate GenericAccountId",
+  "not a substrate BaseAccountId",
 );
+
+// Flexible schema that can handle both GenericAccountId instances and raw Substrate objects
+export const sb_address_flexible = z
+  .custom<unknown>((val) => {
+    // Accept GenericAccountId instances
+    if (val instanceof GenericAccountId) {
+      return true;
+    }
+    // Accept raw Substrate objects that have toString method
+    if (
+      val &&
+      typeof val === "object" &&
+      "toString" in val &&
+      typeof (val as { toString?: unknown }).toString === "function"
+    ) {
+      return true;
+    }
+    return false;
+  })
+  .transform((val) => {
+    if (val instanceof GenericAccountId) {
+      // Use sb_to_primitive to safely extract the value
+      const primitiveResult = sb_to_primitive.safeParse(val);
+      if (primitiveResult.success) {
+        return primitiveResult.data;
+      } else {
+        // Fallback to toString for GenericAccountId instances
+        return val.toString();
+      }
+    }
+
+    // For raw Substrate objects, use sb_to_primitive
+    if (val && typeof val === "object") {
+      const primitiveResult = sb_to_primitive.safeParse(val);
+
+      if (primitiveResult.success) {
+        // If the result is an object with account field, extract it
+        if (
+          typeof primitiveResult.data === "object" &&
+          primitiveResult.data !== null &&
+          "account" in primitiveResult.data
+        ) {
+          const accountData = primitiveResult.data.account;
+          return typeof accountData === "string"
+            ? accountData
+            : "error on accountData";
+        }
+
+        return primitiveResult.data;
+      } else {
+        // Fallback: return the raw object and let downstream handle it
+        return val;
+      }
+    }
+
+    return String(val);
+  });
+
+// Create a version that validates SS58 addresses for strict use cases
+export const sb_address_flexible_strict = sb_address_flexible.pipe(SS58_SCHEMA);
+
+// Create a schema that can handle account enum types (like {Id: address} or direct addresses)
+export const sb_account_enum = z
+  .custom<unknown>((val) => {
+    // Accept any object or GenericAccountId instance
+    return val !== null && val !== undefined;
+  })
+  .transform((val) => {
+    if (val instanceof GenericAccountId) {
+      // Use sb_to_primitive to safely extract the value
+      const primitiveResult = sb_to_primitive.safeParse(val);
+      if (primitiveResult.success) {
+        return primitiveResult.data;
+      } else {
+        return val.toString();
+      }
+    }
+
+    // For raw Substrate objects, use sb_to_primitive
+    if (val && typeof val === "object") {
+      const primitiveResult = sb_to_primitive.safeParse(val);
+
+      if (primitiveResult.success) {
+        // If the result is an object with account field, extract it
+        if (
+          typeof primitiveResult.data === "object" &&
+          primitiveResult.data !== null &&
+          "account" in primitiveResult.data
+        ) {
+          const accountData = primitiveResult.data.account;
+          return typeof accountData === "string"
+            ? accountData
+            : "AccountData error";
+        }
+
+        // If it's an enum like {Id: address}, extract the address
+        if (
+          typeof primitiveResult.data === "object" &&
+          primitiveResult.data !== null &&
+          "Id" in primitiveResult.data
+        ) {
+          const idData = primitiveResult.data.Id;
+          return typeof idData === "string" ? idData : "idData error";
+        }
+
+        return primitiveResult.data;
+      } else {
+        // Fallback: return the raw object
+        return val;
+      }
+    }
+
+    return String(val);
+  });
 
 export const sb_address = GenericAccountId_schema.transform((val) =>
   val.toString(),
