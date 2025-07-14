@@ -70,7 +70,7 @@ const data = {
         },
         {
           title: "Delete Capability",
-          url: "/delete-capability",
+          url: "/capabilities/delete-capability",
           icon: PackageX,
         },
       ],
