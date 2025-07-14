@@ -238,7 +238,7 @@ export function CreateCapabilityForm({
                           {...field}
                           type="number"
                           placeholder="Weight"
-                          value={field.value ?? ""}
+                          value={field.value}
                           onChange={(e) => {
                             const value = parseInt(e.target.value);
                             field.onChange(isNaN(value) ? 1 : value);
@@ -315,7 +315,7 @@ export function CreateCapabilityForm({
                           {...field}
                           type="number"
                           placeholder="%"
-                          value={field.value ?? ""}
+                          value={field.value}
                           onChange={(e) => {
                             const value = parseInt(e.target.value);
                             field.onChange(isNaN(value) ? 0 : value);
