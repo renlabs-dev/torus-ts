@@ -32,7 +32,7 @@ export function NavMain({
             {item.items?.map((subItem) => (
               <SidebarMenuItem key={subItem.title}>
                 <SidebarMenuButton asChild tooltip={subItem.title}>
-                  <Link href={subItem.url}>
+                  <Link href={subItem.url} prefetch={false}>
                     <subItem.icon />
                     <span>{subItem.title}</span>
                   </Link>
