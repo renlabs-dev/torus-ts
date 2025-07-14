@@ -2,8 +2,14 @@
 
 import { useState } from "react";
 
+import type { InferSelectModel } from "drizzle-orm";
 import { Trash2 } from "lucide-react";
 
+import type {
+  emissionPermissionsSchema,
+  namespacePermissionsSchema,
+  permissionsSchema,
+} from "@torus-ts/db/schema";
 import { useTorus } from "@torus-ts/torus-provider";
 import {
   AlertDialog,
@@ -18,6 +24,21 @@ import {
 } from "@torus-ts/ui/components/alert-dialog";
 import { Button } from "@torus-ts/ui/components/button";
 import { useToast } from "@torus-ts/ui/hooks/use-toast";
+
+// Types for the new database structure
+type PermissionData = InferSelectModel<typeof permissionsSchema>;
+type EmissionPermissionData = InferSelectModel<
+  typeof emissionPermissionsSchema
+>;
+type NamespacePermissionData = InferSelectModel<
+  typeof namespacePermissionsSchema
+>;
+
+export interface PermissionWithDetails {
+  permissions: PermissionData;
+  emission_permissions: EmissionPermissionData | null;
+  namespace_permissions: NamespacePermissionData | null;
+}
 
 interface RevokePermissionButtonProps {
   permissionId: string;
@@ -35,7 +56,7 @@ export function RevokePermissionButton({
   const handleRevoke = async () => {
     setIsRevoking(true);
 
-    // Simulate revoke action
+    // TODO: Implement actual revocation logic using SDK
     await new Promise((resolve) => setTimeout(resolve, 1000));
 
     toast.success("Permission revoked successfully");
