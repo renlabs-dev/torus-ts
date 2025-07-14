@@ -80,7 +80,7 @@ const data = {
       items: [
         {
           title: "Register Agent",
-          url: "/register-agent",
+          url: "network-operations/register-agent",
           icon: CircleFadingPlus,
         },
         {
