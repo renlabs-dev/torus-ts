@@ -43,8 +43,8 @@ function WalletOptions() {
         updates.mode = "bridge";
       } else if (value === "base") {
         updates.mode = null;
-        updates.from = "base";
-        updates.to = "torus";
+        updates.from = "torus";
+        updates.to = "base";
       }
 
       const newQuery = updateSearchParams(searchParams, updates);
