@@ -94,7 +94,7 @@ export function CreateCapabilityForm({
       >
         <PortalFormHeader
           title="Create Capability"
-          description="Define a capability path to create a new capability permission for your agent on Torus."
+          description="Create a new capability path for your agent."
         />
 
         <WalletConnectionWarning
@@ -175,7 +175,7 @@ export function CreateCapabilityForm({
               (watchedMethod === "none" && !watchedPath.trim())
             }
           >
-            Create Capability Permission
+            Create Capability
           </Button>
         </div>
       </form>
