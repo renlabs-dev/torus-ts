@@ -229,7 +229,7 @@ export function PermissionSelector(props: PermissionSelectorProps) {
                 disabled={!isAccountConnected || !hasPermissions}
               >
                 <FormControl>
-                  <SelectTrigger>
+                  <SelectTrigger className="w-full">
                     <SelectValue placeholder={getPlaceholderText()} />
                   </SelectTrigger>
                 </FormControl>
@@ -285,22 +285,16 @@ export function PermissionSelector(props: PermissionSelectorProps) {
                               const permissionId =
                                 item.permissions.permissionId;
                               const permissionType = getPermissionType(item);
-                              const isBothRoles =
-                                selectedAccount &&
-                                item.permissions.grantorAccountId ===
-                                  selectedAccount.address &&
-                                item.permissions.granteeAccountId ===
-                                  selectedAccount.address;
+
                               return (
                                 <SelectItem
                                   key={permissionId}
                                   value={permissionId}
                                 >
                                   <div className="flex items-center gap-2">
-                                    <span>{smallAddress(permissionId)}</span>
+                                    <span>{smallAddress(permissionId, 6)}</span>
                                     <span className="text-xs text-muted-foreground">
-                                      ({permissionType}
-                                      {isBothRoles ? " - Both Roles" : ""})
+                                      {permissionType}
                                     </span>
                                   </div>
                                 </SelectItem>

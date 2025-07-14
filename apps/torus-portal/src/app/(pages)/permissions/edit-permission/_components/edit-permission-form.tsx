@@ -23,9 +23,12 @@ import { TargetsField } from "./edit-permission-fields/targets-field";
 import type { EditPermissionFormData } from "./edit-permission-schema";
 import { EDIT_PERMISSION_SCHEMA } from "./edit-permission-schema";
 import {
+  canEditPermission,
+  getPermissionType,
   handlePermissionDataChange,
   prepareFormDataForSDK,
 } from "./edit-permission-utils";
+import { PermissionTypeInfo } from "./permission-type-info";
 import type { PermissionWithDetails } from "./revoke-permission-button";
 import { RevokePermissionButton } from "./revoke-permission-button";
 
@@ -34,10 +37,20 @@ export function EditPermissionForm({
   ...props
 }: React.ComponentProps<"form">) {
   const { toast } = useToast();
-  const { api, isAccountConnected, isInitialized } = useTorus();
+  const { api, isAccountConnected, isInitialized, selectedAccount } =
+    useTorus();
   const [selectedPermissionId, setSelectedPermissionId] = useState<string>("");
   const [hasLoadedPermission, setHasLoadedPermission] = useState(false);
   const currentPermissionDataRef = useRef<PermissionWithDetails | null>(null);
+
+  const permissionType = getPermissionType(currentPermissionDataRef.current);
+  const canEdit = canEditPermission(
+    currentPermissionDataRef.current,
+    selectedAccount?.address,
+  );
+  const isGrantor =
+    currentPermissionDataRef.current?.permissions.grantorAccountId ===
+    selectedAccount?.address;
 
   const form = useForm<EditPermissionFormData>({
     disabled: !isAccountConnected,
@@ -55,12 +68,23 @@ export function EditPermissionForm({
     async (permissionData: PermissionWithDetails) => {
       if (!api) return;
 
-      await handlePermissionDataChange({
-        permissionData,
-        api,
-        form,
-        onError: toast.error,
-      });
+      // Only load form data for emission permissions
+      if (permissionData.emission_permissions) {
+        await handlePermissionDataChange({
+          permissionData,
+          api,
+          form,
+          onError: toast.error,
+        });
+      } else {
+        // For non-emission permissions, just reset the form
+        form.reset({
+          permissionId: permissionData.permissions.permissionId,
+          newTargets: [],
+          newStreams: [],
+          newDistributionControl: { Manual: null },
+        });
+      }
     },
     [api, form, toast.error],
   );
@@ -133,22 +157,36 @@ export function EditPermissionForm({
             />
           </div>
 
-          <PortalFormSeparator title="Edit Permission Details" />
+          {selectedPermissionId && (
+            <>
+              <PortalFormSeparator title="Permission Details" />
 
-          <DistributionControlField control={form.control} />
+              <PermissionTypeInfo
+                permissionType={permissionType}
+                canEdit={canEdit}
+                isGrantor={isGrantor}
+              />
 
-          <TargetsField control={form.control} />
+              {permissionType === "emission" && canEdit && (
+                <>
+                  <DistributionControlField control={form.control} />
 
-          <StreamsField control={form.control} />
+                  <TargetsField control={form.control} />
 
-          <Button
-            type="submit"
-            variant="outline"
-            className="w-full"
-            disabled={!isAccountConnected || !selectedPermissionId}
-          >
-            Update Permission
-          </Button>
+                  <StreamsField control={form.control} />
+
+                  <Button
+                    type="submit"
+                    variant="outline"
+                    className="w-full"
+                    disabled={!isAccountConnected || !selectedPermissionId}
+                  >
+                    Update Permission
+                  </Button>
+                </>
+              )}
+            </>
+          )}
         </div>
       </form>
     </Form>
