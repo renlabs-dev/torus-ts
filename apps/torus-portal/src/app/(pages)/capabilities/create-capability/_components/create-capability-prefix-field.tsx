@@ -12,6 +12,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@torus-ts/ui/components/select";
+import { useIsMobile } from "@torus-ts/ui/hooks/use-mobile";
+
+import { truncateMobileValue } from "~/utils/truncate-mobile-value";
 
 interface CreateCapabilityPrefixFieldProps {
   selectedPrefix: string;
@@ -25,6 +28,7 @@ export function CreateCapabilityPrefixField({
   isAccountConnected,
 }: CreateCapabilityPrefixFieldProps) {
   const { api, selectedAccount } = useTorus();
+  const isMobile = useIsMobile();
 
   const namespaceEntries = useNamespaceEntriesOf(
     api,
@@ -76,16 +80,14 @@ export function CreateCapabilityPrefixField({
           </div>
         ) : (
           <Select value={selectedPrefix} onValueChange={onValueChange}>
-            <SelectTrigger className="w-full [&>span]:truncate [&>span]:max-w-full">
-              <SelectValue placeholder="Select capability" />
+            <SelectTrigger className="w-full max-w-[44rem]">
+              <SelectValue placeholder="Select capability">
+                {truncateMobileValue(selectedPrefix, isMobile)}
+              </SelectValue>
             </SelectTrigger>
-            <SelectContent className="max-w-[90vw]">
+            <SelectContent position="popper">
               {prefixOptions.map((prefix) => (
-                <SelectItem
-                  key={prefix}
-                  value={prefix}
-                  className="font-mono text-sm"
-                >
+                <SelectItem key={prefix} value={prefix}>
                   {prefix}
                 </SelectItem>
               ))}

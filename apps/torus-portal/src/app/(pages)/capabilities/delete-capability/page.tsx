@@ -1,11 +1,11 @@
 import PortalFormContainer from "~/app/_components/portal-form-container";
 
-import DeleteNamespaceForm from "./_components/delete-namespace-form";
+import { DeleteCapabilityForm } from "./_components/delete-capability-form";
 
 export default function DeleteCapabilityPage() {
   return (
     <PortalFormContainer>
-      <DeleteNamespaceForm />
+      <DeleteCapabilityForm />
     </PortalFormContainer>
   );
 }
