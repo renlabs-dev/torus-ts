@@ -1,65 +1,128 @@
+import { merkleizeMetadata } from "@polkadot-api/merkleize-metadata";
 import type { ApiPromise } from "@polkadot/api";
 import type {
   InjectedExtension,
   MetadataDef,
 } from "@polkadot/extension-inject/types";
 import { getSpecTypes } from "@polkadot/types-known";
+import { u8aToHex } from "@polkadot/util";
 import { base64Encode } from "@polkadot/util-crypto";
 
+import { CONSTANTS, sb_bigint, sb_string } from "@torus-network/sdk";
+import { chainErr } from "@torus-network/torus-utils/error";
+import type { Result } from "@torus-network/torus-utils/result";
+import { makeErr, makeOk } from "@torus-network/torus-utils/result";
 import { tryAsync, trySync } from "@torus-network/torus-utils/try-catch";
 
-async function getMetadata(api: ApiPromise, extension: InjectedExtension) {
-  if (!extension.metadata) {
-    console.warn(
-      `No metadata interface found for extension: ${extension.name}`,
-    );
-    return null;
-  }
-
-  const [getMetadataError, metadata] = trySync(() => extension.metadata);
-  if (getMetadataError !== undefined) {
-    console.error(
-      `Error accessing metadata for ${extension.name}:`,
-      getMetadataError,
-    );
-    return null;
-  }
-
-  if (metadata === undefined) {
-    console.error(
-      `No metadata interface found for extension: ${extension.name}`,
-    );
-    return;
-  }
-
-  const [getKnownError, known] = await tryAsync(metadata.get());
-  if (getKnownError !== undefined) {
-    console.error(
-      `Error getting metadata for ${extension.name}:`,
-      getKnownError,
-    );
-    return null;
-  }
-
-  return {
-    extension,
-    known,
-    update: async (def: MetadataDef): Promise<boolean> => {
-      const [provideError, result] = await tryAsync(metadata.provide(def));
-      if (provideError !== undefined) {
-        console.error(
-          `Failed to update metadata for ${extension.name}:`,
-          provideError,
-        );
-        throw provideError;
-      }
-      return result;
-    },
-  };
+/**
+ * Represents the merkleized metadata structure.
+ * @property {string} metadataHash - The hexadecimal hash of the merkleized metadata.
+ * @property {ReturnType<typeof merkleizeMetadata>} merkleizedMetadata - The result of the merkleizeMetadata function.
+ */
+interface MerkleizedMetadata {
+  metadataHash: `0x${string}`;
+  merkleizedMetadata: ReturnType<typeof merkleizeMetadata>;
 }
 
 /**
+ * Retrieves metadata from the chain API, merkleizes it, and computes its hash.
+ */
+export async function getMerkleizedMetadata(
+  api: ApiPromise,
+): Promise<Result<MerkleizedMetadata, Error>> {
+  // Get metadata from API
+  const [metadataError, metadata] = await tryAsync(
+    api.call.metadata.metadataAtVersion(15),
+  );
+  if (metadataError !== undefined) return makeErr(metadataError);
+
+  // Get runtime information
+  const [runtimeError, runtimeInfo] = trySync(() => {
+    const specName = sb_string.parse(api.runtimeVersion.specName);
+    const specVersionBigInt = sb_bigint.parse(api.runtimeVersion.specVersion);
+    const specVersion = Number(specVersionBigInt);
+    return { specName, specVersion };
+  });
+  if (runtimeError !== undefined) return makeErr(runtimeError);
+
+  const { specName, specVersion } = runtimeInfo;
+
+  // Convert metadata to hex, merkleize it, and hash it
+  return trySync(() => {
+    const merkleizedMetadata = merkleizeMetadata(metadata.toHex(), {
+      base58Prefix: api.consts.system.ss58Prefix.toNumber(),
+      decimals: CONSTANTS.EMISSION.DECIMALS,
+      specName: specName,
+      specVersion: specVersion,
+      tokenSymbol: "TORUS",
+    });
+    const metadataHash = u8aToHex(merkleizedMetadata.digest());
+    return { metadataHash, merkleizedMetadata };
+  });
+}
+
+/**
+ * Retrieves metadata handling capabilities for a given extension.
+ */
+async function getMetadata(extension: InjectedExtension): Promise<
+  Result<
+    {
+      extension: InjectedExtension;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      known: any[];
+      update: (def: MetadataDef) => Promise<Result<boolean, Error>>;
+    },
+    Error
+  >
+> {
+  if (!extension.metadata)
+    return makeErr(
+      new Error(`No metadata interface found for extension: ${extension.name}`),
+    );
+
+  const [getMetadataError, metadata] = trySync(() => extension.metadata);
+  if (getMetadataError !== undefined)
+    return makeErr(
+      chainErr(`Error accessing metadata for ${extension.name}`)(
+        getMetadataError,
+      ),
+    );
+  if (metadata === undefined)
+    return makeErr(
+      new Error(`No metadata interface found for extension: ${extension.name}`),
+    );
+
+  const [getKnownError, known] = await tryAsync(metadata.get());
+  if (getKnownError !== undefined)
+    return makeErr(
+      chainErr(`Error getting metadata for extension: ${extension.name}`)(
+        getKnownError,
+      ),
+    );
+
+  return makeOk({
+    extension,
+    known,
+    update: async (def: MetadataDef): Promise<Result<boolean, Error>> => {
+      const [provideError, result] = await tryAsync(metadata.provide(def));
+      if (provideError !== undefined) {
+        return makeErr(
+          chainErr(
+            `Failed to update metadata for extension: ${extension.name}`,
+          )(provideError),
+        );
+      }
+      return makeOk(result);
+    },
+  });
+}
+
+/**
+ * Updates the metadata for the provided extensions if necessary.
  * TODO: Refactor `updateMetadata`
+ * @param {ApiPromise} api - The Polkadot API instance.
+ * @param {InjectedExtension[]} extensions - Array of extensions to update.
+ * @returns {Promise<void>}
  */
 export async function updateMetadata(
   api: ApiPromise,
@@ -209,8 +272,8 @@ export async function updateMetadata(
       continue;
     }
 
-    const [extInfoError, extInfo] = await tryAsync(getMetadata(api, extension));
-    if (extInfoError !== undefined || !extInfo) {
+    const [extInfoError, extInfo] = await getMetadata(extension);
+    if (extInfoError !== undefined) {
       console.warn(
         `Failed to get metadata info for ${extension.name}, skipping...`,
       );

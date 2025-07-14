@@ -1,7 +1,8 @@
-import { z } from "zod";
-import { sb_bigint, sb_number } from "./zod.js";
-import type { H256 } from "@polkadot/types/interfaces";
 import { U8aFixed } from "@polkadot/types";
+import type { H256 } from "@polkadot/types/interfaces";
+import { z } from "zod";
+
+import { sb_bigint, sb_number } from "./zod.js";
 
 export type ZError<T = unknown> = z.ZodError<T>;
 
@@ -30,5 +31,7 @@ export const sb_h256 = z
     return true;
   })
   .transform((value) => value.toHex());
+
+export type HexH256 = z.infer<typeof sb_h256>;
 
 export const H256_HEX = z.string().regex(/^0x[a-fA-F0-9]{64}$/);
