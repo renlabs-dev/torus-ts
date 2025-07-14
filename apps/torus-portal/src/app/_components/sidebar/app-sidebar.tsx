@@ -50,7 +50,7 @@ const data = {
       items: [
         {
           title: "Create Permission",
-          url: "/create-permission",
+          url: "/permissions/create-permission/capability",
           icon: FilePlus,
         },
         {

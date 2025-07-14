@@ -1,10 +1,10 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useRef, useState } from "react";
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Plus, Trash2 } from "lucide-react";
-import { useForm, useFieldArray } from "react-hook-form";
+import { useFieldArray, useForm } from "react-hook-form";
 import type { z } from "zod";
 
 import { useTorus } from "@torus-ts/torus-provider";
@@ -18,9 +18,7 @@ import {
   FormMessage,
 } from "@torus-ts/ui/components/form";
 import { Input } from "@torus-ts/ui/components/input";
-import {
-  WalletConnectionWarning,
-} from "@torus-ts/ui/components/wallet-connection-warning";
+import { WalletConnectionWarning } from "@torus-ts/ui/components/wallet-connection-warning";
 import { useToast } from "@torus-ts/ui/hooks/use-toast";
 import { cn } from "@torus-ts/ui/lib/utils";
 
@@ -117,8 +115,8 @@ export function CreateCapabilityForm({
         className={cn("flex flex-col gap-6", className)}
       >
         <PortalFormHeader
-          title="Create Capability"
-          description="Create a new capability path for your agent."
+          title="Delegate Capability Permission"
+          description="Delegate permission to access a specific capability permission path."
         />
 
         <WalletConnectionWarning
@@ -240,7 +238,7 @@ export function CreateCapabilityForm({
                           {...field}
                           type="number"
                           placeholder="Weight"
-                          value={field.value || ""}
+                          value={field.value ?? ""}
                           onChange={(e) => {
                             const value = parseInt(e.target.value);
                             field.onChange(isNaN(value) ? 1 : value);
@@ -317,7 +315,7 @@ export function CreateCapabilityForm({
                           {...field}
                           type="number"
                           placeholder="%"
-                          value={field.value || ""}
+                          value={field.value ?? ""}
                           onChange={(e) => {
                             const value = parseInt(e.target.value);
                             field.onChange(isNaN(value) ? 0 : value);
