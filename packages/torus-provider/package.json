@@ -27,7 +27,8 @@
     "@polkadot-api/merkleize-metadata": "^1.1.13",
     "react": "catalog:react19",
     "react-dom": "catalog:react19",
-    "zod": "catalog:"
+    "zod": "catalog:",
+    "zustand": "catalog:"
   },
   "devDependencies": {
     "@torus-ts/eslint-config": "workspace:*",
