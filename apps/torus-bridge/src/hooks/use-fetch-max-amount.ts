@@ -83,6 +83,16 @@ async function fetchMaxAmount(
 
   if (maxAmountError) {
     logger.warn("Error fetching fee quotes for max amount:", maxAmountError);
+
+    if (maxAmountError.message.includes("OutOfFund")) {
+      toast({
+        title: "Insufficient Funds",
+        description:
+          "Out of funds: the amount exceeds your available balance after fees.",
+      });
+      return undefined;
+    }
+
     toast({
       title: "Error calculating maximum transfer amount",
       description:
