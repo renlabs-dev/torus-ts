@@ -25,7 +25,7 @@ export function PermissionTypeInfo({
             <AlertCircle className="h-5 w-5" />
             Capability Permission
           </CardTitle>
-          <CardDescription>
+          <CardDescription className="break-words">
             Capability permissions can only be revoked. Edit functionality is
             not available for capability permissions.
           </CardDescription>
@@ -42,7 +42,7 @@ export function PermissionTypeInfo({
             <Lock className="h-5 w-5" />
             Read-Only Permission
           </CardTitle>
-          <CardDescription>
+          <CardDescription className="break-words">
             Only the delegator can edit this permission. As a recipient, you can
             view but not modify the permission details.
           </CardDescription>
@@ -59,7 +59,7 @@ export function PermissionTypeInfo({
             <Info className="h-5 w-5" />
             No Permission Selected
           </CardTitle>
-          <CardDescription>
+          <CardDescription className="break-words">
             Select a permission above to view and modify its details.
           </CardDescription>
         </CardHeader>

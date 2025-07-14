@@ -94,7 +94,7 @@ export function RegisterAgentForm({
           isInitialized={isInitialized}
         />
 
-        <div className="grid gap-6">
+        <div className="grid gap-6 max-w-2xl">
           <RegisterAgentInfoFields
             control={form.control}
             setValue={form.setValue}

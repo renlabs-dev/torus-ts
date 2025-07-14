@@ -333,9 +333,9 @@ export function PermissionSelector(props: PermissionSelectorProps) {
 
           <CardContent className="text-xs p-4 pt-0">
             {getDetailRows().map((row) => (
-              <div key={row.label}>
-                <span className="font-medium">{row.label}:</span>
-                <span className={"ml-2 text-muted-foreground"}>
+              <div key={row.label} className="flex">
+                <span className="font-medium flex-shrink-0">{row.label}:</span>
+                <span className="ml-2 text-muted-foreground break-all">
                   {row.value}
                 </span>
               </div>
