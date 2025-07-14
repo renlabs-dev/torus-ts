@@ -7,7 +7,10 @@ import { Plus, Trash2 } from "lucide-react";
 import { useFieldArray, useForm } from "react-hook-form";
 import type { z } from "zod";
 
+import { createNamespace } from "@torus-network/sdk";
+
 import { useTorus } from "@torus-ts/torus-provider";
+import { useSendTransaction } from "@torus-ts/torus-provider/send-transaction-v2";
 import { Button } from "@torus-ts/ui/components/button";
 import {
   Form,
@@ -34,9 +37,31 @@ export function CreateCapabilityForm({
   ...props
 }: React.ComponentProps<"form">) {
   const { toast } = useToast();
-  const { isAccountConnected, isInitialized } = useTorus();
+  const {
+    isAccountConnected,
+    isInitialized,
+    api,
+    selectedAccount,
+    torusApi,
+    wsEndpoint,
+  } = useTorus();
   const [selectedPrefix, setSelectedPrefix] = useState("");
   const isAppendingRef = useRef(false);
+
+  const {
+    send,
+    isSigning,
+    isPending,
+    isSuccess,
+    isError,
+    message: txMessage,
+  } = useSendTransaction({
+    api,
+    wsEndpoint,
+    selectedAccount,
+    transactionType: "Grant Namespace Permission",
+    web3FromAddress: torusApi.web3FromAddress,
+  });
 
   const form = useForm<z.infer<typeof CREATE_CAPABILITY_SCHEMA>>({
     resolver: zodResolver(CREATE_CAPABILITY_SCHEMA),
@@ -73,39 +98,55 @@ export function CreateCapabilityForm({
     keyName: "fieldId",
   });
 
-  const generateFullPath = () => {
-    if (watchedMethod === "none") {
-      if (selectedPrefix) {
-        return watchedPath
-          ? `${selectedPrefix}.${watchedPath}`
-          : selectedPrefix;
+  const generateFullPath = (
+    prefix: string | undefined,
+    path: string | undefined,
+    method: string | undefined,
+    customMethod: string | undefined,
+  ) => {
+    if (method === "none") {
+      if (prefix) {
+        return path ? `${prefix}.${path}` : prefix;
       }
-      return watchedPath || "";
+      return path ?? "";
     }
 
-    const method =
-      watchedMethod === "custom" ? watchedCustomMethod : watchedMethod;
+    const finalMethod = method === "custom" ? customMethod : method;
 
-    if (selectedPrefix) {
-      const fullPath = watchedPath
-        ? `${selectedPrefix}.${watchedPath}`
-        : selectedPrefix;
-      return `${fullPath}.${method ?? "[method]"}`;
+    if (prefix) {
+      const fullPath = path ? `${prefix}.${path}` : prefix;
+      return `${fullPath}.${finalMethod ?? "[method]"}`;
     }
 
-    if (!watchedPath) return "";
-    return `${watchedPath}.${method ?? "[method]"}`;
+    if (!path) return "";
+    return `${path}.${finalMethod ?? "[method]"}`;
   };
 
-  const fullPath = generateFullPath();
-
-  // eslint-disable-next-line @typescript-eslint/require-await
-  async function onSubmit(_data: z.infer<typeof CREATE_CAPABILITY_SCHEMA>) {
-    form.reset();
-    toast.success(
-      "Success! Submit functionality is disabled but the form behaves as expected",
+  async function onSubmit(data: z.infer<typeof CREATE_CAPABILITY_SCHEMA>) {
+    if (!selectedAccount) {
+      toast.error("Please connect your wallet first");
+      return;
+    }
+    if (!api || !send) {
+      toast.error("Internal error: API or send function not found");
+      return;
+    }
+    const fullPath = generateFullPath(
+      selectedPrefix,
+      data.path,
+      data.method,
+      data.customMethod,
     );
+    const transaction = createNamespace(api, fullPath);
+    await send(transaction);
   }
+
+  const fullPathPreview = generateFullPath(
+    selectedPrefix,
+    watchedPath,
+    watchedMethod,
+    watchedCustomMethod,
+  );
 
   return (
     <Form {...form}>
@@ -184,7 +225,7 @@ export function CreateCapabilityForm({
             </div>
           )}
 
-          <CreateCapabilityPathPreview fullPath={fullPath} />
+          <CreateCapabilityPathPreview fullPath={fullPathPreview} />
 
           <div className="grid gap-4">
             <div className="flex justify-between items-center">
