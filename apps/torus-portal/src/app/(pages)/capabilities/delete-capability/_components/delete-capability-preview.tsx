@@ -11,7 +11,7 @@ export function DeleteCapabilityPreview({
     <div className="space-y-4">
       <div className="space-y-2">
         <div className="text-sm font-medium">Deletion Preview:</div>
-        <div className="flex items-center text-sm">
+        <div className="flex md:items-center text-sm flex-col sm:flex-row">
           {watchedSegment >= 2 ? (
             <>
               {watchedSegment > 0 && (
