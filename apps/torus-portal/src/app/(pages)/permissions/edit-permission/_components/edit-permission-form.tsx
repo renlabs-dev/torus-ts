@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useCallback } from "react";
+import { useCallback, useRef, useState } from "react";
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -17,23 +17,24 @@ import { PermissionSelector } from "~/app/_components/permission-selector";
 import PortalFormHeader from "~/app/_components/portal-form-header";
 import { PortalFormSeparator } from "~/app/_components/portal-form-separator";
 
-import { EditPermissionFields } from "./edit-permission-fields";
+import { DistributionControlField } from "./edit-permission-fields/distribution-control-field";
+import { StreamsField } from "./edit-permission-fields/streams-field";
+import { TargetsField } from "./edit-permission-fields/targets-field";
 import type { EditPermissionFormData } from "./edit-permission-schema";
 import { EDIT_PERMISSION_SCHEMA } from "./edit-permission-schema";
 import {
-  prepareFormDataForSDK,
   handlePermissionDataChange,
+  prepareFormDataForSDK,
 } from "./edit-permission-utils";
+import type { PermissionWithDetails } from "./revoke-permission-button";
 import { RevokePermissionButton } from "./revoke-permission-button";
-import type { PermissionWithDetails } from "../../../edit-permission/_components/revoke-permission-button";
 
 export function EditPermissionForm({
   className,
   ...props
 }: React.ComponentProps<"form">) {
   const { toast } = useToast();
-  const { api, selectedAccount, isAccountConnected, isInitialized } =
-    useTorus();
+  const { api, isAccountConnected, isInitialized } = useTorus();
   const [selectedPermissionId, setSelectedPermissionId] = useState<string>("");
   const [hasLoadedPermission, setHasLoadedPermission] = useState(false);
   const currentPermissionDataRef = useRef<PermissionWithDetails | null>(null);
@@ -53,7 +54,7 @@ export function EditPermissionForm({
   const handlePermissionLoad = useCallback(
     async (permissionData: PermissionWithDetails) => {
       if (!api) return;
-      
+
       await handlePermissionDataChange({
         permissionData,
         api,
@@ -61,7 +62,7 @@ export function EditPermissionForm({
         onError: toast.error,
       });
     },
-    [api, form, toast.error]
+    [api, form, toast.error],
   );
 
   // eslint-disable-next-line @typescript-eslint/require-await
@@ -113,7 +114,7 @@ export function EditPermissionForm({
                 if (
                   permissionData &&
                   !hasLoadedPermission &&
-                  currentPermissionDataRef.current?.permissions.permissionId !== 
+                  currentPermissionDataRef.current?.permissions.permissionId !==
                     permissionData.permissions.permissionId
                 ) {
                   currentPermissionDataRef.current = permissionData;
@@ -134,10 +135,11 @@ export function EditPermissionForm({
 
           <PortalFormSeparator title="Edit Permission Details" />
 
-          <EditPermissionFields
-            control={form.control}
-            selectedAccount={selectedAccount}
-          />
+          <DistributionControlField control={form.control} />
+
+          <TargetsField control={form.control} />
+
+          <StreamsField control={form.control} />
 
           <Button
             type="submit"
