@@ -35,6 +35,8 @@ export const CREATE_CAPABILITY_SCHEMA = z
       .string()
       .max(35, "Custom method must be 35 characters or less")
       .optional(),
+    targets: z.array(z.tuple([z.string(), z.number()])).optional(),
+    streams: z.array(z.tuple([z.string(), z.number()])).optional(),
   })
   .refine(
     (data) => {

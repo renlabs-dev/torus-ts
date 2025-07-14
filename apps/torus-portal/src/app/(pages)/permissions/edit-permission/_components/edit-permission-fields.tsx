@@ -1,6 +1,7 @@
 import { Plus, Trash2 } from "lucide-react";
 import type { Control } from "react-hook-form";
 import { useFieldArray, useWatch } from "react-hook-form";
+import { match } from "rustie";
 
 import { Button } from "@torus-ts/ui/components/button";
 import {
@@ -27,10 +28,20 @@ interface EditPermissionFieldsProps {
 }
 
 export function EditPermissionFields({ control }: EditPermissionFieldsProps) {
-  const distributionType = useWatch({
+  const distributionControl = useWatch({
     control,
-    name: "newDistributionControl.type",
+    name: "newDistributionControl",
   });
+
+  const distributionType = distributionControl
+    ? match(distributionControl)({
+        Manual: () => "Manual",
+        Automatic: () => "Automatic",
+        AtBlock: () => "AtBlock",
+        Interval: () => "Interval",
+      })
+    : null;
+
   const {
     fields: targetFields,
     append: appendTarget,
@@ -51,48 +62,77 @@ export function EditPermissionFields({ control }: EditPermissionFieldsProps) {
 
   return (
     <>
-      {/* Distribution Control */}
       <div className="grid gap-4">
         <FormField
           control={control}
-          name="newDistributionControl.type"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Distribution Control</FormLabel>
-              <Select onValueChange={field.onChange} defaultValue={field.value}>
-                <FormControl>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select distribution type" />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  <SelectItem value="Manual">Manual</SelectItem>
-                  <SelectItem value="Automatic">Automatic</SelectItem>
-                  <SelectItem value="AtBlock">At Block</SelectItem>
-                  <SelectItem value="Interval">Interval</SelectItem>
-                </SelectContent>
-              </Select>
-              <FormMessage />
-            </FormItem>
-          )}
+          name="newDistributionControl"
+          render={({ field }) => {
+            const currentType = field.value
+              ? match(field.value)({
+                  Manual: () => "Manual",
+                  Automatic: () => "Automatic",
+                  AtBlock: () => "AtBlock",
+                  Interval: () => "Interval",
+                })
+              : "";
+
+            return (
+              <FormItem>
+                <FormLabel>Distribution Control</FormLabel>
+                <Select
+                  value={currentType}
+                  onValueChange={(value) => {
+                    switch (value) {
+                      case "Manual":
+                        field.onChange({ Manual: null });
+                        break;
+                      case "Automatic":
+                        field.onChange({ Automatic: 0n });
+                        break;
+                      case "AtBlock":
+                        field.onChange({ AtBlock: 0 });
+                        break;
+                      case "Interval":
+                        field.onChange({ Interval: 0 });
+                        break;
+                    }
+                  }}
+                >
+                  <FormControl>
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Select distribution type" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    <SelectItem value="Manual">Manual</SelectItem>
+                    <SelectItem value="Automatic">Automatic</SelectItem>
+                    <SelectItem value="AtBlock">At Block</SelectItem>
+                    <SelectItem value="Interval">Interval</SelectItem>
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            );
+          }}
         />
 
-        {/* Additional fields for AtBlock distribution */}
-        {distributionType === "AtBlock" && (
+        {distributionType === "Automatic" && (
           <FormField
             control={control}
-            name="newDistributionControl.blockNumber"
+            name="newDistributionControl.Automatic"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Block Number</FormLabel>
+                <FormLabel>Threshold Amount</FormLabel>
                 <FormControl>
                   <Input
                     {...field}
                     type="number"
-                    placeholder="Enter block number"
-                    onChange={(e) =>
-                      field.onChange(parseInt(e.target.value) || 0)
-                    }
+                    placeholder="Enter threshold amount"
+                    value={field.value.toString() || ""}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      field.onChange(value ? BigInt(value) : 0n);
+                    }}
                   />
                 </FormControl>
                 <FormMessage />
@@ -101,54 +141,57 @@ export function EditPermissionFields({ control }: EditPermissionFieldsProps) {
           />
         )}
 
-        {/* Additional fields for Interval distribution */}
+        {distributionType === "AtBlock" && (
+          <FormField
+            control={control}
+            name="newDistributionControl.AtBlock"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Block Number</FormLabel>
+                <FormControl>
+                  <Input
+                    {...field}
+                    type="number"
+                    placeholder="Enter block number"
+                    value={field.value.toString() || ""}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      field.onChange(value ? parseInt(value) : 0);
+                    }}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        )}
+
         {distributionType === "Interval" && (
-          <>
-            <FormField
-              control={control}
-              name="newDistributionControl.blockNumber"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Start Block Number</FormLabel>
-                  <FormControl>
-                    <Input
-                      {...field}
-                      type="number"
-                      placeholder="Enter start block number"
-                      onChange={(e) =>
-                        field.onChange(parseInt(e.target.value) || 0)
-                      }
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={control}
-              name="newDistributionControl.blockInterval"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Block Interval</FormLabel>
-                  <FormControl>
-                    <Input
-                      {...field}
-                      type="number"
-                      placeholder="Enter block interval"
-                      onChange={(e) =>
-                        field.onChange(parseInt(e.target.value) || 0)
-                      }
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </>
+          <FormField
+            control={control}
+            name="newDistributionControl.Interval"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Block Interval</FormLabel>
+                <FormControl>
+                  <Input
+                    {...field}
+                    type="number"
+                    placeholder="Enter block interval"
+                    value={field.value.toString() || ""}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      field.onChange(value ? parseInt(value) : 0);
+                    }}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
         )}
       </div>
 
-      {/* Targets Section */}
       <div className="grid gap-4">
         <div className="flex justify-between items-center">
           <h3 className="text-sm font-medium">Targets</h3>
@@ -156,7 +199,7 @@ export function EditPermissionFields({ control }: EditPermissionFieldsProps) {
             type="button"
             variant="outline"
             size="sm"
-            onClick={() => appendTarget({ agent: "", weight: 1 })}
+            onClick={() => appendTarget({ address: "", weight: 1 })}
           >
             <Plus className="h-4 w-4 mr-2" />
             Add Target
@@ -167,7 +210,7 @@ export function EditPermissionFields({ control }: EditPermissionFieldsProps) {
           <div key={field.id} className="flex gap-2">
             <FormField
               control={control}
-              name={`newTargets.${index}.agent`}
+              name={`newTargets.${index}.address`}
               render={({ field }) => (
                 <FormItem className="flex-1">
                   <FormControl>
@@ -187,7 +230,11 @@ export function EditPermissionFields({ control }: EditPermissionFieldsProps) {
                       {...field}
                       type="number"
                       placeholder="Weight"
-                      onChange={(e) => field.onChange(parseInt(e.target.value))}
+                      value={field.value || ""}
+                      onChange={(e) => {
+                        const value = parseInt(e.target.value);
+                        field.onChange(isNaN(value) ? 1 : value);
+                      }}
                     />
                   </FormControl>
                   <FormMessage />
@@ -206,7 +253,6 @@ export function EditPermissionFields({ control }: EditPermissionFieldsProps) {
         ))}
       </div>
 
-      {/* Streams Section */}
       <div className="grid gap-4">
         <div className="flex justify-between items-center">
           <h3 className="text-sm font-medium">Streams</h3>
@@ -214,7 +260,7 @@ export function EditPermissionFields({ control }: EditPermissionFieldsProps) {
             type="button"
             variant="outline"
             size="sm"
-            onClick={() => appendStream({ agent: "", percentage: 0 })}
+            onClick={() => appendStream({ streamId: "", percentage: 0 })}
           >
             <Plus className="h-4 w-4 mr-2" />
             Add Stream
@@ -225,11 +271,11 @@ export function EditPermissionFields({ control }: EditPermissionFieldsProps) {
           <div key={field.id} className="flex gap-2">
             <FormField
               control={control}
-              name={`newStreams.${index}.agent`}
+              name={`newStreams.${index}.streamId`}
               render={({ field }) => (
                 <FormItem className="flex-1">
                   <FormControl>
-                    <Input {...field} placeholder="Agent address" />
+                    <Input {...field} placeholder="Stream ID (H256)" />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -244,8 +290,12 @@ export function EditPermissionFields({ control }: EditPermissionFieldsProps) {
                     <Input
                       {...field}
                       type="number"
-                      placeholder="Percentage"
-                      onChange={(e) => field.onChange(parseInt(e.target.value))}
+                      placeholder="%"
+                      value={field.value || ""}
+                      onChange={(e) => {
+                        const value = parseInt(e.target.value);
+                        field.onChange(isNaN(value) ? 0 : value);
+                      }}
                     />
                   </FormControl>
                   <FormMessage />
