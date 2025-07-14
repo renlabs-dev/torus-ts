@@ -99,6 +99,7 @@ export function RegisterAgentInfoFields({
                 placeholder="e.g. memory-agent"
                 type="text"
                 required
+                maxLength={30}
               />
             </FormControl>
             <FormMessage />
@@ -110,7 +111,7 @@ export function RegisterAgentInfoFields({
         control={control}
         name="shortDescription"
         render={({ field }) => (
-          <FormItem className="flex flex-col">
+          <FormItem className="flex flex-col max-w-3xl">
             <FormLabel>Introduction</FormLabel>
             <FormControl>
               <Textarea
