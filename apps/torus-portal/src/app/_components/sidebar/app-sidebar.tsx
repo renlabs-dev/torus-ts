@@ -55,7 +55,7 @@ const data = {
         },
         {
           title: "Edit Permission",
-          url: "/edit-permission",
+          url: "/permissions/edit-permission",
           icon: FilePen,
         },
       ],
