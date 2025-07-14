@@ -1,5 +1,11 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@torus-ts/ui/components/card";
 import { AlertCircle, Info, Lock } from "lucide-react";
+
+import {
+  Card,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@torus-ts/ui/components/card";
 
 interface PermissionTypeInfoProps {
   permissionType: "emission" | "capability" | "unknown";
@@ -7,10 +13,9 @@ interface PermissionTypeInfoProps {
   isGrantor?: boolean;
 }
 
-export function PermissionTypeInfo({ 
-  permissionType, 
-  canEdit = true,
-  isGrantor = true 
+export function PermissionTypeInfo({
+  permissionType,
+  isGrantor = true,
 }: PermissionTypeInfoProps) {
   if (permissionType === "capability") {
     return (
@@ -21,13 +26,14 @@ export function PermissionTypeInfo({
             Capability Permission
           </CardTitle>
           <CardDescription>
-            Capability permissions can only be revoked. Edit functionality is not available for capability permissions.
+            Capability permissions can only be revoked. Edit functionality is
+            not available for capability permissions.
           </CardDescription>
         </CardHeader>
       </Card>
     );
   }
-  
+
   if (permissionType === "emission" && !isGrantor) {
     return (
       <Card className="border-muted">
@@ -37,7 +43,8 @@ export function PermissionTypeInfo({
             Read-Only Permission
           </CardTitle>
           <CardDescription>
-            Only the delegator can edit this permission. As a recipient, you can view but not modify the permission details.
+            Only the delegator can edit this permission. As a recipient, you can
+            view but not modify the permission details.
           </CardDescription>
         </CardHeader>
       </Card>

@@ -163,7 +163,6 @@ export function EditPermissionForm({
 
               <PermissionTypeInfo
                 permissionType={permissionType}
-                canEdit={canEdit}
                 isGrantor={isGrantor}
               />
 
