@@ -6,7 +6,8 @@
   "exports": {
     ".": "./src/torus-provider.tsx",
     "./types": "./src/_types/index.ts",
-    "./send-transaction": "./src/_components/send-transaction.tsx"
+    "./send-transaction": "./src/_components/send-transaction.tsx",
+    "./send-transaction-v2": "./src/_components/send-transaction-v2.tsx"
   },
   "license": "MIT",
   "scripts": {

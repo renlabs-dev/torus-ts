@@ -87,7 +87,7 @@ export function useSendTransaction({
       return;
     }
 
-    const send = async <T extends ISubmittableResult>(
+    const sendFn = async <T extends ISubmittableResult>(
       tx: SubmittableExtrinsic<"promise", T>,
     ) => {
       if (!selectedAccount) {
@@ -114,7 +114,7 @@ export function useSendTransaction({
       );
     };
 
-    setSendFn(send);
+    setSendFn(sendFn);
   });
 
   const txHelper = useMemo(() => txStatusToTxHelper(txStage), [txStage]);
