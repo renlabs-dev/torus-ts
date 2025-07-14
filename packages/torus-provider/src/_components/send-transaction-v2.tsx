@@ -1,261 +1,75 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
-import { merkleizeMetadata } from "@polkadot-api/merkleize-metadata";
 import type { ApiPromise, SubmittableResult } from "@polkadot/api";
 import type { SubmittableExtrinsic } from "@polkadot/api/types";
 import type { InjectedExtension } from "@polkadot/extension-inject/types";
+import type { DispatchError } from "@polkadot/types/interfaces";
 import type { ISubmittableResult } from "@polkadot/types/types";
-import { u8aToHex } from "@polkadot/util";
-import type { Enum } from "rustie";
 import { match } from "rustie";
-import type { z } from "zod";
 
-import {
-  CONSTANTS,
-  sb_array,
-  sb_enum,
-  sb_h256,
-  sb_null,
-  sb_string,
-} from "@torus-network/sdk";
 import { chainErr } from "@torus-network/torus-utils/error";
-import type { BaseLogger } from "@torus-network/torus-utils/logger";
+import { BasicLogger } from "@torus-network/torus-utils/logger";
 import type { Result } from "@torus-network/torus-utils/result";
 import { makeErr, makeOk } from "@torus-network/torus-utils/result";
 import { tryAsync, trySync } from "@torus-network/torus-utils/try-catch";
 
+import { toast } from "@torus-ts/ui/hooks/use-toast";
+
 import type { InjectedAccountWithMeta } from "../torus-provider";
-import { updateMetadata } from "../utils/metadata";
+import type { TxHelper, TxStage } from "../transactions";
+import { sb_extrinsic_status, txStatusToTxHelper } from "../transactions";
+import { getMerkleizedMetadata, updateMetadata } from "../utils/chain-metadata";
+import {
+  renderFinalizedWithError,
+  renderSuccessfulyFinalized,
+  renderWaitingForValidation,
+} from "./toast-content-handler";
 
-/**
- * TODO: Refactor `getMetadataProof`
- */
-async function getMetadataProof(api: ApiPromise) {
-  // Get metadata from API
-  const [metadataError, metadata] = await tryAsync(
-    api.call.metadata.metadataAtVersion(15),
-  );
-  if (metadataError !== undefined) {
-    console.error("Error getting metadata:", metadataError);
-    throw metadataError;
-  }
+const strErr = (txt: string) => new Error(txt);
 
-  // Get runtime information
-  const [runtimeError, runtimeInfo] = trySync(() => {
-    const { specName, specVersion } = api.runtimeVersion;
-    return { specName, specVersion };
-  });
-
-  if (runtimeError !== undefined) {
-    console.error("Error getting runtime information:", runtimeError);
-    throw runtimeError;
-  }
-
-  const { specName, specVersion } = runtimeInfo;
-
-  // Convert metadata to hex and merkleize it
-  const [merkleError, merkleizedMetadata] = trySync(() =>
-    merkleizeMetadata(metadata.toHex(), {
-      base58Prefix: api.consts.system.ss58Prefix.toNumber(),
-      decimals: CONSTANTS.EMISSION.DECIMALS,
-      specName: specName.toString(),
-      specVersion: specVersion.toNumber(),
-      tokenSymbol: "TORUS",
-    }),
-  );
-
-  if (merkleError !== undefined) {
-    console.error("Error merkleizing metadata:", merkleError);
-    throw merkleError;
-  }
-
-  // Get hash from merkleized metadata
-  const [hashError, metadataHash] = trySync(() =>
-    u8aToHex(merkleizedMetadata.digest()),
-  );
-
-  if (hashError !== undefined) {
-    console.error("Error generating metadata hash:", hashError);
-    throw hashError;
-  }
-
-  console.log("Generated metadata hash:", metadataHash);
-
-  return {
-    metadataHash,
-    merkleizedMetadata,
-  };
-}
-
-// export interface ExtrinsicStatus extends Enum {
-//   readonly isFuture: boolean;
-//   readonly isReady: boolean;
-//   readonly isBroadcast: boolean;
-//   readonly asBroadcast: Vec<Text>;
-//   readonly isInBlock: boolean;
-//   readonly asInBlock: Hash;
-//   readonly isRetracted: boolean;
-//   readonly asRetracted: Hash;
-//   readonly isFinalityTimeout: boolean;
-//   readonly asFinalityTimeout: Hash;
-//   readonly isFinalized: boolean;
-//   readonly asFinalized: Hash;
-//   readonly isUsurped: boolean;
-//   readonly asUsurped: Hash;
-//   readonly isDropped: boolean;
-//   readonly isInvalid: boolean;
-//   readonly type: 'Future' | 'Ready' | 'Broadcast' | 'InBlock' | 'Retracted' | 'FinalityTimeout' | 'Finalized' | 'Usurped' | 'Dropped' | 'Invalid';
-// }
-
-// const sb_hash =
-
-export type HexH256 = z.infer<typeof sb_h256>;
-
-/**
- * Transitions:
- *   Submit -> [Invalid] | Future | Ready
- *   Future -> Ready
- *   Ready -> Broadcast | [Dropped] | [Usurped] | InBlock
- *   Broadcast -> InBlock
- *   InBlock -> [Finalized] | Retracted | [FinalityTimeout]
- *   Retracted -> Ready
- *
- * TODO: Test `sb_extrinsic_status`
- */
-export const sb_extrinsic_status = sb_enum({
-  Future: sb_null,
-  Ready: sb_null,
-  Broadcast: sb_array(sb_string),
-  InBlock: sb_h256,
-  Retracted: sb_h256,
-  FinalityTimeout: sb_null,
-  Finalized: sb_h256,
-  Usurped: sb_h256,
-  Dropped: sb_null,
-  Invalid: sb_null,
-});
-
-export type SbExtrinsicStatus = z.infer<typeof sb_extrinsic_status>;
-
-/**
- * Extrinsic statuses grouping:
- *
- *   | Group      | Description                          | Statuses                                   |
- *   |------------|--------------------------------------|------------------------------------------  |
- *   | Submitting | Before submitting to node            |                                            |
- *   | Pending    | Validated and waiting for inclusion  | Future, Ready, Broadcast                   |
- *   | Success    | Included in block                    | InBlock, Finalized                         |
- *   | Error      | Transaction failed                   | Invalid, Dropped, Usurped, FinalityTimeout |
- *   | Reverted   | Was included in block but reverted   | Retracted                                 |
- */
-export type TransactionResult = Enum<{
-  Submitting: null;
-  Pending: Enum<{ Future: null; Ready: null; Broadcast: string[] }>;
-  Success: Enum<{ InBlock: HexH256; Finalized: HexH256 }>;
-  Error: Enum<{
-    Invalid: null;
-    Dropped: null;
-    Usurped: HexH256;
-    FinalityTimeout: null;
-  }>;
-  Reverted: Enum<{ Retracted: HexH256 }>;
-}>;
-
-function sbTxStatusToTxResult(extStatus: SbExtrinsicStatus): TransactionResult {
-  return match(extStatus)<TransactionResult>({
-    Future: () => ({
-      Pending: {
-        Future: null,
-      },
-    }),
-    Ready: () => ({
-      Pending: {
-        Ready: null,
-      },
-    }),
-    Broadcast: (xs) => ({
-      Pending: {
-        Broadcast: xs,
-      },
-    }),
-    InBlock: (hash) => ({
-      Success: {
-        InBlock: hash,
-      },
-    }),
-    Retracted: (hash) => ({
-      Reverted: {
-        Retracted: hash,
-      },
-    }),
-    FinalityTimeout: () => ({
-      Error: {
-        FinalityTimeout: null,
-      },
-    }),
-    Finalized: (xs) => ({
-      Success: {
-        Finalized: xs,
-      },
-    }),
-    Invalid: () => ({
-      Error: {
-        Invalid: null,
-      },
-    }),
-    Usurped: (hash) => ({
-      Error: {
-        Usurped: hash,
-      },
-    }),
-    Dropped: () => ({
-      Error: {
-        Dropped: null,
-      },
-    }),
-  });
-}
-
-type SendTxFn = <T extends ISubmittableResult>(
+export type SendTxFn = <T extends ISubmittableResult>(
   tx: SubmittableExtrinsic<"promise", T>,
 ) => Promise<void>;
 
-type SendTxState = Enum<{
-  Init: null;
-  Sendable: {
-    send: SendTxFn;
-  };
-  Sent: { txResult: TransactionResult };
-  Error: { message: string; error?: Error };
-}>;
+interface UseSendTxOutput extends TxHelper {
+  txStage: TxStage;
+  send: SendTxFn | null;
+}
+
+const logger = BasicLogger.create({ name: "use-send-transaction" });
 
 export function useSendTransaction({
   api,
   wsEndpoint,
-  injector,
-  metadataHash,
   selectedAccount,
-  logger,
+  transactionType,
+  web3FromAddress,
 }: {
   api: ApiPromise | null;
   wsEndpoint: string | null;
-  injector: InjectedExtension | null;
-  metadataHash: `0x${string}` | null;
   selectedAccount: InjectedAccountWithMeta | null;
-  logger: BaseLogger;
-}) {
-  const [sendTxState, setSendTxState] = useState<SendTxState>({ Init: null });
+  transactionType: string;
+  web3FromAddress: ((address: string) => Promise<InjectedExtension>) | null;
+  // toast: typeof toast; // TODO: modularize
+}): UseSendTxOutput {
+  const wallet = useWallet({ api, selectedAccount, web3FromAddress });
 
-  const onErr = (errMsg: string, err?: Error) => {
-    logger.error(errMsg, err);
-    setSendTxState({ Error: { message: errMsg, error: err } });
+  const [txStage, setTxStage] = useState<TxStage>({ Empty: null });
+  const [sendFn, setSendFn] = useState<SendTxFn | null>(null);
+
+  const setErrState = (err: Error) => {
+    logger.error(err);
+    setTxStage({ Error: { error: err } });
+    toast.error(err.message || "Transaction failed");
   };
 
   useEffect(() => {
-    if (!api || !wsEndpoint || !injector || !metadataHash) {
-      onErr("Inconsistent internal state for transaction");
+    if (!api || !wsEndpoint || !wallet) {
+      setErrState(strErr("Inconsistent internal state for transaction"));
       return;
     }
+
+    const { injector, metadataHash } = wallet;
 
     const [txOptionsError, txOptions] = trySync(() => ({
       signer: injector.signer,
@@ -267,38 +81,21 @@ export function useSendTransaction({
       withSignedTransaction: true,
     }));
     if (txOptionsError !== undefined) {
-      const err = chainErr("Failed to create transaction options")(
-        txOptionsError,
+      setErrState(
+        chainErr("Failed to create transaction options")(txOptionsError),
       );
-      onErr("Failed to create transaction options", err);
       return;
     }
 
-    const doSend = async <T extends ISubmittableResult>(
+    const send = async <T extends ISubmittableResult>(
       tx: SubmittableExtrinsic<"promise", T>,
     ) => {
       if (!selectedAccount) {
-        setSendTxState({ Error: { message: "No account selected" } });
+        setErrState(strErr("No account selected"));
         return;
       }
 
-      // TODO: improve state handling
-
-      // match(sendTxState)({
-      //   Init: () => {
-      //     // setSendTxState({ Error: { message: "Wallet not initialized" } });
-      //   },
-      //   Sent: () => {
-      //     // setSendTxState({ Error: { message: "Transaction already sent" } });
-      //   },
-      //   Error: () => {
-      //     // setSendTxState({ Error: { message: "Transaction already failed" } });
-      //   },
-      //   Sendable: () => {},
-      // });
-
-      // TODO: check _idk
-      const _idk = await tx.signAndSend(
+      await tx.signAndSend(
         selectedAccount.address,
         txOptions,
         (result: SubmittableResult) => {
@@ -306,36 +103,28 @@ export function useSendTransaction({
             result.status,
           );
           if (!success) {
-            console.error("Failed to parse extrinsic status:", extStatus);
+            setErrState(
+              strErr(`Failed to parse extrinsic status ${extStatus}`),
+            );
             return;
           }
-          const txResult = sbTxStatusToTxResult(extStatus);
-          setSendTxState({
-            Sent: { txResult },
-          });
+          setTxStage({ Submitted: { result, extStatus } });
+          handleTxUpdate({ api, setErrState, transactionType, wsEndpoint });
         },
       );
     };
 
-    setSendTxState({ Sendable: { send: doSend } });
+    setSendFn(send);
   });
 
-  return sendTxState;
-}
+  const txHelper = useMemo(() => txStatusToTxHelper(txStage), [txStage]);
 
-/*
-interface SendTransactionProps {
-  api: ApiPromise | null;
-  selectedAccount: InjectedAccountWithMeta | null;
-  torusApi: TorusApiState;
-  transactionType: string;
-  transaction: SubmittableExtrinsic<"promise">;
-  callback?: (result: TransactionResult) => void;
-  refetchHandler?: () => Promise<void>;
-  wsEndpoint: string;
-  toast: typeof toast;
+  return {
+    txStage,
+    send: sendFn,
+    ...txHelper,
+  };
 }
-*/
 
 const setupWallet = async ({
   api,
@@ -357,9 +146,9 @@ const setupWallet = async ({
     return makeErr(err);
   }
 
-  const [proofError, proof] = await tryAsync(getMetadataProof(api));
+  const [proofError, proof] = await getMerkleizedMetadata(api);
   if (proofError !== undefined) {
-    const err = chainErr("Failed to generate metadata proof")(proofError);
+    const err = chainErr("Failed to generate metadata")(proofError);
     return makeErr(err);
   }
 
@@ -372,14 +161,12 @@ interface UseWalletArgs {
   api: ApiPromise | null;
   selectedAccount: InjectedAccountWithMeta | null;
   web3FromAddress: ((address: string) => Promise<InjectedExtension>) | null;
-  logger: BaseLogger;
 }
 
 export const useWallet = ({
   api,
   selectedAccount,
   web3FromAddress,
-  logger,
 }: UseWalletArgs) => {
   const [wallet, setWallet] = useState<{
     injector: InjectedExtension;
@@ -388,7 +175,7 @@ export const useWallet = ({
 
   useEffect(() => {
     if (!api || !selectedAccount || !web3FromAddress) {
-      logger.error("Inconsistent internal state for transaction");
+      console.warn("Inconsistent internal state for transaction signing");
       return;
     }
 
@@ -398,11 +185,9 @@ export const useWallet = ({
         selectedAccount,
         web3FromAddress,
       });
-
       if (walletSetupError !== undefined) {
-        logger.error(
-          "Failed to setup wallet for transactions:",
-          walletSetupError,
+        toast.error(
+          `Failed to setup wallet for transactions: ${walletSetupError.toString()}`,
         );
         return;
       }
@@ -415,12 +200,195 @@ export const useWallet = ({
       // TODO: refactor, do this only once for wallet/app instance
       const [metadataError] = await tryAsync(updateMetadata(api, [injector]));
       if (metadataError !== undefined) {
-        logger.error("Failed to update chain metadata", metadataError);
+        toast.error(
+          `Failed to update chain metadata: ${metadataError.toString()}`,
+        );
       }
     };
 
-    run().catch((e) => logger.error("Unexpected error setting up wallet:", e));
-  }, [api, selectedAccount, web3FromAddress, logger]);
+    run().catch((e) => {
+      toast.error(`Unexpected error setting up wallet: ${e}`);
+    });
+  }, [api, selectedAccount, web3FromAddress]);
 
   return wallet;
 };
+
+const handleTxUpdate =
+  ({
+    api,
+    setErrState,
+    transactionType,
+    wsEndpoint,
+  }: {
+    api: ApiPromise;
+    setErrState: (err: Error) => void;
+    transactionType: string;
+    wsEndpoint: string;
+  }) =>
+  (tx: TxStage) => {
+    return match(tx)({
+      Empty: () => null,
+      Signing: () => null,
+      Error: ({ error }) => {
+        setErrState(error);
+        return null;
+      },
+      Submitted: ({ extStatus, result }) => {
+        match(extStatus)({
+          Invalid: () => {
+            setErrState(strErr("Invalid transaction"));
+          },
+          Future: () => null,
+          Ready: () => null,
+          Broadcast: () => null,
+          InBlock: (hash) => {
+            // TODO: improve message of transaction include in block
+            toast({
+              title: "Loading...",
+              description: renderWaitingForValidation(hash, wsEndpoint),
+              duration: Infinity,
+            });
+          },
+          Finalized: (hash) => {
+            handleFinalizedTx({
+              api,
+              hash,
+              result,
+              setErrState,
+              transactionType,
+              wsEndpoint,
+            });
+          },
+
+          Dropped: () => null,
+          Usurped: () => null,
+
+          FinalityTimeout: () => null,
+          Retracted: () => null,
+        });
+      },
+    });
+  };
+
+const handleFinalizedTx = ({
+  api,
+  hash,
+  result,
+  setErrState,
+  transactionType,
+  wsEndpoint,
+}: {
+  api: ApiPromise;
+  hash: string;
+  result: SubmittableResult;
+  setErrState: (err: Error) => void;
+  transactionType: string;
+  wsEndpoint: string;
+}) => {
+  const success = result.findRecord("system", "ExtrinsicSuccess");
+  const failed = result.findRecord("system", "ExtrinsicFailed");
+
+  if (success) {
+    toast({
+      title: "Success!",
+      description: renderSuccessfulyFinalized(
+        transactionType,
+        hash,
+        wsEndpoint,
+      ),
+    });
+    return;
+  }
+
+  if (!failed) throw new Error("Inconsistent included transaction state");
+
+  // TODO: refactor extrinsic inclusion handling
+
+  setErrState(strErr("Transaction failed"));
+
+  // Fix the destructuring and error handling
+  const [parseError, dispatchErrorArray] = trySync(
+    () => failed.event.data as unknown as [DispatchError],
+  );
+  if (parseError !== undefined) {
+    console.error("Error parsing dispatch error:", parseError);
+  }
+
+  const dispatchError = dispatchErrorArray?.[0];
+  let msg = `${transactionType} failed: ${dispatchError?.toString() ?? "Unknown error"}`;
+
+  if (dispatchError?.isModule) {
+    const [moduleError, metaError] = trySync(() => {
+      const mod = dispatchError.asModule;
+      return api.registry.findMetaError(mod);
+    });
+
+    if (moduleError !== undefined) {
+      console.error("Error finding meta error:", moduleError);
+    } else {
+      msg = `${transactionType} failed: ${metaError.name}`;
+    }
+  }
+
+  setErrState(strErr(msg));
+
+  toast({
+    title: "Error",
+    description: renderFinalizedWithError(msg, hash, wsEndpoint),
+  });
+};
+
+function _ExampleUsage() {
+  const { api, selectedAccount, web3FromAddress, wsEndpoint } =
+    null as unknown as {
+      api: ApiPromise;
+      selectedAccount: InjectedAccountWithMeta;
+      web3FromAddress: (address: string) => Promise<InjectedExtension>;
+      wsEndpoint: string;
+    };
+
+  const {
+    send,
+    isSigning,
+    isPending,
+    isSuccess,
+    isFinalized,
+    isError,
+    message,
+    error,
+  } = useSendTransaction({
+    api,
+    wsEndpoint,
+    selectedAccount,
+    transactionType: "Transfer",
+    web3FromAddress,
+  });
+
+  const _handleTransfer = async () => {
+    if (!send) return;
+
+    const tx = api.tx.balances.transferAllowDeath(
+      "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY",
+      "1000000000000",
+    );
+
+    await send(tx);
+  };
+
+  return (
+    <div>
+      <button
+        onClick={_handleTransfer}
+        disabled={!send || isPending || isSigning}
+      >
+        {isSigning ? "Signing..." : isPending ? "Pending..." : "Transfer"}
+      </button>
+
+      <div>Status: {message}</div>
+      {isError && error && <div>Error: {error.message}</div>}
+      {isSuccess && <div>Success!</div>}
+      {isFinalized && <div>Finalized!</div>}
+    </div>
+  );
+}
