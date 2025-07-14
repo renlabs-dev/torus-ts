@@ -68,7 +68,6 @@ export function EditPermissionForm({
     async (permissionData: PermissionWithDetails) => {
       if (!api) return;
 
-      // Only load form data for emission permissions
       if (permissionData.emission_permissions) {
         await handlePermissionDataChange({
           permissionData,
@@ -77,7 +76,6 @@ export function EditPermissionForm({
           onError: toast.error,
         });
       } else {
-        // For non-emission permissions, just reset the form
         form.reset({
           permissionId: permissionData.permissions.permissionId,
           newTargets: [],
@@ -131,10 +129,9 @@ export function EditPermissionForm({
               onPermissionIdChange={(value) => {
                 setSelectedPermissionId(value);
                 form.setValue("permissionId", value);
-                setHasLoadedPermission(false); // Reset flag when permission changes
+                setHasLoadedPermission(false);
               }}
               onPermissionDataChange={(permissionData) => {
-                // Only load data if we haven't loaded this permission yet
                 if (
                   permissionData &&
                   !hasLoadedPermission &&

@@ -31,19 +31,15 @@ export default function CreatePermissionLayout({
 
   const handleTabChange = (value: string) => {
     if (value === "capability") {
-      router.push("/create-permission");
+      router.push("/permissions/create-permission/capability");
     } else {
-      router.push("/create-permission/emission");
+      router.push("/permissions/create-permission/emission");
     }
   };
 
   return (
     <PortalFormContainer>
-      <Tabs
-        value={activeTab}
-        onValueChange={handleTabChange}
-        className="w-full pt-6 md:pt-0 mx-4"
-      >
+      <Tabs value={activeTab} onValueChange={handleTabChange}>
         <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="capability">Capability</TabsTrigger>
           <TabsTrigger value="emission">Emission</TabsTrigger>
