@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useCallback } from "react";
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -20,34 +20,61 @@ import { PortalFormSeparator } from "~/app/_components/portal-form-separator";
 import { EditPermissionFields } from "./edit-permission-fields";
 import type { EditPermissionFormData } from "./edit-permission-schema";
 import { EDIT_PERMISSION_SCHEMA } from "./edit-permission-schema";
+import {
+  prepareFormDataForSDK,
+  handlePermissionDataChange,
+} from "./edit-permission-utils";
 import { RevokePermissionButton } from "./revoke-permission-button";
+import type { PermissionWithDetails } from "../../../edit-permission/_components/revoke-permission-button";
 
 export function EditPermissionForm({
   className,
   ...props
 }: React.ComponentProps<"form">) {
   const { toast } = useToast();
-  const { selectedAccount, isAccountConnected, isInitialized } = useTorus();
+  const { api, selectedAccount, isAccountConnected, isInitialized } =
+    useTorus();
   const [selectedPermissionId, setSelectedPermissionId] = useState<string>("");
+  const [hasLoadedPermission, setHasLoadedPermission] = useState(false);
+  const currentPermissionDataRef = useRef<PermissionWithDetails | null>(null);
 
   const form = useForm<EditPermissionFormData>({
     disabled: !isAccountConnected,
     resolver: zodResolver(EDIT_PERMISSION_SCHEMA),
     mode: "onChange",
     defaultValues: {
-      selectedPermission: {
-        permissionId: "",
-      },
+      permissionId: "",
       newTargets: [],
       newStreams: [],
-      newDistributionControl: {
-        type: "Manual",
-      },
+      newDistributionControl: { Manual: null },
     },
   });
 
+  const handlePermissionLoad = useCallback(
+    async (permissionData: PermissionWithDetails) => {
+      if (!api) return;
+      
+      await handlePermissionDataChange({
+        permissionData,
+        api,
+        form,
+        onError: toast.error,
+      });
+    },
+    [api, form, toast.error]
+  );
+
   // eslint-disable-next-line @typescript-eslint/require-await
-  async function onSubmit(_data: z.infer<typeof EDIT_PERMISSION_SCHEMA>) {
+  async function onSubmit(data: z.infer<typeof EDIT_PERMISSION_SCHEMA>) {
+    if (!api) {
+      toast.error("API not initialized");
+      return;
+    }
+
+    const sdkData = prepareFormDataForSDK(data);
+
+    console.log(sdkData);
+
     form.reset();
     toast.success(
       "Success! Submit functionality is disabled but the form behaves as expected",
@@ -78,36 +105,39 @@ export function EditPermissionForm({
               selectedPermissionId={selectedPermissionId}
               onPermissionIdChange={(value) => {
                 setSelectedPermissionId(value);
-                form.setValue("selectedPermission.permissionId", value);
+                form.setValue("permissionId", value);
+                setHasLoadedPermission(false); // Reset flag when permission changes
               }}
-              onPermissionDataChange={() => {
-                // Handle permission data change
+              onPermissionDataChange={(permissionData) => {
+                // Only load data if we haven't loaded this permission yet
+                if (
+                  permissionData &&
+                  !hasLoadedPermission &&
+                  currentPermissionDataRef.current?.permissions.permissionId !== 
+                    permissionData.permissions.permissionId
+                ) {
+                  currentPermissionDataRef.current = permissionData;
+                  setHasLoadedPermission(true);
+                  void handlePermissionLoad(permissionData);
+                }
               }}
             />
 
-            {selectedPermissionId && (
-              <div className="flex justify-end">
-                <RevokePermissionButton
-                  permissionId={selectedPermissionId}
-                  onSuccess={() => {
-                    setSelectedPermissionId("");
-                    form.reset();
-                  }}
-                />
-              </div>
-            )}
+            <RevokePermissionButton
+              permissionId={selectedPermissionId}
+              onSuccess={() => {
+                setSelectedPermissionId("");
+                form.reset();
+              }}
+            />
           </div>
 
-          {selectedPermissionId && (
-            <>
-              <PortalFormSeparator title="Edit Permission Details" />
+          <PortalFormSeparator title="Edit Permission Details" />
 
-              <EditPermissionFields
-                control={form.control}
-                selectedAccount={selectedAccount}
-              />
-            </>
-          )}
+          <EditPermissionFields
+            control={form.control}
+            selectedAccount={selectedAccount}
+          />
 
           <Button
             type="submit"
