@@ -6,6 +6,9 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import type { z } from "zod";
 
+import type { SS58Address } from "@torus-network/sdk";
+
+import { useNamespaceEntriesOf } from "@torus-ts/query-provider/hooks";
 import { useTorus } from "@torus-ts/torus-provider";
 import { Button } from "@torus-ts/ui/components/button";
 import {
@@ -22,6 +25,7 @@ import { useToast } from "@torus-ts/ui/hooks/use-toast";
 import { cn } from "@torus-ts/ui/lib/utils";
 
 import PortalFormHeader from "~/app/_components/portal-form-header";
+import { tryCatch } from "~/utils/try-catch";
 
 import { CreateCapabilityMethodField } from "./create-capability-method-field";
 import { CreateCapabilityPathPreview } from "./create-capability-path-preview";
@@ -33,9 +37,22 @@ export function CreateCapabilityForm({
   ...props
 }: React.ComponentProps<"form">) {
   const { toast } = useToast();
-  const { isAccountConnected, isInitialized, api, selectedAccount } =
-    useTorus();
+  const {
+    api,
+    isAccountConnected,
+    isInitialized,
+    createNamespaceTransaction,
+    selectedAccount,
+  } = useTorus();
   const [selectedPrefix, setSelectedPrefix] = useState("");
+  const [transactionStatus, setTransactionStatus] = useState<
+    "idle" | "loading" | "success" | "error"
+  >("idle");
+
+  const namespaceEntries = useNamespaceEntriesOf(
+    api,
+    selectedAccount?.address as SS58Address,
+  );
 
   const form = useForm<z.infer<typeof CREATE_CAPABILITY_SCHEMA>>({
     resolver: zodResolver(CREATE_CAPABILITY_SCHEMA),
@@ -74,32 +91,55 @@ export function CreateCapabilityForm({
     return `${path}.${finalMethod ?? "[method]"}`;
   };
 
-  async function onSubmit(data: z.infer<typeof CREATE_CAPABILITY_SCHEMA>) {
-    const fullPath = generateFullPath(
-      selectedPrefix,
-      data.path,
-      data.method,
-      data.customMethod,
-    );
-  }
-
-  const fullPathPreview = generateFullPath(
+  const fullPath = generateFullPath(
     selectedPrefix,
     watchedPath,
     watchedMethod,
     watchedCustomMethod,
   );
 
+  async function handleSubmit(_data: z.infer<typeof CREATE_CAPABILITY_SCHEMA>) {
+    setTransactionStatus("loading");
+    const { error } = await tryCatch(
+      createNamespaceTransaction({
+        path: fullPath,
+        callback: (result) => {
+          if (result.status === "SUCCESS" && result.finalized) {
+            setTransactionStatus("success");
+            form.reset();
+            setSelectedPrefix("");
+            void namespaceEntries.refetch();
+          }
+
+          if (result.status === "ERROR") {
+            setTransactionStatus("error");
+            toast.error(result.message ?? "Failed to create capability");
+          }
+        },
+        refetchHandler: async () => {
+          // No-op for now, could be used to refetch data after transaction
+        },
+      }),
+    );
+
+    if (error) {
+      console.error("Error creating capability:", error);
+      setTransactionStatus("error");
+      toast.error("Failed to create capability");
+      return;
+    }
+  }
+
   return (
     <Form {...form}>
       <form
         {...props}
-        onSubmit={form.handleSubmit(onSubmit)}
+        onSubmit={form.handleSubmit(handleSubmit)}
         className={cn("flex flex-col gap-6", className)}
       >
         <PortalFormHeader
-          title="Delegate Capability Permission"
-          description="Delegate permission to access a specific capability permission path."
+          title="Create Capability"
+          description="Create a new capability path for your agent."
         />
 
         <WalletConnectionWarning
@@ -109,6 +149,7 @@ export function CreateCapabilityForm({
 
         <div className="grid gap-6">
           <CreateCapabilityPrefixField
+            namespaceEntries={namespaceEntries}
             selectedPrefix={selectedPrefix}
             onValueChange={setSelectedPrefix}
             isAccountConnected={isAccountConnected}
@@ -167,7 +208,7 @@ export function CreateCapabilityForm({
             </div>
           )}
 
-          <CreateCapabilityPathPreview fullPath={fullPathPreview} />
+          <CreateCapabilityPathPreview fullPath={fullPath} />
 
           <Button
             variant="outline"
@@ -177,10 +218,13 @@ export function CreateCapabilityForm({
               !isAccountConnected ||
               !selectedPrefix ||
               (watchedMethod === "custom" && !watchedCustomMethod?.trim()) ||
-              (watchedMethod === "none" && !watchedPath.trim())
+              (watchedMethod === "none" && !watchedPath.trim()) ||
+              transactionStatus === "loading"
             }
           >
-            Create Capability
+            {transactionStatus === "loading"
+              ? "Creating..."
+              : "Create Capability"}
           </Button>
         </div>
       </form>

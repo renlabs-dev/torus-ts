@@ -925,7 +925,7 @@ export function TorusProvider({
       selectedAccount,
       callback,
       transaction,
-      transactionType: "Create Namespace",
+      transactionType: "Create Capability",
       wsEndpoint,
       refetchHandler,
       toast,
