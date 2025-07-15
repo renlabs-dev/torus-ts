@@ -25,6 +25,8 @@ import {
 import { Button } from "@torus-ts/ui/components/button";
 import { useToast } from "@torus-ts/ui/hooks/use-toast";
 
+import { tryCatch } from "~/utils/try-catch";
+
 // Types for the new database structure
 type PermissionData = InferSelectModel<typeof permissionsSchema>;
 type EmissionPermissionData = InferSelectModel<
@@ -50,18 +52,39 @@ export function RevokePermissionButton({
   onSuccess,
 }: RevokePermissionButtonProps) {
   const { toast } = useToast();
-  const { isAccountConnected } = useTorus();
-  const [isRevoking, setIsRevoking] = useState(false);
+  const { isAccountConnected, revokePermissionTransaction } = useTorus();
+  const [transactionStatus, setTransactionStatus] = useState<
+    "idle" | "loading" | "success" | "error"
+  >("idle");
 
   const handleRevoke = async () => {
-    setIsRevoking(true);
+    setTransactionStatus("loading");
 
-    // TODO: Implement actual revocation logic using SDK
-    await new Promise((resolve) => setTimeout(resolve, 1000));
+    const { error } = await tryCatch(
+      revokePermissionTransaction({
+        permissionId: permissionId as `0x${string}`,
+        callback: (result) => {
+          if (result.status === "SUCCESS" && result.finalized) {
+            setTransactionStatus("success");
+            onSuccess?.();
+          }
 
-    toast.success("Permission revoked successfully");
-    onSuccess?.();
-    setIsRevoking(false);
+          if (result.status === "ERROR") {
+            setTransactionStatus("error");
+            toast.error(result.message ?? "Failed to revoke permission");
+          }
+        },
+        refetchHandler: async () => {
+          // No-op for now, could be used to refetch data after transaction
+        },
+      }),
+    );
+
+    if (error) {
+      console.error("Error revoking permission:", error);
+      setTransactionStatus("error");
+      toast.error("Failed to revoke permission");
+    }
   };
 
   return (
@@ -70,10 +93,16 @@ export function RevokePermissionButton({
         <Button
           variant="destructive"
           size="sm"
-          disabled={!isAccountConnected || !permissionId || isRevoking}
+          disabled={
+            !isAccountConnected ||
+            !permissionId ||
+            transactionStatus === "loading"
+          }
         >
           <Trash2 className="h-4 w-4 mr-2" />
-          Revoke Permission
+          {transactionStatus === "loading"
+            ? "Revoking..."
+            : "Revoke Permission"}
         </Button>
       </AlertDialogTrigger>
       <AlertDialogContent>
@@ -89,8 +118,9 @@ export function RevokePermissionButton({
           <AlertDialogAction
             onClick={handleRevoke}
             className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            disabled={transactionStatus === "loading"}
           >
-            Revoke
+            {transactionStatus === "loading" ? "Revoking..." : "Revoke"}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

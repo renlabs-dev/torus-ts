@@ -16,6 +16,7 @@ import { cn } from "@torus-ts/ui/lib/utils";
 import { PermissionSelector } from "~/app/_components/permission-selector";
 import PortalFormHeader from "~/app/_components/portal-form-header";
 import { PortalFormSeparator } from "~/app/_components/portal-form-separator";
+import { tryCatch } from "~/utils/try-catch";
 
 import { DistributionControlField } from "./edit-permission-fields/distribution-control-field";
 import { StreamsField } from "./edit-permission-fields/streams-field";
@@ -37,10 +38,18 @@ export function EditPermissionForm({
   ...props
 }: React.ComponentProps<"form">) {
   const { toast } = useToast();
-  const { api, isAccountConnected, isInitialized, selectedAccount } =
-    useTorus();
+  const {
+    api,
+    isAccountConnected,
+    isInitialized,
+    selectedAccount,
+    updateEmissionPermissionTransaction,
+  } = useTorus();
   const [selectedPermissionId, setSelectedPermissionId] = useState<string>("");
   const [hasLoadedPermission, setHasLoadedPermission] = useState(false);
+  const [transactionStatus, setTransactionStatus] = useState<
+    "idle" | "loading" | "success" | "error"
+  >("idle");
   const currentPermissionDataRef = useRef<PermissionWithDetails | null>(null);
 
   const permissionType = getPermissionType(currentPermissionDataRef.current);
@@ -87,28 +96,51 @@ export function EditPermissionForm({
     [api, form, toast.error],
   );
 
-  // eslint-disable-next-line @typescript-eslint/require-await
-  async function onSubmit(data: z.infer<typeof EDIT_PERMISSION_SCHEMA>) {
+  async function handleSubmit(data: z.infer<typeof EDIT_PERMISSION_SCHEMA>) {
     if (!api) {
       toast.error("API not initialized");
       return;
     }
 
+    setTransactionStatus("loading");
+
     const sdkData = prepareFormDataForSDK(data);
 
-    console.log(sdkData);
+    const { error } = await tryCatch(
+      updateEmissionPermissionTransaction({
+        ...sdkData,
+        callback: (result) => {
+          if (result.status === "SUCCESS" && result.finalized) {
+            setTransactionStatus("success");
+            form.reset();
+            setSelectedPermissionId("");
+            setHasLoadedPermission(false);
+          }
 
-    form.reset();
-    toast.success(
-      "Success! Submit functionality is disabled but the form behaves as expected",
+          if (result.status === "ERROR") {
+            setTransactionStatus("error");
+            toast.error(result.message ?? "Failed to update permission");
+          }
+        },
+        refetchHandler: async () => {
+          // No-op for now, could be used to refetch data after transaction
+        },
+      }),
     );
+
+    if (error) {
+      console.error("Error updating permission:", error);
+      setTransactionStatus("error");
+      toast.error("Failed to update permission");
+      return;
+    }
   }
 
   return (
     <Form {...form}>
       <form
         {...props}
-        onSubmit={form.handleSubmit(onSubmit)}
+        onSubmit={form.handleSubmit(handleSubmit)}
         className={cn("flex flex-col gap-6", className)}
       >
         <PortalFormHeader
@@ -175,9 +207,15 @@ export function EditPermissionForm({
                     type="submit"
                     variant="outline"
                     className="w-full"
-                    disabled={!isAccountConnected || !selectedPermissionId}
+                    disabled={
+                      !isAccountConnected ||
+                      !selectedPermissionId ||
+                      transactionStatus === "loading"
+                    }
                   >
-                    Update Permission
+                    {transactionStatus === "loading"
+                      ? "Updating..."
+                      : "Update Permission"}
                   </Button>
                 </>
               )}
