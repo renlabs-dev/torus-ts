@@ -139,8 +139,9 @@ export function DeleteCapabilityForm({
       return;
     }
 
+    // Include the selected segment in the deletion (hence +1)
     const pathToDelete = selectedPath.path
-      .slice(0, data.segmentToDelete)
+      .slice(0, data.segmentToDelete + 1)
       .join(".");
 
     setTransactionStatus("loading");
