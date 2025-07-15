@@ -16,7 +16,6 @@ import { checkSS58 } from "@torus-network/sdk";
 import { useTorus } from "@torus-ts/torus-provider";
 import { Badge } from "@torus-ts/ui/components/badge";
 import { Button } from "@torus-ts/ui/components/button";
-import { CardContent } from "@torus-ts/ui/components/card";
 import {
   Form,
   FormControl,
@@ -47,7 +46,6 @@ import type {
 interface GrantEmissionPermissionFormProps {
   form: GrantEmissionPermissionForm;
   mutation: GrantEmissionPermissionMutation;
-  onClose?: () => void;
 }
 
 const checkSS58IfDefined = (addressTxt?: string) =>
@@ -56,7 +54,6 @@ const checkSS58IfDefined = (addressTxt?: string) =>
 export function GrantEmissionPermissionFormComponent({
   form,
   mutation,
-  onClose,
 }: GrantEmissionPermissionFormProps) {
   const { api, selectedAccount, isAccountConnected, isInitialized } =
     useTorus();
@@ -184,7 +181,10 @@ export function GrantEmissionPermissionFormComponent({
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)}>
+      <form
+        onSubmit={form.handleSubmit(onSubmit)}
+        className="flex flex-col gap-6"
+      >
         <PortalFormHeader
           title="Delegate Emission Permission"
           description="Create and configure a new emission permission, to delegate it to a set of agents"
@@ -195,8 +195,7 @@ export function GrantEmissionPermissionFormComponent({
           isAccountConnected={isAccountConnected}
         />
 
-        {/* Allocation */}
-        <CardContent className="space-y-4 pt-8">
+        <div className="grid gap-6">
           {/* <FormField
                 control={form.control}
                 name="allocation.type"
@@ -303,19 +302,20 @@ export function GrantEmissionPermissionFormComponent({
                 )?.isRootStream;
 
                 return (
-                  <div key={field.id} className="space-y-2">
-                    <div className="flex gap-2 items-end">
+                  <div key={field.id} className="grid gap-4">
+                    {isRootStream && (
+                      <Badge className="w-fit">Root Stream</Badge>
+                    )}
+                    <div className="flex gap-2 items-start">
                       <FormField
                         control={form.control}
                         name={`allocation.streams.${index}.streamId`}
                         render={({ field }) => (
                           <FormItem className="flex-1">
-                            <FormLabel>
-                              {isRootStream && <Badge>Root Stream</Badge>}
-                            </FormLabel>
                             <FormControl>
-                              <Input {...field} placeholder={"Stream ID"} />
+                              <Input {...field} placeholder="Stream ID" />
                             </FormControl>
+                            <FormMessage />
                           </FormItem>
                         )}
                       />
@@ -327,63 +327,39 @@ export function GrantEmissionPermissionFormComponent({
                             <FormControl>
                               <Input
                                 {...field}
-                                placeholder="Percentage"
+                                placeholder="%"
                                 type="number"
                                 min="0"
                                 max="100"
                                 step="0.1"
                               />
                             </FormControl>
+                            <FormMessage />
                           </FormItem>
                         )}
                       />
                       <Button
                         type="button"
                         variant="outline"
-                        size="sm"
+                        size="icon"
                         onClick={() => removeStream(index)}
-                        className="py-[1.4em]"
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>
                     </div>
-                    {/* Error messages below the row */}
-                    <div className="flex gap-2">
-                      <div className="flex-1">
-                        <FormField
-                          control={form.control}
-                          name={`allocation.streams.${index}.streamId`}
-                          render={() => <FormMessage />}
-                        />
-                      </div>
-                      <div className="w-32">
-                        <FormField
-                          control={form.control}
-                          name={`allocation.streams.${index}.percentage`}
-                          render={() => <FormMessage />}
-                        />
-                      </div>
-                      <div className="w-10"></div>{" "}
-                      {/* Spacer for button alignment */}
-                    </div>
                   </div>
                 );
               })}
+              <p className="text-sm text-muted-foreground">
+                Define how emissions are allocated. Streams allow
+                percentage-based distribution from your available streams.
+              </p>
             </div>
           )}
-          <p className="text-sm text-muted-foreground mt-2">
-            Define how emissions are allocated. Streams allow percentage-based
-            distribution from your available streams.
-          </p>
-        </CardContent>
-
-        {/* Targets */}
-        <CardContent className="space-y-4">
-          <h4 className="font-medium mb-1 w-fit">Targets</h4>
 
           {targetFields.map((field, index) => (
-            <div key={field.id} className="space-y-2">
-              <div className="flex gap-2 items-end">
+            <div key={field.id} className="grid gap-4">
+              <div className="flex gap-2 items-start">
                 <FormField
                   control={form.control}
                   name={`targets.${index}.account`}
@@ -392,6 +368,7 @@ export function GrantEmissionPermissionFormComponent({
                       <FormControl>
                         <Input {...field} placeholder="Account Address" />
                       </FormControl>
+                      <FormMessage />
                     </FormItem>
                   )}
                 />
@@ -403,60 +380,37 @@ export function GrantEmissionPermissionFormComponent({
                       <FormControl>
                         <Input {...field} placeholder="Weight" type="number" />
                       </FormControl>
+                      <FormMessage />
                     </FormItem>
                   )}
                 />
                 <Button
                   type="button"
                   variant="outline"
-                  size="sm"
+                  size="icon"
                   onClick={() => removeTarget(index)}
-                  className="py-[1.4em]"
                 >
                   <Trash2 className="h-4 w-4" />
                 </Button>
               </div>
-              {/* Error messages below the row */}
-              <div className="flex gap-2">
-                <div className="flex-1">
-                  <FormField
-                    control={form.control}
-                    name={`targets.${index}.account`}
-                    render={() => <FormMessage />}
-                  />
-                </div>
-                <div className="w-32">
-                  <FormField
-                    control={form.control}
-                    name={`targets.${index}.weight`}
-                    render={() => <FormMessage />}
-                  />
-                </div>
-                <div className="w-10"></div> {/* Spacer for button alignment */}
-              </div>
             </div>
           ))}
-          <div className="flex items-center justify-between">
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={() =>
-                appendTarget({ account: "" as SS58Address, weight: "" })
-              }
-            >
-              <Plus className="h-4 w-4 mr-2" />
-              Add Target
-            </Button>
-          </div>
-          <p className="text-sm text-muted-foreground mt-2">
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() =>
+              appendTarget({ account: "" as SS58Address, weight: "" })
+            }
+          >
+            <Plus className="h-4 w-4 mr-2" />
+            Add Target
+          </Button>
+          <p className="text-sm text-muted-foreground">
             Specify the accounts that will receive emissions and their relative
             weights for distribution.
           </p>
-        </CardContent>
 
-        {/* Distribution */}
-        <CardContent className="space-y-4">
           <FormField
             control={form.control}
             name="distribution.type"
@@ -540,13 +494,10 @@ export function GrantEmissionPermissionFormComponent({
               )}
             />
           )}
-          <p className="text-sm text-muted-foreground mt-2">
+          <p className="text-sm text-muted-foreground">
             Configure how and when emissions are distributed to target accounts.
           </p>
-        </CardContent>
 
-        {/* Duration */}
-        <CardContent className="space-y-4">
           <FormField
             control={form.control}
             name="duration.type"
@@ -587,14 +538,11 @@ export function GrantEmissionPermissionFormComponent({
               )}
             />
           )}
-          <p className="text-sm text-muted-foreground mt-2">
+          <p className="text-sm text-muted-foreground">
             Set how long this permission remains active (indefinitely or until a
             specific block number).
           </p>
-        </CardContent>
 
-        {/* Revocation */}
-        <CardContent className="space-y-4">
           <FormField
             control={form.control}
             name="revocation.type"
@@ -629,9 +577,9 @@ export function GrantEmissionPermissionFormComponent({
           />
 
           {revocationType === "RevocableByArbiters" && (
-            <div className="space-y-4">
+            <div className="grid gap-4">
               <div className="flex items-center justify-between">
-                <h4 className="font-medium">Arbiters</h4>
+                <FormLabel>Arbiters</FormLabel>
                 <Button
                   type="button"
                   variant="outline"
@@ -644,45 +592,30 @@ export function GrantEmissionPermissionFormComponent({
                 </Button>
               </div>
               {arbiterFields.map((field, index) => (
-                <div key={field.id} className="space-y-2">
-                  <div className="flex gap-2 items-end">
-                    <FormField
-                      control={form.control}
-                      name={`revocation.accounts.${index}`}
-                      render={({ field }) => (
-                        <FormItem className="flex-1">
-                          <FormLabel>Arbiter Address</FormLabel>
-                          <FormControl>
-                            <Input
-                              {...field}
-                              placeholder="e.g. 5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY"
-                            />
-                          </FormControl>
-                        </FormItem>
-                      )}
-                    />
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      className="py-[1.4em]"
-                      onClick={() => removeArbiter(index)}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
-                  {/* Error message below the row */}
-                  <div className="flex gap-2">
-                    <div className="flex-1">
-                      <FormField
-                        control={form.control}
-                        name={`revocation.accounts.${index}`}
-                        render={() => <FormMessage />}
-                      />
-                    </div>
-                    <div className="w-10"></div>{" "}
-                    {/* Spacer for button alignment */}
-                  </div>
+                <div key={field.id} className="flex gap-2 items-start">
+                  <FormField
+                    control={form.control}
+                    name={`revocation.accounts.${index}`}
+                    render={({ field }) => (
+                      <FormItem className="flex-1">
+                        <FormControl>
+                          <Input
+                            {...field}
+                            placeholder="e.g. 5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY"
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="icon"
+                    onClick={() => removeArbiter(index)}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
                 </div>
               ))}
               <FormField
@@ -720,33 +653,26 @@ export function GrantEmissionPermissionFormComponent({
               )}
             />
           )}
-          <p className="text-sm text-muted-foreground mt-2">
+          <p className="text-sm text-muted-foreground">
             Define the conditions under which this permission can be revoked or
             cancelled.
           </p>
 
-          <div className="flex justify-end space-x-4">
-            {onClose && (
-              <Button type="button" variant="outline" onClick={onClose}>
-                Cancel
-              </Button>
-            )}
-            <Button
-              type="submit"
-              variant="outline"
-              className="w-full"
-              disabled={
-                mutation.isPending ||
-                !isAccountConnected ||
-                !form.formState.isValid
-              }
-            >
-              {mutation.isPending
-                ? "Awaiting Signature..."
-                : "Delegate Permission"}
-            </Button>
-          </div>
-        </CardContent>
+          <Button
+            type="submit"
+            variant="outline"
+            className="w-full"
+            disabled={
+              mutation.isPending ||
+              !isAccountConnected ||
+              !form.formState.isValid
+            }
+          >
+            {mutation.isPending
+              ? "Awaiting Signature..."
+              : "Delegate Permission"}
+          </Button>
+        </div>
       </form>
     </Form>
   );
