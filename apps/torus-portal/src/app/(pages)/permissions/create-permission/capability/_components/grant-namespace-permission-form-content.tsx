@@ -95,7 +95,7 @@ export function GrantNamespacePermissionFormComponent({
       <form
         id="namespace-permission-form"
         onSubmit={form.handleSubmit(onSubmit)}
-        className="space-y-6"
+        className="flex flex-col gap-6"
       >
         <PortalFormHeader
           title="Grant Capability Permission"
@@ -106,213 +106,219 @@ export function GrantNamespacePermissionFormComponent({
           isAccountConnected={isAccountConnected}
           isInitialized={isInitialized}
         />
-        {/* Recipient */}
-        <FormField
-          control={form.control}
-          name="grantee"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Recipient</FormLabel>
-              <FormControl>
-                <Input
-                  {...field}
-                  placeholder="5Dx...abc (SS58 address)"
-                  disabled={!isAccountConnected}
-                />
-              </FormControl>
-              <FormDescription>
-                The account that will receive the capability permission.
-              </FormDescription>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
 
-        {/* Namespace Path */}
-        <FormField
-          control={form.control}
-          name="namespacePath"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Capability Permission Path</FormLabel>
-              <FormControl>
-                {!isAccountConnected ? (
-                  <Input
-                    {...field}
-                    placeholder="Connect wallet to see your capability permissions"
-                    disabled
-                  />
-                ) : namespaceEntries.isLoading ? (
-                  <Input
-                    {...field}
-                    placeholder="Loading capability permissions..."
-                    disabled
-                  />
-                ) : namespaceOptions.length === 0 ? (
-                  <Input
-                    {...field}
-                    placeholder="No capability permissions found - create a capability permission first"
-                    disabled
-                  />
-                ) : (
-                  <Select value={field.value} onValueChange={field.onChange}>
-                    <SelectTrigger className="w-full max-w-[15rem] sm:max-w-[45rem]">
-                      <SelectValue placeholder="Select a capability permission..." />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {namespaceOptions.map((path) => (
-                        <SelectItem key={path} value={path}>
-                          <span className="font-mono">{path}</span>
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                )}
-              </FormControl>
-              <FormDescription>
-                Choose from your existing capability permissions to grant access
-                to.
-              </FormDescription>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        {/* Duration */}
-        <div className="space-y-4">
+        <div className="grid gap-6">
           <FormField
             control={form.control}
-            name="duration.type"
+            name="grantee"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Duration</FormLabel>
+                <FormLabel>Recipient</FormLabel>
                 <FormControl>
-                  <Select
-                    value={field.value}
-                    onValueChange={(value) => {
-                      field.onChange(value);
-                      if (value === "Indefinite") {
-                        form.setValue("duration", { type: "Indefinite" });
-                      } else {
-                        form.setValue("duration", {
-                          type: "UntilBlock",
-                          blockNumber: "",
-                        });
-                      }
-                    }}
+                  <Input
+                    {...field}
+                    placeholder="5Dx...abc (SS58 address)"
                     disabled={!isAccountConnected}
-                  >
-                    <SelectTrigger className="w-full max-w-[15rem] sm:max-w-[45rem]">
-                      <SelectValue placeholder="Select duration..." />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="Indefinite">Indefinite</SelectItem>
-                      <SelectItem value="UntilBlock">Until Block</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  />
                 </FormControl>
+                <FormDescription>
+                  The account that will receive the capability permission.
+                </FormDescription>
                 <FormMessage />
               </FormItem>
             )}
           />
 
-          {durationType === "UntilBlock" && (
-            <FormField
-              control={form.control}
-              name="duration.blockNumber"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Block Number</FormLabel>
-                  <FormControl>
+          <FormField
+            control={form.control}
+            name="namespacePath"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Capability Permission Path</FormLabel>
+                <FormControl>
+                  {!isAccountConnected ? (
                     <Input
                       {...field}
-                      placeholder="e.g. 1000000"
-                      type="number"
-                      disabled={!isAccountConnected}
+                      placeholder="Connect wallet to see your capability permissions"
+                      disabled
                     />
+                  ) : namespaceEntries.isLoading ? (
+                    <Input
+                      {...field}
+                      placeholder="Loading capability permissions..."
+                      disabled
+                    />
+                  ) : namespaceOptions.length === 0 ? (
+                    <Input
+                      {...field}
+                      placeholder="No capability permissions found - create a capability permission first"
+                      disabled
+                    />
+                  ) : (
+                    <Select value={field.value} onValueChange={field.onChange}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select a capability permission..." />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {namespaceOptions.map((path) => (
+                          <SelectItem key={path} value={path}>
+                            <span className="font-mono">{path}</span>
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  )}
+                </FormControl>
+                <FormDescription>
+                  Choose from your existing capability permissions to grant
+                  access to.
+                </FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <div className="grid gap-4">
+            <FormField
+              control={form.control}
+              name="duration.type"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Duration</FormLabel>
+                  <FormControl>
+                    <Select
+                      value={field.value}
+                      onValueChange={(value) => {
+                        field.onChange(value);
+                        if (value === "Indefinite") {
+                          form.setValue("duration", { type: "Indefinite" });
+                        } else {
+                          form.setValue("duration", {
+                            type: "UntilBlock",
+                            blockNumber: "",
+                          });
+                        }
+                      }}
+                      disabled={!isAccountConnected}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select duration..." />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Indefinite">Indefinite</SelectItem>
+                        <SelectItem value="UntilBlock">Until Block</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </FormControl>
-                  <FormDescription>
-                    The block number when this permission expires.
-                  </FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
             />
-          )}
-        </div>
 
-        {/* Revocation */}
-        <div className="space-y-4s">
-          <FormField
-            control={form.control}
-            name="revocation.type"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Revocation Terms</FormLabel>
-                <FormControl>
-                  <Select
-                    value={field.value}
-                    onValueChange={(value) => {
-                      field.onChange(value);
-                      switch (value) {
-                        case "Irrevocable":
-                          form.setValue("revocation", {
-                            type: "Irrevocable",
-                          });
-                          break;
-                        case "RevocableByGrantor":
-                          form.setValue("revocation", {
-                            type: "RevocableByGrantor",
-                          });
-                          break;
-                        case "RevocableByArbiters":
-                          form.setValue("revocation", {
-                            type: "RevocableByArbiters",
-                            accounts: ["" as SS58Address],
-                            requiredVotes: "1",
-                          });
-                          break;
-                        case "RevocableAfter":
-                          form.setValue("revocation", {
-                            type: "RevocableAfter",
-                            blockNumber: "",
-                          });
-                          break;
-                      }
-                    }}
+            {durationType === "UntilBlock" && (
+              <FormField
+                control={form.control}
+                name="duration.blockNumber"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Block Number</FormLabel>
+                    <FormControl>
+                      <Input
+                        {...field}
+                        placeholder="e.g. 1000000"
+                        type="number"
+                        disabled={!isAccountConnected}
+                      />
+                    </FormControl>
+                    <FormDescription>
+                      The block number when this permission expires.
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            )}
+          </div>
+
+          <div className="grid gap-4">
+            <FormField
+              control={form.control}
+              name="revocation.type"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Revocation Terms</FormLabel>
+                  <FormControl>
+                    <Select
+                      value={field.value}
+                      onValueChange={(value) => {
+                        field.onChange(value);
+                        switch (value) {
+                          case "Irrevocable":
+                            form.setValue("revocation", {
+                              type: "Irrevocable",
+                            });
+                            break;
+                          case "RevocableByGrantor":
+                            form.setValue("revocation", {
+                              type: "RevocableByGrantor",
+                            });
+                            break;
+                          case "RevocableByArbiters":
+                            form.setValue("revocation", {
+                              type: "RevocableByArbiters",
+                              accounts: ["" as SS58Address],
+                              requiredVotes: "1",
+                            });
+                            break;
+                          case "RevocableAfter":
+                            form.setValue("revocation", {
+                              type: "RevocableAfter",
+                              blockNumber: "",
+                            });
+                            break;
+                        }
+                      }}
+                      disabled={!isAccountConnected}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select revocation terms..." />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Irrevocable">Irrevocable</SelectItem>
+                        <SelectItem value="RevocableByGrantor">
+                          Revocable by Delegator
+                        </SelectItem>
+                        <SelectItem value="RevocableByArbiters">
+                          Revocable by Arbiters
+                        </SelectItem>
+                        <SelectItem value="RevocableAfter">
+                          Revocable After Block
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            {revocationType === "RevocableByArbiters" && (
+              <div className="grid gap-4">
+                <div className="flex items-center justify-between">
+                  <FormLabel>Arbiters</FormLabel>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => appendArbiter("")}
                     disabled={!isAccountConnected}
                   >
-                    <SelectTrigger className="w-full max-w-[15rem] sm:max-w-[45rem]">
-                      <SelectValue placeholder="Select revocation terms..." />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="Irrevocable">Irrevocable</SelectItem>
-                      <SelectItem value="RevocableByGrantor">
-                        Revocable by Delegator
-                      </SelectItem>
-                      <SelectItem value="RevocableByArbiters">
-                        Revocable by Arbiters
-                      </SelectItem>
-                      <SelectItem value="RevocableAfter">
-                        Revocable After Block
-                      </SelectItem>
-                    </SelectContent>
-                  </Select>
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          {revocationType === "RevocableByArbiters" && (
-            <>
-              <div className="space-y-2 py-6 flex items-start justify-between flex-col">
-                <FormLabel>Arbiters</FormLabel>
+                    <Plus className="h-4 w-4 mr-2" />
+                    Add Arbiter
+                  </Button>
+                </div>
                 {arbiterFields.map((field, index) => (
-                  <div
-                    key={field.id}
-                    className="flex gap-2 justify-between w-full"
-                  >
+                  <div key={field.id} className="flex gap-2 items-start">
                     <FormField
                       control={form.control}
                       name={`revocation.accounts.${index}`}
@@ -332,100 +338,94 @@ export function GrantNamespacePermissionFormComponent({
                     <Button
                       type="button"
                       variant="outline"
+                      size="icon"
                       onClick={() => removeArbiter(index)}
                       disabled={
                         !isAccountConnected || arbiterFields.length <= 1
                       }
                     >
-                      <Trash2 className="h-6 w-6" />
+                      <Trash2 className="h-4 w-4" />
                     </Button>
                   </div>
                 ))}
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => appendArbiter("")}
-                  disabled={!isAccountConnected}
-                >
-                  <Plus className="h-4 w-4 mr-2" />
-                  Add Arbiter
-                </Button>
-              </div>
 
+                <FormField
+                  control={form.control}
+                  name="revocation.requiredVotes"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Required Votes</FormLabel>
+                      <FormControl>
+                        <Input
+                          {...field}
+                          placeholder="e.g. 2"
+                          type="number"
+                          min="1"
+                          disabled={!isAccountConnected}
+                        />
+                      </FormControl>
+                      <FormDescription>
+                        Number of arbiter votes required to revoke this
+                        permission.
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+            )}
+
+            {revocationType === "RevocableAfter" && (
               <FormField
                 control={form.control}
-                name="revocation.requiredVotes"
+                name="revocation.blockNumber"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Required Votes</FormLabel>
+                    <FormLabel>Revocable After Block</FormLabel>
                     <FormControl>
                       <Input
                         {...field}
-                        placeholder="e.g. 2"
+                        placeholder="e.g. 1000000"
                         type="number"
-                        min="1"
                         disabled={!isAccountConnected}
                       />
                     </FormControl>
                     <FormDescription>
-                      Number of arbiter votes required to revoke this
-                      permission.
+                      The block number after which this permission can be
+                      revoked.
                     </FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}
               />
-            </>
-          )}
+            )}
+          </div>
 
-          {revocationType === "RevocableAfter" && (
-            <FormField
-              control={form.control}
-              name="revocation.blockNumber"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Revocable After Block</FormLabel>
-                  <FormControl>
-                    <Input
-                      {...field}
-                      placeholder="e.g. 1000000"
-                      type="number"
-                      disabled={!isAccountConnected}
-                    />
-                  </FormControl>
-                  <FormDescription>
-                    The block number after which this permission can be revoked.
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          )}
+          <Button
+            type="submit"
+            form="namespace-permission-form"
+            className="w-full"
+            variant="outline"
+            disabled={
+              !isAccountConnected ||
+              mutation.isPending ||
+              namespaceOptions.length === 0
+            }
+          >
+            {mutation.isPending ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Awaiting Signature...
+              </>
+            ) : !isAccountConnected ? (
+              "Connect Wallet to Continue"
+            ) : namespaceOptions.length === 0 ? (
+              "Create a Capability Permission First"
+            ) : (
+              "Delegate Capability Permission"
+            )}
+          </Button>
         </div>
-        <Button
-          type="submit"
-          form="namespace-permission-form"
-          className="w-full"
-          disabled={
-            !isAccountConnected ||
-            mutation.isPending ||
-            namespaceOptions.length === 0
-          }
-        >
-          {mutation.isPending ? (
-            <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Awaiting Signature...
-            </>
-          ) : !isAccountConnected ? (
-            "Connect Wallet to Continue"
-          ) : namespaceOptions.length === 0 ? (
-            "Create a Capability Permission First"
-          ) : (
-            "Delegate Capability Permission"
-          )}
-        </Button>
       </form>
     </Form>
   );
