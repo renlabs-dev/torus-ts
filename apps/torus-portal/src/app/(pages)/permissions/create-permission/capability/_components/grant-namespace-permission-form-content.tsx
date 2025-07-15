@@ -98,8 +98,8 @@ export function GrantNamespacePermissionFormComponent({
         className="space-y-6"
       >
         <PortalFormHeader
-          title="Create Capability"
-          description="Create a new capability path for your agent."
+          title="Grant Capability Permission"
+          description="Delegate a capability permission to another account."
         />
 
         <WalletConnectionWarning
