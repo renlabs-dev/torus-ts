@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Trash2 } from "lucide-react";
@@ -27,20 +27,17 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@torus-ts/ui/components/select";
-import {
-  WalletConnectionWarning,
-} from "@torus-ts/ui/components/wallet-connection-warning";
+import { WalletConnectionWarning } from "@torus-ts/ui/components/wallet-connection-warning";
 import { useIsMobile } from "@torus-ts/ui/hooks/use-mobile";
 import { useToast } from "@torus-ts/ui/hooks/use-toast";
 import { cn } from "@torus-ts/ui/lib/utils";
 
 import PortalFormHeader from "~/app/_components/portal-form-header";
 import { truncateMobileValue } from "~/utils/truncate-mobile-value";
+import { tryCatch } from "~/utils/try-catch";
 
 import { DeleteCapabilityPreview } from "./delete-capability-preview";
-import {
-  DeleteCapabilitySegmentSelector,
-} from "./delete-capability-segment-selector";
+import { DeleteCapabilitySegmentSelector } from "./delete-capability-segment-selector";
 
 const DELETE_CAPABILITY_SCHEMA = z.object({
   selectedCapability: z.string().min(1, "Please select a capability path"),
@@ -53,10 +50,18 @@ export function DeleteCapabilityForm({
   className,
   ...props
 }: React.ComponentProps<"form">) {
-  const { isAccountConnected, isInitialized, api, selectedAccount } =
-    useTorus();
+  const {
+    isAccountConnected,
+    isInitialized,
+    api,
+    selectedAccount,
+    deleteNamespaceTransaction,
+  } = useTorus();
   const { toast } = useToast();
   const isMobile = useIsMobile();
+  const [transactionStatus, setTransactionStatus] = useState<
+    "idle" | "loading" | "success" | "error"
+  >("idle");
 
   const form = useForm<DeleteCapabilityFormData>({
     resolver: zodResolver(DELETE_CAPABILITY_SCHEMA),
@@ -66,7 +71,7 @@ export function DeleteCapabilityForm({
     },
   });
 
-  const { control, watch, handleSubmit, setValue } = form;
+  const { control, watch, setValue } = form;
   const watchedCapability = watch("selectedCapability");
   const watchedSegment = watch("segmentToDelete");
 
@@ -128,19 +133,51 @@ export function DeleteCapabilityForm({
     [setValue],
   );
 
-  // eslint-disable-next-line @typescript-eslint/require-await
-  async function onSubmit(_data: DeleteCapabilityFormData) {
-    form.reset();
-    toast.success(
-      "Success! Submit functionality is disabled but the form behaves as expected",
+  async function handleSubmit(data: DeleteCapabilityFormData) {
+    if (!selectedPath) {
+      toast.error("Please select a capability path");
+      return;
+    }
+
+    const pathToDelete = selectedPath.path
+      .slice(0, data.segmentToDelete)
+      .join(".");
+
+    setTransactionStatus("loading");
+    const { error } = await tryCatch(
+      deleteNamespaceTransaction({
+        path: pathToDelete,
+        callback: (result) => {
+          if (result.status === "SUCCESS" && result.finalized) {
+            setTransactionStatus("success");
+            form.reset();
+            void namespaceEntries.refetch();
+          }
+
+          if (result.status === "ERROR") {
+            setTransactionStatus("error");
+            toast.error(result.message ?? "Failed to delete capability");
+          }
+        },
+        refetchHandler: async () => {
+          // No-op for now, could be used to refetch data after transaction
+        },
+      }),
     );
+
+    if (error) {
+      console.error("Error deleting capability:", error);
+      setTransactionStatus("error");
+      toast.error("Failed to delete capability");
+      return;
+    }
   }
 
   return (
     <Form {...form}>
       <form
         {...props}
-        onSubmit={handleSubmit(onSubmit)}
+        onSubmit={form.handleSubmit(handleSubmit)}
         className={cn("flex flex-col gap-6", className)}
       >
         <PortalFormHeader
@@ -220,11 +257,16 @@ export function DeleteCapabilityForm({
             variant="outline"
             className="w-full"
             disabled={
-              !isAccountConnected || !selectedPath || watchedSegment < 2
+              !isAccountConnected ||
+              !selectedPath ||
+              watchedSegment < 2 ||
+              transactionStatus === "loading"
             }
           >
             <Trash2 className="h-4 w-4 mr-2" />
-            Delete Capability
+            {transactionStatus === "loading"
+              ? "Deleting..."
+              : "Delete Capability"}
           </Button>
         </div>
       </form>
