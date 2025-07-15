@@ -80,49 +80,34 @@ export function DeleteCapabilityForm({
     selectedAccount?.address as SS58Address,
   );
 
-  const maxPaths = useMemo(() => {
+  const deletablePaths = useMemo(() => {
     if (!namespaceEntries.data) return [];
 
-    const pathLengths = new Map<string, number>();
+    // Filter out paths with 2 or fewer segments (agent.name)
+    // as they cannot be deleted
+    const validPaths = namespaceEntries.data.filter(
+      (entry) => entry.path.length > 2
+    );
 
-    namespaceEntries.data.forEach((entry) => {
-      if (entry.path.length <= 2) return;
-
-      const baseKey = entry.path.slice(0, 3).join(".");
-
-      const currentLength = pathLengths.get(baseKey);
-      if (!currentLength || entry.path.length > currentLength) {
-        pathLengths.set(baseKey, entry.path.length);
+    // Sort paths by length (longest first) and then alphabetically
+    return validPaths.sort((a, b) => {
+      if (b.path.length !== a.path.length) {
+        return b.path.length - a.path.length;
       }
+      return a.path.join(".").localeCompare(b.path.join("."));
     });
-
-    const result = new Map<string, (typeof namespaceEntries.data)[0]>();
-
-    namespaceEntries.data.forEach((entry) => {
-      if (entry.path.length <= 2) return;
-
-      const baseKey = entry.path.slice(0, 3).join(".");
-      const maxLength = pathLengths.get(baseKey);
-
-      if (entry.path.length === maxLength) {
-        result.set(entry.path.join("."), entry);
-      }
-    });
-
-    return Array.from(result.values());
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [namespaceEntries.data]);
 
   useEffect(() => {
-    if (maxPaths.length > 0 && !watchedCapability) {
-      const firstPath = maxPaths[0];
+    if (deletablePaths.length > 0 && !watchedCapability) {
+      const firstPath = deletablePaths[0];
       if (firstPath) {
         setValue("selectedCapability", firstPath.path.join("."));
       }
     }
-  }, [maxPaths, watchedCapability, setValue]);
+  }, [deletablePaths, watchedCapability, setValue]);
 
-  const selectedPath = maxPaths.find(
+  const selectedPath = deletablePaths.find(
     (entry) => entry.path.join(".") === watchedCapability,
   );
 
@@ -215,7 +200,7 @@ export function DeleteCapabilityForm({
                     <div className="text-sm text-muted-foreground sm:h-10 border flex items-center px-4">
                       Loading your capabilitys...
                     </div>
-                  ) : maxPaths.length === 0 ? (
+                  ) : deletablePaths.length === 0 ? (
                     <div className="text-sm text-muted-foreground sm:h-10 border flex items-center px-4">
                       No capabilities found. Create a capability first.
                     </div>
@@ -227,7 +212,7 @@ export function DeleteCapabilityForm({
                         </SelectValue>
                       </SelectTrigger>
                       <SelectContent>
-                        {maxPaths.map((entry) => (
+                        {deletablePaths.map((entry) => (
                           <SelectItem
                             key={entry.path.join(".")}
                             value={entry.path.join(".")}
