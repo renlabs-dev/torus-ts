@@ -1,9 +1,9 @@
 import { useMemo } from "react";
 
-import type { SS58Address } from "@torus-network/sdk";
+import type { UseQueryResult } from "@tanstack/react-query";
 
-import { useNamespaceEntriesOf } from "@torus-ts/query-provider/hooks";
-import { useTorus } from "@torus-ts/torus-provider";
+import type { NamespaceEntry } from "@torus-network/sdk";
+
 import { FormControl, FormItem, FormLabel } from "@torus-ts/ui/components/form";
 import {
   Select,
@@ -20,20 +20,16 @@ interface CreateCapabilityPrefixFieldProps {
   selectedPrefix: string;
   onValueChange: (value: string) => void;
   isAccountConnected: boolean;
+  namespaceEntries: UseQueryResult<NamespaceEntry[], Error>;
 }
 
 export function CreateCapabilityPrefixField({
   selectedPrefix,
   onValueChange,
   isAccountConnected,
+  namespaceEntries,
 }: CreateCapabilityPrefixFieldProps) {
-  const { api, selectedAccount } = useTorus();
   const isMobile = useIsMobile();
-
-  const namespaceEntries = useNamespaceEntriesOf(
-    api,
-    selectedAccount?.address as SS58Address,
-  );
 
   const prefixOptions = useMemo(() => {
     if (!namespaceEntries.data || namespaceEntries.data.length === 0) {
