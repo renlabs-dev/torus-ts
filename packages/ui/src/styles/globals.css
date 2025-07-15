@@ -24,7 +24,7 @@
     --muted-foreground: 240 5% 65%;
     --accent: 240 2% 10%;
     --accent-foreground: 0 0% 98%;
-    --destructive: 0 62.8% 30.6%;
+    --destructive: 0 62.9% 45.5%;
     --destructive-foreground: 0 0% 98%;
     --border: 240 13% 17%;
     --input: 240 13% 17%;
@@ -35,11 +35,14 @@
     --chart-3: 220 85% 60%;
     --chart-4: 210 95% 75%;
     --chart-5: 215 90% 85%;
-    --chart-secondary-1: 220 70% 50%;
-    --chart-secondary-2: 160 60% 45%;
-    --chart-secondary-3: 30 80% 55%;
-    --chart-secondary-4: 280 65% 60%;
-    --chart-secondary-5: 340 75% 55%;
+    --sidebar: 240 5.9% 10%;
+    --sidebar-foreground: 240 4.8% 95.9%;
+    --sidebar-primary: 224.3 76.3% 48%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 240 3.7% 15.9%;
+    --sidebar-accent-foreground: 240 4.8% 95.9%;
+    --sidebar-border: 240 3.7% 15.9%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
   }
 }
 
@@ -87,35 +90,13 @@
 
 /* Handle */
 ::-webkit-scrollbar-thumb {
-  background: hsl(240 5% 64.9%);
+  background: hsl(240 6% 10%);
   border-radius: 2px;
 }
 
 /* Handle on hover */
 ::-webkit-scrollbar-thumb:hover {
   background: hsl(220 30% 95%);
-}
-
-:root {
-  --sidebar: hsl(0 0% 98%);
-  --sidebar-foreground: hsl(240 5.3% 26.1%);
-  --sidebar-primary: hsl(240 5.9% 10%);
-  --sidebar-primary-foreground: hsl(0 0% 98%);
-  --sidebar-accent: hsl(240 4.8% 95.9%);
-  --sidebar-accent-foreground: hsl(240 5.9% 10%);
-  --sidebar-border: hsl(220 13% 91%);
-  --sidebar-ring: hsl(217.2 91.2% 59.8%);
-}
-
-.dark {
-  --sidebar: hsl(240 5.9% 10%);
-  --sidebar-foreground: hsl(240 4.8% 95.9%);
-  --sidebar-primary: hsl(224.3 76.3% 48%);
-  --sidebar-primary-foreground: hsl(0 0% 100%);
-  --sidebar-accent: hsl(240 3.7% 15.9%);
-  --sidebar-accent-foreground: hsl(240 4.8% 95.9%);
-  --sidebar-border: hsl(240 3.7% 15.9%);
-  --sidebar-ring: hsl(217.2 91.2% 59.8%);
 }
 
 @theme inline {

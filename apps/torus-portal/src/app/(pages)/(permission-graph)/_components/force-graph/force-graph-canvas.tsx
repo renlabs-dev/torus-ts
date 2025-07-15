@@ -22,40 +22,42 @@ export function ForceGraphCanvas({
   userAddress?: string;
 }) {
   return (
-    <Canvas camera={{ position: [0, 0, 600], far: 8000 }} shadows>
-      {/* <color attach="background" args={["#252530"]} /> */}
-      <ambientLight intensity={1.01} />
-      <hemisphereLight
-        intensity={1.125}
-        color="#8040df"
-        groundColor="#bfdbfe"
-      />
-      <spotLight
-        castShadow
-        color="blue"
-        intensity={2}
-        position={[-50, 50, 40]}
-        angle={0.25}
-        penumbra={1}
-        shadow-mapSize={[128, 128]}
-        shadow-bias={0.00005}
-      />
-
-      <Suspense fallback={null}>
-        <ForceGraph
-          graphData={data}
-          onNodeClick={onNodeClick}
-          userAddress={userAddress}
+    <div className="fixed inset-0 z-0 animate-fade animate-delay-1000">
+      <Canvas camera={{ position: [0, 0, 600], far: 8000 }} shadows>
+        {/* <color attach="background" args={["#252530"]} /> */}
+        <ambientLight intensity={1.01} />
+        <hemisphereLight
+          intensity={1.125}
+          color="#8040df"
+          groundColor="#bfdbfe"
         />
-        <OrbitControls dampingFactor={0.01} enablePan={false} />
-        <EffectComposer>
-          <Bloom
-            intensity={1}
-            luminanceThreshold={0}
-            luminanceSmoothing={1.5}
+        <spotLight
+          castShadow
+          color="blue"
+          intensity={2}
+          position={[-50, 50, 40]}
+          angle={0.25}
+          penumbra={1}
+          shadow-mapSize={[128, 128]}
+          shadow-bias={0.00005}
+        />
+
+        <Suspense fallback={null}>
+          <ForceGraph
+            graphData={data}
+            onNodeClick={onNodeClick}
+            userAddress={userAddress}
           />
-        </EffectComposer>
-      </Suspense>
-    </Canvas>
+          <OrbitControls dampingFactor={0.01} enablePan={false} />
+          <EffectComposer>
+            <Bloom
+              intensity={1}
+              luminanceThreshold={0}
+              luminanceSmoothing={1.5}
+            />
+          </EffectComposer>
+        </Suspense>
+      </Canvas>
+    </div>
   );
 }

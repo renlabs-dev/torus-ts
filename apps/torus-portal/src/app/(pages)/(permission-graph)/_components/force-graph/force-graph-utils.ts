@@ -2,7 +2,6 @@ import { smallAddress } from "@torus-network/torus-utils/subspace";
 
 import type {
   allPermissions,
-  CustomGraphData,
   CustomGraphLink,
   CustomGraphNode,
   SignalsList,
@@ -74,18 +73,58 @@ function getDeterministicZ(seed: string, range: number): number {
 
 export interface ComputedWeight {
   agentKey: string;
+  agentName: string;
   percComputedWeight: number;
 }
 
 // Type for allWithCompletePermissions data
 export type AllPermission = allPermissions[number];
 
+export interface ExtractedGraphData {
+  nodes: CustomGraphNode[];
+  links: CustomGraphLink[];
+  permissions: {
+    namespace: {
+      id: string;
+      grantorAccountId: string;
+      granteeAccountId: string;
+      scope: string;
+      duration: string | null;
+    }[];
+    emission: {
+      id: string;
+      grantorAccountId: string;
+      granteeAccountId: string;
+      scope: string;
+      duration: string | null;
+      distributionTargets?: {
+        targetAccountId: string;
+        weight: number;
+      }[];
+    }[];
+  };
+  agents: {
+    accountId: string;
+    name: string;
+    role: "Allocator" | "Root Agent" | "Target Agent";
+    isWhitelisted?: boolean;
+    isAllocated?: boolean;
+  }[];
+  signals: {
+    id: number;
+    title: string;
+    description: string;
+    agentKey: string;
+    proposedAllocation: number;
+  }[];
+}
+
 export function createGraphData(
   computedWeights: ComputedWeight[] | undefined,
   allocatorAddress: string,
   signals?: SignalsList,
   allPermissions?: AllPermission[],
-): CustomGraphData | null {
+): ExtractedGraphData | null {
   if (
     (!allPermissions || allPermissions.length === 0) &&
     (!computedWeights || computedWeights.length === 0)
@@ -95,6 +134,20 @@ export function createGraphData(
 
   const nodes: CustomGraphNode[] = [];
   const links: CustomGraphLink[] = [];
+
+  // Initialize data collectors for search component
+  const extractedAgents: ExtractedGraphData["agents"] = [];
+  const extractedNamespacePermissions: ExtractedGraphData["permissions"]["namespace"] =
+    [];
+  const extractedEmissionPermissions: ExtractedGraphData["permissions"]["emission"] =
+    [];
+  const extractedSignals: ExtractedGraphData["signals"] = [];
+
+  // Create a lookup map for agent names from computed weights
+  const agentNameLookup = new Map<string, string>();
+  computedWeights?.forEach((agent) => {
+    agentNameLookup.set(agent.agentKey, agent.agentName);
+  });
 
   // 1. ALLOCATOR NODE (center)
   const allocatorNode: CustomGraphNode = {
@@ -115,6 +168,14 @@ export function createGraphData(
   };
   nodes.push(allocatorNode);
 
+  // Extract allocator agent data
+  extractedAgents.push({
+    accountId: allocatorAddress,
+    name: "Allocator",
+    role: "Allocator",
+    isWhitelisted: true,
+  });
+
   // 2. ROOT NODES (agents with computed weights, connected to allocator)
   const rootNodeIds = new Set<string>();
 
@@ -125,7 +186,7 @@ export function createGraphData(
 
       const rootNode: CustomGraphNode = {
         id: agent.agentKey,
-        name: smallAddress(agent.agentKey),
+        name: agent.agentName,
         color: graphConstants.nodeConfig.nodeColors.rootNode,
         val: graphConstants.nodeConfig.nodeSizes.rootNode,
         fullAddress: agent.agentKey,
@@ -142,6 +203,15 @@ export function createGraphData(
       };
       nodes.push(rootNode);
       rootNodeIds.add(agent.agentKey);
+
+      // Extract root agent data
+      extractedAgents.push({
+        accountId: agent.agentKey,
+        name: agent.agentName,
+        role: "Root Agent",
+        isWhitelisted: true,
+        isAllocated: true,
+      });
 
       // Create allocation link: Allocator → Root Node
       links.push({
@@ -182,9 +252,11 @@ export function createGraphData(
       const angle = (index * 2 * Math.PI) / grantorKeys.size;
       const radius = 200;
 
+      const agentName = agentNameLookup.get(agentKey) ?? "Unknown Agent Name";
+
       const rootNode: CustomGraphNode = {
         id: agentKey,
-        name: smallAddress(agentKey),
+        name: agentName,
         color: graphConstants.nodeConfig.nodeColors.rootNode,
         val: graphConstants.nodeConfig.nodeSizes.rootNode,
         fullAddress: agentKey,
@@ -201,6 +273,15 @@ export function createGraphData(
       };
       nodes.push(rootNode);
       rootNodeIds.add(agentKey);
+
+      // Extract root agent data (fallback case)
+      extractedAgents.push({
+        accountId: agentKey,
+        name: agentName,
+        role: "Root Agent",
+        isWhitelisted: true,
+        isAllocated: false,
+      });
 
       // Create allocation link: Allocator → Root Node
       links.push({
@@ -297,6 +378,52 @@ export function createGraphData(
           };
           nodes.push(permissionNode);
 
+          // Extract permission data
+          if (permissionType === "capability") {
+            extractedNamespacePermissions.push({
+              id: permissionId,
+              grantorAccountId: permission.permissions.grantorAccountId,
+              granteeAccountId: permission.permissions.granteeAccountId || "",
+              scope: permissionType.toUpperCase(),
+              duration:
+                permission.permissions.durationType === "indefinite"
+                  ? null
+                  : (permission.permissions.durationBlockNumber?.toString() ??
+                    null),
+            });
+          } else {
+            // Collect distribution targets for emission permissions
+            const distributionTargets: {
+              targetAccountId: string;
+              weight: number;
+            }[] = [];
+            permissions.forEach((perm) => {
+              if (perm.emission_distribution_targets?.targetAccountId) {
+                distributionTargets.push({
+                  targetAccountId:
+                    perm.emission_distribution_targets.targetAccountId,
+                  weight: perm.emission_distribution_targets.weight,
+                });
+              }
+            });
+
+            extractedEmissionPermissions.push({
+              id: permissionId,
+              grantorAccountId: permission.permissions.grantorAccountId,
+              granteeAccountId: permission.permissions.granteeAccountId || "",
+              scope: permissionType.toUpperCase(),
+              duration:
+                permission.permissions.durationType === "indefinite"
+                  ? null
+                  : (permission.permissions.durationBlockNumber?.toString() ??
+                    null),
+              distributionTargets:
+                distributionTargets.length > 0
+                  ? distributionTargets
+                  : undefined,
+            });
+          }
+
           // Create permission ownership link: Root Node → Permission
           links.push({
             linkType: "permission_ownership",
@@ -352,9 +479,11 @@ export function createGraphData(
       const angle = (index * 2 * Math.PI) / targetAgents.length;
       const radius = 600;
 
+      const agentName = agentNameLookup.get(agentId) ?? smallAddress(agentId);
+
       const targetNode: CustomGraphNode = {
         id: agentId,
-        name: smallAddress(agentId),
+        name: agentName,
         color: graphConstants.nodeConfig.nodeColors.targetNode,
         val: graphConstants.nodeConfig.nodeSizes.targetNode,
         fullAddress: agentId,
@@ -366,6 +495,13 @@ export function createGraphData(
         agentData: { accountId: agentId },
       };
       nodes.push(targetNode);
+
+      // Extract target agent data
+      extractedAgents.push({
+        accountId: agentId,
+        name: agentName,
+        role: "Target Agent",
+      });
     });
 
     // Third pass: create permission target links
@@ -471,6 +607,15 @@ export function createGraphData(
       };
       nodes.push(signalNode);
 
+      // Extract signal data
+      extractedSignals.push({
+        id: signal.id,
+        title: signal.title,
+        description: signal.description,
+        agentKey: signal.agentKey,
+        proposedAllocation: signal.proposedAllocation,
+      });
+
       const nodeExists = nodes.some((node) => node.id === signal.agentKey);
       if (nodeExists) {
         links.push({
@@ -486,5 +631,14 @@ export function createGraphData(
     });
   }
 
-  return { nodes, links };
+  return {
+    nodes,
+    links,
+    permissions: {
+      namespace: extractedNamespacePermissions,
+      emission: extractedEmissionPermissions,
+    },
+    agents: extractedAgents,
+    signals: extractedSignals,
+  };
 }

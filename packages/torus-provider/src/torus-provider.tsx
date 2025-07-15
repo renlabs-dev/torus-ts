@@ -1,5 +1,8 @@
 "use client";
 
+import * as React from "react";
+import { createContext, useContext, useEffect, useState } from "react";
+
 import { ApiPromise, WsProvider } from "@polkadot/api";
 import type { SubmittableExtrinsic } from "@polkadot/api/types";
 import type {
@@ -7,14 +10,15 @@ import type {
   InjectedExtension,
 } from "@polkadot/extension-inject/types";
 import type { ISubmittableResult } from "@polkadot/types/types";
+
 import type {
   AgentApplication,
   Api,
   CustomMetadataState,
   GrantEmissionPermission,
   GrantNamespacePermission,
-  UpdateEmissionPermission,
   Proposal,
+  UpdateEmissionPermission,
 } from "@torus-network/sdk";
 import {
   createNamespace,
@@ -28,9 +32,10 @@ import {
   updateEmissionPermission,
 } from "@torus-network/sdk";
 import { toNano } from "@torus-network/torus-utils/subspace";
+import { tryAsync, trySync } from "@torus-network/torus-utils/try-catch";
+
 import { useToast } from "@torus-ts/ui/hooks/use-toast";
-import * as React from "react";
-import { createContext, useContext, useEffect, useState } from "react";
+
 import { sendTransaction } from "./_components/send-transaction";
 import type {
   AddAgentApplication,
@@ -42,14 +47,13 @@ import type {
   RemoveVote,
   RevokePermission,
   Stake,
+  TransactionHelpers,
   Transfer,
   TransferStake,
-  TransactionHelpers,
   UpdateAgent,
   UpdateDelegatingVotingPower,
   Vote,
 } from "./_types";
-import { tryAsync, trySync } from "@torus-network/torus-utils/try-catch";
 
 export type { InjectedAccountWithMeta } from "@polkadot/extension-inject/types";
 
@@ -70,8 +74,10 @@ type TransactionExtrinsicPromise =
 
 interface TorusContextType {
   // TODO: Test changing `api` on `TorusProvider` to `ApiPromise` instead of `Api`
-  api: Api | null;
+  api: (Api & ApiPromise) | null;
+  torusApi: TorusApiState; // TODO: refactor out
   torusCacheUrl: string;
+  wsEndpoint: string;
 
   setIsAccountConnected: (arg: boolean) => void;
   isInitialized: boolean;
@@ -919,7 +925,7 @@ export function TorusProvider({
       selectedAccount,
       callback,
       transaction,
-      transactionType: "Create Namespace",
+      transactionType: "Create Capability",
       wsEndpoint,
       refetchHandler,
       toast,
@@ -985,6 +991,7 @@ export function TorusProvider({
         transferStake,
         transferStakeTransaction,
         transferTransaction,
+        torusApi,
         updateDelegatingVotingPower,
         voteProposal,
         grantEmissionPermissionTransaction,
@@ -993,6 +1000,7 @@ export function TorusProvider({
         revokePermissionTransaction,
         createNamespaceTransaction,
         deleteNamespaceTransaction,
+        wsEndpoint,
       }}
     >
       {children}
