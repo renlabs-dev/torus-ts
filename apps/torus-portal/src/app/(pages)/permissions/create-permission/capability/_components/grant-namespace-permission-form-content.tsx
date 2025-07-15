@@ -156,7 +156,7 @@ export function GrantNamespacePermissionFormComponent({
                   />
                 ) : (
                   <Select value={field.value} onValueChange={field.onChange}>
-                    <SelectTrigger>
+                    <SelectTrigger className="w-full max-w-[15rem] sm:max-w-[45rem]">
                       <SelectValue placeholder="Select a capability permission..." />
                     </SelectTrigger>
                     <SelectContent>
@@ -202,7 +202,7 @@ export function GrantNamespacePermissionFormComponent({
                     }}
                     disabled={!isAccountConnected}
                   >
-                    <SelectTrigger>
+                    <SelectTrigger className="w-full max-w-[15rem] sm:max-w-[45rem]">
                       <SelectValue placeholder="Select duration..." />
                     </SelectTrigger>
                     <SelectContent>
@@ -282,7 +282,7 @@ export function GrantNamespacePermissionFormComponent({
                     }}
                     disabled={!isAccountConnected}
                   >
-                    <SelectTrigger>
+                    <SelectTrigger className="w-full max-w-[15rem] sm:max-w-[45rem]">
                       <SelectValue placeholder="Select revocation terms..." />
                     </SelectTrigger>
                     <SelectContent>
