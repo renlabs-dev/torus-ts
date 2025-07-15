@@ -48,7 +48,7 @@ export const graphConstants = {
 
       // Permission group (Orange/Yellow family - permission types)
       permissionNode: "#f97316", // orange-500 (legacy fallback)
-      emissionPermissionNode: "#f97316", // orange-500 (emission permissions)
+      emissionPermissionNode: "#ffffff", // white0 (emission permissions)
       namespacePermissionNode: "#eab308", // yellow-500 (namespace permissions)
 
       // Special nodes
@@ -112,7 +112,7 @@ export const graphConstants = {
       // Source-based link colors (follow the source node color)
       allocatorLink: "#ffffff", // white (from allocator)
       rootNodeLink: "#3b82f6", // blue-500 (from whitelisted agents)
-      emissionPermissionLink: "#f97316", // orange-500 (from emission permissions)
+      emissionPermissionLink: "#ffffff", // white(from emission permissions)
       namespacePermissionLink: "#eab308", // yellow-500 (from namespace permissions)
       targetNodeLink: "#10b981", // emerald-500 (from target nodes)
       userNodeLink: "#0ea5e9", // sky-500 (from user nodes)
