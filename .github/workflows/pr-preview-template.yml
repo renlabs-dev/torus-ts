@@ -136,8 +136,6 @@ jobs:
         uses: iFaxity/wait-on-action@v1.2.1
         with:
           resource: https://pr-${{ github.event.number }}.${{ inputs.app_name }}.torus.network${{ inputs.healthCheckPath }}
-          timeout: 300000 # 5 minutes timeout (in milliseconds)
-          interval: 2000 # Check every 2 seconds
 
       - name: Comment PR
         if: ${{ inputs.hasURL }}
