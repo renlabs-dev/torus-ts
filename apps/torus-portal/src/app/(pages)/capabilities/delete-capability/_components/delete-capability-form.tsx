@@ -135,11 +135,15 @@ export function DeleteCapabilityForm({
 
   async function handleSubmit(data: DeleteCapabilityFormData) {
     if (!selectedPath) {
-      toast.error("Please select a capability path");
+      toast.error("Please select a capability permission path");
       return;
     }
 
-    // Include the selected segment in the deletion (hence +1)
+    if (data.segmentToDelete < 2) {
+      toast.error("Please select a segment to delete");
+      return;
+    }
+
     const pathToDelete = selectedPath.path
       .slice(0, data.segmentToDelete + 1)
       .join(".");
@@ -151,25 +155,29 @@ export function DeleteCapabilityForm({
         callback: (result) => {
           if (result.status === "SUCCESS" && result.finalized) {
             setTransactionStatus("success");
+            toast.success(
+              `Capability permission "${pathToDelete}" deleted successfully`,
+            );
             form.reset();
             void namespaceEntries.refetch();
           }
 
           if (result.status === "ERROR") {
             setTransactionStatus("error");
-            toast.error(result.message ?? "Failed to delete capability");
+            toast.error(result.message ?? "Failed to delete capability permission");
           }
         },
         refetchHandler: async () => {
-          // No-op for now, could be used to refetch data after transaction
+          // Refetch namespace entries after successful deletion
+          await namespaceEntries.refetch();
         },
       }),
     );
 
     if (error) {
-      console.error("Error deleting capability:", error);
+      console.error("Error deleting capability permission:", error);
       setTransactionStatus("error");
-      toast.error("Failed to delete capability");
+      toast.error("Failed to delete capability permission");
       return;
     }
   }
