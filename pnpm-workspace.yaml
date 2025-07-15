@@ -32,6 +32,7 @@ catalog:
   "postcss": ^8.4.41
   "typescript": ^5.5.4
   "zod": ^3.23.8
+  "zustand": ^5.0.6
   "jiti": ^1.21.6
   "next": ^15.3.0
   "rustie": ^0.4.0
