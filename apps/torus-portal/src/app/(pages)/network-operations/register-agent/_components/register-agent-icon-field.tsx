@@ -1,5 +1,3 @@
-import { useState } from "react";
-
 import { FolderUp } from "lucide-react";
 import Image from "next/image";
 import type { Control } from "react-hook-form";
@@ -10,7 +8,6 @@ import Dropzone from "shadcn-dropzone";
 import { smallFilename } from "@torus-network/torus-utils/files";
 import type { CID } from "@torus-network/torus-utils/ipfs";
 import { cidToIpfsUri } from "@torus-network/torus-utils/ipfs";
-import { tryAsync } from "@torus-network/torus-utils/try-catch";
 
 import {
   FormControl,
@@ -18,39 +15,17 @@ import {
   FormItem,
   FormMessage,
 } from "@torus-ts/ui/components/form";
-import { useToast } from "@torus-ts/ui/hooks/use-toast";
 
 import type { RegisterAgentFormData } from "./register-agent-schema";
-import { pinFile } from "./register-agent-utils";
 
 interface RegisterAgentIconFieldProps {
   control: Control<RegisterAgentFormData>;
-  onIconPinned?: (cid: CID) => void;
 }
 
-export function RegisterAgentIconField({
-  control,
-  onIconPinned,
-}: RegisterAgentIconFieldProps) {
-  const { toast } = useToast();
-  const [uploading, setUploading] = useState(false);
-  const [pinnedCid, setPinnedCid] = useState<CID | null>(null);
-
-  const handleFileDrop = async (file: File) => {
-    setUploading(true);
-    
-    const [error, result] = await tryAsync(pinFile(file));
-    
-    if (error !== undefined) {
-      setUploading(false);
-      toast.error(error.message || "Error uploading icon");
-      return null;
-    }
-    
-    setUploading(false);
-    setPinnedCid(result.cid);
-    onIconPinned?.(result.cid);
-    
+export function RegisterAgentIconField({ control }: RegisterAgentIconFieldProps) {
+  const handleFileDrop = (file: File) => {
+    // Just validate and return the file without pinning
+    // Pinning will happen during form submission
     return file;
   };
 
@@ -70,18 +45,15 @@ export function RegisterAgentIconField({
                   dropZoneClassName="border-none"
                   onFileDialogOpen={() => {
                     field.onChange(undefined);
-                    setPinnedCid(null);
                   }}
-                  onDrop={async (acceptedFiles) => {
+                  onDrop={(acceptedFiles) => {
                     if (acceptedFiles[0]) {
-                      const file = await handleFileDrop(acceptedFiles[0]);
-                      if (file) {
-                        field.onChange(file);
-                      }
+                      const file = handleFileDrop(acceptedFiles[0]);
+                      field.onChange(file);
                     }
                   }}
                   multiple={false}
-                  disabled={uploading}
+                  disabled={false}
                   maxSize={512000}
                   maxFiles={1}
                   accept={{
@@ -125,16 +97,6 @@ export function RegisterAgentIconField({
                               {(controllerField.value.size / 1000).toFixed(1)}{" "}
                               KB
                             </span>
-                            {pinnedCid && (
-                              <span className="text-xs font-medium text-green-500">
-                                ✓ Uploaded to IPFS
-                              </span>
-                            )}
-                            {uploading && (
-                              <span className="text-xs font-medium text-yellow-500">
-                                Uploading...
-                              </span>
-                            )}
                             <Image
                               className="absolute inset-0 h-full w-full object-cover opacity-20"
                               src={URL.createObjectURL(controllerField.value)}

@@ -40,9 +40,23 @@ export const strToFile = (
 
 export async function doMetadataPin(
   data: RegisterAgentFormData,
-  iconCid: CID | null,
-): Promise<{ cid: CID | null; error?: string }> {
-  // Use the already pinned icon CID if available
+  iconFile?: File,
+): Promise<{ cid: CID | null; iconCid?: CID | null; error?: string }> {
+  let iconCid: CID | null = null;
+  
+  // Pin the icon file if provided
+  if (iconFile) {
+    const [iconError, iconResult] = await tryAsync(pinFile(iconFile));
+    if (iconError !== undefined) {
+      return {
+        cid: null,
+        error: iconError.message || "Error uploading icon",
+      };
+    }
+    iconCid = iconResult.cid;
+  }
+  
+  // Use the pinned icon CID if available
   const imageObj = iconCid
     ? { images: { icon: cidToIpfsUri(iconCid) } }
     : {};
@@ -81,5 +95,5 @@ export async function doMetadataPin(
     };
   }
 
-  return { cid: metadataResult.cid };
+  return { cid: metadataResult.cid, iconCid };
 }

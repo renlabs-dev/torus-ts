@@ -6,7 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import type { z } from "zod";
 
-import type { CID } from "@torus-network/torus-utils/ipfs";
+import { checkSS58 } from "@torus-network/sdk";
 import { cidToIpfsUri } from "@torus-network/torus-utils/ipfs";
 
 import { useTorus } from "@torus-ts/torus-provider";
@@ -33,8 +33,15 @@ export function RegisterAgentForm({
   ...props
 }: React.ComponentProps<"form">) {
   const { toast } = useToast();
-  const { selectedAccount, isAccountConnected, isInitialized } = useTorus();
-  const [iconCid, setIconCid] = useState<CID | null>(null);
+  const {
+    selectedAccount,
+    isAccountConnected,
+    isInitialized,
+    registerAgentTransaction,
+  } = useTorus();
+  const [transactionStatus, setTransactionStatus] = useState<
+    "idle" | "loading" | "success" | "error"
+  >("idle");
 
   const form = useForm<RegisterAgentFormData>({
     disabled: !isAccountConnected,
@@ -55,23 +62,62 @@ export function RegisterAgentForm({
     },
   });
 
-  async function onSubmit(data: z.infer<typeof REGISTER_AGENT_SCHEMA>) {
-    const { data: result, error } = await tryCatch(
-      doMetadataPin(data, iconCid),
+  async function handleSubmit(data: z.infer<typeof REGISTER_AGENT_SCHEMA>) {
+    setTransactionStatus("loading");
+
+    // First, pin the metadata (and icon if present) to IPFS
+    const { data: metadataResult, error: metadataError } = await tryCatch(
+      doMetadataPin(data, data.icon),
     );
 
-    if (error) {
-      toast.error(error.message);
+    if (metadataError) {
+      console.error("Error pinning metadata:", metadataError);
+      setTransactionStatus("error");
+      toast.error(metadataError.message);
       return;
     }
 
-    if (result.cid) {
-      console.info("Pinned metadata at:", cidToIpfsUri(result.cid));
-      form.reset();
-      setIconCid(null);
-      toast.success(
-        "Success! Metadata pinned to IPFS. Submit functionality is disabled but the form behaves as expected",
-      );
+    if (!metadataResult.cid) {
+      setTransactionStatus("error");
+      toast.error("Failed to pin metadata to IPFS");
+      return;
+    }
+
+    console.info("Pinned metadata at:", cidToIpfsUri(metadataResult.cid));
+
+    // Parse agent key and URL
+    const parsedAgentKey = checkSS58(data.agentKey);
+    const parsedAgentApiUrl =
+      !data.agentApiUrl || data.agentApiUrl.trim() === ""
+        ? "null:"
+        : data.agentApiUrl;
+
+    // Execute the transaction
+    const { error } = await tryCatch(
+      registerAgentTransaction({
+        agentKey: parsedAgentKey,
+        name: data.name,
+        url: parsedAgentApiUrl,
+        metadata: cidToIpfsUri(metadataResult.cid),
+        callback: (result) => {
+          if (result.status === "SUCCESS" && result.finalized) {
+            setTransactionStatus("success");
+            form.reset();
+          }
+
+          if (result.status === "ERROR") {
+            setTransactionStatus("error");
+            toast.error(result.message ?? "Failed to register agent");
+          }
+        },
+      }),
+    );
+
+    if (error) {
+      console.error("Error registering agent:", error);
+      setTransactionStatus("error");
+      toast.error("Failed to register agent");
+      return;
     }
   }
 
@@ -81,7 +127,7 @@ export function RegisterAgentForm({
     <Form {...form}>
       <form
         {...props}
-        onSubmit={form.handleSubmit(onSubmit)}
+        onSubmit={form.handleSubmit(handleSubmit)}
         className={cn("flex flex-col gap-6", className)}
       >
         <PortalFormHeader
@@ -102,10 +148,7 @@ export function RegisterAgentForm({
             formValues={formValues}
           />
 
-          <RegisterAgentIconField
-            control={form.control}
-            onIconPinned={setIconCid}
-          />
+          <RegisterAgentIconField control={form.control} />
 
           <PortalFormSeparator title="Social Information (Optional)" />
 
@@ -119,9 +162,11 @@ export function RegisterAgentForm({
             type="submit"
             variant="outline"
             className="w-full"
-            disabled={!isAccountConnected}
+            disabled={!isAccountConnected || transactionStatus === "loading"}
           >
-            Register Agent
+            {transactionStatus === "loading"
+              ? "Registering..."
+              : "Register Agent"}
           </Button>
         </div>
       </form>
