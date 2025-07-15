@@ -5,21 +5,14 @@ import { useTheme } from "next-themes";
 import { Toaster as SonnerToaster } from "sonner";
 import type { ToasterProps } from "sonner";
 
-export const DEFAULT_DURATION = 5000;
-
 export { CheckCircle, XCircle };
 
+export const DEFAULT_DURATION = 8000;
+
 const CLASS_NAMES = {
-  toast:
-    "group-[.toaster]:bg-background group-[.toaster]:text-foreground group-[.toaster]:bottom-[50px]",
-  description: "group-[.toast]:text-muted-foreground",
-  title: "group-[.toast]:text-foreground",
-  actionButton:
-    "group-[.toast]:bg-primary group-[.toast]:text-primary-foreground",
-  cancelButton:
-    "group-[.toast]:text-foreground/50 group-[.destructive]:text-red-300 group-[.destructive]:hover:text-red-50",
-  error:
-    "group-[.toaster]:bg-destructive group-[.toaster]:text-destructive-foreground",
+  toast: "group-[.toaster]:bottom-[30px] group-[.toaster]:bg-background ",
+  title: "text-sm font-semibold",
+  description: "text-xs my-2",
 };
 
 export function Toaster({ duration = DEFAULT_DURATION }: ToasterProps) {
@@ -28,7 +21,6 @@ export function Toaster({ duration = DEFAULT_DURATION }: ToasterProps) {
   return (
     <SonnerToaster
       swipeDirections={["top", "right"]}
-      closeButton={true}
       containerAriaLabel="Toaster"
       theme={theme as ToasterProps["theme"]}
       className="toaster group"
