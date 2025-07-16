@@ -1,20 +1,19 @@
 import type {
-  SS58Address,
-  EmissionAllocation,
   DistributionControl,
+  EmissionAllocation,
+  EnforcementAuthority,
   PermissionDuration,
   RevocationTerms,
-  EnforcementAuthority,
+  SS58Address,
 } from "@torus-network/sdk";
-import type { GrantEmissionPermissionFormData } from "./grant-emission-permission-form-schema";
 
-// Helper to transform form data to SDK format
-export function transformFormDataToSDK(data: GrantEmissionPermissionFormData) {
-  // Transform allocation
+import type { CreateEmissionPermissionFormData } from "./create-emission-permission-form-schema";
+
+export function transformFormDataToSDK(data: CreateEmissionPermissionFormData) {
   let allocation: EmissionAllocation;
   if (data.allocation.type === "FixedAmount") {
     allocation = {
-      FixedAmount: BigInt(parseFloat(data.allocation.amount) * 1e6), // Convert to micro units as bigint
+      FixedAmount: BigInt(parseFloat(data.allocation.amount) * 1e6),
     };
   } else {
     allocation = {
@@ -27,7 +26,6 @@ export function transformFormDataToSDK(data: GrantEmissionPermissionFormData) {
     };
   }
 
-  // Transform targets
   const targets = data.targets.map(
     (target) =>
       [target.account as SS58Address, parseInt(target.weight)] as [
@@ -36,7 +34,6 @@ export function transformFormDataToSDK(data: GrantEmissionPermissionFormData) {
       ],
   );
 
-  // Transform distribution
   let distribution: DistributionControl;
   switch (data.distribution.type) {
     case "Manual":
@@ -57,7 +54,6 @@ export function transformFormDataToSDK(data: GrantEmissionPermissionFormData) {
       distribution = { Manual: null };
   }
 
-  // Transform duration
   let duration: PermissionDuration;
   if (data.duration.type === "Indefinite") {
     duration = { Indefinite: null };
@@ -65,7 +61,6 @@ export function transformFormDataToSDK(data: GrantEmissionPermissionFormData) {
     duration = { UntilBlock: parseInt(data.duration.blockNumber) };
   }
 
-  // Transform revocation
   let revocation: RevocationTerms;
   switch (data.revocation.type) {
     case "Irrevocable":
@@ -89,7 +84,6 @@ export function transformFormDataToSDK(data: GrantEmissionPermissionFormData) {
       revocation = { Irrevocable: null };
   }
 
-  // Transform enforcement
   let enforcement: EnforcementAuthority;
   if (data.enforcement.type === "None") {
     enforcement = { None: null };

@@ -27,26 +27,17 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@torus-ts/ui/components/select";
-import {
-  WalletConnectionWarning,
-} from "@torus-ts/ui/components/wallet-connection-warning";
+import { WalletConnectionWarning } from "@torus-ts/ui/components/wallet-connection-warning";
 import { useIsMobile } from "@torus-ts/ui/hooks/use-mobile";
 import { useToast } from "@torus-ts/ui/hooks/use-toast";
 
-import PortalFormHeader from "~/app/_components/portal-form-header";
 import { truncateMobileValue } from "~/utils/truncate-mobile-value";
 
 import { DurationField } from "./create-capability-fields/duration-field";
 import { RevocationField } from "./create-capability-fields/revocation-field";
-import type {
-  CreateCapabilityPermissionFormData,
-} from "./create-capability-permission-form-schema";
-import {
-  createCapabilityPermissionSchema,
-} from "./create-capability-permission-form-schema";
-import {
-  transformFormDataToSDK,
-} from "./create-capability-permission-form-utils";
+import type { CreateCapabilityPermissionFormData } from "./create-capability-permission-form-schema";
+import { createCapabilityPermissionSchema } from "./create-capability-permission-form-schema";
+import { transformFormDataToSDK } from "./create-capability-permission-form-utils";
 
 interface CreateCapabilityPermissionFormProps {
   onSuccess?: () => void;
@@ -137,11 +128,6 @@ export function CreateCapabilityPermissionForm({
         onSubmit={form.handleSubmit(handleSubmit)}
         className="flex flex-col gap-6"
       >
-        <PortalFormHeader
-          title="Grant Capability Permission"
-          description="Delegate a capability permission to another account."
-        />
-
         <WalletConnectionWarning
           isAccountConnected={isAccountConnected}
           isInitialized={isInitialized}

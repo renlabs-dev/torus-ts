@@ -1,5 +1,6 @@
-import { z } from "zod";
 import type { UseFormReturn } from "react-hook-form";
+import { z } from "zod";
+
 import { SS58_SCHEMA } from "@torus-network/sdk";
 
 // Schema for duration

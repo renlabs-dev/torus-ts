@@ -805,7 +805,7 @@ export function TorusProvider({
       selectedAccount,
       callback,
       transaction,
-      transactionType: "Grant Emission Permission",
+      transactionType: "Delegate Emission Permission",
       wsEndpoint,
       refetchHandler,
       toast,
