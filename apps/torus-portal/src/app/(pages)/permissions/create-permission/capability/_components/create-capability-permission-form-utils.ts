@@ -4,9 +4,7 @@ import type {
   SS58Address,
 } from "@torus-network/sdk";
 
-import type {
-  CreateCapabilityPermissionFormData,
-} from "./create-capability-permission-form-schema";
+import type { CreateCapabilityPermissionFormData } from "./create-capability-permission-form-schema";
 
 export function transformFormDataToSDK(
   data: CreateCapabilityPermissionFormData,

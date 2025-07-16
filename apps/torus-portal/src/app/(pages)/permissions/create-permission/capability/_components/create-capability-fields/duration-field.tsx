@@ -17,9 +17,7 @@ import {
   SelectValue,
 } from "@torus-ts/ui/components/select";
 
-import type {
-  CreateCapabilityPermissionForm,
-} from "../create-capability-permission-form-schema";
+import type { CreateCapabilityPermissionForm } from "../create-capability-permission-form-schema";
 
 interface DurationFieldProps {
   form: CreateCapabilityPermissionForm;

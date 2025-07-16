@@ -10,6 +10,7 @@ import {
 } from "@torus-ts/ui/components/tabs";
 
 import PortalFormContainer from "~/app/_components/portal-form-container";
+import PortalFormHeader from "~/app/_components/portal-form-header";
 
 // Every single namespace name has been changed to Capability Permission
 // as requested here: https://coda.io/d/RENLABS-CORE-DEVELOPMENT-DOCUMENTS_d5Vgr5OavNK/Text-change-requests_su4jQAlx
@@ -39,7 +40,11 @@ export default function CreatePermissionLayout({
 
   return (
     <PortalFormContainer>
-      <Tabs value={activeTab} onValueChange={handleTabChange}>
+      <PortalFormHeader
+        title="Delegate Permission"
+        description="Select the type of permission you want to delegate."
+      />
+      <Tabs value={activeTab} onValueChange={handleTabChange} className="mt-6">
         <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="capability">Capability</TabsTrigger>
           <TabsTrigger value="emission">Emission</TabsTrigger>

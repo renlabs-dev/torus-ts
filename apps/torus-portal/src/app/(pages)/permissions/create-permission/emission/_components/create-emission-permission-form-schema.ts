@@ -1,6 +1,8 @@
-import { z } from "zod";
 import type { UseFormReturn } from "react-hook-form";
+import { z } from "zod";
+
 import { SS58_SCHEMA } from "@torus-network/sdk";
+
 import {
   createStreamPercentageValidator,
   createTargetWeightValidator,
@@ -11,7 +13,6 @@ const validatePositiveNumber = (value: string) => {
   return !isNaN(num) && num > 0;
 };
 
-// Schema for allocation types
 export const allocationSchema = z.discriminatedUnion("type", [
   z.object({
     type: z.literal("FixedAmount"),
@@ -43,7 +44,6 @@ export const allocationSchema = z.discriminatedUnion("type", [
   }),
 ]);
 
-// Schema for distribution control
 export const distributionSchema = z.discriminatedUnion("type", [
   z.object({
     type: z.literal("Manual"),
@@ -77,7 +77,6 @@ export const distributionSchema = z.discriminatedUnion("type", [
   }),
 ]);
 
-// Schema for duration
 export const durationSchema = z.discriminatedUnion("type", [
   z.object({
     type: z.literal("Indefinite"),
@@ -94,7 +93,6 @@ export const durationSchema = z.discriminatedUnion("type", [
   }),
 ]);
 
-// Schema for revocation terms
 export const revocationSchema = z.discriminatedUnion("type", [
   z.object({
     type: z.literal("Irrevocable"),
@@ -125,7 +123,6 @@ export const revocationSchema = z.discriminatedUnion("type", [
   }),
 ]);
 
-// Schema for enforcement authority
 export const enforcementSchema = z.discriminatedUnion("type", [
   z.object({
     type: z.literal("None"),
@@ -145,8 +142,7 @@ export const enforcementSchema = z.discriminatedUnion("type", [
   }),
 ]);
 
-// Main form schema
-export const grantEmissionPermissionSchema = z.object({
+export const createEmissionPermissionSchema = z.object({
   allocation: allocationSchema,
   targets: z
     .array(
@@ -169,14 +165,9 @@ export const grantEmissionPermissionSchema = z.object({
   enforcement: enforcementSchema,
 });
 
-export type GrantEmissionPermissionFormData = z.infer<
-  typeof grantEmissionPermissionSchema
+export type CreateEmissionPermissionFormData = z.infer<
+  typeof createEmissionPermissionSchema
 >;
 
-export interface GrantEmissionPermissionMutation {
-  isPending: boolean;
-  mutate: (data: GrantEmissionPermissionFormData) => void;
-}
-
-export type GrantEmissionPermissionForm =
-  UseFormReturn<GrantEmissionPermissionFormData>;
+export type CreateEmissionPermissionForm =
+  UseFormReturn<CreateEmissionPermissionFormData>;

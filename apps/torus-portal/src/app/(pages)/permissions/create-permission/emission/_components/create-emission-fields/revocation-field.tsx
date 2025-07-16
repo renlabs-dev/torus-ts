@@ -8,7 +8,6 @@ import type { SS58Address } from "@torus-network/sdk";
 import { Button } from "@torus-ts/ui/components/button";
 import {
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -23,10 +22,10 @@ import {
   SelectValue,
 } from "@torus-ts/ui/components/select";
 
-import type { CreateCapabilityPermissionForm } from "../create-capability-permission-form-schema";
+import type { CreateEmissionPermissionForm } from "../create-emission-permission-form-schema";
 
 interface RevocationFieldProps {
-  form: CreateCapabilityPermissionForm;
+  form: CreateEmissionPermissionForm;
   isAccountConnected: boolean;
 }
 
@@ -43,81 +42,76 @@ export function RevocationField({
   } = useFieldArray({
     control: form.control,
     // @ts-expect-error - TypeScript has issues with conditional schema fields
-    name: "revocation.accounts",
+    name: "revocation.accounts" as const,
   });
 
   return (
-    <div className="grid gap-4">
+    <div className="grid gap-3">
       <FormField
         control={form.control}
         name="revocation.type"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>Revocation Terms</FormLabel>
-            <FormControl>
-              <Select
-                value={field.value}
-                onValueChange={(value) => {
-                  field.onChange(value);
-                  switch (value) {
-                    case "Irrevocable":
-                      form.setValue("revocation", {
-                        type: "Irrevocable",
-                      });
-                      break;
-                    case "RevocableByGrantor":
-                      form.setValue("revocation", {
-                        type: "RevocableByGrantor",
-                      });
-                      break;
-                    case "RevocableByArbiters":
-                      form.setValue("revocation", {
-                        type: "RevocableByArbiters",
-                        accounts: ["" as SS58Address],
-                        requiredVotes: "1",
-                      });
-                      break;
-                    case "RevocableAfter":
-                      form.setValue("revocation", {
-                        type: "RevocableAfter",
-                        blockNumber: "",
-                      });
-                      break;
-                  }
-                }}
-                disabled={!isAccountConnected}
-              >
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Select revocation terms..." />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Irrevocable">Irrevocable</SelectItem>
-                  <SelectItem value="RevocableByGrantor">
-                    Revocable by Delegator
-                  </SelectItem>
-                  <SelectItem value="RevocableByArbiters">
-                    Revocable by Arbiters
-                  </SelectItem>
-                  <SelectItem value="RevocableAfter">
-                    Revocable After Block
-                  </SelectItem>
-                </SelectContent>
-              </Select>
-            </FormControl>
+            <FormLabel>Revocation Type</FormLabel>
+            <Select
+              value={field.value}
+              onValueChange={(value) => {
+                field.onChange(value);
+                switch (value) {
+                  case "Irrevocable":
+                    form.setValue("revocation", { type: "Irrevocable" });
+                    break;
+                  case "RevocableByGrantor":
+                    form.setValue("revocation", { type: "RevocableByGrantor" });
+                    break;
+                  case "RevocableByArbiters":
+                    form.setValue("revocation", {
+                      type: "RevocableByArbiters",
+                      accounts: ["" as SS58Address],
+                      requiredVotes: "1",
+                    });
+                    break;
+                  case "RevocableAfter":
+                    form.setValue("revocation", {
+                      type: "RevocableAfter",
+                      blockNumber: "",
+                    });
+                    break;
+                }
+              }}
+              disabled={!isAccountConnected}
+            >
+              <SelectTrigger className="w-full">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="Irrevocable">Irrevocable</SelectItem>
+                <SelectItem value="RevocableByGrantor">
+                  Revocable by Delegator
+                </SelectItem>
+                <SelectItem value="RevocableByArbiters">
+                  Revocable by Arbiters
+                </SelectItem>
+                <SelectItem value="RevocableAfter">
+                  Revocable After Block
+                </SelectItem>
+              </SelectContent>
+            </Select>
             <FormMessage />
           </FormItem>
         )}
       />
 
       {revocationType === "RevocableByArbiters" && (
-        <div className="grid gap-4">
+        <div className="grid gap-3">
           <div className="flex items-center justify-between">
             <FormLabel>Arbiters</FormLabel>
             <Button
               type="button"
               variant="outline"
               size="sm"
-              onClick={() => appendArbiter("")}
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-return
+              onClick={() => (appendArbiter as any)("")}
               disabled={!isAccountConnected}
             >
               <Plus className="h-4 w-4 mr-2" />
@@ -169,9 +163,6 @@ export function RevocationField({
                     disabled={!isAccountConnected}
                   />
                 </FormControl>
-                <FormDescription>
-                  Number of arbiter votes required to revoke this permission.
-                </FormDescription>
                 <FormMessage />
               </FormItem>
             )}
@@ -194,9 +185,6 @@ export function RevocationField({
                   disabled={!isAccountConnected}
                 />
               </FormControl>
-              <FormDescription>
-                The block number after which this permission can be revoked.
-              </FormDescription>
               <FormMessage />
             </FormItem>
           )}
