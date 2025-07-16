@@ -1,11 +1,16 @@
 import type {
-  SS58Address,
   PermissionDuration,
   RevocationTerms,
+  SS58Address,
 } from "@torus-network/sdk";
-import type { GrantNamespacePermissionFormData } from "./grant-namespace-permission-form-schema";
 
-export function transformFormDataToSDK(data: GrantNamespacePermissionFormData) {
+import type {
+  CreateCapabilityPermissionFormData,
+} from "./create-capability-permission-form-schema";
+
+export function transformFormDataToSDK(
+  data: CreateCapabilityPermissionFormData,
+) {
   // Transform duration
   let duration: PermissionDuration;
   if (data.duration.type === "Indefinite") {
@@ -40,7 +45,7 @@ export function transformFormDataToSDK(data: GrantNamespacePermissionFormData) {
 
   return {
     grantee: data.grantee as SS58Address,
-    paths: [data.namespacePath], // Convert single path to array as expected by transaction
+    paths: [data.namespacePath],
     duration,
     revocation,
   };

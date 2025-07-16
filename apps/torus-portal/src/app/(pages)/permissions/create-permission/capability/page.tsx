@@ -1,5 +1,7 @@
-import GrantNamespacePermissionForm from "./_components/grant-namespace-permission-form";
+import {
+  CreateCapabilityPermissionForm,
+} from "./_components/create-capability-permission-form";
 
-export default function NamespacePermissionPage() {
-  return <GrantNamespacePermissionForm />;
+export default function CreateCapabilityPermissionPage() {
+  return <CreateCapabilityPermissionForm />;
 }

@@ -51,21 +51,21 @@ export const revocationSchema = z.discriminatedUnion("type", [
 ]);
 
 // Main form schema
-export const grantNamespacePermissionSchema = z.object({
+export const createCapabilityPermissionSchema = z.object({
   grantee: SS58_SCHEMA,
   namespacePath: z.string().min(1, "Namespace path is required"),
   duration: durationSchema,
   revocation: revocationSchema,
 });
 
-export type GrantNamespacePermissionFormData = z.infer<
-  typeof grantNamespacePermissionSchema
+export type CreateCapabilityPermissionFormData = z.infer<
+  typeof createCapabilityPermissionSchema
 >;
 
-export interface GrantNamespacePermissionMutation {
+export interface CreateCapabilityPermissionMutation {
   isPending: boolean;
-  mutate: (data: GrantNamespacePermissionFormData) => void;
+  mutate: (data: CreateCapabilityPermissionFormData) => void;
 }
 
-export type GrantNamespacePermissionForm =
-  UseFormReturn<GrantNamespacePermissionFormData>;
+export type CreateCapabilityPermissionForm =
+  UseFormReturn<CreateCapabilityPermissionFormData>;

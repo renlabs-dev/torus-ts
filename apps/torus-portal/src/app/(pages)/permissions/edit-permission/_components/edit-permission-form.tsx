@@ -9,7 +9,9 @@ import type { z } from "zod";
 import { useTorus } from "@torus-ts/torus-provider";
 import { Button } from "@torus-ts/ui/components/button";
 import { Form } from "@torus-ts/ui/components/form";
-import { WalletConnectionWarning } from "@torus-ts/ui/components/wallet-connection-warning";
+import {
+  WalletConnectionWarning,
+} from "@torus-ts/ui/components/wallet-connection-warning";
 import { useToast } from "@torus-ts/ui/hooks/use-toast";
 import { cn } from "@torus-ts/ui/lib/utils";
 
@@ -18,7 +20,9 @@ import PortalFormHeader from "~/app/_components/portal-form-header";
 import { PortalFormSeparator } from "~/app/_components/portal-form-separator";
 import { tryCatch } from "~/utils/try-catch";
 
-import { DistributionControlField } from "./edit-permission-fields/distribution-control-field";
+import {
+  DistributionControlField,
+} from "./edit-permission-fields/distribution-control-field";
 import { StreamsField } from "./edit-permission-fields/streams-field";
 import { TargetsField } from "./edit-permission-fields/targets-field";
 import type { EditPermissionFormData } from "./edit-permission-schema";
