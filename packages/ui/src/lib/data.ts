@@ -60,6 +60,6 @@ export const getLinks = (chainEnv: ChainEnv) => {
     bridge: createUrl("bridge"),
     portal: createUrl("portal"),
 
-    setup_a_wallet: "https://docs.torus.network/installation/setup-wallet",
+    setup_a_wallet: "https://docs.torus.network/getting-started/setup-wallet/",
   };
 };
