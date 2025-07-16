@@ -24,8 +24,12 @@ import { api } from "~/trpc/react";
 import { tryCatch } from "~/utils/try-catch";
 
 import { AgentEmissionsWarning } from "./agent-emissions-warning";
-import { CreateSignalMarkdownField } from "./create-signal-markdown-field";
-import { CreateSignalSliderField } from "./create-signal-slider-field";
+import {
+  CreateSignalMarkdownField,
+} from "./create-signal-fields/create-signal-markdown-field";
+import {
+  CreateSignalSliderField,
+} from "./create-signal-fields/create-signal-slider-field";
 
 export function CreateSignalForm({
   className,
