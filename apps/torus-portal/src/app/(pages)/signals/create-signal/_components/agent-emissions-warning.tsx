@@ -1,9 +1,5 @@
-import {
-  DestructiveAlertWithDescription,
-} from "@torus-ts/ui/components/destructive-alert-with-description";
-import {
-  WalletConnectionWarning,
-} from "@torus-ts/ui/components/wallet-connection-warning";
+import { DestructiveAlertWithDescription } from "@torus-ts/ui/components/destructive-alert-with-description";
+import { WalletConnectionWarning } from "@torus-ts/ui/components/wallet-connection-warning";
 
 interface AgentEmissionsWarningProps {
   hasAgentKey: boolean;
@@ -22,7 +18,7 @@ export function AgentEmissionsWarning({
     return (
       <DestructiveAlertWithDescription
         title="Agent emissions required!"
-        description="You need to be a agent with emissions to create demand signals. Please register as an agent first to access this feature."
+        description="You need to be a agent with emissions (comming from root or target) to create demand signals."
       />
     );
   }
