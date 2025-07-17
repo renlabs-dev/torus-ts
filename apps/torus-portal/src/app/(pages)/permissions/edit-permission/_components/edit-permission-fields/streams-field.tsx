@@ -63,7 +63,6 @@ export function StreamsField({ control }: StreamsFieldProps) {
         </div>
         <Button
           type="button"
-          variant="outline"
           size="sm"
           onClick={() => appendStream({ streamId: "", percentage: 0 })}
         >

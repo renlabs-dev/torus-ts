@@ -63,7 +63,6 @@ export function TargetsField({ control }: TargetsFieldProps) {
         </div>
         <Button
           type="button"
-          variant="outline"
           size="sm"
           onClick={() => appendTarget({ address: "", percentage: 0 })}
         >
