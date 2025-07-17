@@ -1,8 +1,14 @@
 import { useMemo } from "react";
 
-import type { Api, SS58Address } from "@torus-network/sdk";
+import type { ApiPromise } from "@polkadot/api";
 
-import { useNamespacePathCreationCost } from "@torus-ts/query-provider/hooks";
+import type { Api, SS58Address } from "@torus-network/sdk";
+import { createNamespace } from "@torus-network/sdk";
+
+import {
+  useNamespacePathCreationCost,
+  useTransactionFee,
+} from "@torus-ts/query-provider/hooks";
 
 interface NamespaceCreationFeeResult {
   isLoading: boolean;
@@ -22,11 +28,24 @@ export function useNamespaceCreationFee(
 ): NamespaceCreationFeeResult {
   const {
     data: namespaceCost,
-    isLoading,
-    error,
+    isLoading: isLoadingNamespace,
+    error: namespaceError,
   } = useNamespacePathCreationCost(api, account, fullPath);
 
+  const extrinsic = useMemo(() => {
+    if (!api || !account) return null;
+    return createNamespace(api as ApiPromise, fullPath);
+  }, [api, account, fullPath]);
+
+  const {
+    data: transactionFee,
+    isLoading: isLoadingTxFee,
+    error: txFeeError,
+  } = useTransactionFee(extrinsic, account);
+
   return useMemo(() => {
+    const isLoading = isLoadingNamespace || isLoadingTxFee;
+
     if (isLoading) {
       return {
         isLoading: true,
@@ -37,25 +56,40 @@ export function useNamespaceCreationFee(
             amount: 0n,
           },
           {
+            label: "Capability Creation Fee",
+            amount: 0n,
+            description: "Network fee for creating the capability",
+          },
+          {
             label: "Deposit",
             amount: 0n,
-            description: "Reserved, can be reclaimed when capability is deleted",
+            description:
+              "Reserved, can be reclaimed when capability is deleted",
           },
         ],
         totalAmount: 0n,
       };
     }
 
-    if (error) {
+    if (namespaceError) {
       return {
         isLoading: false,
-        error: error.message,
+        error: namespaceError.message,
         feeItems: [],
         totalAmount: 0n,
       };
     }
 
-    if (!namespaceCost) {
+    if (txFeeError) {
+      return {
+        isLoading: false,
+        error: txFeeError.message,
+        feeItems: [],
+        totalAmount: 0n,
+      };
+    }
+
+    if (!namespaceCost || !transactionFee) {
       return {
         isLoading: false,
         error: null,
@@ -78,7 +112,12 @@ export function useNamespaceCreationFee(
     const feeItems = [
       {
         label: "Transaction Fee",
+        amount: transactionFee,
+      },
+      {
+        label: "Capability Creation Fee",
         amount: costData.fee,
+        description: "Network fee for creating the capability",
       },
       {
         label: "Deposit",
@@ -91,7 +130,14 @@ export function useNamespaceCreationFee(
       isLoading: false,
       error: null,
       feeItems,
-      totalAmount: costData.fee + costData.deposit,
+      totalAmount: transactionFee + costData.fee + costData.deposit,
     };
-  }, [namespaceCost, isLoading, error]);
+  }, [
+    namespaceCost,
+    transactionFee,
+    isLoadingNamespace,
+    isLoadingTxFee,
+    namespaceError,
+    txFeeError,
+  ]);
 }
