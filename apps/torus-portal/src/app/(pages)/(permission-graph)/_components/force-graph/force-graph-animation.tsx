@@ -75,9 +75,11 @@ const ForceGraph = memo(
         const customNode = node as CustomGraphNode;
         const color = getNodeColor(node, highlightState, props.userAddress);
 
-        const material = new THREE.MeshLambertMaterial({
+        const material = new THREE.MeshStandardMaterial({
+          roughness: 0.1,
+          metalness: 0.4,
           color: color,
-          opacity: 1,
+          normalScale: new THREE.Vector2(0.15, 0.15),
         });
 
         let geometry: THREE.BufferGeometry;
@@ -131,7 +133,10 @@ const ForceGraph = memo(
           }
         }
 
-        return new THREE.Mesh(geometry, material);
+        const mesh = new THREE.Mesh(geometry, material);
+        mesh.castShadow = true;
+        mesh.receiveShadow = true;
+        return mesh;
       };
     }, [highlightState, props.userAddress]);
 

@@ -15,7 +15,7 @@ export const graphConstants = {
 
   // Highlight and interaction effects
   highlightEffects: {
-    hoverNodeLightenAmount: 0.8,
+    hoverNodeLightenAmount: 1,
     neighborNodeLightenAmount: 0.4,
     linkWidthMultiplier: 1.5,
     particlesIncrease: 2,
@@ -67,32 +67,32 @@ export const graphConstants = {
     nodeGeometry: {
       allocator: {
         type: "sphere",
-        radius: 25,
-        widthSegments: 18,
-        heightSegments: 18,
+        radius: 26,
+        widthSegments: 36,
+        heightSegments: 36,
       },
       rootNode: {
         type: "sphere",
-        radius: 10,
-        widthSegments: 18,
-        heightSegments: 18,
+        radius: 14,
+        widthSegments: 24,
+        heightSegments: 24,
       },
       permissionNode: {
         type: "icosahedron",
-        radius: 7,
+        radius: 9,
         detail: 0,
       },
       targetNode: {
         type: "sphere",
-        radius: 10,
-        widthSegments: 18,
-        heightSegments: 18,
+        radius: 12,
+        widthSegments: 24,
+        heightSegments: 24,
       },
       userNode: {
         type: "sphere",
-        radius: 10,
-        widthSegments: 18,
-        heightSegments: 18,
+        radius: 12,
+        widthSegments: 24,
+        heightSegments: 24,
       },
       signalNode: {
         type: "tetrahedron",
