@@ -83,17 +83,12 @@ export default function AllSignalsView() {
             <AccordionItem
               key={signal.id || index}
               value={`signal-${index}`}
-              className={`px-4 ${signal.fulfilled ? 'bg-green-50/50 border-green-200' : 'bg-muted/50'}`}
+              className={`px-4
+                ${signal.fulfilled ? "bg-green-500/5 border-green-500 border-b" : "bg-muted/50"}`}
             >
               <AccordionTrigger className="flex items-center justify-between">
                 <div className="flex items-center gap-2 text-left w-full">
                   <Badge>#{index + 1}</Badge>
-                  {signal.fulfilled && (
-                    <Badge className="bg-green-500 text-white gap-1">
-                      <Check className="w-3 h-3" />
-                      Fulfilled
-                    </Badge>
-                  )}
 
                   <div>
                     <h3 className="font-medium">{signal.title}</h3>
@@ -102,9 +97,17 @@ export default function AllSignalsView() {
                     </p>
                   </div>
                 </div>
-                {signal.isCurrentUser && (
-                  <Badge className="text-nowrap mr-2">Your Signal</Badge>
-                )}
+                <div className="flex gap-2">
+                  {signal.fulfilled && (
+                    <Badge className="bg-green-500 text-white gap-1">
+                      <Check className="w-3 h-3" />
+                      Fulfilled
+                    </Badge>
+                  )}
+                  {signal.isCurrentUser && (
+                    <Badge className="text-nowrap mr-2">Your Signal</Badge>
+                  )}
+                </div>
               </AccordionTrigger>
               <AccordionContent>
                 <div className="space-y-4">
@@ -135,7 +138,9 @@ export default function AllSignalsView() {
                             size="sm"
                             onClick={(e) => {
                               e.stopPropagation();
-                              fulfillSignalMutation.mutate({ signalId: signal.id });
+                              fulfillSignalMutation.mutate({
+                                signalId: signal.id,
+                              });
                             }}
                             disabled={fulfillSignalMutation.isPending}
                             className="bg-green-500 hover:bg-green-600"
@@ -152,7 +157,9 @@ export default function AllSignalsView() {
                             size="sm"
                             onClick={(e) => {
                               e.stopPropagation();
-                              deleteSignalMutation.mutate({ signalId: signal.id });
+                              deleteSignalMutation.mutate({
+                                signalId: signal.id,
+                              });
                             }}
                             disabled={deleteSignalMutation.isPending}
                           >
