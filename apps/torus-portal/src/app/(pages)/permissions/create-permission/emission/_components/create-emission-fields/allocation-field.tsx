@@ -84,23 +84,25 @@ export function AllocationField({
     <div className="grid gap-3">
       <div className="grid gap-3">
         {streamFields.length > 0 && (
-          <div className="flex items-center justify-between">
-            <FormLabel>Streams</FormLabel>
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={() =>
-                appendStream({
-                  streamId: "",
-                  percentage: "",
-                })
-              }
-              disabled={!isAccountConnected}
-            >
-              <Plus className="h-4 w-4 mr-2" />
-              Add Stream
-            </Button>
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <FormLabel>Streams</FormLabel>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() =>
+                  appendStream({
+                    streamId: "",
+                    percentage: "",
+                  })
+                }
+                disabled={!isAccountConnected}
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                Add Stream
+              </Button>
+            </div>
           </div>
         )}
 
@@ -178,7 +180,7 @@ export function AllocationField({
                       <FormControl>
                         <Input
                           {...percentageField}
-                          placeholder="e.g. 50%"
+                          placeholder="e.g. 100"
                           type="number"
                           step="1"
                           min="0"
