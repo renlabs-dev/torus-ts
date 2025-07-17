@@ -2,7 +2,7 @@
 
 import { useMemo } from "react";
 
-import { Trash2 } from "lucide-react";
+import { Check, Trash2 } from "lucide-react";
 
 import { useTorus } from "@torus-ts/torus-provider";
 import {
@@ -29,6 +29,12 @@ export default function AllSignalsView() {
 
   const utils = api.useUtils();
   const deleteSignalMutation = api.signal.delete.useMutation({
+    onSuccess: () => {
+      void utils.signal.all.invalidate();
+    },
+  });
+
+  const fulfillSignalMutation = api.signal.fulfill.useMutation({
     onSuccess: () => {
       void utils.signal.all.invalidate();
     },
@@ -77,11 +83,17 @@ export default function AllSignalsView() {
             <AccordionItem
               key={signal.id || index}
               value={`signal-${index}`}
-              className="bg-muted/50 px-4"
+              className={`px-4 ${signal.fulfilled ? 'bg-green-50/50 border-green-200' : 'bg-muted/50'}`}
             >
               <AccordionTrigger className="flex items-center justify-between">
                 <div className="flex items-center gap-2 text-left w-full">
                   <Badge>#{index + 1}</Badge>
+                  {signal.fulfilled && (
+                    <Badge className="bg-green-500 text-white gap-1">
+                      <Check className="w-3 h-3" />
+                      Fulfilled
+                    </Badge>
+                  )}
 
                   <div>
                     <h3 className="font-medium">{signal.title}</h3>
@@ -116,20 +128,41 @@ export default function AllSignalsView() {
                       </div>
                     </div>
                     {signal.isCurrentUser && (
-                      <Button
-                        variant="destructive"
-                        size="sm"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          deleteSignalMutation.mutate({ signalId: signal.id });
-                        }}
-                        disabled={deleteSignalMutation.isPending}
-                      >
-                        <Trash2 />
-                        {deleteSignalMutation.isPending
-                          ? "Deleting..."
-                          : "Delete"}
-                      </Button>
+                      <div className="flex gap-2">
+                        {!signal.fulfilled && (
+                          <Button
+                            variant="default"
+                            size="sm"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              fulfillSignalMutation.mutate({ signalId: signal.id });
+                            }}
+                            disabled={fulfillSignalMutation.isPending}
+                            className="bg-green-500 hover:bg-green-600"
+                          >
+                            <Check className="w-4 h-4 mr-1" />
+                            {fulfillSignalMutation.isPending
+                              ? "Fulfilling..."
+                              : "Fulfill"}
+                          </Button>
+                        )}
+                        {!signal.fulfilled && (
+                          <Button
+                            variant="destructive"
+                            size="sm"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              deleteSignalMutation.mutate({ signalId: signal.id });
+                            }}
+                            disabled={deleteSignalMutation.isPending}
+                          >
+                            <Trash2 className="w-4 h-4 mr-1" />
+                            {deleteSignalMutation.isPending
+                              ? "Deleting..."
+                              : "Delete"}
+                          </Button>
+                        )}
+                      </div>
                     )}
                   </div>
 

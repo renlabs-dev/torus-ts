@@ -43,7 +43,24 @@ export const signalRouter = {
           and(
             eq(agentDemandSignalSchema.id, input.signalId),
             eq(agentDemandSignalSchema.agentKey, userKey),
-            isNull(agentDemandSignalSchema.deletedAt)
+            isNull(agentDemandSignalSchema.deletedAt),
+            eq(agentDemandSignalSchema.fulfilled, false)
+          )
+        );
+    }),
+  fulfill: authenticatedProcedure
+    .input(z.object({ signalId: z.number() }))
+    .mutation(async ({ ctx, input }) => {
+      const userKey = ctx.sessionData.userKey;
+      await ctx.db
+        .update(agentDemandSignalSchema)
+        .set({ fulfilled: true })
+        .where(
+          and(
+            eq(agentDemandSignalSchema.id, input.signalId),
+            eq(agentDemandSignalSchema.agentKey, userKey),
+            isNull(agentDemandSignalSchema.deletedAt),
+            eq(agentDemandSignalSchema.fulfilled, false)
           )
         );
     }),
