@@ -1,9 +1,8 @@
 import { asc, eq, isNull, sql, sum } from "drizzle-orm";
 import {
+  bigint as drizzleBigint,
   boolean,
   check,
-  bigint as drizzleBigint,
-  timestamp as drizzleTimestamp,
   index,
   integer,
   numeric,
@@ -13,12 +12,14 @@ import {
   real,
   serial,
   text,
+  timestamp as drizzleTimestamp,
   unique,
   uuid,
   varchar,
 } from "drizzle-orm/pg-core";
 import type { Equals } from "tsafe";
 import { assert } from "tsafe";
+
 import { extract_pgenum_values } from "./utils";
 
 export const createTable = pgTableCreator((name) => `${name}`);
@@ -883,6 +884,8 @@ export const agentDemandSignalSchema = createTable(
     title: text("title").notNull(),
     description: text("description").notNull(),
     proposedAllocation: integer("proposed_allocation").notNull(),
+
+    fulfilled: boolean("fulfilled").notNull().default(false),
 
     // contact info
     discord: text("discord"),
