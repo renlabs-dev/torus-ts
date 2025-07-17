@@ -22,6 +22,7 @@ import { cn } from "@torus-ts/ui/lib/utils";
 import PortalFormHeader from "~/app/_components/portal-form-header";
 import { api } from "~/trpc/react";
 import { tryCatch } from "~/utils/try-catch";
+import { useCanCreateSignal } from "~/hooks/use-can-create-signal";
 
 import { AgentEmissionsWarning } from "./agent-emissions-warning";
 import {
@@ -37,14 +38,10 @@ export function CreateSignalForm({
 }: React.ComponentProps<"form">) {
   const { toast } = useToast();
   const { selectedAccount, isAccountConnected, isInitialized } = useTorus();
+  const { canCreate, isLoading: isAuthLoading, isRootAgent } = useCanCreateSignal();
 
   const existingSignals = api.signal.byCreatorId.useQuery(
     { creatorId: selectedAccount?.address ?? "" },
-    { enabled: isAccountConnected },
-  );
-
-  const rootAgent = api.computedAgentWeight.byAgentKey.useQuery(
-    { agentKey: selectedAccount?.address ?? "" },
     { enabled: isAccountConnected },
   );
 
@@ -102,8 +99,8 @@ export function CreateSignalForm({
         />
 
         <AgentEmissionsWarning
-          hasAgentKey={!!rootAgent.data?.agentKey}
-          isLoading={rootAgent.isLoading}
+          hasAgentKey={isRootAgent}
+          isLoading={isAuthLoading}
           isAccountConnected={isAccountConnected}
           isInitialized={isInitialized}
         />
@@ -242,7 +239,7 @@ export function CreateSignalForm({
             disabled={
               !isAccountConnected ||
               createSignalMutation.isPending ||
-              !rootAgent.data?.agentKey
+              !canCreate
             }
           >
             <Radio className="w-4 h-4 mr-1" />
