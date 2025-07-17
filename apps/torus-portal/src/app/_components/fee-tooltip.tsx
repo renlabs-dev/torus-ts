@@ -27,7 +27,7 @@ interface FeeAlertProps {
   note?: string;
 }
 
-export function FeeAlert({
+export function FeeTooltip({
   title,
   isVisible,
   isLoading,
@@ -73,7 +73,7 @@ export function FeeAlert({
     <TooltipProvider>
       <Tooltip>
         <TooltipTrigger asChild>
-          <div className="flex items-center gap-2 text-sm">
+          <div className="flex items-center gap-2 text-sm w-fit">
             <CircleDollarSign className="h-4 w-4" />
             <span className="flex items-center gap-2">
               <span>{title}:</span>
@@ -81,7 +81,7 @@ export function FeeAlert({
             </span>
           </div>
         </TooltipTrigger>
-        <TooltipContent side="bottom" className="max-w-sm">
+        <TooltipContent side="bottom" className="max-w-sm p-4">
           <div className="space-y-2">
             <div className="font-medium">{title} Breakdown:</div>
             {feeItems.map((item, index) => (
@@ -104,9 +104,7 @@ export function FeeAlert({
               </div>
             </div>
             {note && (
-              <div className="text-xs text-muted-foreground border-t pt-2">
-                {note}
-              </div>
+              <div className="text-xs text-gray-600 border-t pt-2">{note}</div>
             )}
           </div>
         </TooltipContent>

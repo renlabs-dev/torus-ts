@@ -24,7 +24,7 @@ import { WalletConnectionWarning } from "@torus-ts/ui/components/wallet-connecti
 import { useToast } from "@torus-ts/ui/hooks/use-toast";
 import { cn } from "@torus-ts/ui/lib/utils";
 
-import { FeeAlert } from "~/app/_components/fee-alert";
+import { FeeTooltip } from "~/app/_components/fee-tooltip";
 import PortalFormHeader from "~/app/_components/portal-form-header";
 import { useNamespaceCreationFee } from "~/hooks/use-namespace-creation-fee";
 import { tryCatch } from "~/utils/try-catch";
@@ -218,14 +218,14 @@ export function CreateCapabilityForm({
 
           <CreateCapabilityPathPreview fullPath={fullPath} />
 
-          <FeeAlert
+          <FeeTooltip
             title="Capability Creation Fee"
-            isVisible={
-              Boolean(isAccountConnected && 
-              selectedPrefix && 
-              fullPath.trim().length > 0 &&
-              transactionStatus !== "loading")
-            }
+            isVisible={Boolean(
+              isAccountConnected &&
+                selectedPrefix &&
+                fullPath.trim().length > 0 &&
+                transactionStatus !== "loading",
+            )}
             isLoading={namespaceFee.isLoading}
             error={namespaceFee.error}
             feeItems={namespaceFee.feeItems}
