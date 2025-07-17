@@ -1,128 +1,78 @@
 "use client";
 
-import React from "react";
-import { CheckCircle, XCircle } from "lucide-react";
 import { toast as sonnerToast } from "sonner";
-import { DEFAULT_DURATION } from "../components/toaster";
 
-interface Toast {
-  title?: string | React.ReactNode;
-  description?: string | React.ReactNode;
-  variant?: "default" | "destructive";
+type ToastVariant = "default" | "destructive";
+
+interface ToasterToast {
+  id: string;
+  title?: React.ReactNode;
+  description?: React.ReactNode;
+  variant?: ToastVariant;
   duration?: number;
+  action?: React.ReactElement;
 }
 
-interface ToasterToast extends Toast {
-  id: string;
-}
+export type Toast = Omit<ToasterToast, "id">;
 
-interface ToastReturn {
-  id: string;
-  dismiss: () => void;
-  update: (props: ToasterToast) => ReturnType<typeof toast>;
-}
+function toast({ title, description, variant, duration, ...props }: Toast) {
+  let toastId: string | number;
 
-let count = 0;
-let currentToastId: string | null = null;
-
-function genId() {
-  count = (count + 1) % Number.MAX_SAFE_INTEGER;
-  return count.toString();
-}
-
-function dismissCurrentToast() {
-  if (currentToastId) {
-    sonnerToast.dismiss(currentToastId);
-    currentToastId = null;
-  }
-}
-
-function toast({ duration = DEFAULT_DURATION, ...props }: Toast): ToastReturn {
-  // Dismiss any existing toast before showing a new one
-  dismissCurrentToast();
-
-  const id = genId();
-  currentToastId = id;
-
-  const sonnerProps = { id, duration };
-
-  if (props.variant === "destructive") {
-    sonnerToast.error(props.title as string, {
-      description: props.description as string,
-      ...sonnerProps,
+  if (variant === "destructive") {
+    toastId = sonnerToast.error(title, {
+      description,
+      duration,
+      ...props,
     });
-    return {
-      id,
-      dismiss: () => {
-        sonnerToast.dismiss(id);
-        if (currentToastId === id) {
-          currentToastId = null;
-        }
-      },
-      update: (props: ToasterToast) => {
-        sonnerToast.dismiss(id);
-        if (currentToastId === id) {
-          currentToastId = null;
-        }
-        return toast(props);
-      },
-    };
+  } else {
+    toastId = sonnerToast(title, {
+      description,
+      duration,
+      ...props,
+    });
   }
 
-  sonnerToast(props.title as string, {
-    description: props.description as string,
-    ...sonnerProps,
-  });
+  const dismiss = () => sonnerToast.dismiss(toastId);
+  const update = (newProps: Partial<Toast>) => {
+    dismiss();
+    return toast({ title, description, variant, duration, ...props, ...newProps });
+  };
+
   return {
-    id,
-    dismiss: () => {
-      sonnerToast.dismiss(id);
-      if (currentToastId === id) {
-        currentToastId = null;
-      }
-    },
-    update: (props: ToasterToast) => {
-      sonnerToast.dismiss(id);
-      if (currentToastId === id) {
-        currentToastId = null;
-      }
-      return toast(props);
-    },
+    id: toastId.toString(),
+    dismiss,
+    update,
   };
 }
 
-toast.success = (
-  description = "Operation completed successfully.",
-  duration = DEFAULT_DURATION,
-) => {
-  return toast({
-    title: (
-      <div className="flex items-center gap-2">
-        <CheckCircle className="h-4 w-4 text-green-500" />
-        <span>Success!</span>
-      </div>
-    ),
-    description,
-    variant: "default",
-    duration,
+toast.success = (description?: string, duration?: number) => {
+  const toastId = sonnerToast.success(description ?? "Operation completed successfully.", {
+    duration: duration ?? 2000,
   });
+
+  return {
+    id: toastId.toString(),
+    dismiss: () => sonnerToast.dismiss(toastId),
+    update: (newProps: Partial<Toast>) => {
+      sonnerToast.dismiss(toastId);
+      return toast({ title: "Success!", description, variant: "default", duration: duration ?? 2000, ...newProps });
+    },
+  };
 };
 
-toast.error = (
-  description = "An unexpected error occurred. Please try again.",
-  duration = DEFAULT_DURATION,
-) => {
-  return toast({
-    title: (
-      <div className="flex items-center gap-2">
-        <XCircle className="h-4 w-4 text-red-500" />
-        <span>Uh oh! Something went wrong.</span>
-      </div>
-    ),
-    description,
-    variant: "destructive",
-    duration,
+toast.error = (description?: string, duration?: number) => {
+  const toastId = sonnerToast.error(description ?? "An unexpected error occurred. Please try again.", {
+    duration: duration ?? 2000,
   });
+
+  return {
+    id: toastId.toString(),
+    dismiss: () => sonnerToast.dismiss(toastId),
+    update: (newProps: Partial<Toast>) => {
+      sonnerToast.dismiss(toastId);
+      return toast({ title: "Uh oh! Something went wrong.", description, variant: "destructive", duration: duration ?? 2000, ...newProps });
+    },
+  };
 };
 
 export interface ToastFunction {
@@ -134,22 +84,17 @@ export interface ToastFunction {
   error: (description?: string, duration?: number) => ReturnType<typeof toast>;
 }
 
-const mockState = { toasts: [] };
-
 function useToast() {
   return {
-    ...mockState,
-    toast: toast as ToastFunction,
+    toast,
     dismiss: (toastId?: string) => {
-      if (!toastId) {
-        dismissCurrentToast();
-        return;
-      }
-      sonnerToast.dismiss(toastId);
-      if (currentToastId === toastId) {
-        currentToastId = null;
+      if (toastId) {
+        sonnerToast.dismiss(toastId);
+      } else {
+        sonnerToast.dismiss();
       }
     },
+    toasts: [],
   };
 }
 
