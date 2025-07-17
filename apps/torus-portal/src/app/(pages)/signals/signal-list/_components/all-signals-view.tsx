@@ -97,15 +97,17 @@ export default function AllSignalsView() {
                     </p>
                   </div>
                 </div>
-                <div className="flex gap-2">
+                <div className="flex">
                   {signal.fulfilled && (
-                    <Badge className="bg-green-500 text-white gap-1">
+                    <Badge className="bg-green-500 text-white gap-1 mr-2">
                       <Check className="w-3 h-3" />
                       Fulfilled
                     </Badge>
                   )}
                   {signal.isCurrentUser && (
-                    <Badge className="text-nowrap mr-2">Your Signal</Badge>
+                    <Badge className="text-nowrap mr-2 sm:block hidden">
+                      Your Signal
+                    </Badge>
                   )}
                 </div>
               </AccordionTrigger>
