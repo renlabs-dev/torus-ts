@@ -6,8 +6,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import type { z } from "zod";
 
-import { checkSS58 } from "@torus-network/sdk";
 import type { SS58Address } from "@torus-network/sdk";
+import { checkSS58 } from "@torus-network/sdk";
 import { cidToIpfsUri } from "@torus-network/torus-utils/ipfs";
 
 import { useTorus } from "@torus-ts/torus-provider";
@@ -17,7 +17,7 @@ import { WalletConnectionWarning } from "@torus-ts/ui/components/wallet-connecti
 import { useToast } from "@torus-ts/ui/hooks/use-toast";
 import { cn } from "@torus-ts/ui/lib/utils";
 
-import { FeeAlert } from "~/app/_components/fee-alert";
+import { FeeTooltip } from "~/app/_components/fee-tooltip";
 import PortalFormHeader from "~/app/_components/portal-form-header";
 import { PortalFormSeparator } from "~/app/_components/portal-form-separator";
 import { useAgentRegistrationFee } from "~/hooks/use-agent-registration-fee";
@@ -168,14 +168,14 @@ export function RegisterAgentForm({
 
           <RegisterAgentPreview formValues={formValues} />
 
-          <FeeAlert
+          <FeeTooltip
             title="Agent Registration Fee"
-            isVisible={
-              Boolean(isAccountConnected && 
-              formValues.name && 
-              formValues.name.trim().length > 0 &&
-              transactionStatus !== "loading")
-            }
+            isVisible={Boolean(
+              isAccountConnected &&
+                formValues.name &&
+                formValues.name.trim().length > 0 &&
+                transactionStatus !== "loading",
+            )}
             isLoading={agentRegistrationFee.isLoading}
             error={agentRegistrationFee.error}
             feeItems={agentRegistrationFee.feeItems}
