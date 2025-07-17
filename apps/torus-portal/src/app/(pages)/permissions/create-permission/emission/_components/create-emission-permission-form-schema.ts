@@ -3,10 +3,7 @@ import { z } from "zod";
 
 import { SS58_SCHEMA } from "@torus-network/sdk";
 
-import {
-  createStreamPercentageValidator,
-  createTargetWeightValidator,
-} from "~/utils/percentage-validation";
+import { createTargetWeightValidator } from "~/utils/percentage-validation";
 
 const validatePositiveNumber = (value: string) => {
   const num = parseFloat(value);
@@ -39,8 +36,7 @@ export const allocationSchema = z.discriminatedUnion("type", [
             }, "Must be between 0 and 100"),
         }),
       )
-      .min(1, "At least one stream is required")
-      .superRefine(createStreamPercentageValidator()),
+      .min(1, "At least one stream is required"),
   }),
 ]);
 
