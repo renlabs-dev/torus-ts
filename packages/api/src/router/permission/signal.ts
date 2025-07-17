@@ -32,4 +32,19 @@ export const signalRouter = {
         .insert(agentDemandSignalSchema)
         .values({ ...input, agentKey });
     }),
+  delete: authenticatedProcedure
+    .input(z.object({ signalId: z.number() }))
+    .mutation(async ({ ctx, input }) => {
+      const userKey = ctx.sessionData.userKey;
+      await ctx.db
+        .update(agentDemandSignalSchema)
+        .set({ deletedAt: new Date() })
+        .where(
+          and(
+            eq(agentDemandSignalSchema.id, input.signalId),
+            eq(agentDemandSignalSchema.agentKey, userKey),
+            isNull(agentDemandSignalSchema.deletedAt)
+          )
+        );
+    }),
 } satisfies TRPCRouterRecord;
