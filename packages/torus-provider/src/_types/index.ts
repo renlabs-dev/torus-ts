@@ -87,3 +87,7 @@ export interface CreateNamespace extends TransactionHelpers {
 export interface DeleteNamespace extends TransactionHelpers {
   path: string;
 }
+
+export interface RemarkTransaction extends TransactionHelpers {
+  remark: string;
+}
