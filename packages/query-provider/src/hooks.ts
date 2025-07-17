@@ -1,11 +1,14 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 import "@polkadot/api-augment";
+
 import type { ApiPromise } from "@polkadot/api";
 import type {
   QueryObserverOptions,
   UseQueryResult,
 } from "@tanstack/react-query";
 import { useQueries, useQuery } from "@tanstack/react-query";
+import SuperJSON from "superjson";
+
 import type {
   Api,
   LastBlock,
@@ -33,6 +36,8 @@ import {
   queryKeyStakingTo,
   queryLastBlock,
   queryMinAllowedStake,
+  queryNamespaceEntriesOf,
+  queryNamespacePathCreationCost,
   queryPermission,
   queryPermissionsByGrantee,
   queryPermissionsByGrantor,
@@ -45,12 +50,10 @@ import {
   queryTreasuryEmissionFee,
   queryUnrewardedProposals,
   queryWhitelist,
-  queryNamespaceEntriesOf,
 } from "@torus-network/sdk";
-import type { ListItem, Nullish } from "@torus-network/torus-utils/typing";
-import SuperJSON from "superjson";
-import { tryAsync } from "@torus-network/torus-utils/try-catch";
 import { BasicLogger } from "@torus-network/torus-utils/logger";
+import { tryAsync } from "@torus-network/torus-utils/try-catch";
+import type { ListItem, Nullish } from "@torus-network/torus-utils/typing";
 
 // -- Subspace refresh times --
 
@@ -494,6 +497,20 @@ export function useNamespaceEntriesOf(
     queryKey: ["namespace_entries_of", agent],
     enabled: api != null && agent != null,
     queryFn: () => queryNamespaceEntriesOf(api!, agent!),
+    staleTime: CONSTANTS.TIME.STAKE_STALE_TIME,
+    refetchOnWindowFocus: false,
+  });
+}
+
+export function useNamespacePathCreationCost(
+  api: Api | Nullish,
+  account: SS58Address | Nullish,
+  path: string | Nullish,
+) {
+  return useQuery({
+    queryKey: ["namespace_path_creation_cost", account, path],
+    enabled: api != null && account != null && path != null,
+    queryFn: () => queryNamespacePathCreationCost(api!, account!, path!),
     staleTime: CONSTANTS.TIME.STAKE_STALE_TIME,
     refetchOnWindowFocus: false,
   });

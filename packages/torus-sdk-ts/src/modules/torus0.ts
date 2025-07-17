@@ -1,6 +1,5 @@
 import { z } from "zod";
 
-import type { ApiPromise } from "@polkadot/api";
 import { strToByteArray } from "@torus-network/torus-utils";
 import type { Result } from "@torus-network/torus-utils/result";
 import { makeErr, makeOk } from "@torus-network/torus-utils/result";
@@ -132,7 +131,7 @@ export async function queryNamespaceEntriesOf(
  * ```
  */
 export async function queryNamespacePathCreationCost(
-  api: ApiPromise,
+  api: Api,
   accountId: SS58Address,
   namespacePath: string,
 ): Promise<Result<{ fee: bigint; deposit: bigint }, Error>> {
