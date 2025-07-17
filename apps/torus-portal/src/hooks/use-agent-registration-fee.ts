@@ -1,10 +1,14 @@
 import { useMemo } from "react";
 
+import type { ApiPromise } from "@polkadot/api";
+
 import type { Api, SS58Address } from "@torus-network/sdk";
+import { registerAgent } from "@torus-network/sdk";
 
 import {
   useBurnValue,
   useNamespacePathCreationCost,
+  useTransactionFee,
 } from "@torus-ts/query-provider/hooks";
 
 interface AgentRegistrationFeeResult {
@@ -24,7 +28,7 @@ export function useAgentRegistrationFee(
   agentName: string,
 ): AgentRegistrationFeeResult {
   const agentNamespacePath = agentName ? `agent.${agentName}` : "";
-  
+
   const {
     data: namespaceCost,
     isLoading: isLoadingNamespace,
@@ -37,14 +41,52 @@ export function useAgentRegistrationFee(
     error: burnError,
   } = useBurnValue(api);
 
+  const extrinsic = useMemo(() => {
+    if (!api || !account) return null;
+    return registerAgent({
+      api: api as ApiPromise,
+      name: "placeholder-name",
+      agentKey: account,
+      url: "placeholder-url",
+      metadata: "placeholder-metadata",
+    });
+  }, [api, account]);
+
+  const {
+    data: transactionFee,
+    isLoading: isLoadingTxFee,
+    error: txFeeError,
+  } = useTransactionFee(extrinsic, account);
+
   return useMemo(() => {
-    const isLoading = isLoadingNamespace || isLoadingBurn;
+    const isLoading = isLoadingNamespace || isLoadingBurn || isLoadingTxFee;
 
     if (isLoading) {
       return {
         isLoading: true,
         error: null,
-        feeItems: [],
+        feeItems: [
+          {
+            label: "Transaction Fee",
+            amount: 0n,
+          },
+          {
+            label: "Agent Registration Fee",
+            amount: 0n,
+            description: "15 TORUS burned for registration",
+          },
+          {
+            label: "Capability Creation Fee",
+            amount: 0n,
+            description: "Transaction fee for creating agent capability",
+          },
+          {
+            label: "Capability Deposit",
+            amount: 0n,
+            description:
+              "Reserved, can be reclaimed when capability is deleted",
+          },
+        ],
         totalAmount: 0n,
       };
     }
@@ -67,7 +109,16 @@ export function useAgentRegistrationFee(
       };
     }
 
-    if (!namespaceCost || !burnValue) {
+    if (txFeeError) {
+      return {
+        isLoading: false,
+        error: txFeeError.message,
+        feeItems: [],
+        totalAmount: 0n,
+      };
+    }
+
+    if (!namespaceCost || !burnValue || !transactionFee) {
       return {
         isLoading: false,
         error: null,
@@ -88,6 +139,10 @@ export function useAgentRegistrationFee(
     }
 
     const feeItems = [
+      {
+        label: "Transaction Fee",
+        amount: transactionFee,
+      },
       {
         label: "Agent Registration Fee",
         amount: burnValue,
@@ -110,14 +165,20 @@ export function useAgentRegistrationFee(
       error: null,
       feeItems,
       totalAmount:
-        burnValue + namespaceCostData.fee + namespaceCostData.deposit,
+        transactionFee +
+        burnValue +
+        namespaceCostData.fee +
+        namespaceCostData.deposit,
     };
   }, [
     namespaceCost,
     burnValue,
+    transactionFee,
     isLoadingNamespace,
     isLoadingBurn,
+    isLoadingTxFee,
     namespaceError,
     burnError,
+    txFeeError,
   ]);
 }

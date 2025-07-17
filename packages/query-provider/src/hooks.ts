@@ -2,6 +2,7 @@
 import "@polkadot/api-augment";
 
 import type { ApiPromise } from "@polkadot/api";
+import type { SubmittableExtrinsic } from "@polkadot/api/types";
 import type {
   QueryObserverOptions,
   UseQueryResult,
@@ -29,6 +30,7 @@ import {
   queryBurnValue,
   queryCachedStakeOut,
   queryDaoTreasuryAddress,
+  queryExtFee,
   queryFreeBalance,
   queryGlobalGovernanceConfig,
   queryIncentivesRatio,
@@ -512,6 +514,23 @@ export function useNamespacePathCreationCost(
     enabled: api != null && account != null && path != null,
     queryFn: () => queryNamespacePathCreationCost(api!, account!, path!),
     staleTime: CONSTANTS.TIME.STAKE_STALE_TIME,
+    refetchOnWindowFocus: false,
+  });
+}
+
+export function useTransactionFee(
+  extrinsic: SubmittableExtrinsic<"promise"> | Nullish,
+  from: SS58Address | Nullish,
+) {
+  return useQuery({
+    queryKey: ["transaction_fee", extrinsic?.hash.toString(), from],
+    enabled: extrinsic != null && from != null,
+    queryFn: async () => {
+      const [error, result] = await queryExtFee(extrinsic!, from!);
+      if (error) throw error;
+      return result.fee;
+    },
+    staleTime: CONSTANTS.TIME.LAST_BLOCK_STALE_TIME,
     refetchOnWindowFocus: false,
   });
 }

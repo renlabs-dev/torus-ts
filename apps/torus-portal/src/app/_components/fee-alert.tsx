@@ -93,7 +93,7 @@ export function FeeAlert({
                   <div className="font-medium">{item.label}</div>
                 </div>
                 <div className="text-right whitespace-nowrap">
-                  {formatToken(item.amount)} TORUS
+                  {formatToken(item.amount, 6)} TORUS
                 </div>
               </div>
             ))}
