@@ -38,7 +38,6 @@ export function TargetsField({ form, isAccountConnected }: TargetsFieldProps) {
         <FormLabel>Target Accounts</FormLabel>
         <Button
           type="button"
-          variant="outline"
           size="sm"
           onClick={() =>
             appendTarget({ account: "" as SS58Address, weight: "" })

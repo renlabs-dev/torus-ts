@@ -89,7 +89,6 @@ export function AllocationField({
               <FormLabel>Streams</FormLabel>
               <Button
                 type="button"
-                variant="outline"
                 size="sm"
                 onClick={() =>
                   appendStream({
