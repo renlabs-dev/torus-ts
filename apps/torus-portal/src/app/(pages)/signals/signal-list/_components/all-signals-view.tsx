@@ -2,7 +2,7 @@
 
 import { useMemo } from "react";
 
-import { Check, Trash2 } from "lucide-react";
+import { Check, Radio, Trash2 } from "lucide-react";
 
 import { useTorus } from "@torus-ts/torus-provider";
 import {
@@ -145,7 +145,7 @@ export default function AllSignalsView() {
                             disabled={fulfillSignalMutation.isPending}
                             className="bg-green-500 hover:bg-green-600"
                           >
-                            <Check className="w-4 h-4 mr-1" />
+                            <Radio className="w-4 h-4" />
                             {fulfillSignalMutation.isPending
                               ? "Fulfilling..."
                               : "Fulfill"}
@@ -163,7 +163,7 @@ export default function AllSignalsView() {
                             }}
                             disabled={deleteSignalMutation.isPending}
                           >
-                            <Trash2 className="w-4 h-4 mr-1" />
+                            <Trash2 className="w-4 h-4" />
                             {deleteSignalMutation.isPending
                               ? "Deleting..."
                               : "Delete"}
