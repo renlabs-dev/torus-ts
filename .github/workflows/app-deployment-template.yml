@@ -57,6 +57,8 @@ jobs:
           context: .
           push: true
           file: docker/Dockerfile
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
           build-args: |
             APP_NAME=${{ inputs.app_name }}
             TURBO_API=${{ vars.TURBO_API }}
