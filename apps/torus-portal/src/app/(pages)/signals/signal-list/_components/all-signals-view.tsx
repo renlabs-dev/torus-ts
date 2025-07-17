@@ -111,7 +111,7 @@ export default function AllSignalsView() {
               </AccordionTrigger>
               <AccordionContent>
                 <div className="space-y-4">
-                  <div className="flex items-center justify-between">
+                  <div className="flex md:flex-row flex-col gap-2 items-center justify-between">
                     <div className="grid grid-cols-2 gap-4 flex-1">
                       <div>
                         <p className="text-sm text-muted-foreground">
