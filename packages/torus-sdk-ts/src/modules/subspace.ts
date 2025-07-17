@@ -4,6 +4,9 @@ import type { ApiPromise } from "@polkadot/api";
 import type { KeyringPair } from "@polkadot/keyring/types";
 import type { Percent } from "@polkadot/types/interfaces";
 import type { z } from "zod";
+
+import { tryAsync, trySync } from "@torus-network/torus-utils/try-catch";
+
 import type { SS58Address } from "../address.js";
 import type { Balance } from "../types/index.js";
 import {
@@ -19,7 +22,6 @@ import {
 } from "../types/index.js";
 import type { Api } from "./_common.js";
 import { handleDoubleMapEntries, handleMapEntries } from "./_common.js";
-import { tryAsync, trySync } from "@torus-network/torus-utils/try-catch";
 
 // ==== Balances ====
 
@@ -242,6 +244,7 @@ export async function queryKeyStakedTo(
   return result;
 }
 
+// TODO: rename to `queryAgentBurn`
 export async function queryBurnValue(api: Api): Promise<bigint> {
   const [queryError, burn] = await tryAsync(api.query.torus0.burn());
   if (queryError !== undefined) {
