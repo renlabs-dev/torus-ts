@@ -5,12 +5,16 @@ import "@polkadot/api/augment";
 import { ApiPromise, WsProvider } from "@polkadot/api";
 
 import { BasicLogger } from "@torus-network/torus-utils/logger";
+import { formatToken } from "@torus-network/torus-utils/subspace";
+
+import { SS58Address } from "./address.js";
+import { queryExtFee } from "./modules/_common.js";
 
 const log = BasicLogger.create({ name: "torus-sdk-ts.main" });
 
 // // $ pnpm exec tsx src/main.ts
 
-const NODE_URL = "wss://api.testnet.torus.network";
+const NODE_URL = "wss://api-30.nodes.torus.network";
 
 async function connectToChainRpc(wsEndpoint: string) {
   const wsProvider = new WsProvider(wsEndpoint);
@@ -24,50 +28,58 @@ async function connectToChainRpc(wsEndpoint: string) {
 
 const api = await connectToChainRpc(NODE_URL);
 
-// // ====
+// =============================================================================
 
-// Test queryNamespaceEntriesOf function
-import { queryNamespaceEntriesOf } from "./modules/torus0.js";
-import { SS58Address } from "./address.js";
+// const cost = await queryNamespacePathCreationCost(
+//   api,
+//   "5E2X371Jg62WWmKVVhDNgfFNtjXTSKMQDGGWKgqimKUgZ9gX" as SS58Address,
+//   "agent.agent-test.alice.api.twitter.test",
+// );
+// console.log("Namespace path creation cost:", cost);
+// // [
+// //   undefined,
+// //   { fee: 16615066762142640128n, deposit: 27400000000000000000n }
+// // ]
 
-async function testQueryNamespaceEntriesOf() {
-  console.log("Testing queryNamespaceEntriesOf function...");
+// const burnValue = await queryBurnValue(api);
+// console.log("Burn value:", burnValue);
+// // Burn value: 15000000000000000000n
 
-  // Test with a sample agent address (you can replace this with an actual agent address)
-  const testAgentAddress = "5E2X371Jg62WWmKVVhDNgfFNtjXTSKMQDGGWKgqimKUgZ9gX"; // Alice's address
+const ext = api.tx.torus0.registerAgent(
+  "5E2X371Jg62WWmKVVhDNgfFNtjXTSKMQDGGWKgqimKUgZ9gX" as SS58Address,
+  "agent.edmundo",
+  "https://twitter.com/agent-test",
+  "Twitter agent",
+);
 
-  try {
-    const result = await queryNamespaceEntriesOf(
-      api,
-      testAgentAddress as SS58Address,
-    );
-    console.log("✅ queryNamespaceEntriesOf succeeded");
-    console.log("📊 Result:", result);
+// const info = await api.rpc.payment.queryInfo(ext.toU8a());
 
-    // The result is now an array of NamespaceEntry records
-    console.log("📈 Number of namespace entries:", result.length);
+// console.log("info:", info);
 
-    // Log first few entries if any exist
-    if (result.length > 0) {
-      console.log("🔍 Sample namespace entries:");
-      result.slice(0, 3).forEach((entry, index) => {
-        console.log(`  Entry ${index + 1}:`, {
-          path: entry.path,
-          createdAt: entry.createdAt,
-          deposit: entry.deposit,
-        });
-      });
-    } else {
-      console.log("ℹ️ No namespace entries found for this agent");
-    }
-  } catch (error) {
-    console.error("❌ queryNamespaceEntriesOf failed:", error);
-    console.error("Stack:", (error as Error).stack);
-  }
-}
+// const feeDetails = await queryExtFeeInfo(api, ext);
+// console.log("Fee details:", feeDetails);
 
-// Run the test
-await testQueryNamespaceEntriesOf();
+// Fee for registerAgent:
+// - queryNamespacePathCreationCost (agent.name)
+// - queryBurnValue (15 TORUS)
+// Fee for namespace creation:
+// - queryNamespacePathCreationCost (agent.name.alice.api.test)
+
+// // Create an example extrinsic (e.g., a balance transfer)
+// const ext = api.tx.balances.transferKeepAlive(
+//   "5Dr24SR8LCRsG3pGb4VjUE11yEjuvWhoHk4cLBmN85znWzp6",
+//   100000000000000,
+// );
+
+const [error, feeRes] = await queryExtFee(
+  ext,
+  "5Dr24SR8LCRsG3pGb4VjUE11yEjuvWhoHk4cLBmN85znWzp6",
+);
+if (error !== undefined) throw error;
+const { fee } = feeRes;
+
+console.log(`Fee: ${fee} rems`);
+console.log(`Fee: ${formatToken(fee, 9)} TORUS`);
 
 // Disconnect when done
 await api.disconnect();

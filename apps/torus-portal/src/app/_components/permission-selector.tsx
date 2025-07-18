@@ -39,7 +39,8 @@ import {
 
 import { api as trpcApi } from "~/trpc/react";
 
-import type { PermissionWithDetails } from "../(pages)/edit-permission/_components/revoke-permission-button";
+// TODO: Move this import to a more appropriate location
+import type { PermissionWithDetails } from "../(pages)/permissions/edit-permission/_components/revoke-permission-button";
 
 interface PermissionSelectorProps {
   control: Control<{
@@ -229,7 +230,7 @@ export function PermissionSelector(props: PermissionSelectorProps) {
                 disabled={!isAccountConnected || !hasPermissions}
               >
                 <FormControl>
-                  <SelectTrigger>
+                  <SelectTrigger className="w-full">
                     <SelectValue placeholder={getPlaceholderText()} />
                   </SelectTrigger>
                 </FormControl>
@@ -285,22 +286,16 @@ export function PermissionSelector(props: PermissionSelectorProps) {
                               const permissionId =
                                 item.permissions.permissionId;
                               const permissionType = getPermissionType(item);
-                              const isBothRoles =
-                                selectedAccount &&
-                                item.permissions.grantorAccountId ===
-                                  selectedAccount.address &&
-                                item.permissions.granteeAccountId ===
-                                  selectedAccount.address;
+
                               return (
                                 <SelectItem
                                   key={permissionId}
                                   value={permissionId}
                                 >
                                   <div className="flex items-center gap-2">
-                                    <span>{smallAddress(permissionId)}</span>
+                                    <span>{smallAddress(permissionId, 6)}</span>
                                     <span className="text-xs text-muted-foreground">
-                                      ({permissionType}
-                                      {isBothRoles ? " - Both Roles" : ""})
+                                      {permissionType}
                                     </span>
                                   </div>
                                 </SelectItem>
@@ -339,9 +334,9 @@ export function PermissionSelector(props: PermissionSelectorProps) {
 
           <CardContent className="text-xs p-4 pt-0">
             {getDetailRows().map((row) => (
-              <div key={row.label}>
-                <span className="font-medium">{row.label}:</span>
-                <span className={"ml-2 text-muted-foreground"}>
+              <div key={row.label} className="flex">
+                <span className="font-medium flex-shrink-0">{row.label}:</span>
+                <span className="ml-2 text-muted-foreground break-all">
                   {row.value}
                 </span>
               </div>

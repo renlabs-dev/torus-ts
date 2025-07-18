@@ -152,6 +152,17 @@ export function TransferEVM() {
     }
   }, [hasMounted, torusEvmClient]);
 
+  useEffect(() => {
+    if (
+      mode === "withdraw" &&
+      chain &&
+      chain.id !== torusEvmChainId &&
+      hasMounted
+    ) {
+      switchChain({ chainId: torusEvmChainId });
+    }
+  }, [mode, chain, torusEvmChainId, hasMounted, switchChain]);
+
   const refetchHandler = useCallback(async () => {
     await Promise.all([refetchTorusEvmBalance(), accountFreeBalance.refetch()]);
   }, [refetchTorusEvmBalance, accountFreeBalance]);
@@ -205,21 +216,10 @@ export function TransferEVM() {
       return;
     }
 
-    // Check if on the correct chain
     if (chain.id !== torusEvmChainId) {
-      const [switchError] = trySync(() =>
-        switchChain({ chainId: torusEvmChainId }),
-      );
-
-      if (switchError !== undefined) {
-        console.error("Error switching chain:", switchError);
-        toast.error("Failed to switch network.");
-        return;
-      }
-
       toast({
-        title: "Wait, you were connected to the wrong network.",
-        description: "We switched you to Torus. Please try to withdraw again.",
+        title: "Switching networks...",
+        description: "Please wait while we switch to the Torus EVM network.",
       });
       return;
     }
@@ -312,7 +312,6 @@ export function TransferEVM() {
     chain,
     selectedAccount,
     torusEvmChainId,
-    switchChain,
     amountRems,
     refetchHandler,
     wagmiConfig,

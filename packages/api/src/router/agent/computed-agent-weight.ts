@@ -50,8 +50,6 @@ export const computedAgentWeightRouter = {
         ),
       });
 
-      console.log(result);
-
       if (!result) {
         return null;
       }

@@ -2,12 +2,19 @@ default: install check-all
 
 # == Chain metadata ==
 
-dump-metadata name:
-	mkdir -p ./data/metadata
-	scripts/get-metadata.sh {{ name }} > ./data/metadata/{{ name }}.json
+# Dump metadata from chain named 'name'
+metadata-dump name:
+  mkdir -p ./data/metadata
+  scripts/get-metadata.sh {{ name }} > ./data/metadata/{{ name }}.json
 
-gen-types name: (dump-metadata name)
-	(cd packages/torus-sdk-ts && just gen-types {{ name }})
+# Generate Polkadot.js types from metadata file '<name>.json'
+gen-types-from name:
+  (cd packages/torus-sdk-ts && just gen-types {{ name }})
+
+# Dump metadata from chain named 'name' and generate types
+gen-types name:
+  just metadata-dump {{ name }}
+  (cd packages/torus-sdk-ts && just gen-types {{ name }})
 
 # == Dev ==
 

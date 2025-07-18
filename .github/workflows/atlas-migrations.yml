@@ -43,6 +43,7 @@ jobs:
       - uses: ariga/setup-atlas@v0
 
       - run: git fetch origin main:main
+        if: github.ref_name != 'main'
 
       - name: Run lint
         run: |

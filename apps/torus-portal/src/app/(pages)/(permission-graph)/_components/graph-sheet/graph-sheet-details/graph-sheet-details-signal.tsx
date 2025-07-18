@@ -1,4 +1,4 @@
-import { Calendar, Percent, User, Users } from "lucide-react";
+import { Calendar, Check, Percent, User, Users } from "lucide-react";
 
 import { smallAddress } from "@torus-network/torus-utils/subspace";
 
@@ -52,10 +52,18 @@ export function GraphSheetDetailsSignal({ selectedNode }: SignalDetailsProps) {
               <Users className="w-5 h-5" />
               {signalData.title}
             </CardTitle>
-            <Badge variant="secondary" className="flex items-center gap-1">
-              <Percent className="w-3 h-3" />
-              {signalData.proposedAllocation}
-            </Badge>
+            <div className="flex items-center gap-2">
+              {signalData.fulfilled && (
+                <Badge className="bg-green-500 text-white gap-1">
+                  <Check className="w-3 h-3" />
+                  Fulfilled
+                </Badge>
+              )}
+              <Badge variant="secondary" className="flex items-center gap-1">
+                <Percent className="w-3 h-3" />
+                {signalData.proposedAllocation}
+              </Badge>
+            </div>
           </div>
           <CardDescription>
             Demand Signal from {smallAddress(signalData.agentKey)}

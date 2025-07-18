@@ -1,32 +1,43 @@
 "use client";
 
+import { useEffect, useState } from "react";
+
 import {
-  Alert,
-  AlertDescription,
-  AlertTitle,
-} from "@torus-ts/ui/components/alert";
-import { Ban } from "lucide-react";
+  DestructiveAlertWithDescription,
+} from "./destructive-alert-with-description";
 
 interface WalletConnectionWarningProps {
-  formType?: string;
   isAccountConnected: boolean;
+  isInitialized?: boolean;
 }
 
 export function WalletConnectionWarning({
-  formType,
   isAccountConnected,
+  isInitialized = true,
 }: WalletConnectionWarningProps) {
-  if (isAccountConnected) {
+  const [showWarning, setShowWarning] = useState(false);
+
+  useEffect(() => {
+    if (!isInitialized || isAccountConnected) {
+      setShowWarning(false);
+      return;
+    }
+
+    const timer = setTimeout(() => {
+      setShowWarning(true);
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [isInitialized, isAccountConnected]);
+
+  if (!showWarning) {
     return null;
   }
 
   return (
-    <Alert variant="destructive">
-      <Ban className="h-4 w-4" />
-      <AlertTitle>Wallet Required!</AlertTitle>
-      <AlertDescription>
-        Please connect a wallet to {formType ?? "procede"}.
-      </AlertDescription>
-    </Alert>
+    <DestructiveAlertWithDescription
+      title="Wallet Required!"
+      description="Please connect a wallet to proceed."
+    />
   );
 }

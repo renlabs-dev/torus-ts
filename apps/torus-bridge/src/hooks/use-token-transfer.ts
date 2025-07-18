@@ -8,7 +8,7 @@ import {
   useTransactionFns,
 } from "@hyperlane-xyz/widgets";
 import { useToast } from "@torus-ts/ui/hooks/use-toast";
-import { ToastTxSuccess } from "~/app/_components/toast/tx-success-toast";
+import { useTxSuccessToast } from "~/app/_components/toast/tx-success-toast";
 import { useCallback, useState } from "react";
 import { getChainDisplayName } from "../utils/chain";
 import { logger } from "../utils/logger";
@@ -39,6 +39,7 @@ export function useTokenTransfer(onDone?: () => void) {
   const activeChains = useActiveChains(multiProvider);
   const transactionFns = useTransactionFns(multiProvider);
   const { toast } = useToast();
+  const txSuccessToast = useTxSuccessToast();
 
   const [isLoading, setIsLoading] = useState(false);
 
@@ -57,6 +58,7 @@ export function useTokenTransfer(onDone?: () => void) {
         setIsLoading,
         onDone,
         toast,
+        txSuccessToast,
       }),
     [
       warpCore,
@@ -69,6 +71,7 @@ export function useTokenTransfer(onDone?: () => void) {
       updateTransferStatus,
       onDone,
       toast,
+      txSuccessToast,
     ],
   );
 
@@ -90,6 +93,7 @@ async function executeTransfer({
   setIsLoading,
   onDone,
   toast,
+  txSuccessToast,
 }: {
   warpCore: WarpCore;
   values: TransferFormValues;
@@ -102,6 +106,7 @@ async function executeTransfer({
   setIsLoading: (b: boolean) => void;
   onDone?: () => void;
   toast: ReturnType<typeof useToast>["toast"];
+  txSuccessToast: ReturnType<typeof useTxSuccessToast>;
 }) {
   logger.debug("Preparing transfer transaction(s)");
   setIsLoading(true);
@@ -389,7 +394,7 @@ async function executeTransfer({
     txReceipt = receipt;
     const description = toTitleCase(tx.category);
     logger.debug(`${description} transaction confirmed, hash:`, hash);
-    ToastTxSuccess(`${description} transaction sent!`, hash, origin);
+    txSuccessToast(`${description} transaction sent!`, hash, origin);
     hashes.push(hash);
   }
 

@@ -33,6 +33,7 @@ export default function AllocatedAgentsPage() {
               registrationBlock={agent.registrationBlock}
               percComputedWeight={agent.percComputedWeight}
               weightFactor={agent.weightFactor}
+              isWhitelisted={true}
             />
           ))}
         </div>

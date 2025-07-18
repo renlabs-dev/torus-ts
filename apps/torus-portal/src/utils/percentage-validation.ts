@@ -51,19 +51,6 @@ export function createPercentageArrayValidator<T extends Record<string, any>>(
 }
 
 /**
- * Creates a superRefine validator specifically for stream-like objects with percentage strings.
- */
-export const createStreamPercentageValidator = () =>
-  createPercentageArrayValidator(
-    (stream: { percentage: string }) => stream.percentage,
-    {
-      percentageField: "percentage",
-      totalErrorMessage: "Total percent must not exceed 100",
-      itemErrorMessage: "Contributes to total over 100%",
-    },
-  );
-
-/**
  * Creates a superRefine validator specifically for target-like objects with weight strings.
  */
 export const createTargetWeightValidator = () =>

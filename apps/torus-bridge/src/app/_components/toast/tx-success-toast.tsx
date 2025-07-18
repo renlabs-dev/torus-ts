@@ -2,24 +2,13 @@ import type { ChainName } from "@hyperlane-xyz/sdk";
 import { useToast } from "@torus-ts/ui/hooks/use-toast";
 import { useMultiProvider } from "~/hooks/use-multi-provider";
 
-export function ToastTxSuccess(msg: string, txHash: string, chain: ChainName) {
-  const { toast } = useToast();
-  toast({
-    title: "Success!",
-    description: <TxSuccessToast msg={msg} txHash={txHash} chain={chain} />,
-    duration: 12000,
-  });
-}
-
-export function TxSuccessToast({
-  msg,
-  txHash,
-  chain,
-}: Readonly<{
+interface TxSuccessContentProps {
   msg: string;
   txHash: string;
   chain: ChainName;
-}>) {
+}
+
+const TxSuccessContent = ({ msg, txHash, chain }: TxSuccessContentProps) => {
   const multiProvider = useMultiProvider();
   const url = multiProvider.tryGetExplorerTxUrl(chain, { hash: txHash });
 
@@ -38,4 +27,16 @@ export function TxSuccessToast({
       )}
     </div>
   );
-}
+};
+
+export const useTxSuccessToast = () => {
+  const { toast } = useToast();
+
+  return (msg: string, txHash: string, chain: ChainName) => {
+    toast({
+      title: "Success!",
+      description: <TxSuccessContent msg={msg} txHash={txHash} chain={chain} />,
+      duration: 12000,
+    });
+  };
+};

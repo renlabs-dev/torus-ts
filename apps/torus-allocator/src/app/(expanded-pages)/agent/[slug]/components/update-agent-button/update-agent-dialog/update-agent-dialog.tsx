@@ -83,7 +83,6 @@ export default function UpdateAgentDialog({
     mode: "onChange",
     defaultValues: {
       name: "",
-      title: "",
       shortDescription: "",
       description: "",
       website: "",
@@ -111,7 +110,6 @@ export default function UpdateAgentDialog({
     if (agent && agentMetadata) {
       const originalData = {
         name: agent.name ?? "",
-        title: agentMetadata.metadata.title || "",
         shortDescription: agentMetadata.metadata.short_description || "",
         description: agentMetadata.metadata.description || "",
         website: agentMetadata.metadata.website ?? "",

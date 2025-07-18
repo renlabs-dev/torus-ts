@@ -158,7 +158,9 @@ export function AllocatorAgentItem(props: Readonly<AgentCardProps>) {
       </div>
 
       <div className="mt-4 flex flex-col gap-2">
-        <p className="text-sm md:min-h-16">{shortDescription}</p>
+        <p className="max-w-[15rem] break-words text-sm sm:max-w-[40rem] md:min-h-16">
+          {shortDescription}
+        </p>
         {!props.shouldHideAllocation && (
           <>
             <div>

@@ -4,7 +4,9 @@ import { useTorus } from "@torus-ts/torus-provider";
 import { CardFooter } from "@torus-ts/ui/components/card";
 import { Label } from "@torus-ts/ui/components/label";
 import { Slider } from "@torus-ts/ui/components/slider";
+
 import { useDelegateAgentStore } from "~/stores/delegateAgentStore";
+
 import { SkeletonAgentCardFooter } from "./agent-card-skeleton-loader";
 
 interface AgentCardFooterProps {
@@ -15,6 +17,7 @@ interface AgentCardFooterProps {
   registrationBlock: number | null;
   percComputedWeight: number | null;
   weightFactor: number | null;
+  isWhitelisted: boolean;
 }
 
 export function AgentCardFooter(props: Readonly<AgentCardFooterProps>) {
@@ -62,6 +65,10 @@ export function AgentCardFooter(props: Readonly<AgentCardFooterProps>) {
 
   if (!isInitialized) {
     return <SkeletonAgentCardFooter />;
+  }
+
+  if (!props.isWhitelisted) {
+    return null;
   }
 
   return (

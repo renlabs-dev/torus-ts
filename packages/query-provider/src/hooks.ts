@@ -1,11 +1,15 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 import "@polkadot/api-augment";
+
 import type { ApiPromise } from "@polkadot/api";
+import type { SubmittableExtrinsic } from "@polkadot/api/types";
 import type {
   QueryObserverOptions,
   UseQueryResult,
 } from "@tanstack/react-query";
 import { useQueries, useQuery } from "@tanstack/react-query";
+import SuperJSON from "superjson";
+
 import type {
   Api,
   LastBlock,
@@ -26,6 +30,7 @@ import {
   queryBurnValue,
   queryCachedStakeOut,
   queryDaoTreasuryAddress,
+  queryExtFee,
   queryFreeBalance,
   queryGlobalGovernanceConfig,
   queryIncentivesRatio,
@@ -33,6 +38,8 @@ import {
   queryKeyStakingTo,
   queryLastBlock,
   queryMinAllowedStake,
+  queryNamespaceEntriesOf,
+  queryNamespacePathCreationCost,
   queryPermission,
   queryPermissionsByGrantee,
   queryPermissionsByGrantor,
@@ -45,12 +52,10 @@ import {
   queryTreasuryEmissionFee,
   queryUnrewardedProposals,
   queryWhitelist,
-  queryNamespaceEntriesOf,
 } from "@torus-network/sdk";
-import type { ListItem, Nullish } from "@torus-network/torus-utils/typing";
-import SuperJSON from "superjson";
-import { tryAsync } from "@torus-network/torus-utils/try-catch";
 import { BasicLogger } from "@torus-network/torus-utils/logger";
+import { tryAsync } from "@torus-network/torus-utils/try-catch";
+import type { ListItem, Nullish } from "@torus-network/torus-utils/typing";
 
 // -- Subspace refresh times --
 
@@ -495,6 +500,37 @@ export function useNamespaceEntriesOf(
     enabled: api != null && agent != null,
     queryFn: () => queryNamespaceEntriesOf(api!, agent!),
     staleTime: CONSTANTS.TIME.STAKE_STALE_TIME,
+    refetchOnWindowFocus: false,
+  });
+}
+
+export function useNamespacePathCreationCost(
+  api: Api | Nullish,
+  account: SS58Address | Nullish,
+  path: string | Nullish,
+) {
+  return useQuery({
+    queryKey: ["namespace_path_creation_cost", account, path],
+    enabled: api != null && account != null && path != null,
+    queryFn: () => queryNamespacePathCreationCost(api!, account!, path!),
+    staleTime: CONSTANTS.TIME.STAKE_STALE_TIME,
+    refetchOnWindowFocus: false,
+  });
+}
+
+export function useTransactionFee(
+  extrinsic: SubmittableExtrinsic<"promise"> | Nullish,
+  from: SS58Address | Nullish,
+) {
+  return useQuery({
+    queryKey: ["transaction_fee", extrinsic?.hash.toString(), from],
+    enabled: extrinsic != null && from != null,
+    queryFn: async () => {
+      const [error, result] = await queryExtFee(extrinsic!, from!);
+      if (error) throw error;
+      return result.fee;
+    },
+    staleTime: CONSTANTS.TIME.LAST_BLOCK_STALE_TIME,
     refetchOnWindowFocus: false,
   });
 }
