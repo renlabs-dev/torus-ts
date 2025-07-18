@@ -20,17 +20,13 @@ import { useToast } from "@torus-ts/ui/hooks/use-toast";
 import { cn } from "@torus-ts/ui/lib/utils";
 
 import PortalFormHeader from "~/app/_components/portal-form-header";
+import { useCanCreateSignal } from "~/hooks/use-can-create-signal";
 import { api } from "~/trpc/react";
 import { tryCatch } from "~/utils/try-catch";
-import { useCanCreateSignal } from "~/hooks/use-can-create-signal";
 
 import { AgentEmissionsWarning } from "./agent-emissions-warning";
-import {
-  CreateSignalMarkdownField,
-} from "./create-signal-fields/create-signal-markdown-field";
-import {
-  CreateSignalSliderField,
-} from "./create-signal-fields/create-signal-slider-field";
+import { CreateSignalMarkdownField } from "./create-signal-fields/create-signal-markdown-field";
+import { CreateSignalSliderField } from "./create-signal-fields/create-signal-slider-field";
 
 export function CreateSignalForm({
   className,
@@ -38,7 +34,7 @@ export function CreateSignalForm({
 }: React.ComponentProps<"form">) {
   const { toast } = useToast();
   const { selectedAccount, isAccountConnected, isInitialized } = useTorus();
-  const { canCreate, isLoading: isAuthLoading, isRootAgent } = useCanCreateSignal();
+  const { canCreate, isLoading: isAuthLoading } = useCanCreateSignal();
 
   const existingSignals = api.signal.byCreatorId.useQuery(
     { creatorId: selectedAccount?.address ?? "" },
@@ -99,7 +95,7 @@ export function CreateSignalForm({
         />
 
         <AgentEmissionsWarning
-          hasAgentKey={isRootAgent}
+          hasAgentKey={canCreate}
           isLoading={isAuthLoading}
           isAccountConnected={isAccountConnected}
           isInitialized={isInitialized}
