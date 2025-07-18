@@ -1,5 +1,9 @@
 "use client";
 
+import { useState } from "react";
+
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+
 import {
   Select,
   SelectContent,
@@ -7,20 +11,24 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@torus-ts/ui/components/select";
-import { usePathname, useRouter } from "next/navigation";
-import { useState } from "react";
 
 const views = [
-  { label: "All Agents", value: "/" },
-  { label: "New Agents", value: "/new-agents" },
+  { label: "Root Agents", value: "/" },
+  { label: "New Root Agents", value: "/new-agents" },
   { label: "My Allocated Agents", value: "/allocated-agents" },
+  { label: "Registered Agents", value: "/?isWhitelisted=false" },
 ];
 
 export function ViewSelector() {
   const router = useRouter();
   const pathname = usePathname();
+  const searchParams = useSearchParams();
 
   const getInitialView = () => {
+    const isWhitelisted = searchParams.get("isWhitelisted");
+    if (pathname === "/" && isWhitelisted === "false") {
+      return "/?isWhitelisted=false";
+    }
     const matchingView = views.find((view) => view.value === pathname);
     return matchingView ? matchingView.value : "/";
   };

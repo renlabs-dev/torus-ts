@@ -1,4 +1,5 @@
 import { api } from "~/trpc/server";
+
 import { AgentCard } from "./agent-card/agent-card";
 import { PaginationNav } from "./pagination-nav";
 
@@ -8,18 +9,21 @@ interface FetchAgentCardsProps {
   page?: number;
   search?: string | null;
   orderBy?: "createdAt.desc" | undefined;
+  isWhitelisted?: boolean;
 }
 
 export async function AgentList({
   page = 1,
   search = undefined,
   orderBy,
+  isWhitelisted = true,
 }: FetchAgentCardsProps) {
   const result = await api.agent.paginated({
     page,
     limit: ITEMS_PER_PAGE,
     search: search ?? undefined,
     orderBy,
+    isWhitelisted,
   });
 
   const { agents, pagination } = result;
@@ -37,6 +41,7 @@ export async function AgentList({
             weightFactor={agent.weightFactor}
             registrationBlock={agent.registrationBlock}
             percComputedWeight={agent.percComputedWeight}
+            isWhitelisted={agent.isWhitelisted ?? false}
           />
         ))}
       </div>
