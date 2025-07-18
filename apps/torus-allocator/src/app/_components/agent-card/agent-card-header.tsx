@@ -1,5 +1,7 @@
 "use client";
 
+import { Award, Globe } from "lucide-react";
+
 import { useTorus } from "@torus-ts/torus-provider";
 import { Badge } from "@torus-ts/ui/components/badge";
 import { CardHeader } from "@torus-ts/ui/components/card";
@@ -11,14 +13,15 @@ import {
 import { Label } from "@torus-ts/ui/components/label";
 import { Skeleton } from "@torus-ts/ui/components/skeleton";
 import { cn } from "@torus-ts/ui/lib/utils";
-import { Award, Globe } from "lucide-react";
+
 import { useQueryAgentMetadata } from "~/hooks/use-agent-metadata";
 import { useBlobUrl } from "~/hooks/use-blob-url";
 import { useWeeklyUsdCalculation } from "~/hooks/use-weekly-usd";
 import { useDelegateAgentStore } from "~/stores/delegateAgentStore";
+
 import { AgentIcon } from "../agent-icon";
 import { SkeletonAgentCardHeader } from "./agent-card-skeleton-loader";
-import { buildSocials, AgentCardSocialsInfo } from "./agent-card-socials-info";
+import { AgentCardSocialsInfo, buildSocials } from "./agent-card-socials-info";
 
 export interface AgentPreviewData {
   title?: string;
@@ -141,11 +144,6 @@ export function AgentCardHeader({
           metadataResult?.metadata.website,
         );
 
-  const title =
-    previewMode && previewData?.title
-      ? previewData.title
-      : (metadataResult?.metadata.title ?? name);
-
   const isAgentDelegated = delegatedAgents.some((a) => a.address === agentKey);
   const isAgentSelected = originalAgents.some((a) => a.address === agentKey);
 
@@ -166,7 +164,7 @@ export function AgentCardHeader({
             />
           </div>
           <h2 className="w-fit text-ellipsis text-base font-semibold md:max-w-fit">
-            {title}
+            {name}
           </h2>
           <AgentStats
             percComputedWeight={percComputedWeight}

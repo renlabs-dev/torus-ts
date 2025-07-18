@@ -71,7 +71,7 @@ export const uploadMetadata = async (
   const images = icon ? { icon } : undefined;
 
   const finalMetadata = {
-    title: metadata.title,
+    title: metadata.name,
     short_description: metadata.shortDescription,
     description: metadata.description,
     website: metadata.website,

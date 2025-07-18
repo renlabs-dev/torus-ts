@@ -82,46 +82,25 @@ export function UpdateAgentDialogForm({
         <div className="space-y-4">
           <h3 className="text-lg font-medium">Basic Information</h3>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <FormField
-              control={form.control}
-              name="name"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="flex items-center gap-2">
-                    Name <span className="text-red-500">*</span>
-                  </FormLabel>
-                  <FormControl>
-                    <Input
-                      {...field}
-                      disabled
-                      className="bg-muted/50 cursor-not-allowed"
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="title"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="flex items-center gap-2">
-                    Title <span className="text-red-500">*</span>
-                  </FormLabel>
-                  <FormControl>
-                    <Input
-                      {...field}
-                      placeholder="Ex.: AI Support Specialist"
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </div>
+          <FormField
+            control={form.control}
+            name="name"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="flex items-center gap-2">
+                  Name <span className="text-red-500">*</span>
+                </FormLabel>
+                <FormControl>
+                  <Input
+                    {...field}
+                    disabled
+                    className="bg-muted/50 cursor-not-allowed"
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
 
           <FormField
             control={form.control}
