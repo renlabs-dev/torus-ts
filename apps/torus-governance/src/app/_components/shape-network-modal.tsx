@@ -2,13 +2,7 @@
 
 import { useEffect, useState } from "react";
 
-import {
-  ClipboardPlus,
-  Coins,
-  FileText,
-  Grid2x2Check,
-  Grid2x2Plus,
-} from "lucide-react";
+import { ClipboardPlus, Coins, FileText, Grid2x2Plus } from "lucide-react";
 
 import { trySync } from "@torus-network/torus-utils/try-catch";
 
@@ -29,18 +23,22 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@torus-ts/ui/components/select";
-import { WalletConnectionWarning } from "@torus-ts/ui/components/wallet-connection-warning";
+import {
+  WalletConnectionWarning,
+} from "@torus-ts/ui/components/wallet-connection-warning";
 
 import { useGovernance } from "~/context/governance-provider";
 
-import { CreateAgentApplication } from "./agent-application/create-agent-application";
+import {
+  CreateAgentApplication,
+} from "./agent-application/create-agent-application";
 import { CreateProposal } from "./proposal/create-proposal";
-import { CreateTransferDaoTreasuryProposal } from "./proposal/create-transfer-dao-treasury-proposal";
-import { RegisterAgent } from "./proposal/register-agent";
+import {
+  CreateTransferDaoTreasuryProposal,
+} from "./proposal/create-transfer-dao-treasury-proposal";
 
 type ViewType =
   | "whitelist-agent"
-  | "register-agent"
   | "create-proposal"
   | "create-transfer-dao-treasury-proposal";
 
@@ -53,13 +51,6 @@ interface ViewSpec {
 }
 
 const viewList: Record<ViewType, ViewSpec> = {
-  "register-agent": {
-    label: "Register an agent",
-    description: "Register an agent on the network",
-    icon: <Grid2x2Check className="h-4 w-4 text-green-500" />,
-    component: <RegisterAgent />,
-    separatorAfter: true,
-  },
   "whitelist-agent": {
     label: "Whitelist an agent",
     description:
@@ -83,7 +74,7 @@ const viewList: Record<ViewType, ViewSpec> = {
 export function ShapeNetworkModal() {
   const { isAccountConnected } = useTorus();
   const { isInitialized } = useGovernance();
-  const [selectedView, setSelectedView] = useState<ViewType>("register-agent");
+  const [selectedView, setSelectedView] = useState<ViewType>("whitelist-agent");
   const [isOpen, setIsOpen] = useState(false);
 
   useEffect(() => {
