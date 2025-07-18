@@ -16,11 +16,11 @@ import { tryAsync, trySync } from "@torus-network/torus-utils/try-catch";
 
 /**
  * Represents the merkleized metadata structure.
- * @property {string} metadataHash - The hexadecimal hash of the merkleized metadata.
- * @property {ReturnType<typeof merkleizeMetadata>} merkleizedMetadata - The result of the merkleizeMetadata function.
  */
 interface MerkleizedMetadata {
+  /** The hexadecimal hash of the merkleized metadata. */
   metadataHash: `0x${string}`;
+  /** The result of the merkleizeMetadata function. */
   merkleizedMetadata: ReturnType<typeof merkleizeMetadata>;
 }
 

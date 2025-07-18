@@ -31,6 +31,7 @@ import {
  * `*` = terminal states
  */
 export const sb_extrinsic_status = sb_enum({
+  /**  */
   Future: sb_null,
   Ready: sb_null,
   Broadcast: sb_array(sb_string),
@@ -61,7 +62,9 @@ export type TxStage = Enum<{
  * Extrinsic status helper.
  */
 export interface TxHelper {
+  /** FILL */
   isSigning: boolean;
+  /** */
   isSubmitted: boolean;
   isPending: boolean;
   isSuccess: boolean;
