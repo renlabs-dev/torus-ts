@@ -1,8 +1,10 @@
 import { setup } from "@torus-network/sdk";
+import { selectRandomRpcUrl } from "./utils.js";
 
-const NODE_URL = "wss://api.testnet.torus.network";
-
-export const connectToChainRpc = async () => setup(NODE_URL);
+export const connectToChainRpc = async (wsUrl?: string) => {
+  const url = wsUrl ?? selectRandomRpcUrl();
+  return setup(url);
+};
 
 export type ApiPromise = Awaited<ReturnType<typeof connectToChainRpc>>;
 

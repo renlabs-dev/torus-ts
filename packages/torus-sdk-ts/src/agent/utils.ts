@@ -10,16 +10,16 @@ export const ensureTrailingSlash = (path: string) => {
 };
 
 /**
- * Selects a random RPC URL from the provided list for load balancing.
- * If no URLs are provided or the list is empty, defaults to the Torus testnet endpoint.
- * @param rpcUrls - Optional array of RPC endpoint URLs
- * @returns A randomly selected RPC URL, defaults to 'wss://api.testnet.torus.network'
+ * Selects a random RPC URL from environment variable or default.
+ * Reads from TORUS_RPC_URLS environment variable (comma-separated) or defaults to mainnet.
+ * @returns A randomly selected RPC URL, defaults to 'wss://api.torus.network'
  */
-export const selectRandomRpcUrl = (rpcUrls?: string[]): string => {
-  const urls =
-    rpcUrls && rpcUrls.length > 0
-      ? rpcUrls
-      : ["wss://api.testnet.torus.network"];
+export const selectRandomRpcUrl = (): string => {
+  const envRpcUrls = process.env.TORUS_RPC_URLS;
+  const urls = envRpcUrls
+    ? envRpcUrls.split(",").map((url) => url.trim())
+    : ["wss://api.torus.network"];
+
   const randomIndex = Math.floor(Math.random() * urls.length);
   const selectedRpcUrl = urls[randomIndex];
   if (!selectedRpcUrl) {
@@ -70,7 +70,7 @@ export const decodeAuthToken = (
         const { payload } = result;
 
         // TODO: better parsing of formats
-        if (payload.keyType !== 'sr25519') {
+        if (payload.keyType !== "sr25519") {
           return {
             success: false,
             error: `Unsupported key type: ${payload.keyType}`,
@@ -78,7 +78,7 @@ export const decodeAuthToken = (
           };
         }
 
-        if (payload.addressInfo.addressType !== 'ss58') {
+        if (payload.addressInfo.addressType !== "ss58") {
           return {
             success: false,
             error: `Unsupported address type: ${payload.addressInfo.addressType}`,
