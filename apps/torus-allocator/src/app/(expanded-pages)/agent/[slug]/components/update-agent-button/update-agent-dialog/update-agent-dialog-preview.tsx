@@ -1,11 +1,19 @@
 "use client";
 
 import { Card } from "@torus-ts/ui/components/card";
-import { AgentCardContent } from "~/app/_components/agent-card/agent-card-content";
-import type { AgentHeaderProps } from "~/app/_components/agent-card/agent-card-header";
-import { AgentCardHeader } from "~/app/_components/agent-card/agent-card-header";
+
+import {
+  AgentCardContent,
+} from "~/app/_components/agent-card/agent-card-content";
+import type {
+  AgentHeaderProps,
+} from "~/app/_components/agent-card/agent-card-header";
+import {
+  AgentCardHeader,
+} from "~/app/_components/agent-card/agent-card-header";
 import { useBlobUrl } from "~/hooks/use-blob-url";
 import { api } from "~/trpc/react";
+
 import type { UpdateAgentForm } from "./update-agent-dialog-form-schema";
 
 interface UpdateAgentDialogPreviewProps {
@@ -55,7 +63,7 @@ export function UpdateAgentDialogPreview({
     weightFactor: agent.weightFactor,
     previewMode: true,
     previewData: {
-      title: formValues.title,
+      title: formValues.name ?? "",
       socials: {
         discord: formValues.socials.discord,
         twitter: formValues.socials.twitter,

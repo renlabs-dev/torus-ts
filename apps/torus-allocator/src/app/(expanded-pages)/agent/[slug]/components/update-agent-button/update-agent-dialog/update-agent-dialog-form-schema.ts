@@ -71,11 +71,6 @@ export const updateAgentSchema = z.object({
     .trim()
     .optional()
     .describe("Agent name (immutable, cannot be changed)"),
-  title: z
-    .string()
-    .trim()
-    .min(1, "Title is required")
-    .max(100, "Title cannot exceed 100 characters"),
   shortDescription: z
     .string()
     .trim()
