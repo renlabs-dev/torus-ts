@@ -27,10 +27,11 @@ export const agentRouter = {
         limit: z.number().int().positive().default(9),
         search: z.string().optional(),
         orderBy: z.enum(["createdAt.asc", "createdAt.desc"]).optional(),
+        isWhitelisted: z.boolean().optional().default(true),
       }),
     )
     .query(async ({ ctx, input }) => {
-      const { page, limit, search, orderBy } = input;
+      const { page, limit, search, orderBy, isWhitelisted } = input;
       const offset = (page - 1) * limit;
 
       const agentsLastBlock = await ctx.db
@@ -56,7 +57,7 @@ export const agentRouter = {
 
       // Base query configuration for filtering
       let baseWhereClause = and(
-        eq(agentSchema.isWhitelisted, true),
+        eq(agentSchema.isWhitelisted, isWhitelisted),
         isNull(agentSchema.deletedAt),
         gte(agentSchema.atBlock, agentsLastBlock[0].value),
       );

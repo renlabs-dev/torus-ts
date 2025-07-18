@@ -13,6 +13,7 @@ interface AgentCardProps {
   registrationBlock: number | null;
   percComputedWeight: number | null;
   weightFactor: number | null;
+  isWhitelisted: boolean;
 }
 
 export function AgentCard(props: Readonly<AgentCardProps>) {
