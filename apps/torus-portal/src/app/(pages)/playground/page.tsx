@@ -2,16 +2,60 @@
 
 import { useState } from "react";
 
-import { useTorus } from "@torus-ts/torus-provider";
 import type { TransactionResult } from "@torus-ts/torus-provider";
+import { useTorus } from "@torus-ts/torus-provider";
+import { useSendTransaction } from "@torus-ts/torus-provider/send-transaction-v2";
 import { Button } from "@torus-ts/ui/components/button";
 import { Input } from "@torus-ts/ui/components/input";
 import { Label } from "@torus-ts/ui/components/label";
-import { useToast } from "@torus-ts/ui/hooks/use-toast";
+import { toast, useToast } from "@torus-ts/ui/hooks/use-toast";
 
 import { tryCatch } from "~/utils/try-catch";
 
-export default function PlaygroundPage() {
+export default function PlaygroundPageNew() {
+  const { api, selectedAccount, torusApi, wsEndpoint, isAccountConnected } =
+    useTorus();
+  const [remarkText, setRemarkText] = useState("");
+
+  const web3FromAddress = torusApi.web3FromAddress;
+  const { sendTx, isPending, isSuccess, isError, error } = useSendTransaction({
+    api,
+    selectedAccount,
+    wsEndpoint,
+    web3FromAddress,
+    transactionType: "Remark",
+  });
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+
+    console.log("handleSubmit :: api", api);
+    console.log("handleSubmit :: send", sendTx);
+
+    if (!api || !sendTx) {
+      toast.error("API not ready");
+      return;
+    }
+    const text = remarkText.trim();
+    if (!text) {
+      toast.error("Please enter a remark");
+      return;
+    }
+
+    const tx = api.tx.system.remarkWithEvent(text);
+    await sendTx(tx);
+  }
+
+  return RemarkForm({
+    remarkText,
+    setRemarkText,
+    handleSubmit,
+    isAccountConnected,
+    isSending: isPending,
+  });
+}
+
+export function PlaygroundPage() {
   const { toast } = useToast();
   const { isAccountConnected, remarkTransaction } = useTorus();
   const [remarkText, setRemarkText] = useState("");
@@ -26,6 +70,8 @@ export default function PlaygroundPage() {
       toast.error("Please enter a remark");
       return;
     }
+
+    debugger;
 
     setTransactionStatus("loading");
 
@@ -57,6 +103,28 @@ export default function PlaygroundPage() {
     }
   };
 
+  return RemarkForm({
+    remarkText,
+    setRemarkText,
+    handleSubmit,
+    isAccountConnected,
+    isSending: transactionStatus === "loading",
+  });
+}
+
+function RemarkForm({
+  remarkText,
+  setRemarkText,
+  handleSubmit,
+  isAccountConnected,
+  isSending,
+}: {
+  remarkText: string;
+  setRemarkText: (text: string) => void;
+  handleSubmit: (e: React.FormEvent) => Promise<void>;
+  isAccountConnected: boolean;
+  isSending: boolean;
+}) {
   return (
     <div className="max-w-md mx-auto mt-8 p-6 border rounded-lg">
       <h1 className="text-2xl font-bold mb-6">Send Remark</h1>
@@ -70,20 +138,16 @@ export default function PlaygroundPage() {
             value={remarkText}
             onChange={(e) => setRemarkText(e.target.value)}
             placeholder="Enter your remark..."
-            disabled={transactionStatus === "loading"}
+            disabled={isSending}
           />
         </div>
 
         <Button
           type="submit"
           className="w-full"
-          disabled={
-            !isAccountConnected ||
-            !remarkText.trim() ||
-            transactionStatus === "loading"
-          }
+          disabled={!isAccountConnected || !remarkText.trim() || isSending}
         >
-          {transactionStatus === "loading" ? "Sending..." : "Send Remark"}
+          {isSending ? "Sending..." : "Send Remark"}
         </Button>
       </form>
 
