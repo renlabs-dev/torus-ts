@@ -39,7 +39,11 @@ import { getExplorerLink } from "./toast-content-handler";
 =======
 =======
 import { updateMetadata } from "../utils/chain-metadata";
+<<<<<<< HEAD
 >>>>>>> 2b1ea78a (refactor: update metadata import path in send-transaction component)
+=======
+import { getExplorerLink } from "./toast-content-handler";
+>>>>>>> d3741aae (refactor: reorganize imports and enhance error handling in transaction components)
 
 const METADATA_VERSION = 15;
 const TRANSACTION_MODE = 1; // mortal
@@ -63,6 +67,12 @@ const ERROR_MESSAGES = {
   METADATA_UPDATE_FAILED: "Failed to update wallet metadata",
   TRANSACTION_OPTIONS_FAILED: "Failed to create transaction options",
   TRANSACTION_FAILED: "Transaction failed",
+  MISSING_WEB3_FROM_ADDRESS:
+    "Missing web3FromAddress. Please ensure the wallet extension is connected correctly.",
+  MISSING_SELECTED_ACCOUNT:
+    "No account selected. Please select an account to send the transaction.",
+  MISSING_API:
+    "Connection to the API was not established. Please check the connection to the node and try again.",
 } as const;
 
 interface MetadataProof {
@@ -77,24 +87,14 @@ interface TransactionExecutionResult {
 >>>>>>> f7a125d3 (feat: implements transaction sending functionality)
 
 interface SendTransactionProps {
-  api: ApiPromise;
-  selectedAccount: InjectedAccountWithMeta;
+  api: ApiPromise | null;
+  selectedAccount: InjectedAccountWithMeta | null;
   torusApi: TorusApiState;
   transactionType: string;
   transaction: SubmittableExtrinsic<"promise">;
   callback?: (result: TransactionResult) => void;
   refetchHandler?: () => Promise<void>;
   wsEndpoint: string;
-}
-
-export function getExplorerLink({
-  wsEndpoint,
-  hash,
-}: {
-  wsEndpoint: string;
-  hash: string;
-}) {
-  return `https://polkadot.js.org/apps/?rpc=${wsEndpoint}#/explorer/query/${hash}`;
 }
 
 async function generateMetadataProof(api: ApiPromise): Promise<MetadataProof> {
@@ -407,8 +407,20 @@ export async function sendTransaction({
   wsEndpoint,
 }: SendTransactionProps): Promise<void> {
   if (!torusApi.web3FromAddress) {
-    console.error("Missing required parameters");
-    toast.error(ERROR_MESSAGES.MISSING_PARAMETERS);
+    console.error(ERROR_MESSAGES.MISSING_WEB3_FROM_ADDRESS);
+    toast.error(ERROR_MESSAGES.MISSING_WEB3_FROM_ADDRESS);
+    return;
+  }
+
+  if (!selectedAccount) {
+    console.error(ERROR_MESSAGES.MISSING_SELECTED_ACCOUNT);
+    toast.error(ERROR_MESSAGES.MISSING_SELECTED_ACCOUNT);
+    return;
+  }
+
+  if (!api) {
+    console.error(ERROR_MESSAGES.MISSING_API);
+    toast.error(ERROR_MESSAGES.MISSING_API);
     return;
   }
 

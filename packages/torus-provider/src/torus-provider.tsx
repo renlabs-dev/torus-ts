@@ -34,8 +34,6 @@ import { sb_balance } from "@torus-network/sdk/types";
 import { toNano } from "@torus-network/torus-utils/torus/token";
 import { tryAsync, trySync } from "@torus-network/torus-utils/try-catch";
 
-import { useToast } from "@torus-ts/ui/hooks/use-toast";
-
 import { sendTransaction } from "./_components/send-transaction";
 import type {
   AddAgentApplication,
@@ -208,8 +206,6 @@ export function TorusProvider({
   >([]);
   const [selectedAccount, setSelectedAccount] =
     useState<InjectedAccountWithMeta | null>(null);
-
-  const { toast } = useToast();
 
   // == Initialize Polkadot ==
 
@@ -415,7 +411,6 @@ export function TorusProvider({
       transactionType: "Staking",
       refetchHandler,
       wsEndpoint,
-      toast,
     });
   }
 
@@ -445,7 +440,6 @@ export function TorusProvider({
       transactionType: "Unstaking",
       refetchHandler,
       wsEndpoint,
-      toast,
     });
   }
 
@@ -478,7 +472,6 @@ export function TorusProvider({
       transactionType: "Transfer",
       refetchHandler,
       wsEndpoint,
-      toast,
     });
   }
 
@@ -519,7 +512,6 @@ export function TorusProvider({
       transactionType: "Transfer Stake",
       refetchHandler,
       wsEndpoint,
-      toast,
     });
   }
 
@@ -568,7 +560,6 @@ export function TorusProvider({
       transaction,
       transactionType: "Register Agent",
       wsEndpoint,
-      toast,
     });
   }
 
@@ -592,7 +583,6 @@ export function TorusProvider({
       transaction,
       transactionType: "Update Agent",
       wsEndpoint,
-      toast,
     });
   }
 
@@ -616,7 +606,6 @@ export function TorusProvider({
       transactionType: "Vote Proposal",
       wsEndpoint,
       refetchHandler,
-      toast,
     });
   }
 
@@ -637,7 +626,6 @@ export function TorusProvider({
       transactionType: "Remove Vote",
       wsEndpoint,
       refetchHandler,
-      toast,
     });
   }
 
@@ -656,7 +644,6 @@ export function TorusProvider({
       transaction,
       transactionType: "Create Custom Proposal",
       wsEndpoint,
-      toast,
     });
   }
 
@@ -683,7 +670,6 @@ export function TorusProvider({
       transactionType: "Create Dao Application",
       wsEndpoint,
       refetchHandler,
-      toast,
     });
   }
 
@@ -708,7 +694,6 @@ export function TorusProvider({
       transaction,
       transactionType: "Transfer Dao Treasury Proposal",
       wsEndpoint,
-      toast,
     });
   }
 
@@ -772,7 +757,6 @@ export function TorusProvider({
       transactionType: "Update Delegating Voting Power",
       wsEndpoint,
       refetchHandler,
-      toast,
     });
   }
 
@@ -812,7 +796,6 @@ export function TorusProvider({
       transactionType: "Delegate Emission Permission",
       wsEndpoint,
       refetchHandler,
-      toast,
     });
   }
 
@@ -847,7 +830,6 @@ export function TorusProvider({
       transactionType: "Grant Capability Permission",
       wsEndpoint,
       refetchHandler,
-      toast,
     });
   }
 
@@ -882,7 +864,6 @@ export function TorusProvider({
       transactionType: "Update Emission Permission",
       wsEndpoint,
       refetchHandler,
-      toast,
     });
   }
 
@@ -907,7 +888,6 @@ export function TorusProvider({
       transactionType: "Revoke Permission",
       wsEndpoint,
       refetchHandler,
-      toast,
     });
   }
 
@@ -932,7 +912,6 @@ export function TorusProvider({
       transactionType: "Create Capability",
       wsEndpoint,
       refetchHandler,
-      toast,
     });
   }
 
@@ -957,7 +936,6 @@ export function TorusProvider({
       transactionType: "Delete Namespace",
       wsEndpoint,
       refetchHandler,
-      toast,
     });
   }
 
