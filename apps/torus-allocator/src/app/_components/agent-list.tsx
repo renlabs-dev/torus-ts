@@ -49,7 +49,6 @@ export async function AgentList({
       <PaginationNav
         currentPage={pagination.currentPage}
         totalPages={pagination.totalPages}
-        search={search}
       />
     </div>
   );
