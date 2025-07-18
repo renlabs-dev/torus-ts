@@ -18,7 +18,7 @@ export default function PlaygroundPageNew() {
   const [remarkText, setRemarkText] = useState("");
 
   const web3FromAddress = torusApi.web3FromAddress;
-  const { sendTx, isPending, isSuccess, isError, error } = useSendTransaction({
+  const { sendTx, isPending } = useSendTransaction({
     api,
     selectedAccount,
     wsEndpoint,
@@ -28,9 +28,6 @@ export default function PlaygroundPageNew() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-
-    console.log("handleSubmit :: api", api);
-    console.log("handleSubmit :: send", sendTx);
 
     if (!api || !sendTx) {
       toast.error("API not ready");
@@ -70,8 +67,6 @@ export function PlaygroundPage() {
       toast.error("Please enter a remark");
       return;
     }
-
-    debugger;
 
     setTransactionStatus("loading");
 
