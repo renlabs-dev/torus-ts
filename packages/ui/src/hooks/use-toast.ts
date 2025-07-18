@@ -105,15 +105,27 @@ const createErrorToast = (
   };
 };
 
+const createPromiseToast = (
+  promise: Promise<unknown>,
+  handlers: Parameters<typeof sonnerToast.promise>[1],
+): void => {
+  sonnerToast.promise(promise, handlers);
+};
+
 export interface ToastFunction {
   (props: ToastProps): ToastResult;
   success: (description?: string, duration?: number) => ToastResult;
   error: (description?: string, duration?: number) => ToastResult;
+  promise: (
+    promise: Promise<unknown>,
+    handlers: Parameters<typeof sonnerToast.promise>[1],
+  ) => void;
 }
 
 const toast: ToastFunction = Object.assign(createToast, {
   success: createSuccessToast,
   error: createErrorToast,
+  promise: createPromiseToast,
 });
 
 const useToast = () => ({

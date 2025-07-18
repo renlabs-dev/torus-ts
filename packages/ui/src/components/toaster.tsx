@@ -1,6 +1,5 @@
 "use client";
 
-import { useTheme } from "next-themes";
 import { Toaster as SonnerToaster } from "sonner";
 
 export const DEFAULT_DURATION = 8000;
@@ -12,17 +11,16 @@ const CLASS_NAMES = {
 };
 
 export function Toaster({ duration }: { duration?: number }) {
-  const theme = useTheme().theme === "system" ? "dark" : "light";
-
   return (
     <SonnerToaster
       swipeDirections={["top", "right"]}
       containerAriaLabel="Toaster"
-      theme={theme}
+      theme="dark"
       className="toaster group"
       position="bottom-right"
       duration={duration ?? DEFAULT_DURATION}
       toastOptions={{ classNames: CLASS_NAMES }}
+      offset={1}
     />
   );
 }
