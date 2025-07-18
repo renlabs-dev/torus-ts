@@ -33,7 +33,7 @@ export type SendTxFn = <T extends ISubmittableResult>(
 
 interface UseSendTxOutput extends TxHelper {
   txStage: TxStage;
-  send: SendTxFn | null;
+  sendTx: SendTxFn | null;
 }
 
 const logger = BasicLogger.create({ name: "use-send-transaction" });
@@ -55,7 +55,9 @@ export function useSendTransaction({
   const wallet = useWallet({ api, selectedAccount, web3FromAddress });
 
   const [txStage, setTxStage] = useState<TxStage>({ Empty: null });
-  const [sendFn, setSendFn] = useState<SendTxFn | null>(null);
+  const [sendFn, setSendFn] = useState<{ sendTx: SendTxFn | null }>({
+    sendTx: null,
+  });
 
   const setErrState = (err: Error) => {
     logger.error(err);
@@ -87,7 +89,9 @@ export function useSendTransaction({
       return;
     }
 
-    const sendFn = async <T extends ISubmittableResult>(
+    let unsubscribe: (() => void) | null = null;
+
+    const sendTx = async <T extends ISubmittableResult>(
       tx: SubmittableExtrinsic<"promise", T>,
     ) => {
       if (!selectedAccount) {
@@ -95,7 +99,13 @@ export function useSendTransaction({
         return;
       }
 
-      await tx.signAndSend(
+      if (unsubscribe != null) {
+        unsubscribe();
+        unsubscribe = null;
+      }
+
+      debugger;
+      unsubscribe = await tx.signAndSend(
         selectedAccount.address,
         txOptions,
         (result: SubmittableResult) => {
@@ -114,14 +124,20 @@ export function useSendTransaction({
       );
     };
 
-    setSendFn(sendFn);
-  });
+    setSendFn({ sendTx });
+
+    return () => {
+      if (unsubscribe != null) {
+        unsubscribe();
+      }
+    };
+  }, [api, wsEndpoint, wallet, selectedAccount, web3FromAddress]);
 
   const txHelper = useMemo(() => txStatusToTxHelper(txStage), [txStage]);
 
   return {
     txStage,
-    send: sendFn,
+    ...sendFn,
     ...txHelper,
   };
 }
@@ -148,6 +164,7 @@ const setupWallet = async ({
 
   const [proofError, proof] = await getMerkleizedMetadata(api);
   if (proofError !== undefined) {
+    console.error(proofError);
     const err = chainErr("Failed to generate metadata")(proofError);
     return makeErr(err);
   }
