@@ -104,7 +104,6 @@ export function useSendTransaction({
         unsubscribe = null;
       }
 
-      debugger;
       unsubscribe = await tx.signAndSend(
         selectedAccount.address,
         txOptions,
@@ -366,7 +365,7 @@ function _ExampleUsage() {
     };
 
   const {
-    send,
+    sendTx,
     isSigning,
     isPending,
     isSuccess,
@@ -383,21 +382,21 @@ function _ExampleUsage() {
   });
 
   const _handleTransfer = async () => {
-    if (!send) return;
+    if (!sendTx) return;
 
     const tx = api.tx.balances.transferAllowDeath(
       "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY",
       "1000000000000",
     );
 
-    await send(tx);
+    await sendTx(tx);
   };
 
   return (
     <div>
       <button
         onClick={_handleTransfer}
-        disabled={!send || isPending || isSigning}
+        disabled={!sendTx || isPending || isSigning}
       >
         {isSigning ? "Signing..." : isPending ? "Pending..." : "Transfer"}
       </button>
