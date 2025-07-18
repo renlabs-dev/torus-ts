@@ -4,6 +4,7 @@ import type { SubmittableExtrinsic } from "@polkadot/api/types";
 import type { InjectedAccountWithMeta } from "@polkadot/extension-inject/types";
 import type { DispatchError } from "@polkadot/types/interfaces";
 import { u8aToHex } from "@polkadot/util";
+<<<<<<< HEAD
 
 import { CONSTANTS } from "@torus-network/sdk/constants";
 import { tryAsync, trySync } from "@torus-network/torus-utils/try-catch";
@@ -18,6 +19,15 @@ import {
   renderSuccessfulyFinalized,
   renderWaitingForValidation,
 } from "./toast-content-handler";
+=======
+import { CONSTANTS } from "@torus-network/sdk";
+import { tryAsync, trySync } from "@torus-network/torus-utils/try-catch";
+import { toast } from "sonner";
+import type { TransactionResult } from "../_types";
+import type { TorusApiState } from "../torus-provider";
+import { updateMetadata } from "../utils/metadata";
+import { getExplorerLink } from "./toast-content-handler";
+>>>>>>> e4da494e (feat: refactors transaction sending for better UX)
 
 interface SendTransactionProps {
   api: ApiPromise | null;
@@ -28,7 +38,6 @@ interface SendTransactionProps {
   callback?: (result: TransactionResult) => void;
   refetchHandler?: () => Promise<void>;
   wsEndpoint: string;
-  toast: typeof toast;
 }
 
 async function getMetadataProof(api: ApiPromise) {
@@ -87,6 +96,14 @@ async function getMetadataProof(api: ApiPromise) {
     merkleizedMetadata,
   };
 }
+
+// Helper function to create action button for explorer link
+const createExplorerAction = (hash: string, wsEndpoint: string) => {
+  return {
+    label: "View on Block Explorer",
+    onClick: () => window.open(getExplorerLink({ wsEndpoint, hash }), "_blank"),
+  };
+};
 
 export async function sendTransaction({
   api,
@@ -171,122 +188,136 @@ export async function sendTransaction({
     return;
   }
 
-  // Sign and send transaction
-  // TODO: check for memory leak
-  const [txError] = await tryAsync(
-    transaction.signAndSend(
-      selectedAccount.address,
-      txOptions,
-      async (result: SubmittableResult) => {
-        if (result.status.isReady) {
-          callback?.({
-            finalized: false,
-            status: "PENDING",
-            message: "Transaction prepared and ready to send",
-          });
-        }
-
-        if (result.status.isBroadcast) {
-          callback?.({
-            finalized: false,
-            status: "PENDING",
-            message: "Broadcasting your transaction to the network...",
-          });
-        }
-
-        if (result.status.isInBlock) {
-          callback?.({
-            finalized: false,
-            status: "SUCCESS",
-            message: "Transaction included in the blockchain!",
-          });
-
-          toast({
-            title: "Loading...",
-            description: renderWaitingForValidation(
-              result.status.asInBlock.toHex(),
-              wsEndpoint,
-            ),
-            duration: Infinity,
-          });
-        }
-
-        if (result.status.isFinalized) {
-          const success = result.findRecord("system", "ExtrinsicSuccess");
-          const failed = result.findRecord("system", "ExtrinsicFailed");
-          const hash = result.status.asFinalized.toHex();
-
-          if (refetchHandler) {
-            const [refetchError] = await tryAsync(
-              Promise.resolve(refetchHandler()),
-            );
-            if (refetchError !== undefined) {
-              console.error("Error refetching data:", refetchError);
-              // Don't throw since transaction was successful
+  // Create promise for transaction
+  const transactionPromise = new Promise<{ hash: string; success: boolean }>(
+    (resolve, reject) => {
+      transaction
+        .signAndSend(
+          selectedAccount.address,
+          txOptions,
+          async (result: SubmittableResult) => {
+            if (result.status.isReady) {
+              callback?.({
+                finalized: false,
+                status: "PENDING",
+                message: "Transaction prepared and ready to send",
+              });
             }
-          }
 
-          callback?.({
-            finalized: true,
-            status: success ? "SUCCESS" : "ERROR",
-            message: success
-              ? "Transaction completed successfully!"
-              : "Transaction failed",
-            hash,
-          });
+            if (result.status.isBroadcast) {
+              callback?.({
+                finalized: false,
+                status: "PENDING",
+                message: "Broadcasting your transaction to the network...",
+              });
+            }
 
-          if (success) {
-            toast({
-              title: "Success!",
-              description: renderSuccessfulyFinalized(
-                transactionType,
+            if (result.status.isInBlock) {
+              callback?.({
+                finalized: false,
+                status: "SUCCESS",
+                message: "Transaction included in the blockchain!",
+              });
+            }
+
+            if (result.status.isFinalized) {
+              const success = result.findRecord("system", "ExtrinsicSuccess");
+              const failed = result.findRecord("system", "ExtrinsicFailed");
+              const hash = result.status.asFinalized.toHex();
+
+              // Handle refetch
+              if (refetchHandler) {
+                const [refetchError] = await tryAsync(
+                  Promise.resolve(refetchHandler()),
+                );
+                if (refetchError !== undefined) {
+                  console.error("Error refetching data:", refetchError);
+                  // Don't throw since transaction was successful
+                }
+              }
+
+              callback?.({
+                finalized: true,
+                status: success ? "SUCCESS" : "ERROR",
+                message: success
+                  ? "Transaction completed successfully!"
+                  : "Transaction failed",
                 hash,
-                wsEndpoint,
-              ),
-            });
-          } else if (failed) {
-            // Fix the destructuring and error handling
-            const [parseError, dispatchErrorArray] = trySync(
-              () => failed.event.data as unknown as [DispatchError],
-            );
-
-            if (parseError !== undefined) {
-              console.error("Error parsing dispatch error:", parseError);
-            }
-
-            const dispatchError = dispatchErrorArray?.[0];
-            let msg = `${transactionType} failed: ${dispatchError?.toString() ?? "Unknown error"}`;
-
-            if (dispatchError?.isModule) {
-              const [moduleError, metaError] = trySync(() => {
-                const mod = dispatchError.asModule;
-                return api.registry.findMetaError(mod);
               });
 
-              if (moduleError !== undefined) {
-                console.error("Error finding meta error:", moduleError);
+              if (success) {
+                resolve({ hash, success: true });
+              } else if (failed) {
+                // Handle dispatch error
+                const [parseError, dispatchErrorArray] = trySync(
+                  () => failed.event.data as unknown as [DispatchError],
+                );
+
+                if (parseError !== undefined) {
+                  console.error("Error parsing dispatch error:", parseError);
+                }
+
+                const dispatchError = dispatchErrorArray?.[0];
+                let errorMessage = `${transactionType} failed: ${dispatchError?.toString() ?? "Unknown error"}`;
+
+                if (dispatchError?.isModule) {
+                  const [moduleError, metaError] = trySync(() => {
+                    const mod = dispatchError.asModule;
+                    return api.registry.findMetaError(mod);
+                  });
+
+                  if (moduleError !== undefined) {
+                    console.error("Error finding meta error:", moduleError);
+                  } else {
+                    errorMessage = `${transactionType} failed: ${metaError.name}`;
+                  }
+                }
+
+                reject(new Error(errorMessage));
               } else {
-                msg = `${transactionType} failed: ${metaError.name}`;
+                reject(new Error("Transaction failed with unknown error"));
               }
             }
-
-            toast({
-              title: "Error",
-              description: renderFinalizedWithError(msg, hash, wsEndpoint),
-            });
-          }
-        }
-      },
-    ),
+          },
+        )
+        .catch((error: Error) => {
+          console.error("Transaction error:", error);
+          callback?.({
+            finalized: true,
+            status: "ERROR",
+            message: error.message || "Transaction failed",
+          });
+          reject(error);
+        });
+    },
   );
 
-  if (txError !== undefined) {
-    console.error("Transaction error:", txError);
-    callback?.({
-      finalized: true,
-      status: "ERROR",
-      message: txError.message || "Transaction failed",
-    });
-    toast.error(txError.message || "Transaction failed");
-  }
+  toast.promise(transactionPromise, {
+    loading: "Processing transaction...",
+    success: (data) => ({
+      message: "",
+      type: "success",
+      description: `${transactionType} completed successfully`,
+      duration: Infinity,
+      action: createExplorerAction(data.hash, wsEndpoint),
+      classNames: {
+        icon: "mb-6",
+        content: "mb-6",
+      },
+      actionButtonStyle: {
+        position: "absolute",
+        right: "0.5rem",
+        bottom: "0.5rem",
+        "&:hover": {
+          backgroundColor: "var(--color-primary)",
+        },
+      },
+    }),
+    error: (error: Error) => ({
+      message: "",
+      type: "error",
+      description: error.message || "Transaction failed with unknown error",
+      duration: Infinity,
+    }),
+  });
 }
