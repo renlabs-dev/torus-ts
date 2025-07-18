@@ -71,7 +71,6 @@ const registerAgentSchema = z.object({
       AGENT_SHORT_DESCRIPTION_MAX_LENGTH,
       `Max ${AGENT_SHORT_DESCRIPTION_MAX_LENGTH} characters`,
     ),
-  title: z.string().min(1, "Agent title is required"),
   body: z
     .string()
     .min(1, "Agent description is required")
@@ -149,7 +148,6 @@ export function RegisterAgent() {
       agentApiUrl: "",
       name: "",
       shortDescription: "",
-      title: "",
       body: "",
       twitter: "",
       github: "",
@@ -231,14 +229,13 @@ export function RegisterAgent() {
       github,
       telegram,
       discord,
-      title,
       shortDescription,
       body,
       name,
     } = getValues();
 
     const metadata = {
-      title,
+      title: name,
       short_description: shortDescription,
       description: body,
       website: website ? parseUrl(website) : undefined,
@@ -380,7 +377,7 @@ export function RegisterAgent() {
       }
 
       if (tab === "socials") {
-        isValid = await trigger(["title", "body"]);
+        isValid = await trigger(["body"]);
       }
 
       if (isValid) {
@@ -409,8 +406,8 @@ export function RegisterAgent() {
   );
 
   const socialsViewDisabled = useMemo(
-    () => !formValues.title || !formValues.body || aboutViewDisabled,
-    [formValues.title, formValues.body, aboutViewDisabled],
+    () => !formValues.body || aboutViewDisabled,
+    [formValues.body, aboutViewDisabled],
   );
 
   const registerViewDisabled = socialsViewDisabled;
@@ -572,24 +569,6 @@ export function RegisterAgent() {
             value="about"
             className="animate-fade flex flex-col gap-4"
           >
-            <FormField
-              control={control}
-              name="title"
-              render={({ field }) => (
-                <FormItem className="flex flex-col">
-                  <FormLabel>Agent Title</FormLabel>
-                  <FormControl>
-                    <Input
-                      {...field}
-                      placeholder="My Agent's Title"
-                      type="text"
-                      required
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
             <FormField
               control={control}
               name="body"
@@ -860,7 +839,7 @@ export function RegisterAgent() {
                 {getValues("body") && (
                   <MarkdownPreview
                     className="max-h-[44vh] w-full overflow-auto pb-4"
-                    source={`# ${getValues("title")}\n${getValues("body")}`}
+                    source={`# ${getValues("name")}\n${getValues("body")}`}
                     style={{
                       backgroundColor: "transparent",
                       color: "white",

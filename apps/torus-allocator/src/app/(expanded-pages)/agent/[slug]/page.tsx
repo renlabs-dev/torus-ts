@@ -1,20 +1,27 @@
+import { Suspense } from "react";
+
+import { ArrowLeft } from "lucide-react";
+import Link from "next/link";
+import { notFound } from "next/navigation";
+
 import { fetchAgentMetadata } from "@torus-network/sdk";
+import { tryAsync } from "@torus-network/torus-utils/try-catch";
+
 import { Button } from "@torus-ts/ui/components/button";
 import { Card } from "@torus-ts/ui/components/card";
 import { Container } from "@torus-ts/ui/components/container";
 import { Label } from "@torus-ts/ui/components/label";
 import { MarkdownView } from "@torus-ts/ui/components/markdown-view";
-import { ArrowLeft } from "lucide-react";
-import Link from "next/link";
-import { notFound } from "next/navigation";
-import { ExpandedViewSocials } from "~/app/(expanded-pages)/agent/[slug]/components/expanded-view-socials";
+import { Skeleton } from "@torus-ts/ui/components/skeleton";
+
+import {
+  ExpandedViewSocials,
+} from "~/app/(expanded-pages)/agent/[slug]/components/expanded-view-socials";
 import { AgentIcon } from "~/app/_components/agent-icon";
 import { PenaltyList } from "~/app/_components/penalties-list";
 import { api } from "~/trpc/server";
+
 import { AgentInfoCard } from "./components/agent-info-card";
-import { tryAsync } from "@torus-network/torus-utils/try-catch";
-import { Suspense } from "react";
-import { Skeleton } from "@torus-ts/ui/components/skeleton";
 
 interface AgentPageProps {
   params: Promise<{ slug: string }>;
@@ -111,7 +118,7 @@ export default async function AgentPage({ params }: Readonly<AgentPageProps>) {
               </Suspense>
               <div className="flex w-fit flex-col gap-6 p-6 md:p-0 md:pt-6 md:pr-6">
                 <h1 className="text-start text-3xl font-semibold">
-                  {metadata.title}
+                  {mdl.name}
                 </h1>
                 <p className="text-card-foreground word-break-break-word">
                   {metadata.short_description}
