@@ -8,6 +8,7 @@ import type {
 import type { DispatchError, EventRecord } from "@polkadot/types/interfaces";
 import { u8aToHex } from "@polkadot/util";
 <<<<<<< HEAD
+<<<<<<< HEAD
 
 import { CONSTANTS } from "@torus-network/sdk/constants";
 import { tryAsync, trySync } from "@torus-network/torus-utils/try-catch";
@@ -23,16 +24,22 @@ import {
   renderWaitingForValidation,
 } from "./toast-content-handler";
 =======
+=======
+>>>>>>> 2b1ea78a (refactor: update metadata import path in send-transaction component)
 import { CONSTANTS } from "@torus-network/sdk";
 import { tryAsync, trySync } from "@torus-network/torus-utils/try-catch";
 import { toast } from "sonner";
 import type { TransactionResult } from "../_types";
 import type { TorusApiState } from "../torus-provider";
+<<<<<<< HEAD
 import { updateMetadata } from "../utils/metadata";
 <<<<<<< HEAD
 import { getExplorerLink } from "./toast-content-handler";
 >>>>>>> e4da494e (feat: refactors transaction sending for better UX)
 =======
+=======
+import { updateMetadata } from "../utils/chain-metadata";
+>>>>>>> 2b1ea78a (refactor: update metadata import path in send-transaction component)
 
 const METADATA_VERSION = 15;
 const TRANSACTION_MODE = 1; // mortal
