@@ -1,6 +1,5 @@
 "use client";
 
-<<<<<<< HEAD
 import { ArrowRight, Copy } from "lucide-react";
 import { DateTime } from "luxon";
 import { getExplorerLink } from "node_modules/@torus-ts/torus-provider/src/_components/toast-content-handler";
@@ -8,17 +7,13 @@ import { getExplorerLink } from "node_modules/@torus-ts/torus-provider/src/_comp
 import { smallAddress } from "@torus-network/torus-utils/torus/address";
 import { formatToken } from "@torus-network/torus-utils/torus/token";
 
-=======
-import { formatToken, smallAddress } from "@torus-network/torus-utils/subspace";
->>>>>>> d3741aae (refactor: reorganize imports and enhance error handling in transaction components)
 import { CopyButton } from "@torus-ts/ui/components/copy-button";
 import { cn } from "@torus-ts/ui/lib/utils";
-import { ArrowRight, Copy } from "lucide-react";
-import { DateTime } from "luxon";
+
 import { env } from "~/env";
 import type { Transaction, TransactionType } from "~/store/transactions-store";
+
 import { TransactionStatusBadge } from "./transactions-item-status-badge";
-import { getExplorerLink } from "node_modules/@torus-ts/torus-provider/src/_components/toast-content-handler";
 
 interface TransactionItemProps {
   transaction: Transaction;

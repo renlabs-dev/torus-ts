@@ -7,43 +7,17 @@ import type {
 } from "@polkadot/extension-inject/types";
 import type { DispatchError, EventRecord } from "@polkadot/types/interfaces";
 import { u8aToHex } from "@polkadot/util";
-<<<<<<< HEAD
-<<<<<<< HEAD
+import { toast } from "sonner";
 
 import { CONSTANTS } from "@torus-network/sdk/constants";
 import { tryAsync, trySync } from "@torus-network/torus-utils/try-catch";
 
-import { toast } from "@torus-ts/ui/hooks/use-toast";
+import { DEFAULT_DURATION } from "@torus-ts/ui/components/toaster";
 
 import type { TransactionResult } from "../_types";
 import type { TorusApiState } from "../torus-provider";
 import { updateMetadata } from "../utils/chain-metadata";
-import {
-  renderFinalizedWithError,
-  renderSuccessfulyFinalized,
-  renderWaitingForValidation,
-} from "./toast-content-handler";
-=======
-=======
->>>>>>> 2b1ea78a (refactor: update metadata import path in send-transaction component)
-import { CONSTANTS } from "@torus-network/sdk";
-import { tryAsync, trySync } from "@torus-network/torus-utils/try-catch";
-import { toast } from "sonner";
-import type { TransactionResult } from "../_types";
-import type { TorusApiState } from "../torus-provider";
-<<<<<<< HEAD
-import { updateMetadata } from "../utils/metadata";
-<<<<<<< HEAD
 import { getExplorerLink } from "./toast-content-handler";
->>>>>>> e4da494e (feat: refactors transaction sending for better UX)
-=======
-=======
-import { updateMetadata } from "../utils/chain-metadata";
-<<<<<<< HEAD
->>>>>>> 2b1ea78a (refactor: update metadata import path in send-transaction component)
-=======
-import { getExplorerLink } from "./toast-content-handler";
-import { DEFAULT_DURATION } from "@torus-ts/ui/components/toaster";
 
 const METADATA_VERSION = 15;
 const TRANSACTION_MODE = 1; // mortal
@@ -84,7 +58,6 @@ interface TransactionExecutionResult {
   hash: string;
   success: boolean;
 }
->>>>>>> f7a125d3 (feat: implements transaction sending functionality)
 
 interface SendTransactionProps {
   api: ApiPromise | null;

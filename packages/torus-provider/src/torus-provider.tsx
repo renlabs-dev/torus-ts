@@ -960,7 +960,6 @@ export function TorusProvider({
       transactionType: "Remark",
       wsEndpoint,
       refetchHandler,
-      toast,
     });
   }
 
