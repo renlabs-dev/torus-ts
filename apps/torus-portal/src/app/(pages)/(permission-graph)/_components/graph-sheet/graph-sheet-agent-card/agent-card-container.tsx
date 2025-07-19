@@ -3,7 +3,7 @@
 import { memo, useCallback, useEffect, useMemo, useState } from "react";
 
 import { fetchAgentMetadata } from "@torus-network/sdk/metadata";
-import { smallAddress } from "@torus-network/torus-utils/subspace";
+import { smallAddress } from "@torus-network/torus-utils/torus/address";
 import { tryAsync } from "@torus-network/torus-utils/try-catch";
 
 import { Card } from "@torus-ts/ui/components/card";

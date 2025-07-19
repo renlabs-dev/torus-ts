@@ -3,7 +3,7 @@ import { useMemo } from "react";
 import { Info } from "lucide-react";
 
 import { checkSS58 } from "@torus-network/sdk/types";
-import { formatToken } from "@torus-network/torus-utils/subspace";
+import { formatToken } from "@torus-network/torus-utils/torus/token";
 
 import { useKeyStakedBy } from "@torus-ts/query-provider/hooks";
 import { useTorus } from "@torus-ts/torus-provider";

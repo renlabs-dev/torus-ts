@@ -5,7 +5,7 @@ import "@polkadot/api/augment";
 import { ApiPromise, WsProvider } from "@polkadot/api";
 
 import { BasicLogger } from "@torus-network/torus-utils/logger";
-import { formatToken } from "@torus-network/torus-utils/subspace";
+import { formatToken } from "@torus-network/torus-utils/torus/token";
 
 import { queryExtFee } from "./chain/common/index.js";
 import { SS58Address } from "./types/address.js";

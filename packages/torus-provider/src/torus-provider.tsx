@@ -31,7 +31,7 @@ import {
 } from "@torus-network/sdk/chain";
 import type { CustomMetadataState } from "@torus-network/sdk/metadata";
 import { sb_balance } from "@torus-network/sdk/types";
-import { toNano } from "@torus-network/torus-utils/subspace";
+import { toNano } from "@torus-network/torus-utils/torus/token";
 import { tryAsync, trySync } from "@torus-network/torus-utils/try-catch";
 
 import { useToast } from "@torus-ts/ui/hooks/use-toast";

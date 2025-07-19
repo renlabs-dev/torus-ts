@@ -1,8 +1,17 @@
 "use client";
 
+import { useState } from "react";
+
 import { zodResolver } from "@hookform/resolvers/zod";
-import { formatToken } from "@torus-network/torus-utils/subspace";
+import MarkdownPreview from "@uiw/react-markdown-preview";
+import { useFileUploader } from "hooks/use-file-uploader";
+import { useRouter } from "next/navigation";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+
+import { formatToken } from "@torus-network/torus-utils/torus/token";
 import { tryAsync } from "@torus-network/torus-utils/try-catch";
+
 import type { TransactionResult } from "@torus-ts/torus-provider/types";
 import { Button } from "@torus-ts/ui/components/button";
 import {
@@ -23,13 +32,8 @@ import {
 import { Textarea } from "@torus-ts/ui/components/text-area";
 import { TransactionStatus } from "@torus-ts/ui/components/transaction-status";
 import { useToast } from "@torus-ts/ui/hooks/use-toast";
-import MarkdownPreview from "@uiw/react-markdown-preview";
+
 import { useGovernance } from "~/context/governance-provider";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
-import { useForm } from "react-hook-form";
-import { z } from "zod";
-import { useFileUploader } from "hooks/use-file-uploader";
 
 const proposalSchema = z.object({
   title: z.string().min(1, "Title is required"),

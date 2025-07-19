@@ -3,7 +3,7 @@ import type { RefObject } from "react";
 import { z } from "zod";
 
 import { isSS58 } from "@torus-network/sdk/types";
-import { formatToken } from "@torus-network/torus-utils/subspace";
+import { formatToken } from "@torus-network/torus-utils/torus/token";
 
 import {
   doesNotExceedMaxStake,

@@ -2,7 +2,7 @@ import { Copy } from "lucide-react";
 
 import type { Blocks, SS58Address } from "@torus-network/sdk/types";
 import { getCreationTime, getExpirationTime } from "@torus-network/torus-utils";
-import { smallAddress } from "@torus-network/torus-utils/subspace";
+import { smallAddress } from "@torus-network/torus-utils/torus/address";
 
 import { Card, CardHeader, CardTitle } from "@torus-ts/ui/components/card";
 import { CopyButton } from "@torus-ts/ui/components/copy-button";

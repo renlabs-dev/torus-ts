@@ -2,7 +2,7 @@
 
 import { CircleDollarSign } from "lucide-react";
 
-import { formatToken } from "@torus-network/torus-utils/subspace";
+import { formatToken } from "@torus-network/torus-utils/torus/token";
 
 import {
   Tooltip,

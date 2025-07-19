@@ -7,7 +7,7 @@ import { erc20Abi } from "viem";
 import * as wagmi from "wagmi";
 
 import type { SS58Address } from "@torus-network/sdk/types";
-import { formatToken } from "@torus-network/torus-utils/subspace";
+import { formatToken } from "@torus-network/torus-utils/torus/token";
 
 import { useFreeBalance } from "@torus-ts/query-provider/hooks";
 import { useTorus } from "@torus-ts/torus-provider";

@@ -7,7 +7,7 @@ import {
   fromRems,
   makeTorAmount,
   toRems,
-} from "../subspace.js";
+} from "../torus/index.js";
 
 describe("TorAmount", () => {
   it("should correctly apply ROUND_HALF_EVEN (banker's rounding)", () => {

@@ -3,7 +3,7 @@
 import { Anvil, Cuboid, Globe, IdCard } from "lucide-react";
 import Link from "next/link";
 
-import { smallAddress } from "@torus-network/torus-utils/subspace";
+import { smallAddress } from "@torus-network/torus-utils/torus/address";
 
 import { Card } from "@torus-ts/ui/components/card";
 import { CopyButton } from "@torus-ts/ui/components/copy-button";
@@ -88,8 +88,15 @@ export function buildSocials(
 }
 
 export function AgentCard(props: Readonly<PortalAgentCardProps>) {
-  const { agentKey, iconUrl, currentBlock, socialsList, title, shortDescription, agentWeight } =
-    props;
+  const {
+    agentKey,
+    iconUrl,
+    currentBlock,
+    socialsList,
+    title,
+    shortDescription,
+    agentWeight,
+  } = props;
 
   const socialsMapped = buildSocials(socialsList, socialsList.website);
   if (!agentKey) return null;

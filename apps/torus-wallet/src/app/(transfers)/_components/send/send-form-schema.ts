@@ -3,7 +3,7 @@ import type { RefObject } from "react";
 import { z } from "zod";
 
 import { isSS58 } from "@torus-network/sdk/types";
-import { toNano } from "@torus-network/torus-utils/subspace";
+import { toNano } from "@torus-network/torus-utils/torus/token";
 
 import type { FeeLabelHandle } from "~/app/_components/fee-label";
 import { isWithinTransferLimit } from "~/utils/validators";

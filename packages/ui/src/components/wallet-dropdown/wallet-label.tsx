@@ -3,7 +3,7 @@
 import {
   smallAddress,
   smallWalletName,
-} from "@torus-network/torus-utils/subspace";
+} from "@torus-network/torus-utils/torus/address";
 
 import { useIsMobile } from "@torus-ts/ui/hooks/use-mobile";
 

@@ -1,11 +1,13 @@
 "use client";
 
-import { cn } from "@torus-ts/ui/lib/utils";
 import {
-  formatToken,
   smallAddress,
   smallWalletName,
-} from "@torus-network/torus-utils/subspace";
+} from "@torus-network/torus-utils/torus/address";
+import { formatToken } from "@torus-network/torus-utils/torus/token";
+
+import { cn } from "@torus-ts/ui/lib/utils";
+
 import type { InjectedAccountWithMeta } from "./wallet-dropdown";
 
 interface AccountDetailsProps {

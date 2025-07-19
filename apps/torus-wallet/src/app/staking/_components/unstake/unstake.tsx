@@ -8,7 +8,7 @@ import { useForm } from "react-hook-form";
 import type { SS58Address } from "@torus-network/sdk/types";
 import { checkSS58 } from "@torus-network/sdk/types";
 import type { BrandTag } from "@torus-network/torus-utils";
-import { fromNano } from "@torus-network/torus-utils/subspace";
+import { fromNano } from "@torus-network/torus-utils/torus/token";
 import { tryAsync } from "@torus-network/torus-utils/try-catch";
 
 import type { TransactionResult } from "@torus-ts/torus-provider/types";

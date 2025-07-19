@@ -8,7 +8,7 @@ import { CheckIcon, ChevronsUpDownIcon, PlusCircleIcon } from "lucide-react";
 import type { Balance, SS58Address } from "@torus-network/sdk/types";
 import { checkSS58 } from "@torus-network/sdk/types";
 import type { BrandTag } from "@torus-network/torus-utils";
-import { formatToken } from "@torus-network/torus-utils/subspace";
+import { formatToken } from "@torus-network/torus-utils/torus/token";
 
 import { Button } from "@torus-ts/ui/components/button";
 import {

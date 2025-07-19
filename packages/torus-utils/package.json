@@ -83,6 +83,26 @@
     "./date-time": {
       "types": "./dist/date-time.d.ts",
       "default": "./dist/date-time.js"
+    },
+    "./torus": {
+      "types": "./dist/torus/index.d.ts",
+      "default": "./dist/torus/index.js"
+    },
+    "./torus/address": {
+      "types": "./dist/torus/address.d.ts",
+      "default": "./dist/torus/address.js"
+    },
+    "./torus/token": {
+      "types": "./dist/torus/token.d.ts",
+      "default": "./dist/torus/token.js"
+    },
+    "./torus/constants": {
+      "types": "./dist/torus/constants.d.ts",
+      "default": "./dist/torus/constants.js"
+    },
+    "./torus/legacy": {
+      "types": "./dist/torus/legacy.d.ts",
+      "default": "./dist/torus/legacy.js"
     }
   },
   "dependencies": {

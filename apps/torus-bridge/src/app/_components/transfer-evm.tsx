@@ -21,7 +21,8 @@ import {
   withdrawFromTorusEvm,
 } from "@torus-network/sdk/evm";
 import type { SS58Address } from "@torus-network/sdk/types";
-import { smallAddress, toNano } from "@torus-network/torus-utils/subspace";
+import { smallAddress } from "@torus-network/torus-utils/torus/address";
+import { toNano } from "@torus-network/torus-utils/torus/token";
 import { tryAsync, trySync } from "@torus-network/torus-utils/try-catch";
 
 import { useFreeBalance } from "@torus-ts/query-provider/hooks";

@@ -2,7 +2,7 @@ import { useMemo } from "react";
 
 import { Calendar, ExternalLink, Percent, Users } from "lucide-react";
 
-import { smallAddress } from "@torus-network/torus-utils/subspace";
+import { smallAddress } from "@torus-network/torus-utils/torus/address";
 
 import {
   Accordion,
