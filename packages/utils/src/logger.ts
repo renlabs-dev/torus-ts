@@ -2,7 +2,8 @@
 /* eslint-disable @typescript-eslint/no-empty-function */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import type { Err, Result } from "./result.js";
+import type { Err, Result } from "./result/index.js";
+import { nowISOString } from "./date-time.js";
 
 function getCallerInfo(): string {
   const stack = new Error().stack;
@@ -35,7 +36,7 @@ function getCallerInfo(): string {
 export function log(...args: unknown[]) {
   const [first, ...rest] = args;
   // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-  console.log(`[${new Date().toISOString()}] ${first}`, ...rest);
+  console.log(`[${nowISOString()}] ${first}`, ...rest);
 }
 
 // ====

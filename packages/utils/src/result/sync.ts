@@ -11,7 +11,7 @@ export const empty = undefined;
 export type empty = typeof empty;
 export type NonEmpty<T> = T;
 
-// === Result types ===
+// ==== Result types ====
 
 export type Ok<T> = readonly [empty, NonEmpty<T>];
 export type Err<E> = readonly [NonEmpty<E>, empty];

@@ -23,8 +23,9 @@ interface ToastInterface {
 
 /**
  * Function for handling mutations with consistent error handling
- * @param mutation The TRPC mutation to wrap
- * @param toast The toast interface for notifications
+ *
+ * @param mutation - The TRPC mutation to wrap
+ * @param toast - The toast interface for notifications
  * @returns A function to execute the mutation with error handling
  */
 export function createMutationHandler<TData, TResult>(

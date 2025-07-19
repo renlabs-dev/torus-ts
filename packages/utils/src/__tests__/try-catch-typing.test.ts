@@ -1,8 +1,9 @@
 import { assert } from "tsafe";
 import { describe, expect, expectTypeOf, it } from "vitest";
 import { z } from "zod";
-import { makeErr, makeErrFrom, makeOk } from "../result.js";
-import type { Result } from "../result.js";
+
+import type { Result } from "../result/index.js";
+import { makeErr, makeErrFrom, makeOk } from "../result/index.js";
 import {
   ensureError,
   tryAsync,

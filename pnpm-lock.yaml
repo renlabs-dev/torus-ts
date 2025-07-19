@@ -1547,9 +1547,6 @@ importers:
 
   packages/utils:
     dependencies:
-      '@polkadot/util':
-        specifier: 'catalog:'
-        version: 13.4.3
       bignumber.js:
         specifier: ^9.1.2
         version: 9.1.2

@@ -1,8 +1,9 @@
 import { assert } from "tsafe";
-import type { NonEmpty, Result } from "./result.js";
-import { empty, makeErr, makeOk } from "./result.js";
 
-// === Async Result types ===
+import type { NonEmpty, Result } from "./sync.js";
+import { empty, makeErr, makeOk } from "./sync.js";
+
+// ==== Async Result types ====
 
 export type AsyncResult<T, E> = Promise<Result<T, E>>;
 
@@ -12,6 +13,8 @@ export class AsyncResultObj<T, E> implements Promise<Result<T, E>> {
   constructor(value: Promise<Result<T, E>>) {
     this._value = value;
   }
+
+  [Symbol.toStringTag]: string = "AsyncResultObj";
 
   // -- Promise interface implementation --
 
@@ -23,15 +26,16 @@ export class AsyncResultObj<T, E> implements Promise<Result<T, E>> {
   ): Promise<TResult1 | TResult2> {
     return this._value.then(onfulfilled, onrejected);
   }
+
   catch<TResult = never>(
     onrejected?: ((reason: unknown) => TResult | PromiseLike<TResult>) | null,
   ): Promise<Result<T, E> | TResult> {
     return this._value.catch(onrejected);
   }
+
   finally(onfinally?: (() => void) | null): Promise<Result<T, E>> {
     return this._value.finally(onfinally);
   }
-  [Symbol.toStringTag]: string = "AsyncResultObj";
 
   // -- Wrapping and unwrapping --
 

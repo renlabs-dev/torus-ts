@@ -61,8 +61,8 @@
       "default": "./dist/bignumber.js"
     },
     "./result": {
-      "types": "./dist/result.d.ts",
-      "default": "./dist/result.js"
+      "types": "./dist/result/index.d.ts",
+      "default": "./dist/result/index.js"
     },
     "./try-catch": {
       "types": "./dist/try-catch.d.ts",
@@ -79,10 +79,13 @@
     "./logger": {
       "types": "./dist/logger.d.ts",
       "default": "./dist/logger.js"
+    },
+    "./date-time": {
+      "types": "./dist/date-time.d.ts",
+      "default": "./dist/date-time.js"
     }
   },
   "dependencies": {
-    "@polkadot/util": "catalog:",
     "bignumber.js": "^9.1.2",
     "luxon": "catalog:",
     "multiformats": "catalog:",

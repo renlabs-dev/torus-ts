@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+import { nowISOString } from "./date-time.js";
+
 export const AUTH_REQ_SCHEMA = z.object({
   statement: z.string(), // "Sign in with Polkadot extension to authenticate your session at ${uri}"
   uri: z.string(), // origin or "<unknown>"
@@ -18,10 +20,12 @@ function generateNonce(): string {
 }
 
 export function createAuthReqData(uri: string): AuthReq {
+  const nonce = generateNonce();
+  const created = nowISOString();
   return {
     statement: `Sign in with Polkadot extension to authenticate your session at ${uri}`,
     uri,
-    nonce: generateNonce(),
-    created: new Date().toISOString(),
+    nonce,
+    created,
   };
 }
