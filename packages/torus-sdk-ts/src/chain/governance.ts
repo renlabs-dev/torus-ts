@@ -29,15 +29,15 @@ import {
   sb_struct,
   sb_to_primitive,
 } from "../types/index.js";
+import { queryFreeBalance } from "./balance.js";
 import type { Api } from "./common/index.js";
 import { handleMapValues } from "./common/index.js";
-import { queryFreeBalance } from "./subspace.js";
 
 const ADDRESS_FORMAT = 42;
 
 export type GovernanceItemType = "PROPOSAL" | "AGENT_APPLICATION";
 
-// == Proposals ==
+// ==== Proposals ====
 
 /** Based on `PalletGovernanceProposalProposalData` */
 export const PROPOSAL_DATA_SCHEMA = sb_enum({
@@ -313,7 +313,7 @@ export async function queryAgentApplications(
   return daos;
 }
 
-// == Dao Treasury ==
+// ==== Dao Treasury ====
 
 export type DaoTreasuryAddress = z.infer<typeof sb_address>;
 
@@ -479,7 +479,7 @@ export async function queryRewardAllocation(api: Api): Promise<bigint> {
   return getRewardAllocation(governanceConfig, balance);
 }
 
-// == Whitelist ==
+// ==== Whitelist ====
 
 export async function pushToWhitelist(
   api: ApiPromise,

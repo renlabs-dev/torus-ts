@@ -10,6 +10,8 @@ import type {
 import { useQueries, useQuery } from "@tanstack/react-query";
 import SuperJSON from "superjson";
 
+import type { StakeData } from "@torus-network/sdk/cached-queries";
+import { queryCachedStakeOut } from "@torus-network/sdk/cached-queries";
 import type {
   Api,
   LastBlock,
@@ -17,14 +19,13 @@ import type {
   Proposal,
   VoteWithStake,
 } from "@torus-network/sdk/chain";
-import type { SS58Address } from "@torus-network/sdk/types";
 import {
   processVotesAndStakes,
   queryAccountsNotDelegatingVotingPower,
   queryAgentApplications,
+  queryAgentBurn,
   queryAgents,
   queryBlockEmission,
-  queryBurnValue,
   queryDaoTreasuryAddress,
   queryExtFee,
   queryFreeBalance,
@@ -49,10 +50,9 @@ import {
   queryUnrewardedProposals,
   queryWhitelist,
 } from "@torus-network/sdk/chain";
-import { queryCachedStakeOut } from "@torus-network/sdk/cached-queries";
-import type { StakeData } from "@torus-network/sdk/cached-queries";
 import { CONSTANTS } from "@torus-network/sdk/constants";
 import { fetchCustomMetadata } from "@torus-network/sdk/metadata";
+import type { SS58Address } from "@torus-network/sdk/types";
 import { BasicLogger } from "@torus-network/torus-utils/logger";
 import { tryAsync } from "@torus-network/torus-utils/try-catch";
 import type { ListItem, Nullish } from "@torus-network/torus-utils/typing";
@@ -336,7 +336,7 @@ export function useBurnValue(api: Api | Nullish) {
   return useQuery({
     queryKey: ["burn_value"],
     enabled: api != null,
-    queryFn: () => queryBurnValue(api!),
+    queryFn: () => queryAgentBurn(api!),
     staleTime: CONSTANTS.TIME.STAKE_STALE_TIME,
     refetchOnWindowFocus: false,
   });

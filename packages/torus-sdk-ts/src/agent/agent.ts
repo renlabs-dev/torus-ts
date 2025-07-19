@@ -11,7 +11,7 @@ import { z } from "zod";
 import type { SS58Address } from "@torus-network/sdk/types";
 
 import { queryNamespacePermissions } from "../chain/permission0.js";
-import { queryAgents } from "../chain/subspace.js";
+import { queryAgents } from "../chain/torus0/agents.js";
 import { connectToChainRpc } from "../utils/index.js";
 import type { Helpers } from "./helpers.js";
 import { checkTransaction } from "./helpers.js";

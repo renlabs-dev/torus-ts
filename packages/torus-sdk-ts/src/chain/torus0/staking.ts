@@ -1,48 +1,17 @@
-// TODO: refactor / split modules
-
-import type { ApiPromise } from "@polkadot/api";
-import type { KeyringPair } from "@polkadot/keyring/types";
-import type { Percent } from "@polkadot/types/interfaces";
-import type { z } from "zod";
-
 import { tryAsync, trySync } from "@torus-network/torus-utils/try-catch";
 
-import type { SS58Address } from "../types/address.js";
-import type { Balance } from "../types/index.js";
+import type { SS58Address } from "../../types/address.js";
+import type { Balance } from "../../types/index.js";
 import {
   sb_address,
   sb_balance,
   sb_bigint,
-  sb_number_int,
   sb_option_default,
-  sb_percent,
-  sb_some,
-  sb_string,
-  sb_struct,
-} from "../types/index.js";
-import type { Api } from "./common/index.js";
-import { handleDoubleMapEntries, handleMapEntries } from "./common/index.js";
+} from "../../types/index.js";
+import type { Api } from "../common/index.js";
+import { handleDoubleMapEntries } from "../common/index.js";
 
-// ==== Balances ====
-
-export async function queryFreeBalance(
-  api: Api,
-  address: SS58Address,
-): Promise<Balance> {
-  const [queryError, q] = await tryAsync(api.query.system.account(address));
-  if (queryError !== undefined) {
-    console.error("Error querying free balance:", queryError);
-    throw queryError;
-  }
-
-  const [parseError, balance] = trySync(() => sb_balance.parse(q.data.free));
-  if (parseError !== undefined) {
-    console.error("Error parsing free balance:", parseError);
-    throw parseError;
-  }
-
-  return balance;
-}
+// ==== Balances & Staking ====
 
 export async function queryMinAllowedStake(api: Api): Promise<bigint> {
   const [queryError, q] = await tryAsync(api.query.torus0.minAllowedStake());
@@ -94,22 +63,6 @@ export async function queryRewardInterval(api: Api): Promise<bigint> {
   }
 
   return parsed;
-}
-
-export async function queryTotalIssuance(api: Api): Promise<Balance> {
-  const [queryError, q] = await tryAsync(api.query.balances.totalIssuance());
-  if (queryError !== undefined) {
-    console.error("Error querying total issuance:", queryError);
-    throw queryError;
-  }
-
-  const [parseError, balance] = trySync(() => sb_balance.parse(q));
-  if (parseError !== undefined) {
-    console.error("Error parsing total issuance:", parseError);
-    throw parseError;
-  }
-
-  return balance;
 }
 
 /** TODO: refactor: return Map */
@@ -244,8 +197,7 @@ export async function queryKeyStakedTo(
   return result;
 }
 
-// TODO: rename to `queryAgentBurn`
-export async function queryBurnValue(api: Api): Promise<bigint> {
+export async function queryAgentBurn(api: Api): Promise<bigint> {
   const [queryError, burn] = await tryAsync(api.query.torus0.burn());
   if (queryError !== undefined) {
     console.error("Error querying burn value:", queryError);
@@ -306,21 +258,6 @@ export async function queryStakeIn(api: Api): Promise<{
   };
 }
 
-export async function getPermissions(api: Api) {
-  const [queryError, q] = await tryAsync(api.query.permission0.permissions());
-  if (queryError !== undefined) {
-    console.error("Error querying permissions:", queryError);
-    throw queryError;
-  }
-
-  const [parseError, permissions] = trySync(() => sb_some(sb_string).parse(q));
-  if (parseError !== undefined) {
-    console.error("Error parsing permissions:", parseError);
-    throw parseError;
-  }
-
-  return permissions;
-}
 export async function queryStakeOut(api: Api): Promise<{
   total: bigint;
   perAddr: Map<SS58Address, bigint>;
@@ -364,170 +301,4 @@ export async function queryStakeOut(api: Api): Promise<{
     total,
     perAddr,
   };
-}
-
-// ==== Emission ====
-
-export async function queryRecyclingPercentage(api: Api): Promise<Percent> {
-  const [queryError, recyclingPercentage] = await tryAsync(
-    api.query.emission0.emissionRecyclingPercentage(),
-  );
-
-  if (queryError !== undefined) {
-    console.error("Error querying recycling percentage:", queryError);
-    throw queryError;
-  }
-
-  return recyclingPercentage;
-}
-
-export async function queryIncentivesRatio(api: Api): Promise<Percent> {
-  const [queryError, incentivesRatio] = await tryAsync(
-    api.query.emission0.incentivesRatio(),
-  );
-  if (queryError !== undefined) {
-    console.error("Error querying incentives ratio:", queryError);
-    throw queryError;
-  }
-
-  return incentivesRatio;
-}
-
-export function queryBlockEmission(api: Api): bigint {
-  const [queryError, q] = trySync(() => api.consts.emission0.blockEmission);
-  if (queryError !== undefined) {
-    console.error("Error querying block emission:", queryError);
-    throw queryError;
-  }
-
-  const [parseError, emission] = trySync(() => sb_bigint.parse(q));
-  if (parseError !== undefined) {
-    console.error("Error parsing block emission:", parseError);
-    throw parseError;
-  }
-
-  return emission;
-}
-
-// ==== Agents ====
-
-export const FEES_SCHEMA = sb_struct({
-  stakingFee: sb_number_int,
-  weightControlFee: sb_number_int,
-});
-
-export const AGENT_SCHEMA = sb_struct({
-  key: sb_address,
-  name: sb_string,
-  url: sb_string,
-  metadata: sb_string,
-  weightPenaltyFactor: sb_percent,
-  registrationBlock: sb_bigint,
-  fees: FEES_SCHEMA,
-});
-
-export type Agent = z.infer<typeof AGENT_SCHEMA>;
-
-export async function queryAgents(api: Api) {
-  const [queryError, q] = await tryAsync(api.query.torus0.agents.entries());
-  if (queryError !== undefined) {
-    console.error("Error querying agents:", queryError);
-    throw queryError;
-  }
-
-  const [handleError, result] = trySync(() =>
-    handleMapEntries(q, sb_address, sb_some(AGENT_SCHEMA)),
-  );
-  if (handleError !== undefined) {
-    console.error("Error handling agents map entries:", handleError);
-    throw handleError;
-  }
-
-  const [agents, errs] = result;
-  for (const err of errs) {
-    console.error("ERROR:", err);
-    throw new Error("Error in queryAgents");
-  }
-
-  return agents;
-}
-
-// == Weights ==
-
-export async function setChainWeights(
-  api: ApiPromise,
-  keypair: KeyringPair,
-  weights: [SS58Address, number][],
-) {
-  const [createTxError, tx] = trySync(() =>
-    api.tx.emission0.setWeights(weights),
-  );
-  if (createTxError !== undefined) {
-    console.error("Error creating set weights transaction:", createTxError);
-    throw createTxError;
-  }
-
-  const [signError, signedTx] = await tryAsync(tx.signAndSend(keypair));
-  if (signError !== undefined) {
-    console.error(
-      "Error signing and sending set weights transaction:",
-      signError,
-    );
-    throw signError;
-  }
-
-  return signedTx;
-}
-
-export interface RegisterAgent {
-  api: ApiPromise;
-  agentKey: SS58Address;
-  name: string;
-  url: string;
-  metadata: string;
-}
-
-/**
- * Register an agent on the network
- */
-export function registerAgent({
-  api,
-  agentKey,
-  name,
-  url,
-  metadata,
-}: RegisterAgent) {
-  return api.tx.torus0.registerAgent(agentKey, name, url, metadata);
-}
-
-/**
- * Create a new namespace, automatically creating missing intermediate nodes
- */
-export function createNamespace(api: ApiPromise, path: string) {
-  return api.tx.torus0.createNamespace(path);
-}
-
-/**
- * Delete a namespace and all its children
- */
-export function deleteNamespace(api: ApiPromise, path: string) {
-  return api.tx.torus0.deleteNamespace(path);
-}
-
-/**
- * Updates origin's key agent metadata.
- */
-export function updateAgent(
-  api: ApiPromise,
-  url: string,
-  metadata?: string | null,
-  stakingFee?: number | null,
-  weightControlFee?: number | null,
-) {
-  return api.tx.torus0.updateAgent(
-    url,
-    metadata ?? null,
-    stakingFee ?? null,
-    weightControlFee ?? null,
-  );
 }

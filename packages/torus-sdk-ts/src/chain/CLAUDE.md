@@ -19,12 +19,19 @@ All modules follow consistent patterns:
 
 ## Files
 
-- [@_common.ts] - Shared utilities and types for storage map parsing
-- [@subspace.ts] - Misc pallet interface (balances, staking, emission, agents)
-  (needs to be split, the name is outdated)
+- [@common/] - Shared utilities and types for storage map parsing
+  - `index.ts` - Re-exports and common types
+  - `storage-maps.ts` - Storage map handling utilities
+- [@balance.ts] - System and balances pallet queries
+- [@emission0.ts] - Emission0 pallet interface (emission parameters, weights)
 - [@governance.ts] - Governance pallet interface (proposals, voting,
   applications)
 - [@permission0.ts] - Permission0 pallet interface (delegation permissions)
+- [@torus0/] - Torus0 pallet interface (organized by domain)
+  - `agents.ts` - Agent registration and management
+  - `namespace.ts` - Namespace creation and queries
+  - `staking.ts` - Staking operations and queries
+  - `index.ts` - Re-exports all torus0 modules
 
 ## Type System Conventions
 

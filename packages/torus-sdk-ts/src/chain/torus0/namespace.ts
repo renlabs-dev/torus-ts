@@ -6,11 +6,7 @@ import type { Result } from "@torus-network/torus-utils/result";
 import { makeErr, makeOk } from "@torus-network/torus-utils/result";
 import { tryAsync, trySync } from "@torus-network/torus-utils/try-catch";
 
-import type { SS58Address } from "../types/address.js";
-import {
-  namespacePathParser,
-  validateNamespacePath,
-} from "../types/namespace/index.js";
+import type { SS58Address } from "../../types/address.js";
 import {
   sb_address,
   sb_bigint,
@@ -19,11 +15,13 @@ import {
   sb_some,
   sb_string,
   sb_struct,
-} from "../types/zod.js";
-import type { Api } from "./common/index.js";
-import { handleDoubleMapEntries } from "./common/index.js";
-
-// ==== Namespaces ====
+} from "../../types/index.js";
+import {
+  namespacePathParser,
+  validateNamespacePath,
+} from "../../types/namespace/index.js";
+import type { Api } from "../common/index.js";
+import { handleDoubleMapEntries } from "../common/index.js";
 
 export const sb_namespace_path = sb_string.transform((path, ctx) => {
   const [err, segments] = validateNamespacePath(path);
@@ -209,4 +207,20 @@ export async function queryNamespacePathCreationCost(
   }
 
   return makeOk(parsedResult);
+}
+
+// ==== Transactions ====
+
+/**
+ * Create a new namespace, automatically creating missing intermediate nodes
+ */
+export function createNamespace(api: ApiPromise, path: string) {
+  return api.tx.torus0.createNamespace(path);
+}
+
+/**
+ * Delete a namespace and all its children
+ */
+export function deleteNamespace(api: ApiPromise, path: string) {
+  return api.tx.torus0.deleteNamespace(path);
 }

@@ -42,7 +42,7 @@ const api = await connectToChainRpc(NODE_URL);
   // //   undefined,
   // //   { fee: 16615066762142640128n, deposit: 27400000000000000000n }
   // // ]
-  // const burnValue = await queryBurnValue(api);
+  // const burnValue = await queryAgentBurn(api);
   // console.log("Burn value:", burnValue);
   // // Burn value: 15000000000000000000n
   // const ext = api.tx.torus0.registerAgent(
@@ -57,7 +57,7 @@ const api = await connectToChainRpc(NODE_URL);
   // console.log("Fee details:", feeDetails);
   // Fee for registerAgent:
   // - queryNamespacePathCreationCost (agent.name)
-  // - queryBurnValue (15 TORUS)
+  // - queryAgentBurn (15 TORUS)
   // Fee for namespace creation:
   // - queryNamespacePathCreationCost (agent.name.alice.api.test)
   // // Create an example extrinsic (e.g., a balance transfer)
