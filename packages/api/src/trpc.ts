@@ -24,7 +24,7 @@ import type { SessionData } from "./auth";
 import { decodeSessionToken } from "./auth";
 
 let globalDb: ReturnType<typeof createDb> | null = null;
-let globalWSAPI: ApiPromise | null = null;
+let globalWsApi: ApiPromise | null = null;
 
 const getEnv = validateEnvOrExit({
   NEXT_PUBLIC_TORUS_RPC_URL: z
@@ -32,16 +32,18 @@ const getEnv = validateEnvOrExit({
     .nonempty("TORUS_CURATOR_MNEMONIC is required"),
 });
 
+// TODO: better error and connection handling
 function cacheCreateDb() {
   globalDb = globalDb ?? createDb();
   return globalDb;
 }
 
-async function cacheCreateWSAPI() {
-  globalWSAPI =
-    globalWSAPI ??
+// TODO: better error and connection handling
+async function cacheCreateWsApi() {
+  globalWsApi =
+    globalWsApi ??
     (await connectToChainRpc(getEnv(process.env).NEXT_PUBLIC_TORUS_RPC_URL));
-  return globalWSAPI;
+  return globalWsApi;
 }
 
 /**
@@ -78,7 +80,7 @@ export const createTRPCContext = (opts: {
   allocatorAddress: SS58Address;
 }) => {
   const db = cacheCreateDb();
-  const wsAPI = cacheCreateWSAPI();
+  const wsAPI = cacheCreateWsApi();
   const { jwtSecret } = opts;
   const source = opts.headers.get("x-trpc-source") ?? "unknown";
   console.log(">>> tRPC Request from", source);

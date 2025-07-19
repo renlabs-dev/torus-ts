@@ -16,6 +16,8 @@ import { sb_balance, sb_blocks } from "../../types/index.js";
 
 export type Api = ApiDecoration<"promise"> | ApiPromise;
 
+export * from "./storage-maps.js";
+
 // ==== Error ====
 
 export class SbQueryError extends Error {
@@ -29,9 +31,7 @@ export class SbQueryError extends Error {
   }
 }
 
-// ==== Storage maps ====
-
-export * from "./storage-maps.js";
+// ==== Extrinsic fees ====
 
 /**
  * Represents the breakdown and total of inclusion fees for a Substrate extrinsic.
@@ -48,7 +48,7 @@ interface FeeInfo {
 }
 
 /**
- * @deprecated Not working
+ * @deprecated Not working. Investigate later.
  */
 export async function brokenQueryExtFeeInfo(
   api: Api,
@@ -99,6 +99,10 @@ export async function queryExtFee(
   const fee = payInfo.partialFee.toBigInt();
   return makeOk({ fee });
 }
+
+// ==== Misc ====
+
+// TODO: queryLastBlock should return Result
 export async function queryLastBlock(api: ApiPromise): Promise<LastBlock> {
   const [headerError, blockHeader] = await tryAsync(api.rpc.chain.getHeader());
   if (headerError !== undefined) {
