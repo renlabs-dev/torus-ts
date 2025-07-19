@@ -14,14 +14,6 @@
       "default": "./dist/index.browser.js",
       "types": "./dist/index.browser.d.ts"
     },
-    "./types": {
-      "default": "./dist/types/index.js",
-      "types": "./dist/types/index.d.ts"
-    },
-    "./types/namespace": {
-      "default": "./dist/types/namespace/index.js",
-      "types": "./dist/types/namespace/index.d.ts"
-    },
     "./agent": {
       "default": "./dist/agent/index.js",
       "types": "./dist/agent/index.d.ts"
@@ -29,6 +21,34 @@
     "./agent-client": {
       "default": "./dist/agent-client/index.js",
       "types": "./dist/agent-client/index.d.ts"
+    },
+    "./cached-queries": {
+      "default": "./dist/cached-queries.js",
+      "types": "./dist/cached-queries.d.ts"
+    },
+    "./chain": {
+      "default": "./dist/chain/index.js",
+      "types": "./dist/chain/index.d.ts"
+    },
+    "./constants": {
+      "default": "./dist/constants.js",
+      "types": "./dist/constants.d.ts"
+    },
+    "./evm": {
+      "default": "./dist/evm.js",
+      "types": "./dist/evm.d.ts"
+    },
+    "./metadata": {
+      "default": "./dist/metadata/index.js",
+      "types": "./dist/metadata/index.d.ts"
+    },
+    "./types": {
+      "default": "./dist/types/index.js",
+      "types": "./dist/types/index.d.ts"
+    },
+    "./utils": {
+      "default": "./dist/utils/index.js",
+      "types": "./dist/utils/index.d.ts"
     }
   },
   "files": [

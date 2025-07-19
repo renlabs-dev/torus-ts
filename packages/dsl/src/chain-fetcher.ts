@@ -1,25 +1,26 @@
 import type { ApiPromise } from "@polkadot/api";
+
+import { checkSS58, H256_HEX } from "@torus-network/sdk";
 import {
-  setup,
-  queryStakeOut,
-  checkSS58,
-  queryPermission,
   isPermissionEnabled,
-  queryDelegationStreamsByAccount,
   PERMISSION_ID_SCHEMA,
-  H256_HEX,
-} from "@torus-network/sdk";
-import type { AccountId, PermId, UInt, Constraint } from "./types";
+  queryDelegationStreamsByAccount,
+  queryPermission,
+  queryStakeOut,
+} from "@torus-network/sdk/chain";
+import { connectToChainRpc } from "@torus-network/sdk/utils";
+
 import type {
-  StakeOfFact,
-  PermissionExistsFact,
-  PermissionEnabledFact,
-  InactiveUnlessRedelegatedFact,
   BlockFact,
+  InactiveUnlessRedelegatedFact,
+  PermissionEnabledFact,
+  PermissionExistsFact,
   SpecificFact,
+  StakeOfFact,
 } from "./facts";
 import { extractFactsFromConstraint } from "./facts";
 import { ReteNetwork } from "./rete";
+import type { AccountId, Constraint, PermId, UInt } from "./types";
 
 /**
  * Chain data fetcher interface for retrieving blockchain state
@@ -66,7 +67,7 @@ export class TorusChainFetcher implements ChainFetcher {
     }
 
     try {
-      this.api = await setup(this.wsEndpoint);
+      this.api = await connectToChainRpc(this.wsEndpoint);
       console.log("Connected to Torus chain at:", this.wsEndpoint);
     } catch (error) {
       console.error("Failed to connect to Torus chain:", error);

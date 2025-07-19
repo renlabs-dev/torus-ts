@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
-import type { AgentMetadataResult } from "@torus-network/sdk";
-import { fetchAgentMetadata } from "@torus-network/sdk";
+import type { AgentMetadataResult } from "@torus-network/sdk/metadata";
+import { fetchAgentMetadata } from "@torus-network/sdk/metadata";
 import { isIpfsUri } from "@torus-network/torus-utils/ipfs";
 
 declare global {

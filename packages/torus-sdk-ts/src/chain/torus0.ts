@@ -6,7 +6,7 @@ import type { Result } from "@torus-network/torus-utils/result";
 import { makeErr, makeOk } from "@torus-network/torus-utils/result";
 import { tryAsync, trySync } from "@torus-network/torus-utils/try-catch";
 
-import type { SS58Address } from "../address.js";
+import type { SS58Address } from "../types/address.js";
 import {
   namespacePathParser,
   validateNamespacePath,

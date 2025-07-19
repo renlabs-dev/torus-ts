@@ -1,7 +1,9 @@
-import { z } from "zod";
 import { match } from "rustie";
+import { z } from "zod";
+
 import type { SS58Address } from "@torus-network/sdk";
 import { SS58_SCHEMA } from "@torus-network/sdk";
+
 import type { JWTErrorCode } from "./jwt-sr25519.js";
 import { verifyJWT } from "./jwt-sr25519.js";
 
@@ -10,12 +12,15 @@ export const ensureTrailingSlash = (path: string) => {
 };
 
 /**
- * Selects a random RPC URL from environment variable or default.
- * Reads from TORUS_RPC_URLS environment variable (comma-separated) or defaults to mainnet.
- * @returns A randomly selected RPC URL, defaults to 'wss://api.torus.network'
+ * Selects a random RPC URL from the TORUS_RPC_URLS environment variable or
+ * default to mainnet (`wss://api.torus.network`).
+ *
+ * `TORUS_RPC_URLS` is a comma-separated list of RPC URLs, e.g.,
+ * `wss://api.torus.network,wss://api.tor.us`.
  */
-export const selectRandomRpcUrl = (): string => {
+export const selectRpcUrl = (): string => {
   const envRpcUrls = process.env.TORUS_RPC_URLS;
+
   const urls = envRpcUrls
     ? envRpcUrls.split(",").map((url) => url.trim())
     : ["wss://api.torus.network"];

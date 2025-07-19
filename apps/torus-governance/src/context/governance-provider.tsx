@@ -8,8 +8,8 @@ import type {
   LastBlock,
   Proposal,
   SS58Address,
-  StakeData,
 } from "@torus-network/sdk";
+import type { StakeData } from "@torus-network/sdk/cached-queries";
 import type { BaseDao, BaseProposal } from "@torus-ts/query-provider/hooks";
 import {
   useAccountsNotDelegatingVoting,

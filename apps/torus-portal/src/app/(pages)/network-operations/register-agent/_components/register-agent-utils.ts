@@ -1,4 +1,4 @@
-import { AGENT_METADATA_SCHEMA } from "@torus-network/sdk";
+import { AGENT_METADATA_SCHEMA } from "@torus-network/sdk/metadata";
 import type { CID } from "@torus-network/torus-utils/ipfs";
 import { cidToIpfsUri, PIN_FILE_RESULT } from "@torus-network/torus-utils/ipfs";
 import { tryAsync } from "@torus-network/torus-utils/try-catch";

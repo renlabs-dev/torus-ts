@@ -7,9 +7,9 @@ import { ApiPromise, WsProvider } from "@polkadot/api";
 import { BasicLogger } from "@torus-network/torus-utils/logger";
 import { formatToken } from "@torus-network/torus-utils/subspace";
 
-import { SS58Address } from "./address.js";
+import { queryExtFee } from "./chain/_common.js";
 import { sb_string } from "./index.browser.js";
-import { queryExtFee } from "./modules/_common.js";
+import { SS58Address } from "./types/address.js";
 
 const log = BasicLogger.create({ name: "torus-sdk-ts.main" });
 

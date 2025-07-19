@@ -1,15 +1,19 @@
 import type { ApiPromise } from "@polkadot/api";
-import type { AccountId32, H256 } from "@polkadot/types/interfaces";
+import type { Bytes, u16 } from "@polkadot/types";
+import { BTreeMap, BTreeSet } from "@polkadot/types";
+import type { AccountId32, H256, Percent } from "@polkadot/types/interfaces";
 import { blake2AsHex, decodeAddress } from "@polkadot/util-crypto";
+import { if_let, match } from "rustie";
+import { z } from "zod";
+
 import { getOrSetDefault } from "@torus-network/torus-utils/collections";
+import { BasicLogger } from "@torus-network/torus-utils/logger";
 import type { Result } from "@torus-network/torus-utils/result";
 import { makeErr, makeOk } from "@torus-network/torus-utils/result";
 import { tryAsync } from "@torus-network/torus-utils/try-catch";
 import type { Nullable } from "@torus-network/torus-utils/typing";
-import { if_let, match } from "rustie";
-import { z } from "zod";
 
-import type { SS58Address } from "../address.js";
+import type { SS58Address } from "../types/address.js";
 import type { ToBigInt, ZError } from "../types/index.js";
 import {
   sb_address,
@@ -27,13 +31,9 @@ import {
   sb_some,
   sb_struct,
 } from "../types/index.js";
-import { sb_namespace_path } from "./torus0.js";
 import type { Api } from "./_common.js";
 import { SbQueryError } from "./_common.js";
-import { BasicLogger } from "@torus-network/torus-utils/logger";
-import { BTreeMap, BTreeSet } from "@polkadot/types";
-import type { Bytes, u16 } from "@polkadot/types";
-import type { Percent } from "@polkadot/types/interfaces";
+import { sb_namespace_path } from "./torus0.js";
 
 const logger = BasicLogger.create({ name: "torus-sdk-ts.modules.permission0" });
 

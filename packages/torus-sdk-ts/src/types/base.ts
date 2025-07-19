@@ -9,7 +9,9 @@ export type ZError<T = unknown> = z.ZodError<T>;
 export const sb_id = sb_number.pipe(z.number().int().nonnegative());
 export type Id = z.infer<typeof sb_id>;
 
+/** TODO: rename */
 export const sb_blocks = sb_number.pipe(z.number().int().nonnegative());
+/** TODO: rename */
 export type Blocks = z.infer<typeof sb_blocks>;
 
 export const sb_balance = sb_bigint.pipe(z.bigint().nonnegative());

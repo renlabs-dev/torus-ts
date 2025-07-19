@@ -2,7 +2,7 @@
 
 import { memo, useCallback, useEffect, useMemo, useState } from "react";
 
-import { fetchAgentMetadata } from "@torus-network/sdk";
+import { fetchAgentMetadata } from "@torus-network/sdk/metadata";
 import { smallAddress } from "@torus-network/torus-utils/subspace";
 import { tryAsync } from "@torus-network/torus-utils/try-catch";
 

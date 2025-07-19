@@ -1,12 +1,18 @@
+import type { ZodSchema } from "zod";
+import { z } from "zod";
+
 import type { OldResult } from "@torus-network/torus-utils";
 import {
   buildIpfsGatewayUrl,
   IPFS_URI_SCHEMA,
 } from "@torus-network/torus-utils/ipfs";
-import type { ZodSchema } from "zod";
-import { z } from "zod";
-import type { AgentMetadata } from "./agent_metadata/agent_metadata.js";
-import { AGENT_METADATA_SCHEMA } from "./agent_metadata/agent_metadata.js";
+
+import type { AgentMetadata } from "./agent-metadata.js";
+import { AGENT_METADATA_SCHEMA } from "./agent-metadata.js";
+
+/**
+ * TODO: refactor / split
+ */
 
 const CUSTOM_METADATA_SCHEMA = z.object({
   title: z.string().optional(),

@@ -8,17 +8,20 @@
  */
 
 import type { ApiPromise } from "@polkadot/api";
-import type { SS58Address } from "@torus-network/sdk";
-import { setup } from "@torus-network/sdk";
-import { validateEnvOrExit } from "@torus-network/torus-utils/env";
-import { createDb } from "@torus-ts/db/client";
 import { initTRPC, TRPCError } from "@trpc/server";
 import superjson from "superjson";
 import { assert } from "tsafe";
 import { z, ZodError } from "zod";
+
+import type { SS58Address } from "@torus-network/sdk";
+import { connectToChainRpc } from "@torus-network/sdk/utils";
+import { validateEnvOrExit } from "@torus-network/torus-utils/env";
+import { trySync } from "@torus-network/torus-utils/try-catch";
+
+import { createDb } from "@torus-ts/db/client";
+
 import type { SessionData } from "./auth";
 import { decodeSessionToken } from "./auth";
-import { trySync } from "@torus-network/torus-utils/try-catch";
 
 let globalDb: ReturnType<typeof createDb> | null = null;
 let globalWSAPI: ApiPromise | null = null;
@@ -36,7 +39,8 @@ function cacheCreateDb() {
 
 async function cacheCreateWSAPI() {
   globalWSAPI =
-    globalWSAPI ?? (await setup(getEnv(process.env).NEXT_PUBLIC_TORUS_RPC_URL));
+    globalWSAPI ??
+    (await connectToChainRpc(getEnv(process.env).NEXT_PUBLIC_TORUS_RPC_URL));
   return globalWSAPI;
 }
 

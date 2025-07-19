@@ -1,9 +1,7 @@
 import { z } from "zod";
 
-import {
-  AGENT_SHORT_DESCRIPTION_MAX_LENGTH,
-  agentNameField,
-} from "@torus-network/sdk";
+import { agentNameField } from "@torus-network/sdk";
+import { AGENT_SHORT_DESCRIPTION_MAX_LENGTH } from "@torus-network/sdk/metadata";
 
 export const REGISTER_AGENT_SCHEMA = z.object({
   agentKey: z.string().min(1, "Agent address is required"),
