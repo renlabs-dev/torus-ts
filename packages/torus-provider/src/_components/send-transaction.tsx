@@ -43,7 +43,7 @@ import { updateMetadata } from "../utils/chain-metadata";
 >>>>>>> 2b1ea78a (refactor: update metadata import path in send-transaction component)
 =======
 import { getExplorerLink } from "./toast-content-handler";
->>>>>>> d3741aae (refactor: reorganize imports and enhance error handling in transaction components)
+import { DEFAULT_DURATION } from "@torus-ts/ui/components/toaster";
 
 const METADATA_VERSION = 15;
 const TRANSACTION_MODE = 1; // mortal
@@ -251,7 +251,7 @@ function showTransactionResultToast(
     toast.success("", {
       id: toastId,
       description: `${transactionType} ${TOAST_MESSAGES.SUCCESS}`,
-      duration: Infinity,
+      duration: DEFAULT_DURATION,
       action: createExplorerAction(hash, wsEndpoint),
       classNames: {
         icon: "mb-6",
@@ -271,7 +271,7 @@ function showTransactionResultToast(
     toast.error("", {
       id: toastId,
       description: errorMessage,
-      duration: Infinity,
+      duration: DEFAULT_DURATION,
     });
   }
 }
@@ -382,7 +382,7 @@ async function executeTransaction(
         toast.error("", {
           id: toastId,
           description: error.message || ERROR_MESSAGES.TRANSACTION_FAILED,
-          duration: Infinity,
+          duration: DEFAULT_DURATION,
         });
 
         callback?.({
