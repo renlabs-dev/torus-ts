@@ -5,7 +5,7 @@ import type { Result } from "@torus-network/torus-utils/result";
 import { makeErr, makeOk } from "@torus-network/torus-utils/result";
 import { tryAsync, trySync } from "@torus-network/torus-utils/try-catch";
 
-import type { SS58Address } from "../address.js";
+import type { SS58Address } from "../types/address.js";
 import {
   namespacePathParser,
   validateNamespacePath,
@@ -19,8 +19,8 @@ import {
   sb_string,
   sb_struct,
 } from "../types/zod.js";
-import type { Api } from "./_common.js";
-import { handleDoubleMapEntries } from "./_common.js";
+import type { Api } from "./common/index.js";
+import { handleDoubleMapEntries } from "./common/index.js";
 
 // ==== Namespaces ====
 

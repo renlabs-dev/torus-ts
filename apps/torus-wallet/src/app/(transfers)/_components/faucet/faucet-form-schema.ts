@@ -1,4 +1,4 @@
-import { isSS58 } from "@torus-network/sdk";
+import { isSS58 } from "@torus-network/sdk/types";
 import { z } from "zod";
 
 export type FaucetFormValues = z.infer<typeof FaucetFormSchema>;

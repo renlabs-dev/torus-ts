@@ -1,10 +1,4 @@
-import { setup } from "@torus-network/sdk";
-
-const NODE_URL = "wss://api.testnet.torus.network";
-
-export const connectToChainRpc = async () => setup(NODE_URL);
-
-export type ApiPromise = Awaited<ReturnType<typeof connectToChainRpc>>;
+import type { ApiPromise } from "@polkadot/api";
 
 export interface Helpers {
   checkTransaction: ({

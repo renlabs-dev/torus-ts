@@ -7,7 +7,7 @@ import type { z } from "zod";
 
 import { tryAsync, trySync } from "@torus-network/torus-utils/try-catch";
 
-import type { SS58Address } from "../address.js";
+import type { SS58Address } from "../types/address.js";
 import type { Balance } from "../types/index.js";
 import {
   sb_address,
@@ -20,8 +20,8 @@ import {
   sb_string,
   sb_struct,
 } from "../types/index.js";
-import type { Api } from "./_common.js";
-import { handleDoubleMapEntries, handleMapEntries } from "./_common.js";
+import type { Api } from "./common/index.js";
+import { handleDoubleMapEntries, handleMapEntries } from "./common/index.js";
 
 // ==== Balances ====
 

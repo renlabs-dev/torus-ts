@@ -1,6 +1,7 @@
 "use client";
 
-import type { ProposalStatus, SS58Address } from "@torus-network/sdk";
+import type { ProposalStatus } from "@torus-network/sdk/chain";
+import type { SS58Address } from "@torus-network/sdk/types";
 import { ContentNotFound } from "@torus-ts/ui/components/content-not-found";
 import { CardSkeleton } from "~/app/_components/dao-card/components/card-skeleton";
 import { ProposalCard } from "~/app/(pages)/proposals/_components/proposal-card";

@@ -33,6 +33,7 @@
 
   // Formatting
   "tsImportSorter.configuration.autoFormat": "onSave",
+  "tsImportSorter.configuration.keepUnused": [".+"],
   // "tsImportSorter.configuration.maxLineLength": 80,
   "tsImportSorter.configuration.wrappingStyle": {
     "maxBindingNamesPerLine": 0,
@@ -102,6 +103,7 @@
     "prettiercache",
     "pubk",
     "rainbowkit",
+    "redelegated",
     "rootnet",
     "rustie",
     "shadcn",

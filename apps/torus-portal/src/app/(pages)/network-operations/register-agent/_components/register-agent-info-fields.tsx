@@ -1,6 +1,6 @@
 import type { Control } from "react-hook-form";
 
-import { AGENT_SHORT_DESCRIPTION_MAX_LENGTH } from "@torus-network/sdk";
+import { AGENT_SHORT_DESCRIPTION_MAX_LENGTH } from "@torus-network/sdk/metadata";
 
 import { Button } from "@torus-ts/ui/components/button";
 import {

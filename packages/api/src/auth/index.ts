@@ -1,7 +1,8 @@
-import { SS58_SCHEMA } from "@torus-network/sdk";
-import { trySync } from "@torus-network/torus-utils/try-catch";
 import * as jwt from "jsonwebtoken";
 import { z } from "zod";
+
+import { SS58_SCHEMA } from "@torus-network/sdk/types";
+import { trySync } from "@torus-network/torus-utils/try-catch";
 
 export const SESSION_DATA_SCHEMA = z.object({
   userKey: SS58_SCHEMA,

@@ -1,21 +1,25 @@
 "use client";
 
 import { useCallback, useState } from "react";
-import {
-  ConstraintSelect,
-  ConstraintInput,
-  ConstraintSelectIconItem,
-} from "./node-styled-components";
-import { CheckCircle, Play, Pause } from "lucide-react";
+
+import { CheckCircle, Pause, Play } from "lucide-react";
+
+import { H256_HEX } from "@torus-network/sdk/types";
+
 import type { BaseConstraintType } from "@torus-ts/dsl";
 import { BaseConstraint } from "@torus-ts/dsl";
-import type { BaseNodeData } from "./constraint-node-types";
+import { Badge } from "@torus-ts/ui/components/badge";
+
 import {
   PermissionNodeContainer,
   useChildNodeManagement,
 } from "./constraint-node-container";
-import { H256_HEX } from "@torus-network/sdk";
-import { Badge } from "@torus-ts/ui/components/badge";
+import type { BaseNodeData } from "./constraint-node-types";
+import {
+  ConstraintInput,
+  ConstraintSelect,
+  ConstraintSelectIconItem,
+} from "./node-styled-components";
 
 interface PermissionNodeBaseProps {
   id: string;

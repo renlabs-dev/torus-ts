@@ -14,12 +14,11 @@ import type { ISubmittableResult } from "@polkadot/types/types";
 import type {
   AgentApplication,
   Api,
-  CustomMetadataState,
   GrantEmissionPermission,
   GrantNamespacePermission,
   Proposal,
   UpdateEmissionPermission,
-} from "@torus-network/sdk";
+} from "@torus-network/sdk/chain";
 import {
   createNamespace,
   deleteNamespace,
@@ -27,10 +26,11 @@ import {
   grantNamespacePermission,
   registerAgent,
   revokePermission,
-  sb_balance,
   updateAgent,
   updateEmissionPermission,
-} from "@torus-network/sdk";
+} from "@torus-network/sdk/chain";
+import type { CustomMetadataState } from "@torus-network/sdk/metadata";
+import { sb_balance } from "@torus-network/sdk/types";
 import { toNano } from "@torus-network/torus-utils/subspace";
 import { tryAsync, trySync } from "@torus-network/torus-utils/try-catch";
 
@@ -42,6 +42,7 @@ import type {
   CreateNamespace,
   DeleteNamespace,
   RegisterAgent,
+  RemarkTransaction,
   RemoveVote,
   RevokePermission,
   Stake,
@@ -54,6 +55,7 @@ import type {
 } from "./_types";
 
 export type { InjectedAccountWithMeta } from "@polkadot/extension-inject/types";
+export type { TransactionResult } from "./_types";
 
 export type WithMetadataState<T> = T & { customData?: CustomMetadataState };
 
@@ -173,6 +175,8 @@ interface TorusContextType {
   createNamespaceTransaction: (props: CreateNamespace) => Promise<void>;
 
   deleteNamespaceTransaction: (props: DeleteNamespace) => Promise<void>;
+
+  remarkTransaction: (props: RemarkTransaction) => Promise<void>;
 }
 
 const TorusContext = createContext<TorusContextType | null>(null);
@@ -935,6 +939,30 @@ export function TorusProvider({
     });
   }
 
+  async function remarkTransaction({
+    remark,
+    callback,
+    refetchHandler,
+  }: RemarkTransaction): Promise<void> {
+    if (!api?.tx.system.remarkWithEvent) {
+      console.log("API not connected or remark not available");
+      return;
+    }
+
+    const transaction = api.tx.system.remarkWithEvent(remark);
+
+    await sendTransaction({
+      api,
+      torusApi,
+      selectedAccount,
+      callback,
+      transaction,
+      transactionType: "Remark",
+      wsEndpoint,
+      refetchHandler,
+    });
+  }
+
   return (
     <TorusContext.Provider
       value={{
@@ -978,6 +1006,7 @@ export function TorusProvider({
         revokePermissionTransaction,
         createNamespaceTransaction,
         deleteNamespaceTransaction,
+        remarkTransaction,
         wsEndpoint,
       }}
     >

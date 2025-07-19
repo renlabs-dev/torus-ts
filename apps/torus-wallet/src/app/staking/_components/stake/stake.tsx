@@ -1,7 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { checkSS58 } from "@torus-network/sdk";
+import { checkSS58 } from "@torus-network/sdk/types";
 import type { TransactionResult } from "@torus-ts/torus-provider/types";
 import { useToast } from "@torus-ts/ui/hooks/use-toast";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -20,7 +20,7 @@ import type { StakeFormValues } from "./stake-form-schema";
 import { createStakeActionFormSchema } from "./stake-form-schema";
 import type { BrandTag } from "@torus-network/torus-utils";
 import { tryAsync } from "@torus-network/torus-utils/try-catch";
-import type { SS58Address } from "@torus-network/sdk";
+import type { SS58Address } from "@torus-network/sdk/types";
 
 export const MIN_ALLOWED_STAKE_SAFEGUARD = 500000000000000000n;
 export const MIN_EXISTENTIAL_BALANCE = 100000000000000000n;

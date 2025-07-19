@@ -7,7 +7,7 @@ import { Trash2 } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
-import type { SS58Address } from "@torus-network/sdk";
+import type { SS58Address } from "@torus-network/sdk/types";
 
 import { useNamespaceEntriesOf } from "@torus-ts/query-provider/hooks";
 import { useTorus } from "@torus-ts/torus-provider";
@@ -86,7 +86,7 @@ export function DeleteCapabilityForm({
     // Filter out paths with 2 or fewer segments (agent.name)
     // as they cannot be deleted
     const validPaths = namespaceEntries.data.filter(
-      (entry) => entry.path.length > 2
+      (entry) => entry.path.length > 2,
     );
 
     // Sort paths by length (longest first) and then alphabetically
@@ -149,7 +149,9 @@ export function DeleteCapabilityForm({
 
           if (result.status === "ERROR") {
             setTransactionStatus("error");
-            toast.error(result.message ?? "Failed to delete capability permission");
+            toast.error(
+              result.message ?? "Failed to delete capability permission",
+            );
           }
         },
         refetchHandler: async () => {

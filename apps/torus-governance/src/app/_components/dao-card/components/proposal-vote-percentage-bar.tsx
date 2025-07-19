@@ -1,4 +1,4 @@
-import type { ProposalStatus } from "@torus-network/sdk";
+import type { ProposalStatus } from "@torus-network/sdk/chain";
 import { Skeleton } from "@torus-ts/ui/components/skeleton";
 import { calcProposalFavorablePercent } from "~/utils";
 

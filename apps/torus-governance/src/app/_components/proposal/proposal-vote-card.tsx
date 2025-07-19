@@ -4,7 +4,7 @@ import type {
   QueryObserverResult,
   RefetchOptions,
 } from "@tanstack/react-query";
-import type { ProposalStatus, VoteWithStake } from "@torus-network/sdk";
+import type { ProposalStatus, VoteWithStake } from "@torus-network/sdk/chain";
 import type { TransactionResult } from "@torus-ts/torus-provider/types";
 import { Button } from "@torus-ts/ui/components/button";
 import {
