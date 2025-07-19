@@ -36,9 +36,9 @@ export type AgentName = Brand<"AgentName", string>;
  * Regular expression for validating agent names
  * Matches: a-z, 0-9, hyphens, underscores
  * Must start and end with alphanumeric characters
- * Length: 1-63 characters
+ * Length: 1-30 characters
  */
-export const AGENT_NAME_REGEX = /^[a-z0-9]([a-z0-9-_]{0,61}[a-z0-9])?$/;
+export const AGENT_NAME_REGEX = /^[a-z0-9]([a-z0-9-_]{0,28}[a-z0-9])?$/;
 
 /**
  * Error messages for agent name validation
