@@ -15,9 +15,9 @@ import type {
   LastBlock,
   PermissionId,
   Proposal,
-  SS58Address,
   VoteWithStake,
-} from "@torus-network/sdk";
+} from "@torus-network/sdk/chain";
+import type { SS58Address } from "@torus-network/sdk/types";
 import {
   processVotesAndStakes,
   queryAccountsNotDelegatingVotingPower,
@@ -48,7 +48,7 @@ import {
   queryTreasuryEmissionFee,
   queryUnrewardedProposals,
   queryWhitelist,
-} from "@torus-network/sdk";
+} from "@torus-network/sdk/chain";
 import { queryCachedStakeOut } from "@torus-network/sdk/cached-queries";
 import type { StakeData } from "@torus-network/sdk/cached-queries";
 import { CONSTANTS } from "@torus-network/sdk/constants";

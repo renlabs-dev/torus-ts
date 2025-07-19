@@ -5,16 +5,16 @@ import type {
   PermissionContract,
   PermissionId,
   Proposal,
-  SS58Address,
-} from "@torus-network/sdk";
+} from "@torus-network/sdk/chain";
 import {
-  checkSS58,
   queryAgents,
   queryLastBlock,
   queryPermissions,
   queryWhitelist,
-} from "@torus-network/sdk";
+} from "@torus-network/sdk/chain";
 import { CONSTANTS } from "@torus-network/sdk/constants";
+import type { SS58Address } from "@torus-network/sdk/types";
+import { checkSS58 } from "@torus-network/sdk/types";
 import { BasicLogger } from "@torus-network/torus-utils/logger";
 import { tryAsync } from "@torus-network/torus-utils/try-catch";
 

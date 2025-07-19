@@ -1,15 +1,16 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import type { Api, SS58Address, StreamId } from "@torus-network/sdk";
+import { assert } from "tsafe";
+
+import type { Api, StreamId } from "@torus-network/sdk/chain";
 import {
   buildAvailableStreamsFor,
   queryAccumulatedStreamsForAccount,
   queryPermissions,
-} from "@torus-network/sdk";
+} from "@torus-network/sdk/chain";
+import type { SS58Address } from "@torus-network/sdk/types";
 import type { Nullish } from "@torus-network/torus-utils";
-import { assert } from "tsafe";
-
 import { chainErr } from "@torus-network/torus-utils/error";
 
 interface AvailableStream {

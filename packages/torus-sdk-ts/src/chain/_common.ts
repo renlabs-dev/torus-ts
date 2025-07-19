@@ -14,8 +14,8 @@ import type { Result } from "@torus-network/torus-utils/result";
 import { makeErr, makeOk } from "@torus-network/torus-utils/result";
 import { tryAsync, trySync } from "@torus-network/torus-utils/try-catch";
 
-import type { Blocks } from "../index.browser.js";
-import { sb_balance, sb_blocks } from "../index.browser.js";
+import type { Blocks } from "../types/index.js";
+import { sb_balance, sb_blocks } from "../types/index.js";
 
 export type Api = ApiDecoration<"promise"> | ApiPromise;
 

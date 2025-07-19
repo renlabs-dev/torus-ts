@@ -1,6 +1,5 @@
 import type { ApiPromise } from "@polkadot/api";
 
-import { checkSS58, H256_HEX } from "@torus-network/sdk";
 import {
   isPermissionEnabled,
   PERMISSION_ID_SCHEMA,
@@ -8,6 +7,7 @@ import {
   queryPermission,
   queryStakeOut,
 } from "@torus-network/sdk/chain";
+import { checkSS58, H256_HEX } from "@torus-network/sdk/types";
 import { connectToChainRpc } from "@torus-network/sdk/utils";
 
 import type {

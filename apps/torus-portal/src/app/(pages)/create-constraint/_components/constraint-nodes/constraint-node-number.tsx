@@ -2,25 +2,28 @@
 
 import { useCallback, useState } from "react";
 
-import {
-  ConstraintSelect,
-  ConstraintInput,
-  ConstraintSelectIconItem,
-} from "./node-styled-components";
-import { Hash, Clock, Coins, Plus, Minus } from "lucide-react";
-import { NumExpr } from "~/utils/dsl";
+import { Clock, Coins, Hash, Minus, Plus } from "lucide-react";
+
+import { SS58_SCHEMA } from "@torus-network/sdk/types";
+
 import type { NumExprType } from "~/utils/dsl";
-import type {
-  NumberNodeData,
-  NodeCreationResult,
-} from "./constraint-node-types";
-import { createChildNodeId, createEdgeId } from "./constraint-node-types";
+import { NumExpr } from "~/utils/dsl";
+
 import { uintSchema } from "../constraint-validation-schemas";
 import {
   PermissionNodeContainer,
   useChildNodeManagement,
 } from "./constraint-node-container";
-import { SS58_SCHEMA } from "@torus-network/sdk";
+import type {
+  NodeCreationResult,
+  NumberNodeData,
+} from "./constraint-node-types";
+import { createChildNodeId, createEdgeId } from "./constraint-node-types";
+import {
+  ConstraintInput,
+  ConstraintSelect,
+  ConstraintSelectIconItem,
+} from "./node-styled-components";
 
 interface PermissionNodeNumberProps {
   id: string;

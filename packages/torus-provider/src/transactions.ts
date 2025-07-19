@@ -9,7 +9,7 @@ import {
   sb_h256,
   sb_null,
   sb_string,
-} from "@torus-network/sdk";
+} from "@torus-network/sdk/types";
 
 // ==== Transaction / Extrinsic Status ====
 

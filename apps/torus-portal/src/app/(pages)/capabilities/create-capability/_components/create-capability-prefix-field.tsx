@@ -2,7 +2,7 @@ import { useMemo } from "react";
 
 import type { UseQueryResult } from "@tanstack/react-query";
 
-import type { NamespaceEntry } from "@torus-network/sdk";
+import type { NamespaceEntry } from "@torus-network/sdk/chain";
 
 import { FormControl, FormItem, FormLabel } from "@torus-ts/ui/components/form";
 import {

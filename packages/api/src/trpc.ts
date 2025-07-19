@@ -13,7 +13,7 @@ import superjson from "superjson";
 import { assert } from "tsafe";
 import { z, ZodError } from "zod";
 
-import type { SS58Address } from "@torus-network/sdk";
+import type { SS58Address } from "@torus-network/sdk/types";
 import { connectToChainRpc } from "@torus-network/sdk/utils";
 import { validateEnvOrExit } from "@torus-network/torus-utils/env";
 import { trySync } from "@torus-network/torus-utils/try-catch";

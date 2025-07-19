@@ -8,8 +8,8 @@ import { BasicLogger } from "@torus-network/torus-utils/logger";
 import { formatToken } from "@torus-network/torus-utils/subspace";
 
 import { queryExtFee } from "./chain/_common.js";
-import { sb_string } from "./index.browser.js";
 import { SS58Address } from "./types/address.js";
+import { sb_string } from "./types/index.js";
 
 const log = BasicLogger.create({ name: "torus-sdk-ts.main" });
 

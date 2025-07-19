@@ -18,7 +18,7 @@ import { handleEstimateFee } from "./send-fee-handler";
 import { SendForm } from "./send-form";
 import type { SendFormValues } from "./send-form-schema";
 import { tryAsync } from "@torus-network/torus-utils/try-catch";
-import type { SS58Address } from "@torus-network/sdk";
+import type { SS58Address } from "@torus-network/sdk/types";
 
 export const MIN_ALLOWED_STAKE_SAFEGUARD = 500000000000000000n;
 
