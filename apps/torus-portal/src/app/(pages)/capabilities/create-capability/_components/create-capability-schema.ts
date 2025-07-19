@@ -3,7 +3,7 @@ import { z } from "zod";
 import {
   isValidNamespaceSegment,
   namespacePathParser,
-} from "@torus-network/sdk";
+} from "@torus-network/sdk/types";
 
 export const HTTP_METHODS = [
   "get",

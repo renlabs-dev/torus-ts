@@ -1,5 +1,6 @@
+import type { SS58Address } from "@torus-network/sdk/types";
+
 import type { Transaction } from "~/store/transactions-store";
-import type { SS58Address } from "@torus-network/sdk";
 
 export interface ExportableTransaction {
   id: string;

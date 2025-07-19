@@ -1,10 +1,13 @@
 import "@polkadot/api-augment";
+
 import { ApiPromise, WsProvider } from "@polkadot/api";
-import { queryLastBlock } from "@torus-network/sdk";
-import { BasicLogger } from "@torus-network/torus-utils/logger";
-import { tryAsync } from "@torus-network/torus-utils/try-catch";
 import express from "express";
 import { z } from "zod";
+
+import { queryLastBlock } from "@torus-network/sdk/chain";
+import { BasicLogger } from "@torus-network/torus-utils/logger";
+import { tryAsync } from "@torus-network/torus-utils/try-catch";
+
 // import { log } from "./common";
 import { parseEnvOrExit } from "./common/env";
 // import { startAPIServer } from "./trpc/api";

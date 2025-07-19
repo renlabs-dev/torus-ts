@@ -9,15 +9,18 @@ import {
   Null,
   Option as polkadot_Option,
   Struct,
+  Text,
 } from "@polkadot/types";
 import type { AnyJson, Codec } from "@polkadot/types/types";
-import type { Option } from "@torus-network/torus-utils";
 import { match } from "rustie";
 import type { ZodRawShape, ZodType, ZodTypeAny, ZodTypeDef } from "zod";
 import { z } from "zod";
-import { SS58_SCHEMA } from "../address.js";
 
-export { sb_enum } from "./sb_enum.js";
+import type { Option } from "@torus-network/torus-utils";
+
+import { SS58_SCHEMA } from "./address.js";
+
+export * from "./sb_enum.js";
 
 // == Zod ==
 
@@ -243,21 +246,31 @@ export const sb_percent = sb_number_int.transform((val, ctx) => {
 
 // == String ==
 
+export const Text_schema = z.custom<Text>(
+  (val) => val instanceof Text,
+  "not a substrate Text",
+);
+
 export const Bytes_schema = z.custom<Bytes>(
   (val) => val instanceof Bytes,
   "not a substrate Bytes",
 );
 
-export const sb_string = Bytes_schema.transform<string>((val, ctx) => {
-  if (!val.isUtf8) {
-    ctx.addIssue({
-      code: z.ZodIssueCode.custom,
-      message: `Bytes is not valid UTF8`,
-    });
-    return z.NEVER;
-  }
-  return val.toUtf8();
-});
+export const sb_string = Text_schema.or(Bytes_schema).transform<string>(
+  (val, ctx) => {
+    if (val instanceof Text) {
+      return val.toString();
+    }
+    if (!val.isUtf8) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: `Bytes is not valid UTF8`,
+      });
+      return z.NEVER;
+    }
+    return val.toUtf8();
+  },
+);
 
 // == Enum ==
 

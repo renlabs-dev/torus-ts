@@ -1,7 +1,10 @@
-import type { ProposalStatus } from "@torus-network/sdk";
-import { Badge } from "@torus-ts/ui/components/badge";
-import { useGovernance } from "~/context/governance-provider";
 import { match } from "rustie";
+
+import type { ProposalStatus } from "@torus-network/sdk/chain";
+
+import { Badge } from "@torus-ts/ui/components/badge";
+
+import { useGovernance } from "~/context/governance-provider";
 
 interface RewardLabelProps {
   result: ProposalStatus;

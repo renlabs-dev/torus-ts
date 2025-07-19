@@ -1,7 +1,9 @@
-import { z } from "zod";
 import { match } from "rustie";
-import type { SS58Address } from "@torus-network/sdk";
-import { SS58_SCHEMA } from "@torus-network/sdk";
+import { z } from "zod";
+
+import type { SS58Address } from "@torus-network/sdk/types";
+import { SS58_SCHEMA } from "@torus-network/sdk/types";
+
 import type { JWTErrorCode } from "./jwt-sr25519.js";
 import { verifyJWT } from "./jwt-sr25519.js";
 
@@ -10,16 +12,19 @@ export const ensureTrailingSlash = (path: string) => {
 };
 
 /**
- * Selects a random RPC URL from the provided list for load balancing.
- * If no URLs are provided or the list is empty, defaults to the Torus testnet endpoint.
- * @param rpcUrls - Optional array of RPC endpoint URLs
- * @returns A randomly selected RPC URL, defaults to 'wss://api.testnet.torus.network'
+ * Selects a random RPC URL from the TORUS_RPC_URLS environment variable or
+ * default to mainnet (`wss://api.torus.network`).
+ *
+ * `TORUS_RPC_URLS` is a comma-separated list of RPC URLs, e.g.,
+ * `wss://api.torus.network,wss://api.tor.us`.
  */
-export const selectRandomRpcUrl = (rpcUrls?: string[]): string => {
-  const urls =
-    rpcUrls && rpcUrls.length > 0
-      ? rpcUrls
-      : ["wss://api.testnet.torus.network"];
+export const selectRpcUrl = (): string => {
+  const envRpcUrls = process.env.TORUS_RPC_URLS;
+
+  const urls = envRpcUrls
+    ? envRpcUrls.split(",").map((url) => url.trim())
+    : ["wss://api.torus.network"];
+
   const randomIndex = Math.floor(Math.random() * urls.length);
   const selectedRpcUrl = urls[randomIndex];
   if (!selectedRpcUrl) {
@@ -70,7 +75,7 @@ export const decodeAuthToken = (
         const { payload } = result;
 
         // TODO: better parsing of formats
-        if (payload.keyType !== 'sr25519') {
+        if (payload.keyType !== "sr25519") {
           return {
             success: false,
             error: `Unsupported key type: ${payload.keyType}`,
@@ -78,7 +83,7 @@ export const decodeAuthToken = (
           };
         }
 
-        if (payload.addressInfo.addressType !== 'ss58') {
+        if (payload.addressInfo.addressType !== "ss58") {
           return {
             success: false,
             error: `Unsupported address type: ${payload.addressInfo.addressType}`,

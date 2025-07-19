@@ -3,8 +3,9 @@ import type { VoidFn } from "@polkadot/api/types";
 import type { DispatchError } from "@polkadot/types/interfaces";
 import { u8aToHex } from "@polkadot/util";
 import { decodeAddress } from "@polkadot/util-crypto";
-import { queryLastBlock } from "@torus-network/sdk";
 import { z } from "zod";
+
+import { queryLastBlock } from "@torus-network/sdk/chain";
 
 export type FirstFaucetRequestData = z.infer<
   typeof FirstFaucetRequestDataScheme

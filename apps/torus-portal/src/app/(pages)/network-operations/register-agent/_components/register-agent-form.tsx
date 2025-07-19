@@ -6,8 +6,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import type { z } from "zod";
 
-import type { SS58Address } from "@torus-network/sdk";
-import { checkSS58 } from "@torus-network/sdk";
+import type { SS58Address } from "@torus-network/sdk/types";
+import { checkSS58 } from "@torus-network/sdk/types";
 import { cidToIpfsUri } from "@torus-network/torus-utils/ipfs";
 
 import { useTorus } from "@torus-ts/torus-provider";

@@ -1,9 +1,12 @@
-import { isSS58 } from "@torus-network/sdk";
+import type { RefObject } from "react";
+
 import { z } from "zod";
+
+import { isSS58 } from "@torus-network/sdk/types";
+import { toNano } from "@torus-network/torus-utils/subspace";
+
 import type { FeeLabelHandle } from "~/app/_components/fee-label";
 import { isWithinTransferLimit } from "~/utils/validators";
-import { toNano } from "@torus-network/torus-utils/subspace";
-import type { RefObject } from "react";
 
 export type SendFormValues = z.infer<ReturnType<typeof createSendFormSchema>>;
 

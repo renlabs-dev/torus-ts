@@ -25,8 +25,13 @@ import { api } from "~/trpc/react";
 import { tryCatch } from "~/utils/try-catch";
 
 import { AgentEmissionsWarning } from "./agent-emissions-warning";
-import { CreateSignalMarkdownField } from "./create-signal-fields/create-signal-markdown-field";
-import { CreateSignalSliderField } from "./create-signal-fields/create-signal-slider-field";
+import {
+  CreateSignalMarkdownField,
+} from "./create-signal-fields/create-signal-markdown-field";
+import {
+  CreateSignalSliderField,
+} from "./create-signal-fields/create-signal-slider-field";
+import { SignalInfoModal } from "./signal-info-modal";
 
 export function CreateSignalForm({
   className,
@@ -91,9 +96,9 @@ export function CreateSignalForm({
       >
         <PortalFormHeader
           title="Create Signal"
+          extraInfo={<SignalInfoModal />}
           description="Make a demand signal to express your specific need and proposed emission allocation to other agents."
         />
-
         <AgentEmissionsWarning
           hasAgentKey={canCreate}
           isLoading={isAuthLoading}

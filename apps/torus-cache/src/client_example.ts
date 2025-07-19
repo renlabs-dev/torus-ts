@@ -1,4 +1,4 @@
-import { STAKE_DATA_SCHEMA } from "@torus-network/sdk";
+import { STAKE_DATA_SCHEMA } from "@torus-network/sdk/cached-queries";
 import { BasicLogger } from "@torus-network/torus-utils/logger";
 import { tryAsync, trySync } from "@torus-network/torus-utils/try-catch";
 import fetch from "node-fetch";

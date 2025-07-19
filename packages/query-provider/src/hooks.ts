@@ -15,20 +15,16 @@ import type {
   LastBlock,
   PermissionId,
   Proposal,
-  SS58Address,
-  StakeData,
   VoteWithStake,
-} from "@torus-network/sdk";
+} from "@torus-network/sdk/chain";
+import type { SS58Address } from "@torus-network/sdk/types";
 import {
-  CONSTANTS,
-  fetchCustomMetadata,
   processVotesAndStakes,
   queryAccountsNotDelegatingVotingPower,
   queryAgentApplications,
   queryAgents,
   queryBlockEmission,
   queryBurnValue,
-  queryCachedStakeOut,
   queryDaoTreasuryAddress,
   queryExtFee,
   queryFreeBalance,
@@ -52,7 +48,11 @@ import {
   queryTreasuryEmissionFee,
   queryUnrewardedProposals,
   queryWhitelist,
-} from "@torus-network/sdk";
+} from "@torus-network/sdk/chain";
+import { queryCachedStakeOut } from "@torus-network/sdk/cached-queries";
+import type { StakeData } from "@torus-network/sdk/cached-queries";
+import { CONSTANTS } from "@torus-network/sdk/constants";
+import { fetchCustomMetadata } from "@torus-network/sdk/metadata";
 import { BasicLogger } from "@torus-network/torus-utils/logger";
 import { tryAsync } from "@torus-network/torus-utils/try-catch";
 import type { ListItem, Nullish } from "@torus-network/torus-utils/typing";

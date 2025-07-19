@@ -7,7 +7,7 @@ import type {
 } from "@polkadot/extension-inject/types";
 import type { DispatchError, EventRecord } from "@polkadot/types/interfaces";
 import { u8aToHex } from "@polkadot/util";
-import { CONSTANTS } from "@torus-network/sdk";
+import { CONSTANTS } from "@torus-network/sdk/constants";
 import { tryAsync, trySync } from "@torus-network/torus-utils/try-catch";
 import { toast } from "sonner";
 import type { TransactionResult } from "../_types";

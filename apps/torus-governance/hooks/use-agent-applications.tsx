@@ -1,10 +1,14 @@
 "use client";
 
 import { useMemo } from "react";
+
+import { match } from "rustie";
+
+import type { AgentApplication } from "@torus-network/sdk/chain";
+import type { SS58Address } from "@torus-network/sdk/types";
+
 import { useGovernance } from "~/context/governance-provider";
 import { handleCustomAgentApplications } from "~/utils";
-import { match } from "rustie";
-import type { AgentApplication, SS58Address } from "@torus-network/sdk";
 
 // Common function to map status values
 export const mapStatusToView = (status: AgentApplication["status"]): string => {

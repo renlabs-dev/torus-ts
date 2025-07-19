@@ -3,8 +3,8 @@ import React, { useCallback, useEffect } from "react";
 import { Plus, Trash2 } from "lucide-react";
 import { useFieldArray } from "react-hook-form";
 
-import type { Api } from "@torus-network/sdk";
-import { checkSS58 } from "@torus-network/sdk";
+import type { Api } from "@torus-network/sdk/chain";
+import { checkSS58 } from "@torus-network/sdk/types";
 
 import { Button } from "@torus-ts/ui/components/button";
 import {

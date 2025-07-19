@@ -1,8 +1,9 @@
 import type { TRPCRouterRecord } from "@trpc/server";
 import { z } from "zod";
 
-import type { SS58Address } from "@torus-network/sdk";
-import { queryKeyStakedBy, SS58_SCHEMA } from "@torus-network/sdk";
+import { queryKeyStakedBy } from "@torus-network/sdk/chain";
+import type { SS58Address } from "@torus-network/sdk/types";
+import { SS58_SCHEMA } from "@torus-network/sdk/types";
 import { typed_non_null_entries } from "@torus-network/torus-utils";
 
 import { and, eq, gte, isNull, max } from "@torus-ts/db";
