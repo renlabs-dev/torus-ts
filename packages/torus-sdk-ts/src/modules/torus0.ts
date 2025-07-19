@@ -1,3 +1,4 @@
+import { ApiPromise, WsProvider } from "@polkadot/api";
 import { z } from "zod";
 
 import { strToByteArray } from "@torus-network/torus-utils";
@@ -101,6 +102,24 @@ export async function queryNamespaceEntriesOf(
 
 // ---- Namespace Path Creation Cost ----
 
+const NS_CREATION_COST_RPC_URL = "wss://api-30.nodes.torus.network";
+
+/**
+ * GAMBIARRA: connect to hardcoded node with image that exposes RPC method
+ * to compute namespace path creation cost.
+ *
+ * This should be dropped once the main API nodes are updated.
+ */
+async function connectToNsCreationCostNode() {
+  const provider = new WsProvider(NS_CREATION_COST_RPC_URL);
+  const [error, api] = await tryAsync(ApiPromise.create({ provider }));
+  if (error !== undefined) {
+    console.error("Error creating API:", error);
+    throw error;
+  }
+  return api;
+}
+
 /**
  * Queries the cost of creating a namespace path.
  *
@@ -131,7 +150,7 @@ export async function queryNamespaceEntriesOf(
  * ```
  */
 export async function queryNamespacePathCreationCost(
-  api: Api,
+  _api: Api,
   accountId: SS58Address,
   namespacePath: string,
 ): Promise<Result<{ fee: bigint; deposit: bigint }, Error>> {
@@ -141,6 +160,8 @@ export async function queryNamespacePathCreationCost(
   if (pathError !== undefined) {
     return makeErr(new Error(`Invalid namespace path: ${pathError.message}`));
   }
+
+  const api = await connectToNsCreationCostNode();
 
   // Call the RPC method manually since it's not auto-generated
   // Note: Using provider send method because this RPC method is not auto-decorated
