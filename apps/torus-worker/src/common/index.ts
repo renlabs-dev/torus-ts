@@ -6,12 +6,12 @@ import type {
   Api,
   LastBlock,
   Proposal,
-} from "@torus-network/sdk";
+} from "@torus-network/sdk/chain";
 import {
   queryAgentApplications,
   queryLastBlock,
   queryProposals,
-} from "@torus-network/sdk";
+} from "@torus-network/sdk/chain";
 import { CONSTANTS } from "@torus-network/sdk/constants";
 import { BasicLogger } from "@torus-network/torus-utils/logger";
 import { tryAsync } from "@torus-network/torus-utils/try-catch";

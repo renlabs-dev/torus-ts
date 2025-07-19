@@ -1,8 +1,8 @@
 import type {
   PermissionDuration,
   RevocationTerms,
-  SS58Address,
-} from "@torus-network/sdk";
+} from "@torus-network/sdk/chain";
+import type { SS58Address } from "@torus-network/sdk/types";
 
 import type { CreateCapabilityPermissionFormData } from "./create-capability-permission-form-schema";
 

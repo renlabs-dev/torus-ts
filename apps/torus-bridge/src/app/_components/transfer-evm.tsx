@@ -1,12 +1,29 @@
 "use client";
 
+import type { CSSProperties } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+
+import { ArrowLeftRight } from "lucide-react";
+import Image from "next/image";
+import { useRouter, useSearchParams } from "next/navigation";
+import type { Config } from "wagmi";
+import {
+  useAccount,
+  useBalance,
+  useClient,
+  useSwitchChain,
+  useWalletClient,
+} from "wagmi";
+
 import {
   convertH160ToSS58,
   waitForTransactionReceipt,
   withdrawFromTorusEvm,
 } from "@torus-network/sdk/evm";
-import type { SS58Address } from "@torus-network/sdk";
+import type { SS58Address } from "@torus-network/sdk/types";
 import { smallAddress, toNano } from "@torus-network/torus-utils/subspace";
+import { tryAsync, trySync } from "@torus-network/torus-utils/try-catch";
+
 import { useFreeBalance } from "@torus-ts/query-provider/hooks";
 import { useTorus } from "@torus-ts/torus-provider";
 import type { TransactionResult } from "@torus-ts/torus-provider/types";
@@ -21,25 +38,12 @@ import { Input } from "@torus-ts/ui/components/input";
 import { Label } from "@torus-ts/ui/components/label";
 import { TransactionStatus } from "@torus-ts/ui/components/transaction-status";
 import { useToast } from "@torus-ts/ui/hooks/use-toast";
+
 import { getChainValuesOnEnv } from "~/config";
 import { initWagmi } from "~/context/evm-wallet-provider";
 import { env } from "~/env";
 import { useMultiProvider } from "~/hooks/use-multi-provider";
 import { updateSearchParams } from "~/utils/query-params";
-import { ArrowLeftRight } from "lucide-react";
-import Image from "next/image";
-import { useRouter, useSearchParams } from "next/navigation";
-import type { CSSProperties } from "react";
-import { useCallback, useEffect, useMemo, useState } from "react";
-import {
-  useAccount,
-  useBalance,
-  useClient,
-  useSwitchChain,
-  useWalletClient,
-} from "wagmi";
-import type { Config } from "wagmi";
-import { tryAsync, trySync } from "@torus-network/torus-utils/try-catch";
 
 const DEFAULT_MODE = "bridge";
 

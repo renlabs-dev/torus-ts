@@ -8,7 +8,7 @@ import { cors } from "hono/cors";
 import { match } from "rustie";
 import { z } from "zod";
 
-import type { SS58Address } from "@torus-network/sdk";
+import type { SS58Address } from "@torus-network/sdk/types";
 
 import { queryNamespacePermissions } from "../chain/permission0.js";
 import { queryAgents } from "../chain/subspace.js";

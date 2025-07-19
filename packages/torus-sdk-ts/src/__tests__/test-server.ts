@@ -1,5 +1,7 @@
 import { z } from "zod";
-import type { SS58Address } from "@torus-network/sdk";
+
+import type { SS58Address } from "@torus-network/sdk/types";
+
 import { Agent } from "../agent/index.js";
 
 // Create a simple test server with a hello endpoint

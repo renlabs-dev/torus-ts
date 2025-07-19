@@ -5,10 +5,10 @@ import type {
   Api,
   PermissionContract,
   PermissionId,
-  SS58Address,
   StreamId,
-} from "@torus-network/sdk";
-import { queryPermission } from "@torus-network/sdk";
+} from "@torus-network/sdk/chain";
+import { queryPermission } from "@torus-network/sdk/chain";
+import type { SS58Address } from "@torus-network/sdk/types";
 
 import type {
   DistributionControlFormData,

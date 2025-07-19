@@ -18,8 +18,7 @@ import type {
   GrantNamespacePermission,
   Proposal,
   UpdateEmissionPermission,
-} from "@torus-network/sdk";
-import type { CustomMetadataState } from "@torus-network/sdk/metadata";
+} from "@torus-network/sdk/chain";
 import {
   createNamespace,
   deleteNamespace,
@@ -27,10 +26,11 @@ import {
   grantNamespacePermission,
   registerAgent,
   revokePermission,
-  sb_balance,
   updateAgent,
   updateEmissionPermission,
-} from "@torus-network/sdk";
+} from "@torus-network/sdk/chain";
+import type { CustomMetadataState } from "@torus-network/sdk/metadata";
+import { sb_balance } from "@torus-network/sdk/types";
 import { toNano } from "@torus-network/torus-utils/subspace";
 import { tryAsync, trySync } from "@torus-network/torus-utils/try-catch";
 

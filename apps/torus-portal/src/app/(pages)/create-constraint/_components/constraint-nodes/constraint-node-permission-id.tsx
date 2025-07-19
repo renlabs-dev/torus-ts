@@ -1,6 +1,14 @@
 "use client";
 
-import { useCallback, useState, useEffect } from "react";
+import { useCallback, useEffect, useState } from "react";
+
+import { Key } from "lucide-react";
+
+import type { SS58Address } from "@torus-network/sdk/types";
+import { H256_HEX } from "@torus-network/sdk/types";
+
+import { usePermissionsByGrantor } from "@torus-ts/query-provider/hooks";
+import { useTorus } from "@torus-ts/torus-provider";
 import {
   Select,
   SelectContent,
@@ -8,16 +16,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@torus-ts/ui/components/select";
-import type { PermissionIdNodeData } from "./constraint-node-types";
+
 import {
   PermissionNodeContainer,
   useChildNodeManagement,
 } from "./constraint-node-container";
-import { useTorus } from "@torus-ts/torus-provider";
-import { usePermissionsByGrantor } from "@torus-ts/query-provider/hooks";
-import { H256_HEX } from "@torus-network/sdk";
-import type { SS58Address } from "@torus-network/sdk";
-import { Key } from "lucide-react";
+import type { PermissionIdNodeData } from "./constraint-node-types";
 
 interface PermissionNodePermissionIdProps {
   id: string;

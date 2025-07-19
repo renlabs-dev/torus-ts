@@ -1,6 +1,6 @@
 "use client";
 
-import type { AgentApplication } from "@torus-network/sdk";
+import type { AgentApplication } from "@torus-network/sdk/chain";
 import { Button } from "@torus-ts/ui/components/button";
 import { Card } from "@torus-ts/ui/components/card";
 import {

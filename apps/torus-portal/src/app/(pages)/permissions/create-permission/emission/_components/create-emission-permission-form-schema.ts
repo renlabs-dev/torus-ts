@@ -1,7 +1,7 @@
 import type { UseFormReturn } from "react-hook-form";
 import { z } from "zod";
 
-import { SS58_SCHEMA } from "@torus-network/sdk";
+import { SS58_SCHEMA } from "@torus-network/sdk/types";
 
 import { createTargetWeightValidator } from "~/utils/percentage-validation";
 

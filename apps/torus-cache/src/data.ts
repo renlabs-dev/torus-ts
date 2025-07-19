@@ -1,13 +1,13 @@
 import type { ApiPromise } from "@polkadot/api";
 import SuperJSON from "superjson";
 
-import type { LastBlock } from "@torus-network/sdk";
+import type { StakeData } from "@torus-network/sdk/cached-queries";
+import type { LastBlock } from "@torus-network/sdk/chain";
 import {
   queryLastBlock,
   queryStakeIn,
   queryStakeOut,
-} from "@torus-network/sdk";
-import type { StakeData } from "@torus-network/sdk/cached-queries";
+} from "@torus-network/sdk/chain";
 import { BasicLogger } from "@torus-network/torus-utils/logger";
 import { tryAsync, trySync } from "@torus-network/torus-utils/try-catch";
 

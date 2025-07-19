@@ -1,9 +1,11 @@
-import type { ProposalStatus } from "@torus-network/sdk";
+import { if_let, match } from "rustie";
+
+import type { ProposalStatus } from "@torus-network/sdk/chain";
 import type { CustomMetadataState } from "@torus-network/sdk/metadata";
 import { bigintDivision } from "@torus-network/torus-utils";
 import { formatToken } from "@torus-network/torus-utils/subspace";
+
 import type { ProposalState } from "@torus-ts/torus-provider";
-import { if_let, match } from "rustie";
 
 export interface ProposalCardFields {
   title: string | null;

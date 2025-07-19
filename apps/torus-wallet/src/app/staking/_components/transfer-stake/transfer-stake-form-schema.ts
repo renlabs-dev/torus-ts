@@ -1,4 +1,4 @@
-import { isSS58 } from "@torus-network/sdk";
+import { isSS58 } from "@torus-network/sdk/types";
 import { formatToken, toNano } from "@torus-network/torus-utils/subspace";
 import { z } from "zod";
 import { isAmountPositive, meetsMinimumStake } from "~/utils/validators";
