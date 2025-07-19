@@ -2,9 +2,9 @@ import type { ApiPromise } from "@polkadot/api";
 import { z } from "zod";
 
 import type { AgentApplication, SS58Address } from "@torus-network/sdk";
+import { CONSTANTS } from "@torus-network/sdk/constants";
 import {
   acceptApplication,
-  CONSTANTS,
   denyApplication,
   penalizeAgent,
   queryAgents,

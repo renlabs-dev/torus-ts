@@ -7,8 +7,8 @@ import type {
   Balance,
   LastBlock,
   SS58Address,
-  StakeData,
 } from "@torus-network/sdk";
+import type { StakeData } from "@torus-network/sdk/cached-queries";
 import {
   useCachedStakeOut,
   useFreeBalance,

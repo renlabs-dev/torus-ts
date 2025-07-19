@@ -4,7 +4,7 @@ import {
   convertH160ToSS58,
   waitForTransactionReceipt,
   withdrawFromTorusEvm,
-} from "@torus-network/sdk";
+} from "@torus-network/sdk/evm";
 import type { SS58Address } from "@torus-network/sdk";
 import { smallAddress, toNano } from "@torus-network/torus-utils/subspace";
 import { useFreeBalance } from "@torus-ts/query-provider/hooks";

@@ -2,9 +2,9 @@ import type { ApiPromise } from "@polkadot/api";
 import { Keyring } from "@polkadot/api";
 import type { KeyringPair } from "@polkadot/keyring/types";
 import { cryptoWaitReady } from "@polkadot/util-crypto";
+import { CONSTANTS } from "@torus-network/sdk/constants";
 import {
   checkSS58,
-  CONSTANTS,
   queryKeyStakedBy,
   queryLastBlock,
   setChainWeights,

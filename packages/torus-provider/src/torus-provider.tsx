@@ -14,12 +14,12 @@ import type { ISubmittableResult } from "@polkadot/types/types";
 import type {
   AgentApplication,
   Api,
-  CustomMetadataState,
   GrantEmissionPermission,
   GrantNamespacePermission,
   Proposal,
   UpdateEmissionPermission,
 } from "@torus-network/sdk";
+import type { CustomMetadataState } from "@torus-network/sdk/metadata";
 import {
   createNamespace,
   deleteNamespace,

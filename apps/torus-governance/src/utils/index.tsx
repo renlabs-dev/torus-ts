@@ -1,4 +1,5 @@
-import type { CustomMetadataState, ProposalStatus } from "@torus-network/sdk";
+import type { ProposalStatus } from "@torus-network/sdk";
+import type { CustomMetadataState } from "@torus-network/sdk/metadata";
 import { bigintDivision } from "@torus-network/torus-utils";
 import { formatToken } from "@torus-network/torus-utils/subspace";
 import type { ProposalState } from "@torus-ts/torus-provider";

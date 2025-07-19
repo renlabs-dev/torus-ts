@@ -1,14 +1,18 @@
+import "@polkadot/api/augment";
+
+import type { ApiPromise } from "@polkadot/api";
 import { Keyring } from "@polkadot/api";
+import type { Percent } from "@polkadot/types/interfaces";
 import { encodeAddress } from "@polkadot/util-crypto";
 import { z } from "zod";
-import "@polkadot/api/augment";
-import type { ApiPromise } from "@polkadot/api";
-import type { Percent } from "@polkadot/types/interfaces";
-import type { SS58Address } from "../address.js";
+
+import { tryAsync, trySync } from "@torus-network/torus-utils/try-catch";
+
 import {
   queryCachedStakeFrom,
   queryCachedStakeOut,
 } from "../cached-queries.js";
+import type { SS58Address } from "../types/address.js";
 import {
   sb_address,
   sb_amount,
@@ -28,7 +32,6 @@ import {
 import type { Api } from "./_common.js";
 import { handleMapValues } from "./_common.js";
 import { queryFreeBalance } from "./subspace.js";
-import { tryAsync, trySync } from "@torus-network/torus-utils/try-catch";
 
 const ADDRESS_FORMAT = 42;
 
