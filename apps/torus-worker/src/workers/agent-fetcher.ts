@@ -12,6 +12,7 @@ import {
   queryLastBlock,
   queryWhitelist,
   queryPermissions,
+  PERMISSION_ID_SCHEMA,
 } from "@torus-network/sdk";
 import { BasicLogger } from "@torus-network/torus-utils/logger";
 import { tryAsync } from "@torus-network/torus-utils/try-catch";
@@ -46,12 +47,68 @@ import {
   upsertProposal,
   upsertWhitelistApplication,
   upsertPermissions,
+  getAllAgentKeys,
+  getAllPermissionIds,
+  deleteAgents,
+  deletePermissions,
 } from "../db";
 
 const log = BasicLogger.create({ name: "agent-fetcher" });
 
 // Constants for error handling configuration
 const retryDelay = CONSTANTS.TIME.BLOCK_TIME_MILLISECONDS;
+
+/**
+ * Cleans up agents that no longer exist on the blockchain
+ */
+async function cleanAgents(
+  onChainAgents: Set<SS58Address>,
+  blockNumber: number,
+): Promise<void> {
+  const getAllAgentKeysRes = await tryAsync(getAllAgentKeys());
+  if (log.ifResultIsErr(getAllAgentKeysRes)) return;
+  const [_getAllAgentKeysErr, dbAgentKeys] = getAllAgentKeysRes;
+
+  const agentsToDelete = dbAgentKeys.filter(
+    (key) => !onChainAgents.has(checkSS58(key)),
+  );
+
+  if (agentsToDelete.length > 0) {
+    log.info(
+      `Block ${blockNumber}: hard deleting ${agentsToDelete.length} agents that are no longer on-chain`,
+    );
+    const deleteAgentsRes = await tryAsync(deleteAgents(agentsToDelete));
+    if (log.ifResultIsErr(deleteAgentsRes)) return;
+  }
+}
+
+/**
+ * Cleans up permissions that no longer exist on the blockchain
+ */
+async function cleanPermissions(
+  permissionsMap: Map<PermissionId, PermissionContract>,
+  blockNumber: number,
+): Promise<void> {
+  const getAllPermissionIdsRes = await tryAsync(getAllPermissionIds());
+  if (log.ifResultIsErr(getAllPermissionIdsRes)) return;
+  const [_getAllPermissionIdsErr, dbPermissionIds] = getAllPermissionIdsRes;
+
+  const onChainPermissionIds = new Set(Array.from(permissionsMap.keys()));
+  const permissionsToDelete = dbPermissionIds.filter(
+    // TODO: change the db schema to use the permission ID type
+    (id) => !onChainPermissionIds.has(PERMISSION_ID_SCHEMA.parse(id)),
+  );
+
+  if (permissionsToDelete.length > 0) {
+    log.info(
+      `Block ${blockNumber}: hard deleting ${permissionsToDelete.length} permissions that are no longer on-chain`,
+    );
+    const deletePermissionsRes = await tryAsync(
+      deletePermissions(permissionsToDelete),
+    );
+    if (log.ifResultIsErr(deletePermissionsRes)) return;
+  }
+}
 
 /**
  * Transforms a blockchain permission contract to database format
@@ -162,16 +219,13 @@ function permissionContractToDatabase(
   let enforcementControllers: NewPermissionEnforcementController[] | undefined;
   let revocationArbiters: NewPermissionRevocationArbiter[] | undefined;
 
-  // Handle emission scope - now we process both streams and fixed amounts
   match(contract.scope)({
     Emission: (emission) => {
-      // Map allocation type
       const allocationType = match(emission.allocation)({
         Streams: () => "streams" as const,
         FixedAmount: () => "fixed_amount" as const,
       });
 
-      // Map distribution type
       const distributionType = match(emission.distribution)({
         Manual: () => "manual" as const,
         Automatic: () => "automatic" as const,
@@ -179,7 +233,6 @@ function permissionContractToDatabase(
         Interval: () => "interval" as const,
       });
 
-      // Extract distribution-specific data
       const distributionThreshold = match(emission.distribution)({
         Automatic: (auto) => auto.toString(),
         Manual: () => null,
@@ -201,7 +254,6 @@ function permissionContractToDatabase(
         AtBlock: () => null,
       });
 
-      // Extract fixed amount (if applicable)
       const fixedAmount = match(emission.allocation)({
         FixedAmount: (amount) => amount.toString(),
         Streams: () => null,
@@ -218,7 +270,6 @@ function permissionContractToDatabase(
         accumulating: emission.accumulating,
       };
 
-      // Handle stream allocations (if streams-based)
       match(emission.allocation)({
         Streams: (streams) => {
           streamAllocations = Array.from(streams.entries()).map(
@@ -345,10 +396,12 @@ export async function runAgentFetch(lastBlock: LastBlock) {
 
   const upserAgentDataRes = await tryAsync(upsertAgentData(agentsData));
   if (log.ifResultIsErr(upserAgentDataRes)) return;
+  const chainAgentsKeys = agents.map((agent) => checkSS58(agent.key));
+  await cleanAgents(new Set(chainAgentsKeys), blockNumber);
 
   const timeDelta = new Date().getTime() - startTime.getTime();
   log.info(
-    `Block ${blockNumber}: agent data upserted in ${timeDelta / 1000} seconds`,
+    `Block ${blockNumber}: agent data synchronized in ${timeDelta / 1000} seconds`,
   );
 }
 
@@ -382,7 +435,8 @@ export async function runApplicationsFetch(lastBlock: LastBlock) {
     upsertWhitelistApplication(dbApplications),
   );
   if (log.ifResultIsErr(upsertWhitelistApplicationRes)) return;
-  log.info(`Block ${lastBlockNumber}: applications upserted`);
+
+  log.info(`Block ${lastBlockNumber}: applications synchronized`);
 }
 
 /**
@@ -413,15 +467,16 @@ export async function runProposalsFetch(lastBlock: LastBlock) {
     return isNewProposal || hasStatusChanged;
   };
 
-  const getProrposalsRes = await tryAsync(
+  // Only upsert proposals that have changed
+  const changedProposalsRes = await tryAsync(
     getProposals(lastBlock.apiAtBlock, isProposalToInsert),
   );
-  if (log.ifResultIsErr(getProrposalsRes)) return;
-  const [_getProposalsError, proposalsResult] = getProrposalsRes;
+  if (log.ifResultIsErr(changedProposalsRes)) return;
+  const [_changedProposalsError, changedProposalsResult] = changedProposalsRes;
 
-  const proposalsMap = new Map(Object.entries(proposalsResult));
+  const changedProposalsMap = new Map(Object.entries(changedProposalsResult));
   const dbProposals: NewProposal[] = [];
-  proposalsMap.forEach((value, _) => {
+  changedProposalsMap.forEach((value, _) => {
     dbProposals.push(agentProposalToProposal(value));
   });
 
@@ -432,7 +487,7 @@ export async function runProposalsFetch(lastBlock: LastBlock) {
   const upsertProposalRes = await tryAsync(upsertProposal(dbProposals));
   if (log.ifResultIsErr(upsertProposalRes)) return;
 
-  log.info(`Block ${lastBlockNumber}: proposals upserted`);
+  log.info(`Block ${lastBlockNumber}: proposals synchronized`);
 }
 
 /**
@@ -503,7 +558,10 @@ export async function runPermissionsFetch(lastBlock: LastBlock) {
   );
   if (log.ifResultIsErr(upsertPermissionsRes)) return;
 
-  log.info(`Block ${lastBlockNumber}: permissions upserted`);
+  // Clean up permissions that no longer exist on the blockchain
+  await cleanPermissions(permissionsMap, lastBlockNumber);
+
+  log.info(`Block ${lastBlockNumber}: permissions synchronized`);
 }
 
 /**
