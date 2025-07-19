@@ -29,7 +29,7 @@ const ForceGraph = memo(
 
     const [forcesConfigured, setForcesConfigured] = useState(false);
 
-    useFrame(() => {
+    useFrame(({ clock }) => {
       if (fgRef.current?.d3Force) {
         if (!forcesConfigured) {
           const chargeForce = fgRef.current.d3Force("charge");
@@ -45,7 +45,6 @@ const ForceGraph = memo(
           linkForce.distance(graphConstants.physics.linkDistance);
         }
 
-        // Add center force to keep nodes from drifting too far
         const centerForce = fgRef.current.d3Force("center");
         if (centerForce && typeof centerForce.strength === "function") {
           // eslint-disable-next-line @typescript-eslint/no-unsafe-call
@@ -54,6 +53,20 @@ const ForceGraph = memo(
 
         fgRef.current.tickFrame();
       }
+
+      const time = clock.getElapsedTime();
+      const pulsateOpacity = ((Math.sin(time * 3) + 1) / 2) * 0.7 + 0.5; // Oscillates between 0.3 and 1
+
+      props.graphData.nodes.forEach((node) => {
+        if (node.nodeType === "signal" && node.__threeObj) {
+          const mesh = node.__threeObj as THREE.Mesh;
+          // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+          if (mesh.material && "opacity" in mesh.material) {
+            (mesh.material as THREE.MeshLambertMaterial).opacity =
+              pulsateOpacity;
+          }
+        }
+      });
     });
 
     const {
@@ -78,6 +91,7 @@ const ForceGraph = memo(
         const material = new THREE.MeshLambertMaterial({
           color: color,
           opacity: 1,
+          transparent: customNode.nodeType === "signal", // Enable transparency for signal nodes
         });
 
         let geometry: THREE.BufferGeometry;
