@@ -31,8 +31,8 @@ import {
   sb_some,
   sb_struct,
 } from "../types/index.js";
-import type { Api } from "./_common.js";
-import { SbQueryError } from "./_common.js";
+import type { Api } from "./common/index.js";
+import { SbQueryError } from "./common/index.js";
 import { sb_namespace_path } from "./torus0.js";
 
 const logger = BasicLogger.create({ name: "torus-sdk-ts.modules.permission0" });

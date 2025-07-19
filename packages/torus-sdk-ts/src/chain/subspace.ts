@@ -20,8 +20,8 @@ import {
   sb_string,
   sb_struct,
 } from "../types/index.js";
-import type { Api } from "./_common.js";
-import { handleDoubleMapEntries, handleMapEntries } from "./_common.js";
+import type { Api } from "./common/index.js";
+import { handleDoubleMapEntries, handleMapEntries } from "./common/index.js";
 
 // ==== Balances ====
 

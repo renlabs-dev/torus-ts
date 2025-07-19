@@ -29,8 +29,8 @@ import {
   sb_struct,
   sb_to_primitive,
 } from "../types/index.js";
-import type { Api } from "./_common.js";
-import { handleMapValues } from "./_common.js";
+import type { Api } from "./common/index.js";
+import { handleMapValues } from "./common/index.js";
 import { queryFreeBalance } from "./subspace.js";
 
 const ADDRESS_FORMAT = 42;
