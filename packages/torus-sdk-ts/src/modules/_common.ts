@@ -186,7 +186,7 @@ export async function queryExtFeeInfo(
   const len = encoded.length;
 
   const [queryError, feeDetails] = await tryAsync(
-    api.call.transactionPaymentApi.queryFeeDetails(ext, 0),
+    api.call.transactionPaymentApi.queryFeeDetails(ext, len),
   );
   if (queryError !== undefined)
     return makeErr(
