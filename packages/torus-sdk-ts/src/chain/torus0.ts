@@ -20,8 +20,8 @@ import {
   sb_string,
   sb_struct,
 } from "../types/zod.js";
-import type { Api } from "./_common.js";
-import { handleDoubleMapEntries } from "./_common.js";
+import type { Api } from "./common/index.js";
+import { handleDoubleMapEntries } from "./common/index.js";
 
 // ==== Namespaces ====
 

@@ -1,4 +1,4 @@
-export * from "./_common.js";
+export * from "./common/index.js";
 
 export * from "./subspace.js";
 export * from "./governance.js";
