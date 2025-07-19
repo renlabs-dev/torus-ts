@@ -150,7 +150,7 @@ async function connectToNsCreationCostNode() {
  * ```
  */
 export async function queryNamespacePathCreationCost(
-  _api: Api,
+  api: Api,
   accountId: SS58Address,
   namespacePath: string,
 ): Promise<Result<{ fee: bigint; deposit: bigint }, Error>> {
@@ -161,8 +161,8 @@ export async function queryNamespacePathCreationCost(
     return makeErr(new Error(`Invalid namespace path: ${pathError.message}`));
   }
 
-  // GAMBIARRA: connect to hardcoded node with image that exposes RPC method
-  const api = await connectToNsCreationCostNode();
+  // // GAMBIARRA: connect to hardcoded node with image that exposes RPC method
+  // const api = await connectToNsCreationCostNode();
 
   // Call the RPC method manually since it's not auto-generated
   // Note: Using provider send method because this RPC method is not auto-decorated
