@@ -1,9 +1,10 @@
 import { describe, expect, it } from "vitest";
+
 import {
-  validateAgentName,
-  isValidAgentName,
-  agentNameField,
   AGENT_NAME_REGEX,
+  agentNameField,
+  isValidAgentName,
+  validateAgentName,
 } from "../../../types/namespace/agent-name.js";
 
 describe("AgentNameValidation", () => {
@@ -18,7 +19,7 @@ describe("AgentNameValidation", () => {
       "my_test_123",
       "snake_case1",
       "kebab-case2",
-      "a" + "b".repeat(27) + "c", // 30 chars
+      "a" + "b".repeat(28) + "c", // 30 chars
     ],
     invalid: [
       {
