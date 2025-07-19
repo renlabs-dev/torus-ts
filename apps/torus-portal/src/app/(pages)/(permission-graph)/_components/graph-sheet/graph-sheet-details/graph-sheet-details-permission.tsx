@@ -141,7 +141,7 @@ export function GraphSheetDetailsPermission({
                       ) : (
                         <AlertCircle className="w-3 h-3 text-red-500" />
                       )}
-                      {formatDuration(remainingBlocks)}
+                      {formatDuration(remainingBlocks, isIndefinite)}
                     </Badge>
                   </div>
                 )}
