@@ -844,7 +844,7 @@ export function TorusProvider({
       selectedAccount,
       callback,
       transaction,
-      transactionType: "Grant Namespace Permission",
+      transactionType: "Grant Capability Permission",
       wsEndpoint,
       refetchHandler,
       toast,
