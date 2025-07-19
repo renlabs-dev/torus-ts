@@ -105,11 +105,11 @@ const createErrorToast = (
   };
 };
 
-const createPromiseToast = (
-  promise: Promise<unknown>,
+const createPromiseToast = <T>(
+  promise: Promise<T>,
   handlers: Parameters<typeof sonnerToast.promise>[1],
-): void => {
-  sonnerToast.promise(promise, handlers);
+) => {
+  return sonnerToast.promise(promise, handlers);
 };
 
 export interface ToastFunction {
