@@ -1,9 +1,11 @@
+import { Copy } from "lucide-react";
+
+import { smallAddress } from "@torus-network/torus-utils/torus/address";
+import { tryAsync } from "@torus-network/torus-utils/try-catch";
+
 import { Button } from "@torus-ts/ui/components/button";
 import { useToast } from "@torus-ts/ui/hooks/use-toast";
 import { copyToClipboard } from "@torus-ts/ui/lib/utils";
-import { smallAddress } from "@torus-network/torus-utils/subspace";
-import { Copy } from "lucide-react";
-import { tryAsync } from "@torus-network/torus-utils/try-catch";
 
 interface ReceiveAddressDisplayProps {
   address: string;

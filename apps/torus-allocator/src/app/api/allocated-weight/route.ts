@@ -1,9 +1,11 @@
-import type { SS58Address } from "@torus-network/sdk";
-import { api } from "~/trpc/server";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import SuperJSON from "superjson";
+
+import type { SS58Address } from "@torus-network/sdk/types";
 import { tryAsync } from "@torus-network/torus-utils/try-catch";
+
+import { api } from "~/trpc/server";
 
 export async function GET(request: NextRequest): Promise<NextResponse> {
   const [error, result] = await tryAsync(

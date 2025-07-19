@@ -5,7 +5,8 @@ import { Suspense, useMemo } from "react";
 import { Copy, Lock, Scale, Unlock } from "lucide-react";
 import Image from "next/image";
 
-import { formatToken, smallAddress } from "@torus-network/torus-utils/subspace";
+import { smallAddress } from "@torus-network/torus-utils/torus/address";
+import { formatToken } from "@torus-network/torus-utils/torus/token";
 
 import { Card } from "@torus-ts/ui/components/card";
 import { CopyButton } from "@torus-ts/ui/components/copy-button";

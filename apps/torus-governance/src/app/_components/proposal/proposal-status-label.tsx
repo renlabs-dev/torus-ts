@@ -1,6 +1,8 @@
-import type { ProposalStatus } from "@torus-network/sdk";
-import { Badge } from "@torus-ts/ui/components/badge";
 import { match } from "rustie";
+
+import type { ProposalStatus } from "@torus-network/sdk/chain";
+
+import { Badge } from "@torus-ts/ui/components/badge";
 
 interface ProposalStatusLabelProps {
   status: ProposalStatus;

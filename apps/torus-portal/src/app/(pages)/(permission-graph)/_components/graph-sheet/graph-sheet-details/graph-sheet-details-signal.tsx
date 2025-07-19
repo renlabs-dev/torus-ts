@@ -1,6 +1,6 @@
 import { Calendar, Check, Percent, User, Users } from "lucide-react";
 
-import { smallAddress } from "@torus-network/torus-utils/subspace";
+import { smallAddress } from "@torus-network/torus-utils/torus/address";
 
 import { Badge } from "@torus-ts/ui/components/badge";
 import {

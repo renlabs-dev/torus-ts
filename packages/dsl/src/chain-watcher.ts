@@ -1,19 +1,20 @@
-import type { EventRecord } from "@polkadot/types/interfaces";
-import type { Header } from "@polkadot/types/interfaces";
+import type { EventRecord, Header } from "@polkadot/types/interfaces";
+
+import { queryDelegationStreamsByAccount } from "@torus-network/sdk/chain";
+import {
+  checkSS58,
+  parsePermissionAccumulationToggledEvent,
+  parsePermissionExpiredEvent,
+  parsePermissionRevokedEvent,
+} from "@torus-network/sdk/types";
+
 import type { ChainAwareReteNetwork } from "./chain-fetcher";
 import type {
-  PermissionExistsFact,
-  PermissionEnabledFact,
-  InactiveUnlessRedelegatedFact,
   BlockFact,
+  InactiveUnlessRedelegatedFact,
+  PermissionEnabledFact,
+  PermissionExistsFact,
 } from "./facts";
-import {
-  parsePermissionAccumulationToggledEvent,
-  parsePermissionRevokedEvent,
-  parsePermissionExpiredEvent,
-  queryDelegationStreamsByAccount,
-  checkSS58,
-} from "@torus-network/sdk";
 
 /**
  * Chain watcher that monitors Torus blockchain events and updates RETE network facts

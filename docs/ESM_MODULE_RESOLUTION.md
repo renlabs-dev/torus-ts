@@ -118,7 +118,7 @@ Module not found: Can't resolve './typing.js'
 **Solution**: Build the affected package:
 
 ```sh
-cd packages/utils && pnpm run build
+cd packages/torus-utils && pnpm run build
 # or
 cd packages/torus-sdk-ts && pnpm run build
 ```

@@ -14,12 +14,11 @@ import type { ISubmittableResult } from "@polkadot/types/types";
 import type {
   AgentApplication,
   Api,
-  CustomMetadataState,
   GrantEmissionPermission,
   GrantNamespacePermission,
   Proposal,
   UpdateEmissionPermission,
-} from "@torus-network/sdk";
+} from "@torus-network/sdk/chain";
 import {
   createNamespace,
   deleteNamespace,
@@ -27,11 +26,12 @@ import {
   grantNamespacePermission,
   registerAgent,
   revokePermission,
-  sb_balance,
   updateAgent,
   updateEmissionPermission,
-} from "@torus-network/sdk";
-import { toNano } from "@torus-network/torus-utils/subspace";
+} from "@torus-network/sdk/chain";
+import type { CustomMetadataState } from "@torus-network/sdk/metadata";
+import { sb_balance } from "@torus-network/sdk/types";
+import { toNano } from "@torus-network/torus-utils/torus/token";
 import { tryAsync, trySync } from "@torus-network/torus-utils/try-catch";
 
 import { useToast } from "@torus-ts/ui/hooks/use-toast";

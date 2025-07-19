@@ -1,21 +1,26 @@
 "use client";
 
-import type { SS58Address } from "@torus-network/sdk";
-import { formatToken } from "@torus-network/torus-utils/subspace";
+import { useMemo } from "react";
+
+import { useRouter } from "next/navigation";
+
+import type { SS58Address } from "@torus-network/sdk/types";
+import { formatToken } from "@torus-network/torus-utils/torus/token";
+import { tryAsync } from "@torus-network/torus-utils/try-catch";
+
 import { useKeyStakedBy } from "@torus-ts/query-provider/hooks";
 import { useTorus } from "@torus-ts/torus-provider";
 import { Button } from "@torus-ts/ui/components/button";
 import { Label } from "@torus-ts/ui/components/label";
 import { useToast } from "@torus-ts/ui/hooks/use-toast";
+
 import { env } from "~/env";
 import { useDelegateAgentStore } from "~/stores/delegateAgentStore";
 import useSubmitStore from "~/stores/submitStore";
 import { api } from "~/trpc/react";
-import { useRouter } from "next/navigation";
-import { useMemo } from "react";
+
 import type { StatusConfig } from "./get-submit-status";
 import { StatusLabel } from "./status-label";
-import { tryAsync } from "@torus-network/torus-utils/try-catch";
 
 interface MenuTriggerProps {
   submitStatus: StatusConfig;

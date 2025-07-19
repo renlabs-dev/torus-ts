@@ -4,7 +4,8 @@ import { useMemo } from "react";
 
 import { LoaderCircle } from "lucide-react";
 
-import type { ProposalStatus, SS58Address } from "@torus-network/sdk";
+import type { ProposalStatus } from "@torus-network/sdk/chain";
+import type { SS58Address } from "@torus-network/sdk/types";
 
 import { useProcessVotesAndStakes } from "@torus-ts/query-provider/hooks";
 

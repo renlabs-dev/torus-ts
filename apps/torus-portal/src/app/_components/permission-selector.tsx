@@ -10,7 +10,7 @@ import { useEffect } from "react";
 import { Copy } from "lucide-react";
 import type { Control } from "react-hook-form";
 
-import { smallAddress } from "@torus-network/torus-utils/subspace";
+import { smallAddress } from "@torus-network/torus-utils/torus/address";
 
 import { useTorus } from "@torus-ts/torus-provider";
 import {

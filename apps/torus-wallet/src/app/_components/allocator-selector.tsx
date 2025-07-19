@@ -1,10 +1,15 @@
 "use client";
 
+import { useState } from "react";
+
 import type { UseQueryResult } from "@tanstack/react-query";
-import type { Balance, SS58Address } from "@torus-network/sdk";
-import { checkSS58 } from "@torus-network/sdk";
+import { CheckIcon, ChevronsUpDownIcon, PlusCircleIcon } from "lucide-react";
+
+import type { Balance, SS58Address } from "@torus-network/sdk/types";
+import { checkSS58 } from "@torus-network/sdk/types";
 import type { BrandTag } from "@torus-network/torus-utils";
-import { formatToken } from "@torus-network/torus-utils/subspace";
+import { formatToken } from "@torus-network/torus-utils/torus/token";
+
 import { Button } from "@torus-ts/ui/components/button";
 import {
   Command,
@@ -21,8 +26,6 @@ import {
 } from "@torus-ts/ui/components/popover";
 import { cn } from "@torus-ts/ui/lib/utils";
 
-import { CheckIcon, ChevronsUpDownIcon, PlusCircleIcon } from "lucide-react";
-import { useState } from "react";
 import { useWallet } from "~/context/wallet-provider";
 import { env } from "~/env";
 

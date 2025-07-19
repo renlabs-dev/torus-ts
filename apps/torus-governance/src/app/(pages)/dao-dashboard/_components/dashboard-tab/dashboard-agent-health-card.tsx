@@ -2,7 +2,7 @@
 
 import { KeyboardOff } from "lucide-react";
 import DashboardRedirectCard from "./dashboard-redirect-card";
-import { smallAddress } from "@torus-network/torus-utils/subspace";
+import { smallAddress } from "@torus-network/torus-utils/torus/address";
 import { Badge } from "@torus-ts/ui/components/badge";
 import { CopyButton } from "@torus-ts/ui/components/copy-button";
 import { Coins } from "lucide-react";

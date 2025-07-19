@@ -1,11 +1,14 @@
 "use client";
 
-import React from "react";
 import type { JSX } from "react";
-import { smallAddress } from "@torus-network/torus-utils/subspace";
-import { formatScope } from "../../permission-graph-utils";
-import { UserPlus, UserPen, Layers } from "lucide-react";
+import React from "react";
+
 import type { LucideIcon } from "lucide-react";
+import { Layers, UserPen, UserPlus } from "lucide-react";
+
+import { smallAddress } from "@torus-network/torus-utils/torus/address";
+
+import { formatScope } from "../../permission-graph-utils";
 
 interface IconConfig {
   icon: LucideIcon;

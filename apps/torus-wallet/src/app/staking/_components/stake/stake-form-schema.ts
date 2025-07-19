@@ -1,13 +1,17 @@
-import { isSS58 } from "@torus-network/sdk";
-import { formatToken } from "@torus-network/torus-utils/subspace";
-import { z } from "zod";
 import type { RefObject } from "react";
+
+import { z } from "zod";
+
+import { isSS58 } from "@torus-network/sdk/types";
+import { formatToken } from "@torus-network/torus-utils/torus/token";
+
 import {
   doesNotExceedMaxStake,
   isAboveExistentialDeposit,
   isAmountPositive,
   meetsMinimumStake,
 } from "~/utils/validators";
+
 import type { FeeLabelHandle } from "../../../_components/fee-label";
 
 export const createStakeActionFormSchema = (

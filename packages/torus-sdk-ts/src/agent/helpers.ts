@@ -1,12 +1,4 @@
-import { setup } from "@torus-network/sdk";
-import { selectRandomRpcUrl } from "./utils.js";
-
-export const connectToChainRpc = async (wsUrl?: string) => {
-  const url = wsUrl ?? selectRandomRpcUrl();
-  return setup(url);
-};
-
-export type ApiPromise = Awaited<ReturnType<typeof connectToChainRpc>>;
+import type { ApiPromise } from "@polkadot/api";
 
 export interface Helpers {
   checkTransaction: ({

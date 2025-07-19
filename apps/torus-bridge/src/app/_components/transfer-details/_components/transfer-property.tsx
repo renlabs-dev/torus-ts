@@ -1,6 +1,7 @@
 import { CopyButton } from "@hyperlane-xyz/widgets";
-import { smallAddress } from "@torus-network/torus-utils/subspace";
 import { LinkIcon } from "lucide-react";
+
+import { smallAddress } from "@torus-network/torus-utils/torus/address";
 
 export function TransferProperty({
   name,

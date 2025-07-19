@@ -4,7 +4,8 @@ import { ArrowRight, Copy } from "lucide-react";
 import { DateTime } from "luxon";
 import { getExplorerLink } from "node_modules/@torus-ts/torus-provider/src/_components/toast-content-handler";
 
-import { formatToken, smallAddress } from "@torus-network/torus-utils/subspace";
+import { smallAddress } from "@torus-network/torus-utils/torus/address";
+import { formatToken } from "@torus-network/torus-utils/torus/token";
 
 import { CopyButton } from "@torus-ts/ui/components/copy-button";
 import { cn } from "@torus-ts/ui/lib/utils";

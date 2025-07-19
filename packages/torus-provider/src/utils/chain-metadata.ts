@@ -8,7 +8,8 @@ import { getSpecTypes } from "@polkadot/types-known";
 import { u8aToHex } from "@polkadot/util";
 import { base64Encode } from "@polkadot/util-crypto";
 
-import { CONSTANTS, sb_bigint, sb_string } from "@torus-network/sdk";
+import { CONSTANTS } from "@torus-network/sdk/constants";
+import { sb_bigint, sb_string } from "@torus-network/sdk/types";
 import { chainErr } from "@torus-network/torus-utils/error";
 import type { Result } from "@torus-network/torus-utils/result";
 import { makeErr, makeOk } from "@torus-network/torus-utils/result";

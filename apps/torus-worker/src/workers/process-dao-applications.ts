@@ -1,15 +1,16 @@
 import type { ApiPromise } from "@polkadot/api";
 import { z } from "zod";
 
-import type { AgentApplication, SS58Address } from "@torus-network/sdk";
+import type { AgentApplication } from "@torus-network/sdk/chain";
 import {
   acceptApplication,
-  CONSTANTS,
   denyApplication,
   penalizeAgent,
   queryAgents,
   removeFromWhitelist,
-} from "@torus-network/sdk";
+} from "@torus-network/sdk/chain";
+import { CONSTANTS } from "@torus-network/sdk/constants";
+import type { SS58Address } from "@torus-network/sdk/types";
 import { validateEnvOrExit } from "@torus-network/torus-utils/env";
 import { BasicLogger } from "@torus-network/torus-utils/logger";
 import { tryAsync } from "@torus-network/torus-utils/try-catch";

@@ -1,18 +1,25 @@
 "use client";
 
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+
 import { zodResolver } from "@hookform/resolvers/zod";
-import { checkSS58, isSS58 } from "@torus-network/sdk";
-import { fromNano } from "@torus-network/torus-utils/subspace";
+import { useForm } from "react-hook-form";
+
+import type { SS58Address } from "@torus-network/sdk/types";
+import { checkSS58, isSS58 } from "@torus-network/sdk/types";
+import type { BrandTag } from "@torus-network/torus-utils";
+import { fromNano } from "@torus-network/torus-utils/torus/token";
+import { tryAsync } from "@torus-network/torus-utils/try-catch";
+
 import type { TransactionResult } from "@torus-ts/torus-provider/types";
 import { useToast } from "@torus-ts/ui/hooks/use-toast";
-import type { BrandTag } from "@torus-network/torus-utils";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useForm } from "react-hook-form";
+
 import { useUsdPrice } from "~/context/usd-price-provider";
 import { useWallet } from "~/context/wallet-provider";
 import { env } from "~/env";
 import type { UpdatedTransaction } from "~/store/transactions-store";
 import { useTransactionsStore } from "~/store/transactions-store";
+
 import type { FeeLabelHandle } from "../../../_components/fee-label";
 import type { ReviewTransactionDialogHandle } from "../../../_components/review-transaction-dialog";
 import { ReviewTransactionDialog } from "../../../_components/review-transaction-dialog";
@@ -20,8 +27,6 @@ import { handleEstimateFee } from "./transfer-stake-fee-handler";
 import { TransferStakeForm } from "./transfer-stake-form";
 import type { TransferStakeFormValues } from "./transfer-stake-form-schema";
 import { createTransferStakeFormSchema } from "./transfer-stake-form-schema";
-import { tryAsync } from "@torus-network/torus-utils/try-catch";
-import type { SS58Address } from "@torus-network/sdk";
 
 export const MIN_ALLOWED_STAKE_SAFEGUARD = 500000000000000000n;
 export const MIN_EXISTENTIAL_BALANCE = 100000000000000000n;

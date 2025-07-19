@@ -1,7 +1,14 @@
 "use client";
 
+import * as React from "react";
+
 import { zodResolver } from "@hookform/resolvers/zod";
-import { fromRems } from "@torus-network/torus-utils/subspace";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+
+import { fromRems } from "@torus-network/torus-utils/torus/token";
+import { tryAsync } from "@torus-network/torus-utils/try-catch";
+
 import { Button } from "@torus-ts/ui/components/button";
 import {
   Form,
@@ -13,12 +20,9 @@ import {
 import { Input } from "@torus-ts/ui/components/input";
 import { Textarea } from "@torus-ts/ui/components/text-area";
 import { useToast } from "@torus-ts/ui/hooks/use-toast";
+
 import { useGovernance } from "~/context/governance-provider";
 import { api } from "~/trpc/react";
-import * as React from "react";
-import { useForm } from "react-hook-form";
-import { z } from "zod";
-import { tryAsync } from "@torus-network/torus-utils/try-catch";
 
 const MAX_CHARACTERS = 2000;
 const MAX_NAME_CHARACTERS = 25;

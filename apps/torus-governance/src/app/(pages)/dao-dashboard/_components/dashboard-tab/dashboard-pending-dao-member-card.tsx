@@ -6,7 +6,7 @@ import { api } from "~/trpc/react";
 import { CardSkeleton } from "~/app/_components/dao-card/components/card-skeleton";
 import { ContentNotFound } from "@torus-ts/ui/components/content-not-found";
 import { ScrollArea } from "@torus-ts/ui/components/scroll-area";
-import { smallAddress } from "@torus-network/torus-utils/subspace";
+import { smallAddress } from "@torus-network/torus-utils/torus/address";
 import DashboardRedirectCard from "./dashboard-redirect-card";
 import { ScrollFadeEffect } from "~/app/_components/scroll-fade-effect";
 

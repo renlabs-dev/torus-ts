@@ -3,12 +3,15 @@ import { tryAsync } from "@torus-network/torus-utils/try-catch";
 import { describe, expect, it, vi } from "vitest";
 
 // Mock dependencies
-vi.mock("@torus-network/sdk", () => ({
+vi.mock("@torus-network/sdk/chain", () => ({
   queryLastBlock: vi.fn(),
   queryAgentApplications: vi.fn(),
   queryProposals: vi.fn(),
   queryWhitelist: vi.fn(),
   queryAgents: vi.fn(),
+}));
+
+vi.mock("@torus-network/sdk/constants", () => ({
   CONSTANTS: {
     TIME: {
       BLOCK_TIME_MILLISECONDS: 100,

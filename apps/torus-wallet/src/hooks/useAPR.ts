@@ -1,4 +1,8 @@
-import { toNano } from "@torus-network/torus-utils/subspace";
+import { useMemo } from "react";
+
+import { toNano } from "@torus-network/torus-utils/torus/token";
+import { trySync } from "@torus-network/torus-utils/try-catch";
+
 import {
   useIncentivesRatio,
   useRecyclingPercentage,
@@ -7,9 +11,8 @@ import {
   useTreasuryEmissionFee,
 } from "@torus-ts/query-provider/hooks";
 import { useTorus } from "@torus-ts/torus-provider";
-import { useMemo } from "react";
-import { trySync } from "@torus-network/torus-utils/try-catch";
 
+// TODO: refactor magic numbers
 const BLOCKS_IN_DAY = 10_800n;
 const BLOCK_EMISSION = toNano(64_000) / BLOCKS_IN_DAY;
 const HALVING_INTERVAL = toNano(144_000_000);

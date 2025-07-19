@@ -25,7 +25,7 @@
  * - all: Run all scenarios for the selected worker
  */
 
-import { CONSTANTS } from "@torus-network/sdk";
+import { CONSTANTS } from "@torus-network/sdk/constants";
 import { BasicLogger } from "@torus-network/torus-utils/logger";
 import { tryAsync } from "@torus-network/torus-utils/try-catch";
 

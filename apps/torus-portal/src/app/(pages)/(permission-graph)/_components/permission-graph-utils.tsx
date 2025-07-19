@@ -1,4 +1,4 @@
-import { CONSTANTS } from "@torus-network/sdk";
+import { CONSTANTS } from "@torus-network/sdk/constants";
 
 import type {
   CachedAgentData,

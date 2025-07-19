@@ -1,10 +1,13 @@
-import { smallAddress } from "@torus-network/torus-utils/subspace";
+import { X } from "lucide-react";
+
+import { smallAddress } from "@torus-network/torus-utils/torus/address";
+
 import { Button } from "@torus-ts/ui/components/button";
 import { Input } from "@torus-ts/ui/components/input";
 import { Label } from "@torus-ts/ui/components/label";
 import { ScrollArea } from "@torus-ts/ui/components/scroll-area";
+
 import { useDelegateAgentStore } from "~/stores/delegateAgentStore";
-import { X } from "lucide-react";
 
 export function AllocationAgentList() {
   const { delegatedAgents, getAgentPercentage, removeAgent, updatePercentage } =

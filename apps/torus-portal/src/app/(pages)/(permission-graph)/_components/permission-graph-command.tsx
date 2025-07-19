@@ -5,7 +5,7 @@ import React, { useCallback, useMemo, useState } from "react";
 import { Package, Radio, Search, Users, Zap } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 
-import { smallAddress } from "@torus-network/torus-utils/subspace";
+import { smallAddress } from "@torus-network/torus-utils/torus/address";
 
 import {
   CommandDialog,

@@ -1,5 +1,5 @@
 // import { useMemo } from "react";
-import { smallAddress } from "@torus-network/torus-utils/subspace";
+import { smallAddress } from "@torus-network/torus-utils/torus/address";
 
 import {
   Accordion,
