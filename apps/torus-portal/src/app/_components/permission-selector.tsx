@@ -1,15 +1,22 @@
-// Every single grantor/grantee terminology has been changed to delegator/recipient
-// as requested here: https://coda.io/d/RENLABS-CORE-DEVELOPMENT-DOCUMENTS_d5Vgr5OavNK/Text-change-requests_su4jQAlx
-// This change affects UI labels, variable names, and function names throughout the codebase
-// TODO : Ensure all grantor/grantee references are updated to delegator/recipient
-
 "use client";
 
-import { useEffect } from "react";
+import React, { useEffect } from "react";
 
+import { useQuery } from "@tanstack/react-query";
 import { Copy } from "lucide-react";
 import type { Control } from "react-hook-form";
 
+import type {
+  PermissionContract,
+  PermissionId,
+  SS58Address,
+} from "@torus-network/sdk";
+import {
+  CONSTANTS,
+  queryPermissions,
+  queryPermissionsByGrantee,
+  queryPermissionsByGrantor,
+} from "@torus-network/sdk";
 import { smallAddress } from "@torus-network/torus-utils/subspace";
 
 import { useTorus } from "@torus-ts/torus-provider";
@@ -37,10 +44,14 @@ import {
   SelectValue,
 } from "@torus-ts/ui/components/select";
 
-import { api as trpcApi } from "~/trpc/react";
-
-// TODO: Move this import to a more appropriate location
+// Import the expected interface from the form
 import type { PermissionWithDetails } from "../(pages)/permissions/edit-permission/_components/revoke-permission-button";
+
+interface PermissionWithNetworkData {
+  permissionId: string;
+  contract: PermissionContract;
+  namespacePaths?: string[];
+}
 
 interface PermissionSelectorProps {
   control: Control<{
@@ -52,26 +63,129 @@ interface PermissionSelectorProps {
 }
 
 export function PermissionSelector(props: PermissionSelectorProps) {
-  const { selectedAccount, isAccountConnected } = useTorus();
+  const { selectedAccount, isAccountConnected, api } = useTorus();
 
-  const { data: permissionsData, error: permissionsError } =
-    trpcApi.permission.allWithEmissionsAndNamespaces.useQuery(undefined, {
-      enabled: !!selectedAccount?.address,
-    });
+  // Get permission IDs where the user is the grantor
+  const { data: grantorPermissionIds, isLoading: isLoadingGrantor } = useQuery({
+    queryKey: ["permissions_by_grantor", selectedAccount?.address],
+    queryFn: async () => {
+      if (!api || !selectedAccount?.address) return null;
+      const result = await queryPermissionsByGrantor(
+        api,
+        selectedAccount.address as SS58Address,
+      );
+      // Unwrap Result type
+      const [error, data] = result;
+      if (error) {
+        console.error("Error querying grantor permissions:", error);
+        return null;
+      }
+      return data;
+    },
+    enabled: !!api && !!selectedAccount?.address,
+    staleTime: CONSTANTS.TIME.STAKE_STALE_TIME,
+  });
 
-  // Filter permissions for the current account
-  const userPermissions = permissionsData?.filter(
-    (item) =>
-      item.permissions.grantorAccountId === selectedAccount?.address ||
-      item.permissions.granteeAccountId === selectedAccount?.address,
-  );
+  // Get permission IDs where the user is the grantee
+  const { data: granteePermissionIds, isLoading: isLoadingGrantee } = useQuery({
+    queryKey: ["permissions_by_grantee", selectedAccount?.address],
+    queryFn: async () => {
+      if (!api || !selectedAccount?.address) return null;
+      const result = await queryPermissionsByGrantee(
+        api,
+        selectedAccount.address as SS58Address,
+      );
+      // Unwrap Result type
+      const [error, data] = result;
+      if (error) {
+        console.error("Error querying grantee permissions:", error);
+        return null;
+      }
+      return data;
+    },
+    enabled: !!api && !!selectedAccount?.address,
+    staleTime: CONSTANTS.TIME.STAKE_STALE_TIME,
+  });
+
+  // Get all permissions with full details
+  const {
+    data: allPermissions,
+    error: permissionsError,
+    isLoading: isLoadingAll,
+  } = useQuery({
+    queryKey: ["permissions"],
+    queryFn: async () => {
+      if (!api) return null;
+      const result = await queryPermissions(api);
+      // Unwrap Result type
+      const [error, data] = result;
+      if (error) {
+        console.error("Error querying all permissions:", error);
+        return null;
+      }
+      return data;
+    },
+    enabled: !!api,
+    staleTime: CONSTANTS.TIME.STAKE_STALE_TIME,
+  });
+
+  // Combine and filter permissions for the current account
+  const userPermissions = React.useMemo(() => {
+    if (!allPermissions || permissionsError) return null;
+
+    const userPermissionIds = new Set<PermissionId>();
+
+    // Add grantor permission IDs (already unwrapped)
+    if (grantorPermissionIds && Array.isArray(grantorPermissionIds)) {
+      grantorPermissionIds.forEach((id: PermissionId) =>
+        userPermissionIds.add(id),
+      );
+    }
+
+    // Add grantee permission IDs (already unwrapped)
+    if (granteePermissionIds && Array.isArray(granteePermissionIds)) {
+      granteePermissionIds.forEach((id: PermissionId) =>
+        userPermissionIds.add(id),
+      );
+    }
+
+    // Filter all permissions to only include user's permissions
+    const filtered: PermissionWithNetworkData[] = [];
+
+    // allPermissions is already unwrapped and should be a Map
+    if (allPermissions instanceof Map) {
+      userPermissionIds.forEach((permissionId) => {
+        const contract = allPermissions.get(permissionId);
+        if (contract) {
+          // Extract namespace paths if it's a namespace permission
+          let namespacePaths: string[] | undefined;
+          if ("Namespace" in contract.scope) {
+            // The paths are zod-transformed strings, we need to cast them
+            namespacePaths = contract.scope.Namespace
+              .paths as unknown as string[];
+          }
+          filtered.push({ permissionId, contract, namespacePaths });
+        }
+      });
+    }
+
+    return filtered;
+  }, [
+    allPermissions,
+    grantorPermissionIds,
+    granteePermissionIds,
+    permissionsError,
+  ]);
 
   const hasPermissions = userPermissions && userPermissions.length > 0;
 
   // Helper function to determine permission type
-  const getPermissionType = (item: PermissionWithDetails | null) => {
-    if (item?.emission_permissions) return "Emission";
-    if (item?.namespace_permissions) return "Capability";
+  const getPermissionType = (contract: PermissionContract | null) => {
+    if (!contract) return "Unknown";
+    const scopeType = Object.keys(contract.scope)[0];
+    if (scopeType === "Emission") return "Emission";
+    if (scopeType === "Namespace") return "Capability";
+    if (scopeType === "Curator") return "Curator";
     return "Unknown";
   };
 
@@ -81,26 +195,151 @@ export function PermissionSelector(props: PermissionSelectorProps) {
 
     // First try to find a delegator permission
     const delegatorPermission = userPermissions.find(
-      (item) => item.permissions.grantorAccountId === selectedAccount?.address,
+      (item) =>
+        item.contract.grantor === (selectedAccount?.address as SS58Address),
     );
 
     if (delegatorPermission) {
-      return delegatorPermission.permissions.permissionId;
+      return delegatorPermission.permissionId;
     }
 
     // Fall back to first recipient permission
     const recipientPermission = userPermissions.find(
-      (item) => item.permissions.granteeAccountId === selectedAccount?.address,
+      (item) =>
+        item.contract.grantee === (selectedAccount?.address as SS58Address),
     );
 
-    return recipientPermission?.permissions.permissionId ?? null;
+    return recipientPermission?.permissionId ?? null;
   };
 
   const defaultPermissionId = getDefaultPermissionId();
 
   const selectedPermissionData = userPermissions?.find(
-    (item) => item.permissions.permissionId === props.selectedPermissionId,
+    (item) => item.permissionId === props.selectedPermissionId,
   );
+
+  // Transform network data to match expected format
+  const transformToPermissionWithDetails = (
+    networkData: PermissionWithNetworkData | null,
+  ): PermissionWithDetails | null => {
+    if (!networkData) return null;
+
+    const { permissionId, contract } = networkData;
+    const scopeType = Object.keys(contract.scope)[0];
+    const now = new Date();
+
+    // Build the permissions object that matches the database schema
+    const permissions: PermissionWithDetails["permissions"] = {
+      id: permissionId, // Use permissionId as id for compatibility
+      permissionId,
+      grantorAccountId: contract.grantor,
+      granteeAccountId: contract.grantee,
+      durationType:
+        Object.keys(contract.duration)[0] === "Indefinite"
+          ? ("indefinite" as const)
+          : ("until_block" as const),
+      durationBlockNumber:
+        "UntilBlock" in contract.duration
+          ? BigInt(contract.duration.UntilBlock)
+          : null,
+      revocationType: (() => {
+        const revType = Object.keys(contract.revocation)[0];
+        if (revType === "Irrevocable") return "irrevocable";
+        if (revType === "RevocableByGrantor") return "revocable_by_grantor";
+        if (revType === "RevocableAfter") return "revocable_after";
+        if (revType === "RevocableByArbiters") return "revocable_by_arbiters";
+        return "irrevocable"; // Default to irrevocable instead of unknown
+      })(),
+      revocationBlockNumber:
+        "RevocableAfter" in contract.revocation
+          ? BigInt(contract.revocation.RevocableAfter)
+          : null,
+      revocationRequiredVotes:
+        "RevocableByArbiters" in contract.revocation
+          ? BigInt(contract.revocation.RevocableByArbiters.requiredVotes)
+          : null,
+      enforcementType:
+        "None" in contract.enforcement
+          ? ("none" as const)
+          : ("controlled_by" as const),
+      enforcementRequiredVotes:
+        "ControlledBy" in contract.enforcement
+          ? BigInt(contract.enforcement.ControlledBy.controllers.length)
+          : null,
+      lastExecutionBlock:
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+        contract.lastExecution && "Some" in contract.lastExecution
+          ? BigInt(contract.lastExecution.Some)
+          : null,
+      executionCount: Number(contract.executionCount),
+      createdAtBlock: BigInt(contract.createdAt),
+      createdAt: now, // Using current date as approximation
+      updatedAt: now,
+      deletedAt: null,
+    };
+
+    // Build emission permissions if applicable
+    let emission_permissions: PermissionWithDetails["emission_permissions"] =
+      null;
+    if (scopeType === "Emission" && "Emission" in contract.scope) {
+      const emissionScope = contract.scope.Emission;
+      const allocationType = Object.keys(emissionScope.allocation)[0];
+      const distributionType = Object.keys(emissionScope.distribution)[0];
+
+      emission_permissions = {
+        permissionId,
+        allocationType:
+          allocationType === "Streams"
+            ? ("streams" as const)
+            : ("fixed_amount" as const),
+        fixedAmount:
+          "FixedAmount" in emissionScope.allocation
+            ? emissionScope.allocation.FixedAmount.toString()
+            : null,
+        distributionType: distributionType
+          ? (distributionType
+              .toLowerCase()
+              .replace(/([A-Z])/g, "_$1")
+              .toLowerCase()
+              .slice(1) as "manual" | "at_block" | "automatic" | "interval")
+          : "manual",
+        distributionThreshold:
+          "Automatic" in emissionScope.distribution
+            ? emissionScope.distribution.Automatic.toString()
+            : null,
+        distributionTargetBlock:
+          "AtBlock" in emissionScope.distribution
+            ? BigInt(emissionScope.distribution.AtBlock)
+            : null,
+        distributionIntervalBlocks:
+          "Interval" in emissionScope.distribution
+            ? BigInt(emissionScope.distribution.Interval)
+            : null,
+        accumulating: emissionScope.accumulating,
+        createdAt: now,
+        updatedAt: now,
+        deletedAt: null,
+      };
+    }
+
+    // Build namespace permissions if applicable
+    let namespace_permissions: PermissionWithDetails["namespace_permissions"] =
+      null;
+    if (scopeType === "Namespace") {
+      namespace_permissions = {
+        permissionId,
+        createdAt: now,
+        updatedAt: now,
+        deletedAt: null,
+      };
+    }
+
+    return {
+      permissions,
+      emission_permissions,
+      namespace_permissions,
+    };
+  };
 
   // Handle wallet switching - reset selection when account changes
   useEffect(() => {
@@ -109,8 +348,7 @@ export function PermissionSelector(props: PermissionSelectorProps) {
       if (props.selectedPermissionId && userPermissions) {
         // Check if current selection is valid for new account
         const isCurrentSelectionValid = userPermissions.some(
-          (item) =>
-            item.permissions.permissionId === props.selectedPermissionId,
+          (item) => item.permissionId === props.selectedPermissionId,
         );
 
         if (!isCurrentSelectionValid) {
@@ -143,12 +381,17 @@ export function PermissionSelector(props: PermissionSelectorProps) {
   // Update permission data when selection changes
   useEffect(() => {
     if (props.onPermissionDataChange) {
-      props.onPermissionDataChange(selectedPermissionData ?? null);
+      const transformedData = transformToPermissionWithDetails(
+        selectedPermissionData ?? null,
+      );
+      props.onPermissionDataChange(transformedData);
     }
   }, [selectedPermissionData, props.onPermissionDataChange, props]);
 
   function getPlaceholderText() {
     if (!isAccountConnected) return "Connect wallet to view permissions";
+    if (isLoadingGrantor || isLoadingGrantee || isLoadingAll)
+      return "Loading permissions...";
     if (permissionsError) return "Error loading permissions";
     if (!hasPermissions) return "No permissions available";
     return "Select permission";
@@ -157,13 +400,47 @@ export function PermissionSelector(props: PermissionSelectorProps) {
   function getDetailRows() {
     if (!selectedPermissionData) return [];
 
-    const permission = selectedPermissionData.permissions;
-    const permissionType = getPermissionType(selectedPermissionData);
+    const { contract } = selectedPermissionData;
+    const permissionType = getPermissionType(contract);
 
-    return [
+    // Format duration
+    const durationValue = (() => {
+      const durationType = Object.keys(contract.duration)[0];
+      if (durationType === "Indefinite") return "Indefinite";
+      if (durationType === "UntilBlock" && "UntilBlock" in contract.duration) {
+        const blockNumber = contract.duration.UntilBlock;
+        return `Until Block ${blockNumber.toString()}`;
+      }
+      return "Unknown";
+    })();
+
+    // Format revocation
+    const revocationValue = (() => {
+      const revocationType = Object.keys(contract.revocation)[0];
+      if (revocationType === "Irrevocable") return "Irrevocable";
+      if (revocationType === "RevocableByGrantor")
+        return "Revocable by Delegator";
+      if (
+        revocationType === "RevocableAfter" &&
+        "RevocableAfter" in contract.revocation
+      ) {
+        const blockNumber = contract.revocation.RevocableAfter;
+        return `Revocable after Block ${blockNumber.toString()}`;
+      }
+      if (
+        revocationType === "RevocableByArbiters" &&
+        "RevocableByArbiters" in contract.revocation
+      ) {
+        const arbiters = contract.revocation.RevocableByArbiters;
+        return `Revocable by ${arbiters.requiredVotes.toString()} of ${arbiters.accounts.length} Arbiters`;
+      }
+      return "Unknown";
+    })();
+
+    const detailRows = [
       {
         label: "Permission ID",
-        value: smallAddress(permission.permissionId),
+        value: smallAddress(selectedPermissionData.permissionId),
       },
       {
         label: "Type",
@@ -171,38 +448,46 @@ export function PermissionSelector(props: PermissionSelectorProps) {
       },
       {
         label: "Delegator",
-        value: smallAddress(permission.grantorAccountId),
+        value: smallAddress(contract.grantor),
       },
       {
         label: "Recipient",
-        value: smallAddress(permission.granteeAccountId),
+        value: smallAddress(contract.grantee),
       },
       {
         label: "Duration",
-        value:
-          permission.durationType === "indefinite"
-            ? "Indefinite"
-            : `Until Block ${permission.durationBlockNumber?.toString() ?? "N/A"}`,
+        value: durationValue,
       },
       {
         label: "Revocation",
-        // Transform revocation type and update grantor/grantee terminology to delegator/recipient
-        value: permission.revocationType
-          .replace("revocable_after", "Revocable after Block")
-          .replace(/_/g, " ")
-          .replace(/\b\w/g, (l) => l.toUpperCase())
-          .replace("Grantor", "Delegator")
-          .replace("Grantee", "Recipient"),
+        value: revocationValue,
       },
       {
         label: "Created At",
-        value: permission.createdAt.toLocaleDateString(),
-      },
-      {
-        label: "Execution Count",
-        value: permission.executionCount.toString(),
+        value: `Block ${contract.createdAt.toString()}`,
       },
     ];
+
+    // Only add execution count for non-namespace permissions
+    if (permissionType !== "Capability") {
+      detailRows.push({
+        label: "Execution Count",
+        value: contract.executionCount.toString(),
+      });
+    }
+
+    // Add namespace paths if it's a namespace permission
+    if (
+      selectedPermissionData.namespacePaths &&
+      selectedPermissionData.namespacePaths.length > 0
+    ) {
+      detailRows.push({
+        label: "Namespace Path",
+        value: selectedPermissionData.namespacePaths.join("."),
+      });
+    }
+
+    return detailRows;
   }
 
   return (
@@ -221,13 +506,22 @@ export function PermissionSelector(props: PermissionSelectorProps) {
                   props.onPermissionIdChange(value);
                   // Update permission data immediately when selection changes
                   const newPermissionData = userPermissions?.find(
-                    (item) => item.permissions.permissionId === value,
+                    (item) => item.permissionId === value,
                   );
                   if (props.onPermissionDataChange) {
-                    props.onPermissionDataChange(newPermissionData ?? null);
+                    const transformedData = transformToPermissionWithDetails(
+                      newPermissionData ?? null,
+                    );
+                    props.onPermissionDataChange(transformedData);
                   }
                 }}
-                disabled={!isAccountConnected || !hasPermissions}
+                disabled={
+                  !isAccountConnected ||
+                  !hasPermissions ||
+                  isLoadingGrantor ||
+                  isLoadingGrantee ||
+                  isLoadingAll
+                }
               >
                 <FormControl>
                   <SelectTrigger className="w-full">
@@ -241,17 +535,17 @@ export function PermissionSelector(props: PermissionSelectorProps) {
                     // Separate permissions by role and deduplicate
                     const delegatorPermissions = userPermissions.filter(
                       (item) =>
-                        item.permissions.grantorAccountId ===
-                        selectedAccount?.address,
+                        item.contract.grantor ===
+                        (selectedAccount?.address as SS58Address),
                     );
 
                     // Filter out permissions where user is also delegator to avoid duplicates
                     const recipientOnlyPermissions = userPermissions.filter(
                       (item) =>
-                        item.permissions.granteeAccountId ===
-                          selectedAccount?.address &&
-                        item.permissions.grantorAccountId !==
-                          selectedAccount.address,
+                        item.contract.grantee ===
+                          (selectedAccount?.address as SS58Address) &&
+                        item.contract.grantor !==
+                          (selectedAccount?.address as SS58Address),
                     );
 
                     return (
@@ -260,9 +554,9 @@ export function PermissionSelector(props: PermissionSelectorProps) {
                           <SelectGroup>
                             <SelectLabel>As Recipient</SelectLabel>
                             {recipientOnlyPermissions.map((item) => {
-                              const permissionId =
-                                item.permissions.permissionId;
-                              const permissionType = getPermissionType(item);
+                              const { permissionId, contract } = item;
+                              const permissionType =
+                                getPermissionType(contract);
                               return (
                                 <SelectItem
                                   key={permissionId}
@@ -281,11 +575,10 @@ export function PermissionSelector(props: PermissionSelectorProps) {
                         )}
                         {delegatorPermissions.length > 0 && (
                           <SelectGroup>
-                            <SelectLabel>As Delegator</SelectLabel>
                             {delegatorPermissions.map((item) => {
-                              const permissionId =
-                                item.permissions.permissionId;
-                              const permissionType = getPermissionType(item);
+                              const { permissionId, contract } = item;
+                              const permissionType =
+                                getPermissionType(contract);
 
                               return (
                                 <SelectItem

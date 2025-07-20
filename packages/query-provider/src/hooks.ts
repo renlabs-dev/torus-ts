@@ -41,6 +41,7 @@ import {
   queryNamespaceEntriesOf,
   queryNamespacePathCreationCost,
   queryPermission,
+  queryPermissions,
   queryPermissionsByGrantee,
   queryPermissionsByGrantor,
   queryProposals,
@@ -460,6 +461,16 @@ export function usePermission(
     queryKey: ["permission", permId],
     enabled: api != null && permId != null,
     queryFn: () => queryPermission(api!, permId!),
+    staleTime: CONSTANTS.TIME.STAKE_STALE_TIME,
+    refetchOnWindowFocus: false,
+  });
+}
+
+export function usePermissions(api: Api | Nullish) {
+  return useQuery({
+    queryKey: ["permissions"],
+    enabled: api != null,
+    queryFn: () => queryPermissions(api!),
     staleTime: CONSTANTS.TIME.STAKE_STALE_TIME,
     refetchOnWindowFocus: false,
   });
