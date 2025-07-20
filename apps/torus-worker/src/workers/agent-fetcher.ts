@@ -12,7 +12,6 @@ import {
   queryLastBlock,
   queryWhitelist,
   queryPermissions,
-  PERMISSION_ID_SCHEMA,
 } from "@torus-network/sdk";
 import { BasicLogger } from "@torus-network/torus-utils/logger";
 import { tryAsync } from "@torus-network/torus-utils/try-catch";
