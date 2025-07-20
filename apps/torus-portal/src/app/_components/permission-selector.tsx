@@ -575,6 +575,7 @@ export function PermissionSelector(props: PermissionSelectorProps) {
                         )}
                         {delegatorPermissions.length > 0 && (
                           <SelectGroup>
+                            <SelectLabel>As Delegator</SelectLabel>
                             {delegatorPermissions.map((item) => {
                               const { permissionId, contract } = item;
                               const permissionType =
