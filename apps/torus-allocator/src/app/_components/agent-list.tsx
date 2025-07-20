@@ -1,6 +1,6 @@
 import { api } from "~/trpc/server";
 
-import { AgentCard } from "./agent-card/agent-card";
+import { AgentCard } from "./agent-card";
 import { PaginationNav } from "./pagination-nav";
 
 export const ITEMS_PER_PAGE = 9;

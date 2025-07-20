@@ -6,15 +6,17 @@ import { fetchAgentMetadata } from "@torus-network/sdk";
 import { smallAddress } from "@torus-network/torus-utils/subspace";
 import { tryAsync } from "@torus-network/torus-utils/try-catch";
 
+import { AgentCard as UIAgentCard } from "@torus-ts/ui/components/agent-card/agent-card";
+import { AgentItemSkeleton } from "@torus-ts/ui/components/agent-card/agent-card-skeleton-loader";
 import { Card } from "@torus-ts/ui/components/card";
 
+import { useWeeklyUsdCalculation } from "~/hooks/use-weekly-usd";
 import { api } from "~/trpc/react";
 
 import type {
   CachedAgentData,
   ComputedWeightsList,
-} from "../../permission-graph-types";
-import { AgentCard } from "./agent-card";
+} from "../permission-graph-types";
 
 interface AgentCardContainerProps {
   nodeId: string;
@@ -24,7 +26,7 @@ interface AgentCardContainerProps {
   setCachedAgentData?: (nodeId: string, data: CachedAgentData) => void;
 }
 
-export const AgentCardContainer = memo(
+export const AgentCard = memo(
   function PermissionNodeAgentCard({
     nodeId,
     fullAddress,
@@ -40,10 +42,15 @@ export const AgentCardContainer = memo(
     );
     const [agentName, setAgentName] = useState<string>(initialAgentName);
     const [shortDescription, setShortDescription] = useState<string>("");
-    const [currentBlock, setCurrentBlock] = useState<number>(0);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<Error | null>(null);
     const [weightFactor, setWeightFactor] = useState<number>(0);
+
+    const { displayTokensPerWeek, isLoading: isWeeklyUsdLoading } =
+      useWeeklyUsdCalculation({
+        agentKey: fullAddress ?? nodeId,
+        weightFactor: 0, // No weight penalty in portal
+      });
 
     const computedWeight = useMemo(() => {
       if (!allComputedWeights) return null;
@@ -79,7 +86,6 @@ export const AgentCardContainer = memo(
         setAgentName(cachedData.agentName);
         setShortDescription(cachedData.shortDescription);
         setSocials(cachedData.socials);
-        setCurrentBlock(cachedData.currentBlock);
         setWeightFactor(cachedData.weightFactor);
         setError(null);
 
@@ -122,12 +128,10 @@ export const AgentCardContainer = memo(
 
       const agent = agentQuery.data;
       const agentName = agent.name ?? smallAddress(nodeId, 6);
-      const currentBlock = agent.atBlock;
       const weightFactor = computedWeight?.percComputedWeight ?? 0;
 
       setAgentName(agentName);
       setWeightFactor(weightFactor);
-      setCurrentBlock(currentBlock);
       setError(null);
 
       if (agent.metadataUri === null) {
@@ -137,7 +141,7 @@ export const AgentCardContainer = memo(
           shortDescription: "",
           iconBlob: null,
           socials: {},
-          currentBlock,
+          currentBlock: 0,
           weightFactor,
           lastAccessed: Date.now(),
         };
@@ -188,7 +192,7 @@ export const AgentCardContainer = memo(
           shortDescription: shortDesc,
           iconBlob,
           socials,
-          currentBlock,
+          currentBlock: 0,
           weightFactor,
           lastAccessed: Date.now(),
         };
@@ -235,22 +239,26 @@ export const AgentCardContainer = memo(
 
     if (isLoading) {
       return (
-        <Card className="flex-1 flex flex-col z-50 border-none">
-          <p>Loading agent details...</p>
-        </Card>
+        <div className="flex-1 flex flex-col z-50 w-full">
+          <AgentItemSkeleton />
+        </div>
       );
     }
 
     return (
       <Card className="flex-1 flex flex-col gap-4 z-50 border-none w-full">
-        <AgentCard
+        <UIAgentCard
+          name={agentName}
           agentKey={fullAddress ?? nodeId}
-          iconUrl={iconUrl ?? ""}
-          socialsList={socials}
-          title={agentName}
+          iconUrl={iconUrl}
           shortDescription={shortDescription}
-          currentBlock={currentBlock}
-          agentWeight={weightFactor}
+          socials={socials}
+          website={socials.website}
+          percComputedWeight={weightFactor}
+          href={`/agent/${fullAddress ?? nodeId}`}
+          showHoverEffect={true}
+          tokensPerWeek={displayTokensPerWeek}
+          isLoading={isWeeklyUsdLoading}
         />
       </Card>
     );

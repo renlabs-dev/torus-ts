@@ -13,16 +13,10 @@ import type {
   CustomGraphNode,
   SignalsList,
 } from "../permission-graph-types";
-import {
-  AgentCardContainer,
-} from "./graph-sheet-agent-card/agent-card-container";
+import { AgentCard } from "./agent-card";
 import { GraphSheetDetails } from "./graph-sheet-details/graph-sheet-details";
-import {
-  GraphSheetDetailsPermission,
-} from "./graph-sheet-details/graph-sheet-details-permission";
-import {
-  GraphSheetDetailsSignal,
-} from "./graph-sheet-details/graph-sheet-details-signal";
+import { GraphSheetDetailsPermission } from "./graph-sheet-details/graph-sheet-details-permission";
+import { GraphSheetDetailsSignal } from "./graph-sheet-details/graph-sheet-details-signal";
 
 interface GraphSheetProps {
   selectedNode: CustomGraphNode | null;
@@ -70,7 +64,7 @@ export function GraphSheet(props: GraphSheetProps) {
             />
           ) : (
             <div className="w-full flex flex-col gap-4">
-              <AgentCardContainer
+              <AgentCard
                 nodeId={props.selectedNode.id}
                 fullAddress={props.selectedNode.fullAddress}
                 allComputedWeights={props.allComputedWeights}

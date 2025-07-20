@@ -1,12 +1,7 @@
 "use client";
 
-import {
-  Card,
-  CardContent,
-  CardFooter,
-  CardHeader,
-} from "@torus-ts/ui/components/card";
-import { Skeleton } from "@torus-ts/ui/components/skeleton";
+import { Card, CardContent, CardFooter, CardHeader } from "../card";
+import { Skeleton } from "../skeleton";
 
 export function SkeletonAgentCardHeader() {
   return (
@@ -54,10 +49,7 @@ export function SkeletonAgentCardFooter() {
 
 export function AgentItemSkeleton() {
   return (
-    <Card
-      className="to-background group relative border bg-gradient-to-tr from-zinc-900 transition
-        duration-300 hover:scale-[102%] hover:border-white hover:shadow-2xl"
-    >
+    <Card className="group relative border bg-gradient-to-tr from-zinc-900 to-background transition duration-300 hover:scale-[102%] hover:border-white hover:shadow-2xl">
       <SkeletonAgentCardHeader />
       <SkeletonAgentCardContent />
       <SkeletonAgentCardFooter />
@@ -67,7 +59,7 @@ export function AgentItemSkeleton() {
 
 export function AgentItemSkeletonGrid() {
   return (
-    <div className="animate-fade-up animate-delay-1000 grid w-full grid-cols-1 gap-3 md:grid-cols-3">
+    <div className="grid w-full animate-fade-up grid-cols-1 gap-3 animate-delay-1000 md:grid-cols-3">
       {Array.from({ length: 3 }).map((_, i) => (
         <AgentItemSkeleton key={i} />
       ))}

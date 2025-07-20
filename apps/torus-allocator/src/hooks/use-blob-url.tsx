@@ -1,5 +1,8 @@
-import type { Nullish } from "@torus-network/torus-utils";
+"use client";
+
 import { useEffect, useState } from "react";
+
+import type { Nullish } from "@torus-network/torus-utils";
 
 export const useBlobUrl = (blob: Blob | Nullish) => {
   const [url, setUrl] = useState<string | null>(null);
