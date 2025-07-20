@@ -6,8 +6,12 @@ import { fetchAgentMetadata } from "@torus-network/sdk";
 import { smallAddress } from "@torus-network/torus-utils/subspace";
 import { tryAsync } from "@torus-network/torus-utils/try-catch";
 
-import { AgentCard as UIAgentCard } from "@torus-ts/ui/components/agent-card/agent-card";
-import { AgentItemSkeleton } from "@torus-ts/ui/components/agent-card/agent-card-skeleton-loader";
+import {
+  AgentCard as UIAgentCard,
+} from "@torus-ts/ui/components/agent-card/agent-card";
+import {
+  AgentItemSkeleton,
+} from "@torus-ts/ui/components/agent-card/agent-card-skeleton-loader";
 import { Card } from "@torus-ts/ui/components/card";
 
 import { useWeeklyUsdCalculation } from "~/hooks/use-weekly-usd";
@@ -246,21 +250,18 @@ export const AgentCard = memo(
     }
 
     return (
-      <Card className="flex-1 flex flex-col gap-4 z-50 border-none w-full">
-        <UIAgentCard
-          name={agentName}
-          agentKey={fullAddress ?? nodeId}
-          iconUrl={iconUrl}
-          shortDescription={shortDescription}
-          socials={socials}
-          website={socials.website}
-          percComputedWeight={weightFactor}
-          href={`/agent/${fullAddress ?? nodeId}`}
-          showHoverEffect={true}
-          tokensPerWeek={displayTokensPerWeek}
-          isLoading={isWeeklyUsdLoading}
-        />
-      </Card>
+      <UIAgentCard
+        name={agentName}
+        agentKey={fullAddress ?? nodeId}
+        iconUrl={iconUrl}
+        shortDescription={shortDescription}
+        socials={socials}
+        website={socials.website}
+        percComputedWeight={weightFactor}
+        showHoverEffect={false}
+        tokensPerWeek={displayTokensPerWeek}
+        isLoading={isWeeklyUsdLoading}
+      />
     );
   },
   (prevProps, nextProps) => {
