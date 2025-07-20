@@ -3,6 +3,7 @@ import {
   permissionsSchema,
   emissionPermissionsSchema,
   namespacePermissionsSchema,
+  namespacePermissionPathsSchema,
   emissionStreamAllocationsSchema,
   emissionDistributionTargetsSchema,
   accumulatedStreamAmountsSchema,
@@ -268,6 +269,13 @@ export const permissionRouter = {
         eq(
           permissionsSchema.permissionId,
           namespacePermissionsSchema.permissionId,
+        ),
+      )
+      .leftJoin(
+        namespacePermissionPathsSchema,
+        eq(
+          permissionsSchema.permissionId,
+          namespacePermissionPathsSchema.permissionId,
         ),
       )
       .leftJoin(

@@ -281,6 +281,31 @@ export function GraphSheetDetailsPermission({
             </CardContent>
           </Card>
         )}
+
+      {/* Namespace Paths (for capability permissions) */}
+      {permissionData.permissionType === "capability" &&
+        permissionData.namespacePaths &&
+        permissionData.namespacePaths.length > 0 && (
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Layers className="w-5 h-5" />
+                Namespace Paths
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-2">
+                {permissionData.namespacePaths.map((path, index) => (
+                  <div key={index} className="flex items-center gap-2">
+                    <Badge variant="secondary" className="font-mono text-sm">
+                      {path}
+                    </Badge>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        )}
     </div>
   );
 }
