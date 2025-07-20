@@ -96,9 +96,12 @@ async function cleanPermissions(
   const onChainPermissionIds = new Set(Array.from(permissionsMap.keys()));
   const permissionsToDelete = dbPermissionIds.filter(
     // TODO: change the db schema to use the permission ID type
-    (id) => !onChainPermissionIds.has(PERMISSION_ID_SCHEMA.parse(id)),
+    (id) => !onChainPermissionIds.has(id as PermissionId),
   );
 
+  console.log(
+    `Block ${blockNumber}: hard deleting ${permissionsToDelete.length} permissions that are no longer on-chain`,
+  );
   if (permissionsToDelete.length > 0) {
     log.info(
       `Block ${blockNumber}: hard deleting ${permissionsToDelete.length} permissions that are no longer on-chain`,
@@ -535,13 +538,6 @@ export async function runPermissionsFetch(lastBlock: LastBlock) {
       );
       if (permissionData) {
         permissionsData.push(permissionData);
-        log.info(
-          `Block ${lastBlockNumber}: added permission ${permissionId} to batch`,
-        );
-      } else {
-        log.info(
-          `Block ${lastBlockNumber}: skipped curator permission ${permissionId}`,
-        );
       }
     } catch (error) {
       log.error(`Failed to transform permission ${permissionId}:`, error);
@@ -553,13 +549,19 @@ export async function runPermissionsFetch(lastBlock: LastBlock) {
     `Block ${lastBlockNumber}: upserting ${permissionsData.length} permissions`,
   );
 
-  const upsertPermissionsRes = await tryAsync(
-    upsertPermissions(permissionsData),
-  );
-  if (log.ifResultIsErr(upsertPermissionsRes)) return;
-
   // Clean up permissions that no longer exist on the blockchain
   await cleanPermissions(permissionsMap, lastBlockNumber);
+  // Process permissions in batches of 50 to avoid timeout
+  const BATCH_SIZE = 50;
+  for (let i = 0; i < permissionsData.length; i += BATCH_SIZE) {
+    const batch = permissionsData.slice(i, i + BATCH_SIZE);
+    log.info(
+      `Block ${lastBlockNumber}: processing permission batch ${Math.floor(i / BATCH_SIZE) + 1}/${Math.ceil(permissionsData.length / BATCH_SIZE)} (${batch.length} permissions)`,
+    );
+
+    const upsertPermissionsRes = await tryAsync(upsertPermissions(batch));
+    if (log.ifResultIsErr(upsertPermissionsRes)) return;
+  }
 
   log.info(`Block ${lastBlockNumber}: permissions synchronized`);
 }
