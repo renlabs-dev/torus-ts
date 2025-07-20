@@ -1,8 +1,9 @@
 "use client";
 
-import { Icons } from "@torus-ts/ui/components/icons";
-import { cn } from "@torus-ts/ui/lib/utils";
 import Image from "next/image";
+
+import { cn } from "../../lib/utils";
+import { Icons } from "../icons";
 
 interface AgentIconProps {
   icon?: string | null;

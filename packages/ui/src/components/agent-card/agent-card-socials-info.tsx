@@ -1,10 +1,16 @@
-import { Icons } from "@torus-ts/ui/components/icons";
-import { Globe } from "lucide-react";
 import React from "react";
 
-type SocialKind = "website" | "discord" | "twitter" | "github" | "telegram";
+import { Globe } from "lucide-react";
 
-// TODO: Remove code repetition
+import { Icons } from "../icons";
+
+export type SocialKind =
+  | "website"
+  | "discord"
+  | "twitter"
+  | "github"
+  | "telegram";
+
 const SOCIALS_CONFIG: Record<
   SocialKind,
   { name: string; icon: React.ReactNode }
