@@ -80,7 +80,7 @@ function AgentStats({
             </Label>
           </HoverCardTrigger>
           <HoverCardContent className="w-80">
-            <p className="text-sm">Current Network Allocation on this agent.</p>
+            <p className="text-sm">Current emission alocated to this agent.</p>
           </HoverCardContent>
         </HoverCard>
       )}
