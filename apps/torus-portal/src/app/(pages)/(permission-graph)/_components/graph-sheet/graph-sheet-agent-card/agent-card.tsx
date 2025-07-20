@@ -1,6 +1,6 @@
 "use client";
 
-import { Anvil, Cuboid, Globe, IdCard } from "lucide-react";
+import { Anvil, Cuboid, Globe, IdCard, Coins, DollarSign } from "lucide-react";
 import Link from "next/link";
 
 import { smallAddress } from "@torus-network/torus-utils/subspace";
@@ -10,6 +10,7 @@ import { CopyButton } from "@torus-ts/ui/components/copy-button";
 import { Icons } from "@torus-ts/ui/components/icons";
 import { Label } from "@torus-ts/ui/components/label";
 
+import { useWeeklyUsdCalculation } from "~/hooks/use-weekly-usd";
 import { AgentCardImage } from "./agent-card-image";
 
 // Format weight to max 3 chars
@@ -92,6 +93,12 @@ export function AgentCard(props: Readonly<PortalAgentCardProps>) {
     props;
 
   const socialsMapped = buildSocials(socialsList, socialsList.website);
+  
+  const { displayTokensPerWeek, displayUsdValue, isLoading: isWeeklyUsdLoading } = useWeeklyUsdCalculation({
+    agentKey: agentKey || "",
+    weightFactor: 0, // No weight penalty in portal
+  });
+  
   if (!agentKey) return null;
 
   return (
@@ -166,6 +173,25 @@ export function AgentCard(props: Readonly<PortalAgentCardProps>) {
             {smallAddress(agentKey, 3)}
           </span>
         </CopyButton>
+      </div>
+
+      <div
+        className="mt-2 text-sm flex flex-wrap items-center justify-between gap-2 border px-2
+          sm:px-4 py-1"
+      >
+        <Label
+          className={"flex items-center gap-1 text-xs sm:text-sm font-semibold"}
+        >
+          <Coins size={14} />
+          <span>{isWeeklyUsdLoading ? "Loading..." : displayTokensPerWeek}</span>
+        </Label>
+
+        <Label
+          className={"flex items-center gap-1 text-xs sm:text-sm font-semibold"}
+        >
+          <DollarSign size={14} />
+          <span>{isWeeklyUsdLoading ? "Loading..." : displayUsdValue}</span>
+        </Label>
       </div>
     </Card>
   );
