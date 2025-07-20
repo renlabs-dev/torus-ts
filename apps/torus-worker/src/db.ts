@@ -681,3 +681,52 @@ export async function upsertPermissions(
     }
   });
 }
+
+/**
+ * Get all agent keys from the database
+ */
+export async function getAllAgentKeys() {
+  const result = await db
+    .select({ key: agentSchema.key })
+    .from(agentSchema)
+    .execute();
+  return result.map((row) => checkSS58(row.key));
+}
+
+/**
+ * Get all permission IDs from the database
+ */
+export async function getAllPermissionIds(): Promise<string[]> {
+  const result = await db
+    .select({ permissionId: permissionsSchema.permissionId })
+    .from(permissionsSchema)
+    .execute();
+  return result.map((row) => row.permissionId);
+}
+
+/**
+ * Hard delete agents that are no longer on the blockchain
+ */
+export async function deleteAgents(agentKeys: SS58Address[]): Promise<void> {
+  if (agentKeys.length === 0) return;
+
+  await db
+    .delete(agentSchema)
+    .where(inArray(agentSchema.key, agentKeys))
+    .execute();
+}
+
+/**
+ * Hard delete permissions that are no longer on the blockchain
+ * This will cascade to all related tables due to foreign key constraints
+ */
+export async function deletePermissions(
+  permissionIds: string[],
+): Promise<void> {
+  if (permissionIds.length === 0) return;
+
+  await db
+    .delete(permissionsSchema)
+    .where(inArray(permissionsSchema.permissionId, permissionIds))
+    .execute();
+}

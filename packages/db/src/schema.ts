@@ -98,7 +98,7 @@ export const userAgentWeightSchema = createTable(
     userKey: ss58Address("user_key").notNull(),
     agentKey: ss58Address("agent_key")
       .notNull()
-      .references(() => agentSchema.key),
+      .references(() => agentSchema.key, { onDelete: "cascade" }),
 
     weight: real("weight").default(0).notNull(),
 
@@ -116,7 +116,7 @@ export const computedAgentWeightSchema = createTable("computed_agent_weight", {
 
   agentKey: ss58Address("agent_key")
     .notNull()
-    .references(() => agentSchema.key)
+    .references(() => agentSchema.key, { onDelete: "cascade" })
     .unique(),
   // Aggregated weight allocations measured in Rems
   computedWeight: numeric("computed_weight").notNull(),
@@ -192,7 +192,7 @@ export const agentReportSchema = createTable("agent_report", {
 
   userKey: ss58Address("user_key").notNull(),
   agentKey: ss58Address("agent_key")
-    .references(() => agentSchema.key)
+    .references(() => agentSchema.key, { onDelete: "cascade" })
     .notNull(),
 
   reason: reportReason("reason").notNull(),
