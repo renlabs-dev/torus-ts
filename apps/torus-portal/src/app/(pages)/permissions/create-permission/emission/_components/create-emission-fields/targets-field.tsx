@@ -15,7 +15,9 @@ import {
 } from "@torus-ts/ui/components/form";
 import { Input } from "@torus-ts/ui/components/input";
 
-import type { CreateEmissionPermissionForm } from "../create-emission-permission-form-schema";
+import type {
+  CreateEmissionPermissionForm,
+} from "../create-emission-permission-form-schema";
 
 interface TargetsFieldProps {
   form: CreateEmissionPermissionForm;
@@ -39,6 +41,7 @@ export function TargetsField({ form, isAccountConnected }: TargetsFieldProps) {
         <Button
           type="button"
           size="sm"
+          className="bg-white/70"
           onClick={() =>
             appendTarget({ account: "" as SS58Address, weight: "" })
           }

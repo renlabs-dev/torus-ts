@@ -18,7 +18,9 @@ import { Input } from "@torus-ts/ui/components/input";
 
 import { useAvailableStreams } from "~/hooks/use-available-streams";
 
-import type { CreateEmissionPermissionForm } from "../create-emission-permission-form-schema";
+import type {
+  CreateEmissionPermissionForm,
+} from "../create-emission-permission-form-schema";
 
 interface AllocationFieldProps {
   form: CreateEmissionPermissionForm;
@@ -90,6 +92,7 @@ export function AllocationField({
               <Button
                 type="button"
                 size="sm"
+                className="bg-white/70"
                 onClick={() =>
                   appendStream({
                     streamId: "",
