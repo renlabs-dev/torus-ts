@@ -62,10 +62,18 @@ function AgentStats({
   usdValue?: string;
   isLoading?: boolean;
 }) {
+  const shouldShowTokensPerWeek =
+    tokensPerWeek &&
+    !tokensPerWeek.startsWith("0.00") &&
+    !tokensPerWeek.startsWith("0 ");
+
+  const shouldShowUsdValue =
+    usdValue && !usdValue.startsWith("$0.00") && !usdValue.startsWith("$0 ");
+
   const hasStats =
-    ((percComputedWeight !== null && percComputedWeight !== undefined) ||
-      tokensPerWeek) ??
-    usdValue;
+    ((percComputedWeight !== null && percComputedWeight !== 0) ||
+      shouldShowTokensPerWeek) ??
+    shouldShowUsdValue;
 
   if (!hasStats) return null;
 
@@ -85,12 +93,12 @@ function AgentStats({
         </HoverCard>
       )}
 
-      {tokensPerWeek && (
+      {shouldShowTokensPerWeek && (
         <HoverCard>
           <HoverCardTrigger>
             <Label className="flex items-center gap-1 text-xs font-semibold">
               <Award size={16} />
-              {isLoading ? "Loading..." : tokensPerWeek || "0.00 TORUS"}
+              {isLoading ? "Loading..." : tokensPerWeek}
             </Label>
           </HoverCardTrigger>
           <HoverCardContent className="w-80">
@@ -99,10 +107,10 @@ function AgentStats({
         </HoverCard>
       )}
 
-      {usdValue && (
+      {shouldShowUsdValue && (
         <Label className="flex items-center gap-1 text-xs font-semibold">
           <DollarSign size={14} />
-          {isLoading ? "Loading..." : usdValue || "$0.00"}
+          {isLoading ? "Loading..." : usdValue}
         </Label>
       )}
     </div>
