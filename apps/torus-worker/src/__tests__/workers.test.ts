@@ -1,19 +1,25 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 /* eslint-disable @typescript-eslint/require-await */
-import type { LastBlock } from "@torus-network/sdk";
-import { tryAsync } from "@torus-network/torus-utils/try-catch";
+
 import { beforeEach, describe, expect, it, vi } from "vitest";
+
+import type { LastBlock } from "@torus-network/sdk/chain";
+import { tryAsync } from "@torus-network/torus-utils/try-catch";
+
 import * as agentFetcher from "../workers/agent-fetcher";
 
 // Mock dependencies
-vi.mock("@torus-network/sdk", () => ({
+vi.mock("@torus-network/sdk/chain", () => ({
   queryLastBlock: vi.fn(),
   queryAgentApplications: vi.fn(),
   queryProposals: vi.fn(),
   queryWhitelist: vi.fn(),
   queryAgents: vi.fn(),
   queryKeyStakedBy: vi.fn(),
+}));
+
+vi.mock("@torus-network/sdk/constants", () => ({
   CONSTANTS: {
     TIME: {
       BLOCK_TIME_MILLISECONDS: 100,
@@ -88,8 +94,8 @@ describe("Worker module tests", () => {
         return error;
       };
 
-      // Should return undefined error on success
-      const _error = await testSuccessFunction();
+      // Should return undefined error on success  
+      await testSuccessFunction();
       // expect(error).toBeUndefined(); // FIXME: failing assertion
       expect(runAgentFetchSpy).toHaveBeenCalled();
     });

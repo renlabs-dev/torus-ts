@@ -1,4 +1,4 @@
-import { toNano } from "@torus-network/torus-utils/subspace";
+import { toNano } from "@torus-network/torus-utils/torus/token";
 
 /**
  * Check if the provided amount is greater than zero.

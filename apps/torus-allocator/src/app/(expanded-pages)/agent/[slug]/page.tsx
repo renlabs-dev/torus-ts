@@ -4,7 +4,7 @@ import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
-import { fetchAgentMetadata } from "@torus-network/sdk";
+import { fetchAgentMetadata } from "@torus-network/sdk/metadata";
 import { tryAsync } from "@torus-network/torus-utils/try-catch";
 
 import { Button } from "@torus-ts/ui/components/button";

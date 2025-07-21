@@ -18,9 +18,9 @@ import { z } from "zod";
 
 import type { Option } from "@torus-network/torus-utils";
 
-import { SS58_SCHEMA } from "../address.js";
+import { SS58_SCHEMA } from "./address.js";
 
-export { sb_enum } from "./sb_enum.js";
+export * from "./sb_enum.js";
 
 // == Zod ==
 

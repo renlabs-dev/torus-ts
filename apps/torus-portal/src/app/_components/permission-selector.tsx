@@ -9,14 +9,14 @@ import type { Control } from "react-hook-form";
 import type {
   PermissionContract,
   PermissionId,
-  SS58Address,
-} from "@torus-network/sdk";
+} from "@torus-network/sdk/chain";
 import {
-  CONSTANTS,
   queryPermissions,
   queryPermissionsByGrantee,
   queryPermissionsByGrantor,
-} from "@torus-network/sdk";
+} from "@torus-network/sdk/chain";
+import { CONSTANTS } from "@torus-network/sdk/constants";
+import type { SS58Address } from "@torus-network/sdk/types";
 import { smallAddress } from "@torus-network/torus-utils/subspace";
 
 import { useTorus } from "@torus-ts/torus-provider";

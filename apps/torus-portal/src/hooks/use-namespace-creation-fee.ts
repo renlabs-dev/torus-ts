@@ -2,8 +2,9 @@ import { useMemo } from "react";
 
 import type { ApiPromise } from "@polkadot/api";
 
-import type { Api, SS58Address } from "@torus-network/sdk";
-import { createNamespace } from "@torus-network/sdk";
+import type { Api } from "@torus-network/sdk/chain";
+import { createNamespace } from "@torus-network/sdk/chain";
+import type { SS58Address } from "@torus-network/sdk/types";
 
 import {
   useNamespacePathCreationCost,

@@ -1,4 +1,5 @@
-import { CONSTANTS, processApplicationMetadata } from "@torus-network/sdk";
+import { CONSTANTS } from "@torus-network/sdk/constants";
+import { processApplicationMetadata } from "@torus-network/sdk/metadata";
 import { validateEnvOrExit } from "@torus-network/torus-utils/env";
 import {
   buildIpfsGatewayUrl,

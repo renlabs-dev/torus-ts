@@ -1,14 +1,19 @@
 "use client";
 
-import { smallAddress } from "@torus-network/torus-utils/subspace";
+import type { ReactNode } from "react";
+
+import { Copy } from "lucide-react";
+
+import { smallAddress } from "@torus-network/torus-utils/torus/address";
+
 import { Card, CardContent, CardTitle } from "@torus-ts/ui/components/card";
 import { CopyButton } from "@torus-ts/ui/components/copy-button";
+
 import type { Agent } from "~/utils/types";
-import { Copy } from "lucide-react";
+
 import { useWeeklyUsdCalculation } from "../../../../../hooks/use-weekly-usd";
 import { ReportAgent } from "./report-agent";
 import { UpdateAgentButton } from "./update-agent-button/update-agent-button";
-import type { ReactNode } from "react";
 
 interface AgentInfoCardProps {
   agent: Agent;

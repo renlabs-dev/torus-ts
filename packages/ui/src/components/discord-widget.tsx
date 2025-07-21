@@ -1,8 +1,12 @@
 import * as React from "react";
-import { cn } from "../lib/utils";
-import { tryAsync } from "../../../utils/src/try-catch";
 
+import { tryAsync } from "@torus-network/torus-utils/try-catch";
+
+import { cn } from "../lib/utils";
+
+// ?
 const serverId = "941362322000203776";
+
 const uri = `https://discord.com/api/guilds/${serverId}/widget.json`;
 
 async function getDiscordWidgetData(): Promise<unknown> {

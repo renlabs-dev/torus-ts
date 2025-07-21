@@ -1,21 +1,23 @@
+import { match } from "rustie";
+
 import type {
   LastBlock,
-  Proposal,
-  SS58Address,
   PermissionContract,
   PermissionId,
-} from "@torus-network/sdk";
+  Proposal,
+} from "@torus-network/sdk/chain";
 import {
-  checkSS58,
-  CONSTANTS,
   queryAgents,
   queryLastBlock,
-  queryWhitelist,
   queryPermissions,
-} from "@torus-network/sdk";
+  queryWhitelist,
+} from "@torus-network/sdk/chain";
+import { CONSTANTS } from "@torus-network/sdk/constants";
+import type { SS58Address } from "@torus-network/sdk/types";
+import { checkSS58 } from "@torus-network/sdk/types";
 import { BasicLogger } from "@torus-network/torus-utils/logger";
 import { tryAsync } from "@torus-network/torus-utils/try-catch";
-import { match } from "rustie";
+
 import type { WorkerProps } from "../common";
 import {
   agentApplicationToApplication,
@@ -28,28 +30,28 @@ import {
 } from "../common";
 import type {
   NewApplication,
-  NewProposal,
-  NewPermission,
+  NewEmissionDistributionTarget,
   NewEmissionPermission,
   NewEmissionStreamAllocation,
-  NewEmissionDistributionTarget,
-  NewPermissionEnforcementController,
-  NewPermissionRevocationArbiter,
-  NewPermissionHierarchy,
   NewNamespacePermission,
   NewNamespacePermissionPath,
+  NewPermission,
+  NewPermissionEnforcementController,
+  NewPermissionHierarchy,
+  NewPermissionRevocationArbiter,
+  NewProposal,
 } from "../db";
 import {
+  deleteAgents,
+  deletePermissions,
+  getAllAgentKeys,
+  getAllPermissionIds,
   queryProposalsDB,
   SubspaceAgentToDatabase,
   upsertAgentData,
+  upsertPermissions,
   upsertProposal,
   upsertWhitelistApplication,
-  upsertPermissions,
-  getAllAgentKeys,
-  getAllPermissionIds,
-  deleteAgents,
-  deletePermissions,
 } from "../db";
 
 const log = BasicLogger.create({ name: "agent-fetcher" });

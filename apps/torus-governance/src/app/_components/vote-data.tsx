@@ -1,4 +1,4 @@
-import type { ProposalStatus } from "@torus-network/sdk";
+import type { ProposalStatus } from "@torus-network/sdk/chain";
 
 import { Card, CardHeader } from "@torus-ts/ui/components/card";
 

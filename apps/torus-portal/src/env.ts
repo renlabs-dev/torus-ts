@@ -1,7 +1,9 @@
-import { SS58_SCHEMA } from "@torus-network/sdk";
+import { z } from "zod";
+
+import { SS58_SCHEMA } from "@torus-network/sdk/types";
+
 import { buildZodEnvScript } from "@torus-ts/env-validation";
 import { chainEnvSchema } from "@torus-ts/ui/lib/data";
-import { z } from "zod";
 
 const AUTH_ORIGIN_DEFAULT = "validator.torus.network";
 

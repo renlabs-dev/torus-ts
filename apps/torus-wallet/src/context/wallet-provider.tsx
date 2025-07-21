@@ -1,14 +1,15 @@
 "use client";
 
+import { createContext, useContext } from "react";
+
 import type { SubmittableExtrinsic } from "@polkadot/api/types";
 import type { ISubmittableResult } from "@polkadot/types/types";
 import type { UseQueryResult } from "@tanstack/react-query";
-import type {
-  Balance,
-  LastBlock,
-  SS58Address,
-  StakeData,
-} from "@torus-network/sdk";
+
+import type { StakeData } from "@torus-network/sdk/cached-queries";
+import type { LastBlock } from "@torus-network/sdk/chain";
+import type { Balance, SS58Address } from "@torus-network/sdk/types";
+
 import {
   useCachedStakeOut,
   useFreeBalance,
@@ -24,8 +25,9 @@ import type {
   Transfer,
   TransferStake,
 } from "@torus-ts/torus-provider/types";
-import { createContext, useContext } from "react";
+
 import { env } from "~/env";
+
 export type { ISubmittableResult, SubmittableExtrinsic };
 
 export type TransactionExtrinsicPromise =

@@ -1,6 +1,6 @@
 "use client";
 
-import { smallAddress } from "@torus-network/torus-utils/subspace";
+import { smallAddress } from "@torus-network/torus-utils/torus/address";
 import type { AppRouter } from "@torus-ts/api";
 import { Button } from "@torus-ts/ui/components/button";
 import { Card, CardTitle } from "@torus-ts/ui/components/card";

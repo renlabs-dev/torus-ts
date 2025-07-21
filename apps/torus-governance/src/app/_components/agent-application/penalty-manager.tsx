@@ -1,7 +1,8 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import type { AgentApplication, SS58Address } from "@torus-network/sdk";
+import type { AgentApplication } from "@torus-network/sdk/chain";
+import type { SS58Address } from "@torus-network/sdk/types";
 import { Button } from "@torus-ts/ui/components/button";
 import {
   Card,

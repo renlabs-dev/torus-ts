@@ -1,7 +1,9 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
-import type { SS58Address } from "@torus-network/sdk";
+
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
+
+import type { SS58Address } from "@torus-network/sdk/types";
 
 export interface DelegatedAgent {
   id: number;

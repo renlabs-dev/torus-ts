@@ -1,6 +1,8 @@
 import { z } from "zod";
+
+import { H256_HEX, SS58_SCHEMA } from "@torus-network/sdk/types";
+
 import type { BaseConstraintType, NumExprType } from "@torus-ts/dsl";
-import { H256_HEX, SS58_SCHEMA } from "@torus-network/sdk";
 
 export const uintSchema = z
   .string()
