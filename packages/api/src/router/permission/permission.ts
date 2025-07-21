@@ -9,6 +9,7 @@ import {
   emissionDistributionTargetsSchema,
   emissionPermissionsSchema,
   emissionStreamAllocationsSchema,
+  namespacePermissionPathsSchema,
   namespacePermissionsSchema,
   permissionsSchema,
 } from "@torus-ts/db/schema";
@@ -271,6 +272,13 @@ export const permissionRouter = {
         eq(
           permissionsSchema.permissionId,
           namespacePermissionsSchema.permissionId,
+        ),
+      )
+      .leftJoin(
+        namespacePermissionPathsSchema,
+        eq(
+          permissionsSchema.permissionId,
+          namespacePermissionPathsSchema.permissionId,
         ),
       )
       .leftJoin(

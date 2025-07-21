@@ -28,6 +28,7 @@ export interface PermissionNodeData {
   granteeAccountId: string;
   scope?: string;
   duration?: string | null;
+  namespacePaths?: string[];
 }
 
 export interface AgentNodeData {

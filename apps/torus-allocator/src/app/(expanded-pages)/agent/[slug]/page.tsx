@@ -17,7 +17,7 @@ import { Skeleton } from "@torus-ts/ui/components/skeleton";
 import {
   ExpandedViewSocials,
 } from "~/app/(expanded-pages)/agent/[slug]/components/expanded-view-socials";
-import { AgentIcon } from "~/app/_components/agent-icon";
+import { AgentIcon } from "@torus-ts/ui/components/agent-card/agent-icon";
 import { PenaltyList } from "~/app/_components/penalties-list";
 import { api } from "~/trpc/server";
 

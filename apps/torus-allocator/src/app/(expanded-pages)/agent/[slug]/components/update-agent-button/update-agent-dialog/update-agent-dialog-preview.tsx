@@ -1,16 +1,8 @@
 "use client";
 
-import { Card } from "@torus-ts/ui/components/card";
+import { AgentCard } from "@torus-ts/ui/components/agent-card/agent-card";
+import { AgentItemSkeleton } from "@torus-ts/ui/components/agent-card/agent-card-skeleton-loader";
 
-import {
-  AgentCardContent,
-} from "~/app/_components/agent-card/agent-card-content";
-import type {
-  AgentHeaderProps,
-} from "~/app/_components/agent-card/agent-card-header";
-import {
-  AgentCardHeader,
-} from "~/app/_components/agent-card/agent-card-header";
 import { useBlobUrl } from "~/hooks/use-blob-url";
 import { api } from "~/trpc/react";
 
@@ -21,17 +13,6 @@ interface UpdateAgentDialogPreviewProps {
   form: UpdateAgentForm;
 }
 
-function AgentPreviewSkeleton() {
-  return (
-    <div className="flex justify-center items-center py-8">
-      <div className="animate-pulse flex flex-col items-center space-y-4">
-        <div className="rounded-full bg-slate-200 h-16 w-16"></div>
-        <div className="h-4 bg-slate-200 rounded w-3/4"></div>
-        <div className="h-4 bg-slate-200 rounded w-1/2"></div>
-      </div>
-    </div>
-  );
-}
 
 export function UpdateAgentDialogPreview({
   agentKey,
@@ -50,44 +31,34 @@ export function UpdateAgentDialogPreview({
   const previewImage = form.watch("imageFile");
   const previewImageBlobUrl = useBlobUrl(previewImage);
 
-  if (isLoading || !agent?.metadataUri) {
-    return <AgentPreviewSkeleton />;
+  if (isLoading || !agent) {
+    return (
+      <div className="mx-auto max-w-lg my-6">
+        <AgentItemSkeleton />
+      </div>
+    );
   }
 
-  const headerProps: AgentHeaderProps = {
-    name: formValues.name ?? "",
-    agentKey,
-    metadataUri: agent.metadataUri,
-    registrationBlock: agent.registrationBlock,
-    percComputedWeight: null,
-    weightFactor: agent.weightFactor,
-    previewMode: true,
-    previewData: {
-      title: formValues.name ?? "",
-      socials: {
-        discord: formValues.socials.discord,
-        twitter: formValues.socials.twitter,
-        github: formValues.socials.github,
-        telegram: formValues.socials.telegram,
-      },
-      website: formValues.website,
-      iconUrl: previewImageBlobUrl ?? undefined,
-    },
-  };
+  const socials: Record<string, string> = {};
+  if (formValues.socials.discord) socials.discord = formValues.socials.discord;
+  if (formValues.socials.twitter) socials.twitter = formValues.socials.twitter;
+  if (formValues.socials.github) socials.github = formValues.socials.github;
+  if (formValues.socials.telegram) socials.telegram = formValues.socials.telegram;
+  if (formValues.website) socials.website = formValues.website;
 
   return (
     <div className="mx-auto max-w-lg my-6">
-      <div className="relative">
-        <Card
-          className="to-background group relative border bg-gradient-to-tr from-zinc-900 transition
-            duration-300 hover:border-white hover:shadow-lg pointer-events-none"
-        >
-          <AgentCardHeader {...headerProps} />
-          <AgentCardContent
-            metadataUri={agent.metadataUri}
-            shortDescription={formValues.shortDescription}
-          />
-        </Card>
+      <div className="relative pointer-events-none">
+        <AgentCard
+          name={formValues.name ?? ""}
+          agentKey={agentKey}
+          iconUrl={previewImageBlobUrl}
+          shortDescription={formValues.shortDescription}
+          socials={socials}
+          website={formValues.website}
+          percComputedWeight={null}
+          showHoverEffect={false}
+        />
       </div>
     </div>
   );

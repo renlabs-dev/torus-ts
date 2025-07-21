@@ -1,5 +1,8 @@
-import { buildSocials } from "~/app/_components/agent-card/agent-card-socials-info";
 import Link from "next/link";
+
+import {
+  buildSocials,
+} from "@torus-ts/ui/components/agent-card/agent-card-socials-info";
 
 interface ExpandedViewSocialsProps {
   socials?: {
