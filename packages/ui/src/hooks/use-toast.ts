@@ -6,12 +6,22 @@ import { DEFAULT_DURATION } from "../components/toaster";
 
 type ToastVariant = "default" | "destructive";
 
+interface ToastAction {
+  label: string;
+  onClick: () => void;
+}
+
 interface ToastProps {
   title?: React.ReactNode;
   description?: React.ReactNode;
   variant?: ToastVariant;
   duration?: number;
-  action?: React.ReactElement;
+  action?: ToastAction;
+  classNames?: {
+    icon?: string;
+    content?: string;
+  };
+  actionButtonStyle?: React.CSSProperties;
 }
 
 interface ToastResult {
@@ -64,8 +74,36 @@ const createToast = ({
 const createSuccessToast = (
   description = "Operation completed successfully.",
   duration = DEFAULT_DURATION,
+  action?: ToastAction,
 ): ToastResult => {
-  const toastId = sonnerToast.success(description, { duration });
+  const defaultClassNames = action
+    ? {
+        icon: "mb-6",
+        content: "mb-6",
+      }
+    : undefined;
+
+  const defaultActionButtonStyle = action
+    ? {
+        position: "absolute" as const,
+        right: "0.5rem",
+        bottom: "0.5rem",
+      }
+    : undefined;
+
+  const toastOptions = {
+    duration,
+    action: action
+      ? {
+          label: action.label,
+          onClick: action.onClick,
+        }
+      : undefined,
+    classNames: defaultClassNames,
+    actionButtonStyle: defaultActionButtonStyle,
+  };
+
+  const toastId = sonnerToast.success(description, toastOptions);
 
   return {
     id: String(toastId),
@@ -77,6 +115,9 @@ const createSuccessToast = (
         description,
         variant: "default",
         duration,
+        action,
+        classNames: defaultClassNames,
+        actionButtonStyle: defaultActionButtonStyle,
         ...newProps,
       });
     },
@@ -105,6 +146,13 @@ const createErrorToast = (
   };
 };
 
+const createLoadingToast = (
+  description: string,
+  options?: { id?: string | number; duration?: number },
+): string | number => {
+  return sonnerToast.loading(description, options);
+};
+
 const createPromiseToast = <T>(
   promise: Promise<T>,
   handlers: Parameters<typeof sonnerToast.promise>[1],
@@ -114,18 +162,26 @@ const createPromiseToast = <T>(
 
 export interface ToastFunction {
   (props: ToastProps): ToastResult;
-  success: (description?: string, duration?: number) => ToastResult;
+  success: (description?: string, duration?: number, action?: ToastAction) => ToastResult;
   error: (description?: string, duration?: number) => ToastResult;
+  loading: (
+    description: string,
+    options?: { id?: string | number; duration?: number },
+  ) => string | number;
   promise: (
     promise: Promise<unknown>,
     handlers: Parameters<typeof sonnerToast.promise>[1],
   ) => void;
+  dismiss: (toastId?: string | number) => void;
 }
 
 const toast: ToastFunction = Object.assign(createToast, {
   success: createSuccessToast,
   error: createErrorToast,
+  loading: createLoadingToast,
   promise: createPromiseToast,
+  dismiss: (toastId?: string | number) =>
+    toastId ? sonnerToast.dismiss(toastId) : sonnerToast.dismiss(),
 });
 
 const useToast = () => ({

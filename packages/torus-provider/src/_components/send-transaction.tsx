@@ -7,7 +7,7 @@ import type {
 } from "@polkadot/extension-inject/types";
 import type { DispatchError, EventRecord } from "@polkadot/types/interfaces";
 import { u8aToHex } from "@polkadot/util";
-import { toast } from "sonner";
+import { toast } from "@torus-ts/ui/hooks/use-toast";
 
 import { CONSTANTS } from "@torus-network/sdk/constants";
 import { tryAsync, trySync } from "@torus-network/torus-utils/try-catch";
@@ -29,7 +29,8 @@ const TOAST_MESSAGES = {
   PREPARING: "Preparing transaction...",
   READY: "Transaction ready, waiting for signature...",
   BROADCASTING: "Broadcasting transaction to the network...",
-  IN_BLOCK: "Transaction included in block, waiting for finalization...",
+  IN_BLOCK: "Transaction included in block...",
+  FINALIZING: "Waiting for finalization...",
   SUCCESS: "Transaction completed successfully",
   FAILED: "Transaction failed with unknown error",
 } as const;
@@ -221,31 +222,22 @@ function showTransactionResultToast(
   api: ApiPromise,
 ) {
   if (success) {
-    toast.success("", {
-      id: toastId,
-      description: `${transactionType} ${TOAST_MESSAGES.SUCCESS}`,
-      duration: DEFAULT_DURATION,
-      action: createExplorerAction(hash, wsEndpoint),
-      classNames: {
-        icon: "mb-6",
-        content: "mb-6",
-      },
-      actionButtonStyle: {
-        position: "absolute",
-        right: "0.5rem",
-        bottom: "0.5rem",
-      },
-    });
+    toast.dismiss(toastId);
+    toast.success(
+      `${transactionType} ${TOAST_MESSAGES.SUCCESS}`,
+      undefined,
+      {
+        label: "View on Block Explorer",
+        onClick: () => window.open(getExplorerLink({ wsEndpoint, hash }), "_blank"),
+      }
+    );
   } else {
     const errorMessage = failed
       ? parseTransactionError(failed, api, transactionType)
       : TOAST_MESSAGES.FAILED;
 
-    toast.error("", {
-      id: toastId,
-      description: errorMessage,
-      duration: DEFAULT_DURATION,
-    });
+    toast.dismiss(toastId);
+    toast.error(errorMessage);
   }
 }
 
@@ -279,6 +271,10 @@ function handleTransactionStatus(
       status: "SUCCESS",
       message: "Transaction included in the blockchain!",
     });
+    
+    setTimeout(() => {
+      toast.loading(TOAST_MESSAGES.FINALIZING, { id: toastId });
+    }, 1000);
   }
 }
 
@@ -352,11 +348,7 @@ async function executeTransaction(
       .catch((error: Error) => {
         console.error("Transaction error:", error);
 
-        toast.error("", {
-          id: toastId,
-          description: error.message || ERROR_MESSAGES.TRANSACTION_FAILED,
-          duration: DEFAULT_DURATION,
-        });
+        toast.error(error.message || ERROR_MESSAGES.TRANSACTION_FAILED);
 
         callback?.({
           finalized: true,
