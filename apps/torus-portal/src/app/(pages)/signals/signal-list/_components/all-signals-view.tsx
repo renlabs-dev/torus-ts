@@ -13,6 +13,7 @@ import {
 } from "@torus-ts/ui/components/accordion";
 import { Badge } from "@torus-ts/ui/components/badge";
 import { Button } from "@torus-ts/ui/components/button";
+import { MarkdownView } from "@torus-ts/ui/components/markdown-view";
 
 import PortalFormHeader from "~/app/_components/portal-form-header";
 import { api } from "~/trpc/react";
@@ -176,8 +177,8 @@ export default function AllSignalsView() {
                   </div>
 
                   {signal.description && (
-                    <div className="pt-4 border-t">
-                      <p className="text-sm">{signal.description}</p>
+                    <div className="pt-4 bg-muted/50 rounded-md p-4 border">
+                      <MarkdownView source={signal.description} />
                     </div>
                   )}
 
