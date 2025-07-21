@@ -8,6 +8,8 @@ import { ApiPromise, WsProvider } from "@polkadot/api";
 export async function connectToChainRpc(
   wsEndpoint: string,
 ): Promise<ApiPromise> {
+  console.debug("Connecting to chain RPC endpoint:", wsEndpoint);
+
   const wsProvider = new WsProvider(wsEndpoint);
   const api = await ApiPromise.create({ provider: wsProvider });
 
