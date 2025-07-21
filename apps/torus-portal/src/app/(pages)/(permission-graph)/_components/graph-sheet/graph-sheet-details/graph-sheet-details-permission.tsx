@@ -192,27 +192,28 @@ export function GraphSheetDetailsPermission({
         </CardContent>
       </Card>
 
-      {/* Grantee Info */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <UserCheck className="w-5 h-5" />
-            Recipient
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="font-mono text-sm">
-                {smallAddress(permissionData.granteeAccountId)}
-              </p>
-              <p className="text-xs text-muted-foreground">
-                Account that received this permission
-              </p>
+      {permissionData.permissionType !== "emission" && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <UserCheck className="w-5 h-5" />
+              Recipient
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="font-mono text-sm">
+                  {smallAddress(permissionData.granteeAccountId)}
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  Account that received this permission
+                </p>
+              </div>
             </div>
-          </div>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Distribution Targets (for emission permissions) */}
       {permissionData.permissionType === "emission" &&
