@@ -22,10 +22,12 @@ import type { EditPermissionFormData } from "../edit-permission-schema";
 
 interface DistributionControlFieldProps {
   control: Control<EditPermissionFormData>;
+  originalValue?: string | null;
 }
 
 export function DistributionControlField({
   control,
+  originalValue,
 }: DistributionControlFieldProps) {
   const distributionControl = useWatch({
     control,
@@ -58,7 +60,14 @@ export function DistributionControlField({
 
           return (
             <FormItem>
-              <FormLabel>Distribution Control</FormLabel>
+              <FormLabel>
+                Distribution Control
+                {originalValue && (
+                  <span className="ml-2 text-sm font-normal text-muted-foreground">
+                    (Previous: {originalValue})
+                  </span>
+                )}
+              </FormLabel>
               <Select
                 value={currentType}
                 onValueChange={(value) => {
