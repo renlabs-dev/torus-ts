@@ -19,13 +19,26 @@ import type { InjectedAccountWithMeta } from "../torus-provider";
 import type { TxHelper, TxStage } from "../transactions";
 import { sb_extrinsic_status, txStatusToTxHelper } from "../transactions";
 import { getMerkleizedMetadata, updateMetadata } from "../utils/chain-metadata";
-import {
-  renderFinalizedWithError,
-  renderSuccessfulyFinalized,
-  renderWaitingForValidation,
-} from "./toast-content-handler";
 
 const strErr = (txt: string) => new Error(txt);
+
+export const getExplorerLink = ({
+  wsEndpoint,
+  hash,
+}: {
+  wsEndpoint: string;
+  hash: string;
+}) => `https://polkadot.js.org/apps/?rpc=${wsEndpoint}#/explorer/query/${hash}`;
+
+const TOAST_MESSAGES = {
+  PREPARING: "Preparing transaction...",
+  READY: "Transaction ready, waiting for signature...",
+  BROADCASTING: "Broadcasting transaction to the network...",
+  IN_BLOCK: "Transaction included in block...",
+  FINALIZING: "Waiting for finalization...",
+  SUCCESS: "Transaction completed successfully",
+  FAILED: "Transaction failed with unknown error",
+} as const;
 
 export type SendTxFn = <T extends ISubmittableResult>(
   tx: SubmittableExtrinsic<"promise", T>,
@@ -90,6 +103,7 @@ export function useSendTransaction({
     }
 
     let unsubscribe: (() => void) | null = null;
+    let currentToastId: string | number;
 
     const sendTx = async <T extends ISubmittableResult>(
       tx: SubmittableExtrinsic<"promise", T>,
@@ -103,6 +117,8 @@ export function useSendTransaction({
         unsubscribe();
         unsubscribe = null;
       }
+
+      currentToastId = toast.loading(TOAST_MESSAGES.PREPARING);
 
       unsubscribe = await tx.signAndSend(
         selectedAccount.address,
@@ -118,7 +134,13 @@ export function useSendTransaction({
             return;
           }
           setTxStage({ Submitted: { result, extStatus } });
-          handleTxUpdate({ api, setErrState, transactionType, wsEndpoint });
+          handleTxUpdate({
+            api,
+            setErrState,
+            transactionType,
+            wsEndpoint,
+            toastId: currentToastId,
+          });
         },
       );
     };
@@ -236,11 +258,13 @@ const handleTxUpdate =
     setErrState,
     transactionType,
     wsEndpoint,
+    toastId,
   }: {
     api: ApiPromise;
     setErrState: (err: Error) => void;
     transactionType: string;
     wsEndpoint: string;
+    toastId: string | number;
   }) =>
   (tx: TxStage) => {
     return match(tx)({
@@ -256,15 +280,17 @@ const handleTxUpdate =
             setErrState(strErr("Invalid transaction"));
           },
           Future: () => null,
-          Ready: () => null,
-          Broadcast: () => null,
-          InBlock: (hash) => {
-            // TODO: improve message of transaction include in block
-            toast({
-              title: "Loading...",
-              description: renderWaitingForValidation(hash, wsEndpoint),
-              duration: Infinity,
-            });
+          Ready: () => {
+            toast.loading(TOAST_MESSAGES.READY, { id: toastId });
+          },
+          Broadcast: () => {
+            toast.loading(TOAST_MESSAGES.BROADCASTING, { id: toastId });
+          },
+          InBlock: () => {
+            toast.loading(TOAST_MESSAGES.IN_BLOCK, { id: toastId });
+            setTimeout(() => {
+              toast.loading(TOAST_MESSAGES.FINALIZING, { id: toastId });
+            }, 1000);
           },
           Finalized: (hash) => {
             handleFinalizedTx({
@@ -274,6 +300,7 @@ const handleTxUpdate =
               setErrState,
               transactionType,
               wsEndpoint,
+              toastId,
             });
           },
 
@@ -294,6 +321,7 @@ const handleFinalizedTx = ({
   setErrState,
   transactionType,
   wsEndpoint,
+  toastId,
 }: {
   api: ApiPromise;
   hash: string;
@@ -301,27 +329,22 @@ const handleFinalizedTx = ({
   setErrState: (err: Error) => void;
   transactionType: string;
   wsEndpoint: string;
+  toastId: string | number;
 }) => {
   const success = result.findRecord("system", "ExtrinsicSuccess");
   const failed = result.findRecord("system", "ExtrinsicFailed");
 
   if (success) {
-    toast({
-      title: "Success!",
-      description: renderSuccessfulyFinalized(
-        transactionType,
-        hash,
-        wsEndpoint,
-      ),
+    toast.dismiss(toastId);
+    toast.success(`${transactionType} ${TOAST_MESSAGES.SUCCESS}`, undefined, {
+      label: "View on Block Explorer",
+      onClick: () =>
+        window.open(getExplorerLink({ wsEndpoint, hash }), "_blank"),
     });
     return;
   }
 
   if (!failed) throw new Error("Inconsistent included transaction state");
-
-  // TODO: refactor extrinsic inclusion handling
-
-  setErrState(strErr("Transaction failed"));
 
   // Fix the destructuring and error handling
   const [parseError, dispatchErrorArray] = trySync(
@@ -332,7 +355,7 @@ const handleFinalizedTx = ({
   }
 
   const dispatchError = dispatchErrorArray?.[0];
-  let msg = `${transactionType} failed: ${dispatchError?.toString() ?? "Unknown error"}`;
+  let errorMessage = `${transactionType} failed: ${dispatchError?.toString() ?? "Unknown error"}`;
 
   if (dispatchError?.isModule) {
     const [moduleError, metaError] = trySync(() => {
@@ -343,16 +366,14 @@ const handleFinalizedTx = ({
     if (moduleError !== undefined) {
       console.error("Error finding meta error:", moduleError);
     } else {
-      msg = `${transactionType} failed: ${metaError.name}`;
+      errorMessage = `${transactionType} failed: ${metaError.name}`;
     }
   }
 
-  setErrState(strErr(msg));
+  setErrState(strErr(errorMessage));
 
-  toast({
-    title: "Error",
-    description: renderFinalizedWithError(msg, hash, wsEndpoint),
-  });
+  toast.dismiss(toastId);
+  toast.error(errorMessage);
 };
 
 function _ExampleUsage() {

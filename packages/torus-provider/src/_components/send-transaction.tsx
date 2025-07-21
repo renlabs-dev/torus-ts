@@ -12,12 +12,10 @@ import { toast } from "@torus-ts/ui/hooks/use-toast";
 import { CONSTANTS } from "@torus-network/sdk/constants";
 import { tryAsync, trySync } from "@torus-network/torus-utils/try-catch";
 
-import { DEFAULT_DURATION } from "@torus-ts/ui/components/toaster";
-
 import type { TransactionResult } from "../_types";
 import type { TorusApiState } from "../torus-provider";
 import { updateMetadata } from "../utils/chain-metadata";
-import { getExplorerLink } from "./toast-content-handler";
+import { getExplorerLink } from "./send-transaction-v2";
 
 const METADATA_VERSION = 15;
 const TRANSACTION_MODE = 1; // mortal
@@ -174,13 +172,6 @@ function createTransactionOptions(
   return txOptions;
 }
 
-function createExplorerAction(hash: string, wsEndpoint: string) {
-  return {
-    label: "View on Block Explorer",
-    onClick: () => window.open(getExplorerLink({ wsEndpoint, hash }), "_blank"),
-  };
-}
-
 function parseTransactionError(
   failed: EventRecord | undefined,
   api: ApiPromise,
@@ -223,14 +214,11 @@ function showTransactionResultToast(
 ) {
   if (success) {
     toast.dismiss(toastId);
-    toast.success(
-      `${transactionType} ${TOAST_MESSAGES.SUCCESS}`,
-      undefined,
-      {
-        label: "View on Block Explorer",
-        onClick: () => window.open(getExplorerLink({ wsEndpoint, hash }), "_blank"),
-      }
-    );
+    toast.success(`${transactionType} ${TOAST_MESSAGES.SUCCESS}`, undefined, {
+      label: "View on Block Explorer",
+      onClick: () =>
+        window.open(getExplorerLink({ wsEndpoint, hash }), "_blank"),
+    });
   } else {
     const errorMessage = failed
       ? parseTransactionError(failed, api, transactionType)
@@ -271,7 +259,7 @@ function handleTransactionStatus(
       status: "SUCCESS",
       message: "Transaction included in the blockchain!",
     });
-    
+
     setTimeout(() => {
       toast.loading(TOAST_MESSAGES.FINALIZING, { id: toastId });
     }, 1000);
