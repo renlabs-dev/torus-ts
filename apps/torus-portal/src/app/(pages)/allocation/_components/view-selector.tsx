@@ -13,10 +13,10 @@ import {
 } from "@torus-ts/ui/components/select";
 
 const views = [
-  { label: "Root Agents", value: "/" },
-  { label: "New Root Agents", value: "/new-agents" },
-  { label: "My Allocated Agents", value: "/allocated-agents" },
-  { label: "Registered Agents", value: "/?isWhitelisted=false" },
+  { label: "Root Agents", value: "/allocation" },
+  { label: "New Root Agents", value: "/allocation/new-agents" },
+  { label: "My Allocated Agents", value: "/allocation/allocated-agents" },
+  { label: "Registered Agents", value: "/allocation/?isWhitelisted=false" },
 ];
 
 export function ViewSelector() {
@@ -26,11 +26,11 @@ export function ViewSelector() {
 
   const getInitialView = () => {
     const isWhitelisted = searchParams.get("isWhitelisted");
-    if (pathname === "/" && isWhitelisted === "false") {
-      return "/?isWhitelisted=false";
+    if (pathname === "/allocation" && isWhitelisted === "false") {
+      return "/allocation/?isWhitelisted=false";
     }
     const matchingView = views.find((view) => view.value === pathname);
-    return matchingView ? matchingView.value : "/";
+    return matchingView ? matchingView.value : "/allocation";
   };
 
   const [currentView, setCurrentView] = useState(getInitialView());
