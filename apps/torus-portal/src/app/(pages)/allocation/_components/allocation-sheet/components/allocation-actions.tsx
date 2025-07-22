@@ -185,7 +185,7 @@ export function AllocationActions(props: MenuTriggerProps) {
       weightFactor: agent.agent.weightFactor,
     }));
 
-    setDelegatedAgentsFromDB(formattedModules ?? []);
+    setDelegatedAgentsFromDB(formattedModules ?? [], selectedAccount.address);
     setPercentageChange(false);
     setSubmitting(false);
     toast.success("Agent allocations updated successfully");
@@ -209,7 +209,7 @@ export function AllocationActions(props: MenuTriggerProps) {
       return;
     }
 
-    setDelegatedAgentsFromDB([]);
+    setDelegatedAgentsFromDB([], selectedAccount.address);
 
     const [refetchError] = await tryAsync(refetchUserAgentWeight());
 
