@@ -20,21 +20,31 @@ import { easing } from "maath";
 import * as THREE from "three";
 
 export const Animation = () => (
-  <div className="bg-accent/60 scrollbar-hide box-border h-72 overflow-hidden">
-    <Canvas camera={{ position: [0, 0, 100], fov: 6 }}>
-      <Clouds material={THREE.MeshBasicMaterial} position={[0, 0, -2]}>
-        <Cloud segments={20} bounds={[10, 2, 2]} volume={10} color="#3e4e78" />
-        <Cloud seed={1} scale={2} volume={10} color="black" fade={100} />
-      </Clouds>
-      <fog attach="fog" args={["#000000", 8.5, 12]} />
-      <ScrollControls pages={4} infinite>
-        <Rig rotation={[0, 0, 0.15]}>
-          <Carousel />
-        </Rig>
-        <Banner position={[0, -0.15, 0]} />
-      </ScrollControls>
-      <Sparkles count={2000} scale={[20, 20, 10]} size={2} speed={1} />
-    </Canvas>
+  <div className="relative w-full h-72 overflow-hidden">
+    <div className="absolute inset-0">
+      <Canvas
+        camera={{ position: [0, 0, 100], fov: 6 }}
+        resize={{ scroll: false, debounce: { scroll: 0, resize: 0 } }}
+      >
+        <Clouds material={THREE.MeshBasicMaterial} position={[0, 0, -2]}>
+          <Cloud
+            segments={20}
+            bounds={[10, 2, 2]}
+            volume={10}
+            color="#3e4e78"
+          />
+          <Cloud seed={1} scale={2} volume={10} color="black" fade={100} />
+        </Clouds>
+        <fog attach="fog" args={["#000000", 8.5, 12]} />
+        <ScrollControls pages={4} infinite>
+          <Rig rotation={[0, 0, 0.15]}>
+            <Carousel />
+          </Rig>
+          <Banner position={[0, -0.15, 0]} />
+        </ScrollControls>
+        <Sparkles count={2000} scale={[20, 20, 10]} size={2} speed={1} />
+      </Canvas>
+    </div>
   </div>
 );
 

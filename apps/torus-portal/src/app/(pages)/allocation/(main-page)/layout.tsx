@@ -10,9 +10,13 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <div className="pb-14 sm:-mt-16">
-      <Suspense fallback={null}>
-        <AgentBanner />
+    <div className="pb-14 sm:-mt-16 overflow-x-hidden">
+      <Suspense
+        fallback={<div className="w-full h-72 bg-background animate-pulse" />}
+      >
+        <div className="w-full overflow-hidden">
+          <AgentBanner />
+        </div>
       </Suspense>
       <TutorialDialog />
       <AllocationSheet />
