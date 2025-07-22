@@ -30,7 +30,7 @@ export async function AgentList({
 
   return (
     <div className="flex w-full flex-col">
-      <div className="grid w-full grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3">
+      <div className="grid w-full grid-cols-1 gap-3 lg:grid-cols-2 xl:grid-cols-3">
         {agents.map((agent) => (
           <AgentCard
             id={agent.id}
