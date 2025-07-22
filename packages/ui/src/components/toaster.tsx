@@ -1,35 +1,27 @@
 "use client";
 
-import { useToast } from "@torus-ts/ui/hooks/use-toast";
-import {
-  Toast,
-  ToastClose,
-  ToastDescription,
-  ToastProvider,
-  ToastTitle,
-  ToastViewport,
-} from "@torus-ts/ui/components/toast";
+import { Toaster as SonnerToaster } from "sonner";
 
-export function Toaster() {
-  const { toasts } = useToast();
+export const DEFAULT_DURATION = 8000;
 
+const CLASS_NAMES = {
+  toast:
+    "group-[.toaster]:bottom-[30px] group-[.toaster]:bg-background group-[.toaster]:right-[10px]",
+  title: "text-sm font-semibold",
+  description: "text-xs my-2",
+};
+
+export function Toaster({ duration }: { duration?: number }) {
   return (
-    <ToastProvider>
-      {toasts.map(function ({ id, title, description, action, ...props }) {
-        return (
-          <Toast key={id} {...props}>
-            <div className="grid gap-1">
-              {title && <ToastTitle>{title}</ToastTitle>}
-              {description && (
-                <ToastDescription>{description}</ToastDescription>
-              )}
-            </div>
-            {action}
-            <ToastClose />
-          </Toast>
-        );
-      })}
-      <ToastViewport />
-    </ToastProvider>
+    <SonnerToaster
+      swipeDirections={["top", "right"]}
+      containerAriaLabel="Toaster"
+      theme="dark"
+      className="toaster group"
+      position="bottom-right"
+      duration={duration ?? DEFAULT_DURATION}
+      toastOptions={{ classNames: CLASS_NAMES }}
+      offset={1}
+    />
   );
 }
