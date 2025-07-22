@@ -5,7 +5,8 @@ import { Toaster as SonnerToaster } from "sonner";
 export const DEFAULT_DURATION = 8000;
 
 const CLASS_NAMES = {
-  toast: "group-[.toaster]:bottom-[30px] group-[.toaster]:bg-background ",
+  toast:
+    "group-[.toaster]:bottom-[30px] group-[.toaster]:bg-background group-[.toaster]:right-[10px]",
   title: "text-sm font-semibold",
   description: "text-xs my-2",
 };
