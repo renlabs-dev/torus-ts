@@ -1,7 +1,9 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 import "@polkadot/api-augment";
 
-import type { ApiPromise } from "@polkadot/api";
+import { useEffect, useState } from "react";
+
+import { ApiPromise, WsProvider } from "@polkadot/api";
 import type { SubmittableExtrinsic } from "@polkadot/api/types";
 import type {
   QueryObserverOptions,
@@ -58,9 +60,48 @@ import { BasicLogger } from "@torus-network/torus-utils/logger";
 import { tryAsync } from "@torus-network/torus-utils/try-catch";
 import type { ListItem, Nullish } from "@torus-network/torus-utils/typing";
 
-// -- Subspace refresh times --
-
 const log = BasicLogger.create({ name: "query-provider" });
+
+// ==== Old Image Node ====
+
+const NS_CREATION_COST_RPC_URL = "wss://api-30.nodes.torus.network";
+
+/**
+ * GAMBIARRA: Connect to hardcoded node with old image that exposes RPC method
+ * to compute namespace path creation cost and Agent registration burn.
+ *
+ * TODO: This should be dropped once the main API nodes are updated.
+ *
+ * https://discord.com/channels/1306654856286699590/1395038210794586183
+ * https://linear.app/renlabs-dev/issue/CHAIN-116/check-whats-going-on-with-fp-pallets
+ */
+async function connectToOldImageNode(): Promise<ApiPromise> {
+  const provider = new WsProvider(NS_CREATION_COST_RPC_URL);
+  const [error, api] = await tryAsync(ApiPromise.create({ provider }));
+  if (error !== undefined) {
+    console.error("Error creating API:", error);
+    throw error;
+  }
+  return api;
+}
+
+/**
+ * Hook for {@link connectToOldImageNode}.
+ */
+function useOldImageNodeApi(): ApiPromise | null {
+  const [api, setApi] = useState<ApiPromise | null>(null);
+  useEffect(() => {
+    const run = async () => {
+      const api = await connectToOldImageNode();
+      setApi(api);
+    };
+    run().catch((e) => {
+      console.error("Unexpected error setting up API at :", e);
+    });
+  }, []);
+  return api;
+}
+
 // == Chain ==
 
 export function useLastBlock(
@@ -516,10 +557,13 @@ export function useNamespaceEntriesOf(
 }
 
 export function useNamespacePathCreationCost(
-  api: Api | Nullish,
+  _api: Api | Nullish,
   account: SS58Address | Nullish,
   path: string | Nullish,
 ) {
+  // GAMBIARRA: connect to hardcoded node with image that exposes RPC method
+  const api = useOldImageNodeApi();
+
   return useQuery({
     queryKey: ["namespace_path_creation_cost", account, path],
     enabled: api != null && account != null && path != null,

@@ -1,5 +1,12 @@
 # @torus-network/sdk
 
+## 1.1.1
+
+### Patch Changes
+
+- 5755b53: Publishing SDK and utils packages together with same version always.
+  - @torus-network/torus-utils@1.1.1
+
 ## 1.1.0
 
 ### Minor Changes
