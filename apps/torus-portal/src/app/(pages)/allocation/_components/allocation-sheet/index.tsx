@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 
 import { useTorus } from "@torus-ts/torus-provider";
 import {
@@ -26,6 +26,7 @@ export function AllocationSheet() {
     hasUnsavedChanges,
     getTotalPercentage,
     setDelegatedAgentsFromDB,
+    clearStore,
   } = useDelegateAgentStore();
 
   const { selectedAccount } = useTorus();
@@ -41,10 +42,8 @@ export function AllocationSheet() {
       },
     );
 
-  const [hasInitialized, setHasInitialized] = useState(false);
-
   useEffect(() => {
-    if (!hasInitialized && selectedAccount?.address && userAgentWeight) {
+    if (selectedAccount?.address && userAgentWeight) {
       const formattedModules = userAgentWeight.map((data) => ({
         id: data.user_agent_weight.id,
         address: data.user_agent_weight.agentKey,
@@ -57,11 +56,9 @@ export function AllocationSheet() {
         weightFactor: data.agent.weightFactor,
       }));
 
-      setDelegatedAgentsFromDB(formattedModules);
-      setHasInitialized(true);
+      setDelegatedAgentsFromDB(formattedModules, selectedAccount.address);
     } else if (!selectedAccount?.address) {
-      setDelegatedAgentsFromDB([]);
-      setHasInitialized(false);
+      clearStore();
     }
 
     if (agentError) {
@@ -71,8 +68,8 @@ export function AllocationSheet() {
     userAgentWeight,
     agentError,
     setDelegatedAgentsFromDB,
-    selectedAccount,
-    hasInitialized,
+    clearStore,
+    selectedAccount?.address,
   ]);
 
   const submitStatus = getSubmitStatus({

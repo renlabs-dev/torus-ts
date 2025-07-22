@@ -19,6 +19,7 @@ export interface DelegatedAgent {
 interface DelegateState {
   delegatedAgents: DelegatedAgent[];
   originalAgents: DelegatedAgent[];
+  currentWallet: string | null;
   addAgent: (agent: Omit<DelegatedAgent, "percentage">) => void;
   removeAgent: (agentKey: string | SS58Address) => void;
   updatePercentage: (
@@ -30,8 +31,9 @@ interface DelegateState {
     percentage: number,
   ) => void;
   getTotalPercentage: () => number;
-  setDelegatedAgentsFromDB: (agents: DelegatedAgent[]) => void;
+  setDelegatedAgentsFromDB: (agents: DelegatedAgent[], walletAddress: string) => void;
   hasUnsavedChanges: () => boolean;
+  clearStore: () => void;
 
   hasPercentageChange: boolean;
   setPercentageChange: (isOpen: boolean) => void;
@@ -45,6 +47,7 @@ export const useDelegateAgentStore = create<DelegateState>()(
     (set, get) => ({
       delegatedAgents: [],
       originalAgents: [],
+      currentWallet: null,
       addAgent: (agent) =>
         set((state) => ({
           delegatedAgents: [
@@ -108,8 +111,19 @@ export const useDelegateAgentStore = create<DelegateState>()(
           0,
         );
       },
-      setDelegatedAgentsFromDB: (agents) =>
+      setDelegatedAgentsFromDB: (agents, walletAddress) =>
         set((state) => {
+          // If wallet changed, clear everything first
+          if (state.currentWallet !== walletAddress) {
+            return {
+              delegatedAgents: agents,
+              originalAgents: agents,
+              currentWallet: walletAddress,
+              hasPercentageChange: false,
+            };
+          }
+
+          // Same wallet, preserve existing changes
           const existingAgents = state.delegatedAgents;
           const updatedAgents = agents.map((agent) => {
             const existingAgent = existingAgents.find(
@@ -120,8 +134,16 @@ export const useDelegateAgentStore = create<DelegateState>()(
 
           return {
             delegatedAgents: updatedAgents,
-            originalAgents: agents, // Keep the original agents as they were in the DB
+            originalAgents: agents,
+            currentWallet: walletAddress,
           };
+        }),
+      clearStore: () =>
+        set({
+          delegatedAgents: [],
+          originalAgents: [],
+          currentWallet: null,
+          hasPercentageChange: false,
         }),
 
       hasUnsavedChanges: () => {
