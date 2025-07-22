@@ -39,7 +39,7 @@ export const graphConstants = {
   nodeConfig: {
     nodeColors: {
       // Core network node
-      allocator: "#ffffff", // white (stays as requested)
+      allocator: "#FAFAFA", // white (stays as requested)
 
       // Agent/Node group (Blue family - network participants)
       rootNode: "#3b82f6", // blue-500 (whitelisted agents)
@@ -48,7 +48,7 @@ export const graphConstants = {
 
       // Permission group (Orange/Yellow family - permission types)
       permissionNode: "#f97316", // orange-500 (legacy fallback)
-      emissionPermissionNode: "#ffffff", // white0 (emission permissions)
+      emissionPermissionNode: "#FAFAFA", // white0 (emission permissions)
       namespacePermissionNode: "#eab308", // yellow-500 (namespace permissions)
 
       // Special nodes

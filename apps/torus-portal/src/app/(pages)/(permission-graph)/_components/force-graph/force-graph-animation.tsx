@@ -89,8 +89,9 @@ const ForceGraph = memo(
         const color = getNodeColor(node, highlightState, props.userAddress);
 
         const material = new THREE.MeshStandardMaterial({
-          roughness: 0.1,
-          metalness: 0.4,
+          roughness: 0.2,
+          emissiveIntensity: 0.8,
+          emissive: color,
           color: color,
           opacity: 1,
           transparent: customNode.nodeType === "signal", // Enable transparency for signal nodes
