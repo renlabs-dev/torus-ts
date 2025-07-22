@@ -9,6 +9,7 @@ import {
   pgEnum,
   pgMaterializedView,
   pgTableCreator,
+  pgView,
   real,
   serial,
   text,
@@ -901,4 +902,135 @@ export const agentDemandSignalSchema = createTable(
       sql`${t.proposedAllocation} >= 0 and ${t.proposedAllocation} <= 100`,
     ),
   ],
+);
+
+/**
+ * Stream delegation view - calculates effective stream percentages through delegation chains
+ *
+ * Uses recursive CTE to:
+ * 1. Start with root streams (100%) from whitelisted agents
+ * 2. Follow redelegation chain multiplying percentages at each level
+ * 3. Calculate true effective percentage each agent receives from original root
+ * 4. Sum redelegations each agent makes forward
+ *
+ */
+export const streamDelegationView = pgView("stream_delegation", {
+  agentKey: varchar("agent_key", { length: 256 }).notNull(),
+  streamId: varchar("stream_id", { length: 66 }).notNull(),
+  incomingPercentage: numeric("incoming_percentage").notNull(),
+  redelegationPercentage: integer("redelegation_percentage").notNull(),
+  effectivePercentage: numeric("effective_percentage").notNull(),
+  rootGrantor: varchar("root_grantor", { length: 256 }).notNull(),
+  immediateGrantor: varchar("immediate_grantor", { length: 256 }).notNull(),
+  permissionId: varchar("permission_id", { length: 66 }).notNull(),
+  delegationLevel: integer("delegation_level").notNull(),
+  distributionType: emissionDistributionType("distribution_type"),
+  distributionIntervalBlocks: bigint("distribution_interval_blocks"),
+}).as(
+  sql`
+    WITH RECURSIVE delegation_chain AS (
+      SELECT 
+        esa.stream_id,
+        p.grantee_account_id as agent_key,
+        esa.percentage as incoming_percentage,
+        p.grantor_account_id as root_grantor,
+        p.grantor_account_id as immediate_grantor,
+        p.permission_id,
+        1 as delegation_level,
+        p.grantee_account_id::text as delegation_path
+      FROM emission_stream_allocations esa
+      INNER JOIN emission_permissions ep ON esa.permission_id = ep.permission_id
+      INNER JOIN permissions p ON ep.permission_id = p.permission_id
+      INNER JOIN agent a ON p.grantor_account_id = a.key
+      WHERE a.is_whitelisted = true 
+        AND p.deleted_at IS NULL
+        AND p.grantor_account_id != p.grantee_account_id  -- Exclude self-delegations
+        AND NOT EXISTS (
+          -- Exclude if this grantor ever received this same stream from someone else
+          -- This ensures we only start from the TRUE root owner of the stream
+          SELECT 1 FROM emission_stream_allocations esa2
+          INNER JOIN emission_permissions ep2 ON esa2.permission_id = ep2.permission_id  
+          INNER JOIN permissions p2 ON ep2.permission_id = p2.permission_id
+          WHERE esa2.stream_id = esa.stream_id 
+            AND p2.grantee_account_id = p.grantor_account_id
+            AND p2.deleted_at IS NULL
+        )
+      
+      UNION ALL
+      
+      -- Recursive case: Follow ALL redelegations (including from whitelisted agents to themselves or others)
+      SELECT 
+        dc.stream_id,
+        p.grantee_account_id as agent_key,
+        (dc.incoming_percentage * esa.percentage / 100) as incoming_percentage,
+        dc.root_grantor,
+        p.grantor_account_id as immediate_grantor,
+        p.permission_id,
+        dc.delegation_level + 1,
+        dc.delegation_path || ' -> ' || p.grantee_account_id::text
+      FROM delegation_chain dc
+      INNER JOIN permissions p ON p.grantor_account_id = dc.agent_key
+      INNER JOIN emission_permissions ep ON p.permission_id = ep.permission_id
+      INNER JOIN emission_stream_allocations esa ON ep.permission_id = esa.permission_id 
+      WHERE esa.stream_id = dc.stream_id 
+        AND p.deleted_at IS NULL 
+        AND dc.delegation_level < 42  -- Allow up to 42 levels of delegation 
+        AND p.grantor_account_id != p.grantee_account_id  -- Prevent self-delegation loops
+    )
+    SELECT 
+      agent_key,
+      stream_id,
+      SUM(incoming_percentage) as incoming_percentage,
+      COALESCE(
+        (SELECT SUM(esa_out.percentage) 
+         FROM emission_stream_allocations esa_out
+         INNER JOIN emission_permissions ep_out 
+           ON esa_out.permission_id = ep_out.permission_id
+         INNER JOIN permissions p_out 
+           ON ep_out.permission_id = p_out.permission_id
+         WHERE p_out.grantor_account_id = delegation_chain.agent_key 
+           AND esa_out.stream_id = delegation_chain.stream_id
+           AND p_out.deleted_at IS NULL), 
+        0
+      ) as redelegation_percentage,
+      (SUM(incoming_percentage) - COALESCE(
+        (SELECT SUM(esa_out.percentage) 
+         FROM emission_stream_allocations esa_out
+         INNER JOIN emission_permissions ep_out 
+           ON esa_out.permission_id = ep_out.permission_id
+         INNER JOIN permissions p_out 
+           ON ep_out.permission_id = p_out.permission_id
+         WHERE p_out.grantor_account_id = delegation_chain.agent_key 
+           AND esa_out.stream_id = delegation_chain.stream_id
+           AND p_out.deleted_at IS NULL), 
+        0
+      )) as effective_percentage,
+      root_grantor,
+      (array_agg(immediate_grantor))[1] as immediate_grantor,
+      (array_agg(permission_id))[1] as permission_id,
+      MAX(delegation_level) as delegation_level,
+      (SELECT ep_dist.distribution_type 
+       FROM emission_permissions ep_dist 
+       INNER JOIN emission_stream_allocations esa_dist 
+         ON ep_dist.permission_id = esa_dist.permission_id
+       INNER JOIN permissions p_dist
+         ON ep_dist.permission_id = p_dist.permission_id
+       WHERE esa_dist.stream_id = delegation_chain.stream_id
+         AND p_dist.grantee_account_id = delegation_chain.agent_key
+         AND p_dist.deleted_at IS NULL
+       LIMIT 1) as distribution_type,
+      (SELECT ep_dist.distribution_interval_blocks 
+       FROM emission_permissions ep_dist 
+       INNER JOIN emission_stream_allocations esa_dist 
+         ON ep_dist.permission_id = esa_dist.permission_id
+       INNER JOIN permissions p_dist
+         ON ep_dist.permission_id = p_dist.permission_id
+       WHERE esa_dist.stream_id = delegation_chain.stream_id
+         AND p_dist.grantee_account_id = delegation_chain.agent_key
+         AND p_dist.deleted_at IS NULL
+       LIMIT 1) as distribution_interval_blocks
+    FROM delegation_chain
+    GROUP BY agent_key, stream_id, root_grantor
+    ORDER BY stream_id, delegation_level, agent_key
+  `,
 );
