@@ -28,6 +28,7 @@ export interface PermissionNodeData {
   granteeAccountId: string;
   scope?: string;
   duration?: string | null;
+  namespacePaths?: string[];
 }
 
 export interface AgentNodeData {
@@ -41,6 +42,7 @@ export interface SignalData {
   title: string;
   description: string;
   proposedAllocation: number;
+  fulfilled: boolean;
   agentKey: string;
   discord?: string | null;
   github?: string | null;

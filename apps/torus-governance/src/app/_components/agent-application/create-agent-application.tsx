@@ -1,7 +1,18 @@
 "use client";
 
-import { formatToken } from "@torus-network/torus-utils/subspace";
+import { useEffect, useState } from "react";
+
+import { zodResolver } from "@hookform/resolvers/zod";
+import MarkdownPreview from "@uiw/react-markdown-preview";
+import { useDiscordAuth } from "hooks/use-discord-auth";
+import { useFileUploader } from "hooks/use-file-uploader";
+import Link from "next/link";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+
+import { formatToken } from "@torus-network/torus-utils/torus/token";
 import { tryAsync, trySync } from "@torus-network/torus-utils/try-catch";
+
 import type { TransactionResult } from "@torus-ts/torus-provider/types";
 import { Button } from "@torus-ts/ui/components/button";
 import { Checkbox } from "@torus-ts/ui/components/checkbox";
@@ -13,6 +24,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@torus-ts/ui/components/form";
+import { Icons } from "@torus-ts/ui/components/icons";
 import { Input } from "@torus-ts/ui/components/input";
 import { Label } from "@torus-ts/ui/components/label";
 import {
@@ -24,16 +36,8 @@ import {
 import { Textarea } from "@torus-ts/ui/components/text-area";
 import { TransactionStatus } from "@torus-ts/ui/components/transaction-status";
 import { useToast } from "@torus-ts/ui/hooks/use-toast";
-import MarkdownPreview from "@uiw/react-markdown-preview";
+
 import { useGovernance } from "~/context/governance-provider";
-import Link from "next/link";
-import { useState, useEffect } from "react";
-import { useForm } from "react-hook-form";
-import { z } from "zod";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useFileUploader } from "hooks/use-file-uploader";
-import { useDiscordAuth } from "hooks/use-discord-auth";
-import { Icons } from "@torus-ts/ui/components/icons";
 
 import { DiscordAuthButton } from "../discord-auth-button";
 

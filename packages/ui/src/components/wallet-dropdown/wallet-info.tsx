@@ -1,12 +1,14 @@
 "use client";
 
+import { useMemo } from "react";
+
+import { Copy, Lock, LockOpen, Scale } from "lucide-react";
+
 import {
-  formatToken,
   smallAddress,
   smallWalletName,
-} from "@torus-network/torus-utils/subspace";
-import { Copy, Lock, LockOpen, Scale } from "lucide-react";
-import { useMemo } from "react";
+} from "@torus-network/torus-utils/torus/address";
+import { formatToken } from "@torus-network/torus-utils/torus/token";
 
 import { cn } from "../../lib/utils";
 import { CopyButton } from "../copy-button";

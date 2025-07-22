@@ -1,6 +1,7 @@
 // == Transactions ==
 
-import type { PermissionId, SS58Address } from "@torus-network/sdk";
+import type { PermissionId } from "@torus-network/sdk/chain";
+import type { SS58Address } from "@torus-network/sdk/types";
 
 export interface TransactionResult {
   finalized: boolean;
@@ -86,4 +87,8 @@ export interface CreateNamespace extends TransactionHelpers {
 
 export interface DeleteNamespace extends TransactionHelpers {
   path: string;
+}
+
+export interface RemarkTransaction extends TransactionHelpers {
+  remark: string;
 }

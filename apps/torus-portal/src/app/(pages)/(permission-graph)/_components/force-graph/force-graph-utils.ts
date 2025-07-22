@@ -1,4 +1,4 @@
-import { smallAddress } from "@torus-network/torus-utils/subspace";
+import { smallAddress } from "@torus-network/torus-utils/torus/address";
 
 import type {
   allPermissions,
@@ -350,6 +350,17 @@ export function createGraphData(
           const angle = (index * 2 * Math.PI) / permissionMap.size;
           const radius = 400;
 
+          // Extract namespace paths for capability permissions
+          const namespacePaths: string[] = [];
+          if (permissionType === "capability") {
+            // Collect all namespace paths from all permissions with this ID
+            permissions.forEach((perm) => {
+              if ("namespace_permission_paths" in perm && perm.namespace_permission_paths) {
+                namespacePaths.push(perm.namespace_permission_paths.namespacePath);
+              }
+            });
+          }
+
           const permissionNode: CustomGraphNode = {
             id: `permission-${permissionId}`,
             name: permissionType.toUpperCase(),
@@ -374,6 +385,7 @@ export function createGraphData(
                 permission.permissions.durationType === "indefinite"
                   ? null
                   : permission.permissions.durationBlockNumber?.toString(),
+              namespacePaths: namespacePaths.length > 0 ? namespacePaths : undefined,
             },
           };
           nodes.push(permissionNode);

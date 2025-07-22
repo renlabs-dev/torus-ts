@@ -1,7 +1,7 @@
 "use client";
 
-import type { VoteWithStake } from "@torus-network/sdk";
-import { smallAddress } from "@torus-network/torus-utils/subspace";
+import type { VoteWithStake } from "@torus-network/sdk/chain";
+import { smallAddress } from "@torus-network/torus-utils/torus/address";
 import { Button } from "@torus-ts/ui/components/button";
 import { Card, CardHeader } from "@torus-ts/ui/components/card";
 import { useToast } from "@torus-ts/ui/hooks/use-toast";

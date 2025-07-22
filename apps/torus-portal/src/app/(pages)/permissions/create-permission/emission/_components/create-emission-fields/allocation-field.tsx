@@ -3,8 +3,8 @@ import React, { useCallback, useEffect } from "react";
 import { Plus, Trash2 } from "lucide-react";
 import { useFieldArray } from "react-hook-form";
 
-import type { Api } from "@torus-network/sdk";
-import { checkSS58 } from "@torus-network/sdk";
+import type { Api } from "@torus-network/sdk/chain";
+import { checkSS58 } from "@torus-network/sdk/types";
 
 import { Button } from "@torus-ts/ui/components/button";
 import {
@@ -18,7 +18,9 @@ import { Input } from "@torus-ts/ui/components/input";
 
 import { useAvailableStreams } from "~/hooks/use-available-streams";
 
-import type { CreateEmissionPermissionForm } from "../create-emission-permission-form-schema";
+import type {
+  CreateEmissionPermissionForm,
+} from "../create-emission-permission-form-schema";
 
 interface AllocationFieldProps {
   form: CreateEmissionPermissionForm;
@@ -84,23 +86,25 @@ export function AllocationField({
     <div className="grid gap-3">
       <div className="grid gap-3">
         {streamFields.length > 0 && (
-          <div className="flex items-center justify-between">
-            <FormLabel>Streams</FormLabel>
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={() =>
-                appendStream({
-                  streamId: "",
-                  percentage: "",
-                })
-              }
-              disabled={!isAccountConnected}
-            >
-              <Plus className="h-4 w-4 mr-2" />
-              Add Stream
-            </Button>
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <FormLabel>Streams</FormLabel>
+              <Button
+                type="button"
+                size="sm"
+                className="bg-white/70"
+                onClick={() =>
+                  appendStream({
+                    streamId: "",
+                    percentage: "",
+                  })
+                }
+                disabled={!isAccountConnected}
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                Add Stream
+              </Button>
+            </div>
           </div>
         )}
 
@@ -178,7 +182,7 @@ export function AllocationField({
                       <FormControl>
                         <Input
                           {...percentageField}
-                          placeholder="e.g. 50%"
+                          placeholder="e.g. 100"
                           type="number"
                           step="1"
                           min="0"

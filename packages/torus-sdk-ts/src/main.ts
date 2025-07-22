@@ -5,28 +5,13 @@ import "@polkadot/api/augment";
 import { ApiPromise, WsProvider } from "@polkadot/api";
 
 import { BasicLogger } from "@torus-network/torus-utils/logger";
+import { formatToken } from "@torus-network/torus-utils/torus/token";
+
+import { queryExtFee } from "./chain/common/index.js";
+import { SS58Address } from "./types/address.js";
+import { sb_string } from "./types/index.js";
 
 const log = BasicLogger.create({ name: "torus-sdk-ts.main" });
-
-// TORUS token has 18 decimal places
-const TORUS_DECIMALS = 18;
-const TORUS_UNIT = BigInt(10 ** TORUS_DECIMALS);
-
-function formatTorus(amount: bigint): string {
-  const wholePart = amount / TORUS_UNIT;
-  const fractionalPart = amount % TORUS_UNIT;
-
-  if (fractionalPart === 0n) {
-    return `${wholePart.toString()} TORUS`;
-  }
-
-  // Convert fractional part to decimal string with leading zeros
-  const fractionalStr = fractionalPart.toString().padStart(TORUS_DECIMALS, "0");
-  // Remove trailing zeros
-  const trimmedFractional = fractionalStr.replace(/0+$/, "");
-
-  return `${wholePart.toString()}.${trimmedFractional} TORUS`;
-}
 
 // // $ pnpm exec tsx src/main.ts
 
@@ -44,110 +29,57 @@ async function connectToChainRpc(wsEndpoint: string) {
 
 const api = await connectToChainRpc(NODE_URL);
 
-// // ====
+// =============================================================================
 
-// Test queryNamespaceEntriesOf and queryNamespacePathCreationCost functions
-import {
-  queryNamespaceEntriesOf,
-  queryNamespacePathCreationCost,
-} from "./modules/torus0.js";
-import type { SS58Address } from "./address.js";
-
-async function testQueryNamespaceEntriesOf() {
-  console.log("Testing queryNamespaceEntriesOf function...");
-
-  // Test with a sample agent address (you can replace this with an actual agent address)
-  const testAgentAddress = "5E2X371Jg62WWmKVVhDNgfFNtjXTSKMQDGGWKgqimKUgZ9gX"; // Alice's address
-
-  try {
-    const result = await queryNamespaceEntriesOf(
-      api,
-      testAgentAddress as SS58Address,
-    );
-    console.log("✅ queryNamespaceEntriesOf succeeded");
-    console.log("📊 Result:", result);
-
-    // The result is now an array of NamespaceEntry records
-    console.log("📈 Number of namespace entries:", result.length);
-
-    // Log first few entries if any exist
-    if (result.length > 0) {
-      console.log("🔍 Sample namespace entries:");
-      result.slice(0, 3).forEach((entry, index) => {
-        console.log(`  Entry ${index + 1}:`, {
-          path: entry.path,
-          createdAt: entry.createdAt,
-          deposit: entry.deposit,
-        });
-      });
-    } else {
-      console.log("ℹ️ No namespace entries found for this agent");
-    }
-  } catch (error) {
-    console.error("❌ queryNamespaceEntriesOf failed:", error);
-    console.error("Stack:", (error as Error).stack);
-  }
+{
+  // const cost = await queryNamespacePathCreationCost(
+  //   api,
+  //   "5E2X371Jg62WWmKVVhDNgfFNtjXTSKMQDGGWKgqimKUgZ9gX" as SS58Address,
+  //   "agent.agent-test.alice.api.twitter.test",
+  // );
+  // console.log("Namespace path creation cost:", cost);
+  // // [
+  // //   undefined,
+  // //   { fee: 16615066762142640128n, deposit: 27400000000000000000n }
+  // // ]
+  // const burnValue = await queryAgentBurn(api);
+  // console.log("Burn value:", burnValue);
+  // // Burn value: 15000000000000000000n
+  // const ext = api.tx.torus0.registerAgent(
+  //   "5E2X371Jg62WWmKVVhDNgfFNtjXTSKMQDGGWKgqimKUgZ9gX" as SS58Address,
+  //   "agent.edmundo",
+  //   "https://twitter.com/agent-test",
+  //   "Twitter agent",
+  // );
+  // const info = await api.rpc.payment.queryInfo(ext.toU8a());
+  // console.log("info:", info);
+  // const feeDetails = await queryExtFeeInfo(api, ext);
+  // console.log("Fee details:", feeDetails);
+  // Fee for registerAgent:
+  // - queryNamespacePathCreationCost (agent.name)
+  // - queryAgentBurn (15 TORUS)
+  // Fee for namespace creation:
+  // - queryNamespacePathCreationCost (agent.name.alice.api.test)
+  // // Create an example extrinsic (e.g., a balance transfer)
+  // const ext = api.tx.balances.transferKeepAlive(
+  //   "5Dr24SR8LCRsG3pGb4VjUE11yEjuvWhoHk4cLBmN85znWzp6",
+  //   100000000000000,
+  // );
+  // const [error, feeRes] = await queryExtFee(
+  //   ext,
+  //   "5Dr24SR8LCRsG3pGb4VjUE11yEjuvWhoHk4cLBmN85znWzp6",
+  // );
+  // if (error !== undefined) throw error;
+  // const { fee } = feeRes;
+  // console.log(`Fee: ${fee} rems`);
+  // console.log(`Fee: ${formatToken(fee, 9)} TORUS`);
 }
 
-async function testQueryNamespacePathCreationCost() {
-  console.log("\nTesting queryNamespacePathCreationCost function...");
+const rawSpecName = api.runtimeVersion.specName;
 
-  // Test with a sample agent address and namespace path
-  const testAgentAddress = "5E2X371Jg62WWmKVVhDNgfFNtjXTSKMQDGGWKgqimKUgZ9gX"; // Alice's address
-  const testNamespacePath = "agent.test-app.config";
+const specName = sb_string.parse(rawSpecName);
 
-  console.log("🔍 Test parameters:");
-  console.log("  Agent Address:", testAgentAddress);
-  console.log("  Namespace Path:", testNamespacePath);
-
-  const [error, result] = await queryNamespacePathCreationCost(
-    api,
-    testAgentAddress as SS58Address,
-    testNamespacePath,
-  );
-
-  if (error !== undefined) {
-    console.error("❌ queryNamespacePathCreationCost failed:", error.message);
-    console.error("Stack:", error.stack);
-  } else {
-    console.log("✅ queryNamespacePathCreationCost succeeded");
-    console.log("💰 Cost breakdown:");
-    console.log("  Fee:", formatTorus(result.fee));
-    console.log("  Deposit:", formatTorus(result.deposit));
-    console.log("  Total Cost:", formatTorus(result.fee + result.deposit));
-    console.log("📊 Raw values:");
-    console.log("  Fee (raw):", result.fee.toString());
-    console.log("  Deposit (raw):", result.deposit.toString());
-  }
-}
-
-async function testQueryNamespacePathCreationCostWithInvalidPath() {
-  console.log("\nTesting queryNamespacePathCreationCost with invalid path...");
-
-  const testAgentAddress = "5E2X371Jg62WWmKVVhDNgfFNtjXTSKMQDGGWKgqimKUgZ9gX";
-  const invalidPath = "invalid..path"; // Invalid: double dots
-
-  console.log("🔍 Test parameters:");
-  console.log("  Agent Address:", testAgentAddress);
-  console.log("  Invalid Namespace Path:", invalidPath);
-
-  const [error, result] = await queryNamespacePathCreationCost(
-    api,
-    testAgentAddress as SS58Address,
-    invalidPath,
-  );
-
-  if (error !== undefined) {
-    console.log("✅ Expected error for invalid path:", error.message);
-  } else {
-    console.log("❌ Unexpected success for invalid path:", result);
-  }
-}
-
-// Run the tests
-// await testQueryNamespaceEntriesOf();
-await testQueryNamespacePathCreationCost();
-await testQueryNamespacePathCreationCostWithInvalidPath();
+console.log("specName:", specName);
 
 // Disconnect when done
 await api.disconnect();

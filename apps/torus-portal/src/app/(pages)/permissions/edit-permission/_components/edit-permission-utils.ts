@@ -5,10 +5,10 @@ import type {
   Api,
   PermissionContract,
   PermissionId,
-  SS58Address,
   StreamId,
-} from "@torus-network/sdk";
-import { queryPermission } from "@torus-network/sdk";
+} from "@torus-network/sdk/chain";
+import { queryPermission } from "@torus-network/sdk/chain";
+import type { SS58Address } from "@torus-network/sdk/types";
 
 import type {
   DistributionControlFormData,
@@ -107,7 +107,7 @@ export async function handlePermissionDataChange({
     reset: UseFormReset<EditPermissionFormData>;
   };
   onError: (message: string) => void;
-}) {
+}): Promise<{ originalDistributionControl: string } | undefined> {
   if (!api || !permissionData) return;
 
   try {
@@ -123,17 +123,29 @@ export async function handlePermissionDataChange({
 
     const formData = transformPermissionToFormData(permission);
 
+    // Get the original distribution control type as a string
+    let originalDistributionControl = "Manual";
+    if (formData.newDistributionControl) {
+      originalDistributionControl = match(formData.newDistributionControl)({
+        Manual: () => "Manual",
+        Automatic: (threshold) => `Automatic (threshold: ${threshold})`,
+        AtBlock: (block) => `At Block ${block}`,
+        Interval: (interval) => `Every ${interval} blocks`,
+      });
+    }
+
     form.reset({
       permissionId: permissionData.permissions.permissionId,
       newTargets: formData.newTargets ?? [],
       newStreams: formData.newStreams ?? [],
-      newDistributionControl: formData.newDistributionControl ?? {
-        Manual: null,
-      },
+      newDistributionControl: { Manual: null }, // TODO: filling causes the crash bug
     });
+
+    return { originalDistributionControl };
   } catch (err) {
     console.error("Error loading permission data:", err);
     onError("Failed to load permission details");
+    return undefined;
   }
 }
 

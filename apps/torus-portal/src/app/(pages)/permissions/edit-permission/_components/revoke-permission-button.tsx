@@ -4,6 +4,7 @@ import { useState } from "react";
 
 import type { InferSelectModel } from "drizzle-orm";
 import { Trash2 } from "lucide-react";
+import { useQueryClient } from "@tanstack/react-query";
 
 import type {
   emissionPermissionsSchema,
@@ -52,7 +53,8 @@ export function RevokePermissionButton({
   onSuccess,
 }: RevokePermissionButtonProps) {
   const { toast } = useToast();
-  const { isAccountConnected, revokePermissionTransaction } = useTorus();
+  const queryClient = useQueryClient();
+  const { isAccountConnected, revokePermissionTransaction, selectedAccount } = useTorus();
   const [transactionStatus, setTransactionStatus] = useState<
     "idle" | "loading" | "success" | "error"
   >("idle");
@@ -75,7 +77,10 @@ export function RevokePermissionButton({
           }
         },
         refetchHandler: async () => {
-          // No-op for now, could be used to refetch data after transaction
+          // Invalidate all permission-related queries to ensure UI updates
+          await queryClient.invalidateQueries({ queryKey: ["permissions"] });
+          await queryClient.invalidateQueries({ queryKey: ["permissions_by_grantor", selectedAccount?.address] });
+          await queryClient.invalidateQueries({ queryKey: ["permissions_by_grantee", selectedAccount?.address] });
         },
       }),
     );

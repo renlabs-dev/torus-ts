@@ -1,4 +1,4 @@
-import { CONSTANTS } from "@torus-network/sdk";
+import { CONSTANTS } from "@torus-network/sdk/constants";
 
 import type {
   CachedAgentData,
@@ -22,8 +22,11 @@ export const blocksToDays = (blocks: number): number => {
 };
 
 // Format duration for display
-export const formatDuration = (blocks: number): string => {
-  if (blocks >= 999999999) {
+export const formatDuration = (
+  blocks: number,
+  isIndefinite?: boolean,
+): string => {
+  if (isIndefinite || blocks >= 999999999) {
     return "Indefinite";
   }
 

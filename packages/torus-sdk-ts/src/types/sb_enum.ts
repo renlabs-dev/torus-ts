@@ -28,7 +28,7 @@ export interface ZodSubstrateEnumDef<
   typeName: "ZodSubstrateEnum";
 }
 
-type MapZodVariantsToRaw<T extends ZodSubstrateEnumVariants> = {
+export type MapZodVariantsToRaw<T extends ZodSubstrateEnumVariants> = {
   [K in keyof T]: Record<K, z.output<T[K]>>;
 }[keyof T];
 

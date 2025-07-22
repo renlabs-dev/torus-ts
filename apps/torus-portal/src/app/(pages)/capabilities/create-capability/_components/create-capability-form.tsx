@@ -6,7 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import type { z } from "zod";
 
-import type { SS58Address } from "@torus-network/sdk";
+import type { SS58Address } from "@torus-network/sdk/types";
 
 import { useNamespaceEntriesOf } from "@torus-ts/query-provider/hooks";
 import { useTorus } from "@torus-ts/torus-provider";
@@ -24,7 +24,9 @@ import { WalletConnectionWarning } from "@torus-ts/ui/components/wallet-connecti
 import { useToast } from "@torus-ts/ui/hooks/use-toast";
 import { cn } from "@torus-ts/ui/lib/utils";
 
+import { FeeTooltip } from "~/app/_components/fee-tooltip";
 import PortalFormHeader from "~/app/_components/portal-form-header";
+import { useNamespaceCreationFee } from "~/hooks/use-namespace-creation-fee";
 import { tryCatch } from "~/utils/try-catch";
 
 import { CreateCapabilityMethodField } from "./create-capability-method-field";
@@ -96,6 +98,12 @@ export function CreateCapabilityForm({
     watchedPath,
     watchedMethod,
     watchedCustomMethod,
+  );
+
+  const namespaceFee = useNamespaceCreationFee(
+    api,
+    selectedAccount?.address as SS58Address,
+    fullPath,
   );
 
   async function handleSubmit(_data: z.infer<typeof CREATE_CAPABILITY_SCHEMA>) {
@@ -209,6 +217,21 @@ export function CreateCapabilityForm({
           )}
 
           <CreateCapabilityPathPreview fullPath={fullPath} />
+
+          <FeeTooltip
+            title="Capability Creation Fee"
+            isVisible={Boolean(
+              isAccountConnected &&
+                selectedPrefix &&
+                fullPath.trim().length > 0 &&
+                transactionStatus !== "loading",
+            )}
+            isLoading={namespaceFee.isLoading}
+            error={namespaceFee.error}
+            feeItems={namespaceFee.feeItems}
+            totalAmount={namespaceFee.totalAmount}
+            note="The deposit will be reserved and can be reclaimed when the capability is deleted."
+          />
 
           <Button
             variant="outline"

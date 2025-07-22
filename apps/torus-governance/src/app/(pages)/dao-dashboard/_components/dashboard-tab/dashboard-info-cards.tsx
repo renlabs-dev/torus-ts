@@ -2,6 +2,7 @@
 
 import { Card } from "@torus-ts/ui/components/card";
 import { Label } from "@torus-ts/ui/components/label";
+
 import { useGovernance } from "~/context/governance-provider";
 import { api } from "~/trpc/react";
 
@@ -20,7 +21,7 @@ export default function DashboardInfoCards() {
   return (
     <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4">
       <InfoCard title="Agents Registered" value={agentsRegistered} />
-      <InfoCard title="Agents Whitelisted" value={agentsWhitelisted} />
+      <InfoCard title="Root Agents" value={agentsWhitelisted} />
       <InfoCard title="Penalties Applied" value={penaltiesCount} />
       <InfoCard title="DAO Applications" value={pendingDaoApplications} />
     </div>

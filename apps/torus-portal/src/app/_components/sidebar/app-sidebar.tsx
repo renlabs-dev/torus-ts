@@ -54,7 +54,7 @@ const data = {
           icon: FilePlus,
         },
         {
-          title: "Edit Permission",
+          title: "Manage Permissions",
           url: "/permissions/edit-permission",
           icon: FilePen,
         },

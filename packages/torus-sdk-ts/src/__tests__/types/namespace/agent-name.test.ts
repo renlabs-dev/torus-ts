@@ -1,9 +1,10 @@
 import { describe, expect, it } from "vitest";
+
 import {
-  validateAgentName,
-  isValidAgentName,
-  agentNameField,
   AGENT_NAME_REGEX,
+  agentNameField,
+  isValidAgentName,
+  validateAgentName,
 } from "../../../types/namespace/agent-name.js";
 
 describe("AgentNameValidation", () => {
@@ -18,7 +19,7 @@ describe("AgentNameValidation", () => {
       "my_test_123",
       "snake_case1",
       "kebab-case2",
-      "a" + "b".repeat(61) + "c", // 63 chars
+      "a" + "b".repeat(28) + "c", // 30 chars
     ],
     invalid: [
       {
@@ -45,9 +46,9 @@ describe("AgentNameValidation", () => {
       },
       { value: "", error: "Agent name is required" },
       {
-        value: "a" + "b".repeat(62) + "c",
-        error: "Agent name cannot exceed 63 characters",
-      }, // 64 chars
+        value: "a" + "b".repeat(29) + "c",
+        error: "Agent name cannot exceed 30 characters",
+      }, // 31 chars
       {
         value: "+test",
         error: "Agent name must start with a lowercase letter or digit",

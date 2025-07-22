@@ -2,6 +2,9 @@
 
 import { useMemo } from "react";
 
+import { Check, Radio, Trash2 } from "lucide-react";
+
+import { useTorus } from "@torus-ts/torus-provider";
 import {
   Accordion,
   AccordionContent,
@@ -9,38 +12,61 @@ import {
   AccordionTrigger,
 } from "@torus-ts/ui/components/accordion";
 import { Badge } from "@torus-ts/ui/components/badge";
+import { Button } from "@torus-ts/ui/components/button";
+import { MarkdownView } from "@torus-ts/ui/components/markdown-view";
 
 import PortalFormHeader from "~/app/_components/portal-form-header";
 import { api } from "~/trpc/react";
 
 export default function AllSignalsView() {
+  const { selectedAccount } = useTorus();
+  const currentUserKey = selectedAccount?.address;
+
   const { data: allSignals, isLoading: isLoadingSignals } =
     api.signal.all.useQuery();
 
   const { data: allComputedWeights, isLoading: isLoadingWeights } =
     api.computedAgentWeight.all.useQuery();
 
+  const utils = api.useUtils();
+  const deleteSignalMutation = api.signal.delete.useMutation({
+    onSuccess: () => {
+      void utils.signal.all.invalidate();
+    },
+  });
+
+  const fulfillSignalMutation = api.signal.fulfill.useMutation({
+    onSuccess: () => {
+      void utils.signal.all.invalidate();
+    },
+  });
+
   const rankedSignals = useMemo(() => {
     if (!allSignals || !allComputedWeights) return [];
 
-    return allSignals
-      .map((signal) => {
-        const agentWeight = allComputedWeights.find(
-          (weight) => weight.agentKey === signal.agentKey,
-        );
-        const networkAllocation = agentWeight
-          ? (signal.proposedAllocation * agentWeight.percComputedWeight) / 100
-          : 0;
+    const signalsWithMetadata = allSignals.map((signal) => {
+      const agentWeight = allComputedWeights.find(
+        (weight) => weight.agentKey === signal.agentKey,
+      );
+      const networkAllocation = agentWeight
+        ? (signal.proposedAllocation * agentWeight.percComputedWeight) / 100
+        : 0;
 
-        return {
-          ...signal,
-          agentName: agentWeight?.agentName ?? "Unknown Agent",
-          agentPercWeight: agentWeight?.percComputedWeight ?? 0,
-          networkAllocation,
-        };
-      })
-      .sort((a, b) => b.networkAllocation - a.networkAllocation);
-  }, [allSignals, allComputedWeights]);
+      return {
+        ...signal,
+        agentName: agentWeight?.agentName ?? "Unknown Agent",
+        agentPercWeight: agentWeight?.percComputedWeight ?? 0,
+        networkAllocation,
+        isCurrentUser: currentUserKey === signal.agentKey,
+      };
+    });
+
+    return signalsWithMetadata.sort((a, b) => {
+      if (a.isCurrentUser && !b.isCurrentUser) return -1;
+      if (!a.isCurrentUser && b.isCurrentUser) return 1;
+      return b.networkAllocation - a.networkAllocation;
+    });
+  }, [allSignals, allComputedWeights, currentUserKey]);
 
   return (
     <>
@@ -58,11 +84,13 @@ export default function AllSignalsView() {
             <AccordionItem
               key={signal.id || index}
               value={`signal-${index}`}
-              className="bg-muted/50 px-4"
+              className={`px-4
+                ${signal.fulfilled ? "bg-green-500/5 border-green-500 border-b" : "bg-muted/50"}`}
             >
-              <AccordionTrigger>
-                <div className="flex items-center gap-3 text-left">
-                  <Badge variant="secondary">#{index + 1}</Badge>
+              <AccordionTrigger className="flex items-center justify-between">
+                <div className="flex items-center gap-2 text-left w-full">
+                  <Badge>#{index + 1}</Badge>
+
                   <div>
                     <h3 className="font-medium">{signal.title}</h3>
                     <p className="text-sm text-muted-foreground">
@@ -70,31 +98,87 @@ export default function AllSignalsView() {
                     </p>
                   </div>
                 </div>
+                <div className="flex">
+                  {signal.fulfilled && (
+                    <Badge className="bg-green-500 text-white gap-1 mr-2">
+                      <Check className="w-3 h-3" />
+                      Fulfilled
+                    </Badge>
+                  )}
+                  {signal.isCurrentUser && (
+                    <Badge className="text-nowrap mr-2 sm:block hidden">
+                      Your Signal
+                    </Badge>
+                  )}
+                </div>
               </AccordionTrigger>
               <AccordionContent>
                 <div className="space-y-4">
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <p className="text-sm text-muted-foreground">
-                        Agent Weight
-                      </p>
-                      <p className="text-xl font-semibold">
-                        {signal.agentPercWeight.toFixed(2)}%
-                      </p>
+                  <div className="flex md:flex-row flex-col gap-2 items-center justify-between">
+                    <div className="grid grid-cols-2 gap-4 flex-1">
+                      <div>
+                        <p className="text-sm text-muted-foreground">
+                          Agent Weight
+                        </p>
+                        <p className="text-xl font-semibold">
+                          {signal.agentPercWeight.toFixed(2)}%
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-muted-foreground">
+                          Proposed Allocation
+                        </p>
+                        <p className="text-xl font-semibold">
+                          {signal.proposedAllocation}%
+                        </p>
+                      </div>
                     </div>
-                    <div>
-                      <p className="text-sm text-muted-foreground">
-                        Proposed Allocation
-                      </p>
-                      <p className="text-xl font-semibold">
-                        {signal.proposedAllocation}%
-                      </p>
-                    </div>
+                    {signal.isCurrentUser && (
+                      <div className="flex gap-2">
+                        {!signal.fulfilled && (
+                          <Button
+                            variant="default"
+                            size="sm"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              fulfillSignalMutation.mutate({
+                                signalId: signal.id,
+                              });
+                            }}
+                            disabled={fulfillSignalMutation.isPending}
+                            className="bg-green-500 hover:bg-green-600"
+                          >
+                            <Radio className="w-4 h-4" />
+                            {fulfillSignalMutation.isPending
+                              ? "Fulfilling..."
+                              : "Fulfill"}
+                          </Button>
+                        )}
+                        {!signal.fulfilled && (
+                          <Button
+                            variant="destructive"
+                            size="sm"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              deleteSignalMutation.mutate({
+                                signalId: signal.id,
+                              });
+                            }}
+                            disabled={deleteSignalMutation.isPending}
+                          >
+                            <Trash2 className="w-4 h-4" />
+                            {deleteSignalMutation.isPending
+                              ? "Deleting..."
+                              : "Delete"}
+                          </Button>
+                        )}
+                      </div>
+                    )}
                   </div>
 
                   {signal.description && (
-                    <div className="pt-4 border-t">
-                      <p className="text-sm">{signal.description}</p>
+                    <div className="pt-4 bg-muted/50 rounded-md p-4 border">
+                      <MarkdownView source={signal.description} />
                     </div>
                   )}
 

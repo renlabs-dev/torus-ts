@@ -3,7 +3,7 @@ import React from "react";
 import { Plus, Trash2 } from "lucide-react";
 import { useFieldArray } from "react-hook-form";
 
-import type { SS58Address } from "@torus-network/sdk";
+import type { SS58Address } from "@torus-network/sdk/types";
 
 import { Button } from "@torus-ts/ui/components/button";
 import {
@@ -15,7 +15,9 @@ import {
 } from "@torus-ts/ui/components/form";
 import { Input } from "@torus-ts/ui/components/input";
 
-import type { CreateEmissionPermissionForm } from "../create-emission-permission-form-schema";
+import type {
+  CreateEmissionPermissionForm,
+} from "../create-emission-permission-form-schema";
 
 interface TargetsFieldProps {
   form: CreateEmissionPermissionForm;
@@ -38,8 +40,8 @@ export function TargetsField({ form, isAccountConnected }: TargetsFieldProps) {
         <FormLabel>Target Accounts</FormLabel>
         <Button
           type="button"
-          variant="outline"
           size="sm"
+          className="bg-white/70"
           onClick={() =>
             appendTarget({ account: "" as SS58Address, weight: "" })
           }

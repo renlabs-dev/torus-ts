@@ -3,7 +3,7 @@ import React from "react";
 import { Plus, Trash2 } from "lucide-react";
 import { useFieldArray } from "react-hook-form";
 
-import type { SS58Address } from "@torus-network/sdk";
+import type { SS58Address } from "@torus-network/sdk/types";
 
 import { Button } from "@torus-ts/ui/components/button";
 import {

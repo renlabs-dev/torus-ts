@@ -33,7 +33,7 @@ export type SendTxFn = <T extends ISubmittableResult>(
 
 interface UseSendTxOutput extends TxHelper {
   txStage: TxStage;
-  send: SendTxFn | null;
+  sendTx: SendTxFn | null;
 }
 
 const logger = BasicLogger.create({ name: "use-send-transaction" });
@@ -55,7 +55,9 @@ export function useSendTransaction({
   const wallet = useWallet({ api, selectedAccount, web3FromAddress });
 
   const [txStage, setTxStage] = useState<TxStage>({ Empty: null });
-  const [sendFn, setSendFn] = useState<SendTxFn | null>(null);
+  const [sendFn, setSendFn] = useState<{ sendTx: SendTxFn | null }>({
+    sendTx: null,
+  });
 
   const setErrState = (err: Error) => {
     logger.error(err);
@@ -87,7 +89,9 @@ export function useSendTransaction({
       return;
     }
 
-    const sendFn = async <T extends ISubmittableResult>(
+    let unsubscribe: (() => void) | null = null;
+
+    const sendTx = async <T extends ISubmittableResult>(
       tx: SubmittableExtrinsic<"promise", T>,
     ) => {
       if (!selectedAccount) {
@@ -95,7 +99,12 @@ export function useSendTransaction({
         return;
       }
 
-      await tx.signAndSend(
+      if (unsubscribe != null) {
+        unsubscribe();
+        unsubscribe = null;
+      }
+
+      unsubscribe = await tx.signAndSend(
         selectedAccount.address,
         txOptions,
         (result: SubmittableResult) => {
@@ -114,14 +123,20 @@ export function useSendTransaction({
       );
     };
 
-    setSendFn(sendFn);
-  });
+    setSendFn({ sendTx });
+
+    return () => {
+      if (unsubscribe != null) {
+        unsubscribe();
+      }
+    };
+  }, [api, wsEndpoint, wallet, selectedAccount, web3FromAddress]);
 
   const txHelper = useMemo(() => txStatusToTxHelper(txStage), [txStage]);
 
   return {
     txStage,
-    send: sendFn,
+    ...sendFn,
     ...txHelper,
   };
 }
@@ -148,6 +163,7 @@ const setupWallet = async ({
 
   const [proofError, proof] = await getMerkleizedMetadata(api);
   if (proofError !== undefined) {
+    console.error(proofError);
     const err = chainErr("Failed to generate metadata")(proofError);
     return makeErr(err);
   }
@@ -349,7 +365,7 @@ function _ExampleUsage() {
     };
 
   const {
-    send,
+    sendTx,
     isSigning,
     isPending,
     isSuccess,
@@ -366,21 +382,21 @@ function _ExampleUsage() {
   });
 
   const _handleTransfer = async () => {
-    if (!send) return;
+    if (!sendTx) return;
 
     const tx = api.tx.balances.transferAllowDeath(
       "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY",
       "1000000000000",
     );
 
-    await send(tx);
+    await sendTx(tx);
   };
 
   return (
     <div>
       <button
         onClick={_handleTransfer}
-        disabled={!send || isPending || isSigning}
+        disabled={!sendTx || isPending || isSigning}
       >
         {isSigning ? "Signing..." : isPending ? "Pending..." : "Transfer"}
       </button>

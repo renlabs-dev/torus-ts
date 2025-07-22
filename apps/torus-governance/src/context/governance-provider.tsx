@@ -1,15 +1,20 @@
 "use client";
 
+import { createContext, useContext, useMemo } from "react";
+
 import type { UseQueryResult } from "@tanstack/react-query";
+import { useSignIn } from "hooks/use-sign-in";
+
+import type { StakeData } from "@torus-network/sdk/cached-queries";
 import type {
   Agent,
   AgentApplication,
   Api,
   LastBlock,
   Proposal,
-  SS58Address,
-  StakeData,
-} from "@torus-network/sdk";
+} from "@torus-network/sdk/chain";
+import type { SS58Address } from "@torus-network/sdk/types";
+
 import type { BaseDao, BaseProposal } from "@torus-ts/query-provider/hooks";
 import {
   useAccountsNotDelegatingVoting,
@@ -43,9 +48,8 @@ import type {
 } from "@torus-ts/torus-provider/types";
 import { Header } from "@torus-ts/ui/components/header";
 import { WalletDropdown } from "@torus-ts/ui/components/wallet-dropdown/wallet-dropdown";
+
 import { env } from "~/env";
-import { useSignIn } from "hooks/use-sign-in";
-import { createContext, useContext, useMemo } from "react";
 
 interface GovernanceContextType {
   accountFreeBalance: UseQueryResult<bigint, Error>;

@@ -1,18 +1,21 @@
-import { fromNano } from "@torus-network/torus-utils/subspace";
-import { tryAsync } from "@torus-network/torus-utils/try-catch";
-import type { ToastFunction } from "@torus-ts/ui/hooks/use-toast";
-import type {
-  ISubmittableResult,
-  SubmittableExtrinsic,
-} from "~/context/wallet-provider";
-import type { BrandTag } from "@torus-network/torus-utils";
-import type { TransactionResult } from "@torus-ts/torus-provider/types";
 import type {
   FieldValues,
   Path,
   PathValue,
   UseFormReturn,
 } from "react-hook-form";
+
+import type { BrandTag } from "@torus-network/torus-utils";
+import { fromNano } from "@torus-network/torus-utils/torus/token";
+import { tryAsync } from "@torus-network/torus-utils/try-catch";
+
+import type { TransactionResult } from "@torus-ts/torus-provider/types";
+import type { ToastFunction } from "@torus-ts/ui/hooks/use-toast";
+
+import type {
+  ISubmittableResult,
+  SubmittableExtrinsic,
+} from "~/context/wallet-provider";
 
 /**
  * Returns the fee adjusted by the provided buffer percent.

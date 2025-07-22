@@ -1,6 +1,6 @@
 "use client";
 
-import { smallAddress } from "@torus-network/torus-utils/subspace";
+import { smallAddress } from "@torus-network/torus-utils/torus/address";
 import { CardHeader } from "@torus-ts/ui/components/card";
 import { CopyButton } from "@torus-ts/ui/components/copy-button";
 import { Label } from "@torus-ts/ui/components/label";

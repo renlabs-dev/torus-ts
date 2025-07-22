@@ -1,18 +1,22 @@
 import { serve } from "@hono/node-server";
-import { OpenAPIHono, createRoute } from "@hono/zod-openapi";
-import type { SS58Address } from "@torus-network/sdk";
-import type { Context } from "hono";
-import { cors } from "hono/cors";
-import { z } from "zod";
-import { match } from "rustie";
+import { createRoute, OpenAPIHono } from "@hono/zod-openapi";
+import type { ApiPromise } from "@polkadot/api";
 import type { EventRecord } from "@polkadot/types/interfaces";
 import type { Codec } from "@polkadot/types/types";
-import { queryNamespacePermissions } from "../modules/permission0.js";
-import { queryAgents } from "../modules/subspace.js";
-import type { ApiPromise, Helpers } from "./helpers.js";
+import type { Context } from "hono";
+import { cors } from "hono/cors";
+import { match } from "rustie";
+import { z } from "zod";
+
+import type { SS58Address } from "@torus-network/sdk/types";
+
+import { queryNamespacePermissions } from "../chain/permission0.js";
+import { queryAgents } from "../chain/torus0/agents.js";
+import { connectToChainRpc } from "../utils/index.js";
+import type { Helpers } from "./helpers.js";
+import { checkTransaction } from "./helpers.js";
 import type { AuthTokenResult } from "./utils.js";
-import { checkTransaction, connectToChainRpc } from "./helpers.js";
-import { decodeAuthToken, ensureTrailingSlash } from "./utils.js";
+import { decodeAuthToken, ensureTrailingSlash, selectRpcUrl } from "./utils.js";
 
 interface User {
   walletAddress: SS58Address;
@@ -105,9 +109,9 @@ interface MethodOptions<
   };
 }
 
-type CallbackContext = {
+interface CallbackContext extends Helpers {
   user?: User;
-} & Helpers;
+}
 
 /**
  * Callback function type for handling method requests
@@ -225,7 +229,9 @@ export class AgentServer {
    * @private
    */
   private async init() {
-    this.api = await connectToChainRpc();
+    const wsUrl = selectRpcUrl();
+
+    this.api = await connectToChainRpc(wsUrl);
 
     // Resolve agent name from blockchain
     await this.resolveAgentName();

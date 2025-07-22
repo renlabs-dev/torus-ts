@@ -4,7 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 
 import { ArrowLeftRight } from "lucide-react";
 
-import { fromNano, toNano } from "@torus-network/torus-utils/subspace";
+import { fromNano, toNano } from "@torus-network/torus-utils/torus/token";
 
 import { Button } from "@torus-ts/ui/components/button";
 import { Input } from "@torus-ts/ui/components/input";

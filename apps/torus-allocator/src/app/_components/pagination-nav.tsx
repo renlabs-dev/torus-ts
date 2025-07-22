@@ -9,21 +9,20 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "@torus-ts/ui/components/pagination";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import React from "react";
 
 interface PaginationNavProps {
   currentPage: number;
   totalPages: number;
-  search: string | null | undefined;
 }
 
 export function PaginationNav({
   currentPage,
   totalPages,
-  search,
 }: PaginationNavProps) {
   const router = useRouter();
+  const searchParams = useSearchParams();
 
   if (totalPages <= 1) return null;
 
@@ -38,9 +37,9 @@ export function PaginationNav({
   }
 
   const getPageUrl = (page: number) => {
-    let url = `?page=${page}`;
-    if (search) url += `&search=${encodeURIComponent(search)}`;
-    return url;
+    const params = new URLSearchParams(searchParams);
+    params.set('page', page.toString());
+    return `?${params.toString()}`;
   };
 
   const handlePageChange = (page: number, e: React.MouseEvent) => {

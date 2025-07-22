@@ -1,5 +1,5 @@
 import { toWei } from "@hyperlane-xyz/utils";
-import { smallAddress } from "@torus-network/torus-utils/subspace";
+import { smallAddress } from "@torus-network/torus-utils/torus/address";
 import { Loading } from "@torus-ts/ui/components/loading";
 import { getTokenByIndex, useWarpCore } from "~/hooks/token";
 import { useIsApproveRequired } from "~/hooks/token/use-is-approve-required";

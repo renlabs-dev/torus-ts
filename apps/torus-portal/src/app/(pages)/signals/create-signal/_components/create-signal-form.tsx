@@ -20,6 +20,7 @@ import { useToast } from "@torus-ts/ui/hooks/use-toast";
 import { cn } from "@torus-ts/ui/lib/utils";
 
 import PortalFormHeader from "~/app/_components/portal-form-header";
+import { useCanCreateSignal } from "~/hooks/use-can-create-signal";
 import { api } from "~/trpc/react";
 import { tryCatch } from "~/utils/try-catch";
 
@@ -30,6 +31,7 @@ import {
 import {
   CreateSignalSliderField,
 } from "./create-signal-fields/create-signal-slider-field";
+import { SignalInfoModal } from "./signal-info-modal";
 
 export function CreateSignalForm({
   className,
@@ -37,14 +39,10 @@ export function CreateSignalForm({
 }: React.ComponentProps<"form">) {
   const { toast } = useToast();
   const { selectedAccount, isAccountConnected, isInitialized } = useTorus();
+  const { canCreate, isLoading: isAuthLoading } = useCanCreateSignal();
 
   const existingSignals = api.signal.byCreatorId.useQuery(
     { creatorId: selectedAccount?.address ?? "" },
-    { enabled: isAccountConnected },
-  );
-
-  const rootAgent = api.computedAgentWeight.byAgentKey.useQuery(
-    { agentKey: selectedAccount?.address ?? "" },
     { enabled: isAccountConnected },
   );
 
@@ -98,12 +96,12 @@ export function CreateSignalForm({
       >
         <PortalFormHeader
           title="Create Signal"
+          extraInfo={<SignalInfoModal />}
           description="Make a demand signal to express your specific need and proposed emission allocation to other agents."
         />
-
         <AgentEmissionsWarning
-          hasAgentKey={!!rootAgent.data?.agentKey}
-          isLoading={rootAgent.isLoading}
+          hasAgentKey={canCreate}
+          isLoading={isAuthLoading}
           isAccountConnected={isAccountConnected}
           isInitialized={isInitialized}
         />
@@ -242,7 +240,7 @@ export function CreateSignalForm({
             disabled={
               !isAccountConnected ||
               createSignalMutation.isPending ||
-              !rootAgent.data?.agentKey
+              !canCreate
             }
           >
             <Radio className="w-4 h-4 mr-1" />

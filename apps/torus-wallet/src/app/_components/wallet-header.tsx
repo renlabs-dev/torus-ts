@@ -1,6 +1,6 @@
 "use client";
 
-import type { SS58Address } from "@torus-network/sdk";
+import type { SS58Address } from "@torus-network/sdk/types";
 import {
   useCachedStakeOut,
   useFreeBalance,

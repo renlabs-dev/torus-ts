@@ -1,9 +1,8 @@
 import { asc, eq, isNull, sql, sum } from "drizzle-orm";
 import {
+  bigint as drizzleBigint,
   boolean,
   check,
-  bigint as drizzleBigint,
-  timestamp as drizzleTimestamp,
   index,
   integer,
   numeric,
@@ -13,12 +12,14 @@ import {
   real,
   serial,
   text,
+  timestamp as drizzleTimestamp,
   unique,
   uuid,
   varchar,
 } from "drizzle-orm/pg-core";
 import type { Equals } from "tsafe";
 import { assert } from "tsafe";
+
 import { extract_pgenum_values } from "./utils";
 
 export const createTable = pgTableCreator((name) => `${name}`);
@@ -97,7 +98,7 @@ export const userAgentWeightSchema = createTable(
     userKey: ss58Address("user_key").notNull(),
     agentKey: ss58Address("agent_key")
       .notNull()
-      .references(() => agentSchema.key),
+      .references(() => agentSchema.key, { onDelete: "cascade" }),
 
     weight: real("weight").default(0).notNull(),
 
@@ -115,7 +116,7 @@ export const computedAgentWeightSchema = createTable("computed_agent_weight", {
 
   agentKey: ss58Address("agent_key")
     .notNull()
-    .references(() => agentSchema.key)
+    .references(() => agentSchema.key, { onDelete: "cascade" })
     .unique(),
   // Aggregated weight allocations measured in Rems
   computedWeight: numeric("computed_weight").notNull(),
@@ -191,7 +192,7 @@ export const agentReportSchema = createTable("agent_report", {
 
   userKey: ss58Address("user_key").notNull(),
   agentKey: ss58Address("agent_key")
-    .references(() => agentSchema.key)
+    .references(() => agentSchema.key, { onDelete: "cascade" })
     .notNull(),
 
   reason: reportReason("reason").notNull(),
@@ -883,6 +884,8 @@ export const agentDemandSignalSchema = createTable(
     title: text("title").notNull(),
     description: text("description").notNull(),
     proposedAllocation: integer("proposed_allocation").notNull(),
+
+    fulfilled: boolean("fulfilled").notNull().default(false),
 
     // contact info
     discord: text("discord"),

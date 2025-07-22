@@ -55,6 +55,8 @@ export function EditPermissionForm({
     "idle" | "loading" | "success" | "error"
   >("idle");
   const currentPermissionDataRef = useRef<PermissionWithDetails | null>(null);
+  const [originalDistributionControl, setOriginalDistributionControl] =
+    useState<string | null>(null);
 
   const permissionType = getPermissionType(currentPermissionDataRef.current);
   const canEdit = canEditPermission(
@@ -82,12 +84,16 @@ export function EditPermissionForm({
       if (!api) return;
 
       if (permissionData.emission_permissions) {
-        await handlePermissionDataChange({
+        const result = await handlePermissionDataChange({
           permissionData,
           api,
           form,
           onError: toast.error,
         });
+        // Store the original distribution control for display
+        if (result?.originalDistributionControl) {
+          setOriginalDistributionControl(result.originalDistributionControl);
+        }
       } else {
         form.reset({
           permissionId: permissionData.permissions.permissionId,
@@ -95,6 +101,7 @@ export function EditPermissionForm({
           newStreams: [],
           newDistributionControl: { Manual: null },
         });
+        setOriginalDistributionControl(null);
       }
     },
     [api, form, toast.error],
@@ -119,6 +126,7 @@ export function EditPermissionForm({
             form.reset();
             setSelectedPermissionId("");
             setHasLoadedPermission(false);
+            setOriginalDistributionControl(null);
           }
 
           if (result.status === "ERROR") {
@@ -148,7 +156,7 @@ export function EditPermissionForm({
         className={cn("flex flex-col gap-6", className)}
       >
         <PortalFormHeader
-          title="Edit Permission"
+          title="Manage Permissions"
           description="Modify the selected permission. Available fields depend on the permission's type and revocation terms."
         />
 
@@ -186,6 +194,7 @@ export function EditPermissionForm({
               onSuccess={() => {
                 setSelectedPermissionId("");
                 form.reset();
+                setOriginalDistributionControl(null);
               }}
             />
           </div>
@@ -201,7 +210,10 @@ export function EditPermissionForm({
 
               {permissionType === "emission" && canEdit && (
                 <>
-                  <DistributionControlField control={form.control} />
+                  <DistributionControlField
+                    control={form.control}
+                    originalValue={originalDistributionControl}
+                  />
 
                   <TargetsField control={form.control} />
 

@@ -1,22 +1,34 @@
 "use client";
 
-import type { ProposalStatus, SS58Address } from "@torus-network/sdk";
+import { useMemo } from "react";
+
+import { LoaderCircle } from "lucide-react";
+
+import type { ProposalStatus } from "@torus-network/sdk/chain";
+import type { SS58Address } from "@torus-network/sdk/types";
+
 import { useProcessVotesAndStakes } from "@torus-ts/query-provider/hooks";
+
 import { CreateComment } from "~/app/_components/comments/create-comment";
 import { ViewComment } from "~/app/_components/comments/view-comment";
 import { DetailsCard } from "~/app/_components/details-card";
 import { ExpandedViewContent } from "~/app/_components/expanded-view-content";
-import { ProposalTypeLabel } from "~/app/_components/proposal/proposal-type-label";
-import { ProposalVoteCard } from "~/app/_components/proposal/proposal-vote-card";
+import {
+  ProposalTypeLabel,
+} from "~/app/_components/proposal/proposal-type-label";
+import {
+  ProposalVoteCard,
+} from "~/app/_components/proposal/proposal-vote-card";
 import { RewardLabel } from "~/app/_components/proposal/reward-label";
 import { VoterList } from "~/app/_components/proposal/voter-list";
 import { VoteData } from "~/app/_components/vote-data";
 import { useGovernance } from "~/context/governance-provider";
 import type { VoteStatus } from "~/utils/types";
-import { LoaderCircle } from "lucide-react";
-import { useMemo } from "react";
-import { ProposalStatusLabel } from "../../../../_components/proposal/proposal-status-label";
+
 import { handleCustomProposal } from "../../../../../utils";
+import {
+  ProposalStatusLabel,
+} from "../../../../_components/proposal/proposal-status-label";
 
 interface CustomContent {
   paramId: number;

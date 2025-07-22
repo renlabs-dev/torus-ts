@@ -1,23 +1,28 @@
 "use client";
 
+import { useEffect, useMemo, useState } from "react";
+
+import { DateTime } from "luxon";
+
+import { formatToken } from "@torus-network/torus-utils/torus/token";
+
 import { useCachedStakeOut } from "@torus-ts/query-provider/hooks";
 import { useTorus } from "@torus-ts/torus-provider";
 import { Card } from "@torus-ts/ui/components/card";
-import { formatToken } from "@torus-network/torus-utils/subspace";
-import { DateTime } from "luxon";
-import { useEffect, useMemo, useState } from "react";
+
 import { env } from "~/env";
 import { useAPR } from "~/hooks/useAPR";
+
+import { StakingCalculatorAmountInput } from "./staking-calculator-amount-input";
+import { StakingCalculatorForecastPeriods } from "./staking-calculator-forecast-periods";
+import { StakingCalculatorGrowthChart } from "./staking-calculator-growth-chart";
+import { StakingCalculatorHeader } from "./staking-calculator-header";
+import { StakingCalculatorSummaryFooter } from "./staking-calculator-summary-footer";
 import {
   calculatePercentGain,
   calculateProjectedGrowth,
   getInitialAmount,
 } from "./staking-calculator-utils";
-import { StakingCalculatorHeader } from "./staking-calculator-header";
-import { StakingCalculatorAmountInput } from "./staking-calculator-amount-input";
-import { StakingCalculatorForecastPeriods } from "./staking-calculator-forecast-periods";
-import { StakingCalculatorGrowthChart } from "./staking-calculator-growth-chart";
-import { StakingCalculatorSummaryFooter } from "./staking-calculator-summary-footer";
 
 export interface ProjectedData {
   date: Date;

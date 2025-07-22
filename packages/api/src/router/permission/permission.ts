@@ -1,16 +1,20 @@
+import type { TRPCRouterRecord } from "@trpc/server";
+import { z } from "zod";
+
+import { SS58_SCHEMA } from "@torus-network/sdk/types";
+
 import { and, eq, isNull, or } from "@torus-ts/db";
 import {
-  permissionsSchema,
-  emissionPermissionsSchema,
-  namespacePermissionsSchema,
-  emissionStreamAllocationsSchema,
-  emissionDistributionTargetsSchema,
   accumulatedStreamAmountsSchema,
+  emissionDistributionTargetsSchema,
+  emissionPermissionsSchema,
+  emissionStreamAllocationsSchema,
+  namespacePermissionPathsSchema,
+  namespacePermissionsSchema,
+  permissionsSchema,
 } from "@torus-ts/db/schema";
-import type { TRPCRouterRecord } from "@trpc/server";
+
 import { publicProcedure } from "../../trpc";
-import { z } from "zod";
-import { SS58_SCHEMA } from "@torus-network/sdk";
 
 export const permissionRouter = {
   // GET
@@ -268,6 +272,13 @@ export const permissionRouter = {
         eq(
           permissionsSchema.permissionId,
           namespacePermissionsSchema.permissionId,
+        ),
+      )
+      .leftJoin(
+        namespacePermissionPathsSchema,
+        eq(
+          permissionsSchema.permissionId,
+          namespacePermissionPathsSchema.permissionId,
         ),
       )
       .leftJoin(

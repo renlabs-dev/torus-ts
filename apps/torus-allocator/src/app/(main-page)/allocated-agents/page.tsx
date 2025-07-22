@@ -1,9 +1,10 @@
 "use client";
 
+import { AgentCard } from "~/app/_components/agent-card";
 import { ViewSelector } from "~/app/_components/view-selector";
 import { useDelegateAgentStore } from "~/stores/delegateAgentStore";
+
 import { Filter } from "../../_components/filter-content";
-import { AgentCard } from "~/app/_components/agent-card/agent-card";
 
 export default function AllocatedAgentsPage() {
   const { delegatedAgents } = useDelegateAgentStore();
@@ -33,6 +34,7 @@ export default function AllocatedAgentsPage() {
               registrationBlock={agent.registrationBlock}
               percComputedWeight={agent.percComputedWeight}
               weightFactor={agent.weightFactor}
+              isWhitelisted={true}
             />
           ))}
         </div>
