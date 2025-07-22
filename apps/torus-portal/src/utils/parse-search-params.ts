@@ -3,7 +3,7 @@ export function parseSearchParams(searchParams: {
   search?: string;
 }) {
   const pageParam = searchParams.page;
-  const page = pageParam ? parseInt(pageParam) : 1;
+  const page = pageParam ? parseInt(pageParam, 10) || 1 : 1;
   const search = searchParams.search ?? null;
 
   return { page, search };

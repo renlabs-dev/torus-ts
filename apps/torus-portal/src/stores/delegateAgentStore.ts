@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/no-non-null-assertion */
-
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
@@ -31,7 +29,10 @@ interface DelegateState {
     percentage: number,
   ) => void;
   getTotalPercentage: () => number;
-  setDelegatedAgentsFromDB: (agents: DelegatedAgent[], walletAddress: string) => void;
+  setDelegatedAgentsFromDB: (
+    agents: DelegatedAgent[],
+    walletAddress: string,
+  ) => void;
   hasUnsavedChanges: () => boolean;
   clearStore: () => void;
 
@@ -91,13 +92,16 @@ export const useDelegateAgentStore = create<DelegateState>()(
           for (let i = 0; i < agents.length - 1; i++) {
             const normalizedPercentage =
               Math.round(
+                // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
                 (agents[i]!.percentage / totalPercentage) * 100 * 100,
               ) / 100;
+            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
             agents[i]!.percentage = normalizedPercentage;
             remainingPercentage -= normalizedPercentage;
           }
 
           if (agents.length > 0) {
+            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
             agents[agents.length - 1]!.percentage =
               Math.round(remainingPercentage * 100) / 100;
           }
