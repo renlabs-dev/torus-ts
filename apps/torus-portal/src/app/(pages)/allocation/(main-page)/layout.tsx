@@ -10,7 +10,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <div className="pb-14 sm:-mt-16 overflow-x-hidden">
+    <div className="sm:-mt-16 overflow-x-hidden">
       <Suspense
         fallback={<div className="w-full h-72 bg-background animate-pulse" />}
       >
