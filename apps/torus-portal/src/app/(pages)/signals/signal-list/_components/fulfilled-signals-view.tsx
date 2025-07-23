@@ -8,33 +8,20 @@ import { api } from "~/trpc/react";
 
 import SignalAccordion from "./signal-accordion";
 
-export default function AllSignalsView() {
+export default function FulfilledSignalsView() {
   const { selectedAccount } = useTorus();
   const currentUserKey = selectedAccount?.address;
 
-  const { data: allSignals, isLoading: isLoadingSignals } =
-    api.signal.all.useQuery();
+  const { data: fulfilledSignals, isLoading: isLoadingSignals } =
+    api.signal.fulfilled.useQuery();
 
   const { data: allComputedWeights, isLoading: isLoadingWeights } =
     api.computedAgentWeight.all.useQuery();
 
-  const utils = api.useUtils();
-  const deleteSignalMutation = api.signal.delete.useMutation({
-    onSuccess: () => {
-      void utils.signal.all.invalidate();
-    },
-  });
-
-  const fulfillSignalMutation = api.signal.fulfill.useMutation({
-    onSuccess: () => {
-      void utils.signal.all.invalidate();
-    },
-  });
-
   const rankedSignals = useMemo(() => {
-    if (!allSignals || !allComputedWeights) return [];
+    if (!fulfilledSignals || !allComputedWeights) return [];
 
-    const signalsWithMetadata = allSignals.map((signal) => {
+    const signalsWithMetadata = fulfilledSignals.map((signal) => {
       const agentWeight = allComputedWeights.find(
         (weight) => weight.agentKey === signal.agentKey,
       );
@@ -56,12 +43,12 @@ export default function AllSignalsView() {
       if (!a.isCurrentUser && b.isCurrentUser) return 1;
       return b.networkAllocation - a.networkAllocation;
     });
-  }, [allSignals, allComputedWeights, currentUserKey]);
+  }, [fulfilledSignals, allComputedWeights, currentUserKey]);
 
   if (isLoadingSignals || isLoadingWeights) {
     return (
       <div className="flex items-center justify-center mt-6 p-6 bg-muted rounded-md">
-        <div className="text-muted-foreground">Loading signals...</div>
+        <div className="text-muted-foreground">Loading fulfilled signals...</div>
       </div>
     );
   }
@@ -69,19 +56,10 @@ export default function AllSignalsView() {
   if (rankedSignals.length === 0) {
     return (
       <div className="flex items-center justify-center mt-6 p-6 bg-muted rounded-md">
-        <div className="text-muted-foreground">No active signals found.</div>
+        <div className="text-muted-foreground">No fulfilled signals found.</div>
       </div>
     );
   }
 
-  return (
-    <SignalAccordion
-      signals={rankedSignals}
-      onDelete={(signalId) => deleteSignalMutation.mutate({ signalId })}
-      onFulfill={(signalId) => fulfillSignalMutation.mutate({ signalId })}
-      isDeletingSignal={deleteSignalMutation.isPending}
-      isFulfillingSignal={fulfillSignalMutation.isPending}
-      variant="active"
-    />
-  );
+  return <SignalAccordion signals={rankedSignals} variant="fulfilled" />;
 }
