@@ -128,6 +128,11 @@ const data = {
       url: links.ren_labs,
       icon: Icons.LogoRenLabs,
     },
+    {
+      title: "Torus",
+      url: links.landing_page,
+      icon: Icons.Logo,
+    },
   ],
 };
 
