@@ -33,12 +33,17 @@ export const Filter = ({
       return;
     }
 
-    // Otherwise use URL-based filtering (server-side)
-    const url = searchValue
-      ? `/?search=${encodeURIComponent(searchValue)}&page=1`
-      : "/?page=1";
+  //   // Otherwise use URL-based filtering (server-side)
+    const url = new URL(window.location.href);
+    const params = url.searchParams;
+    if (searchValue) {
+      params.set("search", searchValue);
+    } else {
+      params.delete("search");
+    }
+    params.set("page", "1");
 
-    router.push(url);
+    router.push(`${url.pathname}?${params.toString()}`);
   };
 
   const handleClear = (e: React.MouseEvent) => {
@@ -50,8 +55,13 @@ export const Filter = ({
       return;
     }
 
-    router.push("/");
+    const url = new URL(window.location.href);
+    const searchParams = new URLSearchParams(url.search);
+    searchParams.delete('search');
+    searchParams.delete('page');
+    router.push(url.pathname + (searchParams.toString() ? `?${searchParams.toString()}` : ''));
   };
+  
 
   const showSearchInfo = isClientSide
     ? searchValue && hasSearched
