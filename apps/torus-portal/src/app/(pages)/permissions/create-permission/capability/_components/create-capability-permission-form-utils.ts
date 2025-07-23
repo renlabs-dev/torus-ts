@@ -23,8 +23,8 @@ export function transformFormDataToSDK(
     case "Irrevocable":
       revocation = { Irrevocable: null };
       break;
-    case "RevocableByGrantor":
-      revocation = { RevocableByGrantor: null };
+    case "RevocableByDelegator":
+      revocation = { RevocableByDelegator: null };
       break;
     case "RevocableByArbiters":
       revocation = {
@@ -41,10 +41,14 @@ export function transformFormDataToSDK(
       revocation = { Irrevocable: null };
   }
 
+  // Transform paths to the required format
+  const paths = new Map([[null, [data.namespacePath]]]);
+
   return {
-    grantee: data.grantee as SS58Address,
-    paths: [data.namespacePath],
+    recipient: data.recipient as SS58Address,
+    paths,
     duration,
     revocation,
+    instances: parseInt(data.instances),
   };
 }

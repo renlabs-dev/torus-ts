@@ -1,3 +1,5 @@
+import type { SS58Address } from "@torus-network/sdk/types";
+
 import { AllocatorAgentItem } from "@torus-ts/ui/components/allocator-agent-item";
 
 import type { RegisterAgentFormData } from "./register-agent-schema";
@@ -12,7 +14,7 @@ export function RegisterAgentPreview({
   return (
     <AllocatorAgentItem
       shouldHideAllocation
-      agentKey={formValues.agentKey}
+      agentKey={"agentKey" as SS58Address}
       iconUrl={formValues.icon ? URL.createObjectURL(formValues.icon) : null}
       socialsList={{
         discord: formValues.discord,

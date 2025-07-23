@@ -45,7 +45,6 @@ export interface RemoveVote extends TransactionHelpers {
 }
 
 export interface RegisterAgent {
-  agentKey: SS58Address;
   name: string;
   url: string;
   metadata: string;
@@ -67,7 +66,9 @@ export interface AddDaoTreasuryTransferProposal {
   callback?: (status: TransactionResult) => void;
 }
 
-export interface AddEmissionProposal extends Omit<EmissionProposal, "api">, TransactionHelpers {}
+export interface AddEmissionProposal
+  extends Omit<EmissionProposal, "api">,
+    TransactionHelpers {}
 
 export interface AddAgentApplication extends TransactionHelpers {
   IpfsHash: string;
