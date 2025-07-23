@@ -102,7 +102,7 @@ declare module '@polkadot/api-base/types/storage' {
       /**
        * Map of consensus members indexed by their keys. A consensus member is
        * any agent eligible for emissions in the next epoch. This means
-       * unregistered agents will also receive emissions.
+       * deregistered agents will also receive emissions.
        **/
       consensusMembers: AugmentedQuery<ApiType, (arg: AccountId32 | string | Uint8Array) => Observable<Option<PalletEmission0ConsensusMember>>, [AccountId32]> & QueryableStorageEntry<ApiType, [AccountId32]>;
       /**
@@ -286,17 +286,17 @@ declare module '@polkadot/api-base/types/storage' {
        **/
       permissions: AugmentedQuery<ApiType, (arg: H256 | string | Uint8Array) => Observable<Option<PalletPermission0PermissionPermissionContract>>, [H256]> & QueryableStorageEntry<ApiType, [H256]>;
       /**
-       * Permissions received by a specific account
+       * Permissions delegated by a specific account
        **/
-      permissionsByGrantee: AugmentedQuery<ApiType, (arg: AccountId32 | string | Uint8Array) => Observable<Vec<H256>>, [AccountId32]> & QueryableStorageEntry<ApiType, [AccountId32]>;
+      permissionsByDelegator: AugmentedQuery<ApiType, (arg: AccountId32 | string | Uint8Array) => Observable<Vec<H256>>, [AccountId32]> & QueryableStorageEntry<ApiType, [AccountId32]>;
       /**
-       * Permissions granted by a specific account
-       **/
-      permissionsByGrantor: AugmentedQuery<ApiType, (arg: AccountId32 | string | Uint8Array) => Observable<Vec<H256>>, [AccountId32]> & QueryableStorageEntry<ApiType, [AccountId32]>;
-      /**
-       * Mapping from (grantor, grantee) to permission IDs
+       * Mapping from (delegator, recipient) to permission IDs
        **/
       permissionsByParticipants: AugmentedQuery<ApiType, (arg: ITuple<[AccountId32, AccountId32]> | [AccountId32 | string | Uint8Array, AccountId32 | string | Uint8Array]) => Observable<Vec<H256>>, [ITuple<[AccountId32, AccountId32]>]> & QueryableStorageEntry<ApiType, [ITuple<[AccountId32, AccountId32]>]>;
+      /**
+       * Permissions received by a specific account
+       **/
+      permissionsByRecipient: AugmentedQuery<ApiType, (arg: AccountId32 | string | Uint8Array) => Observable<Vec<H256>>, [AccountId32]> & QueryableStorageEntry<ApiType, [AccountId32]>;
       /**
        * Revocations in progress and the voters
        **/
