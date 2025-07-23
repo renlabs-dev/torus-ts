@@ -1,4 +1,5 @@
 import { getLinks } from "@torus-ts/ui/lib/data";
+
 import { env } from "~/env";
 
 const links = getLinks(env("NEXT_PUBLIC_TORUS_CHAIN_ENV"));
@@ -70,7 +71,7 @@ export const CONTENT = {
     ],
     network: [
       { text: "Docs", href: links.docs },
-      { text: "Allocator", href: links.allocator },
+      { text: "Portal", href: links.portal },
       { text: "DAO", href: links.governance },
     ],
     common: [{ text: "Join", href: links.discord }],
