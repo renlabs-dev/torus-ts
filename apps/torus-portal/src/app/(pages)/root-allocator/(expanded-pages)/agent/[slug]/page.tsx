@@ -96,7 +96,7 @@ export default async function AgentPage({ params }: Readonly<AgentPageProps>) {
           className="flex w-fit items-center gap-1.5 p-0"
         >
           <Link
-            href="/allocation"
+            href="/root-allocator"
             className="mb-4 flex items-center text-white transition duration-200"
           >
             <ArrowLeft className="h-5 w-5" />

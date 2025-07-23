@@ -1,7 +1,9 @@
 "use client";
 
 import { useTorus } from "@torus-ts/torus-provider";
-import { AgentCard as UIAgentCard } from "@torus-ts/ui/components/agent-card/agent-card";
+import {
+  AgentCard as UIAgentCard,
+} from "@torus-ts/ui/components/agent-card/agent-card";
 
 import { useQueryAgentMetadata } from "~/hooks/use-agent-metadata";
 import { useBlobUrl } from "~/hooks/use-blob-url";
@@ -82,7 +84,7 @@ export function AgentCard(props: Readonly<AgentCardProps>) {
       socials={socials}
       website={website}
       percComputedWeight={props.percComputedWeight}
-      href={`/allocation/agent/${props.agentKey}`}
+      href={`/root-allocator/agent/${props.agentKey}`}
       showHoverEffect={true}
       isAgentDelegated={isAgentDelegated}
       isAgentSelected={isAgentSelected}

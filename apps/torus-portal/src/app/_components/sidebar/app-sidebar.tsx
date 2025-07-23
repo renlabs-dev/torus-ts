@@ -4,14 +4,14 @@ import * as React from "react";
 
 import {
   CircleFadingPlus,
+  Currency,
   FilePen,
   FilePlus,
-  HandCoins,
-  Network,
   PackagePlus,
   PackageX,
   Radio,
   RadioTower,
+  Waypoints,
 } from "lucide-react";
 import Link from "next/link";
 
@@ -42,12 +42,12 @@ const data = {
         {
           title: "Hypergraph",
           url: "/",
-          icon: Network,
+          icon: Waypoints,
         },
         {
-          title: "Agent Allocation",
-          url: "/allocation",
-          icon: HandCoins,
+          title: "Root Allocator",
+          url: "/root-allocator",
+          icon: Currency,
         },
       ],
     },
