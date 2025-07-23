@@ -140,7 +140,7 @@ export function AgentCardHeader({
       <div className="flex w-full flex-col items-center gap-6 md:flex-row md:gap-3">
         <AgentIcon icon={iconUrl} alt={`${name} icon`} variant="compact" />
         <div className="mt-1 flex h-full w-full flex-col justify-between gap-3">
-          <div className="flex w-full items-center justify-between gap-4">
+          <div className="flex w-full items-center justify-between gap-2">
             <AgentCardSocialsInfo socials={socialsList} />
             <AgentBadge
               isAgentSelected={isAgentSelected}

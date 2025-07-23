@@ -30,6 +30,7 @@ export interface AgentCardProps {
   isLoading?: boolean;
   isMetadataLoading?: boolean;
   footerContent?: React.ReactNode;
+  userWeightPower?: string | bigint | null;
 }
 
 export function AgentCard(props: Readonly<AgentCardProps>) {
@@ -53,6 +54,7 @@ export function AgentCard(props: Readonly<AgentCardProps>) {
     isLoading = false,
     isMetadataLoading = false,
     footerContent,
+    userWeightPower,
   } = props;
 
   const cardContent = (
@@ -85,6 +87,7 @@ export function AgentCard(props: Readonly<AgentCardProps>) {
           onPercentageChange={onPercentageChange}
           isAccountConnected={isAccountConnected}
           isLoading={isLoading}
+          userWeightPower={userWeightPower}
         >
           {footerContent}
         </AgentCardFooter>

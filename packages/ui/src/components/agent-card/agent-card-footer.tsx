@@ -11,6 +11,7 @@ export interface AgentCardFooterProps {
   isAccountConnected?: boolean;
   isLoading?: boolean;
   children?: React.ReactNode;
+  userWeightPower?: string | bigint | null;
 }
 
 export function AgentCardFooter({
@@ -19,6 +20,7 @@ export function AgentCardFooter({
   isAccountConnected = false,
   isLoading = false,
   children,
+  userWeightPower,
 }: Readonly<AgentCardFooterProps>) {
   const handleSliderChange = (value: number[]) => {
     const newPercentage = value[0];
@@ -38,13 +40,34 @@ export function AgentCardFooter({
     return null;
   }
 
+  const calculateUserWeightPowerAllocation = () => {
+    if (!userWeightPower || !currentPercentage) return null;
+
+    const weightPowerValue =
+      typeof userWeightPower === "string"
+        ? parseFloat(userWeightPower.replace(/,/g, ""))
+        : 0;
+
+    const allocation = ((weightPowerValue * currentPercentage) / 100).toFixed(
+      2,
+    );
+    return allocation;
+  };
+
+  const userAllocation = calculateUserWeightPowerAllocation();
+
   return (
     <CardFooter className="mt-4 flex flex-col items-start">
       {showAllocationControls && (
         <>
           <Label className="flex items-center gap-1 text-xs font-semibold">
-            Your current allocation:{" "}
+            Your allocation:{" "}
             <span className="text-cyan-500">{currentPercentage}%</span>
+            {userAllocation && userWeightPower && (
+              <span className="text-muted-foreground">
+                ({userAllocation} TORUS)
+              </span>
+            )}
           </Label>
 
           <Slider

@@ -42,11 +42,8 @@ export default function RootLayout({
           torusCacheUrl={env("NEXT_PUBLIC_TORUS_CACHE_URL")}
         >
           <TRPCReactProvider>
-            {/* <PortalHeader torusCacheUrl={env("NEXT_PUBLIC_TORUS_CACHE_URL")} /> */}
             <SidebarContainer>{children}</SidebarContainer>
             <Toaster />
-            {/* <Footer torusChainEnv={env("NEXT_PUBLIC_TORUS_CHAIN_ENV")} /> */}
-
             <GoogleAnalytics gaId="G-7YCMH64Q4J" />
           </TRPCReactProvider>
         </TorusProvider>
