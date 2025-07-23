@@ -69,16 +69,17 @@ export function AgentCard(props: Readonly<AgentCardProps>) {
         website={website}
         isAgentDelegated={isAgentDelegated}
         isAgentSelected={isAgentSelected}
-        percComputedWeight={percComputedWeight}
-        tokensPerWeek={tokensPerWeek}
-        usdValue={usdValue}
-        isLoading={isLoading}
         isMetadataLoading={isMetadataLoading}
       />
 
       <AgentCardContent
         shortDescription={shortDescription}
+        agentKey={agentKey}
+        percComputedWeight={percComputedWeight}
+        tokensPerWeek={tokensPerWeek}
+        usdValue={usdValue}
         isLoading={isMetadataLoading}
+        isStatsLoading={isLoading}
       />
 
       <div className="mt-auto">
