@@ -1,12 +1,5 @@
-import { useMemo } from "react";
-
 import { Info } from "lucide-react";
 
-import { checkSS58 } from "@torus-network/sdk/types";
-import { formatToken } from "@torus-network/torus-utils/torus/token";
-
-import { useKeyStakedBy } from "@torus-ts/query-provider/hooks";
-import { useTorus } from "@torus-ts/torus-provider";
 import { Label } from "@torus-ts/ui/components/label";
 import {
   Tooltip,
@@ -15,27 +8,12 @@ import {
   TooltipTrigger,
 } from "@torus-ts/ui/components/tooltip";
 
-import { env } from "~/env";
+import { useUserWeightPower } from "~/hooks/use-user-weight-power";
 import { useTutorialStore } from "~/stores/tutorialStore";
 
 export function WeightPowerLabel() {
   const { openTutorial } = useTutorialStore();
-
-  const { selectedAccount, api: torusApi } = useTorus();
-  const { data: accountStakedBy, isLoading: isLoadingAccountStakedBy } =
-    useKeyStakedBy(torusApi, env("NEXT_PUBLIC_TORUS_ALLOCATOR_ADDRESS"));
-
-  const userWeightPower = useMemo(() => {
-    if (isLoadingAccountStakedBy || !selectedAccount?.address) return null;
-
-    if (!accountStakedBy) {
-      return BigInt(0);
-    }
-
-    const stake = accountStakedBy.get(checkSS58(selectedAccount.address));
-
-    return formatToken(stake ?? 0n);
-  }, [accountStakedBy, isLoadingAccountStakedBy, selectedAccount]);
+  const { userWeightPower } = useUserWeightPower();
 
   return (
     <Label className="flex items-center gap-2 text-sm">

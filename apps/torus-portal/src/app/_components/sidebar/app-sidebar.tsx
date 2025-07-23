@@ -7,11 +7,11 @@ import {
   Currency,
   FilePen,
   FilePlus,
+  Network,
   PackagePlus,
   PackageX,
   Radio,
   RadioTower,
-  Waypoints,
 } from "lucide-react";
 import Link from "next/link";
 
@@ -42,7 +42,7 @@ const data = {
         {
           title: "Hypergraph",
           url: "/",
-          icon: Waypoints,
+          icon: Network,
         },
         {
           title: "Root Allocator",

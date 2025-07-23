@@ -7,6 +7,7 @@ import {
 
 import { useQueryAgentMetadata } from "~/hooks/use-agent-metadata";
 import { useBlobUrl } from "~/hooks/use-blob-url";
+import { useUserWeightPower } from "~/hooks/use-user-weight-power";
 import { useWeeklyUsdCalculation } from "~/hooks/use-weekly-usd";
 import { useDelegateAgentStore } from "~/stores/delegateAgentStore";
 
@@ -23,6 +24,7 @@ interface AgentCardProps {
 
 export function AgentCard(props: Readonly<AgentCardProps>) {
   const { selectedAccount, isInitialized } = useTorus();
+  const { userWeightPower } = useUserWeightPower();
   const {
     originalAgents,
     delegatedAgents,
@@ -96,6 +98,7 @@ export function AgentCard(props: Readonly<AgentCardProps>) {
       isAccountConnected={!!selectedAccount?.address}
       isLoading={!isInitialized || isWeeklyUsdLoading}
       isMetadataLoading={isMetadataLoading}
+      userWeightPower={userWeightPower}
     />
   );
 }
