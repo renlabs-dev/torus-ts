@@ -122,6 +122,11 @@ export function AddEmissionProposalForm({
   }
 
   async function onSubmit(data: AddEmissionProposalFormData) {
+    const percent = data.recyclingPercentage + data.treasuryPercentage;
+    if (percent > 100) {
+      toast.error("Recycling and treasury percentages cannot exceed 100%");
+      return;
+    }
     const proposalMetadata = JSON.stringify({
       title: data.title,
       body: data.description,
