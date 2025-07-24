@@ -1,19 +1,20 @@
 "use client";
 
-import { WalletCards } from "lucide-react";
 import { useMemo } from "react";
+
+import { WalletCards } from "lucide-react";
+
+import { cn } from "../../lib/utils";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from "../dropdown-menu";
-
-import { cn } from "../../lib/utils";
 import { WalletActions } from "./wallet-actions";
 import { WalletInfo } from "./wallet-info";
 import { WalletLabel } from "./wallet-label";
-import { WalletSwitch } from "./wallet-switch";
 import { WalletSelect } from "./wallet-select";
+import { WalletSwitch } from "./wallet-switch";
 
 export type KeypairType = "ed25519" | "sr25519" | "ecdsa" | "ethereum";
 
@@ -92,7 +93,7 @@ export const WalletDropdown = (props: WalletDropdownProps) => {
         <DropdownMenuTrigger disabled={!isInitialized} asChild>
           <button
             className={cn(
-              "flex items-center gap-2 bg-background p-2 transition duration-200 hover:bg-background/60",
+              "flex items-center gap-2 bg-transparent p-2 transition duration-200 hover:bg-background/60",
             )}
           >
             <WalletCards className="!h-5 !w-5" />

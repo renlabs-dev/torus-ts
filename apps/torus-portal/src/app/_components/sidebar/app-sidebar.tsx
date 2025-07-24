@@ -4,6 +4,7 @@ import * as React from "react";
 
 import {
   CircleFadingPlus,
+  Currency,
   FilePen,
   FilePlus,
   Network,
@@ -42,6 +43,11 @@ const data = {
           title: "Hypergraph",
           url: "/",
           icon: Network,
+        },
+        {
+          title: "Root Allocator",
+          url: "/root-allocator",
+          icon: Currency,
         },
       ],
     },
@@ -121,6 +127,11 @@ const data = {
       title: "Ren Labs",
       url: links.ren_labs,
       icon: Icons.LogoRenLabs,
+    },
+    {
+      title: "Torus",
+      url: links.landing_page,
+      icon: Icons.Logo,
     },
   ],
 };

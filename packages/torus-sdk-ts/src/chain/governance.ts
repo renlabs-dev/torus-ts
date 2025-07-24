@@ -2,7 +2,9 @@ import "@polkadot/api/augment";
 
 import type { ApiPromise } from "@polkadot/api";
 import { Keyring } from "@polkadot/api";
+import type { Bytes } from "@polkadot/types";
 import type { Percent } from "@polkadot/types/interfaces";
+import type { AnyNumber } from "@polkadot/types/types";
 import { encodeAddress } from "@polkadot/util-crypto";
 import { z } from "zod";
 
@@ -793,4 +795,27 @@ export async function denyApplication(
   }
 
   return extrinsic;
+}
+
+export interface EmissionProposal {
+  api: ApiPromise;
+  recyclingPercentage: Percent | AnyNumber | Uint8Array;
+  treasuryPercentage: Percent | AnyNumber | Uint8Array;
+  incentivesRatio: Percent | AnyNumber | Uint8Array;
+  data: Bytes | string | Uint8Array;
+}
+
+export function addEmissionProposal({
+  api,
+  recyclingPercentage,
+  treasuryPercentage,
+  incentivesRatio,
+  data,
+}: EmissionProposal) {
+  return api.tx.governance.addEmissionProposal(
+    recyclingPercentage,
+    treasuryPercentage,
+    incentivesRatio,
+    data,
+  );
 }
