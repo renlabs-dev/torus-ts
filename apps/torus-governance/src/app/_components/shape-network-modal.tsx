@@ -61,7 +61,7 @@ const viewList: Record<ViewType, ViewSpec> = {
     component: <CreateAgentApplication />,
   },
   "create-proposal": {
-    label: "Create a proposal",
+    label: "Create a custom proposal",
     description: "Submit a new governance proposal",
     icon: <FileText className="h-4 w-4 text-blue-500" />,
     component: <CreateProposal />,

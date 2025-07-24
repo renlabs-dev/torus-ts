@@ -6,6 +6,7 @@ import { Plus } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
+import { formatToken } from "@torus-network/torus-utils/torus/legacy";
 import { tryAsync } from "@torus-network/torus-utils/try-catch";
 
 import { useTorus } from "@torus-ts/torus-provider";
@@ -21,9 +22,13 @@ import {
 } from "@torus-ts/ui/components/form";
 import { Input } from "@torus-ts/ui/components/input";
 import { Textarea } from "@torus-ts/ui/components/text-area";
-import { WalletConnectionWarning } from "@torus-ts/ui/components/wallet-connection-warning";
+import {
+  WalletConnectionWarning,
+} from "@torus-ts/ui/components/wallet-connection-warning";
 import { useToast } from "@torus-ts/ui/hooks/use-toast";
 import { cn } from "@torus-ts/ui/lib/utils";
+
+import { useGovernance } from "~/context/governance-provider";
 
 const ADD_EMISSION_PROPOSAL_SCHEMA = z.object({
   title: z
@@ -62,6 +67,7 @@ export function AddEmissionProposalForm({
   const { isAccountConnected, isInitialized, addEmissionProposal } = useTorus();
   const { toast } = useToast();
   const { uploadFile, uploading } = useFileUploader();
+  const { networkConfigs } = useGovernance();
 
   const form = useForm<AddEmissionProposalFormData>({
     resolver: zodResolver(ADD_EMISSION_PROPOSAL_SCHEMA),
@@ -116,17 +122,6 @@ export function AddEmissionProposalForm({
   }
 
   async function onSubmit(data: AddEmissionProposalFormData) {
-    // Validate that percentages add up to 100
-    const total =
-      data.recyclingPercentage + data.treasuryPercentage + data.incentivesRatio;
-    if (total !== 100) {
-      toast.error(
-        "Recycling, treasury, and incentives percentages must add up to 100%",
-      );
-      return;
-    }
-
-    // Create metadata JSON with title, description, and emission parameters
     const proposalMetadata = JSON.stringify({
       title: data.title,
       body: data.description,
@@ -147,6 +142,8 @@ export function AddEmissionProposalForm({
     await handleFileUpload(fileToUpload);
   }
 
+  const proposalCost = networkConfigs.data?.proposalCost ?? 0;
+
   return (
     <Form {...form}>
       <form
@@ -157,8 +154,7 @@ export function AddEmissionProposalForm({
         <div className="space-y-2">
           <h2 className="text-2xl font-semibold">Create Emission Proposal</h2>
           <p className="text-muted-foreground">
-            Submit a proposal to modify network emission parameters. All
-            percentages must add up to 100%.
+            Submit a proposal to modify network emission parameters.
           </p>
         </div>
 
@@ -293,6 +289,15 @@ export function AddEmissionProposalForm({
               </FormItem>
             )}
           />
+
+          <div className="flex items-start gap-2">
+            <span className="text-white">
+              Proposal cost:{" "}
+              <span className="text-muted-foreground">
+                {formatToken(proposalCost)} TORUS
+              </span>
+            </span>
+          </div>
 
           <Button
             type="submit"
