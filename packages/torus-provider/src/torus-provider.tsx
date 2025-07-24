@@ -20,6 +20,7 @@ import type {
   UpdateEmissionPermission,
 } from "@torus-network/sdk/chain";
 import {
+  addEmissionProposal,
   createNamespace,
   deleteNamespace,
   grantEmissionPermission,
@@ -39,6 +40,7 @@ import type {
   AddAgentApplication,
   AddCustomProposal,
   AddDaoTreasuryTransferProposal,
+  AddEmissionProposal,
   CreateNamespace,
   DeleteNamespace,
   RegisterAgent,
@@ -111,6 +113,7 @@ interface TorusContextType {
   addDaoTreasuryTransferProposal: (
     proposal: AddDaoTreasuryTransferProposal,
   ) => Promise<void>;
+  addEmissionProposal: (proposal: AddEmissionProposal) => Promise<void>;
   updateDelegatingVotingPower: (
     updateDelegating: UpdateDelegatingVotingPower,
   ) => Promise<void>;
@@ -697,6 +700,39 @@ export function TorusProvider({
     });
   }
 
+  async function addEmissionProposalTransaction({
+    recyclingPercentage,
+    treasuryPercentage,
+    incentivesRatio,
+    data,
+    callback,
+    refetchHandler,
+  }: AddEmissionProposal): Promise<void> {
+    if (!api) {
+      console.log("API not connected");
+      return;
+    }
+
+    const transaction = addEmissionProposal({
+      api,
+      recyclingPercentage,
+      treasuryPercentage,
+      incentivesRatio,
+      data,
+    });
+
+    await sendTransaction({
+      api,
+      torusApi,
+      selectedAccount,
+      callback,
+      transaction,
+      transactionType: "Create Emission Proposal",
+      wsEndpoint,
+      refetchHandler,
+    });
+  }
+
   async function estimateFee(
     transaction: SubmittableExtrinsic<"promise", ISubmittableResult>,
   ) {
@@ -970,6 +1006,7 @@ export function TorusProvider({
         AddAgentApplication,
         addCustomProposal,
         addDaoTreasuryTransferProposal,
+        addEmissionProposal: addEmissionProposalTransaction,
         addStake,
         addStakeTransaction,
         api,
