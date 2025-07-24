@@ -129,7 +129,7 @@ export function AddEmissionProposalForm({
     // Create metadata JSON with title, description, and emission parameters
     const proposalMetadata = JSON.stringify({
       title: data.title,
-      description: data.description,
+      body: data.description,
       emissionParameters: {
         recyclingPercentage: data.recyclingPercentage,
         treasuryPercentage: data.treasuryPercentage,
