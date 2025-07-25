@@ -2,7 +2,7 @@
 
 import { ArrowRight, Copy } from "lucide-react";
 import { DateTime } from "luxon";
-import { getExplorerLink } from "node_modules/@torus-ts/torus-provider/src/_components/toast-content-handler";
+import { getExplorerLink } from "node_modules/@torus-ts/torus-provider/src/_components/send-transaction-v2";
 
 import { smallAddress } from "@torus-network/torus-utils/torus/address";
 import { formatToken } from "@torus-network/torus-utils/torus/token";

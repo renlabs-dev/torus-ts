@@ -20,6 +20,7 @@ import type {
   UpdateEmissionPermission,
 } from "@torus-network/sdk/chain";
 import {
+  addEmissionProposal,
   createNamespace,
   deleteNamespace,
   grantEmissionPermission,
@@ -34,13 +35,12 @@ import { sb_balance } from "@torus-network/sdk/types";
 import { toNano } from "@torus-network/torus-utils/torus/token";
 import { tryAsync, trySync } from "@torus-network/torus-utils/try-catch";
 
-import { useToast } from "@torus-ts/ui/hooks/use-toast";
-
 import { sendTransaction } from "./_components/send-transaction";
 import type {
   AddAgentApplication,
   AddCustomProposal,
   AddDaoTreasuryTransferProposal,
+  AddEmissionProposal,
   CreateNamespace,
   DeleteNamespace,
   RegisterAgent,
@@ -113,6 +113,7 @@ interface TorusContextType {
   addDaoTreasuryTransferProposal: (
     proposal: AddDaoTreasuryTransferProposal,
   ) => Promise<void>;
+  addEmissionProposal: (proposal: AddEmissionProposal) => Promise<void>;
   updateDelegatingVotingPower: (
     updateDelegating: UpdateDelegatingVotingPower,
   ) => Promise<void>;
@@ -208,8 +209,6 @@ export function TorusProvider({
   >([]);
   const [selectedAccount, setSelectedAccount] =
     useState<InjectedAccountWithMeta | null>(null);
-
-  const { toast } = useToast();
 
   // == Initialize Polkadot ==
 
@@ -415,7 +414,6 @@ export function TorusProvider({
       transactionType: "Staking",
       refetchHandler,
       wsEndpoint,
-      toast,
     });
   }
 
@@ -445,7 +443,6 @@ export function TorusProvider({
       transactionType: "Unstaking",
       refetchHandler,
       wsEndpoint,
-      toast,
     });
   }
 
@@ -478,7 +475,6 @@ export function TorusProvider({
       transactionType: "Transfer",
       refetchHandler,
       wsEndpoint,
-      toast,
     });
   }
 
@@ -519,7 +515,6 @@ export function TorusProvider({
       transactionType: "Transfer Stake",
       refetchHandler,
       wsEndpoint,
-      toast,
     });
   }
 
@@ -568,7 +563,6 @@ export function TorusProvider({
       transaction,
       transactionType: "Register Agent",
       wsEndpoint,
-      toast,
     });
   }
 
@@ -592,7 +586,6 @@ export function TorusProvider({
       transaction,
       transactionType: "Update Agent",
       wsEndpoint,
-      toast,
     });
   }
 
@@ -616,7 +609,6 @@ export function TorusProvider({
       transactionType: "Vote Proposal",
       wsEndpoint,
       refetchHandler,
-      toast,
     });
   }
 
@@ -637,7 +629,6 @@ export function TorusProvider({
       transactionType: "Remove Vote",
       wsEndpoint,
       refetchHandler,
-      toast,
     });
   }
 
@@ -656,7 +647,6 @@ export function TorusProvider({
       transaction,
       transactionType: "Create Custom Proposal",
       wsEndpoint,
-      toast,
     });
   }
 
@@ -683,7 +673,6 @@ export function TorusProvider({
       transactionType: "Create Dao Application",
       wsEndpoint,
       refetchHandler,
-      toast,
     });
   }
 
@@ -708,7 +697,39 @@ export function TorusProvider({
       transaction,
       transactionType: "Transfer Dao Treasury Proposal",
       wsEndpoint,
-      toast,
+    });
+  }
+
+  async function addEmissionProposalTransaction({
+    recyclingPercentage,
+    treasuryPercentage,
+    incentivesRatio,
+    data,
+    callback,
+    refetchHandler,
+  }: AddEmissionProposal): Promise<void> {
+    if (!api) {
+      console.log("API not connected");
+      return;
+    }
+
+    const transaction = addEmissionProposal({
+      api,
+      recyclingPercentage,
+      treasuryPercentage,
+      incentivesRatio,
+      data,
+    });
+
+    await sendTransaction({
+      api,
+      torusApi,
+      selectedAccount,
+      callback,
+      transaction,
+      transactionType: "Create Emission Proposal",
+      wsEndpoint,
+      refetchHandler,
     });
   }
 
@@ -772,7 +793,6 @@ export function TorusProvider({
       transactionType: "Update Delegating Voting Power",
       wsEndpoint,
       refetchHandler,
-      toast,
     });
   }
 
@@ -812,7 +832,6 @@ export function TorusProvider({
       transactionType: "Delegate Emission Permission",
       wsEndpoint,
       refetchHandler,
-      toast,
     });
   }
 
@@ -847,7 +866,6 @@ export function TorusProvider({
       transactionType: "Grant Capability Permission",
       wsEndpoint,
       refetchHandler,
-      toast,
     });
   }
 
@@ -882,7 +900,6 @@ export function TorusProvider({
       transactionType: "Update Emission Permission",
       wsEndpoint,
       refetchHandler,
-      toast,
     });
   }
 
@@ -907,7 +924,6 @@ export function TorusProvider({
       transactionType: "Revoke Permission",
       wsEndpoint,
       refetchHandler,
-      toast,
     });
   }
 
@@ -932,7 +948,6 @@ export function TorusProvider({
       transactionType: "Create Capability",
       wsEndpoint,
       refetchHandler,
-      toast,
     });
   }
 
@@ -957,7 +972,6 @@ export function TorusProvider({
       transactionType: "Delete Namespace",
       wsEndpoint,
       refetchHandler,
-      toast,
     });
   }
 
@@ -982,7 +996,6 @@ export function TorusProvider({
       transactionType: "Remark",
       wsEndpoint,
       refetchHandler,
-      toast,
     });
   }
 
@@ -993,6 +1006,7 @@ export function TorusProvider({
         AddAgentApplication,
         addCustomProposal,
         addDaoTreasuryTransferProposal,
+        addEmissionProposal: addEmissionProposalTransaction,
         addStake,
         addStakeTransaction,
         api,

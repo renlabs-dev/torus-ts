@@ -26,7 +26,7 @@ export function AgentIcon({
 }: AgentIconProps) {
   const variantClasses = {
     default: "md:h-48 md:w-48",
-    compact: "md:h-32 w-full md:w-32",
+    compact: "md:h-28 w-full md:w-28",
   };
 
   const containerStyles = cn(

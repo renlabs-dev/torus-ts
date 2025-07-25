@@ -258,9 +258,9 @@ export const AgentCard = memo(
         socials={socials}
         website={socials.website}
         percComputedWeight={weightFactor}
-        showHoverEffect={false}
         tokensPerWeek={displayTokensPerWeek}
         isLoading={isWeeklyUsdLoading}
+        href={`/root-allocator/agent/${nodeId}`}
       />
     );
   },

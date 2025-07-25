@@ -114,12 +114,38 @@ function handleProposalParams(
 function handleProposalEmission(
   proposalId: number,
   emission: Record<string, unknown>,
+  customData: CustomMetadataState | null,
 ): ProposalCardFields {
-  const title = `Emission proposal #${proposalId}`;
-  return {
-    title,
-    body: paramsToMarkdown(emission),
-  };
+  const paramsMarkdown = paramsToMarkdown(emission);
+
+  if (customData == null) {
+    const title = `Emission proposal #${proposalId}`;
+    return {
+      title,
+      body: paramsMarkdown,
+    };
+  }
+
+  return match(customData)({
+    Err(): ProposalCardFields {
+      const title = `Emission proposal #${proposalId}`;
+      return {
+        title,
+        body: paramsMarkdown,
+      };
+    },
+    Ok(data): ProposalCardFields {
+      const title = data.title ?? `Emission proposal #${proposalId}`;
+      const body = data.body
+        ? `${paramsMarkdown}\n${data.body}`
+        : paramsMarkdown;
+
+      return {
+        title,
+        body,
+      };
+    },
+  });
 }
 
 export const handleCustomProposal = (
@@ -136,7 +162,11 @@ export const handleCustomProposal = (
       return handleCustomProposalData(proposal.id, proposal.customData ?? null);
     },
     Emission(params): ProposalCardFields {
-      return handleProposalEmission(proposal.id, params);
+      return handleProposalEmission(
+        proposal.id,
+        params,
+        proposal.customData ?? null,
+      );
     },
   });
 

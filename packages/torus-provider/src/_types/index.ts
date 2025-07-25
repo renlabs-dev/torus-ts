@@ -1,6 +1,6 @@
 // == Transactions ==
 
-import type { PermissionId } from "@torus-network/sdk/chain";
+import type { EmissionProposal, PermissionId } from "@torus-network/sdk/chain";
 import type { SS58Address } from "@torus-network/sdk/types";
 
 export interface TransactionResult {
@@ -66,6 +66,8 @@ export interface AddDaoTreasuryTransferProposal {
 
   callback?: (status: TransactionResult) => void;
 }
+
+export interface AddEmissionProposal extends Omit<EmissionProposal, "api">, TransactionHelpers {}
 
 export interface AddAgentApplication extends TransactionHelpers {
   IpfsHash: string;

@@ -10,8 +10,10 @@ import type { SS58Address } from "@torus-network/sdk/types";
 import { checkSS58 } from "@torus-network/sdk/types";
 import { cidToIpfsUri } from "@torus-network/torus-utils/ipfs";
 
+import { useAgents } from "@torus-ts/query-provider/hooks";
 import { useTorus } from "@torus-ts/torus-provider";
 import { Button } from "@torus-ts/ui/components/button";
+import { DestructiveAlertWithDescription } from "@torus-ts/ui/components/destructive-alert-with-description";
 import { Form } from "@torus-ts/ui/components/form";
 import { WalletConnectionWarning } from "@torus-ts/ui/components/wallet-connection-warning";
 import { useToast } from "@torus-ts/ui/hooks/use-toast";
@@ -65,6 +67,12 @@ export function RegisterAgentForm({
       icon: undefined,
     },
   });
+
+  const agents = useAgents(api);
+
+  const isAlreadyRegistered = selectedAccount?.address
+    ? agents.data?.has(selectedAccount.address as SS58Address)
+    : false;
 
   async function handleSubmit(data: z.infer<typeof REGISTER_AGENT_SCHEMA>) {
     setTransactionStatus("loading");
@@ -150,6 +158,13 @@ export function RegisterAgentForm({
           isInitialized={isInitialized}
         />
 
+        {isAlreadyRegistered && (
+          <DestructiveAlertWithDescription
+            title="Agent Already Registered"
+            description="The connected account is already registered as an agent."
+          />
+        )}
+
         <div className="grid gap-6 max-w-2xl">
           <RegisterAgentInfoFields
             control={form.control}
@@ -187,7 +202,11 @@ export function RegisterAgentForm({
             type="submit"
             variant="outline"
             className="w-full"
-            disabled={!isAccountConnected || transactionStatus === "loading"}
+            disabled={
+              !isAccountConnected ||
+              transactionStatus === "loading" ||
+              isAlreadyRegistered
+            }
           >
             {transactionStatus === "loading"
               ? "Registering..."

@@ -32,6 +32,7 @@ import { useGovernance } from "~/context/governance-provider";
 import {
   CreateAgentApplication,
 } from "./agent-application/create-agent-application";
+import { AddEmissionProposalForm } from "./proposal/add-emission-proposal";
 import { CreateProposal } from "./proposal/create-proposal";
 import {
   CreateTransferDaoTreasuryProposal,
@@ -40,6 +41,7 @@ import {
 type ViewType =
   | "whitelist-agent"
   | "create-proposal"
+  | "create-emission-proposal"
   | "create-transfer-dao-treasury-proposal";
 
 interface ViewSpec {
@@ -59,10 +61,16 @@ const viewList: Record<ViewType, ViewSpec> = {
     component: <CreateAgentApplication />,
   },
   "create-proposal": {
-    label: "Create a proposal",
+    label: "Create a custom proposal",
     description: "Submit a new governance proposal",
     icon: <FileText className="h-4 w-4 text-blue-500" />,
     component: <CreateProposal />,
+  },
+  "create-emission-proposal": {
+    label: "Create emission proposal",
+    description: "Propose network emission parameter changes",
+    icon: <Coins className="h-4 w-4 text-green-500" />,
+    component: <AddEmissionProposalForm />,
   },
   "create-transfer-dao-treasury-proposal": {
     label: "Transfer DAO Treasury",

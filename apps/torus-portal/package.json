@@ -43,7 +43,8 @@
     "react-dom": "catalog:react19",
     "three": "catalog:",
     "tsafe": "catalog:",
-    "zod": "catalog:"
+    "zod": "catalog:",
+    "zustand": "^4.5.4"
   },
   "devDependencies": {
     "@next/eslint-plugin-next": "catalog:",

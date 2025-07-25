@@ -1,4 +1,4 @@
-default: install check-all
+default: install check-test
 
 # == Chain metadata ==
 
@@ -63,14 +63,14 @@ fix: lint-fix format-fix
 lint-ws:
   pnpm exec pnpm dlx sherif@latest -r unordered-dependencies
 
-check-all filter="*":
-  pnpm exec turbo run typecheck lint -F "{{filter}}"
-
 check filter="*":
   pnpm exec turbo run typecheck lint -F "{{filter}}"
 
 test filter="*":
   pnpm exec turbo run test --continue -F "{{filter}}"
+
+check-test filter="*":
+  pnpm exec turbo run typecheck lint test -F "{{filter}}"
 
 create-package:
   pnpm turbo gen init

@@ -1,223 +1,194 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { toast as sonnerToast } from "sonner";
+import type { ToastT } from "sonner";
+import { DEFAULT_DURATION } from "../components/toaster";
 
-import type {
-  ToastActionElement,
-  ToastProps,
-} from "@torus-ts/ui/components/toast";
+type ToastVariant = "default" | "destructive";
 
-const TOAST_LIMIT = 1;
-const TOAST_REMOVE_DELAY = 1000000;
+interface ToastAction {
+  label: string;
+  onClick: () => void;
+}
 
-type ToasterToast = ToastProps & {
-  id: string;
+interface ToastProps {
   title?: React.ReactNode;
   description?: React.ReactNode;
-  action?: ToastActionElement;
-};
-
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-const actionTypes = {
-  ADD_TOAST: "ADD_TOAST",
-  UPDATE_TOAST: "UPDATE_TOAST",
-  DISMISS_TOAST: "DISMISS_TOAST",
-  REMOVE_TOAST: "REMOVE_TOAST",
-} as const;
-
-let count = 0;
-
-function genId() {
-  count = (count + 1) % Number.MAX_SAFE_INTEGER;
-  return count.toString();
+  variant?: ToastVariant;
+  duration?: number;
+  action?: ToastAction;
+  classNames?: {
+    icon?: string;
+    content?: string;
+  };
+  actionButtonStyle?: React.CSSProperties;
 }
 
-type ActionType = typeof actionTypes;
-
-type Action =
-  | {
-      type: ActionType["ADD_TOAST"];
-      toast: ToasterToast;
-    }
-  | {
-      type: ActionType["UPDATE_TOAST"];
-      toast: Partial<ToasterToast>;
-    }
-  | {
-      type: ActionType["DISMISS_TOAST"];
-      toastId?: ToasterToast["id"];
-    }
-  | {
-      type: ActionType["REMOVE_TOAST"];
-      toastId?: ToasterToast["id"];
-    };
-
-interface State {
-  toasts: ToasterToast[];
+interface ToastResult {
+  id: string | number;
+  dismiss: () => void;
+  update: (newProps: Partial<ToastProps>) => ToastResult;
 }
 
-const toastTimeouts = new Map<string, ReturnType<typeof setTimeout>>();
+const createEmptyToastResult = (): ToastResult => ({
+  id: "",
+  dismiss: () => {
+    // intentionally empty
+  },
+  update: () => createEmptyToastResult(),
+});
 
-const addToRemoveQueue = (toastId: string) => {
-  if (toastTimeouts.has(toastId)) {
-    return;
-  }
+const createToast = ({
+  title,
+  description,
+  variant = "default",
+  duration,
+  ...props
+}: ToastProps): ToastResult => {
+  if (!title && !description) return createEmptyToastResult();
 
-  const timeout = setTimeout(() => {
-    toastTimeouts.delete(toastId);
-    dispatch({
-      type: "REMOVE_TOAST",
-      toastId: toastId,
-    });
-  }, TOAST_REMOVE_DELAY);
+  const toastOptions = { description, duration, ...props };
 
-  toastTimeouts.set(toastId, timeout);
-};
+  const toastId =
+    variant === "destructive"
+      ? sonnerToast.error(title, toastOptions)
+      : sonnerToast(title, toastOptions);
 
-export const reducer = (state: State, action: Action): State => {
-  switch (action.type) {
-    case "ADD_TOAST":
-      return {
-        ...state,
-        toasts: [action.toast, ...state.toasts].slice(0, TOAST_LIMIT),
-      };
-
-    case "UPDATE_TOAST":
-      return {
-        ...state,
-        toasts: state.toasts.map((t) =>
-          t.id === action.toast.id ? { ...t, ...action.toast } : t,
-        ),
-      };
-
-    case "DISMISS_TOAST": {
-      const { toastId } = action;
-
-      // ! Side effects ! - This could be extracted into a dismissToast() action,
-      // but I'll keep it here for simplicity
-      if (toastId) {
-        addToRemoveQueue(toastId);
-      } else {
-        state.toasts.forEach((toast) => {
-          addToRemoveQueue(toast.id);
-        });
-      }
-
-      return {
-        ...state,
-        toasts: state.toasts.map((t) =>
-          t.id === toastId || toastId === undefined
-            ? {
-                ...t,
-                open: false,
-              }
-            : t,
-        ),
-      };
-    }
-    case "REMOVE_TOAST":
-      if (action.toastId === undefined) {
-        return {
-          ...state,
-          toasts: [],
-        };
-      }
-      return {
-        ...state,
-        toasts: state.toasts.filter((t) => t.id !== action.toastId),
-      };
-  }
-};
-
-const listeners: ((state: State) => void)[] = [];
-
-let memoryState: State = { toasts: [] };
-
-function dispatch(action: Action) {
-  memoryState = reducer(memoryState, action);
-  listeners.forEach((listener) => {
-    listener(memoryState);
-  });
-}
-
-export type Toast = Omit<ToasterToast, "id">;
-
-function toast({ ...props }: Toast) {
-  const id = genId();
-
-  const update = (props: ToasterToast) =>
-    dispatch({
-      type: "UPDATE_TOAST",
-      toast: { ...props, id },
-    });
-  const dismiss = () => dispatch({ type: "DISMISS_TOAST", toastId: id });
-
-  dispatch({
-    type: "ADD_TOAST",
-    toast: {
-      ...props,
-      id,
-      open: true,
-      onOpenChange: (open) => {
-        if (!open) dismiss();
-      },
+  return {
+    id: String(toastId),
+    dismiss: () => sonnerToast.dismiss(toastId),
+    update: (newProps) => {
+      sonnerToast.dismiss(toastId);
+      return createToast({
+        title,
+        description,
+        variant,
+        duration,
+        ...props,
+        ...newProps,
+      });
     },
-  });
-
-  return {
-    id: id,
-    dismiss,
-    update,
   };
-}
-
-toast.success = (description?: string, duration?: number) => {
-  return toast({
-    title: "Success!",
-    description: description ?? "Operation completed successfully.",
-    variant: "default",
-    duration: duration ?? 2000,
-  });
 };
 
-toast.error = (description?: string, duration?: number) => {
-  return toast({
-    title: "Uh oh! Something went wrong.",
-    description:
-      description ?? "An unexpected error occurred. Please try again.",
-    variant: "default",
-    duration: duration ?? 2000,
-  });
-};
-
-// export type ToastFunction = (props: Toast) => ReturnType<typeof toast>;
-export interface ToastFunction {
-  (props: Toast): ReturnType<typeof toast>;
-  success: (
-    description?: string,
-    duration?: number,
-  ) => ReturnType<typeof toast>;
-  error: (description?: string, duration?: number) => ReturnType<typeof toast>;
-}
-
-function useToast() {
-  const [state, setState] = useState<State>(memoryState);
-
-  useEffect(() => {
-    listeners.push(setState);
-    return () => {
-      const index = listeners.indexOf(setState);
-      if (index > -1) {
-        listeners.splice(index, 1);
+const createSuccessToast = (
+  description = "Operation completed successfully.",
+  duration = DEFAULT_DURATION,
+  action?: ToastAction,
+): ToastResult => {
+  const defaultClassNames = action
+    ? {
+        icon: "mb-6",
+        content: "mb-6",
       }
-    };
-  }, [state]);
+    : undefined;
+
+  const defaultActionButtonStyle = action
+    ? {
+        position: "absolute" as const,
+        right: "0.5rem",
+        bottom: "0.5rem",
+      }
+    : undefined;
+
+  const toastOptions = {
+    duration,
+    action: action
+      ? {
+          label: action.label,
+          onClick: action.onClick,
+        }
+      : undefined,
+    classNames: defaultClassNames,
+    actionButtonStyle: defaultActionButtonStyle,
+  };
+
+  const toastId = sonnerToast.success(description, toastOptions);
 
   return {
-    ...state,
-    toast,
-    dismiss: (toastId?: string) => dispatch({ type: "DISMISS_TOAST", toastId }),
+    id: String(toastId),
+    dismiss: () => sonnerToast.dismiss(toastId),
+    update: (newProps) => {
+      sonnerToast.dismiss(toastId);
+      return createToast({
+        title: "Success!",
+        description,
+        variant: "default",
+        duration,
+        action,
+        classNames: defaultClassNames,
+        actionButtonStyle: defaultActionButtonStyle,
+        ...newProps,
+      });
+    },
   };
+};
+
+const createErrorToast = (
+  description = "An unexpected error occurred. Please try again.",
+  duration = DEFAULT_DURATION,
+): ToastResult => {
+  const toastId = sonnerToast.error(description, { duration });
+
+  return {
+    id: String(toastId),
+    dismiss: () => sonnerToast.dismiss(toastId),
+    update: (newProps) => {
+      sonnerToast.dismiss(toastId);
+      return createToast({
+        title: "Uh oh! Something went wrong.",
+        description,
+        variant: "destructive",
+        duration,
+        ...newProps,
+      });
+    },
+  };
+};
+
+const createLoadingToast = (
+  description: string,
+  options?: { id?: string | number; duration?: number },
+): string | number => {
+  return sonnerToast.loading(description, options);
+};
+
+const createPromiseToast = <T>(
+  promise: Promise<T>,
+  handlers: Parameters<typeof sonnerToast.promise>[1],
+) => {
+  return sonnerToast.promise(promise, handlers);
+};
+
+export interface ToastFunction {
+  (props: ToastProps): ToastResult;
+  success: (description?: string, duration?: number, action?: ToastAction) => ToastResult;
+  error: (description?: string, duration?: number) => ToastResult;
+  loading: (
+    description: string,
+    options?: { id?: string | number; duration?: number },
+  ) => string | number;
+  promise: (
+    promise: Promise<unknown>,
+    handlers: Parameters<typeof sonnerToast.promise>[1],
+  ) => void;
+  dismiss: (toastId?: string | number) => void;
 }
+
+const toast: ToastFunction = Object.assign(createToast, {
+  success: createSuccessToast,
+  error: createErrorToast,
+  loading: createLoadingToast,
+  promise: createPromiseToast,
+  dismiss: (toastId?: string | number) =>
+    toastId ? sonnerToast.dismiss(toastId) : sonnerToast.dismiss(),
+});
+
+const useToast = () => ({
+  toast,
+  dismiss: (toastId?: string) =>
+    toastId ? sonnerToast.dismiss(toastId) : sonnerToast.dismiss(),
+  toasts: [] as ToastT[],
+});
 
 export { useToast, toast };
