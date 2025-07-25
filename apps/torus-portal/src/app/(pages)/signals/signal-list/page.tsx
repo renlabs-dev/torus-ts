@@ -11,6 +11,7 @@ import {
 
 import PortalFormContainer from "~/app/_components/portal-form-container";
 import PortalFormHeader from "~/app/_components/portal-form-header";
+import { useStreamDelegations } from "~/hooks/use-stream-delegation";
 
 import AllSignalsView from "./_components/all-signals-view";
 import DeletedSignalsView from "./_components/deleted-signals-view";
@@ -19,6 +20,9 @@ import FulfilledSignalsView from "./_components/fulfilled-signals-view";
 export default function SignalsPage() {
   const [activeTab, setActiveTab] = useState("all");
 
+  // Test the stream delegation hook
+  const { data: streamDelegations, isLoading, error } = useStreamDelegations();
+  console.log("Stream Delegations:", streamDelegations, isLoading, error);
   return (
     <PortalFormContainer>
       <PortalFormHeader
