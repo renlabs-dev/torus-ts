@@ -2,7 +2,6 @@ import type { Control } from "react-hook-form";
 
 import { AGENT_SHORT_DESCRIPTION_MAX_LENGTH } from "@torus-network/sdk/metadata";
 
-import { Button } from "@torus-ts/ui/components/button";
 import {
   FormControl,
   FormField,
@@ -17,55 +16,13 @@ import type { RegisterAgentFormData } from "./register-agent-schema";
 
 interface RegisterAgentInfoTabProps {
   control: Control<RegisterAgentFormData>;
-  setValue: (name: keyof RegisterAgentFormData, value: string) => void;
-  selectedAccount: { address: string } | null;
-  formValues: RegisterAgentFormData;
 }
 
 export function RegisterAgentInfoFields({
   control,
-  setValue,
-  selectedAccount,
 }: RegisterAgentInfoTabProps) {
   return (
     <>
-      <FormField
-        control={control}
-        name="agentKey"
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel>Address</FormLabel>
-            <div className="flex w-full flex-row gap-2">
-              <FormControl>
-                <Input
-                  {...field}
-                  placeholder="e.g. 5E2X...Z9gX"
-                  className="w-full placeholder:text-sm"
-                  type="text"
-                  minLength={47}
-                  maxLength={48}
-                  required
-                  title="Paste the same address that you used in your agent/module application!"
-                />
-              </FormControl>
-
-              <Button
-                variant="outline"
-                type="button"
-                className="!m-0 w-full sm:w-fit"
-                onClick={(e) => {
-                  e.preventDefault();
-                  setValue("agentKey", selectedAccount?.address ?? "");
-                }}
-              >
-                Paste my address
-              </Button>
-            </div>
-            <FormMessage />
-          </FormItem>
-        )}
-      />
-
       <FormField
         control={control}
         name="agentApiUrl"

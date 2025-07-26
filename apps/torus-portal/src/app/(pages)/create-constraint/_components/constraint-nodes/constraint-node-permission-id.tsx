@@ -7,7 +7,7 @@ import { Key } from "lucide-react";
 import type { SS58Address } from "@torus-network/sdk/types";
 import { H256_HEX } from "@torus-network/sdk/types";
 
-import { usePermissionsByGrantor } from "@torus-ts/query-provider/hooks";
+import { usePermissionsByDelegator } from "@torus-ts/query-provider/hooks";
 import { useTorus } from "@torus-ts/torus-provider";
 import {
   Select,
@@ -39,7 +39,7 @@ export function ConstraintNodePermissionId({
   const [permissionIdError, setPermissionIdError] = useState<string>("");
 
   const { data: permissionsByGrantor, isLoading: isLoadingPermissions } =
-    usePermissionsByGrantor(api, selectedAccount?.address as SS58Address);
+    usePermissionsByDelegator(api, selectedAccount?.address as SS58Address);
 
   const [permissionError, permissions] = permissionsByGrantor ?? [
     undefined,

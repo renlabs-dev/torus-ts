@@ -138,8 +138,8 @@ export class TorusChainWatcher {
             void this.handleStakeEvent(event.data);
             break;
 
-          case "permission0.PermissionGranted":
-            this.handlePermissionGranted(event.data);
+          case "permission0.PermissionDelegated":
+            this.handlePermissionDelegated(event.data);
             break;
 
           case "permission0.PermissionRevoked":
@@ -197,24 +197,24 @@ export class TorusChainWatcher {
   }
 
   /**
-   * Handle permission granted events
+   * Handle permission delegated events
    */
-  private handlePermissionGranted(eventData: unknown[]): void {
+  private handlePermissionDelegated(eventData: unknown[]): void {
     try {
-      const [_grantor, _grantee, permissionId] = eventData;
+      const [_delegator, _recipient, permissionId] = eventData;
       if (
         !permissionId ||
         typeof (permissionId as { toString: () => string }).toString !==
           "function"
       ) {
-        console.warn("[ChainWatcher] Invalid permission ID in granted event");
+        console.warn("[ChainWatcher] Invalid permission ID in delegated event");
         return;
       }
       const permissionIdStr = (
         permissionId as { toString: () => string }
       ).toString();
 
-      console.log(`[ChainWatcher] Permission granted: ${permissionIdStr}`);
+      console.log(`[ChainWatcher] Permission delegated: ${permissionIdStr}`);
 
       // Update permission existence fact
       const permissionFact: PermissionExistsFact = {
@@ -226,7 +226,7 @@ export class TorusChainWatcher {
       void this.reteNetwork.addFact(permissionFact);
     } catch (error) {
       console.error(
-        "[ChainWatcher] Error handling permission granted:",
+        "[ChainWatcher] Error handling permission delegated:",
         error instanceof Error ? error.message : String(error),
       );
     }

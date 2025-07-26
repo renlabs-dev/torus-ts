@@ -66,8 +66,8 @@ export function transformFormDataToSDK(data: CreateEmissionPermissionFormData) {
     case "Irrevocable":
       revocation = { Irrevocable: null };
       break;
-    case "RevocableByGrantor":
-      revocation = { RevocableByGrantor: null };
+    case "RevocableByDelegator":
+      revocation = { RevocableByDelegator: null };
       break;
     case "RevocableByArbiters":
       revocation = {

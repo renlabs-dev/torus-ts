@@ -25,7 +25,7 @@ import { transformFormDataToSDK } from "./create-emission-permission-form-utils"
 
 export function CreateEmissionPermissionForm() {
   const {
-    grantEmissionPermissionTransaction,
+    delegateEmissionPermissionTransaction,
     selectedAccount,
     isAccountConnected,
     isInitialized,
@@ -53,7 +53,7 @@ export function CreateEmissionPermissionForm() {
         type: "Indefinite",
       },
       revocation: {
-        type: "RevocableByGrantor",
+        type: "RevocableByDelegator",
       },
       enforcement: {
         type: "ControlledBy",
@@ -69,8 +69,8 @@ export function CreateEmissionPermissionForm() {
         setTransactionStatus("loading");
         const transformedData = transformFormDataToSDK(data);
 
-        await grantEmissionPermissionTransaction({
-          grantee: selectedAccount?.address as SS58Address,
+        await delegateEmissionPermissionTransaction({
+          recipient: selectedAccount?.address as SS58Address,
           ...transformedData,
           callback: (result) => {
             if (result.status === "SUCCESS" && result.finalized) {
@@ -102,7 +102,7 @@ export function CreateEmissionPermissionForm() {
         });
       }
     },
-    [grantEmissionPermissionTransaction, selectedAccount?.address, form, toast],
+    [delegateEmissionPermissionTransaction, selectedAccount?.address, form, toast],
   );
 
   return (

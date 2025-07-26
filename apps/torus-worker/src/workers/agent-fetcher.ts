@@ -129,7 +129,7 @@ function permissionContractToDatabase(
   distributionTargets?: NewEmissionDistributionTarget[];
   enforcementControllers?: NewPermissionEnforcementController[];
   revocationArbiters?: NewPermissionRevocationArbiter[];
-  hierarchy?: NewPermissionHierarchy;
+  hierarchies?: NewPermissionHierarchy[];
 } | null {
   // Process emission and namespace permissions, skip curator permissions
   const shouldProcess = match(contract.scope)({
@@ -156,7 +156,7 @@ function permissionContractToDatabase(
   // Map revocation terms
   const revocationType = match(contract.revocation)({
     Irrevocable: () => "irrevocable" as const,
-    RevocableByGrantor: () => "revocable_by_grantor" as const,
+    RevocableByDelegator: () => "revocable_by_grantor" as const,
     RevocableByArbiters: () => "revocable_by_arbiters" as const,
     RevocableAfter: () => "revocable_after" as const,
   });
@@ -164,7 +164,7 @@ function permissionContractToDatabase(
   const revocationBlockNumber = match(contract.revocation)({
     RevocableAfter: (block) => BigInt(block.toString()),
     Irrevocable: () => null,
-    RevocableByGrantor: () => null,
+    RevocableByDelegator: () => null,
     RevocableByArbiters: () => null,
   });
 
@@ -172,7 +172,7 @@ function permissionContractToDatabase(
     RevocableByArbiters: (arbiters) =>
       BigInt(arbiters.requiredVotes.toString()),
     Irrevocable: () => null,
-    RevocableByGrantor: () => null,
+    RevocableByDelegator: () => null,
     RevocableAfter: () => null,
   });
 
@@ -189,8 +189,8 @@ function permissionContractToDatabase(
 
   const permission: NewPermission = {
     permissionId: permissionId,
-    grantorAccountId: contract.grantor,
-    granteeAccountId: contract.grantee,
+    grantorAccountId: contract.delegator,
+    granteeAccountId: contract.recipient,
     durationType,
     durationBlockNumber,
     revocationType,
@@ -206,14 +206,11 @@ function permissionContractToDatabase(
     createdAtBlock: BigInt(contract.createdAt.toString()),
   };
 
-  // Handle parent hierarchy
-  const hierarchy = match(contract.parent)({
-    Some: (parentId): NewPermissionHierarchy => ({
-      childPermissionId: permissionId,
-      parentPermissionId: parentId,
-    }),
-    None: () => undefined,
-  });
+  // Handle children hierarchy (children are stored as an array in the contract)
+  const hierarchies: NewPermissionHierarchy[] = contract.children.map((childId) => ({
+    childPermissionId: childId,
+    parentPermissionId: permissionId,
+  }));
 
   let emissionPermission: NewEmissionPermission | undefined;
   let namespacePermission: NewNamespacePermission | undefined;
@@ -304,11 +301,16 @@ function permissionContractToDatabase(
         permissionId: permissionId,
       };
 
-      // Extract namespace paths - each path becomes a separate database entry
-      namespacePaths = namespace.paths.map((pathSegments) => ({
-        permissionId: permissionId,
-        namespacePath: pathSegments.join("."), // Convert segments array to dot-separated string
-      }));
+      // Extract namespace paths from the Map structure - each path becomes a separate database entry
+      namespacePaths = [];
+      for (const [_parent, pathSegmentsList] of namespace.paths.entries()) {
+        for (const pathSegments of pathSegmentsList) {
+          namespacePaths.push({
+            permissionId: permissionId,
+            namespacePath: pathSegments.join("."), // Convert segments array to dot-separated string
+          });
+        }
+      }
     },
     Curator: () => {
       // This case should never be reached due to early return above
@@ -343,7 +345,7 @@ function permissionContractToDatabase(
     Irrevocable: () => {
       // No revocation arbiters for other revocation types
     },
-    RevocableByGrantor: () => {
+    RevocableByDelegator: () => {
       // No revocation arbiters for other revocation types
     },
     RevocableAfter: () => {
@@ -360,7 +362,7 @@ function permissionContractToDatabase(
     distributionTargets,
     enforcementControllers,
     revocationArbiters,
-    hierarchy,
+    hierarchies,
   };
 }
 
@@ -527,7 +529,7 @@ export async function runPermissionsFetch(lastBlock: LastBlock) {
     distributionTargets?: NewEmissionDistributionTarget[];
     enforcementControllers?: NewPermissionEnforcementController[];
     revocationArbiters?: NewPermissionRevocationArbiter[];
-    hierarchy?: NewPermissionHierarchy;
+    hierarchies?: NewPermissionHierarchy[];
   }[] = [];
 
   // Transform each permission to database format
