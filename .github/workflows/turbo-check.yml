@@ -44,19 +44,8 @@ jobs:
         with:
           fetch-depth: 0
 
-      - uses: pnpm/action-setup@v4
-        name: Install pnpm
-        with:
-          run_install: false
-
-      - name: Install Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          cache: "pnpm"
-
-      - name: Install dependencies
-        run: pnpm install
+      - name: PNPM setup
+        uses: ./.github/actions/setup
 
       - name: Get apps list
         run: |
@@ -106,13 +95,13 @@ jobs:
         run: |
           echo "## 📦 Changed Applications" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          
+
           CHANGED_PACKAGES=$(cat package_list)
-          
+
           # Create a summary table
           echo "| Application | Status | Changed |" >> $GITHUB_STEP_SUMMARY
           echo "|-------------|--------|---------|" >> $GITHUB_STEP_SUMMARY
-          
+
           while read -r package; do
             package=$(echo "$package" | tr -d '"')
             IS_CHANGED=$(echo $CHANGED_PACKAGES | jq -r "any(. == \"$package\")")
@@ -123,18 +112,18 @@ jobs:
               echo "| $package | ⏭️ No Changes | No |" >> $GITHUB_STEP_SUMMARY
             fi
           done < <(jq -c '.[]' packages_to_track.json)
-          
+
           echo "" >> $GITHUB_STEP_SUMMARY
-          
+
           # Add trigger information
           if [ "${{ github.event_name }}" == "pull_request" ]; then
             echo "**Trigger:** Pull Request #${{ github.event.number }} against \`${{ github.base_ref }}\`" >> $GITHUB_STEP_SUMMARY
           else
             echo "**Trigger:** Push to \`${{ github.ref_name }}\`" >> $GITHUB_STEP_SUMMARY
           fi
-          
+
           echo "**Commit:** ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
-          
+
           # Add deployment implications
           CHANGED_COUNT=$(echo $CHANGED_PACKAGES | jq 'length')
           echo "" >> $GITHUB_STEP_SUMMARY

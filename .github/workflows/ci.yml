@@ -2,9 +2,9 @@ name: CI
 
 on:
   pull_request:
-    branches: ["*"]
   push:
-    branches: ["main"]
+    branches:
+      - main
   merge_group:
 
 concurrency:
@@ -17,6 +17,7 @@ env:
   FORCE_COLOR: 3
   TURBO_TEAM: ${{ vars.TURBO_TEAM }}
   TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
+  TURBO_API: ${{ vars.TURBO_API }}
 
 jobs:
   typecheck:
@@ -24,8 +25,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Setup
-        uses: ./tooling/github/setup
+      - name: PNPM setup
+        uses: ./.github/actions/setup
 
       - name: Typecheck
         id: typecheck
@@ -67,7 +68,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Setup
-        uses: ./tooling/github/setup
+        uses: ./.github/actions/setup
 
       - name: Copy env
         run: cp .env.example .env
@@ -118,7 +119,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Setup
-        uses: ./tooling/github/setup
+        uses: ./.github/actions/setup
 
       - name: Format check
         id: format
