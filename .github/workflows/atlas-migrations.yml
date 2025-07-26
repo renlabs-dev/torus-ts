@@ -105,12 +105,11 @@ jobs:
             echo "- **Status:** No pending migrations" >> $GITHUB_STEP_SUMMARY
             echo "- **Action:** No database changes needed" >> $GITHUB_STEP_SUMMARY
           fi
+            echo "" >> $GITHUB_STEP_SUMMARY
 
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "### Migration Status Details" >> $GITHUB_STEP_SUMMARY
-          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
-          cat migration_status.txt >> $GITHUB_STEP_SUMMARY
-          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+            echo "```" >> $GITHUB_STEP_SUMMARY
+            sed -E 's#(postgresql://)[^:@]+:[^@]+@#\1****:****@#' migration_status.txt >> $GITHUB_STEP_SUMMARY
+            echo "```" >> $GITHUB_STEP_SUMMARY
 
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "**Branch:** \`${{ github.ref_name }}\`" >> $GITHUB_STEP_SUMMARY
@@ -141,8 +140,8 @@ jobs:
       - name: Fetch URL and test connection
         id: shadow-db
         run: |
-          CONTAINER_ID=$(docker compose ps -q postgres)
-          DB_HOST=$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' $CONTAINER_ID)
+          CONTAINER_ID="$(docker compose ps -q postgres)"
+          DB_HOST="$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' "${CONTAINER_ID}")"
           DATABASE_URL="postgresql://postgres:postgres@${DB_HOST}:5432/torus-ts-db?sslmode=disable"
           echo "db_url=${DATABASE_URL}" >> $GITHUB_OUTPUT
 
@@ -164,16 +163,28 @@ jobs:
       - name: Apply migrations (dry-run)
         id: dry-run
         run: |
-          output=$(atlas migrate apply --dry-run --env local --allow-dirty --url "${{ steps.shadow-db.outputs.db_url }}" 2>&1)
-          echo "$output"
-          echo "$output" > dry_run_output.txt
+          set +e  # Don't exit on command failure
+          output=$(atlas migrate apply --dry-run --env local --allow-dirty \
+                  --url "${{ steps.shadow-db.outputs.db_url }}" 2>&1)
+          exit_code=$?
+          sanitized_output=$(echo "$output" | sed -E 's#(postgresql://)[^:@]+:[^@]+@#\1****:****@#g')
+          echo "$sanitized_output"
+          echo "$sanitized_output" > dry_run_output.txt
+          echo "exit_code=$exit_code" >> $GITHUB_OUTPUT
+          exit $exit_code
 
       - name: Apply migrations
         id: shadow-apply
         run: |
-          output=$(atlas migrate apply --env local --allow-dirty --url "${{ steps.shadow-db.outputs.db_url }}" --lock-timeout 120s 2>&1)
-          echo "$output"
-          echo "$output" > shadow_apply_output.txt
+          set +e  # Don't exit on command failure
+          output=$(atlas migrate apply --env local --allow-dirty \
+                  --url "${{ steps.shadow-db.outputs.db_url }}" --lock-timeout 120s 2>&1)
+          exit_code=$?
+          sanitized_output=$(echo "$output" | sed -E 's#(postgresql://)[^:@]+:[^@]+@#\1****:****@#g')
+          echo "$sanitized_output"
+          echo "$sanitized_output" > shadow_apply_output.txt
+          echo "exit_code=$exit_code" >> $GITHUB_OUTPUT
+          exit $exit_code
 
       - name: Generate shadow apply summary
         if: always()
@@ -194,14 +205,24 @@ jobs:
           fi
 
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "### Dry Run Output" >> $GITHUB_STEP_SUMMARY
-          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+          echo "### Dry-Run Output" >> $GITHUB_STEP_SUMMARY
+          echo "```" >> $GITHUB_STEP_SUMMARY
           if [ -f dry_run_output.txt ]; then
             cat dry_run_output.txt >> $GITHUB_STEP_SUMMARY
           else
-            echo "No dry run output available" >> $GITHUB_STEP_SUMMARY
+            echo "No dry-run output available" >> $GITHUB_STEP_SUMMARY
           fi
-          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+          echo "```" >> $GITHUB_STEP_SUMMARY
+
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Shadow Apply Output" >> $GITHUB_STEP_SUMMARY
+          echo "```" >> $GITHUB_STEP_SUMMARY
+          if [ -f shadow_apply_output.txt ]; then
+            cat shadow_apply_output.txt >> $GITHUB_STEP_SUMMARY
+          else
+            echo "No shadow-apply output available" >> $GITHUB_STEP_SUMMARY
+          fi
+          echo "```" >> $GITHUB_STEP_SUMMARY
 
       - name: Delete DB
         if: always()
@@ -242,9 +263,15 @@ jobs:
       - name: Apply migrations
         id: apply-migrations
         run: |
-          output=$(atlas migrate apply --env local --allow-dirty --url "${POSTGRES_URL}" --lock-timeout 120s 2>&1)
-          echo "$output"
-          echo "$output" > apply_output.txt
+          set +e  # Don't exit on command failure
+          output=$(atlas migrate apply --env local --allow-dirty \
+                  --url "${POSTGRES_URL}" --lock-timeout 120s 2>&1)
+          exit_code=$?
+          sanitized_output=$(echo "$output" | sed -E 's#(postgresql://)[^:@]+:[^@]+@#\1****:****@#g')
+          echo "$sanitized_output"
+          echo "$sanitized_output" > apply_output.txt
+          echo "exit_code=$exit_code" >> $GITHUB_OUTPUT
+          exit $exit_code
 
       - name: Update migrations report with final status
         run: |
@@ -282,13 +309,13 @@ jobs:
 
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "### Migration Output" >> $GITHUB_STEP_SUMMARY
-          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+          echo "```" >> $GITHUB_STEP_SUMMARY
           if [ -f apply_output.txt ]; then
             cat apply_output.txt >> $GITHUB_STEP_SUMMARY
           else
             echo "No migration output available" >> $GITHUB_STEP_SUMMARY
           fi
-          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+          echo "```" >> $GITHUB_STEP_SUMMARY
 
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "**Artifacts:** Migration report uploaded for 90 days" >> $GITHUB_STEP_SUMMARY
@@ -336,6 +363,7 @@ jobs:
       - name: Restart apps (${{ matrix.app }})
         id: restart-app
         run: |
+          set -euo pipefail
           kubectl rollout restart -n ${NAMESPACE} deployment -l app=${{ matrix.app }}
           kubectl rollout status -n ${NAMESPACE} deployment -l app=${{ matrix.app }}  --timeout=300s
 

@@ -196,9 +196,19 @@ jobs:
         id: destroy
         working-directory: apps/${{ inputs.app_name }}
         run: |
+          # Capture exit code - helmfile destroy returns non-zero when nothing exists to delete
+          set +e
           helmfile destroy -e dev \
           --state-values-set releaseName=pr-${{ github.event.number }}-${{ inputs.app_name }} \
           --state-values-set releasePrefix=pr-${{ github.event.number }}-${{ inputs.app_name }}
+          DESTROY_EXIT_CODE=$?
+
+          # Exit codes 0 (success) and 2 (nothing to destroy) are both considered success
+          if [ $DESTROY_EXIT_CODE -eq 0 ] || [ $DESTROY_EXIT_CODE -eq 2 ]; then
+            exit 0
+          else
+            exit $DESTROY_EXIT_CODE
+          fi
 
       - name: Generate PR preview cleanup summary
         if: always()
