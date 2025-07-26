@@ -9,9 +9,7 @@ import type { z } from "zod";
 import { useTorus } from "@torus-ts/torus-provider";
 import { Button } from "@torus-ts/ui/components/button";
 import { Form } from "@torus-ts/ui/components/form";
-import {
-  WalletConnectionWarning,
-} from "@torus-ts/ui/components/wallet-connection-warning";
+import { WalletConnectionWarning } from "@torus-ts/ui/components/wallet-connection-warning";
 import { useToast } from "@torus-ts/ui/hooks/use-toast";
 import { cn } from "@torus-ts/ui/lib/utils";
 
@@ -20,9 +18,7 @@ import PortalFormHeader from "~/app/_components/portal-form-header";
 import { PortalFormSeparator } from "~/app/_components/portal-form-separator";
 import { tryCatch } from "~/utils/try-catch";
 
-import {
-  DistributionControlField,
-} from "./edit-permission-fields/distribution-control-field";
+import { DistributionControlField } from "./edit-permission-fields/distribution-control-field";
 import { StreamsField } from "./edit-permission-fields/streams-field";
 import { TargetsField } from "./edit-permission-fields/targets-field";
 import type { EditPermissionFormData } from "./edit-permission-schema";
@@ -55,8 +51,6 @@ export function EditPermissionForm({
     "idle" | "loading" | "success" | "error"
   >("idle");
   const currentPermissionDataRef = useRef<PermissionWithDetails | null>(null);
-  const [originalDistributionControl, setOriginalDistributionControl] =
-    useState<string | null>(null);
 
   const permissionType = getPermissionType(currentPermissionDataRef.current);
   const canEdit = canEditPermission(
@@ -84,24 +78,12 @@ export function EditPermissionForm({
       if (!api) return;
 
       if (permissionData.emission_permissions) {
-        const result = await handlePermissionDataChange({
+        await handlePermissionDataChange({
           permissionData,
           api,
           form,
           onError: toast.error,
         });
-        // Store the original distribution control for display
-        if (result?.originalDistributionControl) {
-          setOriginalDistributionControl(result.originalDistributionControl);
-        }
-      } else {
-        form.reset({
-          permissionId: permissionData.permissions.permissionId,
-          newTargets: [],
-          newStreams: [],
-          newDistributionControl: { Manual: null },
-        });
-        setOriginalDistributionControl(null);
       }
     },
     [api, form, toast.error],
@@ -126,7 +108,6 @@ export function EditPermissionForm({
             form.reset();
             setSelectedPermissionId("");
             setHasLoadedPermission(false);
-            setOriginalDistributionControl(null);
           }
 
           if (result.status === "ERROR") {
@@ -194,7 +175,6 @@ export function EditPermissionForm({
               onSuccess={() => {
                 setSelectedPermissionId("");
                 form.reset();
-                setOriginalDistributionControl(null);
               }}
             />
           </div>
@@ -210,10 +190,7 @@ export function EditPermissionForm({
 
               {permissionType === "emission" && canEdit && (
                 <>
-                  <DistributionControlField
-                    control={form.control}
-                    originalValue={originalDistributionControl}
-                  />
+                  <DistributionControlField control={form.control} />
 
                   <TargetsField control={form.control} />
 
