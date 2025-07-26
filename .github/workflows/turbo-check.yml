@@ -105,7 +105,7 @@ jobs:
           while read -r package; do
             package=$(echo "$package" | tr -d '"')
             IS_CHANGED=$(echo $CHANGED_PACKAGES | jq -r "any(. == \"$package\")")
-            
+
             if [ "$IS_CHANGED" == "true" ]; then
               echo "| $package | ✅ Changed | Yes |" >> $GITHUB_STEP_SUMMARY
             else
