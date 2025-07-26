@@ -28,7 +28,38 @@ jobs:
         uses: ./tooling/github/setup
 
       - name: Typecheck
-        run: just typecheck
+        id: typecheck
+        run: |
+          if just typecheck; then
+            echo "status=success" >> $GITHUB_OUTPUT
+            echo "errors=0" >> $GITHUB_OUTPUT
+          else
+            echo "status=failed" >> $GITHUB_OUTPUT
+            # Count TypeScript errors (this is a rough estimate)
+            ERROR_COUNT=$(just typecheck 2>&1 | grep -c "error TS" || echo "unknown")
+            echo "errors=$ERROR_COUNT" >> $GITHUB_OUTPUT
+            exit 1
+          fi
+
+      - name: Generate typecheck summary
+        if: always()
+        run: |
+          echo "## 🔍 TypeScript Check Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          if [ "${{ steps.typecheck.outputs.status }}" == "success" ]; then
+            echo "✅ **All TypeScript checks passed!**" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "- **Errors:** 0" >> $GITHUB_STEP_SUMMARY
+            echo "- **Status:** All packages compiled successfully" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ **TypeScript errors detected**" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "- **Errors:** ${{ steps.typecheck.outputs.errors }}" >> $GITHUB_STEP_SUMMARY
+            echo "- **Status:** Compilation failed" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "Please fix the TypeScript errors before merging." >> $GITHUB_STEP_SUMMARY
+          fi
 
   lint:
     runs-on: ubicloud-standard-2
@@ -42,7 +73,44 @@ jobs:
         run: cp .env.example .env
 
       - name: Lint
-        run: just lint && just lint-ws
+        id: lint
+        run: |
+          LINT_OUTPUT=$(mktemp)
+          if just lint && just lint-ws 2>&1 | tee "$LINT_OUTPUT"; then
+            echo "status=success" >> $GITHUB_OUTPUT
+            echo "warnings=0" >> $GITHUB_OUTPUT
+            echo "errors=0" >> $GITHUB_OUTPUT
+          else
+            echo "status=failed" >> $GITHUB_OUTPUT
+            # Count warnings and errors (rough estimates)
+            WARNING_COUNT=$(grep -c "warning" "$LINT_OUTPUT" || echo "0")
+            ERROR_COUNT=$(grep -c "error" "$LINT_OUTPUT" || echo "unknown")
+            echo "warnings=$WARNING_COUNT" >> $GITHUB_OUTPUT
+            echo "errors=$ERROR_COUNT" >> $GITHUB_OUTPUT
+            exit 1
+          fi
+
+      - name: Generate lint summary
+        if: always()
+        run: |
+          echo "## 🧹 Linting Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          if [ "${{ steps.lint.outputs.status }}" == "success" ]; then
+            echo "✅ **All linting checks passed!**" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "- **Errors:** 0" >> $GITHUB_STEP_SUMMARY
+            echo "- **Warnings:** ${{ steps.lint.outputs.warnings }}" >> $GITHUB_STEP_SUMMARY
+            echo "- **Status:** Code follows all linting rules" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ **Linting issues detected**" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "- **Errors:** ${{ steps.lint.outputs.errors }}" >> $GITHUB_STEP_SUMMARY
+            echo "- **Warnings:** ${{ steps.lint.outputs.warnings }}" >> $GITHUB_STEP_SUMMARY
+            echo "- **Status:** Code quality issues need to be addressed" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "Please fix the linting errors before merging." >> $GITHUB_STEP_SUMMARY
+          fi
 
   format:
     runs-on: ubicloud-standard-2
@@ -52,5 +120,89 @@ jobs:
       - name: Setup
         uses: ./tooling/github/setup
 
-      - name: Format
-        run: just typecheck
+      - name: Format check
+        id: format
+        run: |
+          if just format; then
+            echo "status=success" >> $GITHUB_OUTPUT
+            echo "issues=0" >> $GITHUB_OUTPUT
+          else
+            echo "status=failed" >> $GITHUB_OUTPUT
+            # Count formatting issues (rough estimate)
+            ISSUE_COUNT=$(just format 2>&1 | grep -c "would reformat\|formatting" || echo "unknown")
+            echo "issues=$ISSUE_COUNT" >> $GITHUB_OUTPUT
+            exit 1
+          fi
+
+      - name: Generate format summary
+        if: always()
+        run: |
+          echo "## 💅 Formatting Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          if [ "${{ steps.format.outputs.status }}" == "success" ]; then
+            echo "✅ **All files are properly formatted!**" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "- **Issues:** 0" >> $GITHUB_STEP_SUMMARY
+            echo "- **Status:** Code formatting is consistent" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ **Formatting issues detected**" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "- **Issues:** ${{ steps.format.outputs.issues }}" >> $GITHUB_STEP_SUMMARY
+            echo "- **Status:** Some files need formatting" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "Run \`just format-fix\` locally to fix formatting issues." >> $GITHUB_STEP_SUMMARY
+          fi
+
+  code-quality-summary:
+    if: always()
+    needs: [typecheck, lint, format]
+    runs-on: ubicloud-standard-2
+    steps:
+      - name: Generate overall code quality summary
+        run: |
+          echo "## 📊 Code Quality Overview" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          # Overall status
+          typecheck_status="${{ needs.typecheck.result }}"
+          lint_status="${{ needs.lint.result }}"
+          format_status="${{ needs.format.result }}"
+
+          echo "### Quality Checks Summary" >> $GITHUB_STEP_SUMMARY
+          echo "| Check | Status | Details |" >> $GITHUB_STEP_SUMMARY
+          echo "|-------|--------|---------|" >> $GITHUB_STEP_SUMMARY
+
+          # TypeScript
+          if [ "$typecheck_status" == "success" ]; then
+            echo "| 🔍 TypeScript | ✅ Passed | All types are valid |" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "| 🔍 TypeScript | ❌ Failed | Type errors detected |" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          # Linting
+          if [ "$lint_status" == "success" ]; then
+            echo "| 🧹 Linting | ✅ Passed | Code follows standards |" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "| 🧹 Linting | ❌ Failed | Linting issues found |" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          # Formatting
+          if [ "$format_status" == "success" ]; then
+            echo "| 💅 Formatting | ✅ Passed | Consistent formatting |" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "| 💅 Formatting | ❌ Failed | Formatting issues found |" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          # Overall result
+          if [ "$typecheck_status" == "success" ] && [ "$lint_status" == "success" ] && [ "$format_status" == "success" ]; then
+            echo "🎉 **All code quality checks passed!** Ready to merge." >> $GITHUB_STEP_SUMMARY
+          else
+            echo "⚠️ **Some code quality checks failed.** Please address the issues above before merging." >> $GITHUB_STEP_SUMMARY
+          fi
+
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Branch:** \`${{ github.ref_name }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "**Commit:** \`${{ github.sha }}\`" >> $GITHUB_STEP_SUMMARY

@@ -94,6 +94,38 @@ jobs:
           echo "has_pending=$(echo "$output" | grep -q "PENDING" && echo "true" || echo "false")" >> $GITHUB_OUTPUT
           echo "$output"
 
+          # Store output for summary
+          echo "$output" > migration_status.txt
+
+      - name: Generate migration check summary
+        if: always()
+        run: |
+          echo "## 🗄️ Database Migration Check" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          has_pending="${{ steps.migration-status.outputs.has_pending }}"
+
+          if [ "$has_pending" == "true" ]; then
+            echo "⚠️ **Pending migrations detected**" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "- **Status:** Migrations need to be applied" >> $GITHUB_STEP_SUMMARY
+            echo "- **Action:** Will be applied automatically on push to main/dev" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "✅ **Database is up to date**" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "- **Status:** No pending migrations" >> $GITHUB_STEP_SUMMARY
+            echo "- **Action:** No database changes needed" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Migration Status Details" >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+          cat migration_status.txt >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Branch:** \`${{ github.ref_name }}\`" >> $GITHUB_STEP_SUMMARY
+
   shadow-apply-check:
     needs: check
     if: |
@@ -141,10 +173,46 @@ jobs:
       - uses: ariga/setup-atlas@v0
 
       - name: Apply migrations (dry-run)
-        run: atlas migrate apply --dry-run --env local --allow-dirty --url "${{ steps.shadow-db.outputs.db_url }}"
+        id: dry-run
+        run: |
+          output=$(atlas migrate apply --dry-run --env local --allow-dirty --url "${{ steps.shadow-db.outputs.db_url }}" 2>&1)
+          echo "$output"
+          echo "$output" > dry_run_output.txt
 
       - name: Apply migrations
-        run: atlas migrate apply --env local --allow-dirty --url "${{ steps.shadow-db.outputs.db_url }}" --lock-timeout 120s
+        id: shadow-apply
+        run: |
+          output=$(atlas migrate apply --env local --allow-dirty --url "${{ steps.shadow-db.outputs.db_url }}" --lock-timeout 120s 2>&1)
+          echo "$output"
+          echo "$output" > shadow_apply_output.txt
+
+      - name: Generate shadow apply summary
+        if: always()
+        run: |
+          echo "## 🧪 Shadow Database Test" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          if [ "${{ steps.shadow-apply.outcome }}" == "success" ]; then
+            echo "✅ **Shadow database migration test passed**" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "- **Status:** Migrations can be safely applied to production" >> $GITHUB_STEP_SUMMARY
+            echo "- **Test Environment:** Shadow database with production data" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ **Shadow database migration test failed**" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "- **Status:** Migrations may have issues with production data" >> $GITHUB_STEP_SUMMARY
+            echo "- **Action:** Review migration compatibility" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Dry Run Output" >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+          if [ -f dry_run_output.txt ]; then
+            cat dry_run_output.txt >> $GITHUB_STEP_SUMMARY
+          else
+            echo "No dry run output available" >> $GITHUB_STEP_SUMMARY
+          fi
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
 
       - name: Delete DB
         if: always()
@@ -183,12 +251,58 @@ jobs:
           atlas migrate apply --env local --dry-run --allow-dirty --url "${POSTGRES_URL}" >> ./migration-artifacts/migrations-report.txt 2>&1
 
       - name: Apply migrations
-        run: atlas migrate apply --env local --allow-dirty --url "${POSTGRES_URL}" --lock-timeout 120s
+        id: apply-migrations
+        run: |
+          output=$(atlas migrate apply --env local --allow-dirty --url "${POSTGRES_URL}" --lock-timeout 120s 2>&1)
+          echo "$output"
+          echo "$output" > apply_output.txt
 
       - name: Update migrations report with final status
         run: |
           echo -e "\nFinal migration status:" >> ./migration-artifacts/migrations-report.txt
           atlas migrate status --env local --url "${POSTGRES_URL}" >> ./migration-artifacts/migrations-report.txt
+
+      - name: Generate migration apply summary
+        if: always()
+        run: |
+          # Determine environment based on branch
+          if [ "${{ github.ref_name }}" == "main" ]; then
+            ENVIRONMENT="Production"
+            ENV_EMOJI="🚀"
+          else
+            ENVIRONMENT="Development"
+            ENV_EMOJI="🧪"
+          fi
+
+          echo "## ${ENV_EMOJI} ${ENVIRONMENT} Migration Applied" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          if [ "${{ steps.apply-migrations.outcome }}" == "success" ]; then
+            echo "✅ **Migrations successfully applied to ${ENVIRONMENT,,}**" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "- **Status:** Database schema updated" >> $GITHUB_STEP_SUMMARY
+            echo "- **Environment:** ${ENVIRONMENT} database (branch: ${{ github.ref_name }})" >> $GITHUB_STEP_SUMMARY
+            echo "- **Timestamp:** $(date)" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ **Migration application failed**" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "- **Status:** Database schema update failed" >> $GITHUB_STEP_SUMMARY
+            echo "- **Environment:** ${ENVIRONMENT} database (branch: ${{ github.ref_name }})" >> $GITHUB_STEP_SUMMARY
+            echo "- **Action:** Manual intervention required" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Migration Output" >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+          if [ -f apply_output.txt ]; then
+            cat apply_output.txt >> $GITHUB_STEP_SUMMARY
+          else
+            echo "No migration output available" >> $GITHUB_STEP_SUMMARY
+          fi
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Artifacts:** Migration report uploaded for 90 days" >> $GITHUB_STEP_SUMMARY
 
       - name: Upload migrations report
         uses: actions/upload-artifact@v4
@@ -231,6 +345,23 @@ jobs:
           echo "NAMESPACE=torus-${{ github.ref_name == 'main' && 'prod' || 'dev' }}-web-apps" >> $GITHUB_ENV
 
       - name: Restart apps (${{ matrix.app }})
+        id: restart-app
         run: |
           kubectl rollout restart -n ${NAMESPACE} deployment -l app=${{ matrix.app }}
           kubectl rollout status -n ${NAMESPACE} deployment -l app=${{ matrix.app }}  --timeout=300s
+
+      - name: Generate restart summary
+        if: always()
+        run: |
+          if [ "${{ strategy.job-index }}" == "0" ]; then
+            echo "## 🔄 Application Restart After Migration" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "Applications restarted to pick up database schema changes:" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          if [ "${{ steps.restart-app.outcome }}" == "success" ]; then
+            echo "- ✅ **${{ matrix.app }}**: Successfully restarted" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "- ❌ **${{ matrix.app }}**: Restart failed" >> $GITHUB_STEP_SUMMARY
+          fi

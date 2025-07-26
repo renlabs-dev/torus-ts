@@ -415,3 +415,268 @@ jobs:
     with:
       app_name: torus-bridge
       delete: true
+
+  deployment-summary:
+    if: always()
+    needs:
+      [
+        turbo-check,
+        torus-page,
+        torus-portal,
+        torus-wallet,
+        torus-allocator,
+        torus-bridge,
+        torus-cache,
+        torus-governance,
+        torus-worker,
+        torus-page-dry-run,
+        torus-portal-dry-run,
+        torus-wallet-dry-run,
+        torus-allocator-dry-run,
+        torus-bridge-dry-run,
+        torus-cache-dry-run,
+        torus-governance-dry-run,
+        torus-worker-dry-run,
+        torus-allocator-pr-activate,
+        torus-cache-pr-activate,
+        torus-governance-pr-activate,
+        torus-page-pr-activate,
+        torus-portal-pr-activate,
+        torus-wallet-pr-activate,
+        torus-bridge-pr-activate,
+        torus-allocator-pr-delete,
+        torus-cache-pr-delete,
+        torus-governance-pr-delete,
+        torus-page-pr-delete,
+        torus-portal-pr-delete,
+        torus-wallet-pr-delete,
+        torus-bridge-pr-delete,
+      ]
+    runs-on: ubicloud-standard-2
+    steps:
+      - name: Generate deployment summary
+        run: |
+          echo "## 🚀 Deployment Overview" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          # Environment detection
+          if [ "${{ github.ref_name }}" == "main" ]; then
+            ENV_NAME="Production"
+            ENV_ICON="🏭"
+          elif [ "${{ github.ref_name }}" == "dev" ]; then
+            ENV_NAME="Development"
+            ENV_ICON="🧪"
+          else
+            ENV_NAME="Preview/Dry-run"
+            ENV_ICON="👀"
+          fi
+
+          echo "**Environment:** $ENV_ICON $ENV_NAME (\`${{ github.ref_name }}\`)" >> $GITHUB_STEP_SUMMARY
+          echo "**Trigger:** ${{ github.event_name }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          # Production/Dev Deployments
+          if [ "${{ github.ref_name }}" == "main" ] || [ "${{ github.ref_name }}" == "dev" ] || [ "${{ github.ref_name }}" == "cicd" ]; then
+            echo "### 🏗️ Application Deployments" >> $GITHUB_STEP_SUMMARY
+            echo "| Application | Status | Changed | Deploy Status |" >> $GITHUB_STEP_SUMMARY
+            echo "|-------------|--------|---------|---------------|" >> $GITHUB_STEP_SUMMARY
+            
+            # torus-page
+            changed="${{ needs.turbo-check.outputs.torus-page }}"
+            deploy_result="${{ needs.torus-page.result }}"
+            if [ "$changed" == "true" ]; then change_icon="✅"; change_text="Yes"; else change_icon="⏭️"; change_text="No"; fi
+            case "$deploy_result" in "success") deploy_icon="✅"; deploy_text="Deployed";; "failure") deploy_icon="❌"; deploy_text="Failed";; "skipped") deploy_icon="⏭️"; deploy_text="Skipped";; *) deploy_icon="❓"; deploy_text="Unknown";; esac
+            echo "| torus-page | $change_icon $change_text | $changed | $deploy_icon $deploy_text |" >> $GITHUB_STEP_SUMMARY
+            
+            # torus-portal
+            changed="${{ needs.turbo-check.outputs.torus-portal }}"
+            deploy_result="${{ needs.torus-portal.result }}"
+            if [ "$changed" == "true" ]; then change_icon="✅"; change_text="Yes"; else change_icon="⏭️"; change_text="No"; fi
+            case "$deploy_result" in "success") deploy_icon="✅"; deploy_text="Deployed";; "failure") deploy_icon="❌"; deploy_text="Failed";; "skipped") deploy_icon="⏭️"; deploy_text="Skipped";; *) deploy_icon="❓"; deploy_text="Unknown";; esac
+            echo "| torus-portal | $change_icon $change_text | $changed | $deploy_icon $deploy_text |" >> $GITHUB_STEP_SUMMARY
+            
+            # torus-wallet
+            changed="${{ needs.turbo-check.outputs.torus-wallet }}"
+            deploy_result="${{ needs.torus-wallet.result }}"
+            if [ "$changed" == "true" ]; then change_icon="✅"; change_text="Yes"; else change_icon="⏭️"; change_text="No"; fi
+            case "$deploy_result" in "success") deploy_icon="✅"; deploy_text="Deployed";; "failure") deploy_icon="❌"; deploy_text="Failed";; "skipped") deploy_icon="⏭️"; deploy_text="Skipped";; *) deploy_icon="❓"; deploy_text="Unknown";; esac
+            echo "| torus-wallet | $change_icon $change_text | $changed | $deploy_icon $deploy_text |" >> $GITHUB_STEP_SUMMARY
+            
+            # torus-allocator
+            changed="${{ needs.turbo-check.outputs.torus-allocator }}"
+            deploy_result="${{ needs.torus-allocator.result }}"
+            if [ "$changed" == "true" ]; then change_icon="✅"; change_text="Yes"; else change_icon="⏭️"; change_text="No"; fi
+            case "$deploy_result" in "success") deploy_icon="✅"; deploy_text="Deployed";; "failure") deploy_icon="❌"; deploy_text="Failed";; "skipped") deploy_icon="⏭️"; deploy_text="Skipped";; *) deploy_icon="❓"; deploy_text="Unknown";; esac
+            echo "| torus-allocator | $change_icon $change_text | $changed | $deploy_icon $deploy_text |" >> $GITHUB_STEP_SUMMARY
+            
+            # torus-bridge
+            changed="${{ needs.turbo-check.outputs.torus-bridge }}"
+            deploy_result="${{ needs.torus-bridge.result }}"
+            if [ "$changed" == "true" ]; then change_icon="✅"; change_text="Yes"; else change_icon="⏭️"; change_text="No"; fi
+            case "$deploy_result" in "success") deploy_icon="✅"; deploy_text="Deployed";; "failure") deploy_icon="❌"; deploy_text="Failed";; "skipped") deploy_icon="⏭️"; deploy_text="Skipped";; *) deploy_icon="❓"; deploy_text="Unknown";; esac
+            echo "| torus-bridge | $change_icon $change_text | $changed | $deploy_icon $deploy_text |" >> $GITHUB_STEP_SUMMARY
+            
+            # torus-cache
+            changed="${{ needs.turbo-check.outputs.torus-cache }}"
+            deploy_result="${{ needs.torus-cache.result }}"
+            if [ "$changed" == "true" ]; then change_icon="✅"; change_text="Yes"; else change_icon="⏭️"; change_text="No"; fi
+            case "$deploy_result" in "success") deploy_icon="✅"; deploy_text="Deployed";; "failure") deploy_icon="❌"; deploy_text="Failed";; "skipped") deploy_icon="⏭️"; deploy_text="Skipped";; *) deploy_icon="❓"; deploy_text="Unknown";; esac
+            echo "| torus-cache | $change_icon $change_text | $changed | $deploy_icon $deploy_text |" >> $GITHUB_STEP_SUMMARY
+            
+            # torus-governance
+            changed="${{ needs.turbo-check.outputs.torus-governance }}"
+            deploy_result="${{ needs.torus-governance.result }}"
+            if [ "$changed" == "true" ]; then change_icon="✅"; change_text="Yes"; else change_icon="⏭️"; change_text="No"; fi
+            case "$deploy_result" in "success") deploy_icon="✅"; deploy_text="Deployed";; "failure") deploy_icon="❌"; deploy_text="Failed";; "skipped") deploy_icon="⏭️"; deploy_text="Skipped";; *) deploy_icon="❓"; deploy_text="Unknown";; esac
+            echo "| torus-governance | $change_icon $change_text | $changed | $deploy_icon $deploy_text |" >> $GITHUB_STEP_SUMMARY
+            
+            # torus-worker
+            changed="${{ needs.turbo-check.outputs.torus-worker }}"
+            deploy_result="${{ needs.torus-worker.result }}"
+            if [ "$changed" == "true" ]; then change_icon="✅"; change_text="Yes"; else change_icon="⏭️"; change_text="No"; fi
+            case "$deploy_result" in "success") deploy_icon="✅"; deploy_text="Deployed";; "failure") deploy_icon="❌"; deploy_text="Failed";; "skipped") deploy_icon="⏭️"; deploy_text="Skipped";; *) deploy_icon="❓"; deploy_text="Unknown";; esac
+            echo "| torus-worker | $change_icon $change_text | $changed | $deploy_icon $deploy_text |" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          # PR Previews
+          if [ "${{ github.event_name }}" == "pull_request" ]; then
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "### 🔍 PR Preview Deployments" >> $GITHUB_STEP_SUMMARY
+            echo "| Application | Status | Preview URL |" >> $GITHUB_STEP_SUMMARY
+            echo "|-------------|--------|-------------|" >> $GITHUB_STEP_SUMMARY
+            
+            # torus-allocator
+            activate_result="${{ needs.torus-allocator-pr-activate.result }}"
+            delete_result="${{ needs.torus-allocator-pr-delete.result }}"
+            if [ "$activate_result" == "success" ]; then
+              echo "| torus-allocator | ✅ Deployed | [Preview](https://pr-${{ github.event.number }}.torus-allocator.torus.network) |" >> $GITHUB_STEP_SUMMARY
+            elif [ "$delete_result" == "success" ]; then
+              echo "| torus-allocator | 🗑️ Deleted | - |" >> $GITHUB_STEP_SUMMARY
+            elif [ "$activate_result" == "skipped" ] && [ "$delete_result" == "skipped" ]; then
+              echo "| torus-allocator | ⏭️ No Changes | - |" >> $GITHUB_STEP_SUMMARY
+            else
+              echo "| torus-allocator | ❌ Failed | - |" >> $GITHUB_STEP_SUMMARY
+            fi
+            
+            # torus-cache
+            activate_result="${{ needs.torus-cache-pr-activate.result }}"
+            delete_result="${{ needs.torus-cache-pr-delete.result }}"
+            if [ "$activate_result" == "success" ]; then
+              echo "| torus-cache | ✅ Deployed | [Preview](https://pr-${{ github.event.number }}.torus-cache.torus.network) |" >> $GITHUB_STEP_SUMMARY
+            elif [ "$delete_result" == "success" ]; then
+              echo "| torus-cache | 🗑️ Deleted | - |" >> $GITHUB_STEP_SUMMARY
+            elif [ "$activate_result" == "skipped" ] && [ "$delete_result" == "skipped" ]; then
+              echo "| torus-cache | ⏭️ No Changes | - |" >> $GITHUB_STEP_SUMMARY
+            else
+              echo "| torus-cache | ❌ Failed | - |" >> $GITHUB_STEP_SUMMARY
+            fi
+            
+            # torus-governance
+            activate_result="${{ needs.torus-governance-pr-activate.result }}"
+            delete_result="${{ needs.torus-governance-pr-delete.result }}"
+            if [ "$activate_result" == "success" ]; then
+              echo "| torus-governance | ✅ Deployed | [Preview](https://pr-${{ github.event.number }}.torus-governance.torus.network) |" >> $GITHUB_STEP_SUMMARY
+            elif [ "$delete_result" == "success" ]; then
+              echo "| torus-governance | 🗑️ Deleted | - |" >> $GITHUB_STEP_SUMMARY
+            elif [ "$activate_result" == "skipped" ] && [ "$delete_result" == "skipped" ]; then
+              echo "| torus-governance | ⏭️ No Changes | - |" >> $GITHUB_STEP_SUMMARY
+            else
+              echo "| torus-governance | ❌ Failed | - |" >> $GITHUB_STEP_SUMMARY
+            fi
+            
+            # torus-page
+            activate_result="${{ needs.torus-page-pr-activate.result }}"
+            delete_result="${{ needs.torus-page-pr-delete.result }}"
+            if [ "$activate_result" == "success" ]; then
+              echo "| torus-page | ✅ Deployed | [Preview](https://pr-${{ github.event.number }}.torus-page.torus.network) |" >> $GITHUB_STEP_SUMMARY
+            elif [ "$delete_result" == "success" ]; then
+              echo "| torus-page | 🗑️ Deleted | - |" >> $GITHUB_STEP_SUMMARY
+            elif [ "$activate_result" == "skipped" ] && [ "$delete_result" == "skipped" ]; then
+              echo "| torus-page | ⏭️ No Changes | - |" >> $GITHUB_STEP_SUMMARY
+            else
+              echo "| torus-page | ❌ Failed | - |" >> $GITHUB_STEP_SUMMARY
+            fi
+            
+            # torus-portal
+            activate_result="${{ needs.torus-portal-pr-activate.result }}"
+            delete_result="${{ needs.torus-portal-pr-delete.result }}"
+            if [ "$activate_result" == "success" ]; then
+              echo "| torus-portal | ✅ Deployed | [Preview](https://pr-${{ github.event.number }}.torus-portal.torus.network) |" >> $GITHUB_STEP_SUMMARY
+            elif [ "$delete_result" == "success" ]; then
+              echo "| torus-portal | 🗑️ Deleted | - |" >> $GITHUB_STEP_SUMMARY
+            elif [ "$activate_result" == "skipped" ] && [ "$delete_result" == "skipped" ]; then
+              echo "| torus-portal | ⏭️ No Changes | - |" >> $GITHUB_STEP_SUMMARY
+            else
+              echo "| torus-portal | ❌ Failed | - |" >> $GITHUB_STEP_SUMMARY
+            fi
+            
+            # torus-wallet
+            activate_result="${{ needs.torus-wallet-pr-activate.result }}"
+            delete_result="${{ needs.torus-wallet-pr-delete.result }}"
+            if [ "$activate_result" == "success" ]; then
+              echo "| torus-wallet | ✅ Deployed | [Preview](https://pr-${{ github.event.number }}.torus-wallet.torus.network) |" >> $GITHUB_STEP_SUMMARY
+            elif [ "$delete_result" == "success" ]; then
+              echo "| torus-wallet | 🗑️ Deleted | - |" >> $GITHUB_STEP_SUMMARY
+            elif [ "$activate_result" == "skipped" ] && [ "$delete_result" == "skipped" ]; then
+              echo "| torus-wallet | ⏭️ No Changes | - |" >> $GITHUB_STEP_SUMMARY
+            else
+              echo "| torus-wallet | ❌ Failed | - |" >> $GITHUB_STEP_SUMMARY
+            fi
+            
+            # torus-bridge
+            activate_result="${{ needs.torus-bridge-pr-activate.result }}"
+            delete_result="${{ needs.torus-bridge-pr-delete.result }}"
+            if [ "$activate_result" == "success" ]; then
+              echo "| torus-bridge | ✅ Deployed | [Preview](https://pr-${{ github.event.number }}.torus-bridge.torus.network) |" >> $GITHUB_STEP_SUMMARY
+            elif [ "$delete_result" == "success" ]; then
+              echo "| torus-bridge | 🗑️ Deleted | - |" >> $GITHUB_STEP_SUMMARY
+            elif [ "$activate_result" == "skipped" ] && [ "$delete_result" == "skipped" ]; then
+              echo "| torus-bridge | ⏭️ No Changes | - |" >> $GITHUB_STEP_SUMMARY
+            else
+              echo "| torus-bridge | ❌ Failed | - |" >> $GITHUB_STEP_SUMMARY
+            fi
+          fi
+
+          # Dry Run Builds
+          if [ "${{ github.ref_name }}" != "main" ] && [ "${{ github.ref_name }}" != "dev" ] && [ "${{ github.ref_name }}" != "cicd" ] && [ "${{ github.event_name }}" != "pull_request" ]; then
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "### 🔨 Dry Run Builds" >> $GITHUB_STEP_SUMMARY
+            echo "| Application | Build Status |" >> $GITHUB_STEP_SUMMARY
+            echo "|-------------|--------------|" >> $GITHUB_STEP_SUMMARY
+            
+            # torus-page
+            dry_run_result="${{ needs.torus-page-dry-run.result }}"
+            case "$dry_run_result" in "success") echo "| torus-page | ✅ Build Successful |" >> $GITHUB_STEP_SUMMARY;; "failure") echo "| torus-page | ❌ Build Failed |" >> $GITHUB_STEP_SUMMARY;; "skipped") echo "| torus-page | ⏭️ Skipped (No Changes) |" >> $GITHUB_STEP_SUMMARY;; *) echo "| torus-page | ❓ Unknown |" >> $GITHUB_STEP_SUMMARY;; esac
+            
+            # torus-portal
+            dry_run_result="${{ needs.torus-portal-dry-run.result }}"
+            case "$dry_run_result" in "success") echo "| torus-portal | ✅ Build Successful |" >> $GITHUB_STEP_SUMMARY;; "failure") echo "| torus-portal | ❌ Build Failed |" >> $GITHUB_STEP_SUMMARY;; "skipped") echo "| torus-portal | ⏭️ Skipped (No Changes) |" >> $GITHUB_STEP_SUMMARY;; *) echo "| torus-portal | ❓ Unknown |" >> $GITHUB_STEP_SUMMARY;; esac
+            
+            # torus-wallet
+            dry_run_result="${{ needs.torus-wallet-dry-run.result }}"
+            case "$dry_run_result" in "success") echo "| torus-wallet | ✅ Build Successful |" >> $GITHUB_STEP_SUMMARY;; "failure") echo "| torus-wallet | ❌ Build Failed |" >> $GITHUB_STEP_SUMMARY;; "skipped") echo "| torus-wallet | ⏭️ Skipped (No Changes) |" >> $GITHUB_STEP_SUMMARY;; *) echo "| torus-wallet | ❓ Unknown |" >> $GITHUB_STEP_SUMMARY;; esac
+            
+            # torus-allocator
+            dry_run_result="${{ needs.torus-allocator-dry-run.result }}"
+            case "$dry_run_result" in "success") echo "| torus-allocator | ✅ Build Successful |" >> $GITHUB_STEP_SUMMARY;; "failure") echo "| torus-allocator | ❌ Build Failed |" >> $GITHUB_STEP_SUMMARY;; "skipped") echo "| torus-allocator | ⏭️ Skipped (No Changes) |" >> $GITHUB_STEP_SUMMARY;; *) echo "| torus-allocator | ❓ Unknown |" >> $GITHUB_STEP_SUMMARY;; esac
+            
+            # torus-bridge
+            dry_run_result="${{ needs.torus-bridge-dry-run.result }}"
+            case "$dry_run_result" in "success") echo "| torus-bridge | ✅ Build Successful |" >> $GITHUB_STEP_SUMMARY;; "failure") echo "| torus-bridge | ❌ Build Failed |" >> $GITHUB_STEP_SUMMARY;; "skipped") echo "| torus-bridge | ⏭️ Skipped (No Changes) |" >> $GITHUB_STEP_SUMMARY;; *) echo "| torus-bridge | ❓ Unknown |" >> $GITHUB_STEP_SUMMARY;; esac
+            
+            # torus-cache
+            dry_run_result="${{ needs.torus-cache-dry-run.result }}"
+            case "$dry_run_result" in "success") echo "| torus-cache | ✅ Build Successful |" >> $GITHUB_STEP_SUMMARY;; "failure") echo "| torus-cache | ❌ Build Failed |" >> $GITHUB_STEP_SUMMARY;; "skipped") echo "| torus-cache | ⏭️ Skipped (No Changes) |" >> $GITHUB_STEP_SUMMARY;; *) echo "| torus-cache | ❓ Unknown |" >> $GITHUB_STEP_SUMMARY;; esac
+            
+            # torus-governance
+            dry_run_result="${{ needs.torus-governance-dry-run.result }}"
+            case "$dry_run_result" in "success") echo "| torus-governance | ✅ Build Successful |" >> $GITHUB_STEP_SUMMARY;; "failure") echo "| torus-governance | ❌ Build Failed |" >> $GITHUB_STEP_SUMMARY;; "skipped") echo "| torus-governance | ⏭️ Skipped (No Changes) |" >> $GITHUB_STEP_SUMMARY;; *) echo "| torus-governance | ❓ Unknown |" >> $GITHUB_STEP_SUMMARY;; esac
+            
+            # torus-worker
+            dry_run_result="${{ needs.torus-worker-dry-run.result }}"
+            case "$dry_run_result" in "success") echo "| torus-worker | ✅ Build Successful |" >> $GITHUB_STEP_SUMMARY;; "failure") echo "| torus-worker | ❌ Build Failed |" >> $GITHUB_STEP_SUMMARY;; "skipped") echo "| torus-worker | ⏭️ Skipped (No Changes) |" >> $GITHUB_STEP_SUMMARY;; *) echo "| torus-worker | ❓ Unknown |" >> $GITHUB_STEP_SUMMARY;; esac
+          fi
+
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Commit:** \`${{ github.sha }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "**Workflow Run:** [#${{ github.run_number }}](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})" >> $GITHUB_STEP_SUMMARY
