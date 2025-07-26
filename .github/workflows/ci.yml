@@ -31,13 +31,14 @@ jobs:
       - name: Typecheck
         id: typecheck
         run: |
-          if just typecheck; then
+          TYPECHECK_OUTPUT="$(mktemp)"
+          if just typecheck 2>&1 | tee "$TYPECHECK_OUTPUT"; then
             echo "status=success" >> $GITHUB_OUTPUT
             echo "errors=0" >> $GITHUB_OUTPUT
           else
             echo "status=failed" >> $GITHUB_OUTPUT
             # Count TypeScript errors (this is a rough estimate)
-            ERROR_COUNT=$(just typecheck 2>&1 | grep -c "error TS" || echo "unknown")
+            ERROR_COUNT=$(grep -c "error TS" "$TYPECHECK_OUTPUT" || echo "unknown")
             echo "errors=$ERROR_COUNT" >> $GITHUB_OUTPUT
             exit 1
           fi
@@ -76,8 +77,8 @@ jobs:
       - name: Lint
         id: lint
         run: |
-          LINT_OUTPUT=$(mktemp)
-          if just lint && just lint-ws 2>&1 | tee "$LINT_OUTPUT"; then
+          LINT_OUTPUT="$(mktemp)"
+          if ( just lint && just lint-ws ) |& tee "$LINT_OUTPUT"; then
             echo "status=success" >> $GITHUB_OUTPUT
             echo "warnings=0" >> $GITHUB_OUTPUT
             echo "errors=0" >> $GITHUB_OUTPUT
@@ -124,13 +125,14 @@ jobs:
       - name: Format check
         id: format
         run: |
-          if just format; then
+          FORMAT_OUTPUT="$(mktemp)"
+          if just format 2>&1 | tee "$FORMAT_OUTPUT"; then
             echo "status=success" >> $GITHUB_OUTPUT
             echo "issues=0" >> $GITHUB_OUTPUT
           else
             echo "status=failed" >> $GITHUB_OUTPUT
             # Count formatting issues (rough estimate)
-            ISSUE_COUNT=$(just format 2>&1 | grep -c "would reformat\|formatting" || echo "unknown")
+            ISSUE_COUNT=$(grep -c "would reformat\|formatting" "$FORMAT_OUTPUT" || echo "unknown")
             echo "issues=$ISSUE_COUNT" >> $GITHUB_OUTPUT
             exit 1
           fi

@@ -26,7 +26,7 @@ concurrency:
 jobs:
   docker-build:
     if: |
-      !inputs.skip_build && 
+      !inputs.skip_build &&
       !contains(github.event.head_commit.message, 'skip build')
     permissions: write-all
     runs-on: ubicloud-standard-16
@@ -144,15 +144,18 @@ jobs:
       - name: Install helm diff plugin
         if: needs.docker-build.result == 'skipped'
         working-directory: apps/${{ env.APP_NAME }}
-        run: helm plugin install https://github.com/databus23/helm-diff
+        run: |
+          if ! helm plugin list | grep -q '^diff'; then
+            helm plugin install https://github.com/databus23/helm-diff
+          fi
 
       - name: Deploy application (apply diff only)
         id: deploy-diff
         if: needs.docker-build.result == 'skipped'
         working-directory: apps/${{ env.APP_NAME }}
         run: |
-          export RELEASE_NAME=$(helmfile -e ${ENV_NAME} list --output json | jq -r '.[].name')
-          export IMAGE_TAG=$(helm get values ${RELEASE_NAME} -n ${NAMESPACE} --output  json | jq -r '.deployment.image.tag')
+          export RELEASE_NAME="$(helmfile -e ${ENV_NAME} list --output json | jq -r '.[].name')"
+          export IMAGE_TAG="$(helm get values "${RELEASE_NAME}" -n "${NAMESPACE}" --output json | jq -r '.deployment.image.tag')"
 
           # Temporarily disable error handling
           set +e
@@ -204,6 +207,9 @@ jobs:
             echo "✅ **Application deployed successfully**" >> $GITHUB_STEP_SUMMARY
             echo "- **Status:** New version deployed" >> $GITHUB_STEP_SUMMARY
             echo "- **Image:** \`ghcr.io/renlabs-dev/${{ inputs.app_name }}:${{ steps.commit.outputs.short }}\`" >> $GITHUB_STEP_SUMMARY
+          elif [ "${{ steps.deploy-new.outcome }}" == "" ]; then
+            echo "⏭️ **Tag deployment skipped**" >> $GITHUB_STEP_SUMMARY
+            echo "- **Status:** No new image built" >> $GITHUB_STEP_SUMMARY
           elif [ "${{ steps.deploy-diff.outcome }}" == "success" ]; then
             if [ "${{ steps.deploy-diff.outputs.changes_applied }}" == "true" ]; then
               echo "✅ **Configuration changes applied**" >> $GITHUB_STEP_SUMMARY

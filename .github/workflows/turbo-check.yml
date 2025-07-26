@@ -63,7 +63,7 @@ jobs:
         if: github.event_name == 'push'
         run: |
           if git rev-parse --quiet --verify ${{ github.event.before }}^{commit}; then
-            BASE_COMMIT=$(git merge-base ${{ github.event.before }} HEAD)
+            BASE_COMMIT="$(git merge-base ${{ github.event.before }} HEAD)"
             pnpm exec turbo run build --filter="...[${BASE_COMMIT}]" --dry-run=json 2>/dev/null > build.json
           else
             pnpm exec turbo run build --dry-run=json 2>/dev/null > build.json
@@ -78,11 +78,12 @@ jobs:
       - name: Check changed packages
         id: changed
         run: |
-          CHANGED_PACKAGES=$(cat package_list)
+          set -euo pipefail
+          CHANGED_PACKAGES="$(cat package_list)"
 
           while read -r package; do
             package=$(echo "$package" | tr -d '"')
-            IS_CHANGED=$(echo $CHANGED_PACKAGES | jq -r "any(. == \"$package\")")
+            IS_CHANGED="$(echo "${CHANGED_PACKAGES}" | jq -r "any(. == \"${package}\")")"
             echo "$package=$IS_CHANGED" >> $GITHUB_OUTPUT
           done < <(jq -c '.[]' packages_to_track.json)
 
@@ -96,7 +97,8 @@ jobs:
           echo "## 📦 Changed Applications" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
 
-          CHANGED_PACKAGES=$(cat package_list)
+          set -euo pipefail
+          CHANGED_PACKAGES="$(cat package_list)"
 
           # Create a summary table
           echo "| Application | Status | Changed |" >> $GITHUB_STEP_SUMMARY
@@ -104,7 +106,7 @@ jobs:
 
           while read -r package; do
             package=$(echo "$package" | tr -d '"')
-            IS_CHANGED=$(echo $CHANGED_PACKAGES | jq -r "any(. == \"$package\")")
+            IS_CHANGED="$(echo "${CHANGED_PACKAGES}" | jq -r "any(. == \"${package}\")")"
 
             if [ "$IS_CHANGED" == "true" ]; then
               echo "| $package | ✅ Changed | Yes |" >> $GITHUB_STEP_SUMMARY
@@ -125,6 +127,6 @@ jobs:
           echo "**Commit:** ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
 
           # Add deployment implications
-          CHANGED_COUNT=$(echo $CHANGED_PACKAGES | jq 'length')
+          CHANGED_COUNT="$(echo "${CHANGED_PACKAGES}" | jq 'length')"
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "**Deployment Impact:** $CHANGED_COUNT applications will be rebuilt and deployed." >> $GITHUB_STEP_SUMMARY
