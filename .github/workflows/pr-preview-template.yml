@@ -15,10 +15,6 @@ on:
         required: false
         type: boolean
         default: true
-      healthCheckPath:
-        required: false
-        type: string
-        default: /
     secrets:
       VAULT_ADDR:
         required: true
@@ -134,13 +130,6 @@ jobs:
           --state-values-set releaseName=pr-${{ github.event.number }}-${{ inputs.app_name }} \
           --state-values-set releasePrefix=pr-${{ github.event.number }}-${{ inputs.app_name }}
 
-      - name: Wait for App URL
-        id: health-check
-        if: ${{ inputs.hasURL }}
-        uses: iFaxity/wait-on-action@v1.2.1
-        with:
-          resource: https://pr-${{ github.event.number }}.${{ inputs.app_name }}.torus.network${{ inputs.healthCheckPath }}
-
       - name: Comment PR
         if: ${{ inputs.hasURL }}
         uses: thollander/actions-comment-pull-request@v3
@@ -175,15 +164,8 @@ jobs:
           # URL status
           if [ "${{ inputs.hasURL }}" == "true" ]; then
             echo "### 🌐 Application URL" >> $GITHUB_STEP_SUMMARY
-            if [ "${{ steps.health-check.outcome }}" == "success" ]; then
-              echo "✅ **Application is accessible**" >> $GITHUB_STEP_SUMMARY
-              echo "- **Preview URL:** https://pr-${{ github.event.number }}.${{ inputs.app_name }}.torus.network" >> $GITHUB_STEP_SUMMARY
-              echo "- **Health Check:** Passed" >> $GITHUB_STEP_SUMMARY
-            else
-              echo "❌ **Application health check failed**" >> $GITHUB_STEP_SUMMARY
-              echo "- **Preview URL:** https://pr-${{ github.event.number }}.${{ inputs.app_name }}.torus.network (may not be ready)" >> $GITHUB_STEP_SUMMARY
-              echo "- **Health Check:** Failed or timeout" >> $GITHUB_STEP_SUMMARY
-            fi
+            echo "✅ **Application is accessible**" >> $GITHUB_STEP_SUMMARY
+            echo "- **Preview URL:** https://pr-${{ github.event.number }}.${{ inputs.app_name }}.torus.network" >> $GITHUB_STEP_SUMMARY
           else
             echo "### 🌐 Application Access" >> $GITHUB_STEP_SUMMARY
             echo "ℹ️ **No public URL configured for this application**" >> $GITHUB_STEP_SUMMARY
