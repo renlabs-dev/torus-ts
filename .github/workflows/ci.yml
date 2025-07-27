@@ -32,7 +32,7 @@ jobs:
         id: typecheck
         run: |
           TYPECHECK_OUTPUT="$(mktemp)"
-          if just typecheck 2>&1 | tee "$TYPECHECK_OUTPUT"; then
+          if just typecheck |& tee "$TYPECHECK_OUTPUT"; then
             echo "status=success" >> $GITHUB_OUTPUT
             echo "errors=0" >> $GITHUB_OUTPUT
           else
@@ -126,7 +126,7 @@ jobs:
         id: format
         run: |
           FORMAT_OUTPUT="$(mktemp)"
-          if just format 2>&1 | tee "$FORMAT_OUTPUT"; then
+          if just format |& tee "$FORMAT_OUTPUT"; then
             echo "status=success" >> $GITHUB_OUTPUT
             echo "issues=0" >> $GITHUB_OUTPUT
           else
