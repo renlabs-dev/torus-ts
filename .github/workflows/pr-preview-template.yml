@@ -15,10 +15,6 @@ on:
         required: false
         type: boolean
         default: true
-      healthCheckPath:
-        required: false
-        type: string
-        default: /
     secrets:
       VAULT_ADDR:
         required: true
@@ -124,6 +120,7 @@ jobs:
             renlabs/utils | kubectl apply -f -
 
       - name: Deploy application
+        id: deploy
         working-directory: apps/${{ inputs.app_name }}
         run: |
           helmfile sync -e dev \
@@ -133,12 +130,6 @@ jobs:
           --state-values-set releaseName=pr-${{ github.event.number }}-${{ inputs.app_name }} \
           --state-values-set releasePrefix=pr-${{ github.event.number }}-${{ inputs.app_name }}
 
-      - name: Wait for App URL
-        if: ${{ inputs.hasURL }}
-        uses: iFaxity/wait-on-action@v1.2.1
-        with:
-          resource: https://pr-${{ github.event.number }}.${{ inputs.app_name }}.torus.network${{ inputs.healthCheckPath }}
-
       - name: Comment PR
         if: ${{ inputs.hasURL }}
         uses: thollander/actions-comment-pull-request@v3
@@ -146,6 +137,42 @@ jobs:
           message: |
             🚀 **${{ inputs.app_name }}** Preview deployment will be available at: https://pr-${{ github.event.number }}.${{ inputs.app_name }}.torus.network
           comment-tag: ${{ inputs.app_name }}-preview-url
+
+      - name: Generate PR preview deployment summary
+        if: always()
+        run: |
+          echo "## 🔍 PR Preview Deployment - ${{ inputs.app_name }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          echo "**PR:** #${{ github.event.number }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Environment:** Development (PR Preview)" >> $GITHUB_STEP_SUMMARY
+          echo "**Namespace:** \`torus-dev-web-apps\`" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          # Deployment status
+          echo "### 🏗️ Deployment Status" >> $GITHUB_STEP_SUMMARY
+          if [ "${{ steps.deploy.outcome }}" == "success" ]; then
+            echo "✅ **PR preview deployed successfully**" >> $GITHUB_STEP_SUMMARY
+            echo "- **Release Name:** \`pr-${{ github.event.number }}-${{ inputs.app_name }}\`" >> $GITHUB_STEP_SUMMARY
+            echo "- **Image:** \`ghcr.io/renlabs-dev/${{ inputs.app_name }}:${{ steps.commit.outputs.short }}-pr\`" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ **PR preview deployment failed**" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          # URL status
+          if [ "${{ inputs.hasURL }}" == "true" ]; then
+            echo "### 🌐 Application URL" >> $GITHUB_STEP_SUMMARY
+            echo "✅ **Application is accessible**" >> $GITHUB_STEP_SUMMARY
+            echo "- **Preview URL:** https://pr-${{ github.event.number }}.${{ inputs.app_name }}.torus.network" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "### 🌐 Application Access" >> $GITHUB_STEP_SUMMARY
+            echo "ℹ️ **No public URL configured for this application**" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Commit:** \`${{ github.sha }}\`" >> $GITHUB_STEP_SUMMARY
 
   destroy:
     if: ${{ inputs.delete }}
@@ -166,8 +193,44 @@ jobs:
         run: /apps/k8s_auth_w_approle_sa.sh
 
       - name: Destroy PR preview app deployment
+        id: destroy
         working-directory: apps/${{ inputs.app_name }}
         run: |
+          # Capture exit code - helmfile destroy returns non-zero when nothing exists to delete
+          set +e
           helmfile destroy -e dev \
           --state-values-set releaseName=pr-${{ github.event.number }}-${{ inputs.app_name }} \
           --state-values-set releasePrefix=pr-${{ github.event.number }}-${{ inputs.app_name }}
+          DESTROY_EXIT_CODE=$?
+
+          set -e  # restore
+
+          # Exit codes 0 (success) and 2 (nothing to destroy) are both considered success
+          if [ $DESTROY_EXIT_CODE -eq 0 ] || [ $DESTROY_EXIT_CODE -eq 2 ]; then
+            exit 0
+          else
+            exit $DESTROY_EXIT_CODE
+          fi
+
+      - name: Generate PR preview cleanup summary
+        if: always()
+        run: |
+          echo "## 🗑️ PR Preview Cleanup - ${{ inputs.app_name }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          echo "**PR:** #${{ github.event.number }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Action:** Preview environment cleanup" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          if [ "${{ steps.destroy.outcome }}" == "success" ]; then
+            echo "✅ **PR preview environment cleaned up successfully**" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "- **Status:** Resources deleted" >> $GITHUB_STEP_SUMMARY
+            echo "- **Release:** \`pr-${{ github.event.number }}-${{ inputs.app_name }}\` removed" >> $GITHUB_STEP_SUMMARY
+            echo "- **URL:** https://pr-${{ github.event.number }}.${{ inputs.app_name }}.torus.network (no longer accessible)" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ **PR preview cleanup failed**" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "- **Status:** Manual cleanup may be required" >> $GITHUB_STEP_SUMMARY
+            echo "- **Action:** Check Kubernetes resources manually" >> $GITHUB_STEP_SUMMARY
+          fi

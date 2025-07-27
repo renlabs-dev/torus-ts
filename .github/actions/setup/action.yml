@@ -1,4 +1,4 @@
-name: "Setup and install"
+name: "PNPM Setup and install"
 description: "Common setup steps for Actions"
 
 runs:
@@ -7,14 +7,16 @@ runs:
     - uses: extractions/setup-just@v2
 
     - uses: pnpm/action-setup@v4
+      name: Install pnpm
+      with:
+        run_install: false
 
-    - uses: actions/setup-node@v4
+    - name: Install Node.js
+      uses: actions/setup-node@v4
       with:
         node-version: 20
         cache: "pnpm"
 
-    - shell: bash
-      run: pnpm add -g turbo
-
-    - shell: bash
+    - name: Install dependencies
+      shell: bash
       run: pnpm install
