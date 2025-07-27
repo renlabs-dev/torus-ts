@@ -31,6 +31,8 @@ jobs:
       - name: Typecheck
         id: typecheck
         run: |
+          set -o pipefail
+
           TYPECHECK_OUTPUT="$(mktemp)"
           if just typecheck |& tee "$TYPECHECK_OUTPUT"; then
             echo "status=success" >> $GITHUB_OUTPUT
@@ -77,6 +79,8 @@ jobs:
       - name: Lint
         id: lint
         run: |
+          set -o pipefail
+
           LINT_OUTPUT="$(mktemp)"
           if ( just lint && just lint-ws ) |& tee "$LINT_OUTPUT"; then
             echo "status=success" >> $GITHUB_OUTPUT
@@ -125,6 +129,8 @@ jobs:
       - name: Format check
         id: format
         run: |
+          set -o pipefail
+
           FORMAT_OUTPUT="$(mktemp)"
           if just format |& tee "$FORMAT_OUTPUT"; then
             echo "status=success" >> $GITHUB_OUTPUT
