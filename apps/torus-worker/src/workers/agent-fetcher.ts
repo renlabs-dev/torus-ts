@@ -1,12 +1,16 @@
 import { match } from "rustie";
 
 import type {
+  EmissionScope,
   LastBlock,
+  NamespaceScope,
   PermissionContract,
   PermissionId,
   Proposal,
 } from "@torus-network/sdk/chain";
 import {
+  EMISSION_SCOPE_SCHEMA,
+  NAMESPACE_SCOPE_SCHEMA,
   queryAgents,
   queryLastBlock,
   queryPermissions,
@@ -115,22 +119,145 @@ async function cleanPermissions(
 }
 
 /**
+ * Transforms emission permission data to database format
+ */
+function emissionToDatabase(
+  permissionId: PermissionId,
+  emission: EmissionScope,
+): {
+  emissionPermission: NewEmissionPermission;
+  streamAllocations: NewEmissionStreamAllocation[];
+  distributionTargets: NewEmissionDistributionTarget[];
+} {
+  const allocationType = match(emission.allocation)({
+    Streams: () => "streams" as const,
+    FixedAmount: () => "fixed_amount" as const,
+  });
+
+  const distributionType = match(emission.distribution)({
+    Manual: () => "manual" as const,
+    Automatic: () => "automatic" as const,
+    AtBlock: () => "at_block" as const,
+    Interval: () => "interval" as const,
+  });
+
+  const distributionThreshold = match(emission.distribution)({
+    Automatic: (auto) => auto.toString(),
+    Manual: () => null,
+    AtBlock: () => null,
+    Interval: () => null,
+  });
+
+  const distributionTargetBlock = match(emission.distribution)({
+    AtBlock: (atBlock) => BigInt(atBlock.toString()),
+    Manual: () => null,
+    Automatic: () => null,
+    Interval: () => null,
+  });
+
+  const distributionIntervalBlocks = match(emission.distribution)({
+    Interval: (interval) => BigInt(interval.toString()),
+    Manual: () => null,
+    Automatic: () => null,
+    AtBlock: () => null,
+  });
+
+  const fixedAmount = match(emission.allocation)({
+    FixedAmount: (amount) => amount.toString(),
+    Streams: () => null,
+  });
+
+  const emissionPermission: NewEmissionPermission = {
+    permissionId: permissionId,
+    allocationType,
+    fixedAmount,
+    distributionType,
+    distributionThreshold,
+    distributionTargetBlock,
+    distributionIntervalBlocks,
+    accumulating: emission.accumulating,
+  };
+
+  const streamAllocations: NewEmissionStreamAllocation[] = match(
+    emission.allocation,
+  )({
+    Streams: (streams) =>
+      Array.from(streams.entries()).map(([streamId, percentage]) => ({
+        permissionId: permissionId,
+        streamId: streamId,
+        percentage: percentage, // 0-100, matches Substrate Percent type
+      })),
+    FixedAmount: () => [],
+  });
+
+  // Handle distribution targets (all emission permissions have targets)
+  const distributionTargets: NewEmissionDistributionTarget[] = Array.from(
+    emission.targets.entries(),
+  ).map(([accountId, weight]) => ({
+    permissionId: permissionId,
+    targetAccountId: accountId,
+    weight: Number(weight.toString()), // Convert bigint to number (u16 range: 0-65535)
+  }));
+
+  return {
+    emissionPermission,
+    streamAllocations,
+    distributionTargets,
+  };
+}
+
+/**
+ * Transforms namespace permission data to database format
+ */
+function namespaceToDatabase(
+  permissionId: PermissionId,
+  namespace: NamespaceScope,
+): {
+  namespacePermission: NewNamespacePermission;
+  namespacePaths: NewNamespacePermissionPath[];
+} {
+  const namespacePermission: NewNamespacePermission = {
+    permissionId: permissionId,
+  };
+
+  // Extract namespace paths - each path becomes a separate database entry
+  const namespacePaths: NewNamespacePermissionPath[] = namespace.paths.map(
+    (pathSegments: string[]) => ({
+      permissionId: permissionId,
+      namespacePath: pathSegments.join("."), // Convert segments array to dot-separated string
+    }),
+  );
+
+  return {
+    namespacePermission,
+    namespacePaths,
+  };
+}
+
+/**
  * Transforms a blockchain permission contract to database format
  */
 function permissionContractToDatabase(
   permissionId: PermissionId,
   contract: PermissionContract,
-): {
-  permission: NewPermission;
-  emissionPermission?: NewEmissionPermission;
-  namespacePermission?: NewNamespacePermission;
-  namespacePaths?: NewNamespacePermissionPath[];
-  streamAllocations?: NewEmissionStreamAllocation[];
-  distributionTargets?: NewEmissionDistributionTarget[];
-  enforcementControllers?: NewPermissionEnforcementController[];
-  revocationArbiters?: NewPermissionRevocationArbiter[];
-  hierarchies?: NewPermissionHierarchy[];
-} | null {
+):
+  | ({
+      permission: NewPermission;
+      hierarchy: NewPermissionHierarchy;
+      enforcementControllers: NewPermissionEnforcementController[];
+      revocationArbiters: NewPermissionRevocationArbiter[];
+    } & (
+      | {
+          emissionPermission: NewEmissionPermission;
+          streamAllocations: NewEmissionStreamAllocation[];
+          distributionTargets: NewEmissionDistributionTarget[];
+        }
+      | {
+          namespacePermission: NewNamespacePermission;
+          namespacePaths: NewNamespacePermissionPath[];
+        }
+    ))
+  | null {
   // Process emission and namespace permissions, skip curator permissions
   const shouldProcess = match(contract.scope)({
     Emission: () => true,
@@ -142,7 +269,6 @@ function permissionContractToDatabase(
     return null; // Skip curator permissions
   }
 
-  // Map duration
   const durationType = match(contract.duration)({
     Indefinite: () => "indefinite" as const,
     UntilBlock: () => "until_block" as const,
@@ -206,116 +332,21 @@ function permissionContractToDatabase(
     createdAtBlock: BigInt(contract.createdAt.toString()),
   };
 
-  // Handle children hierarchy (children are stored as an array in the contract)
-  const hierarchies: NewPermissionHierarchy[] = contract.children.map((childId) => ({
-    childPermissionId: childId,
-    parentPermissionId: permissionId,
-  }));
-
-  let emissionPermission: NewEmissionPermission | undefined;
-  let namespacePermission: NewNamespacePermission | undefined;
-  let namespacePaths: NewNamespacePermissionPath[] | undefined;
-  let streamAllocations: NewEmissionStreamAllocation[] | undefined;
-  let distributionTargets: NewEmissionDistributionTarget[] | undefined;
-  let enforcementControllers: NewPermissionEnforcementController[] | undefined;
-  let revocationArbiters: NewPermissionRevocationArbiter[] | undefined;
-
-  match(contract.scope)({
-    Emission: (emission) => {
-      const allocationType = match(emission.allocation)({
-        Streams: () => "streams" as const,
-        FixedAmount: () => "fixed_amount" as const,
-      });
-
-      const distributionType = match(emission.distribution)({
-        Manual: () => "manual" as const,
-        Automatic: () => "automatic" as const,
-        AtBlock: () => "at_block" as const,
-        Interval: () => "interval" as const,
-      });
-
-      const distributionThreshold = match(emission.distribution)({
-        Automatic: (auto) => auto.toString(),
-        Manual: () => null,
-        AtBlock: () => null,
-        Interval: () => null,
-      });
-
-      const distributionTargetBlock = match(emission.distribution)({
-        AtBlock: (atBlock) => BigInt(atBlock.toString()),
-        Manual: () => null,
-        Automatic: () => null,
-        Interval: () => null,
-      });
-
-      const distributionIntervalBlocks = match(emission.distribution)({
-        Interval: (interval) => BigInt(interval.toString()),
-        Manual: () => null,
-        Automatic: () => null,
-        AtBlock: () => null,
-      });
-
-      const fixedAmount = match(emission.allocation)({
-        FixedAmount: (amount) => amount.toString(),
-        Streams: () => null,
-      });
-
-      emissionPermission = {
-        permissionId: permissionId,
-        allocationType,
-        fixedAmount,
-        distributionType,
-        distributionThreshold,
-        distributionTargetBlock,
-        distributionIntervalBlocks,
-        accumulating: emission.accumulating,
-      };
-
-      match(emission.allocation)({
-        Streams: (streams) => {
-          streamAllocations = Array.from(streams.entries()).map(
-            ([streamId, percentage]) => ({
-              permissionId: permissionId,
-              streamId: streamId,
-              percentage: percentage, // 0-100, matches Substrate Percent type
-            }),
-          );
-        },
-        FixedAmount: () => {
-          // No stream allocations for fixed amount
-        },
-      });
-
-      // Handle distribution targets (all emission permissions have targets)
-      distributionTargets = Array.from(emission.targets.entries()).map(
-        ([accountId, weight]) => ({
-          permissionId: permissionId,
-          targetAccountId: accountId,
-          weight: Number(weight.toString()), // Convert bigint to number (u16 range: 0-65535)
-        }),
-      );
-    },
-    Namespace: (namespace) => {
-      // Handle namespace permissions
-      namespacePermission = {
-        permissionId: permissionId,
-      };
-
-      // Extract namespace paths from the Map structure - each path becomes a separate database entry
-      namespacePaths = [];
-      for (const [_parent, pathSegmentsList] of namespace.paths.entries()) {
-        for (const pathSegments of pathSegmentsList) {
-          namespacePaths.push({
-            permissionId: permissionId,
-            namespacePath: pathSegments.join("."), // Convert segments array to dot-separated string
-          });
-        }
-      }
-    },
-    Curator: () => {
-      // This case should never be reached due to early return above
-    },
+  // Handle parent hierarchy
+  const hierarchy = match(contract.parent)({
+    Some: (parentId): NewPermissionHierarchy => ({
+      childPermissionId: permissionId,
+      parentPermissionId: parentId,
+    }),
+    None: (): NewPermissionHierarchy => ({
+      childPermissionId: permissionId,
+      parentPermissionId: permissionId, // Self-reference when no parent
+    }),
   });
+
+  // Initialize common arrays (always empty if not populated)
+  let enforcementControllers: NewPermissionEnforcementController[] = [];
+  let revocationArbiters: NewPermissionRevocationArbiter[] = [];
 
   // Handle enforcement authorities
   match(contract.enforcement)({
@@ -328,7 +359,7 @@ function permissionContractToDatabase(
       );
     },
     None: () => {
-      // No enforcement authorities
+      // enforcementControllers remains empty array
     },
   });
 
@@ -343,26 +374,44 @@ function permissionContractToDatabase(
       );
     },
     Irrevocable: () => {
-      // No revocation arbiters for other revocation types
+      // revocationArbiters remains empty array
     },
-    RevocableByDelegator: () => {
-      // No revocation arbiters for other revocation types
+    RevocableByGrantor: () => {
+      // revocationArbiters remains empty array
     },
     RevocableAfter: () => {
-      // No revocation arbiters for other revocation types
+      // revocationArbiters remains empty array
     },
   });
 
+  // Handle scope-specific data
+  const emissionScope = EMISSION_SCOPE_SCHEMA.safeParse(contract.scope);
+  let scopeSpecificData:
+    | {
+        emissionPermission: NewEmissionPermission;
+        streamAllocations: NewEmissionStreamAllocation[];
+        distributionTargets: NewEmissionDistributionTarget[];
+      }
+    | {
+        namespacePermission: NewNamespacePermission;
+        namespacePaths: NewNamespacePermissionPath[];
+      };
+  if (emissionScope.success) {
+    scopeSpecificData = emissionToDatabase(permissionId, emissionScope.data);
+  } else {
+    const namespaceScope = NAMESPACE_SCOPE_SCHEMA.safeParse(contract.scope);
+    // TODO: better discrimination between the scopes
+    if (!namespaceScope.success) {
+      throw new Error("Invalid scope");
+    }
+    scopeSpecificData = namespaceToDatabase(permissionId, namespaceScope.data);
+  }
   return {
     permission,
-    emissionPermission,
-    namespacePermission,
-    namespacePaths,
-    streamAllocations,
-    distributionTargets,
+    hierarchy,
     enforcementControllers,
     revocationArbiters,
-    hierarchies,
+    ...scopeSpecificData,
   };
 }
 
@@ -520,17 +569,22 @@ export async function runPermissionsFetch(lastBlock: LastBlock) {
     `Block ${lastBlockNumber}: found ${permissionsMap.size} permissions from blockchain`,
   );
 
-  const permissionsData: {
+  const permissionsData: ({
     permission: NewPermission;
-    emissionPermission?: NewEmissionPermission;
-    namespacePermission?: NewNamespacePermission;
-    namespacePaths?: NewNamespacePermissionPath[];
-    streamAllocations?: NewEmissionStreamAllocation[];
-    distributionTargets?: NewEmissionDistributionTarget[];
-    enforcementControllers?: NewPermissionEnforcementController[];
-    revocationArbiters?: NewPermissionRevocationArbiter[];
-    hierarchies?: NewPermissionHierarchy[];
-  }[] = [];
+    hierarchy: NewPermissionHierarchy;
+    enforcementControllers: NewPermissionEnforcementController[];
+    revocationArbiters: NewPermissionRevocationArbiter[];
+  } & (
+    | {
+        emissionPermission: NewEmissionPermission;
+        streamAllocations: NewEmissionStreamAllocation[];
+        distributionTargets: NewEmissionDistributionTarget[];
+      }
+    | {
+        namespacePermission: NewNamespacePermission;
+        namespacePaths: NewNamespacePermissionPath[];
+      }
+  ))[] = [];
 
   // Transform each permission to database format
   for (const [permissionId, contract] of permissionsMap.entries()) {
