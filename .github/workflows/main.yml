@@ -527,7 +527,7 @@ jobs:
                 "skipped") deploy_icon="⏭️"; deploy_text="Skipped";;
                 *) deploy_icon="❓"; deploy_text="Unknown";;
               esac
-              echo "| ${app} | ${change_icon} ${change_text} | ${changed} | ${deploy_icon} ${deploy_text} |" >> $GITHUB_STEP_SUMMARY
+              echo "| ${app} | ${change_icon} ${change_text} | ${deploy_icon} ${deploy_text} |" >> $GITHUB_STEP_SUMMARY
             done
           fi
 

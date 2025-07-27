@@ -207,7 +207,7 @@ jobs:
             echo "✅ **Application deployed successfully**" >> $GITHUB_STEP_SUMMARY
             echo "- **Status:** New version deployed" >> $GITHUB_STEP_SUMMARY
             echo "- **Image:** \`ghcr.io/renlabs-dev/${{ inputs.app_name }}:${{ steps.commit.outputs.short }}\`" >> $GITHUB_STEP_SUMMARY
-          elif [ "${{ steps.deploy-new.outcome }}" == "" ]; then
+          elif [ "${{ steps.deploy-new.outcome }}" == "skipped" ]; then
             echo "⏭️ **Tag deployment skipped**" >> $GITHUB_STEP_SUMMARY
             echo "- **Status:** No new image built" >> $GITHUB_STEP_SUMMARY
           elif [ "${{ steps.deploy-diff.outcome }}" == "success" ]; then

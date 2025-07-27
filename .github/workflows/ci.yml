@@ -40,7 +40,7 @@ jobs:
           else
             echo "status=failed" >> $GITHUB_OUTPUT
             # Count TypeScript errors (this is a rough estimate)
-            ERROR_COUNT=$(grep -c "error TS" "$TYPECHECK_OUTPUT" || echo "unknown")
+            ERROR_COUNT=$(grep -Eo "error TS[0-9]+" "$TYPECHECK_OUTPUT" | wc -l)
             echo "errors=$ERROR_COUNT" >> $GITHUB_OUTPUT
             exit 1
           fi
