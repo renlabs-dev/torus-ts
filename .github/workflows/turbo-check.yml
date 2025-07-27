@@ -58,7 +58,6 @@ jobs:
         run: |
           pnpm exec turbo run build --filter="...[origin/${{ github.base_ref }}]" --dry-run=json 2>/dev/null > build.json
 
-      # pnpm exec turbo run build --filter="...[HEAD^1]" --dry-run=json 2>/dev/null > build.json
       - name: Get build json (Push based)
         if: github.event_name == 'push'
         run: |

@@ -105,11 +105,12 @@ jobs:
             echo "- **Status:** No pending migrations" >> $GITHUB_STEP_SUMMARY
             echo "- **Action:** No database changes needed" >> $GITHUB_STEP_SUMMARY
           fi
-            echo "" >> $GITHUB_STEP_SUMMARY
 
-            echo "```" >> $GITHUB_STEP_SUMMARY
-            sed -E 's#(postgresql://)[^:@]+:[^@]+@#\1****:****@#' migration_status.txt >> $GITHUB_STEP_SUMMARY
-            echo "```" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          echo "```" >> $GITHUB_STEP_SUMMARY
+          sed -E 's#(postgresql://)[^:@]+:[^@]+@#\1****:****@#' migration_status.txt >> $GITHUB_STEP_SUMMARY
+          echo "```" >> $GITHUB_STEP_SUMMARY
 
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "**Branch:** \`${{ github.ref_name }}\`" >> $GITHUB_STEP_SUMMARY
@@ -167,6 +168,8 @@ jobs:
           output=$(atlas migrate apply --dry-run --env local --allow-dirty \
                   --url "${{ steps.shadow-db.outputs.db_url }}" 2>&1)
           exit_code=$?
+
+          set -e  # restore
           sanitized_output=$(echo "$output" | sed -E 's#(postgresql://)[^:@]+:[^@]+@#\1****:****@#g')
           echo "$sanitized_output"
           echo "$sanitized_output" > dry_run_output.txt
@@ -180,6 +183,8 @@ jobs:
           output=$(atlas migrate apply --env local --allow-dirty \
                   --url "${{ steps.shadow-db.outputs.db_url }}" --lock-timeout 120s 2>&1)
           exit_code=$?
+
+          set -e  # restore
           sanitized_output=$(echo "$output" | sed -E 's#(postgresql://)[^:@]+:[^@]+@#\1****:****@#g')
           echo "$sanitized_output"
           echo "$sanitized_output" > shadow_apply_output.txt
@@ -267,6 +272,8 @@ jobs:
           output=$(atlas migrate apply --env local --allow-dirty \
                   --url "${POSTGRES_URL}" --lock-timeout 120s 2>&1)
           exit_code=$?
+
+          set -e  # restore
           sanitized_output=$(echo "$output" | sed -E 's#(postgresql://)[^:@]+:[^@]+@#\1****:****@#g')
           echo "$sanitized_output"
           echo "$sanitized_output" > apply_output.txt

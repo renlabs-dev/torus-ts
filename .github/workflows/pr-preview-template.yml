@@ -203,6 +203,8 @@ jobs:
           --state-values-set releasePrefix=pr-${{ github.event.number }}-${{ inputs.app_name }}
           DESTROY_EXIT_CODE=$?
 
+          set -e  # restore
+
           # Exit codes 0 (success) and 2 (nothing to destroy) are both considered success
           if [ $DESTROY_EXIT_CODE -eq 0 ] || [ $DESTROY_EXIT_CODE -eq 2 ]; then
             exit 0
