@@ -1,10 +1,3 @@
--- atlas:nolint destructive
-
--- migration.sql --
--- Create enum type "emission_allocation_type"
-CREATE TYPE "public"."emission_allocation_type" AS ENUM ('streams', 'fixed_amount');
--- Create enum type "emission_distribution_type"
-CREATE TYPE "public"."emission_distribution_type" AS ENUM ('manual', 'automatic', 'at_block', 'interval');
 -- Create enum type "permission_duration_type"
 CREATE TYPE "public"."permission_duration_type" AS ENUM ('until_block', 'indefinite');
 -- Create enum type "permission_enforcement_type"
@@ -47,6 +40,12 @@ CREATE INDEX "permissions_grantee_idx" ON "public"."permissions" ("grantee_accou
 CREATE INDEX "permissions_grantor_idx" ON "public"."permissions" ("grantor_account_id");
 -- Create index "permissions_substrate_id_idx" to table: "permissions"
 CREATE INDEX "permissions_substrate_id_idx" ON "public"."permissions" ("permission_id");
+-- Create enum type "emission_allocation_type"
+CREATE TYPE "public"."emission_allocation_type" AS ENUM ('streams', 'fixed_amount');
+-- Create enum type "emission_distribution_type"
+CREATE TYPE "public"."emission_distribution_type" AS ENUM ('manual', 'automatic', 'at_block', 'interval');
+-- Modify "agent_demand_signal" table
+ALTER TABLE "public"."agent_demand_signal" ADD COLUMN "fulfilled" boolean NOT NULL DEFAULT false;
 -- Create "accumulated_stream_amounts" table
 CREATE TABLE "public"."accumulated_stream_amounts" (
   "grantor_account_id" character varying(256) NOT NULL,
@@ -58,6 +57,10 @@ CREATE TABLE "public"."accumulated_stream_amounts" (
 );
 -- Create index "accumulated_streams_grantor_stream_idx" to table: "accumulated_stream_amounts"
 CREATE INDEX "accumulated_streams_grantor_stream_idx" ON "public"."accumulated_stream_amounts" ("grantor_account_id", "stream_id");
+-- Modify "agent_report" table
+ALTER TABLE "public"."agent_report" DROP CONSTRAINT "agent_report_agent_key_agent_key_fk", ADD CONSTRAINT "agent_report_agent_key_agent_key_fk" FOREIGN KEY ("agent_key") REFERENCES "public"."agent" ("key") ON UPDATE NO ACTION ON DELETE CASCADE;
+-- Modify "computed_agent_weight" table
+ALTER TABLE "public"."computed_agent_weight" DROP CONSTRAINT "computed_agent_weight_agent_key_agent_key_fk", ADD CONSTRAINT "computed_agent_weight_agent_key_agent_key_fk" FOREIGN KEY ("agent_key") REFERENCES "public"."agent" ("key") ON UPDATE NO ACTION ON DELETE CASCADE;
 -- Create "emission_permissions" table
 CREATE TABLE "public"."emission_permissions" (
   "permission_id" character varying(66) NOT NULL,
@@ -92,6 +95,7 @@ CREATE TABLE "public"."emission_distribution_targets" (
   "created_at" timestamptz NOT NULL DEFAULT now(),
   "updated_at" timestamptz NOT NULL DEFAULT now(),
   "deleted_at" timestamptz NULL,
+  CONSTRAINT "emission_distribution_targets_permission_id_target_account_id_u" UNIQUE ("permission_id", "target_account_id"),
   CONSTRAINT "emission_distribution_targets_permission_id_emission_permission" FOREIGN KEY ("permission_id") REFERENCES "public"."emission_permissions" ("permission_id") ON UPDATE NO ACTION ON DELETE CASCADE,
   CONSTRAINT "valid_weight" CHECK ((weight >= 0) AND (weight <= 65535))
 );
@@ -103,6 +107,7 @@ CREATE TABLE "public"."emission_stream_allocations" (
   "created_at" timestamptz NOT NULL DEFAULT now(),
   "updated_at" timestamptz NOT NULL DEFAULT now(),
   "deleted_at" timestamptz NULL,
+  CONSTRAINT "emission_stream_allocations_permission_id_stream_id_unique" UNIQUE ("permission_id", "stream_id"),
   CONSTRAINT "emission_stream_allocations_permission_id_emission_permissions_" FOREIGN KEY ("permission_id") REFERENCES "public"."emission_permissions" ("permission_id") ON UPDATE NO ACTION ON DELETE CASCADE,
   CONSTRAINT "valid_percentage" CHECK ((percentage >= 0) AND (percentage <= 100))
 );
@@ -119,12 +124,14 @@ CREATE TABLE "public"."namespace_permissions" (
 CREATE TABLE "public"."namespace_permission_paths" (
   "permission_id" character varying(66) NOT NULL,
   "namespace_path" text NOT NULL,
+  CONSTRAINT "namespace_permission_paths_permission_id_namespace_path_unique" UNIQUE ("permission_id", "namespace_path"),
   CONSTRAINT "namespace_permission_paths_permission_id_namespace_permissions_" FOREIGN KEY ("permission_id") REFERENCES "public"."namespace_permissions" ("permission_id") ON UPDATE NO ACTION ON DELETE CASCADE
 );
 -- Create "permission_enforcement_controllers" table
 CREATE TABLE "public"."permission_enforcement_controllers" (
   "permission_id" character varying(66) NOT NULL,
   "account_id" character varying(256) NOT NULL,
+  CONSTRAINT "permission_enforcement_controllers_permission_id_account_id_uni" UNIQUE ("permission_id", "account_id"),
   CONSTRAINT "permission_enforcement_controllers_permission_id_permissions_pe" FOREIGN KEY ("permission_id") REFERENCES "public"."permissions" ("permission_id") ON UPDATE NO ACTION ON DELETE CASCADE
 );
 -- Create "permission_enforcement_tracking" table
@@ -144,6 +151,7 @@ CREATE TABLE "public"."permission_hierarchies" (
   "created_at" timestamptz NOT NULL DEFAULT now(),
   "updated_at" timestamptz NOT NULL DEFAULT now(),
   "deleted_at" timestamptz NULL,
+  CONSTRAINT "permission_hierarchies_child_permission_id_parent_permission_id" UNIQUE ("child_permission_id", "parent_permission_id"),
   CONSTRAINT "permission_hierarchies_child_permission_id_permissions_permissi" FOREIGN KEY ("child_permission_id") REFERENCES "public"."permissions" ("permission_id") ON UPDATE NO ACTION ON DELETE CASCADE,
   CONSTRAINT "permission_hierarchies_parent_permission_id_permissions_permiss" FOREIGN KEY ("parent_permission_id") REFERENCES "public"."permissions" ("permission_id") ON UPDATE NO ACTION ON DELETE CASCADE
 );
@@ -151,6 +159,7 @@ CREATE TABLE "public"."permission_hierarchies" (
 CREATE TABLE "public"."permission_revocation_arbiters" (
   "permission_id" character varying(66) NOT NULL,
   "account_id" character varying(256) NOT NULL,
+  CONSTRAINT "permission_revocation_arbiters_permission_id_account_id_unique" UNIQUE ("permission_id", "account_id"),
   CONSTRAINT "permission_revocation_arbiters_permission_id_permissions_permis" FOREIGN KEY ("permission_id") REFERENCES "public"."permissions" ("permission_id") ON UPDATE NO ACTION ON DELETE CASCADE
 );
 -- Create "permission_revocation_votes" table
@@ -162,18 +171,20 @@ CREATE TABLE "public"."permission_revocation_votes" (
 );
 -- Create index "revocation_votes_permission_idx" to table: "permission_revocation_votes"
 CREATE INDEX "revocation_votes_permission_idx" ON "public"."permission_revocation_votes" ("permission_id");
--- Drop "enforcement_authority" table
-DROP TABLE "public"."enforcement_authority";
+-- Modify "user_agent_weight" table
+ALTER TABLE "public"."user_agent_weight" DROP CONSTRAINT "user_agent_weight_agent_key_agent_key_fk", ADD CONSTRAINT "user_agent_weight_agent_key_agent_key_fk" FOREIGN KEY ("agent_key") REFERENCES "public"."agent" ("key") ON UPDATE NO ACTION ON DELETE CASCADE;
 -- Drop "permission_details" table
 DROP TABLE "public"."permission_details";
+-- Drop enum type "permission_scope_type"
+DROP TYPE "public"."permission_scope_type";
+-- Drop "enforcement_authority" table
+DROP TABLE "public"."enforcement_authority";
 -- Drop "permission" table
 DROP TABLE "public"."permission";
 -- Drop "permission_emission_scope" table
 DROP TABLE "public"."permission_emission_scope";
 -- Drop enum type "distribution_type"
 DROP TYPE "public"."distribution_type";
--- Drop enum type "permission_scope_type"
-DROP TYPE "public"."permission_scope_type";
 -- Drop "emission_streams_details" table
 DROP TABLE "public"."emission_streams_details";
 -- Drop "emission_streams" table
