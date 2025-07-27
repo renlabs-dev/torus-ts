@@ -519,7 +519,7 @@ jobs:
                   deploy_result="${{ needs.torus-worker.result }}"
                   ;;
               esac
-              
+
               if [ "$changed" == "true" ]; then change_icon="✅"; change_text="Yes"; else change_icon="⏭️"; change_text="No"; fi
               case "$deploy_result" in
                 "success") deploy_icon="✅"; deploy_text="Deployed";;
@@ -540,7 +540,7 @@ jobs:
 
             # PR preview apps (subset of all apps)
             pr_apps=(torus-allocator torus-cache torus-governance torus-page torus-portal torus-wallet torus-bridge)
-            
+
             for app in "${pr_apps[@]}"; do
               case "$app" in
                 "torus-allocator")
@@ -572,7 +572,7 @@ jobs:
                   delete_result="${{ needs.torus-bridge-pr-delete.result }}"
                   ;;
               esac
-              
+
               if [ "$activate_result" == "success" ]; then
                 echo "| ${app} | ✅ Deployed | [Preview](https://pr-${{ github.event.number }}.${app}.torus.network) |" >> $GITHUB_STEP_SUMMARY
               elif [ "$delete_result" == "success" ]; then
@@ -619,7 +619,7 @@ jobs:
                   dry_run_result="${{ needs.torus-worker-dry-run.result }}"
                   ;;
               esac
-              
+
               case "$dry_run_result" in
                 "success") echo "| ${app} | ✅ Build Successful |" >> $GITHUB_STEP_SUMMARY;;
                 "failure") echo "| ${app} | ❌ Build Failed |" >> $GITHUB_STEP_SUMMARY;;
