@@ -101,6 +101,7 @@ service:
 
 ingress:
   enabled: true
+  forecastleExpose: true
   ingressClassName: nginx
 
 configMap:
