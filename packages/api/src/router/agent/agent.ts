@@ -20,6 +20,13 @@ export const agentRouter = {
       ),
     });
   }),
+  allIncludingNonWhitelisted: publicProcedure.query(({ ctx }) => {
+    return ctx.db
+      .select()
+      .from(agentSchema)
+      .where(isNull(agentSchema.deletedAt))
+      .orderBy(agentSchema.isWhitelisted, agentSchema.name);
+  }),
   paginated: publicProcedure
     .input(
       z.object({
