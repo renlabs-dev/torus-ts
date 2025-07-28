@@ -28,7 +28,7 @@ export function AddressWithAgent({
   addressLength = 6,
 }: AddressWithAgentProps) {
   const { data: agent } = api.agent.byKeyLastBlock.useQuery({ key: address });
-  
+
   const agentName = agent?.name;
   const truncatedAddress = smallAddress(address, addressLength);
 
@@ -44,7 +44,7 @@ export function AddressWithAgent({
           <Copy className="h-3 w-3" />
         </CopyButton>
       )}
-      
+
       <div className="flex items-center gap-1 min-w-0">
         <Tooltip>
           <TooltipTrigger asChild>
@@ -52,15 +52,13 @@ export function AddressWithAgent({
               {truncatedAddress}
             </span>
           </TooltipTrigger>
-          <TooltipContent>
+          <TooltipContent className="z-[100]">
             <p className="font-mono">{address}</p>
           </TooltipContent>
         </Tooltip>
-        
+
         {agentName && (
-          <span className="text-sm text-muted-foreground">
-            ({agentName})
-          </span>
+          <span className="text-sm text-muted-foreground">({agentName})</span>
         )}
       </div>
     </div>

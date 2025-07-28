@@ -168,7 +168,7 @@ export function AddressField({
           </CommandEmpty>
 
           {searchData.whitelistedAgents.length > 0 && (
-            <CommandGroup heading="Whitelisted Agents">
+            <CommandGroup heading="Root Agents">
               {searchData.whitelistedAgents.map((agent) => (
                 <CommandItem
                   key={agent.key}
@@ -190,7 +190,7 @@ export function AddressField({
           )}
 
           {searchData.nonWhitelistedAgents.length > 0 && (
-            <CommandGroup heading="Non-Whitelisted Agents">
+            <CommandGroup heading="Agents">
               {searchData.nonWhitelistedAgents.map((agent) => (
                 <CommandItem
                   key={agent.key}
