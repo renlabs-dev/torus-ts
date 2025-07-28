@@ -269,6 +269,7 @@ jobs:
     needs: turbo-check
     if: |
       github.event.pull_request.state == 'open' && !github.event.repository.fork
+      && !github.event.pull_request.draft
       && github.head_ref != 'main' && github.head_ref != 'dev' &&
       needs.turbo-check.outputs.torus-allocator == 'true'
     uses: ./.github/workflows/pr-preview-template.yml
@@ -290,6 +291,7 @@ jobs:
     needs: turbo-check
     if: |
       github.event.pull_request.state == 'open' && !github.event.repository.fork
+      && !github.event.pull_request.draft
       && github.head_ref != 'main' && github.head_ref != 'dev' &&
       (needs.turbo-check.outputs.torus-cache == 'true' ||
       needs.turbo-check.outputs.torus-governance == 'true' ||
@@ -314,6 +316,7 @@ jobs:
     needs: turbo-check
     if: |
       github.event.pull_request.state == 'open' && !github.event.repository.fork
+      && !github.event.pull_request.draft
       && github.head_ref != 'main' && github.head_ref != 'dev' &&
       needs.turbo-check.outputs.torus-governance == 'true'
     uses: ./.github/workflows/pr-preview-template.yml
@@ -335,6 +338,7 @@ jobs:
     needs: turbo-check
     if: |
       github.event.pull_request.state == 'open' && !github.event.repository.fork
+      && !github.event.pull_request.draft
       && github.head_ref != 'main' && github.head_ref != 'dev' &&
       needs.turbo-check.outputs.torus-page == 'true'
     uses: ./.github/workflows/pr-preview-template.yml
@@ -356,6 +360,7 @@ jobs:
     needs: turbo-check
     if: |
       github.event.pull_request.state == 'open' && !github.event.repository.fork
+      && !github.event.pull_request.draft
       && github.head_ref != 'main' && github.head_ref != 'dev' &&
       needs.turbo-check.outputs.torus-portal == 'true'
     uses: ./.github/workflows/pr-preview-template.yml
@@ -377,6 +382,7 @@ jobs:
     needs: turbo-check
     if: |
       github.event.pull_request.state == 'open' && !github.event.repository.fork
+      && !github.event.pull_request.draft
       && github.head_ref != 'main' && github.head_ref != 'dev' &&
       needs.turbo-check.outputs.torus-wallet == 'true'
     uses: ./.github/workflows/pr-preview-template.yml
@@ -398,6 +404,7 @@ jobs:
     needs: turbo-check
     if: |
       github.event.pull_request.state == 'open' && !github.event.repository.fork
+      && !github.event.pull_request.draft
       && github.head_ref != 'main' && github.head_ref != 'dev' &&
       needs.turbo-check.outputs.torus-bridge == 'true'
     uses: ./.github/workflows/pr-preview-template.yml
