@@ -34,20 +34,21 @@ export function DeleteCapabilitySegmentSelector({
             </div>
             {selectedPath.path.slice(2).map((segment, sliceIndex) => {
               const index = sliceIndex + 2;
-              const willBeDeleted = watchedSegment > 1 && index >= watchedSegment;
-              
+              const willBeDeleted =
+                watchedSegment > 1 && index >= watchedSegment;
+
               return (
                 <div key={index} className="flex items-center">
-                  <div 
+                  <div
                     className={cn(
                       "flex items-center bg-background border rounded-lg",
-                      willBeDeleted && "border-destructive"
+                      willBeDeleted && "border-destructive",
                     )}
                   >
-                    <span 
+                    <span
                       className={cn(
                         "px-3 py-1 font-mono text-sm border-r",
-                        willBeDeleted && "text-destructive border-destructive"
+                        willBeDeleted && "text-destructive border-destructive",
                       )}
                     >
                       {segment}

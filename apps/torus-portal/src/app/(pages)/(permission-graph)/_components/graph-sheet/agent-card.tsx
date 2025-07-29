@@ -6,12 +6,8 @@ import { fetchAgentMetadata } from "@torus-network/sdk/metadata";
 import { smallAddress } from "@torus-network/torus-utils/torus/address";
 import { tryAsync } from "@torus-network/torus-utils/try-catch";
 
-import {
-  AgentCard as UIAgentCard,
-} from "@torus-ts/ui/components/agent-card/agent-card";
-import {
-  AgentItemSkeleton,
-} from "@torus-ts/ui/components/agent-card/agent-card-skeleton-loader";
+import { AgentCard as UIAgentCard } from "@torus-ts/ui/components/agent-card/agent-card";
+import { AgentItemSkeleton } from "@torus-ts/ui/components/agent-card/agent-card-skeleton-loader";
 import { Card } from "@torus-ts/ui/components/card";
 
 import { useWeeklyUsdCalculation } from "~/hooks/use-weekly-usd";

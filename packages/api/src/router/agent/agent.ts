@@ -127,7 +127,9 @@ export const agentRouter = {
           .limit(limit)
           .offset(offset)
           .orderBy(orderByClause),
-        ctx.db.select({ totalCount: sql<number>`count(*)` }).from(sql`${countQuery}`),
+        ctx.db
+          .select({ totalCount: sql<number>`count(*)` })
+          .from(sql`${countQuery}`),
       ]);
 
       const totalCount = totalCountResult[0]?.totalCount ?? 0;

@@ -43,7 +43,7 @@ export async function doMetadataPin(
   iconFile?: File,
 ): Promise<{ cid: CID | null; iconCid?: CID | null; error?: string }> {
   let iconCid: CID | null = null;
-  
+
   // Pin the icon file if provided
   if (iconFile) {
     const [iconError, iconResult] = await tryAsync(pinFile(iconFile));
@@ -55,11 +55,9 @@ export async function doMetadataPin(
     }
     iconCid = iconResult.cid;
   }
-  
+
   // Use the pinned icon CID if available
-  const imageObj = iconCid
-    ? { images: { icon: cidToIpfsUri(iconCid) } }
-    : {};
+  const imageObj = iconCid ? { images: { icon: cidToIpfsUri(iconCid) } } : {};
 
   const metadata = {
     title: data.name,

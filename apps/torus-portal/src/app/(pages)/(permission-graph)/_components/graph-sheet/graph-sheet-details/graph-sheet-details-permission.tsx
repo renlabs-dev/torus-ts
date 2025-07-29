@@ -180,7 +180,7 @@ export function GraphSheetDetailsPermission({
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <AddressWithAgent 
+          <AddressWithAgent
             address={permissionData.grantorAccountId}
             className="mb-2"
           />
@@ -199,7 +199,7 @@ export function GraphSheetDetailsPermission({
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <AddressWithAgent 
+            <AddressWithAgent
               address={permissionData.granteeAccountId}
               className="mb-2"
             />
@@ -224,8 +224,11 @@ export function GraphSheetDetailsPermission({
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
                   <div>
-                    <AddressWithAgent 
-                      address={detailedPermission.emission_distribution_targets.targetAccountId}
+                    <AddressWithAgent
+                      address={
+                        detailedPermission.emission_distribution_targets
+                          .targetAccountId
+                      }
                       className="mb-2"
                     />
                     <p className="text-xs text-muted-foreground">

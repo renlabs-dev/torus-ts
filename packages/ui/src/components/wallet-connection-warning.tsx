@@ -2,9 +2,7 @@
 
 import { useEffect, useState } from "react";
 
-import {
-  DestructiveAlertWithDescription,
-} from "./destructive-alert-with-description";
+import { DestructiveAlertWithDescription } from "./destructive-alert-with-description";
 
 interface WalletConnectionWarningProps {
   isAccountConnected: boolean;

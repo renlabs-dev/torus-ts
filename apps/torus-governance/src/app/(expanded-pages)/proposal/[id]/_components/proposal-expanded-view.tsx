@@ -13,12 +13,8 @@ import { CreateComment } from "~/app/_components/comments/create-comment";
 import { ViewComment } from "~/app/_components/comments/view-comment";
 import { DetailsCard } from "~/app/_components/details-card";
 import { ExpandedViewContent } from "~/app/_components/expanded-view-content";
-import {
-  ProposalTypeLabel,
-} from "~/app/_components/proposal/proposal-type-label";
-import {
-  ProposalVoteCard,
-} from "~/app/_components/proposal/proposal-vote-card";
+import { ProposalTypeLabel } from "~/app/_components/proposal/proposal-type-label";
+import { ProposalVoteCard } from "~/app/_components/proposal/proposal-vote-card";
 import { RewardLabel } from "~/app/_components/proposal/reward-label";
 import { VoterList } from "~/app/_components/proposal/voter-list";
 import { VoteData } from "~/app/_components/vote-data";
@@ -26,9 +22,7 @@ import { useGovernance } from "~/context/governance-provider";
 import type { VoteStatus } from "~/utils/types";
 
 import { handleCustomProposal } from "../../../../../utils";
-import {
-  ProposalStatusLabel,
-} from "../../../../_components/proposal/proposal-status-label";
+import { ProposalStatusLabel } from "../../../../_components/proposal/proposal-status-label";
 
 interface CustomContent {
   paramId: number;

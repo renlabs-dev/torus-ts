@@ -1,18 +1,18 @@
 /**
  * Tests for legacy token utility functions.
- * 
+ *
  * These functions are deprecated and have several known issues documented here.
  * They are maintained only for backward compatibility.
- * 
+ *
  * ## Known Issues and Behaviors
- * 
+ *
  * ### `toNano(standardValue: number | string): bigint`
  * - Converts standard token units to nano units (smallest unit)
  * - 1 token = 10^18 nano units
  * - Does NOT truncate decimals beyond 18 places - it keeps all digits
  * - Scientific notation in strings (e.g., "1e18") will fail because it becomes "1e18000..."
  * - Handles floating point precision issues poorly (e.g., 0.1 + 0.2 !== 0.3)
- * 
+ *
  * ### `fromNano(nanoValue: number | string | bigint, roundingDecimals = 18): string`
  * - Converts nano units back to standard token units as a string
  * - Always returns full decimal precision (18 places by default)
@@ -20,16 +20,16 @@
  *   - Example: fromNano(-1n) returns "0.999999999999999999" instead of "-0.000000000000000001"
  *   - Example: fromNano(-500000000000000000n) returns "0.500000000000000000" instead of "-0.500000000000000000"
  *   - Only works correctly for negative values that are exact multiples of 10^18
- * 
+ *
  * ### `formatToken(nano: number | bigint, decimalPlaces = 2): string`
  * - Formats nano units as human-readable string with thousand separators
  * - **TRUNCATES** decimal places, does NOT round (even banker's rounding)
  *   - Example: formatToken(1235500000000000000n, 2) returns "1.23" not "1.24"
  * - Inherits the negative number bugs from `fromNano`
  * - Always pads decimal places with zeros to match requested precision
- * 
+ *
  * ## Migration Guide
- * 
+ *
  * Users should migrate to the new functions:
  * - `toNano` → `toRems` with `TorAmount` type
  * - `fromNano` → `fromRems` with proper negative handling
@@ -130,8 +130,12 @@ describe("legacy token utilities", () => {
     });
 
     it("handles very large amounts", () => {
-      expect(fromNano(1000000000000000000000000n)).toBe("1000000.000000000000000000");
-      expect(fromNano(999999999000000000000000000n)).toBe("999999999.000000000000000000");
+      expect(fromNano(1000000000000000000000000n)).toBe(
+        "1000000.000000000000000000",
+      );
+      expect(fromNano(999999999000000000000000000n)).toBe(
+        "999999999.000000000000000000",
+      );
     });
 
     it("handles negative amounts", () => {
@@ -252,9 +256,15 @@ describe("legacy token utilities", () => {
 
     it("maintains precision for decimals within 18 places", () => {
       expect(fromNano(toNano("0.1"))).toBe("0.100000000000000000");
-      expect(fromNano(toNano("0.123456789012345678"))).toBe("0.123456789012345678");
-      expect(fromNano(toNano("123.456789012345678"))).toBe("123.456789012345678000");
-      expect(fromNano(toNano("999.999999999999999"))).toBe("999.999999999999999000");
+      expect(fromNano(toNano("0.123456789012345678"))).toBe(
+        "0.123456789012345678",
+      );
+      expect(fromNano(toNano("123.456789012345678"))).toBe(
+        "123.456789012345678000",
+      );
+      expect(fromNano(toNano("999.999999999999999"))).toBe(
+        "999.999999999999999000",
+      );
     });
 
     it("handles formatting round-trips", () => {
@@ -272,10 +282,10 @@ describe("legacy token utilities", () => {
     it("demonstrates precision loss with fromNano custom decimals", () => {
       const original = "1.123456789012345678";
       const nano = toNano(original);
-      
+
       // Full precision is maintained
       expect(fromNano(nano)).toBe("1.123456789012345678");
-      
+
       // Custom decimal places truncate
       expect(fromNano(nano, 5)).toBe("1.12345");
       expect(fromNano(nano, 10)).toBe("1.1234567890");
@@ -305,7 +315,7 @@ describe("legacy token utilities", () => {
       const hugeValue = "999999999999999999999999999999999999";
       const hugeNano = toNano(hugeValue);
       expect(hugeNano).toBe(BigInt(hugeValue + "0".repeat(18)));
-      
+
       // fromNano handles it correctly
       expect(fromNano(hugeNano)).toBe(hugeValue + ".000000000000000000");
     });
@@ -314,7 +324,7 @@ describe("legacy token utilities", () => {
       // Very small amounts with large decimal places
       expect(formatToken(123n, 10)).toBe("0.0000000000");
       expect(formatToken(123n, 3)).toBe("0.000");
-      
+
       // Boundary values
       expect(formatToken(999n, 3)).toBe("0.000");
       expect(formatToken(1000n, 3)).toBe("0.000");
@@ -333,7 +343,7 @@ describe("legacy token utilities", () => {
       expect(formatToken(1999999999999999999n, 0)).toBe("1.");
       expect(formatToken(1999999999999999999n, 1)).toBe("1.9");
       expect(formatToken(1999999999999999999n, 2)).toBe("1.99");
-      
+
       // Banker's rounding would round 0.5 to nearest even, but formatToken truncates
       expect(formatToken(1500000000000000000n, 0)).toBe("1.");
       expect(formatToken(2500000000000000000n, 0)).toBe("2.");
@@ -349,7 +359,7 @@ describe("legacy token utilities", () => {
     it("handles scientific notation edge cases", () => {
       // Scientific notation is converted to string first, which results in unexpected behavior
       expect(() => toNano("1e-18")).toThrow(); // "1e-18" becomes "1e-18000..." which can't be parsed
-      
+
       // Large scientific notation also fails when the exponent is too large
       expect(() => toNano("1e1")).toThrow(); // "1e1" becomes "1e1000..." which can't be parsed
       expect(toNano(1e1)).toBe(10000000000000000000n); // But number 10 works
@@ -359,8 +369,12 @@ describe("legacy token utilities", () => {
 
     it("handles decimal truncation in toNano", () => {
       // toNano doesn't truncate - it keeps all digits after decimal when using padEnd
-      expect(toNano("0.123456789012345678901234567890")).toBe(123456789012345678901234567890n);
-      expect(toNano("0.999999999999999999999999999999")).toBe(999999999999999999999999999999n);
+      expect(toNano("0.123456789012345678901234567890")).toBe(
+        123456789012345678901234567890n,
+      );
+      expect(toNano("0.999999999999999999999999999999")).toBe(
+        999999999999999999999999999999n,
+      );
     });
 
     it("handles modulo arithmetic correctly in fromNano", () => {

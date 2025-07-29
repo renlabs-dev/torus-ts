@@ -23,20 +23,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@torus-ts/ui/components/select";
-import {
-  WalletConnectionWarning,
-} from "@torus-ts/ui/components/wallet-connection-warning";
+import { WalletConnectionWarning } from "@torus-ts/ui/components/wallet-connection-warning";
 
 import { useGovernance } from "~/context/governance-provider";
 
-import {
-  CreateAgentApplication,
-} from "./agent-application/create-agent-application";
+import { CreateAgentApplication } from "./agent-application/create-agent-application";
 import { AddEmissionProposalForm } from "./proposal/add-emission-proposal";
 import { CreateProposal } from "./proposal/create-proposal";
-import {
-  CreateTransferDaoTreasuryProposal,
-} from "./proposal/create-transfer-dao-treasury-proposal";
+import { CreateTransferDaoTreasuryProposal } from "./proposal/create-transfer-dao-treasury-proposal";
 
 type ViewType =
   | "whitelist-agent"

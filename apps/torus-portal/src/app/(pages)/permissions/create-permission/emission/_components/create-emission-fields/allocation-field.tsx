@@ -18,9 +18,7 @@ import { Input } from "@torus-ts/ui/components/input";
 
 import { useAvailableStreams } from "~/hooks/use-available-streams";
 
-import type {
-  CreateEmissionPermissionForm,
-} from "../create-emission-permission-form-schema";
+import type { CreateEmissionPermissionForm } from "../create-emission-permission-form-schema";
 
 interface AllocationFieldProps {
   form: CreateEmissionPermissionForm;
