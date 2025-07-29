@@ -22,7 +22,9 @@ interface RegisterAgentIconFieldProps {
   control: Control<RegisterAgentFormData>;
 }
 
-export function RegisterAgentIconField({ control }: RegisterAgentIconFieldProps) {
+export function RegisterAgentIconField({
+  control,
+}: RegisterAgentIconFieldProps) {
   const handleFileDrop = (file: File) => {
     // Just validate and return the file without pinning
     // Pinning will happen during form submission

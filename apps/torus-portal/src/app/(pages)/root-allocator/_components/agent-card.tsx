@@ -1,9 +1,7 @@
 "use client";
 
 import { useTorus } from "@torus-ts/torus-provider";
-import {
-  AgentCard as UIAgentCard,
-} from "@torus-ts/ui/components/agent-card/agent-card";
+import { AgentCard as UIAgentCard } from "@torus-ts/ui/components/agent-card/agent-card";
 
 import { useQueryAgentMetadata } from "~/hooks/use-agent-metadata";
 import { useBlobUrl } from "~/hooks/use-blob-url";

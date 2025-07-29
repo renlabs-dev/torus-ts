@@ -48,7 +48,9 @@ export default function FulfilledSignalsView() {
   if (isLoadingSignals || isLoadingWeights) {
     return (
       <div className="flex items-center justify-center mt-6 p-6 bg-muted rounded-md">
-        <div className="text-muted-foreground">Loading fulfilled signals...</div>
+        <div className="text-muted-foreground">
+          Loading fulfilled signals...
+        </div>
       </div>
     );
   }

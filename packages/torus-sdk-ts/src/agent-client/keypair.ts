@@ -64,8 +64,8 @@ export class Keypair {
       addressInfo: {
         addressType: "ss58",
         metadata: {
-          prefix: 42
-        }
+          prefix: 42,
+        },
       },
       iat: now,
       exp: now + 3600,

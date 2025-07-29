@@ -33,7 +33,7 @@ export const Filter = ({
       return;
     }
 
-  //   // Otherwise use URL-based filtering (server-side)
+    //   // Otherwise use URL-based filtering (server-side)
     const url = new URL(window.location.href);
     const params = url.searchParams;
     if (searchValue) {
@@ -57,11 +57,13 @@ export const Filter = ({
 
     const url = new URL(window.location.href);
     const searchParams = new URLSearchParams(url.search);
-    searchParams.delete('search');
-    searchParams.delete('page');
-    router.push(url.pathname + (searchParams.toString() ? `?${searchParams.toString()}` : ''));
+    searchParams.delete("search");
+    searchParams.delete("page");
+    router.push(
+      url.pathname +
+        (searchParams.toString() ? `?${searchParams.toString()}` : ""),
+    );
   };
-  
 
   const showSearchInfo = isClientSide
     ? searchValue && hasSearched

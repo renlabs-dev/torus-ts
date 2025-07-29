@@ -94,7 +94,7 @@ describe("Worker module tests", () => {
         return error;
       };
 
-      // Should return undefined error on success  
+      // Should return undefined error on success
       await testSuccessFunction();
       // expect(error).toBeUndefined(); // FIXME: failing assertion
       expect(runAgentFetchSpy).toHaveBeenCalled();

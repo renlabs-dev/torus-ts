@@ -17,10 +17,7 @@ interface PaginationNavProps {
   totalPages: number;
 }
 
-export function PaginationNav({
-  currentPage,
-  totalPages,
-}: PaginationNavProps) {
+export function PaginationNav({ currentPage, totalPages }: PaginationNavProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -38,7 +35,7 @@ export function PaginationNav({
 
   const getPageUrl = (page: number) => {
     const params = new URLSearchParams(searchParams);
-    params.set('page', page.toString());
+    params.set("page", page.toString());
     return `?${params.toString()}`;
   };
 

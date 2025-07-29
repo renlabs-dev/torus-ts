@@ -47,7 +47,7 @@ export function NodeDetailsCard({
   selectedNode,
 }: NodeDetailsCardProps) {
   const router = useRouter();
-  
+
   if (!graphData) return null;
 
   const processedPermissions = nodePermissions.map((permission) => {

@@ -162,7 +162,11 @@ const createPromiseToast = <T>(
 
 export interface ToastFunction {
   (props: ToastProps): ToastResult;
-  success: (description?: string, duration?: number, action?: ToastAction) => ToastResult;
+  success: (
+    description?: string,
+    duration?: number,
+    action?: ToastAction,
+  ) => ToastResult;
   error: (description?: string, duration?: number) => ToastResult;
   loading: (
     description: string,

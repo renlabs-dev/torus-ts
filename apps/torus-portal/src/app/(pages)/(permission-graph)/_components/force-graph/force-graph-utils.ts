@@ -355,8 +355,13 @@ export function createGraphData(
           if (permissionType === "capability") {
             // Collect all namespace paths from all permissions with this ID
             permissions.forEach((perm) => {
-              if ("namespace_permission_paths" in perm && perm.namespace_permission_paths) {
-                namespacePaths.push(perm.namespace_permission_paths.namespacePath);
+              if (
+                "namespace_permission_paths" in perm &&
+                perm.namespace_permission_paths
+              ) {
+                namespacePaths.push(
+                  perm.namespace_permission_paths.namespacePath,
+                );
               }
             });
           }
@@ -385,7 +390,8 @@ export function createGraphData(
                 permission.permissions.durationType === "indefinite"
                   ? null
                   : permission.permissions.durationBlockNumber?.toString(),
-              namespacePaths: namespacePaths.length > 0 ? namespacePaths : undefined,
+              namespacePaths:
+                namespacePaths.length > 0 ? namespacePaths : undefined,
             },
           };
           nodes.push(permissionNode);

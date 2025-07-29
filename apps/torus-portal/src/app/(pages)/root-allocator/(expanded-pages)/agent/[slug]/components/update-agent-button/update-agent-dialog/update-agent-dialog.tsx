@@ -8,14 +8,10 @@ import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 
 import { useTorus } from "@torus-ts/torus-provider";
-import type {
-  TransactionResult,
-} from "@torus-ts/ui/components/transaction-status";
+import type { TransactionResult } from "@torus-ts/ui/components/transaction-status";
 import { TransactionStatus } from "@torus-ts/ui/components/transaction-status";
 
-import {
-  UnsavedChangesDialog,
-} from "~/app/(pages)/root-allocator/_components/unsaved-changes-dialog";
+import { UnsavedChangesDialog } from "~/app/(pages)/root-allocator/_components/unsaved-changes-dialog";
 import { useQueryAgentMetadata } from "~/hooks/use-agent-metadata";
 import { useBlobUrl } from "~/hooks/use-blob-url";
 import { api } from "~/trpc/react";

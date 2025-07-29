@@ -115,7 +115,9 @@ export function getNodeColor(
   userAddress?: string,
 ): string {
   const nodeId = String(node.id);
-  const baseColor = String(node.color ?? graphConstants.nodeConfig.nodeColors.default);
+  const baseColor = String(
+    node.color ?? graphConstants.nodeConfig.nodeColors.default,
+  );
 
   if (userAddress && nodeId.toLowerCase() === userAddress.toLowerCase()) {
     return graphConstants.nodeConfig.nodeColors.userNode;

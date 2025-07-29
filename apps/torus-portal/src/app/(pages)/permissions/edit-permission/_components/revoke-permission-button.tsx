@@ -54,7 +54,8 @@ export function RevokePermissionButton({
 }: RevokePermissionButtonProps) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const { isAccountConnected, revokePermissionTransaction, selectedAccount } = useTorus();
+  const { isAccountConnected, revokePermissionTransaction, selectedAccount } =
+    useTorus();
   const [transactionStatus, setTransactionStatus] = useState<
     "idle" | "loading" | "success" | "error"
   >("idle");
@@ -79,8 +80,12 @@ export function RevokePermissionButton({
         refetchHandler: async () => {
           // Invalidate all permission-related queries to ensure UI updates
           await queryClient.invalidateQueries({ queryKey: ["permissions"] });
-          await queryClient.invalidateQueries({ queryKey: ["permissions_by_grantor", selectedAccount?.address] });
-          await queryClient.invalidateQueries({ queryKey: ["permissions_by_grantee", selectedAccount?.address] });
+          await queryClient.invalidateQueries({
+            queryKey: ["permissions_by_grantor", selectedAccount?.address],
+          });
+          await queryClient.invalidateQueries({
+            queryKey: ["permissions_by_grantee", selectedAccount?.address],
+          });
         },
       }),
     );

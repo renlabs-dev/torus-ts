@@ -13,7 +13,6 @@ interface UpdateAgentDialogPreviewProps {
   form: UpdateAgentForm;
 }
 
-
 export function UpdateAgentDialogPreview({
   agentKey,
   form,
@@ -43,7 +42,8 @@ export function UpdateAgentDialogPreview({
   if (formValues.socials.discord) socials.discord = formValues.socials.discord;
   if (formValues.socials.twitter) socials.twitter = formValues.socials.twitter;
   if (formValues.socials.github) socials.github = formValues.socials.github;
-  if (formValues.socials.telegram) socials.telegram = formValues.socials.telegram;
+  if (formValues.socials.telegram)
+    socials.telegram = formValues.socials.telegram;
   if (formValues.website) socials.website = formValues.website;
 
   return (

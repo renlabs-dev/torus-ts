@@ -138,7 +138,9 @@ export async function handlePermissionDataChange({
       permissionId: permissionData.permissions.permissionId,
       newTargets: formData.newTargets ?? [],
       newStreams: formData.newStreams ?? [],
-      newDistributionControl: formData.newDistributionControl ?? { Manual: null },
+      newDistributionControl: formData.newDistributionControl ?? {
+        Manual: null,
+      },
     });
 
     return { originalDistributionControl };

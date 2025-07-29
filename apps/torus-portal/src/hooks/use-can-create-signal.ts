@@ -15,25 +15,28 @@ export function useCanCreateSignal() {
 
   const rootAgent = api.computedAgentWeight.byAgentKey.useQuery(
     { agentKey: userKey },
-    { enabled: isAccountConnected && !!userKey }
+    { enabled: isAccountConnected && !!userKey },
   );
 
-  const emissionTargets = api.permission.distributionTargetsByAccountId.useQuery(
-    { accountId: userKey },
-    { enabled: isAccountConnected && !!userKey }
-  );
+  const emissionTargets =
+    api.permission.distributionTargetsByAccountId.useQuery(
+      { accountId: userKey },
+      { enabled: isAccountConnected && !!userKey },
+    );
 
   const canCreate = !!(
-    rootAgent.data?.agentKey ?? 
+    rootAgent.data?.agentKey ??
     (emissionTargets.data && emissionTargets.data.length > 0)
   );
-  
+
   const isLoading = rootAgent.isLoading || emissionTargets.isLoading;
 
-  return { 
-    canCreate, 
+  return {
+    canCreate,
     isLoading,
     isRootAgent: !!rootAgent.data?.agentKey,
-    isEmissionTarget: !!(emissionTargets.data && emissionTargets.data.length > 0)
+    isEmissionTarget: !!(
+      emissionTargets.data && emissionTargets.data.length > 0
+    ),
   };
 }

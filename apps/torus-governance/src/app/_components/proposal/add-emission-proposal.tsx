@@ -22,9 +22,7 @@ import {
 } from "@torus-ts/ui/components/form";
 import { Input } from "@torus-ts/ui/components/input";
 import { Textarea } from "@torus-ts/ui/components/text-area";
-import {
-  WalletConnectionWarning,
-} from "@torus-ts/ui/components/wallet-connection-warning";
+import { WalletConnectionWarning } from "@torus-ts/ui/components/wallet-connection-warning";
 import { useToast } from "@torus-ts/ui/hooks/use-toast";
 import { cn } from "@torus-ts/ui/lib/utils";
 
