@@ -26,7 +26,7 @@ concurrency:
 jobs:
   docker-build:
     if: |
-      !inputs.skip_build && 
+      !inputs.skip_build &&
       !contains(github.event.head_commit.message, 'skip build')
     permissions: write-all
     runs-on: ubicloud-standard-16
@@ -135,6 +135,7 @@ jobs:
             renlabs/utils | kubectl apply -f -
 
       - name: Deploy application (new tag)
+        id: deploy-new
         if: needs.docker-build.result == 'success'
         working-directory: apps/${{ env.APP_NAME }}
         run: |
@@ -143,14 +144,18 @@ jobs:
       - name: Install helm diff plugin
         if: needs.docker-build.result == 'skipped'
         working-directory: apps/${{ env.APP_NAME }}
-        run: helm plugin install https://github.com/databus23/helm-diff
+        run: |
+          if ! helm plugin list | grep -q '^diff'; then
+            helm plugin install https://github.com/databus23/helm-diff
+          fi
 
       - name: Deploy application (apply diff only)
+        id: deploy-diff
         if: needs.docker-build.result == 'skipped'
         working-directory: apps/${{ env.APP_NAME }}
         run: |
-          export RELEASE_NAME=$(helmfile -e ${ENV_NAME} list --output json | jq -r '.[].name')
-          export IMAGE_TAG=$(helm get values ${RELEASE_NAME} -n ${NAMESPACE} --output  json | jq -r '.deployment.image.tag')
+          export RELEASE_NAME="$(helmfile -e ${ENV_NAME} list --output json | jq -r '.[].name')"
+          export IMAGE_TAG="$(helm get values "${RELEASE_NAME}" -n "${NAMESPACE}" --output json | jq -r '.deployment.image.tag')"
 
           # Temporarily disable error handling
           set +e
@@ -162,10 +167,62 @@ jobs:
 
           if [ "$DIFF_EXIT_CODE" == "0" ]; then
             echo "No changes detected, skipping sync"
+            echo "changes_applied=false" >> $GITHUB_OUTPUT
           elif [ "$DIFF_EXIT_CODE" == "2" ]; then
             echo "Changes detected, applying updates..."
             helmfile sync -e ${ENV_NAME} --set deployment.image.tag=${IMAGE_TAG}
+            echo "changes_applied=true" >> $GITHUB_OUTPUT
           else
             echo "Error running helmfile diff with exit code: $DIFF_EXIT_CODE"
             exit 1
           fi
+
+      - name: Generate deployment summary
+        if: always()
+        run: |
+          echo "## 🚀 Deployment Summary - ${{ inputs.app_name }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          # Environment info
+          echo "**Environment:** ${{ env.ENV_NAME }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Namespace:** \`${{ env.NAMESPACE }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          # Docker build status
+          if [ "${{ needs.docker-build.result }}" == "success" ]; then
+            echo "### 🐳 Docker Build" >> $GITHUB_STEP_SUMMARY
+            echo "✅ New image built and pushed" >> $GITHUB_STEP_SUMMARY
+            echo "- **Image Tag:** \`${{ steps.commit.outputs.short }}\`" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+          elif [ "${{ needs.docker-build.result }}" == "skipped" ]; then
+            echo "### 🐳 Docker Build" >> $GITHUB_STEP_SUMMARY
+            echo "⏭️ Build skipped (existing image reused)" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          # Deployment status
+          echo "### 🏗️ Kubernetes Deployment" >> $GITHUB_STEP_SUMMARY
+
+          if [ "${{ steps.deploy-new.outcome }}" == "success" ]; then
+            echo "✅ **Application deployed successfully**" >> $GITHUB_STEP_SUMMARY
+            echo "- **Status:** New version deployed" >> $GITHUB_STEP_SUMMARY
+            echo "- **Image:** \`ghcr.io/renlabs-dev/${{ inputs.app_name }}:${{ steps.commit.outputs.short }}\`" >> $GITHUB_STEP_SUMMARY
+          elif [ "${{ steps.deploy-new.outcome }}" == "skipped" ]; then
+            echo "⏭️ **Tag deployment skipped**" >> $GITHUB_STEP_SUMMARY
+            echo "- **Status:** No new image built" >> $GITHUB_STEP_SUMMARY
+          elif [ "${{ steps.deploy-diff.outcome }}" == "success" ]; then
+            if [ "${{ steps.deploy-diff.outputs.changes_applied }}" == "true" ]; then
+              echo "✅ **Configuration changes applied**" >> $GITHUB_STEP_SUMMARY
+              echo "- **Status:** Helm configuration updated" >> $GITHUB_STEP_SUMMARY
+            else
+              echo "✅ **No changes needed**" >> $GITHUB_STEP_SUMMARY
+              echo "- **Status:** Application already up to date" >> $GITHUB_STEP_SUMMARY
+            fi
+          else
+            echo "❌ **Deployment failed**" >> $GITHUB_STEP_SUMMARY
+            echo "- **Status:** Deployment or configuration issues" >> $GITHUB_STEP_SUMMARY
+            echo "- **Action:** Check deployment logs" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Commit:** \`${{ github.sha }}\`" >> $GITHUB_STEP_SUMMARY

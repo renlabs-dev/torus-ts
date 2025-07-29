@@ -1631,8 +1631,6 @@ importers:
         specifier: 'catalog:'
         version: 5.8.2
 
-  tooling/github: {}
-
   tooling/prettier:
     dependencies:
       prettier:

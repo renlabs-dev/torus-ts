@@ -15,9 +15,9 @@ import {
 } from "@torus-ts/ui/components/form";
 import { Input } from "@torus-ts/ui/components/input";
 
-import type {
-  CreateEmissionPermissionForm,
-} from "../create-emission-permission-form-schema";
+import { FormAddressField } from "~/app/_components/address-field";
+
+import type { CreateEmissionPermissionForm } from "../create-emission-permission-form-schema";
 
 interface TargetsFieldProps {
   form: CreateEmissionPermissionForm;
@@ -72,24 +72,16 @@ export function TargetsField({ form, isAccountConnected }: TargetsFieldProps) {
             )}
           </div>
 
-          <div className="grid grid-cols-[1fr,120px] gap-3">
+          <div className="grid grid-cols-1 md:grid-cols-[1fr,120px] gap-3">
             <FormField
               control={form.control}
               name={`targets.${index}.account`}
               render={({ field: accountField }) => (
-                <FormItem>
-                  <FormLabel>Account</FormLabel>
-                  <FormControl>
-                    <Input
-                      {...accountField}
-                      placeholder="e.g. 5FHy...Wdpc"
-                      disabled={!isAccountConnected}
-                    />
-                  </FormControl>
-                  <div className="min-h-[20px]">
-                    <FormMessage />
-                  </div>
-                </FormItem>
+                <FormAddressField
+                  field={accountField}
+                  label="Account"
+                  disabled={!isAccountConnected}
+                />
               )}
             />
 
@@ -108,6 +100,7 @@ export function TargetsField({ form, isAccountConnected }: TargetsFieldProps) {
                       min="0"
                       max="100"
                       disabled={!isAccountConnected}
+                      className="h-[2.6rem]"
                     />
                   </FormControl>
                   <div className="min-h-[20px]">

@@ -1,6 +1,7 @@
 "use client";
 
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useRef, useState, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -38,6 +39,7 @@ export function EditPermissionForm({
   ...props
 }: React.ComponentProps<"form">) {
   const { toast } = useToast();
+  const searchParams = useSearchParams();
   const {
     api,
     isAccountConnected,
@@ -72,6 +74,15 @@ export function EditPermissionForm({
       newDistributionControl: { Manual: null },
     },
   });
+
+  // Handle URL parameter population
+  useEffect(() => {
+    const permissionIdFromUrl = searchParams.get("id");
+    if (permissionIdFromUrl && !selectedPermissionId) {
+      setSelectedPermissionId(permissionIdFromUrl);
+      form.setValue("permissionId", permissionIdFromUrl);
+    }
+  }, [searchParams, selectedPermissionId, form]);
 
   const handlePermissionLoad = useCallback(
     async (permissionData: PermissionWithDetails) => {

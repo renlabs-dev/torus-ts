@@ -158,9 +158,9 @@ jobs:
   torus-page-dry-run:
     needs: [turbo-check, pr-check]
     if: |
-      github.ref_name != 'main' && 
-      github.ref_name != 'dev' && 
-      github.ref_name != 'cicd' && 
+      github.ref_name != 'main' &&
+      github.ref_name != 'dev' &&
+      github.ref_name != 'cicd' &&
       needs.turbo-check.outputs.torus-page == 'true' &&
       needs.pr-check.outputs.pr_exists == 'false'
     uses: ./.github/workflows/dry-run-build-template.yml
@@ -171,9 +171,9 @@ jobs:
   torus-portal-dry-run:
     needs: [turbo-check, pr-check]
     if: |
-      github.ref_name != 'main' && 
-      github.ref_name != 'dev' && 
-      github.ref_name != 'cicd' && 
+      github.ref_name != 'main' &&
+      github.ref_name != 'dev' &&
+      github.ref_name != 'cicd' &&
       needs.turbo-check.outputs.torus-portal == 'true' &&
       needs.pr-check.outputs.pr_exists == 'false'
     uses: ./.github/workflows/dry-run-build-template.yml
@@ -184,9 +184,9 @@ jobs:
   torus-wallet-dry-run:
     needs: [turbo-check, pr-check]
     if: |
-      github.ref_name != 'main' && 
-      github.ref_name != 'dev' && 
-      github.ref_name != 'cicd' && 
+      github.ref_name != 'main' &&
+      github.ref_name != 'dev' &&
+      github.ref_name != 'cicd' &&
       needs.turbo-check.outputs.torus-wallet == 'true' &&
       needs.pr-check.outputs.pr_exists == 'false'
     uses: ./.github/workflows/dry-run-build-template.yml
@@ -197,9 +197,9 @@ jobs:
   torus-allocator-dry-run:
     needs: [turbo-check, pr-check]
     if: |
-      github.ref_name != 'main' && 
-      github.ref_name != 'dev' && 
-      github.ref_name != 'cicd' && 
+      github.ref_name != 'main' &&
+      github.ref_name != 'dev' &&
+      github.ref_name != 'cicd' &&
       needs.turbo-check.outputs.torus-allocator == 'true' &&
       needs.pr-check.outputs.pr_exists == 'false'
     uses: ./.github/workflows/dry-run-build-template.yml
@@ -210,9 +210,9 @@ jobs:
   torus-bridge-dry-run:
     needs: [turbo-check, pr-check]
     if: |
-      github.ref_name != 'main' && 
-      github.ref_name != 'dev' && 
-      github.ref_name != 'cicd' && 
+      github.ref_name != 'main' &&
+      github.ref_name != 'dev' &&
+      github.ref_name != 'cicd' &&
       needs.turbo-check.outputs.torus-bridge == 'true'
     uses: ./.github/workflows/dry-run-build-template.yml
     secrets: inherit
@@ -222,9 +222,9 @@ jobs:
   torus-cache-dry-run:
     needs: [turbo-check, pr-check]
     if: |
-      github.ref_name != 'main' && 
-      github.ref_name != 'dev' && 
-      github.ref_name != 'cicd' && 
+      github.ref_name != 'main' &&
+      github.ref_name != 'dev' &&
+      github.ref_name != 'cicd' &&
       needs.pr-check.outputs.pr_exists == 'false' &&
       (needs.turbo-check.outputs.torus-cache == 'true' ||
       needs.turbo-check.outputs.torus-governance == 'true' ||
@@ -238,9 +238,9 @@ jobs:
   torus-governance-dry-run:
     needs: [turbo-check, pr-check]
     if: |
-      github.ref_name != 'main' && 
-      github.ref_name != 'dev' && 
-      github.ref_name != 'cicd' && 
+      github.ref_name != 'main' &&
+      github.ref_name != 'dev' &&
+      github.ref_name != 'cicd' &&
       needs.turbo-check.outputs.torus-governance == 'true' &&
       needs.pr-check.outputs.pr_exists == 'false'
     uses: ./.github/workflows/dry-run-build-template.yml
@@ -251,9 +251,9 @@ jobs:
   torus-worker-dry-run:
     needs: [turbo-check, pr-check]
     if: |
-      github.ref_name != 'main' && 
-      github.ref_name != 'dev' && 
-      github.ref_name != 'cicd' && 
+      github.ref_name != 'main' &&
+      github.ref_name != 'dev' &&
+      github.ref_name != 'cicd' &&
       (needs.turbo-check.outputs.torus-worker == 'true' ||
       needs.turbo-check.outputs.torus-governance == 'true' ||
       needs.turbo-check.outputs.torus-allocator == 'true')
@@ -269,6 +269,7 @@ jobs:
     needs: turbo-check
     if: |
       github.event.pull_request.state == 'open' && !github.event.repository.fork
+      && !github.event.pull_request.draft
       && github.head_ref != 'main' && github.head_ref != 'dev' &&
       needs.turbo-check.outputs.torus-allocator == 'true'
     uses: ./.github/workflows/pr-preview-template.yml
@@ -290,6 +291,7 @@ jobs:
     needs: turbo-check
     if: |
       github.event.pull_request.state == 'open' && !github.event.repository.fork
+      && !github.event.pull_request.draft
       && github.head_ref != 'main' && github.head_ref != 'dev' &&
       (needs.turbo-check.outputs.torus-cache == 'true' ||
       needs.turbo-check.outputs.torus-governance == 'true' ||
@@ -299,7 +301,6 @@ jobs:
     secrets: inherit
     with:
       app_name: torus-cache
-      healthCheckPath: /api/stake-out
 
   torus-cache-pr-delete:
     if: |
@@ -315,6 +316,7 @@ jobs:
     needs: turbo-check
     if: |
       github.event.pull_request.state == 'open' && !github.event.repository.fork
+      && !github.event.pull_request.draft
       && github.head_ref != 'main' && github.head_ref != 'dev' &&
       needs.turbo-check.outputs.torus-governance == 'true'
     uses: ./.github/workflows/pr-preview-template.yml
@@ -336,6 +338,7 @@ jobs:
     needs: turbo-check
     if: |
       github.event.pull_request.state == 'open' && !github.event.repository.fork
+      && !github.event.pull_request.draft
       && github.head_ref != 'main' && github.head_ref != 'dev' &&
       needs.turbo-check.outputs.torus-page == 'true'
     uses: ./.github/workflows/pr-preview-template.yml
@@ -357,6 +360,7 @@ jobs:
     needs: turbo-check
     if: |
       github.event.pull_request.state == 'open' && !github.event.repository.fork
+      && !github.event.pull_request.draft
       && github.head_ref != 'main' && github.head_ref != 'dev' &&
       needs.turbo-check.outputs.torus-portal == 'true'
     uses: ./.github/workflows/pr-preview-template.yml
@@ -378,6 +382,7 @@ jobs:
     needs: turbo-check
     if: |
       github.event.pull_request.state == 'open' && !github.event.repository.fork
+      && !github.event.pull_request.draft
       && github.head_ref != 'main' && github.head_ref != 'dev' &&
       needs.turbo-check.outputs.torus-wallet == 'true'
     uses: ./.github/workflows/pr-preview-template.yml
@@ -399,6 +404,7 @@ jobs:
     needs: turbo-check
     if: |
       github.event.pull_request.state == 'open' && !github.event.repository.fork
+      && !github.event.pull_request.draft
       && github.head_ref != 'main' && github.head_ref != 'dev' &&
       needs.turbo-check.outputs.torus-bridge == 'true'
     uses: ./.github/workflows/pr-preview-template.yml
@@ -415,3 +421,221 @@ jobs:
     with:
       app_name: torus-bridge
       delete: true
+
+  deployment-summary:
+    if: always()
+    needs:
+      [
+        turbo-check,
+        torus-page,
+        torus-portal,
+        torus-wallet,
+        torus-allocator,
+        torus-bridge,
+        torus-cache,
+        torus-governance,
+        torus-worker,
+        torus-page-dry-run,
+        torus-portal-dry-run,
+        torus-wallet-dry-run,
+        torus-allocator-dry-run,
+        torus-bridge-dry-run,
+        torus-cache-dry-run,
+        torus-governance-dry-run,
+        torus-worker-dry-run,
+        torus-allocator-pr-activate,
+        torus-cache-pr-activate,
+        torus-governance-pr-activate,
+        torus-page-pr-activate,
+        torus-portal-pr-activate,
+        torus-wallet-pr-activate,
+        torus-bridge-pr-activate,
+        torus-allocator-pr-delete,
+        torus-cache-pr-delete,
+        torus-governance-pr-delete,
+        torus-page-pr-delete,
+        torus-portal-pr-delete,
+        torus-wallet-pr-delete,
+        torus-bridge-pr-delete,
+      ]
+    runs-on: ubicloud-standard-2
+    steps:
+      - name: Generate deployment summary
+        run: |
+          set -euo pipefail
+          echo "## 🚀 Deployment Overview" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          # Environment detection
+          if [ "${{ github.ref_name }}" == "main" ]; then
+            ENV_NAME="Production"
+            ENV_ICON="🏭"
+          elif [ "${{ github.ref_name }}" == "dev" ]; then
+            ENV_NAME="Development"
+            ENV_ICON="🧪"
+          else
+            ENV_NAME="Preview/Dry-run"
+            ENV_ICON="👀"
+          fi
+
+          echo "**Environment:** $ENV_ICON $ENV_NAME (\`${{ github.ref_name }}\`)" >> $GITHUB_STEP_SUMMARY
+          echo "**Trigger:** ${{ github.event_name }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          # Define application list
+          apps=(torus-page torus-portal torus-wallet torus-allocator torus-bridge torus-cache torus-governance torus-worker)
+
+          # Production/Dev Deployments
+          if [ "${{ github.ref_name }}" == "main" ] || [ "${{ github.ref_name }}" == "dev" ] || [ "${{ github.ref_name }}" == "cicd" ]; then
+            echo "### 🏗️ Application Deployments" >> $GITHUB_STEP_SUMMARY
+            echo "| Application | Status | Changed | Deploy Status |" >> $GITHUB_STEP_SUMMARY
+            echo "|-------------|--------|---------|---------------|" >> $GITHUB_STEP_SUMMARY
+
+            for app in "${apps[@]}"; do
+              case "$app" in
+                "torus-page")
+                  changed="${{ needs.turbo-check.outputs.torus-page }}"
+                  deploy_result="${{ needs.torus-page.result }}"
+                  ;;
+                "torus-portal")
+                  changed="${{ needs.turbo-check.outputs.torus-portal }}"
+                  deploy_result="${{ needs.torus-portal.result }}"
+                  ;;
+                "torus-wallet")
+                  changed="${{ needs.turbo-check.outputs.torus-wallet }}"
+                  deploy_result="${{ needs.torus-wallet.result }}"
+                  ;;
+                "torus-allocator")
+                  changed="${{ needs.turbo-check.outputs.torus-allocator }}"
+                  deploy_result="${{ needs.torus-allocator.result }}"
+                  ;;
+                "torus-bridge")
+                  changed="${{ needs.turbo-check.outputs.torus-bridge }}"
+                  deploy_result="${{ needs.torus-bridge.result }}"
+                  ;;
+                "torus-cache")
+                  changed="${{ needs.turbo-check.outputs.torus-cache }}"
+                  deploy_result="${{ needs.torus-cache.result }}"
+                  ;;
+                "torus-governance")
+                  changed="${{ needs.turbo-check.outputs.torus-governance }}"
+                  deploy_result="${{ needs.torus-governance.result }}"
+                  ;;
+                "torus-worker")
+                  changed="${{ needs.turbo-check.outputs.torus-worker }}"
+                  deploy_result="${{ needs.torus-worker.result }}"
+                  ;;
+              esac
+
+              if [ "$changed" == "true" ]; then change_icon="✅"; change_text="Yes"; else change_icon="⏭️"; change_text="No"; fi
+              case "$deploy_result" in
+                "success") deploy_icon="✅"; deploy_text="Deployed";;
+                "failure") deploy_icon="❌"; deploy_text="Failed";;
+                "skipped") deploy_icon="⏭️"; deploy_text="Skipped";;
+                *) deploy_icon="❓"; deploy_text="Unknown";;
+              esac
+              echo "| ${app} | ${change_icon} ${change_text} | ${deploy_icon} ${deploy_text} |" >> $GITHUB_STEP_SUMMARY
+            done
+          fi
+
+          # PR Previews
+          if [ "${{ github.event_name }}" == "pull_request" ]; then
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "### 🔍 PR Preview Deployments" >> $GITHUB_STEP_SUMMARY
+            echo "| Application | Status | Preview URL |" >> $GITHUB_STEP_SUMMARY
+            echo "|-------------|--------|-------------|" >> $GITHUB_STEP_SUMMARY
+
+            # PR preview apps (subset of all apps)
+            pr_apps=(torus-allocator torus-cache torus-governance torus-page torus-portal torus-wallet torus-bridge)
+
+            for app in "${pr_apps[@]}"; do
+              case "$app" in
+                "torus-allocator")
+                  activate_result="${{ needs.torus-allocator-pr-activate.result }}"
+                  delete_result="${{ needs.torus-allocator-pr-delete.result }}"
+                  ;;
+                "torus-cache")
+                  activate_result="${{ needs.torus-cache-pr-activate.result }}"
+                  delete_result="${{ needs.torus-cache-pr-delete.result }}"
+                  ;;
+                "torus-governance")
+                  activate_result="${{ needs.torus-governance-pr-activate.result }}"
+                  delete_result="${{ needs.torus-governance-pr-delete.result }}"
+                  ;;
+                "torus-page")
+                  activate_result="${{ needs.torus-page-pr-activate.result }}"
+                  delete_result="${{ needs.torus-page-pr-delete.result }}"
+                  ;;
+                "torus-portal")
+                  activate_result="${{ needs.torus-portal-pr-activate.result }}"
+                  delete_result="${{ needs.torus-portal-pr-delete.result }}"
+                  ;;
+                "torus-wallet")
+                  activate_result="${{ needs.torus-wallet-pr-activate.result }}"
+                  delete_result="${{ needs.torus-wallet-pr-delete.result }}"
+                  ;;
+                "torus-bridge")
+                  activate_result="${{ needs.torus-bridge-pr-activate.result }}"
+                  delete_result="${{ needs.torus-bridge-pr-delete.result }}"
+                  ;;
+              esac
+
+              if [ "$activate_result" == "success" ]; then
+                echo "| ${app} | ✅ Deployed | [Preview](https://pr-${{ github.event.number }}.${app}.torus.network) |" >> $GITHUB_STEP_SUMMARY
+              elif [ "$delete_result" == "success" ]; then
+                echo "| ${app} | 🗑️ Deleted | - |" >> $GITHUB_STEP_SUMMARY
+              elif [ "$activate_result" == "skipped" ] && [ "$delete_result" == "skipped" ]; then
+                echo "| ${app} | ⏭️ No Changes | - |" >> $GITHUB_STEP_SUMMARY
+              else
+                echo "| ${app} | ❌ Failed | - |" >> $GITHUB_STEP_SUMMARY
+              fi
+            done
+          fi
+
+          # Dry Run Builds
+          if [ "${{ github.ref_name }}" != "main" ] && [ "${{ github.ref_name }}" != "dev" ] && [ "${{ github.ref_name }}" != "cicd" ] && [ "${{ github.event_name }}" != "pull_request" ]; then
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "### 🔨 Dry Run Builds" >> $GITHUB_STEP_SUMMARY
+            echo "| Application | Build Status |" >> $GITHUB_STEP_SUMMARY
+            echo "|-------------|--------------|" >> $GITHUB_STEP_SUMMARY
+
+            for app in "${apps[@]}"; do
+              case "$app" in
+                "torus-page")
+                  dry_run_result="${{ needs.torus-page-dry-run.result }}"
+                  ;;
+                "torus-portal")
+                  dry_run_result="${{ needs.torus-portal-dry-run.result }}"
+                  ;;
+                "torus-wallet")
+                  dry_run_result="${{ needs.torus-wallet-dry-run.result }}"
+                  ;;
+                "torus-allocator")
+                  dry_run_result="${{ needs.torus-allocator-dry-run.result }}"
+                  ;;
+                "torus-bridge")
+                  dry_run_result="${{ needs.torus-bridge-dry-run.result }}"
+                  ;;
+                "torus-cache")
+                  dry_run_result="${{ needs.torus-cache-dry-run.result }}"
+                  ;;
+                "torus-governance")
+                  dry_run_result="${{ needs.torus-governance-dry-run.result }}"
+                  ;;
+                "torus-worker")
+                  dry_run_result="${{ needs.torus-worker-dry-run.result }}"
+                  ;;
+              esac
+
+              case "$dry_run_result" in
+                "success") echo "| ${app} | ✅ Build Successful |" >> $GITHUB_STEP_SUMMARY;;
+                "failure") echo "| ${app} | ❌ Build Failed |" >> $GITHUB_STEP_SUMMARY;;
+                "skipped") echo "| ${app} | ⏭️ Skipped (No Changes) |" >> $GITHUB_STEP_SUMMARY;;
+                *) echo "| ${app} | ❓ Unknown |" >> $GITHUB_STEP_SUMMARY;;
+              esac
+            done
+          fi
+
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Commit:** \`${{ github.sha }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "**Workflow Run:** [#${{ github.run_number }}](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})" >> $GITHUB_STEP_SUMMARY
