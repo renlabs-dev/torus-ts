@@ -46,20 +46,20 @@ export function AddressWithAgent({
       )}
 
       <div className="flex items-center gap-1 min-w-0">
+        {agentName && <span className="text-sm">{agentName}</span>}
         <Tooltip>
           <TooltipTrigger asChild>
-            <span className="font-mono text-sm cursor-help hover:text-foreground/80 transition-colors">
-              {truncatedAddress}
+            <span
+              className="font-mono text-sm cursor-help hover:text-foreground/60 text-muted-foreground
+                transition-colors"
+            >
+              ({truncatedAddress})
             </span>
           </TooltipTrigger>
           <TooltipContent className="z-[100]">
             <p className="font-mono">{address}</p>
           </TooltipContent>
         </Tooltip>
-
-        {agentName && (
-          <span className="text-sm text-muted-foreground">({agentName})</span>
-        )}
       </div>
     </div>
   );

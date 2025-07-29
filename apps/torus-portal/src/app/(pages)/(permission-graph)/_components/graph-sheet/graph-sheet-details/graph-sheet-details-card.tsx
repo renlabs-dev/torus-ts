@@ -1,4 +1,6 @@
 // import { useMemo } from "react";
+import { useRouter } from "next/navigation";
+
 import { smallAddress } from "@torus-network/torus-utils/torus/address";
 
 import {
@@ -44,6 +46,8 @@ export function NodeDetailsCard({
   allPermissions,
   selectedNode,
 }: NodeDetailsCardProps) {
+  const router = useRouter();
+  
   if (!graphData) return null;
 
   const processedPermissions = nodePermissions.map((permission) => {
@@ -189,11 +193,18 @@ export function NodeDetailsCard({
                           <span className="text-xs text-gray-500">
                             Permission ID
                           </span>
-                          <div className="text-sm text-gray-300">
+                          <button
+                            onClick={() => {
+                              router.push(
+                                `?id=permission-${details.permissions.permissionId}`,
+                              );
+                            }}
+                            className="text-sm text-blue-400 hover:text-blue-300 cursor-pointer underline"
+                          >
                             {smallAddress(
                               String(details.permissions.permissionId),
                             )}
-                          </div>
+                          </button>
                         </div>
                       </div>
                     </>
