@@ -2,9 +2,9 @@
 
 import { Suspense } from "react";
 
-import { OrbitControls } from "@react-three/drei";
+import { Environment, Lightformer, OrbitControls } from "@react-three/drei";
 import { Canvas } from "@react-three/fiber";
-import { Bloom, EffectComposer } from "@react-three/postprocessing";
+import { Bloom, EffectComposer, N8AO } from "@react-three/postprocessing";
 
 import type {
   CustomGraphData,
@@ -23,24 +23,57 @@ export function ForceGraphCanvas({
 }) {
   return (
     <div className="fixed inset-0 z-0 animate-fade animate-delay-1000">
-      <Canvas camera={{ position: [0, 0, 600], far: 8000 }} shadows>
-        {/* <color attach="background" args={["#252530"]} /> */}
-        <ambientLight intensity={1.01} />
-        <hemisphereLight
-          intensity={1.125}
-          color="#8040df"
-          groundColor="#bfdbfe"
-        />
+      <Canvas
+        shadows
+        dpr={[1, 1.5]}
+        gl={{ antialias: false }}
+        camera={{ position: [0, 0, 600], far: 8000 }}
+      >
+        <color attach="background" args={["#0E0E11"]} />
+        <ambientLight intensity={0.8} />
         <spotLight
-          castShadow
-          color="blue"
-          intensity={2}
-          position={[-50, 50, 40]}
-          angle={0.25}
+          position={[10, 10, 10]}
+          angle={0.15}
           penumbra={1}
-          shadow-mapSize={[128, 128]}
-          shadow-bias={0.00005}
+          intensity={1}
+          castShadow
         />
+
+        <EffectComposer multisampling={8}>
+          <N8AO distanceFalloff={1} aoRadius={1} intensity={0} />
+        </EffectComposer>
+        <Environment resolution={256}>
+          <group rotation={[-Math.PI / 3, 0, 1]}>
+            <Lightformer
+              form="circle"
+              intensity={2}
+              rotation-x={Math.PI / 2}
+              position={[0, 5, -9]}
+              scale={2}
+            />
+            <Lightformer
+              form="circle"
+              intensity={1}
+              rotation-y={Math.PI / 2}
+              position={[-5, 1, -1]}
+              scale={2}
+            />
+            <Lightformer
+              form="circle"
+              intensity={1}
+              rotation-y={Math.PI / 2}
+              position={[-5, -1, -1]}
+              scale={2}
+            />
+            <Lightformer
+              form="circle"
+              intensity={1}
+              rotation-y={-Math.PI / 2}
+              position={[10, 1, 0]}
+              scale={8}
+            />
+          </group>
+        </Environment>
 
         <Suspense fallback={null}>
           <ForceGraph
@@ -48,12 +81,15 @@ export function ForceGraphCanvas({
             onNodeClick={onNodeClick}
             userAddress={userAddress}
           />
+
           <OrbitControls dampingFactor={0.01} enablePan={false} />
           <EffectComposer>
             <Bloom
-              intensity={1}
-              luminanceThreshold={0}
+              mipmapBlur
+              intensity={0.6}
+              luminanceThreshold={0.1}
               luminanceSmoothing={1.5}
+              levels={7}
             />
           </EffectComposer>
         </Suspense>

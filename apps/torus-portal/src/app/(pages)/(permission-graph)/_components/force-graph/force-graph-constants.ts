@@ -15,7 +15,7 @@ export const graphConstants = {
 
   // Highlight and interaction effects
   highlightEffects: {
-    hoverNodeLightenAmount: 0.8,
+    hoverNodeLightenAmount: 1,
     neighborNodeLightenAmount: 0.4,
     linkWidthMultiplier: 1.5,
     particlesIncrease: 2,
@@ -39,7 +39,7 @@ export const graphConstants = {
   nodeConfig: {
     nodeColors: {
       // Core network node
-      allocator: "#ffffff", // white (stays as requested)
+      allocator: "#FAFAFA", // white (stays as requested)
 
       // Agent/Node group (Blue family - network participants)
       rootNode: "#3b82f6", // blue-500 (whitelisted agents)
@@ -48,7 +48,7 @@ export const graphConstants = {
 
       // Permission group (Orange/Yellow family - permission types)
       permissionNode: "#f97316", // orange-500 (legacy fallback)
-      emissionPermissionNode: "#ffffff", // white0 (emission permissions)
+      emissionPermissionNode: "#FAFAFA", // white0 (emission permissions)
       namespacePermissionNode: "#eab308", // yellow-500 (namespace permissions)
 
       // Special nodes
@@ -67,32 +67,32 @@ export const graphConstants = {
     nodeGeometry: {
       allocator: {
         type: "sphere",
-        radius: 25,
-        widthSegments: 18,
-        heightSegments: 18,
+        radius: 26,
+        widthSegments: 36,
+        heightSegments: 36,
       },
       rootNode: {
         type: "sphere",
-        radius: 10,
-        widthSegments: 18,
-        heightSegments: 18,
+        radius: 14,
+        widthSegments: 24,
+        heightSegments: 24,
       },
       permissionNode: {
         type: "icosahedron",
-        radius: 7,
+        radius: 9,
         detail: 0,
       },
       targetNode: {
         type: "sphere",
-        radius: 10,
-        widthSegments: 18,
-        heightSegments: 18,
+        radius: 12,
+        widthSegments: 24,
+        heightSegments: 24,
       },
       userNode: {
         type: "sphere",
-        radius: 10,
-        widthSegments: 18,
-        heightSegments: 18,
+        radius: 12,
+        widthSegments: 24,
+        heightSegments: 24,
       },
       signalNode: {
         type: "tetrahedron",
