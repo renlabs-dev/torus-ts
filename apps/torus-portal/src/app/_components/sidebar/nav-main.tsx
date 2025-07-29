@@ -30,7 +30,7 @@ export function NavMain({
           {item.title && <SidebarGroupLabel>{item.title}</SidebarGroupLabel>}
           <SidebarMenu>
             {item.items?.map((subItem) => (
-              <SidebarMenuItem key={subItem.title}>
+              <SidebarMenuItem key={subItem.title} className="z-[100]">
                 <SidebarMenuButton asChild tooltip={subItem.title}>
                   <Link href={subItem.url}>
                     <subItem.icon />

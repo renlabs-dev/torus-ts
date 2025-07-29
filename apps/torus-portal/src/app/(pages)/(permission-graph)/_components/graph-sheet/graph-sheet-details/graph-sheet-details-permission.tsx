@@ -23,6 +23,7 @@ import {
   CardTitle,
 } from "@torus-ts/ui/components/card";
 
+import { AddressWithAgent } from "~/app/_components/address-with-agent";
 import type {
   allPermissions,
   CustomGraphNode,
@@ -179,16 +180,13 @@ export function GraphSheetDetailsPermission({
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="font-mono text-sm">
-                {smallAddress(permissionData.grantorAccountId)}
-              </p>
-              <p className="text-xs text-muted-foreground">
-                Account that delegated this permission
-              </p>
-            </div>
-          </div>
+          <AddressWithAgent 
+            address={permissionData.grantorAccountId}
+            className="mb-2"
+          />
+          <p className="text-xs text-muted-foreground">
+            Account that delegated this permission
+          </p>
         </CardContent>
       </Card>
 
@@ -201,16 +199,13 @@ export function GraphSheetDetailsPermission({
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="font-mono text-sm">
-                  {smallAddress(permissionData.granteeAccountId)}
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  Account that received this permission
-                </p>
-              </div>
-            </div>
+            <AddressWithAgent 
+              address={permissionData.granteeAccountId}
+              className="mb-2"
+            />
+            <p className="text-xs text-muted-foreground">
+              Account that received this permission
+            </p>
           </CardContent>
         </Card>
       )}
@@ -229,12 +224,10 @@ export function GraphSheetDetailsPermission({
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="font-mono text-sm">
-                      {smallAddress(
-                        detailedPermission.emission_distribution_targets
-                          .targetAccountId,
-                      )}
-                    </p>
+                    <AddressWithAgent 
+                      address={detailedPermission.emission_distribution_targets.targetAccountId}
+                      className="mb-2"
+                    />
                     <p className="text-xs text-muted-foreground">
                       Target account for emission distribution
                     </p>

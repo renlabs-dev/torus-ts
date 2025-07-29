@@ -138,7 +138,7 @@ export async function handlePermissionDataChange({
       permissionId: permissionData.permissions.permissionId,
       newTargets: formData.newTargets ?? [],
       newStreams: formData.newStreams ?? [],
-      newDistributionControl: { Manual: null }, // TODO: filling causes the crash bug
+      newDistributionControl: formData.newDistributionControl ?? { Manual: null },
     });
 
     return { originalDistributionControl };

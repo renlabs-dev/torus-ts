@@ -32,6 +32,7 @@ import { WalletConnectionWarning } from "@torus-ts/ui/components/wallet-connecti
 import { useIsMobile } from "@torus-ts/ui/hooks/use-mobile";
 import { useToast } from "@torus-ts/ui/hooks/use-toast";
 
+import { FormAddressField } from "~/app/_components/address-field";
 import { truncateMobileValue } from "~/utils/truncate-mobile-value";
 
 import { DurationField } from "./create-capability-fields/duration-field";
@@ -140,17 +141,11 @@ export function CreateCapabilityPermissionForm({
             control={form.control}
             name="recipient"
             render={({ field }) => (
-              <FormItem>
-                <FormLabel>Recipient</FormLabel>
-                <FormControl>
-                  <Input
-                    {...field}
-                    placeholder="5Dx...abc (SS58 address)"
-                    disabled={!isAccountConnected}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
+              <FormAddressField
+                field={field}
+                label="Recipient"
+                disabled={!isAccountConnected}
+              />
             )}
           />
 

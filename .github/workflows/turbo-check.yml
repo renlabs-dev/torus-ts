@@ -44,19 +44,8 @@ jobs:
         with:
           fetch-depth: 0
 
-      - uses: pnpm/action-setup@v4
-        name: Install pnpm
-        with:
-          run_install: false
-
-      - name: Install Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          cache: "pnpm"
-
-      - name: Install dependencies
-        run: pnpm install
+      - name: PNPM setup
+        uses: ./.github/actions/setup
 
       - name: Get apps list
         run: |
@@ -69,12 +58,11 @@ jobs:
         run: |
           pnpm exec turbo run build --filter="...[origin/${{ github.base_ref }}]" --dry-run=json 2>/dev/null > build.json
 
-      # pnpm exec turbo run build --filter="...[HEAD^1]" --dry-run=json 2>/dev/null > build.json
       - name: Get build json (Push based)
         if: github.event_name == 'push'
         run: |
           if git rev-parse --quiet --verify ${{ github.event.before }}^{commit}; then
-            BASE_COMMIT=$(git merge-base ${{ github.event.before }} HEAD)
+            BASE_COMMIT="$(git merge-base ${{ github.event.before }} HEAD)"
             pnpm exec turbo run build --filter="...[${BASE_COMMIT}]" --dry-run=json 2>/dev/null > build.json
           else
             pnpm exec turbo run build --dry-run=json 2>/dev/null > build.json
@@ -89,11 +77,12 @@ jobs:
       - name: Check changed packages
         id: changed
         run: |
-          CHANGED_PACKAGES=$(cat package_list)
+          set -euo pipefail
+          CHANGED_PACKAGES="$(cat package_list)"
 
           while read -r package; do
             package=$(echo "$package" | tr -d '"')
-            IS_CHANGED=$(echo $CHANGED_PACKAGES | jq -r "any(. == \"$package\")")
+            IS_CHANGED="$(echo "${CHANGED_PACKAGES}" | jq -r "any(. == \"${package}\")")"
             echo "$package=$IS_CHANGED" >> $GITHUB_OUTPUT
           done < <(jq -c '.[]' packages_to_track.json)
 
@@ -101,3 +90,42 @@ jobs:
         run: |
           echo 'Changed packages status:'
           echo '${{ toJSON(steps.changed.outputs) }}' | jq '.'
+
+      - name: Generate job summary
+        run: |
+          echo "## 📦 Changed Applications" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          set -euo pipefail
+          CHANGED_PACKAGES="$(cat package_list)"
+
+          # Create a summary table
+          echo "| Application | Status | Changed |" >> $GITHUB_STEP_SUMMARY
+          echo "|-------------|--------|---------|" >> $GITHUB_STEP_SUMMARY
+
+          while read -r package; do
+            package=$(echo "$package" | tr -d '"')
+            IS_CHANGED="$(echo "${CHANGED_PACKAGES}" | jq -r "any(. == \"${package}\")")"
+
+            if [ "$IS_CHANGED" == "true" ]; then
+              echo "| $package | ✅ Changed | Yes |" >> $GITHUB_STEP_SUMMARY
+            else
+              echo "| $package | ⏭️ No Changes | No |" >> $GITHUB_STEP_SUMMARY
+            fi
+          done < <(jq -c '.[]' packages_to_track.json)
+
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          # Add trigger information
+          if [ "${{ github.event_name }}" == "pull_request" ]; then
+            echo "**Trigger:** Pull Request #${{ github.event.number }} against \`${{ github.base_ref }}\`" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "**Trigger:** Push to \`${{ github.ref_name }}\`" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          echo "**Commit:** ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
+
+          # Add deployment implications
+          CHANGED_COUNT="$(echo "${CHANGED_PACKAGES}" | jq 'length')"
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Deployment Impact:** $CHANGED_COUNT applications will be rebuilt and deployed." >> $GITHUB_STEP_SUMMARY

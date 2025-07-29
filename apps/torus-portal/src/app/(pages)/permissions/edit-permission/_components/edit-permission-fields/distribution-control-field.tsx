@@ -22,12 +22,10 @@ import type { EditPermissionFormData } from "../edit-permission-schema";
 
 interface DistributionControlFieldProps {
   control: Control<EditPermissionFormData>;
-  originalValue?: string | null;
 }
 
 export function DistributionControlField({
   control,
-  originalValue,
 }: DistributionControlFieldProps) {
   const distributionControl = useWatch({
     control,
@@ -60,14 +58,7 @@ export function DistributionControlField({
 
           return (
             <FormItem>
-              <FormLabel>
-                Distribution Control
-                {originalValue && (
-                  <span className="ml-2 text-sm font-normal text-muted-foreground">
-                    (Previous: {originalValue})
-                  </span>
-                )}
-              </FormLabel>
+              <FormLabel>Distribution Control</FormLabel>
               <Select
                 value={currentType}
                 onValueChange={(value) => {
@@ -108,25 +99,30 @@ export function DistributionControlField({
       {distributionType === "Automatic" && (
         <FormField
           control={control}
-          name="newDistributionControl.Automatic"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Threshold Amount</FormLabel>
-              <FormControl>
-                <Input
-                  {...field}
-                  type="number"
-                  placeholder="Enter threshold amount"
-                  value={field.value.toString() || ""}
-                  onChange={(e) => {
-                    const value = e.target.value;
-                    field.onChange(value ? BigInt(value) : 0n);
-                  }}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
+          name="newDistributionControl"
+          render={({ field }) => {
+            const currentValue =
+              field.value && "Automatic" in field.value
+                ? field.value.Automatic
+                : 0n;
+            return (
+              <FormItem>
+                <FormLabel>Threshold Amount</FormLabel>
+                <FormControl>
+                  <Input
+                    type="number"
+                    placeholder="Enter threshold amount"
+                    value={currentValue.toString() || ""}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      field.onChange({ Automatic: value ? BigInt(value) : 0n });
+                    }}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            );
+          }}
         />
       )}
 
@@ -134,50 +130,58 @@ export function DistributionControlField({
       {distributionType === "AtBlock" && (
         <FormField
           control={control}
-          name="newDistributionControl.AtBlock"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Block Number</FormLabel>
-              <FormControl>
-                <Input
-                  {...field}
-                  type="number"
-                  placeholder="Enter block number"
-                  value={field.value.toString() || ""}
-                  onChange={(e) => {
-                    const value = e.target.value;
-                    field.onChange(value ? parseInt(value) : 0);
-                  }}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
+          name="newDistributionControl"
+          render={({ field }) => {
+            const currentValue =
+              field.value && "AtBlock" in field.value ? field.value.AtBlock : 0;
+            return (
+              <FormItem>
+                <FormLabel>Block Number</FormLabel>
+                <FormControl>
+                  <Input
+                    type="number"
+                    placeholder="Enter block number"
+                    value={currentValue.toString() || ""}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      field.onChange({ AtBlock: value ? parseInt(value) : 0 });
+                    }}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            );
+          }}
         />
       )}
 
       {distributionType === "Interval" && (
         <FormField
           control={control}
-          name="newDistributionControl.Interval"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Block Interval</FormLabel>
-              <FormControl>
-                <Input
-                  {...field}
-                  type="number"
-                  placeholder="Enter block interval"
-                  value={field.value.toString() || ""}
-                  onChange={(e) => {
-                    const value = e.target.value;
-                    field.onChange(value ? parseInt(value) : 0);
-                  }}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
+          name="newDistributionControl"
+          render={({ field }) => {
+            const currentValue =
+              field.value && "Interval" in field.value
+                ? field.value.Interval
+                : 0;
+            return (
+              <FormItem>
+                <FormLabel>Block Interval</FormLabel>
+                <FormControl>
+                  <Input
+                    type="number"
+                    placeholder="Enter block interval"
+                    value={currentValue.toString() || ""}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      field.onChange({ Interval: value ? parseInt(value) : 0 });
+                    }}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            );
+          }}
         />
       )}
     </div>

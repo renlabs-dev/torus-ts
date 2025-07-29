@@ -71,6 +71,14 @@ function TetrahedronShape({
   );
 }
 
+function LineShape({ color }: { color: string }) {
+  return (
+    <svg width="24" height="12" viewBox="0 0 24 12" className="flex-shrink-0">
+      <line x1="2" y1="6" x2="22" y2="6" stroke={color} strokeWidth="2" />
+    </svg>
+  );
+}
+
 function NodeShape({
   shape,
   color,
@@ -92,6 +100,10 @@ function NodeShape({
   }
 }
 
+function ConnectionShape({ color }: { color: string }) {
+  return <LineShape color={color} />;
+}
+
 interface NodeColorInfo {
   color: string;
   title: string;
@@ -100,9 +112,20 @@ interface NodeColorInfo {
   shape: "sphere" | "icosahedron" | "tetrahedron";
 }
 
+interface ConnectionInfo {
+  color: string;
+  title: string;
+  description: string;
+}
+
 interface NodeCategory {
   label: string;
   nodes: NodeColorInfo[];
+}
+
+interface ConnectionCategory {
+  label: string;
+  connections: ConnectionInfo[];
 }
 
 const nodeColorCategories: NodeCategory[] = [
@@ -111,7 +134,7 @@ const nodeColorCategories: NodeCategory[] = [
     nodes: [
       {
         color: graphConstants.nodeConfig.nodeColors.rootNode,
-        title: "Whitelisted Agent",
+        title: "Root Agent",
         description: "Agents verified and whitelisted in the network",
         shape: "sphere",
       },
@@ -171,6 +194,20 @@ const nodeColorCategories: NodeCategory[] = [
   },
 ];
 
+const connectionCategories: ConnectionCategory[] = [
+  {
+    label: "Node Connections",
+    connections: [
+      {
+        color: "#6b7280",
+        title: "Delegation Paths",
+        description:
+          "Lines connecting nodes representing delegation relationships and permission flows",
+      },
+    ],
+  },
+];
+
 export function NodeColorLegendDropdown() {
   return (
     <DropdownMenu>
@@ -181,11 +218,11 @@ export function NodeColorLegendDropdown() {
           className="h-8 animate-fade-up animate-delay-[900ms]"
         >
           <InfoIcon className="w-4 h-4 mr-1" />
-          Nodes Information
+          Graph Legend
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="start" className="w-72">
-        {nodeColorCategories.map((category, categoryIndex) => (
+        {nodeColorCategories.map((category) => (
           <div key={category.label}>
             <DropdownMenuLabel className="text-sm font-semibold text-foreground px-2 py-1.5">
               {category.label}
@@ -206,15 +243,38 @@ export function NodeColorLegendDropdown() {
                   <div className="font-medium text-sm leading-tight">
                     {node.title}
                   </div>
-                  <div className="text-xs text-Smuted-foreground mt-0.5 leading-relaxed">
+                  <div className="text-xs text-muted-foreground mt-0.5 leading-relaxed">
                     {node.description}
                   </div>
                 </div>
               </DropdownMenuItem>
             ))}
-            {categoryIndex < nodeColorCategories.length - 1 && (
-              <DropdownMenuSeparator className="my-1" />
-            )}
+            <DropdownMenuSeparator className="my-1" />
+          </div>
+        ))}
+        {connectionCategories.map((category) => (
+          <div key={category.label}>
+            <DropdownMenuLabel className="text-sm font-semibold text-foreground px-2 py-1.5">
+              {category.label}
+            </DropdownMenuLabel>
+            {category.connections.map((connection, connectionIndex) => (
+              <DropdownMenuItem
+                key={`${category.label}-${connectionIndex}`}
+                className="flex items-start gap-3 py-2 px-2 cursor-default focus:bg-muted/50"
+              >
+                <div className="mt-1">
+                  <ConnectionShape color={connection.color} />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="font-medium text-sm leading-tight">
+                    {connection.title}
+                  </div>
+                  <div className="text-xs text-muted-foreground mt-0.5 leading-relaxed">
+                    {connection.description}
+                  </div>
+                </div>
+              </DropdownMenuItem>
+            ))}
           </div>
         ))}
       </DropdownMenuContent>
