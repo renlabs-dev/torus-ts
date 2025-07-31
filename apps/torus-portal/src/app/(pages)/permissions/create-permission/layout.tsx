@@ -38,6 +38,8 @@ export default function CreatePermissionLayout({
     }
   };
 
+  return <>{children}</>;
+
   return (
     <PortalFormContainer>
       <PortalFormHeader
