@@ -1,14 +1,26 @@
 import type { Metadata } from "next";
+import { use } from "react";
 
 export interface SeoProps {
   ogImageAlt?: string;
   ogImageUrl?: string;
+  baseUrl: string;
 }
 
 export const Seo = ({
   ogImageAlt = "Torus Network",
   ogImageUrl = "/og.png",
+  baseUrl,
 }: SeoProps) => {
+  const imageUrl = `${baseUrl}${ogImageUrl}`;
+
+  const imageExists = use(fetch(imageUrl).then((res) => res.ok));
+  console.log("imageExists", imageExists);
+
+  if (!imageExists) {
+    return <></>;
+  }
+
   return (
     <>
       <meta property="og:image" content={ogImageUrl} />
@@ -61,22 +73,9 @@ export function createSeoMetadata({
     title,
     description,
     keywords: [
+      // TODO: Add more keywords
       "torus network",
       "Torus Network",
-      "autonomous blockchain",
-      "peer-to-peer blockchain",
-      "stake-driven network",
-      "Substrate blockchain",
-      "Rust blockchain",
-      "decentralized incentives",
-      "blockchain ecosystem",
-      "self-evolving protocol",
-      "emergent network architecture",
-      "decentralized agents",
-      "recursive permissions",
-      "hypergraph blockchain",
-      "modular blockchain infrastructure",
-      "adaptive blockchain protocol",
       ...(keywords?.length ? keywords : []),
     ],
     robots: "all",
