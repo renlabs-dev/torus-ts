@@ -2,60 +2,46 @@ import { memo } from "react";
 
 import { Handle, Position } from "@xyflow/react";
 
-interface NamespacePathNodeData extends Record<string, unknown> {
-  label: string;
-  acessible: boolean;
-  redelegationCount: number;
-  selected?: boolean;
-}
+import { cn } from "@torus-ts/ui/lib/utils";
 
-interface NamespacePathNodeProps {
-  id: string;
-  data: NamespacePathNodeData;
-  selected: boolean;
-}
+import type { NamespacePathNodeData } from "./namespace-path-selector-flow";
 
 export const NamespacePathNode = memo(function NamespacePathNode({
   data,
-}: NamespacePathNodeProps) {
+}: {
+  data: NamespacePathNodeData;
+}) {
   const isAccessible = data.acessible;
   const isSelected = data.selected ?? false;
 
   return (
     <div
-      className="px-4 py-2 rounded-lg border-2 text-sm font-medium min-w-[120px] text-center bg-white border-gray-300 text-gray-900"
-      style={{ 
-        backgroundColor: isSelected ? '#dcfce7' : '#ffffff',
-        borderColor: isSelected ? '#16a34a' : isAccessible ? '#d1d5db' : '#9ca3af',
-        opacity: isAccessible ? 1 : 0.6,
-        cursor: isAccessible ? 'pointer' : 'not-allowed'
-      }}
+      className={cn(
+        "px-4 py-2 backdrop-blur-xl border rounded-sm",
+        isSelected
+          ? "bg-green-500/10 border-green-500 text-green-500"
+          : "bg-muted border-border",
+        isAccessible
+          ? "cursor-pointer"
+          : "cursor-not-allowed bg-stone-700/10 text-stone-500/70 border-stone-500/10",
+      )}
+      onClick={isAccessible ? undefined : (e) => e.preventDefault()}
+      aria-disabled={!isAccessible}
     >
-      <Handle
-        type="target"
-        position={Position.Top}
-        className="w-2 h-2 !bg-border"
-        isConnectable={false}
-      />
+      <Handle type="target" position={Position.Left} isConnectable={false} />
 
-      <div className="space-y-1">
-        <div className="font-mono text-xs leading-tight">{data.label}</div>
-        <div className="text-xs text-muted-foreground">
-          {data.redelegationCount} delegations
-        </div>
-        {!isAccessible && (
-          <div className="text-xs text-orange-600 dark:text-orange-400">
-            View only
-          </div>
+      <div
+        className={cn(
+          "absolute -top-3 -left-2 text-xs bg-muted rounded-sm border px-1 py-0.5",
+          isSelected ? "border-green-500" : "border-border",
         )}
+      >
+        {data.redelegationCount}
       </div>
 
-      <Handle
-        type="source"
-        position={Position.Bottom}
-        className="w-2 h-2 !bg-border"
-        isConnectable={false}
-      />
+      <div className="font-mono text-sm leading-tight">{data.label}</div>
+
+      <Handle type="source" isConnectable={false} position={Position.Right} />
     </div>
   );
 });

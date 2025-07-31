@@ -2,20 +2,18 @@
 
 import "@xyflow/react/dist/style.css";
 
-import { useCallback, useEffect, useState, useMemo } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
+import type { Node } from "@xyflow/react";
 import {
   Background,
-  Controls,
   Panel,
   ReactFlow,
   ReactFlowProvider,
   useEdgesState,
   useNodesState,
-  useReactFlow
-  
+  useReactFlow,
 } from "@xyflow/react";
-import type {Node} from "@xyflow/react";
 
 import { Badge } from "@torus-ts/ui/components/badge";
 import { Button } from "@torus-ts/ui/components/button";
@@ -26,7 +24,7 @@ import useAutoLayout from "~/app/(pages)/create-constraint/_components/constrain
 import {
   edges as initialEdges,
   nodes as initialNodes,
-} from "../../_components/mock-capability-path-data";
+} from "./mock-capability-path-data";
 import { NamespacePathNode } from "./namespace-path-node";
 
 const nodeTypes = {
@@ -36,8 +34,7 @@ const nodeTypes = {
 const proOptions = {
   hideAttribution: true,
 };
-
-interface NamespacePathNodeData extends Record<string, unknown> {
+export interface NamespacePathNodeData extends Record<string, unknown> {
   label: string;
   acessible: boolean;
   redelegationCount: number;
@@ -64,33 +61,36 @@ function NamespacePathFlow() {
   const layoutOptions: LayoutOptions = useMemo(
     () => ({
       algorithm: "d3-hierarchy",
-      direction: "TB",
+      direction: "LR",
       spacing: [50, 80],
     }),
-    []
+    [],
   );
 
   // Apply auto-layout using the constraint layout utilities
   useAutoLayout(layoutOptions);
 
   // Helper function to get all descendant node IDs
-  const getDescendantIds = useCallback((nodeId: string): string[] => {
-    const descendants: string[] = [];
-    const queue = [nodeId];
-    
-    while (queue.length > 0) {
-      const currentId = queue.shift()!;
-      // Find all edges where current node is the source
-      const childEdges = edges.filter(edge => edge.source === currentId);
-      for (const edge of childEdges) {
-        descendants.push(edge.target);
-        queue.push(edge.target);
-      }
-    }
-    
-    return descendants;
-  }, [edges]);
+  const getDescendantIds = useCallback(
+    (nodeId: string): string[] => {
+      const descendants: string[] = [];
+      const queue = [nodeId];
 
+      while (queue.length > 0) {
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        const currentId = queue.shift()!;
+        // Find all edges where current node is the source
+        const childEdges = edges.filter((edge) => edge.source === currentId);
+        for (const edge of childEdges) {
+          descendants.push(edge.target);
+          queue.push(edge.target);
+        }
+      }
+
+      return descendants;
+    },
+    [edges],
+  );
 
   const handleNodeClick = useCallback(
     (_event: React.MouseEvent, node: Node<NamespacePathNodeData>) => {
@@ -107,32 +107,17 @@ function NamespacePathFlow() {
         // Deselecting: remove node and all its descendants
         newSelectedPaths.delete(nodeId);
         const descendants = getDescendantIds(nodeId);
-        descendants.forEach(id => newSelectedPaths.delete(id));
+        descendants.forEach((id) => newSelectedPaths.delete(id));
       } else {
         // Selecting: add node and all its descendants (if accessible)
         newSelectedPaths.add(nodeId);
         const descendants = getDescendantIds(nodeId);
-        descendants.forEach(descendantId => {
-          const descendantNode = nodes.find(n => n.id === descendantId);
+        descendants.forEach((descendantId) => {
+          const descendantNode = nodes.find((n) => n.id === descendantId);
           if (descendantNode?.data.acessible) {
             newSelectedPaths.add(descendantId);
           }
         });
-
-        // Also check if all siblings are selected to auto-select parent
-        const parentEdge = edges.find(edge => edge.target === nodeId);
-        if (parentEdge) {
-          const siblingEdges = edges.filter(edge => edge.source === parentEdge.source);
-          const allSiblingsSelected = siblingEdges.every(edge => 
-            newSelectedPaths.has(edge.target)
-          );
-          if (allSiblingsSelected) {
-            const parentNode = nodes.find(n => n.id === parentEdge.source);
-            if (parentNode?.data.acessible) {
-              newSelectedPaths.add(parentEdge.source);
-            }
-          }
-        }
       }
 
       setSelectedPaths(newSelectedPaths);
@@ -151,7 +136,7 @@ function NamespacePathFlow() {
         }),
       );
     },
-    [selectedPaths, nodes, edges, setNodes, getDescendantIds],
+    [selectedPaths, nodes, setNodes, getDescendantIds],
   );
 
   const handleClearSelection = useCallback(() => {
@@ -167,41 +152,6 @@ function NamespacePathFlow() {
     );
   }, [setNodes]);
 
-  const handleSelectAll = useCallback(() => {
-    // Get all root nodes (nodes with no incoming edges)
-    const rootNodeIds = nodes
-      .filter(node => {
-        const hasParent = edges.some(edge => edge.target === node.id);
-        return !hasParent && node.data.acessible;
-      })
-      .map(node => node.id);
-
-    const allSelectedIds = new Set<string>();
-    
-    // For each root, add it and all its accessible descendants
-    rootNodeIds.forEach(rootId => {
-      allSelectedIds.add(rootId);
-      const descendants = getDescendantIds(rootId);
-      descendants.forEach(descendantId => {
-        const node = nodes.find(n => n.id === descendantId);
-        if (node?.data.acessible) {
-          allSelectedIds.add(descendantId);
-        }
-      });
-    });
-    
-    setSelectedPaths(allSelectedIds);
-    setNodes((currentNodes) =>
-      currentNodes.map((node) => ({
-        ...node,
-        data: {
-          ...node.data,
-          selected: allSelectedIds.has(node.id),
-        },
-      })),
-    );
-  }, [nodes, edges, setNodes, getDescendantIds]);
-
   // Fit view when nodes change, with a slight delay to ensure layout is applied
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -215,7 +165,7 @@ function NamespacePathFlow() {
   const totalCount = nodes.length;
 
   return (
-    <div className="h-full w-full relative">
+    <div className="h-full w-full relative -top-14">
       <ReactFlow
         nodes={nodes}
         edges={edges}
@@ -228,34 +178,24 @@ function NamespacePathFlow() {
         nodesFocusable={true}
         edgesFocusable={false}
         proOptions={proOptions}
-        style={{
-          backgroundColor: "#0E0E11",
-        }}
-        defaultViewport={{ x: 0, y: 0, zoom: 1 }}
-        minZoom={0.1}
-        maxZoom={2}
+        minZoom={0.6}
+        maxZoom={1.7}
       >
         <Background />
-        <Controls />
 
-        <Panel
-          position="top-left"
-          className="bg-background border rounded-lg p-4 shadow-lg"
-        >
-          <div className="space-y-2">
-            <h3 className="font-semibold text-sm">Namespace Path Selection</h3>
-            <div className="flex flex-wrap gap-2 text-xs">
-              <Badge variant="default">
-                {selectedCount} of {accessibleCount} selected
-              </Badge>
-              <Badge variant="secondary">
-                {totalCount - accessibleCount} view-only
-              </Badge>
-            </div>
-          </div>
+        <Panel position="top-left" className="pt-10 space-x-2 z-50">
+          <Badge variant="default">
+            {selectedCount} of {accessibleCount} selected
+          </Badge>
+          <Badge variant="secondary">
+            {totalCount - accessibleCount} view-only
+          </Badge>
         </Panel>
 
-        <Panel position="bottom-right" className="flex gap-2">
+        <Panel
+          position="bottom-right"
+          className="flex gap-2 z-50 pb-4 shadow-lg"
+        >
           <Button
             variant="outline"
             size="sm"
@@ -264,14 +204,6 @@ function NamespacePathFlow() {
           >
             Clear Selection
           </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleSelectAll}
-            disabled={selectedCount === accessibleCount}
-          >
-            Select All Accessible
-          </Button>
           <Button size="sm" disabled={selectedCount === 0}>
             Create Permission ({selectedCount} paths)
           </Button>
@@ -279,8 +211,8 @@ function NamespacePathFlow() {
 
         {selectedCount > 0 && (
           <Panel
-            position="top-right"
-            className="bg-green-500/10 border-green-500/20 border rounded-lg p-3"
+            position="bottom-left"
+            className="bg-green-500/10 border-green-500/20 border rounded-lg p-3 z-50 shadow-lg"
           >
             <div className="space-y-1">
               <div className="text-sm font-medium text-green-700 dark:text-green-300">
@@ -294,7 +226,7 @@ function NamespacePathFlow() {
                       key={nodeId}
                       className="font-mono text-green-600 dark:text-green-400"
                     >
-                      {String(node?.data.label ?? '')}
+                      {String(node?.data.label ?? "")}
                     </div>
                   );
                 })}

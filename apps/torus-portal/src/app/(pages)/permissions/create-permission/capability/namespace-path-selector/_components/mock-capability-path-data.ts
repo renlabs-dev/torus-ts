@@ -30,14 +30,14 @@ export const nodes: Node<NamespacePathNodeData>[] = [
     data: {
       label: "agent.alice.api.x.post",
       acessible: true,
-      redelegationCount: 0,
+      redelegationCount: 1,
     },
     position: { x: 0, y: 0 },
   },
   {
     id: "4",
     data: {
-      label: "diana.network",
+      label: "agent.diana",
       acessible: true,
       redelegationCount: 3,
     },
@@ -46,7 +46,7 @@ export const nodes: Node<NamespacePathNodeData>[] = [
   {
     id: "5",
     data: {
-      label: "diana.network.storage",
+      label: "agent.diana.storage",
       acessible: true,
       redelegationCount: 1,
     },
