@@ -13,6 +13,11 @@ if (process?.env) {
 // warning: DO NOT expose any sensitive data on the schema default values!
 export const envSchema = {
   NODE_ENV: NodeEnvSchema.default("development"),
+  BASE_URL: z
+    .string()
+    .default(
+      process.env.NODE_ENV === "production" ? "https://torus.network" : "",
+    ),
 
   /**
    * Specify your client-side environment variables schema here.

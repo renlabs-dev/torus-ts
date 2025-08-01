@@ -1,11 +1,22 @@
 "use client";
 
+import { createSeoMetadata } from "@torus-ts/ui/components/seo";
+import { env } from "~/env";
 import { GuideDialog } from "./_components/guide-dialog";
 import { SelectActionDialog } from "./_components/select-action-dialog";
 import { SidebarLinks } from "./_components/shared/sidebar-links";
 import WalletActions from "./_components/shared/wallet-actions";
 import { WalletBalance } from "./_components/shared/wallet-balance";
 import { TransferDetails } from "./_components/transfer-details";
+
+export const metadata = createSeoMetadata({
+  title: "Torus Bridge - Cross-Chain Token Transfer",
+  description: "Securely transfer tokens across different blockchain networks with Torus Bridge. Fast, reliable, and decentralized cross-chain transactions.",
+  keywords: ["cross-chain bridge", "token transfer", "blockchain bridge", "multi-chain", "interoperability", "secure transfers"],
+  ogSiteName: "Torus Bridge",
+  canonical: "/",
+  baseUrl: env("BASE_URL"),
+});
 
 export default function HomePage() {
   return (

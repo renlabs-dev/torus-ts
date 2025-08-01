@@ -1,8 +1,23 @@
+import { createSeoMetadata } from "@torus-ts/ui/components/seo";
+import { env } from "~/env";
 import { Button } from "@torus-ts/ui/components/button";
 import { Container } from "@torus-ts/ui/components/container";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { ProposalExpandedView } from "./_components/proposal-expanded-view";
+
+export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  
+  return createSeoMetadata({
+    title: `Proposal #${id} - Torus Governance`,
+    description: `View proposal #${id} details, voting results, and community discussion on the Torus Network governance platform.`,
+    keywords: ["network proposal", "proposal details", "governance voting", "proposal discussion"],
+    ogSiteName: "Torus Governance",
+    canonical: `/proposal/${id}`,
+    baseUrl: env("BASE_URL"),
+  });
+}
 
 export default async function ProposalView({
   params,

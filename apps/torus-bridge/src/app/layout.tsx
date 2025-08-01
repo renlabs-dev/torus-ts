@@ -5,16 +5,19 @@ import "@solana/wallet-adapter-react-ui/styles.css";
 import { Layout } from "@torus-ts/ui/components/layout";
 import { AppContextProvider } from "~/context/app-context-provider";
 import { EnvScript } from "~/env";
-import type { Metadata } from "next";
+
+import { createSeoMetadata } from "@torus-ts/ui/components/seo";
+import { env } from "~/env";
 import { Fira_Mono as FiraMono } from "next/font/google";
 
-export const metadata: Metadata = {
-  robots: "all",
+export const metadata = createSeoMetadata({
   title: "Torus Base Bridge",
-  icons: [{ rel: "icon", url: "favicon.ico" }],
-  description:
-    "Simple, secure, and easy-to-use wallet for the Torus ecosystem.",
-};
+  description: "Cross-chain token bridge for the Torus ecosystem. Securely transfer tokens across multiple blockchain networks with ease and reliability.",
+  keywords: ["cross-chain bridge", "token transfer", "multi-chain wallet", "blockchain interoperability", "crypto bridge"],
+  ogSiteName: "Torus Base Bridge",
+  canonical: "/",
+  baseUrl: env("BASE_URL"),
+});
 
 export const firaMono = FiraMono({
   subsets: ["latin"],

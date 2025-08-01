@@ -1,28 +1,30 @@
 import type { TabItem } from "~/app/_components/tab-layout";
 import { TabLayout } from "~/app/_components/tab-layout";
-import { generateMetadata } from "~/utils/seo";
 import { Stake } from "./_components/stake/stake";
 import { StakingCalculator } from "./_components/staking-calculator/staking-calculator";
 import { TransferStake } from "./_components/transfer-stake/transfer-stake";
 import { Unstake } from "./_components/unstake/unstake";
+import { createSeoMetadata } from "@torus-ts/ui/components/seo";
+import { env } from "~/env";
 
-export const metadata = generateMetadata({
+export const metadata = createSeoMetadata({
   title: "Staking - Torus Wallet",
   description: "Stake your tokens and earn rewards in the Torus ecosystem",
-  ogTitle: "Staking - Torus Wallet",
-  ogDescription: "Stake your tokens and earn rewards in the Torus ecosystem",
-  twitterTitle: "Staking - Torus Wallet",
-  twitterDescription:
-    "Stake your tokens and earn rewards in the Torus ecosystem",
-  canonical: "/staking",
   keywords: [
-    "crypto wallet",
-    "torus",
-    "staking",
+    "torus staking",
     "stake tokens",
     "earn rewards",
-    "web3",
+    "staking rewards",
+    "validator staking",
+    "apy forecast",
+    "unstake tokens",
+    "transfer stake",
+    "proof of stake",
+    "yield farming",
   ],
+  ogSiteName: "Torus Wallet",
+  baseUrl: env("BASE_URL"),
+  canonical: "/staking",
 });
 
 const tabs: TabItem[] = [
