@@ -1,5 +1,7 @@
 "use client";
 
+import { createSeoMetadata } from "@torus-ts/ui/components/seo";
+import { env } from "~/env";
 import {
   Tabs,
   TabsContent,
@@ -10,6 +12,15 @@ import DashboardTab from "./_components/dashboard-tab/dashboard";
 import AgentHealthTab from "./_components/agent-health-tab/agent-health-tab";
 import DaoApplicationsTab from "./_components/dao-applications-tab";
 import { useTabWithQueryParam } from "hooks/use-tab-with-query-param";
+
+export const metadata = createSeoMetadata({
+  title: "DAO Dashboard - Torus Governance",
+  description: "Monitor DAO operations, agent health, and applications. Comprehensive dashboard for Torus Network governance management.",
+  keywords: ["dao dashboard", "agent health", "dao applications", "governance monitoring", "network status"],
+  ogSiteName: "Torus Governance",
+  canonical: "/dao-dashboard",
+  baseUrl: env("BASE_URL"),
+});
 
 export default function DaoDashboardPage() {
   const { tab, handleTabChange } = useTabWithQueryParam("dashboard");

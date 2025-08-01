@@ -1,6 +1,17 @@
+import { createSeoMetadata } from "@torus-ts/ui/components/seo";
 import Image from "next/image";
 import * as React from "react";
 import { TorusAnimation } from "./_components/torus-animation";
+import { env } from "~/env";
+
+export const metadata = createSeoMetadata({
+  title: "Torus Network - Decentralized Infrastructure",
+  description: "Torus Network is a decentralized infrastructure platform built on Substrate. Explore the future of blockchain technology and decentralized applications.",
+  keywords: ["torus network", "decentralized infrastructure", "substrate blockchain", "web3 platform", "blockchain network"],
+  ogSiteName: "Torus Network",
+  canonical: "/",
+  baseUrl: env("BASE_URL"),
+});
 
 export default function Page() {
   return (
