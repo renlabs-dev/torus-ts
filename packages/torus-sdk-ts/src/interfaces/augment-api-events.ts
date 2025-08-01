@@ -9,7 +9,7 @@ import type { ApiTypes, AugmentedEvent } from '@polkadot/api-base/types';
 import type { Bytes, Null, Option, Result, U8aFixed, Vec, bool, u128, u32, u64 } from '@polkadot/types-codec';
 import type { ITuple } from '@polkadot/types-codec/types';
 import type { AccountId32, H160, H256, Percent } from '@polkadot/types/interfaces/runtime';
-import type { EthereumLog, EvmCoreErrorExitReason, FrameSupportDispatchDispatchInfo, FrameSupportTokensMiscBalanceStatus, PalletMultisigTimepoint, PalletPermission0PermissionEnforcementReferendum, PalletTorus0NamespaceNamespaceOwnership, SpConsensusGrandpaAppPublic, SpRuntimeDispatchError, TorusRuntimeRuntimeTask } from '@polkadot/types/lookup';
+import type { EthereumLog, EvmCoreErrorExitReason, FrameSupportDispatchDispatchInfo, FrameSupportTokensMiscBalanceStatus, PalletMultisigTimepoint, PalletPermission0PermissionEmissionDistributionReason, PalletPermission0PermissionEnforcementReferendum, PalletTorus0NamespaceNamespaceOwnership, SpConsensusGrandpaAppPublic, SpRuntimeDispatchError, TorusRuntimeRuntimeTask } from '@polkadot/types/lookup';
 
 export type __AugmentedEvent<ApiType extends ApiTypes> = AugmentedEvent<ApiType>;
 
@@ -222,7 +222,7 @@ declare module '@polkadot/api-base/types/events' {
        **/
       ProposalVoted: AugmentedEvent<ApiType, [u64, AccountId32, bool]>;
       /**
-       * A vote has been unregistered from a proposal.
+       * A vote has been deregistered from a proposal.
        **/
       ProposalVoteUnregistered: AugmentedEvent<ApiType, [u64, AccountId32]>;
       /**
@@ -280,9 +280,13 @@ declare module '@polkadot/api-base/types/events' {
     };
     permission0: {
       /**
-       * Auto-distribution executed
+       * Accumulated emission for stream
        **/
-      AutoDistributionExecuted: AugmentedEvent<ApiType, [grantor: AccountId32, grantee: AccountId32, permissionId: H256, streamId: Option<H256>, amount: u128], { grantor: AccountId32, grantee: AccountId32, permissionId: H256, streamId: Option<H256>, amount: u128 }>;
+      AccumulatedEmission: AugmentedEvent<ApiType, [permissionId: H256, streamId: H256, amount: u128], { permissionId: H256, streamId: H256, amount: u128 }>;
+      /**
+       * An emission distribution happened
+       **/
+      EmissionDistribution: AugmentedEvent<ApiType, [permissionId: H256, streamId: Option<H256>, target: AccountId32, amount: u128, reason: PalletPermission0PermissionEmissionDistributionReason], { permissionId: H256, streamId: Option<H256>, target: AccountId32, amount: u128, reason: PalletPermission0PermissionEmissionDistributionReason }>;
       /**
        * Enforcement authority set for permission
        **/
@@ -296,25 +300,21 @@ declare module '@polkadot/api-base/types/events' {
        **/
       PermissionAccumulationToggled: AugmentedEvent<ApiType, [permissionId: H256, accumulating: bool, toggledBy: Option<AccountId32>], { permissionId: H256, accumulating: bool, toggledBy: Option<AccountId32> }>;
       /**
+       * Permission delegated from delegator to recipient with ID
+       **/
+      PermissionDelegated: AugmentedEvent<ApiType, [delegator: AccountId32, recipient: AccountId32, permissionId: H256], { delegator: AccountId32, recipient: AccountId32, permissionId: H256 }>;
+      /**
        * Permission was executed by enforcement authority
        **/
       PermissionEnforcementExecuted: AugmentedEvent<ApiType, [permissionId: H256, executedBy: Option<AccountId32>], { permissionId: H256, executedBy: Option<AccountId32> }>;
       /**
-       * Permission executed (manual distribution) with ID
-       **/
-      PermissionExecuted: AugmentedEvent<ApiType, [grantor: AccountId32, grantee: AccountId32, permissionId: H256, streamId: Option<H256>, amount: u128], { grantor: AccountId32, grantee: AccountId32, permissionId: H256, streamId: Option<H256>, amount: u128 }>;
-      /**
        * Permission expired with ID
        **/
-      PermissionExpired: AugmentedEvent<ApiType, [grantor: AccountId32, grantee: AccountId32, permissionId: H256], { grantor: AccountId32, grantee: AccountId32, permissionId: H256 }>;
-      /**
-       * Permission granted from grantor to grantee with ID
-       **/
-      PermissionGranted: AugmentedEvent<ApiType, [grantor: AccountId32, grantee: AccountId32, permissionId: H256], { grantor: AccountId32, grantee: AccountId32, permissionId: H256 }>;
+      PermissionExpired: AugmentedEvent<ApiType, [delegator: AccountId32, recipient: AccountId32, permissionId: H256], { delegator: AccountId32, recipient: AccountId32, permissionId: H256 }>;
       /**
        * Permission revoked with ID
        **/
-      PermissionRevoked: AugmentedEvent<ApiType, [grantor: AccountId32, grantee: AccountId32, revokedBy: Option<AccountId32>, permissionId: H256], { grantor: AccountId32, grantee: AccountId32, revokedBy: Option<AccountId32>, permissionId: H256 }>;
+      PermissionRevoked: AugmentedEvent<ApiType, [delegator: AccountId32, recipient: AccountId32, revokedBy: Option<AccountId32>, permissionId: H256], { delegator: AccountId32, recipient: AccountId32, revokedBy: Option<AccountId32>, permissionId: H256 }>;
       /**
        * Generic event
        **/
