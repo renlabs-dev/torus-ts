@@ -17,7 +17,7 @@ export const envSchema = {
     .string()
     .default(
       process.env.NODE_ENV === "production"
-        ? "https://allocator.torus.network"
+        ? "https://wallet.torus.network"
         : "",
     ),
   /*

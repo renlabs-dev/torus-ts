@@ -24,6 +24,11 @@ export const envSchema = {
   POSTGRES_URL: z.string().url(),
   PINATA_JWT: z.string(),
   PORT: z.string(),
+  BASE_URL: z
+    .string()
+    .default(
+      process.env.NODE_ENV === "production" ? "https://dao.torus.network" : "",
+    ),
 
   // Discord Authentication
   DISCORD_CLIENT_ID: z.string().nonempty(),

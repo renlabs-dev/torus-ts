@@ -22,6 +22,13 @@ export const envSchema = {
   POSTGRES_URL: z.string().url(),
   PORT: z.string(),
   PINATA_JWT: z.string(),
+  BASE_URL: z
+    .string()
+    .default(
+      process.env.NODE_ENV === "production"
+        ? "https://allocator.torus.network"
+        : "",
+    ),
 
   /**
    * Specify your client-side environment variables schema here.
