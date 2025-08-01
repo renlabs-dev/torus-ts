@@ -1,5 +1,6 @@
 import { Position } from "@xyflow/react";
-import type { Direction } from "./constraint-layout-types";
+
+import type { Direction } from "./react-flow-layout-types";
 
 export function getSourceHandlePosition(direction: Direction) {
   switch (direction) {

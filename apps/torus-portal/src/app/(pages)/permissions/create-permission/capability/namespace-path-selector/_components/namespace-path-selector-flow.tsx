@@ -18,8 +18,8 @@ import {
 import { Badge } from "@torus-ts/ui/components/badge";
 import { Button } from "@torus-ts/ui/components/button";
 
-import type { LayoutOptions } from "~/app/(pages)/create-constraint/_components/constraint-layout/use-auto-layout";
-import useAutoLayout from "~/app/(pages)/create-constraint/_components/constraint-layout/use-auto-layout";
+import type { LayoutOptions } from "~/app/_components/react-flow-layout/use-auto-layout";
+import useAutoLayout from "~/app/_components/react-flow-layout/use-auto-layout";
 
 import {
   edges as initialEdges,
@@ -62,7 +62,7 @@ function NamespacePathFlow() {
     () => ({
       algorithm: "d3-hierarchy",
       direction: "LR",
-      spacing: [50, 80],
+      spacing: [40, 60],
     }),
     [],
   );
@@ -212,7 +212,7 @@ function NamespacePathFlow() {
         {selectedCount > 0 && (
           <Panel
             position="bottom-left"
-            className="bg-green-500/10 border-green-500/20 border rounded-lg p-3 z-50 shadow-lg"
+            className="bg-green-500/10 border-green-500/20 border rounded-sm p-2 z-50 shadow-lg"
           >
             <div className="space-y-1">
               <div className="text-sm font-medium text-green-700 dark:text-green-300">
