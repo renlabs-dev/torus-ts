@@ -152,6 +152,10 @@ declare module '@polkadot/api-base/types/consts' {
     };
     permission0: {
       /**
+       * Maximum number of children a single permission can have.
+       **/
+      maxChildrenPerPermission: u32 & AugmentedConst<ApiType>;
+      /**
        * Maximum number of controllers per permission.
        **/
       maxControllersPerPermission: u32 & AugmentedConst<ApiType>;
