@@ -46,6 +46,24 @@ export const STREAM_ID_SCHEMA = sb_h256;
 export type PermissionId = z.infer<typeof PERMISSION_ID_SCHEMA>;
 export type StreamId = z.infer<typeof STREAM_ID_SCHEMA>;
 
+// Schema for accumulated stream amounts storage key: (AccountId, StreamId, PermissionId)
+export const ACCUMULATED_STREAM_KEY_SCHEMA = sb_struct({
+  delegator: sb_address,
+  streamId: STREAM_ID_SCHEMA,
+  permissionId: PERMISSION_ID_SCHEMA,
+});
+
+export const ACCUMULATED_STREAM_ENTRY_SCHEMA = sb_struct({
+  delegator: sb_address,
+  streamId: STREAM_ID_SCHEMA,
+  permissionId: PERMISSION_ID_SCHEMA,
+  amount: sb_balance,
+});
+
+export type AccumulatedStreamEntry = z.infer<
+  typeof ACCUMULATED_STREAM_ENTRY_SCHEMA
+>;
+
 // ---- Curator Permissions (Bitflags) ----
 
 export const CURATOR_PERMISSIONS_SCHEMA = sb_struct({
@@ -101,7 +119,7 @@ export type CuratorScope = z.infer<typeof CURATOR_SCOPE_SCHEMA>;
 // ---- Namespace Types ----
 
 export const NAMESPACE_SCOPE_SCHEMA = sb_struct({
-  paths: sb_array(sb_namespace_path),
+  paths: sb_map(sb_option(PERMISSION_ID_SCHEMA), sb_array(sb_namespace_path)),
 });
 
 export type NamespaceScope = z.infer<typeof NAMESPACE_SCOPE_SCHEMA>;
@@ -126,6 +144,7 @@ export const PERMISSION_DURATION_SCHEMA = sb_enum({
 export const REVOCATION_TERMS_SCHEMA = sb_enum({
   Irrevocable: sb_null,
   RevocableByGrantor: sb_null,
+  RevocableByDelegator: sb_null,
   RevocableByArbiters: sb_struct({
     accounts: sb_array(sb_address),
     requiredVotes: sb_bigint, // u32 as bigint
@@ -156,15 +175,16 @@ export type EnforcementReferendum = z.infer<
 // ---- Main Permission Contract ----
 
 export const PERMISSION_CONTRACT_SCHEMA = sb_struct({
-  grantor: sb_address,
-  grantee: sb_address,
+  delegator: sb_address,
+  recipient: sb_address,
   scope: PERMISSION_SCOPE_SCHEMA,
   duration: PERMISSION_DURATION_SCHEMA,
   revocation: REVOCATION_TERMS_SCHEMA,
   enforcement: ENFORCEMENT_AUTHORITY_SCHEMA,
   lastExecution: sb_option(sb_blocks),
   executionCount: sb_bigint, // u32 as bigint
-  parent: sb_option(PERMISSION_ID_SCHEMA),
+  maxInstances: sb_bigint, // u32 as bigint
+  children: sb_array(PERMISSION_ID_SCHEMA), // BoundedBTreeSet serialized as array
   createdAt: sb_blocks,
 });
 
@@ -249,6 +269,9 @@ export async function queryPermissionsByGrantor(
   api: Api,
   grantor: SS58Address,
 ): Promise<Result<`0x${string}`[], SbQueryError | ZError<unknown>>> {
+  if (!api.query.permission0.permissionsByGrantor) {
+    return makeErr(new Error("permissionsByGrantor query not available"));
+  }
   const [queryError, query] = await tryAsync(
     api.query.permission0.permissionsByGrantor(grantor),
   );
@@ -269,6 +292,9 @@ export async function queryPermissionsByGrantee(
   api: Api,
   grantee: SS58Address,
 ): Promise<Result<PermissionId[], SbQueryError | ZError<unknown>>> {
+  if (!api.query.permission0.permissionsByGrantee) {
+    return makeErr(new Error("permissionsByGrantee query not available"));
+  }
   const [queryError, query] = await tryAsync(
     api.query.permission0.permissionsByGrantee(grantee),
   );
@@ -335,6 +361,111 @@ export async function queryNamespacePermissions(
   }
 
   return makeOk(namespacePermissions);
+}
+
+/**
+ * Query all accumulated stream amounts from substrate
+ * @returns Array of accumulated stream entries with proper Zod parsing
+ */
+export async function queryAllAccumulatedStreamAmounts(
+  api: Api,
+): Promise<
+  Result<
+    AccumulatedStreamEntry[],
+    SbQueryError | ZError<AccumulatedStreamEntry>
+  >
+> {
+  const [queryError, query] = await tryAsync(
+    api.query.permission0.accumulatedStreamAmounts.entries(),
+  );
+  if (queryError) return makeErr(SbQueryError.from(queryError));
+
+  const accumulatedAmounts: AccumulatedStreamEntry[] = [];
+
+  for (const [keysRaw, valueRaw] of query) {
+    const keyArgs = keysRaw.args;
+
+    const [delegatorRaw, streamIdRaw, permissionIdRaw] = keyArgs;
+
+    const delegatorParsed = sb_address.safeParse(delegatorRaw, {
+      path: ["storage", "permission0", "accumulatedStreamAmounts", "delegator"],
+    });
+    if (delegatorParsed.success === false)
+      return makeErr(delegatorParsed.error);
+
+    const streamIdParsed = STREAM_ID_SCHEMA.safeParse(streamIdRaw, {
+      path: ["storage", "permission0", "accumulatedStreamAmounts", "streamId"],
+    });
+    if (streamIdParsed.success === false) return makeErr(streamIdParsed.error);
+
+    const permissionIdParsed = PERMISSION_ID_SCHEMA.safeParse(permissionIdRaw, {
+      path: [
+        "storage",
+        "permission0",
+        "accumulatedStreamAmounts",
+        "permissionId",
+      ],
+    });
+    if (permissionIdParsed.success === false)
+      return makeErr(permissionIdParsed.error);
+
+    // Parse balance value - the storage returns Option<BalanceOf<T>>
+    const amountParsed = sb_some(sb_balance).safeParse(valueRaw, {
+      path: ["storage", "permission0", "accumulatedStreamAmounts", "amount"],
+    });
+    if (amountParsed.success === false) return makeErr(amountParsed.error);
+
+    accumulatedAmounts.push({
+      delegator: delegatorParsed.data,
+      streamId: streamIdParsed.data,
+      permissionId: permissionIdParsed.data,
+      amount: amountParsed.data,
+    });
+  }
+
+  return makeOk(accumulatedAmounts);
+}
+
+/**
+ * Query accumulated stream amounts for a specific delegator, stream, and permission
+ */
+export async function queryAccumulatedStreamAmount(
+  api: Api,
+  delegator: SS58Address,
+  streamId: StreamId,
+  permissionId: PermissionId,
+): Promise<Result<bigint, Error>> {
+  const [queryError, queryResult] = await tryAsync(
+    api.query.permission0.accumulatedStreamAmounts(
+      delegator,
+      streamId,
+      permissionId,
+    ),
+  );
+
+  if (queryError) {
+    return makeErr(
+      new Error(
+        `Failed to query accumulated stream amount: ${queryError.message}`,
+      ),
+    );
+  }
+
+  // Parse the Option<u128> result directly from the Option instance
+  const parsed = sb_option(sb_balance).safeParse(queryResult);
+  if (!parsed.success) {
+    return makeErr(
+      new Error(`Failed to parse accumulated amount: ${parsed.error.message}`),
+    );
+  }
+
+  // Use match to handle Option type properly
+  const amount = match(parsed.data)({
+    None: () => BigInt(0),
+    Some: (value) => value,
+  });
+
+  return makeOk(amount);
 }
 
 /**
@@ -568,7 +699,7 @@ export function buildAvailableStreamsFor(
 
   if (permissions != null) {
     for (const [_permId, permission] of permissions) {
-      const grantee = permission.grantee;
+      const grantee = permission.recipient;
 
       // Only add consider permissions that are granted to the agent
       if (grantee !== agentId) continue;
@@ -659,7 +790,7 @@ export async function queryDelegationStreamsByAccount(
 
               return {
                 grantor: grantorAccount,
-                grantee: permission.grantee,
+                grantee: permission.recipient,
                 streamId,
                 percentage,
                 targets: emissionScope.targets,
@@ -681,10 +812,10 @@ export async function queryDelegationStreamsByAccount(
       // TODO: refactor
       await (async () => {
         const [err, accumulatedStreams] =
-          await queryAccumulatedStreamsForAccount(api, permission.grantee);
+          await queryAccumulatedStreamsForAccount(api, permission.recipient);
         if (err !== undefined) {
           logger.error(
-            `Failed to query accumulated streams for account ${permission.grantee}:`,
+            `Failed to query accumulated streams for account ${permission.recipient}:`,
             err,
           );
           return;
@@ -745,6 +876,9 @@ export function grantEmissionPermission({
     targetsMap,
   );
 
+  if (!api.tx.permission0.grantEmissionPermission) {
+    throw new Error("grantEmissionPermission transaction not available");
+  }
   return api.tx.permission0.grantEmissionPermission(
     grantee,
     allocation,
@@ -846,6 +980,9 @@ export function grantNamespacePermission({
 }: GrantNamespacePermission) {
   const pathsSet = new BTreeSet<Bytes>(api.registry, "Bytes", paths);
 
+  if (!api.tx.permission0.grantNamespacePermission) {
+    throw new Error("grantNamespacePermission transaction not available");
+  }
   return api.tx.permission0.grantNamespacePermission(
     grantee,
     pathsSet,

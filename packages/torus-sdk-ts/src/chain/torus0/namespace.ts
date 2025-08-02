@@ -1,4 +1,4 @@
-import { ApiPromise, WsProvider } from "@polkadot/api";
+import type { ApiPromise } from "@polkadot/api";
 import { z } from "zod";
 
 import { strToByteArray } from "@torus-network/torus-utils";

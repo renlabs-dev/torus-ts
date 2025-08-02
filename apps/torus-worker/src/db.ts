@@ -583,10 +583,17 @@ export async function upsertPermissions(
       });
 
     // Step 2: Separate emission and namespace permissions
-    const emissionPermissions = permissions.filter((p): p is typeof p & { emissionPermission: NewEmissionPermission } => 
+    const emissionPermissions = permissions.filter((p): p is typeof p & {
+      emissionPermission: NewEmissionPermission;
+      streamAllocations: NewEmissionStreamAllocation[];
+      distributionTargets: NewEmissionDistributionTarget[];
+    } => 
       'emissionPermission' in p
     );
-    const namespacePermissions = permissions.filter((p): p is typeof p & { namespacePermission: NewNamespacePermission } => 
+    const namespacePermissions = permissions.filter((p): p is typeof p & {
+      namespacePermission: NewNamespacePermission;
+      namespacePaths: NewNamespacePermissionPath[];
+    } => 
       'namespacePermission' in p
     );
 
@@ -644,11 +651,17 @@ export async function upsertPermissions(
       await tx
         .insert(emissionDistributionTargetsSchema)
         .values(distributionTargets)
-        .onConflictDoNothing({
+        .onConflictDoUpdate({
           target: [
             emissionDistributionTargetsSchema.permissionId,
+            emissionDistributionTargetsSchema.streamId,
             emissionDistributionTargetsSchema.targetAccountId,
           ],
+          set: buildConflictUpdateColumns(emissionDistributionTargetsSchema, [
+            "weight",
+            "accumulatedTokens",
+            "atBlock",
+          ]),
         });
     }
 

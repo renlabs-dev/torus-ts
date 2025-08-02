@@ -196,7 +196,7 @@ export function PermissionSelector(props: PermissionSelectorProps) {
     // First try to find a delegator permission
     const delegatorPermission = userPermissions.find(
       (item) =>
-        item.contract.grantor === (selectedAccount?.address as SS58Address),
+        item.contract.delegator === (selectedAccount?.address as SS58Address),
     );
 
     if (delegatorPermission) {
@@ -206,7 +206,7 @@ export function PermissionSelector(props: PermissionSelectorProps) {
     // Fall back to first recipient permission
     const recipientPermission = userPermissions.find(
       (item) =>
-        item.contract.grantee === (selectedAccount?.address as SS58Address),
+        item.contract.recipient === (selectedAccount?.address as SS58Address),
     );
 
     return recipientPermission?.permissionId ?? null;
@@ -232,8 +232,8 @@ export function PermissionSelector(props: PermissionSelectorProps) {
     const permissions: PermissionWithDetails["permissions"] = {
       id: permissionId, // Use permissionId as id for compatibility
       permissionId,
-      grantorAccountId: contract.grantor,
-      granteeAccountId: contract.grantee,
+      grantorAccountId: contract.delegator,
+      granteeAccountId: contract.recipient,
       durationType:
         Object.keys(contract.duration)[0] === "Indefinite"
           ? ("indefinite" as const)
@@ -448,11 +448,11 @@ export function PermissionSelector(props: PermissionSelectorProps) {
       },
       {
         label: "Delegator",
-        value: smallAddress(contract.grantor),
+        value: smallAddress(contract.delegator),
       },
       {
         label: "Recipient",
-        value: smallAddress(contract.grantee),
+        value: smallAddress(contract.recipient),
       },
       {
         label: "Duration",
@@ -535,16 +535,16 @@ export function PermissionSelector(props: PermissionSelectorProps) {
                     // Separate permissions by role and deduplicate
                     const delegatorPermissions = userPermissions.filter(
                       (item) =>
-                        item.contract.grantor ===
+                        item.contract.delegator ===
                         (selectedAccount?.address as SS58Address),
                     );
 
                     // Filter out permissions where user is also delegator to avoid duplicates
                     const recipientOnlyPermissions = userPermissions.filter(
                       (item) =>
-                        item.contract.grantee ===
+                        item.contract.recipient ===
                           (selectedAccount?.address as SS58Address) &&
-                        item.contract.grantor !==
+                        item.contract.delegator !==
                           (selectedAccount?.address as SS58Address),
                     );
 
