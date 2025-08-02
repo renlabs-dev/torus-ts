@@ -1,6 +1,7 @@
 import { match } from "rustie";
 
 import type {
+  AccumulatedStreamEntry,
   EmissionScope,
   LastBlock,
   NamespaceScope,
@@ -9,9 +10,8 @@ import type {
   Proposal,
 } from "@torus-network/sdk/chain";
 import {
-  EMISSION_SCOPE_SCHEMA,
-  NAMESPACE_SCOPE_SCHEMA,
   queryAgents,
+  queryAllAccumulatedStreamAmounts,
   queryLastBlock,
   queryPermissions,
   queryWhitelist,
@@ -124,6 +124,9 @@ async function cleanPermissions(
 function emissionToDatabase(
   permissionId: PermissionId,
   emission: EmissionScope,
+  delegator: SS58Address,
+  streamAccumulations: AccumulatedStreamEntry[],
+  atBlock: number,
 ): {
   emissionPermission: NewEmissionPermission;
   streamAllocations: NewEmissionStreamAllocation[];
@@ -190,14 +193,48 @@ function emissionToDatabase(
     FixedAmount: () => [],
   });
 
-  // Handle distribution targets (all emission permissions have targets)
-  const distributionTargets: NewEmissionDistributionTarget[] = Array.from(
-    emission.targets.entries(),
-  ).map(([accountId, weight]) => ({
-    permissionId: permissionId,
-    targetAccountId: accountId,
-    weight: Number(weight.toString()), // Convert bigint to number (u16 range: 0-65535)
-  }));
+  // Handle distribution targets (create entry for each stream-target combination)
+  const distributionTargets: NewEmissionDistributionTarget[] = [];
+
+  // Create a lookup map for accumulated amounts by (delegator, streamId, permissionId)
+  // The delegator is the account that owns/delegates the stream and where tokens accumulate
+  const accumulationLookup = new Map<string, bigint>();
+  for (const accumulation of streamAccumulations) {
+    const key = `${accumulation.delegator}-${accumulation.streamId}-${accumulation.permissionId}`;
+    accumulationLookup.set(key, accumulation.amount);
+  }
+
+  // Calculate total weight for proportional distribution
+  const totalWeight = Array.from(emission.targets.values()).reduce(
+    (sum, weight) => sum + weight,
+    BigInt(0),
+  );
+
+  for (const [accountId, weight] of emission.targets.entries()) {
+    for (const streamAllocation of streamAllocations) {
+      // Look up accumulated amount for this permission's delegator (the account that owns/delegates the stream)
+      // The accumulated amount is stored under (delegator, streamId, permissionId)
+      const lookupKey = `${delegator}-${streamAllocation.streamId}-${permissionId}`;
+      const totalAccumulatedForStream =
+        accumulationLookup.get(lookupKey) ?? BigInt(0);
+
+      // Distribute the accumulated amount proportionally based on target weights
+      // accumulatedTokens = (weight / totalWeight) * totalAccumulatedForStream
+      const accumulatedTokens =
+        totalWeight > BigInt(0)
+          ? (weight * totalAccumulatedForStream) / totalWeight
+          : BigInt(0);
+
+      distributionTargets.push({
+        permissionId: permissionId,
+        streamId: streamAllocation.streamId,
+        targetAccountId: accountId,
+        weight: Number(weight.toString()), // Convert bigint to number (u16 range: 0-65535)
+        accumulatedTokens: accumulatedTokens.toString(),
+        atBlock: atBlock,
+      });
+    }
+  }
 
   return {
     emissionPermission,
@@ -220,13 +257,18 @@ function namespaceToDatabase(
     permissionId: permissionId,
   };
 
-  // Extract namespace paths - each path becomes a separate database entry
-  const namespacePaths: NewNamespacePermissionPath[] = namespace.paths.map(
-    (pathSegments: string[]) => ({
-      permissionId: permissionId,
-      namespacePath: pathSegments.join("."), // Convert segments array to dot-separated string
-    }),
-  );
+  // Extract namespace paths from the map structure
+  // namespace.paths is a Map<Option<PermissionId>, Array<string>>
+  const namespacePaths: NewNamespacePermissionPath[] = [];
+
+  for (const [_parentPermissionId, pathsArray] of namespace.paths.entries()) {
+    for (const pathSegments of pathsArray) {
+      namespacePaths.push({
+        permissionId: permissionId,
+        namespacePath: pathSegments.join("."), // Convert NamespacePath (string[]) to dot-separated string
+      });
+    }
+  }
 
   return {
     namespacePermission,
@@ -240,6 +282,8 @@ function namespaceToDatabase(
 function permissionContractToDatabase(
   permissionId: PermissionId,
   contract: PermissionContract,
+  streamAccumulations: AccumulatedStreamEntry[],
+  atBlock: number,
 ):
   | ({
       permission: NewPermission;
@@ -282,7 +326,8 @@ function permissionContractToDatabase(
   // Map revocation terms
   const revocationType = match(contract.revocation)({
     Irrevocable: () => "irrevocable" as const,
-    RevocableByDelegator: () => "revocable_by_grantor" as const,
+    RevocableByGrantor: () => "revocable_by_grantor" as const,
+    RevocableByDelegator: () => "revocable_by_delegator" as const,
     RevocableByArbiters: () => "revocable_by_arbiters" as const,
     RevocableAfter: () => "revocable_after" as const,
   });
@@ -290,6 +335,7 @@ function permissionContractToDatabase(
   const revocationBlockNumber = match(contract.revocation)({
     RevocableAfter: (block) => BigInt(block.toString()),
     Irrevocable: () => null,
+    RevocableByGrantor: () => null,
     RevocableByDelegator: () => null,
     RevocableByArbiters: () => null,
   });
@@ -298,6 +344,7 @@ function permissionContractToDatabase(
     RevocableByArbiters: (arbiters) =>
       BigInt(arbiters.requiredVotes.toString()),
     Irrevocable: () => null,
+    RevocableByGrantor: () => null,
     RevocableByDelegator: () => null,
     RevocableAfter: () => null,
   });
@@ -332,17 +379,12 @@ function permissionContractToDatabase(
     createdAtBlock: BigInt(contract.createdAt.toString()),
   };
 
-  // Handle parent hierarchy
-  const hierarchy = match(contract.parent)({
-    Some: (parentId): NewPermissionHierarchy => ({
-      childPermissionId: permissionId,
-      parentPermissionId: parentId,
-    }),
-    None: (): NewPermissionHierarchy => ({
-      childPermissionId: permissionId,
-      parentPermissionId: permissionId, // Self-reference when no parent
-    }),
-  });
+  // Handle hierarchy - since parent field no longer exists, create self-reference
+  // Children relationships are now managed through the children field on other permissions
+  const hierarchy: NewPermissionHierarchy = {
+    childPermissionId: permissionId,
+    parentPermissionId: permissionId, // Self-reference (no parent in current schema)
+  };
 
   // Initialize common arrays (always empty if not populated)
   let enforcementControllers: NewPermissionEnforcementController[] = [];
@@ -379,13 +421,15 @@ function permissionContractToDatabase(
     RevocableByGrantor: () => {
       // revocationArbiters remains empty array
     },
+    RevocableByDelegator: () => {
+      // revocationArbiters remains empty array
+    },
     RevocableAfter: () => {
       // revocationArbiters remains empty array
     },
   });
 
   // Handle scope-specific data
-  const emissionScope = EMISSION_SCOPE_SCHEMA.safeParse(contract.scope);
   let scopeSpecificData:
     | {
         emissionPermission: NewEmissionPermission;
@@ -396,16 +440,26 @@ function permissionContractToDatabase(
         namespacePermission: NewNamespacePermission;
         namespacePaths: NewNamespacePermissionPath[];
       };
-  if (emissionScope.success) {
-    scopeSpecificData = emissionToDatabase(permissionId, emissionScope.data);
+
+  // TODO: MAKE THIS PRETTIER
+  if ("Emission" in contract.scope) {
+    scopeSpecificData = emissionToDatabase(
+      permissionId,
+      contract.scope.Emission,
+      contract.delegator,
+      streamAccumulations,
+      atBlock,
+    );
+  } else if ("Namespace" in contract.scope) {
+    scopeSpecificData = namespaceToDatabase(
+      permissionId,
+      contract.scope.Namespace,
+    );
   } else {
-    const namespaceScope = NAMESPACE_SCOPE_SCHEMA.safeParse(contract.scope);
-    // TODO: better discrimination between the scopes
-    if (!namespaceScope.success) {
-      throw new Error("Invalid scope");
-    }
-    scopeSpecificData = namespaceToDatabase(permissionId, namespaceScope.data);
+    // This should never happen due to shouldProcess check above
+    throw new Error(`Unexpected scope type in permission ${permissionId}`);
   }
+
   return {
     permission,
     hierarchy,
@@ -569,6 +623,24 @@ export async function runPermissionsFetch(lastBlock: LastBlock) {
     `Block ${lastBlockNumber}: found ${permissionsMap.size} permissions from blockchain`,
   );
 
+  // Query all accumulated stream amounts
+  const streamAccumulationsResult = await queryAllAccumulatedStreamAmounts(
+    lastBlock.apiAtBlock,
+  );
+  const [streamAccumulationsErr, streamAccumulations] =
+    streamAccumulationsResult;
+  if (streamAccumulationsErr) {
+    log.error(
+      `Block ${lastBlockNumber}: queryAllAccumulatedStreamAmounts failed:`,
+      streamAccumulationsErr,
+    );
+    return;
+  }
+
+  log.info(
+    `Block ${lastBlockNumber}: found ${streamAccumulations.length} accumulated stream amounts`,
+  );
+
   const permissionsData: ({
     permission: NewPermission;
     hierarchy: NewPermissionHierarchy;
@@ -592,6 +664,8 @@ export async function runPermissionsFetch(lastBlock: LastBlock) {
       const permissionData = permissionContractToDatabase(
         permissionId,
         contract,
+        streamAccumulations,
+        lastBlockNumber,
       );
       if (permissionData) {
         permissionsData.push(permissionData);
@@ -663,7 +737,10 @@ export async function agentFetcherWorker(props: WorkerProps) {
       })(),
     );
     if (log.ifResultIsErr(fetchWorkerRes)) {
+      log.error("Agent fetcher failed:", fetchWorkerRes[0]);
       await sleep(retryDelay);
     }
+
+    await sleep(retryDelay);
   }
 }
