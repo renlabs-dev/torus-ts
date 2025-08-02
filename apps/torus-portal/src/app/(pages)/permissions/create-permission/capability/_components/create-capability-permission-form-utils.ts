@@ -42,7 +42,7 @@ export function transformFormDataToSDK(
   }
 
   // Transform paths to the required format
-  const paths = new Map([[null, [data.namespacePath]]]);
+  const paths = new Map([[null, data.namespacePaths]]);
 
   return {
     recipient: data.recipient as SS58Address,

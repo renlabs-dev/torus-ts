@@ -54,7 +54,9 @@ export const revocationSchema = z.discriminatedUnion("type", [
 // Main form schema
 export const createCapabilityPermissionSchema = z.object({
   recipient: SS58_SCHEMA,
-  namespacePath: z.string().min(1, "Namespace path is required"),
+  namespacePaths: z
+    .array(z.string())
+    .min(1, "At least one namespace path is required"),
   duration: durationSchema,
   revocation: revocationSchema,
   instances: z

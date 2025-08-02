@@ -41,7 +41,11 @@ export interface NamespacePathNodeData extends Record<string, unknown> {
   selected?: boolean;
 }
 
-function NamespacePathFlow() {
+interface NamespacePathFlowProps {
+  onCreatePermission?: (selectedPaths: string[]) => void;
+}
+
+function NamespacePathFlow({ onCreatePermission }: NamespacePathFlowProps) {
   const { fitView } = useReactFlow();
   const [nodes, setNodes, onNodesChange] = useNodesState(
     initialNodes.map((node, index) => ({
@@ -55,7 +59,7 @@ function NamespacePathFlow() {
       } as NamespacePathNodeData,
     })),
   );
-  const [edges, , onEdgesChange] = useEdgesState(initialEdges);
+  const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
   const [selectedPaths, setSelectedPaths] = useState<Set<string>>(new Set());
 
   const layoutOptions: LayoutOptions = useMemo(
@@ -135,8 +139,30 @@ function NamespacePathFlow() {
           };
         }),
       );
+
+      // Update edge styles based on selection state
+      setEdges((currentEdges) =>
+        currentEdges.map((edge) => {
+          const sourceSelected = newSelectedPaths.has(edge.source);
+          const targetSelected = newSelectedPaths.has(edge.target);
+          const bothSelected = sourceSelected && targetSelected;
+
+          return {
+            ...edge,
+            style: bothSelected
+              ? {
+                  stroke: "#22c55e",
+                  strokeWidth: 2,
+                }
+              : {
+                  stroke: "#64748b",
+                  strokeWidth: 1,
+                },
+          };
+        }),
+      );
     },
-    [selectedPaths, nodes, setNodes, getDescendantIds],
+    [selectedPaths, nodes, setNodes, setEdges, getDescendantIds],
   );
 
   const handleClearSelection = useCallback(() => {
@@ -150,7 +176,17 @@ function NamespacePathFlow() {
         },
       })),
     );
-  }, [setNodes]);
+    // Reset edge styles when clearing selection
+    setEdges((currentEdges) =>
+      currentEdges.map((edge) => ({
+        ...edge,
+        style: {
+          stroke: "#64748b",
+          strokeWidth: 1,
+        },
+      })),
+    );
+  }, [setNodes, setEdges]);
 
   // Fit view when nodes change, with a slight delay to ensure layout is applied
   useEffect(() => {
@@ -204,7 +240,19 @@ function NamespacePathFlow() {
           >
             Clear Selection
           </Button>
-          <Button size="sm" disabled={selectedCount === 0}>
+          <Button 
+            size="sm" 
+            disabled={selectedCount === 0}
+            onClick={() => {
+              if (selectedCount > 0 && onCreatePermission) {
+                const selectedLabels = Array.from(selectedPaths).map((nodeId) => {
+                  const node = nodes.find((n) => n.id === nodeId);
+                  return String(node?.data.label ?? "");
+                }).filter(Boolean);
+                onCreatePermission(selectedLabels);
+              }
+            }}
+          >
             Create Permission ({selectedCount} paths)
           </Button>
         </Panel>
@@ -239,10 +287,14 @@ function NamespacePathFlow() {
   );
 }
 
-export function NamespacePathSelectorFlow() {
+interface NamespacePathSelectorFlowProps {
+  onCreatePermission?: (selectedPaths: string[]) => void;
+}
+
+export function NamespacePathSelectorFlow({ onCreatePermission }: NamespacePathSelectorFlowProps) {
   return (
     <ReactFlowProvider>
-      <NamespacePathFlow />
+      <NamespacePathFlow onCreatePermission={onCreatePermission} />
     </ReactFlowProvider>
   );
 }
