@@ -493,6 +493,7 @@ export const permissionDurationType = pgEnum("permission_duration_type", [
 export const permissionRevocationType = pgEnum("permission_revocation_type", [
   "irrevocable",
   "revocable_by_grantor",
+  "revocable_by_delegator",
   "revocable_by_arbiters",
   "revocable_after",
 ]);
@@ -778,7 +779,7 @@ export const emissionStreamAllocationsSchema = createTable(
 );
 
 /**
- * Distribution targets with weights
+ * Distribution targets with weights per stream
  */
 export const emissionDistributionTargetsSchema = createTable(
   "emission_distribution_targets",
@@ -788,14 +789,21 @@ export const emissionDistributionTargetsSchema = createTable(
       .references(() => emissionPermissionsSchema.permissionId, {
         onDelete: "cascade",
       }),
+    streamId: varchar("stream_id", { length: 66 }).notNull(),
     targetAccountId: ss58Address("target_account_id").notNull(),
     weight: integer("weight").notNull(), // 0-65535
+    accumulatedTokens: numeric("accumulated_tokens")
+      .notNull()
+      .default(sql`0`),
+    atBlock: integer("at_block").notNull(),
 
     ...timeFields(),
   },
   (t) => [
-    { primaryKey: { columns: [t.permissionId, t.targetAccountId] } },
-    unique().on(t.permissionId, t.targetAccountId),
+    {
+      primaryKey: { columns: [t.permissionId, t.streamId, t.targetAccountId] },
+    },
+    unique().on(t.permissionId, t.streamId, t.targetAccountId),
     check("valid_weight", sql`${t.weight} >= 0 AND ${t.weight} <= 65535`),
   ],
 );
@@ -944,15 +952,16 @@ export const streamDelegationView = pgView("stream_delegation", {
       INNER JOIN agent a ON p.grantor_account_id = a.key
       WHERE a.is_whitelisted = true 
         AND p.deleted_at IS NULL
-        AND p.grantor_account_id != p.grantee_account_id  -- Exclude self-delegations
         AND NOT EXISTS (
           -- Exclude if this grantor ever received this same stream from someone else
           -- This ensures we only start from the TRUE root owner of the stream
+          -- Allow self-delegations as they represent root stream ownership
           SELECT 1 FROM emission_stream_allocations esa2
           INNER JOIN emission_permissions ep2 ON esa2.permission_id = ep2.permission_id  
           INNER JOIN permissions p2 ON ep2.permission_id = p2.permission_id
           WHERE esa2.stream_id = esa.stream_id 
             AND p2.grantee_account_id = p.grantor_account_id
+            AND p2.grantor_account_id != p2.grantee_account_id  -- Allow self-delegations
             AND p2.deleted_at IS NULL
         )
       
