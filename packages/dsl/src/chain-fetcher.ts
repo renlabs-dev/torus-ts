@@ -243,13 +243,13 @@ export class TorusChainFetcher implements ChainFetcher {
         };
       }
 
-      // Get delegation streams for the grantee of this permission
+      // Get delegation streams for the recipient of this permission
       const [delegationError, delegationStreams] =
-        await queryDelegationStreamsByAccount(api, permission.grantee);
+        await queryDelegationStreamsByAccount(api, permission.recipient);
 
       if (delegationError !== undefined) {
         console.warn(
-          `Error querying delegation streams for grantee ${permission.grantee}:`,
+          `Error querying delegation streams for recipient ${permission.recipient}:`,
           delegationError,
         );
         return {

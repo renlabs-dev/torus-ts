@@ -3,7 +3,6 @@ import type { z } from "zod";
 
 import { tryAsync, trySync } from "@torus-network/torus-utils/try-catch";
 
-import type { SS58Address } from "../../types/address.js";
 import {
   sb_address,
   sb_bigint,
@@ -61,7 +60,6 @@ export async function queryAgents(api: Api) {
 
 export interface RegisterAgent {
   api: ApiPromise;
-  agentKey: SS58Address;
   name: string;
   url: string;
   metadata: string;
@@ -72,12 +70,11 @@ export interface RegisterAgent {
  */
 export function registerAgent({
   api,
-  agentKey,
   name,
   url,
   metadata,
 }: RegisterAgent) {
-  return api.tx.torus0.registerAgent(agentKey, name, url, metadata);
+  return api.tx.torus0.registerAgent(name, url, metadata);
 }
 
 /**

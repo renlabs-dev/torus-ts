@@ -41,8 +41,8 @@ import {
   queryNamespacePathCreationCost,
   queryPermission,
   queryPermissions,
-  queryPermissionsByGrantee,
-  queryPermissionsByGrantor,
+  queryPermissionsByDelegator,
+  queryPermissionsByRecipient,
   queryProposals,
   queryRecyclingPercentage,
   queryRewardAllocation,
@@ -517,27 +517,27 @@ export function usePermissions(api: Api | Nullish) {
   });
 }
 
-export function usePermissionsByGrantor(
+export function usePermissionsByDelegator(
   api: Api | Nullish,
   address: SS58Address | Nullish,
 ) {
   return useQuery({
     queryKey: ["permissions_by_grantor", address],
     enabled: api != null && address != null,
-    queryFn: () => queryPermissionsByGrantor(api!, address!),
+    queryFn: () => queryPermissionsByDelegator(api!, address!),
     staleTime: CONSTANTS.TIME.STAKE_STALE_TIME,
     refetchOnWindowFocus: false,
   });
 }
 
-export function usePermissionsByGrantee(
+export function usePermissionsByRecipient(
   api: Api | Nullish,
   address: SS58Address | Nullish,
 ) {
   return useQuery({
     queryKey: ["permissions_by_grantee", address],
     enabled: api != null && address != null,
-    queryFn: () => queryPermissionsByGrantee(api!, address!),
+    queryFn: () => queryPermissionsByRecipient(api!, address!),
     staleTime: CONSTANTS.TIME.STAKE_STALE_TIME,
     refetchOnWindowFocus: false,
   });

@@ -4,7 +4,6 @@ import { AGENT_SHORT_DESCRIPTION_MAX_LENGTH } from "@torus-network/sdk/metadata"
 import { agentNameField } from "@torus-network/sdk/types";
 
 export const REGISTER_AGENT_SCHEMA = z.object({
-  agentKey: z.string().min(1, "Agent address is required"),
   agentApiUrl: z.string().optional(),
   name: agentNameField(),
   shortDescription: z

@@ -45,7 +45,6 @@ export interface RemoveVote extends TransactionHelpers {
 }
 
 export interface RegisterAgent {
-  agentKey: SS58Address;
   name: string;
   url: string;
   metadata: string;

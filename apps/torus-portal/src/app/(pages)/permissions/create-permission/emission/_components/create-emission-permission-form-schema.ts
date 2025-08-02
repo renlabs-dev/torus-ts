@@ -94,7 +94,7 @@ export const revocationSchema = z.discriminatedUnion("type", [
     type: z.literal("Irrevocable"),
   }),
   z.object({
-    type: z.literal("RevocableByGrantor"),
+    type: z.literal("RevocableByDelegator"),
   }),
   z.object({
     type: z.literal("RevocableByArbiters"),

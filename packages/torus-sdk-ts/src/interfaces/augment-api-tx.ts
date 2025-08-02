@@ -150,6 +150,28 @@ declare module '@polkadot/api-base/types/submittable' {
     };
     faucet: {
       /**
+       * Request tokens from the faucet by performing proof of work
+       * 
+       * This extrinsic is only available on testnets. It requires the user to perform
+       * proof-of-work by finding a nonce that, when combined with a recent block hash
+       * and the user's account ID, produces a hash that meets the difficulty requirement.
+       * 
+       * The account must have a total balance (free + staked) below the threshold to be eligible.
+       * 
+       * # Parameters
+       * * `origin` - Must be None (unsigned)
+       * * `block_number` - A recent block number (within 3 blocks)
+       * * `nonce` - A value that makes the resulting hash meet the difficulty requirement
+       * * `work` - The hash result of the proof of work
+       * * `key` - The account ID that will receive the tokens
+       * 
+       * # Weight
+       * * Read operations: 16
+       * * Write operations: 28
+       * * Does not pay fees
+       **/
+      faucet: AugmentedSubmittable<(blockNumber: u64 | AnyNumber | Uint8Array, nonce: u64 | AnyNumber | Uint8Array, work: Bytes | string | Uint8Array, key: MultiAddress | { Id: any } | { Index: any } | { Raw: any } | { Address32: any } | { Address20: any } | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [u64, u64, Bytes, MultiAddress]>;
+      /**
        * Generic tx
        **/
       [key: string]: SubmittableExtrinsicFunction<ApiType>;
@@ -400,6 +422,18 @@ declare module '@polkadot/api-base/types/submittable' {
     };
     permission0: {
       /**
+       * Delegate a permission for curator delegation
+       **/
+      delegateCuratorPermission: AugmentedSubmittable<(recipient: AccountId32 | string | Uint8Array, flags: u32 | AnyNumber | Uint8Array, cooldown: Option<u64> | null | Uint8Array | u64 | AnyNumber, duration: PalletPermission0PermissionPermissionDuration | { UntilBlock: any } | { Indefinite: any } | string | Uint8Array, revocation: PalletPermission0PermissionRevocationTerms | { Irrevocable: any } | { RevocableByDelegator: any } | { RevocableByArbiters: any } | { RevocableAfter: any } | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [AccountId32, u32, Option<u64>, PalletPermission0PermissionPermissionDuration, PalletPermission0PermissionRevocationTerms]>;
+      /**
+       * Delegate a permission for emission delegation
+       **/
+      delegateEmissionPermission: AugmentedSubmittable<(recipient: AccountId32 | string | Uint8Array, allocation: PalletPermission0PermissionEmissionEmissionAllocation | { Streams: any } | { FixedAmount: any } | string | Uint8Array, targets: BTreeMap<AccountId32, u16>, distribution: PalletPermission0PermissionEmissionDistributionControl | { Manual: any } | { Automatic: any } | { AtBlock: any } | { Interval: any } | string | Uint8Array, duration: PalletPermission0PermissionPermissionDuration | { UntilBlock: any } | { Indefinite: any } | string | Uint8Array, revocation: PalletPermission0PermissionRevocationTerms | { Irrevocable: any } | { RevocableByDelegator: any } | { RevocableByArbiters: any } | { RevocableAfter: any } | string | Uint8Array, enforcement: PalletPermission0PermissionEnforcementAuthority | { None: any } | { ControlledBy: any } | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [AccountId32, PalletPermission0PermissionEmissionEmissionAllocation, BTreeMap<AccountId32, u16>, PalletPermission0PermissionEmissionDistributionControl, PalletPermission0PermissionPermissionDuration, PalletPermission0PermissionRevocationTerms, PalletPermission0PermissionEnforcementAuthority]>;
+      /**
+       * Delegate a permission over namespaces
+       **/
+      delegateNamespacePermission: AugmentedSubmittable<(recipient: AccountId32 | string | Uint8Array, paths: BTreeMap<Option<H256>, BTreeSet<Bytes>>, duration: PalletPermission0PermissionPermissionDuration | { UntilBlock: any } | { Indefinite: any } | string | Uint8Array, revocation: PalletPermission0PermissionRevocationTerms | { Irrevocable: any } | { RevocableByDelegator: any } | { RevocableByArbiters: any } | { RevocableAfter: any } | string | Uint8Array, instances: u32 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [AccountId32, BTreeMap<Option<H256>, BTreeSet<Bytes>>, PalletPermission0PermissionPermissionDuration, PalletPermission0PermissionRevocationTerms, u32]>;
+      /**
        * Execute a permission through enforcement authority
        * The caller must be authorized as a controller or be the root key
        **/
@@ -409,24 +443,12 @@ declare module '@polkadot/api-base/types/submittable' {
        **/
       executePermission: AugmentedSubmittable<(permissionId: H256 | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [H256]>;
       /**
-       * Grant a permission for curator delegation
-       **/
-      grantCuratorPermission: AugmentedSubmittable<(grantee: AccountId32 | string | Uint8Array, flags: u32 | AnyNumber | Uint8Array, cooldown: Option<u64> | null | Uint8Array | u64 | AnyNumber, duration: PalletPermission0PermissionPermissionDuration | { UntilBlock: any } | { Indefinite: any } | string | Uint8Array, revocation: PalletPermission0PermissionRevocationTerms | { Irrevocable: any } | { RevocableByGrantor: any } | { RevocableByArbiters: any } | { RevocableAfter: any } | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [AccountId32, u32, Option<u64>, PalletPermission0PermissionPermissionDuration, PalletPermission0PermissionRevocationTerms]>;
-      /**
-       * Grant a permission for emission delegation
-       **/
-      grantEmissionPermission: AugmentedSubmittable<(grantee: AccountId32 | string | Uint8Array, allocation: PalletPermission0PermissionEmissionEmissionAllocation | { Streams: any } | { FixedAmount: any } | string | Uint8Array, targets: BTreeMap<AccountId32, u16>, distribution: PalletPermission0PermissionEmissionDistributionControl | { Manual: any } | { Automatic: any } | { AtBlock: any } | { Interval: any } | string | Uint8Array, duration: PalletPermission0PermissionPermissionDuration | { UntilBlock: any } | { Indefinite: any } | string | Uint8Array, revocation: PalletPermission0PermissionRevocationTerms | { Irrevocable: any } | { RevocableByGrantor: any } | { RevocableByArbiters: any } | { RevocableAfter: any } | string | Uint8Array, enforcement: PalletPermission0PermissionEnforcementAuthority | { None: any } | { ControlledBy: any } | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [AccountId32, PalletPermission0PermissionEmissionEmissionAllocation, BTreeMap<AccountId32, u16>, PalletPermission0PermissionEmissionDistributionControl, PalletPermission0PermissionPermissionDuration, PalletPermission0PermissionRevocationTerms, PalletPermission0PermissionEnforcementAuthority]>;
-      /**
-       * Grant a permission over namespaces
-       **/
-      grantNamespacePermission: AugmentedSubmittable<(grantee: AccountId32 | string | Uint8Array, paths: BTreeSet<Bytes>, duration: PalletPermission0PermissionPermissionDuration | { UntilBlock: any } | { Indefinite: any } | string | Uint8Array, revocation: PalletPermission0PermissionRevocationTerms | { Irrevocable: any } | { RevocableByGrantor: any } | { RevocableByArbiters: any } | { RevocableAfter: any } | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [AccountId32, BTreeSet<Bytes>, PalletPermission0PermissionPermissionDuration, PalletPermission0PermissionRevocationTerms]>;
-      /**
        * Revoke a permission. The caller must met revocation constraints or be a root key.
        **/
       revokePermission: AugmentedSubmittable<(permissionId: H256 | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [H256]>;
       /**
        * Set enforcement authority for a permission
-       * Only the grantor or root can set enforcement authority
+       * Only the delegator or root can set enforcement authority
        **/
       setEnforcementAuthority: AugmentedSubmittable<(permissionId: H256 | string | Uint8Array, enforcement: PalletPermission0PermissionEnforcementAuthority | { None: any } | { ControlledBy: any } | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [H256, PalletPermission0PermissionEnforcementAuthority]>;
       /**
@@ -435,7 +457,7 @@ declare module '@polkadot/api-base/types/submittable' {
        **/
       togglePermissionAccumulation: AugmentedSubmittable<(permissionId: H256 | string | Uint8Array, accumulating: bool | boolean | Uint8Array) => SubmittableExtrinsic<ApiType>, [H256, bool]>;
       /**
-       * Allows Grantor/Grantee to edit stream emission permission
+       * Allows Delegator/Recipient to edit stream emission permission
        **/
       updateEmissionPermission: AugmentedSubmittable<(permissionId: H256 | string | Uint8Array, newTargets: BTreeMap<AccountId32, u16>, newStreams: Option<BTreeMap<H256, Percent>> | null | Uint8Array | BTreeMap<H256, Percent>, newDistributionControl: Option<PalletPermission0PermissionEmissionDistributionControl> | null | Uint8Array | PalletPermission0PermissionEmissionDistributionControl | { Manual: any } | { Automatic: any } | { AtBlock: any } | { Interval: any } | string) => SubmittableExtrinsic<ApiType>, [H256, BTreeMap<AccountId32, u16>, Option<BTreeMap<H256, Percent>>, Option<PalletPermission0PermissionEmissionDistributionControl>]>;
       /**
@@ -598,9 +620,13 @@ declare module '@polkadot/api-base/types/submittable' {
        **/
       deleteNamespace: AugmentedSubmittable<(path: Bytes | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [Bytes]>;
       /**
+       * Unregister origin's key agent.
+       **/
+      deregisterAgent: AugmentedSubmittable<() => SubmittableExtrinsic<ApiType>, []>;
+      /**
        * Registers a new agent on behalf of an arbitrary key.
        **/
-      registerAgent: AugmentedSubmittable<(agentKey: AccountId32 | string | Uint8Array, name: Bytes | string | Uint8Array, url: Bytes | string | Uint8Array, metadata: Bytes | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [AccountId32, Bytes, Bytes, Bytes]>;
+      registerAgent: AugmentedSubmittable<(name: Bytes | string | Uint8Array, url: Bytes | string | Uint8Array, metadata: Bytes | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [Bytes, Bytes, Bytes]>;
       /**
        * Removes stakes from origin to the agent key.
        **/
@@ -613,10 +639,6 @@ declare module '@polkadot/api-base/types/submittable' {
        * Transfers origin's stakes from an agent to another.
        **/
       transferStake: AugmentedSubmittable<(agentKey: AccountId32 | string | Uint8Array, newAgentKey: AccountId32 | string | Uint8Array, amount: u128 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [AccountId32, AccountId32, u128]>;
-      /**
-       * Unregister origin's key agent.
-       **/
-      unregisterAgent: AugmentedSubmittable<() => SubmittableExtrinsic<ApiType>, []>;
       /**
        * Updates origin's key agent metadata.
        **/

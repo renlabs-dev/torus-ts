@@ -26,7 +26,7 @@ export const revocationSchema = z.discriminatedUnion("type", [
     type: z.literal("Irrevocable"),
   }),
   z.object({
-    type: z.literal("RevocableByGrantor"),
+    type: z.literal("RevocableByDelegator"),
   }),
   z.object({
     type: z.literal("RevocableByArbiters"),
@@ -53,10 +53,17 @@ export const revocationSchema = z.discriminatedUnion("type", [
 
 // Main form schema
 export const createCapabilityPermissionSchema = z.object({
-  grantee: SS58_SCHEMA,
+  recipient: SS58_SCHEMA,
   namespacePath: z.string().min(1, "Namespace path is required"),
   duration: durationSchema,
   revocation: revocationSchema,
+  instances: z
+    .string()
+    .min(1, "Number of instances is required")
+    .refine((val) => {
+      const num = parseInt(val);
+      return !isNaN(num) && num > 0;
+    }, "Must be a positive integer"),
 });
 
 export type CreateCapabilityPermissionFormData = z.infer<

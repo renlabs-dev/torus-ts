@@ -14,17 +14,17 @@ import type { ISubmittableResult } from "@polkadot/types/types";
 import type {
   AgentApplication,
   Api,
-  GrantEmissionPermission,
-  GrantNamespacePermission,
+  DelegateEmissionPermission,
+  DelegateNamespacePermission,
   Proposal,
   UpdateEmissionPermission,
 } from "@torus-network/sdk/chain";
 import {
   addEmissionProposal,
   createNamespace,
+  delegateEmissionPermission,
+  delegateNamespacePermission,
   deleteNamespace,
-  grantEmissionPermission,
-  grantNamespacePermission,
   registerAgent,
   revokePermission,
   updateAgent,
@@ -133,16 +133,6 @@ interface TorusContextType {
     | SubmittableExtrinsic<"promise", ISubmittableResult>
     | undefined;
 
-  getRegisterAgentFee: ({
-    agentKey,
-    name,
-    url,
-    metadata,
-  }: Omit<
-    RegisterAgent,
-    "callback" | "refetchHandler"
-  >) => TransactionExtrinsicPromise;
-
   addStakeTransaction: ({
     validator,
     amount,
@@ -162,12 +152,12 @@ interface TorusContextType {
     "callback" | "refetchHandler"
   >) => TransactionExtrinsicPromise;
 
-  grantEmissionPermissionTransaction: (
-    props: Omit<GrantEmissionPermission, "api"> & TransactionHelpers,
+  delegateEmissionPermissionTransaction: (
+    props: Omit<DelegateEmissionPermission, "api"> & TransactionHelpers,
   ) => Promise<void>;
 
-  grantNamespacePermissionTransaction: (
-    props: Omit<GrantNamespacePermission, "api"> & TransactionHelpers,
+  delegateNamespacePermissionTransaction: (
+    props: Omit<DelegateNamespacePermission, "api"> & TransactionHelpers,
   ) => Promise<void>;
   updateEmissionPermissionTransaction: (
     props: Omit<UpdateEmissionPermission, "api"> & TransactionHelpers,
@@ -518,25 +508,7 @@ export function TorusProvider({
     });
   }
 
-  // == Subspace ==
-
-  // TODO: refactor
-  // This was a gambiarra duplicated function by vinicius that is only used
-  // to get the fee of this transaction, so even though this is not exaclty
-  // getRegisterAgentFee is better named now then registerAgentTransaction
-  const getRegisterAgentFee = ({
-    agentKey,
-    name,
-    url,
-    metadata,
-  }: Omit<RegisterAgent, "callback" | "refetchHandler">) => {
-    if (!api?.tx.torus0?.registerAgent) return;
-
-    return api.tx.torus0.registerAgent(agentKey, name, url, metadata);
-  };
-
   async function registerAgentTransaction({
-    agentKey,
     name,
     url,
     metadata,
@@ -549,7 +521,6 @@ export function TorusProvider({
 
     const transaction = registerAgent({
       api,
-      agentKey,
       name,
       url,
       metadata,
@@ -796,8 +767,8 @@ export function TorusProvider({
     });
   }
 
-  async function grantEmissionPermissionTransaction({
-    grantee,
+  async function delegateEmissionPermissionTransaction({
+    recipient,
     allocation,
     targets,
     distribution,
@@ -806,15 +777,16 @@ export function TorusProvider({
     enforcement,
     callback,
     refetchHandler,
-  }: Omit<GrantEmissionPermission, "api"> & TransactionHelpers): Promise<void> {
+  }: Omit<DelegateEmissionPermission, "api"> &
+    TransactionHelpers): Promise<void> {
     if (!api) {
       console.log("API not connected");
       return;
     }
 
-    const transaction = grantEmissionPermission({
+    const transaction = delegateEmissionPermission({
       api,
-      grantee,
+      recipient,
       allocation,
       targets,
       distribution,
@@ -835,26 +807,28 @@ export function TorusProvider({
     });
   }
 
-  async function grantNamespacePermissionTransaction({
-    grantee,
+  async function delegateNamespacePermissionTransaction({
+    recipient,
     paths,
     duration,
     revocation,
+    instances,
     callback,
     refetchHandler,
-  }: Omit<GrantNamespacePermission, "api"> &
+  }: Omit<DelegateNamespacePermission, "api"> &
     TransactionHelpers): Promise<void> {
     if (!api) {
       console.log("API not connected");
       return;
     }
 
-    const transaction = grantNamespacePermission({
+    const transaction = delegateNamespacePermission({
       api,
-      grantee,
+      recipient,
       paths,
       duration,
       revocation,
+      instances,
     });
 
     await sendTransaction({
@@ -863,7 +837,7 @@ export function TorusProvider({
       selectedAccount,
       callback,
       transaction,
-      transactionType: "Grant Capability Permission",
+      transactionType: "Delegate Namespace Permission",
       wsEndpoint,
       refetchHandler,
     });
@@ -1020,7 +994,6 @@ export function TorusProvider({
         isInitialized,
         openWalletModal,
         registerAgentTransaction,
-        getRegisterAgentFee,
         updateAgentTransaction,
         removeStake,
         removeStakeTransaction,
@@ -1037,8 +1010,8 @@ export function TorusProvider({
         torusApi,
         updateDelegatingVotingPower,
         voteProposal,
-        grantEmissionPermissionTransaction,
-        grantNamespacePermissionTransaction,
+        delegateEmissionPermissionTransaction,
+        delegateNamespacePermissionTransaction,
         updateEmissionPermissionTransaction,
         revokePermissionTransaction,
         createNamespaceTransaction,

@@ -14,6 +14,7 @@ import { Button } from "@torus-ts/ui/components/button";
 import {
   Form,
   FormControl,
+  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -48,7 +49,7 @@ export function CreateCapabilityPermissionForm({
   onSuccess,
 }: CreateCapabilityPermissionFormProps) {
   const {
-    grantNamespacePermissionTransaction,
+    delegateNamespacePermissionTransaction,
     isAccountConnected,
     selectedAccount,
     api,
@@ -63,14 +64,15 @@ export function CreateCapabilityPermissionForm({
   const form = useForm<CreateCapabilityPermissionFormData>({
     resolver: zodResolver(createCapabilityPermissionSchema),
     defaultValues: {
-      grantee: "",
+      recipient: "",
       namespacePath: "",
       duration: {
         type: "Indefinite",
       },
       revocation: {
-        type: "RevocableByGrantor",
+        type: "RevocableByDelegator",
       },
+      instances: "1",
     },
   });
 
@@ -94,7 +96,7 @@ export function CreateCapabilityPermissionForm({
         setTransactionStatus("loading");
         const transformedData = transformFormDataToSDK(data);
 
-        await grantNamespacePermissionTransaction({
+        await delegateNamespacePermissionTransaction({
           ...transformedData,
           callback: (result) => {
             if (result.status === "SUCCESS" && result.finalized) {
@@ -119,7 +121,7 @@ export function CreateCapabilityPermissionForm({
         toast.error("Failed to grant capability permission");
       }
     },
-    [grantNamespacePermissionTransaction, toast, form, onSuccess],
+    [delegateNamespacePermissionTransaction, toast, form, onSuccess],
   );
 
   return (
@@ -137,7 +139,7 @@ export function CreateCapabilityPermissionForm({
         <div className="grid gap-6">
           <FormField
             control={form.control}
-            name="grantee"
+            name="recipient"
             render={({ field }) => (
               <FormAddressField
                 field={field}
@@ -191,6 +193,29 @@ export function CreateCapabilityPermissionForm({
           />
 
           <DurationField form={form} isAccountConnected={isAccountConnected} />
+
+          <FormField
+            control={form.control}
+            name="instances"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Maximum Instances</FormLabel>
+                <FormControl>
+                  <Input
+                    {...field}
+                    type="number"
+                    min="1"
+                    placeholder="1"
+                    disabled={!isAccountConnected}
+                  />
+                </FormControl>
+                <FormDescription>
+                  The maximum number of instances that can be created under this permission.
+                </FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
 
           <RevocationField
             form={form}
