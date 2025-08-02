@@ -70,14 +70,8 @@ export interface RegisterAgent {
 /**
  * Register an agent on the network
  */
-export function registerAgent({
-  api,
-  agentKey,
-  name,
-  url,
-  metadata,
-}: RegisterAgent) {
-  return api.tx.torus0.registerAgent(agentKey, name, url, metadata);
+export function registerAgent({ api, name, url, metadata }: RegisterAgent) {
+  return api.tx.torus0.registerAgent(name, url, metadata);
 }
 
 /**

@@ -374,29 +374,43 @@ export class AgentServer {
       // Filter for permissions where this agent is the grantor and organize by namespace path
       Array.from(namespacePermissions.entries())
         .filter(
-          ([_, permission]) => permission.grantor === this.options.agentKey,
+          ([_, permission]) => permission.delegator === this.options.agentKey,
         )
         .forEach(([permissionId, permission]) => {
           match(permission.scope)({
             Namespace: (namespaceScope) => {
-              if (namespaceScope.paths.length > 0) {
-                // For each path in this permission, add the grantee to the list
-                namespaceScope.paths.forEach((path) => {
-                  const normalizedPath = path.join(".").toLowerCase();
-                  const existingGrantees =
-                    this.delegatedNamespacePermissions.get(normalizedPath) ??
-                    [];
-                  if (!existingGrantees.includes(permission.grantee)) {
-                    existingGrantees.push(permission.grantee);
-                    this.delegatedNamespacePermissions.set(
-                      normalizedPath,
-                      existingGrantees,
-                    );
-                  }
-                });
+              if (namespaceScope.paths.size > 0) {
+                // For each entry in the paths map, process all paths
+                for (const [
+                  _parentPermId,
+                  pathsArray,
+                ] of namespaceScope.paths.entries()) {
+                  pathsArray.forEach((path) => {
+                    const normalizedPath = path.join(".").toLowerCase();
+                    const existingGrantees =
+                      this.delegatedNamespacePermissions.get(normalizedPath) ??
+                      [];
+                    if (!existingGrantees.includes(permission.recipient)) {
+                      existingGrantees.push(permission.recipient);
+                      this.delegatedNamespacePermissions.set(
+                        normalizedPath,
+                        existingGrantees,
+                      );
+                    }
+                  });
+                }
+
+                // Collect all paths for logging
+                const allPaths: string[] = [];
+                for (const [
+                  _parentPermId,
+                  pathsArray,
+                ] of namespaceScope.paths.entries()) {
+                  allPaths.push(...pathsArray.map((p) => p.join(".")));
+                }
                 console.log(
-                  `Cached namespace permission ${permissionId} for grantee ${permission.grantee} with paths:`,
-                  namespaceScope.paths.map((path) => path.join(".")),
+                  `Cached namespace permission ${permissionId} for grantee ${permission.recipient} with paths:`,
+                  allPaths,
                 );
               }
             },
