@@ -240,15 +240,17 @@ function NamespacePathFlow({ onCreatePermission }: NamespacePathFlowProps) {
           >
             Clear Selection
           </Button>
-          <Button 
-            size="sm" 
+          <Button
+            size="sm"
             disabled={selectedCount === 0}
             onClick={() => {
               if (selectedCount > 0 && onCreatePermission) {
-                const selectedLabels = Array.from(selectedPaths).map((nodeId) => {
-                  const node = nodes.find((n) => n.id === nodeId);
-                  return String(node?.data.label ?? "");
-                }).filter(Boolean);
+                const selectedLabels = Array.from(selectedPaths)
+                  .map((nodeId) => {
+                    const node = nodes.find((n) => n.id === nodeId);
+                    return String(node?.data.label ?? "");
+                  })
+                  .filter(Boolean);
                 onCreatePermission(selectedLabels);
               }
             }}
@@ -291,7 +293,9 @@ interface NamespacePathSelectorFlowProps {
   onCreatePermission?: (selectedPaths: string[]) => void;
 }
 
-export function NamespacePathSelectorFlow({ onCreatePermission }: NamespacePathSelectorFlowProps) {
+export function NamespacePathSelectorFlow({
+  onCreatePermission,
+}: NamespacePathSelectorFlowProps) {
   return (
     <ReactFlowProvider>
       <NamespacePathFlow onCreatePermission={onCreatePermission} />
