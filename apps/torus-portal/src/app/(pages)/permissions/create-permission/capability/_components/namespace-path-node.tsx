@@ -11,7 +11,7 @@ export const NamespacePathNode = memo(function NamespacePathNode({
 }: {
   data: NamespacePathNodeData;
 }) {
-  const isAccessible = data.acessible;
+  const isAccessible = data.accessible;
   const isSelected = data.selected ?? false;
 
   return (

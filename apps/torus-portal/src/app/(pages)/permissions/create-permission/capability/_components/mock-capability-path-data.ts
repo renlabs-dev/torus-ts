@@ -2,7 +2,7 @@ import type { Edge, Node } from "@xyflow/react";
 
 interface NamespacePathNodeData extends Record<string, unknown> {
   label: string;
-  acessible: boolean;
+  accessible: boolean;
   redelegationCount: number;
 }
 
@@ -12,7 +12,7 @@ export const nodes: Node<NamespacePathNodeData>[] = [
     id: "agent-bob",
     data: {
       label: "agent.bob",
-      acessible: true,
+      accessible: true,
       redelegationCount: 3,
     },
     position: { x: 0, y: 0 },
@@ -21,7 +21,7 @@ export const nodes: Node<NamespacePathNodeData>[] = [
     id: "bob-compute",
     data: {
       label: "agent.bob.compute",
-      acessible: true,
+      accessible: true,
       redelegationCount: 1,
     },
     position: { x: 0, y: 0 },
@@ -30,7 +30,7 @@ export const nodes: Node<NamespacePathNodeData>[] = [
     id: "bob-storage",
     data: {
       label: "agent.bob.storage",
-      acessible: false,
+      accessible: false,
       redelegationCount: 2,
     },
     position: { x: 0, y: 0 },
@@ -41,7 +41,7 @@ export const nodes: Node<NamespacePathNodeData>[] = [
     id: "agent-charlie",
     data: {
       label: "agent.charlie",
-      acessible: true,
+      accessible: true,
       redelegationCount: 2,
     },
     position: { x: 0, y: 0 },
@@ -50,7 +50,7 @@ export const nodes: Node<NamespacePathNodeData>[] = [
     id: "charlie-bridge",
     data: {
       label: "agent.charlie.bridge",
-      acessible: true,
+      accessible: true,
       redelegationCount: 1,
     },
     position: { x: 0, y: 0 },
@@ -59,7 +59,7 @@ export const nodes: Node<NamespacePathNodeData>[] = [
     id: "charlie-bridge-ethereum",
     data: {
       label: "agent.charlie.bridge.ethereum",
-      acessible: false,
+      accessible: false,
       redelegationCount: 0,
     },
     position: { x: 0, y: 0 },
@@ -68,7 +68,7 @@ export const nodes: Node<NamespacePathNodeData>[] = [
     id: "charlie-bridge-polygon",
     data: {
       label: "agent.charlie.bridge.polygon",
-      acessible: false,
+      accessible: false,
       redelegationCount: 0,
     },
     position: { x: 0, y: 0 },
@@ -79,7 +79,7 @@ export const nodes: Node<NamespacePathNodeData>[] = [
     id: "agent-diana",
     data: {
       label: "agent.diana",
-      acessible: true,
+      accessible: true,
       redelegationCount: 5,
     },
     position: { x: 0, y: 0 },
@@ -88,7 +88,7 @@ export const nodes: Node<NamespacePathNodeData>[] = [
     id: "diana-network",
     data: {
       label: "agent.diana.network",
-      acessible: true,
+      accessible: true,
       redelegationCount: 3,
     },
     position: { x: 0, y: 0 },
@@ -97,7 +97,7 @@ export const nodes: Node<NamespacePathNodeData>[] = [
     id: "diana-network-storage",
     data: {
       label: "agent.diana.network.storage",
-      acessible: true,
+      accessible: true,
       redelegationCount: 1,
     },
     position: { x: 0, y: 0 },
@@ -106,7 +106,7 @@ export const nodes: Node<NamespacePathNodeData>[] = [
     id: "diana-network-broadcast",
     data: {
       label: "agent.diana.network.broadcast",
-      acessible: false,
+      accessible: false,
       redelegationCount: 2,
     },
     position: { x: 0, y: 0 },
@@ -117,7 +117,7 @@ export const nodes: Node<NamespacePathNodeData>[] = [
     id: "agent-eve",
     data: {
       label: "agent.eve",
-      acessible: true,
+      accessible: true,
       redelegationCount: 2,
     },
     position: { x: 0, y: 0 },
@@ -126,7 +126,7 @@ export const nodes: Node<NamespacePathNodeData>[] = [
     id: "eve-monitor",
     data: {
       label: "agent.eve.monitor",
-      acessible: true,
+      accessible: true,
       redelegationCount: 1,
     },
     position: { x: 0, y: 0 },
@@ -135,7 +135,7 @@ export const nodes: Node<NamespacePathNodeData>[] = [
     id: "eve-audit",
     data: {
       label: "agent.eve.audit",
-      acessible: false,
+      accessible: false,
       redelegationCount: 0,
     },
     position: { x: 0, y: 0 },
@@ -146,7 +146,7 @@ export const nodes: Node<NamespacePathNodeData>[] = [
     id: "agent-services",
     data: {
       label: "agent.services",
-      acessible: true,
+      accessible: true,
       redelegationCount: 12,
     },
     position: { x: 0, y: 0 },
@@ -155,7 +155,7 @@ export const nodes: Node<NamespacePathNodeData>[] = [
     id: "service-database",
     data: {
       label: "agent.services.database",
-      acessible: true,
+      accessible: true,
       redelegationCount: 7,
     },
     position: { x: 0, y: 0 },
@@ -164,7 +164,7 @@ export const nodes: Node<NamespacePathNodeData>[] = [
     id: "service-messaging",
     data: {
       label: "agent.services.messaging",
-      acessible: true,
+      accessible: true,
       redelegationCount: 3,
     },
     position: { x: 0, y: 0 },
@@ -173,7 +173,7 @@ export const nodes: Node<NamespacePathNodeData>[] = [
     id: "service-cache",
     data: {
       label: "agent.services.cache",
-      acessible: false,
+      accessible: false,
       redelegationCount: 2,
     },
     position: { x: 0, y: 0 },
@@ -184,7 +184,7 @@ export const nodes: Node<NamespacePathNodeData>[] = [
     id: "db-read",
     data: {
       label: "agent.services.database.read",
-      acessible: true,
+      accessible: true,
       redelegationCount: 4,
     },
     position: { x: 0, y: 0 },
@@ -193,7 +193,7 @@ export const nodes: Node<NamespacePathNodeData>[] = [
     id: "db-write",
     data: {
       label: "agent.services.database.write",
-      acessible: true,
+      accessible: true,
       redelegationCount: 2,
     },
     position: { x: 0, y: 0 },
@@ -202,7 +202,7 @@ export const nodes: Node<NamespacePathNodeData>[] = [
     id: "db-admin",
     data: {
       label: "agent.services.database.admin",
-      acessible: false,
+      accessible: false,
       redelegationCount: 1,
     },
     position: { x: 0, y: 0 },
@@ -213,7 +213,7 @@ export const nodes: Node<NamespacePathNodeData>[] = [
     id: "db-admin-backup",
     data: {
       label: "agent.services.database.admin.backup",
-      acessible: false,
+      accessible: false,
       redelegationCount: 0,
     },
     position: { x: 0, y: 0 },
@@ -222,7 +222,7 @@ export const nodes: Node<NamespacePathNodeData>[] = [
     id: "db-admin-restore",
     data: {
       label: "agent.services.database.admin.restore",
-      acessible: false,
+      accessible: false,
       redelegationCount: 0,
     },
     position: { x: 0, y: 0 },
@@ -233,7 +233,7 @@ export const nodes: Node<NamespacePathNodeData>[] = [
     id: "msg-send",
     data: {
       label: "agent.services.messaging.send",
-      acessible: true,
+      accessible: true,
       redelegationCount: 2,
     },
     position: { x: 0, y: 0 },
@@ -242,7 +242,7 @@ export const nodes: Node<NamespacePathNodeData>[] = [
     id: "msg-broadcast",
     data: {
       label: "agent.services.messaging.broadcast",
-      acessible: true,
+      accessible: true,
       redelegationCount: 1,
     },
     position: { x: 0, y: 0 },
@@ -253,7 +253,7 @@ export const nodes: Node<NamespacePathNodeData>[] = [
     id: "agent-governance",
     data: {
       label: "agent.governance",
-      acessible: true,
+      accessible: true,
       redelegationCount: 8,
     },
     position: { x: 0, y: 0 },
@@ -262,7 +262,7 @@ export const nodes: Node<NamespacePathNodeData>[] = [
     id: "gov-proposals",
     data: {
       label: "agent.governance.proposals",
-      acessible: true,
+      accessible: true,
       redelegationCount: 5,
     },
     position: { x: 0, y: 0 },
@@ -271,7 +271,7 @@ export const nodes: Node<NamespacePathNodeData>[] = [
     id: "gov-voting",
     data: {
       label: "agent.governance.voting",
-      acessible: false,
+      accessible: false,
       redelegationCount: 3,
     },
     position: { x: 0, y: 0 },
@@ -282,7 +282,7 @@ export const nodes: Node<NamespacePathNodeData>[] = [
     id: "prop-create",
     data: {
       label: "agent.governance.proposals.create",
-      acessible: true,
+      accessible: true,
       redelegationCount: 2,
     },
     position: { x: 0, y: 0 },
@@ -291,7 +291,7 @@ export const nodes: Node<NamespacePathNodeData>[] = [
     id: "prop-vote",
     data: {
       label: "agent.governance.proposals.vote",
-      acessible: false,
+      accessible: false,
       redelegationCount: 0,
     },
     position: { x: 0, y: 0 },
@@ -302,7 +302,7 @@ export const nodes: Node<NamespacePathNodeData>[] = [
     id: "agent-api",
     data: {
       label: "agent.api",
-      acessible: true,
+      accessible: true,
       redelegationCount: 6,
     },
     position: { x: 0, y: 0 },
@@ -311,7 +311,7 @@ export const nodes: Node<NamespacePathNodeData>[] = [
     id: "api-v1",
     data: {
       label: "agent.api.v1",
-      acessible: true,
+      accessible: true,
       redelegationCount: 4,
     },
     position: { x: 0, y: 0 },
@@ -320,7 +320,7 @@ export const nodes: Node<NamespacePathNodeData>[] = [
     id: "api-v2",
     data: {
       label: "agent.api.v2",
-      acessible: false,
+      accessible: false,
       redelegationCount: 2,
     },
     position: { x: 0, y: 0 },
@@ -329,7 +329,7 @@ export const nodes: Node<NamespacePathNodeData>[] = [
     id: "api-v1-users",
     data: {
       label: "agent.api.v1.users",
-      acessible: true,
+      accessible: true,
       redelegationCount: 3,
     },
     position: { x: 0, y: 0 },
@@ -338,7 +338,7 @@ export const nodes: Node<NamespacePathNodeData>[] = [
     id: "api-v1-posts",
     data: {
       label: "agent.api.v1.posts",
-      acessible: true,
+      accessible: true,
       redelegationCount: 2,
     },
     position: { x: 0, y: 0 },
@@ -347,7 +347,7 @@ export const nodes: Node<NamespacePathNodeData>[] = [
     id: "api-v1-users-get",
     data: {
       label: "agent.api.v1.users.get",
-      acessible: true,
+      accessible: true,
       redelegationCount: 1,
     },
     position: { x: 0, y: 0 },
@@ -356,7 +356,7 @@ export const nodes: Node<NamespacePathNodeData>[] = [
     id: "api-v1-users-post",
     data: {
       label: "agent.api.v1.users.post",
-      acessible: false,
+      accessible: false,
       redelegationCount: 0,
     },
     position: { x: 0, y: 0 },

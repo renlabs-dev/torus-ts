@@ -36,7 +36,7 @@ const proOptions = {
 };
 export interface NamespacePathNodeData extends Record<string, unknown> {
   label: string;
-  acessible: boolean;
+  accessible: boolean;
   redelegationCount: number;
   selected?: boolean;
 }
@@ -99,7 +99,7 @@ function NamespacePathFlow({ onCreatePermission }: NamespacePathFlowProps) {
   const handleNodeClick = useCallback(
     (_event: React.MouseEvent, node: Node<NamespacePathNodeData>) => {
       // Only handle clicks on accessible nodes
-      if (!node.data.acessible) {
+      if (!node.data.accessible) {
         return;
       }
 
@@ -118,7 +118,7 @@ function NamespacePathFlow({ onCreatePermission }: NamespacePathFlowProps) {
         const descendants = getDescendantIds(nodeId);
         descendants.forEach((descendantId) => {
           const descendantNode = nodes.find((n) => n.id === descendantId);
-          if (descendantNode?.data.acessible) {
+          if (descendantNode?.data.accessible) {
             newSelectedPaths.add(descendantId);
           }
         });
@@ -197,7 +197,7 @@ function NamespacePathFlow({ onCreatePermission }: NamespacePathFlowProps) {
   }, [nodes, fitView]);
 
   const selectedCount = selectedPaths.size;
-  const accessibleCount = nodes.filter((node) => node.data.acessible).length;
+  const accessibleCount = nodes.filter((node) => node.data.accessible).length;
   const totalCount = nodes.length;
 
   return (
