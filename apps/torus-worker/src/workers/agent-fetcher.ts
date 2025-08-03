@@ -682,17 +682,9 @@ export async function runPermissionsFetch(lastBlock: LastBlock) {
 
   // Clean up permissions that no longer exist on the blockchain
   await cleanPermissions(permissionsMap, lastBlockNumber);
-  // Process permissions in batches of 50 to avoid timeout
-  const BATCH_SIZE = 50;
-  for (let i = 0; i < permissionsData.length; i += BATCH_SIZE) {
-    const batch = permissionsData.slice(i, i + BATCH_SIZE);
-    log.info(
-      `Block ${lastBlockNumber}: processing permission batch ${Math.floor(i / BATCH_SIZE) + 1}/${Math.ceil(permissionsData.length / BATCH_SIZE)} (${batch.length} permissions)`,
-    );
 
-    const upsertPermissionsRes = await tryAsync(upsertPermissions(batch));
-    if (log.ifResultIsErr(upsertPermissionsRes)) return;
-  }
+  const upsertPermissionsRes = await tryAsync(upsertPermissions(permissionsData));
+  if (log.ifResultIsErr(upsertPermissionsRes)) return;
 
   log.info(`Block ${lastBlockNumber}: permissions synchronized`);
 }
