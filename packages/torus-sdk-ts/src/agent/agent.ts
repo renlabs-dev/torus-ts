@@ -379,22 +379,39 @@ export class AgentServer {
         .forEach(([permissionId, permission]) => {
           match(permission.scope)({
             Namespace: (namespaceScope) => {
-              // Handle new namespace scope structure with paths as Map<Option<H256>, string[]>
-              for (const [_parent, paths] of namespaceScope.paths.entries()) {
-                // For each path in this permission, add the recipient to the list
-                paths.forEach((path) => {
-                  const normalizedPath = path.join(".").toLowerCase();
-                  const existingRecipients =
-                    this.delegatedNamespacePermissions.get(normalizedPath) ??
-                    [];
-                  if (!existingRecipients.includes(permission.recipient)) {
-                    existingRecipients.push(permission.recipient);
-                    this.delegatedNamespacePermissions.set(
-                      normalizedPath,
-                      existingRecipients,
-                    );
-                  }
-                });
+              if (namespaceScope.paths.size > 0) {
+                // For each entry in the paths map, process all paths
+                for (const [
+                  _parentPermId,
+                  pathsArray,
+                ] of namespaceScope.paths.entries()) {
+                  pathsArray.forEach((path) => {
+                    const normalizedPath = path.join(".").toLowerCase();
+                    const existingGrantees =
+                      this.delegatedNamespacePermissions.get(normalizedPath) ??
+                      [];
+                    if (!existingGrantees.includes(permission.recipient)) {
+                      existingGrantees.push(permission.recipient);
+                      this.delegatedNamespacePermissions.set(
+                        normalizedPath,
+                        existingGrantees,
+                      );
+                    }
+                  });
+                }
+
+                // Collect all paths for logging
+                const allPaths: string[] = [];
+                for (const [
+                  _parentPermId,
+                  pathsArray,
+                ] of namespaceScope.paths.entries()) {
+                  allPaths.push(...pathsArray.map((p) => p.join(".")));
+                }
+                console.log(
+                  `Cached namespace permission ${permissionId} for grantee ${permission.recipient} with paths:`,
+                  allPaths,
+                );
               }
               console.log(
                 `Cached namespace permission ${permissionId} for recipient ${permission.recipient}`,

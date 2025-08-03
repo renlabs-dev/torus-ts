@@ -200,7 +200,7 @@ export class TorusChainFetcher implements ChainFetcher {
 
   /**
    * Fetch whether an account is inactive unless redelegated
-   * Checks if the grantee of the specified permission has delegation streams to the target account with at least the required percentage
+   * Checks if the recipient of the specified permission has delegation streams to the target account with at least the required percentage
    */
   async fetchInactiveUnlessRedelegated(
     account: AccountId,
@@ -214,7 +214,7 @@ export class TorusChainFetcher implements ChainFetcher {
       const validTargetAccount = checkSS58(account);
       // const hexPermId = permissionId.startsWith('0x') ? permissionId as `0x${string}` : `0x${permissionId}`;
       const hexPermId = PERMISSION_ID_SCHEMA.parse(permissionId);
-      // Get the specific permission to find its grantee
+      // Get the specific permission to find its recipient
       const [permissionError, permission] = await queryPermission(
         api,
         hexPermId,

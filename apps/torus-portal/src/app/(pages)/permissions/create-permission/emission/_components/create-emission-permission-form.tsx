@@ -102,7 +102,12 @@ export function CreateEmissionPermissionForm() {
         });
       }
     },
-    [delegateEmissionPermissionTransaction, selectedAccount?.address, form, toast],
+    [
+      delegateEmissionPermissionTransaction,
+      selectedAccount?.address,
+      form,
+      toast,
+    ],
   );
 
   return (
