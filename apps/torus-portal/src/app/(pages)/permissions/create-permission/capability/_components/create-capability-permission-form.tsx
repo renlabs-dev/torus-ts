@@ -210,7 +210,8 @@ export function CreateCapabilityPermissionForm({
                   />
                 </FormControl>
                 <FormDescription>
-                  The maximum number of instances that can be created under this permission.
+                  The maximum number of instances that can be created under this
+                  permission.
                 </FormDescription>
                 <FormMessage />
               </FormItem>

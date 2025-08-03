@@ -702,7 +702,7 @@ export function buildAvailableStreamsFor(
       const grantee = permission.recipient;
 
       // Only add consider permissions that are granted to the agent
-      if (recipient !== agentId) continue;
+      if (grantee !== agentId) continue;
 
       const streams = extractStreamsFromPermission(permission);
       if (streams != null) {
@@ -789,8 +789,8 @@ export async function queryDelegationStreamsByAccount(
               const [streamId, percentage] = streamEntries[0]!;
 
               return {
-                grantor: grantorAccount,
-                grantee: permission.recipient,
+                delegator: delegatorAccount,
+                recipient: permission.recipient,
                 streamId,
                 percentage,
                 targets: emissionScope.targets,
@@ -880,7 +880,7 @@ export function delegateEmissionPermission({
     throw new Error("grantEmissionPermission transaction not available");
   }
   return api.tx.permission0.grantEmissionPermission(
-    grantee,
+    recipient,
     allocation,
     targetsMap_,
     distribution,
@@ -1002,8 +1002,8 @@ export function delegateNamespacePermission({
     throw new Error("grantNamespacePermission transaction not available");
   }
   return api.tx.permission0.grantNamespacePermission(
-    grantee,
-    pathsSet,
+    recipient,
+    pathsMap,
     duration,
     revocation,
     instances,

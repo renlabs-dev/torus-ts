@@ -547,14 +547,17 @@ export async function upsertPermissions(
     hierarchy: NewPermissionHierarchy;
     enforcementControllers: NewPermissionEnforcementController[];
     revocationArbiters: NewPermissionRevocationArbiter[];
-  } & ({
-    emissionPermission: NewEmissionPermission;
-    streamAllocations: NewEmissionStreamAllocation[];
-    distributionTargets: NewEmissionDistributionTarget[];
-  } | {
-    namespacePermission: NewNamespacePermission;
-    namespacePaths: NewNamespacePermissionPath[];
-  }))[],
+  } & (
+    | {
+        emissionPermission: NewEmissionPermission;
+        streamAllocations: NewEmissionStreamAllocation[];
+        distributionTargets: NewEmissionDistributionTarget[];
+      }
+    | {
+        namespacePermission: NewNamespacePermission;
+        namespacePaths: NewNamespacePermissionPath[];
+      }
+  ))[],
 ) {
   if (permissions.length === 0) return;
 
@@ -583,25 +586,29 @@ export async function upsertPermissions(
       });
 
     // Step 2: Separate emission and namespace permissions
-    const emissionPermissions = permissions.filter((p): p is typeof p & {
-      emissionPermission: NewEmissionPermission;
-      streamAllocations: NewEmissionStreamAllocation[];
-      distributionTargets: NewEmissionDistributionTarget[];
-    } => 
-      'emissionPermission' in p
+    const emissionPermissions = permissions.filter(
+      (
+        p,
+      ): p is typeof p & {
+        emissionPermission: NewEmissionPermission;
+        streamAllocations: NewEmissionStreamAllocation[];
+        distributionTargets: NewEmissionDistributionTarget[];
+      } => "emissionPermission" in p,
     );
-    const namespacePermissions = permissions.filter((p): p is typeof p & {
-      namespacePermission: NewNamespacePermission;
-      namespacePaths: NewNamespacePermissionPath[];
-    } => 
-      'namespacePermission' in p
+    const namespacePermissions = permissions.filter(
+      (
+        p,
+      ): p is typeof p & {
+        namespacePermission: NewNamespacePermission;
+        namespacePaths: NewNamespacePermissionPath[];
+      } => "namespacePermission" in p,
     );
 
     // Step 3: Bulk insert emission permissions
     if (emissionPermissions.length > 0) {
       await tx
         .insert(emissionPermissionsSchema)
-        .values(emissionPermissions.map(p => p.emissionPermission))
+        .values(emissionPermissions.map((p) => p.emissionPermission))
         .onConflictDoNothing({
           target: [emissionPermissionsSchema.permissionId],
         });
@@ -611,14 +618,16 @@ export async function upsertPermissions(
     if (namespacePermissions.length > 0) {
       await tx
         .insert(namespacePermissionsSchema)
-        .values(namespacePermissions.map(p => p.namespacePermission))
+        .values(namespacePermissions.map((p) => p.namespacePermission))
         .onConflictDoNothing({
           target: [namespacePermissionsSchema.permissionId],
         });
     }
 
     // Step 5: Bulk insert namespace paths
-    const namespacePaths = namespacePermissions.flatMap(p => p.namespacePaths);
+    const namespacePaths = namespacePermissions.flatMap(
+      (p) => p.namespacePaths,
+    );
     if (namespacePaths.length > 0) {
       await tx
         .insert(namespacePermissionPathsSchema)
@@ -632,7 +641,9 @@ export async function upsertPermissions(
     }
 
     // Step 6: Bulk insert stream allocations
-    const streamAllocations = emissionPermissions.flatMap(p => p.streamAllocations);
+    const streamAllocations = emissionPermissions.flatMap(
+      (p) => p.streamAllocations,
+    );
     if (streamAllocations.length > 0) {
       await tx
         .insert(emissionStreamAllocationsSchema)
@@ -646,7 +657,9 @@ export async function upsertPermissions(
     }
 
     // Step 7: Bulk insert distribution targets
-    const distributionTargets = emissionPermissions.flatMap(p => p.distributionTargets);
+    const distributionTargets = emissionPermissions.flatMap(
+      (p) => p.distributionTargets,
+    );
     if (distributionTargets.length > 0) {
       await tx
         .insert(emissionDistributionTargetsSchema)
@@ -666,7 +679,9 @@ export async function upsertPermissions(
     }
 
     // Step 8: Bulk insert enforcement controllers
-    const enforcementControllers = permissions.flatMap(p => p.enforcementControllers);
+    const enforcementControllers = permissions.flatMap(
+      (p) => p.enforcementControllers,
+    );
     if (enforcementControllers.length > 0) {
       await tx
         .insert(permissionEnforcementControllersSchema)
@@ -680,7 +695,7 @@ export async function upsertPermissions(
     }
 
     // Step 9: Bulk insert revocation arbiters
-    const revocationArbiters = permissions.flatMap(p => p.revocationArbiters);
+    const revocationArbiters = permissions.flatMap((p) => p.revocationArbiters);
     if (revocationArbiters.length > 0) {
       await tx
         .insert(permissionRevocationArbitersSchema)
@@ -694,7 +709,7 @@ export async function upsertPermissions(
     }
 
     // Step 10: Bulk insert hierarchies
-    const hierarchies = permissions.map(p => p.hierarchy);
+    const hierarchies = permissions.map((p) => p.hierarchy);
     if (hierarchies.length > 0) {
       await tx
         .insert(permissionHierarchiesSchema)

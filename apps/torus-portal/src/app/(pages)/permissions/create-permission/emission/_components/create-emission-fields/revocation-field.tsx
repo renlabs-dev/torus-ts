@@ -62,7 +62,9 @@ export function RevocationField({
                     form.setValue("revocation", { type: "Irrevocable" });
                     break;
                   case "RevocableByDelegator":
-                    form.setValue("revocation", { type: "RevocableByDelegator" });
+                    form.setValue("revocation", {
+                      type: "RevocableByDelegator",
+                    });
                     break;
                   case "RevocableByArbiters":
                     form.setValue("revocation", {

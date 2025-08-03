@@ -683,7 +683,9 @@ export async function runPermissionsFetch(lastBlock: LastBlock) {
   // Clean up permissions that no longer exist on the blockchain
   await cleanPermissions(permissionsMap, lastBlockNumber);
 
-  const upsertPermissionsRes = await tryAsync(upsertPermissions(permissionsData));
+  const upsertPermissionsRes = await tryAsync(
+    upsertPermissions(permissionsData),
+  );
   if (log.ifResultIsErr(upsertPermissionsRes)) return;
 
   log.info(`Block ${lastBlockNumber}: permissions synchronized`);
