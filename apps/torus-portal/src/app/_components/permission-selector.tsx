@@ -66,46 +66,48 @@ export function PermissionSelector(props: PermissionSelectorProps) {
   const { selectedAccount, isAccountConnected, api } = useTorus();
 
   // Get permission IDs where the user is the delegator
-  const { data: delegatorPermissionIds, isLoading: isLoadingDelegator } = useQuery({
-    queryKey: ["permissions_by_delegator", selectedAccount?.address],
-    queryFn: async () => {
-      if (!api || !selectedAccount?.address) return null;
-      const result = await queryPermissionsByDelegator(
-        api,
-        selectedAccount.address as SS58Address,
-      );
-      // Unwrap Result type
-      const [error, data] = result;
-      if (error) {
-        console.error("Error querying delegator permissions:", error);
-        return null;
-      }
-      return data;
-    },
-    enabled: !!api && !!selectedAccount?.address,
-    staleTime: CONSTANTS.TIME.STAKE_STALE_TIME,
-  });
+  const { data: delegatorPermissionIds, isLoading: isLoadingDelegator } =
+    useQuery({
+      queryKey: ["permissions_by_delegator", selectedAccount?.address],
+      queryFn: async () => {
+        if (!api || !selectedAccount?.address) return null;
+        const result = await queryPermissionsByDelegator(
+          api,
+          selectedAccount.address as SS58Address,
+        );
+        // Unwrap Result type
+        const [error, data] = result;
+        if (error) {
+          console.error("Error querying delegator permissions:", error);
+          return null;
+        }
+        return data;
+      },
+      enabled: !!api && !!selectedAccount?.address,
+      staleTime: CONSTANTS.TIME.STAKE_STALE_TIME,
+    });
 
   // Get permission IDs where the user is the recipient
-  const { data: recipientPermissionIds, isLoading: isLoadingRecipient } = useQuery({
-    queryKey: ["permissions_by_recipient", selectedAccount?.address],
-    queryFn: async () => {
-      if (!api || !selectedAccount?.address) return null;
-      const result = await queryPermissionsByRecipient(
-        api,
-        selectedAccount.address as SS58Address,
-      );
-      // Unwrap Result type
-      const [error, data] = result;
-      if (error) {
-        console.error("Error querying recipient permissions:", error);
-        return null;
-      }
-      return data;
-    },
-    enabled: !!api && !!selectedAccount?.address,
-    staleTime: CONSTANTS.TIME.STAKE_STALE_TIME,
-  });
+  const { data: recipientPermissionIds, isLoading: isLoadingRecipient } =
+    useQuery({
+      queryKey: ["permissions_by_recipient", selectedAccount?.address],
+      queryFn: async () => {
+        if (!api || !selectedAccount?.address) return null;
+        const result = await queryPermissionsByRecipient(
+          api,
+          selectedAccount.address as SS58Address,
+        );
+        // Unwrap Result type
+        const [error, data] = result;
+        if (error) {
+          console.error("Error querying recipient permissions:", error);
+          return null;
+        }
+        return data;
+      },
+      enabled: !!api && !!selectedAccount?.address,
+      staleTime: CONSTANTS.TIME.STAKE_STALE_TIME,
+    });
 
   // Get all permissions with full details
   const {
