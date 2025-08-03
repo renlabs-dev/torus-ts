@@ -55,8 +55,13 @@ const data = {
       title: "Permissions",
       items: [
         {
-          title: "Create Permission",
+          title: "Capability Permission",
           url: "/permissions/create-permission/capability",
+          icon: FilePlus,
+        },
+        {
+          title: "Emission Permission",
+          url: "/permissions/create-permission/emission",
           icon: FilePlus,
         },
         {
