@@ -66,6 +66,9 @@ catalogs:
     dotenv-cli:
       specifier: ^7.4.2
       version: 7.4.4
+    emittery:
+      specifier: ^1.2.0
+      version: 1.2.0
     eslint:
       specifier: ^9.9.0
       version: 9.22.0
@@ -1353,6 +1356,9 @@ importers:
       base64url:
         specifier: ^3.0.1
         version: 3.0.1
+      emittery:
+        specifier: 'catalog:'
+        version: 1.2.0
       hono:
         specifier: ^4.7.6
         version: 4.8.4
@@ -9689,6 +9695,10 @@ packages:
 
   embla-carousel@8.6.0:
     resolution: {integrity: sha512-SjWyZBHJPbqxHOzckOfo8lHisEaJWmwd23XppYFYVh10bU66/Pn5tkVkbkCMZVdbUE5eTCI2nD8OyIP4Z+uwkA==}
+
+  emittery@1.2.0:
+    resolution: {integrity: sha512-KxdRyyFcS85pH3dnU8Y5yFUm2YJdaHwcBZWrfG8o89ZY9a13/f9itbN+YG3ELbBo9Pg5zvIozstmuV8bX13q6g==}
+    engines: {node: '>=14.16'}
 
   emoji-regex@7.0.3:
     resolution: {integrity: sha512-CwBLREIQ7LvYFB0WyRvwhq5N5qPhc6PMjD6bYggFlI5YyDgl+0vxq5VHbMOFqLg7hfWzmu8T5Z1QofhmTIhItA==}
@@ -26913,6 +26923,8 @@ snapshots:
       embla-carousel: 8.6.0
 
   embla-carousel@8.6.0: {}
+
+  emittery@1.2.0: {}
 
   emoji-regex@7.0.3: {}
 

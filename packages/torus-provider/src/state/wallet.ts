@@ -8,7 +8,7 @@ import { match } from "rustie";
 import { create } from "zustand";
 import { immer } from "zustand/middleware/immer";
 
-import type { TxStage } from "../transactions";
+import type { TxStage } from "@torus-network/sdk/extrinsics";
 
 // TODO: finish implementing this refactor
 

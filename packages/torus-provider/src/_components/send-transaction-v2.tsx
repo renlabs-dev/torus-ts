@@ -7,6 +7,11 @@ import type { DispatchError } from "@polkadot/types/interfaces";
 import type { ISubmittableResult } from "@polkadot/types/types";
 import { match } from "rustie";
 
+import type { TxHelper, TxStage } from "@torus-network/sdk/extrinsics";
+import {
+  sb_extrinsic_status,
+  txStatusToTxHelper,
+} from "@torus-network/sdk/extrinsics";
 import { chainErr } from "@torus-network/torus-utils/error";
 import { BasicLogger } from "@torus-network/torus-utils/logger";
 import type { Result } from "@torus-network/torus-utils/result";
@@ -16,8 +21,6 @@ import { tryAsync, trySync } from "@torus-network/torus-utils/try-catch";
 import { toast } from "@torus-ts/ui/hooks/use-toast";
 
 import type { InjectedAccountWithMeta } from "../torus-provider";
-import type { TxHelper, TxStage } from "../transactions";
-import { sb_extrinsic_status, txStatusToTxHelper } from "../transactions";
 import { getMerkleizedMetadata, updateMetadata } from "../utils/chain-metadata";
 
 const strErr = (txt: string) => new Error(txt);
