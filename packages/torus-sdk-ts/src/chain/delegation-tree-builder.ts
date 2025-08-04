@@ -2,10 +2,9 @@ import type { Result } from "@torus-network/torus-utils/result";
 import { makeErr, makeOk } from "@torus-network/torus-utils/result";
 
 import type { SS58Address } from "../types/address.js";
-import type { Api } from "./common/index.js";
-import type { SbQueryError } from "./common/index.js";
-import { queryAgentNamespacePermissions } from "./permission0.js";
+import type { Api, SbQueryError } from "./common/index.js";
 import type { PermissionContract, PermissionId } from "./permission0.js";
+import { queryAgentNamespacePermissions } from "./permission0.js";
 import { queryNamespaceEntriesOf } from "./torus0/namespace.js";
 
 /**

@@ -143,7 +143,6 @@ export const PERMISSION_DURATION_SCHEMA = sb_enum({
 
 export const REVOCATION_TERMS_SCHEMA = sb_enum({
   Irrevocable: sb_null,
-  RevocableByGrantor: sb_null,
   RevocableByDelegator: sb_null,
   RevocableByArbiters: sb_struct({
     accounts: sb_array(sb_address),
@@ -1026,10 +1025,7 @@ export function delegateNamespacePermission({
     pathsMap.set(optionParent, btreeSet);
   }
 
-  if (!api.tx.permission0.grantNamespacePermission) {
-    throw new Error("grantNamespacePermission transaction not available");
-  }
-  return api.tx.permission0.grantNamespacePermission(
+  return api.tx.permission0.delegateNamespacePermission(
     recipient,
     pathsMap,
     duration,

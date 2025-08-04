@@ -5,3 +5,4 @@ export * from "./governance.js";
 export * from "./torus0/index.js";
 export * from "./emission0.js";
 export * from "./permission0.js";
+export * from "./delegation-tree-builder.js";

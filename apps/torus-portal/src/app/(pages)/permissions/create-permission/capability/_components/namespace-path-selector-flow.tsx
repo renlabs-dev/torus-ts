@@ -4,7 +4,8 @@ import "@xyflow/react/dist/style.css";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 
-import type { Node } from "@xyflow/react";
+import { useQueryClient } from "@tanstack/react-query";
+import type { Edge, Node } from "@xyflow/react";
 import {
   Background,
   Panel,
@@ -15,17 +16,15 @@ import {
   useReactFlow,
 } from "@xyflow/react";
 
+import { useTorus } from "@torus-ts/torus-provider";
 import { Badge } from "@torus-ts/ui/components/badge";
 import { Button } from "@torus-ts/ui/components/button";
 
 import type { LayoutOptions } from "~/app/_components/react-flow-layout/use-auto-layout";
 import useAutoLayout from "~/app/_components/react-flow-layout/use-auto-layout";
 
-import {
-  edges as initialEdges,
-  nodes as initialNodes,
-} from "./mock-capability-path-data";
 import { NamespacePathNode } from "./namespace-path-node";
+import { useDelegationTree } from "./use-delegation-tree";
 
 const nodeTypes = {
   namespacePath: NamespacePathNode,
@@ -47,20 +46,69 @@ interface NamespacePathFlowProps {
 
 function NamespacePathFlow({ onCreatePermission }: NamespacePathFlowProps) {
   const { fitView } = useReactFlow();
-  const [nodes, setNodes, onNodesChange] = useNodesState(
-    initialNodes.map((node, index) => ({
-      ...node,
-      type: "namespacePath",
-      // Give initial spread positions to avoid overlap while layout loads
-      position: { x: (index % 3) * 200, y: Math.floor(index / 3) * 100 },
-      data: {
-        ...node.data,
-        selected: false,
-      } as NamespacePathNodeData,
-    })),
-  );
-  const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
+  const queryClient = useQueryClient();
+  const { selectedAccount } = useTorus();
   const [selectedPaths, setSelectedPaths] = useState<Set<string>>(new Set());
+  const [currentWallet, setCurrentWallet] = useState<string | null>(
+    selectedAccount?.address ?? null,
+  );
+
+  // Track wallet changes and force immediate state clearing
+  const walletAddress = selectedAccount?.address ?? null;
+  const isWalletChanging = currentWallet !== walletAddress;
+
+  // Fetch real delegation tree data, but disable during wallet changes
+  const {
+    data: delegationData,
+    isLoading,
+    error,
+    refetch,
+  } = useDelegationTree({
+    enabled: !isWalletChanging,
+  });
+
+  const [nodes, setNodes, onNodesChange] = useNodesState<
+    Node<NamespacePathNodeData>
+  >([]);
+  const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
+
+  // Handle wallet changes
+  useEffect(() => {
+    if (isWalletChanging) {
+      // Immediately clear all state when wallet changes
+      setNodes([]);
+      setEdges([]);
+      setSelectedPaths(new Set());
+
+      // Update current wallet and refetch for new wallet
+      setCurrentWallet(walletAddress);
+
+      // Invalidate queries and refetch
+      void queryClient.invalidateQueries({
+        queryKey: ["delegationTree"],
+      });
+
+      // Wait a tick for the wallet to be updated, then refetch
+      setTimeout(() => {
+        void refetch();
+      }, 100);
+    }
+  }, [
+    isWalletChanging,
+    walletAddress,
+    setNodes,
+    setEdges,
+    queryClient,
+    refetch,
+  ]);
+
+  // Update nodes and edges when delegation data loads
+  useEffect(() => {
+    if (delegationData && !isWalletChanging) {
+      setNodes(delegationData.nodes);
+      setEdges(delegationData.edges);
+    }
+  }, [delegationData, setNodes, setEdges, isWalletChanging]);
 
   const layoutOptions: LayoutOptions = useMemo(
     () => ({
@@ -200,6 +248,56 @@ function NamespacePathFlow({ onCreatePermission }: NamespacePathFlowProps) {
   const accessibleCount = nodes.filter((node) => node.data.accessible).length;
   const totalCount = nodes.length;
 
+  // Show loading state
+  if (isLoading || isWalletChanging) {
+    return (
+      <div className="h-full w-full relative -top-14 flex items-center justify-center">
+        <div className="text-center space-y-2">
+          <div className="text-lg font-medium">
+            {isWalletChanging
+              ? "Switching wallet..."
+              : "Loading namespace permissions..."}
+          </div>
+          <div className="text-sm text-muted-foreground">
+            {isWalletChanging
+              ? "Updating delegation tree for new wallet"
+              : "Fetching delegation tree from blockchain"}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Show error state
+  if (error) {
+    return (
+      <div className="h-full w-full relative -top-14 flex items-center justify-center">
+        <div className="text-center space-y-2">
+          <div className="text-lg font-medium text-destructive">
+            Failed to load delegation tree
+          </div>
+          <div className="text-sm text-muted-foreground">{error.message}</div>
+        </div>
+      </div>
+    );
+  }
+
+  // Show empty state if no nodes
+  if (!delegationData || nodes.length === 0) {
+    return (
+      <div className="h-full w-full relative -top-14 flex items-center justify-center">
+        <div className="text-center space-y-2">
+          <div className="text-lg font-medium">
+            No delegation permissions found
+          </div>
+          <div className="text-sm text-muted-foreground">
+            You don't have any namespace permissions to delegate
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="h-full w-full relative -top-14">
       <ReactFlow
@@ -245,13 +343,13 @@ function NamespacePathFlow({ onCreatePermission }: NamespacePathFlowProps) {
             disabled={selectedCount === 0}
             onClick={() => {
               if (selectedCount > 0 && onCreatePermission) {
-                const selectedLabels = Array.from(selectedPaths)
+                const selectedNamespaces = Array.from(selectedPaths)
                   .map((nodeId) => {
                     const node = nodes.find((n) => n.id === nodeId);
                     return String(node?.data.label ?? "");
                   })
                   .filter(Boolean);
-                onCreatePermission(selectedLabels);
+                onCreatePermission(selectedNamespaces);
               }
             }}
           >

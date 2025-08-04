@@ -36,7 +36,7 @@ export const NamespacePathNode = memo(function NamespacePathNode({
           isSelected ? "border-green-500" : "border-border",
         )}
       >
-        {data.redelegationCount}
+        {data.redelegationCount === Infinity ? "∞" : data.redelegationCount}
       </div>
 
       <div className="font-mono text-sm leading-tight">{data.label}</div>
