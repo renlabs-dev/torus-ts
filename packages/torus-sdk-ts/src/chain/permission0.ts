@@ -269,9 +269,6 @@ export async function queryPermissionsByDelegator(
   api: Api,
   delegator: SS58Address,
 ): Promise<Result<`0x${string}`[], SbQueryError | ZError<unknown>>> {
-  if (!api.query.permission0.permissionsByGrantor) {
-    return makeErr(new Error("permissionsByGrantor query not available"));
-  }
   const [queryError, query] = await tryAsync(
     api.query.permission0.permissionsByDelegator(delegator),
   );
@@ -361,6 +358,37 @@ export async function queryNamespacePermissions(
   }
 
   return makeOk(namespacePermissions);
+}
+
+/**
+ * Query namespace permissions where the specified address is the recipient.
+ *
+ * @param api - The blockchain API instance
+ * @param agentAddress - The SS58 address of the agent (recipient)
+ * @returns A map of PermissionId -> PermissionContract for permissions where the agent is the recipient
+ */
+export async function queryAgentNamespacePermissions(
+  api: Api,
+  agentAddress: SS58Address,
+): Promise<
+  Result<
+    Map<PermissionId, PermissionContract>,
+    SbQueryError | ZError<H256> | ZError<PermissionContract>
+  >
+> {
+  const [permissionsError, allPermissions] =
+    await queryNamespacePermissions(api);
+  if (permissionsError) return makeErr(permissionsError);
+
+  const agentPermissions = new Map<PermissionId, PermissionContract>();
+
+  for (const [permissionId, permission] of allPermissions) {
+    if (permission.recipient === agentAddress) {
+      agentPermissions.set(permissionId, permission);
+    }
+  }
+
+  return makeOk(agentPermissions);
 }
 
 /**
