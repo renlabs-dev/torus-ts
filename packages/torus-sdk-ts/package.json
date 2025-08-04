@@ -30,6 +30,10 @@
       "default": "./dist/evm.js",
       "types": "./dist/evm.d.ts"
     },
+    "./extrinsics": {
+      "default": "./dist/extrinsics.js",
+      "types": "./dist/extrinsics.d.ts"
+    },
     "./metadata": {
       "default": "./dist/metadata/index.js",
       "types": "./dist/metadata/index.d.ts"
@@ -73,6 +77,7 @@
     "@torus-network/torus-utils": "workspace:*",
     "@wagmi/core": "2.16.3",
     "base64url": "^3.0.1",
+    "emittery": "catalog:",
     "hono": "^4.7.6",
     "hono-rate-limiter": "^0.4.2",
     "jsonwebtoken": "^9.0.2",
