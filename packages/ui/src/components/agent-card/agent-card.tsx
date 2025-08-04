@@ -23,7 +23,6 @@ export interface AgentCardProps {
   isAgentDelegated?: boolean;
   isAgentSelected?: boolean;
   tokensPerWeek?: string;
-  usdValue?: string;
   currentPercentage?: number;
   onPercentageChange?: (value: number) => void;
   isAccountConnected?: boolean;
@@ -47,7 +46,6 @@ export function AgentCard(props: Readonly<AgentCardProps>) {
     isAgentDelegated,
     isAgentSelected,
     tokensPerWeek,
-    usdValue,
     currentPercentage,
     onPercentageChange,
     isAccountConnected,
@@ -77,7 +75,6 @@ export function AgentCard(props: Readonly<AgentCardProps>) {
         agentKey={agentKey}
         percComputedWeight={percComputedWeight}
         tokensPerWeek={tokensPerWeek}
-        usdValue={usdValue}
         isLoading={isMetadataLoading}
         isStatsLoading={isLoading}
       />

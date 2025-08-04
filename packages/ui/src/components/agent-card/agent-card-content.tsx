@@ -1,6 +1,6 @@
 "use client";
 
-import { Coins, DollarSign, Globe, Key } from "lucide-react";
+import { Coins, Globe, Key } from "lucide-react";
 
 import { smallAddress } from "@torus-network/torus-utils/torus/address";
 
@@ -17,7 +17,6 @@ interface AgentCardContentProps {
   agentKey: string;
   percComputedWeight?: number | null;
   tokensPerWeek?: string;
-  usdValue?: string;
   isLoading?: boolean;
   isStatsLoading?: boolean;
 }
@@ -26,7 +25,6 @@ function AgentStats({
   percComputedWeight,
   tokensPerWeek,
   agentKey,
-  usdValue,
   isLoading = false,
 }: {
   agentKey: string;
@@ -42,52 +40,40 @@ function AgentStats({
     !tokensPerWeek.startsWith("0.00") &&
     !tokensPerWeek.startsWith("0 ");
 
-  const shouldShowUsdValue =
-    usdValue && !usdValue.startsWith("$0.00") && !usdValue.startsWith("$0 ");
-
-  const hasStats =
-    ((percComputedWeight !== null && percComputedWeight !== 0) ||
-      shouldShowTokensPerWeek) ??
-    shouldShowUsdValue;
-
-  if (!hasStats) return null;
+  // Always show stats section to display address and other info
+  // Individual stats will show "-" for missing values
 
   return (
     <div className="relative z-30 flex w-full flex-wrap items-center justify-between gap-3">
-      {percComputedWeight !== null && percComputedWeight !== undefined && (
-        <HoverCard>
-          <HoverCardTrigger>
-            <Label className="flex items-center gap-1.5 text-xs font-semibold">
-              <Globe size={14} />
-              {Math.round(percComputedWeight * 100)}%
-            </Label>
-          </HoverCardTrigger>
-          <HoverCardContent className="w-80">
-            <p className="text-sm">Current emission alocated to this agent.</p>
-          </HoverCardContent>
-        </HoverCard>
-      )}
+      <HoverCard>
+        <HoverCardTrigger>
+          <Label className="flex items-center gap-1.5 text-xs font-semibold">
+            <Globe size={14} />
+            {percComputedWeight !== null && percComputedWeight !== undefined
+              ? `${Math.round(percComputedWeight * 100)}%`
+              : "-"}
+          </Label>
+        </HoverCardTrigger>
+        <HoverCardContent className="w-80">
+          <p className="text-sm">Current emission allocated to this agent.</p>
+        </HoverCardContent>
+      </HoverCard>
 
-      {shouldShowTokensPerWeek && (
-        <HoverCard>
-          <HoverCardTrigger>
-            <Label className="flex items-center gap-1 text-xs font-semibold">
-              <Coins size={16} />
-              {isLoading ? "Loading..." : tokensPerWeek}
-            </Label>
-          </HoverCardTrigger>
-          <HoverCardContent className="w-80">
-            <p className="text-sm">Tokens per week.</p>
-          </HoverCardContent>
-        </HoverCard>
-      )}
-
-      {shouldShowUsdValue && (
-        <Label className="flex items-center gap-1 text-xs font-semibold">
-          <DollarSign size={14} />
-          {isLoading ? "Loading..." : usdValue}
-        </Label>
-      )}
+      <HoverCard>
+        <HoverCardTrigger>
+          <Label className="flex items-center gap-1 text-xs font-semibold">
+            <Coins size={16} />
+            {isLoading
+              ? "Loading..."
+              : shouldShowTokensPerWeek
+                ? tokensPerWeek
+                : "-"}
+          </Label>
+        </HoverCardTrigger>
+        <HoverCardContent className="w-80">
+          <p className="text-sm">Tokens per week.</p>
+        </HoverCardContent>
+      </HoverCard>
 
       <Label className="flex items-center gap-1 text-xs font-semibold">
         <Key size={14} />
@@ -102,7 +88,6 @@ export function AgentCardContent({
   agentKey,
   percComputedWeight,
   tokensPerWeek,
-  usdValue,
   isLoading = false,
   isStatsLoading = false,
 }: Readonly<AgentCardContentProps>) {
@@ -118,7 +103,6 @@ export function AgentCardContent({
             agentKey={agentKey}
             percComputedWeight={percComputedWeight}
             tokensPerWeek={tokensPerWeek}
-            usdValue={usdValue}
             isLoading={isStatsLoading}
           />
         </div>
