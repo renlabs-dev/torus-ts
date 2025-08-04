@@ -11,7 +11,7 @@ import {
   queryAgentNamespacePermissions,
   queryNamespacePermissions,
 } from "./chain/permission0.js";
-import { buildDelegationTree, DelegationTreeManager } from "./chain/delegation-tree-builder.js";
+import { DelegationTreeManager } from "./chain/delegation-tree-builder.js";
 import type { SS58Address } from "./types/address.js";
 
 const wsEndpoint = "wss://api.testnet.torus.network";
@@ -81,20 +81,22 @@ async function main() {
         const edges = treeManager.getEdges();
         console.log(`✅ Built delegation tree with ${nodes.length} nodes and ${edges.length} edges`);
         
-        // Show tree structure with new redelegation count format
+        // Show tree structure with new permission-based format
         console.log("\n📊 Delegation Tree Structure:");
         console.log("Nodes:");
         for (const node of nodes) {
           const accessIcon = node.accessible ? "✅" : "❌";
-          const totalCount = treeManager.getTotalRedelegationCount(node.id);
+          const permissions = treeManager.getNodePermissions(node.id);
           
-          // Show detailed redelegation count breakdown
-          const countDetails = Array.from(node.redelegationCount.entries())
-            .map(([parent, count]) => `${parent}:${count === null ? "∞" : count}`)
+          // Show detailed permission breakdown
+          const permissionDetails = Array.from(permissions.entries())
+            .map(([permId, count]) => {
+              const displayId = permId === "self" ? "self" : permId.slice(0, 8) + "...";
+              return `${displayId}:${count === null ? "∞" : count}`;
+            })
             .join(", ");
           
-          const totalDisplay = totalCount === null ? "∞" : totalCount;
-          console.log(`  ${accessIcon} ${node.id}: "${node.label}" (total: ${totalDisplay}, breakdown: {${countDetails}})`);
+          console.log(`  ${accessIcon} ${node.id}: "${node.label}" (permissions: {${permissionDetails}})`);
         }
         
         console.log("\nEdges:");
@@ -102,32 +104,70 @@ async function main() {
           console.log(`  ${edge.source} → ${edge.target}`);
         }
         
-        // Test cascading updates
-        console.log("\n🔄 Testing cascading updates...");
-        const sampleNode = nodes.find(n => n.accessible && n.redelegationCount.size > 0);
-        if (sampleNode) {
-          const [firstParent] = sampleNode.redelegationCount.keys();
-          const originalCount = sampleNode.redelegationCount.get(firstParent!)!;
-          
-          console.log(`Original count for ${sampleNode.id} from ${firstParent}: ${originalCount}`);
-          
-          // Update the count
-          treeManager.updateRedelegationCount(sampleNode.id, firstParent!, 99);
-          
-          console.log(`Updated count for ${sampleNode.id} from ${firstParent}: ${sampleNode.redelegationCount.get(firstParent!)}`);
-          
-          // Check if it cascaded to children
-          const children = treeManager.getChildren(sampleNode.id);
-          for (const childId of children) {
-            const child = treeManager.getNode(childId);
-            if (child && child.redelegationCount.has(firstParent!)) {
-              console.log(`Cascaded to child ${childId}: ${child.redelegationCount.get(firstParent!)}`);
+        // Test permission updates
+        console.log("\n🔄 Testing permission updates...");
+        const allPermissions = treeManager.getAllPermissionCounts();
+        const sampleNode = nodes.find(n => n.accessible && n.permissions.size > 0);
+        
+        if (sampleNode && sampleNode.permissions.size > 0) {
+          const [firstPermission] = sampleNode.permissions;
+          if (firstPermission && firstPermission !== "self") {
+            const originalCount = allPermissions.get(firstPermission);
+            
+            console.log(`Original count for permission ${firstPermission.slice(0, 8)}...: ${originalCount}`);
+            
+            // Update the permission count globally
+            treeManager.updatePermissionCount(firstPermission, 99);
+            
+            // Check the updated count
+            const updatedPermissions = treeManager.getNodePermissions(sampleNode.id);
+            const newCount = updatedPermissions.get(firstPermission);
+            console.log(`Updated count for permission ${firstPermission.slice(0, 8)}...: ${newCount}`);
+            
+            // Show that it affects all nodes with this permission
+            console.log("Affected nodes:");
+            for (const node of nodes) {
+              if (node.permissions.has(firstPermission)) {
+                console.log(`  - ${node.id}`);
+              }
             }
           }
         }
         
-        // Test weakest delegator finding
-        console.log("\n🎯 Testing weakest delegator finding...");
+        // Test finding permission with most instances
+        console.log("\n🏆 Testing finding permission with most instances...");
+        const testNamespaces = ["agent.gumball.hello.post", "agent.dev01.arthur.doyle.run", "agent.kek.asd.nic"];
+        
+        for (const namespace of testNamespaces) {
+          const best = treeManager.getPermissionWithMostInstances(namespace);
+          if (best) {
+            const displayId = best.permissionId === "self" ? "self" : best.permissionId.slice(0, 8) + "...";
+            const displayCount = best.count === null ? "∞" : best.count;
+            console.log(`${namespace} → Best permission: ${displayId} with ${displayCount} instances`);
+          } else {
+            console.log(`${namespace} → No permissions found`);
+          }
+        }
+        
+        // Test permission intersection
+        console.log("\n🔀 Testing permission intersection...");
+        const intersectionTests = [
+          ["agent.gumball", "agent.gumball.hello", "agent.gumball.hello.post"],
+          ["agent.dev01.arthur", "agent.dev01.arthur.doyle", "agent.dev01.arthur.doyle.run"],
+          ["agent.gumball.hello.post", "agent.dev01.arthur.doyle.run"],
+        ];
+        
+        for (const paths of intersectionTests) {
+          const intersection = treeManager.getPermissionIntersection(paths);
+          const permDetails = Array.from(intersection)
+            .map(permId => permId === "self" ? "self" : permId.slice(0, 8) + "...")
+            .join(", ");
+          console.log(`Intersection of [${paths.join(", ")}]:`);
+          console.log(`  → {${permDetails}}`);
+        }
+        
+        // Test finding nodes with permissions
+        console.log("\n🎯 Testing finding nodes with permissions...");
         
         // Test with some example targets
         const testTargets = [
@@ -139,24 +179,21 @@ async function main() {
         ];
         
         for (const target of testTargets) {
-          const weakest = treeManager.getWeakestDelegator(target);
-          if (weakest) {
-            const totalCount = treeManager.getTotalRedelegationCount(weakest.id);
-            const countDisplay = totalCount === null ? "∞" : totalCount;
-            console.log(`Target: ${target} → Weakest delegator: ${weakest.id} (${countDisplay} instances)`);
-            
-            // Show all possible delegators for comparison
-            const allDelegators = treeManager.getAllDelegatorsFor(target);
-            if (allDelegators.length > 1) {
-              const alternatives = allDelegators.slice(1).map(d => {
-                const count = treeManager.getTotalRedelegationCount(d.id);
-                const display = count === null ? "∞" : count;
-                return `${d.id}(${display})`;
-              }).join(", ");
-              console.log(`  Other options: ${alternatives}`);
+          const nodesWithPerms = treeManager.getNodesWithPermissionsFor(target);
+          if (nodesWithPerms.length > 0) {
+            console.log(`Target: ${target}`);
+            for (const node of nodesWithPerms) {
+              const permissions = treeManager.getNodePermissions(node.id);
+              const permDetails = Array.from(permissions.entries())
+                .map(([permId, count]) => {
+                  const displayId = permId === "self" ? "self" : permId.slice(0, 8) + "...";
+                  return `${displayId}:${count === null ? "∞" : count}`;
+                })
+                .join(", ");
+              console.log(`  → ${node.id} (permissions: {${permDetails}})`);
             }
           } else {
-            console.log(`Target: ${target} → No delegator available`);
+            console.log(`Target: ${target} → No nodes with permissions available`);
           }
         }
       }

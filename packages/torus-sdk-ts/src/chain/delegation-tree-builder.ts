@@ -8,13 +8,26 @@ import { queryAgentNamespacePermissions } from "./permission0.js";
 import { queryNamespaceEntriesOf } from "./torus0/namespace.js";
 
 /**
+ * Utility function to compute the intersection of two sets
+ */
+function setIntersection<T>(setA: Set<T>, setB: Set<T>): Set<T> {
+  const intersection = new Set<T>();
+  for (const item of setA) {
+    if (setB.has(item)) {
+      intersection.add(item);
+    }
+  }
+  return intersection;
+}
+
+/**
  * Node data structure for delegation tree graph visualization
  */
 export interface DelegationNodeData extends Record<string, unknown> {
   id: string;
   label: string;
   accessible: boolean;
-  redelegationCount: Map<string, number | null>; // parentNodeId -> count (null = infinite)
+  permissions: Set<PermissionId | "self">; // Set of permissions that can delegate this namespace
 }
 
 /**
@@ -42,14 +55,14 @@ export class DelegationTreeManager {
   private parentChildMap: Map<string, Set<string>>;
   private childParentMap: Map<string, string>;
   private edges: DelegationEdge[];
-  private ownedNamespaces: Set<string>;
+  private permissionCounts: Map<PermissionId | "self", number | null>;
 
   private constructor() {
     this.nodes = new Map();
     this.parentChildMap = new Map();
     this.childParentMap = new Map();
     this.edges = [];
-    this.ownedNamespaces = new Set();
+    this.permissionCounts = new Map();
   }
 
   /**
@@ -76,29 +89,32 @@ export class DelegationTreeManager {
    */
   private static processAccessibleNamespaces(
     accessibleNamespaces: string[],
-    ownedNamespace: string,
+    permissionId: PermissionId | "self",
     maxInstances: number | null,
     nodeMap: Map<string, DelegationNodeData>,
+    permissionCounts: Map<PermissionId | "self", number | null>,
   ): void {
+    // Store the permission count in the central map
+    permissionCounts.set(permissionId, maxInstances);
+
     for (const namespace of accessibleNamespaces) {
       const pathParts = namespace.split(".");
       const nodeId = pathParts.join("-");
       const label = pathParts[pathParts.length - 1] ?? namespace;
 
-      if (!nodeMap.has(nodeId)) {
-        const redelegationCount = new Map<string, number | null>();
-
-        // The owned namespace is what grants redelegation capability
-        const ownedNodeId = ownedNamespace.replace(/\./g, "-");
-        redelegationCount.set(ownedNodeId, maxInstances);
-
-        nodeMap.set(nodeId, {
+      let node = nodeMap.get(nodeId);
+      if (!node) {
+        node = {
           id: nodeId,
           label,
           accessible: true,
-          redelegationCount,
-        });
+          permissions: new Set<PermissionId | "self">(),
+        };
+        nodeMap.set(nodeId, node);
       }
+
+      // Add this permission to the node's permissions set
+      node.permissions.add(permissionId);
     }
   }
 
@@ -139,7 +155,7 @@ export class DelegationTreeManager {
             id: prefixNodeId,
             label: prefixLabel,
             accessible: false,
-            redelegationCount: new Map(),
+            permissions: new Set<PermissionId | "self">(),
           });
         }
       }
@@ -184,19 +200,21 @@ export class DelegationTreeManager {
     const nodeMap = new Map<string, DelegationNodeData>();
     const edgeSet = new Set<string>();
     const allNamespaces = new Set<string>();
+    const permissionCounts = new Map<PermissionId | "self", number | null>();
 
     for (const ownedNamespace of ownedNamespaces) {
       DelegationTreeManager.processAccessibleNamespaces(
         [ownedNamespace], // Single namespace as array
-        ownedNamespace, // Self-reference for the key
+        "self",
         null, // Infinite redelegations
         nodeMap,
+        permissionCounts,
       );
       allNamespaces.add(ownedNamespace);
     }
 
     // Step 4: Process delegated permissions
-    for (const [_permissionId, permission] of agentPermissions) {
+    for (const [permissionId, permission] of agentPermissions) {
       if (!("Namespace" in permission.scope)) continue;
 
       const namespaceScope = permission.scope.Namespace;
@@ -222,9 +240,10 @@ export class DelegationTreeManager {
           // Step 6: Build nodes for the accessible namespaces
           DelegationTreeManager.processAccessibleNamespaces(
             accessibleNamespaces,
-            ownedNamespace,
+            permissionId,
             Number(permission.maxInstances),
             nodeMap,
+            permissionCounts,
           );
 
           // Collect all namespaces for hierarchy processing later
@@ -247,7 +266,7 @@ export class DelegationTreeManager {
 
     // Initialize the manager with the built data
     manager.nodes = nodeMap;
-    manager.ownedNamespaces = ownedNamespaces;
+    manager.permissionCounts = permissionCounts;
     manager.edges = Array.from(edgeSet).map((edgeId) => {
       const parts = edgeId.split("->");
       const source = parts[0];
@@ -289,82 +308,25 @@ export class DelegationTreeManager {
   }
 
   /**
-   * Update the redelegation count for a specific parent reference in a node
-   * This will cascade the change to all descendant nodes
+   * Update the count for a specific permission globally
    *
-   * @returns The actual value that was set, null if self-owned (infinite), or undefined if node not found
+   * @returns The actual value that was set, null if self-owned (infinite)
    */
-  updateRedelegationCount(
-    nodeId: string,
-    parentReference: string,
+  updatePermissionCount(
+    permissionId: PermissionId | "self",
     newCount: number | null,
-  ): number | null | undefined {
-    const node = this.nodes.get(nodeId);
-    if (!node) return undefined;
-
-    // Convert nodeId back to namespace to check if we own it
-    const namespace = nodeId.replace(/-/g, ".");
-
-    // Check if this namespace is owned by our agent
-    // Self-owned namespaces always have infinite (null) redelegation count and can't be updated
-    if (this.ownedNamespaces.has(namespace)) {
+  ): number | null {
+    // Self-owned permissions can't be updated
+    if (permissionId === "self") {
       return null; // Return null to indicate infinite/unchanged
     }
 
-    // Update the node's own count
-    node.redelegationCount.set(parentReference, newCount);
-
-    // Cascade to all descendants
-    this.cascadeRedelegationCount(nodeId, parentReference, newCount);
+    // Update the permission's count in the central map
+    this.permissionCounts.set(permissionId, newCount);
 
     return newCount;
   }
 
-  /**
-   * Get all descendant nodes of a given node
-   */
-  private getDescendants(nodeId: string): Set<string> {
-    const descendants = new Set<string>();
-    const stack = [nodeId];
-
-    while (stack.length > 0) {
-      const currentId = stack.pop();
-      if (currentId === undefined) {
-        console.warn("Stack.pop() returned undefined when stack length > 0");
-        throw new Error("Unexpected undefined value from stack.pop()");
-      }
-      const children = this.parentChildMap.get(currentId);
-
-      if (children) {
-        for (const childId of children) {
-          if (!descendants.has(childId)) {
-            descendants.add(childId);
-            stack.push(childId);
-          }
-        }
-      }
-    }
-
-    return descendants;
-  }
-
-  /**
-   * Cascade redelegation count changes to all descendants
-   */
-  private cascadeRedelegationCount(
-    sourceNodeId: string,
-    parentReference: string,
-    newCount: number | null,
-  ): void {
-    const descendants = this.getDescendants(sourceNodeId);
-
-    for (const descendantId of descendants) {
-      const descendantNode = this.nodes.get(descendantId);
-      if (descendantNode?.redelegationCount.has(parentReference)) {
-        descendantNode.redelegationCount.set(parentReference, newCount);
-      }
-    }
-  }
 
   /**
    * Get all nodes as an array
@@ -388,19 +350,94 @@ export class DelegationTreeManager {
   }
 
   /**
-   * Get total redelegation count for a node (sum of all parent contributions)
-   * Returns null if any contribution is infinite (null)
+   * Get all permissions and their redelegation counts for a node
+   * Returns a map of permissionId -> maxInstances
    */
-  getTotalRedelegationCount(nodeId: string): number | null {
+  getNodePermissions(nodeId: string): Map<PermissionId | "self", number | null> {
     const node = this.nodes.get(nodeId);
-    if (!node) return 0;
+    if (!node) return new Map();
 
-    let total = 0;
-    for (const count of node.redelegationCount.values()) {
-      if (count === null) return null; // Infinite delegation capability
-      total += count;
+    // Build a map from the node's permissions set using the central counts
+    const result = new Map<PermissionId | "self", number | null>();
+    for (const permissionId of node.permissions) {
+      const count = this.permissionCounts.get(permissionId);
+      if (count !== undefined) {
+        result.set(permissionId, count);
+      }
     }
-    return total;
+    return result;
+  }
+
+  /**
+   * Get all permissions and their counts
+   * Returns a map of permissionId -> maxInstances
+   */
+  getAllPermissionCounts(): Map<PermissionId | "self", number | null> {
+    return new Map(this.permissionCounts);
+  }
+
+  /**
+   * Get the permission with the most instances for a given namespace
+   * Returns the permissionId and count, or null if no permissions available
+   * 
+   * @param namespacePath - The namespace path (e.g., "agent.arthur.doyle.run")
+   * @returns Object with permissionId and count, or null if none found
+   */
+  getPermissionWithMostInstances(namespacePath: string): { permissionId: PermissionId | "self", count: number | null } | null {
+    const nodeId = namespacePath.replace(/\./g, "-");
+    const node = this.nodes.get(nodeId);
+    
+    if (!node || node.permissions.size === 0) {
+      return null;
+    }
+
+    let bestPermission: PermissionId | "self" | null = null;
+    let bestCount: number | null = null;
+
+    for (const permissionId of node.permissions) {
+      const count = this.permissionCounts.get(permissionId);
+      if (count === undefined) continue;
+
+      // If we find a permission with infinite instances (null), return it immediately
+      if (count === null) {
+        return { permissionId, count: null };
+      }
+
+      // Otherwise, track the highest count
+      if (bestCount === null || count > bestCount) {
+        bestPermission = permissionId;
+        bestCount = count;
+      }
+    }
+
+    if (bestPermission === null) {
+      return null;
+    }
+
+    return { permissionId: bestPermission, count: bestCount };
+  }
+
+  /**
+   * Get the intersection of permissions across multiple namespace paths
+   * Returns permissions that are common to ALL provided namespaces
+   * 
+   * @param namespacePaths - Array of namespace paths to find common permissions
+   * @returns Set of permission IDs that exist in all namespaces
+   */
+  getPermissionIntersection(namespacePaths: string[]): Set<PermissionId | "self"> {
+    if (namespacePaths.length === 0) {
+      return new Set();
+    }
+
+    // Map namespace paths to their permission sets
+    const permissionSets = namespacePaths.map(path => {
+      const nodeId = path.replace(/\./g, "-");
+      const node = this.nodes.get(nodeId);
+      return node ? node.permissions : new Set<PermissionId | "self">();
+    });
+
+    // Use reduce to find intersection of all sets
+    return permissionSets.reduce((acc, curr) => setIntersection(acc, curr));
   }
 
   /**
@@ -418,63 +455,14 @@ export class DelegationTreeManager {
     return this.childParentMap.get(nodeId);
   }
 
-  /**
-   * Get the weakest (most specific) node that can delegate to the target namespace.
-   * Returns the node with available redelegation instances that is closest/most specific to the target.
-   *
-   * @param targetNamespace - The namespace to delegate (e.g., "agent.arthur.doyle.run")
-   * @returns The most specific node that can delegate to this target, or null if none available
-   *
-   * @example
-   * ```ts
-   * // If we want to delegate "agent.arthur.doyle.run" and we have:
-   * // - agent-arthur (5 instances)
-   * // - agent-arthur-doyle-run (2 instances)
-   * // This returns agent-arthur-doyle-run because it's more specific
-   * const weakest = manager.getWeakestDelegator("agent.arthur.doyle.run");
-   * ```
-   */
-  getWeakestDelegator(targetNamespace: string): DelegationNodeData | null {
-    const targetNodeId = targetNamespace.replace(/\./g, "-");
-
-    // Find all nodes that can delegate to this target
-    const candidates: DelegationNodeData[] = [];
-
-    for (const node of this.nodes.values()) {
-      // Skip non-accessible nodes
-      if (!node.accessible) continue;
-
-      // Check if this node has available redelegation instances
-      const totalCount = this.getTotalRedelegationCount(node.id);
-      if (totalCount === 0) continue;
-
-      // Check if the target is this node or a descendant of this node
-      if (targetNodeId === node.id || targetNodeId.startsWith(node.id + "-")) {
-        candidates.push(node);
-      }
-    }
-
-    if (candidates.length === 0) return null;
-
-    // Sort by specificity (longest node ID = most specific)
-    // The "weakest" delegator is the one with the longest/most specific path
-    candidates.sort((a, b) => {
-      const aDepth = a.id.split("-").length;
-      const bDepth = b.id.split("-").length;
-      return bDepth - aDepth; // Descending order - most specific first
-    });
-
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    return candidates[0]!;
-  }
 
   /**
-   * Get all nodes that can delegate to a target namespace, ordered by specificity (weakest first)
+   * Get all nodes that can delegate to a target namespace
    *
    * @param targetNamespace - The namespace to delegate
-   * @returns Array of nodes that can delegate, ordered from most specific to least specific
+   * @returns Array of nodes that have permissions to delegate to this namespace
    */
-  getAllDelegatorsFor(targetNamespace: string): DelegationNodeData[] {
+  getNodesWithPermissionsFor(targetNamespace: string): DelegationNodeData[] {
     const targetNodeId = targetNamespace.replace(/\./g, "-");
 
     const candidates: DelegationNodeData[] = [];
@@ -483,22 +471,22 @@ export class DelegationTreeManager {
       // Skip non-accessible nodes
       if (!node.accessible) continue;
 
-      // Check if this node has available redelegation instances
-      const totalCount = this.getTotalRedelegationCount(node.id);
-      if (totalCount === 0) continue;
+      // Check if this node has any permissions with available instances
+      let hasAvailableInstances = false;
+      for (const permissionId of node.permissions) {
+        const count = this.permissionCounts.get(permissionId);
+        if (count === null || (count !== undefined && count > 0)) {
+          hasAvailableInstances = true;
+          break;
+        }
+      }
+      if (!hasAvailableInstances) continue;
 
       // Check if the target is this node or a descendant of this node
       if (targetNodeId === node.id || targetNodeId.startsWith(node.id + "-")) {
         candidates.push(node);
       }
     }
-
-    // Sort by specificity (longest node ID = most specific)
-    candidates.sort((a, b) => {
-      const aDepth = a.id.split("-").length;
-      const bDepth = b.id.split("-").length;
-      return bDepth - aDepth; // Descending order - most specific first
-    });
 
     return candidates;
   }
