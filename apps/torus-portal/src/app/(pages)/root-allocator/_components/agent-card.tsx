@@ -55,7 +55,7 @@ export function AgentCard(props: Readonly<AgentCardProps>) {
     (a) => a.address === props.agentKey,
   );
   const currentPercentage = getAgentPercentage(props.agentKey);
-  
+
   const allocatorAddress = env("NEXT_PUBLIC_TORUS_ALLOCATOR_ADDRESS");
   const isAllocatorAgent = props.agentKey === allocatorAddress;
 
@@ -93,9 +93,13 @@ export function AgentCard(props: Readonly<AgentCardProps>) {
       isAgentDelegated={isAgentDelegated}
       isAgentSelected={isAgentSelected}
       tokensPerWeek={displayTokensPerWeek}
-      currentPercentage={props.isWhitelisted && !isAllocatorAgent ? currentPercentage : undefined}
+      currentPercentage={
+        props.isWhitelisted && !isAllocatorAgent ? currentPercentage : undefined
+      }
       onPercentageChange={
-        props.isWhitelisted && !isAllocatorAgent ? handlePercentageChange : undefined
+        props.isWhitelisted && !isAllocatorAgent
+          ? handlePercentageChange
+          : undefined
       }
       isAccountConnected={!!selectedAccount?.address}
       isLoading={!isInitialized || isWeeklyUsdLoading}
