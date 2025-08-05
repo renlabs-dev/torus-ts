@@ -14,6 +14,7 @@ import {
   useSwitchChain,
   useWalletClient,
 } from "wagmi";
+import { useWalletDetails } from "@hyperlane-xyz/widgets";
 
 import {
   convertH160ToSS58,
@@ -72,6 +73,9 @@ export function TransferEVM() {
   const { data: walletClient } = useWalletClient();
   const { chain, address } = useAccount();
   const { switchChain } = useSwitchChain();
+  
+  // Get wallet details to check if it's Coinbase Wallet
+  const walletDetails = useWalletDetails();
 
   const getChainValues = getChainValuesOnEnv(
     env("NEXT_PUBLIC_TORUS_CHAIN_ENV"),
@@ -158,15 +162,33 @@ export function TransferEVM() {
   }, [hasMounted, torusEvmClient]);
 
   useEffect(() => {
-    if (
-      mode === "withdraw" &&
-      chain &&
-      chain.id !== torusEvmChainId &&
-      hasMounted
-    ) {
-      switchChain({ chainId: torusEvmChainId });
+    const shouldPromptOrSwitch =
+      hasMounted && mode === "withdraw" && chain && chain.id !== torusEvmChainId;
+
+    if (!shouldPromptOrSwitch) return;
+
+    const walletName = walletDetails.ethereum.name?.toLowerCase();
+    const isCoinbaseWallet = walletName?.includes("coinbase") ?? false;
+
+    if (isCoinbaseWallet) {
+      toast.error(
+        "Please switch to Torus EVM manually in your Coinbase Wallet.",
+        Infinity,
+        {
+          label: "Switch Network",
+          onClick: () => {
+            window.open(
+              env("NEXT_PUBLIC_TORUS_EVM_NETWORK_DOCS_URL"),
+              "_blank",
+            );
+          },
+        },
+      );
+      return;
     }
-  }, [mode, chain, torusEvmChainId, hasMounted, switchChain]);
+
+    switchChain({ chainId: torusEvmChainId });
+  }, [hasMounted, mode, chain, torusEvmChainId, walletDetails, toast, switchChain]);
 
   const refetchHandler = useCallback(async () => {
     await Promise.all([refetchTorusEvmBalance(), accountFreeBalance.refetch()]);
