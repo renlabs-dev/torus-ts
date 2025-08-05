@@ -9,8 +9,8 @@ import {
   DialogTitle,
 } from "@torus-ts/ui/components/dialog";
 
+import { NamespacePathSelectorFlow } from "./_components/create-capability-path-flow/namespace-path-selector-flow";
 import { CreateCapabilityPermissionForm } from "./_components/create-capability-permission-form";
-import { NamespacePathSelectorFlow } from "./_components/namespace-path-selector-flow";
 
 export default function CapabilityV2Page() {
   const [selectedPaths, setSelectedPaths] = useState<string[]>([]);

@@ -26,10 +26,10 @@ import { FormAddressField } from "~/app/_components/address-field";
 
 import { DurationField } from "./create-capability-fields/duration-field";
 import { RevocationField } from "./create-capability-fields/revocation-field";
+import { SelectedPathsDisplay } from "./create-capability-path-flow/selected-paths-display";
 import type { CreateCapabilityPermissionFormData } from "./create-capability-permission-form-schema";
 import { createCapabilityPermissionSchema } from "./create-capability-permission-form-schema";
 import { transformFormDataToSDK } from "./create-capability-permission-form-utils";
-import { SelectedPathsDisplay } from "./selected-paths-display";
 
 interface CreateCapabilityPermissionFormProps {
   selectedPaths?: string[];

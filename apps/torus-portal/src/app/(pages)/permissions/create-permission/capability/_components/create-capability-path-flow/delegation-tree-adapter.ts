@@ -3,18 +3,38 @@ import type { Edge, Node } from "@xyflow/react";
 import type { DelegationTreeManager } from "@torus-network/sdk/chain";
 import { nodeIdToNamespace } from "@torus-network/sdk/chain";
 
-import type { NamespacePathNodeData } from "./namespace-path-selector-flow";
+import type {
+  NamespacePathNodeData,
+  PermissionInfo,
+} from "./namespace-path-selector-flow";
+import { PermissionColorManager } from "./permission-colors";
 
 export function adaptDelegationTreeToReactFlow(
   treeManager: DelegationTreeManager,
 ): {
   nodes: Node<NamespacePathNodeData>[];
   edges: Edge[];
+  colorManager: PermissionColorManager;
 } {
+  const colorManager = new PermissionColorManager();
+
   const nodes: Node<NamespacePathNodeData>[] = treeManager
     .getNodes()
     .map((node, index) => {
-      const totalCount = treeManager.getTotalRedelegationCount(node.id);
+      // Get permissions for this node using the new API
+      const nodePermissions = treeManager.getNodePermissions(node.id);
+
+      // Convert permissions to PermissionInfo with colors
+      const permissions: PermissionInfo[] = Array.from(
+        nodePermissions.entries(),
+      ).map(([permissionId, count]) => {
+        const color = colorManager.getColorForPermission(permissionId);
+        return {
+          permissionId,
+          count,
+          color: color.hex,
+        };
+      });
 
       return {
         id: node.id,
@@ -23,8 +43,8 @@ export function adaptDelegationTreeToReactFlow(
         data: {
           label: nodeIdToNamespace(node.id), // Convert back to namespace format for display
           accessible: node.accessible,
-          redelegationCount: totalCount ?? Infinity, // Display infinity for null counts
-          selected: false,
+          permissions,
+          selectedPermission: null,
         } satisfies NamespacePathNodeData,
       };
     });
@@ -35,5 +55,5 @@ export function adaptDelegationTreeToReactFlow(
     target: edge.target,
   }));
 
-  return { nodes, edges };
+  return { nodes, edges, colorManager };
 }
