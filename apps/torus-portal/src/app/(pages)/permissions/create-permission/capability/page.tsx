@@ -9,15 +9,20 @@ import {
   DialogTitle,
 } from "@torus-ts/ui/components/dialog";
 
+import type { PathWithPermission } from "./_components/create-capability-path-flow/types";
 import { NamespacePathSelectorFlow } from "./_components/create-capability-path-flow/namespace-path-selector-flow";
 import { CreateCapabilityPermissionForm } from "./_components/create-capability-permission-form";
 
 export default function CapabilityV2Page() {
   const [selectedPaths, setSelectedPaths] = useState<string[]>([]);
+  const [pathsWithPermissions, setPathsWithPermissions] = useState<PathWithPermission[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const handleCreatePermission = (paths: string[]) => {
-    setSelectedPaths(paths);
+  const handleCreatePermission = (paths: PathWithPermission[]) => {
+    // Extract just the paths for the form
+    setSelectedPaths(paths.map(p => p.path));
+    // Store the full data for submission
+    setPathsWithPermissions(paths);
     setIsModalOpen(true);
   };
 
@@ -36,6 +41,7 @@ export default function CapabilityV2Page() {
           </DialogHeader>
           <CreateCapabilityPermissionForm
             selectedPaths={selectedPaths}
+            pathsWithPermissions={pathsWithPermissions}
             onSuccess={handleFormSuccess}
           />
         </DialogContent>

@@ -10,11 +10,6 @@ import { adaptDelegationTreeToReactFlow } from "./delegation-tree-adapter";
 import type { PermissionColorManager } from "./permission-colors";
 import type { NamespacePathNodeData } from "./types";
 
-interface UseDelegationTreeOptions {
-  agentAddress?: SS58Address;
-  enabled?: boolean;
-}
-
 interface DelegationTreeData {
   nodes: Node<NamespacePathNodeData>[];
   edges: Edge[];
@@ -26,29 +21,20 @@ interface DelegationTreeData {
  * Hook to fetch and manage delegation tree data from the blockchain.
  * Uses DelegationTreeManager to build the tree and adapts it for React Flow.
  */
-export function useDelegationTree({
-  agentAddress,
-  enabled = true,
-}: UseDelegationTreeOptions = {}) {
+export function useDelegationTree() {
   const { api, isInitialized, selectedAccount } = useTorus();
 
   // Use the selected account address if no specific address provided
-  const targetAddress = agentAddress ?? selectedAccount?.address;
+  const targetAddress = selectedAccount?.address as SS58Address;
 
   return useQuery<DelegationTreeData, Error>({
     queryKey: ["delegationTree", targetAddress, selectedAccount?.address],
     queryFn: async () => {
-      if (!api) {
-        throw new Error("API not available");
-      }
-      if (!targetAddress) {
-        throw new Error("No agent address provided");
-      }
-
       // Create delegation tree manager from blockchain data
       const [managerError, treeManager] = await DelegationTreeManager.create(
-        api,
-        targetAddress as SS58Address,
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        api!,
+        targetAddress,
       );
 
       if (managerError) {
@@ -70,9 +56,6 @@ export function useDelegationTree({
         colorManager,
       };
     },
-
-    enabled: enabled && isInitialized && !!api && !!targetAddress,
-    staleTime: 1000 * 60 * 5, // 5 minutes
-    retry: 2,
+    enabled: isInitialized && !!api && !!targetAddress,
   });
 }

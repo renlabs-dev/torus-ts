@@ -29,7 +29,7 @@ import useAutoLayout from "~/app/_components/react-flow-layout/use-auto-layout";
 import { DEFAULT_LAYOUT_OPTIONS, REACT_FLOW_PRO_OPTIONS } from "./constants";
 import { NamespacePathNode } from "./namespace-path-node";
 import type { PermissionColorManager } from "./permission-colors";
-import type { NamespacePathFlowProps, NamespacePathNodeData } from "./types";
+import type { NamespacePathFlowProps, NamespacePathNodeData, PathWithPermission } from "./types";
 import { useDelegationTree } from "./use-delegation-tree";
 import { usePermissionSelection } from "./use-permission-selection";
 
@@ -390,13 +390,20 @@ function NamespacePathFlow({ onCreatePermission }: NamespacePathFlowProps) {
             disabled={selectedCount === 0}
             onClick={() => {
               if (selectedCount > 0 && onCreatePermission) {
-                const selectedNamespaces = Array.from(selectedPaths)
+                // Create array of paths with their permissions
+                const pathsWithPermissions: PathWithPermission[] = Array.from(selectedPaths)
                   .map((nodeId) => {
                     const node = nodes.find((n) => n.id === nodeId);
-                    return String(node?.data.label ?? "");
+                    if (!node) return null;
+                    
+                    return {
+                      path: String(node.data.label),
+                      permissionId: node.data.selectedPermission === "self" ? null : node.data.selectedPermission,
+                    };
                   })
-                  .filter(Boolean);
-                onCreatePermission(selectedNamespaces);
+                  .filter((item): item is PathWithPermission => item !== null);
+                
+                onCreatePermission(pathsWithPermissions);
               }
             }}
           >
@@ -435,7 +442,7 @@ function NamespacePathFlow({ onCreatePermission }: NamespacePathFlowProps) {
 }
 
 interface NamespacePathSelectorFlowProps {
-  onCreatePermission?: (selectedPaths: string[]) => void;
+  onCreatePermission?: (pathsWithPermissions: PathWithPermission[]) => void;
 }
 
 export function NamespacePathSelectorFlow({

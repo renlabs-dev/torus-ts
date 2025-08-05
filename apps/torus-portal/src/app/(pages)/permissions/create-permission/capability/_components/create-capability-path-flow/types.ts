@@ -21,10 +21,18 @@ export interface NamespacePathNodeData extends Record<string, unknown> {
 }
 
 /**
+ * Path with its associated permission information
+ */
+export interface PathWithPermission {
+  path: string;
+  permissionId: PermissionId | null;
+}
+
+/**
  * Props for the main namespace path flow component
  */
 export interface NamespacePathFlowProps {
-  onCreatePermission?: (selectedPaths: string[]) => void;
+  onCreatePermission?: (pathsWithPermissions: PathWithPermission[]) => void;
 }
 
 /**
