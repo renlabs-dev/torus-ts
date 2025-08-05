@@ -31,13 +31,10 @@ import { NamespacePathNode } from "./namespace-path-node";
 import type { PermissionColorManager } from "./permission-colors";
 import type { NamespacePathFlowProps, NamespacePathNodeData } from "./types";
 import { useDelegationTree } from "./use-delegation-tree";
+import { usePermissionSelection } from "./use-permission-selection";
 
 function NamespacePathFlow({ onCreatePermission }: NamespacePathFlowProps) {
   const { fitView } = useReactFlow();
-  const [selectedPaths, setSelectedPaths] = useState<Set<string>>(new Set());
-  const [activePermission, setActivePermission] = useState<
-    PermissionId | "self" | null
-  >(null);
   const [colorManager, setColorManager] =
     useState<PermissionColorManager | null>(null);
 
@@ -47,6 +44,17 @@ function NamespacePathFlow({ onCreatePermission }: NamespacePathFlowProps) {
     Node<NamespacePathNodeData>
   >([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
+
+  const {
+    selectedPaths,
+    activePermission,
+    setSelectedPaths,
+    setActivePermission,
+    getDescendantIds,
+    updatePermissionBlocking,
+    updateEdgeStyles,
+    clearSelection,
+  } = usePermissionSelection({ nodes, edges, setNodes, setEdges });
 
   useEffect(() => {
     if (delegationData) {
@@ -62,69 +70,6 @@ function NamespacePathFlow({ onCreatePermission }: NamespacePathFlowProps) {
   );
 
   useAutoLayout(layoutOptions);
-
-  // Helper function to update permission blocking based on active permission
-  const updatePermissionBlocking = useCallback(
-    (selectedPermissionId: PermissionId | "self" | null) => {
-      if (!delegationData) return;
-
-      setNodes((currentNodes) =>
-        currentNodes.map((node) => {
-          const updatedPermissions = node.data.permissions.map((permission) => {
-            // If no permission is selected, nothing is blocked
-            if (!selectedPermissionId) {
-              return { ...permission, blocked: false };
-            }
-
-            // Self permissions are never blocked
-            if (permission.permissionId === "self") {
-              return { ...permission, blocked: false };
-            }
-
-            // If self is the active permission, don't block other permissions
-            if (selectedPermissionId === "self") {
-              return { ...permission, blocked: false };
-            }
-
-            // Block permissions that don't match the selected one
-            const blocked = permission.permissionId !== selectedPermissionId;
-            return { ...permission, blocked };
-          });
-
-          return {
-            ...node,
-            data: {
-              ...node.data,
-              permissions: updatedPermissions,
-            },
-          };
-        }),
-      );
-    },
-    [delegationData, setNodes],
-  );
-
-  // Helper function to get all descendant node IDs
-  const getDescendantIds = useCallback(
-    (nodeId: string): string[] => {
-      const descendants: string[] = [];
-      const queue = [nodeId];
-
-      while (queue.length > 0) {
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        const currentId = queue.shift()!;
-        // Find all edges where current node is the source
-        const childEdges = edges.filter((edge) => edge.source === currentId);
-        for (const edge of childEdges) {
-          descendants.push(edge.target);
-          queue.push(edge.target);
-        }
-      }
-
-      return descendants;
-    },
-    [edges],
-  );
 
   // Handle permission selection on nodes
   const handlePermissionSelect = useCallback(
@@ -267,66 +212,27 @@ function NamespacePathFlow({ onCreatePermission }: NamespacePathFlowProps) {
         }),
       );
 
-      // Update edge styles - simple white for selected, gray for unselected
-      setEdges((currentEdges) =>
-        currentEdges.map((edge) => {
-          const sourceSelected = newSelectedPaths.has(edge.source);
-          const targetSelected = newSelectedPaths.has(edge.target);
-          const bothSelected = sourceSelected && targetSelected;
-
-          return {
-            ...edge,
-            style: bothSelected
-              ? {
-                  stroke: "#ffffff",
-                  strokeWidth: 2,
-                }
-              : {
-                  stroke: "#64748b",
-                  strokeWidth: 1,
-                },
-          };
-        }),
-      );
+      // Update edge styles
+      updateEdgeStyles(newSelectedPaths);
     },
     [
-      selectedPaths,
-      nodes,
-      activePermission,
       delegationData,
       colorManager,
+      nodes,
+      selectedPaths,
+      setSelectedPaths,
       setNodes,
-      setEdges,
+      updateEdgeStyles,
       getDescendantIds,
+      setActivePermission,
       updatePermissionBlocking,
+      activePermission,
     ],
   );
 
   const handleClearSelection = useCallback(() => {
-    setSelectedPaths(new Set());
-    setActivePermission(null);
-    updatePermissionBlocking(null);
-
-    setNodes((currentNodes) =>
-      currentNodes.map((node) => ({
-        ...node,
-        data: {
-          ...node.data,
-          selectedPermission: null,
-        },
-      })),
-    );
-    // Reset edge styles when clearing selection
-    setEdges((currentEdges) =>
-      currentEdges.map((edge) => ({
-        ...edge,
-        style: {
-          stroke: "#64748b",
-          strokeWidth: 1,
-        },
-      })),
-    );
-  }, [setNodes, setEdges, updatePermissionBlocking]);
+    clearSelection();
+  }, [clearSelection]);
 
   // Fit view when nodes change, with a slight delay to ensure layout is applied
   useEffect(() => {
@@ -418,62 +324,51 @@ function NamespacePathFlow({ onCreatePermission }: NamespacePathFlowProps) {
               {totalCount - accessibleCount} view-only
             </Badge>
           </div>
+        </Panel>
 
+        <Panel position="top-right" className="pt-10 space-y-2 z-50">
           {/* Permission colors reference panel */}
           {colorManager && (
-            <div className="bg-muted/50 backdrop-blur-sm border rounded-sm p-2 space-y-1 max-w-md">
-              <div className="text-xs font-medium text-muted-foreground">
-                Permission Colors Reference:
-              </div>
-              <div className="flex flex-wrap gap-1">
-                {(() => {
-                  // Get all unique permissions from all nodes
-                  const allPermissions = new Set<string>();
-                  nodes.forEach((node) => {
-                    node.data.permissions.forEach((perm) => {
-                      allPermissions.add(perm.permissionId);
-                    });
+            <div className="flex flex-wrap gap-1">
+              {(() => {
+                // Get all unique permissions from all nodes
+                const allPermissions = new Set<string>();
+                nodes.forEach((node) => {
+                  node.data.permissions.forEach((perm) => {
+                    allPermissions.add(perm.permissionId);
                   });
+                });
 
-                  return Array.from(allPermissions).map((permissionId) => {
-                    const typedPermissionId = permissionId as
-                      | PermissionId
-                      | "self";
-                    const color =
-                      colorManager.getColorForPermission(typedPermissionId);
-                    const displayText =
-                      colorManager.getPermissionDisplayText(typedPermissionId);
-                    const isActive = activePermission === permissionId;
+                return Array.from(allPermissions).map((permissionId) => {
+                  const typedPermissionId = permissionId as
+                    | PermissionId
+                    | "self";
+                  const color =
+                    colorManager.getColorForPermission(typedPermissionId);
+                  const displayText =
+                    colorManager.getPermissionDisplayText(typedPermissionId);
+                  const isActive = activePermission === permissionId;
 
-                    return (
+                  return (
+                    <div
+                      key={permissionId}
+                      className={cn(
+                        "flex items-center gap-1 px-2 py-1 rounded-sm text-xs font-mono border",
+                        isActive
+                          ? `${color.bg} ${color.border} ${color.text} border-2 font-semibold`
+                          : "bg-muted/50 text-muted-foreground border-border",
+                      )}
+                    >
                       <div
-                        key={permissionId}
-                        className={cn(
-                          "flex items-center gap-1 px-2 py-1 rounded-sm text-xs font-mono border",
-                          isActive
-                            ? `${color.bg} ${color.border} ${color.text} border-2 font-semibold`
-                            : "bg-muted/50 text-muted-foreground border-border",
-                        )}
-                      >
-                        <div
-                          className="w-3 h-3 border border-border/50 rounded-sm"
-                          style={{ backgroundColor: color.hex }}
-                        />
-                        <span className="font-semibold">{displayText}</span>
-                        {isActive && (
-                          <span className="ml-1 text-xs">ACTIVE</span>
-                        )}
-                      </div>
-                    );
-                  });
-                })()}
-              </div>
-              <div className="text-xs text-muted-foreground">
-                Select colored buttons on nodes to choose paths.{" "}
-                {activePermission
-                  ? "One permission + self-owned paths allowed."
-                  : "Click any permission to start."}
-              </div>
+                        className="w-3 h-3 border border-border/50 rounded-sm"
+                        style={{ backgroundColor: color.hex }}
+                      />
+                      <span className="font-semibold">{displayText}</span>
+                      {isActive && <span className="ml-1 text-xs">ACTIVE</span>}
+                    </div>
+                  );
+                });
+              })()}
             </div>
           )}
         </Panel>

@@ -327,7 +327,6 @@ export class DelegationTreeManager {
     return newCount;
   }
 
-
   /**
    * Get all nodes as an array
    */
@@ -353,7 +352,9 @@ export class DelegationTreeManager {
    * Get all permissions and their redelegation counts for a node
    * Returns a map of permissionId -> maxInstances
    */
-  getNodePermissions(nodeId: string): Map<PermissionId | "self", number | null> {
+  getNodePermissions(
+    nodeId: string,
+  ): Map<PermissionId | "self", number | null> {
     const node = this.nodes.get(nodeId);
     if (!node) return new Map();
 
@@ -379,14 +380,16 @@ export class DelegationTreeManager {
   /**
    * Get the permission with the most instances for a given namespace
    * Returns the permissionId and count, or null if no permissions available
-   * 
+   *
    * @param namespacePath - The namespace path (e.g., "agent.arthur.doyle.run")
    * @returns Object with permissionId and count, or null if none found
    */
-  getPermissionWithMostInstances(namespacePath: string): { permissionId: PermissionId | "self", count: number | null } | null {
+  getPermissionWithMostInstances(
+    namespacePath: string,
+  ): { permissionId: PermissionId | "self"; count: number | null } | null {
     const nodeId = namespacePath.replace(/\./g, "-");
     const node = this.nodes.get(nodeId);
-    
+
     if (!node || node.permissions.size === 0) {
       return null;
     }
@@ -420,17 +423,19 @@ export class DelegationTreeManager {
   /**
    * Get the intersection of permissions across multiple namespace paths
    * Returns permissions that are common to ALL provided namespaces
-   * 
+   *
    * @param namespacePaths - Array of namespace paths to find common permissions
    * @returns Set of permission IDs that exist in all namespaces
    */
-  getPermissionIntersection(namespacePaths: string[]): Set<PermissionId | "self"> {
+  getPermissionIntersection(
+    namespacePaths: string[],
+  ): Set<PermissionId | "self"> {
     if (namespacePaths.length === 0) {
       return new Set();
     }
 
     // Map namespace paths to their permission sets
-    const permissionSets = namespacePaths.map(path => {
+    const permissionSets = namespacePaths.map((path) => {
       const nodeId = path.replace(/\./g, "-");
       const node = this.nodes.get(nodeId);
       return node ? node.permissions : new Set<PermissionId | "self">();
@@ -454,7 +459,6 @@ export class DelegationTreeManager {
   getParent(nodeId: string): string | undefined {
     return this.childParentMap.get(nodeId);
   }
-
 
   /**
    * Get all nodes that can delegate to a target namespace

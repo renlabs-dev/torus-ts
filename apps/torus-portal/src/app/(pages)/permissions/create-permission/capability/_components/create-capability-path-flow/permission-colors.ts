@@ -1,4 +1,5 @@
 import type { PermissionId } from "@torus-network/sdk/chain";
+import { smallAddress } from "@torus-network/torus-utils/torus";
 
 /**
  * Predefined color palette for permissions
@@ -200,8 +201,8 @@ export class PermissionColorManager {
    */
   getPermissionDisplayText(permissionId: PermissionId | "self"): string {
     if (permissionId === "self") {
-      return "SELF";
+      return "Your Paths";
     }
-    return `0x${permissionId.slice(2, 10).toUpperCase()}`;
+    return `0x${smallAddress(permissionId)}`;
   }
 }
