@@ -28,13 +28,30 @@ export function useGraphData() {
 
   const graphData = useMemo(() => {
     // Wait for all data to be loaded before calling the function
-    if (isLoadingAgents || isLoadingPermissions || !allAgents || !allPermissions) {
+    if (
+      isLoadingAgents ||
+      isLoadingPermissions ||
+      !allAgents ||
+      !allPermissions
+    ) {
       return null;
     }
-    
+
     // Only call the function when we have complete data
-    return createSimplifiedGraphData(allAgents, allPermissions, allocatorAddress, allSignals);
-  }, [allAgents, allPermissions, allocatorAddress, allSignals, isLoadingAgents, isLoadingPermissions]);
+    return createSimplifiedGraphData(
+      allAgents,
+      allPermissions,
+      allocatorAddress,
+      allSignals,
+    );
+  }, [
+    allAgents,
+    allPermissions,
+    allocatorAddress,
+    allSignals,
+    isLoadingAgents,
+    isLoadingPermissions,
+  ]);
 
   const isLoading =
     isLoadingPermissions ||
