@@ -56,6 +56,8 @@ export interface CustomGraphLink extends LinkObject {
     | "allocation"
     | "permission_ownership"
     | "permission_target"
+    | "permission_grant"
+    | "permission_receive"
     | "signal";
   id?: string;
   scope?: string;
