@@ -789,7 +789,7 @@ export const emissionDistributionTargetsSchema = createTable(
       .references(() => emissionPermissionsSchema.permissionId, {
         onDelete: "cascade",
       }),
-    streamId: varchar("stream_id", { length: 66 }).notNull(),
+    streamId: varchar("stream_id", { length: 66 }),
     targetAccountId: ss58Address("target_account_id").notNull(),
     weight: integer("weight").notNull(), // 0-65535
     accumulatedTokens: numeric("accumulated_tokens")
