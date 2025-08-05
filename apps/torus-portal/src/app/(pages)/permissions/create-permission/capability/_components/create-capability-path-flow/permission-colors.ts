@@ -105,13 +105,13 @@ export const PERMISSION_COLORS = [
     hex: "#84cc16",
   },
   {
-    name: "violet",
-    bg: "bg-violet-500/10",
-    border: "border-violet-500",
-    text: "text-violet-500",
-    button: "bg-violet-500",
+    name: "slate",
+    bg: "bg-slate-500/10",
+    border: "border-slate-500",
+    text: "text-slate-500",
+    button: "bg-slate-500",
     buttonText: "text-white",
-    hex: "#8b5cf6",
+    hex: "#64748b",
   },
 ] as const;
 

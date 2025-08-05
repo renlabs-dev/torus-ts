@@ -3,11 +3,8 @@ import type { Edge, Node } from "@xyflow/react";
 import type { DelegationTreeManager } from "@torus-network/sdk/chain";
 import { nodeIdToNamespace } from "@torus-network/sdk/chain";
 
-import type {
-  NamespacePathNodeData,
-  PermissionInfo,
-} from "./namespace-path-selector-flow";
 import { PermissionColorManager } from "./permission-colors";
+import type { NamespacePathNodeData, PermissionInfo } from "./types";
 
 export function adaptDelegationTreeToReactFlow(
   treeManager: DelegationTreeManager,

@@ -6,16 +6,8 @@ import type { PermissionId } from "@torus-network/sdk/chain";
 
 import { cn } from "@torus-ts/ui/lib/utils";
 
-import type { NamespacePathNodeData } from "./namespace-path-selector-flow";
-import { PermissionColorManager } from "./permission-colors";
-
-interface NamespacePathNodeProps {
-  data: NamespacePathNodeData;
-  onPermissionSelect?: (
-    nodeId: string,
-    permissionId: PermissionId | "self" | null,
-  ) => void;
-}
+import { NODE_STYLES, OPACITY, PERMISSION_BUTTON_STYLES } from "./constants";
+import type { NamespacePathNodeProps } from "./types";
 
 export const NamespacePathNode = memo(function NamespacePathNode({
   data,
@@ -23,8 +15,6 @@ export const NamespacePathNode = memo(function NamespacePathNode({
 }: NamespacePathNodeProps) {
   const isAccessible = data.accessible;
   const hasSelectedPermission = data.selectedPermission !== null;
-  const colorManager = new PermissionColorManager();
-
   const handlePermissionButtonClick = (
     e: React.MouseEvent,
     permissionId: PermissionId | "self",
@@ -44,31 +34,47 @@ export const NamespacePathNode = memo(function NamespacePathNode({
     permissionId: PermissionId | "self",
     blocked: boolean,
   ) => {
-    const color = colorManager.getColorForPermission(permissionId);
     const isSelected = data.selectedPermission === permissionId;
 
     if (blocked) {
-      return "bg-gray-300 text-gray-500 cursor-not-allowed opacity-50";
+      return PERMISSION_BUTTON_STYLES.blocked;
     }
 
     if (isSelected) {
-      return `${color.button} ${color.buttonText} ring-2 ring-offset-1 ring-blue-500`;
+      return PERMISSION_BUTTON_STYLES.selected;
     }
 
-    return `${color.button} ${color.buttonText} hover:opacity-80 transition-opacity`;
+    return PERMISSION_BUTTON_STYLES.default;
   };
 
-  const getNodeStyle = () => {
+  const getNodeClassNames = () => {
     if (!isAccessible) {
-      return "cursor-not-allowed bg-stone-700/10 text-stone-500/70 border-stone-500/10";
+      return NODE_STYLES.inaccessible;
     }
 
     if (hasSelectedPermission && data.selectedPermission) {
-      const color = colorManager.getColorForPermission(data.selectedPermission);
-      return `${color.bg} ${color.border} ${color.text}`;
+      return NODE_STYLES.selected;
     }
 
-    return "bg-muted border-border";
+    return NODE_STYLES.default;
+  };
+
+  const getNodeInlineStyles = () => {
+    if (hasSelectedPermission && data.selectedPermission) {
+      // Find the permission in the data to get its color
+      const selectedPermissionData = data.permissions.find(
+        (perm) => perm.permissionId === data.selectedPermission,
+      );
+
+      if (selectedPermissionData) {
+        return {
+          backgroundColor: `${selectedPermissionData.color}${OPACITY.backgroundSelected}`,
+          borderColor: selectedPermissionData.color,
+          color: selectedPermissionData.color,
+        };
+      }
+    }
+    return {};
   };
 
   return (
@@ -76,8 +82,9 @@ export const NamespacePathNode = memo(function NamespacePathNode({
       className={cn(
         `px-2 py-2 backdrop-blur-xl border flex gap-1 items-center rounded-sm
         min-w-[200px]`,
-        getNodeStyle(),
+        getNodeClassNames(),
       )}
+      style={getNodeInlineStyles()}
       aria-disabled={!isAccessible}
     >
       <Handle type="target" position={Position.Left} isConnectable={false} />
@@ -85,9 +92,6 @@ export const NamespacePathNode = memo(function NamespacePathNode({
       {isAccessible && data.permissions.length > 0 && (
         <div className="flex gap-1">
           {data.permissions.map((permission) => {
-            const displayText = colorManager.getPermissionDisplayText(
-              permission.permissionId,
-            );
             const countText =
               permission.count === null ? "∞" : permission.count.toString();
             const isBlocked = permission.blocked ?? false;
@@ -109,7 +113,7 @@ export const NamespacePathNode = memo(function NamespacePathNode({
                   handlePermissionButtonClick(e, permission.permissionId)
                 }
                 disabled={isBlocked}
-                title={`${displayText}: ${countText} delegations available${isBlocked ? " (blocked)" : ""}`}
+                title={`${countText} delegations available${isBlocked ? " (blocked)" : ""}`}
               >
                 <span className="font-bold">{countText}</span>
               </button>

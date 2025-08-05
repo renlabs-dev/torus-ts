@@ -7,8 +7,8 @@ import type { SS58Address } from "@torus-network/sdk/types";
 import { useTorus } from "@torus-ts/torus-provider";
 
 import { adaptDelegationTreeToReactFlow } from "./delegation-tree-adapter";
-import type { NamespacePathNodeData } from "./namespace-path-selector-flow";
 import type { PermissionColorManager } from "./permission-colors";
+import type { NamespacePathNodeData } from "./types";
 
 interface UseDelegationTreeOptions {
   agentAddress?: SS58Address;

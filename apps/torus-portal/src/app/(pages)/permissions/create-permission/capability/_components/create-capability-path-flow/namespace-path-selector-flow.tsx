@@ -21,33 +21,16 @@ import { Badge } from "@torus-ts/ui/components/badge";
 import { Button } from "@torus-ts/ui/components/button";
 import { cn } from "@torus-ts/ui/lib/utils";
 
-import type { LayoutOptions } from "~/app/_components/react-flow-layout/use-auto-layout";
+import type {
+  LayoutOptions,
+} from "~/app/_components/react-flow-layout/use-auto-layout";
 import useAutoLayout from "~/app/_components/react-flow-layout/use-auto-layout";
 
+import { DEFAULT_LAYOUT_OPTIONS, REACT_FLOW_PRO_OPTIONS } from "./constants";
 import { NamespacePathNode } from "./namespace-path-node";
 import type { PermissionColorManager } from "./permission-colors";
+import type { NamespacePathFlowProps, NamespacePathNodeData } from "./types";
 import { useDelegationTree } from "./use-delegation-tree";
-
-const proOptions = {
-  hideAttribution: true,
-};
-export interface PermissionInfo {
-  permissionId: PermissionId | "self";
-  count: number | null;
-  color: string;
-  blocked?: boolean;
-}
-
-export interface NamespacePathNodeData extends Record<string, unknown> {
-  label: string;
-  accessible: boolean;
-  permissions: PermissionInfo[];
-  selectedPermission?: PermissionId | "self" | null;
-}
-
-interface NamespacePathFlowProps {
-  onCreatePermission?: (selectedPaths: string[]) => void;
-}
 
 function NamespacePathFlow({ onCreatePermission }: NamespacePathFlowProps) {
   const { fitView } = useReactFlow();
@@ -74,11 +57,7 @@ function NamespacePathFlow({ onCreatePermission }: NamespacePathFlowProps) {
   }, [delegationData, setNodes, setEdges]);
 
   const layoutOptions: LayoutOptions = useMemo(
-    () => ({
-      algorithm: "d3-hierarchy",
-      direction: "LR",
-      spacing: [40, 60],
-    }),
+    () => DEFAULT_LAYOUT_OPTIONS,
     [],
   );
 
@@ -230,40 +209,50 @@ function NamespacePathFlow({ onCreatePermission }: NamespacePathFlowProps) {
       setNodes((currentNodes) =>
         currentNodes.map((node) => {
           const isNodeSelected = newSelectedPaths.has(node.id);
+          const wasNodeSelected = selectedPaths.has(node.id);
           let selectedPermissionForNode: PermissionId | "self" | null = null;
 
           if (isNodeSelected) {
             // For selected nodes, determine which permission they're using
             if (node.id === targetNode.id) {
+              // This is the node we just clicked - use the permission we selected
               selectedPermissionForNode = permissionId;
+            } else if (wasNodeSelected && node.data.selectedPermission) {
+              // This node was already selected - keep its existing permission
+              selectedPermissionForNode = node.data.selectedPermission;
             } else {
-              // For descendants, determine the best permission to use
-              const currentActivePermission = activePermission ?? permissionId;
-
-              const hasActivePermission = node.data.permissions.some(
-                (perm) => perm.permissionId === currentActivePermission,
-              );
+              // This is a newly selected node (descendant) - determine best permission
               const hasSelfPermission = node.data.permissions.some(
                 (perm) => perm.permissionId === "self",
               );
+              const hasCurrentPermission =
+                permissionId &&
+                node.data.permissions.some(
+                  (perm) => perm.permissionId === permissionId,
+                );
+              const hasActivePermission =
+                activePermission &&
+                node.data.permissions.some(
+                  (perm) => perm.permissionId === activePermission,
+                );
 
-              if (currentActivePermission === "self") {
-                // If self is active, prefer self permission but allow any
-                if (hasSelfPermission) {
-                  selectedPermissionForNode = "self";
-                } else {
-                  // Use the first available permission
-                  const firstAvailablePermission =
-                    node.data.permissions[0]?.permissionId;
-                  selectedPermissionForNode = firstAvailablePermission ?? null;
-                }
+              if (hasCurrentPermission) {
+                // Priority 1: Use the currently selected permission if the node has it
+                selectedPermissionForNode = permissionId;
+              } else if (permissionId === "self" && hasSelfPermission) {
+                // Priority 2: If we're specifically selecting self and node has it
+                selectedPermissionForNode = "self";
+              } else if (hasActivePermission) {
+                // Priority 3: Fall back to the active permission if the node has it
+                selectedPermissionForNode = activePermission;
+              } else if (hasSelfPermission) {
+                // Priority 4: Fallback to self if available
+                selectedPermissionForNode = "self";
               } else {
-                // If a specific permission is active, prefer that but fall back to self
-                if (hasActivePermission) {
-                  selectedPermissionForNode = currentActivePermission;
-                } else if (hasSelfPermission) {
-                  selectedPermissionForNode = "self";
-                }
+                // Priority 5: Use the first available permission as last resort
+                const firstAvailablePermission =
+                  node.data.permissions[0]?.permissionId;
+                selectedPermissionForNode = firstAvailablePermission ?? null;
               }
             }
           }
@@ -278,11 +267,7 @@ function NamespacePathFlow({ onCreatePermission }: NamespacePathFlowProps) {
         }),
       );
 
-      // Update edge styles based on selection
-      if (!permissionId) return;
-      const activeColor = colorManager.getColorForPermission(
-        activePermission ?? permissionId,
-      );
+      // Update edge styles - simple white for selected, gray for unselected
       setEdges((currentEdges) =>
         currentEdges.map((edge) => {
           const sourceSelected = newSelectedPaths.has(edge.source);
@@ -293,7 +278,7 @@ function NamespacePathFlow({ onCreatePermission }: NamespacePathFlowProps) {
             ...edge,
             style: bothSelected
               ? {
-                  stroke: activeColor.hex,
+                  stroke: "#ffffff",
                   strokeWidth: 2,
                 }
               : {
@@ -418,7 +403,7 @@ function NamespacePathFlow({ onCreatePermission }: NamespacePathFlowProps) {
         nodesConnectable={false}
         nodesFocusable={true}
         edgesFocusable={false}
-        proOptions={proOptions}
+        proOptions={REACT_FLOW_PRO_OPTIONS}
         minZoom={0.6}
         maxZoom={1.7}
       >
