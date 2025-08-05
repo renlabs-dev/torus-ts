@@ -169,10 +169,18 @@ export async function processApplicationsWorker(props: WorkerProps) {
 
         factors.push(...keysResetToPenaltyZero);
 
+        if (factors.length === 0) {
+          log.info("No penalty changes needed");
+        }
+
         const processPenaltyRes = await tryAsync(
           processPenalty(props.api, mnemonic, factors),
         );
         if (log.ifResultIsErr(processPenaltyRes)) return;
+
+        if (factors.length > 0) {
+          log.info("Penalty processing completed");
+        }
       })(),
     );
 
@@ -317,7 +325,6 @@ export async function getVotesOnPending(
   const votesRes = await tryAsync(queryTotalVotesPerApp());
   if (log.ifResultIsErr(votesRes)) return [];
   const [_votesErr, votes] = votesRes;
-
   const votes_on_pending = votes.filter((vote) => {
     const app = applications_map[vote.appId];
     if (app == null) return false;
@@ -347,7 +354,9 @@ export async function getCadreThreshold() {
  */
 export async function getPenaltyThreshold() {
   const keys = await countCadreKeys();
-  return Math.floor(Math.sqrt(keys)) + 1;
+  const threshold = Math.floor(Math.sqrt(keys)) + 1;
+  log.info(`Penalty threshold: ${threshold} (from ${keys} cadre members)`);
+  return threshold;
 }
 
 /**
@@ -359,8 +368,10 @@ export async function getPenaltyThreshold() {
  */
 export async function getPenaltyFactors(cadreThreshold: number) {
   const nth_factor = Math.max(cadreThreshold - 1, 1);
-
   const penalizations = await pendingPenalizations(cadreThreshold, nth_factor);
+  log.info(
+    `Found ${penalizations.length} agents with sufficient penalty votes`,
+  );
   return penalizations;
 }
 
@@ -376,8 +387,8 @@ export async function getPenaltyFactors(cadreThreshold: number) {
  * @returns List of agents whose penalties should be reset to zero
  */
 async function getKeysToReset(api: ApiPromise, penaltyThreshold: number) {
+  return [];
   const agentPenaltyVotes = await getAgentKeysWithPenalties();
-
   const voteCountByAgentKey = new Map(
     agentPenaltyVotes.map(({ agentKey, count }) => [agentKey, count]),
   );
@@ -395,7 +406,7 @@ async function getKeysToReset(api: ApiPromise, penaltyThreshold: number) {
 
     if (hasCurrentPenalty && voteCount < penaltyThreshold) {
       log.info(
-        `Agent ${agentKey} penalty votes (${voteCount}) below threshold (${penaltyThreshold})`,
+        `Agent ${agentKey}: resetting penalty (${voteCount} votes < ${penaltyThreshold} threshold)`,
       );
       keysToResetPenalty.push({
         agentKey: agentKey,
@@ -404,6 +415,9 @@ async function getKeysToReset(api: ApiPromise, penaltyThreshold: number) {
     }
   }
 
+  if (keysToResetPenalty.length > 0) {
+    log.info(`Found ${keysToResetPenalty.length} agents to reset penalties`);
+  }
   return keysToResetPenalty;
 }
 
@@ -424,7 +438,7 @@ export async function processPenalty(
     nthBiggestPenaltyFactor: number;
   }[],
 ) {
-  log.info(`Penalties to apply: ${JSON.stringify(penaltiesToApply)}`);
+  log.info(`Processing penalties for ${penaltiesToApply.length} agents`);
 
   const agentsRes = await tryAsync(queryAgents(api));
   const agentsErrorMsg = () => "Failed to query agents:";
@@ -432,12 +446,26 @@ export async function processPenalty(
   const [_agentsErr, agentsMap] = agentsRes;
 
   const allProcessedKeys: SS58Address[] = [];
+  const DELAY_BETWEEN_TXS = 10000; // 10 second delay between transactions
+
+  log.info(
+    `Processing ${penaltiesToApply.length} penalties one at a time with ${DELAY_BETWEEN_TXS}ms delay between each`,
+  );
 
   for (const penalty of penaltiesToApply) {
     const { agentKey, nthBiggestPenaltyFactor } = penalty;
     const agent = agentsMap.get(agentKey);
 
-    if (agent && nthBiggestPenaltyFactor !== agent.weightPenaltyFactor) {
+    if (!agent) {
+      log.warn(`Agent ${agentKey} not found in blockchain query - skipping`);
+      continue;
+    }
+
+    if (nthBiggestPenaltyFactor !== agent.weightPenaltyFactor) {
+      log.info(
+        `Applying penalty ${nthBiggestPenaltyFactor}% to ${agentKey} (was ${agent.weightPenaltyFactor}%)`,
+      );
+
       const penalizeRes = await tryAsync(
         penalizeAgent(api, agentKey, nthBiggestPenaltyFactor, mnemonic),
       );
@@ -445,11 +473,14 @@ export async function processPenalty(
       const penalizeErrorMsg = () =>
         `Failed to apply penalty to agent ${agentKey}:`;
       if (log.ifResultIsErr(penalizeRes, penalizeErrorMsg)) continue;
-      log.info(
-        `Applied penalty factor ${nthBiggestPenaltyFactor} to agent ${agentKey}`,
-      );
 
+      log.info(`✅ Applied penalty ${nthBiggestPenaltyFactor}% to ${agentKey}`);
       allProcessedKeys.push(agentKey);
+
+      // Add delay between transactions to avoid "priority too low" errors
+      if (penalty !== penaltiesToApply[penaltiesToApply.length - 1]) {
+        await new Promise((resolve) => setTimeout(resolve, DELAY_BETWEEN_TXS));
+      }
     }
   }
 
@@ -460,8 +491,8 @@ export async function processPenalty(
     const updateErrorMsg = () => "Failed to update penalty votes:";
     if (log.ifResultIsErr(updateRes, updateErrorMsg)) return;
 
-    log.info(`Penalties updated for ${allProcessedKeys.length} agents`);
+    log.info(`✅ Marked ${allProcessedKeys.length} penalty votes as executed`);
   } else {
-    log.info("No penalties required updates");
+    log.info("No penalty updates needed");
   }
 }
