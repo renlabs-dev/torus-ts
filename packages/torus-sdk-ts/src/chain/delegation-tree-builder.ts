@@ -1,10 +1,11 @@
+import { match } from "rustie";
 import type { Result } from "@torus-network/torus-utils/result";
 import { makeErr, makeOk } from "@torus-network/torus-utils/result";
 
 import type { SS58Address } from "../types/address.js";
 import type { Api, SbQueryError } from "./common/index.js";
-import type { PermissionContract, PermissionId } from "./permission0.js";
-import { queryAgentNamespacePermissions } from "./permission0.js";
+import type { PermissionContract, PermissionId, RevocationTerms } from "./permission0.js";
+import { queryAgentNamespacePermissions, queryPermission } from "./permission0.js";
 import { queryNamespaceEntriesOf } from "./torus0/namespace.js";
 
 /**
@@ -90,12 +91,14 @@ export class DelegationTreeManager {
   private static processAccessibleNamespaces(
     accessibleNamespaces: string[],
     permissionId: PermissionId | "self",
-    maxInstances: number | null,
+    availableInstances: number | null,
     nodeMap: Map<string, DelegationNodeData>,
     permissionCounts: Map<PermissionId | "self", number | null>,
   ): void {
-    // Store the permission count in the central map
-    permissionCounts.set(permissionId, maxInstances);
+    // Store the available instance count in the central map
+    // For permissions: availableInstances = maxInstances - sum(child.maxInstances)
+    // For self-owned namespaces: null (infinite)
+    permissionCounts.set(permissionId, availableInstances);
 
     for (const namespace of accessibleNamespaces) {
       const pathParts = namespace.split(".");
@@ -237,11 +240,26 @@ export class DelegationTreeManager {
             (ns) => ns.startsWith(ownedNamespace),
           );
 
-          // Step 6: Build nodes for the accessible namespaces
+          // Step 6: Calculate available instances using Substrate formula:
+          // available_instances = max_instances - sum(child.max_instances for all children)
+          let availableInstances = Number(permission.maxInstances);
+          
+          // Subtract max_instances of each child permission
+          for (const childId of permission.children) {
+            const [childError, childPermission] = await queryPermission(api, childId);
+            if (childError === undefined && childPermission !== null) {
+              availableInstances -= Number(childPermission.maxInstances);
+            }
+            // If child not found or error, we treat it as 0 (saturating_sub behavior)
+          }
+
+          // Ensure we don't go negative (saturating behavior)
+          availableInstances = Math.max(0, availableInstances);
+
           DelegationTreeManager.processAccessibleNamespaces(
             accessibleNamespaces,
             permissionId,
-            Number(permission.maxInstances),
+            availableInstances,
             nodeMap,
             permissionCounts,
           );
@@ -308,8 +326,12 @@ export class DelegationTreeManager {
   }
 
   /**
-   * Update the count for a specific permission globally
+   * Update the available instance count for a specific permission globally
+   * Note: This updates the calculated available instances (maxInstances - sum(child.maxInstances)),
+   * not the raw maxInstances value from the blockchain.
    *
+   * @param permissionId The permission to update
+   * @param newCount The new available instance count to set
    * @returns The actual value that was set, null if self-owned (infinite)
    */
   updatePermissionCount(
@@ -321,7 +343,7 @@ export class DelegationTreeManager {
       return null; // Return null to indicate infinite/unchanged
     }
 
-    // Update the permission's count in the central map
+    // Update the permission's available instance count in the central map
     this.permissionCounts.set(permissionId, newCount);
 
     return newCount;
@@ -349,8 +371,8 @@ export class DelegationTreeManager {
   }
 
   /**
-   * Get all permissions and their redelegation counts for a node
-   * Returns a map of permissionId -> maxInstances
+   * Get all permissions and their available redelegation instances for a node
+   * Returns a map of permissionId -> availableInstances (maxInstances - sum(child.maxInstances))
    */
   getNodePermissions(
     nodeId: string,
@@ -370,8 +392,8 @@ export class DelegationTreeManager {
   }
 
   /**
-   * Get all permissions and their counts
-   * Returns a map of permissionId -> maxInstances
+   * Get all permissions and their available instance counts
+   * Returns a map of permissionId -> availableInstances (maxInstances - sum(child.maxInstances))
    */
   getAllPermissionCounts(): Map<PermissionId | "self", number | null> {
     return new Map(this.permissionCounts);
@@ -503,6 +525,100 @@ export class DelegationTreeManager {
       nodes: this.getNodes(),
       edges: this.getEdges(),
     };
+  }
+
+  /**
+   * Checks if the child revocation terms are weaker than or equal to the parent.
+   * 
+   * This implements the same hierarchy validation as the Substrate runtime,
+   * ensuring that delegated permissions cannot have stronger revocation terms
+   * than their parent permissions.
+   * 
+   * Hierarchy from weakest to strongest:
+   * 1. RevocableByDelegator (weakest) - Can be revoked by delegator anytime
+   * 2. RevocableAfter(block) - Can only be revoked after specific block
+   * 3. RevocableByArbiters - Requires arbiter votes for revocation  
+   * 4. Irrevocable (strongest) - Cannot be revoked
+   * 
+   * @param parent - The parent permission's revocation terms
+   * @param child - The child permission's revocation terms to validate
+   * @returns True if child terms are weaker than or equal to parent terms
+   * 
+   * @example
+   * ```ts
+   * // Valid delegations (child is weaker)
+   * DelegationTreeManager.isWeaker(
+   *   { Irrevocable: null }, 
+   *   { RevocableByDelegator: null }
+   * ); // true
+   * 
+   * DelegationTreeManager.isWeaker(
+   *   { RevocableAfter: 1000n },
+   *   { RevocableAfter: 1200n }
+   * ); // true (child block >= parent block)
+   * 
+   * // Invalid delegations (child is stronger)
+   * DelegationTreeManager.isWeaker(
+   *   { RevocableByDelegator: null },
+   *   { Irrevocable: null }
+   * ); // false
+   * ```
+   */
+  static isWeaker(parent: RevocationTerms, child: RevocationTerms): boolean {
+    // RevocableByDelegator is always the weakest - can be child of any parent
+    return match(child)({
+      RevocableByDelegator() {
+        return true;
+      },
+      RevocableAfter(childBlock) {
+        return match(parent)({
+          RevocableAfter(parentBlock) {
+            return parentBlock <= childBlock;
+          },
+          Irrevocable() {
+            return true;
+          },
+          RevocableByDelegator() {
+            return false;
+          },
+          RevocableByArbiters() {
+            return false;
+          },
+        });
+      },
+      Irrevocable() {
+        return match(parent)({
+          Irrevocable() {
+            return true;
+          },
+          RevocableAfter() {
+            return false;
+          },
+          RevocableByDelegator() {
+            return false;
+          },
+          RevocableByArbiters() {
+            return false;
+          },
+        });
+      },
+      RevocableByArbiters() {
+        return match(parent)({
+          Irrevocable() {
+            return true;
+          },
+          RevocableByArbiters() {
+            return true;
+          },
+          RevocableAfter() {
+            return false;
+          },
+          RevocableByDelegator() {
+            return false;
+          },
+        });
+      },
+    });
   }
 }
 

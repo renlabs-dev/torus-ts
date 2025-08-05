@@ -201,6 +201,139 @@ async function main() {
       console.log("⚠️  No test address available for delegation tree");
     }
 
+    // Test 4: Test isWeaker method for RevocationTerms
+    console.log("\n⚖️ Test 4: Testing isWeaker method for RevocationTerms...");
+    
+    // Test cases based on the Substrate runtime implementation
+    const testCases = [
+      // RevocableByDelegator is always weakest
+      {
+        parent: { Irrevocable: null },
+        child: { RevocableByDelegator: null },
+        expected: true,
+        description: "Irrevocable → RevocableByDelegator (valid: child is weakest)"
+      },
+      {
+        parent: { RevocableAfter: 1000n },
+        child: { RevocableByDelegator: null },
+        expected: true,
+        description: "RevocableAfter(1000) → RevocableByDelegator (valid: child is weakest)"
+      },
+      {
+        parent: { RevocableByArbiters: { accounts: [], requiredVotes: 1n } },
+        child: { RevocableByDelegator: null },
+        expected: true,
+        description: "RevocableByArbiters → RevocableByDelegator (valid: child is weakest)"
+      },
+      
+      // RevocableAfter tests
+      {
+        parent: { RevocableAfter: 1000n },
+        child: { RevocableAfter: 1200n },
+        expected: true,
+        description: "RevocableAfter(1000) → RevocableAfter(1200) (valid: child block >= parent)"
+      },
+      {
+        parent: { RevocableAfter: 1000n },
+        child: { RevocableAfter: 1000n },
+        expected: true,
+        description: "RevocableAfter(1000) → RevocableAfter(1000) (valid: same block)"
+      },
+      {
+        parent: { RevocableAfter: 1000n },
+        child: { RevocableAfter: 500n },
+        expected: false,
+        description: "RevocableAfter(1000) → RevocableAfter(500) (invalid: child block < parent)"
+      },
+      
+      // Irrevocable tests
+      {
+        parent: { Irrevocable: null },
+        child: { RevocableAfter: 1000n },
+        expected: true,
+        description: "Irrevocable → RevocableAfter(1000) (valid: weakening irrevocable)"
+      },
+      {
+        parent: { Irrevocable: null },
+        child: { Irrevocable: null },
+        expected: true,
+        description: "Irrevocable → Irrevocable (valid: same strength)"
+      },
+      
+      // Invalid strengthening cases
+      {
+        parent: { RevocableByDelegator: null },
+        child: { Irrevocable: null },
+        expected: false,
+        description: "RevocableByDelegator → Irrevocable (invalid: child is stronger)"
+      },
+      {
+        parent: { RevocableByDelegator: null },
+        child: { RevocableAfter: 1000n },
+        expected: false,
+        description: "RevocableByDelegator → RevocableAfter(1000) (invalid: child is stronger)"
+      },
+      {
+        parent: { RevocableByDelegator: null },
+        child: { RevocableByArbiters: { accounts: [], requiredVotes: 1n } },
+        expected: false,
+        description: "RevocableByDelegator → RevocableByArbiters (invalid: child is stronger)"
+      },
+      
+      // RevocableByArbiters tests
+      {
+        parent: { Irrevocable: null },
+        child: { RevocableByArbiters: { accounts: [], requiredVotes: 2n } },
+        expected: true,
+        description: "Irrevocable → RevocableByArbiters (valid: weakening irrevocable)"
+      },
+      {
+        parent: { RevocableByArbiters: { accounts: [], requiredVotes: 1n } },
+        child: { RevocableByArbiters: { accounts: [], requiredVotes: 2n } },
+        expected: true,
+        description: "RevocableByArbiters → RevocableByArbiters (valid: same type)"
+      },
+      {
+        parent: { RevocableAfter: 1000n },
+        child: { RevocableByArbiters: { accounts: [], requiredVotes: 1n } },
+        expected: false,
+        description: "RevocableAfter(1000) → RevocableByArbiters (invalid: child is stronger)"
+      },
+    ];
+
+    console.log(`Running ${testCases.length} test cases...\n`);
+    
+    let passed = 0;
+    let failed = 0;
+
+    for (const testCase of testCases) {
+      const result = DelegationTreeManager.isWeaker(testCase.parent, testCase.child);
+      const success = result === testCase.expected;
+      
+      const icon = success ? "✅" : "❌";
+      const status = success ? "PASS" : "FAIL";
+      
+      console.log(`${icon} ${status}: ${testCase.description}`);
+      console.log(`   Expected: ${testCase.expected}, Got: ${result}`);
+      
+      if (!success) {
+        console.log(`   Parent: ${JSON.stringify(testCase.parent)}`);
+        console.log(`   Child: ${JSON.stringify(testCase.child)}`);
+        failed++;
+      } else {
+        passed++;
+      }
+      console.log();
+    }
+
+    console.log(`📊 Test Results: ${passed}/${testCases.length} passed, ${failed} failed`);
+    
+    if (failed === 0) {
+      console.log("🎉 All isWeaker tests passed!");
+    } else {
+      console.log(`⚠️ ${failed} test(s) failed - please review implementation`);
+    }
+
     await api.disconnect();
     console.log("\n🔌 Disconnected from chain");
     console.log("✨ Playground completed successfully!");
