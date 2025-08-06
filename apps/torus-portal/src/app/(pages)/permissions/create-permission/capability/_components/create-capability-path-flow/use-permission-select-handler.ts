@@ -13,11 +13,13 @@ import type { NamespacePathNodeData } from "./types";
 interface UsePermissionSelectHandlerProps {
   nodes: Node<NamespacePathNodeData>[];
   selectedPaths: Set<string>;
+  rootSelectedPaths: Set<string>;
   activePermission: PermissionId | "self" | null;
   delegationData: unknown;
   colorManager: unknown;
   treeManager: DelegationTreeManager | null;
   setSelectedPaths: (paths: Set<string>) => void;
+  setRootSelectedPaths: (paths: Set<string>) => void;
   setActivePermission: (permission: PermissionId | "self" | null) => void;
   setNodes: (
     nodes:
@@ -263,11 +265,13 @@ function updateNodeSelectionStates(
 export function usePermissionSelectHandler({
   nodes,
   selectedPaths,
+  rootSelectedPaths,
   activePermission,
   delegationData,
   colorManager,
   treeManager,
   setSelectedPaths,
+  setRootSelectedPaths,
   setActivePermission,
   setNodes,
   getDescendantIds,
@@ -287,14 +291,25 @@ export function usePermissionSelectHandler({
 
       const isDeselecting = permissionId === null;
       let newSelectedPaths: Set<string>;
+      let newRootSelectedPaths: Set<string>;
 
       if (isDeselecting) {
-        // Handle deselection
+        // Only allow deselecting root paths (not descendants)
+        if (!rootSelectedPaths.has(targetNode.id)) {
+          // This is a descendant path, not a root path - don't allow deselection
+          return;
+        }
+
+        // Handle deselection of root path
         newSelectedPaths = handleDeselection(
           targetNode,
           selectedPaths,
           getDescendantIds,
         );
+
+        // Remove from root paths
+        newRootSelectedPaths = new Set(rootSelectedPaths);
+        newRootSelectedPaths.delete(targetNode.id);
 
         // If no paths remain selected, clear the active permission
         if (newSelectedPaths.size === 0) {
@@ -325,9 +340,14 @@ export function usePermissionSelectHandler({
           getDescendantIds,
           treeManager,
         );
+
+        // Add to root paths (only the clicked node)
+        newRootSelectedPaths = new Set(rootSelectedPaths);
+        newRootSelectedPaths.add(targetNode.id);
       }
 
       setSelectedPaths(newSelectedPaths);
+      setRootSelectedPaths(newRootSelectedPaths);
 
       // Update node selection states
       setNodes((currentNodes) =>
@@ -351,7 +371,9 @@ export function usePermissionSelectHandler({
       treeManager,
       nodes,
       selectedPaths,
+      rootSelectedPaths,
       setSelectedPaths,
+      setRootSelectedPaths,
       setNodes,
       updateEdgeStyles,
       getDescendantIds,

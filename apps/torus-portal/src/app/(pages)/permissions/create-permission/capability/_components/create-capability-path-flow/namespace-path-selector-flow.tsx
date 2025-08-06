@@ -15,15 +15,13 @@ import {
   useReactFlow,
 } from "@xyflow/react";
 
-import type { DelegationTreeManager } from "@torus-network/sdk/chain";
+import type { DelegationTreeManager, PermissionId } from "@torus-network/sdk/chain";
 import { nodeIdToNamespace } from "@torus-network/sdk/chain";
 
 import { Badge } from "@torus-ts/ui/components/badge";
 import { Button } from "@torus-ts/ui/components/button";
 
-import type {
-  LayoutOptions,
-} from "~/app/_components/react-flow-layout/use-auto-layout";
+import type { LayoutOptions } from "~/app/_components/react-flow-layout/use-auto-layout";
 import useAutoLayout from "~/app/_components/react-flow-layout/use-auto-layout";
 
 import { DEFAULT_LAYOUT_OPTIONS, REACT_FLOW_PRO_OPTIONS } from "./constants";
@@ -56,8 +54,10 @@ function NamespacePathFlow({ onCreatePermission }: NamespacePathFlowProps) {
 
   const {
     selectedPaths,
+    rootSelectedPaths,
     activePermission,
     setSelectedPaths,
+    setRootSelectedPaths,
     setActivePermission,
     getDescendantIds,
     updatePermissionBlocking,
@@ -67,12 +67,45 @@ function NamespacePathFlow({ onCreatePermission }: NamespacePathFlowProps) {
 
   useEffect(() => {
     if (delegationData) {
-      setNodes(delegationData.nodes);
+      // Preserve existing selection states when updating nodes
+      setNodes((currentNodes) => {
+        // Create a map of existing selection states
+        const existingSelections = new Map<string, PermissionId | "self" | null>();
+        currentNodes.forEach((node) => {
+          if (node.data.selectedPermission) {
+            existingSelections.set(node.id, node.data.selectedPermission);
+          }
+        });
+
+        // Merge new data with existing selections
+        return delegationData.nodes.map((newNode) => {
+          const existingSelection = existingSelections.get(newNode.id);
+          return {
+            ...newNode,
+            data: {
+              ...newNode.data,
+              selectedPermission: existingSelection ?? newNode.data.selectedPermission,
+            },
+          };
+        });
+      });
+
       setEdges(delegationData.edges);
       setColorManager(delegationData.colorManager);
       setTreeManager(delegationData.treeManager);
+
+      // Restore visual states after data update
+      if (selectedPaths.size > 0) {
+        // Restore edge styles
+        updateEdgeStyles(selectedPaths);
+      }
+      
+      if (activePermission) {
+        // Restore permission blocking
+        updatePermissionBlocking(activePermission);
+      }
     }
-  }, [delegationData, setNodes, setEdges]);
+  }, [delegationData, setNodes, setEdges, selectedPaths, activePermission, updateEdgeStyles, updatePermissionBlocking]);
 
   const layoutOptions: LayoutOptions = useMemo(
     () => DEFAULT_LAYOUT_OPTIONS,
@@ -84,11 +117,13 @@ function NamespacePathFlow({ onCreatePermission }: NamespacePathFlowProps) {
   const handlePermissionSelect = usePermissionSelectHandler({
     nodes,
     selectedPaths,
+    rootSelectedPaths,
     activePermission,
     delegationData,
     colorManager,
     treeManager,
     setSelectedPaths,
+    setRootSelectedPaths,
     setActivePermission,
     setNodes,
     getDescendantIds,
@@ -101,8 +136,8 @@ function NamespacePathFlow({ onCreatePermission }: NamespacePathFlowProps) {
   }, [clearSelection]);
 
   const handleCreatePermission = useCallback(() => {
-    if (selectedPaths.size > 0 && onCreatePermission) {
-      const pathsWithPermissions = Array.from(selectedPaths)
+    if (rootSelectedPaths.size > 0 && onCreatePermission) {
+      const pathsWithPermissions = Array.from(rootSelectedPaths)
         .map((nodeId) => {
           const node = nodes.find((n) => n.id === nodeId);
           if (!node?.data.selectedPermission) return null;
@@ -118,7 +153,7 @@ function NamespacePathFlow({ onCreatePermission }: NamespacePathFlowProps) {
         .filter((item): item is PathWithPermission => item !== null);
       onCreatePermission(pathsWithPermissions);
     }
-  }, [selectedPaths, nodes, onCreatePermission]);
+  }, [rootSelectedPaths, nodes, onCreatePermission]);
 
   const renderPermissionBadges = usePermissionBadges({
     colorManager,
@@ -126,7 +161,6 @@ function NamespacePathFlow({ onCreatePermission }: NamespacePathFlowProps) {
     treeManager,
   });
 
-  // Initial fit view when delegation data first loads
   useEffect(() => {
     if (delegationData && nodes.length > 0) {
       const timer = setTimeout(() => {
@@ -134,8 +168,7 @@ function NamespacePathFlow({ onCreatePermission }: NamespacePathFlowProps) {
       }, 100);
       return () => clearTimeout(timer);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [delegationData, fitView]); // Only trigger on initial delegation data load
+  }, [delegationData, fitView, nodes.length]);
 
   const accessibleCount = nodes.filter((node) => node.data.accessible).length;
   const totalCount = nodes.length;
@@ -212,7 +245,7 @@ function NamespacePathFlow({ onCreatePermission }: NamespacePathFlowProps) {
         <Panel position="top-left" className="pt-10 space-y-2 z-50">
           <div className="flex space-x-2">
             <Badge variant="default">
-              {selectedPaths.size} of {accessibleCount} selected
+              {rootSelectedPaths.size} of {accessibleCount} selected
             </Badge>
             <Badge variant="secondary">
               {totalCount - accessibleCount} view-only
@@ -237,30 +270,30 @@ function NamespacePathFlow({ onCreatePermission }: NamespacePathFlowProps) {
             variant="outline"
             size="sm"
             onClick={handleClearSelection}
-            disabled={selectedPaths.size === 0}
+            disabled={rootSelectedPaths.size === 0}
           >
             Clear Selection
           </Button>
           <Button
             size="sm"
-            disabled={selectedPaths.size === 0}
+            disabled={rootSelectedPaths.size === 0}
             onClick={handleCreatePermission}
           >
-            Create Permission ({selectedPaths.size} paths)
+            Create Permission ({rootSelectedPaths.size} paths)
           </Button>
         </Panel>
 
-        {selectedPaths.size > 0 && (
+        {rootSelectedPaths.size > 0 && (
           <Panel
             position="bottom-left"
             className="bg-green-500/10 border-green-500/20 border rounded-sm p-2 z-50 shadow-lg"
           >
             <div className="space-y-1">
               <div className="text-sm font-medium text-green-700 dark:text-green-300">
-                Selected Paths:
+                Root Selected Paths:
               </div>
               <div className="text-xs space-y-1 max-h-32 overflow-y-auto">
-                {Array.from(selectedPaths).map((nodeId) => {
+                {Array.from(rootSelectedPaths).map((nodeId) => {
                   const node = nodes.find((n) => n.id === nodeId);
                   return (
                     <div
@@ -272,6 +305,12 @@ function NamespacePathFlow({ onCreatePermission }: NamespacePathFlowProps) {
                   );
                 })}
               </div>
+              {selectedPaths.size > rootSelectedPaths.size && (
+                <div className="text-xs text-green-500/80 pt-1 border-t border-green-500/20">
+                  + {selectedPaths.size - rootSelectedPaths.size} descendant
+                  paths (visual only)
+                </div>
+              )}
             </div>
           </Panel>
         )}

@@ -25,7 +25,10 @@ export function usePermissionSelection({
   setEdges,
   treeManager,
 }: UsePermissionSelectionProps) {
+  // Visual selection for UI feedback (includes descendants)
   const [selectedPaths, setSelectedPaths] = useState<Set<string>>(new Set());
+  // Root paths that were actually clicked by the user (for form submission)
+  const [rootSelectedPaths, setRootSelectedPaths] = useState<Set<string>>(new Set());
   const [activePermission, setActivePermission] = useState<
     PermissionId | "self" | null
   >(null);
@@ -133,6 +136,7 @@ export function usePermissionSelection({
   // Clear all selections
   const clearSelection = useCallback(() => {
     setSelectedPaths(new Set());
+    setRootSelectedPaths(new Set());
     setActivePermission(null);
     updatePermissionBlocking(null);
 
@@ -150,9 +154,11 @@ export function usePermissionSelection({
   }, [setNodes, updatePermissionBlocking, updateEdgeStyles]);
 
   return {
-    selectedPaths,
+    selectedPaths, // Visual selection (includes descendants)
+    rootSelectedPaths, // Only root paths clicked by user
     activePermission,
     setSelectedPaths,
+    setRootSelectedPaths,
     setActivePermission,
     getDescendantIds,
     updatePermissionBlocking,
