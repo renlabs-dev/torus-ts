@@ -795,7 +795,7 @@ export const emissionDistributionTargetsSchema = createTable(
     accumulatedTokens: numeric("accumulated_tokens")
       .notNull()
       .default(sql`0`),
-    atBlock: integer("at_block").notNull(),
+    atBlock: integer("at_block"),
 
     ...timeFields(),
   },
