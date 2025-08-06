@@ -19,7 +19,6 @@ import type {
   DelegationTreeManager,
   PermissionId,
 } from "@torus-network/sdk/chain";
-import { nodeIdToNamespace } from "@torus-network/sdk/chain";
 
 import { Badge } from "@torus-ts/ui/components/badge";
 import { Button } from "@torus-ts/ui/components/button";
@@ -158,7 +157,7 @@ function NamespacePathFlow({ onCreatePermission }: NamespacePathFlowProps) {
           if (!node?.data.selectedPermission) return null;
 
           return {
-            path: nodeIdToNamespace(nodeId),
+            path: nodeId,
             permissionId:
               node.data.selectedPermission === "self"
                 ? null

@@ -1,7 +1,6 @@
 import type { Edge, Node } from "@xyflow/react";
 
 import type { DelegationTreeManager } from "@torus-network/sdk/chain";
-import { nodeIdToNamespace } from "@torus-network/sdk/chain";
 
 import { PermissionColorManager } from "./permission-colors";
 import type { NamespacePathNodeData, PermissionInfo } from "./types";
@@ -39,7 +38,7 @@ export function adaptDelegationTreeToReactFlow(
         type: "namespacePath",
         position: { x: (index % 3) * 200, y: Math.floor(index / 3) * 100 },
         data: {
-          label: nodeIdToNamespace(node.id),
+          label: node.id,
           accessible: node.accessible,
           permissions,
           selectedPermission: null,

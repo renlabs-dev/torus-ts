@@ -6,7 +6,6 @@ import type {
   DelegationTreeManager,
   PermissionId,
 } from "@torus-network/sdk/chain";
-import { namespaceToNodeId } from "@torus-network/sdk/chain";
 
 import type { NamespacePathNodeData } from "./types";
 
@@ -282,8 +281,8 @@ export function usePermissionSelectHandler({
     (nodeId: string, permissionId: PermissionId | "self" | null) => {
       if (!delegationData || !colorManager) return;
 
-      // Convert namespace path to node ID
-      const targetNodeId = namespaceToNodeId(nodeId);
+      // Node ID is already the namespace path
+      const targetNodeId = nodeId;
 
       // Find the target node
       const targetNode = nodes.find((n) => n.id === targetNodeId);
