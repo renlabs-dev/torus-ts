@@ -55,12 +55,13 @@ export function CreateCapabilityPermissionForm({
   const [transactionStatus, setTransactionStatus] = useState<
     "idle" | "loading" | "success" | "error"
   >("idle");
-  
+
   // Set up revocation validation
-  const { validateRevocationStrength, hasParentPermissions } = useRevocationValidation({
-    api: api ?? undefined,
-    pathsWithPermissions,
-  });
+  const { validateRevocationStrength, hasParentPermissions } =
+    useRevocationValidation({
+      api: api ?? undefined,
+      pathsWithPermissions,
+    });
 
   const form = useForm<CreateCapabilityPermissionFormData>({
     resolver: zodResolver(createCapabilityPermissionSchema),
@@ -93,7 +94,9 @@ export function CreateCapabilityPermissionForm({
       if (hasParentPermissions && api) {
         const validationErrors = await validateRevocationStrength(data);
         if (validationErrors.length > 0) {
-          toast.error("Please fix revocation strength issues before submitting");
+          toast.error(
+            "Please fix revocation strength issues before submitting",
+          );
           return;
         }
       }

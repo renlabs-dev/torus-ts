@@ -47,13 +47,16 @@ export function RevocationField({
   pathsWithPermissions = [],
 }: RevocationFieldProps) {
   const revocationType = form.watch("revocation.type");
-  const [validationErrors, setValidationErrors] = useState<RevocationValidationError[]>([]);
+  const [validationErrors, setValidationErrors] = useState<
+    RevocationValidationError[]
+  >([]);
   const [validating, setValidating] = useState(false);
 
-  const { validateRevocationStrength, hasParentPermissions } = useRevocationValidation({
-    api,
-    pathsWithPermissions,
-  });
+  const { validateRevocationStrength, hasParentPermissions } =
+    useRevocationValidation({
+      api,
+      pathsWithPermissions,
+    });
 
   // Watch all revocation fields for validation
   const revocationData = form.watch("revocation");
@@ -66,16 +69,16 @@ export function RevocationField({
     }
 
     let isCancelled = false;
-    
+
     const validateAsync = async () => {
       setValidating(true);
-      
+
       try {
         const errors = await validateRevocationStrength({
           ...form.getValues(),
           revocation: revocationData,
         });
-        
+
         if (!isCancelled) {
           setValidationErrors(errors);
         }
@@ -100,7 +103,13 @@ export function RevocationField({
       isCancelled = true;
       clearTimeout(timeoutId);
     };
-  }, [revocationData, hasParentPermissions, api, validateRevocationStrength, form]);
+  }, [
+    revocationData,
+    hasParentPermissions,
+    api,
+    validateRevocationStrength,
+    form,
+  ]);
 
   const {
     fields: arbiterFields,
@@ -191,7 +200,8 @@ export function RevocationField({
                     </span>
                   </p>
                   <p className="text-xs opacity-90">
-                    Child permissions must have weaker or equal revocation terms.
+                    Child permissions must have weaker or equal revocation
+                    terms.
                   </p>
                 </div>
               ))}

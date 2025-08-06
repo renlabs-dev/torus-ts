@@ -4,8 +4,15 @@ import { makeErr, makeOk } from "@torus-network/torus-utils/result";
 
 import type { SS58Address } from "../types/address.js";
 import type { Api, SbQueryError } from "./common/index.js";
-import type { PermissionContract, PermissionId, RevocationTerms } from "./permission0.js";
-import { queryAgentNamespacePermissions, queryPermission } from "./permission0.js";
+import type {
+  PermissionContract,
+  PermissionId,
+  RevocationTerms,
+} from "./permission0.js";
+import {
+  queryAgentNamespacePermissions,
+  queryPermission,
+} from "./permission0.js";
 import { queryNamespaceEntriesOf } from "./torus0/namespace.js";
 
 /**
@@ -243,10 +250,13 @@ export class DelegationTreeManager {
           // Step 6: Calculate available instances using Substrate formula:
           // available_instances = max_instances - sum(child.max_instances for all children)
           let availableInstances = Number(permission.maxInstances);
-          
+
           // Subtract max_instances of each child permission
           for (const childId of permission.children) {
-            const [childError, childPermission] = await queryPermission(api, childId);
+            const [childError, childPermission] = await queryPermission(
+              api,
+              childId,
+            );
             if (childError === undefined && childPermission !== null) {
               availableInstances -= Number(childPermission.maxInstances);
             }
@@ -529,34 +539,34 @@ export class DelegationTreeManager {
 
   /**
    * Checks if the child revocation terms are weaker than or equal to the parent.
-   * 
+   *
    * This implements the same hierarchy validation as the Substrate runtime,
    * ensuring that delegated permissions cannot have stronger revocation terms
    * than their parent permissions.
-   * 
+   *
    * Hierarchy from weakest to strongest:
    * 1. RevocableByDelegator (weakest) - Can be revoked by delegator anytime
    * 2. RevocableAfter(block) - Can only be revoked after specific block
-   * 3. RevocableByArbiters - Requires arbiter votes for revocation  
+   * 3. RevocableByArbiters - Requires arbiter votes for revocation
    * 4. Irrevocable (strongest) - Cannot be revoked
-   * 
+   *
    * @param parent - The parent permission's revocation terms
    * @param child - The child permission's revocation terms to validate
    * @returns True if child terms are weaker than or equal to parent terms
-   * 
+   *
    * @example
    * ```ts
    * // Valid delegations (child is weaker)
    * DelegationTreeManager.isWeaker(
-   *   { Irrevocable: null }, 
+   *   { Irrevocable: null },
    *   { RevocableByDelegator: null }
    * ); // true
-   * 
+   *
    * DelegationTreeManager.isWeaker(
    *   { RevocableAfter: 1000n },
    *   { RevocableAfter: 1200n }
    * ); // true (child block >= parent block)
-   * 
+   *
    * // Invalid delegations (child is stronger)
    * DelegationTreeManager.isWeaker(
    *   { RevocableByDelegator: null },

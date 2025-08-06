@@ -15,12 +15,14 @@ import { CreateCapabilityPermissionForm } from "./_components/create-capability-
 
 export default function CapabilityV2Page() {
   const [selectedPaths, setSelectedPaths] = useState<string[]>([]);
-  const [pathsWithPermissions, setPathsWithPermissions] = useState<PathWithPermission[]>([]);
+  const [pathsWithPermissions, setPathsWithPermissions] = useState<
+    PathWithPermission[]
+  >([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const handleCreatePermission = (paths: PathWithPermission[]) => {
     // Extract just the paths for the form
-    setSelectedPaths(paths.map(p => p.path));
+    setSelectedPaths(paths.map((p) => p.path));
     // Store the full data for submission
     setPathsWithPermissions(paths);
     setIsModalOpen(true);

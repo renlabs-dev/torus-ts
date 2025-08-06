@@ -135,7 +135,7 @@ function handleNodeSelection(
   treeManager: DelegationTreeManager | null,
 ): Set<string> {
   const newSelectedPaths = new Set(selectedPaths);
-  
+
   // Add target node
   newSelectedPaths.add(targetNode.id);
 
@@ -149,7 +149,8 @@ function handleNodeSelection(
 
     // Check if descendant has compatible permissions using treeManager if available
     if (treeManager) {
-      const descendantPermissions = treeManager.getNodePermissions(descendantId);
+      const descendantPermissions =
+        treeManager.getNodePermissions(descendantId);
       const hasCompatible = Array.from(descendantPermissions.keys()).some(
         (perm) => isPermissionCompatible(perm, currentActivePermission),
       );
@@ -187,12 +188,12 @@ function determineNodePermission(
     // This is the clicked node - use the selected permission
     return selectedPermission;
   }
-  
+
   if (wasSelected && node.data.selectedPermission) {
     // Keep existing permission for already selected nodes
     return node.data.selectedPermission;
   }
-  
+
   // Determine best permission for newly selected descendants
   return determineBestPermission(
     node,
@@ -236,7 +237,7 @@ function updateNodeSelectionStates(
   return nodes.map((node) => {
     const isNodeSelected = newSelectedPaths.has(node.id);
     const wasNodeSelected = selectedPaths.has(node.id);
-    
+
     let selectedPermissionForNode: PermissionId | "self" | null = null;
     if (isNodeSelected) {
       selectedPermissionForNode = determineNodePermission(

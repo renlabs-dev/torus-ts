@@ -46,7 +46,7 @@ export function transformFormDataToSDK(
 
   // Group paths by permission ID
   const pathsMap = new Map<H256 | null, string[]>();
-  
+
   pathsWithPermissions.forEach(({ path, permissionId }) => {
     // Cast the permissionId to H256 (it's already in the correct hex format)
     const h256PermissionId = permissionId as unknown as H256;
