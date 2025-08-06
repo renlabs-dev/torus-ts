@@ -1,7 +1,6 @@
 import type { H256 } from "@polkadot/types/interfaces";
 import type {
   PermissionDuration,
-  PermissionId,
   RevocationTerms,
 } from "@torus-network/sdk/chain";
 import type { SS58Address } from "@torus-network/sdk/types";

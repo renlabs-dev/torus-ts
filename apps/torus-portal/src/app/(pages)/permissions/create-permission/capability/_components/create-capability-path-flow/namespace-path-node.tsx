@@ -113,7 +113,7 @@ export const NamespacePathNode = memo(function NamespacePathNode({
                   handlePermissionButtonClick(e, permission.permissionId)
                 }
                 disabled={isBlocked}
-                title={`${countText} delegations available${isBlocked ? " (blocked)" : ""}`}
+                title={`${countText} available instances${isBlocked ? " (blocked)" : ""}`}
               >
                 <span className="font-bold">{countText}</span>
               </button>

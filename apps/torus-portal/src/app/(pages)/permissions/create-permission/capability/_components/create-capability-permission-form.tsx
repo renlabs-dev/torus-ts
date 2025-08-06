@@ -26,6 +26,7 @@ import { FormAddressField } from "~/app/_components/address-field";
 
 import { DurationField } from "./create-capability-fields/duration-field";
 import { RevocationField } from "./create-capability-fields/revocation-field";
+import { useRevocationValidation } from "./create-capability-fields/use-revocation-validation";
 import { SelectedPathsDisplay } from "./create-capability-path-flow/selected-paths-display";
 import type { PathWithPermission } from "./create-capability-path-flow/types";
 import type { CreateCapabilityPermissionFormData } from "./create-capability-permission-form-schema";
@@ -47,13 +48,19 @@ export function CreateCapabilityPermissionForm({
     delegateNamespacePermissionTransaction,
     isAccountConnected,
     // selectedAccount,
-    // api,
+    api,
     isInitialized,
   } = useTorus();
   const { toast } = useToast();
   const [transactionStatus, setTransactionStatus] = useState<
     "idle" | "loading" | "success" | "error"
   >("idle");
+  
+  // Set up revocation validation
+  const { validateRevocationStrength, hasParentPermissions } = useRevocationValidation({
+    api: api ?? undefined,
+    pathsWithPermissions,
+  });
 
   const form = useForm<CreateCapabilityPermissionFormData>({
     resolver: zodResolver(createCapabilityPermissionSchema),
@@ -80,6 +87,15 @@ export function CreateCapabilityPermissionForm({
       if (data.namespacePaths.length === 0) {
         toast.error("No capability paths selected");
         return;
+      }
+
+      // Validate revocation strength before submitting
+      if (hasParentPermissions && api) {
+        const validationErrors = await validateRevocationStrength(data);
+        if (validationErrors.length > 0) {
+          toast.error("Please fix revocation strength issues before submitting");
+          return;
+        }
       }
 
       try {
@@ -122,6 +138,9 @@ export function CreateCapabilityPermissionForm({
       form,
       onSuccess,
       pathsWithPermissions,
+      hasParentPermissions,
+      api,
+      validateRevocationStrength,
     ],
   );
 
@@ -183,6 +202,8 @@ export function CreateCapabilityPermissionForm({
           <RevocationField
             form={form}
             isAccountConnected={isAccountConnected}
+            api={api ?? undefined}
+            pathsWithPermissions={pathsWithPermissions}
           />
 
           <Button
