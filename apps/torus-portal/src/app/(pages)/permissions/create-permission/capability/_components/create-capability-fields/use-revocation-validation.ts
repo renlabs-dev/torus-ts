@@ -1,10 +1,13 @@
 import { useCallback, useMemo } from "react";
 
-import type { Api } from "@torus-network/sdk/chain";
-import { DelegationTreeManager, queryPermission } from "@torus-network/sdk/chain";
 import type {
+  Api,
   PermissionId,
   RevocationTerms,
+} from "@torus-network/sdk/chain";
+import {
+  DelegationTreeManager,
+  queryPermission,
 } from "@torus-network/sdk/chain";
 
 import type { PathWithPermission } from "../create-capability-path-flow/types";
@@ -34,11 +37,14 @@ export function useRevocationValidation({
     return Array.from(
       new Set(
         pathsWithPermissions
-          .filter((path): path is PathWithPermission & { permissionId: PermissionId } => 
-            path.permissionId !== null
+          .filter(
+            (
+              path,
+            ): path is PathWithPermission & { permissionId: PermissionId } =>
+              path.permissionId !== null,
           )
-          .map((path) => path.permissionId)
-      )
+          .map((path) => path.permissionId),
+      ),
     );
   }, [pathsWithPermissions]);
 
@@ -47,7 +53,7 @@ export function useRevocationValidation({
    */
   const validateRevocationStrength = useCallback(
     async (
-      formData: CreateCapabilityPermissionFormData
+      formData: CreateCapabilityPermissionFormData,
     ): Promise<RevocationValidationError[]> => {
       if (!api || parentPermissionIds.length === 0) {
         return [];
@@ -63,7 +69,7 @@ export function useRevocationValidation({
         try {
           const [queryError, parentPermission] = await queryPermission(
             api,
-            permissionId
+            permissionId,
           );
 
           if (queryError || !parentPermission) {
@@ -75,7 +81,7 @@ export function useRevocationValidation({
           // Use SDK's isWeaker method to validate
           const isValid = DelegationTreeManager.isWeaker(
             parentRevocation,
-            childRevocation
+            childRevocation,
           );
 
           if (!isValid) {
@@ -93,7 +99,7 @@ export function useRevocationValidation({
 
       return errors;
     },
-    [api, parentPermissionIds]
+    [api, parentPermissionIds],
   );
 
   return {
@@ -107,7 +113,7 @@ export function useRevocationValidation({
  * Convert form revocation data to SDK RevocationTerms format
  */
 function convertFormToRevocationTerms(
-  formRevocation: CreateCapabilityPermissionFormData["revocation"]
+  formRevocation: CreateCapabilityPermissionFormData["revocation"],
 ): RevocationTerms {
   switch (formRevocation.type) {
     case "Irrevocable":
@@ -120,13 +126,13 @@ function convertFormToRevocationTerms(
       return {
         RevocableByArbiters: {
           accounts: formRevocation.accounts,
-          requiredVotes: BigInt(formRevocation.requiredVotes),
+          requiredVotes: BigInt(formRevocation.requiredVotes || "0"),
         },
       };
 
     case "RevocableAfter":
       return {
-        RevocableAfter: parseInt(formRevocation.blockNumber),
+        RevocableAfter: parseInt(formRevocation.blockNumber, 10),
       };
 
     default:
@@ -139,7 +145,7 @@ function convertFormToRevocationTerms(
  * Format revocation terms for display
  */
 export function formatRevocationTermsForDisplay(
-  revocation: RevocationTerms
+  revocation: RevocationTerms,
 ): string {
   if ("Irrevocable" in revocation) {
     return "Irrevocable";
@@ -154,6 +160,6 @@ export function formatRevocationTermsForDisplay(
   if ("RevocableAfter" in revocation) {
     return `Revocable after block ${revocation.RevocableAfter}`;
   }
-  
+
   return "Unknown";
 }

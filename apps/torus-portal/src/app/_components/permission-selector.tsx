@@ -12,8 +12,8 @@ import type {
 } from "@torus-network/sdk/chain";
 import {
   queryPermissions,
-  queryPermissionsByRecipient,
   queryPermissionsByDelegator,
+  queryPermissionsByRecipient,
 } from "@torus-network/sdk/chain";
 import { CONSTANTS } from "@torus-network/sdk/constants";
 import type { SS58Address } from "@torus-network/sdk/types";
@@ -247,7 +247,7 @@ export function PermissionSelector(props: PermissionSelectorProps) {
       revocationType: (() => {
         const revType = Object.keys(contract.revocation)[0];
         if (revType === "Irrevocable") return "irrevocable";
-        if (revType === "RevocableByGrantor") return "revocable_by_grantor";
+        if (revType === "RevocableByDelegator") return "revocable_by_delegator";
         if (revType === "RevocableAfter") return "revocable_after";
         if (revType === "RevocableByArbiters") return "revocable_by_arbiters";
         return "irrevocable"; // Default to irrevocable instead of unknown
@@ -420,7 +420,7 @@ export function PermissionSelector(props: PermissionSelectorProps) {
     const revocationValue = (() => {
       const revocationType = Object.keys(contract.revocation)[0];
       if (revocationType === "Irrevocable") return "Irrevocable";
-      if (revocationType === "RevocableByGrantor")
+      if (revocationType === "RevocableByDelegator")
         return "Revocable by Delegator";
       if (
         revocationType === "RevocableAfter" &&
