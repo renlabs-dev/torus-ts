@@ -3,6 +3,7 @@ import type { Result } from "@torus-network/torus-utils/result";
 import { makeErr, makeOk } from "@torus-network/torus-utils/result";
 
 import type { SS58Address } from "../types/address.js";
+import type { NamespacePath } from "../types/namespace/namespace-path.js";
 import type { Api, SbQueryError } from "./common/index.js";
 import type {
   PermissionContract,
@@ -32,8 +33,9 @@ function setIntersection<T>(setA: Set<T>, setB: Set<T>): Set<T> {
  * Node data structure for delegation tree graph visualization
  */
 export interface DelegationNodeData extends Record<string, unknown> {
-  id: string;
-  label: string;
+  id: string; // Dot-separated namespace path (e.g., "agent.dev01.arthur")
+  label: string; // Last segment of the namespace path
+  segments: NamespacePath; // Array of namespace segments
   accessible: boolean;
   permissions: Set<PermissionId | "self">; // Set of permissions that can delegate this namespace
 }
@@ -109,7 +111,7 @@ export class DelegationTreeManager {
 
     for (const namespace of accessibleNamespaces) {
       const pathParts = namespace.split(".");
-      const nodeId = pathParts.join("-");
+      const nodeId = namespace;
       const label = pathParts[pathParts.length - 1] ?? namespace;
 
       let node = nodeMap.get(nodeId);
@@ -117,6 +119,7 @@ export class DelegationTreeManager {
         node = {
           id: nodeId,
           label,
+          segments: pathParts as NamespacePath,
           accessible: true,
           permissions: new Set<PermissionId | "self">(),
         };
@@ -142,7 +145,7 @@ export class DelegationTreeManager {
     // Add prefix nodes (skip generic "agent")
     for (let i = 2; i < pathParts.length; i++) {
       const prefixPath = pathParts.slice(0, i);
-      const prefixNodeId = prefixPath.join("-");
+      const prefixNodeId = prefixPath.join(".");
       const prefixLabel =
         prefixPath[prefixPath.length - 1] ?? prefixPath.join(".");
 
@@ -164,6 +167,7 @@ export class DelegationTreeManager {
           nodeMap.set(prefixNodeId, {
             id: prefixNodeId,
             label: prefixLabel,
+            segments: prefixPath as NamespacePath,
             accessible: false,
             permissions: new Set<PermissionId | "self">(),
           });
@@ -175,8 +179,8 @@ export class DelegationTreeManager {
     for (let i = 2; i < pathParts.length; i++) {
       const parentParts = pathParts.slice(0, i);
       const childParts = pathParts.slice(0, i + 1);
-      const parentId = parentParts.join("-");
-      const childId = childParts.join("-");
+      const parentId = parentParts.join(".");
+      const childId = childParts.join(".");
       const edgeId = `${parentId}->${childId}`;
 
       if (!edgeSet.has(edgeId)) {
@@ -419,7 +423,7 @@ export class DelegationTreeManager {
   getPermissionWithMostInstances(
     namespacePath: string,
   ): { permissionId: PermissionId | "self"; count: number | null } | null {
-    const nodeId = namespacePath.replace(/\./g, "-");
+    const nodeId = namespacePath;
     const node = this.nodes.get(nodeId);
 
     if (!node || node.permissions.size === 0) {
@@ -468,7 +472,7 @@ export class DelegationTreeManager {
 
     // Map namespace paths to their permission sets
     const permissionSets = namespacePaths.map((path) => {
-      const nodeId = path.replace(/\./g, "-");
+      const nodeId = path;
       const node = this.nodes.get(nodeId);
       return node ? node.permissions : new Set<PermissionId | "self">();
     });
@@ -499,7 +503,7 @@ export class DelegationTreeManager {
    * @returns Array of nodes that have permissions to delegate to this namespace
    */
   getNodesWithPermissionsFor(targetNamespace: string): DelegationNodeData[] {
-    const targetNodeId = targetNamespace.replace(/\./g, "-");
+    const targetNodeId = targetNamespace;
 
     const candidates: DelegationNodeData[] = [];
 
@@ -633,26 +637,12 @@ export class DelegationTreeManager {
 }
 
 /**
- * Utility function to convert a namespace path to a node ID
- */
-export function namespaceToNodeId(namespacePath: string): string {
-  return namespacePath.replace(/\./g, "-");
-}
-
-/**
- * Utility function to convert a node ID back to namespace path
- */
-export function nodeIdToNamespace(nodeId: string): string {
-  return nodeId.replace(/-/g, ".");
-}
-
-/**
  * Utility function to get the parent node ID for a given node ID
  */
 export function getParentNodeId(nodeId: string): string | null {
-  const parts = nodeId.split("-");
+  const parts = nodeId.split(".");
   if (parts.length <= 1) return null;
-  return parts.slice(0, -1).join("-");
+  return parts.slice(0, -1).join(".");
 }
 
 /**
@@ -662,12 +652,12 @@ export function getChildNodeIds(
   nodeId: string,
   allNodes: DelegationNodeData[],
 ): string[] {
-  const targetPrefix = nodeId + "-";
+  const targetPrefix = nodeId + ".";
   return allNodes
     .map((node) => node.id)
     .filter(
       (id) =>
         id.startsWith(targetPrefix) &&
-        id.split("-").length === nodeId.split("-").length + 1,
+        id.split(".").length === nodeId.split(".").length + 1,
     );
 }
