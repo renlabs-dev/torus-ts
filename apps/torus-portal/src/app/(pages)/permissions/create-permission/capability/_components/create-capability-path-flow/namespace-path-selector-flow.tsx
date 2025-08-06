@@ -15,7 +15,10 @@ import {
   useReactFlow,
 } from "@xyflow/react";
 
-import type { DelegationTreeManager, PermissionId } from "@torus-network/sdk/chain";
+import type {
+  DelegationTreeManager,
+  PermissionId,
+} from "@torus-network/sdk/chain";
 import { nodeIdToNamespace } from "@torus-network/sdk/chain";
 
 import { Badge } from "@torus-ts/ui/components/badge";
@@ -70,7 +73,10 @@ function NamespacePathFlow({ onCreatePermission }: NamespacePathFlowProps) {
       // Preserve existing selection states when updating nodes
       setNodes((currentNodes) => {
         // Create a map of existing selection states
-        const existingSelections = new Map<string, PermissionId | "self" | null>();
+        const existingSelections = new Map<
+          string,
+          PermissionId | "self" | null
+        >();
         currentNodes.forEach((node) => {
           if (node.data.selectedPermission) {
             existingSelections.set(node.id, node.data.selectedPermission);
@@ -84,7 +90,8 @@ function NamespacePathFlow({ onCreatePermission }: NamespacePathFlowProps) {
             ...newNode,
             data: {
               ...newNode.data,
-              selectedPermission: existingSelection ?? newNode.data.selectedPermission,
+              selectedPermission:
+                existingSelection ?? newNode.data.selectedPermission,
             },
           };
         });
@@ -99,13 +106,21 @@ function NamespacePathFlow({ onCreatePermission }: NamespacePathFlowProps) {
         // Restore edge styles
         updateEdgeStyles(selectedPaths);
       }
-      
+
       if (activePermission) {
         // Restore permission blocking
         updatePermissionBlocking(activePermission);
       }
     }
-  }, [delegationData, setNodes, setEdges, selectedPaths, activePermission, updateEdgeStyles, updatePermissionBlocking]);
+  }, [
+    delegationData,
+    setNodes,
+    setEdges,
+    selectedPaths,
+    activePermission,
+    updateEdgeStyles,
+    updatePermissionBlocking,
+  ]);
 
   const layoutOptions: LayoutOptions = useMemo(
     () => DEFAULT_LAYOUT_OPTIONS,

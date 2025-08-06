@@ -28,7 +28,9 @@ export function usePermissionSelection({
   // Visual selection for UI feedback (includes descendants)
   const [selectedPaths, setSelectedPaths] = useState<Set<string>>(new Set());
   // Root paths that were actually clicked by the user (for form submission)
-  const [rootSelectedPaths, setRootSelectedPaths] = useState<Set<string>>(new Set());
+  const [rootSelectedPaths, setRootSelectedPaths] = useState<Set<string>>(
+    new Set(),
+  );
   const [activePermission, setActivePermission] = useState<
     PermissionId | "self" | null
   >(null);
