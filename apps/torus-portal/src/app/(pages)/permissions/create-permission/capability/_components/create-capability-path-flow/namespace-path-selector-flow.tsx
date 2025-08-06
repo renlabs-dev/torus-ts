@@ -21,7 +21,9 @@ import { nodeIdToNamespace } from "@torus-network/sdk/chain";
 import { Badge } from "@torus-ts/ui/components/badge";
 import { Button } from "@torus-ts/ui/components/button";
 
-import type { LayoutOptions } from "~/app/_components/react-flow-layout/use-auto-layout";
+import type {
+  LayoutOptions,
+} from "~/app/_components/react-flow-layout/use-auto-layout";
 import useAutoLayout from "~/app/_components/react-flow-layout/use-auto-layout";
 
 import { DEFAULT_LAYOUT_OPTIONS, REACT_FLOW_PRO_OPTIONS } from "./constants";
@@ -124,13 +126,16 @@ function NamespacePathFlow({ onCreatePermission }: NamespacePathFlowProps) {
     treeManager,
   });
 
-  // Fit view when nodes change, with a slight delay to ensure layout is applied
+  // Initial fit view when delegation data first loads
   useEffect(() => {
-    const timer = setTimeout(() => {
-      void fitView({ padding: 0.1, duration: 800 });
-    }, 100);
-    return () => clearTimeout(timer);
-  }, [nodes, fitView]);
+    if (delegationData && nodes.length > 0) {
+      const timer = setTimeout(() => {
+        void fitView({ padding: 0.1, duration: 800 });
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [delegationData, fitView]); // Only trigger on initial delegation data load
 
   const accessibleCount = nodes.filter((node) => node.data.accessible).length;
   const totalCount = nodes.length;

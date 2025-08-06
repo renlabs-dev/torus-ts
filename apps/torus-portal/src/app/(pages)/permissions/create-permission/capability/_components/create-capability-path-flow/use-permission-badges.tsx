@@ -48,7 +48,6 @@ export function usePermissionBadges({
             style={{ backgroundColor: color.hex }}
           />
           <span className="font-semibold">{displayText}</span>
-          {isActive && <span className="ml-1 text-xs">ACTIVE</span>}
         </div>
       );
     });

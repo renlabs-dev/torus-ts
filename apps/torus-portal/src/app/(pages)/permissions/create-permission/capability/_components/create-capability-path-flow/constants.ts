@@ -32,7 +32,7 @@ export const NODE_STYLES = {
 // Permission button styles
 export const PERMISSION_BUTTON_STYLES = {
   blocked: "bg-gray-300 text-gray-500 cursor-not-allowed opacity-50",
-  selected: "text-white ring-2 ring-offset-1 ring-blue-500",
+  selected: "text-white",
   default: "text-white hover:opacity-80 transition-opacity",
 } as const;
 
