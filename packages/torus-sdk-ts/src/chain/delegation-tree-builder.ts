@@ -233,21 +233,78 @@ export class DelegationTreeManager {
 
       const namespaceScope = permission.scope.Namespace;
 
-      // Step 5: Get delegator's actual owned namespaces from torus0.namespaces
-      const delegatorNamespaces =
-        await DelegationTreeManager.queryNamespaceEntriesForAddress(
-          api,
-          permission.delegator,
-        );
-      if (!delegatorNamespaces) continue;
+      // Step 4: Process each entry in the paths map
+      for (const [parentPermissionId, pathsArray] of namespaceScope.paths) {
+        // Find the root owner by tracing back through parent permissions
+        const rootOwnerResult = await match(parentPermissionId)({
+          // If None, the delegator is the root owner
+          None: () => Promise.resolve(makeOk(permission.delegator)),
 
-      // Step 4: Process agent's owned namespaces
-      for (const [_, pathsArray] of namespaceScope.paths) {
+          // Otherwise, trace back to find the root owner
+          Some: async (permId: PermissionId) => {
+            const currentPermId = permId;
+
+            while (true) {
+              const [error, parentPerm] = await queryPermission(
+                api,
+                currentPermId,
+              );
+              if (error !== undefined || parentPerm === null) {
+                return makeErr(
+                  `Failed to query parent permission ${currentPermId}`,
+                );
+              }
+
+              if (!("Namespace" in parentPerm.scope)) {
+                return makeErr(
+                  `Parent permission ${currentPermId} is not a namespace permission`,
+                );
+              }
+
+              // Check each entry in the parent's paths map
+
+              for (const [grandParentId, paths] of parentPerm.scope.Namespace
+                .paths) {
+                const shouldReturn = match(grandParentId)({
+                  None() {
+                    // Found root - paths with None parent mean delegator owns them
+                    return paths.length > 0;
+                  },
+                  Some(_id: PermissionId) {
+                    return false;
+                  },
+                });
+
+                if (shouldReturn) {
+                  return makeOk(parentPerm.delegator);
+                }
+              }
+              // No more parents found, current permission's delegator is root
+              return makeOk(parentPerm.delegator);
+            }
+          },
+        });
+
+        const [rootError, rootOwnerAddress] = rootOwnerResult;
+        if (rootError !== undefined) {
+          console.warn(rootError);
+          continue;
+        }
+
+        // Get the root owner's actual owned namespaces from torus0.namespaces
+        const rootOwnerNamespaces =
+          await DelegationTreeManager.queryNamespaceEntriesForAddress(
+            api,
+            rootOwnerAddress,
+          );
+        if (!rootOwnerNamespaces) continue;
+
+        // Process the namespace paths for this parent
         for (const ownedPath of pathsArray) {
           const ownedNamespace = ownedPath.join(".");
 
           // Step 5: Find all downstream namespaces that the agent can delegate
-          const accessibleNamespaces = Array.from(delegatorNamespaces).filter(
+          const accessibleNamespaces = Array.from(rootOwnerNamespaces).filter(
             (ns) => ns.startsWith(ownedNamespace),
           );
 
