@@ -270,13 +270,16 @@ export class DelegationTreeManager {
           // Ensure we don't go negative (saturating behavior)
           availableInstances = Math.max(0, availableInstances);
 
-          DelegationTreeManager.processAccessibleNamespaces(
-            accessibleNamespaces,
-            permissionId,
-            availableInstances,
-            nodeMap,
-            permissionCounts,
-          );
+          // Only process permissions that have accessible namespaces
+          if (accessibleNamespaces.length > 0) {
+            DelegationTreeManager.processAccessibleNamespaces(
+              accessibleNamespaces,
+              permissionId,
+              availableInstances,
+              nodeMap,
+              permissionCounts,
+            );
+          }
 
           // Collect all namespaces for hierarchy processing later
           for (const namespace of accessibleNamespaces) {
