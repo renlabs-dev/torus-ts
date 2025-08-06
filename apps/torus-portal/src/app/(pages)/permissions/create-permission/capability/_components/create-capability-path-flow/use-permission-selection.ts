@@ -2,7 +2,10 @@ import { useCallback, useState } from "react";
 
 import type { Edge, Node } from "@xyflow/react";
 
-import type { PermissionId } from "@torus-network/sdk/chain";
+import type {
+  DelegationTreeManager,
+  PermissionId,
+} from "@torus-network/sdk/chain";
 
 import { EDGE_COLORS, EDGE_WIDTHS } from "./constants";
 import type { NamespacePathNodeData } from "./types";
@@ -12,6 +15,7 @@ interface UsePermissionSelectionProps {
   edges: Edge[];
   setNodes: React.Dispatch<React.SetStateAction<Node<NamespacePathNodeData>[]>>;
   setEdges: React.Dispatch<React.SetStateAction<Edge[]>>;
+  treeManager?: DelegationTreeManager | null;
 }
 
 export function usePermissionSelection({
@@ -19,31 +23,49 @@ export function usePermissionSelection({
   edges,
   setNodes,
   setEdges,
+  treeManager,
 }: UsePermissionSelectionProps) {
   const [selectedPaths, setSelectedPaths] = useState<Set<string>>(new Set());
   const [activePermission, setActivePermission] = useState<
     PermissionId | "self" | null
   >(null);
 
-  // Get all descendant node IDs
+  // Get all descendant node IDs recursively using the tree manager if available
   const getDescendantIds = useCallback(
     (nodeId: string): string[] => {
-      const descendants: string[] = [];
-      const queue = [nodeId];
+      if (treeManager) {
+        // Use the tree manager's built-in method for getting children
+        const descendants: string[] = [];
+        const queue = [nodeId];
 
-      while (queue.length > 0) {
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        const currentId = queue.shift()!;
-        const childEdges = edges.filter((edge) => edge.source === currentId);
-        for (const edge of childEdges) {
-          descendants.push(edge.target);
-          queue.push(edge.target);
+        while (queue.length > 0) {
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+          const currentId = queue.shift()!;
+          const children = treeManager.getChildren(currentId);
+          descendants.push(...children);
+          queue.push(...children);
         }
-      }
 
-      return descendants;
+        return descendants;
+      } else {
+        // Fallback to edge-based traversal
+        const descendants: string[] = [];
+        const queue = [nodeId];
+
+        while (queue.length > 0) {
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+          const currentId = queue.shift()!;
+          const childEdges = edges.filter((edge) => edge.source === currentId);
+          for (const edge of childEdges) {
+            descendants.push(edge.target);
+            queue.push(edge.target);
+          }
+        }
+
+        return descendants;
+      }
     },
-    [edges],
+    [edges, treeManager],
   );
 
   // Update permission blocking based on active permission

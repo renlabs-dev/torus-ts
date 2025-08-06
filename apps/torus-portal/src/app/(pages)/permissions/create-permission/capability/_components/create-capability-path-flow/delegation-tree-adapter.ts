@@ -12,6 +12,7 @@ export function adaptDelegationTreeToReactFlow(
   nodes: Node<NamespacePathNodeData>[];
   edges: Edge[];
   colorManager: PermissionColorManager;
+  treeManager: DelegationTreeManager;
 } {
   const colorManager = new PermissionColorManager();
 
@@ -38,7 +39,7 @@ export function adaptDelegationTreeToReactFlow(
         type: "namespacePath",
         position: { x: (index % 3) * 200, y: Math.floor(index / 3) * 100 },
         data: {
-          label: nodeIdToNamespace(node.id), // Convert back to namespace format for display
+          label: nodeIdToNamespace(node.id),
           accessible: node.accessible,
           permissions,
           selectedPermission: null,
@@ -52,5 +53,5 @@ export function adaptDelegationTreeToReactFlow(
     target: edge.target,
   }));
 
-  return { nodes, edges, colorManager };
+  return { nodes, edges, colorManager, treeManager };
 }

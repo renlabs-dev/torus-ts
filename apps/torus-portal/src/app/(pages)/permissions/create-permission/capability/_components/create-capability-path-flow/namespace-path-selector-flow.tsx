@@ -15,28 +15,35 @@ import {
   useReactFlow,
 } from "@xyflow/react";
 
-import type { PermissionId } from "@torus-network/sdk/chain";
+import type { DelegationTreeManager } from "@torus-network/sdk/chain";
 
 import { Badge } from "@torus-ts/ui/components/badge";
 import { Button } from "@torus-ts/ui/components/button";
-import { cn } from "@torus-ts/ui/lib/utils";
 
-import type {
-  LayoutOptions,
-} from "~/app/_components/react-flow-layout/use-auto-layout";
+import type { LayoutOptions } from "~/app/_components/react-flow-layout/use-auto-layout";
 import useAutoLayout from "~/app/_components/react-flow-layout/use-auto-layout";
 
 import { DEFAULT_LAYOUT_OPTIONS, REACT_FLOW_PRO_OPTIONS } from "./constants";
 import { NamespacePathNode } from "./namespace-path-node";
 import type { PermissionColorManager } from "./permission-colors";
-import type { NamespacePathFlowProps, NamespacePathNodeData, PathWithPermission } from "./types";
+import type {
+  NamespacePathFlowProps,
+  NamespacePathNodeData,
+  PathWithPermission,
+} from "./types";
 import { useDelegationTree } from "./use-delegation-tree";
+import { usePermissionBadges } from "./use-permission-badges";
+import { usePermissionSelectHandler } from "./use-permission-select-handler";
 import { usePermissionSelection } from "./use-permission-selection";
+import { createPathsWithPermissions } from "./utils";
 
 function NamespacePathFlow({ onCreatePermission }: NamespacePathFlowProps) {
   const { fitView } = useReactFlow();
   const [colorManager, setColorManager] =
     useState<PermissionColorManager | null>(null);
+  const [treeManager, setTreeManager] = useState<DelegationTreeManager | null>(
+    null,
+  );
 
   const { data: delegationData, isLoading, error } = useDelegationTree();
 
@@ -54,13 +61,14 @@ function NamespacePathFlow({ onCreatePermission }: NamespacePathFlowProps) {
     updatePermissionBlocking,
     updateEdgeStyles,
     clearSelection,
-  } = usePermissionSelection({ nodes, edges, setNodes, setEdges });
+  } = usePermissionSelection({ nodes, edges, setNodes, setEdges, treeManager });
 
   useEffect(() => {
     if (delegationData) {
       setNodes(delegationData.nodes);
       setEdges(delegationData.edges);
       setColorManager(delegationData.colorManager);
+      setTreeManager(delegationData.treeManager);
     }
   }, [delegationData, setNodes, setEdges]);
 
@@ -71,168 +79,40 @@ function NamespacePathFlow({ onCreatePermission }: NamespacePathFlowProps) {
 
   useAutoLayout(layoutOptions);
 
-  // Handle permission selection on nodes
-  const handlePermissionSelect = useCallback(
-    (nodeId: string, permissionId: PermissionId | "self" | null) => {
-      if (!delegationData || !colorManager) return;
-
-      // Find the node by label (nodeId is actually the namespace path)
-      const targetNode = nodes.find((n) => n.data.label === nodeId);
-      if (!targetNode) return;
-
-      const newSelectedPaths = new Set(selectedPaths);
-      const isDeselecting = permissionId === null;
-
-      if (isDeselecting) {
-        // Deselecting: remove this node and all its descendants
-        newSelectedPaths.delete(targetNode.id);
-        const descendants = getDescendantIds(targetNode.id);
-        descendants.forEach((id) => newSelectedPaths.delete(id));
-
-        // If no paths remain selected, clear the active permission
-        if (newSelectedPaths.size === 0) {
-          setActivePermission(null);
-          updatePermissionBlocking(null);
-        }
-      } else {
-        // Selecting: check if this permission is compatible with current selection
-        if (
-          activePermission &&
-          activePermission !== permissionId &&
-          activePermission !== "self" &&
-          permissionId !== "self"
-        ) {
-          // Cannot mix two different non-self permissions
-          return;
-        }
-
-        // Set or update active permission
-        if (!activePermission) {
-          setActivePermission(permissionId);
-          updatePermissionBlocking(permissionId);
-        } else if (activePermission === "self" && permissionId !== "self") {
-          // If self is active and we're selecting a specific permission, switch to that permission
-          setActivePermission(permissionId);
-          updatePermissionBlocking(permissionId);
-        } else if (activePermission !== "self" && permissionId === "self") {
-          // If a specific permission is active and we're selecting self, keep the current permission
-          // Self can always be added to any selection
-        }
-
-        // Add this node and all its descendants (if they have compatible permissions)
-        newSelectedPaths.add(targetNode.id);
-        const descendants = getDescendantIds(targetNode.id);
-        descendants.forEach((descendantId) => {
-          const descendantNode = nodes.find((n) => n.id === descendantId);
-          if (descendantNode?.data.accessible) {
-            // Determine the current active permission (could be the one we just set or the existing one)
-            const currentActivePermission = activePermission ?? permissionId;
-
-            // Check if descendant has compatible permissions
-            const hasCompatiblePermission =
-              descendantNode.data.permissions.some((perm) => {
-                // Self permissions are always compatible
-                if (perm.permissionId === "self") return true;
-
-                // If the active permission is self, any permission is compatible
-                if (currentActivePermission === "self") return true;
-
-                // Otherwise, only the same permission is compatible
-                return perm.permissionId === currentActivePermission;
-              });
-
-            if (hasCompatiblePermission) {
-              newSelectedPaths.add(descendantId);
-            }
-          }
-        });
-      }
-
-      setSelectedPaths(newSelectedPaths);
-
-      // Update node selection states
-      setNodes((currentNodes) =>
-        currentNodes.map((node) => {
-          const isNodeSelected = newSelectedPaths.has(node.id);
-          const wasNodeSelected = selectedPaths.has(node.id);
-          let selectedPermissionForNode: PermissionId | "self" | null = null;
-
-          if (isNodeSelected) {
-            // For selected nodes, determine which permission they're using
-            if (node.id === targetNode.id) {
-              // This is the node we just clicked - use the permission we selected
-              selectedPermissionForNode = permissionId;
-            } else if (wasNodeSelected && node.data.selectedPermission) {
-              // This node was already selected - keep its existing permission
-              selectedPermissionForNode = node.data.selectedPermission;
-            } else {
-              // This is a newly selected node (descendant) - determine best permission
-              const hasSelfPermission = node.data.permissions.some(
-                (perm) => perm.permissionId === "self",
-              );
-              const hasCurrentPermission =
-                permissionId &&
-                node.data.permissions.some(
-                  (perm) => perm.permissionId === permissionId,
-                );
-              const hasActivePermission =
-                activePermission &&
-                node.data.permissions.some(
-                  (perm) => perm.permissionId === activePermission,
-                );
-
-              if (hasCurrentPermission) {
-                // Priority 1: Use the currently selected permission if the node has it
-                selectedPermissionForNode = permissionId;
-              } else if (permissionId === "self" && hasSelfPermission) {
-                // Priority 2: If we're specifically selecting self and node has it
-                selectedPermissionForNode = "self";
-              } else if (hasActivePermission) {
-                // Priority 3: Fall back to the active permission if the node has it
-                selectedPermissionForNode = activePermission;
-              } else if (hasSelfPermission) {
-                // Priority 4: Fallback to self if available
-                selectedPermissionForNode = "self";
-              } else {
-                // Priority 5: Use the first available permission as last resort
-                const firstAvailablePermission =
-                  node.data.permissions[0]?.permissionId;
-                selectedPermissionForNode = firstAvailablePermission ?? null;
-              }
-            }
-          }
-
-          return {
-            ...node,
-            data: {
-              ...node.data,
-              selectedPermission: selectedPermissionForNode,
-            },
-          };
-        }),
-      );
-
-      // Update edge styles
-      updateEdgeStyles(newSelectedPaths);
-    },
-    [
-      delegationData,
-      colorManager,
-      nodes,
-      selectedPaths,
-      setSelectedPaths,
-      setNodes,
-      updateEdgeStyles,
-      getDescendantIds,
-      setActivePermission,
-      updatePermissionBlocking,
-      activePermission,
-    ],
-  );
+  const handlePermissionSelect = usePermissionSelectHandler({
+    nodes,
+    selectedPaths,
+    activePermission,
+    delegationData,
+    colorManager,
+    treeManager,
+    setSelectedPaths,
+    setActivePermission,
+    setNodes,
+    getDescendantIds,
+    updatePermissionBlocking,
+    updateEdgeStyles,
+  });
 
   const handleClearSelection = useCallback(() => {
     clearSelection();
   }, [clearSelection]);
+
+  const handleCreatePermission = useCallback(() => {
+    if (selectedPaths.size > 0 && onCreatePermission) {
+      const pathsWithPermissions = createPathsWithPermissions(
+        selectedPaths,
+        nodes,
+      );
+      onCreatePermission(pathsWithPermissions);
+    }
+  }, [selectedPaths, nodes, onCreatePermission]);
+
+  const renderPermissionBadges = usePermissionBadges({
+    colorManager,
+    activePermission,
+    treeManager,
+  });
 
   // Fit view when nodes change, with a slight delay to ensure layout is applied
   useEffect(() => {
@@ -242,7 +122,6 @@ function NamespacePathFlow({ onCreatePermission }: NamespacePathFlowProps) {
     return () => clearTimeout(timer);
   }, [nodes, fitView]);
 
-  const selectedCount = selectedPaths.size;
   const accessibleCount = nodes.filter((node) => node.data.accessible).length;
   const totalCount = nodes.length;
 
@@ -318,7 +197,7 @@ function NamespacePathFlow({ onCreatePermission }: NamespacePathFlowProps) {
         <Panel position="top-left" className="pt-10 space-y-2 z-50">
           <div className="flex space-x-2">
             <Badge variant="default">
-              {selectedCount} of {accessibleCount} selected
+              {selectedPaths.size} of {accessibleCount} selected
             </Badge>
             <Badge variant="secondary">
               {totalCount - accessibleCount} view-only
@@ -330,45 +209,7 @@ function NamespacePathFlow({ onCreatePermission }: NamespacePathFlowProps) {
           {/* Permission colors reference panel */}
           {colorManager && (
             <div className="flex flex-wrap gap-1">
-              {(() => {
-                // Get all unique permissions from all nodes
-                const allPermissions = new Set<string>();
-                nodes.forEach((node) => {
-                  node.data.permissions.forEach((perm) => {
-                    allPermissions.add(perm.permissionId);
-                  });
-                });
-
-                return Array.from(allPermissions).map((permissionId) => {
-                  const typedPermissionId = permissionId as
-                    | PermissionId
-                    | "self";
-                  const color =
-                    colorManager.getColorForPermission(typedPermissionId);
-                  const displayText =
-                    colorManager.getPermissionDisplayText(typedPermissionId);
-                  const isActive = activePermission === permissionId;
-
-                  return (
-                    <div
-                      key={permissionId}
-                      className={cn(
-                        "flex items-center gap-1 px-2 py-1 rounded-sm text-xs font-mono border",
-                        isActive
-                          ? `${color.bg} ${color.border} ${color.text} border-2 font-semibold`
-                          : "bg-muted/50 text-muted-foreground border-border",
-                      )}
-                    >
-                      <div
-                        className="w-3 h-3 border border-border/50 rounded-sm"
-                        style={{ backgroundColor: color.hex }}
-                      />
-                      <span className="font-semibold">{displayText}</span>
-                      {isActive && <span className="ml-1 text-xs">ACTIVE</span>}
-                    </div>
-                  );
-                });
-              })()}
+              {renderPermissionBadges()}
             </div>
           )}
         </Panel>
@@ -381,37 +222,20 @@ function NamespacePathFlow({ onCreatePermission }: NamespacePathFlowProps) {
             variant="outline"
             size="sm"
             onClick={handleClearSelection}
-            disabled={selectedCount === 0}
+            disabled={selectedPaths.size === 0}
           >
             Clear Selection
           </Button>
           <Button
             size="sm"
-            disabled={selectedCount === 0}
-            onClick={() => {
-              if (selectedCount > 0 && onCreatePermission) {
-                // Create array of paths with their permissions
-                const pathsWithPermissions: PathWithPermission[] = Array.from(selectedPaths)
-                  .map((nodeId) => {
-                    const node = nodes.find((n) => n.id === nodeId);
-                    if (!node) return null;
-                    
-                    return {
-                      path: String(node.data.label),
-                      permissionId: node.data.selectedPermission === "self" ? null : node.data.selectedPermission,
-                    };
-                  })
-                  .filter((item): item is PathWithPermission => item !== null);
-                
-                onCreatePermission(pathsWithPermissions);
-              }
-            }}
+            disabled={selectedPaths.size === 0}
+            onClick={handleCreatePermission}
           >
-            Create Permission ({selectedCount} paths)
+            Create Permission ({selectedPaths.size} paths)
           </Button>
         </Panel>
 
-        {selectedCount > 0 && (
+        {selectedPaths.size > 0 && (
           <Panel
             position="bottom-left"
             className="bg-green-500/10 border-green-500/20 border rounded-sm p-2 z-50 shadow-lg"

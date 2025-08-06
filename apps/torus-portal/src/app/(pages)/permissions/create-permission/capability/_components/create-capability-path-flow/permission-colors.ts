@@ -182,21 +182,6 @@ export class PermissionColorManager {
   }
 
   /**
-   * Get all assigned permission colors
-   */
-  getAllAssignedColors(): Map<PermissionId | "self", PermissionColor> {
-    return new Map(this.permissionColorMap);
-  }
-
-  /**
-   * Clear all color assignments (useful when switching wallets)
-   */
-  clear(): void {
-    this.permissionColorMap.clear();
-    this.usedColorIndices.clear();
-  }
-
-  /**
    * Get display text for permission ID
    */
   getPermissionDisplayText(permissionId: PermissionId | "self"): string {
