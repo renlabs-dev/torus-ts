@@ -303,10 +303,20 @@ export class DelegationTreeManager {
         for (const ownedPath of pathsArray) {
           const ownedNamespace = ownedPath.join(".");
 
-          // Step 5: Find all downstream namespaces that the agent can delegate
-          const accessibleNamespaces = Array.from(rootOwnerNamespaces).filter(
-            (ns) => ns.startsWith(ownedNamespace),
+          // Always include the delegated namespace itself
+          const accessibleNamespaces = [ownedNamespace];
+
+          // Find all downstream namespaces owned by the root owner
+          const downstreamNamespaces = Array.from(rootOwnerNamespaces).filter(
+            (ns) => ns.startsWith(ownedNamespace + "."),
           );
+
+          // Add all downstream namespaces
+          for (const downstream of downstreamNamespaces) {
+            if (!accessibleNamespaces.includes(downstream)) {
+              accessibleNamespaces.push(downstream);
+            }
+          }
 
           // Step 6: Calculate available instances using Substrate formula:
           // available_instances = max_instances - sum(child.max_instances for all children)
@@ -327,16 +337,13 @@ export class DelegationTreeManager {
           // Ensure we don't go negative (saturating behavior)
           availableInstances = Math.max(0, availableInstances);
 
-          // Only process permissions that have accessible namespaces
-          if (accessibleNamespaces.length > 0) {
-            DelegationTreeManager.processAccessibleNamespaces(
-              accessibleNamespaces,
-              permissionId,
-              availableInstances,
-              nodeMap,
-              permissionCounts,
-            );
-          }
+          DelegationTreeManager.processAccessibleNamespaces(
+            accessibleNamespaces,
+            permissionId,
+            availableInstances,
+            nodeMap,
+            permissionCounts,
+          );
 
           // Collect all namespaces for hierarchy processing later
           for (const namespace of accessibleNamespaces) {
