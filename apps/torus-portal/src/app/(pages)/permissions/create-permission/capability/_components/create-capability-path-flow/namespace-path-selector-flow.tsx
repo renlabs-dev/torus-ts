@@ -16,6 +16,7 @@ import {
 } from "@xyflow/react";
 
 import type { DelegationTreeManager } from "@torus-network/sdk/chain";
+import { nodeIdToNamespace } from "@torus-network/sdk/chain";
 
 import { Badge } from "@torus-ts/ui/components/badge";
 import { Button } from "@torus-ts/ui/components/button";
@@ -35,7 +36,6 @@ import { useDelegationTree } from "./use-delegation-tree";
 import { usePermissionBadges } from "./use-permission-badges";
 import { usePermissionSelectHandler } from "./use-permission-select-handler";
 import { usePermissionSelection } from "./use-permission-selection";
-import { createPathsWithPermissions } from "./utils";
 
 function NamespacePathFlow({ onCreatePermission }: NamespacePathFlowProps) {
   const { fitView } = useReactFlow();
@@ -100,10 +100,20 @@ function NamespacePathFlow({ onCreatePermission }: NamespacePathFlowProps) {
 
   const handleCreatePermission = useCallback(() => {
     if (selectedPaths.size > 0 && onCreatePermission) {
-      const pathsWithPermissions = createPathsWithPermissions(
-        selectedPaths,
-        nodes,
-      );
+      const pathsWithPermissions = Array.from(selectedPaths)
+        .map((nodeId) => {
+          const node = nodes.find((n) => n.id === nodeId);
+          if (!node?.data.selectedPermission) return null;
+
+          return {
+            path: nodeIdToNamespace(nodeId),
+            permissionId:
+              node.data.selectedPermission === "self"
+                ? null
+                : node.data.selectedPermission,
+          };
+        })
+        .filter((item): item is PathWithPermission => item !== null);
       onCreatePermission(pathsWithPermissions);
     }
   }, [selectedPaths, nodes, onCreatePermission]);

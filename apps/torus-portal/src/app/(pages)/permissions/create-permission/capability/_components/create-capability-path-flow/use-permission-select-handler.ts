@@ -31,12 +31,89 @@ interface UsePermissionSelectHandlerProps {
   updateEdgeStyles: (paths: Set<string>) => void;
 }
 
+/**
+ * Determines the best permission to use for a node based on available permissions and priorities
+ */
+function determineBestPermission(
+  node: Node<NamespacePathNodeData>,
+  currentPermissionId: PermissionId | "self" | null,
+  activePermission: PermissionId | "self" | null,
+  treeManager: DelegationTreeManager | null,
+): PermissionId | "self" | null {
+  if (!treeManager) {
+    // Fallback to original logic if no treeManager
+    const permissions = node.data.permissions;
+    const hasSelf = permissions.some((p) => p.permissionId === "self");
+    const hasCurrent =
+      currentPermissionId &&
+      permissions.some((p) => p.permissionId === currentPermissionId);
+    const hasActive =
+      activePermission &&
+      permissions.some((p) => p.permissionId === activePermission);
+
+    if (hasCurrent) return currentPermissionId;
+    if (currentPermissionId === "self" && hasSelf) return "self";
+    if (hasActive) return activePermission;
+    if (hasSelf) return "self";
+    return permissions[0]?.permissionId ?? null;
+  }
+
+  // Use treeManager to get node permissions
+  const nodePermissions = treeManager.getNodePermissions(node.id);
+  const availablePermissions = Array.from(nodePermissions.keys());
+
+  // Priority order:
+  // 1. Current permission if available
+  if (
+    currentPermissionId &&
+    availablePermissions.includes(currentPermissionId)
+  ) {
+    return currentPermissionId;
+  }
+
+  // 2. Self permission when specifically requested
+  if (currentPermissionId === "self" && availablePermissions.includes("self")) {
+    return "self";
+  }
+
+  // 3. Active permission if available
+  if (activePermission && availablePermissions.includes(activePermission)) {
+    return activePermission;
+  }
+
+  // 4. Self permission as fallback
+  if (availablePermissions.includes("self")) {
+    return "self";
+  }
+
+  // 5. First available permission
+  return availablePermissions[0] ?? null;
+}
+
+/**
+ * Checks if a permission is compatible with the current selection
+ */
+function isPermissionCompatible(
+  permissionId: PermissionId | "self",
+  activePermission: PermissionId | "self" | null,
+): boolean {
+  // No active permission means any permission is compatible
+  if (!activePermission) return true;
+
+  // Self permissions are always compatible
+  if (permissionId === "self" || activePermission === "self") return true;
+
+  // Otherwise, permissions must match
+  return permissionId === activePermission;
+}
+
 export function usePermissionSelectHandler({
   nodes,
   selectedPaths,
   activePermission,
   delegationData,
   colorManager,
+  treeManager,
   setSelectedPaths,
   setActivePermission,
   setNodes,
@@ -48,9 +125,14 @@ export function usePermissionSelectHandler({
     (nodeId: string, permissionId: PermissionId | "self" | null) => {
       if (!delegationData || !colorManager) return;
 
-      // Convert namespace path to node ID and find the node
+      // Convert namespace path to node ID
       const targetNodeId = namespaceToNodeId(nodeId);
-      const targetNode = nodes.find((n) => n.id === targetNodeId);
+
+      // Use treeManager to get node if available, otherwise fallback to array.find
+      const targetNode = treeManager?.getNode(targetNodeId)
+        ? nodes.find((n) => n.id === targetNodeId)
+        : nodes.find((n) => n.id === targetNodeId);
+
       if (!targetNode) return;
 
       const newSelectedPaths = new Set(selectedPaths);
@@ -68,53 +150,52 @@ export function usePermissionSelectHandler({
           updatePermissionBlocking(null);
         }
       } else {
-        // Selecting: check if this permission is compatible with current selection
-        if (
-          activePermission &&
-          activePermission !== permissionId &&
-          activePermission !== "self" &&
-          permissionId !== "self"
-        ) {
-          // Cannot mix two different non-self permissions
+        // Check permission compatibility
+        if (!isPermissionCompatible(permissionId, activePermission)) {
           return;
         }
 
-        // Set or update active permission
-        if (!activePermission) {
+        // Update active permission based on selection
+        if (
+          !activePermission ||
+          (activePermission === "self" && permissionId !== "self")
+        ) {
           setActivePermission(permissionId);
           updatePermissionBlocking(permissionId);
-        } else if (activePermission === "self" && permissionId !== "self") {
-          // If self is active and we're selecting a specific permission, switch to that permission
-          setActivePermission(permissionId);
-          updatePermissionBlocking(permissionId);
-        } else if (activePermission !== "self" && permissionId === "self") {
-          // If a specific permission is active and we're selecting self, keep the current permission
-          // Self can always be added to any selection
         }
 
-        // Add this node and all its descendants (if they have compatible permissions)
+        // Add target node
         newSelectedPaths.add(targetNode.id);
+
+        // Add compatible descendants
         const descendants = getDescendantIds(targetNode.id);
+        const currentActivePermission = activePermission ?? permissionId;
+
         descendants.forEach((descendantId) => {
           const descendantNode = nodes.find((n) => n.id === descendantId);
-          if (descendantNode?.data.accessible) {
-            // Determine the current active permission (could be the one we just set or the existing one)
-            const currentActivePermission = activePermission ?? permissionId;
+          if (!descendantNode?.data.accessible) return;
 
-            // Check if descendant has compatible permissions
-            const hasCompatiblePermission =
-              descendantNode.data.permissions.some((perm) => {
-                // Self permissions are always compatible
-                if (perm.permissionId === "self") return true;
+          // Check if descendant has compatible permissions using treeManager if available
+          if (treeManager) {
+            const descendantPermissions =
+              treeManager.getNodePermissions(descendantId);
+            const hasCompatible = Array.from(descendantPermissions.keys()).some(
+              (perm) => isPermissionCompatible(perm, currentActivePermission),
+            );
 
-                // If the active permission is self, any permission is compatible
-                if (currentActivePermission === "self") return true;
+            if (hasCompatible) {
+              newSelectedPaths.add(descendantId);
+            }
+          } else {
+            // Fallback to original logic
+            const hasCompatible = descendantNode.data.permissions.some((perm) =>
+              isPermissionCompatible(
+                perm.permissionId,
+                currentActivePermission,
+              ),
+            );
 
-                // Otherwise, only the same permission is compatible
-                return perm.permissionId === currentActivePermission;
-              });
-
-            if (hasCompatiblePermission) {
+            if (hasCompatible) {
               newSelectedPaths.add(descendantId);
             }
           }
@@ -131,47 +212,20 @@ export function usePermissionSelectHandler({
           let selectedPermissionForNode: PermissionId | "self" | null = null;
 
           if (isNodeSelected) {
-            // For selected nodes, determine which permission they're using
             if (node.id === targetNode.id) {
-              // This is the node we just clicked - use the permission we selected
+              // This is the clicked node - use the selected permission
               selectedPermissionForNode = permissionId;
             } else if (wasNodeSelected && node.data.selectedPermission) {
-              // This node was already selected - keep its existing permission
+              // Keep existing permission for already selected nodes
               selectedPermissionForNode = node.data.selectedPermission;
             } else {
-              // This is a newly selected node (descendant) - determine best permission
-              const hasSelfPermission = node.data.permissions.some(
-                (perm) => perm.permissionId === "self",
+              // Determine best permission for newly selected descendants
+              selectedPermissionForNode = determineBestPermission(
+                node,
+                permissionId,
+                activePermission,
+                treeManager,
               );
-              const hasCurrentPermission =
-                permissionId &&
-                node.data.permissions.some(
-                  (perm) => perm.permissionId === permissionId,
-                );
-              const hasActivePermission =
-                activePermission &&
-                node.data.permissions.some(
-                  (perm) => perm.permissionId === activePermission,
-                );
-
-              if (hasCurrentPermission) {
-                // Priority 1: Use the currently selected permission if the node has it
-                selectedPermissionForNode = permissionId;
-              } else if (permissionId === "self" && hasSelfPermission) {
-                // Priority 2: If we're specifically selecting self and node has it
-                selectedPermissionForNode = "self";
-              } else if (hasActivePermission) {
-                // Priority 3: Fall back to the active permission if the node has it
-                selectedPermissionForNode = activePermission;
-              } else if (hasSelfPermission) {
-                // Priority 4: Fallback to self if available
-                selectedPermissionForNode = "self";
-              } else {
-                // Priority 5: Use the first available permission as last resort
-                const firstAvailablePermission =
-                  node.data.permissions[0]?.permissionId;
-                selectedPermissionForNode = firstAvailablePermission ?? null;
-              }
             }
           }
 
@@ -191,6 +245,7 @@ export function usePermissionSelectHandler({
     [
       delegationData,
       colorManager,
+      treeManager,
       nodes,
       selectedPaths,
       setSelectedPaths,
