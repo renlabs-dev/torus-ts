@@ -25,7 +25,7 @@ import {
   SelectValue,
 } from "@torus-ts/ui/components/select";
 
-import type { PathWithPermission } from "../create-capability-flow/types";
+import type { PathWithPermission } from "../create-capability-flow/create-capability-flow-types";
 import type { CreateCapabilityPermissionForm } from "../create-capability-permission-form-schema";
 import type { RevocationValidationError } from "./use-revocation-validation";
 import {

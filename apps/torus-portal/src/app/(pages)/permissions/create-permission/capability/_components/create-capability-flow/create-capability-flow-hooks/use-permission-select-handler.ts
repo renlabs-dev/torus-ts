@@ -7,7 +7,7 @@ import type {
   PermissionId,
 } from "@torus-network/sdk/chain";
 
-import type { NamespacePathNodeData } from "../types";
+import type { NamespacePathNodeData } from "../create-capability-flow-types";
 
 interface UsePermissionSelectHandlerProps {
   nodes: Node<NamespacePathNodeData>[];

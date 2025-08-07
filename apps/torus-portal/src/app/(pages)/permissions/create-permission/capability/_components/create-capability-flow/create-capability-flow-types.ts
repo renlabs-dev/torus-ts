@@ -1,14 +1,11 @@
 import type { PermissionId } from "@torus-network/sdk/chain";
 
-import type { PermissionColorName } from "./permission-colors";
-
 /**
  * Information about a permission attached to a namespace node
  */
 export interface PermissionInfo {
   permissionId: PermissionId | "self";
   count: number | null;
-  colorName: PermissionColorName;
   blocked?: boolean;
 }
 

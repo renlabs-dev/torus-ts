@@ -26,9 +26,9 @@ import { FormAddressField } from "~/app/_components/address-field";
 
 import { DurationField } from "./create-capability-fields/duration-field";
 import { RevocationField } from "./create-capability-fields/revocation-field";
+import { SelectedPathsDisplay } from "./create-capability-fields/selected-paths-display";
 import { useRevocationValidation } from "./create-capability-fields/use-revocation-validation";
-import { SelectedPathsDisplay } from "./create-capability-flow/selected-paths-display";
-import type { PathWithPermission } from "./create-capability-flow/types";
+import type { PathWithPermission } from "./create-capability-flow/create-capability-flow-types";
 import type { CreateCapabilityPermissionFormData } from "./create-capability-permission-form-schema";
 import { createCapabilityPermissionSchema } from "./create-capability-permission-form-schema";
 import { transformFormDataToSDK } from "./create-capability-permission-form-utils";

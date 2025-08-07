@@ -1,6 +1,6 @@
 import type { Node } from "@xyflow/react";
 
-import type { NamespacePathNodeData } from "../types";
+import type { NamespacePathNodeData } from "../create-capability-flow-types";
 
 interface SelectedPathsPanelProps {
   rootSelectedPaths: Set<string>;

@@ -1,12 +1,10 @@
 import type { PermissionId } from "@torus-network/sdk/chain";
+import { smallAddress } from "@torus-network/torus-utils/torus";
 
 import { cn } from "@torus-ts/ui/lib/utils";
 
+import { getPermissionClasses } from "../create-capability-flow-colors";
 import { useDelegationTree } from "../create-capability-flow-hooks/use-delegation-tree";
-import {
-  getPermissionColor,
-  getPermissionDisplayText,
-} from "../permission-colors";
 
 interface PermissionBadgesPanelProps {
   activePermission: PermissionId | "self" | null;
@@ -28,9 +26,11 @@ export function PermissionBadgesPanel({
   return (
     <div className="flex flex-wrap gap-1">
       {Array.from(allPermissions).map((permissionId) => {
-        const colorName = getPermissionColor(permissionId);
-        const displayText = getPermissionDisplayText(permissionId);
+        const classes = getPermissionClasses(permissionId);
         const isActive = activePermission === permissionId;
+        const displayText = permissionId === "self" 
+          ? "Your Paths" 
+          : `0x${smallAddress(permissionId)}`;
 
         return (
           <div
@@ -38,13 +38,15 @@ export function PermissionBadgesPanel({
             className={cn(
               "flex items-center gap-1 px-2 py-1 rounded-sm text-xs font-mono border",
               isActive
-                ? `bg-${colorName}-500/10 border-${colorName}-500 text-${colorName}-500 border-2
-                  font-semibold`
+                ? `${classes.selected} border-2 font-semibold`
                 : "bg-muted/50 text-muted-foreground border-border",
             )}
           >
             <div
-              className={`w-3 h-3 border border-border/50 rounded-sm bg-${colorName}-500`}
+              className={cn(
+                "w-3 h-3 border border-border/50 rounded-sm",
+                classes.bg
+              )}
             />
             <span className="font-semibold">{displayText}</span>
           </div>

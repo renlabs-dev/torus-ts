@@ -9,8 +9,8 @@ import {
   DialogTitle,
 } from "@torus-ts/ui/components/dialog";
 
-import { NamespacePathSelectorFlow } from "./_components/create-capability-flow/namespace-path-selector-flow";
-import type { PathWithPermission } from "./_components/create-capability-flow/types";
+import { CreateCapabilityFlowProvider } from "./_components/create-capability-flow/create-capability-flow";
+import type { PathWithPermission } from "./_components/create-capability-flow/create-capability-flow-types";
 import { CreateCapabilityPermissionForm } from "./_components/create-capability-permission-form";
 
 export default function CapabilityV2Page() {
@@ -34,7 +34,9 @@ export default function CapabilityV2Page() {
 
   return (
     <div className="h-screen w-full">
-      <NamespacePathSelectorFlow onCreatePermission={handleCreatePermission} />
+      <CreateCapabilityFlowProvider
+        onCreatePermission={handleCreatePermission}
+      />
 
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">

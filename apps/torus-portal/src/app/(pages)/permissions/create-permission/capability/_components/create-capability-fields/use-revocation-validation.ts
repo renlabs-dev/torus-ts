@@ -10,7 +10,7 @@ import {
   queryPermission,
 } from "@torus-network/sdk/chain";
 
-import type { PathWithPermission } from "../create-capability-flow/types";
+import type { PathWithPermission } from "../create-capability-flow/create-capability-flow-types";
 import type { CreateCapabilityPermissionFormData } from "../create-capability-permission-form-schema";
 
 interface UseRevocationValidationProps {

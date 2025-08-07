@@ -6,8 +6,10 @@ import type { SS58Address } from "@torus-network/sdk/types";
 
 import { useTorus } from "@torus-ts/torus-provider";
 
-import { getPermissionColor } from "../permission-colors";
-import type { NamespacePathNodeData, PermissionInfo } from "../types";
+import type {
+  NamespacePathNodeData,
+  PermissionInfo,
+} from "../create-capability-flow-types";
 
 interface DelegationTreeData {
   nodes: Node<NamespacePathNodeData>[];
@@ -48,7 +50,6 @@ export function useDelegationTree() {
           ).map(([permissionId, count]) => ({
             permissionId,
             count,
-            colorName: getPermissionColor(permissionId),
           }));
 
           return {

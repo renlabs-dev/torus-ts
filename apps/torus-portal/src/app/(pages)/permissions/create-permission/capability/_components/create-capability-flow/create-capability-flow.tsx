@@ -20,26 +20,27 @@ import type {
   PermissionId,
 } from "@torus-network/sdk/chain";
 
-
 import type { LayoutOptions } from "~/app/_components/react-flow-layout/use-auto-layout";
 import useAutoLayout from "~/app/_components/react-flow-layout/use-auto-layout";
 
 import { useDelegationTree } from "./create-capability-flow-hooks/use-delegation-tree";
 import { usePermissionSelectHandler } from "./create-capability-flow-hooks/use-permission-select-handler";
 import { usePermissionSelection } from "./create-capability-flow-hooks/use-permission-selection";
+import { NamespacePathNode } from "./create-capability-flow-node";
 import { ActionButtonsPanel } from "./create-capability-flow-panels/action-buttons-panel";
 import { PermissionBadgesPanel } from "./create-capability-flow-panels/permission-badges-panel";
 import { SelectedPathsPanel } from "./create-capability-flow-panels/selected-paths-panel";
 import { StatsPanel } from "./create-capability-flow-panels/stats-panel";
-import { createPathsWithPermissions } from "./create-capability-flow-panels/utils";
-import { NamespacePathNode } from "./namespace-path-node";
-import type { NamespacePathNodeData, PathWithPermission } from "./types";
+import type {
+  NamespacePathNodeData,
+  PathWithPermission,
+} from "./create-capability-flow-types";
 
 interface NamespacePathFlowProps {
   onCreatePermission: (pathsWithPermissions: PathWithPermission[]) => void;
 }
 
-function NamespacePathFlow({ onCreatePermission }: NamespacePathFlowProps) {
+function CreateCapabilityFlow({ onCreatePermission }: NamespacePathFlowProps) {
   const { fitView } = useReactFlow();
   const [treeManager, setTreeManager] = useState<DelegationTreeManager | null>(
     null,
@@ -141,7 +142,20 @@ function NamespacePathFlow({ onCreatePermission }: NamespacePathFlowProps) {
 
   const handleCreatePermission = useCallback(() => {
     if (rootSelectedPaths.size > 0) {
-      const pathsWithPermissions = createPathsWithPermissions(rootSelectedPaths, nodes);
+      const pathsWithPermissions = Array.from(rootSelectedPaths)
+        .map((nodeId) => {
+          const node = nodes.find((n) => n.id === nodeId);
+          if (!node?.data.selectedPermission) return null;
+
+          return {
+            path: nodeId,
+            permissionId:
+              node.data.selectedPermission === "self"
+                ? null
+                : node.data.selectedPermission,
+          };
+        })
+        .filter((item): item is PathWithPermission => item !== null);
       onCreatePermission(pathsWithPermissions);
     }
   }, [rootSelectedPaths, nodes, onCreatePermission]);
@@ -267,12 +281,12 @@ function NamespacePathFlow({ onCreatePermission }: NamespacePathFlowProps) {
   );
 }
 
-export function NamespacePathSelectorFlow({
+export function CreateCapabilityFlowProvider({
   onCreatePermission,
 }: NamespacePathFlowProps) {
   return (
     <ReactFlowProvider>
-      <NamespacePathFlow onCreatePermission={onCreatePermission} />
+      <CreateCapabilityFlow onCreatePermission={onCreatePermission} />
     </ReactFlowProvider>
   );
 }
