@@ -7,6 +7,7 @@ import {
   Currency,
   FilePen,
   FilePlus,
+  FileText,
   Network,
   PackagePlus,
   PackageX,
@@ -57,7 +58,7 @@ const data = {
         {
           title: "Capability Permission",
           url: "/permissions/create-permission/capability",
-          icon: FilePlus,
+          icon: FileText,
         },
         {
           title: "Emission Permission",
