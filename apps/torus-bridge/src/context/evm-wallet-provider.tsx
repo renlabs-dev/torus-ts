@@ -72,12 +72,12 @@ export function initWagmi(multiProvider: MultiProtocolProvider) {
     if (!chains.length) {
       throw new Error("No chains available for Wagmi configuration");
     }
-    
+
     const firstChain = chains[0];
     if (!firstChain) {
       throw new Error("First chain is undefined");
     }
-    
+
     return createConfig({
       chains: [firstChain, ...chains.slice(1)],
       connectors,

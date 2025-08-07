@@ -73,7 +73,7 @@ export function TransferEVM() {
   const { data: walletClient } = useWalletClient();
   const { chain, address } = useAccount();
   const { switchChain } = useSwitchChain();
-  
+
   // Get wallet details to check if it's Coinbase Wallet
   const walletDetails = useWalletDetails();
 
@@ -163,7 +163,10 @@ export function TransferEVM() {
 
   useEffect(() => {
     const shouldPromptOrSwitch =
-      hasMounted && mode === "withdraw" && chain && chain.id !== torusEvmChainId;
+      hasMounted &&
+      mode === "withdraw" &&
+      chain &&
+      chain.id !== torusEvmChainId;
 
     if (!shouldPromptOrSwitch) return;
 
@@ -188,7 +191,15 @@ export function TransferEVM() {
     }
 
     switchChain({ chainId: torusEvmChainId });
-  }, [hasMounted, mode, chain, torusEvmChainId, walletDetails, toast, switchChain]);
+  }, [
+    hasMounted,
+    mode,
+    chain,
+    torusEvmChainId,
+    walletDetails,
+    toast,
+    switchChain,
+  ]);
 
   const refetchHandler = useCallback(async () => {
     await Promise.all([refetchTorusEvmBalance(), accountFreeBalance.refetch()]);
