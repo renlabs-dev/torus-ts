@@ -21,9 +21,7 @@ export default function CapabilityV2Page() {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const handleCreatePermission = (paths: PathWithPermission[]) => {
-    // Extract just the paths for the form
     setSelectedPaths(paths.map((p) => p.path));
-    // Store the full data for submission
     setPathsWithPermissions(paths);
     setIsModalOpen(true);
   };

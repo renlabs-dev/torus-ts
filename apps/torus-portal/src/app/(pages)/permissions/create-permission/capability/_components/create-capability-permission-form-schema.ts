@@ -72,10 +72,5 @@ export type CreateCapabilityPermissionFormData = z.infer<
   typeof createCapabilityPermissionSchema
 >;
 
-export interface CreateCapabilityPermissionMutation {
-  isPending: boolean;
-  mutate: (data: CreateCapabilityPermissionFormData) => void;
-}
-
 export type CreateCapabilityPermissionForm =
   UseFormReturn<CreateCapabilityPermissionFormData>;

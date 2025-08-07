@@ -20,6 +20,7 @@ import type { DelegationTreeManager } from "@torus-network/sdk/chain";
 
 import { useTorus } from "@torus-ts/torus-provider";
 
+import LoadingPage from "~/app/(pages)/loading";
 import type { LayoutOptions } from "~/app/_components/react-flow-layout/use-auto-layout";
 import useAutoLayout from "~/app/_components/react-flow-layout/use-auto-layout";
 
@@ -43,7 +44,7 @@ interface NamespacePathFlowProps {
 
 function CreateCapabilityFlow({ onCreatePermission }: NamespacePathFlowProps) {
   const { fitView } = useReactFlow();
-  const { selectedAccount } = useTorus();
+  const { selectedAccount, isAccountConnected, isInitialized } = useTorus();
   const queryClient = useQueryClient();
   const [treeManager, setTreeManager] = useState<DelegationTreeManager | null>(
     null,
@@ -163,14 +164,17 @@ function CreateCapabilityFlow({ onCreatePermission }: NamespacePathFlowProps) {
   const accessibleCount = nodes.filter((node) => node.data.accessible).length;
   const totalCount = nodes.length;
 
-  if (isLoading || isFetching) {
+  if (isLoading || isFetching || !isInitialized) {
+    return <LoadingPage />;
+  }
+
+  if (!isAccountConnected) {
     return (
       <div className="h-full w-full relative -top-14 flex items-center justify-center">
         <div className="text-center space-y-2">
-          <div className="text-lg font-medium">
-            {isLoading
-              ? "Loading namespace permissions..."
-              : "Updating permissions for new wallet..."}
+          <div className="text-lg font-medium">No wallet selected</div>
+          <div className="text-sm text-muted-foreground">
+            Please connect your wallet to view your paths.
           </div>
         </div>
       </div>
