@@ -73,6 +73,7 @@
     "daos",
     "datetime",
     "dotenv",
+    "emittery",
     "extrinsics",
     "heroicons",
     "Honza",
