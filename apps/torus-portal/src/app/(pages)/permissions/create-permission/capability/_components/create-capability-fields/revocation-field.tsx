@@ -25,13 +25,13 @@ import {
   SelectValue,
 } from "@torus-ts/ui/components/select";
 
+import type { PathWithPermission } from "../create-capability-flow/types";
 import type { CreateCapabilityPermissionForm } from "../create-capability-permission-form-schema";
-import type { PathWithPermission } from "../create-capability-path-flow/types";
+import type { RevocationValidationError } from "./use-revocation-validation";
 import {
   formatRevocationTermsForDisplay,
   useRevocationValidation,
 } from "./use-revocation-validation";
-import type { RevocationValidationError } from "./use-revocation-validation";
 
 interface RevocationFieldProps {
   form: CreateCapabilityPermissionForm;

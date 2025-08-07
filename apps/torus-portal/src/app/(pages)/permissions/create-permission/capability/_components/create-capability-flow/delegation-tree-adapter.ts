@@ -2,7 +2,7 @@ import type { Edge, Node } from "@xyflow/react";
 
 import type { DelegationTreeManager } from "@torus-network/sdk/chain";
 
-import { PermissionColorManager } from "./permission-colors";
+import { getPermissionColor } from "./permission-colors";
 import type { NamespacePathNodeData, PermissionInfo } from "./types";
 
 export function adaptDelegationTreeToReactFlow(
@@ -10,26 +10,23 @@ export function adaptDelegationTreeToReactFlow(
 ): {
   nodes: Node<NamespacePathNodeData>[];
   edges: Edge[];
-  colorManager: PermissionColorManager;
   treeManager: DelegationTreeManager;
 } {
-  const colorManager = new PermissionColorManager();
-
   const nodes: Node<NamespacePathNodeData>[] = treeManager
     .getNodes()
     .map((node, index) => {
       // Get permissions for this node using the new API
       const nodePermissions = treeManager.getNodePermissions(node.id);
 
-      // Convert permissions to PermissionInfo with colors
+      // Convert permissions to PermissionInfo with color names
       const permissions: PermissionInfo[] = Array.from(
         nodePermissions.entries(),
       ).map(([permissionId, count]) => {
-        const color = colorManager.getColorForPermission(permissionId);
+        const colorName = getPermissionColor(permissionId);
         return {
           permissionId,
           count,
-          color: color.hex,
+          colorName,
         };
       });
 
@@ -52,5 +49,5 @@ export function adaptDelegationTreeToReactFlow(
     target: edge.target,
   }));
 
-  return { nodes, edges, colorManager, treeManager };
+  return { nodes, edges, treeManager };
 }

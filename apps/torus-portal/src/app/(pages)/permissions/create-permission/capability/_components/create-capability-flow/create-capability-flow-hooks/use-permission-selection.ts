@@ -7,14 +7,12 @@ import type {
   PermissionId,
 } from "@torus-network/sdk/chain";
 
-import { EDGE_COLORS, EDGE_WIDTHS } from "./constants";
-import type { NamespacePathNodeData } from "./types";
+import type { NamespacePathNodeData } from "../types";
 
 interface UsePermissionSelectionProps {
   nodes: Node<NamespacePathNodeData>[];
   edges: Edge[];
   setNodes: React.Dispatch<React.SetStateAction<Node<NamespacePathNodeData>[]>>;
-  setEdges: React.Dispatch<React.SetStateAction<Edge[]>>;
   treeManager?: DelegationTreeManager | null;
 }
 
@@ -22,7 +20,6 @@ export function usePermissionSelection({
   // nodes,
   edges,
   setNodes,
-  setEdges,
   treeManager,
 }: UsePermissionSelectionProps) {
   // Visual selection for UI feedback (includes descendants)
@@ -108,33 +105,6 @@ export function usePermissionSelection({
     [setNodes],
   );
 
-  // Update edge styles
-  const updateEdgeStyles = useCallback(
-    (newSelectedPaths: Set<string>) => {
-      setEdges((currentEdges) =>
-        currentEdges.map((edge) => {
-          const sourceSelected = newSelectedPaths.has(edge.source);
-          const targetSelected = newSelectedPaths.has(edge.target);
-          const bothSelected = sourceSelected && targetSelected;
-
-          return {
-            ...edge,
-            style: bothSelected
-              ? {
-                  stroke: EDGE_COLORS.selected,
-                  strokeWidth: EDGE_WIDTHS.selected,
-                }
-              : {
-                  stroke: EDGE_COLORS.default,
-                  strokeWidth: EDGE_WIDTHS.default,
-                },
-          };
-        }),
-      );
-    },
-    [setEdges],
-  );
-
   // Clear all selections
   const clearSelection = useCallback(() => {
     setSelectedPaths(new Set());
@@ -151,9 +121,7 @@ export function usePermissionSelection({
         },
       })),
     );
-
-    updateEdgeStyles(new Set());
-  }, [setNodes, updatePermissionBlocking, updateEdgeStyles]);
+  }, [setNodes, updatePermissionBlocking]);
 
   return {
     selectedPaths, // Visual selection (includes descendants)
@@ -164,7 +132,6 @@ export function usePermissionSelection({
     setActivePermission,
     getDescendantIds,
     updatePermissionBlocking,
-    updateEdgeStyles,
     clearSelection,
   };
 }

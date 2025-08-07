@@ -7,7 +7,7 @@ import type {
   PermissionId,
 } from "@torus-network/sdk/chain";
 
-import type { NamespacePathNodeData } from "./types";
+import type { NamespacePathNodeData } from "../types";
 
 interface UsePermissionSelectHandlerProps {
   nodes: Node<NamespacePathNodeData>[];
@@ -15,7 +15,6 @@ interface UsePermissionSelectHandlerProps {
   rootSelectedPaths: Set<string>;
   activePermission: PermissionId | "self" | null;
   delegationData: unknown;
-  colorManager: unknown;
   treeManager: DelegationTreeManager | null;
   setSelectedPaths: (paths: Set<string>) => void;
   setRootSelectedPaths: (paths: Set<string>) => void;
@@ -29,7 +28,6 @@ interface UsePermissionSelectHandlerProps {
   ) => void;
   getDescendantIds: (nodeId: string) => string[];
   updatePermissionBlocking: (permission: PermissionId | "self" | null) => void;
-  updateEdgeStyles: (paths: Set<string>) => void;
 }
 
 /**
@@ -267,7 +265,6 @@ export function usePermissionSelectHandler({
   rootSelectedPaths,
   activePermission,
   delegationData,
-  colorManager,
   treeManager,
   setSelectedPaths,
   setRootSelectedPaths,
@@ -275,11 +272,10 @@ export function usePermissionSelectHandler({
   setNodes,
   getDescendantIds,
   updatePermissionBlocking,
-  updateEdgeStyles,
 }: UsePermissionSelectHandlerProps) {
   const handlePermissionSelect = useCallback(
     (nodeId: string, permissionId: PermissionId | "self" | null) => {
-      if (!delegationData || !colorManager) return;
+      if (!delegationData) return;
 
       // Node ID is already the namespace path
       const targetNodeId = nodeId;
@@ -360,13 +356,9 @@ export function usePermissionSelectHandler({
           treeManager,
         ),
       );
-
-      // Update edge styles
-      updateEdgeStyles(newSelectedPaths);
     },
     [
       delegationData,
-      colorManager,
       treeManager,
       nodes,
       selectedPaths,
@@ -374,7 +366,6 @@ export function usePermissionSelectHandler({
       setSelectedPaths,
       setRootSelectedPaths,
       setNodes,
-      updateEdgeStyles,
       getDescendantIds,
       setActivePermission,
       updatePermissionBlocking,

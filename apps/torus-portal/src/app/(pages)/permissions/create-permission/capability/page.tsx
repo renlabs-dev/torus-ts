@@ -9,8 +9,8 @@ import {
   DialogTitle,
 } from "@torus-ts/ui/components/dialog";
 
-import type { PathWithPermission } from "./_components/create-capability-path-flow/types";
-import { NamespacePathSelectorFlow } from "./_components/create-capability-path-flow/namespace-path-selector-flow";
+import { NamespacePathSelectorFlow } from "./_components/create-capability-flow/namespace-path-selector-flow";
+import type { PathWithPermission } from "./_components/create-capability-flow/types";
 import { CreateCapabilityPermissionForm } from "./_components/create-capability-permission-form";
 
 export default function CapabilityV2Page() {

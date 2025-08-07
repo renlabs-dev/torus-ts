@@ -6,15 +6,13 @@ import type { SS58Address } from "@torus-network/sdk/types";
 
 import { useTorus } from "@torus-ts/torus-provider";
 
-import { adaptDelegationTreeToReactFlow } from "./delegation-tree-adapter";
-import type { PermissionColorManager } from "./permission-colors";
-import type { NamespacePathNodeData } from "./types";
+import { adaptDelegationTreeToReactFlow } from "../delegation-tree-adapter";
+import type { NamespacePathNodeData } from "../types";
 
 interface DelegationTreeData {
   nodes: Node<NamespacePathNodeData>[];
   edges: Edge[];
   treeManager: DelegationTreeManager;
-  colorManager: PermissionColorManager;
 }
 
 /**
@@ -46,14 +44,12 @@ export function useDelegationTree() {
       }
 
       // Transform to React Flow format
-      const { nodes, edges, colorManager } =
-        adaptDelegationTreeToReactFlow(treeManager);
+      const { nodes, edges } = adaptDelegationTreeToReactFlow(treeManager);
 
       return {
         nodes,
         edges,
         treeManager,
-        colorManager,
       };
     },
     enabled: isInitialized && !!api && !!targetAddress,

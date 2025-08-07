@@ -1,12 +1,14 @@
 import type { PermissionId } from "@torus-network/sdk/chain";
 
+import type { PermissionColorName } from "./permission-colors";
+
 /**
  * Information about a permission attached to a namespace node
  */
 export interface PermissionInfo {
   permissionId: PermissionId | "self";
   count: number | null;
-  color: string;
+  colorName: PermissionColorName;
   blocked?: boolean;
 }
 
@@ -26,22 +28,4 @@ export interface NamespacePathNodeData extends Record<string, unknown> {
 export interface PathWithPermission {
   path: string;
   permissionId: PermissionId | null;
-}
-
-/**
- * Props for the main namespace path flow component
- */
-export interface NamespacePathFlowProps {
-  onCreatePermission?: (pathsWithPermissions: PathWithPermission[]) => void;
-}
-
-/**
- * Props for the namespace path node component
- */
-export interface NamespacePathNodeProps {
-  data: NamespacePathNodeData;
-  onPermissionSelect?: (
-    nodeId: string,
-    permissionId: PermissionId | "self" | null,
-  ) => void;
 }

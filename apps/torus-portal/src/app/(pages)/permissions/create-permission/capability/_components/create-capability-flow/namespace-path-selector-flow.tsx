@@ -26,23 +26,19 @@ import { Button } from "@torus-ts/ui/components/button";
 import type { LayoutOptions } from "~/app/_components/react-flow-layout/use-auto-layout";
 import useAutoLayout from "~/app/_components/react-flow-layout/use-auto-layout";
 
-import { DEFAULT_LAYOUT_OPTIONS, REACT_FLOW_PRO_OPTIONS } from "./constants";
+import { useDelegationTree } from "./create-capability-flow-hooks/use-delegation-tree";
+import { usePermissionBadges } from "./create-capability-flow-hooks/use-permission-badges";
+import { usePermissionSelectHandler } from "./create-capability-flow-hooks/use-permission-select-handler";
+import { usePermissionSelection } from "./create-capability-flow-hooks/use-permission-selection";
 import { NamespacePathNode } from "./namespace-path-node";
-import type { PermissionColorManager } from "./permission-colors";
-import type {
-  NamespacePathFlowProps,
-  NamespacePathNodeData,
-  PathWithPermission,
-} from "./types";
-import { useDelegationTree } from "./use-delegation-tree";
-import { usePermissionBadges } from "./use-permission-badges";
-import { usePermissionSelectHandler } from "./use-permission-select-handler";
-import { usePermissionSelection } from "./use-permission-selection";
+import type { NamespacePathNodeData, PathWithPermission } from "./types";
+
+interface NamespacePathFlowProps {
+  onCreatePermission: (pathsWithPermissions: PathWithPermission[]) => void;
+}
 
 function NamespacePathFlow({ onCreatePermission }: NamespacePathFlowProps) {
   const { fitView } = useReactFlow();
-  const [colorManager, setColorManager] =
-    useState<PermissionColorManager | null>(null);
   const [treeManager, setTreeManager] = useState<DelegationTreeManager | null>(
     null,
   );
@@ -63,9 +59,8 @@ function NamespacePathFlow({ onCreatePermission }: NamespacePathFlowProps) {
     setActivePermission,
     getDescendantIds,
     updatePermissionBlocking,
-    updateEdgeStyles,
     clearSelection,
-  } = usePermissionSelection({ nodes, edges, setNodes, setEdges, treeManager });
+  } = usePermissionSelection({ nodes, edges, setNodes, treeManager });
 
   useEffect(() => {
     if (delegationData) {
@@ -97,14 +92,7 @@ function NamespacePathFlow({ onCreatePermission }: NamespacePathFlowProps) {
       });
 
       setEdges(delegationData.edges);
-      setColorManager(delegationData.colorManager);
       setTreeManager(delegationData.treeManager);
-
-      // Restore visual states after data update
-      if (selectedPaths.size > 0) {
-        // Restore edge styles
-        updateEdgeStyles(selectedPaths);
-      }
 
       if (activePermission) {
         // Restore permission blocking
@@ -115,14 +103,16 @@ function NamespacePathFlow({ onCreatePermission }: NamespacePathFlowProps) {
     delegationData,
     setNodes,
     setEdges,
-    selectedPaths,
     activePermission,
-    updateEdgeStyles,
     updatePermissionBlocking,
   ]);
 
   const layoutOptions: LayoutOptions = useMemo(
-    () => DEFAULT_LAYOUT_OPTIONS,
+    () => ({
+      algorithm: "d3-hierarchy",
+      direction: "LR",
+      spacing: [30, 40],
+    }),
     [],
   );
 
@@ -134,7 +124,6 @@ function NamespacePathFlow({ onCreatePermission }: NamespacePathFlowProps) {
     rootSelectedPaths,
     activePermission,
     delegationData,
-    colorManager,
     treeManager,
     setSelectedPaths,
     setRootSelectedPaths,
@@ -142,7 +131,6 @@ function NamespacePathFlow({ onCreatePermission }: NamespacePathFlowProps) {
     setNodes,
     getDescendantIds,
     updatePermissionBlocking,
-    updateEdgeStyles,
   });
 
   const handleClearSelection = useCallback(() => {
@@ -150,7 +138,7 @@ function NamespacePathFlow({ onCreatePermission }: NamespacePathFlowProps) {
   }, [clearSelection]);
 
   const handleCreatePermission = useCallback(() => {
-    if (rootSelectedPaths.size > 0 && onCreatePermission) {
+    if (rootSelectedPaths.size > 0) {
       const pathsWithPermissions = Array.from(rootSelectedPaths)
         .map((nodeId) => {
           const node = nodes.find((n) => n.id === nodeId);
@@ -170,7 +158,6 @@ function NamespacePathFlow({ onCreatePermission }: NamespacePathFlowProps) {
   }, [rootSelectedPaths, nodes, onCreatePermission]);
 
   const renderPermissionBadges = usePermissionBadges({
-    colorManager,
     activePermission,
     treeManager,
   });
@@ -250,7 +237,7 @@ function NamespacePathFlow({ onCreatePermission }: NamespacePathFlowProps) {
         nodesConnectable={false}
         nodesFocusable={true}
         edgesFocusable={false}
-        proOptions={REACT_FLOW_PRO_OPTIONS}
+        proOptions={{ hideAttribution: true }}
         minZoom={0.6}
         maxZoom={1.7}
       >
@@ -269,7 +256,7 @@ function NamespacePathFlow({ onCreatePermission }: NamespacePathFlowProps) {
 
         <Panel position="top-right" className="pt-10 space-y-2 z-50">
           {/* Permission colors reference panel */}
-          {colorManager && (
+          {treeManager && (
             <div className="flex flex-wrap gap-1">
               {renderPermissionBadges()}
             </div>
@@ -333,13 +320,9 @@ function NamespacePathFlow({ onCreatePermission }: NamespacePathFlowProps) {
   );
 }
 
-interface NamespacePathSelectorFlowProps {
-  onCreatePermission?: (pathsWithPermissions: PathWithPermission[]) => void;
-}
-
 export function NamespacePathSelectorFlow({
   onCreatePermission,
-}: NamespacePathSelectorFlowProps) {
+}: NamespacePathFlowProps) {
   return (
     <ReactFlowProvider>
       <NamespacePathFlow onCreatePermission={onCreatePermission} />

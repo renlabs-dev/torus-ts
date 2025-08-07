@@ -6,8 +6,15 @@ import type { PermissionId } from "@torus-network/sdk/chain";
 
 import { cn } from "@torus-ts/ui/lib/utils";
 
-import { NODE_STYLES, OPACITY, PERMISSION_BUTTON_STYLES } from "./constants";
-import type { NamespacePathNodeProps } from "./types";
+import type { NamespacePathNodeData } from "./types";
+
+interface NamespacePathNodeProps {
+  data: NamespacePathNodeData;
+  onPermissionSelect: (
+    nodeId: string,
+    permissionId: PermissionId | "self" | null,
+  ) => void;
+}
 
 export const NamespacePathNode = memo(function NamespacePathNode({
   data,
@@ -15,19 +22,19 @@ export const NamespacePathNode = memo(function NamespacePathNode({
 }: NamespacePathNodeProps) {
   const isAccessible = data.accessible;
   const hasSelectedPermission = data.selectedPermission !== null;
+
   const handlePermissionButtonClick = (
     e: React.MouseEvent,
     permissionId: PermissionId | "self",
   ) => {
     e.stopPropagation();
-    if (onPermissionSelect) {
-      const nodeId = e.currentTarget.getAttribute("data-node-id");
-      if (!nodeId) return;
-      const isCurrentlySelected = data.selectedPermission === permissionId;
 
-      // If clicking the same permission, deselect it
-      onPermissionSelect(nodeId, isCurrentlySelected ? null : permissionId);
-    }
+    const nodeId = e.currentTarget.getAttribute("data-node-id");
+    if (!nodeId) return;
+    const isCurrentlySelected = data.selectedPermission === permissionId;
+
+    // If clicking the same permission, deselect it
+    onPermissionSelect(nodeId, isCurrentlySelected ? null : permissionId);
   };
 
   const getPermissionButtonStyle = (
@@ -35,6 +42,12 @@ export const NamespacePathNode = memo(function NamespacePathNode({
     blocked: boolean,
   ) => {
     const isSelected = data.selectedPermission === permissionId;
+
+    const PERMISSION_BUTTON_STYLES = {
+      blocked: "bg-gray-300 text-gray-500 cursor-not-allowed opacity-50",
+      selected: "text-white",
+      default: "text-white hover:opacity-80 transition-opacity",
+    } as const;
 
     if (blocked) {
       return PERMISSION_BUTTON_STYLES.blocked;
@@ -48,6 +61,13 @@ export const NamespacePathNode = memo(function NamespacePathNode({
   };
 
   const getNodeClassNames = () => {
+    const NODE_STYLES = {
+      inaccessible:
+        "cursor-not-allowed bg-stone-700/10 text-stone-500/70 border-stone-500/10",
+      selected: "border-2",
+      default: "bg-muted border-border",
+    } as const;
+
     if (!isAccessible) {
       return NODE_STYLES.inaccessible;
     }
@@ -59,7 +79,7 @@ export const NamespacePathNode = memo(function NamespacePathNode({
     return NODE_STYLES.default;
   };
 
-  const getNodeInlineStyles = () => {
+  const getSelectedPermissionClasses = () => {
     if (hasSelectedPermission && data.selectedPermission) {
       // Find the permission in the data to get its color
       const selectedPermissionData = data.permissions.find(
@@ -67,14 +87,11 @@ export const NamespacePathNode = memo(function NamespacePathNode({
       );
 
       if (selectedPermissionData) {
-        return {
-          backgroundColor: `${selectedPermissionData.color}${OPACITY.backgroundSelected}`,
-          borderColor: selectedPermissionData.color,
-          color: selectedPermissionData.color,
-        };
+        const colorName = selectedPermissionData.colorName;
+        return `bg-${colorName}-500/10 border-${colorName}-500 text-${colorName}-500`;
       }
     }
-    return {};
+    return "";
   };
 
   return (
@@ -83,8 +100,8 @@ export const NamespacePathNode = memo(function NamespacePathNode({
         `px-2 py-2 backdrop-blur-xl border flex gap-1 items-center rounded-sm
         min-w-[200px]`,
         getNodeClassNames(),
+        getSelectedPermissionClasses(),
       )}
-      style={getNodeInlineStyles()}
       aria-disabled={!isAccessible}
     >
       <Handle type="target" position={Position.Left} isConnectable={false} />
@@ -99,13 +116,12 @@ export const NamespacePathNode = memo(function NamespacePathNode({
             return (
               <button
                 key={permission.permissionId}
-                style={{ backgroundColor: permission.color }}
                 data-node-id={data.label} // Use label as node identifier
                 className={cn(
                   `text-xs rounded-sm px-2 py-1 font-mono font-semibold transition-all border
                   border-border`,
                   "flex items-center gap-1 justify-center",
-                  permission.color,
+                  `bg-${permission.colorName}-500 text-white`,
                   getPermissionButtonStyle(permission.permissionId, isBlocked),
                 )}
                 onClick={(e) =>
