@@ -326,7 +326,6 @@ function permissionContractToDatabase(
   // Map revocation terms
   const revocationType = match(contract.revocation)({
     Irrevocable: () => "irrevocable" as const,
-    RevocableByGrantor: () => "revocable_by_grantor" as const,
     RevocableByDelegator: () => "revocable_by_delegator" as const,
     RevocableByArbiters: () => "revocable_by_arbiters" as const,
     RevocableAfter: () => "revocable_after" as const,
@@ -335,7 +334,6 @@ function permissionContractToDatabase(
   const revocationBlockNumber = match(contract.revocation)({
     RevocableAfter: (block) => BigInt(block.toString()),
     Irrevocable: () => null,
-    RevocableByGrantor: () => null,
     RevocableByDelegator: () => null,
     RevocableByArbiters: () => null,
   });
@@ -344,7 +342,6 @@ function permissionContractToDatabase(
     RevocableByArbiters: (arbiters) =>
       BigInt(arbiters.requiredVotes.toString()),
     Irrevocable: () => null,
-    RevocableByGrantor: () => null,
     RevocableByDelegator: () => null,
     RevocableAfter: () => null,
   });
@@ -416,9 +413,6 @@ function permissionContractToDatabase(
       );
     },
     Irrevocable: () => {
-      // revocationArbiters remains empty array
-    },
-    RevocableByGrantor: () => {
       // revocationArbiters remains empty array
     },
     RevocableByDelegator: () => {
