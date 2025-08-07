@@ -62,6 +62,7 @@ export const createCapabilityPermissionSchema = z.object({
   instances: z
     .string()
     .min(1, "Number of instances is required")
+    .max(100, "Maximum instances is 100")
     .refine((val) => {
       const num = parseInt(val);
       return !isNaN(num) && num > 0;
