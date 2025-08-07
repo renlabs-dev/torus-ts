@@ -4,6 +4,7 @@ import "@xyflow/react/dist/style.css";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 
+import { useQueryClient } from "@tanstack/react-query";
 import type { Edge, Node } from "@xyflow/react";
 import {
   Background,
@@ -15,10 +16,9 @@ import {
   useReactFlow,
 } from "@xyflow/react";
 
-import type {
-  DelegationTreeManager,
-  PermissionId,
-} from "@torus-network/sdk/chain";
+import type { DelegationTreeManager } from "@torus-network/sdk/chain";
+
+import { useTorus } from "@torus-ts/torus-provider";
 
 import type { LayoutOptions } from "~/app/_components/react-flow-layout/use-auto-layout";
 import useAutoLayout from "~/app/_components/react-flow-layout/use-auto-layout";
@@ -43,11 +43,18 @@ interface NamespacePathFlowProps {
 
 function CreateCapabilityFlow({ onCreatePermission }: NamespacePathFlowProps) {
   const { fitView } = useReactFlow();
+  const { selectedAccount } = useTorus();
+  const queryClient = useQueryClient();
   const [treeManager, setTreeManager] = useState<DelegationTreeManager | null>(
     null,
   );
 
-  const { data: delegationData, isLoading, error } = useDelegationTree();
+  const {
+    data: delegationData,
+    isLoading,
+    error,
+    isFetching,
+  } = useDelegationTree();
 
   const [nodes, setNodes, onNodesChange] = useNodesState<
     Node<NamespacePathNodeData>
@@ -73,49 +80,26 @@ function CreateCapabilityFlow({ onCreatePermission }: NamespacePathFlowProps) {
   });
 
   useEffect(() => {
-    if (delegationData) {
-      // Preserve existing selection states when updating nodes
-      setNodes((currentNodes) => {
-        // Create a map of existing selection states
-        const existingSelections = new Map<
-          string,
-          PermissionId | "self" | null
-        >();
-        currentNodes.forEach((node) => {
-          if (node.data.selectedPermission) {
-            existingSelections.set(node.id, node.data.selectedPermission);
-          }
-        });
-
-        // Merge new data with existing selections
-        return delegationData.nodes.map((newNode) => {
-          const existingSelection = existingSelections.get(newNode.id);
-          return {
-            ...newNode,
-            data: {
-              ...newNode.data,
-              selectedPermission:
-                existingSelection ?? newNode.data.selectedPermission,
-            },
-          };
-        });
-      });
-
-      setEdges(delegationData.edges);
-      setTreeManager(delegationData.treeManager);
-
-      if (activePermission) {
-        // Restore permission blocking
-        updatePermissionBlocking(activePermission);
-      }
-    }
+    clearSelection();
+    setNodes(() => []);
+    setEdges(() => []);
+    setTreeManager(null);
+    void queryClient.invalidateQueries({ queryKey: ["delegationTree"] });
   }, [
-    delegationData,
+    selectedAccount?.address,
+    clearSelection,
+    queryClient,
     setNodes,
     setEdges,
-    activePermission,
-    updatePermissionBlocking,
   ]);
+
+  useEffect(() => {
+    if (delegationData) {
+      setNodes(() => [...delegationData.nodes]);
+      setEdges(() => [...delegationData.edges]);
+      setTreeManager(delegationData.treeManager);
+    }
+  }, [delegationData, setNodes, setEdges]);
 
   const layoutOptions: LayoutOptions = useMemo(
     () => ({
@@ -179,13 +163,14 @@ function CreateCapabilityFlow({ onCreatePermission }: NamespacePathFlowProps) {
   const accessibleCount = nodes.filter((node) => node.data.accessible).length;
   const totalCount = nodes.length;
 
-  // Show loading state
-  if (isLoading) {
+  if (isLoading || isFetching) {
     return (
       <div className="h-full w-full relative -top-14 flex items-center justify-center">
         <div className="text-center space-y-2">
           <div className="text-lg font-medium">
-            Loading namespace permissions...
+            {isLoading
+              ? "Loading namespace permissions..."
+              : "Updating permissions for new wallet..."}
           </div>
         </div>
       </div>
@@ -235,6 +220,7 @@ function CreateCapabilityFlow({ onCreatePermission }: NamespacePathFlowProps) {
         }
       `}</style>
       <ReactFlow
+        key={selectedAccount?.address}
         nodes={nodes}
         edges={getStyledEdges()}
         onNodesChange={onNodesChange}
@@ -267,7 +253,10 @@ function CreateCapabilityFlow({ onCreatePermission }: NamespacePathFlowProps) {
         </Panel>
 
         <Panel position="top-right" className="pt-10 space-y-2 z-50">
-          <PermissionBadgesPanel activePermission={activePermission} nodes={nodes} />
+          <PermissionBadgesPanel
+            activePermission={activePermission}
+            nodes={nodes}
+          />
         </Panel>
 
         <Panel
