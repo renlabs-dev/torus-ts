@@ -23,11 +23,7 @@ export function ActionButtonsPanel({
       >
         Clear Selection
       </Button>
-      <Button
-        size="sm"
-        disabled={!hasSelection}
-        onClick={onCreatePermission}
-      >
+      <Button size="sm" disabled={!hasSelection} onClick={onCreatePermission}>
         Create Permission ({selectedCount} paths)
       </Button>
     </>
