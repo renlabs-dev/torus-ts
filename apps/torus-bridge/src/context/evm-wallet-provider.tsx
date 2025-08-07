@@ -11,7 +11,6 @@ import {
 import {
   argentWallet,
   coinbaseWallet,
-  injectedWallet,
   ledgerWallet,
   metaMaskWallet,
   rainbowWallet,
@@ -54,7 +53,6 @@ export function initWagmi(multiProvider: MultiProtocolProvider) {
             trustWallet,
             argentWallet,
             uniswapWallet,
-            injectedWallet,
           ],
         },
       ],
