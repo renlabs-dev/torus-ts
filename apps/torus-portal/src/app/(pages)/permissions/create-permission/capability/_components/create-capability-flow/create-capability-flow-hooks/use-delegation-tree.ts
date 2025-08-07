@@ -6,8 +6,8 @@ import type { SS58Address } from "@torus-network/sdk/types";
 
 import { useTorus } from "@torus-ts/torus-provider";
 
-import { adaptDelegationTreeToReactFlow } from "../delegation-tree-adapter";
-import type { NamespacePathNodeData } from "../types";
+import { getPermissionColor } from "../permission-colors";
+import type { NamespacePathNodeData, PermissionInfo } from "../types";
 
 interface DelegationTreeData {
   nodes: Node<NamespacePathNodeData>[];
@@ -36,21 +36,41 @@ export function useDelegationTree() {
       );
 
       if (managerError) {
-        const errorMessage =
-          managerError instanceof Error
-            ? managerError.message
-            : String(managerError);
-        throw new Error(`Failed to create delegation tree: ${errorMessage}`);
+        throw new Error(`Failed to create delegation tree`);
       }
 
-      // Transform to React Flow format
-      const { nodes, edges } = adaptDelegationTreeToReactFlow(treeManager);
+      const nodes: Node<NamespacePathNodeData>[] = treeManager
+        .getNodes()
+        .map((node, index) => {
+          const nodePermissions = treeManager.getNodePermissions(node.id);
+          const permissions: PermissionInfo[] = Array.from(
+            nodePermissions.entries(),
+          ).map(([permissionId, count]) => ({
+            permissionId,
+            count,
+            colorName: getPermissionColor(permissionId),
+          }));
 
-      return {
-        nodes,
-        edges,
-        treeManager,
-      };
+          return {
+            id: node.id,
+            type: "namespacePath",
+            position: { x: (index % 3) * 200, y: Math.floor(index / 3) * 100 },
+            data: {
+              label: node.id,
+              accessible: node.accessible,
+              permissions,
+              selectedPermission: null,
+            },
+          };
+        });
+
+      const edges: Edge[] = treeManager.getEdges().map((edge) => ({
+        id: edge.id,
+        source: edge.source,
+        target: edge.target,
+      }));
+
+      return { nodes, edges, treeManager };
     },
     enabled: isInitialized && !!api && !!targetAddress,
   });

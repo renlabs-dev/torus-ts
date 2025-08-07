@@ -20,16 +20,18 @@ import type {
   PermissionId,
 } from "@torus-network/sdk/chain";
 
-import { Badge } from "@torus-ts/ui/components/badge";
-import { Button } from "@torus-ts/ui/components/button";
 
 import type { LayoutOptions } from "~/app/_components/react-flow-layout/use-auto-layout";
 import useAutoLayout from "~/app/_components/react-flow-layout/use-auto-layout";
 
 import { useDelegationTree } from "./create-capability-flow-hooks/use-delegation-tree";
-import { usePermissionBadges } from "./create-capability-flow-hooks/use-permission-badges";
 import { usePermissionSelectHandler } from "./create-capability-flow-hooks/use-permission-select-handler";
 import { usePermissionSelection } from "./create-capability-flow-hooks/use-permission-selection";
+import { ActionButtonsPanel } from "./create-capability-flow-panels/action-buttons-panel";
+import { PermissionBadgesPanel } from "./create-capability-flow-panels/permission-badges-panel";
+import { SelectedPathsPanel } from "./create-capability-flow-panels/selected-paths-panel";
+import { StatsPanel } from "./create-capability-flow-panels/stats-panel";
+import { createPathsWithPermissions } from "./create-capability-flow-panels/utils";
 import { NamespacePathNode } from "./namespace-path-node";
 import type { NamespacePathNodeData, PathWithPermission } from "./types";
 
@@ -139,28 +141,10 @@ function NamespacePathFlow({ onCreatePermission }: NamespacePathFlowProps) {
 
   const handleCreatePermission = useCallback(() => {
     if (rootSelectedPaths.size > 0) {
-      const pathsWithPermissions = Array.from(rootSelectedPaths)
-        .map((nodeId) => {
-          const node = nodes.find((n) => n.id === nodeId);
-          if (!node?.data.selectedPermission) return null;
-
-          return {
-            path: nodeId,
-            permissionId:
-              node.data.selectedPermission === "self"
-                ? null
-                : node.data.selectedPermission,
-          };
-        })
-        .filter((item): item is PathWithPermission => item !== null);
+      const pathsWithPermissions = createPathsWithPermissions(rootSelectedPaths, nodes);
       onCreatePermission(pathsWithPermissions);
     }
   }, [rootSelectedPaths, nodes, onCreatePermission]);
-
-  const renderPermissionBadges = usePermissionBadges({
-    activePermission,
-    treeManager,
-  });
 
   useEffect(() => {
     if (delegationData && nodes.length > 0) {
@@ -244,44 +228,26 @@ function NamespacePathFlow({ onCreatePermission }: NamespacePathFlowProps) {
         <Background />
 
         <Panel position="top-left" className="pt-10 space-y-2 z-50">
-          <div className="flex space-x-2">
-            <Badge variant="default">
-              {rootSelectedPaths.size} of {accessibleCount} selected
-            </Badge>
-            <Badge variant="secondary">
-              {totalCount - accessibleCount} view-only
-            </Badge>
-          </div>
+          <StatsPanel
+            selectedCount={rootSelectedPaths.size}
+            accessibleCount={accessibleCount}
+            viewOnlyCount={totalCount - accessibleCount}
+          />
         </Panel>
 
         <Panel position="top-right" className="pt-10 space-y-2 z-50">
-          {/* Permission colors reference panel */}
-          {treeManager && (
-            <div className="flex flex-wrap gap-1">
-              {renderPermissionBadges()}
-            </div>
-          )}
+          <PermissionBadgesPanel activePermission={activePermission} />
         </Panel>
 
         <Panel
           position="bottom-right"
           className="flex gap-2 z-50 pb-4 shadow-lg"
         >
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleClearSelection}
-            disabled={rootSelectedPaths.size === 0}
-          >
-            Clear Selection
-          </Button>
-          <Button
-            size="sm"
-            disabled={rootSelectedPaths.size === 0}
-            onClick={handleCreatePermission}
-          >
-            Create Permission ({rootSelectedPaths.size} paths)
-          </Button>
+          <ActionButtonsPanel
+            selectedCount={rootSelectedPaths.size}
+            onClearSelection={handleClearSelection}
+            onCreatePermission={handleCreatePermission}
+          />
         </Panel>
 
         {rootSelectedPaths.size > 0 && (
@@ -289,30 +255,11 @@ function NamespacePathFlow({ onCreatePermission }: NamespacePathFlowProps) {
             position="bottom-left"
             className="bg-green-500/10 border-green-500/20 border rounded-sm p-2 z-50 shadow-lg"
           >
-            <div className="space-y-1">
-              <div className="text-sm font-medium text-green-700 dark:text-green-300">
-                Root Selected Paths:
-              </div>
-              <div className="text-xs space-y-1 max-h-32 overflow-y-auto">
-                {Array.from(rootSelectedPaths).map((nodeId) => {
-                  const node = nodes.find((n) => n.id === nodeId);
-                  return (
-                    <div
-                      key={nodeId}
-                      className="font-mono text-green-600 dark:text-green-400"
-                    >
-                      {String(node?.data.label ?? "")}
-                    </div>
-                  );
-                })}
-              </div>
-              {selectedPaths.size > rootSelectedPaths.size && (
-                <div className="text-xs text-green-500/80 pt-1 border-t border-green-500/20">
-                  + {selectedPaths.size - rootSelectedPaths.size} descendant
-                  paths (visual only)
-                </div>
-              )}
-            </div>
+            <SelectedPathsPanel
+              rootSelectedPaths={rootSelectedPaths}
+              selectedPaths={selectedPaths}
+              nodes={nodes}
+            />
           </Panel>
         )}
       </ReactFlow>
