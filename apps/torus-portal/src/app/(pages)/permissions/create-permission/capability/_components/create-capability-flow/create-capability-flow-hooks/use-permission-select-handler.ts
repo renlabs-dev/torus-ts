@@ -90,6 +90,14 @@ function determineBestPermission(
 }
 
 /**
+ * Checks if nodeA is an ancestor of nodeB (nodeA comes before nodeB in the tree hierarchy)
+ */
+function isAncestorOf(nodeA: string, nodeB: string): boolean {
+  // NodeA is an ancestor of NodeB if NodeB starts with NodeA followed by a dot
+  return nodeB.startsWith(nodeA + ".");
+}
+
+/**
  * Checks if a permission is compatible with the current selection
  */
 function isPermissionCompatible(
@@ -287,6 +295,7 @@ export function usePermissionSelectHandler({
       const isDeselecting = permissionId === null;
       let newSelectedPaths: Set<string>;
       let newRootSelectedPaths: Set<string>;
+      let previousSelectedPaths = selectedPaths;
 
       if (isDeselecting) {
         // Only allow deselecting root paths (not descendants)
@@ -317,6 +326,27 @@ export function usePermissionSelectHandler({
           return;
         }
 
+        // Check if the new selection is an ancestor of any existing selections
+        // If so, clear those descendant selections first
+        const clearedRootPaths = new Set(rootSelectedPaths);
+        const clearedSelectedPaths = new Set(selectedPaths);
+
+        for (const existingRootPath of rootSelectedPaths) {
+          if (isAncestorOf(targetNode.id, existingRootPath)) {
+            // Clear the descendant selection
+            clearedRootPaths.delete(existingRootPath);
+            // Also clear it from selected paths along with its descendants
+            clearedSelectedPaths.delete(existingRootPath);
+            const descendantsOfExisting = getDescendantIds(existingRootPath);
+            descendantsOfExisting.forEach((id) =>
+              clearedSelectedPaths.delete(id),
+            );
+          }
+        }
+
+        // Store the previous selected paths for node state updates
+        previousSelectedPaths = clearedSelectedPaths;
+
         // Update active permission state
         updateActivePermissionState(
           permissionId,
@@ -325,11 +355,10 @@ export function usePermissionSelectHandler({
           updatePermissionBlocking,
         );
 
-        // Handle node selection
         newSelectedPaths = handleNodeSelection(
           targetNode,
           permissionId,
-          selectedPaths,
+          clearedSelectedPaths,
           activePermission,
           nodes,
           getDescendantIds,
@@ -337,7 +366,7 @@ export function usePermissionSelectHandler({
         );
 
         // Add to root paths (only the clicked node)
-        newRootSelectedPaths = new Set(rootSelectedPaths);
+        newRootSelectedPaths = new Set(clearedRootPaths);
         newRootSelectedPaths.add(targetNode.id);
       }
 
@@ -349,7 +378,7 @@ export function usePermissionSelectHandler({
         updateNodeSelectionStates(
           currentNodes,
           newSelectedPaths,
-          selectedPaths,
+          previousSelectedPaths,
           targetNode.id,
           permissionId,
           activePermission,

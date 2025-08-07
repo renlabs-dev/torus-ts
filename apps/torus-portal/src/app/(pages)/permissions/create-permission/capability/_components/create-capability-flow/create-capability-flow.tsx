@@ -275,10 +275,7 @@ function CreateCapabilityFlow({ onCreatePermission }: NamespacePathFlowProps) {
         </Panel>
 
         {rootSelectedPaths.size > 0 && (
-          <Panel
-            position="bottom-left"
-            className="bg-green-500/10 border-green-500/20 border rounded-sm p-2 z-50 shadow-lg"
-          >
+          <Panel position="bottom-left">
             <SelectedPathsPanel
               rootSelectedPaths={rootSelectedPaths}
               selectedPaths={selectedPaths}

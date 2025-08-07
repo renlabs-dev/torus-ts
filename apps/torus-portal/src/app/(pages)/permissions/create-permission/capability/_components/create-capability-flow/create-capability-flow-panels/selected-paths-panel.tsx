@@ -20,25 +20,23 @@ export function SelectedPathsPanel({
   const descendantCount = selectedPaths.size - rootSelectedPaths.size;
 
   return (
-    <div className="space-y-1">
-      <div className="text-sm font-medium text-green-700 dark:text-green-300">
-        Root Selected Paths:
-      </div>
+    <div
+      className="bg-muted/50 backdrop-blur-md border-border border rounded-sm p-2 z-50 shadow-lg
+        space-y-1 max-w-screen-sm"
+    >
+      <div className="text-sm font-medium text-white">Root Selected Paths:</div>
       <div className="text-xs space-y-1 max-h-32 overflow-y-auto">
         {Array.from(rootSelectedPaths).map((nodeId) => {
           const node = nodes.find((n) => n.id === nodeId);
           return (
-            <div
-              key={nodeId}
-              className="font-mono text-green-600 dark:text-green-400"
-            >
+            <div key={nodeId} className="font-mono text-white">
               {String(node?.data.label ?? "")}
             </div>
           );
         })}
       </div>
       {descendantCount > 0 && (
-        <div className="text-xs text-green-500/80 pt-1 border-t border-green-500/20">
+        <div className="text-xs text-white/80 pt-23 border-t border-white/20">
           + {descendantCount} descendant paths (visual only)
         </div>
       )}
