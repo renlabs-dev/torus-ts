@@ -24,6 +24,7 @@ import type { LayoutOptions } from "~/app/_components/react-flow-layout/use-auto
 import useAutoLayout from "~/app/_components/react-flow-layout/use-auto-layout";
 
 import { useDelegationTree } from "./create-capability-flow-hooks/use-delegation-tree";
+import { useEdgeStyling } from "./create-capability-flow-hooks/use-edge-styling";
 import { usePermissionSelectHandler } from "./create-capability-flow-hooks/use-permission-select-handler";
 import { usePermissionSelection } from "./create-capability-flow-hooks/use-permission-selection";
 import { NamespacePathNode } from "./create-capability-flow-node";
@@ -64,6 +65,12 @@ function CreateCapabilityFlow({ onCreatePermission }: NamespacePathFlowProps) {
     updatePermissionBlocking,
     clearSelection,
   } = usePermissionSelection({ nodes, edges, setNodes, treeManager });
+
+  const { getStyledEdges } = useEdgeStyling({
+    nodes,
+    edges,
+    selectedPaths,
+  });
 
   useEffect(() => {
     if (delegationData) {
@@ -217,9 +224,19 @@ function CreateCapabilityFlow({ onCreatePermission }: NamespacePathFlowProps) {
 
   return (
     <div className="h-full w-full relative -top-14">
+      <style jsx>{`
+        @keyframes dash {
+          from {
+            stroke-dashoffset: 12;
+          }
+          to {
+            stroke-dashoffset: 0;
+          }
+        }
+      `}</style>
       <ReactFlow
         nodes={nodes}
-        edges={edges}
+        edges={getStyledEdges()}
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
         onNodeClick={undefined}
@@ -250,7 +267,7 @@ function CreateCapabilityFlow({ onCreatePermission }: NamespacePathFlowProps) {
         </Panel>
 
         <Panel position="top-right" className="pt-10 space-y-2 z-50">
-          <PermissionBadgesPanel activePermission={activePermission} />
+          <PermissionBadgesPanel activePermission={activePermission} nodes={nodes} />
         </Panel>
 
         <Panel

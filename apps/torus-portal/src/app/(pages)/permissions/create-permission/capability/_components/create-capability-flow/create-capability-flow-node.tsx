@@ -1,6 +1,7 @@
 import { memo } from "react";
 
 import { Handle, Position } from "@xyflow/react";
+import { MouseOff, Route } from "lucide-react";
 
 import type { PermissionId } from "@torus-network/sdk/chain";
 
@@ -42,53 +43,74 @@ export const NamespacePathNode = memo(function NamespacePathNode({
     <div
       className={cn(
         `px-2 py-2 backdrop-blur-xl border flex gap-1 items-center rounded-sm
-        min-w-[200px]`,
+        cursor-default min-w-[200px]`,
         // Accessibility styling
         !isAccessible &&
           "cursor-not-allowed bg-stone-700/10 text-stone-500/70 border-stone-500/10",
         isAccessible && "bg-muted border-border",
         // Selected permission styling
-        hasSelectedPermission && data.selectedPermission && getPermissionClasses(data.selectedPermission).selected,
+        hasSelectedPermission &&
+          data.selectedPermission &&
+          getPermissionClasses(data.selectedPermission).selected,
       )}
       aria-disabled={!isAccessible}
     >
       <Handle type="target" position={Position.Left} isConnectable={false} />
 
-      <div className="flex gap-1">
-        {data.permissions.map((permission) => {
-          const countText =
-            permission.count === null ? "∞" : permission.count.toString();
-          const isBlocked = permission.blocked ?? false;
-          const isSelected =
-            data.selectedPermission === permission.permissionId;
+      {data.permissions.length > 0 ? (
+        <div className="flex gap-1">
+          {data.permissions.map((permission) => {
+            const isBlocked = permission.blocked ?? false;
+            const isSelected =
+              data.selectedPermission === permission.permissionId;
+            const isInfinite = permission.count === null;
+            const countNumber = permission.count ?? 0;
 
-          return (
-            <button
-              key={permission.permissionId}
-              data-node-id={data.label} // Use label as node identifier
-              className={cn(
-                `text-xs rounded-sm px-2 py-1 font-mono font-semibold transition-all border
-                border-border`,
-                "flex items-center gap-1 justify-center",
-                getPermissionClasses(permission.permissionId).bg,
-                // Button state styling
-                isBlocked &&
-                  "bg-gray-300 text-gray-500 cursor-not-allowed opacity-50",
-                !isBlocked && "text-white hover:opacity-80 transition-opacity",
-                isSelected && !isBlocked && "text-white",
-              )}
-              onClick={(e) =>
-                !isBlocked &&
-                handlePermissionButtonClick(e, permission.permissionId)
-              }
-              disabled={isBlocked}
-              title={`${countText} available instances${isBlocked ? " (blocked)" : ""}`}
-            >
-              <span className="font-bold">{countText}</span>
-            </button>
-          );
-        })}
-      </div>
+            return (
+              <button
+                key={permission.permissionId}
+                data-node-id={data.label} // Use label as node identifier
+                className={cn(
+                  `text-xs rounded-sm px-2 py-1 font-mono font-semibold transition-all border
+                    border-border`,
+                  "flex items-center gap-1 justify-center min-w-[28px] h-7",
+                  getPermissionClasses(permission.permissionId).bg,
+                  // Button state styling
+                  isBlocked &&
+                    "bg-gray-300 text-gray-500 cursor-not-allowed opacity-50",
+                  !isBlocked &&
+                    "text-white hover:opacity-80 transition-opacity",
+                  isSelected && !isBlocked && "text-white",
+                )}
+                onClick={(e) =>
+                  !isBlocked &&
+                  handlePermissionButtonClick(e, permission.permissionId)
+                }
+                disabled={isBlocked}
+                title={`${isInfinite ? "Unlimited" : countNumber} available instances${isBlocked ? " (blocked)" : ""}`}
+              >
+                {isInfinite ? (
+                  <Route size={12} className="font-bold" />
+                ) : (
+                  <span className="font-bold">{countNumber}</span>
+                )}
+              </button>
+            );
+          })}
+        </div>
+      ) : (
+        !isAccessible && (
+          <button
+            disabled
+            className={cn(
+              `text-xs rounded-sm p-1 font-mono font-semibold border border-border min-w-[28px]
+                items-center h-7 flex justify-center`,
+            )}
+          >
+            <MouseOff size={12} className="font-bold" />
+          </button>
+        )
+      )}
 
       <div className="font-mono text-sm leading-tight">{data.label}</div>
 
