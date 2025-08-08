@@ -10,8 +10,8 @@ import {
 } from "@rainbow-me/rainbowkit";
 import {
   argentWallet,
-  coinbaseWallet,
-  // injectedWallet,
+  // coinbaseWallet,
+  injectedWallet,
   ledgerWallet,
   metaMaskWallet,
   rainbowWallet,
@@ -49,12 +49,12 @@ export function initWagmi(multiProvider: MultiProtocolProvider) {
         {
           groupName: "More",
           wallets: [
-            coinbaseWallet,
+            // coinbaseWallet,
             rainbowWallet,
             trustWallet,
             argentWallet,
             uniswapWallet,
-            // injectedWallet,
+            injectedWallet,
           ],
         },
       ],
@@ -83,11 +83,7 @@ export function initWagmi(multiProvider: MultiProtocolProvider) {
     return createConfig({
       chains: [firstChain, ...chains.slice(1)],
       connectors,
-      // Avoid probing all injected providers on mount which can trigger
-      // eth_accounts hangs in some wallets (e.g., Coinbase extension)
       multiInjectedProviderDiscovery: false,
-      // Do not persist connection state to avoid reconnect-on-mount behavior
-      storage: null,
       client({ chain }) {
         const transport = http(chain.rpcUrls.default.http[0]);
         return createClient({ chain, transport });
