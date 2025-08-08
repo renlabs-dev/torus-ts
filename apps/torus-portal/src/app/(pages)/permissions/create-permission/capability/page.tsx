@@ -15,6 +15,7 @@ import type {
   PathWithPermission,
 } from "./_components/create-capability-flow/create-capability-flow-types";
 import { CreateCapabilityPermissionForm } from "./_components/create-capability-permission-form";
+import { CapabilityTutorialDialog } from "./_components/capability-tutorial-dialog";
 
 export default function CapabilityV2Page() {
   const [selectedPaths, setSelectedPaths] = useState<string[]>([]);
@@ -39,6 +40,7 @@ export default function CapabilityV2Page() {
 
   return (
     <div className="h-screen w-full">
+      <CapabilityTutorialDialog />
       <CreateCapabilityFlowProvider
         ref={flowRef}
         onCreatePermission={handleCreatePermission}
