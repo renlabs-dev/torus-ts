@@ -43,7 +43,7 @@ export const NamespacePathNode = memo(function NamespacePathNode({
     <div
       className={cn(
         `px-2 py-2 backdrop-blur-xl border flex gap-1 items-center rounded-sm
-        cursor-default min-w-[200px]`,
+        cursor-default pr-4`,
         // Accessibility styling
         !isAccessible &&
           "cursor-not-allowed bg-stone-700/10 text-stone-500/70 border-stone-500/10",
@@ -71,9 +71,9 @@ export const NamespacePathNode = memo(function NamespacePathNode({
                 key={permission.permissionId}
                 data-node-id={data.label} // Use label as node identifier
                 className={cn(
-                  `text-xs rounded-sm px-2 py-1 font-mono font-semibold transition-all border
+                  `text-sm rounded-sm px-2 py-1 font-mono font-bold transition-all border
                     border-border`,
-                  "flex items-center gap-1 justify-center min-w-[28px] h-7",
+                  "flex items-center gap-1 justify-center min-w-8 h-8",
                   getPermissionClasses(permission.permissionId).bg,
                   // Button state styling
                   isBlocked &&
