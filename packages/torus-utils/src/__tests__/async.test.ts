@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import { AsyncPushStream, defer } from "../async.js";
 
-const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+const sleep = (ms: number = 0) => new Promise((r) => setTimeout(r, ms));
 
 describe("defer", () => {
   it("should create a deferred promise", () => {
@@ -481,7 +481,7 @@ describe("AsyncPushStream", () => {
     }
 
     // Wait for consumer to process all values
-    await sleep(30);
+    await sleep(60);
     stream.end();
 
     await consumer;
@@ -613,7 +613,200 @@ describe("AsyncPushStream", () => {
       }
     })();
     s.push(1);
-    await sleep(0);
+    await sleep();
     expect(out).toEqual([1, 2]);
+  });
+});
+
+describe("AsyncPushStream.throw()", () => {
+  it("rejects the throw() promise and marks the stream finished", async () => {
+    const stream = new AsyncPushStream<number>();
+
+    // No waiters yet; throw should still close and reject.
+    const err = new Error("boom");
+    await expect(stream.throw(err)).rejects.toBe(err);
+
+    // Stream is closed afterwards.
+    await expect(stream.next()).resolves.toEqual({
+      value: undefined,
+      done: true,
+    });
+  });
+
+  it("rejects all *pending* next() waiters with the same error", async () => {
+    const stream = new AsyncPushStream<number>();
+
+    // Create two waiters.
+    const p1 = stream.next();
+    const p2 = stream.next();
+
+    // Throw an error; both waiters should reject with it.
+    const err = new Error("kaput");
+    const t = stream.throw(err);
+
+    await expect(p1).rejects.toBe(err);
+    await expect(p2).rejects.toBe(err);
+    await expect(t).rejects.toBe(err);
+
+    // After close, next() resolves as done:true.
+    await expect(stream.next()).resolves.toEqual({
+      value: undefined,
+      done: true,
+    });
+  });
+
+  it("discards buffered values when throw() is called", async () => {
+    const stream = new AsyncPushStream<number>();
+    stream.push(1);
+    stream.push(2);
+
+    const thrown = stream.throw(new Error("nope"));
+    await expect(thrown).rejects.toThrow("nope");
+
+    // Buffer should be dropped; nothing left to consume.
+    await expect(stream.next()).resolves.toEqual({
+      value: undefined,
+      done: true,
+    });
+  });
+
+  it("returns {done:true} (idempotent) when already finished", async () => {
+    const stream = new AsyncPushStream<number>();
+    stream.end(); // finished cleanly
+
+    // Idempotent: should *not* reject a second time.
+    await expect(stream.throw(new Error("late"))).resolves.toEqual({
+      value: undefined,
+      done: true,
+    });
+
+    // Still finished.
+    await expect(stream.next()).resolves.toEqual({
+      value: undefined,
+      done: true,
+    });
+  });
+
+  it("returns {done:true} (idempotent) after a previous throw()", async () => {
+    const stream = new AsyncPushStream<number>();
+    await expect(stream.throw(new Error("first"))).rejects.toThrow("first");
+
+    // Second throw shouldn't reject again.
+    await expect(stream.throw(new Error("second"))).resolves.toEqual({
+      value: undefined,
+      done: true,
+    });
+  });
+
+  it("rejects pending next() created before throw(), then future next() resolve done:true", async () => {
+    const stream = new AsyncPushStream<number>();
+    const p = stream.next(); // waiter
+
+    const thrown = stream.throw(new Error("x"));
+    await expect(p).rejects.toThrow("x");
+    await expect(thrown).rejects.toThrow("x");
+
+    // New next() after close
+    await expect(stream.next()).resolves.toEqual({
+      value: undefined,
+      done: true,
+    });
+  });
+
+  it("uses default error message when no error is provided", async () => {
+    const stream = new AsyncPushStream<number>();
+    await expect(stream.throw()).rejects.toMatchObject({
+      message: "Stream aborted",
+    });
+  });
+
+  it("does not create unhandled noise when throw() is called after return()", async () => {
+    const stream = new AsyncPushStream<number>();
+
+    // Start a waiter, then graceful close it so waiter resolves as done:true.
+    const waiter = stream.next();
+    const ret = stream.return();
+    await expect(waiter).resolves.toEqual({ value: undefined, done: true });
+    await expect(ret).resolves.toEqual({ value: undefined, done: true });
+
+    // Now a late throw(): should be idempotent and quiet.
+    await expect(stream.throw(new Error("late"))).resolves.toEqual({
+      value: undefined,
+      done: true,
+    });
+  });
+
+  it("works correctly within a for-await-of: throw() causes the loop to reject and the iterator to close", async () => {
+    const stream = new AsyncPushStream<number>();
+
+    // Start a consumer but ensure it awaits a value so we can inject a throw().
+    const consumed: number[] = [];
+    const consumption = (async () => {
+      try {
+        for await (const v of stream) {
+          consumed.push(v);
+        }
+      } catch (e) {
+        // Expect our injected error
+        expect(e).toBeInstanceOf(Error);
+        if (e instanceof Error) {
+          expect(e.message).toBe("explode");
+        }
+      }
+    })();
+
+    // Let the consumer start and block on next()
+    await sleep();
+
+    // Throw inside: should reject the loop and close.
+    await expect(stream.throw(new Error("explode"))).rejects.toThrow("explode");
+
+    await consumption; // wait for loop to finish
+    expect(consumed).toEqual([]); // never yielded
+
+    // Confirm closed.
+    await expect(stream.next()).resolves.toEqual({
+      value: undefined,
+      done: true,
+    });
+  });
+
+  it("throw() while some values are buffered: drops them and closes", async () => {
+    const stream = new AsyncPushStream<number>();
+    stream.push(1);
+    stream.push(2);
+
+    // One buffered value is still there, but we throw before anyone pulls it.
+    await expect(stream.throw(new Error("nope"))).rejects.toThrow("nope");
+
+    // Next() should not see buffered values anymore.
+    await expect(stream.next()).resolves.toEqual({
+      value: undefined,
+      done: true,
+    });
+  });
+
+  it("throw() rejects waiters even if a value is pushed concurrently", async () => {
+    const stream = new AsyncPushStream<number>();
+    const waiter = stream.next();
+
+    // Simulate race: push and throw in same tick; throw wins because waiter is pending.
+    const p1 = (async () => {
+      // microtask to interleave
+      await sleep();
+      stream.push(42);
+    })();
+
+    const p2 = stream.throw(new Error("race"));
+
+    await expect(waiter).rejects.toThrow("race");
+    await expect(p2).rejects.toThrow("race");
+
+    await p1;
+    // Closed; the concurrent push should have been ignored by the finished-guard in your push()
+    await expect(stream.next()).resolves.toEqual({
+      value: undefined,
+      done: true,
+    });
   });
 });

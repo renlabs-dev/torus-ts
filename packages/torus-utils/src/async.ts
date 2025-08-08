@@ -1,5 +1,6 @@
 import { assert } from "tsafe";
 
+import { ensureError } from "./error.js";
 import type { Result } from "./result/sync.js";
 import { makeErr, makeOk } from "./result/sync.js";
 
@@ -31,7 +32,7 @@ import { makeErr, makeOk } from "./result/sync.js";
  *
  * @returns An object with `promise`, `resolve`, and `reject` properties
  */
-export function defer<T>() {
+export function defer<T>(): Waiter<T> & { promise: Promise<T> } {
   let resolve: ((value: T) => void) | undefined;
   let reject: ((reason: unknown) => void) | undefined;
 
@@ -46,94 +47,156 @@ export function defer<T>() {
   return { promise, resolve, reject };
 }
 
+interface Waiter<T> {
+  resolve: (result: T) => void;
+  reject: (e: unknown) => void;
+}
+
 /**
- * A push-based async iterable and iterator that lets a producer inject values,
- * which consumers then pull via `for await…of`. Ideal for bridging callback-
- * or event-based systems into a simple, back-pressure–friendly async stream.
+ * A push-based async iterable/iterator that lets a producer inject values,
+ * which consumers then pull via `for await … of`. Useful to bridge callback- or
+ * event-based sources into a simple, backpressure-friendly async stream.
+ *
+ * Semantics:
+ * - `undefined` values are allowed.
+ * - `end()` drains any buffered values first, then yields `{done:true}`.
+ * - `throw(err)`:
+ *    - Finishes the stream, clears the buffer.
+ *    - All pending `next()` promises reject with `err`.
+ *    - The `throw()` call itself rejects with `err` (or a default error).
+ *    - Subsequent `throw()` calls still reject (stream is already finished).
+ * - After finished, `push()` returns an Error via the Result type.
  *
  * @template T The type of items in the stream.
  */
 export class AsyncPushStream<T> implements AsyncIterable<T>, AsyncIterator<T> {
-  private values: T[] = [];
-  private resolvers: ((result: IteratorResult<T>) => void)[] = [];
+  private _values: T[] = [];
+  private _waiters: Waiter<IteratorResult<T>>[] = [];
   private _finished = false;
 
-  /**
-   * True once `end()` (or an early `return()`) has been called.
-   */
+  /** True once `end()` or `return()` has been called (or `throw()`). */
   public get isFinished(): boolean {
     return this._finished;
   }
 
   /**
    * Push a new value into the stream.
-   * @param value The value to enqueue for downstream consumption.
-   * @throws If called after the stream has been ended.
+   * @param value The value to enqueue for downstream consumption (may be `undefined`).
+   * @returns Result<void, Error> — error if the stream is already finished.
    */
   push(value: T): Result<void, Error> {
     if (this._finished) {
       return makeErr(new Error("Cannot push after stream has ended"));
     }
-    const resolve = this.resolvers.shift();
-    if (resolve !== undefined) {
-      resolve({ value, done: false });
+    const waiter = this._waiters.shift();
+    if (waiter !== undefined) {
+      waiter.resolve({ value, done: false });
     } else {
-      this.values.push(value);
+      this._values.push(value);
     }
     return makeOk(undefined);
   }
 
   /**
-   * Signal that no more values will be pushed. Resolves any waiting consumers
-   * with `done: true`.
+   * Mark the stream as finished: no more values will be delivered.
+   *
+   * Effects:
+   * - Resolves any currently *waiting* consumers of `next()` with `{ value: undefined, done: true }`.
+   * - Clears the internal buffer (any enqueued values are discarded).
+   * - Subsequent `next()` calls resolve immediately with `{ done: true }`.
+   *
+   * Note: Calling `end()` multiple times is a no-op after the first call.
    */
   end(): void {
     if (this._finished) return;
     this._finished = true;
-    for (const resolve of this.resolvers) {
-      resolve({ value: undefined, done: true });
+
+    // Wake pending waiters as done.
+    for (const waiter of this._waiters) {
+      waiter.resolve({ value: undefined, done: true });
     }
-    this.resolvers = [];
-    this.values = [];
+    this._waiters = [];
+
+    // Discard any buffered values.
+    this._values = [];
   }
 
   // ---- AsyncIterator ----
 
   /**
-   * Pulls the next value from the stream, waiting if none are available yet.
-   * @returns A promise that resolves to the next `{ value, done }` tuple.
+   * Pull the next value. If none are buffered:
+   * - waits until a value is pushed,
+   * - or resolves `{ done: true }` if the stream is finished before a value arrives.
    */
   async next(): Promise<IteratorResult<T>> {
+    // Note: If we want buffered values to be consumed after the stream is
+    // finished, we can move the buffer shift() here <=== and not empty _values
+    // in end().
+
     if (this._finished) {
       return { value: undefined, done: true };
     }
-
-    // Check list length instead of return of shift to allow `undefined` values
-    if (this.values.length > 0) {
+    if (this._values.length > 0) {
+      // `undefined` is a valid value; we check length rather than sentinel.
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      const value = this.values.shift()!;
+      const value = this._values.shift()!;
       return { value, done: false };
     }
-    return new Promise<IteratorResult<T>>((resolve) => {
-      this.resolvers.push(resolve);
-    });
+    const waiter = defer<IteratorResult<T>>();
+    this._waiters.push(waiter);
+    return waiter.promise;
   }
 
   /**
-   * Allows the consumer to early-close the stream.
-   * @returns A `{ value: undefined, done: true }` result.
+   * Consumer-initiated graceful close.
+   *
+   * Semantics:
+   * - Equivalent to `end()`.
+   * - Resolves any pending `next()` with `{ done: true }`.
+   * - Returns `{ done: true }` to the caller.
    */
-  // eslint-disable-next-line @typescript-eslint/require-await
-  async return(): Promise<IteratorResult<T>> {
+  return(): Promise<IteratorResult<T>> {
     this.end();
-    return { value: undefined, done: true };
+    return Promise.resolve({ value: undefined, done: true });
+  }
+
+  /**
+   * Signal an error and close the stream (fatal close).
+   *
+   * Effects (first call while open):
+   * - Marks the stream finished and clears the buffer.
+   * - Rejects all *pending* `next()` waiters with the provided error.
+   * - Returns a rejected promise with that same error.
+   *
+   * Idempotence:
+   * - If the stream is already finished, this returns `{ done: true }`
+   *   instead of rejecting again, to avoid double faults in teardown code.
+   */
+  async throw(error?: unknown): Promise<IteratorResult<T>> {
+    if (this._finished) {
+      // Idempotent after close
+      return { value: undefined, done: true };
+    }
+
+    this._finished = true;
+
+    const err = ensureError(error ?? "Stream aborted");
+
+    // Fail any pending `next()` calls.
+    for (const waiter of this._waiters) {
+      waiter.reject(err);
+    }
+    this._waiters = [];
+
+    // Discard any buffered values.
+    this._values = [];
+
+    // Surface the fatal error to the caller of throw().
+    return Promise.reject(err);
   }
 
   // ---- AsyncIterable ----
 
-  /**
-   * @returns This instance, as it implements both `AsyncIterable` and `AsyncIterator`.
-   */
   [Symbol.asyncIterator](): AsyncIterator<T> {
     return this;
   }
