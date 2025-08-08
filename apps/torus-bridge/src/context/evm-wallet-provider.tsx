@@ -81,7 +81,7 @@ export function initWagmi(multiProvider: MultiProtocolProvider) {
     return createConfig({
       chains: [firstChain, ...chains.slice(1)],
       connectors,
-      multiInjectedProviderDiscovery: true,
+      multiInjectedProviderDiscovery: false,
       client({ chain }) {
         const transport = http(chain.rpcUrls.default.http[0]);
         return createClient({ chain, transport });
