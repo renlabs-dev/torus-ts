@@ -4,7 +4,7 @@ Monorepo for the **Torus Network** TypesSript Ecosystem. It's managed with
 [Turborepo](https://turborepo.org) and [pnpm](https://pnpm.io/).
 
 > [!IMPORTANT]  
-> For a more in depth guide on how to use this project, please refer to the [Torus Docs](https://docs.torus.network/web-apps/intro/).
+> For a more in depth guide on how to use this project, please refer to the [Torus Docs](https://docs.torus.network/development/web/overview-and-setup/).
 
 ## Project Structure
 
@@ -107,7 +107,7 @@ just gen-types "https://custom-node.example.com"
 ### Networks
 
 - `mainnet` - `https://api.torus.network`
-- `testnet` - `https://api.testnet.torus.network` 
+- `testnet` - `https://api.testnet.torus.network`
 - `local` - `http://localhost:9951`
 
 ### Process
@@ -120,7 +120,7 @@ just gen-types "https://custom-node.example.com"
 ### Generated Files
 
 - `augment-api-consts.ts` - Blockchain constants
-- `augment-api-errors.ts` - Runtime errors  
+- `augment-api-errors.ts` - Runtime errors
 - `augment-api-events.ts` - Blockchain events
 - `augment-api-query.ts` - Storage queries
 - `augment-api-rpc.ts` - RPC calls
