@@ -11,6 +11,7 @@ import {
 import {
   argentWallet,
   coinbaseWallet,
+  // injectedWallet,
   ledgerWallet,
   metaMaskWallet,
   rainbowWallet,
@@ -53,6 +54,7 @@ export function initWagmi(multiProvider: MultiProtocolProvider) {
             trustWallet,
             argentWallet,
             uniswapWallet,
+            // injectedWallet,
           ],
         },
       ],
@@ -81,7 +83,7 @@ export function initWagmi(multiProvider: MultiProtocolProvider) {
     return createConfig({
       chains: [firstChain, ...chains.slice(1)],
       connectors,
-      multiInjectedProviderDiscovery: false,
+      multiInjectedProviderDiscovery: true,
       client({ chain }) {
         const transport = http(chain.rpcUrls.default.http[0]);
         return createClient({ chain, transport });
