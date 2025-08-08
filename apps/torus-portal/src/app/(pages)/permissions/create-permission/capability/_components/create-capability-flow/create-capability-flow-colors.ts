@@ -17,52 +17,52 @@ const colors = [
 
 const PERMISSION_COLORS = {
   blue: {
-    bg: "bg-blue-500",
-    selected: "bg-blue-500/10 border-blue-500 text-blue-500",
+    bg: "bg-blue-600",
+    selected: "bg-blue-600/10 border-blue-600 text-blue-600",
   },
   emerald: {
-    bg: "bg-emerald-500",
-    selected: "bg-emerald-500/10 border-emerald-500 text-emerald-500",
+    bg: "bg-emerald-600",
+    selected: "bg-emerald-600/10 border-emerald-600 text-emerald-600",
   },
   purple: {
-    bg: "bg-purple-500",
-    selected: "bg-purple-500/10 border-purple-500 text-purple-500",
+    bg: "bg-purple-600",
+    selected: "bg-purple-600/10 border-purple-600 text-purple-600",
   },
   amber: {
-    bg: "bg-amber-500",
-    selected: "bg-amber-500/10 border-amber-500 text-amber-500",
+    bg: "bg-amber-600",
+    selected: "bg-amber-600/10 border-amber-600 text-amber-600",
   },
   cyan: {
-    bg: "bg-cyan-500",
-    selected: "bg-cyan-500/10 border-cyan-500 text-cyan-500",
+    bg: "bg-cyan-600",
+    selected: "bg-cyan-600/10 border-cyan-600 text-cyan-600",
   },
   indigo: {
-    bg: "bg-indigo-500",
-    selected: "bg-indigo-500/10 border-indigo-500 text-indigo-500",
+    bg: "bg-indigo-600",
+    selected: "bg-indigo-600/10 border-indigo-600 text-indigo-600",
   },
   orange: {
-    bg: "bg-orange-500",
-    selected: "bg-orange-500/10 border-orange-500 text-orange-500",
+    bg: "bg-orange-600",
+    selected: "bg-orange-600/10 border-orange-600 text-orange-600",
   },
   teal: {
-    bg: "bg-teal-500",
-    selected: "bg-teal-500/10 border-teal-500 text-teal-500",
+    bg: "bg-teal-600",
+    selected: "bg-teal-600/10 border-teal-600 text-teal-600",
   },
   pink: {
-    bg: "bg-pink-500",
-    selected: "bg-pink-500/10 border-pink-500 text-pink-500",
+    bg: "bg-pink-600",
+    selected: "bg-pink-600/10 border-pink-600 text-pink-600",
   },
   lime: {
-    bg: "bg-lime-500",
-    selected: "bg-lime-500/10 border-lime-500 text-lime-500",
+    bg: "bg-lime-600",
+    selected: "bg-lime-600/10 border-lime-600 text-lime-600",
   },
   rose: {
-    bg: "bg-rose-500",
-    selected: "bg-rose-500/10 border-rose-500 text-rose-500",
+    bg: "bg-rose-600",
+    selected: "bg-rose-600/10 border-rose-600 text-rose-600",
   },
   green: {
-    bg: "bg-green-500",
-    selected: "bg-green-500/10 border-green-500 text-green-500",
+    bg: "bg-green-600",
+    selected: "bg-green-600/10 border-green-600 text-green-600",
   },
 } as const;
 

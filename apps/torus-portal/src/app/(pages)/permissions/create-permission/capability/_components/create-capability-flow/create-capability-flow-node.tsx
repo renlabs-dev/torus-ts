@@ -25,6 +25,19 @@ export const NamespacePathNode = memo(function NamespacePathNode({
   const isAccessible = data.accessible;
   const hasSelectedPermission = data.selectedPermission !== null;
 
+  const getDisplayPath = (fullPath: string): string => {
+    const withoutAgentPrefix = fullPath.startsWith("agent.")
+      ? fullPath.substring(6)
+      : fullPath;
+
+    if (!withoutAgentPrefix) return fullPath;
+
+    const segments = withoutAgentPrefix.split(".");
+    if (segments.length <= 1) return withoutAgentPrefix;
+
+    return segments.slice(-2).join(".");
+  };
+
   const handlePermissionButtonClick = (
     e: React.MouseEvent,
     permissionId: PermissionId | "self",
@@ -43,12 +56,10 @@ export const NamespacePathNode = memo(function NamespacePathNode({
     <div
       className={cn(
         `px-2 py-2 backdrop-blur-xl border flex gap-1 items-center rounded-sm
-        cursor-default pr-4`,
-        // Accessibility styling
+        cursor-default pr-3`,
         !isAccessible &&
           "cursor-not-allowed bg-stone-700/10 text-stone-500/70 border-stone-500/10",
         isAccessible && "bg-muted border-border",
-        // Selected permission styling
         hasSelectedPermission &&
           data.selectedPermission &&
           getPermissionClasses(data.selectedPermission).selected,
@@ -65,32 +76,33 @@ export const NamespacePathNode = memo(function NamespacePathNode({
               data.selectedPermission === permission.permissionId;
             const isInfinite = permission.count === null;
             const countNumber = permission.count ?? 0;
+            const isDisabled = isBlocked || (!isInfinite && countNumber === 0);
 
             return (
               <button
                 key={permission.permissionId}
-                data-node-id={data.label} // Use label as node identifier
+                data-node-id={data.label}
                 className={cn(
                   `text-sm rounded-sm px-2 py-1 font-mono font-bold transition-all border
                     border-border`,
-                  "flex items-center gap-1 justify-center min-w-8 h-8",
+                  "flex items-center gap-1 justify-center min-w-8 h-8 ",
                   getPermissionClasses(permission.permissionId).bg,
-                  // Button state styling
-                  isBlocked &&
+
+                  isDisabled &&
                     "bg-gray-300 text-gray-500 cursor-not-allowed opacity-50",
-                  !isBlocked &&
+                  !isDisabled &&
                     "text-white hover:opacity-80 transition-opacity",
-                  isSelected && !isBlocked && "text-white",
+                  isSelected && !isDisabled && "text-white",
                 )}
                 onClick={(e) =>
-                  !isBlocked &&
+                  !isDisabled &&
                   handlePermissionButtonClick(e, permission.permissionId)
                 }
-                disabled={isBlocked}
-                title={`${isInfinite ? "Unlimited" : countNumber} available instances${isBlocked ? " (blocked)" : ""}`}
+                disabled={isDisabled}
+                title={`${isInfinite ? "Unlimited" : countNumber} available instances${isDisabled ? (isBlocked ? " (blocked)" : " (no instances available)") : ""}`}
               >
                 {isInfinite ? (
-                  <Route size={12} className="font-bold" />
+                  <Route size={15} className="font-bold" />
                 ) : (
                   <span className="font-bold">{countNumber}</span>
                 )}
@@ -112,7 +124,9 @@ export const NamespacePathNode = memo(function NamespacePathNode({
         )
       )}
 
-      <div className="font-mono text-sm leading-tight">{data.label}</div>
+      <div className="font-mono text-sm leading-tight pl-1" title={data.label}>
+        {getDisplayPath(data.label)}
+      </div>
 
       <Handle type="source" isConnectable={false} position={Position.Right} />
     </div>

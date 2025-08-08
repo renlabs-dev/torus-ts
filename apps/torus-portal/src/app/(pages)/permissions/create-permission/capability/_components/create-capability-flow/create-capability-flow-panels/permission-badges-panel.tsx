@@ -51,11 +51,12 @@ export function PermissionBadgesPanel({
           <div
             key={permissionId}
             className={cn(
-              "flex items-center gap-1 px-2 py-1 rounded-sm text-xs font-mono border",
+              `flex items-center gap-1 px-2 py-1 rounded-sm text-xs font-mono border
+              backdrop-blur-sm`,
               isActive
-                ? `${classes.selected} border-2 font-semibold`
+                ? `${classes.selected} font-semibold`
                 : isSelected
-                  ? `${classes.selected} border font-semibold`
+                  ? `${classes.selected} font-semibold`
                   : "bg-muted/50 text-muted-foreground border-border",
             )}
           >
