@@ -15,7 +15,7 @@ export const HTTP_METHODS = [
   "none",
 ] as const;
 
-export const CREATE_CAPABILITY_SCHEMA = z
+export const REGISTER_CAPABILITY_SCHEMA = z
   .object({
     path: z
       .string()

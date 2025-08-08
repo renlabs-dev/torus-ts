@@ -16,19 +16,19 @@ import { useIsMobile } from "@torus-ts/ui/hooks/use-mobile";
 
 import { truncateMobileValue } from "~/utils/truncate-mobile-value";
 
-interface CreateCapabilityPrefixFieldProps {
+interface RegisterCapabilityPrefixFieldProps {
   selectedPrefix: string;
   onValueChange: (value: string) => void;
   isAccountConnected: boolean;
   namespaceEntries: UseQueryResult<NamespaceEntry[], Error>;
 }
 
-export function CreateCapabilityPrefixField({
+export function RegisterCapabilityPrefixField({
   selectedPrefix,
   onValueChange,
   isAccountConnected,
   namespaceEntries,
-}: CreateCapabilityPrefixFieldProps) {
+}: RegisterCapabilityPrefixFieldProps) {
   const isMobile = useIsMobile();
 
   const prefixOptions = useMemo(() => {
@@ -71,8 +71,8 @@ export function CreateCapabilityPrefixField({
           </div>
         ) : prefixOptions.length === 0 ? (
           <div className="text-sm text-destructive p-3 border sm:h-10 flex items-center">
-            Registration required. Please register your agent before creating a
-            capability.
+            Registration required. Please register your agent before registering
+            a capability.
           </div>
         ) : (
           <Select value={selectedPrefix} onValueChange={onValueChange}>

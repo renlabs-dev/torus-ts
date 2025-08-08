@@ -67,7 +67,7 @@ const data = {
         },
         {
           title: "Manage Permissions",
-          url: "/permissions/edit-permission",
+          url: "/permissions/manage-permission",
           icon: FilePen,
         },
       ],
@@ -76,8 +76,8 @@ const data = {
       title: "Capabilities",
       items: [
         {
-          title: "Create Capability",
-          url: "/capabilities/create-capability",
+          title: "Register Capability",
+          url: "/capabilities/register-capability",
           icon: PackagePlus,
         },
         {

@@ -45,7 +45,7 @@ import {
 } from "@torus-ts/ui/components/select";
 
 // Import the expected interface from the form
-import type { PermissionWithDetails } from "../(pages)/permissions/edit-permission/_components/revoke-permission-button";
+import type { PermissionWithDetails } from "../(pages)/permissions/manage-permission/_components/revoke-permission-button";
 
 interface PermissionWithNetworkData {
   permissionId: string;
