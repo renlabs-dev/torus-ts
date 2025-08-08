@@ -26,3 +26,10 @@ export interface PathWithPermission {
   path: string;
   permissionId: PermissionId | null;
 }
+
+/**
+ * Exposed methods from the capability flow component
+ */
+export interface CapabilityFlowRef {
+  clearSelection: () => void;
+}

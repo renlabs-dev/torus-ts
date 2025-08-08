@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 
 import {
   Dialog,
@@ -10,7 +10,10 @@ import {
 } from "@torus-ts/ui/components/dialog";
 
 import { CreateCapabilityFlowProvider } from "./_components/create-capability-flow/create-capability-flow";
-import type { PathWithPermission } from "./_components/create-capability-flow/create-capability-flow-types";
+import type {
+  CapabilityFlowRef,
+  PathWithPermission,
+} from "./_components/create-capability-flow/create-capability-flow-types";
 import { CreateCapabilityPermissionForm } from "./_components/create-capability-permission-form";
 
 export default function CapabilityV2Page() {
@@ -19,6 +22,7 @@ export default function CapabilityV2Page() {
     PathWithPermission[]
   >([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const flowRef = useRef<CapabilityFlowRef>(null);
 
   const handleCreatePermission = (paths: PathWithPermission[]) => {
     setSelectedPaths(paths.map((p) => p.path));
@@ -28,11 +32,15 @@ export default function CapabilityV2Page() {
 
   const handleFormSuccess = () => {
     setIsModalOpen(false);
+    setSelectedPaths([]);
+    setPathsWithPermissions([]);
+    flowRef.current?.clearSelection();
   };
 
   return (
     <div className="h-screen w-full">
       <CreateCapabilityFlowProvider
+        ref={flowRef}
         onCreatePermission={handleCreatePermission}
       />
 

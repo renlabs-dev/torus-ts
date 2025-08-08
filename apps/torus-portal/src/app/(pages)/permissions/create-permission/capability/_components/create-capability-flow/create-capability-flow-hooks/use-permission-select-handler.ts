@@ -374,8 +374,8 @@ export function usePermissionSelectHandler({
       setRootSelectedPaths(newRootSelectedPaths);
 
       // Update node selection states
-      setNodes((currentNodes) =>
-        updateNodeSelectionStates(
+      setNodes((currentNodes) => {
+        const updatedNodes = updateNodeSelectionStates(
           currentNodes,
           newSelectedPaths,
           previousSelectedPaths,
@@ -383,8 +383,34 @@ export function usePermissionSelectHandler({
           permissionId,
           activePermission,
           treeManager,
-        ),
-      );
+        );
+
+        if (isDeselecting && newSelectedPaths.size > 0 && activePermission) {
+          const remainingPermissions = new Set(
+            updatedNodes
+              .filter(
+                (node) =>
+                  newSelectedPaths.has(node.id) && node.data.selectedPermission,
+              )
+              // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+              .map((node) => node.data.selectedPermission!),
+          );
+
+          if (!remainingPermissions.has(activePermission)) {
+            setTimeout(() => {
+              const newActivePermission =
+                remainingPermissions.size > 0
+                  ? // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+                    Array.from(remainingPermissions)[0]!
+                  : null;
+              setActivePermission(newActivePermission);
+              updatePermissionBlocking(newActivePermission);
+            }, 0);
+          }
+        }
+
+        return updatedNodes;
+      });
     },
     [
       delegationData,
