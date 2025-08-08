@@ -24,7 +24,7 @@ export default function SidebarContainer({
           className="sticky top-0 flex h-16 shrink-0 items-center gap-2 justify-between z-50
             sm:bg-transparent bg-background"
         >
-          <div className="flex items-center gap-2 px-4">
+          <div className="flex items-center gap-2 px-4 w-full">
             <SidebarTrigger className="-ml-1" />
             <Separator
               orientation="vertical"
@@ -32,7 +32,7 @@ export default function SidebarContainer({
             />
             <SidebarBreadcrumb />
           </div>
-          <div className="flex items-center gap-2 px-4 w-full sm:w-fit">
+          <div className="flex items-center px-2 sm:px-4 w-fit text-nowrap">
             <PortalWalletDropdown />
           </div>
         </header>

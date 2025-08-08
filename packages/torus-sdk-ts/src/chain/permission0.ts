@@ -903,10 +903,7 @@ export function delegateEmissionPermission({
     targetsMap,
   );
 
-  if (!api.tx.permission0.grantEmissionPermission) {
-    throw new Error("grantEmissionPermission transaction not available");
-  }
-  return api.tx.permission0.grantEmissionPermission(
+  return api.tx.permission0.delegateEmissionPermission(
     recipient,
     allocation,
     targetsMap_,
