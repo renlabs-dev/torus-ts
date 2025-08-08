@@ -2,7 +2,14 @@
 
 import "@xyflow/react/dist/style.css";
 
-import { forwardRef, useCallback, useEffect, useImperativeHandle, useMemo, useState } from "react";
+import {
+  forwardRef,
+  useCallback,
+  useEffect,
+  useImperativeHandle,
+  useMemo,
+  useState,
+} from "react";
 
 import { useQueryClient } from "@tanstack/react-query";
 import type { Edge, Node } from "@xyflow/react";
@@ -43,8 +50,10 @@ interface NamespacePathFlowProps {
   onCreatePermission: (pathsWithPermissions: PathWithPermission[]) => void;
 }
 
-const CreateCapabilityFlow = forwardRef<CapabilityFlowRef, NamespacePathFlowProps>(
-  function CreateCapabilityFlow({ onCreatePermission }, ref) {
+const CreateCapabilityFlow = forwardRef<
+  CapabilityFlowRef,
+  NamespacePathFlowProps
+>(function CreateCapabilityFlow({ onCreatePermission }, ref) {
   const { fitView } = useReactFlow();
   const { selectedAccount, isAccountConnected, isInitialized } = useTorus();
   const queryClient = useQueryClient();
@@ -135,9 +144,13 @@ const CreateCapabilityFlow = forwardRef<CapabilityFlowRef, NamespacePathFlowProp
   }, [clearSelection]);
 
   // Expose clearSelection function through ref
-  useImperativeHandle(ref, () => ({
-    clearSelection: handleClearSelection,
-  }), [handleClearSelection]);
+  useImperativeHandle(
+    ref,
+    () => ({
+      clearSelection: handleClearSelection,
+    }),
+    [handleClearSelection],
+  );
 
   const handleCreatePermission = useCallback(() => {
     if (rootSelectedPaths.size > 0) {
@@ -255,7 +268,10 @@ const CreateCapabilityFlow = forwardRef<CapabilityFlowRef, NamespacePathFlowProp
       >
         <Background />
 
-        <Panel position="top-left" className="pt-10 space-y-2 z-50">
+        <Panel
+          position="top-left"
+          className="pt-10 space-y-2 z-50 sm:block hidden"
+        >
           <StatsPanel
             selectedCount={rootSelectedPaths.size}
             accessibleCount={accessibleCount}
@@ -295,12 +311,13 @@ const CreateCapabilityFlow = forwardRef<CapabilityFlowRef, NamespacePathFlowProp
   );
 });
 
-export const CreateCapabilityFlowProvider = forwardRef<CapabilityFlowRef, NamespacePathFlowProps>(
-  function CreateCapabilityFlowProvider({ onCreatePermission }, ref) {
-    return (
-      <ReactFlowProvider>
-        <CreateCapabilityFlow ref={ref} onCreatePermission={onCreatePermission} />
-      </ReactFlowProvider>
-    );
-  }
-);
+export const CreateCapabilityFlowProvider = forwardRef<
+  CapabilityFlowRef,
+  NamespacePathFlowProps
+>(function CreateCapabilityFlowProvider({ onCreatePermission }, ref) {
+  return (
+    <ReactFlowProvider>
+      <CreateCapabilityFlow ref={ref} onCreatePermission={onCreatePermission} />
+    </ReactFlowProvider>
+  );
+});
