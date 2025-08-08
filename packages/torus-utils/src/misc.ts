@@ -51,3 +51,44 @@ export function once() {
   };
 }
 
+/**
+ * Creates a memoized version of a function that caches its result after the first call.
+ *
+ * The wrapped function will only be executed once on its first invocation.
+ * All subsequent calls will return the cached result without re-executing the function.
+ *
+ * ### Example
+ *
+ * ```ts
+ * const getConfig = memo(() => {
+ *   console.log("Loading config...");
+ *   return { apiUrl: "https://api.example.com", timeout: 5000 };
+ * });
+ *
+ * const config1 = getConfig(); // Logs: "Loading config..."
+ * const config2 = getConfig(); // No log, returns cached result
+ * console.log(config1 === config2); // true (same object reference)
+ * ```
+ *
+ * ### Use Cases
+ *
+ * - Lazy initialization of expensive resources
+ * - Singleton pattern implementation
+ * - Caching configuration or environment parsing
+ * - Avoiding top-level stateful singletons
+ *
+ * @param fn - The function to memoize. Must not take any arguments.
+ * @returns A memoized version of the function that returns the cached result.
+ */
+export function memo<T>(fn: () => T): () => T {
+  let cached: T | undefined;
+  let hasRun = false;
+
+  return () => {
+    if (!hasRun) {
+      cached = fn();
+      hasRun = true;
+    }
+    return cached as T;
+  };
+}

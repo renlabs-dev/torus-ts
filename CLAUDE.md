@@ -178,11 +178,13 @@ The database uses Drizzle ORM with PostgreSQL and follows these conventions:
 ### Key Tables
 
 #### Core Agent System
+
 - `agent`: Registered network participants
 - `user_agent_weight`: User weight allocations  
 - `computed_agent_weight`: Aggregated agent weights
 
 #### Permission System (Updated Architecture - June 2025)
+
 - `permissions`: Core permission data with Substrate permission_id (H256 hash)
 - `permission_hierarchies`: Parent-child permission relationships without self-referential tables
 - `emission_permissions`: Emission-specific permission data (allocation types, distribution control)
@@ -197,6 +199,7 @@ The database uses Drizzle ORM with PostgreSQL and follows these conventions:
 - `accumulated_stream_amounts`: Runtime state for stream accumulation
 
 #### Governance System  
+
 - `proposal`: Network governance proposals
 - `whitelist_application`: Agent application requests
 - `cadre`: Governance participants
@@ -205,6 +208,7 @@ The database uses Drizzle ORM with PostgreSQL and follows these conventions:
 ### Permission System Architecture Notes
 
 **Key Design Decisions:**
+
 - **No Self-Referential Tables**: Parent-child relationships use separate `permission_hierarchies` table
 - **Substrate Integration**: All permissions have both internal UUID and Substrate H256 permission_id
 - **Foreign Key Strategy**: Related tables reference `permission_id` (66-char varchar) not internal UUIDs
@@ -222,12 +226,26 @@ The database uses Drizzle ORM with PostgreSQL and follows these conventions:
 
 ## Code Quality & Patterns
 
+### Avoid Top-Level Stateful Singletons
+
+- **Never** instantiate stateful singleton objects at the module top level
+- Use lazy initialization patterns instead
+- Examples of what to avoid:
+  - `const env = envSchema.parse(process.env)` at top level
+  - `const api = new ApiPromise()` at top level
+  - `let apiPromise: Promise<ApiPromise>` at top level
+  - `const db = drizzle(conn, { schema })` at top level
+- Instead use functions that lazily initialize on first call
+  - `const getEnv = () => envSchema.parse(process.env)` at top level
+
 ### Field Naming Convention
 
-When working with database fields:
+When working with database fields, follow these conventions:
+
 - **Schema properties**: Use camelCase (e.g., `grantorKey`, `permissionId`)
 - **Database columns**: Use snake_case (e.g., `"grantor_key"`, `"permission_id"`)
 - **SQL excluded references**: Use actual column names (e.g., `excluded.updated_at`)
+- **Drizzle schema**: Use camelCase for TypeScript properties, snake_case for database columns
 
 ### Common Patterns
 
@@ -263,6 +281,7 @@ The agent-fetcher worker synchronizes blockchain data to the database:
 - **Permissions**: Transforms Substrate PermissionContract data to relational schema
 
 **Permission Transformation Logic:**
+
 - Maps Substrate permission structures to normalized database tables
 - Handles emission permissions with streams and fixed amounts
 - Processes distribution types (manual, automatic, timed)
@@ -271,6 +290,7 @@ The agent-fetcher worker synchronizes blockchain data to the database:
 - Supports incremental updates with conflict resolution
 
 **Key Functions:**
+
 - `permissionContractToDatabase()`: Transforms Substrate data to database format
 - `upsertPermissions()`: Batch inserts/updates permissions with proper foreign key handling
 - `runPermissionsFetch()`: Main permission synchronization entry point

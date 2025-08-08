@@ -67,6 +67,16 @@ interface Waiter<T> {
  *    - Subsequent `throw()` calls still reject (stream is already finished).
  * - After finished, `push()` returns an Error via the Result type.
  *
+ * Single-Consumer Iterator: This class implements both `AsyncIterable` and
+ * `AsyncIterator`, with `[Symbol.asyncIterator]()` returning `this`. This
+ * means:
+ * - All iterations share the same internal state (values buffer and waiters
+ *   queue)
+ * - Multiple concurrent `for await...of` loops will interfere with each other
+ * - The sequence cannot be restarted once consumed
+ * - This is spec-compliant behavior (generator objects work the same way)
+ * - For multi-consumer or restartable iteration, wrap or buffer externally
+ *
  * @template T The type of items in the stream.
  */
 export class AsyncPushStream<T> implements AsyncIterable<T>, AsyncIterator<T> {
@@ -197,6 +207,14 @@ export class AsyncPushStream<T> implements AsyncIterable<T>, AsyncIterator<T> {
 
   // ---- AsyncIterable ----
 
+  /**
+   * Returns the iterator object (this instance itself).
+   *
+   * Note: This returns `this`, making AsyncPushStream a single-consumer
+   * iterator. Multiple iterations or concurrent loops will share the same state
+   * and interfere with each other. This is intentional and follows the same
+   * pattern as generator objects.
+   */
   [Symbol.asyncIterator](): AsyncIterator<T> {
     return this;
   }
