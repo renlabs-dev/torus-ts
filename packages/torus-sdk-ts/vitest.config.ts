@@ -29,7 +29,7 @@ export default defineConfig({
               // maxThreads: 1,
             },
           },
-          setupFiles: ["./chain.setup.ts"],
+          setupFiles: ["./src/testing/chain.setup.ts"],
         },
       },
     ],

@@ -262,6 +262,19 @@ permission.grantor_key // This won't work with new schema
 permission.grantorKey // This works with Drizzle schema
 ```
 
+### Rustie ADT Format
+
+When working with rustie Enum types, values are represented as:
+
+```ts
+{ VariantName: contents }
+```
+
+Use rustie utilities (`match`, `if_let` etc.) instead of switch statements or
+type casts.
+
+Reference: <https://github.com/steinerkelvin/rustie-ts>
+
 ### Substrate Integration
 
 - **Permission IDs**: Always use the Substrate H256 hash (66 chars) for external APIs
