@@ -10,7 +10,7 @@ import {
 } from "@rainbow-me/rainbowkit";
 import {
   argentWallet,
-  // coinbaseWallet,
+  coinbaseWallet,
   injectedWallet,
   ledgerWallet,
   metaMaskWallet,
@@ -49,7 +49,7 @@ export function initWagmi(multiProvider: MultiProtocolProvider) {
         {
           groupName: "More",
           wallets: [
-            // coinbaseWallet,
+            coinbaseWallet,
             rainbowWallet,
             trustWallet,
             argentWallet,
