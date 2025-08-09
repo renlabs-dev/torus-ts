@@ -31,12 +31,6 @@ export const envSchema = {
   NEXT_PUBLIC_WALLET_CONNECT_ID: z.string().default(""),
   NEXT_PUBLIC_TRANSFER_BLACKLIST: z.string().default(""),
   NEXT_PUBLIC_CHAIN_WALLET_WHITELISTS: z.string().default("[]"),
-  NEXT_PUBLIC_TORUS_EVM_NETWORK_DOCS_URL: z
-    .string()
-    .url()
-    .default(
-      "https://docs.torus.network/how-to-guides/holders/bridge-from-base/#bridge-torus-evm-to-torus",
-    ),
   // NEXT_PUBLIC_TORUS_RPC_HTTPS_URL: string().url(),
   NEXT_PUBLIC_NODE_ENV: NodeEnvSchema,
 };
