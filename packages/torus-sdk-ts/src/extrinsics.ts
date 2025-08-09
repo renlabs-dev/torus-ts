@@ -1,3 +1,7 @@
+/*
+  https://paritytech.github.io/polkadot-sdk/master/sc_transaction_pool_api/enum.TransactionStatus.html
+*/
+
 import type { ApiPromise, SubmittableResult } from "@polkadot/api";
 import type { SubmittableExtrinsic } from "@polkadot/api-base/types";
 import type {
@@ -5,10 +9,13 @@ import type {
   DispatchInfo,
   EventRecord,
 } from "@polkadot/types/interfaces";
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+import { ExtrinsicStatus } from "@polkadot/types/interfaces";
 import Emittery from "emittery";
 import type { Enum } from "rustie";
 import { match } from "rustie";
-import type { z } from "zod";
+import { assert } from "tsafe";
+import { z } from "zod";
 
 import type { HexH256 } from "@torus-network/sdk/types";
 import {
@@ -21,14 +28,22 @@ import {
   sb_option,
   sb_string,
   sb_struct,
+  sb_struct_obj,
 } from "@torus-network/sdk/types";
 import { AsyncPushStream, defer } from "@torus-network/torus-utils/async";
+import { chainErr, ParseError } from "@torus-network/torus-utils/error";
+import { zodParseResult } from "@torus-network/torus-utils/typing";
 
-// ==== Transaction / Extrinsic Status ====
+export * from "./extrinsics-helpers.js";
+
+// ==== Raw Extrinsic State ====
+
+// ---- Extrinsic Status ----
 
 /**
- * Parser for Substrate enum ExtrinsicStatus, which represents the lifecycle of
- * a transaction (extrinsic) that was submitted to a Substrate network.
+ * Parser for Substrate enum {@link ExtrinsicStatus}, which represents the
+ * lifecycle of a transaction (extrinsic) that was submitted to a Substrate
+ * network.
  *
  * Transitions:
  *
@@ -44,20 +59,81 @@ import { AsyncPushStream, defer } from "@torus-network/torus-utils/async";
  * `*` = terminal states
  */
 export const sb_extrinsic_status = sb_enum({
-  /**  */
-  Future: sb_null,
-  Ready: sb_null,
-  Broadcast: sb_array(sb_string),
-  InBlock: sb_h256,
-  Retracted: sb_h256,
-  FinalityTimeout: sb_null,
-  Finalized: sb_h256,
-  Usurped: sb_h256,
-  Dropped: sb_null,
+  /**
+   * Transaction was deemed invalid on import; never entered the transaction
+   * pool. Terminal state.
+   */
   Invalid: sb_null,
+
+  /**
+   * Transaction is in the future queue (e.g., nonce/era not yet valid).
+   * Awaiting readiness.
+   */
+  Future: sb_null,
+
+  /**
+   * Transaction is ready in the pool and eligible for propagation/inclusion.
+   */
+  Ready: sb_null,
+
+  /**
+   * Transaction was broadcast to peers; array contains peer identifiers.
+   */
+  Broadcast: sb_array(sb_string),
+
+  /**
+   * Transaction in the pool was replaced by another with the same (sender,
+   * nonce) but higher priority. Terminal state.
+   */
+  Usurped: sb_h256,
+
+  /**
+   * Transaction was removed from the pool before inclusion (e.g., low priority,
+   * max pool size). Terminal state. Can be (potentially) re-submitted.
+   */
+  Dropped: sb_null,
+
+  /**
+   * Transaction has been included in a block; value is the block hash.
+   */
+  InBlock: sb_h256,
+
+  /**
+   * Inclusion block was removed from the best chain due to a re-org;
+   * transaction may be re-included later.
+   */
+  Retracted: sb_h256,
+
+  /**
+   * Transaction’s block has been finalized by consensus; value is the block
+   * hash. Terminal state.
+   */
+  Finalized: sb_h256,
+
+  /**
+   * Node gave up waiting for finality within its configured window; block may
+   * still finalize later if re-subscribed. Terminal for this subscription.
+   * Can be (potentially) re-submitted.
+   */
+  FinalityTimeout: sb_h256,
 });
 
 export type SbExtrinsicStatus = z.infer<typeof sb_extrinsic_status>;
+
+export const isSubscriptionTerminal = (status: SbExtrinsicStatus): boolean => {
+  return match(status)<boolean>({
+    Invalid: () => true,
+    Future: () => true,
+    Ready: () => true,
+    Broadcast: () => true,
+    Usurped: () => true,
+    Dropped: () => true,
+    InBlock: () => false,
+    Retracted: () => false,
+    Finalized: () => false,
+    FinalityTimeout: () => true,
+  });
+};
 
 // ---- Dispatch Error ----
 
@@ -172,6 +248,31 @@ export const sb_dispatch_info = sb_struct({
 
 export type SbDispatchInfo = z.infer<typeof sb_dispatch_info>;
 
+// ---- Event ----
+
+/**
+ * Parser for Substrate Event (IEvent), which contains the actual event data.
+ *
+ * See {@link GenericEvent}, {@link IEvent}.
+ */
+export const sb_event = sb_struct_obj(
+  {
+    // Map properties
+    /** Event index/id. */
+    index: z.any().optional(),
+    // data: sb_array(z.any()),
+  },
+  {
+    // Direct object properties
+    /** The module (pallet) that emitted the event. */
+    section: z.string(),
+    /** The event method/name. */
+    method: z.string(),
+  },
+);
+
+export type SbEvent = z.infer<typeof sb_event>;
+
 // ---- Event Record ----
 
 /**
@@ -188,22 +289,8 @@ export const sb_event_record = sb_struct({
     /** Initialization phase. */
     Initialization: sb_null,
   }),
-  /** The event data - we keep this raw for flexibility. */
-  event: sb_struct({
-    /** The module (pallet) that emitted the event. */
-    section: sb_string,
-    /** The event method/name. */
-    method: sb_string,
-    /** The event data (kept as raw for flexibility). */
-    data: sb_array(sb_string),
-    /** Optional metadata. */
-    meta: sb_option(
-      sb_struct({
-        /** Event documentation. */
-        docs: sb_array(sb_string),
-      })
-    ),
-  }),
+  /** The event itself. */
+  event: sb_event,
   /** List of topics for indexed event attributes. */
   topics: sb_array(sb_h256),
 });
@@ -216,26 +303,242 @@ export type SbEventRecord = z.infer<typeof sb_event_record>;
  * Parser for {@link SubmittableResult}, which contains the complete result of
  * a submitted extrinsic including status, events, and any errors.
  */
-export const sb_submittable_result = sb_struct({
+export const sb_submittable_result = z.object({
+  /** Optional dispatch error if the extrinsic failed. */
+  dispatchError: sb_dispatch_error.optional(),
+  /** Optional dispatch info containing weight and fee information. */
+  dispatchInfo: sb_dispatch_info.optional(),
+  /** Optional internal error from submission/RPC pipeline. */
+  internalError: z.instanceof(Error).optional(),
+  /** Array of events that occurred during extrinsic execution. */
+  events: z.array(sb_event_record).default([]),
   /** The status of the extrinsic. */
   status: sb_extrinsic_status,
-  /** Array of events that occurred during extrinsic execution. */
-  events: sb_array(sb_event_record),
-  /** Optional dispatch error if the extrinsic failed. */
-  dispatchError: sb_option(sb_dispatch_error),
-  /** Optional dispatch info containing weight and fee information. */
-  dispatchInfo: sb_option(sb_dispatch_info),
   /** The transaction hash. */
   txHash: sb_h256,
-  /** Optional block hash if the transaction is included in a block. */
-  blockHash: sb_option(sb_h256),
-  /** Optional block number if the transaction is included in a block. */
-  blockNumber: sb_option(sb_number),
   /** Optional transaction index within the block. */
-  txIndex: sb_option(sb_number),
+  txIndex: z.number().optional(),
+  /** Optional block number if the transaction is included in a block. */
+  blockNumber: sb_number.optional(),
 });
 
 export type SbSubmittableResult = z.infer<typeof sb_submittable_result>;
+
+// ==== Sanitized Extrinsic State ====
+
+// ---- Runtime outcome once included ----
+
+export type RuntimeOutcome = Enum<{
+  Success: { info: SbDispatchInfo };
+  Failed: { error: SbDispatchError; info: SbDispatchInfo };
+}>;
+
+// ---- High-level ADT over SubmittableResult ----
+
+export type TxUpdate = Enum<{
+  /** Submission/watch/signing/RPC pipeline failure (non-runtime). */
+  InternalError: {
+    txHash: HexH256;
+    error: Error;
+  };
+
+  /** Pool rejection: tx deemed invalid on import; never entered the pool. */
+  Invalid: {
+    txHash: HexH256;
+    reason?: Error; // optional diagnostic/context
+  };
+
+  /** Still in the tx pool (pre-inclusion). */
+  Pool: {
+    kind: "Future" | "Ready" | "Broadcast";
+    txHash: HexH256;
+  };
+
+  /** Pool eviction: tx was in the pool, then removed before execution. */
+  Evicted: {
+    kind: "Dropped" | "Usurped";
+    txHash: HexH256;
+    reason?: Error; // optional diagnostic/context
+  };
+
+  /** Included in a block; `finalized` marks consensus finality. */
+  Included: {
+    kind: "InBlock" | "Finalized";
+    txHash: HexH256;
+    blockHash: HexH256;
+    blockNumber: number;
+    txIndex: number;
+    events: SbEventRecord[];
+    outcome: RuntimeOutcome;
+    /**
+     * - false = InBlock
+     * - true = Finalized
+     *
+     * TODO: maybe join this filed in a "finalization" concept with all states
+     * (finalized = true | finalized = false | finalityTimeout) instead of
+     * having separate `FinalityTimeout` variant on top-level
+     */
+    finalized: boolean;
+  };
+
+  /** Non-fatal warning states (keep listening). */
+  Warning: {
+    txHash: HexH256;
+    kind: "Retracted";
+  };
+
+  // Terminal for this subscription (watch timed out before finality)
+  FinalityTimeout: {
+    kind: "FinalityTimeout";
+    txHash: HexH256;
+    // Last known included context (so you can persist/report something useful)
+    blockHash: HexH256;
+    blockNumber: number;
+    txIndex: number;
+    events: SbEventRecord[];
+    outcome: RuntimeOutcome; // success/failed at inclusion time
+    finalized: false;
+  };
+}>;
+
+/**
+ * Transforms a parsed SbSubmittableResult into a high-level TxUpdate
+ * representation.
+ *
+ * @param result - The parsed SbSubmittableResult
+ */
+export function parseSubmittableResult(rawResult: SubmittableResult): {
+  txUpdate: TxUpdate;
+  result: SbSubmittableResult;
+} {
+  const [parseErr, result] = zodParseResult(sb_submittable_result)(rawResult);
+  if (parseErr !== undefined)
+    // This should never happen, so we throw instead of returning Result
+    throw chainErr("Error parsing SubmittableResult", ParseError)(parseErr);
+
+  const { status, internalError, events, txHash, dispatchError, dispatchInfo } =
+    result;
+
+  // Handle internal errors first (submission/RPC failures)
+  if (internalError) {
+    const txUpdate = {
+      InternalError: {
+        txHash,
+        error: internalError,
+      },
+    };
+    return { txUpdate, result };
+  }
+
+  const handlePool = (kind: "Future" | "Ready" | "Broadcast") => () => {
+    return {
+      Pool: {
+        txHash,
+        kind,
+      },
+    };
+  };
+
+  const handleIncludedAndTimeout =
+    <K extends "InBlock" | "Finalized" | "FinalityTimeout">(kind: K) =>
+    (blockHash: HexH256) => {
+      const finalized = kind === "Finalized";
+
+      assert(dispatchInfo != null, "Dispatch info should be present");
+      const outcome = dispatchError
+        ? { Failed: { error: dispatchError, info: dispatchInfo } }
+        : { Success: { info: dispatchInfo } };
+
+      const blockNumber = result.blockNumber;
+      const txIndex = result.txIndex;
+
+      // blockHash is passed from the status
+      assert(blockNumber != null, "Block number should be present");
+      assert(txIndex != null, "Tx index should be present");
+
+      return {
+        kind,
+        txHash,
+        blockHash,
+        blockNumber,
+        txIndex,
+        events,
+        outcome,
+        finalized,
+      };
+    };
+
+  const handleIncluded =
+    <K extends "InBlock" | "Finalized">(kind: K) =>
+    (blockHash: HexH256) => {
+      const common = handleIncludedAndTimeout(kind)(blockHash);
+      return {
+        Included: {
+          ...common,
+          kind,
+        },
+      };
+    };
+  const handleFinalityTimeout = (blockHash: HexH256) => {
+    const common = handleIncludedAndTimeout("FinalityTimeout")(blockHash);
+    return {
+      FinalityTimeout: {
+        ...common,
+        kind: "FinalityTimeout",
+        finalized: false,
+      } as const,
+    };
+  };
+
+  // Use rustie's match to handle the status enum
+  const txUpdate = match(status)<TxUpdate>({
+    Invalid: () => ({
+      Invalid: {
+        txHash,
+        reason: new Error("Transaction deemed invalid by the pool"),
+      },
+    }),
+
+    Future: handlePool("Future"),
+    Ready: handlePool("Ready"),
+    Broadcast: (_peers) => ({
+      Pool: {
+        txHash,
+        kind: "Broadcast",
+      },
+    }),
+
+    InBlock: handleIncluded("InBlock"),
+    Finalized: handleIncluded("Finalized"),
+
+    Retracted: (_hash) => ({
+      Warning: {
+        txHash,
+        kind: "Retracted",
+      },
+    }),
+
+    Dropped: () => ({
+      Evicted: {
+        txHash,
+        kind: "Dropped",
+      },
+    }),
+    Usurped: (_hash) => ({
+      Evicted: {
+        txHash,
+        kind: "Usurped",
+      },
+    }),
+
+    FinalityTimeout: handleFinalityTimeout,
+  });
+
+  return {
+    txUpdate,
+    result,
+  };
+}
 
 // ==== Extrinsic Tracker ====
 
@@ -295,6 +598,7 @@ export interface ExtrinsicTracker
   submitted: Promise<string>;
   inBlock: Promise<string>;
   finalized: Promise<string>;
+  finalityTimeout: Promise<string>;
 
   cancel(): void;
 }
@@ -302,7 +606,7 @@ export interface ExtrinsicTracker
 export function submitWithTracker(
   _api: ApiPromise,
   extrinsic: SubmittableExtrinsic<"promise">,
-  signer: Parameters<SubmittableExtrinsic<"promise">["signAndSend"]>[0]
+  signer: Parameters<SubmittableExtrinsic<"promise">["signAndSend"]>[0],
 ): ExtrinsicTracker {
   const emitter = new Emittery<ExtrinsicTrackerEvents>();
 
@@ -311,23 +615,23 @@ export function submitWithTracker(
   const submitted = defer<string>();
   const inBlock = defer<string>();
   const finalized = defer<string>();
-  const failed = defer<never>();
+  const finalityTimeout = defer<string>();
+  const _failed = defer<never>();
 
   let unsubscribe: (() => void) | undefined;
 
   // -- Async iterator using AsyncPushStream --
   const stream = new AsyncPushStream<ExtUpdate>();
 
-  const updateHandler = (result: SubmittableResult) => {
-    const { status, events, dispatchError, internalError, txHash, txIndex } =
-      result;
-
-    const extStatus = sb_extrinsic_status.parse(status);
+  const updateHandler = (rawResult: SubmittableResult) => {
+    // Transform to high-level TxUpdate
+    const { txUpdate, result } = parseSubmittableResult(rawResult);
+    const { internalError } = result;
 
     const baseUpdate: ExtUpdateBase = {
-      _extResultRaw: result,
-      status: extStatus,
-      txHash: result.txHash.toHex(),
+      _extResultRaw: rawResult,
+      status: result.status,
+      txHash: rawResult.txHash.toHex(),
     };
 
     const makeUpdate = <U>(update: U) => ({
@@ -346,18 +650,14 @@ export function submitWithTracker(
       unsubscribe?.();
     }
 
-    match(extStatus)<unknown>({
-      Invalid: () => {},
-      Future: () => {},
-      Ready: () => {},
-      Broadcast: () => {},
-      InBlock: () => {},
-      Finalized: () => {},
-      Dropped: () => {},
-      Usurped: () => {},
-      FinalityTimeout: () => {},
-      Retracted: () => {},
-    });
+    console.log("txUpdate:", txUpdate);
+
+    // match(txUpdate)<unknown>({
+    //   Invalid: ({ error }) => {
+    //     console.log("Invalid:", error);
+    //   },
+    //   // TODO: finish transaction handler
+    // });
 
     stream.push(baseUpdate);
   };
@@ -380,6 +680,7 @@ export function submitWithTracker(
     submitted: submitted.promise,
     inBlock: inBlock.promise,
     finalized: finalized.promise,
+    finalityTimeout: finalityTimeout.promise,
 
     cancel() {
       unsubscribe?.();
@@ -392,105 +693,4 @@ export function submitWithTracker(
   };
 
   return tracker;
-}
-
-// ==== UI helpers (we will ignore these for now) ====
-
-// ---- Transaction / Extrinsic Status ----
-
-/**
- * Represents a transaction being submitted to a Substrate network.
- */
-export type TxStage = Enum<{
-  Empty: null;
-  Signing: null;
-  Submitted: { result: SubmittableResult; extStatus: SbExtrinsicStatus }; // same parser you wrote
-  Error: { error: Error };
-}>;
-
-/**
- * Extrinsic status helper.
- */
-export interface TxHelper {
-  /** FILL */
-  isSigning: boolean;
-  /** */
-  isSubmitted: boolean;
-  isPending: boolean;
-  isSuccess: boolean;
-  isFinalized: boolean;
-  isError: boolean;
-  isReverted: boolean;
-
-  message: string;
-  error?: Error;
-}
-
-export function txStatusToTxHelper(txStatus: TxStage): TxHelper {
-  const setOnHelper = <T extends Partial<TxHelper>>(
-    opts: T
-  ): Omit<TxHelper, "message"> & T => ({
-    isSigning: false,
-    isSubmitted: false,
-    isPending: false,
-    isSuccess: false,
-    isFinalized: false,
-    isError: false,
-    isReverted: false,
-    ...opts,
-  });
-  return match(txStatus)<TxHelper>({
-    Empty: () => setOnHelper({ message: "Transaction not started" }),
-    Signing: () =>
-      setOnHelper({ isSigning: true, message: "Signing transaction" }),
-    Submitted: ({ extStatus }) => {
-      const isSubmitted = true;
-      const rest = match(extStatus)<
-        Partial<TxHelper> & Pick<TxHelper, "message">
-      >({
-        Invalid: () => ({ isError: true, message: "Transaction invalid" }),
-        Future: () => ({
-          isPending: true,
-          message: "Transaction has dependencies",
-        }),
-        Ready: () => ({
-          isPending: true,
-          message: "Transaction ready and included in pool",
-        }),
-        Broadcast: () => ({
-          isPending: true,
-          message: "Transaction broadcasted to network nodes",
-        }),
-        InBlock: () => ({
-          isSuccess: true,
-          message: "Transaction was included in block",
-        }),
-        Finalized: () => ({
-          isSuccess: true,
-          isFinalized: true,
-          message: "Transaction was finalized",
-        }),
-
-        // From Ready
-        Dropped: () => ({ isError: true, message: "Transaction dropped" }),
-        Usurped: () => ({ isError: true, message: "Transaction replaced" }),
-
-        // From InBlock
-        FinalityTimeout: () => ({
-          isError: true,
-          isReverted: true,
-          message: "Transaction finalization timed out",
-        }),
-        Retracted: () => ({
-          isError: true,
-          isReverted: true,
-          message: "Transaction retracted",
-        }),
-      });
-
-      return setOnHelper({ isSubmitted, ...rest });
-    },
-    Error: ({ error }) =>
-      setOnHelper({ isError: true, error, message: error.message }),
-  });
 }

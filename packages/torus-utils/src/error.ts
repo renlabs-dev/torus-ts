@@ -1,6 +1,8 @@
 import type { Extends } from "tsafe";
 import { assert } from "tsafe";
 
+// ==== Utilities ====
+
 type ErrorCtr = new (message: string, options?: ErrorOptions) => Error;
 
 /**
@@ -161,7 +163,16 @@ export const chainErr =
   (err: Error) =>
     new errCtr(`${msg}: ${err.message}`, { cause: err });
 
-// ==== MultiError ====
+// ==== Errors ====
+
+// ---- ParseError ----
+
+/**
+ * Error thrown when parsing operations fail.
+ */
+export class ParseError extends Error {}
+
+// ---- MultiError ----
 
 /**
  * Type representing an error that combines both Error and Array<Error> interfaces.

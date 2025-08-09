@@ -1,5 +1,3 @@
-// TODO: split `zod.ts` into multiple files
-
 import {
   bool,
   BTreeSet,
@@ -13,6 +11,9 @@ import {
 } from "@polkadot/types";
 import type { AnyJson, Codec } from "@polkadot/types/types";
 import { match } from "rustie";
+import type { Equals } from "tsafe";
+import { assert } from "tsafe";
+import type { Merge } from "type-fest";
 import type { ZodRawShape, ZodType, ZodTypeAny, ZodTypeDef } from "zod";
 import { z } from "zod";
 
@@ -102,10 +103,117 @@ export const Struct_schema = z.custom<Struct>(
   "not a substrate Struct",
 );
 
+/**
+ * Parser for standard Substrate Structs that behave like Maps.
+ *
+ * Use this for Substrate Structs where all properties are accessed via the
+ * `.get(key)` / `.entries()` methods.
+ *
+ * @param shape - Zod schema shape defining the expected properties and their types
+ * @param params - Optional Zod creation parameters (error messages, etc.)
+ *
+ * @example
+ * ```ts
+ * const parser = sb_struct({
+ *   index: sb_number,
+ *   name: sb_string,
+ * });
+ *
+ * // Parses a Substrate Struct where:
+ * // - struct.get('index') returns a number-like Codec
+ * // - struct.get('name') returns a Text/Bytes Codec
+ * ```
+ */
 export const sb_struct = <T extends ZodRawShape>(
   shape: T,
   params?: ZodRawCreateParams,
 ) => Struct_schema.pipe(z_map(shape, params));
+
+/**
+ * Parser for hybrid Substrate Structs that have both Map-like and object-like
+ * properties.
+ *
+ * Use this for Substrate Structs that extend Map but also have additional
+ * direct properties. Some properties are accessed via `.get(key)` /
+ * `.entries()` (Map behavior) while others are accessed directly as
+ * `struct.property` (object behavior).
+ *
+ * @param mapShape - Schema for properties accessed like Map keys
+ * @param objShape - Schema for properties accessed directly as object properties
+ * @param params - Optional Zod creation parameters (error messages, etc.)
+ *
+ * @example
+ * ```ts
+ * // For a Substrate Event which has:
+ * // - Map properties: index, data (accessed via event.get('index'))
+ * // - Direct properties: section, method (accessed via event.section)
+ * const eventParser = sb_struct_obj(
+ *   {
+ *     // Map properties - accessed via .get()
+ *     index: z.any().optional(),
+ *     data: sb_array(z.any()),
+ *   },
+ *   {
+ *     // Direct object properties
+ *     section: z.string(),
+ *     method: z.string(),
+ *   }
+ * );
+ * ```
+ *
+ * @remarks
+ * This handles the hybrid nature of certain Substrate types like Event, which
+ * extend Map for some properties but expose others as direct properties. The
+ * parser extracts values from both access patterns and validates them according
+ * to the provided schemas.
+ */
+export const sb_struct_obj = <MS extends ZodRawShape, OS extends ZodRawShape>(
+  mapShape: MS,
+  objShape: OS,
+  params?: ZodRawCreateParams,
+) =>
+  Struct_schema.transform((inputValue, ctx) => {
+    const obj: Record<string, unknown> = {};
+
+    // Handle Struct as Map
+    for (const key of Object.keys(mapShape)) {
+      const value = inputValue.get(key);
+      if (value === undefined) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: `Missing key ${key} in Struct (as Map)`,
+        });
+        return z.NEVER;
+      }
+      obj[key] = value;
+    }
+
+    const objKeys = Object.keys(objShape);
+    for (const key of objKeys) {
+      const inputObj = inputValue as unknown as Record<string, unknown>;
+      const val = inputObj[key];
+      if (val === undefined) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: `Missing key ${key} in Struct`,
+        });
+        return z.NEVER;
+      }
+      obj[key] = val;
+    }
+
+    return obj;
+  }).pipe(z.object<Merge<MS, OS>>({ ...mapShape, ...objShape }, params));
+
+function _test_sb_struct() {
+  const _s1 = sb_struct({ a: sb_number, b: sb_string });
+  type S1 = z.infer<typeof _s1>;
+  assert<Equals<S1, { a: number; b: string }>>();
+
+  const _s2 = sb_struct_obj({ a: sb_number }, { d: sb_string });
+  type S2 = z.infer<typeof _s2>;
+  assert<Equals<S2, { a: number; d: string }>>();
+}
 
 // == Null ==
 

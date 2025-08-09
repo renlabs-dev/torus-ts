@@ -3,10 +3,12 @@ import "@polkadot/api/augment";
 
 import { ApiPromise, WsProvider } from "@polkadot/api";
 import { Keyring } from "@polkadot/keyring";
+import { match } from "rustie";
 
 import { BasicLogger } from "@torus-network/torus-utils/logger";
 
 import {
+  parseSubmittableResult,
   sb_dispatch_error,
   sb_dispatch_info,
   sb_event_record,
@@ -33,117 +35,149 @@ const api = await connectToChainRpc(NODE_URL);
 
 // =============================================================================
 
-// Create a test account (Alice for development)
+// Create test accounts
 const keyring = new Keyring({ type: "sr25519" });
 const alice = keyring.addFromUri("//Alice");
+const bob = keyring.addFromUri("//Bob");
 
-// Try to trigger a dispatch error - let's try calling a restricted function
-// or create a transaction that will fail during execution
-console.log("Creating a transaction that should fail...");
+// Helper function to test a transaction
+async function testTransaction(
+  name: string,
+  tx: any,
+  signer: any,
+  options = {},
+): Promise<void> {
+  console.log("\n" + "=".repeat(70));
+  console.log(`🧪 Test Case: ${name}`);
+  console.log("=".repeat(70));
 
-// Try to set a storage item that requires root origin (should fail)
-const failingTx = api.tx.system.setStorage([
-  ["0x1234", "0x5678"], // Random storage key/value that we don't have permission to set
-]);
+  return new Promise((resolve) => {
+    const timeout = setTimeout(() => {
+      console.log("\n⏱️ Test timed out after 10 seconds");
+      resolve();
+    }, 10000);
 
-console.log("Submitting transaction that should fail with BadOrigin...");
+    tx.signAndSend(signer, options, (rawResult: any) => {
+      console.log("\n📡 Status:", rawResult.status.toString());
 
-const unsubscribe = await failingTx.signAndSend(alice, (result) => {
-  console.log("\n=== Raw SubmittableResult ===");
-  console.log("Status:", result.status.toString());
-  console.log("Status type:", result.status.type);
+      // Test our new transformation functions
+      try {
+        // Step 1: Parse the raw result to SbSubmittableResult
+        const { result, txUpdate } = parseSubmittableResult(rawResult);
 
-  // Parse individual components with our parsers
-  try {
-    // Parse the status
-    const parsedStatus = sb_extrinsic_status.parse(result.status);
-    console.log("\n=== Parsed Status ===");
-    console.log("Parsed status:", parsedStatus);
+        console.log("\n📦 Parsed SubmittableResult:");
+        console.log("- txHash:", result.txHash);
+        console.log("- status type:", Object.keys(result.status)[0]);
+        console.log("- has dispatchError:", result.dispatchError !== undefined);
+        console.log("- has dispatchInfo:", result.dispatchInfo !== undefined);
+        console.log("- events count:", result.events.length);
 
-    // Parse events if available
-    if (result.events && result.events.length > 0) {
-      console.log("\n=== Raw Events ===");
-      result.events.forEach((event, index) => {
-        console.log(`Event ${index}:`, {
-          phase: event.phase.toString(),
-          section: event.event.section,
-          method: event.event.method,
-          data: event.event.data.toString(),
+        // Step 2: Transform to high-level TxUpdate
+        console.log("\n🔄 Transformed to TxUpdate:");
+        const updateType = Object.keys(txUpdate)[0];
+        console.log("- Update type:", updateType);
+
+        // Use rustie's match to handle the TxUpdate
+        match(txUpdate)({
+          Pool: ({ txHash, kind }) => {
+            console.log(`  → Transaction in pool (${kind})`);
+            console.log(`    Hash: ${txHash}`);
+          },
+          Included: ({ txHash, blockHash, outcome, finalized, events }) => {
+            console.log(
+              `  → Transaction included in block (finalized: ${finalized})`,
+            );
+            console.log(`    Tx Hash: ${txHash}`);
+            console.log(`    Block Hash: ${blockHash}`);
+            console.log(`    Events: ${events.length}`);
+
+            // Check the outcome
+            match(outcome)({
+              Success: ({ info }) => {
+                console.log("    ✅ Success!");
+                console.log(`    Weight: ${info.weight.refTime}`);
+                console.log(`    Pays fee: ${Object.keys(info.paysFee)[0]}`);
+              },
+              Failed: ({ error }) => {
+                console.log("    ❌ Failed!");
+                console.log(`    Error type: ${Object.keys(error)[0]}`);
+                if ("BadOrigin" in error) {
+                  console.log(
+                    "    Error: BadOrigin - insufficient permissions",
+                  );
+                }
+              },
+            });
+          },
+          Warning: ({ txHash, kind }) => {
+            console.log(`  → Warning: ${kind}`);
+            console.log(`    Hash: ${txHash}`);
+          },
+          Evicted: ({ txHash, kind, reason }) => {
+            console.log(`  → Transaction evicted (${kind})`);
+            console.log(`    Hash: ${txHash}`);
+            if (reason) console.log(`    Reason: ${reason.message}`);
+          },
+          Invalid: ({ txHash, reason }) => {
+            console.log(`  → Transaction invalid`);
+            console.log(`    Hash: ${txHash}`);
+            if (reason) console.log(`    Reason: ${reason.message}`);
+          },
+          InternalError: ({ txHash, error }) => {
+            console.log(`  → Internal error`);
+            console.log(`    Hash: ${txHash}`);
+            console.log(`    Error: ${error.message}`);
+          },
+          FinalityTimeout: ({ txHash }) => {
+            console.log(`  → Finality timeout`);
+            console.log(`    Hash: ${txHash}`);
+          },
         });
-      });
-
-      // Try parsing with our parser
-      console.log("\n=== Parsing Events ===");
-      const parsedEvents = result.events.map((event, index) => {
-        try {
-          const parsed = sb_event_record.parse(event);
-          console.log(`Event ${index} parsed successfully`);
-          return parsed;
-        } catch (e) {
-          console.log(`Event ${index} parse failed - using raw data`);
-          // Return raw event data instead
-          return {
-            phase: event.phase.toString(),
-            event: {
-              section: event.event.section,
-              method: event.event.method,
-              data: event.event.data.map((d) => d.toString()),
-            },
-            topics: event.topics.map((t) => t.toHex()),
-          };
-        }
-      });
-      console.log(`Processed ${parsedEvents.length} events`);
-    }
-
-    // Parse dispatch info if available
-    if (result.dispatchInfo) {
-      try {
-        const parsedInfo = sb_dispatch_info.parse(result.dispatchInfo);
-        console.log("\n=== Parsed Dispatch Info ===");
-        console.log("Dispatch info:", parsedInfo);
-      } catch (e) {
-        console.error("Failed to parse dispatch info:", e);
+      } catch (error) {
+        console.error("Failed to test new transformation functions:", error);
       }
-    }
 
-    // Parse dispatch error if available
-    if (result.dispatchError) {
-      try {
-        const parsedError = sb_dispatch_error.parse(result.dispatchError);
-        console.log("\n=== Parsed Dispatch Error ===");
-        console.log("Dispatch error:", parsedError);
-      } catch (e) {
-        console.error("Failed to parse dispatch error:", e);
+      // Check if transaction is finalized or failed
+      if (
+        rawResult.status.isFinalized ||
+        rawResult.status.isInvalid ||
+        rawResult.status.isDropped
+      ) {
+        console.log("\n🏁 Terminal state reached");
+        clearTimeout(timeout);
+        resolve();
       }
-    }
-  } catch (error) {
-    console.error("Failed to parse components:", error);
-  }
+    });
+  });
+}
 
-  // Check if transaction is finalized or failed
-  if (result.status.isFinalized) {
-    console.log("\n✅ Transaction finalized!");
-    console.log("Block hash:", result.status.asFinalized.toHex());
-    unsubscribe();
-  }
+// ========================================================================
+// Run all test cases sequentially
+// ========================================================================
 
-  if (result.status.isInvalid || result.status.isDropped) {
-    console.log("\n❌ Transaction failed!");
-    unsubscribe();
-  }
+// Test 1: Success case - simple remark
+const successTx = api.tx.system.remark("Test success");
+await testTransaction("SUCCESS - System Remark", successTx, alice);
 
-  // Check for dispatch error
-  if (result.dispatchError) {
-    console.log("\n❌ Transaction resulted in dispatch error!");
-  }
+// Test 2: Failure case - transfer more than available balance
+const failTx = api.tx.balances.transferKeepAlive(
+  bob.address,
+  BigInt("999999999999999999999999"),
+);
+await testTransaction("FAILURE - Insufficient Balance", failTx, alice);
+
+// Test 3: Invalid case - bad nonce
+const invalidTx = api.tx.system.remark("Test invalid");
+await testTransaction("INVALID - Bad Nonce", invalidTx, alice, {
+  nonce: 999999,
 });
 
-// Wait a bit for the transaction to process
-await new Promise((resolve) => setTimeout(resolve, 10000));
+// ========================================================================
 
-// =============================================================================
+console.log("\n" + "=".repeat(70));
+console.log("✅ All tests completed!");
+console.log("=".repeat(70));
 
-// Disconnect when done
+// Disconnect
 await api.disconnect();
-console.log("API disconnected");
+console.log("\n🔌 API disconnected");
