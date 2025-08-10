@@ -1,4 +1,4 @@
-import { AlertCircle, Plus, Trash2 } from "lucide-react";
+import { Plus, Trash2 } from "lucide-react";
 import type { Control } from "react-hook-form";
 import { useFieldArray, useWatch } from "react-hook-form";
 
@@ -11,6 +11,8 @@ import {
 } from "@torus-ts/ui/components/form";
 import { Input } from "@torus-ts/ui/components/input";
 import { cn } from "@torus-ts/ui/lib/utils";
+
+import { FormAddressField } from "~/app/_components/address-field";
 
 import type { EditPermissionFormData } from "../edit-permission-schema";
 
@@ -73,28 +75,19 @@ export function TargetsField({ control }: TargetsFieldProps) {
       </div>
 
       {targetFields.map((field, index) => (
-        <div key={field.id} className="flex gap-2">
+        <div key={field.id} className="flex gap-2 items-end">
           <FormField
             control={control}
             name={`newTargets.${index}.address`}
             render={({ field }) => {
               const isDuplicate = duplicateAddresses.has(field.value);
               return (
-                <FormItem className="flex-1">
-                  <FormControl>
-                    <div className="relative">
-                      <Input
-                        {...field}
-                        placeholder="Agent address"
-                        className={cn(isDuplicate && "border-destructive")}
-                      />
-                      {isDuplicate && (
-                        <AlertCircle className="absolute right-2 top-1/2 -translate-y-1/2 h-4 w-4 text-destructive" />
-                      )}
-                    </div>
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
+                <div className="flex-1">
+                  <FormAddressField
+                    field={field}
+                    className={cn(isDuplicate && "border-destructive")}
+                  />
+                </div>
               );
             }}
           />
@@ -110,6 +103,7 @@ export function TargetsField({ control }: TargetsFieldProps) {
                     placeholder="%"
                     min="0"
                     max="100"
+                    className="h-[2.7rem]"
                     value={field.value || ""}
                     onChange={(e) => {
                       const value = parseInt(e.target.value);
@@ -127,6 +121,7 @@ export function TargetsField({ control }: TargetsFieldProps) {
             type="button"
             variant="outline"
             size="icon"
+            className="h-[2.7rem] w-[2.7rem]"
             onClick={() => removeTarget(index)}
           >
             <Trash2 className="h-4 w-4" />

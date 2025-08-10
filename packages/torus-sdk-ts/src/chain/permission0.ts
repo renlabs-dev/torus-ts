@@ -288,9 +288,6 @@ export async function queryPermissionsByRecipient(
   api: Api,
   recipient: SS58Address,
 ): Promise<Result<PermissionId[], SbQueryError | ZError<unknown>>> {
-  if (!api.query.permission0.permissionsByGrantee) {
-    return makeErr(new Error("permissionsByGrantee query not available"));
-  }
   const [queryError, query] = await tryAsync(
     api.query.permission0.permissionsByRecipient(recipient),
   );

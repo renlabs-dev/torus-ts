@@ -46,6 +46,7 @@ import {
 
 // Import the expected interface from the form
 import type { PermissionWithDetails } from "../(pages)/permissions/manage-permission/_components/revoke-permission-button";
+import { AddressWithAgent } from "./address-with-agent";
 
 interface PermissionWithNetworkData {
   permissionId: string;
@@ -442,19 +443,50 @@ export function PermissionSelector(props: PermissionSelectorProps) {
     const detailRows = [
       {
         label: "Permission ID",
-        value: smallAddress(selectedPermissionData.permissionId),
-      },
-      {
-        label: "Type",
-        value: permissionType,
+        component: (
+          <div className="flex items-center gap-2">
+            <CopyButton
+              copy={selectedPermissionData.permissionId}
+              variant="ghost"
+              message="Permission ID copied to clipboard"
+              className="h-auto p-1 hover:bg-muted/50"
+            >
+              <Copy className="h-3 w-3" />
+            </CopyButton>
+            <span className="font-mono text-sm">
+              {smallAddress(selectedPermissionData.permissionId, 8)}
+            </span>
+          </div>
+        ),
       },
       {
         label: "Delegator",
-        value: smallAddress(contract.delegator),
+        component: (
+          <AddressWithAgent
+            address={contract.delegator}
+            showCopyButton={true}
+            addressLength={8}
+            className="text-sm"
+          />
+        ),
       },
+      // Only show Recipient for non-emission permissions
+      ...(permissionType !== "Emission" ? [
+        {
+          label: "Recipient",
+          component: (
+            <AddressWithAgent
+              address={contract.recipient}
+              showCopyButton={true}
+              addressLength={8}
+              className="text-sm"
+            />
+          ),
+        },
+      ] : []),
       {
-        label: "Recipient",
-        value: smallAddress(contract.recipient),
+        label: "Type",
+        value: permissionType,
       },
       {
         label: "Duration",
@@ -566,7 +598,7 @@ export function PermissionSelector(props: PermissionSelectorProps) {
                                 >
                                   <div className="flex items-center gap-2">
                                     <span>{smallAddress(permissionId)}</span>
-                                    <span className="text-xs text-muted-foreground">
+                                    <span className="text-sm text-muted-foreground">
                                       ({permissionType})
                                     </span>
                                   </div>
@@ -590,7 +622,7 @@ export function PermissionSelector(props: PermissionSelectorProps) {
                                 >
                                   <div className="flex items-center gap-2">
                                     <span>{smallAddress(permissionId, 6)}</span>
-                                    <span className="text-xs text-muted-foreground">
+                                    <span className="text-sm text-muted-foreground">
                                       {permissionType}
                                     </span>
                                   </div>
@@ -628,13 +660,13 @@ export function PermissionSelector(props: PermissionSelectorProps) {
             </CardTitle>
           </CardHeader>
 
-          <CardContent className="text-xs p-4 pt-0">
+          <CardContent className="text-sm p-4 pt-0">
             {getDetailRows().map((row) => (
-              <div key={row.label} className="flex">
+              <div key={row.label} className="flex items-center">
                 <span className="font-medium flex-shrink-0">{row.label}:</span>
-                <span className="ml-2 text-muted-foreground break-all">
-                  {row.value}
-                </span>
+                <div className="ml-2 text-muted-foreground break-all">
+                  {row.component ?? row.value}
+                </div>
               </div>
             ))}
           </CardContent>
