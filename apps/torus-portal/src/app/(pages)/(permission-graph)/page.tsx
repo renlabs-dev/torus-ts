@@ -26,7 +26,7 @@ export default function PermissionGraphPage() {
   );
   const [isSheetOpen, setIsSheetOpen] = useState(false);
 
-  const agentCache = useRef(new AgentLRUCache(10));
+  const agentCache = useRef(new AgentLRUCache(50));
 
   const {
     graphData,
