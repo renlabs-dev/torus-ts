@@ -530,7 +530,7 @@ export function PermissionSelector(props: PermissionSelectorProps) {
                     <SelectValue placeholder={getPlaceholderText()} />
                   </SelectTrigger>
                 </FormControl>
-                <SelectContent>
+                <SelectContent className="max-h-[32vh]">
                   {(() => {
                     if (!userPermissions) return null;
 
