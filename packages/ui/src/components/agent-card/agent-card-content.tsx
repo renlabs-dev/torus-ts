@@ -19,6 +19,9 @@ interface AgentCardContentProps {
   tokensPerWeek?: string;
   isLoading?: boolean;
   isStatsLoading?: boolean;
+  // Optional: show penalty details in tooltip when provided
+  prePenaltyPercent?: number | null;
+  penaltyFactor?: number | null;
 }
 
 function AgentStats({
@@ -26,12 +29,16 @@ function AgentStats({
   tokensPerWeek,
   agentKey,
   isLoading = false,
+  prePenaltyPercent,
+  penaltyFactor,
 }: {
   agentKey: string;
   percComputedWeight?: number | null;
   tokensPerWeek?: string;
   usdValue?: string;
   isLoading?: boolean;
+  prePenaltyPercent?: number | null;
+  penaltyFactor?: number | null;
 }) {
   const isMobile = useIsMobile();
 
@@ -49,13 +56,34 @@ function AgentStats({
         <HoverCardTrigger>
           <Label className="flex items-center gap-1.5 text-xs font-semibold">
             <Globe size={14} />
-            {percComputedWeight !== null && percComputedWeight !== undefined
-              ? `${Math.round(percComputedWeight * 100)}%`
+            {typeof percComputedWeight === "number"
+              ? `${(percComputedWeight * 100).toFixed(2)}%`
               : "-"}
           </Label>
         </HoverCardTrigger>
         <HoverCardContent className="w-80">
-          <p className="text-sm">Current emission allocated to this agent.</p>
+          <div className="space-y-2">
+            <p className="text-sm">Current emission allocated to this agent.</p>
+            {typeof penaltyFactor === "number" &&
+              !Number.isNaN(penaltyFactor) &&
+              penaltyFactor > 0 && (
+                <div className="space-y-1 text-xs text-muted-foreground">
+                  {typeof prePenaltyPercent === "number" &&
+                    !Number.isNaN(prePenaltyPercent) && (
+                      <div>
+                        Before penalty: {(prePenaltyPercent * 100).toFixed(2)}%
+                      </div>
+                    )}
+                  <div>Penalty applied: {penaltyFactor.toFixed(2)}%</div>
+                  {typeof percComputedWeight === "number" &&
+                    !Number.isNaN(percComputedWeight) && (
+                      <div>
+                        After penalty: {(percComputedWeight * 100).toFixed(2)}%
+                      </div>
+                    )}
+                </div>
+              )}
+          </div>
         </HoverCardContent>
       </HoverCard>
 
@@ -90,6 +118,8 @@ export function AgentCardContent({
   tokensPerWeek,
   isLoading = false,
   isStatsLoading = false,
+  prePenaltyPercent,
+  penaltyFactor,
 }: Readonly<AgentCardContentProps>) {
   if (isLoading) {
     return <SkeletonAgentCardContent />;
@@ -104,6 +134,8 @@ export function AgentCardContent({
             percComputedWeight={percComputedWeight}
             tokensPerWeek={tokensPerWeek}
             isLoading={isStatsLoading}
+            prePenaltyPercent={prePenaltyPercent}
+            penaltyFactor={penaltyFactor}
           />
         </div>
         <Separator />

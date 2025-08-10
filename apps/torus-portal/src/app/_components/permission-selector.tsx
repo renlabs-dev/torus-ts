@@ -471,19 +471,21 @@ export function PermissionSelector(props: PermissionSelectorProps) {
         ),
       },
       // Only show Recipient for non-emission permissions
-      ...(permissionType !== "Emission" ? [
-        {
-          label: "Recipient",
-          component: (
-            <AddressWithAgent
-              address={contract.recipient}
-              showCopyButton={true}
-              addressLength={8}
-              className="text-sm"
-            />
-          ),
-        },
-      ] : []),
+      ...(permissionType !== "Emission"
+        ? [
+            {
+              label: "Recipient",
+              component: (
+                <AddressWithAgent
+                  address={contract.recipient}
+                  showCopyButton={true}
+                  addressLength={8}
+                  className="text-sm"
+                />
+              ),
+            },
+          ]
+        : []),
       {
         label: "Type",
         value: permissionType,

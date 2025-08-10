@@ -11,6 +11,7 @@ import { AgentItemSkeleton } from "@torus-ts/ui/components/agent-card/agent-card
 import { Card } from "@torus-ts/ui/components/card";
 
 import { useWeeklyUsdCalculation } from "~/hooks/use-weekly-usd";
+import { calculatePostPenaltyEmission } from "~/hooks/use-post-penalty-emission";
 import { api } from "~/trpc/react";
 
 import type {
@@ -128,7 +129,12 @@ export const AgentCard = memo(
 
       const agent = agentQuery.data;
       const agentName = agent.name ?? smallAddress(nodeId, 6);
-      const weightFactor = computedWeight?.percComputedWeight ?? 0;
+      const prepenaltyWeight = computedWeight?.percComputedWeight ?? 0;
+      // Apply penalty calculation using utility function
+      const weightFactor = calculatePostPenaltyEmission(
+        prepenaltyWeight,
+        agent.weightFactor,
+      );
 
       setAgentName(agentName);
       setWeightFactor(weightFactor);
@@ -254,6 +260,8 @@ export const AgentCard = memo(
         socials={socials}
         website={socials.website}
         percComputedWeight={weightFactor}
+        prePenaltyPercent={computedWeight?.percComputedWeight ?? null}
+        penaltyFactor={agentQuery.data?.weightFactor ?? null}
         tokensPerWeek={displayTokensPerWeek}
         isLoading={isWeeklyUsdLoading}
         href={`/root-allocator/agent/${nodeId}`}
