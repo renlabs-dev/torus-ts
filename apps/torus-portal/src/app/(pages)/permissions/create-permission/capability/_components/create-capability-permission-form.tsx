@@ -6,101 +6,117 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2 } from "lucide-react";
 import { useForm } from "react-hook-form";
 
-import type { SS58Address } from "@torus-network/sdk/types";
-
-import { useNamespaceEntriesOf } from "@torus-ts/query-provider/hooks";
+// import type { SS58Address } from "@torus-network/sdk/types";
 import { useTorus } from "@torus-ts/torus-provider";
 import { Button } from "@torus-ts/ui/components/button";
 import {
   Form,
   FormControl,
+  FormDescription,
   FormField,
   FormItem,
   FormLabel,
   FormMessage,
 } from "@torus-ts/ui/components/form";
 import { Input } from "@torus-ts/ui/components/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@torus-ts/ui/components/select";
 import { WalletConnectionWarning } from "@torus-ts/ui/components/wallet-connection-warning";
-import { useIsMobile } from "@torus-ts/ui/hooks/use-mobile";
 import { useToast } from "@torus-ts/ui/hooks/use-toast";
 
 import { FormAddressField } from "~/app/_components/address-field";
-import { truncateMobileValue } from "~/utils/truncate-mobile-value";
 
 import { DurationField } from "./create-capability-fields/duration-field";
 import { RevocationField } from "./create-capability-fields/revocation-field";
+import { SelectedPathsDisplay } from "./create-capability-fields/selected-paths-display";
+import { useRevocationValidation } from "./create-capability-fields/use-revocation-validation";
+import type { PathWithPermission } from "./create-capability-flow/create-capability-flow-types";
 import type { CreateCapabilityPermissionFormData } from "./create-capability-permission-form-schema";
 import { createCapabilityPermissionSchema } from "./create-capability-permission-form-schema";
 import { transformFormDataToSDK } from "./create-capability-permission-form-utils";
 
 interface CreateCapabilityPermissionFormProps {
+  selectedPaths?: string[];
+  pathsWithPermissions?: PathWithPermission[];
   onSuccess?: () => void;
 }
 
 export function CreateCapabilityPermissionForm({
+  selectedPaths = [],
+  pathsWithPermissions = [],
   onSuccess,
 }: CreateCapabilityPermissionFormProps) {
   const {
-    grantNamespacePermissionTransaction,
+    delegateNamespacePermissionTransaction,
     isAccountConnected,
-    selectedAccount,
+    // selectedAccount,
     api,
     isInitialized,
   } = useTorus();
-  const isMobile = useIsMobile();
   const { toast } = useToast();
   const [transactionStatus, setTransactionStatus] = useState<
     "idle" | "loading" | "success" | "error"
   >("idle");
 
+  // Set up revocation validation
+  const { validateRevocationStrength, hasParentPermissions } =
+    useRevocationValidation({
+      api: api ?? undefined,
+      pathsWithPermissions,
+    });
+
   const form = useForm<CreateCapabilityPermissionFormData>({
     resolver: zodResolver(createCapabilityPermissionSchema),
     defaultValues: {
-      grantee: "",
-      namespacePath: "",
+      recipient: "",
+      namespacePaths: selectedPaths,
       duration: {
         type: "Indefinite",
       },
       revocation: {
-        type: "RevocableByGrantor",
+        type: "RevocableByDelegator",
       },
+      instances: "1",
     },
   });
 
-  // Get user's namespaces for the dropdown
-  const namespaceEntries = useNamespaceEntriesOf(
-    api,
-    selectedAccount?.address as SS58Address,
-  );
-
-  const namespaceOptions =
-    namespaceEntries.data?.map((entry) => entry.path.join(".")) ?? [];
-
-  // Clear namespacePath when account changes
+  // Update form when selectedPaths change
   useEffect(() => {
-    form.setValue("namespacePath", "");
-  }, [selectedAccount?.address, form]);
+    form.setValue("namespacePaths", selectedPaths);
+  }, [selectedPaths, form]);
 
   const handleSubmit = useCallback(
     async (data: CreateCapabilityPermissionFormData) => {
+      if (data.namespacePaths.length === 0) {
+        toast.error("No capability paths selected");
+        return;
+      }
+
+      // Validate revocation strength before submitting
+      if (hasParentPermissions && api) {
+        const validationErrors = await validateRevocationStrength(data);
+        if (validationErrors.length > 0) {
+          toast.error(
+            "Please fix revocation strength issues before submitting",
+          );
+          return;
+        }
+      }
+
       try {
         setTransactionStatus("loading");
-        const transformedData = transformFormDataToSDK(data);
+        const transformedData = transformFormDataToSDK(
+          data,
+          pathsWithPermissions,
+        );
 
-        await grantNamespacePermissionTransaction({
+        await delegateNamespacePermissionTransaction({
           ...transformedData,
           callback: (result) => {
             if (result.status === "SUCCESS" && result.finalized) {
               setTransactionStatus("success");
+              toast.success(
+                `Successfully created capability permission for ${data.namespacePaths.length} path${data.namespacePaths.length > 1 ? "s" : ""}`,
+              );
               onSuccess?.();
-              // Reset form
               form.reset();
             } else if (result.status === "ERROR") {
               setTransactionStatus("error");
@@ -119,7 +135,16 @@ export function CreateCapabilityPermissionForm({
         toast.error("Failed to grant capability permission");
       }
     },
-    [grantNamespacePermissionTransaction, toast, form, onSuccess],
+    [
+      delegateNamespacePermissionTransaction,
+      toast,
+      form,
+      onSuccess,
+      pathsWithPermissions,
+      hasParentPermissions,
+      api,
+      validateRevocationStrength,
+    ],
   );
 
   return (
@@ -137,7 +162,7 @@ export function CreateCapabilityPermissionForm({
         <div className="grid gap-6">
           <FormField
             control={form.control}
-            name="grantee"
+            name="recipient"
             render={({ field }) => (
               <FormAddressField
                 field={field}
@@ -147,54 +172,41 @@ export function CreateCapabilityPermissionForm({
             )}
           />
 
+          {selectedPaths.length > 0 && (
+            <SelectedPathsDisplay paths={selectedPaths} />
+          )}
+
+          <DurationField form={form} isAccountConnected={isAccountConnected} />
+
           <FormField
             control={form.control}
-            name="namespacePath"
+            name="instances"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Capability Path</FormLabel>
+                <FormLabel>Maximum Instances</FormLabel>
                 <FormControl>
-                  {!isAccountConnected ? (
-                    <Input {...field} placeholder="Connect wallet" disabled />
-                  ) : namespaceEntries.isLoading ? (
-                    <Input
-                      {...field}
-                      placeholder="Loading capabilitys..."
-                      disabled
-                    />
-                  ) : namespaceOptions.length === 0 ? (
-                    <Input
-                      {...field}
-                      placeholder="No capabilitys found"
-                      disabled
-                    />
-                  ) : (
-                    <Select value={field.value} onValueChange={field.onChange}>
-                      <SelectTrigger className="w-full max-w-[44rem]">
-                        <SelectValue placeholder="e.g. agent.alice.api">
-                          {truncateMobileValue(field.value, isMobile)}
-                        </SelectValue>
-                      </SelectTrigger>
-                      <SelectContent className="max-w-[18.5rem] sm:max-w-full">
-                        {namespaceOptions.map((path) => (
-                          <SelectItem key={path} value={path}>
-                            <span className="font-mono">{path}</span>
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  )}
+                  <Input
+                    {...field}
+                    type="number"
+                    min="1"
+                    placeholder="1"
+                    disabled={!isAccountConnected}
+                  />
                 </FormControl>
+                <FormDescription>
+                  The maximum number of instances that can be created under this
+                  permission.
+                </FormDescription>
                 <FormMessage />
               </FormItem>
             )}
           />
 
-          <DurationField form={form} isAccountConnected={isAccountConnected} />
-
           <RevocationField
             form={form}
             isAccountConnected={isAccountConnected}
+            api={api ?? undefined}
+            pathsWithPermissions={pathsWithPermissions}
           />
 
           <Button
@@ -205,20 +217,20 @@ export function CreateCapabilityPermissionForm({
             disabled={
               !isAccountConnected ||
               transactionStatus === "loading" ||
-              namespaceOptions.length === 0
+              selectedPaths.length === 0
             }
           >
             {transactionStatus === "loading" ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Creating...
+                Creating permission...
               </>
             ) : !isAccountConnected ? (
               "Connect Wallet to Continue"
-            ) : namespaceOptions.length === 0 ? (
-              "Create a Capability Permission First"
+            ) : selectedPaths.length === 0 ? (
+              "No Capability Paths Selected"
             ) : (
-              "Delegate Capability Permission"
+              `Create Capability Permission (${selectedPaths.length} path${selectedPaths.length > 1 ? "s" : ""})`
             )}
           </Button>
         </div>

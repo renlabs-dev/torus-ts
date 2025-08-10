@@ -7,7 +7,6 @@ import { useForm } from "react-hook-form";
 import type { z } from "zod";
 
 import type { SS58Address } from "@torus-network/sdk/types";
-import { checkSS58 } from "@torus-network/sdk/types";
 import { cidToIpfsUri } from "@torus-network/torus-utils/ipfs";
 
 import { useAgents } from "@torus-ts/query-provider/hooks";
@@ -54,7 +53,6 @@ export function RegisterAgentForm({
     resolver: zodResolver(REGISTER_AGENT_SCHEMA),
     mode: "onChange",
     defaultValues: {
-      agentKey: "",
       agentApiUrl: "",
       name: "",
       shortDescription: "",
@@ -97,8 +95,14 @@ export function RegisterAgentForm({
 
     console.info("Pinned metadata at:", cidToIpfsUri(metadataResult.cid));
 
-    // Parse agent key and URL
-    const parsedAgentKey = checkSS58(data.agentKey);
+    // Ensure we have a connected account
+    if (!selectedAccount?.address) {
+      setTransactionStatus("error");
+      toast.error("No account connected");
+      return;
+    }
+
+    // Parse URL
     const parsedAgentApiUrl =
       !data.agentApiUrl || data.agentApiUrl.trim() === ""
         ? "null:"
@@ -107,7 +111,6 @@ export function RegisterAgentForm({
     // Execute the transaction
     const { error } = await tryCatch(
       registerAgentTransaction({
-        agentKey: parsedAgentKey,
         name: data.name,
         url: parsedAgentApiUrl,
         metadata: cidToIpfsUri(metadataResult.cid),
@@ -165,13 +168,8 @@ export function RegisterAgentForm({
           />
         )}
 
-        <div className="grid gap-6 max-w-2xl">
-          <RegisterAgentInfoFields
-            control={form.control}
-            setValue={form.setValue}
-            selectedAccount={selectedAccount}
-            formValues={formValues}
-          />
+        <div className="grid gap-6 max-w-3xl">
+          <RegisterAgentInfoFields control={form.control} />
 
           <RegisterAgentIconField control={form.control} />
 

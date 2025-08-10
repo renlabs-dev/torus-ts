@@ -4,6 +4,7 @@ import { useMemo } from "react";
 
 import { useTorus } from "@torus-ts/torus-provider";
 
+import { calculatePostPenaltyEmission } from "~/hooks/use-post-penalty-emission";
 import { api } from "~/trpc/react";
 
 import SignalAccordion from "./signal-accordion";
@@ -38,14 +39,21 @@ export default function AllSignalsView() {
       const agentWeight = allComputedWeights.find(
         (weight) => weight.agentKey === signal.agentKey,
       );
+
+      // Calculate post-penalty emission percentage using utility function
+      const postPenaltyPercent = calculatePostPenaltyEmission(
+        agentWeight?.percComputedWeight,
+        agentWeight?.weightFactor,
+      );
+
       const networkAllocation = agentWeight
-        ? (signal.proposedAllocation * agentWeight.percComputedWeight) / 100
+        ? (signal.proposedAllocation * postPenaltyPercent) / 100
         : 0;
 
       return {
         ...signal,
         agentName: agentWeight?.agentName ?? "Unknown Agent",
-        agentPercWeight: agentWeight?.percComputedWeight ?? 0,
+        agentPercWeight: postPenaltyPercent,
         networkAllocation,
         isCurrentUser: currentUserKey === signal.agentKey,
       };

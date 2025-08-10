@@ -370,7 +370,7 @@ export function CreateAgentApplication() {
                   My application meets all the{" "}
                   <Link
                     className="text-cyan-500 underline"
-                    href="https://docs.torus.network/concepts/agent-application"
+                    href="https://docs.torus.network/how-to-guides/goal-leaders/become-a-root-agent/"
                     target="_blank"
                   >
                     requirements

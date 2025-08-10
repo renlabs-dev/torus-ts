@@ -461,6 +461,10 @@ declare module '@polkadot/api-base/types/errors' {
     };
     permission0: {
       /**
+       * Namespace delegation depth exceeded the maximum allowed limit.
+       **/
+      DelegationDepthExceeded: AugmentedError<ApiType>;
+      /**
        * Permission is a duplicate, revoke the previous one
        **/
       DuplicatePermission: AugmentedError<ApiType>;
@@ -515,11 +519,15 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       InvalidThreshold: AugmentedError<ApiType>;
       /**
+       * Deriving a permission from multiple parents is still forbidden.
+       **/
+      MultiParentForbidden: AugmentedError<ApiType>;
+      /**
        * Namespace creation was disabled by a curator.
        **/
       NamespaceCreationDisabled: AugmentedError<ApiType>;
       /**
-       * Tried granting unknown namespace.
+       * Tried delegating unknown namespace.
        **/
       NamespaceDoesNotExist: AugmentedError<ApiType>;
       /**
@@ -551,13 +559,19 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       NotEditable: AugmentedError<ApiType>;
       /**
-       * Not the grantee of the permission
+       * Not enough instances available to delegate/execute a permission.
+       * This might mean the execution requires more than the available instances
+       * or that all instances are locked behind redelegations.
        **/
-      NotPermissionGrantee: AugmentedError<ApiType>;
+      NotEnoughInstances: AugmentedError<ApiType>;
       /**
-       * Not the grantor of the permission
+       * Not the delegator of the permission
        **/
-      NotPermissionGrantor: AugmentedError<ApiType>;
+      NotPermissionDelegator: AugmentedError<ApiType>;
+      /**
+       * Not the recipient of the permission
+       **/
+      NotPermissionRecipient: AugmentedError<ApiType>;
       /**
        * The agent is not registered
        **/
@@ -579,6 +593,10 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       PermissionNotFound: AugmentedError<ApiType>;
       /**
+       * Revocation terms are too strong for a permission re-delegation.
+       **/
+      RevocationTermsTooStrong: AugmentedError<ApiType>;
+      /**
        * Self-permission is not allowed
        **/
       SelfPermissionNotAllowed: AugmentedError<ApiType>;
@@ -587,9 +605,17 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       StorageError: AugmentedError<ApiType>;
       /**
+       * Too many children for a permission.
+       **/
+      TooManyChildren: AugmentedError<ApiType>;
+      /**
        * Too many controllers
        **/
       TooManyControllers: AugmentedError<ApiType>;
+      /**
+       * Too many curator permissions being delegated in a single permission.
+       **/
+      TooManyCuratorPermissions: AugmentedError<ApiType>;
       /**
        * Exceeded amount of total namespaces allowed in a single permission.
        **/

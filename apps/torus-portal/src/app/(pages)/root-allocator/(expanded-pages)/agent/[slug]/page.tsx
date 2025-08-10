@@ -12,6 +12,8 @@ import { Button } from "@torus-ts/ui/components/button";
 import { Card } from "@torus-ts/ui/components/card";
 import { Container } from "@torus-ts/ui/components/container";
 import { Label } from "@torus-ts/ui/components/label";
+
+import { calculatePostPenaltyEmission } from "~/hooks/use-post-penalty-emission";
 import { MarkdownView } from "@torus-ts/ui/components/markdown-view";
 import { Skeleton } from "@torus-ts/ui/components/skeleton";
 
@@ -80,9 +82,14 @@ export default async function AgentPage({ params }: Readonly<AgentPageProps>) {
   }
 
   const globalWeight = computedAgentWeight.find((d) => d.agentKey === agentKey);
-  const networkAllocation = globalWeight
-    ? (globalWeight.percComputedWeight * 100).toFixed(2)
-    : "0";
+
+  // Calculate post-penalty emission percentage using utility function
+  const postPenaltyPercent = calculatePostPenaltyEmission(
+    globalWeight?.percComputedWeight,
+    globalWeight?.weightFactor,
+  );
+
+  const networkAllocation = (postPenaltyPercent * 100).toFixed(2);
 
   const showPenalties =
     mdl.weightFactor !== null && mdl.weightFactor > 0 && penalties.length > 0;

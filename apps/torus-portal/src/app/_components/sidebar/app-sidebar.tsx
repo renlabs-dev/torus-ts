@@ -7,6 +7,7 @@ import {
   Currency,
   FilePen,
   FilePlus,
+  FileText,
   Network,
   PackagePlus,
   PackageX,
@@ -55,13 +56,18 @@ const data = {
       title: "Permissions",
       items: [
         {
-          title: "Create Permission",
+          title: "Capability Permission",
           url: "/permissions/create-permission/capability",
+          icon: FileText,
+        },
+        {
+          title: "Emission Permission",
+          url: "/permissions/create-permission/emission",
           icon: FilePlus,
         },
         {
           title: "Manage Permissions",
-          url: "/permissions/edit-permission",
+          url: "/permissions/manage-permission",
           icon: FilePen,
         },
       ],
@@ -70,8 +76,8 @@ const data = {
       title: "Capabilities",
       items: [
         {
-          title: "Create Capability",
-          url: "/capabilities/create-capability",
+          title: "Register Capability",
+          url: "/capabilities/register-capability",
           icon: PackagePlus,
         },
         {

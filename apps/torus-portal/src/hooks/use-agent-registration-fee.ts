@@ -47,7 +47,6 @@ export function useAgentRegistrationFee(
     return registerAgent({
       api: api as ApiPromise,
       name: "placeholder-name",
-      agentKey: account,
       url: "placeholder-url",
       metadata: "placeholder-metadata",
     });

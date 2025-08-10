@@ -18,12 +18,14 @@ export interface AgentCardProps {
   socials?: Partial<Record<SocialKind, string>>;
   website?: string;
   percComputedWeight?: number | null;
+  // Optional: provide pre-penalty and penalty to show tooltip details
+  prePenaltyPercent?: number | null;
+  penaltyFactor?: number | null;
   href?: string;
   showHoverEffect?: boolean;
   isAgentDelegated?: boolean;
   isAgentSelected?: boolean;
   tokensPerWeek?: string;
-  usdValue?: string;
   currentPercentage?: number;
   onPercentageChange?: (value: number) => void;
   isAccountConnected?: boolean;
@@ -42,12 +44,13 @@ export function AgentCard(props: Readonly<AgentCardProps>) {
     socials,
     website,
     percComputedWeight,
+    prePenaltyPercent,
+    penaltyFactor,
     href,
     showHoverEffect = true,
     isAgentDelegated,
     isAgentSelected,
     tokensPerWeek,
-    usdValue,
     currentPercentage,
     onPercentageChange,
     isAccountConnected,
@@ -76,8 +79,9 @@ export function AgentCard(props: Readonly<AgentCardProps>) {
         shortDescription={shortDescription}
         agentKey={agentKey}
         percComputedWeight={percComputedWeight}
+        prePenaltyPercent={prePenaltyPercent}
+        penaltyFactor={penaltyFactor}
         tokensPerWeek={tokensPerWeek}
-        usdValue={usdValue}
         isLoading={isMetadataLoading}
         isStatsLoading={isLoading}
       />

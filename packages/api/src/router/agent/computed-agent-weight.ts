@@ -24,6 +24,7 @@ export const computedAgentWeightRouter = {
         agentName: agentSchema.name,
         computedWeight: computedAgentWeightSchema.computedWeight,
         percComputedWeight: computedAgentWeightSchema.percComputedWeight,
+        weightFactor: agentSchema.weightFactor,
       })
       .from(computedAgentWeightSchema)
       .where(

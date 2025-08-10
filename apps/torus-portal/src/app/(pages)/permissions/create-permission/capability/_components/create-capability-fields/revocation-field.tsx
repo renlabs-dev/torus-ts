@@ -1,10 +1,12 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 
-import { Plus, Trash2 } from "lucide-react";
+import { AlertTriangle, Plus, Trash2 } from "lucide-react";
 import { useFieldArray } from "react-hook-form";
 
+import type { Api } from "@torus-network/sdk/chain";
 import type { SS58Address } from "@torus-network/sdk/types";
 
+import { Alert, AlertDescription } from "@torus-ts/ui/components/alert";
 import { Button } from "@torus-ts/ui/components/button";
 import {
   FormControl,
@@ -23,18 +25,91 @@ import {
   SelectValue,
 } from "@torus-ts/ui/components/select";
 
+import type { PathWithPermission } from "../create-capability-flow/create-capability-flow-types";
 import type { CreateCapabilityPermissionForm } from "../create-capability-permission-form-schema";
+import type { RevocationValidationError } from "./use-revocation-validation";
+import {
+  formatRevocationTermsForDisplay,
+  useRevocationValidation,
+} from "./use-revocation-validation";
 
 interface RevocationFieldProps {
   form: CreateCapabilityPermissionForm;
   isAccountConnected: boolean;
+  api?: Api;
+  pathsWithPermissions?: PathWithPermission[];
 }
 
 export function RevocationField({
   form,
   isAccountConnected,
+  api,
+  pathsWithPermissions = [],
 }: RevocationFieldProps) {
   const revocationType = form.watch("revocation.type");
+  const [validationErrors, setValidationErrors] = useState<
+    RevocationValidationError[]
+  >([]);
+  const [validating, setValidating] = useState(false);
+
+  const { validateRevocationStrength, hasParentPermissions } =
+    useRevocationValidation({
+      api,
+      pathsWithPermissions,
+    });
+
+  // Watch all revocation fields for validation
+  const revocationData = form.watch("revocation");
+
+  // Validate revocation strength when revocation data changes
+  useEffect(() => {
+    if (!hasParentPermissions || !api) {
+      setValidationErrors([]);
+      return;
+    }
+
+    let isCancelled = false;
+
+    const validateAsync = async () => {
+      setValidating(true);
+
+      try {
+        const errors = await validateRevocationStrength({
+          ...form.getValues(),
+          revocation: revocationData,
+        });
+
+        if (!isCancelled) {
+          setValidationErrors(errors);
+        }
+      } catch (error) {
+        if (!isCancelled) {
+          console.error("Validation error:", error);
+          setValidationErrors([]);
+        }
+      } finally {
+        if (!isCancelled) {
+          setValidating(false);
+        }
+      }
+    };
+
+    // Debounce validation
+    const timeoutId = setTimeout(() => {
+      void validateAsync();
+    }, 300);
+
+    return () => {
+      isCancelled = true;
+      clearTimeout(timeoutId);
+    };
+  }, [
+    revocationData,
+    hasParentPermissions,
+    api,
+    validateRevocationStrength,
+    form,
+  ]);
 
   const {
     fields: arbiterFields,
@@ -65,9 +140,9 @@ export function RevocationField({
                         type: "Irrevocable",
                       });
                       break;
-                    case "RevocableByGrantor":
+                    case "RevocableByDelegator":
                       form.setValue("revocation", {
-                        type: "RevocableByGrantor",
+                        type: "RevocableByDelegator",
                       });
                       break;
                     case "RevocableByArbiters":
@@ -92,7 +167,7 @@ export function RevocationField({
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="Irrevocable">Irrevocable</SelectItem>
-                  <SelectItem value="RevocableByGrantor">
+                  <SelectItem value="RevocableByDelegator">
                     Revocable by Delegator
                   </SelectItem>
                   <SelectItem value="RevocableByArbiters">
@@ -108,6 +183,39 @@ export function RevocationField({
           </FormItem>
         )}
       />
+
+      {/* Validation errors display */}
+      {validationErrors.length > 0 && (
+        <Alert variant="destructive">
+          <AlertTriangle className="h-4 w-4" />
+          <AlertDescription>
+            <div className="space-y-2">
+              <p className="font-medium">Revocation terms are too strong</p>
+              {validationErrors.map((error, index) => (
+                <div key={index} className="text-sm">
+                  <p className="mb-1">
+                    Parent permission {error.permissionId.slice(0, 8)}... has{" "}
+                    <span className="font-mono">
+                      {formatRevocationTermsForDisplay(error.parentRevocation)}
+                    </span>
+                  </p>
+                  <p className="text-xs opacity-90">
+                    Child permissions must have weaker or equal revocation
+                    terms.
+                  </p>
+                </div>
+              ))}
+            </div>
+          </AlertDescription>
+        </Alert>
+      )}
+
+      {/* Loading state */}
+      {validating && hasParentPermissions && (
+        <div className="text-sm text-muted-foreground">
+          Validating revocation strength...
+        </div>
+      )}
 
       {revocationType === "RevocableByArbiters" && (
         <div className="grid gap-4">

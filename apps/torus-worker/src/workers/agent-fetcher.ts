@@ -1,13 +1,17 @@
 import { match } from "rustie";
 
 import type {
+  AccumulatedStreamEntry,
+  EmissionScope,
   LastBlock,
+  NamespaceScope,
   PermissionContract,
   PermissionId,
   Proposal,
 } from "@torus-network/sdk/chain";
 import {
   queryAgents,
+  queryAllAccumulatedStreamAmounts,
   queryLastBlock,
   queryPermissions,
   queryWhitelist,
@@ -115,22 +119,189 @@ async function cleanPermissions(
 }
 
 /**
+ * Transforms emission permission data to database format
+ */
+function emissionToDatabase(
+  permissionId: PermissionId,
+  emission: EmissionScope,
+  delegator: SS58Address,
+  streamAccumulations: AccumulatedStreamEntry[],
+  atBlock: number,
+): {
+  emissionPermission: NewEmissionPermission;
+  streamAllocations: NewEmissionStreamAllocation[];
+  distributionTargets: NewEmissionDistributionTarget[];
+} {
+  const allocationType = match(emission.allocation)({
+    Streams: () => "streams" as const,
+    FixedAmount: () => "fixed_amount" as const,
+  });
+
+  const distributionType = match(emission.distribution)({
+    Manual: () => "manual" as const,
+    Automatic: () => "automatic" as const,
+    AtBlock: () => "at_block" as const,
+    Interval: () => "interval" as const,
+  });
+
+  const distributionThreshold = match(emission.distribution)({
+    Automatic: (auto) => auto.toString(),
+    Manual: () => null,
+    AtBlock: () => null,
+    Interval: () => null,
+  });
+
+  const distributionTargetBlock = match(emission.distribution)({
+    AtBlock: (atBlock) => BigInt(atBlock.toString()),
+    Manual: () => null,
+    Automatic: () => null,
+    Interval: () => null,
+  });
+
+  const distributionIntervalBlocks = match(emission.distribution)({
+    Interval: (interval) => BigInt(interval.toString()),
+    Manual: () => null,
+    Automatic: () => null,
+    AtBlock: () => null,
+  });
+
+  const fixedAmount = match(emission.allocation)({
+    FixedAmount: (amount) => amount.toString(),
+    Streams: () => null,
+  });
+
+  const emissionPermission: NewEmissionPermission = {
+    permissionId: permissionId,
+    allocationType,
+    fixedAmount,
+    distributionType,
+    distributionThreshold,
+    distributionTargetBlock,
+    distributionIntervalBlocks,
+    accumulating: emission.accumulating,
+  };
+
+  const streamAllocations: NewEmissionStreamAllocation[] = match(
+    emission.allocation,
+  )({
+    Streams: (streams) =>
+      Array.from(streams.entries()).map(([streamId, percentage]) => ({
+        permissionId: permissionId,
+        streamId: streamId,
+        percentage: percentage, // 0-100, matches Substrate Percent type
+      })),
+    FixedAmount: () => [],
+  });
+
+  // Handle distribution targets (create entry for each stream-target combination)
+  const distributionTargets: NewEmissionDistributionTarget[] = [];
+
+  // Create a lookup map for accumulated amounts by (delegator, streamId, permissionId)
+  // The delegator is the account that owns/delegates the stream and where tokens accumulate
+  const accumulationLookup = new Map<string, bigint>();
+  for (const accumulation of streamAccumulations) {
+    const key = `${accumulation.delegator}-${accumulation.streamId}-${accumulation.permissionId}`;
+    accumulationLookup.set(key, accumulation.amount);
+  }
+
+  // Calculate total weight for proportional distribution
+  const totalWeight = Array.from(emission.targets.values()).reduce(
+    (sum, weight) => sum + weight,
+    BigInt(0),
+  );
+
+  for (const [accountId, weight] of emission.targets.entries()) {
+    for (const streamAllocation of streamAllocations) {
+      // Look up accumulated amount for this permission's delegator (the account that owns/delegates the stream)
+      // The accumulated amount is stored under (delegator, streamId, permissionId)
+      const lookupKey = `${delegator}-${streamAllocation.streamId}-${permissionId}`;
+      const totalAccumulatedForStream =
+        accumulationLookup.get(lookupKey) ?? BigInt(0);
+
+      // Distribute the accumulated amount proportionally based on target weights
+      // accumulatedTokens = (weight / totalWeight) * totalAccumulatedForStream
+      const accumulatedTokens =
+        totalWeight > BigInt(0)
+          ? (weight * totalAccumulatedForStream) / totalWeight
+          : BigInt(0);
+
+      distributionTargets.push({
+        permissionId: permissionId,
+        streamId: streamAllocation.streamId,
+        targetAccountId: accountId,
+        weight: Number(weight.toString()), // Convert bigint to number (u16 range: 0-65535)
+        accumulatedTokens: accumulatedTokens.toString(),
+        atBlock: atBlock,
+      });
+    }
+  }
+
+  return {
+    emissionPermission,
+    streamAllocations,
+    distributionTargets,
+  };
+}
+
+/**
+ * Transforms namespace permission data to database format
+ */
+function namespaceToDatabase(
+  permissionId: PermissionId,
+  namespace: NamespaceScope,
+): {
+  namespacePermission: NewNamespacePermission;
+  namespacePaths: NewNamespacePermissionPath[];
+} {
+  const namespacePermission: NewNamespacePermission = {
+    permissionId: permissionId,
+  };
+
+  // Extract namespace paths from the map structure
+  // namespace.paths is a Map<Option<PermissionId>, Array<string>>
+  const namespacePaths: NewNamespacePermissionPath[] = [];
+
+  for (const [_parentPermissionId, pathsArray] of namespace.paths.entries()) {
+    for (const pathSegments of pathsArray) {
+      namespacePaths.push({
+        permissionId: permissionId,
+        namespacePath: pathSegments.join("."), // Convert NamespacePath (string[]) to dot-separated string
+      });
+    }
+  }
+
+  return {
+    namespacePermission,
+    namespacePaths,
+  };
+}
+
+/**
  * Transforms a blockchain permission contract to database format
  */
 function permissionContractToDatabase(
   permissionId: PermissionId,
   contract: PermissionContract,
-): {
-  permission: NewPermission;
-  emissionPermission?: NewEmissionPermission;
-  namespacePermission?: NewNamespacePermission;
-  namespacePaths?: NewNamespacePermissionPath[];
-  streamAllocations?: NewEmissionStreamAllocation[];
-  distributionTargets?: NewEmissionDistributionTarget[];
-  enforcementControllers?: NewPermissionEnforcementController[];
-  revocationArbiters?: NewPermissionRevocationArbiter[];
-  hierarchy?: NewPermissionHierarchy;
-} | null {
+  streamAccumulations: AccumulatedStreamEntry[],
+  atBlock: number,
+):
+  | ({
+      permission: NewPermission;
+      hierarchy: NewPermissionHierarchy;
+      enforcementControllers: NewPermissionEnforcementController[];
+      revocationArbiters: NewPermissionRevocationArbiter[];
+    } & (
+      | {
+          emissionPermission: NewEmissionPermission;
+          streamAllocations: NewEmissionStreamAllocation[];
+          distributionTargets: NewEmissionDistributionTarget[];
+        }
+      | {
+          namespacePermission: NewNamespacePermission;
+          namespacePaths: NewNamespacePermissionPath[];
+        }
+    ))
+  | null {
   // Process emission and namespace permissions, skip curator permissions
   const shouldProcess = match(contract.scope)({
     Emission: () => true,
@@ -142,7 +313,6 @@ function permissionContractToDatabase(
     return null; // Skip curator permissions
   }
 
-  // Map duration
   const durationType = match(contract.duration)({
     Indefinite: () => "indefinite" as const,
     UntilBlock: () => "until_block" as const,
@@ -156,7 +326,7 @@ function permissionContractToDatabase(
   // Map revocation terms
   const revocationType = match(contract.revocation)({
     Irrevocable: () => "irrevocable" as const,
-    RevocableByGrantor: () => "revocable_by_grantor" as const,
+    RevocableByDelegator: () => "revocable_by_delegator" as const,
     RevocableByArbiters: () => "revocable_by_arbiters" as const,
     RevocableAfter: () => "revocable_after" as const,
   });
@@ -164,7 +334,7 @@ function permissionContractToDatabase(
   const revocationBlockNumber = match(contract.revocation)({
     RevocableAfter: (block) => BigInt(block.toString()),
     Irrevocable: () => null,
-    RevocableByGrantor: () => null,
+    RevocableByDelegator: () => null,
     RevocableByArbiters: () => null,
   });
 
@@ -172,7 +342,7 @@ function permissionContractToDatabase(
     RevocableByArbiters: (arbiters) =>
       BigInt(arbiters.requiredVotes.toString()),
     Irrevocable: () => null,
-    RevocableByGrantor: () => null,
+    RevocableByDelegator: () => null,
     RevocableAfter: () => null,
   });
 
@@ -189,8 +359,8 @@ function permissionContractToDatabase(
 
   const permission: NewPermission = {
     permissionId: permissionId,
-    grantorAccountId: contract.grantor,
-    granteeAccountId: contract.grantee,
+    grantorAccountId: contract.delegator,
+    granteeAccountId: contract.recipient,
     durationType,
     durationBlockNumber,
     revocationType,
@@ -206,114 +376,16 @@ function permissionContractToDatabase(
     createdAtBlock: BigInt(contract.createdAt.toString()),
   };
 
-  // Handle parent hierarchy
-  const hierarchy = match(contract.parent)({
-    Some: (parentId): NewPermissionHierarchy => ({
-      childPermissionId: permissionId,
-      parentPermissionId: parentId,
-    }),
-    None: () => undefined,
-  });
+  // Handle hierarchy - since parent field no longer exists, create self-reference
+  // Children relationships are now managed through the children field on other permissions
+  const hierarchy: NewPermissionHierarchy = {
+    childPermissionId: permissionId,
+    parentPermissionId: permissionId, // Self-reference (no parent in current schema)
+  };
 
-  let emissionPermission: NewEmissionPermission | undefined;
-  let namespacePermission: NewNamespacePermission | undefined;
-  let namespacePaths: NewNamespacePermissionPath[] | undefined;
-  let streamAllocations: NewEmissionStreamAllocation[] | undefined;
-  let distributionTargets: NewEmissionDistributionTarget[] | undefined;
-  let enforcementControllers: NewPermissionEnforcementController[] | undefined;
-  let revocationArbiters: NewPermissionRevocationArbiter[] | undefined;
-
-  match(contract.scope)({
-    Emission: (emission) => {
-      const allocationType = match(emission.allocation)({
-        Streams: () => "streams" as const,
-        FixedAmount: () => "fixed_amount" as const,
-      });
-
-      const distributionType = match(emission.distribution)({
-        Manual: () => "manual" as const,
-        Automatic: () => "automatic" as const,
-        AtBlock: () => "at_block" as const,
-        Interval: () => "interval" as const,
-      });
-
-      const distributionThreshold = match(emission.distribution)({
-        Automatic: (auto) => auto.toString(),
-        Manual: () => null,
-        AtBlock: () => null,
-        Interval: () => null,
-      });
-
-      const distributionTargetBlock = match(emission.distribution)({
-        AtBlock: (atBlock) => BigInt(atBlock.toString()),
-        Manual: () => null,
-        Automatic: () => null,
-        Interval: () => null,
-      });
-
-      const distributionIntervalBlocks = match(emission.distribution)({
-        Interval: (interval) => BigInt(interval.toString()),
-        Manual: () => null,
-        Automatic: () => null,
-        AtBlock: () => null,
-      });
-
-      const fixedAmount = match(emission.allocation)({
-        FixedAmount: (amount) => amount.toString(),
-        Streams: () => null,
-      });
-
-      emissionPermission = {
-        permissionId: permissionId,
-        allocationType,
-        fixedAmount,
-        distributionType,
-        distributionThreshold,
-        distributionTargetBlock,
-        distributionIntervalBlocks,
-        accumulating: emission.accumulating,
-      };
-
-      match(emission.allocation)({
-        Streams: (streams) => {
-          streamAllocations = Array.from(streams.entries()).map(
-            ([streamId, percentage]) => ({
-              permissionId: permissionId,
-              streamId: streamId,
-              percentage: percentage, // 0-100, matches Substrate Percent type
-            }),
-          );
-        },
-        FixedAmount: () => {
-          // No stream allocations for fixed amount
-        },
-      });
-
-      // Handle distribution targets (all emission permissions have targets)
-      distributionTargets = Array.from(emission.targets.entries()).map(
-        ([accountId, weight]) => ({
-          permissionId: permissionId,
-          targetAccountId: accountId,
-          weight: Number(weight.toString()), // Convert bigint to number (u16 range: 0-65535)
-        }),
-      );
-    },
-    Namespace: (namespace) => {
-      // Handle namespace permissions
-      namespacePermission = {
-        permissionId: permissionId,
-      };
-
-      // Extract namespace paths - each path becomes a separate database entry
-      namespacePaths = namespace.paths.map((pathSegments) => ({
-        permissionId: permissionId,
-        namespacePath: pathSegments.join("."), // Convert segments array to dot-separated string
-      }));
-    },
-    Curator: () => {
-      // This case should never be reached due to early return above
-    },
-  });
+  // Initialize common arrays (always empty if not populated)
+  let enforcementControllers: NewPermissionEnforcementController[] = [];
+  let revocationArbiters: NewPermissionRevocationArbiter[] = [];
 
   // Handle enforcement authorities
   match(contract.enforcement)({
@@ -326,7 +398,7 @@ function permissionContractToDatabase(
       );
     },
     None: () => {
-      // No enforcement authorities
+      // enforcementControllers remains empty array
     },
   });
 
@@ -341,26 +413,53 @@ function permissionContractToDatabase(
       );
     },
     Irrevocable: () => {
-      // No revocation arbiters for other revocation types
+      // revocationArbiters remains empty array
     },
-    RevocableByGrantor: () => {
-      // No revocation arbiters for other revocation types
+    RevocableByDelegator: () => {
+      // revocationArbiters remains empty array
     },
     RevocableAfter: () => {
-      // No revocation arbiters for other revocation types
+      // revocationArbiters remains empty array
     },
   });
 
+  // Handle scope-specific data
+  let scopeSpecificData:
+    | {
+        emissionPermission: NewEmissionPermission;
+        streamAllocations: NewEmissionStreamAllocation[];
+        distributionTargets: NewEmissionDistributionTarget[];
+      }
+    | {
+        namespacePermission: NewNamespacePermission;
+        namespacePaths: NewNamespacePermissionPath[];
+      };
+
+  // TODO: MAKE THIS PRETTIER
+  if ("Emission" in contract.scope) {
+    scopeSpecificData = emissionToDatabase(
+      permissionId,
+      contract.scope.Emission,
+      contract.delegator,
+      streamAccumulations,
+      atBlock,
+    );
+  } else if ("Namespace" in contract.scope) {
+    scopeSpecificData = namespaceToDatabase(
+      permissionId,
+      contract.scope.Namespace,
+    );
+  } else {
+    // This should never happen due to shouldProcess check above
+    throw new Error(`Unexpected scope type in permission ${permissionId}`);
+  }
+
   return {
     permission,
-    emissionPermission,
-    namespacePermission,
-    namespacePaths,
-    streamAllocations,
-    distributionTargets,
+    hierarchy,
     enforcementControllers,
     revocationArbiters,
-    hierarchy,
+    ...scopeSpecificData,
   };
 }
 
@@ -518,17 +617,40 @@ export async function runPermissionsFetch(lastBlock: LastBlock) {
     `Block ${lastBlockNumber}: found ${permissionsMap.size} permissions from blockchain`,
   );
 
-  const permissionsData: {
+  // Query all accumulated stream amounts
+  const streamAccumulationsResult = await queryAllAccumulatedStreamAmounts(
+    lastBlock.apiAtBlock,
+  );
+  const [streamAccumulationsErr, streamAccumulations] =
+    streamAccumulationsResult;
+  if (streamAccumulationsErr) {
+    log.error(
+      `Block ${lastBlockNumber}: queryAllAccumulatedStreamAmounts failed:`,
+      streamAccumulationsErr,
+    );
+    return;
+  }
+
+  log.info(
+    `Block ${lastBlockNumber}: found ${streamAccumulations.length} accumulated stream amounts`,
+  );
+
+  const permissionsData: ({
     permission: NewPermission;
-    emissionPermission?: NewEmissionPermission;
-    namespacePermission?: NewNamespacePermission;
-    namespacePaths?: NewNamespacePermissionPath[];
-    streamAllocations?: NewEmissionStreamAllocation[];
-    distributionTargets?: NewEmissionDistributionTarget[];
-    enforcementControllers?: NewPermissionEnforcementController[];
-    revocationArbiters?: NewPermissionRevocationArbiter[];
-    hierarchy?: NewPermissionHierarchy;
-  }[] = [];
+    hierarchy: NewPermissionHierarchy;
+    enforcementControllers: NewPermissionEnforcementController[];
+    revocationArbiters: NewPermissionRevocationArbiter[];
+  } & (
+    | {
+        emissionPermission: NewEmissionPermission;
+        streamAllocations: NewEmissionStreamAllocation[];
+        distributionTargets: NewEmissionDistributionTarget[];
+      }
+    | {
+        namespacePermission: NewNamespacePermission;
+        namespacePaths: NewNamespacePermissionPath[];
+      }
+  ))[] = [];
 
   // Transform each permission to database format
   for (const [permissionId, contract] of permissionsMap.entries()) {
@@ -536,6 +658,8 @@ export async function runPermissionsFetch(lastBlock: LastBlock) {
       const permissionData = permissionContractToDatabase(
         permissionId,
         contract,
+        streamAccumulations,
+        lastBlockNumber,
       );
       if (permissionData) {
         permissionsData.push(permissionData);
@@ -552,17 +676,11 @@ export async function runPermissionsFetch(lastBlock: LastBlock) {
 
   // Clean up permissions that no longer exist on the blockchain
   await cleanPermissions(permissionsMap, lastBlockNumber);
-  // Process permissions in batches of 50 to avoid timeout
-  const BATCH_SIZE = 50;
-  for (let i = 0; i < permissionsData.length; i += BATCH_SIZE) {
-    const batch = permissionsData.slice(i, i + BATCH_SIZE);
-    log.info(
-      `Block ${lastBlockNumber}: processing permission batch ${Math.floor(i / BATCH_SIZE) + 1}/${Math.ceil(permissionsData.length / BATCH_SIZE)} (${batch.length} permissions)`,
-    );
 
-    const upsertPermissionsRes = await tryAsync(upsertPermissions(batch));
-    if (log.ifResultIsErr(upsertPermissionsRes)) return;
-  }
+  const upsertPermissionsRes = await tryAsync(
+    upsertPermissions(permissionsData),
+  );
+  if (log.ifResultIsErr(upsertPermissionsRes)) return;
 
   log.info(`Block ${lastBlockNumber}: permissions synchronized`);
 }
@@ -607,7 +725,10 @@ export async function agentFetcherWorker(props: WorkerProps) {
       })(),
     );
     if (log.ifResultIsErr(fetchWorkerRes)) {
+      log.error("Agent fetcher failed:", fetchWorkerRes[0]);
       await sleep(retryDelay);
     }
+
+    await sleep(retryDelay);
   }
 }
