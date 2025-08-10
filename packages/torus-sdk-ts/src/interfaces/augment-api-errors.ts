@@ -461,6 +461,10 @@ declare module '@polkadot/api-base/types/errors' {
     };
     permission0: {
       /**
+       * Namespace delegation depth exceeded the maximum allowed limit.
+       **/
+      DelegationDepthExceeded: AugmentedError<ApiType>;
+      /**
        * Permission is a duplicate, revoke the previous one
        **/
       DuplicatePermission: AugmentedError<ApiType>;
@@ -608,6 +612,10 @@ declare module '@polkadot/api-base/types/errors' {
        * Too many controllers
        **/
       TooManyControllers: AugmentedError<ApiType>;
+      /**
+       * Too many curator permissions being delegated in a single permission.
+       **/
+      TooManyCuratorPermissions: AugmentedError<ApiType>;
       /**
        * Exceeded amount of total namespaces allowed in a single permission.
        **/

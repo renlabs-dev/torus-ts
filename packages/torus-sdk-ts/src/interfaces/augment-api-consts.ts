@@ -160,6 +160,10 @@ declare module '@polkadot/api-base/types/consts' {
        **/
       maxControllersPerPermission: u32 & AugmentedConst<ApiType>;
       /**
+       * Maximum number of curator subpermissions a single permission can delegate.
+       **/
+      maxCuratorSubpermissionsPerPermission: u32 & AugmentedConst<ApiType>;
+      /**
        * Maximum number of namespaces a single permission can delegate.
        **/
       maxNamespacesPerPermission: u32 & AugmentedConst<ApiType>;

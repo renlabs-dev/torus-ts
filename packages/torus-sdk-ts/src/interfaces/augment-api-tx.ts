@@ -424,7 +424,7 @@ declare module '@polkadot/api-base/types/submittable' {
       /**
        * Delegate a permission for curator delegation
        **/
-      delegateCuratorPermission: AugmentedSubmittable<(recipient: AccountId32 | string | Uint8Array, flags: u32 | AnyNumber | Uint8Array, cooldown: Option<u64> | null | Uint8Array | u64 | AnyNumber, duration: PalletPermission0PermissionPermissionDuration | { UntilBlock: any } | { Indefinite: any } | string | Uint8Array, revocation: PalletPermission0PermissionRevocationTerms | { Irrevocable: any } | { RevocableByDelegator: any } | { RevocableByArbiters: any } | { RevocableAfter: any } | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [AccountId32, u32, Option<u64>, PalletPermission0PermissionPermissionDuration, PalletPermission0PermissionRevocationTerms]>;
+      delegateCuratorPermission: AugmentedSubmittable<(recipient: AccountId32 | string | Uint8Array, flags: BTreeMap<Option<H256>, u32>, cooldown: Option<u64> | null | Uint8Array | u64 | AnyNumber, duration: PalletPermission0PermissionPermissionDuration | { UntilBlock: any } | { Indefinite: any } | string | Uint8Array, revocation: PalletPermission0PermissionRevocationTerms | { Irrevocable: any } | { RevocableByDelegator: any } | { RevocableByArbiters: any } | { RevocableAfter: any } | string | Uint8Array, instances: u32 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [AccountId32, BTreeMap<Option<H256>, u32>, Option<u64>, PalletPermission0PermissionPermissionDuration, PalletPermission0PermissionRevocationTerms, u32]>;
       /**
        * Delegate a permission for emission delegation
        **/
