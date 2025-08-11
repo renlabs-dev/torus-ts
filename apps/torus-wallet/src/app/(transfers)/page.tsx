@@ -10,7 +10,7 @@ export const metadata = createSeoMetadata({
   title: "Transfer Tokens - Torus Wallet",
   description: "Send and receive digital assets securely with Torus Wallet",
   ogSiteName: "Torus Wallet",
-  canonical: "/",
+  canonical: "/transfers",
   baseUrl: env("BASE_URL"),
   keywords: [
     "send tokens",

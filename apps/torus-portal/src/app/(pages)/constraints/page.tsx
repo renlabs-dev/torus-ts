@@ -14,7 +14,7 @@ export const metadata = createSeoMetadata({
     "network conditions",
   ],
   ogSiteName: "Torus Portal",
-  canonical: "/create-constraint",
+  canonical: "/constraints",
   baseUrl: env("BASE_URL"),
 });
 
