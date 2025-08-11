@@ -1,8 +1,8 @@
+import { ArrowDownLeft, ArrowUpRight } from "lucide-react";
 // import { useMemo } from "react";
 import { useRouter } from "next/navigation";
 
 import { smallAddress } from "@torus-network/torus-utils/torus/address";
-import { ArrowDownLeft, ArrowUpRight } from "lucide-react";
 
 import {
   Accordion,
@@ -11,6 +11,7 @@ import {
   AccordionTrigger,
 } from "@torus-ts/ui/components/accordion";
 import { Card } from "@torus-ts/ui/components/card";
+import { CopyButton } from "@torus-ts/ui/components/copy-button";
 import { ScrollArea } from "@torus-ts/ui/components/scroll-area";
 import {
   Tabs,
@@ -28,11 +29,6 @@ import type {
 import { formatDuration, formatScope } from "../../permission-graph-utils";
 import { GraphSheetDetailsLinkButtons } from "./graph-sheet-details-link-buttons";
 import { GraphSheetDetailsSignalsAccordion } from "./graph-sheet-details-signals-accordion";
-
-// Every single namespace name has been changed to Capability Permission
-// as requested here: https://coda.io/d/RENLABS-CORE-DEVELOPMENT-DOCUMENTS_d5Vgr5OavNK/Text-change-requests_su4jQAlx
-// In the future we are going to have all the other names from namespace to Capability Permission
-// TODO : Change all namespace to Capability Permission
 
 interface NodeDetailsCardProps {
   nodePermissions: CustomGraphLinkWithType[];
@@ -209,6 +205,32 @@ export function NodeDetailsCard({
                             )}
                           </button>
                         </div>
+                        {details.emission_stream_allocations && (
+                          <div>
+                            <span className="text-xs text-gray-500">
+                              Emission ID
+                            </span>
+                            <div className="text-sm text-gray-300">
+                              <CopyButton
+                                copy={String(
+                                  details.emission_stream_allocations.streamId,
+                                )}
+                                message="Emission ID copied to clipboard"
+                                variant="ghost"
+                                className="h-auto p-0"
+                              >
+                                <span className="text-blue-400 hover:text-blue-300 cursor-pointer underline">
+                                  {smallAddress(
+                                    String(
+                                      details.emission_stream_allocations
+                                        .streamId,
+                                    ),
+                                  )}
+                                </span>
+                              </CopyButton>
+                            </div>
+                          </div>
+                        )}
                       </div>
 
                       {details.namespace_permissions &&

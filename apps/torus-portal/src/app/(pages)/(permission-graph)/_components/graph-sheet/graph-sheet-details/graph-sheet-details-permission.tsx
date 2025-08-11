@@ -78,10 +78,18 @@ export function GraphSheetDetailsPermission({
       }
     }
 
-    return Array.from(grouped.entries()).map(([targetAccountId, streams]) => ({
-      targetAccountId,
-      streams: Array.from(streams.values()),
-    }));
+    return Array.from(grouped.entries()).map(([targetAccountId, streams]) => {
+      const values = Array.from(streams.values());
+      const hasSpecificStreams = values.some((s) => s.streamId);
+      // If there are specific streams, drop the default aggregate to avoid duplicated weights
+      if (hasSpecificStreams && streams.has("default")) {
+        streams.delete("default");
+      }
+      return {
+        targetAccountId,
+        streams: Array.from(streams.values()),
+      };
+    });
   }, [allPermissions, permissionData]);
 
   if (!permissionData) {
