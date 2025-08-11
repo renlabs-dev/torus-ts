@@ -4,7 +4,9 @@ import type { JSX } from "react";
 import React from "react";
 
 import type { LucideIcon } from "lucide-react";
-import { UserPen, UserPlus } from "lucide-react";
+import { HandCoins, Layers, UserPlus } from "lucide-react";
+
+import { smallAddress } from "@torus-network/torus-utils/torus";
 
 import { AddressWithAgent } from "~/app/_components/address-with-agent";
 
@@ -19,8 +21,10 @@ interface IconConfig {
 interface LinkButtonsProps {
   grantor_key: string | undefined;
   grantee_key: string | undefined;
+  permission_id?: string | undefined;
   grantorIcon?: IconConfig;
   granteeIcon?: IconConfig;
+  permissionIcon?: IconConfig;
   iconSize?: number;
   iconColor?: string;
 }
@@ -28,8 +32,10 @@ interface LinkButtonsProps {
 export function GraphSheetDetailsLinkButtons({
   grantor_key,
   grantee_key,
+  permission_id,
   grantorIcon,
   granteeIcon,
+  permissionIcon,
   iconSize = 16,
   iconColor = "currentColor",
 }: LinkButtonsProps): JSX.Element {
@@ -49,10 +55,17 @@ export function GraphSheetDetailsLinkButtons({
   };
 
   const defaultGranteeIcon: IconConfig = {
-    icon: UserPen,
+    icon: HandCoins,
     size: iconSize,
     color: iconColor,
     ...granteeIcon,
+  };
+
+  const defaultPermissionIcon: IconConfig = {
+    icon: Layers,
+    size: iconSize,
+    color: iconColor,
+    ...permissionIcon,
   };
 
   const ShortenedDetailsDisplay = ({
@@ -68,13 +81,13 @@ export function GraphSheetDetailsLinkButtons({
 
     return (
       <div className="flex items-center gap-1" title={address}>
-        {label && <span className="sr-only">{label}:</span>}
         <Icon
           size={size}
           color={color}
           strokeWidth={strokeWidth}
           className={className}
         />
+        {label && <span>{label}:</span>}
         <AddressWithAgent
           address={address}
           showCopyButton={false}
@@ -85,7 +98,7 @@ export function GraphSheetDetailsLinkButtons({
   };
 
   return (
-    <div className="flex flex-wrap justify-between items-center gap-2 text-sm text-gray-400">
+    <div className="flex flex-wrap justify-start items-center gap-2 text-sm text-gray-400">
       <ShortenedDetailsDisplay
         iconConfig={defaultGrantorIcon}
         address={grantor_key}
@@ -94,6 +107,12 @@ export function GraphSheetDetailsLinkButtons({
         iconConfig={defaultGranteeIcon}
         address={grantee_key}
       />
+      {permission_id && (
+        <div className="flex items-center gap-1">
+          <defaultPermissionIcon.icon size={iconSize} color={iconColor} />
+          <span>{smallAddress(permission_id)}</span>
+        </div>
+      )}
     </div>
   );
 }

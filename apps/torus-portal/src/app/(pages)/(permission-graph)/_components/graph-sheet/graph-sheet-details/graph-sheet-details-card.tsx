@@ -113,7 +113,7 @@ export function NodeDetailsCard({
   });
 
   const PermissionsContent = () => (
-    <ScrollArea className="h-[calc(100vh-30rem)]">
+    <ScrollArea className="h-[calc(100vh-26rem)]">
       {processedPermissions.length > 0 ? (
         <Accordion type="single" collapsible className="w-full">
           {processedPermissions.map(
@@ -127,21 +127,18 @@ export function NodeDetailsCard({
                   <div className="flex flex-col gap-1 w-full pr-2">
                     <div className="flex items-center justify-between">
                       <span className="font-medium text-white">
-                        {isOutgoing ? "← Delegated " : "→ Received "}
+                        {isOutgoing ? "Delegated" : "Received"}{" "}
                         {details?.emission_permissions
                           ? "emission permission"
                           : details?.namespace_permissions
                             ? "capability permission"
                             : "permission"}
-                        {" "}
-                        {smallAddress(
-                          String(details?.permissions.permissionId),
-                        )}
                       </span>
                     </div>
                     <GraphSheetDetailsLinkButtons
                       grantor_key={details?.permissions.grantorAccountId}
                       grantee_key={details?.permissions.granteeAccountId}
+                      permission_id={String(details?.permissions.permissionId)}
                     />
                   </div>
                 </AccordionTrigger>
