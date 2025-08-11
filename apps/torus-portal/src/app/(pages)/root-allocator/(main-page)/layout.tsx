@@ -20,7 +20,7 @@ export default function RootLayout({
       </Suspense>
       <TutorialDialog />
       <AllocationSheet />
-      <main className="flex flex-1 flex-col gap-4 p-4 animate-fade-down">
+      <main className="flex flex-1 flex-col gap-4 px-4 sm:pt-0 pt-4 animate-fade-down">
         <div className="mx-auto w-full max-w-7xl rounded-md z-50 p-1 sm:p-8">
           {children}
         </div>

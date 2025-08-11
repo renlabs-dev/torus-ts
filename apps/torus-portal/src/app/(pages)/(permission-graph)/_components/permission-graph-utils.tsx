@@ -65,13 +65,16 @@ export const getNodePermissions = (
 
     if (
       (sourceId === node.id || targetId === node.id) &&
-      (link.linkType === "permission_ownership" ||
-        link.linkType === "permission_target")
+      (link.linkType === "permission_grant" ||
+        link.linkType === "permission_receive" ||
+        link.linkType === "permission_target" ||
+        link.linkType === "permission_ownership")
     ) {
       if (!permissionsMap.has(key)) {
         permissionsMap.set(key, {
           ...link,
-          type: link.source === node.id ? "outgoing" : "incoming",
+          // Use normalized IDs to determine direction reliably
+          type: sourceId === node.id ? "outgoing" : "incoming",
         });
       }
     }

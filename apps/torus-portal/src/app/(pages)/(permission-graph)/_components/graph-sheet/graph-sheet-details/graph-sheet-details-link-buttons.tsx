@@ -4,11 +4,11 @@ import type { JSX } from "react";
 import React from "react";
 
 import type { LucideIcon } from "lucide-react";
-import { Layers, UserPen, UserPlus } from "lucide-react";
+import { HandCoins, Layers, UserPlus } from "lucide-react";
 
-import { smallAddress } from "@torus-network/torus-utils/torus/address";
+import { smallAddress } from "@torus-network/torus-utils/torus";
 
-import { formatScope } from "../../permission-graph-utils";
+import { AddressWithAgent } from "~/app/_components/address-with-agent";
 
 interface IconConfig {
   icon: LucideIcon;
@@ -21,10 +21,10 @@ interface IconConfig {
 interface LinkButtonsProps {
   grantor_key: string | undefined;
   grantee_key: string | undefined;
-  scope: string | undefined;
+  permission_id?: string | undefined;
   grantorIcon?: IconConfig;
   granteeIcon?: IconConfig;
-  scopeIcon?: IconConfig;
+  permissionIcon?: IconConfig;
   iconSize?: number;
   iconColor?: string;
 }
@@ -32,10 +32,10 @@ interface LinkButtonsProps {
 export function GraphSheetDetailsLinkButtons({
   grantor_key,
   grantee_key,
-  scope,
+  permission_id,
   grantorIcon,
   granteeIcon,
-  scopeIcon,
+  permissionIcon,
   iconSize = 16,
   iconColor = "currentColor",
 }: LinkButtonsProps): JSX.Element {
@@ -55,17 +55,17 @@ export function GraphSheetDetailsLinkButtons({
   };
 
   const defaultGranteeIcon: IconConfig = {
-    icon: UserPen,
+    icon: HandCoins,
     size: iconSize,
     color: iconColor,
     ...granteeIcon,
   };
 
-  const defaultScopeIcon: IconConfig = {
+  const defaultPermissionIcon: IconConfig = {
     icon: Layers,
     size: iconSize,
     color: iconColor,
-    ...scopeIcon,
+    ...permissionIcon,
   };
 
   const ShortenedDetailsDisplay = ({
@@ -81,35 +81,38 @@ export function GraphSheetDetailsLinkButtons({
 
     return (
       <div className="flex items-center gap-1" title={address}>
-        {label && <span className="sr-only">{label}:</span>}
         <Icon
           size={size}
           color={color}
           strokeWidth={strokeWidth}
           className={className}
         />
-        <span>{address}</span>
+        {label && <span>{label}:</span>}
+        <AddressWithAgent
+          address={address}
+          showCopyButton={false}
+          addressLength={3}
+        />
       </div>
     );
   };
 
   return (
-    <div
-      className="flex flex-wrap justify-between items-center gap-2 text-sm text-gray-400
-        font-mono"
-    >
+    <div className="flex flex-wrap justify-start items-center gap-2 text-sm text-gray-400">
       <ShortenedDetailsDisplay
         iconConfig={defaultGrantorIcon}
-        address={smallAddress(grantor_key, 3)}
+        address={grantor_key}
       />
       <ShortenedDetailsDisplay
         iconConfig={defaultGranteeIcon}
-        address={smallAddress(grantee_key, 3)}
+        address={grantee_key}
       />
-      <ShortenedDetailsDisplay
-        iconConfig={defaultScopeIcon}
-        address={formatScope(scope ?? "")}
-      />
+      {permission_id && (
+        <div className="flex items-center gap-1">
+          <defaultPermissionIcon.icon size={iconSize} color={iconColor} />
+          <span>{smallAddress(permission_id)}</span>
+        </div>
+      )}
     </div>
   );
 }

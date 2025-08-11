@@ -24,6 +24,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@torus-ts/ui/components/card";
+import { Separator } from "@torus-ts/ui/components/separator";
 
 import { AddressWithAgent } from "~/app/_components/address-with-agent";
 
@@ -44,7 +45,7 @@ export function GraphSheetDetailsPermission({
 }: GraphSheetDetailsPermissionProps) {
   const permissionData = selectedNode.permissionData;
 
-  // Group distribution targets for this permission (there can be multiple rows due to JOIN)
+  // Group distribution targets by target account to avoid duplicates and show streams per target
   const distributionTargets = useMemo(() => {
     if (
       !allPermissions ||
@@ -54,33 +55,41 @@ export function GraphSheetDetailsPermission({
       return [];
     }
 
-    const targets = allPermissions
-      .filter((p) => p.permissions.permissionId === permissionData.permissionId)
-      .filter((p) => p.emission_distribution_targets?.targetAccountId)
-      .map((p) => {
-        const target = p.emission_distribution_targets;
-        if (!target) return null;
-        return {
-          targetAccountId: target.targetAccountId,
-          weight: target.weight,
+    // targetAccountId -> (streamKey -> { streamId, weight })
+    const grouped = new Map<
+      string,
+      Map<string, { streamId?: string | null; weight: number }>
+    >();
+
+    for (const p of allPermissions) {
+      if (p.permissions.permissionId !== permissionData.permissionId) continue;
+      const target = p.emission_distribution_targets;
+      if (!target?.targetAccountId) continue;
+      const targetId = target.targetAccountId;
+      const streamKey = target.streamId ?? "default";
+      if (!grouped.has(targetId)) grouped.set(targetId, new Map());
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      const streams = grouped.get(targetId)!;
+      if (!streams.has(streamKey)) {
+        streams.set(streamKey, {
           streamId: target.streamId,
-        };
-      })
-      .filter(
-        (target): target is NonNullable<typeof target> => target !== null,
-      );
+          weight: target.weight,
+        });
+      }
+    }
 
-    // Remove duplicates by creating a unique key
-    const uniqueTargets = targets.filter(
-      (target, index, array) =>
-        array.findIndex(
-          (t) =>
-            t.targetAccountId === target.targetAccountId &&
-            t.streamId === target.streamId,
-        ) === index,
-    );
-
-    return uniqueTargets;
+    return Array.from(grouped.entries()).map(([targetAccountId, streams]) => {
+      const values = Array.from(streams.values());
+      const hasSpecificStreams = values.some((s) => s.streamId);
+      // If there are specific streams, drop the default aggregate to avoid duplicated weights
+      if (hasSpecificStreams && streams.has("default")) {
+        streams.delete("default");
+      }
+      return {
+        targetAccountId,
+        streams: Array.from(streams.values()),
+      };
+    });
   }, [allPermissions, permissionData]);
 
   if (!permissionData) {
@@ -190,15 +199,17 @@ export function GraphSheetDetailsPermission({
                 )}
               </div>
             </div>
-            <div>
-              <h4 className="font-medium mb-2 flex items-center gap-2">
-                <CheckCircle className="w-4 h-4" />
-                Executions
-              </h4>
-              <p className="text-sm text-muted-foreground">
-                {detailedPermission?.permissions.executionCount ?? 0} times
-              </p>
-            </div>
+            {permissionData.permissionType === "emission" && (
+              <div>
+                <h4 className="font-medium mb-2 flex items-center gap-2">
+                  <CheckCircle className="w-4 h-4" />
+                  Executions
+                </h4>
+                <p className="text-sm text-muted-foreground">
+                  {detailedPermission?.permissions.executionCount ?? 0} times
+                </p>
+              </div>
+            )}
           </div>
 
           {detailedPermission?.permissions.createdAt && (
@@ -264,28 +275,34 @@ export function GraphSheetDetailsPermission({
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
-                {distributionTargets.map((target) => (
-                  <div
-                    key={`${target.targetAccountId}-${target.streamId ?? "default"}`}
-                    className="flex flex-col items-start justify-between"
-                  >
-                    <AddressWithAgent
-                      address={target.targetAccountId}
-                      className="mb-2"
-                    />
-                    <span className="text-xs text-muted-foreground">
-                      {target.streamId && (
-                        <span className="items-center flex gap-1">
-                          <Badge variant="secondary">
-                            Stream: {smallAddress(target.streamId, 6)}
-                          </Badge>
-
-                          <Badge variant="secondary">
-                            Weight: {target.weight}
-                          </Badge>
-                        </span>
-                      )}
-                    </span>
+                {distributionTargets.map((entry, i) => (
+                  <div key={entry.targetAccountId} className="w-full">
+                    <div className="flex flex-col items-start justify-between">
+                      <AddressWithAgent
+                        address={entry.targetAccountId}
+                        className="mb-2"
+                      />
+                      <div className="flex flex-wrap gap-2">
+                        {entry.streams.map((s, idx) => (
+                          <span
+                            key={`${entry.targetAccountId}-${s.streamId ?? "default"}-${idx}`}
+                            className="items-center flex gap-1"
+                          >
+                            {s.streamId && (
+                              <Badge variant="secondary">
+                                Stream: {smallAddress(s.streamId, 6)}
+                              </Badge>
+                            )}
+                            <Badge variant="secondary">
+                              Weight: {s.weight}
+                            </Badge>
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                    {i < distributionTargets.length - 1 && (
+                      <Separator className="my-3" />
+                    )}
                   </div>
                 ))}
               </div>
