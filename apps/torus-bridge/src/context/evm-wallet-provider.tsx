@@ -70,19 +70,26 @@ export function initWagmi(multiProvider: MultiProtocolProvider) {
     throw connectorsError;
   }
 
-  const [configError, wagmiConfig] = trySync(() =>
-    createConfig({
-      // Splice to make annoying wagmi type happy
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      chains: [chains[0]!, ...chains.slice(1)],
+  const [configError, wagmiConfig] = trySync(() => {
+    if (!chains.length) {
+      throw new Error("No chains available for Wagmi configuration");
+    }
+
+    const firstChain = chains[0];
+    if (!firstChain) {
+      throw new Error("First chain is undefined");
+    }
+
+    return createConfig({
+      chains: [firstChain, ...chains.slice(1)],
       connectors,
       multiInjectedProviderDiscovery: false,
       client({ chain }) {
         const transport = http(chain.rpcUrls.default.http[0]);
         return createClient({ chain, transport });
       },
-    }),
-  );
+    });
+  });
 
   if (configError !== undefined) {
     console.error("Error creating Wagmi config:", configError);
