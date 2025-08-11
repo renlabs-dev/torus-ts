@@ -17,8 +17,15 @@ import SidebarContainer from "../_components/sidebar/sidebar-container";
 
 export const metadata = createSeoMetadata({
   title: "Torus Portal",
-  description: "Manage network permissions, agent allocations, and explore the Torus Network ecosystem",
-  keywords: ["torus portal", "permission management", "agent allocation", "network governance", "web3 platform"],
+  description:
+    "Manage network permissions, agent allocations, and explore the Torus Network ecosystem",
+  keywords: [
+    "torus portal",
+    "permission management",
+    "agent allocation",
+    "network governance",
+    "web3 platform",
+  ],
   ogSiteName: "Torus Portal",
   canonical: "/",
   baseUrl: env("BASE_URL"),

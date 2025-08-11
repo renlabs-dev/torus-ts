@@ -19,7 +19,8 @@ import { TransactionsSheet } from "./_components/transactions-sheet";
 
 export const metadata = createSeoMetadata({
   title: "Torus Wallet - Secure Crypto Wallet for Torus Network",
-  description: "Manage your Torus Network tokens securely with our web-based wallet. Stake, transfer, and track your digital assets in the Torus ecosystem.",
+  description:
+    "Manage your Torus Network tokens securely with our web-based wallet. Stake, transfer, and track your digital assets in the Torus ecosystem.",
   ogSiteName: "Torus Wallet",
   canonical: "/",
   baseUrl: env("BASE_URL"),

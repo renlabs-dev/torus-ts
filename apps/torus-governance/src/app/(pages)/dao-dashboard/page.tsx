@@ -15,8 +15,15 @@ import { useTabWithQueryParam } from "hooks/use-tab-with-query-param";
 
 export const metadata = createSeoMetadata({
   title: "DAO Dashboard - Torus Governance",
-  description: "Monitor DAO operations, agent health, and applications. Comprehensive dashboard for Torus Network governance management.",
-  keywords: ["dao dashboard", "agent health", "dao applications", "governance monitoring", "network status"],
+  description:
+    "Monitor DAO operations, agent health, and applications. Comprehensive dashboard for Torus Network governance management.",
+  keywords: [
+    "dao dashboard",
+    "agent health",
+    "dao applications",
+    "governance monitoring",
+    "network status",
+  ],
   ogSiteName: "Torus Governance",
   canonical: "/dao-dashboard",
   baseUrl: env("BASE_URL"),

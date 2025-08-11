@@ -13,8 +13,15 @@ import { WalletConflictGuard } from "./_components/wallet-conflict-guard";
 
 export const metadata = createSeoMetadata({
   title: "Torus Base Bridge",
-  description: "Cross-chain token bridge for the Torus ecosystem. Securely transfer tokens across multiple blockchain networks with ease and reliability.",
-  keywords: ["cross-chain bridge", "token transfer", "multi-chain wallet", "blockchain interoperability", "crypto bridge"],
+  description:
+    "Cross-chain token bridge for the Torus ecosystem. Securely transfer tokens across multiple blockchain networks with ease and reliability.",
+  keywords: [
+    "cross-chain bridge",
+    "token transfer",
+    "multi-chain wallet",
+    "blockchain interoperability",
+    "crypto bridge",
+  ],
   ogSiteName: "Torus Base Bridge",
   canonical: "/",
   baseUrl: env("BASE_URL"),

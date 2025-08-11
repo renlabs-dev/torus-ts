@@ -6,8 +6,15 @@ import { ListWhitelistApplications } from "./_components/list-whitelist-applicat
 
 export const metadata = createSeoMetadata({
   title: "Whitelist Applications - Torus Governance",
-  description: "Review and vote on agent whitelist applications. Manage network participation by evaluating agent applications for the Torus Network.",
-  keywords: ["whitelist applications", "agent applications", "network participation", "agent approval", "governance review"],
+  description:
+    "Review and vote on agent whitelist applications. Manage network participation by evaluating agent applications for the Torus Network.",
+  keywords: [
+    "whitelist applications",
+    "agent applications",
+    "network participation",
+    "agent approval",
+    "governance review",
+  ],
   ogSiteName: "Torus Governance",
   canonical: "/whitelist-applications",
   baseUrl: env("BASE_URL"),

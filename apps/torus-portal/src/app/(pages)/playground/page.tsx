@@ -16,8 +16,15 @@ import { tryCatch } from "~/utils/try-catch";
 
 export const metadata = createSeoMetadata({
   title: "Playground - Torus Portal",
-  description: "Test and experiment with Torus Network transactions. Send remarks and explore blockchain functionality in a safe environment.",
-  keywords: ["blockchain playground", "test transactions", "remark transactions", "network testing", "blockchain experiments"],
+  description:
+    "Test and experiment with Torus Network transactions. Send remarks and explore blockchain functionality in a safe environment.",
+  keywords: [
+    "blockchain playground",
+    "test transactions",
+    "remark transactions",
+    "network testing",
+    "blockchain experiments",
+  ],
   ogSiteName: "Torus Portal",
   canonical: "/playground",
   baseUrl: env("BASE_URL"),

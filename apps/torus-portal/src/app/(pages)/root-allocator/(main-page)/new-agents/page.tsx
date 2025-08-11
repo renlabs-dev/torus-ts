@@ -7,8 +7,15 @@ import { PageLayout } from "../../_components/page-layout";
 
 export const metadata = createSeoMetadata({
   title: "New Agents - Torus Portal",
-  description: "Discover newly registered agents on the Torus Network. Explore and allocate to the latest network participants.",
-  keywords: ["new agents", "recent agents", "agent discovery", "latest registrations", "network participants"],
+  description:
+    "Discover newly registered agents on the Torus Network. Explore and allocate to the latest network participants.",
+  keywords: [
+    "new agents",
+    "recent agents",
+    "agent discovery",
+    "latest registrations",
+    "network participants",
+  ],
   ogSiteName: "Torus Portal",
   canonical: "/root-allocator/new-agents",
   baseUrl: env("BASE_URL"),

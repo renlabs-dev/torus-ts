@@ -6,8 +6,15 @@ import { RegisterAgentForm } from "./_components/register-agent-form";
 
 export const metadata = createSeoMetadata({
   title: "Register Agent - Torus Portal",
-  description: "Register a new agent on the Torus Network. Join the decentralized network as a validator or service provider.",
-  keywords: ["register agent", "agent registration", "network participation", "validator registration", "network onboarding"],
+  description:
+    "Register a new agent on the Torus Network. Join the decentralized network as a validator or service provider.",
+  keywords: [
+    "register agent",
+    "agent registration",
+    "network participation",
+    "validator registration",
+    "network onboarding",
+  ],
   ogSiteName: "Torus Portal",
   canonical: "/network-operations/register-agent",
   baseUrl: env("BASE_URL"),

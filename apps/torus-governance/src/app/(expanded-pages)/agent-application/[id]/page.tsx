@@ -6,13 +6,22 @@ import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { AgentApplicationExpandedView } from "./_components/agent-application-expanded-view";
 
-export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
   const { id } = await params;
-  
+
   return createSeoMetadata({
     title: `Agent Application #${id} - Torus Governance`,
     description: `Review agent application #${id} details, voting status, and community feedback on the Torus Network governance platform.`,
-    keywords: ["agent application", "application details", "governance voting", "agent review"],
+    keywords: [
+      "agent application",
+      "application details",
+      "governance voting",
+      "agent review",
+    ],
     ogSiteName: "Torus Governance",
     canonical: `/agent-application/${id}`,
     baseUrl: env("BASE_URL"),

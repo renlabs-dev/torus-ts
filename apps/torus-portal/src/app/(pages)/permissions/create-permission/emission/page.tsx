@@ -6,8 +6,15 @@ import { CreateEmissionPermissionForm } from "./_components/create-emission-perm
 
 export const metadata = createSeoMetadata({
   title: "Create Emission Permission - Torus Portal",
-  description: "Create emission permissions to control token distribution and rewards on the Torus Network. Manage network incentives and allocations.",
-  keywords: ["emission permission", "token distribution", "network rewards", "permission management", "token allocation"],
+  description:
+    "Create emission permissions to control token distribution and rewards on the Torus Network. Manage network incentives and allocations.",
+  keywords: [
+    "emission permission",
+    "token distribution",
+    "network rewards",
+    "permission management",
+    "token allocation",
+  ],
   ogSiteName: "Torus Portal",
   canonical: "/permissions/create-permission/emission",
   baseUrl: env("BASE_URL"),

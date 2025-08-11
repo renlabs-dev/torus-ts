@@ -4,8 +4,15 @@ import { env } from "~/env";
 
 export const metadata = createSeoMetadata({
   title: "Create Constraint - Torus Portal",
-  description: "Create custom constraints for the Torus Network. Define rules and conditions for network operations and governance.",
-  keywords: ["create constraint", "network rules", "constraint management", "governance rules", "network conditions"],
+  description:
+    "Create custom constraints for the Torus Network. Define rules and conditions for network operations and governance.",
+  keywords: [
+    "create constraint",
+    "network rules",
+    "constraint management",
+    "governance rules",
+    "network conditions",
+  ],
   ogSiteName: "Torus Portal",
   canonical: "/create-constraint",
   baseUrl: env("BASE_URL"),
