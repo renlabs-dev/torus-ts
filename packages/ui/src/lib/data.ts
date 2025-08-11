@@ -11,7 +11,7 @@ export const chainEnvSchema = z
     },
   );
 
-export type ChainEnv = z.infer<typeof chainEnvSchema>;
+export type ChainEnv = "mainnet" | "testnet" | (string & {});
 
 const getChainEnvPrefix = (chainEnv: ChainEnv) => {
   const chainEnvResult = chainEnvSchema.safeParse(chainEnv);
