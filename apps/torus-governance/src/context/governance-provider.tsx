@@ -42,7 +42,6 @@ import type {
   AddAgentApplication,
   AddCustomProposal,
   AddDaoTreasuryTransferProposal,
-  RegisterAgent,
   RemoveVote,
   Vote,
 } from "@torus-ts/torus-provider/types";
@@ -84,7 +83,6 @@ interface GovernanceContextType {
   lastBlock: UseQueryResult<LastBlock, Error>;
   proposals: UseQueryResult<Proposal[], Error>;
   proposalsWithMeta: ProposalState[] | undefined;
-  registerAgentTransaction: (registerAgent: RegisterAgent) => Promise<void>;
   removeVoteProposal: (removeVote: RemoveVote) => Promise<void>;
   rewardAllocation: UseQueryResult<bigint, Error>;
   selectedAccount: InjectedAccountWithMeta | null;
@@ -117,7 +115,6 @@ export function GovernanceProvider({
     handleSelectWallet,
     isAccountConnected,
     isInitialized,
-    registerAgentTransaction,
     removeVoteProposal,
     selectedAccount,
     torusCacheUrl,
@@ -240,7 +237,6 @@ export function GovernanceProvider({
         networkConfigs,
         proposals,
         proposalsWithMeta,
-        registerAgentTransaction,
         removeVoteProposal,
         rewardAllocation,
         selectedAccount,

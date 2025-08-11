@@ -542,142 +542,184 @@ export async function getUserWeightMap(): Promise<
 }
 
 export async function upsertPermissions(
-  permissions: {
+  permissions: ({
     permission: NewPermission;
-    emissionPermission?: NewEmissionPermission;
-    namespacePermission?: NewNamespacePermission;
-    namespacePaths?: NewNamespacePermissionPath[];
-    streamAllocations?: NewEmissionStreamAllocation[];
-    distributionTargets?: NewEmissionDistributionTarget[];
-    enforcementControllers?: NewPermissionEnforcementController[];
-    revocationArbiters?: NewPermissionRevocationArbiter[];
-    hierarchy?: NewPermissionHierarchy;
-  }[],
+    hierarchy: NewPermissionHierarchy;
+    enforcementControllers: NewPermissionEnforcementController[];
+    revocationArbiters: NewPermissionRevocationArbiter[];
+  } & (
+    | {
+        emissionPermission: NewEmissionPermission;
+        streamAllocations: NewEmissionStreamAllocation[];
+        distributionTargets: NewEmissionDistributionTarget[];
+      }
+    | {
+        namespacePermission: NewNamespacePermission;
+        namespacePaths: NewNamespacePermissionPath[];
+      }
+  ))[],
 ) {
+  if (permissions.length === 0) return;
+
   await db.transaction(async (tx) => {
-    for (const {
-      permission,
-      emissionPermission,
-      namespacePermission,
-      namespacePaths,
-      streamAllocations,
-      distributionTargets,
-      enforcementControllers,
-      revocationArbiters,
-      hierarchy,
-    } of permissions) {
+    // Step 1: Bulk upsert core permissions (parent table)
+    const allPermissions = permissions.map((p) => p.permission);
+    await tx
+      .insert(permissionsSchema)
+      .values(allPermissions)
+      .onConflictDoUpdate({
+        target: [permissionsSchema.permissionId],
+        set: buildConflictUpdateColumns(permissionsSchema, [
+          "lastExecutionBlock",
+          "executionCount",
+          "grantorAccountId",
+          "granteeAccountId",
+          "durationType",
+          "durationBlockNumber",
+          "revocationType",
+          "revocationBlockNumber",
+          "revocationRequiredVotes",
+          "enforcementType",
+          "enforcementRequiredVotes",
+          "createdAtBlock",
+        ]),
+      });
+
+    // Step 2: Separate emission and namespace permissions
+    const emissionPermissions = permissions.filter(
+      (
+        p,
+      ): p is typeof p & {
+        emissionPermission: NewEmissionPermission;
+        streamAllocations: NewEmissionStreamAllocation[];
+        distributionTargets: NewEmissionDistributionTarget[];
+      } => "emissionPermission" in p,
+    );
+    const namespacePermissions = permissions.filter(
+      (
+        p,
+      ): p is typeof p & {
+        namespacePermission: NewNamespacePermission;
+        namespacePaths: NewNamespacePermissionPath[];
+      } => "namespacePermission" in p,
+    );
+
+    // Step 3: Bulk insert emission permissions
+    if (emissionPermissions.length > 0) {
       await tx
-        .insert(permissionsSchema)
-        .values(permission)
-        .onConflictDoUpdate({
-          target: [permissionsSchema.permissionId],
-          set: {
-            lastExecutionBlock: permission.lastExecutionBlock,
-            executionCount: permission.executionCount,
-            grantorAccountId: permission.grantorAccountId,
-            granteeAccountId: permission.granteeAccountId,
-            durationType: permission.durationType,
-            durationBlockNumber: permission.durationBlockNumber,
-            revocationType: permission.revocationType,
-            revocationBlockNumber: permission.revocationBlockNumber,
-            revocationRequiredVotes: permission.revocationRequiredVotes,
-            enforcementType: permission.enforcementType,
-            enforcementRequiredVotes: permission.enforcementRequiredVotes,
-            createdAtBlock: permission.createdAtBlock,
-          },
+        .insert(emissionPermissionsSchema)
+        .values(emissionPermissions.map((p) => p.emissionPermission))
+        .onConflictDoNothing({
+          target: [emissionPermissionsSchema.permissionId],
         });
+    }
 
-      if (emissionPermission) {
-        await tx
-          .insert(emissionPermissionsSchema)
-          .values(emissionPermission)
-          .onConflictDoNothing({
-            target: [emissionPermissionsSchema.permissionId],
-          });
-      }
+    // Step 4: Bulk insert namespace permissions
+    if (namespacePermissions.length > 0) {
+      await tx
+        .insert(namespacePermissionsSchema)
+        .values(namespacePermissions.map((p) => p.namespacePermission))
+        .onConflictDoNothing({
+          target: [namespacePermissionsSchema.permissionId],
+        });
+    }
 
-      // STEP 3: Insert namespace permission data (if namespace scope)
-      if (namespacePermission) {
-        await tx
-          .insert(namespacePermissionsSchema)
-          .values(namespacePermission)
-          .onConflictDoNothing({
-            target: [namespacePermissionsSchema.permissionId],
-          });
-      }
+    // Step 5: Bulk insert namespace paths
+    const namespacePaths = namespacePermissions.flatMap(
+      (p) => p.namespacePaths,
+    );
+    if (namespacePaths.length > 0) {
+      await tx
+        .insert(namespacePermissionPathsSchema)
+        .values(namespacePaths)
+        .onConflictDoNothing({
+          target: [
+            namespacePermissionPathsSchema.permissionId,
+            namespacePermissionPathsSchema.namespacePath,
+          ],
+        });
+    }
 
-      // STEP 4: Insert namespace paths
-      if (namespacePaths && namespacePaths.length > 0) {
-        await tx
-          .insert(namespacePermissionPathsSchema)
-          .values(namespacePaths)
-          .onConflictDoNothing({
-            target: [
-              namespacePermissionPathsSchema.permissionId,
-              namespacePermissionPathsSchema.namespacePath,
-            ],
-          });
-      }
+    // Step 6: Bulk insert stream allocations
+    const streamAllocations = emissionPermissions.flatMap(
+      (p) => p.streamAllocations,
+    );
+    if (streamAllocations.length > 0) {
+      await tx
+        .insert(emissionStreamAllocationsSchema)
+        .values(streamAllocations)
+        .onConflictDoNothing({
+          target: [
+            emissionStreamAllocationsSchema.permissionId,
+            emissionStreamAllocationsSchema.streamId,
+          ],
+        });
+    }
 
-      if (streamAllocations && streamAllocations.length > 0) {
-        await tx
-          .insert(emissionStreamAllocationsSchema)
-          .values(streamAllocations)
-          .onConflictDoNothing({
-            target: [
-              emissionStreamAllocationsSchema.permissionId,
-              emissionStreamAllocationsSchema.streamId,
-            ],
-          });
-      }
+    // Step 7: Bulk insert distribution targets
+    const distributionTargets = emissionPermissions.flatMap(
+      (p) => p.distributionTargets,
+    );
+    if (distributionTargets.length > 0) {
+      await tx
+        .insert(emissionDistributionTargetsSchema)
+        .values(distributionTargets)
+        .onConflictDoUpdate({
+          target: [
+            emissionDistributionTargetsSchema.permissionId,
+            emissionDistributionTargetsSchema.streamId,
+            emissionDistributionTargetsSchema.targetAccountId,
+          ],
+          set: buildConflictUpdateColumns(emissionDistributionTargetsSchema, [
+            "weight",
+            "accumulatedTokens",
+            "atBlock",
+          ]),
+        });
+    }
 
-      if (distributionTargets && distributionTargets.length > 0) {
-        await tx
-          .insert(emissionDistributionTargetsSchema)
-          .values(distributionTargets)
-          .onConflictDoNothing({
-            target: [
-              emissionDistributionTargetsSchema.permissionId,
-              emissionDistributionTargetsSchema.targetAccountId,
-            ],
-          });
-      }
+    // Step 8: Bulk insert enforcement controllers
+    const enforcementControllers = permissions.flatMap(
+      (p) => p.enforcementControllers,
+    );
+    if (enforcementControllers.length > 0) {
+      await tx
+        .insert(permissionEnforcementControllersSchema)
+        .values(enforcementControllers)
+        .onConflictDoNothing({
+          target: [
+            permissionEnforcementControllersSchema.permissionId,
+            permissionEnforcementControllersSchema.accountId,
+          ],
+        });
+    }
 
-      if (enforcementControllers && enforcementControllers.length > 0) {
-        await tx
-          .insert(permissionEnforcementControllersSchema)
-          .values(enforcementControllers)
-          .onConflictDoNothing({
-            target: [
-              permissionEnforcementControllersSchema.permissionId,
-              permissionEnforcementControllersSchema.accountId,
-            ],
-          });
-      }
+    // Step 9: Bulk insert revocation arbiters
+    const revocationArbiters = permissions.flatMap((p) => p.revocationArbiters);
+    if (revocationArbiters.length > 0) {
+      await tx
+        .insert(permissionRevocationArbitersSchema)
+        .values(revocationArbiters)
+        .onConflictDoNothing({
+          target: [
+            permissionRevocationArbitersSchema.permissionId,
+            permissionRevocationArbitersSchema.accountId,
+          ],
+        });
+    }
 
-      if (revocationArbiters && revocationArbiters.length > 0) {
-        await tx
-          .insert(permissionRevocationArbitersSchema)
-          .values(revocationArbiters)
-          .onConflictDoNothing({
-            target: [
-              permissionRevocationArbitersSchema.permissionId,
-              permissionRevocationArbitersSchema.accountId,
-            ],
-          });
-      }
-
-      if (hierarchy) {
-        await tx
-          .insert(permissionHierarchiesSchema)
-          .values(hierarchy)
-          .onConflictDoNothing({
-            target: [
-              permissionHierarchiesSchema.childPermissionId,
-              permissionHierarchiesSchema.parentPermissionId,
-            ],
-          });
-      }
+    // Step 10: Bulk insert hierarchies
+    const hierarchies = permissions.map((p) => p.hierarchy);
+    if (hierarchies.length > 0) {
+      await tx
+        .insert(permissionHierarchiesSchema)
+        .values(hierarchies)
+        .onConflictDoNothing({
+          target: [
+            permissionHierarchiesSchema.childPermissionId,
+            permissionHierarchiesSchema.parentPermissionId,
+          ],
+        });
     }
   });
 }

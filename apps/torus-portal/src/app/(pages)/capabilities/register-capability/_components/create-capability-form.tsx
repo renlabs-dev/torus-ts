@@ -29,12 +29,12 @@ import PortalFormHeader from "~/app/_components/portal-form-header";
 import { useNamespaceCreationFee } from "~/hooks/use-namespace-creation-fee";
 import { tryCatch } from "~/utils/try-catch";
 
-import { CreateCapabilityMethodField } from "./create-capability-method-field";
-import { CreateCapabilityPathPreview } from "./create-capability-path-preview";
-import { CreateCapabilityPrefixField } from "./create-capability-prefix-field";
-import { CREATE_CAPABILITY_SCHEMA } from "./create-capability-schema";
+import { RegisterCapabilityMethodField } from "./create-capability-method-field";
+import { RegisterCapabilityPathPreview } from "./create-capability-path-preview";
+import { RegisterCapabilityPrefixField } from "./create-capability-prefix-field";
+import { REGISTER_CAPABILITY_SCHEMA } from "./create-capability-schema";
 
-export function CreateCapabilityForm({
+export function RegisterCapabilityForm({
   className,
   ...props
 }: React.ComponentProps<"form">) {
@@ -56,8 +56,8 @@ export function CreateCapabilityForm({
     selectedAccount?.address as SS58Address,
   );
 
-  const form = useForm<z.infer<typeof CREATE_CAPABILITY_SCHEMA>>({
-    resolver: zodResolver(CREATE_CAPABILITY_SCHEMA),
+  const form = useForm<z.infer<typeof REGISTER_CAPABILITY_SCHEMA>>({
+    resolver: zodResolver(REGISTER_CAPABILITY_SCHEMA),
     defaultValues: {
       path: "",
       method: "get",
@@ -106,7 +106,9 @@ export function CreateCapabilityForm({
     fullPath,
   );
 
-  async function handleSubmit(_data: z.infer<typeof CREATE_CAPABILITY_SCHEMA>) {
+  async function handleSubmit(
+    _data: z.infer<typeof REGISTER_CAPABILITY_SCHEMA>,
+  ) {
     setTransactionStatus("loading");
     const { error } = await tryCatch(
       createNamespaceTransaction({
@@ -121,7 +123,7 @@ export function CreateCapabilityForm({
 
           if (result.status === "ERROR") {
             setTransactionStatus("error");
-            toast.error(result.message ?? "Failed to create capability");
+            toast.error(result.message ?? "Failed to register capability");
           }
         },
         refetchHandler: async () => {
@@ -131,9 +133,9 @@ export function CreateCapabilityForm({
     );
 
     if (error) {
-      console.error("Error creating capability:", error);
+      console.error("Error registering capability:", error);
       setTransactionStatus("error");
-      toast.error("Failed to create capability");
+      toast.error("Failed to register capability");
       return;
     }
   }
@@ -146,8 +148,8 @@ export function CreateCapabilityForm({
         className={cn("flex flex-col gap-6", className)}
       >
         <PortalFormHeader
-          title="Create Capability"
-          description="Create a new capability path for your agent."
+          title="Register Capability"
+          description="Register a new capability path for your agent."
         />
 
         <WalletConnectionWarning
@@ -156,7 +158,7 @@ export function CreateCapabilityForm({
         />
 
         <div className="grid gap-6">
-          <CreateCapabilityPrefixField
+          <RegisterCapabilityPrefixField
             namespaceEntries={namespaceEntries}
             selectedPrefix={selectedPrefix}
             onValueChange={setSelectedPrefix}
@@ -183,7 +185,7 @@ export function CreateCapabilityForm({
             )}
           />
 
-          <CreateCapabilityMethodField
+          <RegisterCapabilityMethodField
             control={form.control}
             isDisabled={!isAccountConnected || !selectedPrefix}
             onMethodChange={(value) => {
@@ -216,7 +218,7 @@ export function CreateCapabilityForm({
             </div>
           )}
 
-          <CreateCapabilityPathPreview fullPath={fullPath} />
+          <RegisterCapabilityPathPreview fullPath={fullPath} />
 
           <FeeTooltip
             title="Capability Creation Fee"
@@ -246,8 +248,8 @@ export function CreateCapabilityForm({
             }
           >
             {transactionStatus === "loading"
-              ? "Creating..."
-              : "Create Capability"}
+              ? "Registering..."
+              : "Register Capability"}
           </Button>
         </div>
       </form>

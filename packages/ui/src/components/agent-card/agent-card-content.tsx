@@ -1,6 +1,6 @@
 "use client";
 
-import { Coins, DollarSign, Globe, Key } from "lucide-react";
+import { Coins, Globe, Key } from "lucide-react";
 
 import { smallAddress } from "@torus-network/torus-utils/torus/address";
 
@@ -17,23 +17,28 @@ interface AgentCardContentProps {
   agentKey: string;
   percComputedWeight?: number | null;
   tokensPerWeek?: string;
-  usdValue?: string;
   isLoading?: boolean;
   isStatsLoading?: boolean;
+  // Optional: show penalty details in tooltip when provided
+  prePenaltyPercent?: number | null;
+  penaltyFactor?: number | null;
 }
 
 function AgentStats({
   percComputedWeight,
   tokensPerWeek,
   agentKey,
-  usdValue,
   isLoading = false,
+  prePenaltyPercent,
+  penaltyFactor,
 }: {
   agentKey: string;
   percComputedWeight?: number | null;
   tokensPerWeek?: string;
   usdValue?: string;
   isLoading?: boolean;
+  prePenaltyPercent?: number | null;
+  penaltyFactor?: number | null;
 }) {
   const isMobile = useIsMobile();
 
@@ -42,52 +47,61 @@ function AgentStats({
     !tokensPerWeek.startsWith("0.00") &&
     !tokensPerWeek.startsWith("0 ");
 
-  const shouldShowUsdValue =
-    usdValue && !usdValue.startsWith("$0.00") && !usdValue.startsWith("$0 ");
-
-  const hasStats =
-    ((percComputedWeight !== null && percComputedWeight !== 0) ||
-      shouldShowTokensPerWeek) ??
-    shouldShowUsdValue;
-
-  if (!hasStats) return null;
+  // Always show stats section to display address and other info
+  // Individual stats will show "-" for missing values
 
   return (
     <div className="relative z-30 flex w-full flex-wrap items-center justify-between gap-3">
-      {percComputedWeight !== null && percComputedWeight !== undefined && (
-        <HoverCard>
-          <HoverCardTrigger>
-            <Label className="flex items-center gap-1.5 text-xs font-semibold">
-              <Globe size={14} />
-              {Math.round(percComputedWeight * 100)}%
-            </Label>
-          </HoverCardTrigger>
-          <HoverCardContent className="w-80">
-            <p className="text-sm">Current emission alocated to this agent.</p>
-          </HoverCardContent>
-        </HoverCard>
-      )}
+      <HoverCard>
+        <HoverCardTrigger>
+          <Label className="flex items-center gap-1.5 text-xs font-semibold">
+            <Globe size={14} />
+            {typeof percComputedWeight === "number"
+              ? `${(percComputedWeight * 100).toFixed(2)}%`
+              : "-"}
+          </Label>
+        </HoverCardTrigger>
+        <HoverCardContent className="w-80">
+          <div className="space-y-2">
+            <p className="text-sm">Current emission allocated to this agent.</p>
+            {typeof penaltyFactor === "number" &&
+              !Number.isNaN(penaltyFactor) &&
+              penaltyFactor > 0 && (
+                <div className="space-y-1 text-xs text-muted-foreground">
+                  {typeof prePenaltyPercent === "number" &&
+                    !Number.isNaN(prePenaltyPercent) && (
+                      <div>
+                        Before penalty: {(prePenaltyPercent * 100).toFixed(2)}%
+                      </div>
+                    )}
+                  <div>Penalty applied: {penaltyFactor.toFixed(2)}%</div>
+                  {typeof percComputedWeight === "number" &&
+                    !Number.isNaN(percComputedWeight) && (
+                      <div>
+                        After penalty: {(percComputedWeight * 100).toFixed(2)}%
+                      </div>
+                    )}
+                </div>
+              )}
+          </div>
+        </HoverCardContent>
+      </HoverCard>
 
-      {shouldShowTokensPerWeek && (
-        <HoverCard>
-          <HoverCardTrigger>
-            <Label className="flex items-center gap-1 text-xs font-semibold">
-              <Coins size={16} />
-              {isLoading ? "Loading..." : tokensPerWeek}
-            </Label>
-          </HoverCardTrigger>
-          <HoverCardContent className="w-80">
-            <p className="text-sm">Tokens per week.</p>
-          </HoverCardContent>
-        </HoverCard>
-      )}
-
-      {shouldShowUsdValue && (
-        <Label className="flex items-center gap-1 text-xs font-semibold">
-          <DollarSign size={14} />
-          {isLoading ? "Loading..." : usdValue}
-        </Label>
-      )}
+      <HoverCard>
+        <HoverCardTrigger>
+          <Label className="flex items-center gap-1 text-xs font-semibold">
+            <Coins size={16} />
+            {isLoading
+              ? "Loading..."
+              : shouldShowTokensPerWeek
+                ? tokensPerWeek
+                : "-"}
+          </Label>
+        </HoverCardTrigger>
+        <HoverCardContent className="w-80">
+          <p className="text-sm">Tokens per week.</p>
+        </HoverCardContent>
+      </HoverCard>
 
       <Label className="flex items-center gap-1 text-xs font-semibold">
         <Key size={14} />
@@ -102,9 +116,10 @@ export function AgentCardContent({
   agentKey,
   percComputedWeight,
   tokensPerWeek,
-  usdValue,
   isLoading = false,
   isStatsLoading = false,
+  prePenaltyPercent,
+  penaltyFactor,
 }: Readonly<AgentCardContentProps>) {
   if (isLoading) {
     return <SkeletonAgentCardContent />;
@@ -118,8 +133,9 @@ export function AgentCardContent({
             agentKey={agentKey}
             percComputedWeight={percComputedWeight}
             tokensPerWeek={tokensPerWeek}
-            usdValue={usdValue}
             isLoading={isStatsLoading}
+            prePenaltyPercent={prePenaltyPercent}
+            penaltyFactor={penaltyFactor}
           />
         </div>
         <Separator />

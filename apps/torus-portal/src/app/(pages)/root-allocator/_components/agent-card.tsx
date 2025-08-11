@@ -3,10 +3,12 @@
 import { useTorus } from "@torus-ts/torus-provider";
 import { AgentCard as UIAgentCard } from "@torus-ts/ui/components/agent-card/agent-card";
 
+import { env } from "~/env";
 import { useQueryAgentMetadata } from "~/hooks/use-agent-metadata";
 import { useBlobUrl } from "~/hooks/use-blob-url";
 import { useUserWeightPower } from "~/hooks/use-user-weight-power";
 import { useWeeklyUsdCalculation } from "~/hooks/use-weekly-usd";
+import { usePostPenaltyEmission } from "~/hooks/use-post-penalty-emission";
 import { useDelegateAgentStore } from "~/stores/delegateAgentStore";
 
 interface AgentCardProps {
@@ -55,6 +57,15 @@ export function AgentCard(props: Readonly<AgentCardProps>) {
   );
   const currentPercentage = getAgentPercentage(props.agentKey);
 
+  // Calculate post-penalty emission percentage using custom hook
+  const postPenaltyPercComputedWeight = usePostPenaltyEmission(
+    props.percComputedWeight,
+    props.weightFactor,
+  );
+
+  const allocatorAddress = env("NEXT_PUBLIC_TORUS_ALLOCATOR_ADDRESS");
+  const isAllocatorAgent = props.agentKey === allocatorAddress;
+
   const handlePercentageChange = (newPercentage: number) => {
     setPercentageChange(true);
 
@@ -83,15 +94,21 @@ export function AgentCard(props: Readonly<AgentCardProps>) {
       shortDescription={shortDescription}
       socials={socials}
       website={website}
-      percComputedWeight={props.percComputedWeight}
+      percComputedWeight={postPenaltyPercComputedWeight}
+      prePenaltyPercent={props.percComputedWeight}
+      penaltyFactor={props.weightFactor}
       href={`/root-allocator/agent/${props.agentKey}`}
       showHoverEffect={true}
       isAgentDelegated={isAgentDelegated}
       isAgentSelected={isAgentSelected}
       tokensPerWeek={displayTokensPerWeek}
-      currentPercentage={props.isWhitelisted ? currentPercentage : undefined}
+      currentPercentage={
+        props.isWhitelisted && !isAllocatorAgent ? currentPercentage : undefined
+      }
       onPercentageChange={
-        props.isWhitelisted ? handlePercentageChange : undefined
+        props.isWhitelisted && !isAllocatorAgent
+          ? handlePercentageChange
+          : undefined
       }
       isAccountConnected={!!selectedAccount?.address}
       isLoading={!isInitialized || isWeeklyUsdLoading}

@@ -9,6 +9,7 @@ import { EnvScript } from "~/env";
 import { createSeoMetadata } from "@torus-ts/ui/components/seo";
 import { env } from "~/env";
 import { Fira_Mono as FiraMono } from "next/font/google";
+import { WalletConflictGuard } from "./_components/wallet-conflict-guard";
 
 export const metadata = createSeoMetadata({
   title: "Torus Base Bridge",
@@ -32,7 +33,9 @@ export default function RootLayout({
 }>) {
   return (
     <Layout font={firaMono} headScripts={[EnvScript]}>
-      <AppContextProvider>{children}</AppContextProvider>
+      <WalletConflictGuard>
+        <AppContextProvider>{children}</AppContextProvider>
+      </WalletConflictGuard>
     </Layout>
   );
 }

@@ -1,4 +1,4 @@
-export function CreateCapabilityPathPreview({
+export function RegisterCapabilityPathPreview({
   fullPath,
 }: {
   fullPath: string;

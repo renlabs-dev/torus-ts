@@ -1,3 +1,5 @@
+import { useMemo } from "react";
+
 import {
   AlertCircle,
   Calendar,
@@ -24,6 +26,7 @@ import {
 } from "@torus-ts/ui/components/card";
 
 import { AddressWithAgent } from "~/app/_components/address-with-agent";
+
 import type {
   allPermissions,
   CustomGraphNode,
@@ -40,6 +43,45 @@ export function GraphSheetDetailsPermission({
   allPermissions,
 }: GraphSheetDetailsPermissionProps) {
   const permissionData = selectedNode.permissionData;
+
+  // Group distribution targets for this permission (there can be multiple rows due to JOIN)
+  const distributionTargets = useMemo(() => {
+    if (
+      !allPermissions ||
+      !permissionData ||
+      permissionData.permissionType !== "emission"
+    ) {
+      return [];
+    }
+
+    const targets = allPermissions
+      .filter((p) => p.permissions.permissionId === permissionData.permissionId)
+      .filter((p) => p.emission_distribution_targets?.targetAccountId)
+      .map((p) => {
+        const target = p.emission_distribution_targets;
+        if (!target) return null;
+        return {
+          targetAccountId: target.targetAccountId,
+          weight: target.weight,
+          streamId: target.streamId,
+        };
+      })
+      .filter(
+        (target): target is NonNullable<typeof target> => target !== null,
+      );
+
+    // Remove duplicates by creating a unique key
+    const uniqueTargets = targets.filter(
+      (target, index, array) =>
+        array.findIndex(
+          (t) =>
+            t.targetAccountId === target.targetAccountId &&
+            t.streamId === target.streamId,
+        ) === index,
+    );
+
+    return uniqueTargets;
+  }, [allPermissions, permissionData]);
 
   if (!permissionData) {
     return (
@@ -148,15 +190,17 @@ export function GraphSheetDetailsPermission({
                 )}
               </div>
             </div>
-            <div>
-              <h4 className="font-medium mb-2 flex items-center gap-2">
-                <CheckCircle className="w-4 h-4" />
-                Executions
-              </h4>
-              <p className="text-sm text-muted-foreground">
-                {detailedPermission?.permissions.executionCount ?? 0} times
-              </p>
-            </div>
+            {permissionData.permissionType === "emission" && (
+              <div>
+                <h4 className="font-medium mb-2 flex items-center gap-2">
+                  <CheckCircle className="w-4 h-4" />
+                  Executions
+                </h4>
+                <p className="text-sm text-muted-foreground">
+                  {detailedPermission?.permissions.executionCount ?? 0} times
+                </p>
+              </div>
+            )}
           </div>
 
           {detailedPermission?.permissions.createdAt && (
@@ -212,34 +256,40 @@ export function GraphSheetDetailsPermission({
 
       {/* Distribution Targets (for emission permissions) */}
       {permissionData.permissionType === "emission" &&
-        detailedPermission?.emission_distribution_targets && (
+        distributionTargets.length > 0 && (
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Layers className="w-5 h-5" />
-                Distribution Target
+                Distribution Target{distributionTargets.length > 1 ? "s" : ""}
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <div>
+                {distributionTargets.map((target) => (
+                  <div
+                    key={`${target.targetAccountId}-${target.streamId ?? "default"}`}
+                    className="flex flex-col items-start justify-between"
+                  >
                     <AddressWithAgent
-                      address={
-                        detailedPermission.emission_distribution_targets
-                          .targetAccountId
-                      }
+                      address={target.targetAccountId}
                       className="mb-2"
                     />
-                    <p className="text-xs text-muted-foreground">
-                      Target account for emission distribution
-                    </p>
+                    <span className="text-xs text-muted-foreground">
+                      {target.streamId && (
+                        <span className="items-center flex gap-1">
+                          <Badge variant="secondary">
+                            Stream: {smallAddress(target.streamId, 6)}
+                          </Badge>
+
+                          <Badge variant="secondary">
+                            Weight: {target.weight}
+                          </Badge>
+                        </span>
+                      )}
+                    </span>
                   </div>
-                  <Badge variant="secondary">
-                    Weight:{" "}
-                    {detailedPermission.emission_distribution_targets.weight}
-                  </Badge>
-                </div>
+                ))}
               </div>
             </CardContent>
           </Card>

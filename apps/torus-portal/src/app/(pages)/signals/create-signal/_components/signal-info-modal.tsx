@@ -91,7 +91,7 @@ export function SignalInfoModal() {
             <p className="text-muted-foreground mb-3">
               Still have questions? Check out our{" "}
               <a
-                href="https://docs.torus.network/agents/demand-signaling/"
+                href="https://docs.torus.network/how-to-guides/builders/create-signal/"
                 target="_blank"
                 rel="noreferrer"
                 className="text-cyan-500 hover:underline"

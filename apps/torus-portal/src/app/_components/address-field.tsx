@@ -122,6 +122,7 @@ export function AddressField({
         {label && <FormLabel>{label}</FormLabel>}
         <div className="flex gap-2">
           <button
+            type="button"
             className="text-sm border p-2.5 gap-6 w-full justify-between flex items-center
               bg-field-background"
             onClick={() => setOpen(true)}

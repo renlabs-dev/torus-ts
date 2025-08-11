@@ -2,6 +2,7 @@
 import { useRouter } from "next/navigation";
 
 import { smallAddress } from "@torus-network/torus-utils/torus/address";
+import { ArrowDownLeft, ArrowUpRight } from "lucide-react";
 
 import {
   Accordion,
@@ -113,7 +114,7 @@ export function NodeDetailsCard({
   });
 
   const PermissionsContent = () => (
-    <ScrollArea className="h-[calc(100vh-30rem)]">
+    <ScrollArea className="h-[calc(100vh-26rem)]">
       {processedPermissions.length > 0 ? (
         <Accordion type="single" collapsible className="w-full">
           {processedPermissions.map(
@@ -126,24 +127,24 @@ export function NodeDetailsCard({
                 <AccordionTrigger className="px-4 py-3 hover:no-underline hover:bg-gray-700/50 text-left">
                   <div className="flex flex-col gap-1 w-full pr-2">
                     <div className="flex items-center justify-between">
-                      <span className="font-medium text-white">
-                        {isOutgoing ? "← Delegated " : "→ Received "}
-                        Permission{" "}
-                        {smallAddress(
-                          String(details?.permissions.permissionId),
+                      <span className="font-medium text-white flex items-center gap-2">
+                        {isOutgoing ? (
+                          <ArrowUpRight className="h-4 w-4 text-muted-foreground" />
+                        ) : (
+                          <ArrowDownLeft className="h-4 w-4 text-muted-foreground" />
                         )}
+                        {isOutgoing ? "Delegated" : "Received"}{" "}
+                        {details?.emission_permissions
+                          ? "emission permission"
+                          : details?.namespace_permissions
+                            ? "capability permission"
+                            : "permission"}
                       </span>
                     </div>
                     <GraphSheetDetailsLinkButtons
                       grantor_key={details?.permissions.grantorAccountId}
                       grantee_key={details?.permissions.granteeAccountId}
-                      scope={
-                        details?.emission_permissions
-                          ? "EMISSION"
-                          : details?.namespace_permissions
-                            ? "CAPABILITY"
-                            : "UNKNOWN"
-                      }
+                      permission_id={String(details?.permissions.permissionId)}
                     />
                   </div>
                 </AccordionTrigger>
@@ -181,14 +182,16 @@ export function NodeDetailsCard({
                       </div>
 
                       <div className="grid grid-cols-2 gap-3">
-                        <div>
-                          <span className="text-xs text-gray-500">
-                            Executions
-                          </span>
-                          <div className="text-sm text-gray-300">
-                            {details.permissions.executionCount}
+                        {details.namespace_permissions ? null : (
+                          <div>
+                            <span className="text-xs text-gray-500">
+                              Executions
+                            </span>
+                            <div className="text-sm text-gray-300">
+                              {details.permissions.executionCount}
+                            </div>
                           </div>
-                        </div>
+                        )}
                         <div>
                           <span className="text-xs text-gray-500">
                             Permission ID
@@ -207,6 +210,18 @@ export function NodeDetailsCard({
                           </button>
                         </div>
                       </div>
+
+                  {details.namespace_permissions &&
+                    details.namespace_permission_paths?.namespacePath && (
+                      <div>
+                        <span className="text-xs text-gray-500">
+                          Capability path
+                        </span>
+                        <div className="text-sm text-gray-300 font-mono break-all">
+                          {details.namespace_permission_paths.namespacePath}
+                        </div>
+                      </div>
+                    )}
                     </>
                   )}
                 </AccordionContent>

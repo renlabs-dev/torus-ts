@@ -1,7 +1,5 @@
 "use client";
 
-import { createSeoMetadata } from "@torus-ts/ui/components/seo";
-import { env } from "~/env";
 import { usePathname, useRouter } from "next/navigation";
 
 import {
@@ -13,15 +11,6 @@ import {
 
 import PortalFormContainer from "~/app/_components/portal-form-container";
 import PortalFormHeader from "~/app/_components/portal-form-header";
-
-export const metadata = createSeoMetadata({
-  title: "Create Permission - Torus Portal",
-  description: "Create and delegate permissions on the Torus Network. Choose between capability and emission permissions for network participants.",
-  keywords: ["create permission", "delegate permission", "capability permission", "emission permission", "permission management"],
-  ogSiteName: "Torus Portal",
-  canonical: "/permissions/create-permission",
-  baseUrl: env("BASE_URL"),
-});
 
 // Every single namespace name has been changed to Capability Permission
 // as requested here: https://coda.io/d/RENLABS-CORE-DEVELOPMENT-DOCUMENTS_d5Vgr5OavNK/Text-change-requests_su4jQAlx

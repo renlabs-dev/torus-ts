@@ -297,7 +297,7 @@ export class AgentServer {
       // Only handle permission0 events that involve our agent
       if (event.section === "permission0") {
         switch (event.method) {
-          case "PermissionGranted":
+          case "PermissionDelegated":
           case "PermissionRevoked":
           case "PermissionExpired":
             this.handlePermissionChange(event.method, event.data);
@@ -317,17 +317,17 @@ export class AgentServer {
    */
   private handlePermissionChange(eventMethod: string, eventData: Codec[]) {
     try {
-      // Event data structure: [grantor, grantee, permissionId]
-      const [grantor, grantee, permissionId] = eventData;
+      // Event data structure: [delegator, recipient, permissionId]
+      const [delegator, recipient, permissionId] = eventData;
 
-      if (!grantor || !grantee || !permissionId) {
+      if (!delegator || !recipient || !permissionId) {
         return;
       }
 
-      const grantorStr = grantor.toString();
+      const delegatorStr = delegator.toString();
 
-      // Only care about permissions involving our agent as grantor
-      if (grantorStr === this.options.agentKey) {
+      // Only care about permissions involving our agent as delegator
+      if (delegatorStr === this.options.agentKey) {
         console.log(
           `Permission ${eventMethod.toLowerCase()} by our agent: ${permissionId.toString()}`,
         );
@@ -371,34 +371,51 @@ export class AgentServer {
         return;
       }
 
-      // Filter for permissions where this agent is the grantor and organize by namespace path
+      // Filter for permissions where this agent is the delegator and organize by namespace path
       Array.from(namespacePermissions.entries())
         .filter(
-          ([_, permission]) => permission.grantor === this.options.agentKey,
+          ([_, permission]) => permission.delegator === this.options.agentKey,
         )
         .forEach(([permissionId, permission]) => {
           match(permission.scope)({
             Namespace: (namespaceScope) => {
-              if (namespaceScope.paths.length > 0) {
-                // For each path in this permission, add the grantee to the list
-                namespaceScope.paths.forEach((path) => {
-                  const normalizedPath = path.join(".").toLowerCase();
-                  const existingGrantees =
-                    this.delegatedNamespacePermissions.get(normalizedPath) ??
-                    [];
-                  if (!existingGrantees.includes(permission.grantee)) {
-                    existingGrantees.push(permission.grantee);
-                    this.delegatedNamespacePermissions.set(
-                      normalizedPath,
-                      existingGrantees,
-                    );
-                  }
-                });
+              if (namespaceScope.paths.size > 0) {
+                // For each entry in the paths map, process all paths
+                for (const [
+                  _parentPermId,
+                  pathsArray,
+                ] of namespaceScope.paths.entries()) {
+                  pathsArray.forEach((path) => {
+                    const normalizedPath = path.join(".").toLowerCase();
+                    const existingGrantees =
+                      this.delegatedNamespacePermissions.get(normalizedPath) ??
+                      [];
+                    if (!existingGrantees.includes(permission.recipient)) {
+                      existingGrantees.push(permission.recipient);
+                      this.delegatedNamespacePermissions.set(
+                        normalizedPath,
+                        existingGrantees,
+                      );
+                    }
+                  });
+                }
+
+                // Collect all paths for logging
+                const allPaths: string[] = [];
+                for (const [
+                  _parentPermId,
+                  pathsArray,
+                ] of namespaceScope.paths.entries()) {
+                  allPaths.push(...pathsArray.map((p) => p.join(".")));
+                }
                 console.log(
-                  `Cached namespace permission ${permissionId} for grantee ${permission.grantee} with paths:`,
-                  namespaceScope.paths.map((path) => path.join(".")),
+                  `Cached namespace permission ${permissionId} for grantee ${permission.recipient} with paths:`,
+                  allPaths,
                 );
               }
+              console.log(
+                `Cached namespace permission ${permissionId} for recipient ${permission.recipient}`,
+              );
             },
             Emission: () => {
               // Skip emission permissions

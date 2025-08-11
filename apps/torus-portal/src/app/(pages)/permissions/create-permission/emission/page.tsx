@@ -1,5 +1,7 @@
 import { createSeoMetadata } from "@torus-ts/ui/components/seo";
 import { env } from "~/env";
+import PortalFormContainer from "~/app/_components/portal-form-container";
+import PortalFormHeader from "~/app/_components/portal-form-header";
 import { CreateEmissionPermissionForm } from "./_components/create-emission-permission-form";
 
 export const metadata = createSeoMetadata({
@@ -12,5 +14,13 @@ export const metadata = createSeoMetadata({
 });
 
 export default function CreateEmissionPermissionPage() {
-  return <CreateEmissionPermissionForm />;
+  return (
+    <PortalFormContainer>
+      <PortalFormHeader
+        title="Create Emission Permission"
+        description="Distribute emissions to a set of accounts."
+      />
+      <CreateEmissionPermissionForm />
+    </PortalFormContainer>
+  );
 }

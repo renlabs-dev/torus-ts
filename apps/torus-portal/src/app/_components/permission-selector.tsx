@@ -12,8 +12,8 @@ import type {
 } from "@torus-network/sdk/chain";
 import {
   queryPermissions,
-  queryPermissionsByGrantee,
-  queryPermissionsByGrantor,
+  queryPermissionsByDelegator,
+  queryPermissionsByRecipient,
 } from "@torus-network/sdk/chain";
 import { CONSTANTS } from "@torus-network/sdk/constants";
 import type { SS58Address } from "@torus-network/sdk/types";
@@ -45,7 +45,8 @@ import {
 } from "@torus-ts/ui/components/select";
 
 // Import the expected interface from the form
-import type { PermissionWithDetails } from "../(pages)/permissions/edit-permission/_components/revoke-permission-button";
+import type { PermissionWithDetails } from "../(pages)/permissions/manage-permission/_components/revoke-permission-button";
+import { AddressWithAgent } from "./address-with-agent";
 
 interface PermissionWithNetworkData {
   permissionId: string;
@@ -65,47 +66,49 @@ interface PermissionSelectorProps {
 export function PermissionSelector(props: PermissionSelectorProps) {
   const { selectedAccount, isAccountConnected, api } = useTorus();
 
-  // Get permission IDs where the user is the grantor
-  const { data: grantorPermissionIds, isLoading: isLoadingGrantor } = useQuery({
-    queryKey: ["permissions_by_grantor", selectedAccount?.address],
-    queryFn: async () => {
-      if (!api || !selectedAccount?.address) return null;
-      const result = await queryPermissionsByGrantor(
-        api,
-        selectedAccount.address as SS58Address,
-      );
-      // Unwrap Result type
-      const [error, data] = result;
-      if (error) {
-        console.error("Error querying grantor permissions:", error);
-        return null;
-      }
-      return data;
-    },
-    enabled: !!api && !!selectedAccount?.address,
-    staleTime: CONSTANTS.TIME.STAKE_STALE_TIME,
-  });
+  // Get permission IDs where the user is the delegator
+  const { data: delegatorPermissionIds, isLoading: isLoadingDelegator } =
+    useQuery({
+      queryKey: ["permissions_by_delegator", selectedAccount?.address],
+      queryFn: async () => {
+        if (!api || !selectedAccount?.address) return null;
+        const result = await queryPermissionsByDelegator(
+          api,
+          selectedAccount.address as SS58Address,
+        );
+        // Unwrap Result type
+        const [error, data] = result;
+        if (error) {
+          console.error("Error querying delegator permissions:", error);
+          return null;
+        }
+        return data;
+      },
+      enabled: !!api && !!selectedAccount?.address,
+      staleTime: CONSTANTS.TIME.STAKE_STALE_TIME,
+    });
 
-  // Get permission IDs where the user is the grantee
-  const { data: granteePermissionIds, isLoading: isLoadingGrantee } = useQuery({
-    queryKey: ["permissions_by_grantee", selectedAccount?.address],
-    queryFn: async () => {
-      if (!api || !selectedAccount?.address) return null;
-      const result = await queryPermissionsByGrantee(
-        api,
-        selectedAccount.address as SS58Address,
-      );
-      // Unwrap Result type
-      const [error, data] = result;
-      if (error) {
-        console.error("Error querying grantee permissions:", error);
-        return null;
-      }
-      return data;
-    },
-    enabled: !!api && !!selectedAccount?.address,
-    staleTime: CONSTANTS.TIME.STAKE_STALE_TIME,
-  });
+  // Get permission IDs where the user is the recipient
+  const { data: recipientPermissionIds, isLoading: isLoadingRecipient } =
+    useQuery({
+      queryKey: ["permissions_by_recipient", selectedAccount?.address],
+      queryFn: async () => {
+        if (!api || !selectedAccount?.address) return null;
+        const result = await queryPermissionsByRecipient(
+          api,
+          selectedAccount.address as SS58Address,
+        );
+        // Unwrap Result type
+        const [error, data] = result;
+        if (error) {
+          console.error("Error querying recipient permissions:", error);
+          return null;
+        }
+        return data;
+      },
+      enabled: !!api && !!selectedAccount?.address,
+      staleTime: CONSTANTS.TIME.STAKE_STALE_TIME,
+    });
 
   // Get all permissions with full details
   const {
@@ -135,16 +138,16 @@ export function PermissionSelector(props: PermissionSelectorProps) {
 
     const userPermissionIds = new Set<PermissionId>();
 
-    // Add grantor permission IDs (already unwrapped)
-    if (grantorPermissionIds && Array.isArray(grantorPermissionIds)) {
-      grantorPermissionIds.forEach((id: PermissionId) =>
+    // Add delegator permission IDs (already unwrapped)
+    if (delegatorPermissionIds && Array.isArray(delegatorPermissionIds)) {
+      delegatorPermissionIds.forEach((id: PermissionId) =>
         userPermissionIds.add(id),
       );
     }
 
-    // Add grantee permission IDs (already unwrapped)
-    if (granteePermissionIds && Array.isArray(granteePermissionIds)) {
-      granteePermissionIds.forEach((id: PermissionId) =>
+    // Add recipient permission IDs (already unwrapped)
+    if (recipientPermissionIds && Array.isArray(recipientPermissionIds)) {
+      recipientPermissionIds.forEach((id: PermissionId) =>
         userPermissionIds.add(id),
       );
     }
@@ -172,8 +175,8 @@ export function PermissionSelector(props: PermissionSelectorProps) {
     return filtered;
   }, [
     allPermissions,
-    grantorPermissionIds,
-    granteePermissionIds,
+    delegatorPermissionIds,
+    recipientPermissionIds,
     permissionsError,
   ]);
 
@@ -196,7 +199,7 @@ export function PermissionSelector(props: PermissionSelectorProps) {
     // First try to find a delegator permission
     const delegatorPermission = userPermissions.find(
       (item) =>
-        item.contract.grantor === (selectedAccount?.address as SS58Address),
+        item.contract.delegator === (selectedAccount?.address as SS58Address),
     );
 
     if (delegatorPermission) {
@@ -206,7 +209,7 @@ export function PermissionSelector(props: PermissionSelectorProps) {
     // Fall back to first recipient permission
     const recipientPermission = userPermissions.find(
       (item) =>
-        item.contract.grantee === (selectedAccount?.address as SS58Address),
+        item.contract.recipient === (selectedAccount?.address as SS58Address),
     );
 
     return recipientPermission?.permissionId ?? null;
@@ -232,8 +235,8 @@ export function PermissionSelector(props: PermissionSelectorProps) {
     const permissions: PermissionWithDetails["permissions"] = {
       id: permissionId, // Use permissionId as id for compatibility
       permissionId,
-      grantorAccountId: contract.grantor,
-      granteeAccountId: contract.grantee,
+      grantorAccountId: contract.delegator,
+      granteeAccountId: contract.recipient,
       durationType:
         Object.keys(contract.duration)[0] === "Indefinite"
           ? ("indefinite" as const)
@@ -245,7 +248,7 @@ export function PermissionSelector(props: PermissionSelectorProps) {
       revocationType: (() => {
         const revType = Object.keys(contract.revocation)[0];
         if (revType === "Irrevocable") return "irrevocable";
-        if (revType === "RevocableByGrantor") return "revocable_by_grantor";
+        if (revType === "RevocableByDelegator") return "revocable_by_delegator";
         if (revType === "RevocableAfter") return "revocable_after";
         if (revType === "RevocableByArbiters") return "revocable_by_arbiters";
         return "irrevocable"; // Default to irrevocable instead of unknown
@@ -390,7 +393,7 @@ export function PermissionSelector(props: PermissionSelectorProps) {
 
   function getPlaceholderText() {
     if (!isAccountConnected) return "Connect wallet to view permissions";
-    if (isLoadingGrantor || isLoadingGrantee || isLoadingAll)
+    if (isLoadingDelegator || isLoadingRecipient || isLoadingAll)
       return "Loading permissions...";
     if (permissionsError) return "Error loading permissions";
     if (!hasPermissions) return "No permissions available";
@@ -418,7 +421,7 @@ export function PermissionSelector(props: PermissionSelectorProps) {
     const revocationValue = (() => {
       const revocationType = Object.keys(contract.revocation)[0];
       if (revocationType === "Irrevocable") return "Irrevocable";
-      if (revocationType === "RevocableByGrantor")
+      if (revocationType === "RevocableByDelegator")
         return "Revocable by Delegator";
       if (
         revocationType === "RevocableAfter" &&
@@ -440,19 +443,52 @@ export function PermissionSelector(props: PermissionSelectorProps) {
     const detailRows = [
       {
         label: "Permission ID",
-        value: smallAddress(selectedPermissionData.permissionId),
-      },
-      {
-        label: "Type",
-        value: permissionType,
+        component: (
+          <div className="flex items-center gap-2">
+            <CopyButton
+              copy={selectedPermissionData.permissionId}
+              variant="ghost"
+              message="Permission ID copied to clipboard"
+              className="h-auto p-1 hover:bg-muted/50"
+            >
+              <Copy className="h-3 w-3" />
+            </CopyButton>
+            <span className="font-mono text-sm">
+              {smallAddress(selectedPermissionData.permissionId, 8)}
+            </span>
+          </div>
+        ),
       },
       {
         label: "Delegator",
-        value: smallAddress(contract.grantor),
+        component: (
+          <AddressWithAgent
+            address={contract.delegator}
+            showCopyButton={true}
+            addressLength={8}
+            className="text-sm"
+          />
+        ),
       },
+      // Only show Recipient for non-emission permissions
+      ...(permissionType !== "Emission"
+        ? [
+            {
+              label: "Recipient",
+              component: (
+                <AddressWithAgent
+                  address={contract.recipient}
+                  showCopyButton={true}
+                  addressLength={8}
+                  className="text-sm"
+                />
+              ),
+            },
+          ]
+        : []),
       {
-        label: "Recipient",
-        value: smallAddress(contract.grantee),
+        label: "Type",
+        value: permissionType,
       },
       {
         label: "Duration",
@@ -518,8 +554,8 @@ export function PermissionSelector(props: PermissionSelectorProps) {
                 disabled={
                   !isAccountConnected ||
                   !hasPermissions ||
-                  isLoadingGrantor ||
-                  isLoadingGrantee ||
+                  isLoadingDelegator ||
+                  isLoadingRecipient ||
                   isLoadingAll
                 }
               >
@@ -528,23 +564,23 @@ export function PermissionSelector(props: PermissionSelectorProps) {
                     <SelectValue placeholder={getPlaceholderText()} />
                   </SelectTrigger>
                 </FormControl>
-                <SelectContent>
+                <SelectContent className="max-h-[32vh]">
                   {(() => {
                     if (!userPermissions) return null;
 
                     // Separate permissions by role and deduplicate
                     const delegatorPermissions = userPermissions.filter(
                       (item) =>
-                        item.contract.grantor ===
+                        item.contract.delegator ===
                         (selectedAccount?.address as SS58Address),
                     );
 
                     // Filter out permissions where user is also delegator to avoid duplicates
                     const recipientOnlyPermissions = userPermissions.filter(
                       (item) =>
-                        item.contract.grantee ===
+                        item.contract.recipient ===
                           (selectedAccount?.address as SS58Address) &&
-                        item.contract.grantor !==
+                        item.contract.delegator !==
                           (selectedAccount?.address as SS58Address),
                     );
 
@@ -564,7 +600,7 @@ export function PermissionSelector(props: PermissionSelectorProps) {
                                 >
                                   <div className="flex items-center gap-2">
                                     <span>{smallAddress(permissionId)}</span>
-                                    <span className="text-xs text-muted-foreground">
+                                    <span className="text-sm text-muted-foreground">
                                       ({permissionType})
                                     </span>
                                   </div>
@@ -588,7 +624,7 @@ export function PermissionSelector(props: PermissionSelectorProps) {
                                 >
                                   <div className="flex items-center gap-2">
                                     <span>{smallAddress(permissionId, 6)}</span>
-                                    <span className="text-xs text-muted-foreground">
+                                    <span className="text-sm text-muted-foreground">
                                       {permissionType}
                                     </span>
                                   </div>
@@ -626,13 +662,13 @@ export function PermissionSelector(props: PermissionSelectorProps) {
             </CardTitle>
           </CardHeader>
 
-          <CardContent className="text-xs p-4 pt-0">
+          <CardContent className="text-sm p-4 pt-0">
             {getDetailRows().map((row) => (
-              <div key={row.label} className="flex">
+              <div key={row.label} className="flex items-center">
                 <span className="font-medium flex-shrink-0">{row.label}:</span>
-                <span className="ml-2 text-muted-foreground break-all">
-                  {row.value}
-                </span>
+                <div className="ml-2 text-muted-foreground break-all">
+                  {row.component ?? row.value}
+                </div>
               </div>
             ))}
           </CardContent>

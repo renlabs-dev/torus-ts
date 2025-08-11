@@ -14,20 +14,20 @@ import {
   ToggleGroupItem,
 } from "@torus-ts/ui/components/toggle-group";
 
-import type { CREATE_CAPABILITY_SCHEMA } from "./create-capability-schema";
+import type { REGISTER_CAPABILITY_SCHEMA } from "./create-capability-schema";
 import { HTTP_METHODS } from "./create-capability-schema";
 
-interface CreateCapabilityMethodFieldProps {
-  control: Control<z.infer<typeof CREATE_CAPABILITY_SCHEMA>>;
+interface RegisterCapabilityMethodFieldProps {
+  control: Control<z.infer<typeof REGISTER_CAPABILITY_SCHEMA>>;
   isDisabled: boolean;
   onMethodChange: (value: string) => void;
 }
 
-export function CreateCapabilityMethodField({
+export function RegisterCapabilityMethodField({
   control,
   isDisabled,
   onMethodChange,
-}: CreateCapabilityMethodFieldProps) {
+}: RegisterCapabilityMethodFieldProps) {
   return (
     <FormField
       control={control}

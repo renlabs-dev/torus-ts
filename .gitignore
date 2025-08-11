@@ -37,5 +37,7 @@
 .DS_Store
 
 **/.claude/settings.local.json
-**/.crush/
+
+# Crush
+.crush
 CRUSH.md

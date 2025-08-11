@@ -61,8 +61,10 @@ export function RevocationField({
                   case "Irrevocable":
                     form.setValue("revocation", { type: "Irrevocable" });
                     break;
-                  case "RevocableByGrantor":
-                    form.setValue("revocation", { type: "RevocableByGrantor" });
+                  case "RevocableByDelegator":
+                    form.setValue("revocation", {
+                      type: "RevocableByDelegator",
+                    });
                     break;
                   case "RevocableByArbiters":
                     form.setValue("revocation", {
@@ -86,7 +88,7 @@ export function RevocationField({
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="Irrevocable">Irrevocable</SelectItem>
-                <SelectItem value="RevocableByGrantor">
+                <SelectItem value="RevocableByDelegator">
                   Revocable by Delegator
                 </SelectItem>
                 <SelectItem value="RevocableByArbiters">
