@@ -11,8 +11,16 @@ import { TransferDetails } from "./_components/transfer-details";
 
 export const metadata = createSeoMetadata({
   title: "Torus Bridge - Cross-Chain Token Transfer",
-  description: "Securely transfer tokens across different blockchain networks with Torus Bridge. Fast, reliable, and decentralized cross-chain transactions.",
-  keywords: ["cross-chain bridge", "token transfer", "blockchain bridge", "multi-chain", "interoperability", "secure transfers"],
+  description:
+    "Securely transfer tokens across different blockchain networks with Torus Bridge. Fast, reliable, and decentralized cross-chain transactions.",
+  keywords: [
+    "cross-chain bridge",
+    "token transfer",
+    "blockchain bridge",
+    "multi-chain",
+    "interoperability",
+    "secure transfers",
+  ],
   ogSiteName: "Torus Bridge",
   canonical: "/",
   baseUrl: env("BASE_URL"),

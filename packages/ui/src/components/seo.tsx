@@ -37,6 +37,7 @@ export interface SeoMetadataConfig {
   title: string;
   description: string;
   keywords?: string[];
+  robots?: string;
 
   // Open Graph
   ogTitle?: string;
@@ -73,6 +74,7 @@ export function createSeoMetadata({
   title,
   description,
   keywords,
+  robots,
   ogTitle,
   ogDescription,
   ogSiteName,
@@ -82,10 +84,10 @@ export function createSeoMetadata({
   baseUrl,
   ogImagePath = "/og.png",
 }: SeoMetadataConfig): Metadata {
-  if(!baseUrl.startsWith("https://")) {
+  if (!baseUrl.startsWith("https://")) {
     return {};
   }
- 
+
   const ogImageUrl = `${baseUrl}${ogImagePath}`;
 
   return {
@@ -95,7 +97,7 @@ export function createSeoMetadata({
       ...DEFAULT_BLOCKCHAIN_KEYWORDS,
       ...(keywords?.length ? keywords : []),
     ],
-    robots: "all",
+    robots: robots ?? "all",
     icons: [
       { rel: "icon", url: "/favicon.ico" },
       {

@@ -6,8 +6,15 @@ import { env } from "~/env";
 
 export const metadata = createSeoMetadata({
   title: "Torus Network - Decentralized Infrastructure",
-  description: "Torus Network is a decentralized infrastructure platform built on Substrate. Explore the future of blockchain technology and decentralized applications.",
-  keywords: ["torus network", "decentralized infrastructure", "substrate blockchain", "web3 platform", "blockchain network"],
+  description:
+    "Torus Network is a decentralized infrastructure platform built on Substrate. Explore the future of blockchain technology and decentralized applications.",
+  keywords: [
+    "torus network",
+    "decentralized infrastructure",
+    "substrate blockchain",
+    "web3 platform",
+    "blockchain network",
+  ],
   ogSiteName: "Torus Network",
   canonical: "/",
   baseUrl: env("BASE_URL"),

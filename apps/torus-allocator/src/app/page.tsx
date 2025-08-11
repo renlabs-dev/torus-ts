@@ -8,8 +8,15 @@ import { env } from "~/env";
 
 export const metadata = createSeoMetadata({
   title: "Torus Allocator - Moved to Portal",
-  description: "The Torus Allocator has moved to the Torus Portal. Access agent allocation and weight management through the integrated portal interface.",
-  keywords: ["torus allocator", "agent allocation", "weight management", "portal integration", "network allocation"],
+  description:
+    "The Torus Allocator has moved to the Torus Portal. Access agent allocation and weight management through the integrated portal interface.",
+  keywords: [
+    "torus allocator",
+    "agent allocation",
+    "weight management",
+    "portal integration",
+    "network allocation",
+  ],
   ogSiteName: "Torus Allocator",
   canonical: "/",
   baseUrl: env("BASE_URL"),

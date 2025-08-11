@@ -22,8 +22,15 @@ import { AgentLRUCache } from "./_components/permission-graph-utils";
 
 export const metadata = createSeoMetadata({
   title: "Permission Graph - Torus Portal",
-  description: "Visualize and explore the Torus Network permission graph. Interactive network visualization of agents, permissions, and relationships.",
-  keywords: ["permission graph", "network visualization", "agent relationships", "permission mapping", "network explorer"],
+  description:
+    "Visualize and explore the Torus Network permission graph. Interactive network visualization of agents, permissions, and relationships.",
+  keywords: [
+    "permission graph",
+    "network visualization",
+    "agent relationships",
+    "permission mapping",
+    "network explorer",
+  ],
   ogSiteName: "Torus Portal",
   canonical: "/",
   baseUrl: env("BASE_URL"),
@@ -122,6 +129,7 @@ export default function PermissionGraphPage() {
         className="fixed inset-0 flex flex-col items-center text-sm justify-center animate-pulse
           gap-2"
       >
+        <h1 className="sr-only">Permission Graph - Torus Portal</h1>
         <span className="flex items-center gap-2">
           <Loading /> Loading...
         </span>
@@ -134,6 +142,7 @@ export default function PermissionGraphPage() {
 
   return (
     <main>
+      <h1 className="sr-only">Permission Graph - Torus Portal</h1>
       <GraphSheet
         selectedNode={selectedNode}
         graphData={graphData}
