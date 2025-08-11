@@ -4,7 +4,7 @@ import type { JSX } from "react";
 import React from "react";
 
 import type { LucideIcon } from "lucide-react";
-import { Layers, UserPen, UserPlus } from "lucide-react";
+import { UserPen, UserPlus } from "lucide-react";
 
 import { AddressWithAgent } from "~/app/_components/address-with-agent";
 
@@ -75,15 +75,17 @@ export function GraphSheetDetailsLinkButtons({
           strokeWidth={strokeWidth}
           className={className}
         />
-        <AddressWithAgent address={address} showCopyButton={false} addressLength={3} />
+        <AddressWithAgent
+          address={address}
+          showCopyButton={false}
+          addressLength={3}
+        />
       </div>
     );
   };
 
   return (
-    <div
-      className="flex flex-wrap justify-between items-center gap-2 text-sm text-gray-400"
-    >
+    <div className="flex flex-wrap justify-between items-center gap-2 text-sm text-gray-400">
       <ShortenedDetailsDisplay
         iconConfig={defaultGrantorIcon}
         address={grantor_key}
