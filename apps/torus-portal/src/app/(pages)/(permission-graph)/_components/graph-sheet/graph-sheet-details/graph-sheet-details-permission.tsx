@@ -190,15 +190,17 @@ export function GraphSheetDetailsPermission({
                 )}
               </div>
             </div>
-            <div>
-              <h4 className="font-medium mb-2 flex items-center gap-2">
-                <CheckCircle className="w-4 h-4" />
-                Executions
-              </h4>
-              <p className="text-sm text-muted-foreground">
-                {detailedPermission?.permissions.executionCount ?? 0} times
-              </p>
-            </div>
+            {permissionData.permissionType === "emission" && (
+              <div>
+                <h4 className="font-medium mb-2 flex items-center gap-2">
+                  <CheckCircle className="w-4 h-4" />
+                  Executions
+                </h4>
+                <p className="text-sm text-muted-foreground">
+                  {detailedPermission?.permissions.executionCount ?? 0} times
+                </p>
+              </div>
+            )}
           </div>
 
           {detailedPermission?.permissions.createdAt && (

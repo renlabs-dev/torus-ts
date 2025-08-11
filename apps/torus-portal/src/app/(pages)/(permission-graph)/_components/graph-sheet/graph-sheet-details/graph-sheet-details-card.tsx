@@ -2,6 +2,7 @@
 import { useRouter } from "next/navigation";
 
 import { smallAddress } from "@torus-network/torus-utils/torus/address";
+import { ArrowDownLeft, ArrowUpRight } from "lucide-react";
 
 import {
   Accordion,
@@ -126,7 +127,12 @@ export function NodeDetailsCard({
                 <AccordionTrigger className="px-4 py-3 hover:no-underline hover:bg-gray-700/50 text-left">
                   <div className="flex flex-col gap-1 w-full pr-2">
                     <div className="flex items-center justify-between">
-                      <span className="font-medium text-white">
+                      <span className="font-medium text-white flex items-center gap-2">
+                        {isOutgoing ? (
+                          <ArrowUpRight className="h-4 w-4 text-muted-foreground" />
+                        ) : (
+                          <ArrowDownLeft className="h-4 w-4 text-muted-foreground" />
+                        )}
                         {isOutgoing ? "Delegated" : "Received"}{" "}
                         {details?.emission_permissions
                           ? "emission permission"
@@ -176,14 +182,16 @@ export function NodeDetailsCard({
                       </div>
 
                       <div className="grid grid-cols-2 gap-3">
-                        <div>
-                          <span className="text-xs text-gray-500">
-                            Executions
-                          </span>
-                          <div className="text-sm text-gray-300">
-                            {details.permissions.executionCount}
+                        {details.namespace_permissions ? null : (
+                          <div>
+                            <span className="text-xs text-gray-500">
+                              Executions
+                            </span>
+                            <div className="text-sm text-gray-300">
+                              {details.permissions.executionCount}
+                            </div>
                           </div>
-                        </div>
+                        )}
                         <div>
                           <span className="text-xs text-gray-500">
                             Permission ID
