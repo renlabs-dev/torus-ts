@@ -7,6 +7,7 @@ import { AppContextProvider } from "~/context/app-context-provider";
 import { EnvScript } from "~/env";
 import type { Metadata } from "next";
 import { Fira_Mono as FiraMono } from "next/font/google";
+import { WalletConflictGuard } from "./_components/wallet-conflict-guard";
 
 export const metadata: Metadata = {
   robots: "all",
@@ -29,7 +30,9 @@ export default function RootLayout({
 }>) {
   return (
     <Layout font={firaMono} headScripts={[EnvScript]}>
-      <AppContextProvider>{children}</AppContextProvider>
+      <WalletConflictGuard>
+        <AppContextProvider>{children}</AppContextProvider>
+      </WalletConflictGuard>
     </Layout>
   );
 }

@@ -71,39 +71,53 @@ const createToast = ({
   };
 };
 
-const createSuccessToast = (
-  description = "Operation completed successfully.",
-  duration = DEFAULT_DURATION,
-  action?: ToastAction,
-): ToastResult => {
-  const defaultClassNames = action
+const buildActionOptions = (action?: ToastAction) => {
+  const classNames = action
     ? {
         icon: "mb-6",
         content: "mb-6",
       }
     : undefined;
-
-  const defaultActionButtonStyle = action
+  const actionButtonStyle = action
     ? {
         position: "absolute" as const,
         right: "0.5rem",
         bottom: "0.5rem",
       }
     : undefined;
+  const normalizedAction = action
+    ? {
+        label: action.label,
+        onClick: action.onClick,
+      }
+    : undefined;
+  return { classNames, actionButtonStyle, action: normalizedAction } as const;
+};
+
+const createTypedToast = (
+  type: "success" | "error",
+  description: string,
+  duration: number,
+  action?: ToastAction,
+  titles?: { defaultTitle?: string; variant?: ToastVariant },
+): ToastResult => {
+  const {
+    classNames,
+    actionButtonStyle,
+    action: normalizedAction,
+  } = buildActionOptions(action);
 
   const toastOptions = {
     duration,
-    action: action
-      ? {
-          label: action.label,
-          onClick: action.onClick,
-        }
-      : undefined,
-    classNames: defaultClassNames,
-    actionButtonStyle: defaultActionButtonStyle,
+    action: normalizedAction,
+    classNames,
+    actionButtonStyle,
   };
 
-  const toastId = sonnerToast.success(description, toastOptions);
+  const toastId =
+    type === "success"
+      ? sonnerToast.success(description, toastOptions)
+      : sonnerToast.error(description, toastOptions);
 
   return {
     id: String(toastId),
@@ -111,40 +125,39 @@ const createSuccessToast = (
     update: (newProps) => {
       sonnerToast.dismiss(toastId);
       return createToast({
-        title: "Success!",
+        title: titles?.defaultTitle,
         description,
-        variant: "default",
+        variant:
+          titles?.variant ?? (type === "error" ? "destructive" : "default"),
         duration,
         action,
-        classNames: defaultClassNames,
-        actionButtonStyle: defaultActionButtonStyle,
+        classNames,
+        actionButtonStyle,
         ...newProps,
       });
     },
   };
 };
+
+const createSuccessToast = (
+  description = "Operation completed successfully.",
+  duration = DEFAULT_DURATION,
+  action?: ToastAction,
+): ToastResult =>
+  createTypedToast("success", description, duration, action, {
+    defaultTitle: "Success!",
+    variant: "default",
+  });
 
 const createErrorToast = (
   description = "An unexpected error occurred. Please try again.",
   duration = DEFAULT_DURATION,
-): ToastResult => {
-  const toastId = sonnerToast.error(description, { duration });
-
-  return {
-    id: String(toastId),
-    dismiss: () => sonnerToast.dismiss(toastId),
-    update: (newProps) => {
-      sonnerToast.dismiss(toastId);
-      return createToast({
-        title: "Uh oh! Something went wrong.",
-        description,
-        variant: "destructive",
-        duration,
-        ...newProps,
-      });
-    },
-  };
-};
+  action?: ToastAction,
+): ToastResult =>
+  createTypedToast("error", description, duration, action, {
+    defaultTitle: "Uh oh! Something went wrong.",
+    variant: "destructive",
+  });
 
 const createLoadingToast = (
   description: string,
@@ -167,7 +180,11 @@ export interface ToastFunction {
     duration?: number,
     action?: ToastAction,
   ) => ToastResult;
-  error: (description?: string, duration?: number) => ToastResult;
+  error: (
+    description?: string,
+    duration?: number,
+    action?: ToastAction,
+  ) => ToastResult;
   loading: (
     description: string,
     options?: { id?: string | number; duration?: number },
