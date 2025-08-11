@@ -1,7 +1,6 @@
 // == Transactions ==
 
 import type { EmissionProposal, PermissionId } from "@torus-network/sdk/chain";
-import type { SS58Address } from "@torus-network/sdk/types";
 
 export interface TransactionResult {
   finalized: boolean;
