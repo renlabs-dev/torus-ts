@@ -16,7 +16,7 @@ export const metadata = createSeoMetadata({
     "permission management",
   ],
   ogSiteName: "Torus Portal",
-  canonical: "/permissions/edit-permission",
+  canonical: "/permissions/manage-permission",
   baseUrl: env("BASE_URL"),
 });
 
