@@ -202,6 +202,18 @@ export function NodeDetailsCard({
                           </button>
                         </div>
                       </div>
+
+                  {details.namespace_permissions &&
+                    details.namespace_permission_paths?.namespacePath && (
+                      <div>
+                        <span className="text-xs text-gray-500">
+                          Capability path
+                        </span>
+                        <div className="text-sm text-gray-300 font-mono break-all">
+                          {details.namespace_permission_paths.namespacePath}
+                        </div>
+                      </div>
+                    )}
                     </>
                   )}
                 </AccordionContent>
