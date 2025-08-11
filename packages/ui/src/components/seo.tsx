@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { use } from "react";
 
 export interface SeoProps {
   ogImageAlt?: string;
@@ -12,18 +11,14 @@ export const Seo = ({
   ogImageUrl = "/og.png",
   baseUrl,
 }: SeoProps) => {
-  const imageUrl = `${baseUrl}${ogImageUrl}`;
-
-  const imageExists = use(fetch(imageUrl).then((res) => res.ok));
-  console.log("imageExists", imageExists);
-
-  if (!imageExists) {
-    return <></>;
-  }
+  const imageUrl =
+    ogImageUrl.startsWith("http://") || ogImageUrl.startsWith("https://")
+      ? ogImageUrl
+      : `${baseUrl}${ogImageUrl}`;
 
   return (
     <>
-      <meta property="og:image" content={ogImageUrl} />
+      <meta property="og:image" content={imageUrl} />
       <meta property="og:image:width" content="1200" />
       <meta property="og:image:height" content="630" />
       <meta property="og:image:alt" content={ogImageAlt} />
