@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { use } from "react";
-import { ChainEnv } from "../lib/data";
 
 export interface SeoProps {
   ogImageAlt?: string;
