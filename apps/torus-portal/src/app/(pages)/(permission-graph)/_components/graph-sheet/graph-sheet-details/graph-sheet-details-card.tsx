@@ -128,7 +128,12 @@ export function NodeDetailsCard({
                     <div className="flex items-center justify-between">
                       <span className="font-medium text-white">
                         {isOutgoing ? "← Delegated " : "→ Received "}
-                        Permission{" "}
+                        {details?.emission_permissions
+                          ? "emission permission"
+                          : details?.namespace_permissions
+                            ? "capability permission"
+                            : "permission"}
+                        {" "}
                         {smallAddress(
                           String(details?.permissions.permissionId),
                         )}
@@ -137,13 +142,6 @@ export function NodeDetailsCard({
                     <GraphSheetDetailsLinkButtons
                       grantor_key={details?.permissions.grantorAccountId}
                       grantee_key={details?.permissions.granteeAccountId}
-                      scope={
-                        details?.emission_permissions
-                          ? "EMISSION"
-                          : details?.namespace_permissions
-                            ? "CAPABILITY"
-                            : "UNKNOWN"
-                      }
                     />
                   </div>
                 </AccordionTrigger>

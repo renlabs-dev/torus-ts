@@ -6,9 +6,7 @@ import React from "react";
 import type { LucideIcon } from "lucide-react";
 import { Layers, UserPen, UserPlus } from "lucide-react";
 
-import { smallAddress } from "@torus-network/torus-utils/torus/address";
-
-import { formatScope } from "../../permission-graph-utils";
+import { AddressWithAgent } from "~/app/_components/address-with-agent";
 
 interface IconConfig {
   icon: LucideIcon;
@@ -21,10 +19,8 @@ interface IconConfig {
 interface LinkButtonsProps {
   grantor_key: string | undefined;
   grantee_key: string | undefined;
-  scope: string | undefined;
   grantorIcon?: IconConfig;
   granteeIcon?: IconConfig;
-  scopeIcon?: IconConfig;
   iconSize?: number;
   iconColor?: string;
 }
@@ -32,10 +28,8 @@ interface LinkButtonsProps {
 export function GraphSheetDetailsLinkButtons({
   grantor_key,
   grantee_key,
-  scope,
   grantorIcon,
   granteeIcon,
-  scopeIcon,
   iconSize = 16,
   iconColor = "currentColor",
 }: LinkButtonsProps): JSX.Element {
@@ -61,13 +55,6 @@ export function GraphSheetDetailsLinkButtons({
     ...granteeIcon,
   };
 
-  const defaultScopeIcon: IconConfig = {
-    icon: Layers,
-    size: iconSize,
-    color: iconColor,
-    ...scopeIcon,
-  };
-
   const ShortenedDetailsDisplay = ({
     address,
     label,
@@ -88,27 +75,22 @@ export function GraphSheetDetailsLinkButtons({
           strokeWidth={strokeWidth}
           className={className}
         />
-        <span>{address}</span>
+        <AddressWithAgent address={address} showCopyButton={false} addressLength={3} />
       </div>
     );
   };
 
   return (
     <div
-      className="flex flex-wrap justify-between items-center gap-2 text-sm text-gray-400
-        font-mono"
+      className="flex flex-wrap justify-between items-center gap-2 text-sm text-gray-400"
     >
       <ShortenedDetailsDisplay
         iconConfig={defaultGrantorIcon}
-        address={smallAddress(grantor_key, 3)}
+        address={grantor_key}
       />
       <ShortenedDetailsDisplay
         iconConfig={defaultGranteeIcon}
-        address={smallAddress(grantee_key, 3)}
-      />
-      <ShortenedDetailsDisplay
-        iconConfig={defaultScopeIcon}
-        address={formatScope(scope ?? "")}
+        address={grantee_key}
       />
     </div>
   );
