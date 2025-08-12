@@ -5,21 +5,22 @@ import { FilterContent } from "../../_components/filter-content";
 import { ShapeNetworkModal } from "../../_components/shape-network-modal";
 import { ListProposals } from "./_components/list-proposals";
 
-export const metadata = createSeoMetadata({
-  title: "Proposals - Torus Governance",
-  description:
-    "Browse and vote on network proposals. Participate in Torus Network governance by reviewing and voting on community proposals.",
-  keywords: [
-    "network proposals",
-    "governance voting",
-    "community proposals",
-    "dao voting",
-    "proposal management",
-  ],
-  ogSiteName: "Torus Governance",
-  canonical: "/proposals",
-  baseUrl: env("BASE_URL"),
-});
+export const metadata = () =>
+  createSeoMetadata({
+    title: "Proposals - Torus Governance",
+    description:
+      "Browse and vote on network proposals. Participate in Torus Network governance by reviewing and voting on community proposals.",
+    keywords: [
+      "network proposals",
+      "governance voting",
+      "community proposals",
+      "dao voting",
+      "proposal management",
+    ],
+    ogSiteName: "Torus Governance",
+    canonical: "/proposals",
+    baseUrl: env("BASE_URL"),
+  });
 
 export default function ProposalsPage() {
   return (

@@ -19,21 +19,22 @@ import AllSignalsView from "./_components/all-signals-view";
 import DeletedSignalsView from "./_components/deleted-signals-view";
 import FulfilledSignalsView from "./_components/fulfilled-signals-view";
 
-export const metadata = createSeoMetadata({
-  title: "Signal List - Torus Portal",
-  description:
-    "View and manage demand signals on the Torus Network. Browse active, fulfilled, and deleted network signals.",
-  keywords: [
-    "signal list",
-    "demand signals",
-    "network signals",
-    "signal management",
-    "signal status",
-  ],
-  ogSiteName: "Torus Portal",
-  canonical: "/signals/signal-list",
-  baseUrl: env("BASE_URL"),
-});
+export const metadata = () =>
+  createSeoMetadata({
+    title: "Signal List - Torus Portal",
+    description:
+      "View and manage demand signals on the Torus Network. Browse active, fulfilled, and deleted network signals.",
+    keywords: [
+      "signal list",
+      "demand signals",
+      "network signals",
+      "signal management",
+      "signal status",
+    ],
+    ogSiteName: "Torus Portal",
+    canonical: "/signals/signal-list",
+    baseUrl: env("BASE_URL"),
+  });
 
 export default function SignalsPage() {
   const [activeTab, setActiveTab] = useState("all");

@@ -8,21 +8,22 @@ import { Container } from "@torus-ts/ui/components/container";
 
 import { api } from "~/trpc/server";
 
-export const metadata = createSeoMetadata({
-  title: "Agent Stake Details - Torus Portal",
-  description:
-    "View detailed stake information for agents on the Torus Network. Analyze stake weights and user allocations.",
-  keywords: [
-    "agent stake",
-    "stake weights",
-    "user allocations",
-    "stake details",
-    "network stakes",
-  ],
-  ogSiteName: "Torus Portal",
-  canonical: "/root-allocator/agentstake",
-  baseUrl: env("BASE_URL"),
-});
+export const metadata = () =>
+  createSeoMetadata({
+    title: "Agent Stake Details - Torus Portal",
+    description:
+      "View detailed stake information for agents on the Torus Network. Analyze stake weights and user allocations.",
+    keywords: [
+      "agent stake",
+      "stake weights",
+      "user allocations",
+      "stake details",
+      "network stakes",
+    ],
+    ogSiteName: "Torus Portal",
+    canonical: "/root-allocator/agentstake",
+    baseUrl: env("BASE_URL"),
+  });
 
 export default async function UserAgentPage({
   searchParams,

@@ -17,22 +17,23 @@ import { WalletBalance } from "./_components/wallet-balance";
 import { WalletHeader } from "./_components/wallet-header";
 import { TransactionsSheet } from "./_components/transactions-sheet";
 
-export const metadata = createSeoMetadata({
-  title: "Torus Wallet - Secure Crypto Wallet for Torus Network",
-  description:
-    "Manage your Torus Network tokens securely with our web-based wallet. Stake, transfer, and track your digital assets in the Torus ecosystem.",
-  ogSiteName: "Torus Wallet",
-  canonical: "/",
-  baseUrl: env("BASE_URL"),
-  keywords: [
-    "torus wallet",
-    "crypto wallet",
-    "web3 wallet",
-    "secure wallet",
-    "token management",
-    "wallet dashboard",
-  ],
-});
+export const metadata = () =>
+  createSeoMetadata({
+    title: "Torus Wallet - Secure Crypto Wallet for Torus Network",
+    description:
+      "Manage your Torus Network tokens securely with our web-based wallet. Stake, transfer, and track your digital assets in the Torus ecosystem.",
+    ogSiteName: "Torus Wallet",
+    canonical: "/",
+    baseUrl: env("BASE_URL"),
+    keywords: [
+      "torus wallet",
+      "crypto wallet",
+      "web3 wallet",
+      "secure wallet",
+      "token management",
+      "wallet dashboard",
+    ],
+  });
 
 interface ProvidersProps {
   children: React.ReactNode;

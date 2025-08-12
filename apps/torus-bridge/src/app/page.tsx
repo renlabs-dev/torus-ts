@@ -9,22 +9,23 @@ import WalletActions from "./_components/shared/wallet-actions";
 import { WalletBalance } from "./_components/shared/wallet-balance";
 import { TransferDetails } from "./_components/transfer-details";
 
-export const metadata = createSeoMetadata({
-  title: "Torus Bridge - Cross-Chain Token Transfer",
-  description:
-    "Securely transfer tokens across different blockchain networks with Torus Bridge. Fast, reliable, and decentralized cross-chain transactions.",
-  keywords: [
-    "cross-chain bridge",
-    "token transfer",
-    "blockchain bridge",
-    "multi-chain",
-    "interoperability",
-    "secure transfers",
-  ],
-  ogSiteName: "Torus Bridge",
-  canonical: "/",
-  baseUrl: env("BASE_URL"),
-});
+export const metadata = () =>
+  createSeoMetadata({
+    title: "Torus Bridge - Cross-Chain Token Transfer",
+    description:
+      "Securely transfer tokens across different blockchain networks with Torus Bridge. Fast, reliable, and decentralized cross-chain transactions.",
+    keywords: [
+      "cross-chain bridge",
+      "token transfer",
+      "blockchain bridge",
+      "multi-chain",
+      "interoperability",
+      "secure transfers",
+    ],
+    ogSiteName: "Torus Bridge",
+    canonical: "/",
+    baseUrl: env("BASE_URL"),
+  });
 
 export default function HomePage() {
   return (

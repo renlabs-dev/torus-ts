@@ -10,21 +10,22 @@ import { Layout } from "@torus-ts/ui/components/layout";
 
 import { EnvScript } from "~/env";
 
-export const metadata = createSeoMetadata({
-  title: "Torus Allocator",
-  description:
-    "Torus Network agent allocation platform. Manage and distribute network resources through a comprehensive allocation interface.",
-  keywords: [
-    "agent allocation",
-    "network resources",
-    "weight management",
-    "torus network",
-    "resource distribution",
-  ],
-  ogSiteName: "Torus Allocator",
-  canonical: "/",
-  baseUrl: env("BASE_URL"),
-});
+export const metadata = () =>
+  createSeoMetadata({
+    title: "Torus Allocator",
+    description:
+      "Torus Network agent allocation platform. Manage and distribute network resources through a comprehensive allocation interface.",
+    keywords: [
+      "agent allocation",
+      "network resources",
+      "weight management",
+      "torus network",
+      "resource distribution",
+    ],
+    ogSiteName: "Torus Allocator",
+    canonical: "/",
+    baseUrl: env("BASE_URL"),
+  });
 
 export const firaMono = FiraMono({
   subsets: ["latin"],

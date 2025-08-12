@@ -12,21 +12,22 @@ import { createSeoMetadata } from "@torus-ts/ui/components/seo";
 import { Fira_Mono as FiraMono } from "next/font/google";
 import DiscordAuthProvider from "../context/auth-provider";
 
-export const metadata = createSeoMetadata({
-  title: "Torus DAO",
-  description:
-    "Decentralized governance platform for the Torus Network. Participate in DAO decisions, vote on proposals, and shape the future of decentralized infrastructure.",
-  keywords: [
-    "torus dao",
-    "decentralized governance",
-    "blockchain voting",
-    "community decision-making",
-    "web3 governance",
-  ],
-  ogSiteName: "Torus DAO",
-  canonical: "/",
-  baseUrl: env("BASE_URL"),
-});
+export const metadata = () =>
+  createSeoMetadata({
+    title: "Torus DAO",
+    description:
+      "Decentralized governance platform for the Torus Network. Participate in DAO decisions, vote on proposals, and shape the future of decentralized infrastructure.",
+    keywords: [
+      "torus dao",
+      "decentralized governance",
+      "blockchain voting",
+      "community decision-making",
+      "web3 governance",
+    ],
+    ogSiteName: "Torus DAO",
+    canonical: "/",
+    baseUrl: env("BASE_URL"),
+  });
 
 export const firaMono = FiraMono({
   subsets: ["latin"],

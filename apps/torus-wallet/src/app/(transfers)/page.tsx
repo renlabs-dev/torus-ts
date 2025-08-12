@@ -6,22 +6,23 @@ import { TabLayout } from "~/app/_components/tab-layout";
 import { createSeoMetadata } from "@torus-ts/ui/components/seo";
 import { env } from "~/env";
 
-export const metadata = createSeoMetadata({
-  title: "Transfer Tokens - Torus Wallet",
-  description: "Send and receive digital assets securely with Torus Wallet",
-  ogSiteName: "Torus Wallet",
-  canonical: "/transfers",
-  baseUrl: env("BASE_URL"),
-  keywords: [
-    "send tokens",
-    "receive tokens",
-    "transfer tokens",
-    "token transfers",
-    "secure transactions",
-    "crypto payments",
-    "wallet transfers",
-  ],
-});
+export const metadata = () =>
+  createSeoMetadata({
+    title: "Transfer Tokens - Torus Wallet",
+    description: "Send and receive digital assets securely with Torus Wallet",
+    ogSiteName: "Torus Wallet",
+    canonical: "/transfers",
+    baseUrl: env("BASE_URL"),
+    keywords: [
+      "send tokens",
+      "receive tokens",
+      "transfer tokens",
+      "token transfers",
+      "secure transactions",
+      "crypto payments",
+      "wallet transfers",
+    ],
+  });
 
 export default function TransfersPage() {
   const tabs: TabItem[] = [

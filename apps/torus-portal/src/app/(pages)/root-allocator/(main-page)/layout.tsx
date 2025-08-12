@@ -6,21 +6,22 @@ import { AgentBanner } from "../_components/agent-banner";
 import { AllocationSheet } from "../_components/allocation-sheet";
 import { TutorialDialog } from "../_components/tutorial-dialog";
 
-export const metadata = createSeoMetadata({
-  title: "Agent Allocation Dashboard - Torus Portal",
-  description:
-    "Manage and allocate weights to agents on the Torus Network. Dashboard for root allocators to distribute network resources.",
-  keywords: [
-    "allocation dashboard",
-    "agent weights",
-    "resource allocation",
-    "network management",
-    "allocator interface",
-  ],
-  ogSiteName: "Torus Portal",
-  canonical: "/root-allocator",
-  baseUrl: env("BASE_URL"),
-});
+export const metadata = () =>
+  createSeoMetadata({
+    title: "Agent Allocation Dashboard - Torus Portal",
+    description:
+      "Manage and allocate weights to agents on the Torus Network. Dashboard for root allocators to distribute network resources.",
+    keywords: [
+      "allocation dashboard",
+      "agent weights",
+      "resource allocation",
+      "network management",
+      "allocator interface",
+    ],
+    ogSiteName: "Torus Portal",
+    canonical: "/root-allocator",
+    baseUrl: env("BASE_URL"),
+  });
 
 export default function RootLayout({
   children,

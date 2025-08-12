@@ -5,21 +5,22 @@ import { parseSearchParams } from "~/utils/parse-search-params";
 import { AgentList } from "../_components/agent-list";
 import { PageLayout } from "../_components/page-layout";
 
-export const metadata = createSeoMetadata({
-  title: "Root Allocator - Torus Portal",
-  description:
-    "Manage agent allocations and weights on the Torus Network. View and allocate resources to network participants.",
-  keywords: [
-    "root allocator",
-    "agent allocation",
-    "weight allocation",
-    "resource management",
-    "network allocation",
-  ],
-  ogSiteName: "Torus Portal",
-  canonical: "/root-allocator",
-  baseUrl: env("BASE_URL"),
-});
+export const metadata = () =>
+  createSeoMetadata({
+    title: "Root Allocator - Torus Portal",
+    description:
+      "Manage agent allocations and weights on the Torus Network. View and allocate resources to network participants.",
+    keywords: [
+      "root allocator",
+      "agent allocation",
+      "weight allocation",
+      "resource management",
+      "network allocation",
+    ],
+    ogSiteName: "Torus Portal",
+    canonical: "/root-allocator",
+    baseUrl: env("BASE_URL"),
+  });
 
 export default async function Page(props: {
   searchParams: Promise<{

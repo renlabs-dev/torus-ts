@@ -6,21 +6,22 @@ import { getLinks } from "@torus-ts/ui/lib/data";
 
 import { env } from "~/env";
 
-export const metadata = createSeoMetadata({
-  title: "Torus Allocator - Moved to Portal",
-  description:
-    "The Torus Allocator has moved to the Torus Portal. Access agent allocation and weight management through the integrated portal interface.",
-  keywords: [
-    "torus allocator",
-    "agent allocation",
-    "weight management",
-    "portal integration",
-    "network allocation",
-  ],
-  ogSiteName: "Torus Allocator",
-  canonical: "/",
-  baseUrl: env("BASE_URL"),
-});
+export const metadata = () =>
+  createSeoMetadata({
+    title: "Torus Allocator - Moved to Portal",
+    description:
+      "The Torus Allocator has moved to the Torus Portal. Access agent allocation and weight management through the integrated portal interface.",
+    keywords: [
+      "torus allocator",
+      "agent allocation",
+      "weight management",
+      "portal integration",
+      "network allocation",
+    ],
+    ogSiteName: "Torus Allocator",
+    canonical: "/",
+    baseUrl: env("BASE_URL"),
+  });
 
 export default function Page() {
   const links = getLinks(env("NEXT_PUBLIC_TORUS_CHAIN_ENV"));
