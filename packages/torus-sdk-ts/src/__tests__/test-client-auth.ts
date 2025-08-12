@@ -198,6 +198,75 @@ async function testSimpleAgentClient() {
   }
 }
 
+async function testNamespacePermissionDenial() {
+  console.log(
+    "🚧 Testing namespace permission denial (should return 403)...\n",
+  );
+
+  // This test assumes the user has valid JWT auth but lacks namespace permission
+  // In a real scenario, the agent server would check blockchain permissions
+  const jwtToken = await createJWTToken(TEST_MNEMONIC);
+
+  try {
+    const response = await fetch(
+      "http://localhost:3002/restricted-namespace-test-el-psy-congroo",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${jwtToken}`,
+        },
+        body: JSON.stringify({
+          message: "Testing restricted namespace access",
+        }),
+      },
+    );
+
+    if (response.status === 403) {
+      const errorResponse = (await response.json()) as {
+        message: string;
+        code: string;
+      };
+      console.log(`Response status: ${response.status}`);
+      console.log(`Response body:`, errorResponse);
+
+      if (errorResponse.code === "NAMESPACE_ACCESS_DENIED") {
+        console.log(
+          "✅ Correctly denied access due to insufficient namespace permissions",
+        );
+        console.log(`   Message: ${errorResponse.message}`);
+        console.log(`   Code: ${errorResponse.code}`);
+
+        // Extract and display the namespace path from error message
+        const namespaceMatch = errorResponse.message.match(/namespace (.+)$/);
+        if (namespaceMatch) {
+          console.log(`   Required namespace: ${namespaceMatch[1]}\n`);
+        }
+      } else {
+        console.log(
+          "❌ Unexpected error code - expected 'NAMESPACE_ACCESS_DENIED'\n",
+        );
+      }
+    } else if (response.ok) {
+      const result = await response.json();
+      console.log(
+        "⚠️  Warning: Request succeeded when it should have been denied",
+      );
+      console.log("   This might indicate:");
+      console.log("   - The test user has the required namespace permissions");
+      console.log("   - Namespace checking is disabled or not working");
+      console.log("   - The agent couldn't resolve its name from blockchain");
+      console.log(`   Response: ${JSON.stringify(result)}\n`);
+    } else {
+      const responseText = await response.text();
+      console.log(`❌ Unexpected response status: ${response.status}`);
+      console.log(`Response body: ${responseText}\n`);
+    }
+  } catch (error) {
+    console.error("❌ Error testing namespace permission denial:", error);
+  }
+}
+
 async function runAuthenticatedTests() {
   console.log("🚀 Starting authenticated client tests...\n");
 
@@ -206,6 +275,8 @@ async function runAuthenticatedTests() {
   await testJWTAuthentication();
 
   await testOldJWTRejection();
+
+  await testNamespacePermissionDenial();
 
   await testSimpleAgentClient();
 }

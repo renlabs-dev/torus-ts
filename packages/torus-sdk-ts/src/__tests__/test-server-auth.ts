@@ -68,5 +68,45 @@ agent.method(
   },
 );
 
+// Add a test endpoint with a namespace that definitely won't exist
+agent.method(
+  "restricted-namespace-test-el-psy-congroo",
+  {
+    method: "post",
+    auth: {
+      required: true,
+    },
+    namespace: {
+      enabled: true,
+      rpcUrls: ["wss://api.testnet.torus.network"],
+    },
+    input: z.object({
+      message: z.string(),
+    }),
+    output: {
+      ok: {
+        description: "This should never be returned",
+        schema: z.object({
+          result: z.string(),
+        }),
+      },
+      err: {
+        description: "Error response",
+        schema: z.object({
+          error: z.string(),
+        }),
+      },
+    },
+  },
+  async (input) => {
+    // This should never be reached if namespace permissions are working
+    return {
+      ok: {
+        result: `This shouldn't happen - received: ${input.message}`,
+      },
+    };
+  },
+);
+
 console.log("Starting authenticated test server on port 3002...");
 agent.run();
