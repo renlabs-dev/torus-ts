@@ -4,11 +4,6 @@
 
 import type { ApiPromise, SubmittableResult } from "@polkadot/api";
 import type { SubmittableExtrinsic } from "@polkadot/api-base/types";
-import type {
-  DispatchError,
-  DispatchInfo,
-  EventRecord,
-} from "@polkadot/types/interfaces";
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { ExtrinsicStatus } from "@polkadot/types/interfaces";
 import Emittery from "emittery";
@@ -123,14 +118,14 @@ export type SbExtrinsicStatus = z.infer<typeof sb_extrinsic_status>;
 export const isSubscriptionTerminal = (status: SbExtrinsicStatus): boolean => {
   return match(status)<boolean>({
     Invalid: () => true,
-    Future: () => true,
-    Ready: () => true,
-    Broadcast: () => true,
+    Future: () => false,
+    Ready: () => false,
+    Broadcast: () => false,
     Usurped: () => true,
     Dropped: () => true,
     InBlock: () => false,
     Retracted: () => false,
-    Finalized: () => false,
+    Finalized: () => true,
     FinalityTimeout: () => true,
   });
 };
@@ -345,7 +340,7 @@ export type TxUpdate = Enum<{
   /** Pool rejection: tx deemed invalid on import; never entered the pool. */
   Invalid: {
     txHash: HexH256;
-    reason?: Error; // optional diagnostic/context
+    reason: Error; // optional diagnostic/context
   };
 
   /** Still in the tx pool (pre-inclusion). */
@@ -361,43 +356,21 @@ export type TxUpdate = Enum<{
     reason?: Error; // optional diagnostic/context
   };
 
-  /** Included in a block; `finalized` marks consensus finality. */
+  /** Included in a block with finalization status. */
   Included: {
-    kind: "InBlock" | "Finalized";
+    kind: "InBlock" | "Finalized" | "FinalityTimeout";
     txHash: HexH256;
     blockHash: HexH256;
     blockNumber: number;
     txIndex: number;
     events: SbEventRecord[];
     outcome: RuntimeOutcome;
-    /**
-     * - false = InBlock
-     * - true = Finalized
-     *
-     * TODO: maybe join this filed in a "finalization" concept with all states
-     * (finalized = true | finalized = false | finalityTimeout) instead of
-     * having separate `FinalityTimeout` variant on top-level
-     */
-    finalized: boolean;
   };
 
   /** Non-fatal warning states (keep listening). */
   Warning: {
     txHash: HexH256;
     kind: "Retracted";
-  };
-
-  // Terminal for this subscription (watch timed out before finality)
-  FinalityTimeout: {
-    kind: "FinalityTimeout";
-    txHash: HexH256;
-    // Last known included context (so you can persist/report something useful)
-    blockHash: HexH256;
-    blockNumber: number;
-    txIndex: number;
-    events: SbEventRecord[];
-    outcome: RuntimeOutcome; // success/failed at inclusion time
-    finalized: false;
   };
 }>;
 
@@ -439,11 +412,9 @@ export function parseSubmittableResult(rawResult: SubmittableResult): {
     };
   };
 
-  const handleIncludedAndTimeout =
+  const handleIncluded =
     <K extends "InBlock" | "Finalized" | "FinalityTimeout">(kind: K) =>
     (blockHash: HexH256) => {
-      const finalized = kind === "Finalized";
-
       assert(dispatchInfo != null, "Dispatch info should be present");
       const outcome = dispatchError
         ? { Failed: { error: dispatchError, info: dispatchInfo } }
@@ -457,38 +428,17 @@ export function parseSubmittableResult(rawResult: SubmittableResult): {
       assert(txIndex != null, "Tx index should be present");
 
       return {
-        kind,
-        txHash,
-        blockHash,
-        blockNumber,
-        txIndex,
-        events,
-        outcome,
-        finalized,
-      };
-    };
-
-  const handleIncluded =
-    <K extends "InBlock" | "Finalized">(kind: K) =>
-    (blockHash: HexH256) => {
-      const common = handleIncludedAndTimeout(kind)(blockHash);
-      return {
         Included: {
-          ...common,
           kind,
+          txHash,
+          blockHash,
+          blockNumber,
+          txIndex,
+          events,
+          outcome,
         },
       };
     };
-  const handleFinalityTimeout = (blockHash: HexH256) => {
-    const common = handleIncludedAndTimeout("FinalityTimeout")(blockHash);
-    return {
-      FinalityTimeout: {
-        ...common,
-        kind: "FinalityTimeout",
-        finalized: false,
-      } as const,
-    };
-  };
 
   // Use rustie's match to handle the status enum
   const txUpdate = match(status)<TxUpdate>({
@@ -531,7 +481,7 @@ export function parseSubmittableResult(rawResult: SubmittableResult): {
       },
     }),
 
-    FinalityTimeout: handleFinalityTimeout,
+    FinalityTimeout: handleIncluded("FinalityTimeout"),
   });
 
   return {
@@ -543,44 +493,64 @@ export function parseSubmittableResult(rawResult: SubmittableResult): {
 // ==== Extrinsic Tracker ====
 
 export interface ExtUpdateBase {
-  _extResultRaw: SubmittableResult;
-  status: SbExtrinsicStatus;
+  extResultRaw: SubmittableResult;
+  extResult: SbSubmittableResult;
   txHash: HexH256;
   // events: SbEventRecord[]
 }
 
 export interface ExtUpdateInternalError extends ExtUpdateBase {
+  kind: "InternalError";
   internalError: Error;
 }
 
 export interface ExtUpdateInvalid extends ExtUpdateBase {
-  error: Error;
+  kind: "Invalid";
+  reason: Error;
+}
+
+export interface ExtUpdatePool extends ExtUpdateBase {
+  kind: "Future" | "Ready" | "Broadcast";
+}
+
+export interface ExtUpdateEvicted extends ExtUpdateBase {
+  kind: "Dropped" | "Usurped";
 }
 
 export interface ExtUpdateInBlock extends ExtUpdateBase {
-  _dispatchErrorRaw: DispatchError | null;
-  _dispatchInfoRaw: DispatchInfo;
-  _internalErrorRaw: Error | null;
-  _eventsRaw: EventRecord[];
-  dispatchError?: SbDispatchError;
-  dispatchInfo: SbDispatchInfo;
+  kind: "InBlock" | "Finalized" | "FinalityTimeout";
+  txHash: HexH256;
+  blockHash: HexH256;
+  blockNumber: number;
+  txIndex: number;
   events: SbEventRecord[];
+  outcome: RuntimeOutcome;
 }
 
-interface ExtrinsicTrackerEvents {
-  status: ExtUpdateBase;
-
-  internalError: ExtUpdateInternalError;
-  sendFailed: ExtUpdateInvalid;
-
-  inBlock: ExtUpdateInBlock;
-  finalized: ExtUpdateInBlock;
+export interface ExtUpdateWarning extends ExtUpdateBase {
+  kind: "Retracted";
 }
 
 export type ExtUpdate =
-  | ExtUpdateBase
   | ExtUpdateInternalError
-  | ExtUpdateInvalid;
+  | ExtUpdateInvalid
+  | ExtUpdatePool
+  | ExtUpdateEvicted
+  | ExtUpdateInBlock
+  | ExtUpdateWarning;
+
+export interface ExtrinsicTrackerEvents {
+  status: ExtUpdate;
+
+  internalError: ExtUpdateInternalError;
+  invalid: ExtUpdateInvalid;
+  inPool: ExtUpdatePool;
+  inBlock: ExtUpdateInBlock;
+  evicted: ExtUpdateEvicted;
+  finalized: ExtUpdateInBlock & { kind: "Finalized" };
+  finalityTimeout: ExtUpdateInBlock & { kind: "FinalityTimeout" };
+  warning: ExtUpdateWarning;
+}
 
 export interface ExtrinsicTracker
   extends Pick<
@@ -593,30 +563,27 @@ export interface ExtrinsicTracker
   // // We will ignore async iterator for now
   // stream: AsyncPushStream<ExtUpdate>;
 
-  // Promises for specific events
-  sendFailed: Promise<never>;
-  submitted: Promise<string>;
-  inBlock: Promise<string>;
-  finalized: Promise<string>;
-  finalityTimeout: Promise<string>;
+  // // Promises for specific events
+  // sendFailed: Promise<never>;
+  // submitted: Promise<string>;
+  // // inBlock: Promise<string>;
+  // finalized: Promise<string>;
+  // finalityTimeout: Promise<string>;
 
   cancel(): void;
 }
 
-export function submitWithTracker(
+export function submitTxWithTracker(
   _api: ApiPromise,
   extrinsic: SubmittableExtrinsic<"promise">,
   signer: Parameters<SubmittableExtrinsic<"promise">["signAndSend"]>[0],
+  options?: Parameters<SubmittableExtrinsic<"promise">["signAndSend"]>[1],
 ): ExtrinsicTracker {
   const emitter = new Emittery<ExtrinsicTrackerEvents>();
 
   // Promises for specific events
-  const sendFailed = defer<never>();
-  const submitted = defer<string>();
-  const inBlock = defer<string>();
-  const finalized = defer<string>();
-  const finalityTimeout = defer<string>();
-  const _failed = defer<never>();
+
+  const finality = defer<ExtUpdateInBlock & { kind: "Finalized" }>();
 
   let unsubscribe: (() => void) | undefined;
 
@@ -626,46 +593,112 @@ export function submitWithTracker(
   const updateHandler = (rawResult: SubmittableResult) => {
     // Transform to high-level TxUpdate
     const { txUpdate, result } = parseSubmittableResult(rawResult);
-    const { internalError } = result;
 
     const baseUpdate: ExtUpdateBase = {
-      _extResultRaw: rawResult,
-      status: result.status,
+      extResultRaw: rawResult,
+      extResult: result,
       txHash: rawResult.txHash.toHex(),
     };
-
     const makeUpdate = <U>(update: U) => ({
       ...baseUpdate,
       ...update,
     });
 
-    if (internalError) {
-      const update: ExtUpdateInternalError = makeUpdate({
-        internalError,
-      });
-
-      void emitter.emit("internalError", update);
-      void emitter.emit("status", update);
-      stream.push(update);
-      unsubscribe?.();
-    }
-
     console.log("txUpdate:", txUpdate);
 
-    // match(txUpdate)<unknown>({
-    //   Invalid: ({ error }) => {
-    //     console.log("Invalid:", error);
-    //   },
-    //   // TODO: finish transaction handler
-    // });
-
-    stream.push(baseUpdate);
+    match(txUpdate)<unknown>({
+      InternalError: ({ txHash, error }) => {
+        const update: ExtUpdateInternalError = makeUpdate({
+          kind: "InternalError",
+          txHash,
+          internalError: error,
+        });
+        void emitter.emit("internalError", update);
+        void emitter.emit("status", update);
+        stream.push(update);
+        // Internal error is terminal for the event stream
+        unsubscribe?.();
+      },
+      Invalid: ({ txHash, reason }) => {
+        const update: ExtUpdateInvalid = makeUpdate({
+          kind: "Invalid",
+          txHash,
+          reason,
+        });
+        void emitter.emit("invalid", update);
+        void emitter.emit("status", update);
+        stream.push(update);
+        // Invalid is terminal for the event stream
+        unsubscribe?.();
+      },
+      Pool: ({ txHash, kind }) => {
+        const update: ExtUpdatePool = makeUpdate({
+          txHash,
+          kind,
+        });
+        void emitter.emit("inPool", update);
+        void emitter.emit("status", update);
+        stream.push(update);
+      },
+      Evicted: ({ txHash, kind }) => {
+        const update: ExtUpdateEvicted = makeUpdate({
+          txHash,
+          kind,
+        });
+        void emitter.emit("evicted", update);
+        void emitter.emit("status", update);
+        stream.push(update);
+      },
+      Included: ({
+        kind,
+        txHash,
+        blockHash,
+        blockNumber,
+        txIndex,
+        events,
+        outcome,
+      }) => {
+        const update: ExtUpdateInBlock = makeUpdate({
+          kind,
+          txHash,
+          blockHash,
+          blockNumber,
+          txIndex,
+          events,
+          outcome,
+        });
+        void emitter.emit("inBlock", update);
+        void emitter.emit("status", update);
+        stream.push(update);
+        switch (update.kind) {
+          case "Finalized":
+            void finality.resolve({
+              ...update,
+              kind: update.kind, // lol
+            });
+            break;
+          default:
+            break;
+        }
+      },
+      Warning: ({ txHash, kind }) => {
+        const update: ExtUpdateWarning = makeUpdate({
+          txHash,
+          kind,
+        });
+        void emitter.emit("status", update);
+        void emitter.emit("warning", update);
+        stream.push(update);
+      },
+    });
   };
 
   extrinsic
-    .signAndSend(signer, updateHandler)
+    .signAndSend(signer, options ?? {}, updateHandler)
     .then((u) => (unsubscribe = u))
-    .catch((e) => sendFailed.reject(e));
+    .catch((e) => {
+      console.log("ERROR on signAndSend:", e);
+    });
 
   const tracker: ExtrinsicTracker = {
     emitter,
@@ -676,11 +709,11 @@ export function submitWithTracker(
     off: emitter.off.bind(emitter),
     events: emitter.events.bind(emitter),
 
-    sendFailed: sendFailed.promise,
-    submitted: submitted.promise,
-    inBlock: inBlock.promise,
-    finalized: finalized.promise,
-    finalityTimeout: finalityTimeout.promise,
+    // sendFailed: sendFailed.promise,
+    // submitted: submitted.promise,
+    // inBlock: inBlock.promise,
+    // finalized: finalized.promise,
+    // finalityTimeout: finalityTimeout.promise,
 
     cancel() {
       unsubscribe?.();

@@ -83,9 +83,9 @@ async function testTransaction(
             console.log(`  → Transaction in pool (${kind})`);
             console.log(`    Hash: ${txHash}`);
           },
-          Included: ({ txHash, blockHash, outcome, finalized, events }) => {
+          Included: ({ txHash, blockHash, outcome, kind, events }) => {
             console.log(
-              `  → Transaction included in block (finalized: ${finalized})`,
+              `  → Transaction included in block (status: ${kind})`,
             );
             console.log(`    Tx Hash: ${txHash}`);
             console.log(`    Block Hash: ${blockHash}`);
@@ -127,10 +127,6 @@ async function testTransaction(
             console.log(`  → Internal error`);
             console.log(`    Hash: ${txHash}`);
             console.log(`    Error: ${error.message}`);
-          },
-          FinalityTimeout: ({ txHash }) => {
-            console.log(`  → Finality timeout`);
-            console.log(`    Hash: ${txHash}`);
           },
         });
       } catch (error) {
