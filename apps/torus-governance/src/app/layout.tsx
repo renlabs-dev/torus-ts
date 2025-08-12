@@ -1,5 +1,6 @@
 import "@torus-ts/ui/globals.css";
 import { GoogleAnalytics } from "@next/third-parties/google";
+import PlausibleProvider from "next-plausible";
 import { TorusProvider } from "@torus-ts/torus-provider";
 import { Footer } from "@torus-ts/ui/components/footer";
 import { Layout } from "@torus-ts/ui/components/layout";
@@ -32,22 +33,24 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <Layout font={firaMono} headScripts={[EnvScript]}>
-      <TorusProvider
-        wsEndpoint={env("NEXT_PUBLIC_TORUS_RPC_URL")}
-        torusCacheUrl={env("NEXT_PUBLIC_TORUS_CACHE_URL")}
-      >
-        <TRPCReactProvider>
-          <GovernanceProvider>
-            <DiscordAuthProvider>
-              {children}
-              <Footer torusChainEnv={env("NEXT_PUBLIC_TORUS_CHAIN_ENV")} />
-              <Toaster />
-            </DiscordAuthProvider>
-          </GovernanceProvider>
-        </TRPCReactProvider>
-      </TorusProvider>
-      <GoogleAnalytics gaId="G-7YCMH64Q4J" />
-    </Layout>
+    <PlausibleProvider domain="torus.network" trackOutboundLinks hash>
+      <Layout font={firaMono} headScripts={[EnvScript]}>
+        <TorusProvider
+          wsEndpoint={env("NEXT_PUBLIC_TORUS_RPC_URL")}
+          torusCacheUrl={env("NEXT_PUBLIC_TORUS_CACHE_URL")}
+        >
+          <TRPCReactProvider>
+            <GovernanceProvider>
+              <DiscordAuthProvider>
+                {children}
+                <Footer torusChainEnv={env("NEXT_PUBLIC_TORUS_CHAIN_ENV")} />
+                <Toaster />
+              </DiscordAuthProvider>
+            </GovernanceProvider>
+          </TRPCReactProvider>
+        </TorusProvider>
+        <GoogleAnalytics gaId="G-7YCMH64Q4J" />
+      </Layout>
+    </PlausibleProvider>
   );
 }

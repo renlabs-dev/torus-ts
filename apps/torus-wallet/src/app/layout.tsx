@@ -1,4 +1,5 @@
 import { GoogleAnalytics } from "@next/third-parties/google";
+import PlausibleProvider from "next-plausible";
 import { ReactQueryProvider } from "@torus-ts/query-provider";
 import { TorusProvider } from "@torus-ts/torus-provider";
 import { Container } from "@torus-ts/ui/components/container";
@@ -45,33 +46,35 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <Layout font={firaMono} headScripts={[EnvScript]}>
-      <Providers
-        wsEndpoint={env("NEXT_PUBLIC_TORUS_RPC_URL")}
-        torusCacheUrl={env("NEXT_PUBLIC_TORUS_CACHE_URL")}
-      >
-        <WalletHeader />
-        <APRBar />
-        <Container>
-          <main className="mx-auto flex min-w-full flex-col items-center gap-3 text-white">
-            <div
-              className="flex w-full max-w-screen-xl flex-col justify-around gap-4 lg:mt-[10vh]
-                lg:flex-row"
-            >
-              <div className="animate-fade flex w-full flex-col gap-4 lg:max-w-[320px]">
-                <SidebarLinks />
-                <WalletBalance />
+    <PlausibleProvider domain="torus.network" trackOutboundLinks hash>
+      <Layout font={firaMono} headScripts={[EnvScript]}>
+        <Providers
+          wsEndpoint={env("NEXT_PUBLIC_TORUS_RPC_URL")}
+          torusCacheUrl={env("NEXT_PUBLIC_TORUS_CACHE_URL")}
+        >
+          <WalletHeader />
+          <APRBar />
+          <Container>
+            <main className="mx-auto flex min-w-full flex-col items-center gap-3 text-white">
+              <div
+                className="flex w-full max-w-screen-xl flex-col justify-around gap-4 lg:mt-[10vh]
+                  lg:flex-row"
+              >
+                <div className="animate-fade flex w-full flex-col gap-4 lg:max-w-[320px]">
+                  <SidebarLinks />
+                  <WalletBalance />
+                </div>
+                {children}
+                <div className="mb-20 lg:hidden" />
               </div>
-              {children}
-              <div className="mb-20 lg:hidden" />
-            </div>
-            <TransactionsSheet />
-          </main>
-        </Container>
-        <Toaster />
-      </Providers>
-      <Footer torusChainEnv={env("NEXT_PUBLIC_TORUS_CHAIN_ENV")} />
-      <GoogleAnalytics gaId={env("NEXT_PUBLIC_TORUS_GA_ID")} />
-    </Layout>
+              <TransactionsSheet />
+            </main>
+          </Container>
+          <Toaster />
+        </Providers>
+        <Footer torusChainEnv={env("NEXT_PUBLIC_TORUS_CHAIN_ENV")} />
+        <GoogleAnalytics gaId={env("NEXT_PUBLIC_TORUS_GA_ID")} />
+      </Layout>
+    </PlausibleProvider>
   );
 }

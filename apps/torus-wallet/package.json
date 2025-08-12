@@ -31,6 +31,7 @@
     "@torus-ts/ui": "workspace:*",
     "lucide-react": "catalog:",
     "next": "catalog:",
+    "next-plausible": "catalog:",
     "react": "catalog:react19",
     "react-dom": "catalog:react19",
     "react-hook-form": "^7.53.2",

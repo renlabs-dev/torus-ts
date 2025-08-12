@@ -33,6 +33,7 @@
     "luxon": "catalog:",
     "maath": "^0.10.8",
     "next": "catalog:",
+    "next-plausible": "catalog:",
     "next-auth": "^4.24.11",
     "react": "catalog:react19",
     "react-dom": "catalog:react19",

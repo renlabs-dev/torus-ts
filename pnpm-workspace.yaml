@@ -44,6 +44,7 @@ catalog:
   "vitest": ^1.5.1
   # Hyperlane
   "viem": ^2.22.1
+  "next-plausible": ^3.12.4
 
 catalogs:
   react18:
