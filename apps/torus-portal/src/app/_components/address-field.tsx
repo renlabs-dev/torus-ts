@@ -104,8 +104,8 @@ export function AddressField({
   const displayValue = selectedAgent
     ? `${formatAgentName(selectedAgent.name ?? selectedAgent.key)}(${smallAddress(selectedAgent.key, isMobile ? 3 : 6)})`
     : value
-    ? `Custom Address (${smallAddress(value, isMobile ? 3 : 6)})`
-    : title;
+      ? `Custom Address (${smallAddress(value, isMobile ? 3 : 6)})`
+      : title;
 
   React.useEffect(() => {
     const down = (e: KeyboardEvent) => {
@@ -170,25 +170,25 @@ export function AddressField({
             {isLoading ? "Loading agents..." : "No agents found."}
           </CommandEmpty>
 
-          {searchValue && 
-            !agents?.some((agent) => 
-              agent.key.toLowerCase() === searchValue.toLowerCase()
+          {searchValue &&
+            !agents?.some(
+              (agent) => agent.key.toLowerCase() === searchValue.toLowerCase(),
             ) && (
-            <CommandGroup heading="Custom Address">
-              <CommandItem
-                value={searchValue}
-                onSelect={() => handleSelect(searchValue)}
-              >
-                <Users className="mr-2 h-4 w-4" />
-                <div className="flex flex-col">
-                  <span className="font-medium">Use custom address</span>
-                  <span className="text-xs text-muted-foreground">
-                    {searchValue}
-                  </span>
-                </div>
-              </CommandItem>
-            </CommandGroup>
-          )}
+              <CommandGroup heading="Custom Address">
+                <CommandItem
+                  value={searchValue}
+                  onSelect={() => handleSelect(searchValue)}
+                >
+                  <Users className="mr-2 h-4 w-4" />
+                  <div className="flex flex-col">
+                    <span className="font-medium">Use custom address</span>
+                    <span className="text-xs text-muted-foreground">
+                      {searchValue}
+                    </span>
+                  </div>
+                </CommandItem>
+              </CommandGroup>
+            )}
 
           {searchData.whitelistedAgents.length > 0 && (
             <CommandGroup heading="Root Agents">

@@ -92,8 +92,9 @@ function getCapabilityPaths(namespacePaths: unknown): {
             : a.localeCompare(b);
         });
 
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access
-        return keys.map((key) => String((data as any)[key])).filter(Boolean);
+        return keys
+          .map((key) => String((data as Record<string, unknown>)[key]))
+          .filter(Boolean);
       } catch {
         return [];
       }
@@ -103,7 +104,8 @@ function getCapabilityPaths(namespacePaths: unknown): {
   };
 
   const paths = extractPaths(namespacePaths);
-  return { paths, pathString: paths.join(".") };
+  // Use space to preserve token boundaries for search use-cases.
+  return { paths, pathString: paths.join(" ") };
 }
 
 interface PermissionWithNetworkData {
@@ -292,7 +294,12 @@ export function PermissionSelector(props: PermissionSelectorProps) {
 
     const start = parts.slice(0, 2).join("."); // agent.agent-name
     const end = parts[parts.length - 1]; // subpath
-    if (!end) return path; // Fallback if end is undefined
+    if (!end) {
+      // Fallback: truncate path if necessary
+      return path.length > maxLength
+        ? path.substring(0, maxLength - 3) + "..."
+        : path;
+    }
 
     const truncated = `${start}...${end}`;
 
@@ -368,13 +375,12 @@ export function PermissionSelector(props: PermissionSelectorProps) {
     if (!userPermissionsWithNames?.length || !userPermissionIds) return null;
 
     // First try delegator permissions, then recipient permissions
-    const priorityOrder = [
+    const priorityOrder: string[] = [
       ...userPermissionIds.delegator,
       ...userPermissionIds.recipient,
     ];
     const firstMatch = userPermissionsWithNames.find((p) =>
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-explicit-any
-      priorityOrder.includes(p.permissionId as any),
+      priorityOrder.includes(p.permissionId),
     );
 
     return firstMatch?.permissionId ?? null;
