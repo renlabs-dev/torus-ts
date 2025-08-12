@@ -27,46 +27,43 @@ function isTronLinkInstalled(): boolean {
 }
 
 function isCoinbaseWalletInstalled(): boolean {
-  // Check if we're in a browser environment
-  if (typeof window === "undefined" || !window.ethereum) {
+  // Browser environment check
+  if (typeof window === "undefined") {
     return false;
   }
 
-  const ethereum = window.ethereum as unknown as Eip1193Provider;
+  const win = window as unknown as Record<string, unknown>;
 
-  // Handle single provider case
-  if (!ethereum.providers) {
-    return Boolean(ethereum.isCoinbaseWallet);
+  // Coinbase Wallet often exposes globals
+  const hasGlobalFlag = Boolean(
+    win.coinbaseWalletExtension ?? win.walletLinkExtension,
+  );
+
+  const ethereum = win.ethereum as
+    | (Eip1193Provider & Record<string, unknown>)
+    | undefined;
+
+  if (!ethereum) {
+    return hasGlobalFlag;
   }
 
-  // Handle multiple providers case
-  const providers = ethereum.providers;
-  if (!Array.isArray(providers)) {
-    return false;
-  }
+  const providerHasCoinbaseFlag = (provider: unknown): boolean => {
+    if (!provider || typeof provider !== "object") return false;
+    const p = provider as Record<string, unknown>;
+    const direct = Boolean(p.isCoinbaseWallet || p.isWalletLink);
+    const nested = Array.isArray(p.providers)
+      ? p.providers.some((sub) => providerHasCoinbaseFlag(sub))
+      : false;
+    return direct || nested;
+  };
 
-  return providers.some((provider: unknown) => {
-    if (!provider || typeof provider !== "object") {
-      return false;
-    }
+  // Single or multiple providers
+  const hasFlagOnEthereum = providerHasCoinbaseFlag(ethereum);
+  const hasFlagOnAnyProvider = Array.isArray(ethereum.providers)
+    ? ethereum.providers.some((p) => providerHasCoinbaseFlag(p))
+    : false;
 
-    const typedProvider = provider as Record<string, unknown>;
-
-    // Check nested providers (some wallets wrap other wallets)
-    if (Array.isArray(typedProvider.providers)) {
-      return typedProvider.providers.some((subProvider: unknown) => {
-        if (!subProvider || typeof subProvider !== "object") {
-          return false;
-        }
-        return Boolean(
-          (subProvider as Record<string, unknown>).isCoinbaseWallet,
-        );
-      });
-    }
-
-    // Check direct provider
-    return Boolean(typedProvider.isCoinbaseWallet);
-  });
+  return hasGlobalFlag || hasFlagOnEthereum || hasFlagOnAnyProvider;
 }
 
 function useWalletConflictDetection() {
