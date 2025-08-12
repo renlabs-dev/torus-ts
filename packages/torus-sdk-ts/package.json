@@ -1,7 +1,7 @@
 {
   "name": "@torus-network/sdk",
   "description": "Torus Network JS SDK",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "private": false,
   "license": "MIT",
   "type": "module",
