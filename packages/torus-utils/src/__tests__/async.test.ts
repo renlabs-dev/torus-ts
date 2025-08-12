@@ -325,9 +325,15 @@ describe("AsyncPushStream", () => {
     expect(returnResult).toEqual({ value: undefined, done: true });
     expect(stream.isFinished).toBe(true);
 
-    // After return, the stream is ended and buffer is cleared
+    // After return, buffered values should still be consumable
     const result2 = await stream.next();
-    expect(result2).toEqual({ value: undefined, done: true });
+    expect(result2).toEqual({ value: 2, done: false });
+
+    const result3 = await stream.next();
+    expect(result3).toEqual({ value: 3, done: false });
+
+    const result4 = await stream.next();
+    expect(result4).toEqual({ value: undefined, done: true });
   });
 
   it("should handle multiple end calls gracefully", () => {
@@ -424,9 +430,15 @@ describe("AsyncPushStream", () => {
     // After break, the stream is closed via return()
     expect(stream.isFinished).toBe(true);
 
-    // Further next() calls should return done
-    const next = await stream.next();
-    expect(next).toEqual({ value: undefined, done: true });
+    // With new behavior, buffered values should still be consumable
+    const next1 = await stream.next();
+    expect(next1).toEqual({ value: 4, done: false });
+
+    const next2 = await stream.next();
+    expect(next2).toEqual({ value: 5, done: false });
+
+    const next3 = await stream.next();
+    expect(next3).toEqual({ value: undefined, done: true });
 
     // Push should error or no-op after stream is closed
     const pushResult = stream.push(6);
@@ -615,6 +627,33 @@ describe("AsyncPushStream", () => {
     s.push(1);
     await sleep();
     expect(out).toEqual([1, 2]);
+  });
+
+  it("should consume buffered values after end() is called", async () => {
+    const stream = new AsyncPushStream<number>();
+
+    // Buffer values before ending
+    stream.push(1);
+    stream.push(2);
+    stream.push(3);
+    
+    // End the stream
+    stream.end();
+    expect(stream.isFinished).toBe(true);
+
+    // Buffered values should still be consumable
+    const result1 = await stream.next();
+    expect(result1).toEqual({ value: 1, done: false });
+
+    const result2 = await stream.next();
+    expect(result2).toEqual({ value: 2, done: false });
+
+    const result3 = await stream.next();
+    expect(result3).toEqual({ value: 3, done: false });
+
+    // After all buffered values are consumed, next() should return done
+    const result4 = await stream.next();
+    expect(result4).toEqual({ value: undefined, done: true });
   });
 });
 

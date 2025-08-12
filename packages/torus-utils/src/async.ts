@@ -59,7 +59,7 @@ interface Waiter<T> {
  *
  * Semantics:
  * - `undefined` values are allowed.
- * - `end()` drains any buffered values first, then yields `{done:true}`.
+ * - `end()` marks the stream as finished but preserves buffered values for consumption.
  * - `throw(err)`:
  *    - Finishes the stream, clears the buffer.
  *    - All pending `next()` promises reject with `err`.
@@ -112,8 +112,8 @@ export class AsyncPushStream<T> implements AsyncIterable<T>, AsyncIterator<T> {
    *
    * Effects:
    * - Resolves any currently *waiting* consumers of `next()` with `{ value: undefined, done: true }`.
-   * - Clears the internal buffer (any enqueued values are discarded).
-   * - Subsequent `next()` calls resolve immediately with `{ done: true }`.
+   * - Buffered values remain available for consumption until drained.
+   * - Subsequent `next()` calls resolve immediately with `{ done: true }` after buffer is empty.
    *
    * Note: Calling `end()` multiple times is a no-op after the first call.
    */
@@ -127,8 +127,7 @@ export class AsyncPushStream<T> implements AsyncIterable<T>, AsyncIterator<T> {
     }
     this._waiters = [];
 
-    // Discard any buffered values.
-    this._values = [];
+    // Keep buffered values in `this._values` - they will be consumed in next().
   }
 
   // ---- AsyncIterator ----
@@ -139,18 +138,17 @@ export class AsyncPushStream<T> implements AsyncIterable<T>, AsyncIterator<T> {
    * - or resolves `{ done: true }` if the stream is finished before a value arrives.
    */
   async next(): Promise<IteratorResult<T>> {
-    // Note: If we want buffered values to be consumed after the stream is
-    // finished, we can move the buffer shift() here <=== and not empty _values
-    // in end().
-
-    if (this._finished) {
-      return { value: undefined, done: true };
-    }
+    // We first check the buffer, as there might be enqueued values even
+    // if the stream is finished, so we ensure all produced values can be
+    // consumed and not dropped inadvertently.
     if (this._values.length > 0) {
       // `undefined` is a valid value; we check length rather than sentinel.
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       const value = this._values.shift()!;
       return { value, done: false };
+    }
+    if (this._finished) {
+      return { value: undefined, done: true };
     }
     const waiter = defer<IteratorResult<T>>();
     this._waiters.push(waiter);
