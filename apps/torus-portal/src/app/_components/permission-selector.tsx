@@ -1,15 +1,13 @@
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
 "use client";
 
-import React, { useEffect } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 
 import { useQuery } from "@tanstack/react-query";
-import { Copy } from "lucide-react";
+import { Check, ChevronDown, Copy, Package, Zap } from "lucide-react";
 import type { Control } from "react-hook-form";
 
-import type {
-  PermissionContract,
-  PermissionId,
-} from "@torus-network/sdk/chain";
+import type { PermissionContract } from "@torus-network/sdk/chain";
 import {
   queryPermissions,
   queryPermissionsByDelegator,
@@ -20,13 +18,23 @@ import type { SS58Address } from "@torus-network/sdk/types";
 import { smallAddress } from "@torus-network/torus-utils/subspace";
 
 import { useTorus } from "@torus-ts/torus-provider";
+import { Button } from "@torus-ts/ui/components/button";
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
 } from "@torus-ts/ui/components/card";
+import {
+  CommandDialog,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@torus-ts/ui/components/command";
 import { CopyButton } from "@torus-ts/ui/components/copy-button";
+import { DialogTitle } from "@torus-ts/ui/components/dialog";
 import {
   FormControl,
   FormField,
@@ -34,24 +42,78 @@ import {
   FormLabel,
   FormMessage,
 } from "@torus-ts/ui/components/form";
-import {
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectLabel,
-  SelectTrigger,
-  SelectValue,
-} from "@torus-ts/ui/components/select";
+import { useIsMobile } from "@torus-ts/ui/hooks/use-mobile";
 
 // Import the expected interface from the form
 import type { PermissionWithDetails } from "../(pages)/permissions/manage-permission/_components/revoke-permission-button";
 import { AddressWithAgent } from "./address-with-agent";
 
+// Helper function to safely extract capability paths
+function getCapabilityPaths(namespacePaths: unknown): {
+  paths: string[];
+  pathString: string;
+} {
+  const extractPaths = (data: unknown): string[] => {
+    if (Array.isArray(data)) return data.map(String);
+    if (typeof data === "string") {
+      return data.includes(",") ? data.split(",").map((s) => s.trim()) : [data];
+    }
+
+    if (data && typeof data === "object") {
+      try {
+        if (data instanceof Map) {
+          const paths: string[] = [];
+          for (const value of data.values()) {
+            if (Array.isArray(value)) {
+              paths.push(
+                ...value.map((item) =>
+                  Array.isArray(item) ? item.join(".") : String(item),
+                ),
+              );
+            } else {
+              paths.push(String(value));
+            }
+          }
+          return paths.filter(Boolean);
+        }
+
+        if ("values" in data && typeof data.values === "function") {
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+          const values = Array.from(data.values() as Iterable<unknown>);
+          return values
+            .flatMap((v) => (Array.isArray(v) ? v.map(String) : [String(v)]))
+            .filter(Boolean);
+        }
+
+        const keys = Object.keys(data).sort((a, b) => {
+          const [numA, numB] = [parseInt(a, 10), parseInt(b, 10)];
+          return !isNaN(numA) && !isNaN(numB)
+            ? numA - numB
+            : a.localeCompare(b);
+        });
+
+        return keys
+          .map((key) => String((data as Record<string, unknown>)[key]))
+          .filter(Boolean);
+      } catch {
+        return [];
+      }
+    }
+
+    return [];
+  };
+
+  const paths = extractPaths(namespacePaths);
+  // Use space to preserve token boundaries for search use-cases.
+  return { paths, pathString: paths.join(" ") };
+}
+
 interface PermissionWithNetworkData {
   permissionId: string;
   contract: PermissionContract;
   namespacePaths?: string[];
+  delegatorAgentName?: string;
+  recipientAgentName?: string;
 }
 
 interface PermissionSelectorProps {
@@ -65,46 +127,39 @@ interface PermissionSelectorProps {
 
 export function PermissionSelector(props: PermissionSelectorProps) {
   const { selectedAccount, isAccountConnected, api } = useTorus();
+  const [open, setOpen] = useState(false);
+  const isMobile = useIsMobile();
 
-  // Get permission IDs where the user is the delegator
-  const { data: delegatorPermissionIds, isLoading: isLoadingDelegator } =
+  // Get user's permission IDs (both delegator and recipient)
+  const { data: userPermissionIds, isLoading: isLoadingUserPermissions } =
     useQuery({
-      queryKey: ["permissions_by_delegator", selectedAccount?.address],
+      queryKey: ["user_permissions", selectedAccount?.address],
       queryFn: async () => {
         if (!api || !selectedAccount?.address) return null;
-        const result = await queryPermissionsByDelegator(
-          api,
-          selectedAccount.address as SS58Address,
-        );
-        // Unwrap Result type
-        const [error, data] = result;
-        if (error) {
-          console.error("Error querying delegator permissions:", error);
-          return null;
-        }
-        return data;
-      },
-      enabled: !!api && !!selectedAccount?.address,
-      staleTime: CONSTANTS.TIME.STAKE_STALE_TIME,
-    });
 
-  // Get permission IDs where the user is the recipient
-  const { data: recipientPermissionIds, isLoading: isLoadingRecipient } =
-    useQuery({
-      queryKey: ["permissions_by_recipient", selectedAccount?.address],
-      queryFn: async () => {
-        if (!api || !selectedAccount?.address) return null;
-        const result = await queryPermissionsByRecipient(
-          api,
-          selectedAccount.address as SS58Address,
-        );
-        // Unwrap Result type
-        const [error, data] = result;
-        if (error) {
-          console.error("Error querying recipient permissions:", error);
-          return null;
-        }
-        return data;
+        const [delegatorResult, recipientResult] = await Promise.all([
+          queryPermissionsByDelegator(
+            api,
+            selectedAccount.address as SS58Address,
+          ),
+          queryPermissionsByRecipient(
+            api,
+            selectedAccount.address as SS58Address,
+          ),
+        ]);
+
+        const permissionIds = new Set<string>();
+        const [, delegatorData] = delegatorResult;
+        const [, recipientData] = recipientResult;
+
+        if (delegatorData) delegatorData.forEach((id) => permissionIds.add(id));
+        if (recipientData) recipientData.forEach((id) => permissionIds.add(id));
+
+        return {
+          all: Array.from(permissionIds),
+          delegator: delegatorData ?? [],
+          recipient: recipientData ?? [],
+        };
       },
       enabled: !!api && !!selectedAccount?.address,
       staleTime: CONSTANTS.TIME.STAKE_STALE_TIME,
@@ -134,36 +189,16 @@ export function PermissionSelector(props: PermissionSelectorProps) {
 
   // Combine and filter permissions for the current account
   const userPermissions = React.useMemo(() => {
-    if (!allPermissions || permissionsError) return null;
+    if (!allPermissions || permissionsError || !userPermissionIds) return null;
 
-    const userPermissionIds = new Set<PermissionId>();
-
-    // Add delegator permission IDs (already unwrapped)
-    if (delegatorPermissionIds && Array.isArray(delegatorPermissionIds)) {
-      delegatorPermissionIds.forEach((id: PermissionId) =>
-        userPermissionIds.add(id),
-      );
-    }
-
-    // Add recipient permission IDs (already unwrapped)
-    if (recipientPermissionIds && Array.isArray(recipientPermissionIds)) {
-      recipientPermissionIds.forEach((id: PermissionId) =>
-        userPermissionIds.add(id),
-      );
-    }
-
-    // Filter all permissions to only include user's permissions
     const filtered: PermissionWithNetworkData[] = [];
 
-    // allPermissions is already unwrapped and should be a Map
     if (allPermissions instanceof Map) {
-      userPermissionIds.forEach((permissionId) => {
-        const contract = allPermissions.get(permissionId);
+      userPermissionIds.all.forEach((permissionId) => {
+        const contract = allPermissions.get(permissionId as `0x${string}`);
         if (contract) {
-          // Extract namespace paths if it's a namespace permission
           let namespacePaths: string[] | undefined;
           if ("Namespace" in contract.scope) {
-            // The paths are zod-transformed strings, we need to cast them
             namespacePaths = contract.scope.Namespace
               .paths as unknown as string[];
           }
@@ -173,14 +208,26 @@ export function PermissionSelector(props: PermissionSelectorProps) {
     }
 
     return filtered;
-  }, [
-    allPermissions,
-    delegatorPermissionIds,
-    recipientPermissionIds,
-    permissionsError,
-  ]);
+  }, [allPermissions, permissionsError, userPermissionIds]);
 
-  const hasPermissions = userPermissions && userPermissions.length > 0;
+  // For now, we'll show agent names in the detailed view with AddressWithAgent component
+  // Agent names in the dropdown items can be added later when we have proper batch fetching
+  const agentNameMap = useMemo(() => {
+    return new Map<string, string>();
+  }, []);
+
+  // Enhanced user permissions with agent names
+  const userPermissionsWithNames = useMemo(() => {
+    if (!userPermissions) return null;
+    return userPermissions.map((permission) => ({
+      ...permission,
+      delegatorAgentName: agentNameMap.get(permission.contract.delegator),
+      recipientAgentName: agentNameMap.get(permission.contract.recipient),
+    }));
+  }, [userPermissions, agentNameMap]);
+
+  const hasPermissions =
+    userPermissionsWithNames && userPermissionsWithNames.length > 0;
 
   // Helper function to determine permission type
   const getPermissionType = (contract: PermissionContract | null) => {
@@ -192,32 +239,156 @@ export function PermissionSelector(props: PermissionSelectorProps) {
     return "Unknown";
   };
 
-  // Prioritize delegator permissions for auto-selection
-  const getDefaultPermissionId = () => {
-    if (!userPermissions?.length) return null;
-
-    // First try to find a delegator permission
-    const delegatorPermission = userPermissions.find(
-      (item) =>
-        item.contract.delegator === (selectedAccount?.address as SS58Address),
+  // Helper to render capability paths in CommandItems
+  const renderCapabilityPaths = (namespacePaths: unknown) => {
+    if (!namespacePaths) return null;
+    const { paths } = getCapabilityPaths(namespacePaths);
+    return (
+      <div className="space-y-0.5">
+        {paths.map((path, index) => (
+          <div key={index} className="truncate" title={path}>
+            Capability{paths.length > 1 ? ` ${index + 1}` : ""}: {path}
+          </div>
+        ))}
+      </div>
     );
+  };
 
-    if (delegatorPermission) {
-      return delegatorPermission.permissionId;
+  // Mobile-responsive class helpers
+  const getDetailRowClassName = () =>
+    isMobile ? "flex flex-col space-y-1" : "flex items-center";
+  const getDetailValueClassName = () =>
+    isMobile
+      ? "text-muted-foreground break-all"
+      : "ml-2 text-muted-foreground break-all";
+
+  // Helper function to truncate capability namespace paths intelligently
+  // Format: agent.agent-name.path.subpath -> agent.agent-name...subpath
+  const truncateNamespacePath = (
+    path: string,
+    maxLength: number = 25,
+  ): string => {
+    if (path.length <= maxLength) return path;
+
+    const parts = path.split(".");
+    if (parts.length <= 2) {
+      // If only 1-2 parts, truncate the longest part
+      if (parts.length === 1) {
+        return parts[0]!.length > maxLength
+          ? parts[0]!.substring(0, maxLength - 3) + "..."
+          : parts[0]!;
+      } else {
+        const joined = parts.join(".");
+        return joined.length > maxLength
+          ? parts[0] +
+              "..." +
+              parts[1]!.substring(
+                Math.max(
+                  0,
+                  parts[1]!.length - (maxLength - parts[0]!.length - 6),
+                ),
+              )
+          : joined;
+      }
     }
 
-    // Fall back to first recipient permission
-    const recipientPermission = userPermissions.find(
-      (item) =>
-        item.contract.recipient === (selectedAccount?.address as SS58Address),
+    const start = parts.slice(0, 2).join("."); // agent.agent-name
+    const end = parts[parts.length - 1]; // subpath
+    if (!end) {
+      // Fallback: truncate path if necessary
+      return path.length > maxLength
+        ? path.substring(0, maxLength - 3) + "..."
+        : path;
+    }
+
+    const truncated = `${start}...${end}`;
+
+    // If the start itself is too long, truncate it
+    if (start.length > maxLength - 6) {
+      // Reserve space for "...end"
+      const firstPart = parts[0]!;
+      const secondPart = parts[1]!;
+      const availableForSecond = maxLength - firstPart.length - 7; // "agent...end"
+
+      if (availableForSecond > 3) {
+        const truncatedSecond =
+          secondPart.substring(0, availableForSecond) + "...";
+        return `${firstPart}.${truncatedSecond}...${end}`;
+      } else {
+        // If even the first part is too long, truncate it
+        return `${firstPart.substring(0, maxLength - 6)}...${end}`;
+      }
+    }
+
+    // If truncated is still too long, truncate the end part
+    if (truncated.length > maxLength && end.length > 8) {
+      const availableForEnd = maxLength - start.length - 6; // "start...end"
+      if (availableForEnd > 3) {
+        const shortenedEnd = end.substring(0, availableForEnd) + "...";
+        return `${start}...${shortenedEnd}`;
+      }
+    }
+
+    return truncated.length > maxLength
+      ? `${start.substring(0, maxLength - 6)}...${end}`
+      : truncated;
+  };
+
+  // Enhanced search data with agent names and grouping
+  const searchData = useMemo(() => {
+    if (!userPermissionsWithNames)
+      return { emissionPermissions: [], namespacePermissions: [] };
+
+    const emissionPermissions = userPermissionsWithNames
+      .filter((item) => getPermissionType(item.contract) === "Emission")
+      .map((item) => ({
+        ...item,
+        searchText: [
+          item.permissionId,
+          getCapabilityPaths(item.namespacePaths).pathString,
+          "emission",
+        ]
+          .filter(Boolean)
+          .join(" ")
+          .toLowerCase(),
+      }));
+
+    const namespacePermissions = userPermissionsWithNames
+      .filter((item) => getPermissionType(item.contract) === "Capability")
+      .map((item) => ({
+        ...item,
+        searchText: [
+          item.permissionId,
+          getCapabilityPaths(item.namespacePaths).pathString,
+          "capability",
+        ]
+          .filter(Boolean)
+          .join(" ")
+          .toLowerCase(),
+      }));
+
+    return { emissionPermissions, namespacePermissions };
+  }, [userPermissionsWithNames]);
+
+  // Prioritize delegator permissions for auto-selection
+  const getDefaultPermissionId = () => {
+    if (!userPermissionsWithNames?.length || !userPermissionIds) return null;
+
+    // First try delegator permissions, then recipient permissions
+    const priorityOrder: string[] = [
+      ...userPermissionIds.delegator,
+      ...userPermissionIds.recipient,
+    ];
+    const firstMatch = userPermissionsWithNames.find((p) =>
+      priorityOrder.includes(p.permissionId),
     );
 
-    return recipientPermission?.permissionId ?? null;
+    return firstMatch?.permissionId ?? null;
   };
 
   const defaultPermissionId = getDefaultPermissionId();
 
-  const selectedPermissionData = userPermissions?.find(
+  const selectedPermissionData = userPermissionsWithNames?.find(
     (item) => item.permissionId === props.selectedPermissionId,
   );
 
@@ -325,7 +496,7 @@ export function PermissionSelector(props: PermissionSelectorProps) {
       };
     }
 
-    // Build namespace permissions if applicable
+    // Build capability permissions if applicable
     let namespace_permissions: PermissionWithDetails["namespace_permissions"] =
       null;
     if (scopeType === "Namespace") {
@@ -344,13 +515,52 @@ export function PermissionSelector(props: PermissionSelectorProps) {
     };
   };
 
+  function getPlaceholderText() {
+    if (!isAccountConnected) return "Connect wallet to view permissions";
+    if (isLoadingUserPermissions || isLoadingAll)
+      return "Loading permissions...";
+    if (permissionsError) return "Error loading permissions";
+    if (!hasPermissions) return "No permissions available";
+    return "Search permissions...";
+  }
+
+  function getSelectedPermissionDisplay() {
+    if (!props.selectedPermissionId || !selectedPermissionData) {
+      return getPlaceholderText();
+    }
+
+    const { permissionId, contract, namespacePaths } = selectedPermissionData;
+
+    // On mobile, show only the permission ID
+    if (isMobile) {
+      return smallAddress(permissionId, 4);
+    }
+
+    const permissionType = getPermissionType(contract);
+    const displayId = smallAddress(permissionId, 6);
+    const { pathString: capabilityPath } = getCapabilityPaths(namespacePaths);
+
+    let displayName = `${displayId} (${permissionType})`;
+    if (capabilityPath) {
+      const truncatedPath =
+        permissionType === "Capability"
+          ? truncateNamespacePath(capabilityPath, 35)
+          : capabilityPath.length > 35
+            ? capabilityPath.substring(0, 32) + "..."
+            : capabilityPath;
+      displayName += ` - ${truncatedPath}`;
+    }
+
+    return displayName;
+  }
+
   // Handle wallet switching - reset selection when account changes
   useEffect(() => {
     if (selectedAccount?.address) {
       // Clear current selection when wallet changes
-      if (props.selectedPermissionId && userPermissions) {
+      if (props.selectedPermissionId && userPermissionsWithNames) {
         // Check if current selection is valid for new account
-        const isCurrentSelectionValid = userPermissions.some(
+        const isCurrentSelectionValid = userPermissionsWithNames.some(
           (item) => item.permissionId === props.selectedPermissionId,
         );
 
@@ -362,7 +572,7 @@ export function PermissionSelector(props: PermissionSelectorProps) {
     }
   }, [
     selectedAccount?.address,
-    userPermissions,
+    userPermissionsWithNames,
     props.selectedPermissionId,
     props.onPermissionIdChange,
     props,
@@ -390,15 +600,6 @@ export function PermissionSelector(props: PermissionSelectorProps) {
       props.onPermissionDataChange(transformedData);
     }
   }, [selectedPermissionData, props.onPermissionDataChange, props]);
-
-  function getPlaceholderText() {
-    if (!isAccountConnected) return "Connect wallet to view permissions";
-    if (isLoadingDelegator || isLoadingRecipient || isLoadingAll)
-      return "Loading permissions...";
-    if (permissionsError) return "Error loading permissions";
-    if (!hasPermissions) return "No permissions available";
-    return "Select permission";
-  }
 
   function getDetailRows() {
     if (!selectedPermissionData) return [];
@@ -504,7 +705,7 @@ export function PermissionSelector(props: PermissionSelectorProps) {
       },
     ];
 
-    // Only add execution count for non-namespace permissions
+    // Only add execution count for non-capability permissions
     if (permissionType !== "Capability") {
       detailRows.push({
         label: "Execution Count",
@@ -512,15 +713,30 @@ export function PermissionSelector(props: PermissionSelectorProps) {
       });
     }
 
-    // Add namespace paths if it's a namespace permission
-    if (
-      selectedPermissionData.namespacePaths &&
-      selectedPermissionData.namespacePaths.length > 0
-    ) {
-      detailRows.push({
-        label: "Namespace Path",
-        value: selectedPermissionData.namespacePaths.join("."),
-      });
+    // Add capability paths if it's a capability permission
+    const { paths: capabilityPaths } = getCapabilityPaths(
+      selectedPermissionData.namespacePaths,
+    );
+    if (capabilityPaths.length > 0) {
+      if (capabilityPaths.length === 1) {
+        detailRows.push({
+          label: "Capability Path",
+          value: capabilityPaths[0]!,
+        });
+      } else {
+        detailRows.push({
+          label: "Capability Paths",
+          component: (
+            <div className="space-y-1">
+              {capabilityPaths.map((path, index) => (
+                <div key={index} className="text-sm">
+                  {index + 1}. {path}
+                </div>
+              ))}
+            </div>
+          ),
+        });
+      }
     }
 
     return detailRows;
@@ -532,125 +748,156 @@ export function PermissionSelector(props: PermissionSelectorProps) {
         control={props.control}
         name="permissionId"
         render={({ field }) => (
-          <FormItem>
-            <FormLabel>Select Permission</FormLabel>
-            <div className="flex items-center gap-2">
-              <Select
-                value={field.value}
-                onValueChange={(value: string) => {
-                  field.onChange(value);
-                  props.onPermissionIdChange(value);
-                  // Update permission data immediately when selection changes
-                  const newPermissionData = userPermissions?.find(
-                    (item) => item.permissionId === value,
-                  );
-                  if (props.onPermissionDataChange) {
-                    const transformedData = transformToPermissionWithDetails(
-                      newPermissionData ?? null,
-                    );
-                    props.onPermissionDataChange(transformedData);
-                  }
-                }}
-                disabled={
-                  !isAccountConnected ||
-                  !hasPermissions ||
-                  isLoadingDelegator ||
-                  isLoadingRecipient ||
-                  isLoadingAll
-                }
-              >
+          <>
+            <FormItem>
+              <FormLabel>Select Permission</FormLabel>
+              <div className="flex items-center gap-2">
                 <FormControl>
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder={getPlaceholderText()} />
-                  </SelectTrigger>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    role="combobox"
+                    aria-expanded={open}
+                    className="w-full justify-between min-w-0"
+                    disabled={
+                      !isAccountConnected ||
+                      !hasPermissions ||
+                      isLoadingUserPermissions ||
+                      isLoadingAll
+                    }
+                    onClick={() => setOpen(true)}
+                  >
+                    <span
+                      className="truncate text-left flex-1 min-w-0"
+                      title={getSelectedPermissionDisplay()}
+                    >
+                      {getSelectedPermissionDisplay()}
+                    </span>
+                    <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                  </Button>
                 </FormControl>
-                <SelectContent className="max-h-[32vh]">
-                  {(() => {
-                    if (!userPermissions) return null;
+                {props.selectedPermissionId && (
+                  <CopyButton
+                    copy={props.selectedPermissionId}
+                    variant="outline"
+                    className="h-9 px-2"
+                    message="Permission ID copied to clipboard."
+                  >
+                    <Copy className="h-3 w-3" />
+                  </CopyButton>
+                )}
+              </div>
+              <FormMessage />
+            </FormItem>
 
-                    // Separate permissions by role and deduplicate
-                    const delegatorPermissions = userPermissions.filter(
-                      (item) =>
-                        item.contract.delegator ===
-                        (selectedAccount?.address as SS58Address),
-                    );
+            <CommandDialog open={open} onOpenChange={setOpen}>
+              <DialogTitle className="hidden">
+                Search permissions...
+              </DialogTitle>
+              <CommandInput placeholder="Search permissions..." />
+              <CommandList>
+                <CommandEmpty>No permissions found.</CommandEmpty>
 
-                    // Filter out permissions where user is also delegator to avoid duplicates
-                    const recipientOnlyPermissions = userPermissions.filter(
-                      (item) =>
-                        item.contract.recipient ===
-                          (selectedAccount?.address as SS58Address) &&
-                        item.contract.delegator !==
-                          (selectedAccount?.address as SS58Address),
-                    );
+                {searchData.emissionPermissions.length > 0 && (
+                  <CommandGroup heading="Emission Permissions">
+                    {searchData.emissionPermissions.map((item) => {
+                      const { permissionId } = item;
+                      const isSelected =
+                        props.selectedPermissionId === permissionId;
 
-                    return (
-                      <>
-                        {recipientOnlyPermissions.length > 0 && (
-                          <SelectGroup>
-                            <SelectLabel>As Recipient</SelectLabel>
-                            {recipientOnlyPermissions.map((item) => {
-                              const { permissionId, contract } = item;
-                              const permissionType =
-                                getPermissionType(contract);
-                              return (
-                                <SelectItem
-                                  key={permissionId}
-                                  value={permissionId}
-                                >
-                                  <div className="flex items-center gap-2">
-                                    <span>{smallAddress(permissionId)}</span>
-                                    <span className="text-sm text-muted-foreground">
-                                      ({permissionType})
-                                    </span>
-                                  </div>
-                                </SelectItem>
-                              );
-                            })}
-                          </SelectGroup>
-                        )}
-                        {delegatorPermissions.length > 0 && (
-                          <SelectGroup>
-                            <SelectLabel>As Delegator</SelectLabel>
-                            {delegatorPermissions.map((item) => {
-                              const { permissionId, contract } = item;
-                              const permissionType =
-                                getPermissionType(contract);
+                      return (
+                        <CommandItem
+                          key={permissionId}
+                          value={item.searchText}
+                          onSelect={() => {
+                            field.onChange(permissionId);
+                            props.onPermissionIdChange(permissionId);
+                            if (props.onPermissionDataChange) {
+                              const transformedData =
+                                transformToPermissionWithDetails(item);
+                              props.onPermissionDataChange(transformedData);
+                            }
+                            setOpen(false);
+                          }}
+                          className="flex items-start gap-2 py-2 max-w-full"
+                        >
+                          <Zap className="h-4 w-4 mt-0.5 shrink-0" />
+                          <div className="flex-1 min-w-0 overflow-hidden">
+                            <div className="flex items-center gap-2">
+                              <span className="font-mono text-sm truncate">
+                                {smallAddress(permissionId, 8)}
+                              </span>
+                              {isSelected && (
+                                <Check className="h-4 w-4 shrink-0" />
+                              )}
+                            </div>
+                            <div className="text-xs text-muted-foreground space-y-0.5">
+                              {item.namespacePaths &&
+                                renderCapabilityPaths(item.namespacePaths)}
+                              <div className="truncate text-muted-foreground">
+                                <span className="text-xs">
+                                  ID: {smallAddress(permissionId, 6)}
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+                        </CommandItem>
+                      );
+                    })}
+                  </CommandGroup>
+                )}
 
-                              return (
-                                <SelectItem
-                                  key={permissionId}
-                                  value={permissionId}
-                                >
-                                  <div className="flex items-center gap-2">
-                                    <span>{smallAddress(permissionId, 6)}</span>
-                                    <span className="text-sm text-muted-foreground">
-                                      {permissionType}
-                                    </span>
-                                  </div>
-                                </SelectItem>
-                              );
-                            })}
-                          </SelectGroup>
-                        )}
-                      </>
-                    );
-                  })()}
-                </SelectContent>
-              </Select>
-              {props.selectedPermissionId && (
-                <CopyButton
-                  copy={props.selectedPermissionId}
-                  variant="outline"
-                  className="h-9 px-2"
-                  message="Permission ID copied to clipboard."
-                >
-                  <Copy className="h-3 w-3" />
-                </CopyButton>
-              )}
-            </div>
-            <FormMessage />
-          </FormItem>
+                {searchData.namespacePermissions.length > 0 && (
+                  <CommandGroup heading="Capability Permissions">
+                    {searchData.namespacePermissions.map((item) => {
+                      const { permissionId } = item;
+                      const isSelected =
+                        props.selectedPermissionId === permissionId;
+
+                      return (
+                        <CommandItem
+                          key={permissionId}
+                          value={item.searchText}
+                          onSelect={() => {
+                            field.onChange(permissionId);
+                            props.onPermissionIdChange(permissionId);
+                            if (props.onPermissionDataChange) {
+                              const transformedData =
+                                transformToPermissionWithDetails(item);
+                              props.onPermissionDataChange(transformedData);
+                            }
+                            setOpen(false);
+                          }}
+                          className="flex items-start gap-2 py-2 max-w-full"
+                        >
+                          <Package className="h-4 w-4 mt-0.5 shrink-0" />
+                          <div className="flex-1 min-w-0 overflow-hidden">
+                            <div className="flex items-center gap-2">
+                              <span className="font-mono text-sm truncate">
+                                {smallAddress(permissionId, 8)}
+                              </span>
+                              {isSelected && (
+                                <Check className="h-4 w-4 shrink-0" />
+                              )}
+                            </div>
+                            <div className="text-xs text-muted-foreground space-y-0.5">
+                              {item.namespacePaths &&
+                                renderCapabilityPaths(item.namespacePaths)}
+                              <div className="truncate text-muted-foreground">
+                                <span className="text-xs">
+                                  ID: {smallAddress(permissionId, 6)}
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+                        </CommandItem>
+                      );
+                    })}
+                  </CommandGroup>
+                )}
+              </CommandList>
+            </CommandDialog>
+          </>
         )}
       />
 
@@ -664,9 +911,9 @@ export function PermissionSelector(props: PermissionSelectorProps) {
 
           <CardContent className="text-sm p-4 pt-0">
             {getDetailRows().map((row) => (
-              <div key={row.label} className="flex items-center">
+              <div key={row.label} className={getDetailRowClassName()}>
                 <span className="font-medium flex-shrink-0">{row.label}:</span>
-                <div className="ml-2 text-muted-foreground break-all">
+                <div className={getDetailValueClassName()}>
                   {row.component ?? row.value}
                 </div>
               </div>

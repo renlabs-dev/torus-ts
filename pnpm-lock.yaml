@@ -84,6 +84,9 @@ catalogs:
     next:
       specifier: ^15.3.0
       version: 15.3.0
+    next-plausible:
+      specifier: ^3.12.4
+      version: 3.12.4
     postcss:
       specifier: ^8.4.41
       version: 8.5.3
@@ -217,6 +220,9 @@ importers:
       next:
         specifier: 'catalog:'
         version: 15.3.0(@babel/core@7.26.10)(babel-plugin-macros@3.1.0)(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
+      next-plausible:
+        specifier: 'catalog:'
+        version: 3.12.4(next@15.3.0(@babel/core@7.26.10)(react-dom@19.0.0(react@19.0.0))(react@19.0.0))(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
       react:
         specifier: ^19.0.0
         version: 19.0.0
@@ -577,6 +583,9 @@ importers:
       next-auth:
         specifier: ^4.24.11
         version: 4.24.11(next@15.3.0(@babel/core@7.26.10)(react-dom@19.0.0(react@19.0.0))(react@19.0.0))(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
+      next-plausible:
+        specifier: 'catalog:'
+        version: 3.12.4(next@15.3.0(@babel/core@7.26.10)(react-dom@19.0.0(react@19.0.0))(react@19.0.0))(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
       react:
         specifier: ^19.0.0
         version: 19.0.0
@@ -671,6 +680,9 @@ importers:
       next:
         specifier: 'catalog:'
         version: 15.3.0(@babel/core@7.26.10)(babel-plugin-macros@3.1.0)(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
+      next-plausible:
+        specifier: 'catalog:'
+        version: 3.12.4(next@15.3.0(@babel/core@7.26.10)(react-dom@19.0.0(react@19.0.0))(react@19.0.0))(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
       react:
         specifier: ^19.0.0
         version: 19.0.0
@@ -783,6 +795,9 @@ importers:
       next:
         specifier: 'catalog:'
         version: 15.3.0(@babel/core@7.26.10)(babel-plugin-macros@3.1.0)(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
+      next-plausible:
+        specifier: 'catalog:'
+        version: 3.12.4(next@15.3.0(@babel/core@7.26.10)(react-dom@19.0.0(react@19.0.0))(react@19.0.0))(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
       r3f-forcegraph:
         specifier: ^1.0.8
         version: 1.0.8(react@19.0.0)(three@0.175.0)
@@ -895,6 +910,9 @@ importers:
       next:
         specifier: 'catalog:'
         version: 15.3.0(@babel/core@7.26.10)(babel-plugin-macros@3.1.0)(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
+      next-plausible:
+        specifier: 'catalog:'
+        version: 3.12.4(next@15.3.0(@babel/core@7.26.10)(react-dom@19.0.0(react@19.0.0))(react@19.0.0))(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
       react:
         specifier: ^19.0.0
         version: 19.0.0
@@ -11993,6 +12011,13 @@ packages:
         optional: true
       nodemailer:
         optional: true
+
+  next-plausible@3.12.4:
+    resolution: {integrity: sha512-cD3+ixJxf8yBYvsideTxqli3fvrB7R4BXcvsNJz8Sm2X1QN039WfiXjCyNWkub4h5++rRs6fHhchUMnOuJokcg==}
+    peerDependencies:
+      next: '^11.1.0 || ^12.0.0 || ^13.0.0 || ^14.0.0 || ^15.0.0 '
+      react: ^19.0.0
+      react-dom: ^19.0.0
 
   next-runtime-env@3.3.0-alpha.1:
     resolution: {integrity: sha512-6QgiCPbvhpf7sjbeRQqgbc+5xpEUHJwbv75kmg0MEj6kThlv4Y/sckTHoJZrc8XcaC/AFkpCU8HIKWzMJWU30w==}
@@ -30118,6 +30143,12 @@ snapshots:
       react: 19.0.0
       react-dom: 19.0.0(react@19.0.0)
       uuid: 8.3.2
+
+  next-plausible@3.12.4(next@15.3.0(@babel/core@7.26.10)(react-dom@19.0.0(react@19.0.0))(react@19.0.0))(react-dom@19.0.0(react@19.0.0))(react@19.0.0):
+    dependencies:
+      next: 15.3.0(@babel/core@7.26.10)(babel-plugin-macros@3.1.0)(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
+      react: 19.0.0
+      react-dom: 19.0.0(react@19.0.0)
 
   next-runtime-env@3.3.0-alpha.1(next@15.3.0(react-dom@19.0.0(react@19.0.0))(react@19.0.0))(react@19.0.0):
     dependencies:

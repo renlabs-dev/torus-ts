@@ -38,6 +38,7 @@
     "d3-hierarchy": "^3.1.2",
     "lucide-react": "catalog:",
     "next": "catalog:",
+    "next-plausible": "catalog:",
     "r3f-forcegraph": "^1.0.8",
     "react": "catalog:react19",
     "react-dom": "catalog:react19",
