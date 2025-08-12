@@ -29,7 +29,7 @@ import {
   CardTitle,
 } from "@torus-ts/ui/components/card";
 import {
-  Command,
+  CommandDialog,
   CommandEmpty,
   CommandGroup,
   CommandInput,
@@ -37,6 +37,7 @@ import {
   CommandList,
 } from "@torus-ts/ui/components/command";
 import { CopyButton } from "@torus-ts/ui/components/copy-button";
+import { DialogTitle } from "@torus-ts/ui/components/dialog";
 import {
   FormControl,
   FormField,
@@ -44,11 +45,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@torus-ts/ui/components/form";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@torus-ts/ui/components/popover";
+import { useIsMobile } from "@torus-ts/ui/hooks/use-mobile";
 
 // Import the expected interface from the form
 import type { PermissionWithDetails } from "../(pages)/permissions/manage-permission/_components/revoke-permission-button";
@@ -189,6 +186,7 @@ interface PermissionSelectorProps {
 export function PermissionSelector(props: PermissionSelectorProps) {
   const { selectedAccount, isAccountConnected, api } = useTorus();
   const [open, setOpen] = useState(false);
+  const isMobile = useIsMobile();
 
   // Get permission IDs where the user is the delegator
   const { data: delegatorPermissionIds, isLoading: isLoadingDelegator } =
@@ -603,6 +601,12 @@ export function PermissionSelector(props: PermissionSelectorProps) {
     }
 
     const { permissionId, contract, namespacePaths } = selectedPermissionData;
+
+    // On mobile, show only the permission ID
+    if (isMobile) {
+      return smallAddress(permissionId, 4);
+    }
+
     const permissionType = getPermissionType(contract);
     const displayId = smallAddress(permissionId, 6); // Shorter for main display
     const capabilityPath = getCapabilityPathString(namespacePaths);
@@ -816,199 +820,197 @@ export function PermissionSelector(props: PermissionSelectorProps) {
         control={props.control}
         name="permissionId"
         render={({ field }) => (
-          <FormItem>
-            <FormLabel>Select Permission</FormLabel>
-            <div className="flex items-center gap-2">
-              <Popover open={open} onOpenChange={setOpen}>
-                <PopoverTrigger asChild>
-                  <FormControl>
-                    <Button
-                      variant="outline"
-                      role="combobox"
-                      aria-expanded={open}
-                      className="w-full justify-between min-w-0"
-                      disabled={
-                        !isAccountConnected ||
-                        !hasPermissions ||
-                        isLoadingDelegator ||
-                        isLoadingRecipient ||
-                        isLoadingAll
-                      }
+          <>
+            <FormItem>
+              <FormLabel>Select Permission</FormLabel>
+              <div className="flex items-center gap-2">
+                <FormControl>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    role="combobox"
+                    aria-expanded={open}
+                    className="w-full justify-between min-w-0"
+                    disabled={
+                      !isAccountConnected ||
+                      !hasPermissions ||
+                      isLoadingDelegator ||
+                      isLoadingRecipient ||
+                      isLoadingAll
+                    }
+                    onClick={() => setOpen(true)}
+                  >
+                    <span
+                      className="truncate text-left flex-1 min-w-0"
+                      title={getSelectedPermissionDisplay()}
                     >
-                      <span
-                        className="truncate text-left flex-1 min-w-0"
-                        title={getSelectedPermissionDisplay()}
-                      >
-                        {getSelectedPermissionDisplay()}
-                      </span>
-                      <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                    </Button>
-                  </FormControl>
-                </PopoverTrigger>
-                <PopoverContent className="w-[400px] p-0" align="start">
-                  <Command className="w-full">
-                    <CommandInput placeholder="Search permissions..." />
-                    <CommandList className="max-h-[32vh] max-w-[400px]">
-                      <CommandEmpty>No permissions found.</CommandEmpty>
+                      {getSelectedPermissionDisplay()}
+                    </span>
+                    <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                  </Button>
+                </FormControl>
+                {props.selectedPermissionId && (
+                  <CopyButton
+                    copy={props.selectedPermissionId}
+                    variant="outline"
+                    className="h-9 px-2"
+                    message="Permission ID copied to clipboard."
+                  >
+                    <Copy className="h-3 w-3" />
+                  </CopyButton>
+                )}
+              </div>
+              <FormMessage />
+            </FormItem>
 
-                      {searchData.emissionPermissions.length > 0 && (
-                        <CommandGroup heading="Emission Permissions">
-                          {searchData.emissionPermissions.map((item) => {
-                            const { permissionId } = item;
-                            const isSelected =
-                              props.selectedPermissionId === permissionId;
+            <CommandDialog open={open} onOpenChange={setOpen}>
+              <DialogTitle className="hidden">
+                Search permissions...
+              </DialogTitle>
+              <CommandInput placeholder="Search permissions..." />
+              <CommandList>
+                <CommandEmpty>No permissions found.</CommandEmpty>
 
-                            return (
-                              <CommandItem
-                                key={permissionId}
-                                value={item.searchText}
-                                onSelect={() => {
-                                  field.onChange(permissionId);
-                                  props.onPermissionIdChange(permissionId);
-                                  if (props.onPermissionDataChange) {
-                                    const transformedData =
-                                      transformToPermissionWithDetails(item);
-                                    props.onPermissionDataChange(
-                                      transformedData,
-                                    );
-                                  }
-                                  setOpen(false);
-                                }}
-                                className="flex items-start gap-2 py-2 max-w-full"
-                              >
-                                <Zap className="h-4 w-4 mt-0.5 shrink-0" />
-                                <div className="flex-1 min-w-0 overflow-hidden">
-                                  <div className="flex items-center gap-2">
-                                    <span className="font-mono text-sm truncate">
-                                      {smallAddress(permissionId, 8)}
-                                    </span>
-                                    {isSelected && (
-                                      <Check className="h-4 w-4 shrink-0" />
-                                    )}
-                                  </div>
-                                  <div className="text-xs text-muted-foreground space-y-0.5">
-                                    {item.namespacePaths && (
-                                      <div
-                                        className="space-y-0.5"
-                                        title={getCapabilityPathsArray(
-                                          item.namespacePaths,
-                                        ).join(", ")}
-                                      >
-                                        {getCapabilityPathsArray(
-                                          item.namespacePaths,
-                                        ).map((path, index) => (
-                                          <div key={index} className="truncate">
-                                            Capability
-                                            {getCapabilityPathsArray(
-                                              item.namespacePaths,
-                                            ).length > 1
-                                              ? ` ${index + 1}`
-                                              : ""}
-                                            : {path}
-                                          </div>
-                                        ))}
-                                      </div>
-                                    )}
-                                    <div className="truncate text-muted-foreground">
-                                      <span className="text-xs">
-                                        ID: {smallAddress(permissionId, 6)}
-                                      </span>
+                {searchData.emissionPermissions.length > 0 && (
+                  <CommandGroup heading="Emission Permissions">
+                    {searchData.emissionPermissions.map((item) => {
+                      const { permissionId } = item;
+                      const isSelected =
+                        props.selectedPermissionId === permissionId;
+
+                      return (
+                        <CommandItem
+                          key={permissionId}
+                          value={item.searchText}
+                          onSelect={() => {
+                            field.onChange(permissionId);
+                            props.onPermissionIdChange(permissionId);
+                            if (props.onPermissionDataChange) {
+                              const transformedData =
+                                transformToPermissionWithDetails(item);
+                              props.onPermissionDataChange(transformedData);
+                            }
+                            setOpen(false);
+                          }}
+                          className="flex items-start gap-2 py-2 max-w-full"
+                        >
+                          <Zap className="h-4 w-4 mt-0.5 shrink-0" />
+                          <div className="flex-1 min-w-0 overflow-hidden">
+                            <div className="flex items-center gap-2">
+                              <span className="font-mono text-sm truncate">
+                                {smallAddress(permissionId, 8)}
+                              </span>
+                              {isSelected && (
+                                <Check className="h-4 w-4 shrink-0" />
+                              )}
+                            </div>
+                            <div className="text-xs text-muted-foreground space-y-0.5">
+                              {item.namespacePaths && (
+                                <div
+                                  className="space-y-0.5"
+                                  title={getCapabilityPathsArray(
+                                    item.namespacePaths,
+                                  ).join(", ")}
+                                >
+                                  {getCapabilityPathsArray(
+                                    item.namespacePaths,
+                                  ).map((path, index) => (
+                                    <div key={index} className="truncate">
+                                      Capability
+                                      {getCapabilityPathsArray(
+                                        item.namespacePaths,
+                                      ).length > 1
+                                        ? ` ${index + 1}`
+                                        : ""}
+                                      : {path}
                                     </div>
-                                  </div>
+                                  ))}
                                 </div>
-                              </CommandItem>
-                            );
-                          })}
-                        </CommandGroup>
-                      )}
+                              )}
+                              <div className="truncate text-muted-foreground">
+                                <span className="text-xs">
+                                  ID: {smallAddress(permissionId, 6)}
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+                        </CommandItem>
+                      );
+                    })}
+                  </CommandGroup>
+                )}
 
-                      {searchData.namespacePermissions.length > 0 && (
-                        <CommandGroup heading="Capability Permissions">
-                          {searchData.namespacePermissions.map((item) => {
-                            const { permissionId } = item;
-                            const isSelected =
-                              props.selectedPermissionId === permissionId;
+                {searchData.namespacePermissions.length > 0 && (
+                  <CommandGroup heading="Capability Permissions">
+                    {searchData.namespacePermissions.map((item) => {
+                      const { permissionId } = item;
+                      const isSelected =
+                        props.selectedPermissionId === permissionId;
 
-                            return (
-                              <CommandItem
-                                key={permissionId}
-                                value={item.searchText}
-                                onSelect={() => {
-                                  field.onChange(permissionId);
-                                  props.onPermissionIdChange(permissionId);
-                                  if (props.onPermissionDataChange) {
-                                    const transformedData =
-                                      transformToPermissionWithDetails(item);
-                                    props.onPermissionDataChange(
-                                      transformedData,
-                                    );
-                                  }
-                                  setOpen(false);
-                                }}
-                                className="flex items-start gap-2 py-2 max-w-full"
-                              >
-                                <Package className="h-4 w-4 mt-0.5 shrink-0" />
-                                <div className="flex-1 min-w-0 overflow-hidden">
-                                  <div className="flex items-center gap-2">
-                                    <span className="font-mono text-sm truncate">
-                                      {smallAddress(permissionId, 8)}
-                                    </span>
-                                    {isSelected && (
-                                      <Check className="h-4 w-4 shrink-0" />
-                                    )}
-                                  </div>
-                                  <div className="text-xs text-muted-foreground space-y-0.5">
-                                    {item.namespacePaths && (
-                                      <div
-                                        className="space-y-0.5"
-                                        title={getCapabilityPathsArray(
-                                          item.namespacePaths,
-                                        ).join(", ")}
-                                      >
-                                        {getCapabilityPathsArray(
-                                          item.namespacePaths,
-                                        ).map((path, index) => (
-                                          <div key={index} className="truncate">
-                                            Capability
-                                            {getCapabilityPathsArray(
-                                              item.namespacePaths,
-                                            ).length > 1
-                                              ? ` ${index + 1}`
-                                              : ""}
-                                            : {path}
-                                          </div>
-                                        ))}
-                                      </div>
-                                    )}
-                                    <div className="truncate text-muted-foreground">
-                                      <span className="text-xs">
-                                        ID: {smallAddress(permissionId, 6)}
-                                      </span>
+                      return (
+                        <CommandItem
+                          key={permissionId}
+                          value={item.searchText}
+                          onSelect={() => {
+                            field.onChange(permissionId);
+                            props.onPermissionIdChange(permissionId);
+                            if (props.onPermissionDataChange) {
+                              const transformedData =
+                                transformToPermissionWithDetails(item);
+                              props.onPermissionDataChange(transformedData);
+                            }
+                            setOpen(false);
+                          }}
+                          className="flex items-start gap-2 py-2 max-w-full"
+                        >
+                          <Package className="h-4 w-4 mt-0.5 shrink-0" />
+                          <div className="flex-1 min-w-0 overflow-hidden">
+                            <div className="flex items-center gap-2">
+                              <span className="font-mono text-sm truncate">
+                                {smallAddress(permissionId, 8)}
+                              </span>
+                              {isSelected && (
+                                <Check className="h-4 w-4 shrink-0" />
+                              )}
+                            </div>
+                            <div className="text-xs text-muted-foreground space-y-0.5">
+                              {item.namespacePaths && (
+                                <div
+                                  className="space-y-0.5"
+                                  title={getCapabilityPathsArray(
+                                    item.namespacePaths,
+                                  ).join(", ")}
+                                >
+                                  {getCapabilityPathsArray(
+                                    item.namespacePaths,
+                                  ).map((path, index) => (
+                                    <div key={index} className="truncate">
+                                      Capability
+                                      {getCapabilityPathsArray(
+                                        item.namespacePaths,
+                                      ).length > 1
+                                        ? ` ${index + 1}`
+                                        : ""}
+                                      : {path}
                                     </div>
-                                  </div>
+                                  ))}
                                 </div>
-                              </CommandItem>
-                            );
-                          })}
-                        </CommandGroup>
-                      )}
-                    </CommandList>
-                  </Command>
-                </PopoverContent>
-              </Popover>
-              {props.selectedPermissionId && (
-                <CopyButton
-                  copy={props.selectedPermissionId}
-                  variant="outline"
-                  className="h-10 px-2"
-                  message="Permission ID copied to clipboard."
-                >
-                  <Copy className="h-3 w-3" />
-                </CopyButton>
-              )}
-            </div>
-            <FormMessage />
-          </FormItem>
+                              )}
+                              <div className="truncate text-muted-foreground">
+                                <span className="text-xs">
+                                  ID: {smallAddress(permissionId, 6)}
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+                        </CommandItem>
+                      );
+                    })}
+                  </CommandGroup>
+                )}
+              </CommandList>
+            </CommandDialog>
+          </>
         )}
       />
 
@@ -1022,9 +1024,20 @@ export function PermissionSelector(props: PermissionSelectorProps) {
 
           <CardContent className="text-sm p-4 pt-0">
             {getDetailRows().map((row) => (
-              <div key={row.label} className="flex items-center">
+              <div
+                key={row.label}
+                className={
+                  isMobile ? "flex flex-col space-y-1" : "flex items-center"
+                }
+              >
                 <span className="font-medium flex-shrink-0">{row.label}:</span>
-                <div className="ml-2 text-muted-foreground break-all">
+                <div
+                  className={
+                    isMobile
+                      ? "text-muted-foreground break-all"
+                      : "ml-2 text-muted-foreground break-all"
+                  }
+                >
                   {row.component ?? row.value}
                 </div>
               </div>
