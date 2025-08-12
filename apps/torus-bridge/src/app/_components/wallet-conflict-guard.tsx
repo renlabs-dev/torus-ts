@@ -50,7 +50,7 @@ function isCoinbaseWalletInstalled(): boolean {
   const providerHasCoinbaseFlag = (provider: unknown): boolean => {
     if (!provider || typeof provider !== "object") return false;
     const p = provider as Record<string, unknown>;
-    const direct = Boolean(p.isCoinbaseWallet || p.isWalletLink);
+    const direct = Boolean(p.isCoinbaseWallet ?? p.isWalletLink);
     const nested = Array.isArray(p.providers)
       ? p.providers.some((sub) => providerHasCoinbaseFlag(sub))
       : false;
