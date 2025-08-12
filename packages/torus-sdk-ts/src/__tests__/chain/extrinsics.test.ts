@@ -4,8 +4,8 @@ import { assert, describe, expect, it } from "vitest";
 
 import {
   type ExtrinsicTracker,
-  type ExtUpdate,
-  type ExtUpdateInBlock,
+  type TxEvent,
+  type TxInBlockEvent,
   submitTxWithTracker,
 } from "../../extrinsics.js";
 import { getApi } from "../../testing/getApi.js";
@@ -54,13 +54,13 @@ describe("submitWithTracker - live chain", () => {
     tracker: ExtrinsicTracker,
     timeoutMs: number = 20000,
   ): Promise<{
-    statusUpdates: ExtUpdate[];
-    inBlockUpdate?: ExtUpdate;
-    finalUpdate?: ExtUpdate;
+    statusUpdates: TxEvent[];
+    inBlockUpdate?: TxEvent;
+    finalUpdate?: TxEvent;
   }> {
-    const statusUpdates: ExtUpdate[] = [];
-    let inBlockUpdate: ExtUpdate | undefined;
-    let finalUpdate: ExtUpdate | undefined;
+    const statusUpdates: TxEvent[] = [];
+    let inBlockUpdate: TxEvent | undefined;
+    let finalUpdate: TxEvent | undefined;
 
     return new Promise((resolve, reject) => {
       const timeout = setTimeout(() => {
@@ -140,7 +140,7 @@ describe("submitWithTracker - live chain", () => {
 
       // Type guard to ensure it's an InBlock update
       assert(inBlockUpdate.kind === "InBlock");
-      const inBlockTyped = inBlockUpdate as ExtUpdateInBlock;
+      const inBlockTyped = inBlockUpdate as TxInBlockEvent;
 
       // Validate inBlock update structure
       expect(inBlockTyped.kind).toBe("InBlock");
@@ -194,7 +194,7 @@ describe("submitWithTracker - live chain", () => {
 
       // Type guard to ensure it's an InBlock update
       assert(inBlockUpdate.kind === "InBlock");
-      const inBlockTyped = inBlockUpdate as ExtUpdateInBlock;
+      const inBlockTyped = inBlockUpdate as TxInBlockEvent;
 
       // Validate inBlock update structure
       expect(inBlockTyped.kind).toBe("InBlock");
@@ -239,8 +239,8 @@ describe("submitWithTracker - live chain", () => {
 
     try {
       // Collect events for a shorter period to catch pool states
-      const poolEvents: ExtUpdate[] = [];
-      const inBlockEvents: ExtUpdate[] = [];
+      const poolEvents: TxEvent[] = [];
+      const inBlockEvents: TxEvent[] = [];
 
       tracker.on("inPool", (update) => {
         poolEvents.push(update);
@@ -301,9 +301,9 @@ describe("submitWithTracker - live chain", () => {
       });
 
       // For this test, accept Future status as terminal since high nonce won't proceed
-      const result = await new Promise<{ statusUpdates: ExtUpdate[] }>(
+      const result = await new Promise<{ statusUpdates: TxEvent[] }>(
         (resolve, reject) => {
-          const statusUpdates: ExtUpdate[] = [];
+          const statusUpdates: TxEvent[] = [];
           const timeout = setTimeout(() => {
             tracker.cancel();
             resolve({ statusUpdates }); // Don't reject, just return what we have
@@ -399,7 +399,7 @@ describe("submitWithTracker - live chain", () => {
 
       // Validate inBlock update has all required fields for successful transaction
       if (inBlockUpdate && inBlockUpdate.kind === "InBlock") {
-        const inBlockTyped = inBlockUpdate as ExtUpdateInBlock;
+        const inBlockTyped = inBlockUpdate as TxInBlockEvent;
         expect(inBlockTyped.kind).toBe("InBlock");
         expect(inBlockTyped.blockHash).toMatch(/^0x[a-f0-9]{64}$/i);
         expect(inBlockTyped.blockNumber).toBeGreaterThan(0);

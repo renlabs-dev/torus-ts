@@ -8,7 +8,7 @@ import { Keyring } from "@polkadot/keyring";
 import { if_let, match } from "rustie";
 import { assert, describe, expect, it } from "vitest";
 
-import { parseSubmittableResult, type TxUpdate } from "../../extrinsics.js";
+import { parseSubmittableResult, type TxState } from "../../extrinsics.js";
 import { getApi } from "../../testing/getApi.js";
 
 /**
@@ -31,10 +31,10 @@ describe("parseSubmittableResult - live chain", () => {
     signer: AddressOrPair,
     options: Partial<SignerOptions> = {},
   ): Promise<{
-    updates: TxUpdate[];
+    updates: TxState[];
     rawResults: SubmittableResult[];
   }> {
-    const updates: TxUpdate[] = [];
+    const updates: TxState[] = [];
     const rawResults: SubmittableResult[] = [];
 
     return new Promise((resolve, reject) => {
@@ -45,11 +45,11 @@ describe("parseSubmittableResult - live chain", () => {
       tx.signAndSend(signer, options, (rawResult: SubmittableResult) => {
         try {
           rawResults.push(rawResult);
-          const { txUpdate } = parseSubmittableResult(rawResult);
-          updates.push(txUpdate);
+          const { txState } = parseSubmittableResult(rawResult);
+          updates.push(txState);
 
           // Check for terminal states (modified to not wait for finalization)
-          const isTerminal = match(txUpdate)<boolean>({
+          const isTerminal = match(txState)<boolean>({
             Invalid: () => true,
             Evicted: () => true,
             InternalError: () => true,

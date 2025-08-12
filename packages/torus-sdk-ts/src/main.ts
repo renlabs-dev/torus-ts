@@ -63,7 +63,7 @@ async function testTransaction(
       // Test our new transformation functions
       try {
         // Step 1: Parse the raw result to SbSubmittableResult
-        const { result, txUpdate } = parseSubmittableResult(rawResult);
+        const { result, txState } = parseSubmittableResult(rawResult);
 
         console.log("\n📦 Parsed SubmittableResult:");
         console.log("- txHash:", result.txHash);
@@ -72,21 +72,19 @@ async function testTransaction(
         console.log("- has dispatchInfo:", result.dispatchInfo !== undefined);
         console.log("- events count:", result.events.length);
 
-        // Step 2: Transform to high-level TxUpdate
-        console.log("\n🔄 Transformed to TxUpdate:");
-        const updateType = Object.keys(txUpdate)[0];
+        // Step 2: Transform to high-level TxState
+        console.log("\n🔄 Transformed to TxState:");
+        const updateType = Object.keys(txState)[0];
         console.log("- Update type:", updateType);
 
-        // Use rustie's match to handle the TxUpdate
-        match(txUpdate)({
+        // Use rustie's match to handle the TxState
+        match(txState)({
           Pool: ({ txHash, kind }) => {
             console.log(`  → Transaction in pool (${kind})`);
             console.log(`    Hash: ${txHash}`);
           },
           Included: ({ txHash, blockHash, outcome, kind, events }) => {
-            console.log(
-              `  → Transaction included in block (status: ${kind})`,
-            );
+            console.log(`  → Transaction included in block (status: ${kind})`);
             console.log(`    Tx Hash: ${txHash}`);
             console.log(`    Block Hash: ${blockHash}`);
             console.log(`    Events: ${events.length}`);
