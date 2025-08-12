@@ -23,10 +23,10 @@ export default defineConfig({
           testTimeout: 30_000,
           hookTimeout: 30_000,
           pool: "threads",
+          maxConcurrency: 1,
           poolOptions: {
             threads: {
-              // minThreads: 1,
-              // maxThreads: 1,
+              singleThread: true,
             },
           },
           setupFiles: ["./src/testing/chain.setup.ts"],

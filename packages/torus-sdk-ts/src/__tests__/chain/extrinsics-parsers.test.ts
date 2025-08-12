@@ -53,8 +53,7 @@ describe("parseSubmittableResult - live chain", () => {
             Invalid: () => true,
             Evicted: () => true,
             InternalError: () => true,
-            FinalityTimeout: () => true,
-            Included: ({ kind }) => kind === "InBlock", // Stop at InBlock instead of waiting for finalization
+            Included: ({ kind }) => kind === "InBlock" || kind === "FinalityTimeout", // Stop at InBlock or FinalityTimeout
             Pool: ({ kind }) => kind === "Future" && options.nonce === 999999,
             Warning: () => false,
           });

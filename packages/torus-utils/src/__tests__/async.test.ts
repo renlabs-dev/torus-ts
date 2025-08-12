@@ -133,7 +133,7 @@ describe("defer", () => {
         await deferred.promise;
         return "success";
       } catch (error) {
-        return "caught error";
+        return `caught error: ${String(error)}`;
       }
     };
 
@@ -142,7 +142,7 @@ describe("defer", () => {
     deferred.reject(new Error("test error"));
 
     const result = await resultPromise;
-    expect(result).toBe("caught error");
+    expect(result).toBe("caught error: Error: test error");
   });
 
   it("should only resolve/reject once", async () => {
@@ -636,7 +636,7 @@ describe("AsyncPushStream", () => {
     stream.push(1);
     stream.push(2);
     stream.push(3);
-    
+
     // End the stream
     stream.end();
     expect(stream.isFinished).toBe(true);
