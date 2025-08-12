@@ -330,7 +330,7 @@ export type RuntimeOutcome = Enum<{
 
 // ---- High-level ADT over SubmittableResult ----
 
-export type TxUpdate = Enum<{
+export type TxState = Enum<{
   /** Submission/watch/signing/RPC pipeline failure (non-runtime). */
   InternalError: {
     txHash: HexH256;
@@ -375,13 +375,13 @@ export type TxUpdate = Enum<{
 }>;
 
 /**
- * Transforms a parsed SbSubmittableResult into a high-level TxUpdate
+ * Transforms a parsed SbSubmittableResult into a high-level TxState
  * representation.
  *
  * @param result - The parsed SbSubmittableResult
  */
 export function parseSubmittableResult(rawResult: SubmittableResult): {
-  txUpdate: TxUpdate;
+  txState: TxState;
   result: SbSubmittableResult;
 } {
   const [parseErr, result] = zodParseResult(sb_submittable_result)(rawResult);
@@ -394,13 +394,13 @@ export function parseSubmittableResult(rawResult: SubmittableResult): {
 
   // Handle internal errors first (submission/RPC failures)
   if (internalError) {
-    const txUpdate = {
+    const txState = {
       InternalError: {
         txHash,
         error: internalError,
       },
     };
-    return { txUpdate, result };
+    return { txState, result };
   }
 
   const handlePool = (kind: "Future" | "Ready" | "Broadcast") => () => {
@@ -441,7 +441,7 @@ export function parseSubmittableResult(rawResult: SubmittableResult): {
     };
 
   // Use rustie's match to handle the status enum
-  const txUpdate = match(status)<TxUpdate>({
+  const txState = match(status)<TxState>({
     Invalid: () => ({
       Invalid: {
         txHash,
@@ -485,39 +485,40 @@ export function parseSubmittableResult(rawResult: SubmittableResult): {
   });
 
   return {
-    txUpdate,
+    txState,
     result,
   };
 }
 
 // ==== Extrinsic Tracker ====
 
-export interface ExtUpdateBase {
+export interface TxEventBase {
   extResultRaw: SubmittableResult;
   extResult: SbSubmittableResult;
   txHash: HexH256;
+  txState: TxState;
   // events: SbEventRecord[]
 }
 
-export interface ExtUpdateInternalError extends ExtUpdateBase {
+export interface TxInternalErrorEvent extends TxEventBase {
   kind: "InternalError";
   internalError: Error;
 }
 
-export interface ExtUpdateInvalid extends ExtUpdateBase {
+export interface TxInvalidEvent extends TxEventBase {
   kind: "Invalid";
   reason: Error;
 }
 
-export interface ExtUpdatePool extends ExtUpdateBase {
+export interface TxPoolEvent extends TxEventBase {
   kind: "Future" | "Ready" | "Broadcast";
 }
 
-export interface ExtUpdateEvicted extends ExtUpdateBase {
+export interface TxEvictedEvent extends TxEventBase {
   kind: "Dropped" | "Usurped";
 }
 
-export interface ExtUpdateInBlock extends ExtUpdateBase {
+export interface TxInBlockEvent extends TxEventBase {
   kind: "InBlock" | "Finalized" | "FinalityTimeout";
   txHash: HexH256;
   blockHash: HexH256;
@@ -527,29 +528,29 @@ export interface ExtUpdateInBlock extends ExtUpdateBase {
   outcome: RuntimeOutcome;
 }
 
-export interface ExtUpdateWarning extends ExtUpdateBase {
+export interface TxWarningEvent extends TxEventBase {
   kind: "Retracted";
 }
 
-export type ExtUpdate =
-  | ExtUpdateInternalError
-  | ExtUpdateInvalid
-  | ExtUpdatePool
-  | ExtUpdateEvicted
-  | ExtUpdateInBlock
-  | ExtUpdateWarning;
+export type TxEvent =
+  | TxInternalErrorEvent
+  | TxInvalidEvent
+  | TxPoolEvent
+  | TxEvictedEvent
+  | TxInBlockEvent
+  | TxWarningEvent;
 
 export interface ExtrinsicTrackerEvents {
-  status: ExtUpdate;
+  status: TxEvent;
 
-  internalError: ExtUpdateInternalError;
-  invalid: ExtUpdateInvalid;
-  inPool: ExtUpdatePool;
-  inBlock: ExtUpdateInBlock;
-  evicted: ExtUpdateEvicted;
-  finalized: ExtUpdateInBlock & { kind: "Finalized" };
-  finalityTimeout: ExtUpdateInBlock & { kind: "FinalityTimeout" };
-  warning: ExtUpdateWarning;
+  internalError: TxInternalErrorEvent;
+  invalid: TxInvalidEvent;
+  inPool: TxPoolEvent;
+  inBlock: TxInBlockEvent;
+  evicted: TxEvictedEvent;
+  finalized: TxInBlockEvent & { kind: "Finalized" };
+  finalityTimeout: TxInBlockEvent & { kind: "FinalityTimeout" };
+  warning: TxWarningEvent;
 }
 
 export interface ExtrinsicTracker
@@ -582,33 +583,32 @@ export function submitTxWithTracker(
   const emitter = new Emittery<ExtrinsicTrackerEvents>();
 
   // Promises for specific events
-
-  const finality = defer<ExtUpdateInBlock & { kind: "Finalized" }>();
+  // TODO: check promises for transaction events
+  // const finality = defer<TxInBlockEvent & { kind: "Finalized" }>();
 
   let unsubscribe: (() => void) | undefined;
 
   // -- Async iterator using AsyncPushStream --
-  const stream = new AsyncPushStream<ExtUpdate>();
+  const stream = new AsyncPushStream<TxEvent>();
 
   const updateHandler = (rawResult: SubmittableResult) => {
-    // Transform to high-level TxUpdate
-    const { txUpdate, result } = parseSubmittableResult(rawResult);
+    // Transform to high-level TxState
+    const { txState, result } = parseSubmittableResult(rawResult);
 
-    const baseUpdate: ExtUpdateBase = {
+    const baseUpdate: TxEventBase = {
       extResultRaw: rawResult,
       extResult: result,
       txHash: rawResult.txHash.toHex(),
+      txState,
     };
     const makeUpdate = <U>(update: U) => ({
       ...baseUpdate,
       ...update,
     });
 
-    console.log("txUpdate:", txUpdate);
-
-    match(txUpdate)<unknown>({
+    match(txState)<unknown>({
       InternalError: ({ txHash, error }) => {
-        const update: ExtUpdateInternalError = makeUpdate({
+        const update: TxInternalErrorEvent = makeUpdate({
           kind: "InternalError",
           txHash,
           internalError: error,
@@ -620,7 +620,7 @@ export function submitTxWithTracker(
         unsubscribe?.();
       },
       Invalid: ({ txHash, reason }) => {
-        const update: ExtUpdateInvalid = makeUpdate({
+        const update: TxInvalidEvent = makeUpdate({
           kind: "Invalid",
           txHash,
           reason,
@@ -632,7 +632,7 @@ export function submitTxWithTracker(
         unsubscribe?.();
       },
       Pool: ({ txHash, kind }) => {
-        const update: ExtUpdatePool = makeUpdate({
+        const update: TxPoolEvent = makeUpdate({
           txHash,
           kind,
         });
@@ -641,7 +641,7 @@ export function submitTxWithTracker(
         stream.push(update);
       },
       Evicted: ({ txHash, kind }) => {
-        const update: ExtUpdateEvicted = makeUpdate({
+        const update: TxEvictedEvent = makeUpdate({
           txHash,
           kind,
         });
@@ -658,7 +658,7 @@ export function submitTxWithTracker(
         events,
         outcome,
       }) => {
-        const update: ExtUpdateInBlock = makeUpdate({
+        const update: TxInBlockEvent = makeUpdate({
           kind,
           txHash,
           blockHash,
@@ -670,19 +670,19 @@ export function submitTxWithTracker(
         void emitter.emit("inBlock", update);
         void emitter.emit("status", update);
         stream.push(update);
-        switch (update.kind) {
-          case "Finalized":
-            void finality.resolve({
-              ...update,
-              kind: update.kind, // lol
-            });
-            break;
-          default:
-            break;
-        }
+        // switch (update.kind) {
+        //   case "Finalized":
+        //     void finality.resolve({
+        //       ...update,
+        //       kind: update.kind, // lol
+        //     });
+        //     break;
+        //   default:
+        //     break;
+        // }
       },
       Warning: ({ txHash, kind }) => {
-        const update: ExtUpdateWarning = makeUpdate({
+        const update: TxWarningEvent = makeUpdate({
           txHash,
           kind,
         });
