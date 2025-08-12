@@ -48,6 +48,14 @@
       "dependsOn": ["^build"],
       "outputs": []
     },
+    "test:chain": {
+      "dependsOn": ["^build"],
+      "outputs": [],
+      "cache": false
+    },
+    "test:all": {
+      "dependsOn": ["test", "test:chain"]
+    },
     "publish": {
       "dependsOn": ["build", "test"],
       "outputs": []
