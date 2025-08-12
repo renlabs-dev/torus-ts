@@ -17,6 +17,15 @@ interface Eip1193Provider {
   providers?: Eip1193Provider[];
 }
 
+function isTronLinkInstalled(): boolean {
+  if (typeof window === "undefined") return false;
+  const maybeWindow = window as unknown as Record<string, unknown>;
+  // TronLink typically injects either `tronLink` and/or `tronWeb`
+  const hasTronLinkObject = Boolean(maybeWindow.tronLink);
+  const hasTronWebObject = Boolean(maybeWindow.tronWeb);
+  return hasTronLinkObject || hasTronWebObject;
+}
+
 function isCoinbaseWalletInstalled(): boolean {
   // Check if we're in a browser environment
   if (typeof window === "undefined" || !window.ethereum) {
@@ -64,11 +73,22 @@ function useWalletConflictDetection() {
   const [isReady, setIsReady] = useState(false);
   const [hasPhantom, setHasPhantom] = useState(false);
   const [hasCoinbase, setHasCoinbase] = useState(false);
+  const [hasTronLink, setHasTronLink] = useState(false);
 
-  const hasConflict = useMemo(
-    () => hasPhantom && hasCoinbase,
-    [hasPhantom, hasCoinbase],
-  );
+  const hasConflict = useMemo(() => {
+    const enabledCount = [hasPhantom, hasCoinbase, hasTronLink].filter(
+      Boolean,
+    ).length;
+    return enabledCount >= 2;
+  }, [hasPhantom, hasCoinbase, hasTronLink]);
+
+  const detectedWallets = useMemo(() => {
+    const names: string[] = [];
+    if (hasPhantom) names.push("Phantom");
+    if (hasCoinbase) names.push("Coinbase Wallet");
+    if (hasTronLink) names.push("TronLink");
+    return names;
+  }, [hasPhantom, hasCoinbase, hasTronLink]);
 
   useEffect(() => {
     let isActive = true;
@@ -77,6 +97,7 @@ function useWalletConflictDetection() {
 
       setHasPhantom(phantomWallet().installed ?? false);
       setHasCoinbase(isCoinbaseWalletInstalled());
+      setHasTronLink(isTronLinkInstalled());
       setTimeout(() => isActive && setIsReady(true), 300);
     };
 
@@ -87,13 +108,15 @@ function useWalletConflictDetection() {
     };
   }, []);
 
-  return { isReady, hasConflict };
+  return { isReady, hasConflict, detectedWallets };
 }
 
 function WalletConflictOverlay({
   onCopyExtensionsUrl,
+  detectedWallets,
 }: {
   onCopyExtensionsUrl: () => void;
+  detectedWallets: string[];
 }) {
   return (
     <div className="mx-auto max-w-xl p-6">
@@ -101,8 +124,8 @@ function WalletConflictOverlay({
         <CardHeader>
           <CardTitle>Wallet conflict detected</CardTitle>
           <CardDescription>
-            Two wallet extensions are enabled (Phantom and Coinbase Wallet).
-            This makes it unclear which one should respond and can break the
+            Multiple wallet extensions are enabled ({detectedWallets.join(", ")}
+            ). This makes it unclear which one should respond and can break the
             Bridge.
           </CardDescription>
         </CardHeader>
@@ -120,13 +143,7 @@ function WalletConflictOverlay({
             <p className="font-semibold">Quick fix</p>
             <ul className="list-disc pl-5 space-y-1 text-sm text-muted-foreground">
               <li>Keep only one wallet extension enabled at a time.</li>
-              <li>
-                If you want to use{" "}
-                <span className="font-medium">Coinbase Wallet</span>, disable
-                Phantom. If you want{" "}
-                <span className="font-medium">Phantom</span>, disable Coinbase
-                Wallet. Then reload this page.
-              </li>
+              <li>Disable all but your preferred wallet, then reload.</li>
             </ul>
           </div>
 
@@ -145,7 +162,7 @@ function WalletConflictOverlay({
                 </button>{" "}
                 (click to copy)
               </li>
-              <li>Find “Phantom” or “Coinbase Wallet”</li>
+              <li>Find the listed wallet extensions</li>
               <li>Toggle it off (or remove)</li>
               <li>Reload this page</li>
             </ol>
@@ -165,7 +182,8 @@ function WalletConflictOverlay({
 }
 
 export function WalletConflictGuard({ children }: PropsWithChildren) {
-  const { isReady, hasConflict } = useWalletConflictDetection();
+  const { isReady, hasConflict, detectedWallets } =
+    useWalletConflictDetection();
 
   const handleCopyExtensionsUrl = useCallback(async () => {
     await navigator.clipboard.writeText("chrome://extensions");
@@ -174,7 +192,10 @@ export function WalletConflictGuard({ children }: PropsWithChildren) {
   if (!isReady) return null;
   if (hasConflict) {
     return (
-      <WalletConflictOverlay onCopyExtensionsUrl={handleCopyExtensionsUrl} />
+      <WalletConflictOverlay
+        onCopyExtensionsUrl={handleCopyExtensionsUrl}
+        detectedWallets={detectedWallets}
+      />
     );
   }
   return <>{children}</>;
