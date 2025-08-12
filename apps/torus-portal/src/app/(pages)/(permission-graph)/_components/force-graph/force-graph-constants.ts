@@ -39,7 +39,7 @@ export const graphConstants = {
       // Agent/Node group (Blue family - network participants)
       rootNode: "#3b82f6", // blue-500 (whitelisted agents)
       targetNode: "#10b981", // emerald-500 (permission targets)
-      userNode: "#0ea5e9", // sky-500 (user's agent)
+      userNode: "#d946ef", // sky-500 (user's agent)
 
       // Permission group (Orange/Yellow family - permission types)
       permissionNode: "#f97316", // orange-500 (legacy fallback)
