@@ -810,6 +810,11 @@ export const emissionDistributionTargetsSchema = createTable(
 
 /**
  * Accumulated stream amounts (runtime state)
+ * This table is meant for tracking historical amounts, so
+ * it shouldn`t be relied upon for current accumulation ammounts.
+ * For that, we have the column `accumulated_tokens` in the
+ * `emission_distribution_targets` table.
+ *
  */
 export const accumulatedStreamAmountsSchema = createTable(
   "accumulated_stream_amounts",
@@ -828,15 +833,16 @@ export const accumulatedStreamAmountsSchema = createTable(
       .notNull()
       .default("0"),
     lastUpdated: timestampzNow("last_updated"),
+    lastUpdatedBlock: integer("last_updated_block"),
+    atBlock: integer("at_block").notNull(),
+    executionCount: integer("execution_count").notNull().default(0),
   },
   (t) => [
     {
-      primaryKey: { columns: [t.grantorAccountId, t.streamId, t.permissionId] },
+      primaryKey: {
+        columns: [t.grantorAccountId, t.streamId, t.permissionId, t.atBlock],
+      },
     },
-    index("accumulated_streams_grantor_stream_idx").on(
-      t.grantorAccountId,
-      t.streamId,
-    ),
   ],
 );
 
