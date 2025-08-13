@@ -19,6 +19,7 @@ cmd_with_env() {
     source .env
     set +a
   fi
+  echo >&2 "Running with environment variables: $*"
   "$@"
 }
 
@@ -82,7 +83,9 @@ cmd_dev() {
     set +a
   fi
 
-  turbo "$turbo_cmd" dev "${flags[@]}" -F "$app_name" -- "${app_args[@]}"
+  cmd=(turbo "$turbo_cmd" dev "${flags[@]}" -F "$app_name" -- "${app_args[@]}")
+  echo >&2 "Running: ${cmd[*]}"
+  "${cmd[@]}"
 }
 
 if [ -z "$1" ]; then

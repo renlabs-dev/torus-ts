@@ -25,11 +25,12 @@ import {
   sb_struct,
   sb_struct_obj,
 } from "@torus-network/sdk/types";
-import { AsyncPushStream, defer } from "@torus-network/torus-utils/async";
+import { AsyncPushStream } from "@torus-network/torus-utils/async";
 import { chainErr, ParseError } from "@torus-network/torus-utils/error";
+import type { Result } from "@torus-network/torus-utils/result";
+import { makeErr, makeOk } from "@torus-network/torus-utils/result";
+import { tryAsync } from "@torus-network/torus-utils/try-catch";
 import { zodParseResult } from "@torus-network/torus-utils/typing";
-
-export * from "./extrinsics-helpers.js";
 
 // ==== Raw Extrinsic State ====
 
@@ -540,8 +541,14 @@ export type TxEvent =
   | TxInBlockEvent
   | TxWarningEvent;
 
+export interface ErrorEvent {
+  kind: "Error";
+  error: Error;
+}
+
 export interface ExtrinsicTrackerEvents {
   status: TxEvent;
+  error: ErrorEvent;
 
   internalError: TxInternalErrorEvent;
   invalid: TxInvalidEvent;
@@ -574,18 +581,26 @@ export interface ExtrinsicTracker
   cancel(): void;
 }
 
-export function submitTxWithTracker(
+export class SendTxError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "SendTxError";
+  }
+}
+
+export async function sendTxWithTracker(
   _api: ApiPromise,
   extrinsic: SubmittableExtrinsic<"promise">,
   signer: Parameters<SubmittableExtrinsic<"promise">["signAndSend"]>[0],
   options?: Parameters<SubmittableExtrinsic<"promise">["signAndSend"]>[1],
-): ExtrinsicTracker {
+): Promise<Result<ExtrinsicTracker, SendTxError>> {
   const emitter = new Emittery<ExtrinsicTrackerEvents>();
 
   // Promises for specific events
   // TODO: check promises for transaction events
   // const finality = defer<TxInBlockEvent & { kind: "Finalized" }>();
 
+  // eslint-disable-next-line prefer-const
   let unsubscribe: (() => void) | undefined;
 
   // -- Async iterator using AsyncPushStream --
@@ -693,37 +708,46 @@ export function submitTxWithTracker(
     });
   };
 
-  extrinsic
-    .signAndSend(signer, options ?? {}, updateHandler)
-    .then((u) => (unsubscribe = u))
-    .catch((e) => {
-      console.log("ERROR on signAndSend:", e);
-    });
+  // try {
+  //   extrinsic
+  //     .signAndSend(signer, options ?? {}, updateHandler)
+  //     .then((u) => (unsubscribe = u))
+  //     .catch((e) => {
+  //       const error = ensureError(e);
+  //       console.log("ERROR on signAndSend:", e);
+  //       void emitter.emit("error", { kind: "Error", error });
+  //     });
+  // } catch (e) {
+  //   const error = ensureError(e);
+  //   console.log("ERROR on signAndSend:", e);
+  //   void emitter.emit("error", { kind: "Error", error });
+  // }
+
+  const [sendError, unsubscribeRes] = await tryAsync(
+    extrinsic.signAndSend(signer, options ?? {}, updateHandler),
+  );
+  if (sendError !== undefined) {
+    void emitter.emit("error", { kind: "Error", error: sendError });
+    const txError = new SendTxError(sendError.message || "Failed to submit transaction");
+    return makeErr(txError);
+  }
+
+  unsubscribe = unsubscribeRes;
 
   const tracker: ExtrinsicTracker = {
     emitter,
-    // stream,
 
     on: emitter.on.bind(emitter),
     once: emitter.once.bind(emitter),
     off: emitter.off.bind(emitter),
     events: emitter.events.bind(emitter),
 
-    // sendFailed: sendFailed.promise,
-    // submitted: submitted.promise,
-    // inBlock: inBlock.promise,
-    // finalized: finalized.promise,
-    // finalityTimeout: finalityTimeout.promise,
-
     cancel() {
-      unsubscribe?.();
+      unsubscribe();
       emitter.clearListeners();
       stream.end();
     },
-
-    // [Symbol.asyncIterator]() {
-    // },
   };
 
-  return tracker;
+  return makeOk(tracker);
 }
