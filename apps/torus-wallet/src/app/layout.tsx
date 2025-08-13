@@ -1,22 +1,26 @@
+import "@torus-ts/ui/globals.css";
+
 import { GoogleAnalytics } from "@next/third-parties/google";
 import PlausibleProvider from "next-plausible";
+
 import { ReactQueryProvider } from "@torus-ts/query-provider";
 import { TorusProvider } from "@torus-ts/torus-provider";
 import { Container } from "@torus-ts/ui/components/container";
 import { Footer } from "@torus-ts/ui/components/footer";
 import { Layout } from "@torus-ts/ui/components/layout";
 import { Toaster } from "@torus-ts/ui/components/toaster";
-import "@torus-ts/ui/globals.css";
+
 import { UsdPriceProvider } from "~/context/usd-price-provider";
 import { WalletProvider } from "~/context/wallet-provider";
-import { EnvScript, env } from "~/env";
+import { env, EnvScript } from "~/env";
 import { firaMono } from "~/utils/fonts";
 import { generateMetadata } from "~/utils/seo";
+
 import { APRBar } from "./_components/apr-bar/apr-bar";
 import { SidebarLinks } from "./_components/sidebar-links";
+import { TransactionsSheet } from "./_components/transactions-sheet";
 import { WalletBalance } from "./_components/wallet-balance";
 import { WalletHeader } from "./_components/wallet-header";
-import { TransactionsSheet } from "./_components/transactions-sheet";
 
 export const metadata = generateMetadata();
 
@@ -46,7 +50,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <PlausibleProvider domain="torus.network" trackOutboundLinks hash>
+    <PlausibleProvider domain="torus.network" trackOutboundLinks>
       <Layout font={firaMono} headScripts={[EnvScript]}>
         <Providers
           wsEndpoint={env("NEXT_PUBLIC_TORUS_RPC_URL")}
