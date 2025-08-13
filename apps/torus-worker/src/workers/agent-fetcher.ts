@@ -10,7 +10,6 @@ import type {
   Proposal,
 } from "@torus-network/sdk/chain";
 import {
-  queryAccumulatedStreamAmount,
   queryAgents,
   queryAllAccumulatedStreamAmounts,
   queryLastBlock,
