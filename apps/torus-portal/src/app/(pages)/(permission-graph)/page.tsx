@@ -25,6 +25,7 @@ export default function PermissionGraphPage() {
     null,
   );
   const [isSheetOpen, setIsSheetOpen] = useState(false);
+  const resetCameraRef = useRef<(() => void) | null>(null);
 
   const agentCache = useRef(new AgentLRUCache(50));
 
@@ -94,6 +95,11 @@ export default function PermissionGraphPage() {
   function handleOnOpenChange(isOpen: boolean) {
     setIsSheetOpen(isOpen);
     if (!isOpen) {
+      // Reset camera view when sheet closes
+      if (resetCameraRef.current) {
+        resetCameraRef.current();
+      }
+      
       const params = new URLSearchParams(searchParams.toString());
       params.delete("id");
       const newUrl = params.toString() ? `/?${params.toString()}` : "/";
@@ -138,6 +144,9 @@ export default function PermissionGraphPage() {
         data={graphData}
         onNodeClick={handleNodeSelect}
         userAddress={selectedAccount?.address}
+        onResetCamera={(resetFn) => {
+          resetCameraRef.current = resetFn;
+        }}
       />
       <PermissionGraphFooter handleNodeSelect={handleNodeSelect} />
     </main>
