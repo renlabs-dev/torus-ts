@@ -7,9 +7,10 @@ import type { OrbitControls as OrbitControlsImpl } from "three-stdlib";
 import type { CustomGraphNode } from "../permission-graph-types";
 
 export function useCameraFocus(
-  controlsRef: React.MutableRefObject<OrbitControlsImpl | null>,
+  controlsRef: React.RefObject<OrbitControlsImpl | null>,
   onNodeClick: (node: CustomGraphNode) => void,
   onResetCamera: (callback: () => void) => void,
+  initialNode?: CustomGraphNode | null,
 ) {
   const { camera } = useThree();
   const originalCameraPosition = useRef(new THREE.Vector3(0, 0, 600));
@@ -26,7 +27,13 @@ export function useCameraFocus(
       const animate = () => {
         const elapsed = Date.now() - startTime;
         const progress = Math.min(elapsed / duration, 1);
-        const easeProgress = 1 - Math.pow(1 - progress, 3);
+
+        // Use a more aggressive easing that finishes faster
+        // This easing accelerates quickly and reaches near-completion sooner
+        const easeProgress =
+          progress < 0.5
+            ? 4 * progress * progress * progress
+            : 1 - Math.pow(-2 * progress + 2, 3) / 2;
 
         camera.position.lerpVectors(startPosition, targetPos, easeProgress);
 
@@ -39,7 +46,13 @@ export function useCameraFocus(
           controlsRef.current.update();
         }
 
-        if (progress < 1) {
+        // Check if we're close enough to the target position
+        const distanceToTarget = camera.position.distanceTo(targetPos);
+        const targetDistanceToLookAt = controlsRef.current?.target.distanceTo(lookAt) ?? 0;
+        
+        // Stop when we're within 5 units of target OR 90% of time has elapsed
+        // This prevents the slow tail while ensuring we get close enough
+        if (distanceToTarget > 5 && targetDistanceToLookAt > 2 && progress < 0.9) {
           requestAnimationFrame(animate);
         }
       };
@@ -53,7 +66,7 @@ export function useCameraFocus(
     (node: CustomGraphNode) => {
       if (!node.x || !node.y || !node.z) return;
 
-      const distance = 100;
+      const distance = 200;
       const distRatio = 1 + distance / Math.hypot(node.x, node.y, node.z);
 
       const targetPosition = new THREE.Vector3(
@@ -64,7 +77,7 @@ export function useCameraFocus(
 
       const targetLookAt = new THREE.Vector3(node.x, node.y, node.z);
 
-      animateCameraToTarget(targetPosition, targetLookAt, 2000);
+      animateCameraToTarget(targetPosition, targetLookAt, 1500);
 
       onNodeClick(node);
 
@@ -79,13 +92,39 @@ export function useCameraFocus(
     animateCameraToTarget(
       originalCameraPosition.current,
       originalTarget.current,
-      1500,
+      1200,
     );
   }, [animateCameraToTarget]);
 
   React.useEffect(() => {
     onResetCamera(resetCamera);
   }, [onResetCamera, resetCamera]);
+
+  React.useEffect(() => {
+    if (!initialNode) return;
+
+    const timeoutId = setTimeout(() => {
+      const { x, y, z } = initialNode;
+
+      if (x !== undefined && y !== undefined && z !== undefined) {
+        const focusDistance = 200;
+        const distRatio = 1 + focusDistance / Math.hypot(x, y, z);
+
+        const targetPosition = new THREE.Vector3(
+          x * distRatio,
+          y * distRatio,
+          z * distRatio,
+        );
+
+        const targetLookAt = new THREE.Vector3(x, y, z);
+        animateCameraToTarget(targetPosition, targetLookAt, 1200);
+      }
+    }, 1500); // Wait 1.5 seconds for force simulation to stabilize
+
+    return () => {
+      clearTimeout(timeoutId);
+    };
+  }, [initialNode, animateCameraToTarget]);
 
   return {
     handleNodeFocus,

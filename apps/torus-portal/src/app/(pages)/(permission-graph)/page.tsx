@@ -147,6 +147,7 @@ export default function PermissionGraphPage() {
         onResetCamera={(resetFn) => {
           resetCameraRef.current = resetFn;
         }}
+        initialNode={selectedNode}
       />
       <PermissionGraphFooter handleNodeSelect={handleNodeSelect} />
     </main>
