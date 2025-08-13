@@ -21,6 +21,7 @@ interface ForceGraphProps {
   graphData: CustomGraphData;
   onNodeClick: (node: CustomGraphNode) => void;
   userAddress?: string;
+  selectedNodeId?: string | null;
 }
 
 const ForceGraph = memo(
@@ -74,7 +75,11 @@ const ForceGraph = memo(
       handleNodeClick,
       handleNodeHover,
       handleLinkHover,
-    } = useGraphInteractions(props.graphData, props.onNodeClick);
+    } = useGraphInteractions(
+      props.graphData,
+      props.onNodeClick,
+      props.selectedNodeId,
+    );
 
     const formatedData = useMemo(() => {
       return {
@@ -185,7 +190,8 @@ const ForceGraph = memo(
     return (
       prevProps.graphData === nextProps.graphData &&
       prevProps.onNodeClick === nextProps.onNodeClick &&
-      prevProps.userAddress === nextProps.userAddress
+      prevProps.userAddress === nextProps.userAddress &&
+      prevProps.selectedNodeId === nextProps.selectedNodeId
     );
   },
 );

@@ -61,6 +61,24 @@ export function createNeighborMap(
   return map;
 }
 
+export function createParentMap(
+  links: CustomGraphLink[],
+): Map<string, Set<string>> {
+  const map = new Map<string, Set<string>>();
+
+  links.forEach((link) => {
+    const { sourceId, targetId } = extractLinkIds(link);
+
+    if (sourceId && targetId) {
+      // In a directed graph, source -> target means source is parent of target
+      if (!map.has(targetId)) map.set(targetId, new Set());
+      map.get(targetId)?.add(sourceId);
+    }
+  });
+
+  return map;
+}
+
 export function calculateNodeHighlights(
   node: NodeObject,
   neighborMap: Map<string, Set<string>>,
@@ -80,6 +98,54 @@ export function calculateNodeHighlights(
   links.forEach((link) => {
     if (linkConnectsToNode(link, nodeId)) {
       const { linkId } = extractLinkIds(link);
+      newHighlightLinks.add(linkId);
+    }
+  });
+
+  return {
+    highlightNodes: newHighlightNodes,
+    highlightLinks: newHighlightLinks,
+  };
+}
+
+// For hover: highlight only the hovered node
+export function calculateHoverHighlights(
+  node: NodeObject,
+): { highlightNodes: Set<string>; highlightLinks: Set<string> } {
+  const newHighlightNodes = new Set<string>();
+  const newHighlightLinks = new Set<string>();
+
+  const nodeId = String(node.id);
+  newHighlightNodes.add(nodeId);
+
+  return {
+    highlightNodes: newHighlightNodes,
+    highlightLinks: newHighlightLinks,
+  };
+}
+
+// For selection: highlight the node and all its parent nodes
+export function calculateSelectionHighlights(
+  node: NodeObject,
+  parentMap: Map<string, Set<string>>,
+  links: CustomGraphLink[],
+): { highlightNodes: Set<string>; highlightLinks: Set<string> } {
+  const newHighlightNodes = new Set<string>();
+  const newHighlightLinks = new Set<string>();
+
+  const nodeId = String(node.id);
+  newHighlightNodes.add(nodeId);
+
+  // Add all parent nodes
+  const parents = parentMap.get(nodeId);
+  if (parents) {
+    parents.forEach((parentId) => newHighlightNodes.add(parentId));
+  }
+
+  // Add links from parents to this node
+  links.forEach((link) => {
+    const { sourceId, targetId, linkId } = extractLinkIds(link);
+    if (targetId === nodeId && parents?.has(sourceId)) {
       newHighlightLinks.add(linkId);
     }
   });

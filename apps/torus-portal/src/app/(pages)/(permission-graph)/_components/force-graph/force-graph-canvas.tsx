@@ -20,15 +20,17 @@ function ForceGraphScene({
   userAddress,
   onResetCamera,
   initialNode,
+  selectedNodeId,
 }: {
   data: CustomGraphData;
   onNodeClick: (node: CustomGraphNode) => void;
   userAddress?: string;
   onResetCamera: (callback: () => void) => void;
   initialNode?: CustomGraphNode | null;
+  selectedNodeId?: string | null;
 }) {
   const controlsRef = useRef<OrbitControlsImpl | null>(null);
-  
+
   const { handleNodeFocus } = useCameraFocus(
     controlsRef,
     onNodeClick,
@@ -59,6 +61,7 @@ function ForceGraphScene({
         graphData={data}
         onNodeClick={handleNodeFocus}
         userAddress={userAddress}
+        selectedNodeId={selectedNodeId}
       />
       <OrbitControls ref={controlsRef} dampingFactor={0.01} enablePan={false} />
       <EffectComposer>
@@ -74,12 +77,14 @@ export function ForceGraphCanvas({
   userAddress,
   onResetCamera,
   initialNode,
+  selectedNodeId,
 }: {
   data: CustomGraphData;
   onNodeClick: (node: CustomGraphNode) => void;
   userAddress?: string;
   onResetCamera?: (resetFn: () => void) => void;
   initialNode?: CustomGraphNode | null;
+  selectedNodeId?: string | null;
 }) {
   const handleNodeClick = useCallback(
     (node: CustomGraphNode) => {
@@ -108,6 +113,7 @@ export function ForceGraphCanvas({
             userAddress={userAddress}
             onResetCamera={handleSetResetCamera}
             initialNode={initialNode}
+            selectedNodeId={selectedNodeId}
           />
         </Suspense>
       </Canvas>

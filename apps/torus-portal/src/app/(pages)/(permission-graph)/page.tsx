@@ -99,7 +99,7 @@ export default function PermissionGraphPage() {
       if (resetCameraRef.current) {
         resetCameraRef.current();
       }
-      
+
       const params = new URLSearchParams(searchParams.toString());
       params.delete("id");
       const newUrl = params.toString() ? `/?${params.toString()}` : "/";
@@ -148,6 +148,7 @@ export default function PermissionGraphPage() {
           resetCameraRef.current = resetFn;
         }}
         initialNode={selectedNode}
+        selectedNodeId={selectedNode?.id}
       />
       <PermissionGraphFooter handleNodeSelect={handleNodeSelect} />
     </main>

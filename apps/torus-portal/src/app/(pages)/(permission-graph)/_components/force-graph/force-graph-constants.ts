@@ -1,9 +1,9 @@
 export const graphConstants = {
   // Physics and animation constants
   physics: {
-    linkDistance: 100,
-    chargeStrength: -100,
-    centerForceStrength: 0.1,
+    linkDistance: 130,
+    chargeStrength: -40,
+    centerForceStrength: 0.5,
   },
 
   // Data processing and scaling
