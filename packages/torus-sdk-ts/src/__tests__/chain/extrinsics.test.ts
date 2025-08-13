@@ -4,11 +4,25 @@ import { assert, describe, expect, it } from "vitest";
 
 import {
   type ExtrinsicTracker,
+  sendTxWithTracker,
   type TxEvent,
   type TxInBlockEvent,
-  submitTxWithTracker,
+  type TxInvalidEvent,
+  type TxInternalErrorEvent,
 } from "../../extrinsics.js";
+import { isErr, isOk, type Result } from "@torus-network/torus-utils/result";
 import { getApi } from "../../testing/getApi.js";
+
+// Helper function to expect OK result and extract value
+function expectOk<T, E>(result: Result<T, E>): T {
+  if (isErr(result)) {
+    const error = result[0];
+    const message = error instanceof Error ? error.message : String(error);
+    throw new Error(`Expected Ok result but got Err: ${message}`);
+  }
+  expect(isOk(result)).toBe(true);
+  return result[1];
+}
 
 /**
  * Live chain tests for submitWithTracker function.
@@ -69,47 +83,47 @@ describe("submitWithTracker - live chain", () => {
       }, timeoutMs);
 
       // Listen for all status updates
-      tracker.on("status", (update) => {
+      tracker.on("status", (update: TxEvent) => {
         statusUpdates.push(update);
       });
 
       // Listen for specific events
-      tracker.on("inBlock", (update) => {
+      tracker.on("inBlock", (update: TxEvent) => {
         inBlockUpdate = update;
       });
 
-      tracker.on("internalError", (update) => {
+      tracker.on("internalError", (update: TxInternalErrorEvent) => {
         finalUpdate = update;
         clearTimeout(timeout);
         resolve({ statusUpdates, inBlockUpdate, finalUpdate });
       });
 
-      tracker.on("invalid", (update) => {
+      tracker.on("invalid", (update: TxInvalidEvent) => {
         finalUpdate = update;
         clearTimeout(timeout);
         resolve({ statusUpdates, inBlockUpdate, finalUpdate });
       });
 
-      tracker.on("evicted", (update) => {
+      tracker.on("evicted", (update: TxEvent) => {
         finalUpdate = update;
         clearTimeout(timeout);
         resolve({ statusUpdates, inBlockUpdate, finalUpdate });
       });
 
-      tracker.on("finalized", (update) => {
+      tracker.on("finalized", (update: TxEvent) => {
         finalUpdate = update;
         clearTimeout(timeout);
         resolve({ statusUpdates, inBlockUpdate, finalUpdate });
       });
 
-      tracker.on("finalityTimeout", (update) => {
+      tracker.on("finalityTimeout", (update: TxEvent) => {
         finalUpdate = update;
         clearTimeout(timeout);
         resolve({ statusUpdates, inBlockUpdate, finalUpdate });
       });
 
       // For transactions that reach InBlock (success or failure), terminate to avoid waiting for finalization
-      tracker.on("inBlock", (update) => {
+      tracker.on("inBlock", (update: TxEvent) => {
         if (update.kind === "InBlock") {
           finalUpdate = update;
           clearTimeout(timeout);
@@ -125,7 +139,7 @@ describe("submitWithTracker - live chain", () => {
 
     const account = await accountPool.acquire();
 
-    const tracker = submitTxWithTracker(api, tx, account);
+    const tracker = expectOk(await sendTxWithTracker(api, tx, account));
 
     try {
       const { statusUpdates, inBlockUpdate, finalUpdate } =
@@ -179,7 +193,7 @@ describe("submitWithTracker - live chain", () => {
     const largeAmount = (1_000_000_000n * 10n ** 18n).toString();
     const tx = api.tx.balances.transferKeepAlive(bob.address, largeAmount);
 
-    const tracker = submitTxWithTracker(api, tx, account);
+    const tracker = expectOk(await sendTxWithTracker(api, tx, account));
 
     try {
       const { statusUpdates, inBlockUpdate, finalUpdate } =
@@ -235,18 +249,18 @@ describe("submitWithTracker - live chain", () => {
 
     const account = await accountPool.acquire();
 
-    const tracker = submitTxWithTracker(api, tx, account);
+    const tracker = expectOk(await sendTxWithTracker(api, tx, account));
 
     try {
       // Collect events for a shorter period to catch pool states
       const poolEvents: TxEvent[] = [];
       const inBlockEvents: TxEvent[] = [];
 
-      tracker.on("inPool", (update) => {
+      tracker.on("inPool", (update: TxEvent) => {
         poolEvents.push(update);
       });
 
-      tracker.on("inBlock", (update) => {
+      tracker.on("inBlock", (update: TxEvent) => {
         inBlockEvents.push(update);
       });
 
@@ -282,19 +296,21 @@ describe("submitWithTracker - live chain", () => {
     const badNonce = currentNonce.toNumber() + 1000; // Use a nonce far in the future
 
     // Use the transaction with bad nonce option
-    const tracker = submitTxWithTracker(api, tx, account, { nonce: badNonce });
+    const tracker = expectOk(await sendTxWithTracker(api, tx, account, {
+      nonce: badNonce,
+    }));
 
     try {
       let invalidEventReceived = false;
       let internalErrorReceived = false;
 
-      tracker.on("invalid", (update) => {
+      tracker.on("invalid", (update: TxInvalidEvent) => {
         invalidEventReceived = true;
         expect(update.reason).toBeInstanceOf(Error);
         expect(update.txHash).toMatch(/^0x[a-f0-9]{64}$/i);
       });
 
-      tracker.on("internalError", (update) => {
+      tracker.on("internalError", (update: TxInternalErrorEvent) => {
         internalErrorReceived = true;
         expect(update.internalError).toBeInstanceOf(Error);
         expect(update.txHash).toMatch(/^0x[a-f0-9]{64}$/i);
@@ -309,7 +325,7 @@ describe("submitWithTracker - live chain", () => {
             resolve({ statusUpdates }); // Don't reject, just return what we have
           }, 5000);
 
-          tracker.on("status", (update) => {
+          tracker.on("status", (update: TxEvent) => {
             statusUpdates.push(update);
             // If we see Future status, that's enough for this test
             if (update.kind === "Future") {
@@ -357,7 +373,7 @@ describe("submitWithTracker - live chain", () => {
 
     const account = await accountPool.acquire();
 
-    const tracker = submitTxWithTracker(api, tx, account);
+    const tracker = expectOk(await sendTxWithTracker(api, tx, account));
 
     // Cancel immediately
     tracker.cancel();
@@ -379,7 +395,7 @@ describe("submitWithTracker - live chain", () => {
 
     const account = await accountPool.acquire();
 
-    const tracker = submitTxWithTracker(api, tx, account);
+    const tracker = expectOk(await sendTxWithTracker(api, tx, account));
 
     try {
       const { statusUpdates, inBlockUpdate } =

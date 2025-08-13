@@ -1,17 +1,19 @@
 import { useEffect, useMemo, useState } from "react";
 
-import type { ApiPromise, SubmittableResult } from "@polkadot/api";
+import type { ApiPromise } from "@polkadot/api";
 import type { SubmittableExtrinsic } from "@polkadot/api/types";
 import type { InjectedExtension } from "@polkadot/extension-inject/types";
-import type { DispatchError } from "@polkadot/types/interfaces";
 import type { ISubmittableResult } from "@polkadot/types/types";
-import { match } from "rustie";
+import type { Enum } from "rustie";
+import { if_let, match } from "rustie";
 
-import type { TxHelper, TxStage } from "@torus-network/sdk/extrinsics";
-import {
-  sb_extrinsic_status,
-  txStatusToTxHelper,
+import type {
+  ExtrinsicTracker,
+  SbDispatchError,
+  TxEvent,
 } from "@torus-network/sdk/extrinsics";
+import { sendTxWithTracker } from "@torus-network/sdk/extrinsics";
+import type { HexH256 } from "@torus-network/sdk/types";
 import { chainErr } from "@torus-network/torus-utils/error";
 import { BasicLogger } from "@torus-network/torus-utils/logger";
 import type { Result } from "@torus-network/torus-utils/result";
@@ -23,15 +25,7 @@ import { toast } from "@torus-ts/ui/hooks/use-toast";
 import type { InjectedAccountWithMeta } from "../torus-provider";
 import { getMerkleizedMetadata, updateMetadata } from "../utils/chain-metadata";
 
-const strErr = (txt: string) => new Error(txt);
-
-export const getExplorerLink = ({
-  wsEndpoint,
-  hash,
-}: {
-  wsEndpoint: string;
-  hash: string;
-}) => `https://polkadot.js.org/apps/?rpc=${wsEndpoint}#/explorer/query/${hash}`;
+// ==== Constants ====
 
 const TOAST_MESSAGES = {
   PREPARING: "Preparing transaction...",
@@ -43,16 +37,64 @@ const TOAST_MESSAGES = {
   FAILED: "Transaction failed with unknown error",
 } as const;
 
+export const getExplorerLink = ({
+  wsEndpoint,
+  hash,
+}: {
+  wsEndpoint: string;
+  hash: string;
+}) => `https://polkadot.js.org/apps/?rpc=${wsEndpoint}#/explorer/query/${hash}`;
+
+const strErr = (txt: string) => new Error(txt);
+
 export type SendTxFn = <T extends ISubmittableResult>(
   tx: SubmittableExtrinsic<"promise", T>,
+  options?: Pick<
+    Parameters<SubmittableExtrinsic<"promise">["signAndSend"]>[1],
+    "nonce" | "tip"
+  >,
 ) => Promise<void>;
 
-interface UseSendTxOutput extends TxHelper {
+export interface UseSendTxOutput extends TxHelper {
   txStage: TxStage;
+  setTx: (extrinsic: SubmittableExtrinsic<"promise"> | null) => void;
   sendTx: SendTxFn | null;
 }
 
+/**
+ * Helper interface that provides boolean flags and messages for UI state management.
+ */
+export interface TxHelper {
+  txHash: HexH256 | null;
+
+  isSigning: boolean;
+  isSubmitted: boolean;
+  isPending: boolean;
+  isSuccess: boolean;
+  isFinalized: boolean;
+  isError: boolean;
+  isReverted: boolean;
+
+  message: string;
+  error?: Error;
+}
 const logger = BasicLogger.create({ name: "use-send-transaction" });
+
+export type TxStage = Enum<{
+  Idle: {
+    extrinsic: SubmittableExtrinsic<"promise"> | null;
+  };
+  Signing: {
+    extrinsic: SubmittableExtrinsic<"promise">;
+  };
+  Submitted: {
+    event: TxEvent;
+  };
+  Error: {
+    error: Error;
+    txHash?: HexH256;
+  };
+}>;
 
 export function useSendTransaction({
   api,
@@ -70,26 +112,36 @@ export function useSendTransaction({
 }): UseSendTxOutput {
   const wallet = useWallet({ api, selectedAccount, web3FromAddress });
 
-  const [txStage, setTxStage] = useState<TxStage>({ Empty: null });
+  const [txStage, setTxStage] = useState<TxStage>({
+    Idle: { extrinsic: null },
+  });
   const [sendFn, setSendFn] = useState<{ sendTx: SendTxFn | null }>({
     sendTx: null,
   });
 
-  const setErrState = (err: Error) => {
-    logger.error(err);
-    setTxStage({ Error: { error: err } });
-    toast.error(err.message || "Transaction failed");
+  const setErrState = (
+    err: Error,
+    {
+      showToast = true,
+      txHash,
+    }: { showToast?: boolean; txHash?: HexH256 } = {},
+  ) => {
+    logger.warn(err);
+    setTxStage({ Error: { error: err, txHash } });
+    if (showToast) {
+      toast.error(err.message || `Transaction failed: ${String(err)}`);
+    }
   };
 
   useEffect(() => {
     if (!api || !wsEndpoint || !wallet) {
-      setErrState(strErr("Inconsistent internal state for transaction"));
+      // logger.warn("API or wallet not ready");
       return;
     }
 
     const { injector, metadataHash } = wallet;
 
-    const [txOptionsError, txOptions] = trySync(() => ({
+    const [txOptionsError, baseTxOptions] = trySync(() => ({
       signer: injector.signer,
       tip: 0,
       nonce: -1,
@@ -105,62 +157,87 @@ export function useSendTransaction({
       return;
     }
 
-    let unsubscribe: (() => void) | null = null;
+    let currentTracker: ExtrinsicTracker | null = null;
     let currentToastId: string | number;
 
     const sendTx = async <T extends ISubmittableResult>(
       tx: SubmittableExtrinsic<"promise", T>,
-    ) => {
+      options: Pick<
+        Parameters<SubmittableExtrinsic<"promise">["signAndSend"]>[1],
+        "nonce" | "tip"
+      > = {},
+    ): Promise<void> => {
       if (!selectedAccount) {
         setErrState(strErr("No account selected"));
         return;
       }
 
-      if (unsubscribe != null) {
-        unsubscribe();
-        unsubscribe = null;
+      // Cancel any existing tracker
+      // TODO: maybe lock sending when transaction is in progress?
+      if (currentTracker) {
+        currentTracker.cancel();
+        currentTracker = null;
       }
+
+      // Clear any previous state and set to signing stage
+      setTxStage({ Signing: { extrinsic: tx } });
 
       currentToastId = toast.loading(TOAST_MESSAGES.PREPARING);
 
-      unsubscribe = await tx.signAndSend(
+      const txOptions = { ...baseTxOptions, ...options };
+
+      // try {
+      const [sendError, tracker] = await sendTxWithTracker(
+        api,
+        tx,
         selectedAccount.address,
         txOptions,
-        (result: SubmittableResult) => {
-          const { success, data: extStatus } = sb_extrinsic_status.safeParse(
-            result.status,
-          );
-          if (!success) {
-            setErrState(
-              strErr(`Failed to parse extrinsic status ${extStatus}`),
-            );
-            return;
-          }
-          setTxStage({ Submitted: { result, extStatus } });
-          handleTxUpdate({
-            api,
-            setErrState,
-            transactionType,
-            wsEndpoint,
-            toastId: currentToastId,
-          });
-        },
       );
+      // } catch (error) {
+      //   setErrState(
+      //     error instanceof Error
+      //       ? error
+      //       : strErr("Failed to create transaction tracker"),
+      //   );
+      // }
+      if (sendError !== undefined) {
+        setErrState(sendError);
+        return;
+      }
+      currentTracker = tracker;
+
+      // Listen to all status events
+      currentTracker.on("status", (event: TxEvent) => {
+        setTxStage({ Submitted: { event } });
+        handleTxEvent({
+          event,
+          api,
+          setErrState,
+          transactionType,
+          wsEndpoint,
+          toastId: currentToastId,
+        });
+      });
     };
 
     setSendFn({ sendTx });
 
     return () => {
-      if (unsubscribe != null) {
-        unsubscribe();
+      if (currentTracker) {
+        currentTracker.cancel();
       }
     };
   }, [api, wsEndpoint, wallet, selectedAccount, web3FromAddress]);
 
-  const txHelper = useMemo(() => txStatusToTxHelper(txStage), [txStage]);
+  const setTx = (extrinsic: SubmittableExtrinsic<"promise"> | null) => {
+    setTxStage({ Idle: { extrinsic } });
+  };
+
+  const txHelper = useMemo(() => txStageToTxHelper(txStage), [txStage]);
 
   return {
     txStage,
+    setTx: setTx,
     ...sendFn,
     ...txHelper,
   };
@@ -255,129 +332,450 @@ export const useWallet = ({
   return wallet;
 };
 
-const handleTxUpdate =
-  ({
-    api,
-    setErrState,
-    transactionType,
-    wsEndpoint,
-    toastId,
-  }: {
-    api: ApiPromise;
-    setErrState: (err: Error) => void;
-    transactionType: string;
-    wsEndpoint: string;
-    toastId: string | number;
-  }) =>
-  (tx: TxStage) => {
-    return match(tx)({
-      Empty: () => null,
-      Signing: () => null,
-      Error: ({ error }) => {
-        setErrState(error);
-        return null;
-      },
-      Submitted: ({ extStatus, result }) => {
-        match(extStatus)({
-          Invalid: () => {
-            setErrState(strErr("Invalid transaction"));
-          },
-          Future: () => null,
-          Ready: () => {
-            toast.loading(TOAST_MESSAGES.READY, { id: toastId });
-          },
-          Broadcast: () => {
-            toast.loading(TOAST_MESSAGES.BROADCASTING, { id: toastId });
-          },
-          InBlock: () => {
-            toast.loading(TOAST_MESSAGES.IN_BLOCK, { id: toastId });
-            setTimeout(() => {
-              toast.loading(TOAST_MESSAGES.FINALIZING, { id: toastId });
-            }, 1000);
-          },
-          Finalized: (hash) => {
-            handleFinalizedTx({
-              api,
-              hash,
-              result,
-              setErrState,
-              transactionType,
-              wsEndpoint,
-              toastId,
-            });
-          },
-
-          Dropped: () => null,
-          Usurped: () => null,
-
-          FinalityTimeout: () => null,
-          Retracted: () => null,
-        });
-      },
-    });
-  };
-
-const handleFinalizedTx = ({
+const handleTxEvent = ({
+  event,
   api,
-  hash,
-  result,
   setErrState,
   transactionType,
   wsEndpoint,
   toastId,
 }: {
+  event: TxEvent;
   api: ApiPromise;
-  hash: string;
-  result: SubmittableResult;
   setErrState: (err: Error) => void;
   transactionType: string;
   wsEndpoint: string;
   toastId: string | number;
 }) => {
-  const success = result.findRecord("system", "ExtrinsicSuccess");
-  const failed = result.findRecord("system", "ExtrinsicFailed");
+  // Handle toast updates based on event kind
+  switch (event.kind) {
+    case "InternalError":
+      setErrState(event.internalError);
+      break;
 
-  if (success) {
-    toast.dismiss(toastId);
-    toast.success(`${transactionType} ${TOAST_MESSAGES.SUCCESS}`, undefined, {
-      label: "View on Block Explorer",
-      onClick: () =>
-        window.open(getExplorerLink({ wsEndpoint, hash }), "_blank"),
-    });
+    case "Invalid":
+      setErrState(event.reason);
+      break;
+
+    case "Future":
+      // Transaction has dependencies, keep current loading state
+      break;
+
+    case "Ready":
+      toast.loading(TOAST_MESSAGES.READY, { id: toastId });
+      break;
+
+    case "Broadcast":
+      toast.loading(TOAST_MESSAGES.BROADCASTING, { id: toastId });
+      break;
+
+    case "InBlock":
+      toast.loading(TOAST_MESSAGES.IN_BLOCK, { id: toastId });
+      setTimeout(() => {
+        toast.loading(TOAST_MESSAGES.FINALIZING, { id: toastId });
+      }, 1000);
+      break;
+
+    case "Finalized":
+      handleFinalizedTxEvent({
+        event,
+        api,
+        setErrState,
+        transactionType,
+        wsEndpoint,
+        toastId,
+      });
+      break;
+
+    case "FinalityTimeout":
+      setErrState(strErr("Transaction finalization timed out"));
+      break;
+
+    case "Dropped":
+      setErrState(strErr("Transaction was dropped from the pool"));
+      break;
+
+    case "Usurped":
+      setErrState(strErr("Transaction was replaced by another transaction"));
+      break;
+
+    case "Retracted":
+      setErrState(strErr("Transaction was retracted"));
+      break;
+  }
+};
+
+const handleFinalizedTxEvent = ({
+  event,
+  api,
+  setErrState,
+  transactionType,
+  wsEndpoint,
+  toastId,
+}: {
+  event: TxEvent;
+  api: ApiPromise;
+  setErrState: (err: Error) => void;
+  transactionType: string;
+  wsEndpoint: string;
+  toastId: string | number;
+}) => {
+  // Check if this is an InBlock event with outcome information
+  if (event.kind !== "Finalized" && event.kind !== "InBlock") {
+    console.warn("handleFinalizedTxEvent called with non-finalized event");
     return;
   }
 
-  if (!failed) throw new Error("Inconsistent included transaction state");
+  // Use the structured outcome from the event
+  const outcome = event.outcome; // TxInBlockEvent has outcome
+  const _blockHash = event.blockHash;
+  const txHash = event.txHash;
 
-  // Fix the destructuring and error handling
-  const [parseError, dispatchErrorArray] = trySync(
-    () => failed.event.data as unknown as [DispatchError],
-  );
-  if (parseError !== undefined) {
-    console.error("Error parsing dispatch error:", parseError);
-  }
+  match(outcome)({
+    Success: () => {
+      toast.dismiss(toastId);
+      toast.success(`${transactionType} ${TOAST_MESSAGES.SUCCESS}`, undefined, {
+        label: "View on Block Explorer",
+        onClick: () =>
+          window.open(getExplorerLink({ wsEndpoint, hash: txHash }), "_blank"),
+      });
+    },
+    Failed: ({ error: dispatchError }) => {
+      // Use the new comprehensive error mapper
+      const errorMessage = mapDispatchErrorToMessage(
+        dispatchError,
+        api,
+        transactionType,
+      );
 
-  const dispatchError = dispatchErrorArray?.[0];
-  let errorMessage = `${transactionType} failed: ${dispatchError?.toString() ?? "Unknown error"}`;
-
-  if (dispatchError?.isModule) {
-    const [moduleError, metaError] = trySync(() => {
-      const mod = dispatchError.asModule;
-      return api.registry.findMetaError(mod);
-    });
-
-    if (moduleError !== undefined) {
-      console.error("Error finding meta error:", moduleError);
-    } else {
-      errorMessage = `${transactionType} failed: ${metaError.name}`;
-    }
-  }
-
-  setErrState(strErr(errorMessage));
-
-  toast.dismiss(toastId);
-  toast.error(errorMessage);
+      setErrState(strErr(errorMessage));
+      toast.dismiss(toastId);
+      toast.error(errorMessage);
+    },
+  });
 };
+
+// ==== Display Helpers ====
+
+/**
+ * Converts a TxStage to TxHelper for UI state management.
+ */
+export function txStageToTxHelper(stage: TxStage): TxHelper {
+  const setOnHelper = <T extends Partial<TxHelper>>(
+    opts: T,
+  ): Omit<TxHelper, "message"> & T => ({
+    txHash: null,
+    isSigning: false,
+    isSubmitted: false,
+    isPending: false,
+    isSuccess: false,
+    isFinalized: false,
+    isError: false,
+    isReverted: false,
+    ...opts,
+  });
+
+  return match(stage)<TxHelper>({
+    Idle: () =>
+      setOnHelper({
+        message: "Ready to send transaction",
+      }),
+
+    Signing: () =>
+      setOnHelper({
+        isSigning: true,
+        message: "Waiting for signature...",
+      }),
+
+    Submitted: ({ event }) => txEventToTxHelper(event, null),
+
+    Error: ({ error, txHash: txHash }) =>
+      setOnHelper({
+        txHash: txHash,
+        isError: true,
+        error,
+        message: error.message || "Transaction failed",
+      }),
+  });
+}
+
+/**
+ * Converts a TxEvent to TxHelper for backward compatibility and easier UI state management.
+ */
+export function txEventToTxHelper(
+  txEvent: TxEvent | null,
+  error: Error | null = null,
+): TxHelper {
+  const setOnHelper = <T extends Partial<TxHelper>>(
+    opts: T,
+  ): Omit<TxHelper, "message"> & T => ({
+    txHash: null,
+    isSigning: false,
+    isSubmitted: false,
+    isPending: false,
+    isSuccess: false,
+    isFinalized: false,
+    isError: false,
+    isReverted: false,
+    ...opts,
+  });
+  // Handle error state first
+  if (error) {
+    return setOnHelper({
+      isError: true,
+      error,
+      message: error.message || "Transaction failed",
+    });
+  }
+
+  if (!txEvent) {
+    return setOnHelper({ message: "Transaction not started" });
+  }
+
+  // Extract txHash from the event (available in all events via TxEventBase)
+  const txHash = txEvent.txHash;
+
+  // Use the TxState from the event for simplified state logic
+  return match(txEvent.txState)<TxHelper>({
+    InternalError: ({ error }) =>
+      setOnHelper({
+        txHash,
+        isError: true,
+        error,
+        message: error.message || "Internal error occurred",
+      }),
+
+    Invalid: ({ reason }) =>
+      setOnHelper({
+        txHash,
+        isError: true,
+        error: reason,
+        message: "Transaction invalid",
+      }),
+
+    Pool: ({ kind }) => {
+      const isSubmitted = true;
+      switch (kind) {
+        case "Future":
+          return setOnHelper({
+            txHash,
+            isSubmitted,
+            isPending: true,
+            message: "Transaction has dependencies",
+          });
+        case "Ready":
+          return setOnHelper({
+            txHash,
+            isSubmitted,
+            isPending: true,
+            message: "Transaction ready and included in pool",
+          });
+        case "Broadcast":
+          return setOnHelper({
+            txHash,
+            isSubmitted,
+            isPending: true,
+            message: "Transaction broadcasted to network nodes",
+          });
+      }
+    },
+
+    Evicted: ({ kind }) => {
+      switch (kind) {
+        case "Dropped":
+          return setOnHelper({
+            txHash,
+            isError: true,
+            message: "Transaction dropped",
+          });
+        case "Usurped":
+          return setOnHelper({
+            txHash,
+            isError: true,
+            message: "Transaction replaced",
+          });
+      }
+    },
+
+    Included: ({ kind, outcome }) => {
+      const isSubmitted = true;
+
+      // Check if the transaction failed at runtime
+      const runtimeFailed = match(outcome)<boolean>({
+        Success: () => false,
+        Failed: () => true,
+      });
+
+      if (runtimeFailed) {
+        const errorMessage = match(outcome)<string>({
+          Success: () => "Unexpected success state",
+          Failed: ({ error }) => mapDispatchErrorToMessage(error),
+        });
+
+        const error = new Error(errorMessage);
+
+        return setOnHelper({
+          txHash,
+          isSubmitted,
+          isError: true,
+          error,
+          message: errorMessage,
+        });
+      }
+
+      switch (kind) {
+        case "InBlock":
+          return setOnHelper({
+            txHash,
+            isSubmitted,
+            isSuccess: true,
+            message: "Transaction was included in block",
+          });
+        case "Finalized":
+          return setOnHelper({
+            txHash,
+            isSubmitted,
+            isSuccess: true,
+            isFinalized: true,
+            message: "Transaction was finalized",
+          });
+        case "FinalityTimeout":
+          return setOnHelper({
+            txHash,
+            isSubmitted,
+            isError: true,
+            isReverted: true,
+            message: "Transaction finalization timed out",
+          });
+        default:
+          // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+          throw new Error(`Unexpected Included event kind: ${kind}`);
+      }
+    },
+
+    Warning: ({ kind }) => {
+      switch (kind) {
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+        case "Retracted":
+          return setOnHelper({
+            txHash,
+            isError: true,
+            isReverted: true,
+            message: "Transaction retracted",
+          });
+        default:
+          // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+          throw new Error(`Unexpected Warning event kind: ${kind}`);
+      }
+    },
+  });
+}
+
+/**
+ * Maps SbDispatchError to user-friendly error messages.
+ *
+ * @param error - The SbDispatchError to convert
+ * @param api - Optional ApiPromise for module error lookup
+ * @param transactionType - Type of transaction for context
+ * @returns User-friendly error message
+ */
+export function mapDispatchErrorToMessage(
+  error: SbDispatchError,
+  api?: ApiPromise,
+  transactionType?: string,
+): string {
+  const prefix = transactionType
+    ? `${transactionType} failed: `
+    : "Transaction failed: ";
+
+  return match(error)<string>({
+    Other: (message) => `${prefix}${message}`,
+
+    CannotLookup: () => `${prefix}Failed to lookup required data`,
+
+    BadOrigin: () => `${prefix}Invalid transaction origin`,
+
+    Module: ({ index, error: errorIndex, message }) => {
+      return if_let(message, "Some")(
+        (msg) => `${prefix}${msg}`,
+        () => {
+          // Try to resolve module error using registry
+          if (api) {
+            const [moduleError, metaError] = trySync(() => {
+              // Use the simplified module error lookup
+              return api.registry.findMetaError({
+                index: api.registry.createType("u8", index),
+                error: api.registry.createType("u8", errorIndex),
+              });
+            });
+            // if (moduleError !== undefined) {
+            // }
+
+            if (moduleError === undefined) {
+              const { section, name, docs } = metaError;
+              const docString = docs.length > 0 ? ` - ${docs.join(" ")}` : "";
+              return `${prefix}${section}.${name}${docString}`;
+            }
+          }
+
+          // Fallback to generic module error
+          return `${prefix}Module error ${index}.${errorIndex}`;
+        },
+      );
+    },
+
+    ConsumerRemaining: () =>
+      `${prefix}Account has remaining consumers and cannot be destroyed`,
+
+    NoProviders: () =>
+      `${prefix}Account cannot be created - no providers available`,
+
+    TooManyConsumers: () =>
+      `${prefix}Account cannot be created - too many consumers`,
+
+    Token: (tokenError) =>
+      match(tokenError)<string>({
+        FundsUnavailable: () => `${prefix}Insufficient funds available`,
+        OnlyProvider: () =>
+          `${prefix}Cannot remove funds - account would lose only provider`,
+        BelowMinimum: () =>
+          `${prefix}Account balance would fall below minimum required`,
+        CannotCreate: () => `${prefix}Cannot create account with these funds`,
+        UnknownAsset: () => `${prefix}Unknown asset specified`,
+        Frozen: () => `${prefix}Funds are frozen and cannot be used`,
+        Unsupported: () => `${prefix}Operation not supported for this asset`,
+        CannotCreateHold: () =>
+          `${prefix}Cannot create account for held balance`,
+        NotExpendable: () =>
+          `${prefix}Withdrawal would cause unwanted loss of account`,
+        Blocked: () => `${prefix}Account cannot receive the assets`,
+      }),
+
+    Arithmetic: (arithmeticError) =>
+      match(arithmeticError)<string>({
+        Underflow: () => `${prefix}Arithmetic underflow occurred`,
+        Overflow: () => `${prefix}Arithmetic overflow occurred`,
+        DivisionByZero: () => `${prefix}Division by zero error`,
+      }),
+
+    Transactional: (transactionalError) =>
+      match(transactionalError)<string>({
+        LimitReached: () => `${prefix}Too many transactional layers`,
+        NoLayer: () => `${prefix}No transactional layer available`,
+      }),
+
+    Exhausted: () => `${prefix}System resources exhausted`,
+
+    Corruption: () => `${prefix}System state corruption detected`,
+
+    Unavailable: () => `${prefix}Required resource is currently unavailable`,
+
+    RootNotAllowed: () =>
+      `${prefix}Root origin is not allowed for this operation`,
+  });
+}
+
+// ==== Basic Test / Usage ====
 
 function _ExampleUsage() {
   const { api, selectedAccount, web3FromAddress, wsEndpoint } =
@@ -390,6 +788,7 @@ function _ExampleUsage() {
 
   const {
     sendTx,
+    // currentEvent,
     isSigning,
     isPending,
     isSuccess,
@@ -405,7 +804,7 @@ function _ExampleUsage() {
     web3FromAddress,
   });
 
-  const _handleTransfer = async () => {
+  const _handleTransfer = () => {
     if (!sendTx) return;
 
     const tx = api.tx.balances.transferAllowDeath(
@@ -413,7 +812,7 @@ function _ExampleUsage() {
       "1000000000000",
     );
 
-    await sendTx(tx);
+    void sendTx(tx);
   };
 
   return (

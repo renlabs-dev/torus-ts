@@ -32,7 +32,8 @@ export const isErr = <T, E>(result: Result<T, E>): result is Err<E> =>
   result[0] !== empty;
 
 export const isOk = <T, E>(result: Result<T, E>): result is Ok<T> =>
-  result[1] === empty;
+  result[0] === empty;
+
 export class ResultObj<T, E> {
   constructor(public value: Result<T, E>) {}
 
