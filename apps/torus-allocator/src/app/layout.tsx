@@ -1,8 +1,8 @@
 import "@torus-ts/ui/globals.css";
 
 import { GoogleAnalytics } from "@next/third-parties/google";
-import PlausibleProvider from "next-plausible";
 import type { Metadata } from "next";
+import PlausibleProvider from "next-plausible";
 import { Fira_Mono as FiraMono } from "next/font/google";
 
 import { Layout } from "@torus-ts/ui/components/layout";
@@ -30,7 +30,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <PlausibleProvider domain="torus.network" trackOutboundLinks hash>
+    <PlausibleProvider domain="torus.network" trackOutboundLinks>
       <Layout font={firaMono} headScripts={[EnvScript]}>
         {children}
         <GoogleAnalytics gaId="G-7YCMH64Q4J" />

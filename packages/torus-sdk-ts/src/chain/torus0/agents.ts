@@ -11,6 +11,7 @@ import {
   sb_some,
   sb_string,
   sb_struct,
+  SS58Address,
 } from "../../types/index.js";
 import type { Api } from "../common/index.js";
 import { handleMapEntries } from "../common/index.js";
@@ -88,4 +89,8 @@ export function updateAgent(
     stakingFee ?? null,
     weightControlFee ?? null,
   );
+}
+
+export function deregisterAgent(api: ApiPromise) {
+  return api.tx.torus0.deregisterAgent();
 }
