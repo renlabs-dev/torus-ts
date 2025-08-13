@@ -7,7 +7,9 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useTorus } from "@torus-ts/torus-provider";
 import { KeyboardShortcutBadge } from "@torus-ts/ui/components/keyboard-shortcut-badge";
 import { Loading } from "@torus-ts/ui/components/loading";
+import { Tabs, TabsList, TabsTrigger } from "@torus-ts/ui/components/tabs";
 
+import { ForceGraph2DCanvas } from "./_components/force-graph/force-graph-2d-canvas";
 import { ForceGraphCanvas } from "./_components/force-graph/force-graph-canvas";
 import { useGraphData } from "./_components/force-graph/use-graph-data";
 import { GraphSheet } from "./_components/graph-sheet/graph-sheet";
@@ -25,6 +27,7 @@ export default function PermissionGraphPage() {
     null,
   );
   const [isSheetOpen, setIsSheetOpen] = useState(false);
+  const [viewMode, setViewMode] = useState<"2d" | "3d">("2d");
 
   const agentCache = useRef(new AgentLRUCache(50));
 
@@ -134,11 +137,34 @@ export default function PermissionGraphPage() {
         isOpen={isSheetOpen}
         onOpenChange={handleOnOpenChange}
       />
-      <ForceGraphCanvas
-        data={graphData}
-        onNodeClick={handleNodeSelect}
-        userAddress={selectedAccount?.address}
-      />
+
+      {/* View mode toggle */}
+      <div className="fixed top-4 right-4 z-10">
+        <Tabs
+          value={viewMode}
+          onValueChange={(value) => setViewMode(value as "2d" | "3d")}
+        >
+          <TabsList className="bg-background/80 backdrop-blur pt-24">
+            <TabsTrigger value="2d">2D</TabsTrigger>
+            <TabsTrigger value="3d">3D</TabsTrigger>
+          </TabsList>
+        </Tabs>
+      </div>
+
+      {viewMode === "3d" ? (
+        <ForceGraphCanvas
+          data={graphData}
+          onNodeClick={handleNodeSelect}
+          userAddress={selectedAccount?.address}
+        />
+      ) : (
+        <ForceGraph2DCanvas
+          data={graphData}
+          onNodeClick={handleNodeSelect}
+          userAddress={selectedAccount?.address}
+        />
+      )}
+
       <PermissionGraphFooter handleNodeSelect={handleNodeSelect} />
     </main>
   );

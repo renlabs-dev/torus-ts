@@ -296,13 +296,6 @@ export const permissionRouter = {
           emissionDistributionTargetsSchema.permissionId,
         ),
       )
-      .leftJoin(
-        accumulatedStreamAmountsSchema,
-        eq(
-          permissionsSchema.permissionId,
-          accumulatedStreamAmountsSchema.permissionId,
-        ),
-      )
       .where(isNull(permissionsSchema.deletedAt))
       .orderBy(
         permissionsSchema.createdAt,
