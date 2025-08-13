@@ -43,6 +43,7 @@ catalog:
   "lucide-react": ^0.475.0
   "vitest": ^3.2.4
   "emittery": ^1.2.0
+  "@uidotdev/usehooks": ^2.4.1
   # Hyperlane
   "viem": ^2.22.1
   "next-plausible": ^3.12.4
