@@ -3,9 +3,8 @@
 import React, { Suspense, useCallback, useRef } from "react";
 
 import { OrbitControls } from "@react-three/drei";
-import { Canvas, useThree } from "@react-three/fiber";
+import { Canvas } from "@react-three/fiber";
 import { Bloom, EffectComposer } from "@react-three/postprocessing";
-import * as THREE from "three";
 import type { OrbitControls as OrbitControlsImpl } from "three-stdlib";
 
 import type {
@@ -13,6 +12,7 @@ import type {
   CustomGraphNode,
 } from "../permission-graph-types";
 import ForceGraph from "./force-graph-animation";
+import { useCameraFocus } from "./use-camera-focus";
 
 function ForceGraphScene({
   data,
@@ -25,117 +25,13 @@ function ForceGraphScene({
   userAddress?: string;
   onResetCamera: (callback: () => void) => void;
 }) {
-  const { camera } = useThree();
   const controlsRef = useRef<OrbitControlsImpl>(null);
-  const originalCameraPosition = useRef(new THREE.Vector3(0, 0, 600));
-  const originalTarget = useRef(new THREE.Vector3(0, 0, 0));
-  const focusTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-
-  const handleNodeFocus = useCallback(
-    (node: CustomGraphNode) => {
-      if (!node.x || !node.y || !node.z) return;
-
-      const distance = 100;
-      const distRatio = 1 + distance / Math.hypot(node.x, node.y, node.z);
-
-      const targetPosition = new THREE.Vector3(
-        node.x * distRatio,
-        node.y * distRatio,
-        node.z * distRatio,
-      );
-
-      const targetLookAt = new THREE.Vector3(node.x, node.y, node.z);
-
-      const animateCameraToTarget = (
-        targetPos: THREE.Vector3,
-        lookAt: THREE.Vector3,
-        duration: number,
-      ) => {
-        const startPosition = camera.position.clone();
-        const startTarget =
-          controlsRef.current?.target.clone() ?? new THREE.Vector3();
-        const startTime = Date.now();
-
-        const animate = () => {
-          const elapsed = Date.now() - startTime;
-          const progress = Math.min(elapsed / duration, 1);
-          const easeProgress = 1 - Math.pow(1 - progress, 3);
-
-          camera.position.lerpVectors(startPosition, targetPos, easeProgress);
-
-          if (controlsRef.current) {
-            controlsRef.current.target.lerpVectors(
-              startTarget,
-              lookAt,
-              easeProgress,
-            );
-            controlsRef.current.update();
-          }
-
-          if (progress < 1) {
-            requestAnimationFrame(animate);
-          }
-        };
-
-        animate();
-      };
-
-      animateCameraToTarget(targetPosition, targetLookAt, 2000);
-
-      onNodeClick(node);
-
-      if (focusTimeoutRef.current) {
-        clearTimeout(focusTimeoutRef.current);
-      }
-    },
-    [camera, onNodeClick],
+  
+  const { handleNodeFocus } = useCameraFocus(
+    controlsRef,
+    onNodeClick,
+    onResetCamera,
   );
-
-  const resetCamera = useCallback(() => {
-    const animateCameraToTarget = (
-      targetPos: THREE.Vector3,
-      lookAt: THREE.Vector3,
-      duration: number,
-    ) => {
-      const startPosition = camera.position.clone();
-      const startTarget =
-        controlsRef.current?.target.clone() ?? new THREE.Vector3();
-      const startTime = Date.now();
-
-      const animate = () => {
-        const elapsed = Date.now() - startTime;
-        const progress = Math.min(elapsed / duration, 1);
-        const easeProgress = 1 - Math.pow(1 - progress, 3);
-
-        camera.position.lerpVectors(startPosition, targetPos, easeProgress);
-
-        if (controlsRef.current) {
-          controlsRef.current.target.lerpVectors(
-            startTarget,
-            lookAt,
-            easeProgress,
-          );
-          controlsRef.current.update();
-        }
-
-        if (progress < 1) {
-          requestAnimationFrame(animate);
-        }
-      };
-
-      animate();
-    };
-
-    animateCameraToTarget(
-      originalCameraPosition.current,
-      originalTarget.current,
-      1500,
-    );
-  }, [camera]);
-
-  React.useEffect(() => {
-    onResetCamera(resetCamera);
-  }, [onResetCamera, resetCamera]);
 
   return (
     <>
