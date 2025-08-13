@@ -3,6 +3,7 @@
 import { AgentCard } from "@torus-ts/ui/components/agent-card/agent-card";
 import { AgentItemSkeleton } from "@torus-ts/ui/components/agent-card/agent-card-skeleton-loader";
 
+import { useQueryAgentMetadata } from "~/hooks/use-agent-metadata";
 import { useBlobUrl } from "~/hooks/use-blob-url";
 import { api } from "~/trpc/react";
 
@@ -26,9 +27,18 @@ export function UpdateAgentPreview({
     },
   );
 
+  const { data: agentMetadata } = useQueryAgentMetadata(
+    agent?.metadataUri ?? "",
+    {
+      fetchImages: true,
+      enabled: !!agent?.metadataUri,
+    },
+  );
+
   const formValues = form.getValues();
   const previewImage = form.watch("imageFile");
   const previewImageBlobUrl = useBlobUrl(previewImage);
+  const currentImageBlobUrl = useBlobUrl(agentMetadata?.images.icon);
 
   if (isLoading || !agent) {
     return (
@@ -52,7 +62,7 @@ export function UpdateAgentPreview({
         <AgentCard
           name={formValues.name ?? ""}
           agentKey={agentKey}
-          iconUrl={previewImageBlobUrl}
+          iconUrl={previewImageBlobUrl ?? currentImageBlobUrl}
           shortDescription={formValues.shortDescription}
           socials={socials}
           website={formValues.website}
