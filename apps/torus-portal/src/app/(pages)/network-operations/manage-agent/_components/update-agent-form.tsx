@@ -30,6 +30,7 @@ import { useQueryAgentMetadata } from "~/hooks/use-agent-metadata";
 import { useBlobUrl } from "~/hooks/use-blob-url";
 import { api } from "~/trpc/react";
 
+import { DeregisterAgentButton } from "./deregister-agent-button";
 import { UpdateAgentFormFields } from "./update-agent-form-fields";
 import type { UpdateAgentFormData } from "./update-agent-form-schema";
 import { updateAgentSchema } from "./update-agent-form-schema";
@@ -264,7 +265,8 @@ export function UpdateAgentForm({ agentKey }: UpdateAgentFormProps) {
               />
             </div>
 
-            <div className="flex justify-end space-x-2 mt-6">
+            <div className="flex justify-between items-center mt-6">
+              <DeregisterAgentButton agentName={agent?.name ?? ""} />
               <Button
                 type="button"
                 variant="outline"
