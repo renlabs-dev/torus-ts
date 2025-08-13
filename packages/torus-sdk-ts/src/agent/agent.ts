@@ -264,11 +264,16 @@ export class AgentServer {
         this.agentName = matchingAgent.name;
         console.log(`Resolved agent name: ${this.agentName}`);
       } else {
-        console.error(`Failed to resolve agent name for key: ${this.options.agentKey}. Agent not found on chain: ${this.rpcUrl}`);
+        console.error(
+          `Failed to resolve agent name for key: ${this.options.agentKey}. Agent not found on chain: ${this.rpcUrl}`,
+        );
         process.exit(1);
       }
     } catch (error) {
-      console.error(`Failed to resolve agent name on chain ${this.rpcUrl}:`, error);
+      console.error(
+        `Failed to resolve agent name on chain ${this.rpcUrl}:`,
+        error,
+      );
       process.exit(1);
     }
   }

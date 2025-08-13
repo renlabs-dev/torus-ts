@@ -6,17 +6,17 @@ import { AgentItemSkeleton } from "@torus-ts/ui/components/agent-card/agent-card
 import { useBlobUrl } from "~/hooks/use-blob-url";
 import { api } from "~/trpc/react";
 
-import type { UpdateAgentForm } from "./update-agent-dialog-form-schema";
+import type { UpdateAgentForm } from "./update-agent-form-schema";
 
-interface UpdateAgentDialogPreviewProps {
+interface UpdateAgentPreviewProps {
   agentKey: string;
   form: UpdateAgentForm;
 }
 
-export function UpdateAgentDialogPreview({
+export function UpdateAgentPreview({
   agentKey,
   form,
-}: UpdateAgentDialogPreviewProps) {
+}: UpdateAgentPreviewProps) {
   const { data: agent, isLoading } = api.agent.byKeyLastBlock.useQuery(
     { key: agentKey },
     {
