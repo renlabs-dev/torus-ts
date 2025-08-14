@@ -833,14 +833,14 @@ export const accumulatedStreamAmountsSchema = createTable(
       .notNull()
       .default("0"),
     lastUpdated: timestampzNow("last_updated"),
-    lastUpdatedBlock: integer("last_updated_block"),
+    lastExecutedBlock: integer("last_executed_block"),
     atBlock: integer("at_block").notNull(),
     executionCount: integer("execution_count").notNull().default(0),
   },
   (t) => [
     {
       primaryKey: {
-        columns: [t.grantorAccountId, t.streamId, t.permissionId, t.atBlock],
+        columns: [t.grantorAccountId, t.streamId, t.permissionId, t.executionCount],
       },
     },
   ],
