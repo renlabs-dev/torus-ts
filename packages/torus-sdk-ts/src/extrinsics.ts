@@ -728,7 +728,9 @@ export async function sendTxWithTracker(
   );
   if (sendError !== undefined) {
     void emitter.emit("error", { kind: "Error", error: sendError });
-    const txError = new SendTxError(sendError.message || "Failed to submit transaction");
+    const txError = new SendTxError(
+      sendError.message || "Failed to submit transaction",
+    );
     return makeErr(txError);
   }
 
