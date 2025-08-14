@@ -40,23 +40,20 @@ function ForceGraphScene({
 
   return (
     <>
-      <ambientLight intensity={1.01} />
-      <hemisphereLight
-        intensity={1.125}
-        color="#8040df"
-        groundColor="#bfdbfe"
-      />
+      <ambientLight intensity={0.3} />
+      <hemisphereLight intensity={1.2} color="#ffffff" groundColor="#444444" />
       <spotLight
         castShadow
-        color="blue"
-        intensity={2}
-        position={[-50, 50, 40]}
-        angle={0.25}
+        color="#ffffff"
+        intensity={1.5}
+        position={[10, 10, 10]}
+        angle={0.3}
         penumbra={1}
-        shadow-mapSize={[128, 128]}
-        shadow-bias={0.00005}
+        shadow-mapSize={[256, 256]}
       />
-
+      <EffectComposer>
+        <Bloom mipmapBlur luminanceThreshold={2.6} intensity={2} radius={1.2} />
+      </EffectComposer>
       <ForceGraph
         graphData={data}
         onNodeClick={handleNodeFocus}
@@ -64,9 +61,6 @@ function ForceGraphScene({
         selectedNodeId={selectedNodeId}
       />
       <OrbitControls ref={controlsRef} dampingFactor={0.01} enablePan={false} />
-      <EffectComposer>
-        <Bloom intensity={1} luminanceThreshold={0} luminanceSmoothing={1.5} />
-      </EffectComposer>
     </>
   );
 }
