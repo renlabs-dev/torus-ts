@@ -28,6 +28,7 @@ const ForceGraph = memo(
     const fgRef = useRef<GraphMethods | undefined>(undefined);
 
     const [forcesConfigured, setForcesConfigured] = useState(false);
+    const lastHoveredNodeRef = useRef<NodeObject | null>(null);
 
     useFrame(() => {
       if (fgRef.current?.d3Force) {
@@ -60,6 +61,22 @@ const ForceGraph = memo(
       props.onNodeClick,
       props.selectedNodeId,
     );
+
+    const handleNodeHover = (node: NodeObject | null) => {
+      if (lastHoveredNodeRef.current) {
+        const prevMesh = lastHoveredNodeRef.current.__threeObj as THREE.Mesh;
+        const prevMaterial = prevMesh.material as THREE.MeshLambertMaterial;
+        prevMaterial.emissive.setHex(0x000000);
+      }
+
+      if (node) {
+        const mesh = node.__threeObj as THREE.Mesh;
+        const material = mesh.material as THREE.MeshLambertMaterial;
+        material.emissive.setHex(0x444444);
+      }
+
+      lastHoveredNodeRef.current = node;
+    };
 
     const formatedData = useMemo(() => {
       return {
@@ -142,6 +159,7 @@ const ForceGraph = memo(
             Number(link.linkWidth) || graphConstants.linkConfig.linkWidth
           }
           onNodeClick={handleNodeClick}
+          onNodeHover={handleNodeHover}
         />
       </>
     );
