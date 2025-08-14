@@ -1,30 +1,36 @@
 import { useMemo } from "react";
 
-import { useLastBlock } from "@torus-ts/query-provider/hooks";
-import { useTorus } from "@torus-ts/torus-provider";
-
 import { env } from "~/env";
 import { api as trpcApi } from "~/trpc/react";
 
 import { createSimplifiedGraphData } from "./force-graph-utils";
 
 export function useGraphData() {
-  const { api } = useTorus();
-  const lastBlock = useLastBlock(api);
-
   const allocatorAddress = env("NEXT_PUBLIC_TORUS_ALLOCATOR_ADDRESS");
 
+  const cacheOptions = {
+    staleTime: Infinity,
+    gcTime: 1000 * 60 * 60 * 1,
+    refetchOnMount: false,
+    refetchOnReconnect: false,
+    refetchOnWindowFocus: false,
+    refetchInterval: false as const,
+  };
+
   const { data: allPermissions, isLoading: isLoadingPermissions } =
-    trpcApi.permission.allWithCompletePermissions.useQuery();
+    trpcApi.permission.allWithCompletePermissions.useQuery(
+      undefined,
+      cacheOptions,
+    );
 
   const { data: allAgents, isLoading: isLoadingAgents } =
-    trpcApi.agent.all.useQuery();
+    trpcApi.agent.all.useQuery(undefined, cacheOptions);
 
   const { data: allComputedWeights, isLoading: isLoadingWeights } =
-    trpcApi.computedAgentWeight.all.useQuery();
+    trpcApi.computedAgentWeight.all.useQuery(undefined, cacheOptions);
 
   const { data: allSignals, isLoading: isLoadingSignals } =
-    trpcApi.signal.all.useQuery();
+    trpcApi.signal.all.useQuery(undefined, cacheOptions);
 
   const graphData = useMemo(() => {
     // Wait for all data to be loaded before calling the function
@@ -57,8 +63,7 @@ export function useGraphData() {
     isLoadingPermissions ||
     isLoadingAgents ||
     isLoadingWeights ||
-    isLoadingSignals ||
-    lastBlock.isLoading;
+    isLoadingSignals;
 
   return {
     isLoading,
