@@ -48,11 +48,16 @@ export function useCameraFocus(
 
         // Check if we're close enough to the target position
         const distanceToTarget = camera.position.distanceTo(targetPos);
-        const targetDistanceToLookAt = controlsRef.current?.target.distanceTo(lookAt) ?? 0;
-        
+        const targetDistanceToLookAt =
+          controlsRef.current?.target.distanceTo(lookAt) ?? 0;
+
         // Stop when we're within 5 units of target OR 90% of time has elapsed
         // This prevents the slow tail while ensuring we get close enough
-        if (distanceToTarget > 5 && targetDistanceToLookAt > 2 && progress < 0.9) {
+        if (
+          distanceToTarget > 5 &&
+          targetDistanceToLookAt > 2 &&
+          progress < 0.9
+        ) {
           requestAnimationFrame(animate);
         }
       };

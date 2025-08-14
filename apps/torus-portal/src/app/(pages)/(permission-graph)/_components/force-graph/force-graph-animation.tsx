@@ -29,7 +29,7 @@ const ForceGraph = memo(
 
     const [forcesConfigured, setForcesConfigured] = useState(false);
 
-    useFrame(({ clock }) => {
+    useFrame(() => {
       if (fgRef.current?.d3Force) {
         if (!forcesConfigured) {
           const chargeForce = fgRef.current.d3Force("charge");
@@ -53,20 +53,6 @@ const ForceGraph = memo(
 
         fgRef.current.tickFrame();
       }
-
-      const time = clock.getElapsedTime();
-      const pulsateOpacity = ((Math.sin(time * 3) + 1) / 2) * 0.7 + 0.5; // Oscillates between 0.3 and 1
-
-      props.graphData.nodes.forEach((node) => {
-        if (node.nodeType === "signal" && node.__threeObj) {
-          const mesh = node.__threeObj as THREE.Mesh;
-          // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-          if (mesh.material && "opacity" in mesh.material) {
-            (mesh.material as THREE.MeshLambertMaterial).opacity =
-              pulsateOpacity;
-          }
-        }
-      });
     });
 
     const { handleNodeClick } = useGraphInteractions(
@@ -85,11 +71,30 @@ const ForceGraph = memo(
     const nodeThreeObject = useMemo(() => {
       return (node: NodeObject) => {
         const customNode = node as CustomGraphNode;
-        const baseColor = String(
-          node.color ?? graphConstants.nodeConfig.nodeColors.default,
-        );
 
-        let color = baseColor;
+        if (customNode.precomputedGeometry && customNode.precomputedMaterial) {
+          if (
+            props.userAddress &&
+            String(node.id).toLowerCase() === props.userAddress.toLowerCase()
+          ) {
+            const userMaterial =
+              customNode.precomputedMaterial.clone() as THREE.MeshLambertMaterial;
+            userMaterial.color.setHex(
+              parseInt(
+                graphConstants.nodeConfig.nodeColors.userNode.replace("#", ""),
+                16,
+              ),
+            );
+            return new THREE.Mesh(customNode.precomputedGeometry, userMaterial);
+          }
+
+          return new THREE.Mesh(
+            customNode.precomputedGeometry,
+            customNode.precomputedMaterial,
+          );
+        }
+
+        let color = node.color as string;
         if (
           props.userAddress &&
           String(node.id).toLowerCase() === props.userAddress.toLowerCase()
@@ -100,60 +105,9 @@ const ForceGraph = memo(
         const material = new THREE.MeshLambertMaterial({
           color: color,
           opacity: 1,
-          transparent: customNode.nodeType === "signal",
         });
 
-        let geometry: THREE.BufferGeometry;
-
-        switch (customNode.nodeType) {
-          case "signal": {
-            const config = graphConstants.nodeConfig.nodeGeometry.signalNode;
-            geometry = new THREE.TetrahedronGeometry(
-              config.radius,
-              config.detail,
-            );
-            break;
-          }
-          case "permission": {
-            const config =
-              graphConstants.nodeConfig.nodeGeometry.permissionNode;
-            geometry = new THREE.IcosahedronGeometry(
-              config.radius,
-              config.detail,
-            );
-            break;
-          }
-          case "allocator": {
-            const config = graphConstants.nodeConfig.nodeGeometry.allocator;
-            geometry = new THREE.SphereGeometry(
-              config.radius,
-              config.widthSegments,
-              config.heightSegments,
-            );
-            break;
-          }
-          case "root_agent": {
-            const config = graphConstants.nodeConfig.nodeGeometry.rootNode;
-            geometry = new THREE.SphereGeometry(
-              config.radius,
-              config.widthSegments,
-              config.heightSegments,
-            );
-            break;
-          }
-
-          case "target_agent":
-          default: {
-            const config = graphConstants.nodeConfig.nodeGeometry.targetNode;
-            geometry = new THREE.SphereGeometry(
-              config.radius,
-              config.widthSegments,
-              config.heightSegments,
-            );
-            break;
-          }
-        }
-
+        const geometry = new THREE.SphereGeometry(10, 16, 16);
         return new THREE.Mesh(geometry, material);
       };
     }, [props.userAddress]);
@@ -175,14 +129,18 @@ const ForceGraph = memo(
             graphConstants.linkConfig.particleConfig.speed
           }
           linkDirectionalArrowLength={(link: LinkObject) =>
-            Number(link.linkDirectionalArrowLength)
+            Number(link.linkDirectionalArrowLength) ||
+            graphConstants.linkConfig.arrowConfig.defaultArrowLength
           }
           linkDirectionalArrowRelPos={(link: LinkObject) =>
-            Number(link.linkDirectionalArrowRelPos)
+            Number(link.linkDirectionalArrowRelPos) ||
+            graphConstants.linkConfig.arrowConfig.defaultArrowRelPos
           }
           linkCurvature={(link: LinkObject) => Number(link.linkCurvature)}
           linkColor={(link: LinkObject) => String(link.linkColor)}
-          linkWidth={(link: LinkObject) => Number(link.linkWidth) || 1}
+          linkWidth={(link: LinkObject) =>
+            Number(link.linkWidth) || graphConstants.linkConfig.linkWidth
+          }
           onNodeClick={handleNodeClick}
         />
       </>

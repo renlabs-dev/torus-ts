@@ -1,4 +1,5 @@
 import type { inferProcedureOutput } from "@trpc/server";
+import * as THREE from "three";
 
 import { smallAddress } from "@torus-network/torus-utils/torus/address";
 
@@ -11,6 +12,80 @@ import type {
   SignalsList,
 } from "../permission-graph-types";
 import { graphConstants } from "./force-graph-constants";
+
+// Pre-computed geometries for performance
+const precomputedGeometries = {
+  allocator: new THREE.SphereGeometry(
+    graphConstants.nodeConfig.nodeGeometry.allocator.radius,
+    graphConstants.nodeConfig.nodeGeometry.allocator.widthSegments,
+    graphConstants.nodeConfig.nodeGeometry.allocator.heightSegments,
+  ),
+  rootNode: new THREE.SphereGeometry(
+    graphConstants.nodeConfig.nodeGeometry.rootNode.radius,
+    graphConstants.nodeConfig.nodeGeometry.rootNode.widthSegments,
+    graphConstants.nodeConfig.nodeGeometry.rootNode.heightSegments,
+  ),
+  permissionNode: new THREE.IcosahedronGeometry(
+    graphConstants.nodeConfig.nodeGeometry.permissionNode.radius,
+    graphConstants.nodeConfig.nodeGeometry.permissionNode.detail,
+  ),
+  targetNode: new THREE.SphereGeometry(
+    graphConstants.nodeConfig.nodeGeometry.targetNode.radius,
+    graphConstants.nodeConfig.nodeGeometry.targetNode.widthSegments,
+    graphConstants.nodeConfig.nodeGeometry.targetNode.heightSegments,
+  ),
+  userNode: new THREE.SphereGeometry(
+    graphConstants.nodeConfig.nodeGeometry.userNode.radius,
+    graphConstants.nodeConfig.nodeGeometry.userNode.widthSegments,
+    graphConstants.nodeConfig.nodeGeometry.userNode.heightSegments,
+  ),
+  signalNode: new THREE.TetrahedronGeometry(
+    graphConstants.nodeConfig.nodeGeometry.signalNode.radius,
+    graphConstants.nodeConfig.nodeGeometry.signalNode.detail,
+  ),
+};
+
+// Helper function to create pre-computed material
+function createPrecomputedMaterial(color: string, transparent = false) {
+  return new THREE.MeshLambertMaterial({
+    color: color,
+    opacity: 1,
+    transparent: transparent,
+  });
+}
+
+// Helper function to assign pre-computed geometry and material to a node
+function assignPrecomputedObjects(node: CustomGraphNode) {
+  const nodeType = node.nodeType;
+  const color = node.color ?? graphConstants.nodeConfig.nodeColors.default;
+
+  switch (nodeType) {
+    case "allocator":
+      node.precomputedGeometry = precomputedGeometries.allocator;
+      node.precomputedMaterial = createPrecomputedMaterial(color);
+      break;
+    case "root_agent":
+      node.precomputedGeometry = precomputedGeometries.rootNode;
+      node.precomputedMaterial = createPrecomputedMaterial(color);
+      break;
+    case "permission":
+      node.precomputedGeometry = precomputedGeometries.permissionNode;
+      node.precomputedMaterial = createPrecomputedMaterial(color);
+      break;
+    case "target_agent":
+      node.precomputedGeometry = precomputedGeometries.targetNode;
+      node.precomputedMaterial = createPrecomputedMaterial(color);
+      break;
+    case "signal":
+      node.precomputedGeometry = precomputedGeometries.signalNode;
+      node.precomputedMaterial = createPrecomputedMaterial(color, true); // transparent for signal nodes
+      break;
+    default:
+      node.precomputedGeometry = precomputedGeometries.targetNode;
+      node.precomputedMaterial = createPrecomputedMaterial(color);
+      break;
+  }
+}
 
 // Infer Agent type from tRPC router
 export type Agent = NonNullable<
@@ -134,6 +209,7 @@ export function createSimplifiedGraphData(
       isWhitelisted: true,
     },
   };
+  assignPrecomputedObjects(rootNode);
   nodesMap.set(allocatorAddress, rootNode);
 
   // Create a map to track all agent nodes (from agents list + permissions)
@@ -168,6 +244,7 @@ export function createSimplifiedGraphData(
       },
     };
 
+    assignPrecomputedObjects(agentNode);
     allAgentNodes.set(agentKey, agentNode);
     return agentNode;
   };
@@ -227,15 +304,7 @@ export function createSimplifiedGraphData(
         target: agent.key,
         id: `allocation-${agent.key}`,
         linkColor: graphConstants.linkConfig.linkColors.allocatorLink,
-        linkWidth: graphConstants.linkConfig.linkWidth,
-        linkDirectionalArrowLength:
-          graphConstants.linkConfig.arrowConfig.defaultArrowLength,
-        linkDirectionalArrowRelPos:
-          graphConstants.linkConfig.arrowConfig.defaultArrowRelPos,
-        linkDirectionalParticles: graphConstants.linkConfig.particleConfig.particles,
         linkDirectionalParticleSpeed: getDeterministicParticleSpeed(agent.key),
-        linkDirectionalParticleResolution:
-          graphConstants.linkConfig.particleAnimation.resolution,
       });
     }
   });
@@ -333,6 +402,7 @@ export function createSimplifiedGraphData(
               : [],
           },
         };
+        assignPrecomputedObjects(permissionNode);
         nodesMap.set(permissionNodeId, permissionNode);
       }
 
@@ -353,16 +423,8 @@ export function createSimplifiedGraphData(
         target: permissionNodeId,
         id: `grant-${permissionId}`,
         linkColor: graphConstants.linkConfig.linkColors.namespacePermissionLink,
-        linkWidth: graphConstants.linkConfig.linkWidth,
-        linkDirectionalArrowLength:
-          graphConstants.linkConfig.arrowConfig.defaultArrowLength,
-        linkDirectionalArrowRelPos:
-          graphConstants.linkConfig.arrowConfig.defaultArrowRelPos,
-        linkDirectionalParticles: graphConstants.linkConfig.particleConfig.particles,
         linkDirectionalParticleSpeed:
           getDeterministicParticleSpeed(permissionId),
-        linkDirectionalParticleResolution:
-          graphConstants.linkConfig.particleAnimation.resolution,
       });
 
       // Edge: permission node -> grantee
@@ -372,16 +434,8 @@ export function createSimplifiedGraphData(
         target: granteeId,
         id: `receive-${permissionId}`,
         linkColor: graphConstants.linkConfig.linkColors.namespacePermissionLink,
-        linkWidth: graphConstants.linkConfig.linkWidth,
-        linkDirectionalArrowLength:
-          graphConstants.linkConfig.arrowConfig.defaultArrowLength,
-        linkDirectionalArrowRelPos:
-          graphConstants.linkConfig.arrowConfig.defaultArrowRelPos,
-        linkDirectionalParticles: graphConstants.linkConfig.particleConfig.particles,
         linkDirectionalParticleSpeed:
           getDeterministicParticleSpeed(permissionId),
-        linkDirectionalParticleResolution:
-          graphConstants.linkConfig.particleAnimation.resolution,
       });
     }
 
@@ -417,6 +471,7 @@ export function createSimplifiedGraphData(
                   null),
           },
         };
+        assignPrecomputedObjects(permissionNode);
         nodesMap.set(permissionNodeId, permissionNode);
       }
 
@@ -433,16 +488,8 @@ export function createSimplifiedGraphData(
         target: permissionNodeId,
         id: `grant-${permissionId}`,
         linkColor: graphConstants.linkConfig.linkColors.emissionPermissionLink,
-        linkWidth: graphConstants.linkConfig.linkWidth,
-        linkDirectionalArrowLength:
-          graphConstants.linkConfig.arrowConfig.defaultArrowLength,
-        linkDirectionalArrowRelPos:
-          graphConstants.linkConfig.arrowConfig.defaultArrowRelPos,
-        linkDirectionalParticles: graphConstants.linkConfig.particleConfig.particles,
         linkDirectionalParticleSpeed:
           getDeterministicParticleSpeed(permissionId),
-        linkDirectionalParticleResolution:
-          graphConstants.linkConfig.particleAnimation.resolution,
       });
 
       // Edge: permission node -> recipient (only if no distribution targets and grantee exists and is different)
@@ -464,12 +511,8 @@ export function createSimplifiedGraphData(
           id: `receive-${permissionId}`,
           linkColor:
             graphConstants.linkConfig.linkColors.emissionPermissionLink,
-          linkWidth: graphConstants.linkConfig.linkWidth,
-          linkDirectionalArrowLength:
-            graphConstants.linkConfig.arrowConfig.defaultArrowLength,
-          linkDirectionalArrowRelPos:
-            graphConstants.linkConfig.arrowConfig.defaultArrowRelPos,
-          linkDirectionalParticles: graphConstants.linkConfig.particleConfig.particles,
+          linkDirectionalParticles:
+            graphConstants.linkConfig.particleConfig.particles,
           linkDirectionalParticleSpeed:
             getDeterministicParticleSpeed(permissionId),
           linkDirectionalParticleResolution:
@@ -502,10 +545,6 @@ export function createSimplifiedGraphData(
         id: `distribution-${permissionId}-${targetId}`,
         linkColor: graphConstants.linkConfig.linkColors.emissionPermissionLink,
         linkWidth: graphConstants.linkConfig.linkWidth * 0.7,
-        linkDirectionalArrowLength:
-          graphConstants.linkConfig.arrowConfig.defaultArrowLength,
-        linkDirectionalArrowRelPos:
-          graphConstants.linkConfig.arrowConfig.defaultArrowRelPos,
         linkDirectionalParticles: Math.max(
           1,
           Math.ceil(
@@ -530,6 +569,7 @@ export function createSimplifiedGraphData(
         nodeType: "signal",
         signalData: signal,
       };
+      assignPrecomputedObjects(signalNode);
       nodesMap.set(signalNode.id, signalNode);
 
       // Extract signal data
@@ -551,11 +591,6 @@ export function createSimplifiedGraphData(
           id: `signal-link-${signal.id}`,
           linkDirectionalParticles: 0,
           linkColor: graphConstants.linkConfig.linkColors.signalLink,
-          linkWidth: graphConstants.linkConfig.linkWidth,
-          linkDirectionalArrowLength:
-            graphConstants.linkConfig.arrowConfig.defaultArrowLength,
-          linkDirectionalArrowRelPos:
-            graphConstants.linkConfig.arrowConfig.defaultArrowRelPos,
         });
       } else {
         // Create agent node if it doesn't exist
@@ -570,11 +605,6 @@ export function createSimplifiedGraphData(
           id: `signal-link-${signal.id}`,
           linkDirectionalParticles: 0,
           linkColor: graphConstants.linkConfig.linkColors.signalLink,
-          linkWidth: graphConstants.linkConfig.linkWidth,
-          linkDirectionalArrowLength:
-            graphConstants.linkConfig.arrowConfig.defaultArrowLength,
-          linkDirectionalArrowRelPos:
-            graphConstants.linkConfig.arrowConfig.defaultArrowRelPos,
         });
       }
     });
