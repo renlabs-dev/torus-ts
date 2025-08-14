@@ -1,5 +1,8 @@
-import { smallAddress } from "@torus-network/torus-utils/torus/address";
 import type { inferProcedureOutput } from "@trpc/server";
+
+import { smallAddress } from "@torus-network/torus-utils/torus/address";
+
+import type { AppRouter } from "@torus-ts/api";
 
 import type {
   allPermissions,
@@ -8,7 +11,6 @@ import type {
   SignalsList,
 } from "../permission-graph-types";
 import { graphConstants } from "./force-graph-constants";
-import type { AppRouter } from "@torus-ts/api";
 
 // Infer Agent type from tRPC router
 export type Agent = NonNullable<
@@ -33,8 +35,8 @@ function getDeterministicValue(seed: string, min: number, max: number): number {
 function getDeterministicParticleSpeed(seed: string): number {
   return getDeterministicValue(
     seed,
-    graphConstants.particleAnimation.speedMin,
-    graphConstants.particleAnimation.speedMax,
+    graphConstants.linkConfig.particleAnimation.speedMin,
+    graphConstants.linkConfig.particleAnimation.speedMax,
   );
 }
 
@@ -118,7 +120,6 @@ export function createSimplifiedGraphData(
     id: allocatorAddress,
     name: "Allocator",
     color: graphConstants.nodeConfig.nodeColors.allocator,
-    val: graphConstants.nodeConfig.nodeSizes.allocator * 1.5,
     fullAddress: allocatorAddress,
     role: "Allocator",
     nodeType: "allocator",
@@ -158,7 +159,6 @@ export function createSimplifiedGraphData(
       color: existingAgent
         ? graphConstants.nodeConfig.nodeColors.rootNode
         : graphConstants.nodeConfig.nodeColors.targetNode,
-      val: graphConstants.nodeConfig.nodeSizes.rootNode,
       fullAddress: agentKey,
       role: existingAgent ? "Root Agent" : "Target Agent",
       nodeType: existingAgent ? "root_agent" : "target_agent",
@@ -227,15 +227,15 @@ export function createSimplifiedGraphData(
         target: agent.key,
         id: `allocation-${agent.key}`,
         linkColor: graphConstants.linkConfig.linkColors.allocatorLink,
-        linkWidth: graphConstants.linkConfig.linkWidths.allocationLink,
+        linkWidth: graphConstants.linkConfig.linkWidth,
         linkDirectionalArrowLength:
           graphConstants.linkConfig.arrowConfig.defaultArrowLength,
         linkDirectionalArrowRelPos:
           graphConstants.linkConfig.arrowConfig.defaultArrowRelPos,
-        linkDirectionalParticles: 2,
+        linkDirectionalParticles: graphConstants.linkConfig.particleConfig.particles,
         linkDirectionalParticleSpeed: getDeterministicParticleSpeed(agent.key),
         linkDirectionalParticleResolution:
-          graphConstants.particleAnimation.resolution,
+          graphConstants.linkConfig.particleAnimation.resolution,
       });
     }
   });
@@ -311,7 +311,6 @@ export function createSimplifiedGraphData(
           id: permissionNodeId,
           name: `Permission ${smallAddress(permissionId)}`,
           color: graphConstants.nodeConfig.nodeColors.namespacePermissionNode,
-          val: graphConstants.nodeConfig.nodeSizes.permissionNode,
           fullAddress: permissionId,
           role: "Namespace Permission",
           nodeType: "permission",
@@ -354,16 +353,16 @@ export function createSimplifiedGraphData(
         target: permissionNodeId,
         id: `grant-${permissionId}`,
         linkColor: graphConstants.linkConfig.linkColors.namespacePermissionLink,
-        linkWidth: graphConstants.linkConfig.linkWidths.permissionLink,
+        linkWidth: graphConstants.linkConfig.linkWidth,
         linkDirectionalArrowLength:
           graphConstants.linkConfig.arrowConfig.defaultArrowLength,
         linkDirectionalArrowRelPos:
           graphConstants.linkConfig.arrowConfig.defaultArrowRelPos,
-        linkDirectionalParticles: 2,
+        linkDirectionalParticles: graphConstants.linkConfig.particleConfig.particles,
         linkDirectionalParticleSpeed:
           getDeterministicParticleSpeed(permissionId),
         linkDirectionalParticleResolution:
-          graphConstants.particleAnimation.resolution,
+          graphConstants.linkConfig.particleAnimation.resolution,
       });
 
       // Edge: permission node -> grantee
@@ -373,16 +372,16 @@ export function createSimplifiedGraphData(
         target: granteeId,
         id: `receive-${permissionId}`,
         linkColor: graphConstants.linkConfig.linkColors.namespacePermissionLink,
-        linkWidth: graphConstants.linkConfig.linkWidths.permissionLink,
+        linkWidth: graphConstants.linkConfig.linkWidth,
         linkDirectionalArrowLength:
           graphConstants.linkConfig.arrowConfig.defaultArrowLength,
         linkDirectionalArrowRelPos:
           graphConstants.linkConfig.arrowConfig.defaultArrowRelPos,
-        linkDirectionalParticles: 2,
+        linkDirectionalParticles: graphConstants.linkConfig.particleConfig.particles,
         linkDirectionalParticleSpeed:
           getDeterministicParticleSpeed(permissionId),
         linkDirectionalParticleResolution:
-          graphConstants.particleAnimation.resolution,
+          graphConstants.linkConfig.particleAnimation.resolution,
       });
     }
 
@@ -399,7 +398,6 @@ export function createSimplifiedGraphData(
           id: permissionNodeId,
           name: `Stream ${smallAddress(permissionId)}`,
           color: graphConstants.nodeConfig.nodeColors.emissionPermissionNode,
-          val: graphConstants.nodeConfig.nodeSizes.permissionNode,
           fullAddress: permissionId,
           role: "Emission Permission",
           nodeType: "permission",
@@ -435,16 +433,16 @@ export function createSimplifiedGraphData(
         target: permissionNodeId,
         id: `grant-${permissionId}`,
         linkColor: graphConstants.linkConfig.linkColors.emissionPermissionLink,
-        linkWidth: graphConstants.linkConfig.linkWidths.permissionLink,
+        linkWidth: graphConstants.linkConfig.linkWidth,
         linkDirectionalArrowLength:
           graphConstants.linkConfig.arrowConfig.defaultArrowLength,
         linkDirectionalArrowRelPos:
           graphConstants.linkConfig.arrowConfig.defaultArrowRelPos,
-        linkDirectionalParticles: 2,
+        linkDirectionalParticles: graphConstants.linkConfig.particleConfig.particles,
         linkDirectionalParticleSpeed:
           getDeterministicParticleSpeed(permissionId),
         linkDirectionalParticleResolution:
-          graphConstants.particleAnimation.resolution,
+          graphConstants.linkConfig.particleAnimation.resolution,
       });
 
       // Edge: permission node -> recipient (only if no distribution targets and grantee exists and is different)
@@ -466,16 +464,16 @@ export function createSimplifiedGraphData(
           id: `receive-${permissionId}`,
           linkColor:
             graphConstants.linkConfig.linkColors.emissionPermissionLink,
-          linkWidth: graphConstants.linkConfig.linkWidths.permissionLink,
+          linkWidth: graphConstants.linkConfig.linkWidth,
           linkDirectionalArrowLength:
             graphConstants.linkConfig.arrowConfig.defaultArrowLength,
           linkDirectionalArrowRelPos:
             graphConstants.linkConfig.arrowConfig.defaultArrowRelPos,
-          linkDirectionalParticles: 2,
+          linkDirectionalParticles: graphConstants.linkConfig.particleConfig.particles,
           linkDirectionalParticleSpeed:
             getDeterministicParticleSpeed(permissionId),
           linkDirectionalParticleResolution:
-            graphConstants.particleAnimation.resolution,
+            graphConstants.linkConfig.particleAnimation.resolution,
         });
       }
     }
@@ -503,7 +501,7 @@ export function createSimplifiedGraphData(
         target: targetId,
         id: `distribution-${permissionId}-${targetId}`,
         linkColor: graphConstants.linkConfig.linkColors.emissionPermissionLink,
-        linkWidth: graphConstants.linkConfig.linkWidths.permissionLink * 0.7,
+        linkWidth: graphConstants.linkConfig.linkWidth * 0.7,
         linkDirectionalArrowLength:
           graphConstants.linkConfig.arrowConfig.defaultArrowLength,
         linkDirectionalArrowRelPos:
@@ -516,7 +514,7 @@ export function createSimplifiedGraphData(
         ),
         linkDirectionalParticleSpeed: getDeterministicParticleSpeed(targetId),
         linkDirectionalParticleResolution:
-          graphConstants.particleAnimation.resolution,
+          graphConstants.linkConfig.particleAnimation.resolution,
       });
     }
   });
@@ -528,7 +526,6 @@ export function createSimplifiedGraphData(
         id: `signal-${signal.id}`,
         name: signal.title,
         color: graphConstants.nodeConfig.nodeColors.signalNode,
-        val: graphConstants.nodeConfig.nodeSizes.signalNode,
         role: "Signal",
         nodeType: "signal",
         signalData: signal,
@@ -554,7 +551,7 @@ export function createSimplifiedGraphData(
           id: `signal-link-${signal.id}`,
           linkDirectionalParticles: 0,
           linkColor: graphConstants.linkConfig.linkColors.signalLink,
-          linkWidth: graphConstants.linkConfig.linkWidths.signalLink,
+          linkWidth: graphConstants.linkConfig.linkWidth,
           linkDirectionalArrowLength:
             graphConstants.linkConfig.arrowConfig.defaultArrowLength,
           linkDirectionalArrowRelPos:
@@ -573,7 +570,7 @@ export function createSimplifiedGraphData(
           id: `signal-link-${signal.id}`,
           linkDirectionalParticles: 0,
           linkColor: graphConstants.linkConfig.linkColors.signalLink,
-          linkWidth: graphConstants.linkConfig.linkWidths.signalLink,
+          linkWidth: graphConstants.linkConfig.linkWidth,
           linkDirectionalArrowLength:
             graphConstants.linkConfig.arrowConfig.defaultArrowLength,
           linkDirectionalArrowRelPos:

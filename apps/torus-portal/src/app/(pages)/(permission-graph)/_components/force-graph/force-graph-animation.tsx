@@ -12,7 +12,6 @@ import type {
   CustomGraphNode,
 } from "../permission-graph-types";
 import { graphConstants } from "./force-graph-constants";
-import { getLinkWidth, getNodeColor } from "./force-graph-highlight-utils";
 import { useGraphInteractions } from "./use-graph-interactions";
 
 const R3fForceGraph = dynamic(() => import("r3f-forcegraph"), { ssr: false });
@@ -70,12 +69,7 @@ const ForceGraph = memo(
       });
     });
 
-    const {
-      highlightState,
-      handleNodeClick,
-      handleNodeHover,
-      handleLinkHover,
-    } = useGraphInteractions(
+    const { handleNodeClick } = useGraphInteractions(
       props.graphData,
       props.onNodeClick,
       props.selectedNodeId,
@@ -91,12 +85,22 @@ const ForceGraph = memo(
     const nodeThreeObject = useMemo(() => {
       return (node: NodeObject) => {
         const customNode = node as CustomGraphNode;
-        const color = getNodeColor(node, highlightState, props.userAddress);
+        const baseColor = String(
+          node.color ?? graphConstants.nodeConfig.nodeColors.default,
+        );
+
+        let color = baseColor;
+        if (
+          props.userAddress &&
+          String(node.id).toLowerCase() === props.userAddress.toLowerCase()
+        ) {
+          color = graphConstants.nodeConfig.nodeColors.userNode;
+        }
 
         const material = new THREE.MeshLambertMaterial({
           color: color,
           opacity: 1,
-          transparent: customNode.nodeType === "signal", // Enable transparency for signal nodes
+          transparent: customNode.nodeType === "signal",
         });
 
         let geometry: THREE.BufferGeometry;
@@ -152,22 +156,23 @@ const ForceGraph = memo(
 
         return new THREE.Mesh(geometry, material);
       };
-    }, [highlightState, props.userAddress]);
+    }, [props.userAddress]);
 
     return (
       <>
         <R3fForceGraph
           ref={fgRef}
           graphData={formatedData}
-          nodeOpacity={graphConstants.nodeConfig.rendering.opacity}
           nodeThreeObject={nodeThreeObject}
-          linkDirectionalParticleWidth={3}
+          linkDirectionalParticleWidth={
+            graphConstants.linkConfig.particleConfig.particleWidth
+          }
           linkDirectionalParticles={(link: LinkObject) =>
             Number(link.linkDirectionalParticles) || 0
           }
           linkDirectionalParticleSpeed={(link: LinkObject) =>
             Number(link.linkDirectionalParticleSpeed) ||
-            graphConstants.particleAnimation.defaultSpeed
+            graphConstants.linkConfig.particleConfig.speed
           }
           linkDirectionalArrowLength={(link: LinkObject) =>
             Number(link.linkDirectionalArrowLength)
@@ -177,11 +182,8 @@ const ForceGraph = memo(
           }
           linkCurvature={(link: LinkObject) => Number(link.linkCurvature)}
           linkColor={(link: LinkObject) => String(link.linkColor)}
-          linkWidth={(link: LinkObject) => getLinkWidth(link, highlightState)}
-          nodeResolution={graphConstants.nodeConfig.rendering.resolution}
+          linkWidth={(link: LinkObject) => Number(link.linkWidth) || 1}
           onNodeClick={handleNodeClick}
-          onNodeHover={handleNodeHover}
-          onLinkHover={handleLinkHover}
         />
       </>
     );
