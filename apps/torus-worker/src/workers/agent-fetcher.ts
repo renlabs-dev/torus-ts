@@ -730,6 +730,10 @@ export async function runStreamAccumulationUpdate(lastBlock: LastBlock) {
   // Transform accumulated stream amounts to database format with permission context
   const dbStreamAmounts: NewAccumulatedStreamAmount[] = [];
 
+  log.info(
+    `Block ${lastBlockNumber}: processing ${streamAccumulations.length} stream accumulations`,
+  );
+
   for (const accumulation of streamAccumulations) {
     const permission = permissionsMap.get(accumulation.permissionId);
 
@@ -740,18 +744,24 @@ export async function runStreamAccumulationUpdate(lastBlock: LastBlock) {
       continue;
     }
 
-    dbStreamAmounts.push({
+    const streamAmount = {
       grantorAccountId: accumulation.delegator,
       streamId: accumulation.streamId,
       permissionId: accumulation.permissionId,
       accumulatedAmount: accumulation.amount.toString(),
-      lastUpdatedBlock: match(permission.lastExecution)({
+      lastExecutedBlock: match(permission.lastExecution)({
         Some: (block) => block,
         None: () => null,
       }),
       atBlock: lastBlockNumber,
       executionCount: Number(permission.executionCount),
-    });
+    };
+
+    log.debug(
+      `Block ${lastBlockNumber}: stream amount - delegator: ${streamAmount.grantorAccountId}, streamId: ${streamAmount.streamId}, amount: ${streamAmount.accumulatedAmount}`,
+    );
+
+    dbStreamAmounts.push(streamAmount);
   }
 
   if (dbStreamAmounts.length > 0) {
@@ -763,9 +773,17 @@ export async function runStreamAccumulationUpdate(lastBlock: LastBlock) {
       upsertAccumulatedStreamAmounts(dbStreamAmounts),
     );
 
-    if (log.ifResultIsErr(upsertRes)) return;
+    if (log.ifResultIsErr(upsertRes)) {
+      log.error(
+        `Block ${lastBlockNumber}: failed to upsert stream amounts:`,
+        upsertRes[0],
+      );
+      return;
+    }
 
     log.info(`Block ${lastBlockNumber}: stream accumulations synchronized`);
+  } else {
+    log.info(`Block ${lastBlockNumber}: no stream amounts to upsert`);
   }
 }
 
@@ -808,12 +826,8 @@ export async function agentFetcherWorker(props: WorkerProps) {
         await runApplicationsFetch(lastBlock);
         await runProposalsFetch(lastBlock);
         await runPermissionsFetch(lastBlock);
-
-        // Update accumulated stream amounts every 100 blocks
-        if (lastBlockNumber - lastStreamAccumulationBlock >= 100) {
-          await runStreamAccumulationUpdate(lastBlock);
-          lastStreamAccumulationBlock = lastBlockNumber;
-        }
+        await runStreamAccumulationUpdate(lastBlock);
+        lastStreamAccumulationBlock = lastBlockNumber;
       })(),
     );
     if (log.ifResultIsErr(fetchWorkerRes)) {
