@@ -1,6 +1,6 @@
 "use client";
 
-import { memo, useMemo, useRef, useState } from "react";
+import { memo, useEffect, useMemo, useRef, useState } from "react";
 
 import { useFrame } from "@react-three/fiber";
 import dynamic from "next/dynamic";
@@ -12,6 +12,7 @@ import type {
   CustomGraphNode,
 } from "../permission-graph-types";
 import { graphConstants } from "./force-graph-constants";
+import { disposePrecomputedGeometries } from "./force-graph-utils";
 import { useGraphInteractions } from "./use-graph-interactions";
 
 const R3fForceGraph = dynamic(() => import("r3f-forcegraph"), { ssr: false });
@@ -26,6 +27,8 @@ interface ForceGraphProps {
 const ForceGraph = memo(
   function ForceGraph(props: ForceGraphProps) {
     const fgRef = useRef<GraphMethods | undefined>(undefined);
+    const materialsRef = useRef<Set<THREE.Material>>(new Set());
+    const geometriesRef = useRef<Set<THREE.BufferGeometry>>(new Set());
 
     const [forcesConfigured, setForcesConfigured] = useState(false);
     const lastHoveredNodeRef = useRef<NodeObject | null>(null);
@@ -55,6 +58,28 @@ const ForceGraph = memo(
         fgRef.current.tickFrame();
       }
     });
+
+    // Cleanup materials and geometries on unmount
+    useEffect(() => {
+      return () => {
+        // Dispose all tracked materials
+        materialsRef.current.forEach((material) => {
+          material.dispose();
+        });
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+        materialsRef.current.clear();
+
+        // Dispose all tracked geometries
+        geometriesRef.current.forEach((geometry) => {
+          geometry.dispose();
+        });
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+        geometriesRef.current.clear();
+
+        // Dispose shared geometries
+        disposePrecomputedGeometries();
+      };
+    }, []);
 
     const { handleNodeClick } = useGraphInteractions(
       props.graphData,
@@ -108,6 +133,7 @@ const ForceGraph = memo(
                 16,
               ),
             );
+            materialsRef.current.add(userMaterial);
             return new THREE.Mesh(customNode.precomputedGeometry, userMaterial);
           }
 
@@ -129,8 +155,10 @@ const ForceGraph = memo(
           color: color,
           opacity: 1,
         });
+        materialsRef.current.add(material);
 
         const geometry = new THREE.SphereGeometry(10, 16, 16);
+        geometriesRef.current.add(geometry);
         return new THREE.Mesh(geometry, material);
       };
     }, [props.userAddress]);

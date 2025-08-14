@@ -44,6 +44,12 @@ const precomputedGeometries = {
   ),
 };
 
+export function disposePrecomputedGeometries() {
+  Object.values(precomputedGeometries).forEach((geometry) => {
+    geometry.dispose();
+  });
+}
+
 function createPrecomputedMaterial(color: string) {
   return new THREE.MeshLambertMaterial({
     color: color,
