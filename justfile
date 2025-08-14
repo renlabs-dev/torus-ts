@@ -70,7 +70,7 @@ test filter="*":
   pnpm exec turbo run test --continue -F "{{filter}}"
 
 test-all filter="*":
-  pnpm exec turbo run test:all --continue -F "{{filter}}"
+  pnpm exec ./scripts/dev-helper with-env turbo run test:all --continue -F "{{filter}}"
 
 check-test filter="*":
   pnpm exec turbo run typecheck lint test -F "{{filter}}"
