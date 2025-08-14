@@ -134,15 +134,15 @@ export interface ExtractedGraphData {
   permissions: {
     namespace: {
       id: string;
-      grantorAccountId: string;
-      granteeAccountId: string;
+      delegatorAccountId: string;
+      recipientAccountId: string;
       scope: string;
       duration: string | null;
     }[];
     emission: {
       id: string;
-      grantorAccountId: string;
-      granteeAccountId: string;
+      delegatorAccountId: string;
+      recipientAccountId: string;
       scope: string;
       duration: string | null;
       distributionTargets?: {
@@ -190,8 +190,8 @@ export function createSimplifiedGraphData(
     [];
   const extractedSignals: ExtractedGraphData["signals"] = [];
 
-  // 1. ADD ROOT NODE (center)
-  const rootNode: CustomGraphNode = {
+  // 1. ADD ALLOCATOR NODE (center)
+  const allocatorNode: CustomGraphNode = {
     id: allocatorAddress,
     name: "Allocator",
     color: graphConstants.nodeConfig.nodeColors.allocator,
@@ -209,8 +209,8 @@ export function createSimplifiedGraphData(
       isWhitelisted: true,
     },
   };
-  assignPrecomputedObjects(rootNode);
-  nodesMap.set(allocatorAddress, rootNode);
+  assignPrecomputedObjects(allocatorNode);
+  nodesMap.set(allocatorAddress, allocatorNode);
 
   // Create a map to track all agent nodes (from agents list + permissions)
   const allAgentNodes = new Map<string, CustomGraphNode>();
@@ -295,7 +295,7 @@ export function createSimplifiedGraphData(
     });
   });
 
-  // 2.5. ADD ALLOCATOR EDGES TO ALL WHITELISTED AGENTS
+  // 2.5. ADD ALLOCATION LINKS TO ALL ROOT_AGENTS (whitelisted agents)
   agents.forEach((agent) => {
     if (agent.isWhitelisted) {
       links.push({
@@ -315,8 +315,8 @@ export function createSimplifiedGraphData(
 
   allPermissions.forEach((permission) => {
     const permissionId = permission.permissions.permissionId;
-    const grantorId = permission.permissions.grantorAccountId;
-    const granteeId = permission.permissions.granteeAccountId;
+    const delegatorId = permission.permissions.grantorAccountId;
+    const recipientId = permission.permissions.granteeAccountId;
 
     // Determine permission type
     const permissionType = permission.emission_permissions
@@ -329,8 +329,8 @@ export function createSimplifiedGraphData(
     if (permissionType === "capability") {
       extractedNamespacePermissions.push({
         id: permissionId,
-        grantorAccountId: grantorId || "",
-        granteeAccountId: granteeId || "",
+        delegatorAccountId: delegatorId || "",
+        recipientAccountId: recipientId || "",
         scope: permissionType.toUpperCase(),
         duration:
           permission.permissions.durationType === "indefinite"
@@ -350,8 +350,8 @@ export function createSimplifiedGraphData(
 
       extractedEmissionPermissions.push({
         id: permissionId,
-        grantorAccountId: grantorId || "",
-        granteeAccountId: granteeId || "",
+        delegatorAccountId: delegatorId || "",
+        recipientAccountId: recipientId || "",
         scope: permissionType.toUpperCase(),
         duration:
           permission.permissions.durationType === "indefinite"
@@ -364,11 +364,11 @@ export function createSimplifiedGraphData(
     // Create edges based on permission relationships
     if (
       permissionType === "capability" &&
-      grantorId &&
-      granteeId &&
-      grantorId !== granteeId
+      delegatorId &&
+      recipientId &&
+      delegatorId !== recipientId
     ) {
-      // For namespace permissions: require different grantor and grantee
+      // For namespace permissions: delegator (root_agent) creates permission for recipient (target_agent)
       const permissionNodeId = `permission-${permissionId}`;
 
       // Only create permission node if it doesn't already exist
@@ -389,8 +389,8 @@ export function createSimplifiedGraphData(
           permissionData: {
             permissionId,
             permissionType: "capability",
-            grantorAccountId: grantorId,
-            granteeAccountId: granteeId,
+            delegatorAccountId: delegatorId,
+            recipientAccountId: recipientId,
             scope: "CAPABILITY",
             duration:
               permission.permissions.durationType === "indefinite"
@@ -406,20 +406,20 @@ export function createSimplifiedGraphData(
         nodesMap.set(permissionNodeId, permissionNode);
       }
 
-      // Ensure grantor and grantee nodes exist
-      if (!nodesMap.has(grantorId)) {
-        const grantorNode = getOrCreateAgentNode(grantorId);
-        nodesMap.set(grantorId, grantorNode);
+      // Ensure delegator (root_agent) and recipient (target_agent) nodes exist
+      if (!nodesMap.has(delegatorId)) {
+        const delegatorNode = getOrCreateAgentNode(delegatorId);
+        nodesMap.set(delegatorId, delegatorNode);
       }
-      if (!nodesMap.has(granteeId)) {
-        const granteeNode = getOrCreateAgentNode(granteeId);
-        nodesMap.set(granteeId, granteeNode);
+      if (!nodesMap.has(recipientId)) {
+        const recipientNode = getOrCreateAgentNode(recipientId);
+        nodesMap.set(recipientId, recipientNode);
       }
 
-      // Edge: grantor -> permission node
+      // Edge: delegator (root_agent) -> permission node
       links.push({
         linkType: "permission_grant",
-        source: grantorId,
+        source: delegatorId,
         target: permissionNodeId,
         id: `grant-${permissionId}`,
         linkColor: graphConstants.linkConfig.linkColors.namespacePermissionLink,
@@ -427,11 +427,11 @@ export function createSimplifiedGraphData(
           getDeterministicParticleSpeed(permissionId),
       });
 
-      // Edge: permission node -> grantee
+      // Edge: permission node -> recipient (target_agent)
       links.push({
         linkType: "permission_receive",
         source: permissionNodeId,
-        target: granteeId,
+        target: recipientId,
         id: `receive-${permissionId}`,
         linkColor: graphConstants.linkConfig.linkColors.namespacePermissionLink,
         linkDirectionalParticleSpeed:
@@ -439,8 +439,8 @@ export function createSimplifiedGraphData(
       });
     }
 
-    // For emission permissions: create permission node regardless of grantor/grantee relationship
-    if (permissionType === "emission" && grantorId) {
+    // For emission permissions: delegator (root_agent) creates emission permission with targets
+    if (permissionType === "emission" && delegatorId) {
       const permissionNodeId = `permission-${permissionId}`;
 
       // Only create permission node if it doesn't already exist
@@ -461,8 +461,8 @@ export function createSimplifiedGraphData(
           permissionData: {
             permissionId,
             permissionType: "emission",
-            grantorAccountId: grantorId,
-            granteeAccountId: granteeId || "",
+            delegatorAccountId: delegatorId,
+            recipientAccountId: recipientId || "",
             scope: "EMISSION",
             duration:
               permission.permissions.durationType === "indefinite"
@@ -475,16 +475,16 @@ export function createSimplifiedGraphData(
         nodesMap.set(permissionNodeId, permissionNode);
       }
 
-      // Ensure grantor node exists
-      if (!nodesMap.has(grantorId)) {
-        const grantorNode = getOrCreateAgentNode(grantorId);
-        nodesMap.set(grantorId, grantorNode);
+      // Ensure delegator (root_agent) node exists
+      if (!nodesMap.has(delegatorId)) {
+        const delegatorNode = getOrCreateAgentNode(delegatorId);
+        nodesMap.set(delegatorId, delegatorNode);
       }
 
-      // Edge: grantor -> permission node
+      // Edge: delegator -> permission node
       links.push({
         linkType: "permission_grant",
-        source: grantorId,
+        source: delegatorId,
         target: permissionNodeId,
         id: `grant-${permissionId}`,
         linkColor: graphConstants.linkConfig.linkColors.emissionPermissionLink,
@@ -492,22 +492,22 @@ export function createSimplifiedGraphData(
           getDeterministicParticleSpeed(permissionId),
       });
 
-      // Edge: permission node -> recipient (only if no distribution targets and grantee exists and is different)
+      // Edge: permission node -> recipient (target_agent) (only if no distribution targets and recipient exists and is different)
       if (
         !permission.emission_distribution_targets?.targetAccountId &&
-        granteeId &&
-        granteeId !== grantorId
+        recipientId &&
+        recipientId !== delegatorId
       ) {
-        // Ensure grantee node exists
-        if (!nodesMap.has(granteeId)) {
-          const granteeNode = getOrCreateAgentNode(granteeId);
-          nodesMap.set(granteeId, granteeNode);
+        // Ensure recipient node exists
+        if (!nodesMap.has(recipientId)) {
+          const recipientNode = getOrCreateAgentNode(recipientId);
+          nodesMap.set(recipientId, recipientNode);
         }
 
         links.push({
           linkType: "permission_receive",
           source: permissionNodeId,
-          target: granteeId,
+          target: recipientId,
           id: `receive-${permissionId}`,
           linkColor:
             graphConstants.linkConfig.linkColors.emissionPermissionLink,
@@ -526,7 +526,7 @@ export function createSimplifiedGraphData(
       permission.emission_distribution_targets?.targetAccountId &&
       permissionId &&
       permissionType === "emission" &&
-      grantorId // Only create edge if permission node was created (which requires grantorId)
+      delegatorId // Only create edge if permission node was created (which requires delegatorId)
     ) {
       const targetId = permission.emission_distribution_targets.targetAccountId;
       const permissionNodeId = `permission-${permissionId}`;
