@@ -4,13 +4,16 @@ import type { ApiPromise } from "@polkadot/api";
 import type { SubmittableExtrinsic } from "@polkadot/api/types";
 import type { InjectedExtension } from "@polkadot/extension-inject/types";
 import type { ISubmittableResult } from "@polkadot/types/types";
+import { useThrottle } from "@uidotdev/usehooks";
 import type { Enum } from "rustie";
 import { if_let, match } from "rustie";
 
+import { queryExtFee } from "@torus-network/sdk/chain";
 import type {
   ExtrinsicTracker,
   SbDispatchError,
   TxEvent,
+  TxInBlockEvent,
 } from "@torus-network/sdk/extrinsics";
 import { sendTxWithTracker } from "@torus-network/sdk/extrinsics";
 import type { HexH256 } from "@torus-network/sdk/types";
@@ -18,6 +21,7 @@ import { chainErr } from "@torus-network/torus-utils/error";
 import { BasicLogger } from "@torus-network/torus-utils/logger";
 import type { Result } from "@torus-network/torus-utils/result";
 import { makeErr, makeOk } from "@torus-network/torus-utils/result";
+import { formatToken } from "@torus-network/torus-utils/torus/token";
 import { tryAsync, trySync } from "@torus-network/torus-utils/try-catch";
 
 import { toast } from "@torus-ts/ui/hooks/use-toast";
@@ -28,15 +32,18 @@ import { getMerkleizedMetadata, updateMetadata } from "../utils/chain-metadata";
 // ==== Constants ====
 
 const TOAST_MESSAGES = {
-  PREPARING: "Preparing transaction...",
-  READY: "Transaction ready, waiting for signature...",
-  BROADCASTING: "Broadcasting transaction to the network...",
+  PREPARING: "Signing transaction...",
+  READY: "Transaction signed and submitted to pool...",
+  BROADCASTING: "Broadcasting transaction to peers...",
   IN_BLOCK: "Transaction included in block...",
   FINALIZING: "Waiting for finalization...",
   SUCCESS: "Transaction completed successfully",
-  FAILED: "Transaction failed with unknown error",
+  FAILED: "Transaction failed",
 } as const;
 
+/**
+ * Generates a Polkadot.js Apps explorer link for viewing a transaction.
+ */
 export const getExplorerLink = ({
   wsEndpoint,
   hash,
@@ -47,6 +54,9 @@ export const getExplorerLink = ({
 
 const strErr = (txt: string) => new Error(txt);
 
+/**
+ * Function type for sending transactions with optional signing parameters.
+ */
 export type SendTxFn = <T extends ISubmittableResult>(
   tx: SubmittableExtrinsic<"promise", T>,
   options?: Pick<
@@ -55,30 +65,102 @@ export type SendTxFn = <T extends ISubmittableResult>(
   >,
 ) => Promise<void>;
 
+/**
+ * Output interface for the useSendTransaction hook.
+ *
+ * Combines transaction state, helper flags, fee information, and the send function.
+ */
 export interface UseSendTxOutput extends TxHelper {
   txStage: TxStage;
-  setTx: (extrinsic: SubmittableExtrinsic<"promise"> | null) => void;
   sendTx: SendTxFn | null;
+  fee: bigint | null;
+  isFeeLoading: boolean;
+  feeError: Error | null;
 }
 
 /**
  * Helper interface that provides boolean flags and messages for UI state management.
+ *
+ * This interface simplifies transaction state management by providing clear boolean
+ * flags for each stage of the transaction lifecycle.
  */
 export interface TxHelper {
+  /** Transaction hash, available once submitted */
   txHash: HexH256 | null;
 
+  /** True when waiting for user signature */
   isSigning: boolean;
+  /** True when transaction has been submitted to the network */
   isSubmitted: boolean;
+  /** True when transaction is in progress (signing, submitted, or in pool) */
   isPending: boolean;
-  isSuccess: boolean;
+  /** True when transaction has been included in a block */
+  isInBlock: boolean;
+  /** True when transaction executed successfully (not just included) */
+  isExecuted: boolean;
+  /** True when transaction has been finalized */
   isFinalized: boolean;
+  /** True when any error occurred */
   isError: boolean;
-  isReverted: boolean;
 
+  /** Human-readable status message */
   message: string;
+  /** Error object when isError is true */
   error?: Error;
 }
 const logger = BasicLogger.create({ name: "use-send-transaction" });
+
+// ==== Fee Estimation Hook ====
+
+/**
+ * Hook for estimating transaction fees.
+ */
+interface UseTxFeeOutput {
+  fee: bigint | null;
+  isLoading: boolean;
+  error: Error | null;
+}
+
+export function useTxFee(
+  tx: SubmittableExtrinsic<"promise"> | null,
+  account: string | null,
+  api: ApiPromise | null,
+  options?: { enabled?: boolean },
+): UseTxFeeOutput {
+  const [fee, setFee] = useState<bigint | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<Error | null>(null);
+
+  useEffect(() => {
+    if (!tx || !account || !api || options?.enabled === false) {
+      setFee(null);
+      setError(null);
+      setIsLoading(false);
+      return;
+    }
+
+    const estimateFee = async () => {
+      setIsLoading(true);
+      setError(null);
+
+      const [queryError, result] = await queryExtFee(tx, account);
+
+      if (queryError !== undefined) {
+        setError(queryError);
+        setFee(null);
+      } else {
+        setFee(result.fee);
+        setError(null);
+      }
+
+      setIsLoading(false);
+    };
+
+    void estimateFee();
+  }, [tx, account, api, options?.enabled]);
+
+  return { fee, isLoading, error };
+}
 
 export type TxStage = Enum<{
   Idle: {
@@ -96,18 +178,33 @@ export type TxStage = Enum<{
   };
 }>;
 
+/**
+ * React hook for sending Substrate/Polkadot transactions with comprehensive state management.
+ *
+ * Handles the complete transaction lifecycle from signing through finalization,
+ * with automatic fee estimation, wallet integration, and user feedback.
+ *
+ * @param api - Polkadot API instance
+ * @param wsEndpoint - WebSocket endpoint for blockchain connection
+ * @param selectedAccount - Currently selected wallet account
+ * @param web3FromAddress - Function to get wallet injector for an address
+ * @param transactionType - Human-readable transaction type for error messages
+ * @param estimateTx - Transaction to estimate fees for (can differ from sent transaction)
+ */
 export function useSendTransaction({
   api,
   wsEndpoint,
   selectedAccount,
   transactionType,
   web3FromAddress,
+  estimateTx,
 }: {
   api: ApiPromise | null;
   wsEndpoint: string | null;
   selectedAccount: InjectedAccountWithMeta | null;
-  transactionType: string;
   web3FromAddress: ((address: string) => Promise<InjectedExtension>) | null;
+  transactionType: string;
+  estimateTx: SubmittableExtrinsic<"promise"> | null;
   // toast: typeof toast; // TODO: modularize
 }): UseSendTxOutput {
   const wallet = useWallet({ api, selectedAccount, web3FromAddress });
@@ -186,20 +283,12 @@ export function useSendTransaction({
 
       const txOptions = { ...baseTxOptions, ...options };
 
-      // try {
       const [sendError, tracker] = await sendTxWithTracker(
         api,
         tx,
         selectedAccount.address,
         txOptions,
       );
-      // } catch (error) {
-      //   setErrState(
-      //     error instanceof Error
-      //       ? error
-      //       : strErr("Failed to create transaction tracker"),
-      //   );
-      // }
       if (sendError !== undefined) {
         setErrState(sendError);
         return;
@@ -229,17 +318,25 @@ export function useSendTransaction({
     };
   }, [api, wsEndpoint, wallet, selectedAccount, web3FromAddress]);
 
-  const setTx = (extrinsic: SubmittableExtrinsic<"promise"> | null) => {
-    setTxStage({ Idle: { extrinsic } });
-  };
+  // Throttle the estimation transaction to prevent excessive fee queries
+  const throttledTx = useThrottle(estimateTx, 1000);
+
+  // Get fee estimation for the throttled extrinsic
+  const {
+    fee,
+    isLoading: isFeeLoading,
+    error: feeError,
+  } = useTxFee(throttledTx ?? null, selectedAccount?.address ?? null, api);
 
   const txHelper = useMemo(() => txStageToTxHelper(txStage), [txStage]);
 
   return {
     txStage,
-    setTx: setTx,
     ...sendFn,
     ...txHelper,
+    fee,
+    isFeeLoading,
+    feeError,
   };
 }
 
@@ -413,7 +510,7 @@ const handleFinalizedTxEvent = ({
   wsEndpoint,
   toastId,
 }: {
-  event: TxEvent;
+  event: TxInBlockEvent;
   api: ApiPromise;
   setErrState: (err: Error) => void;
   transactionType: string;
@@ -422,14 +519,13 @@ const handleFinalizedTxEvent = ({
 }) => {
   // Check if this is an InBlock event with outcome information
   if (event.kind !== "Finalized" && event.kind !== "InBlock") {
-    console.warn("handleFinalizedTxEvent called with non-finalized event");
+    console.error("handleFinalizedTxEvent called with non-finalized event");
     return;
   }
 
   // Use the structured outcome from the event
-  const outcome = event.outcome; // TxInBlockEvent has outcome
-  const _blockHash = event.blockHash;
-  const txHash = event.txHash;
+  const outcome = event.outcome;
+  const blockHash = event.blockHash;
 
   match(outcome)({
     Success: () => {
@@ -437,7 +533,10 @@ const handleFinalizedTxEvent = ({
       toast.success(`${transactionType} ${TOAST_MESSAGES.SUCCESS}`, undefined, {
         label: "View on Block Explorer",
         onClick: () =>
-          window.open(getExplorerLink({ wsEndpoint, hash: txHash }), "_blank"),
+          window.open(
+            getExplorerLink({ wsEndpoint, hash: blockHash }),
+            "_blank",
+          ),
       });
     },
     Failed: ({ error: dispatchError }) => {
@@ -468,10 +567,10 @@ export function txStageToTxHelper(stage: TxStage): TxHelper {
     isSigning: false,
     isSubmitted: false,
     isPending: false,
-    isSuccess: false,
+    isInBlock: false,
+    isExecuted: false,
     isFinalized: false,
     isError: false,
-    isReverted: false,
     ...opts,
   });
 
@@ -513,10 +612,10 @@ export function txEventToTxHelper(
     isSigning: false,
     isSubmitted: false,
     isPending: false,
-    isSuccess: false,
+    isInBlock: false,
+    isExecuted: false,
     isFinalized: false,
     isError: false,
-    isReverted: false,
     ...opts,
   });
   // Handle error state first
@@ -601,26 +700,20 @@ export function txEventToTxHelper(
       const isSubmitted = true;
 
       // Check if the transaction failed at runtime
+      // Important: A transaction can be included in a block but still fail execution
       const runtimeFailed = match(outcome)<boolean>({
         Success: () => false,
         Failed: () => true,
       });
 
+      // Handle error message for runtime failures
+      let error: Error | undefined;
       if (runtimeFailed) {
         const errorMessage = match(outcome)<string>({
           Success: () => "Unexpected success state",
           Failed: ({ error }) => mapDispatchErrorToMessage(error),
         });
-
-        const error = new Error(errorMessage);
-
-        return setOnHelper({
-          txHash,
-          isSubmitted,
-          isError: true,
-          error,
-          message: errorMessage,
-        });
+        error = new Error(errorMessage);
       }
 
       switch (kind) {
@@ -628,23 +721,32 @@ export function txEventToTxHelper(
           return setOnHelper({
             txHash,
             isSubmitted,
-            isSuccess: true,
-            message: "Transaction was included in block",
+            isInBlock: true,
+            isExecuted: !runtimeFailed,
+            isError: runtimeFailed,
+            error,
+            message: runtimeFailed
+              ? "Transaction included but failed execution"
+              : "Transaction was included in block",
           });
         case "Finalized":
           return setOnHelper({
             txHash,
             isSubmitted,
-            isSuccess: true,
+            isInBlock: true,
+            isExecuted: !runtimeFailed,
+            isError: runtimeFailed,
             isFinalized: true,
-            message: "Transaction was finalized",
+            error,
+            message: runtimeFailed
+              ? "Transaction finalized but failed execution"
+              : "Transaction was finalized",
           });
         case "FinalityTimeout":
           return setOnHelper({
             txHash,
             isSubmitted,
             isError: true,
-            isReverted: true,
             message: "Transaction finalization timed out",
           });
         default:
@@ -660,7 +762,6 @@ export function txEventToTxHelper(
           return setOnHelper({
             txHash,
             isError: true,
-            isReverted: true,
             message: "Transaction retracted",
           });
         default:
@@ -781,28 +882,49 @@ function _ExampleUsage() {
   const { api, selectedAccount, web3FromAddress, wsEndpoint } =
     null as unknown as {
       api: ApiPromise;
-      selectedAccount: InjectedAccountWithMeta;
+      selectedAccount: InjectedAccountWithMeta | null;
       web3FromAddress: (address: string) => Promise<InjectedExtension>;
       wsEndpoint: string;
     };
 
+  const estimateTx = useMemo(() => {
+    return api.tx.balances.transferAllowDeath(
+      "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY",
+      "1000000000000",
+    );
+  }, [api]);
+
   const {
     sendTx,
-    // currentEvent,
     isSigning,
     isPending,
-    isSuccess,
+    isExecuted,
     isFinalized,
     isError,
     message,
     error,
+    fee,
+    isFeeLoading,
+    feeError,
   } = useSendTransaction({
     api,
     wsEndpoint,
     selectedAccount,
     transactionType: "Transfer",
     web3FromAddress,
+    estimateTx: estimateTx,
   });
+
+  // Format fee with proper error handling like other forms in the codebase
+  const formattedFee = useMemo(() => {
+    if (!fee) return null;
+    try {
+      return `${formatToken(fee)} TORUS`;
+    } catch {
+      // If formatting fails for higher amounts, return a fallback
+      return `${fee.toString()} Rems`;
+    }
+  }, [fee]);
 
   const _handleTransfer = () => {
     if (!sendTx) return;
@@ -825,8 +947,12 @@ function _ExampleUsage() {
       </button>
 
       <div>Status: {message}</div>
+      <div>Feed: {formattedFee}</div>
+      {isFeeLoading && <div>Estimating fee...</div>}
+      {formattedFee && <div>Estimated fee: {formattedFee}</div>}
+      {feeError && <div>Fee estimation error: {feeError.message}</div>}
       {isError && error && <div>Error: {error.message}</div>}
-      {isSuccess && <div>Success!</div>}
+      {isExecuted && <div>Success!</div>}
       {isFinalized && <div>Finalized!</div>}
     </div>
   );

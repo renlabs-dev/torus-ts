@@ -1,23 +1,18 @@
 "use client";
 
-import { useState } from "react";
-import Link from "next/link";
+import React, { useMemo, useState } from "react";
 
 import type { InjectedAccountWithMeta } from "@polkadot/extension-inject/types";
+import Link from "next/link";
 
-import {
-  parseTorusTokens,
-  toRems,
-} from "@torus-network/torus-utils/torus/token";
+import { fromNano, toNano } from "@torus-network/torus-utils/torus/token";
 
 import type { TransactionResult } from "@torus-ts/torus-provider";
 import { useTorus } from "@torus-ts/torus-provider";
-import { useSendTransaction } from "@torus-ts/torus-provider/send-transaction-v2";
+import {
+  useSendTransaction,
+} from "@torus-ts/torus-provider/use-send-transaction";
 import { Button } from "@torus-ts/ui/components/button";
-import { Checkbox } from "@torus-ts/ui/components/checkbox";
-import { Input } from "@torus-ts/ui/components/input";
-import { Label } from "@torus-ts/ui/components/label";
-import { toast, useToast } from "@torus-ts/ui/hooks/use-toast";
 import {
   Card,
   CardContent,
@@ -25,6 +20,10 @@ import {
   CardHeader,
   CardTitle,
 } from "@torus-ts/ui/components/card";
+import { Checkbox } from "@torus-ts/ui/components/checkbox";
+import { Input } from "@torus-ts/ui/components/input";
+import { Label } from "@torus-ts/ui/components/label";
+import { toast, useToast } from "@torus-ts/ui/hooks/use-toast";
 
 import { tryCatch } from "~/utils/try-catch";
 
@@ -83,26 +82,56 @@ function NewTransferPlayground() {
   const [amount, setAmount] = useState("1");
   const [useInvalidNonce, setUseInvalidNonce] = useState(false);
 
+  const estimateTx = useMemo(() => {
+    const recipientTrimmed = recipient.trim();
+    const amountTrimmed = amount.trim();
+    if (!api || !recipientTrimmed || !amountTrimmed) {
+      return null;
+    }
+    try {
+      const torAmount = toNano(amountTrimmed);
+      return api.tx.balances.transferAllowDeath(recipientTrimmed, torAmount);
+    } catch (e) {
+      console.log("Error parsing amount:", e);
+      return null;
+    }
+  }, [api, recipient, amount]);
+
   const web3FromAddress = torusApi.web3FromAddress;
   const {
     sendTx,
     isSigning,
     isSubmitted,
     isPending,
-    isSuccess,
+    isInBlock,
+    isExecuted,
     isFinalized,
     isError,
-    isReverted,
     message,
     error,
     txHash,
+    fee,
+    isFeeLoading,
+    feeError,
   } = useSendTransaction({
     api,
     selectedAccount,
     wsEndpoint,
     web3FromAddress,
     transactionType: "Transfer",
+    estimateTx: estimateTx,
   });
+
+  // Format fee with proper error handling like other forms in the codebase
+  const formattedFee = useMemo(() => {
+    if (!fee) return null;
+    try {
+      return `${fromNano(fee)} TORUS`;
+    } catch {
+      // If formatting fails for higher amounts, return a fallback
+      return `${fee.toString()} nano-TORUS`;
+    }
+  }, [fee]);
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -127,22 +156,18 @@ function NewTransferPlayground() {
     let remAmount: bigint;
     try {
       // Parse the amount using parseTorusTokens and convert to Rems
-      const torAmount = parseTorusTokens(transferAmount);
-      remAmount = toRems(torAmount);
+      remAmount = toNano(transferAmount);
     } catch {
-      toast.error("Invalid amount format");
+      toast.error(`Invalid amount format: ${transferAmount}`);
       return;
     }
 
-    const tx = api.tx.balances.transferAllowDeath(
-      recipientAddress,
-      remAmount.toString(),
-    );
+    const tx = api.tx.balances.transferAllowDeath(recipientAddress, remAmount);
 
     // If checkbox is checked, use an invalid nonce to cause an error
     if (useInvalidNonce) {
-      // Use an invalid nonce (999999) that will likely cause the transaction to fail
-      void sendTx(tx, { nonce: 999999 });
+      // Use an invalid nonce that will likely cause the transaction to fail
+      void sendTx(tx, { nonce: 1 });
     } else {
       void sendTx(tx);
     }
@@ -207,6 +232,28 @@ function NewTransferPlayground() {
           </Label>
         </div>
 
+        {/* Fee Display */}
+        <div className="p-3 bg-muted/50 rounded-md">
+          <div className="text-sm font-medium text-muted-foreground mb-1">
+            Estimated Fee
+          </div>
+          {isFeeLoading ? (
+            <div className="text-sm text-muted-foreground">Estimating...</div>
+          ) : feeError ? (
+            <div className="text-sm text-red-600">
+              Error: {feeError.message}
+            </div>
+          ) : formattedFee ? (
+            <div className="text-sm font-mono">{formattedFee}</div>
+          ) : (
+            <div className="text-sm text-muted-foreground">
+              {recipient.trim() && amount.trim()
+                ? "No fee estimate"
+                : "Enter details to see fee"}
+            </div>
+          )}
+        </div>
+
         <Button
           type="submit"
           className="w-full"
@@ -252,9 +299,17 @@ function NewTransferPlayground() {
             </span>
           </div>
           <div className="flex items-center gap-2">
-            <span className="text-muted-foreground">Success:</span>
-            <span className={isSuccess ? "text-green-600" : "text-gray-400"}>
-              {isSuccess ? "Yes" : "No"}
+            <span className="text-muted-foreground">In Block:</span>
+            <span className={isInBlock ? "text-blue-600" : "text-gray-400"}>
+              {isInBlock ? "Yes" : "No"}
+            </span>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="text-muted-foreground">
+              Executed Successfully:
+            </span>
+            <span className={isExecuted ? "text-green-600" : "text-gray-400"}>
+              {isExecuted ? "Yes" : "No"}
             </span>
           </div>
           <div className="flex items-center gap-2">
@@ -267,12 +322,6 @@ function NewTransferPlayground() {
             <span className="text-muted-foreground">Error:</span>
             <span className={isError ? "text-red-600" : "text-gray-400"}>
               {isError ? "Yes" : "No"}
-            </span>
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="text-muted-foreground">Reverted:</span>
-            <span className={isReverted ? "text-orange-600" : "text-gray-400"}>
-              {isReverted ? "Yes" : "No"}
             </span>
           </div>
           {message && (

@@ -15,7 +15,7 @@ import { tryAsync, trySync } from "@torus-network/torus-utils/try-catch";
 import type { TransactionResult } from "../_types";
 import type { TorusApiState } from "../torus-provider";
 import { updateMetadata } from "../utils/chain-metadata";
-import { getExplorerLink } from "./send-transaction-v2";
+import { getExplorerLink } from "./use-send-transaction";
 
 const METADATA_VERSION = 15;
 const TRANSACTION_MODE = 1; // mortal
