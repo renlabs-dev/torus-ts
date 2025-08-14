@@ -10,7 +10,6 @@ import {
   pgMaterializedView,
   pgTableCreator,
   pgView,
-  primaryKey,
   real,
   serial,
   text,
@@ -839,10 +838,11 @@ export const accumulatedStreamAmountsSchema = createTable(
     executionCount: integer("execution_count").notNull().default(0),
   },
   (t) => [
-    primaryKey({
-      name: "accumulated_stream_amounts_pkey",
-      columns: [t.grantorAccountId, t.streamId, t.permissionId, t.executionCount],
-    }),
+    {
+      primaryKey: {
+        columns: [t.grantorAccountId, t.streamId, t.permissionId, t.executionCount],
+      },
+    },
   ],
 );
 
