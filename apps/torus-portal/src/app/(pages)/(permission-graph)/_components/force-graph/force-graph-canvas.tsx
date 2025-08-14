@@ -60,7 +60,12 @@ function ForceGraphScene({
         userAddress={userAddress}
         selectedNodeId={selectedNodeId}
       />
-      <OrbitControls ref={controlsRef} dampingFactor={0.01} enablePan={false} />
+      <OrbitControls
+        ref={controlsRef}
+        enableDamping
+        dampingFactor={0.02}
+        enablePan={false}
+      />
     </>
   );
 }

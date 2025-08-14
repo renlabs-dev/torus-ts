@@ -5,7 +5,9 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 
 import { useTorus } from "@torus-ts/torus-provider";
-import { KeyboardShortcutBadge } from "@torus-ts/ui/components/keyboard-shortcut-badge";
+import {
+  KeyboardShortcutBadge,
+} from "@torus-ts/ui/components/keyboard-shortcut-badge";
 import { Loading } from "@torus-ts/ui/components/loading";
 
 import { ForceGraphCanvas } from "./_components/force-graph/force-graph-canvas";
@@ -95,9 +97,9 @@ export default function PermissionGraphPage() {
   function handleOnOpenChange(isOpen: boolean) {
     setIsSheetOpen(isOpen);
     if (!isOpen) {
-      // Reset camera view when sheet closes
       if (resetCameraRef.current) {
         resetCameraRef.current();
+        resetCameraRef.current = null;
       }
 
       const params = new URLSearchParams(searchParams.toString());

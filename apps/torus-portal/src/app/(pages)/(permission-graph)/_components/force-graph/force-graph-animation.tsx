@@ -66,13 +66,19 @@ const ForceGraph = memo(
       if (lastHoveredNodeRef.current) {
         const prevMesh = lastHoveredNodeRef.current.__threeObj as THREE.Mesh;
         const prevMaterial = prevMesh.material as THREE.MeshLambertMaterial;
-        prevMaterial.emissive.setHex(0x000000);
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+        if (prevMaterial.emissive) {
+          prevMaterial.emissive.setHex(0x000000);
+        }
       }
 
       if (node) {
         const mesh = node.__threeObj as THREE.Mesh;
         const material = mesh.material as THREE.MeshLambertMaterial;
-        material.emissive.setHex(0x444444);
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+        if (material.emissive) {
+          material.emissive.setHex(0x444444);
+        }
       }
 
       lastHoveredNodeRef.current = node;

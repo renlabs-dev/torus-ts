@@ -13,7 +13,6 @@ import type {
 } from "../permission-graph-types";
 import { graphConstants } from "./force-graph-constants";
 
-// Pre-computed geometries for performance
 const precomputedGeometries = {
   allocator: new THREE.SphereGeometry(
     graphConstants.nodeConfig.nodeGeometry.allocator.radius,
@@ -45,16 +44,12 @@ const precomputedGeometries = {
   ),
 };
 
-// Helper function to create pre-computed material
-function createPrecomputedMaterial(color: string, transparent = false) {
+function createPrecomputedMaterial(color: string) {
   return new THREE.MeshLambertMaterial({
     color: color,
-    opacity: 1,
-    transparent: transparent,
   });
 }
 
-// Helper function to assign pre-computed geometry and material to a node
 function assignPrecomputedObjects(node: CustomGraphNode) {
   const nodeType = node.nodeType;
   const color = node.color ?? graphConstants.nodeConfig.nodeColors.default;
@@ -78,7 +73,7 @@ function assignPrecomputedObjects(node: CustomGraphNode) {
       break;
     case "signal":
       node.precomputedGeometry = precomputedGeometries.signalNode;
-      node.precomputedMaterial = createPrecomputedMaterial(color, true); // transparent for signal nodes
+      node.precomputedMaterial = createPrecomputedMaterial(color);
       break;
     default:
       node.precomputedGeometry = precomputedGeometries.targetNode;
