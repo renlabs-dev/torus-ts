@@ -145,10 +145,16 @@ const ForceGraph = memo(
             Number(link.linkDirectionalParticleSpeed) ||
             graphConstants.linkConfig.particleConfig.speed
           }
-          linkDirectionalArrowLength={(link: LinkObject) =>
-            Number(link.linkDirectionalArrowLength) ||
-            graphConstants.linkConfig.arrowConfig.defaultArrowLength
-          }
+          linkDirectionalArrowLength={(link: LinkObject) => {
+            const targetNode = link.target as CustomGraphNode;
+            if (targetNode.nodeType === "permission") {
+              return 0;
+            }
+            return (
+              Number(link.linkDirectionalArrowLength) ||
+              graphConstants.linkConfig.arrowConfig.defaultArrowLength
+            );
+          }}
           linkDirectionalArrowRelPos={(link: LinkObject) =>
             Number(link.linkDirectionalArrowRelPos) ||
             graphConstants.linkConfig.arrowConfig.defaultArrowRelPos

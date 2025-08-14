@@ -22,15 +22,15 @@ export const graphConstants = {
     nodeGeometry: {
       allocator: {
         type: "sphere",
-        radius: 24,
+        radius: 28,
         widthSegments: 24,
         heightSegments: 24,
       },
       rootNode: {
         type: "sphere",
         radius: 15,
-        widthSegments: 24,
-        heightSegments: 24,
+        widthSegments: 20,
+        heightSegments: 20,
       },
       permissionNode: {
         type: "icosahedron",
@@ -40,14 +40,14 @@ export const graphConstants = {
       targetNode: {
         type: "sphere",
         radius: 15,
-        widthSegments: 24,
-        heightSegments: 24,
+        widthSegments: 20,
+        heightSegments: 20,
       },
       userNode: {
         type: "sphere",
         radius: 15,
-        widthSegments: 24,
-        heightSegments: 24,
+        widthSegments: 20,
+        heightSegments: 20,
       },
       signalNode: {
         type: "tetrahedron",
@@ -72,7 +72,7 @@ export const graphConstants = {
     linkWidth: 0.5,
     arrowConfig: {
       defaultArrowLength: 6,
-      defaultArrowRelPos: 1,
+      defaultArrowRelPos: 0.93,
     },
     particleAnimation: {
       speedMin: 0.002,
