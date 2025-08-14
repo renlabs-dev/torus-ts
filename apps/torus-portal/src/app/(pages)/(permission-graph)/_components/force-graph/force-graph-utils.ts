@@ -304,9 +304,11 @@ export function createSimplifiedGraphData(
         target: agent.key,
         id: `allocation-${agent.key}`,
         linkColor: graphConstants.linkConfig.linkColors.allocatorLink,
-        linkDirectionalParticles: graphConstants.linkConfig.particleConfig.particles,
+        linkDirectionalParticles:
+          graphConstants.linkConfig.particleConfig.particles,
         linkDirectionalParticleSpeed: getDeterministicParticleSpeed(agent.key),
-        linkDirectionalParticleResolution: graphConstants.linkConfig.particleAnimation.resolution,
+        linkDirectionalParticleResolution:
+          graphConstants.linkConfig.particleAnimation.resolution,
       });
     }
   });
@@ -490,10 +492,12 @@ export function createSimplifiedGraphData(
         target: permissionNodeId,
         id: `grant-${permissionId}`,
         linkColor: graphConstants.linkConfig.linkColors.emissionPermissionLink,
-        linkDirectionalParticles: graphConstants.linkConfig.particleConfig.particles,
+        linkDirectionalParticles:
+          graphConstants.linkConfig.particleConfig.particles,
         linkDirectionalParticleSpeed:
           getDeterministicParticleSpeed(permissionId),
-        linkDirectionalParticleResolution: graphConstants.linkConfig.particleAnimation.resolution,
+        linkDirectionalParticleResolution:
+          graphConstants.linkConfig.particleAnimation.resolution,
       });
 
       // Edge: permission node -> recipient (target_agent) (only if no distribution targets and recipient exists and is different)
