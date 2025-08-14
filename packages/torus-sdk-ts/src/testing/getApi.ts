@@ -11,6 +11,6 @@ import { getEnv } from "./env.js";
 export const getApi = memo((): Promise<ApiPromise> => {
   const env = getEnv();
   return ApiPromise.create({
-    provider: new WsProvider(env.CHAIN_RPC_URL),
+    provider: new WsProvider(env.TEST_CHAIN_RPC_URL),
   });
 });

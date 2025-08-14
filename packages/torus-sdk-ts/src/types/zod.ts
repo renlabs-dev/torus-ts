@@ -182,6 +182,7 @@ export const sb_struct_obj = <MS extends ZodRawShape, OS extends ZodRawShape>(
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
           message: `Missing key ${key} in Struct (as Map)`,
+          path: [...ctx.path, key],
         });
         return z.NEVER;
       }
@@ -196,6 +197,7 @@ export const sb_struct_obj = <MS extends ZodRawShape, OS extends ZodRawShape>(
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
           message: `Missing key ${key} in Struct`,
+          path: [...ctx.path, key],
         });
         return z.NEVER;
       }

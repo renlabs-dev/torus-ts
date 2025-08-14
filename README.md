@@ -151,6 +151,7 @@ The project uses a tiered testing structure:
 - Network-dependent, may be slower
 - Only in packages that interact with the chain (e.g., `@torus-network/sdk`)
 - Always executed (no caching)
+- Chain tests read the `TEST_CHAIN_RPC_URL` environment variable to connect to the blockchain
 
 ### Running Tests
 

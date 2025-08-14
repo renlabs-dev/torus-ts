@@ -2,17 +2,19 @@ import "dotenv/config";
 
 import { z } from "zod";
 
+import { validateEnvOrExit } from "@torus-network/torus-utils/env";
 import { memo } from "@torus-network/torus-utils/misc";
 
 /**
  * Environment configuration for chain tests.
- * Validates required environment variables using Zod.
  */
-const envSchema = z.object({
-  CHAIN_RPC_URL: z.string().url().default("wss://api.testnet.torus.network"),
-});
+const testingEnvVarsSchema = {
+  TEST_CHAIN_RPC_URL: z.string().url(),
+};
 
 /**
  * Lazily parse and cache environment variables.
  */
-export const getEnv = memo(() => envSchema.parse(process.env));
+export const getEnv = memo(() =>
+  validateEnvOrExit(testingEnvVarsSchema)(process.env),
+);

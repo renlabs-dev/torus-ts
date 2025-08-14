@@ -311,3 +311,9 @@ The agent-fetcher worker synchronizes blockchain data to the database:
 ## Branching
 
 - We should create new branches over `dev` branch
+
+## Configuration
+
+- Remember to add relevant environment variables to Turbo config at turbo.json.
+
+## Misc

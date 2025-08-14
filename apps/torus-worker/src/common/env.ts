@@ -1,5 +1,13 @@
 import type { z } from "zod";
 
+/**
+ * @deprecated Use `validateEnvOrExit` from `@torus-network/torus-utils/env`
+ * instead.
+ *
+ * This function is deprecated in favor of `validateEnvOrExit` which
+ * provides the same functionality with a more consistent API for object
+ * schemas.
+ */
 export const parseEnvOrExit =
   <Out>(envSchema: z.ZodType<Out>) =>
   (env: unknown): Out => {
