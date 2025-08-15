@@ -1,6 +1,6 @@
 "use client";
 
-import { memo, useMemo, useRef, useState } from "react";
+import { memo, useEffect, useMemo, useRef, useState } from "react";
 
 import { useFrame } from "@react-three/fiber";
 import dynamic from "next/dynamic";
@@ -12,7 +12,11 @@ import type {
   CustomGraphNode,
 } from "../permission-graph-types";
 import { graphConstants } from "./force-graph-constants";
-import { getLinkWidth, getNodeColor } from "./force-graph-highlight-utils";
+import {
+  disposePrecomputedGeometries,
+  disposePrecomputedMaterials,
+  getHypergraphFlowNodes,
+} from "./force-graph-utils";
 import { useGraphInteractions } from "./use-graph-interactions";
 
 const R3fForceGraph = dynamic(() => import("r3f-forcegraph"), { ssr: false });
@@ -21,15 +25,63 @@ interface ForceGraphProps {
   graphData: CustomGraphData;
   onNodeClick: (node: CustomGraphNode) => void;
   userAddress?: string;
+  selectedNodeId?: string | null;
+  allocatorAddress: string;
 }
 
 const ForceGraph = memo(
   function ForceGraph(props: ForceGraphProps) {
     const fgRef = useRef<GraphMethods | undefined>(undefined);
+    const materialsRef = useRef<Set<THREE.Material>>(new Set());
+    const geometriesRef = useRef<Set<THREE.BufferGeometry>>(new Set());
 
     const [forcesConfigured, setForcesConfigured] = useState(false);
+    const lastHoveredNodeRef = useRef<NodeObject | null>(null);
 
-    useFrame(({ clock }) => {
+    // Track connected nodes for opacity control
+    const connectedNodesRef = useRef<Set<string>>(new Set());
+    const nodeObjectsRef = useRef<Map<string, THREE.Mesh>>(new Map());
+
+    // Update connected nodes when selectedNodeId changes
+    useEffect(() => {
+      if (props.selectedNodeId) {
+        const flowNodes = getHypergraphFlowNodes(
+          props.selectedNodeId,
+          props.graphData.nodes,
+          props.graphData.links,
+          props.allocatorAddress,
+        );
+        connectedNodesRef.current = flowNodes;
+      } else {
+        connectedNodesRef.current = new Set();
+      }
+
+      // Update opacity of existing node materials
+      nodeObjectsRef.current.forEach((mesh, nodeId) => {
+        const material = mesh.material as THREE.MeshLambertMaterial;
+        const isSelected =
+          props.selectedNodeId && nodeId === props.selectedNodeId;
+        const isConnected = connectedNodesRef.current.has(nodeId);
+        const hasSelection =
+          props.selectedNodeId !== null && props.selectedNodeId !== undefined;
+
+        let opacity = 1.0;
+        if (hasSelection && !isSelected && !isConnected) {
+          opacity = 0.1;
+        }
+
+        material.transparent = true;
+        material.opacity = opacity;
+        material.needsUpdate = true;
+      });
+    }, [
+      props.selectedNodeId,
+      props.graphData.links,
+      props.graphData.nodes,
+      props.allocatorAddress,
+    ]);
+
+    useFrame(() => {
       if (fgRef.current?.d3Force) {
         if (!forcesConfigured) {
           const chargeForce = fgRef.current.d3Force("charge");
@@ -53,28 +105,62 @@ const ForceGraph = memo(
 
         fgRef.current.tickFrame();
       }
-
-      const time = clock.getElapsedTime();
-      const pulsateOpacity = ((Math.sin(time * 3) + 1) / 2) * 0.7 + 0.5; // Oscillates between 0.3 and 1
-
-      props.graphData.nodes.forEach((node) => {
-        if (node.nodeType === "signal" && node.__threeObj) {
-          const mesh = node.__threeObj as THREE.Mesh;
-          // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-          if (mesh.material && "opacity" in mesh.material) {
-            (mesh.material as THREE.MeshLambertMaterial).opacity =
-              pulsateOpacity;
-          }
-        }
-      });
     });
 
-    const {
-      highlightState,
-      handleNodeClick,
-      handleNodeHover,
-      handleLinkHover,
-    } = useGraphInteractions(props.graphData, props.onNodeClick);
+    // Cleanup materials and geometries on unmount
+    useEffect(() => {
+      return () => {
+        // Dispose all tracked materials
+        materialsRef.current.forEach((material) => {
+          material.dispose();
+        });
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+        materialsRef.current.clear();
+
+        // Dispose all tracked geometries
+        geometriesRef.current.forEach((geometry) => {
+          geometry.dispose();
+        });
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+        geometriesRef.current.clear();
+
+        // Clear node objects map
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+        nodeObjectsRef.current.clear();
+
+        // Dispose shared geometries and materials
+        disposePrecomputedGeometries();
+        disposePrecomputedMaterials();
+      };
+    }, []);
+
+    const { handleNodeClick } = useGraphInteractions(
+      props.graphData,
+      props.onNodeClick,
+      props.selectedNodeId,
+    );
+
+    const handleNodeHover = (node: NodeObject | null) => {
+      if (lastHoveredNodeRef.current) {
+        const prevMesh = lastHoveredNodeRef.current.__threeObj as THREE.Mesh;
+        const prevMaterial = prevMesh.material as THREE.MeshLambertMaterial;
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+        if (prevMaterial.emissive) {
+          prevMaterial.emissive.setHex(0x000000);
+        }
+      }
+
+      if (node) {
+        const mesh = node.__threeObj as THREE.Mesh;
+        const material = mesh.material as THREE.MeshLambertMaterial;
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+        if (material.emissive) {
+          material.emissive.setHex(0x444444);
+        }
+      }
+
+      lastHoveredNodeRef.current = node;
+    };
 
     const formatedData = useMemo(() => {
       return {
@@ -86,97 +172,140 @@ const ForceGraph = memo(
     const nodeThreeObject = useMemo(() => {
       return (node: NodeObject) => {
         const customNode = node as CustomGraphNode;
-        const color = getNodeColor(node, highlightState, props.userAddress);
+        const nodeId = String(node.id);
 
-        const material = new THREE.MeshLambertMaterial({
-          color: color,
-          opacity: 1,
-          transparent: customNode.nodeType === "signal", // Enable transparency for signal nodes
-        });
+        // Determine initial opacity based on selection state
+        const isSelected =
+          props.selectedNodeId && nodeId === props.selectedNodeId;
+        const isConnected = connectedNodesRef.current.has(nodeId);
+        const hasSelection =
+          props.selectedNodeId !== null && props.selectedNodeId !== undefined;
 
-        let geometry: THREE.BufferGeometry;
-
-        switch (customNode.nodeType) {
-          case "signal": {
-            const config = graphConstants.nodeConfig.nodeGeometry.signalNode;
-            geometry = new THREE.TetrahedronGeometry(
-              config.radius,
-              config.detail,
-            );
-            break;
-          }
-          case "permission": {
-            const config =
-              graphConstants.nodeConfig.nodeGeometry.permissionNode;
-            geometry = new THREE.IcosahedronGeometry(
-              config.radius,
-              config.detail,
-            );
-            break;
-          }
-          case "allocator": {
-            const config = graphConstants.nodeConfig.nodeGeometry.allocator;
-            geometry = new THREE.SphereGeometry(
-              config.radius,
-              config.widthSegments,
-              config.heightSegments,
-            );
-            break;
-          }
-          case "root_agent": {
-            const config = graphConstants.nodeConfig.nodeGeometry.rootNode;
-            geometry = new THREE.SphereGeometry(
-              config.radius,
-              config.widthSegments,
-              config.heightSegments,
-            );
-            break;
-          }
-
-          case "target_agent":
-          default: {
-            const config = graphConstants.nodeConfig.nodeGeometry.targetNode;
-            geometry = new THREE.SphereGeometry(
-              config.radius,
-              config.widthSegments,
-              config.heightSegments,
-            );
-            break;
-          }
+        let opacity = 1.0;
+        if (hasSelection && !isSelected && !isConnected) {
+          opacity = 0.2; // Dim unconnected nodes
         }
 
-        return new THREE.Mesh(geometry, material);
+        let mesh: THREE.Mesh;
+
+        if (customNode.precomputedGeometry && customNode.precomputedMaterial) {
+          const material =
+            customNode.precomputedMaterial.clone() as THREE.MeshLambertMaterial;
+
+          if (
+            props.userAddress &&
+            String(node.id).toLowerCase() === props.userAddress.toLowerCase()
+          ) {
+            material.color.setHex(
+              parseInt(
+                graphConstants.nodeConfig.nodeColors.userNode.replace("#", ""),
+                16,
+              ),
+            );
+          }
+
+          material.transparent = true;
+          material.opacity = opacity;
+          materialsRef.current.add(material);
+          mesh = new THREE.Mesh(customNode.precomputedGeometry, material);
+        } else {
+          let color = node.color as string;
+          if (
+            props.userAddress &&
+            String(node.id).toLowerCase() === props.userAddress.toLowerCase()
+          ) {
+            color = graphConstants.nodeConfig.nodeColors.userNode;
+          }
+
+          const material = new THREE.MeshLambertMaterial({
+            color: color,
+            opacity: opacity,
+            transparent: true,
+          });
+          materialsRef.current.add(material);
+
+          const geometry = new THREE.SphereGeometry(10, 16, 16);
+          geometriesRef.current.add(geometry);
+          mesh = new THREE.Mesh(geometry, material);
+        }
+
+        // Store reference for later updates
+        nodeObjectsRef.current.set(nodeId, mesh);
+        return mesh;
       };
-    }, [highlightState, props.userAddress]);
+    }, [props.selectedNodeId, props.userAddress]);
 
     return (
       <>
         <R3fForceGraph
           ref={fgRef}
           graphData={formatedData}
-          nodeOpacity={graphConstants.nodeConfig.rendering.opacity}
           nodeThreeObject={nodeThreeObject}
-          linkDirectionalParticleWidth={3}
+          linkDirectionalParticleWidth={
+            graphConstants.linkConfig.particleConfig.particleWidth
+          }
           linkDirectionalParticles={(link: LinkObject) =>
             Number(link.linkDirectionalParticles) || 0
           }
           linkDirectionalParticleSpeed={(link: LinkObject) =>
             Number(link.linkDirectionalParticleSpeed) ||
-            graphConstants.particleAnimation.defaultSpeed
+            graphConstants.linkConfig.particleConfig.speed
           }
-          linkDirectionalArrowLength={(link: LinkObject) =>
-            Number(link.linkDirectionalArrowLength)
-          }
+          linkDirectionalArrowLength={(link: LinkObject) => {
+            const targetNode = link.target as CustomGraphNode;
+            if (targetNode.nodeType === "permission") {
+              return 0;
+            }
+            return (
+              Number(link.linkDirectionalArrowLength) ||
+              graphConstants.linkConfig.arrowConfig.defaultArrowLength
+            );
+          }}
           linkDirectionalArrowRelPos={(link: LinkObject) =>
-            Number(link.linkDirectionalArrowRelPos)
+            Number(link.linkDirectionalArrowRelPos) ||
+            graphConstants.linkConfig.arrowConfig.defaultArrowRelPos
           }
           linkCurvature={(link: LinkObject) => Number(link.linkCurvature)}
-          linkColor={(link: LinkObject) => String(link.linkColor)}
-          linkWidth={(link: LinkObject) => getLinkWidth(link, highlightState)}
-          nodeResolution={graphConstants.nodeConfig.rendering.resolution}
+          linkColor={(link: LinkObject) => {
+            const linkColor = String(link.linkColor);
+            const hasSelection =
+              props.selectedNodeId !== null &&
+              props.selectedNodeId !== undefined;
+
+            if (hasSelection) {
+              const sourceId =
+                typeof link.source === "string"
+                  ? link.source
+                  : typeof link.source === "object"
+                    ? String(link.source.id)
+                    : "";
+              const targetId =
+                typeof link.target === "string"
+                  ? link.target
+                  : typeof link.target === "object"
+                    ? String(link.target.id)
+                    : "";
+
+              const isSourceConnected = connectedNodesRef.current.has(sourceId);
+              const isTargetConnected = connectedNodesRef.current.has(targetId);
+
+              if (!isSourceConnected || !isTargetConnected) {
+                // Convert hex color to rgba with low opacity
+                const hex = linkColor.replace("#", "");
+                const r = parseInt(hex.substring(0, 2), 16);
+                const g = parseInt(hex.substring(2, 4), 16);
+                const b = parseInt(hex.substring(4, 6), 16);
+                return `rgba(${r}, ${g}, ${b}, 0.1)`;
+              }
+            }
+
+            return linkColor;
+          }}
+          linkWidth={(link: LinkObject) =>
+            Number(link.linkWidth) || graphConstants.linkConfig.linkWidth
+          }
           onNodeClick={handleNodeClick}
           onNodeHover={handleNodeHover}
-          onLinkHover={handleLinkHover}
         />
       </>
     );
@@ -185,7 +314,8 @@ const ForceGraph = memo(
     return (
       prevProps.graphData === nextProps.graphData &&
       prevProps.onNodeClick === nextProps.onNodeClick &&
-      prevProps.userAddress === nextProps.userAddress
+      prevProps.userAddress === nextProps.userAddress &&
+      prevProps.selectedNodeId === nextProps.selectedNodeId
     );
   },
 );

@@ -1,5 +1,9 @@
-import { smallAddress } from "@torus-network/torus-utils/torus/address";
 import type { inferProcedureOutput } from "@trpc/server";
+import * as THREE from "three";
+
+import { smallAddress } from "@torus-network/torus-utils/torus/address";
+
+import type { AppRouter } from "@torus-ts/api";
 
 import type {
   allPermissions,
@@ -8,7 +12,95 @@ import type {
   SignalsList,
 } from "../permission-graph-types";
 import { graphConstants } from "./force-graph-constants";
-import type { AppRouter } from "@torus-ts/api";
+
+const precomputedGeometries = {
+  allocator: new THREE.SphereGeometry(
+    graphConstants.nodeConfig.nodeGeometry.allocator.radius,
+    graphConstants.nodeConfig.nodeGeometry.allocator.widthSegments,
+    graphConstants.nodeConfig.nodeGeometry.allocator.heightSegments,
+  ),
+  rootNode: new THREE.SphereGeometry(
+    graphConstants.nodeConfig.nodeGeometry.rootNode.radius,
+    graphConstants.nodeConfig.nodeGeometry.rootNode.widthSegments,
+    graphConstants.nodeConfig.nodeGeometry.rootNode.heightSegments,
+  ),
+  permissionNode: new THREE.IcosahedronGeometry(
+    graphConstants.nodeConfig.nodeGeometry.permissionNode.radius,
+    graphConstants.nodeConfig.nodeGeometry.permissionNode.detail,
+  ),
+  targetNode: new THREE.SphereGeometry(
+    graphConstants.nodeConfig.nodeGeometry.targetNode.radius,
+    graphConstants.nodeConfig.nodeGeometry.targetNode.widthSegments,
+    graphConstants.nodeConfig.nodeGeometry.targetNode.heightSegments,
+  ),
+  userNode: new THREE.SphereGeometry(
+    graphConstants.nodeConfig.nodeGeometry.userNode.radius,
+    graphConstants.nodeConfig.nodeGeometry.userNode.widthSegments,
+    graphConstants.nodeConfig.nodeGeometry.userNode.heightSegments,
+  ),
+  signalNode: new THREE.TetrahedronGeometry(
+    graphConstants.nodeConfig.nodeGeometry.signalNode.radius,
+    graphConstants.nodeConfig.nodeGeometry.signalNode.detail,
+  ),
+};
+
+const materialCache = new Set<THREE.Material>();
+
+export function disposePrecomputedGeometries() {
+  Object.values(precomputedGeometries).forEach((geometry) => {
+    geometry.dispose();
+  });
+}
+
+/**
+ * Dispose cached materials to release GPU memory.
+ */
+export function disposePrecomputedMaterials() {
+  materialCache.forEach((material) => {
+    material.dispose();
+  });
+  materialCache.clear();
+}
+
+function createPrecomputedMaterial(color: string) {
+  const material = new THREE.MeshLambertMaterial({
+    color: color,
+  });
+  materialCache.add(material);
+  return material;
+}
+
+function assignPrecomputedObjects(node: CustomGraphNode) {
+  const nodeType = node.nodeType;
+  const color = node.color ?? graphConstants.nodeConfig.nodeColors.default;
+
+  switch (nodeType) {
+    case "allocator":
+      node.precomputedGeometry = precomputedGeometries.allocator;
+      node.precomputedMaterial = createPrecomputedMaterial(color);
+      break;
+    case "root_agent":
+      node.precomputedGeometry = precomputedGeometries.rootNode;
+      node.precomputedMaterial = createPrecomputedMaterial(color);
+      break;
+    case "permission":
+      node.precomputedGeometry = precomputedGeometries.permissionNode;
+      node.precomputedMaterial = createPrecomputedMaterial(color);
+      break;
+    case "target_agent":
+      node.precomputedGeometry = precomputedGeometries.targetNode;
+      node.precomputedMaterial = createPrecomputedMaterial(color);
+      break;
+    case "signal":
+      node.precomputedGeometry = precomputedGeometries.signalNode;
+      node.precomputedMaterial = createPrecomputedMaterial(color);
+      break;
+    default:
+      node.precomputedGeometry = precomputedGeometries.targetNode;
+      node.precomputedMaterial = createPrecomputedMaterial(color);
+      break;
+  }
+}
 
 // Infer Agent type from tRPC router
 export type Agent = NonNullable<
@@ -33,8 +125,8 @@ function getDeterministicValue(seed: string, min: number, max: number): number {
 function getDeterministicParticleSpeed(seed: string): number {
   return getDeterministicValue(
     seed,
-    graphConstants.particleAnimation.speedMin,
-    graphConstants.particleAnimation.speedMax,
+    graphConstants.linkConfig.particleAnimation.speedMin,
+    graphConstants.linkConfig.particleAnimation.speedMax,
   );
 }
 
@@ -57,15 +149,15 @@ export interface ExtractedGraphData {
   permissions: {
     namespace: {
       id: string;
-      grantorAccountId: string;
-      granteeAccountId: string;
+      delegatorAccountId: string;
+      recipientAccountId: string;
       scope: string;
       duration: string | null;
     }[];
     emission: {
       id: string;
-      grantorAccountId: string;
-      granteeAccountId: string;
+      delegatorAccountId: string;
+      recipientAccountId: string;
       scope: string;
       duration: string | null;
       distributionTargets?: {
@@ -88,6 +180,95 @@ export interface ExtractedGraphData {
     agentKey: string;
     proposedAllocation: number;
   }[];
+}
+
+export function getHypergraphFlowNodes(
+  selectedNodeId: string,
+  nodes: CustomGraphNode[],
+  links: CustomGraphLink[],
+  allocatorAddress: string,
+): Set<string> {
+  const flowNodes = new Set<string>();
+  const selectedNode = nodes.find((n) => n.id === selectedNodeId);
+
+  if (!selectedNode) return flowNodes;
+
+  // Always include the selected node
+  flowNodes.add(selectedNodeId);
+
+  // Helper function to get link IDs safely
+  const getLinkIds = (link: CustomGraphLink) => {
+    const sourceId =
+      typeof link.source === "string"
+        ? link.source
+        : typeof link.source === "object"
+          ? String(link.source.id)
+          : "";
+    const targetId =
+      typeof link.target === "string"
+        ? link.target
+        : typeof link.target === "object"
+          ? String(link.target.id)
+          : "";
+    return { sourceId, targetId };
+  };
+
+  // Helper function to traverse connections recursively, excluding allocator connections
+  const traverseConnections = (nodeId: string, visited: Set<string>) => {
+    if (visited.has(nodeId)) return;
+    visited.add(nodeId);
+    flowNodes.add(nodeId);
+
+    // Find all links connected to this node, but skip allocator connections unless it's the selected node
+    const connectedLinks = links.filter((link) => {
+      const { sourceId, targetId } = getLinkIds(link);
+      const isNodeInvolved = sourceId === nodeId || targetId === nodeId;
+
+      if (!isNodeInvolved) return false;
+
+      // If this node is the allocator and it's not the selected node, skip its connections
+      if (nodeId === allocatorAddress && nodeId !== selectedNodeId) {
+        return false;
+      }
+
+      // Skip allocation links (allocator -> root agents) unless allocator is selected
+      if (
+        link.linkType === "allocation" &&
+        selectedNodeId !== allocatorAddress
+      ) {
+        return false;
+      }
+
+      return true;
+    });
+
+    // Traverse to connected nodes
+    connectedLinks.forEach((link) => {
+      const { sourceId, targetId } = getLinkIds(link);
+
+      if (sourceId !== nodeId) {
+        traverseConnections(sourceId, visited);
+      }
+      if (targetId !== nodeId) {
+        traverseConnections(targetId, visited);
+      }
+    });
+  };
+
+  // Special handling for allocator selection
+  if (selectedNodeId === allocatorAddress) {
+    // If allocator is selected, show everything
+    nodes.forEach((node) => flowNodes.add(node.id));
+  } else {
+    // For any other node, traverse connections but exclude allocator's direct connections
+    const visited = new Set<string>();
+    traverseConnections(selectedNodeId, visited);
+
+    // Always include the allocator in the flow as it's the root of all flows
+    flowNodes.add(allocatorAddress);
+  }
+
+  return flowNodes;
 }
 
 export function createSimplifiedGraphData(
@@ -113,12 +294,11 @@ export function createSimplifiedGraphData(
     [];
   const extractedSignals: ExtractedGraphData["signals"] = [];
 
-  // 1. ADD ROOT NODE (center)
-  const rootNode: CustomGraphNode = {
+  // 1. ADD ALLOCATOR NODE (center)
+  const allocatorNode: CustomGraphNode = {
     id: allocatorAddress,
     name: "Allocator",
     color: graphConstants.nodeConfig.nodeColors.allocator,
-    val: graphConstants.nodeConfig.nodeSizes.allocator * 1.5,
     fullAddress: allocatorAddress,
     role: "Allocator",
     nodeType: "allocator",
@@ -133,7 +313,8 @@ export function createSimplifiedGraphData(
       isWhitelisted: true,
     },
   };
-  nodesMap.set(allocatorAddress, rootNode);
+  assignPrecomputedObjects(allocatorNode);
+  nodesMap.set(allocatorAddress, allocatorNode);
 
   // Create a map to track all agent nodes (from agents list + permissions)
   const allAgentNodes = new Map<string, CustomGraphNode>();
@@ -158,7 +339,6 @@ export function createSimplifiedGraphData(
       color: existingAgent
         ? graphConstants.nodeConfig.nodeColors.rootNode
         : graphConstants.nodeConfig.nodeColors.targetNode,
-      val: graphConstants.nodeConfig.nodeSizes.rootNode,
       fullAddress: agentKey,
       role: existingAgent ? "Root Agent" : "Target Agent",
       nodeType: existingAgent ? "root_agent" : "target_agent",
@@ -168,6 +348,7 @@ export function createSimplifiedGraphData(
       },
     };
 
+    assignPrecomputedObjects(agentNode);
     allAgentNodes.set(agentKey, agentNode);
     return agentNode;
   };
@@ -218,7 +399,7 @@ export function createSimplifiedGraphData(
     });
   });
 
-  // 2.5. ADD ALLOCATOR EDGES TO ALL WHITELISTED AGENTS
+  // 2.5. ADD ALLOCATION LINKS TO ALL ROOT_AGENTS (whitelisted agents)
   agents.forEach((agent) => {
     if (agent.isWhitelisted) {
       links.push({
@@ -227,15 +408,11 @@ export function createSimplifiedGraphData(
         target: agent.key,
         id: `allocation-${agent.key}`,
         linkColor: graphConstants.linkConfig.linkColors.allocatorLink,
-        linkWidth: graphConstants.linkConfig.linkWidths.allocationLink,
-        linkDirectionalArrowLength:
-          graphConstants.linkConfig.arrowConfig.defaultArrowLength,
-        linkDirectionalArrowRelPos:
-          graphConstants.linkConfig.arrowConfig.defaultArrowRelPos,
-        linkDirectionalParticles: 2,
+        linkDirectionalParticles:
+          graphConstants.linkConfig.particleConfig.particles,
         linkDirectionalParticleSpeed: getDeterministicParticleSpeed(agent.key),
         linkDirectionalParticleResolution:
-          graphConstants.particleAnimation.resolution,
+          graphConstants.linkConfig.particleAnimation.resolution,
       });
     }
   });
@@ -246,8 +423,8 @@ export function createSimplifiedGraphData(
 
   allPermissions.forEach((permission) => {
     const permissionId = permission.permissions.permissionId;
-    const grantorId = permission.permissions.grantorAccountId;
-    const granteeId = permission.permissions.granteeAccountId;
+    const delegatorId = permission.permissions.grantorAccountId;
+    const recipientId = permission.permissions.granteeAccountId;
 
     // Determine permission type
     const permissionType = permission.emission_permissions
@@ -260,8 +437,8 @@ export function createSimplifiedGraphData(
     if (permissionType === "capability") {
       extractedNamespacePermissions.push({
         id: permissionId,
-        grantorAccountId: grantorId || "",
-        granteeAccountId: granteeId || "",
+        delegatorAccountId: delegatorId || "",
+        recipientAccountId: recipientId || "",
         scope: permissionType.toUpperCase(),
         duration:
           permission.permissions.durationType === "indefinite"
@@ -281,8 +458,8 @@ export function createSimplifiedGraphData(
 
       extractedEmissionPermissions.push({
         id: permissionId,
-        grantorAccountId: grantorId || "",
-        granteeAccountId: granteeId || "",
+        delegatorAccountId: delegatorId || "",
+        recipientAccountId: recipientId || "",
         scope: permissionType.toUpperCase(),
         duration:
           permission.permissions.durationType === "indefinite"
@@ -295,11 +472,11 @@ export function createSimplifiedGraphData(
     // Create edges based on permission relationships
     if (
       permissionType === "capability" &&
-      grantorId &&
-      granteeId &&
-      grantorId !== granteeId
+      delegatorId &&
+      recipientId &&
+      delegatorId !== recipientId
     ) {
-      // For namespace permissions: require different grantor and grantee
+      // For namespace permissions: delegator (root_agent) creates permission for recipient (target_agent)
       const permissionNodeId = `permission-${permissionId}`;
 
       // Only create permission node if it doesn't already exist
@@ -311,7 +488,6 @@ export function createSimplifiedGraphData(
           id: permissionNodeId,
           name: `Permission ${smallAddress(permissionId)}`,
           color: graphConstants.nodeConfig.nodeColors.namespacePermissionNode,
-          val: graphConstants.nodeConfig.nodeSizes.permissionNode,
           fullAddress: permissionId,
           role: "Namespace Permission",
           nodeType: "permission",
@@ -321,8 +497,8 @@ export function createSimplifiedGraphData(
           permissionData: {
             permissionId,
             permissionType: "capability",
-            grantorAccountId: grantorId,
-            granteeAccountId: granteeId,
+            delegatorAccountId: delegatorId,
+            recipientAccountId: recipientId,
             scope: "CAPABILITY",
             duration:
               permission.permissions.durationType === "indefinite"
@@ -334,60 +510,45 @@ export function createSimplifiedGraphData(
               : [],
           },
         };
+        assignPrecomputedObjects(permissionNode);
         nodesMap.set(permissionNodeId, permissionNode);
       }
 
-      // Ensure grantor and grantee nodes exist
-      if (!nodesMap.has(grantorId)) {
-        const grantorNode = getOrCreateAgentNode(grantorId);
-        nodesMap.set(grantorId, grantorNode);
+      // Ensure delegator (root_agent) and recipient (target_agent) nodes exist
+      if (!nodesMap.has(delegatorId)) {
+        const delegatorNode = getOrCreateAgentNode(delegatorId);
+        nodesMap.set(delegatorId, delegatorNode);
       }
-      if (!nodesMap.has(granteeId)) {
-        const granteeNode = getOrCreateAgentNode(granteeId);
-        nodesMap.set(granteeId, granteeNode);
+      if (!nodesMap.has(recipientId)) {
+        const recipientNode = getOrCreateAgentNode(recipientId);
+        nodesMap.set(recipientId, recipientNode);
       }
 
-      // Edge: grantor -> permission node
+      // Edge: delegator (root_agent) -> permission node
       links.push({
         linkType: "permission_grant",
-        source: grantorId,
+        source: delegatorId,
         target: permissionNodeId,
         id: `grant-${permissionId}`,
         linkColor: graphConstants.linkConfig.linkColors.namespacePermissionLink,
-        linkWidth: graphConstants.linkConfig.linkWidths.permissionLink,
-        linkDirectionalArrowLength:
-          graphConstants.linkConfig.arrowConfig.defaultArrowLength,
-        linkDirectionalArrowRelPos:
-          graphConstants.linkConfig.arrowConfig.defaultArrowRelPos,
-        linkDirectionalParticles: 2,
         linkDirectionalParticleSpeed:
           getDeterministicParticleSpeed(permissionId),
-        linkDirectionalParticleResolution:
-          graphConstants.particleAnimation.resolution,
       });
 
-      // Edge: permission node -> grantee
+      // Edge: permission node -> recipient (target_agent)
       links.push({
         linkType: "permission_receive",
         source: permissionNodeId,
-        target: granteeId,
+        target: recipientId,
         id: `receive-${permissionId}`,
         linkColor: graphConstants.linkConfig.linkColors.namespacePermissionLink,
-        linkWidth: graphConstants.linkConfig.linkWidths.permissionLink,
-        linkDirectionalArrowLength:
-          graphConstants.linkConfig.arrowConfig.defaultArrowLength,
-        linkDirectionalArrowRelPos:
-          graphConstants.linkConfig.arrowConfig.defaultArrowRelPos,
-        linkDirectionalParticles: 2,
         linkDirectionalParticleSpeed:
           getDeterministicParticleSpeed(permissionId),
-        linkDirectionalParticleResolution:
-          graphConstants.particleAnimation.resolution,
       });
     }
 
-    // For emission permissions: create permission node regardless of grantor/grantee relationship
-    if (permissionType === "emission" && grantorId) {
+    // For emission permissions: delegator (root_agent) creates emission permission with targets
+    if (permissionType === "emission" && delegatorId) {
       const permissionNodeId = `permission-${permissionId}`;
 
       // Only create permission node if it doesn't already exist
@@ -399,7 +560,6 @@ export function createSimplifiedGraphData(
           id: permissionNodeId,
           name: `Stream ${smallAddress(permissionId)}`,
           color: graphConstants.nodeConfig.nodeColors.emissionPermissionNode,
-          val: graphConstants.nodeConfig.nodeSizes.permissionNode,
           fullAddress: permissionId,
           role: "Emission Permission",
           nodeType: "permission",
@@ -409,8 +569,8 @@ export function createSimplifiedGraphData(
           permissionData: {
             permissionId,
             permissionType: "emission",
-            grantorAccountId: grantorId,
-            granteeAccountId: granteeId || "",
+            delegatorAccountId: delegatorId,
+            recipientAccountId: recipientId || "",
             scope: "EMISSION",
             duration:
               permission.permissions.durationType === "indefinite"
@@ -419,63 +579,56 @@ export function createSimplifiedGraphData(
                   null),
           },
         };
+        assignPrecomputedObjects(permissionNode);
         nodesMap.set(permissionNodeId, permissionNode);
       }
 
-      // Ensure grantor node exists
-      if (!nodesMap.has(grantorId)) {
-        const grantorNode = getOrCreateAgentNode(grantorId);
-        nodesMap.set(grantorId, grantorNode);
+      // Ensure delegator (root_agent) node exists
+      if (!nodesMap.has(delegatorId)) {
+        const delegatorNode = getOrCreateAgentNode(delegatorId);
+        nodesMap.set(delegatorId, delegatorNode);
       }
 
-      // Edge: grantor -> permission node
+      // Edge: delegator -> permission node
       links.push({
         linkType: "permission_grant",
-        source: grantorId,
+        source: delegatorId,
         target: permissionNodeId,
         id: `grant-${permissionId}`,
         linkColor: graphConstants.linkConfig.linkColors.emissionPermissionLink,
-        linkWidth: graphConstants.linkConfig.linkWidths.permissionLink,
-        linkDirectionalArrowLength:
-          graphConstants.linkConfig.arrowConfig.defaultArrowLength,
-        linkDirectionalArrowRelPos:
-          graphConstants.linkConfig.arrowConfig.defaultArrowRelPos,
-        linkDirectionalParticles: 2,
+        linkDirectionalParticles:
+          graphConstants.linkConfig.particleConfig.particles,
         linkDirectionalParticleSpeed:
           getDeterministicParticleSpeed(permissionId),
         linkDirectionalParticleResolution:
-          graphConstants.particleAnimation.resolution,
+          graphConstants.linkConfig.particleAnimation.resolution,
       });
 
-      // Edge: permission node -> recipient (only if no distribution targets and grantee exists and is different)
+      // Edge: permission node -> recipient (target_agent) (only if no distribution targets and recipient exists and is different)
       if (
         !permission.emission_distribution_targets?.targetAccountId &&
-        granteeId &&
-        granteeId !== grantorId
+        recipientId &&
+        recipientId !== delegatorId
       ) {
-        // Ensure grantee node exists
-        if (!nodesMap.has(granteeId)) {
-          const granteeNode = getOrCreateAgentNode(granteeId);
-          nodesMap.set(granteeId, granteeNode);
+        // Ensure recipient node exists
+        if (!nodesMap.has(recipientId)) {
+          const recipientNode = getOrCreateAgentNode(recipientId);
+          nodesMap.set(recipientId, recipientNode);
         }
 
         links.push({
           linkType: "permission_receive",
           source: permissionNodeId,
-          target: granteeId,
+          target: recipientId,
           id: `receive-${permissionId}`,
           linkColor:
             graphConstants.linkConfig.linkColors.emissionPermissionLink,
-          linkWidth: graphConstants.linkConfig.linkWidths.permissionLink,
-          linkDirectionalArrowLength:
-            graphConstants.linkConfig.arrowConfig.defaultArrowLength,
-          linkDirectionalArrowRelPos:
-            graphConstants.linkConfig.arrowConfig.defaultArrowRelPos,
-          linkDirectionalParticles: 2,
+          linkDirectionalParticles:
+            graphConstants.linkConfig.particleConfig.particles,
           linkDirectionalParticleSpeed:
             getDeterministicParticleSpeed(permissionId),
           linkDirectionalParticleResolution:
-            graphConstants.particleAnimation.resolution,
+            graphConstants.linkConfig.particleAnimation.resolution,
         });
       }
     }
@@ -485,7 +638,7 @@ export function createSimplifiedGraphData(
       permission.emission_distribution_targets?.targetAccountId &&
       permissionId &&
       permissionType === "emission" &&
-      grantorId // Only create edge if permission node was created (which requires grantorId)
+      delegatorId // Only create edge if permission node was created (which requires delegatorId)
     ) {
       const targetId = permission.emission_distribution_targets.targetAccountId;
       const permissionNodeId = `permission-${permissionId}`;
@@ -503,11 +656,7 @@ export function createSimplifiedGraphData(
         target: targetId,
         id: `distribution-${permissionId}-${targetId}`,
         linkColor: graphConstants.linkConfig.linkColors.emissionPermissionLink,
-        linkWidth: graphConstants.linkConfig.linkWidths.permissionLink * 0.7,
-        linkDirectionalArrowLength:
-          graphConstants.linkConfig.arrowConfig.defaultArrowLength,
-        linkDirectionalArrowRelPos:
-          graphConstants.linkConfig.arrowConfig.defaultArrowRelPos,
+        linkWidth: graphConstants.linkConfig.linkWidth * 0.7,
         linkDirectionalParticles: Math.max(
           1,
           Math.ceil(
@@ -516,7 +665,7 @@ export function createSimplifiedGraphData(
         ),
         linkDirectionalParticleSpeed: getDeterministicParticleSpeed(targetId),
         linkDirectionalParticleResolution:
-          graphConstants.particleAnimation.resolution,
+          graphConstants.linkConfig.particleAnimation.resolution,
       });
     }
   });
@@ -528,11 +677,11 @@ export function createSimplifiedGraphData(
         id: `signal-${signal.id}`,
         name: signal.title,
         color: graphConstants.nodeConfig.nodeColors.signalNode,
-        val: graphConstants.nodeConfig.nodeSizes.signalNode,
         role: "Signal",
         nodeType: "signal",
         signalData: signal,
       };
+      assignPrecomputedObjects(signalNode);
       nodesMap.set(signalNode.id, signalNode);
 
       // Extract signal data
@@ -554,11 +703,6 @@ export function createSimplifiedGraphData(
           id: `signal-link-${signal.id}`,
           linkDirectionalParticles: 0,
           linkColor: graphConstants.linkConfig.linkColors.signalLink,
-          linkWidth: graphConstants.linkConfig.linkWidths.signalLink,
-          linkDirectionalArrowLength:
-            graphConstants.linkConfig.arrowConfig.defaultArrowLength,
-          linkDirectionalArrowRelPos:
-            graphConstants.linkConfig.arrowConfig.defaultArrowRelPos,
         });
       } else {
         // Create agent node if it doesn't exist
@@ -573,11 +717,6 @@ export function createSimplifiedGraphData(
           id: `signal-link-${signal.id}`,
           linkDirectionalParticles: 0,
           linkColor: graphConstants.linkConfig.linkColors.signalLink,
-          linkWidth: graphConstants.linkConfig.linkWidths.signalLink,
-          linkDirectionalArrowLength:
-            graphConstants.linkConfig.arrowConfig.defaultArrowLength,
-          linkDirectionalArrowRelPos:
-            graphConstants.linkConfig.arrowConfig.defaultArrowRelPos,
         });
       }
     });
