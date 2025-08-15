@@ -17,7 +17,7 @@ import type {
 } from "@torus-network/sdk/extrinsics";
 import { sendTxWithTracker } from "@torus-network/sdk/extrinsics";
 import type { HexH256 } from "@torus-network/sdk/types";
-import { chainErr } from "@torus-network/torus-utils/error";
+import { chainErr, strErr } from "@torus-network/torus-utils/error";
 import { BasicLogger } from "@torus-network/torus-utils/logger";
 import type { Result } from "@torus-network/torus-utils/result";
 import { makeErr, makeOk } from "@torus-network/torus-utils/result";
@@ -51,8 +51,6 @@ export const getExplorerLink = ({
   wsEndpoint: string;
   hash: string;
 }) => `https://polkadot.js.org/apps/?rpc=${wsEndpoint}#/explorer/query/${hash}`;
-
-const strErr = (txt: string) => new Error(txt);
 
 /**
  * Function type for sending transactions with optional signing parameters.
