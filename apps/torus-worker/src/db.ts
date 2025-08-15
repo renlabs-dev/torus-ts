@@ -787,6 +787,19 @@ export async function upsertAccumulatedStreamAmounts(
   await db
     .insert(accumulatedStreamAmountsSchema)
     .values(streamAmounts)
-    .onConflictDoNothing()
+    .onConflictDoUpdate({
+      target: [
+        accumulatedStreamAmountsSchema.grantorAccountId,
+        accumulatedStreamAmountsSchema.streamId,
+        accumulatedStreamAmountsSchema.permissionId,
+        accumulatedStreamAmountsSchema.executionCount,
+      ],
+      set: {
+        atBlock: sql`excluded.at_block`,
+        accumulatedAmount: sql`excluded.accumulated_amount`,
+        lastUpdated: sql`excluded.last_updated`,
+        lastExecutedBlock: sql`excluded.last_executed_block`,
+      },
+    })
     .execute();
 }
