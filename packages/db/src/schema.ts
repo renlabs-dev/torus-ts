@@ -840,9 +840,19 @@ export const accumulatedStreamAmountsSchema = createTable(
   },
   (t) => [
     primaryKey({
-      columns: [t.grantorAccountId, t.streamId, t.permissionId, t.executionCount],
+      columns: [
+        t.grantorAccountId,
+        t.streamId,
+        t.permissionId,
+        t.executionCount,
+      ],
     }),
-    unique().on(t.grantorAccountId, t.streamId, t.permissionId, t.executionCount),
+    unique().on(
+      t.grantorAccountId,
+      t.streamId,
+      t.permissionId,
+      t.executionCount,
+    ),
   ],
 );
 
