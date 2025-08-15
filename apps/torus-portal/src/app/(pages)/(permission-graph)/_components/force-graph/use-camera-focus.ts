@@ -15,7 +15,7 @@ export function useCameraFocus(
   const { camera } = useThree();
   const originalCameraPosition = useRef(new THREE.Vector3(0, 0, 600));
   const originalTarget = useRef(new THREE.Vector3(0, 0, 0));
-  const focusTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const focusTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const animateCameraToTarget = useCallback(
     (targetPos: THREE.Vector3, lookAt: THREE.Vector3, duration: number) => {
@@ -72,7 +72,8 @@ export function useCameraFocus(
       if (!node.x || !node.y || !node.z) return;
 
       const distance = 300;
-      const distRatio = 1 + distance / Math.hypot(node.x, node.y, node.z);
+      const len = Math.hypot(node.x, node.y, node.z);
+      const distRatio = 1 + distance / Math.max(len, 1e-3);
 
       const targetPosition = new THREE.Vector3(
         node.x * distRatio,
@@ -88,6 +89,7 @@ export function useCameraFocus(
 
       if (focusTimeoutRef.current) {
         clearTimeout(focusTimeoutRef.current);
+        focusTimeoutRef.current = null;
       }
     },
     [animateCameraToTarget, onNodeClick],
@@ -108,12 +110,13 @@ export function useCameraFocus(
   React.useEffect(() => {
     if (!initialNode) return;
 
-    const timeoutId = setTimeout(() => {
+    focusTimeoutRef.current = setTimeout(() => {
       const { x, y, z } = initialNode;
 
       if (x !== undefined && y !== undefined && z !== undefined) {
         const focusDistance = 350;
-        const distRatio = 1 + focusDistance / Math.hypot(x, y, z);
+        const len = Math.hypot(x, y, z);
+        const distRatio = 1 + focusDistance / Math.max(len, 1e-3);
 
         const targetPosition = new THREE.Vector3(
           x * distRatio,
@@ -127,7 +130,10 @@ export function useCameraFocus(
     }, 1500); // Wait 1.5 seconds for force simulation to stabilize
 
     return () => {
-      clearTimeout(timeoutId);
+      if (focusTimeoutRef.current) {
+        clearTimeout(focusTimeoutRef.current);
+        focusTimeoutRef.current = null;
+      }
     };
   }, [initialNode, animateCameraToTarget]);
 

@@ -14,6 +14,7 @@ import type {
 import { graphConstants } from "./force-graph-constants";
 import {
   disposePrecomputedGeometries,
+  disposePrecomputedMaterials,
   getHypergraphFlowNodes,
 } from "./force-graph-utils";
 import { useGraphInteractions } from "./use-graph-interactions";
@@ -127,8 +128,9 @@ const ForceGraph = memo(
         // eslint-disable-next-line react-hooks/exhaustive-deps
         nodeObjectsRef.current.clear();
 
-        // Dispose shared geometries
+        // Dispose shared geometries and materials
         disposePrecomputedGeometries();
+        disposePrecomputedMaterials();
       };
     }, []);
 

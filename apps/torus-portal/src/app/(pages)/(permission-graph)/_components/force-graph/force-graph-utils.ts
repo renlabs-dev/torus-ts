@@ -44,16 +44,30 @@ const precomputedGeometries = {
   ),
 };
 
+const materialCache = new Set<THREE.Material>();
+
 export function disposePrecomputedGeometries() {
   Object.values(precomputedGeometries).forEach((geometry) => {
     geometry.dispose();
   });
 }
 
+/**
+ * Dispose cached materials to release GPU memory.
+ */
+export function disposePrecomputedMaterials() {
+  materialCache.forEach((material) => {
+    material.dispose();
+  });
+  materialCache.clear();
+}
+
 function createPrecomputedMaterial(color: string) {
-  return new THREE.MeshLambertMaterial({
+  const material = new THREE.MeshLambertMaterial({
     color: color,
   });
+  materialCache.add(material);
+  return material;
 }
 
 function assignPrecomputedObjects(node: CustomGraphNode) {
@@ -169,56 +183,69 @@ export interface ExtractedGraphData {
 }
 
 export function getHypergraphFlowNodes(
-  selectedNodeId: string, 
-  nodes: CustomGraphNode[], 
-  links: CustomGraphLink[], 
-  allocatorAddress: string
+  selectedNodeId: string,
+  nodes: CustomGraphNode[],
+  links: CustomGraphLink[],
+  allocatorAddress: string,
 ): Set<string> {
   const flowNodes = new Set<string>();
-  const selectedNode = nodes.find(n => n.id === selectedNodeId);
-  
+  const selectedNode = nodes.find((n) => n.id === selectedNodeId);
+
   if (!selectedNode) return flowNodes;
-  
+
   // Always include the selected node
   flowNodes.add(selectedNodeId);
-  
+
   // Helper function to get link IDs safely
   const getLinkIds = (link: CustomGraphLink) => {
-    const sourceId = typeof link.source === 'string' ? link.source : (typeof link.source === 'object' && link.source ? String(link.source.id) : '');
-    const targetId = typeof link.target === 'string' ? link.target : (typeof link.target === 'object' && link.target ? String(link.target.id) : '');
+    const sourceId =
+      typeof link.source === "string"
+        ? link.source
+        : typeof link.source === "object"
+          ? String(link.source.id)
+          : "";
+    const targetId =
+      typeof link.target === "string"
+        ? link.target
+        : typeof link.target === "object"
+          ? String(link.target.id)
+          : "";
     return { sourceId, targetId };
   };
-  
+
   // Helper function to traverse connections recursively, excluding allocator connections
   const traverseConnections = (nodeId: string, visited: Set<string>) => {
     if (visited.has(nodeId)) return;
     visited.add(nodeId);
     flowNodes.add(nodeId);
-    
+
     // Find all links connected to this node, but skip allocator connections unless it's the selected node
-    const connectedLinks = links.filter(link => {
+    const connectedLinks = links.filter((link) => {
       const { sourceId, targetId } = getLinkIds(link);
       const isNodeInvolved = sourceId === nodeId || targetId === nodeId;
-      
+
       if (!isNodeInvolved) return false;
-      
+
       // If this node is the allocator and it's not the selected node, skip its connections
       if (nodeId === allocatorAddress && nodeId !== selectedNodeId) {
         return false;
       }
-      
+
       // Skip allocation links (allocator -> root agents) unless allocator is selected
-      if (link.linkType === 'allocation' && selectedNodeId !== allocatorAddress) {
+      if (
+        link.linkType === "allocation" &&
+        selectedNodeId !== allocatorAddress
+      ) {
         return false;
       }
-      
+
       return true;
     });
-    
+
     // Traverse to connected nodes
-    connectedLinks.forEach(link => {
+    connectedLinks.forEach((link) => {
       const { sourceId, targetId } = getLinkIds(link);
-      
+
       if (sourceId !== nodeId) {
         traverseConnections(sourceId, visited);
       }
@@ -227,20 +254,20 @@ export function getHypergraphFlowNodes(
       }
     });
   };
-  
+
   // Special handling for allocator selection
   if (selectedNodeId === allocatorAddress) {
     // If allocator is selected, show everything
-    nodes.forEach(node => flowNodes.add(node.id));
+    nodes.forEach((node) => flowNodes.add(node.id));
   } else {
     // For any other node, traverse connections but exclude allocator's direct connections
     const visited = new Set<string>();
     traverseConnections(selectedNodeId, visited);
-    
+
     // Always include the allocator in the flow as it's the root of all flows
     flowNodes.add(allocatorAddress);
   }
-  
+
   return flowNodes;
 }
 
