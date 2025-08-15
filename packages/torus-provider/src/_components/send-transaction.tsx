@@ -7,10 +7,11 @@ import type {
 } from "@polkadot/extension-inject/types";
 import type { DispatchError, EventRecord } from "@polkadot/types/interfaces";
 import { u8aToHex } from "@polkadot/util";
-import { toast } from "@torus-ts/ui/hooks/use-toast";
 
 import { CONSTANTS } from "@torus-network/sdk/constants";
 import { tryAsync, trySync } from "@torus-network/torus-utils/try-catch";
+
+import { toast } from "@torus-ts/ui/hooks/use-toast";
 
 import type { TransactionResult } from "../_types";
 import type { TorusApiState } from "../torus-provider";
@@ -217,7 +218,7 @@ function showTransactionResultToast(
     toast.success(`${transactionType} ${TOAST_MESSAGES.SUCCESS}`, undefined, {
       label: "View on Block Explorer",
       onClick: () =>
-        window.open(getExplorerLink({ wsEndpoint, hash }), "_blank"),
+        window.open(getExplorerLink({ wsEndpoint, blockHash: hash }), "_blank"),
     });
   } else {
     const errorMessage = failed

@@ -9,6 +9,7 @@ import { formatToken, toNano } from "@torus-network/torus-utils/torus/token";
 import type { TransactionResult } from "@torus-ts/torus-provider";
 import { useTorus } from "@torus-ts/torus-provider";
 import { useSendTransaction } from "@torus-ts/torus-provider/use-send-transaction";
+import { useTransactionFee } from "@torus-ts/torus-provider/use-transaction-fee";
 import { Button } from "@torus-ts/ui/components/button";
 import { Checkbox } from "@torus-ts/ui/components/checkbox";
 import { Input } from "@torus-ts/ui/components/input";
@@ -47,28 +48,26 @@ export default function Playground() {
 function NewTransferPlayground() {
   const { api, selectedAccount, torusApi, wsEndpoint, isAccountConnected } =
     useTorus();
+  const { web3FromAddress } = torusApi;
+
   const [recipient, setRecipient] = useState(
     "5CSPN5CCbxjEVyAjDqzdaerMxMAbkcex7KMME7vmFWxDXfLb",
   );
   const [amount, setAmount] = useState("1");
   const [useInvalidNonce, setUseInvalidNonce] = useState(false);
 
-  const estimateTx = useMemo(() => {
-    const recipientTrimmed = recipient.trim();
-    const amountTrimmed = amount.trim();
-    if (!api || !recipientTrimmed || !amountTrimmed) {
-      return null;
-    }
-    try {
-      const torAmount = toNano(amountTrimmed);
-      return api.tx.balances.transferAllowDeath(recipientTrimmed, torAmount);
-    } catch (e) {
-      console.log("Error parsing amount:", e);
-      return null;
-    }
-  }, [api, recipient, amount]);
+  const estimateTx =
+    api?.tx.balances.transferAllowDeath(
+      "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY", // Alice
+      100,
+    ) ?? null;
 
-  const web3FromAddress = torusApi.web3FromAddress;
+  const {
+    fee,
+    isLoading: isFeeLoading,
+    error: feeError,
+  } = useTransactionFee(estimateTx, selectedAccount?.address ?? null, api);
+
   const {
     sendTx,
     isSigning,
@@ -81,16 +80,12 @@ function NewTransferPlayground() {
     message,
     error,
     txHash,
-    fee,
-    isFeeLoading,
-    feeError,
   } = useSendTransaction({
     api,
     selectedAccount,
     wsEndpoint,
     web3FromAddress,
     transactionType: "Transfer",
-    estimateTx: estimateTx,
   });
 
   // Format fee with proper error handling like other forms in the codebase
@@ -100,7 +95,7 @@ function NewTransferPlayground() {
       return `${formatToken(fee, 6)} TORUS`;
     } catch {
       // If formatting fails for higher amounts, return a fallback
-      return `${fee.toString()} nano-TORUS`;
+      return `${fee.toString()} Rems`;
     }
   }, [fee]);
 
