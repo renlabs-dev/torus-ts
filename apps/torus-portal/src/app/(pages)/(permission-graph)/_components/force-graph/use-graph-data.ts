@@ -69,6 +69,7 @@ export function useGraphData() {
     isLoading,
 
     graphData,
+    allocatorAddress,
 
     allSignals,
     allPermissions,

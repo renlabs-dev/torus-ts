@@ -34,6 +34,7 @@ export default function PermissionGraphPage() {
   const {
     graphData,
     isLoading,
+    allocatorAddress,
     allComputedWeights,
     allSignals,
     allPermissions,
@@ -151,6 +152,7 @@ export default function PermissionGraphPage() {
         }}
         initialNode={selectedNode}
         selectedNodeId={selectedNode?.id}
+        allocatorAddress={allocatorAddress}
       />
       <PermissionGraphFooter handleNodeSelect={handleNodeSelect} />
     </main>

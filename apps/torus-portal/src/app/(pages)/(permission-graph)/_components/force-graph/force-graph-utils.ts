@@ -168,6 +168,82 @@ export interface ExtractedGraphData {
   }[];
 }
 
+export function getHypergraphFlowNodes(
+  selectedNodeId: string, 
+  nodes: CustomGraphNode[], 
+  links: CustomGraphLink[], 
+  allocatorAddress: string
+): Set<string> {
+  const flowNodes = new Set<string>();
+  const selectedNode = nodes.find(n => n.id === selectedNodeId);
+  
+  if (!selectedNode) return flowNodes;
+  
+  // Always include the selected node
+  flowNodes.add(selectedNodeId);
+  
+  // Helper function to get link IDs safely
+  const getLinkIds = (link: CustomGraphLink) => {
+    const sourceId = typeof link.source === 'string' ? link.source : (typeof link.source === 'object' && link.source ? String(link.source.id) : '');
+    const targetId = typeof link.target === 'string' ? link.target : (typeof link.target === 'object' && link.target ? String(link.target.id) : '');
+    return { sourceId, targetId };
+  };
+  
+  // Helper function to traverse connections recursively, excluding allocator connections
+  const traverseConnections = (nodeId: string, visited: Set<string>) => {
+    if (visited.has(nodeId)) return;
+    visited.add(nodeId);
+    flowNodes.add(nodeId);
+    
+    // Find all links connected to this node, but skip allocator connections unless it's the selected node
+    const connectedLinks = links.filter(link => {
+      const { sourceId, targetId } = getLinkIds(link);
+      const isNodeInvolved = sourceId === nodeId || targetId === nodeId;
+      
+      if (!isNodeInvolved) return false;
+      
+      // If this node is the allocator and it's not the selected node, skip its connections
+      if (nodeId === allocatorAddress && nodeId !== selectedNodeId) {
+        return false;
+      }
+      
+      // Skip allocation links (allocator -> root agents) unless allocator is selected
+      if (link.linkType === 'allocation' && selectedNodeId !== allocatorAddress) {
+        return false;
+      }
+      
+      return true;
+    });
+    
+    // Traverse to connected nodes
+    connectedLinks.forEach(link => {
+      const { sourceId, targetId } = getLinkIds(link);
+      
+      if (sourceId !== nodeId) {
+        traverseConnections(sourceId, visited);
+      }
+      if (targetId !== nodeId) {
+        traverseConnections(targetId, visited);
+      }
+    });
+  };
+  
+  // Special handling for allocator selection
+  if (selectedNodeId === allocatorAddress) {
+    // If allocator is selected, show everything
+    nodes.forEach(node => flowNodes.add(node.id));
+  } else {
+    // For any other node, traverse connections but exclude allocator's direct connections
+    const visited = new Set<string>();
+    traverseConnections(selectedNodeId, visited);
+    
+    // Always include the allocator in the flow as it's the root of all flows
+    flowNodes.add(allocatorAddress);
+  }
+  
+  return flowNodes;
+}
+
 export function createSimplifiedGraphData(
   agents: Agent[],
   allPermissions: AllPermission[],

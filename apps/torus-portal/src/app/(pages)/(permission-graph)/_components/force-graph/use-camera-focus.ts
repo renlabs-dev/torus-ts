@@ -71,7 +71,7 @@ export function useCameraFocus(
     (node: CustomGraphNode) => {
       if (!node.x || !node.y || !node.z) return;
 
-      const distance = 200;
+      const distance = 300;
       const distRatio = 1 + distance / Math.hypot(node.x, node.y, node.z);
 
       const targetPosition = new THREE.Vector3(
@@ -112,7 +112,7 @@ export function useCameraFocus(
       const { x, y, z } = initialNode;
 
       if (x !== undefined && y !== undefined && z !== undefined) {
-        const focusDistance = 200;
+        const focusDistance = 350;
         const distRatio = 1 + focusDistance / Math.hypot(x, y, z);
 
         const targetPosition = new THREE.Vector3(
