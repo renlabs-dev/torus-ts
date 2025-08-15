@@ -764,6 +764,7 @@ export const permissionRouter = {
       const incomingStreamsByTarget = await getStreamsByTarget(ctx, {
         targetAccountId: input.accountId,
       });
+      console.log(incomingStreamsByTarget);
       const incomingPermissionStreamPairs = extractPermissionStreamPairs(
         incomingStreamsByTarget,
       );
@@ -875,6 +876,7 @@ export const permissionRouter = {
         }
       }
 
+      //incoming: Record<string, Record<string, number | null>> -> PermissionId, <StreamId, Tokens Per Block or null (if its null it means it still calculating)>
       return {
         incoming,
         outgoing,
