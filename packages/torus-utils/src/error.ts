@@ -20,6 +20,20 @@ export function isError(error: unknown): error is Error {
   return error instanceof Error;
 }
 
+/**
+ * Creates a new Error instance with the provided message.
+ *
+ * @param txt - The error message
+ * @returns A new Error instance with the provided message
+ *
+ * @example
+ * ```ts
+ * throw strErr("Something went wrong");
+ * // Equivalent to: throw new Error("Something went wrong");
+ * ```
+ */
+export const strErr = (txt: string) => new Error(txt);
+
 export interface ErrorLike {
   name: string;
   message: string;
