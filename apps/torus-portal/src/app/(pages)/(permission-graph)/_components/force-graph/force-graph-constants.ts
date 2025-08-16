@@ -8,29 +8,29 @@ export const graphConstants = {
   nodeConfig: {
     nodeColors: {
       default: "#6b7280",
-      allocator: "#ffffff",
+      allocator: "#d1d1d1",
 
       userNode: "#d946ef",
-      rootNode: "#7ac3ff",
-      targetNode: "#10b981",
+      rootNode: "#63cbff",
+      targetNode: "#1fdb77",
 
       signalNode: "#69ff5c",
 
-      emissionPermissionNode: "#ffffff",
-      namespacePermissionNode: "#eab308",
+      emissionPermissionNode: "#d1d1d1",
+      namespacePermissionNode: "#f2b907",
     },
     nodeGeometry: {
       allocator: {
         type: "sphere",
         radius: 28,
-        widthSegments: 24,
-        heightSegments: 24,
+        widthSegments: 36,
+        heightSegments: 36,
       },
       rootNode: {
         type: "sphere",
         radius: 15,
-        widthSegments: 20,
-        heightSegments: 20,
+        widthSegments: 24,
+        heightSegments: 24,
       },
       permissionNode: {
         type: "icosahedron",
@@ -40,14 +40,14 @@ export const graphConstants = {
       targetNode: {
         type: "sphere",
         radius: 15,
-        widthSegments: 20,
-        heightSegments: 20,
+        widthSegments: 24,
+        heightSegments: 24,
       },
       userNode: {
         type: "sphere",
         radius: 15,
-        widthSegments: 20,
-        heightSegments: 20,
+        widthSegments: 24,
+        heightSegments: 24,
       },
       signalNode: {
         type: "tetrahedron",
@@ -69,7 +69,7 @@ export const graphConstants = {
       signalLink: "#69ff5c",
       defaultLink: "#6b7280",
     },
-    linkWidth: 0.5,
+    linkWidth: 0.8,
     arrowConfig: {
       defaultArrowLength: 6,
       defaultArrowRelPos: 0.93,
@@ -82,7 +82,7 @@ export const graphConstants = {
       defaultSpeed: 0.008,
     },
     particleConfig: {
-      particleWidth: 2,
+      particleWidth: 3,
       particles: 1,
       speed: 0.008,
     },
