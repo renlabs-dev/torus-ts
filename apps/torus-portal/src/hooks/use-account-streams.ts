@@ -46,11 +46,13 @@ function processStreamData(
   let hasValidValues = false;
 
   for (const [permissionId, streamData] of Object.entries(streams)) {
-    for (const [streamId, tokensPerBlock] of Object.entries(streamData)) {
-      if (tokensPerBlock === null) {
+    for (const [streamId, tokensPerBlockRaw] of Object.entries(streamData)) {
+      if (tokensPerBlockRaw === null) {
         hasNullValues = true;
       } else {
         hasValidValues = true;
+
+        const tokensPerBlock = tokensPerBlockRaw / 10e18;
         const tokensPerWeek = tokensPerBlock * BLOCKS_PER_WEEK;
 
         streamList.push({
