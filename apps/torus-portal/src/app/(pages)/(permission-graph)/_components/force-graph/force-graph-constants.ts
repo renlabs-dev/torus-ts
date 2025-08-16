@@ -39,13 +39,13 @@ export const graphConstants = {
       },
       targetNode: {
         type: "sphere",
-        radius: 15,
+        radius: 13,
         widthSegments: 24,
         heightSegments: 24,
       },
       userNode: {
         type: "sphere",
-        radius: 15,
+        radius: 13,
         widthSegments: 24,
         heightSegments: 24,
       },
