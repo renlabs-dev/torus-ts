@@ -42,7 +42,8 @@ function ForceGraphScene({
 
   return (
     <>
-      <ambientLight intensity={0.3} />
+      <color attach="background" args={["#111"]} />
+      <ambientLight intensity={0.4} />
       <hemisphereLight intensity={1.2} color="#ffffff" groundColor="#444444" />
       <spotLight
         castShadow
@@ -54,7 +55,12 @@ function ForceGraphScene({
         shadow-mapSize={[256, 256]}
       />
       <EffectComposer>
-        <Bloom mipmapBlur luminanceThreshold={2.6} intensity={2} radius={1.2} />
+        <Bloom
+          mipmapBlur
+          luminanceThreshold={0.7}
+          intensity={1.3}
+          radius={0.8}
+        />
       </EffectComposer>
       <ForceGraph
         graphData={data}
@@ -109,7 +115,11 @@ export function ForceGraphCanvas({
 
   return (
     <div className="fixed inset-0 z-0 animate-fade animate-delay-1000">
-      <Canvas camera={{ position: [0, 0, 600], far: 8000 }} shadows>
+      <Canvas
+        camera={{ position: [0, 0, 600], far: 8000 }}
+        shadows
+        performance={{ min: 0.5 }}
+      >
         <Suspense fallback={null}>
           <ForceGraphScene
             data={data}

@@ -106,7 +106,6 @@ const ForceGraph = memo(
         fgRef.current.tickFrame();
       }
     });
-
     // Cleanup materials and geometries on unmount
     useEffect(() => {
       return () => {
@@ -144,19 +143,15 @@ const ForceGraph = memo(
       if (lastHoveredNodeRef.current) {
         const prevMesh = lastHoveredNodeRef.current.__threeObj as THREE.Mesh;
         const prevMaterial = prevMesh.material as THREE.MeshLambertMaterial;
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-        if (prevMaterial.emissive) {
-          prevMaterial.emissive.setHex(0x000000);
-        }
+        // Reset to base emissive intensity
+        prevMaterial.emissiveIntensity = 0.95;
       }
 
       if (node) {
         const mesh = node.__threeObj as THREE.Mesh;
         const material = mesh.material as THREE.MeshLambertMaterial;
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-        if (material.emissive) {
-          material.emissive.setHex(0x444444);
-        }
+        // Increase emissive intensity for stronger glow on hover
+        material.emissiveIntensity = 1.2;
       }
 
       lastHoveredNodeRef.current = node;
@@ -206,6 +201,9 @@ const ForceGraph = memo(
 
           material.transparent = true;
           material.opacity = opacity;
+          // Add emissive properties for glow effect
+          material.emissive = material.color.clone();
+          material.emissiveIntensity = 0.95;
           materialsRef.current.add(material);
           mesh = new THREE.Mesh(customNode.precomputedGeometry, material);
         } else {
@@ -221,6 +219,9 @@ const ForceGraph = memo(
             color: color,
             opacity: opacity,
             transparent: true,
+            // Add emissive properties for glow effect
+            emissive: color,
+            emissiveIntensity: 0.95,
           });
           materialsRef.current.add(material);
 
