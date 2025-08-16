@@ -35,7 +35,6 @@ interface UseAccountStreamsProps {
 
 const BLOCKS_PER_WEEK =
   CONSTANTS.TIME.ONE_WEEK / CONSTANTS.TIME.BLOCK_TIME_SECONDS;
-
 function processStreamData(
   streams: Record<string, Record<string, number | null>>,
   // type: "incoming" | "outgoing",
@@ -51,8 +50,7 @@ function processStreamData(
         hasNullValues = true;
       } else {
         hasValidValues = true;
-
-        const tokensPerBlock = tokensPerBlockRaw / 10e18;
+        const tokensPerBlock = tokensPerBlockRaw / 10 ** 18;
         const tokensPerWeek = tokensPerBlock * BLOCKS_PER_WEEK;
 
         streamList.push({
@@ -82,7 +80,6 @@ function processStreamData(
     (sum, s) => sum + s.percentage,
     0,
   );
-
   return {
     totalTokensPerBlock,
     totalTokensPerWeek,
@@ -161,7 +158,6 @@ export function useAccountStreamsSummary(props: UseAccountStreamsProps) {
       !streams.outgoing.isCalculating &&
       !streams.incoming.hasPartialData &&
       !streams.outgoing.hasPartialData;
-
     return {
       ...streams,
       delta: {
