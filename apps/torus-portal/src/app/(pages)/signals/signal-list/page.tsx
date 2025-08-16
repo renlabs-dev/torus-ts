@@ -2,8 +2,13 @@
 
 import { useState } from "react";
 
-import { formatToken } from "@torus-network/torus-utils/torus";
-
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@torus-ts/ui/components/card";
 import {
   Tabs,
   TabsContent,
@@ -22,14 +27,13 @@ import FulfilledSignalsView from "./_components/fulfilled-signals-view";
 export default function SignalsPage() {
   const [activeTab, setActiveTab] = useState("all");
 
-  const { totalEmissions } = useAccountEmissions({
-    accountId: "5F6ZNwszZqhf6zjW4AxUaagczJSF9FwXDML8TpNtUCSnpC2u",
+  // Test account - you can change this to any account ID
+  const testAccountId = "5D5FbRRUvQxdQnJLgNW6BdgZ86CRGreKRahzhxmdSj2REBnt";
+
+  const emissions = useAccountEmissions({
+    accountId: testAccountId,
+    weightFactor: 0, // No penalty for testing
   });
-  console.log(
-    "Total Emissions for account:",
-    "5F6ZNwszZqhf6zjW4AxUaagczJSF9FwXDML8TpNtUCSnpC2u",
-  );
-  console.log(formatToken(totalEmissions));
 
   return (
     <PortalFormContainer>
