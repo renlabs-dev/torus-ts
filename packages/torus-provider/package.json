@@ -7,7 +7,9 @@
     ".": "./src/torus-provider.tsx",
     "./types": "./src/_types/index.ts",
     "./send-transaction": "./src/_components/send-transaction.tsx",
-    "./send-transaction-v2": "./src/_components/send-transaction-v2.tsx"
+    "./use-send-transaction": "./src/_components/use-send-transaction.ts",
+    "./use-send-transaction-display": "./src/_components/use-send-transaction-display.ts",
+    "./use-transaction-fee": "./src/_components/use-transaction-fee.ts"
   },
   "license": "MIT",
   "scripts": {

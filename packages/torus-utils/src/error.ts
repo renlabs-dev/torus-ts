@@ -1,4 +1,137 @@
+import type { Extends } from "tsafe";
+import { assert } from "tsafe";
+
+// ==== Utilities ====
+
 type ErrorCtr = new (message: string, options?: ErrorOptions) => Error;
+
+/**
+ * Type guard to check if a value is an instance of Error.
+ *
+ * @param error - The value to check.
+ * @returns True if the value is an Error instance, false otherwise.
+ *
+ * @example
+ * if (isError(result)) {
+ *   console.error(result.message);
+ * }
+ */
+export function isError(error: unknown): error is Error {
+  return error instanceof Error;
+}
+
+/**
+ * Creates a new Error instance with the provided message.
+ *
+ * @param txt - The error message
+ * @returns A new Error instance with the provided message
+ *
+ * @example
+ * ```ts
+ * throw strErr("Something went wrong");
+ * // Equivalent to: throw new Error("Something went wrong");
+ * ```
+ */
+export const strErr = (txt: string) => new Error(txt);
+
+export interface ErrorLike {
+  name: string;
+  message: string;
+  stack?: string;
+  cause?: unknown;
+}
+
+// ErrorLike is - in theory, at the present moment - identical with Error
+// as defined by Ts typing of the ECMAScript standard. But well keep this as
+// a separate type to avoid any possible issues in the future.
+assert<Extends<ErrorLike, Error>>();
+
+export function isErrorLike(v: unknown): v is ErrorLike {
+  if (!v || typeof v !== "object") return false;
+  if (!("name" in v) || typeof v.name !== "string") return false;
+  if (!("message" in v) || typeof v.message !== "string") return false;
+  if ("stack" in v && typeof v.stack !== "string") return false;
+  return true;
+}
+
+/** Safe JSON that won't explode on cycles; optional length cap */
+function safeStringify(value: unknown, maxLen = 1000): string {
+  const seen = new WeakSet();
+  const json = JSON.stringify(value, (_k, v: unknown) => {
+    if (typeof v === "object" && v !== null) {
+      if (seen.has(v)) return "[Circular]";
+      seen.add(v);
+    }
+    if (typeof v === "bigint") return v.toString(); // JSON can't do bigint
+    if (typeof v === "symbol") return String(v);
+    if (typeof v === "function") return `[Function ${v.name || "anonymous"}]`;
+    return v;
+  });
+  return json.length > maxLen ? json.slice(0, maxLen) + "…[truncated]" : json;
+}
+
+/** Turns a value into a string representation that can be used for error messages */
+function messageFor(value: unknown): string {
+  if (typeof value === "string") return value;
+  if (typeof value === "number" || typeof value === "boolean")
+    return String(value);
+  if (typeof value === "bigint") return value.toString();
+  if (typeof value === "symbol") return String(value);
+  if (Array.isArray(value))
+    return `Aggregate(${value.length}): ` + safeStringify(value);
+  if (value && typeof value === "object") return safeStringify(value);
+  return String(value);
+}
+
+/**
+ * Ensures that the provided value is converted to an Error object.
+ *
+ * If the input is already an Error, returns it unchanged. Otherwise, attempts
+ * to create a new Error with a stringified version of the input.
+ *
+ * @param maybeError - The value to convert to an Error
+ * @returns An Error object
+ *
+ * @example
+ * ```ts
+ * // Returns original error
+ * ensureError(new Error('test')); // Error: test
+ *
+ * // Converts object to Error
+ * ensureError({ message: 'test' }); // Error: {"message":"test"}
+ *
+ * // Handles non-stringifiable values
+ * ensureError(undefined); // Error: undefined
+ * ```
+ */
+// TODO: add unit tests for `ensureError`
+export function ensureError(maybeError: unknown): Error {
+  if (isError(maybeError)) {
+    return maybeError;
+  }
+
+  // If it's "error-like", reconstruct a proper Error while preserving details
+  if (isErrorLike(maybeError)) {
+    const { name, message, stack, cause } = maybeError;
+
+    const err = new Error(message, { cause: maybeError });
+    err.name = name;
+
+    if (typeof stack === "string") {
+      // Keep provided stack if present (e.g., serialized errors)
+      err.stack = stack;
+    }
+    if (cause !== undefined) {
+      // Keep provided cause if present (e.g., serialized errors)
+      err.cause = cause;
+    }
+
+    return err;
+  }
+
+  const message = messageFor(maybeError);
+  return new Error(message, { cause: maybeError });
+}
 
 /**
  * Creates an error with a chained message that preserves the original error as the cause.
@@ -44,7 +177,16 @@ export const chainErr =
   (err: Error) =>
     new errCtr(`${msg}: ${err.message}`, { cause: err });
 
-// ==== MultiError ====
+// ==== Errors ====
+
+// ---- ParseError ----
+
+/**
+ * Error thrown when parsing operations fail.
+ */
+export class ParseError extends Error {}
+
+// ---- MultiError ----
 
 /**
  * Type representing an error that combines both Error and Array<Error> interfaces.

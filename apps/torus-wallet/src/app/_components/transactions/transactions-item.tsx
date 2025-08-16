@@ -2,11 +2,11 @@
 
 import { ArrowRight, Copy } from "lucide-react";
 import { DateTime } from "luxon";
-import { getExplorerLink } from "node_modules/@torus-ts/torus-provider/src/_components/send-transaction-v2";
 
 import { smallAddress } from "@torus-network/torus-utils/torus/address";
 import { formatToken } from "@torus-network/torus-utils/torus/token";
 
+import { getExplorerLink } from "@torus-ts/torus-provider/use-send-transaction";
 import { CopyButton } from "@torus-ts/ui/components/copy-button";
 import { cn } from "@torus-ts/ui/lib/utils";
 
@@ -51,7 +51,7 @@ export function TransactionItem({
 
   const explorerLink = getExplorerLink({
     wsEndpoint: env("NEXT_PUBLIC_TORUS_RPC_URL"),
-    hash: transaction.hash ?? "",
+    blockHash: transaction.hash ?? "",
   });
 
   return (
