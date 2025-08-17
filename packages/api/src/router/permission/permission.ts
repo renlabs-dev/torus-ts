@@ -752,6 +752,139 @@ export const permissionRouter = {
       };
     }),
 
+  streamsByMultipleAccountsPerBlock: publicProcedure
+    .input(
+      z.object({
+        accountIds: z.array(SS58_SCHEMA),
+        lastN: z.number().int().positive().default(7),
+      }),
+    )
+    .query(async ({ ctx, input }) => {
+      const result: Record<string, { incoming: Record<string, Record<string, number | null>>, outgoing: Record<string, Record<string, number | null>> }> = {};
+
+      // Process each account
+      for (const accountId of input.accountIds) {
+        // Get incoming streams (where account is target)
+        const incomingStreamsByTarget = await getStreamsByTarget(ctx, {
+          targetAccountId: accountId,
+        });
+        const incomingPermissionStreamPairs = extractPermissionStreamPairs(
+          incomingStreamsByTarget,
+        );
+
+        // Get outgoing streams (where account is grantor)
+        const outgoingStreamsByGrantor = await getOutgoingStreamsByGrantor(ctx, {
+          grantorAccountId: accountId,
+        });
+        const outgoingPermissionStreamPairs = extractSimplePermissionStreamPairs(
+          outgoingStreamsByGrantor,
+        );
+
+        // Process incoming streams (with weights)
+        const incoming: Record<string, Record<string, number | null>> = {};
+        if (incomingPermissionStreamPairs.length > 0) {
+          const simplePairs = incomingPermissionStreamPairs.map(
+            ({ permissionId, streamId }) => ({ permissionId, streamId }),
+          );
+          const incomingAccumulatedAmounts = await queryAccumulatedAmounts(
+            ctx,
+            simplePairs,
+          );
+
+          // Calculate median amounts
+          const medianAmounts = calculateMedianAmounts(
+            simplePairs,
+            incomingAccumulatedAmounts,
+            input.lastN,
+          );
+          const weightedMedianAmounts = applyWeightsToMedianAmounts(
+            medianAmounts,
+            incomingStreamsByTarget,
+          );
+
+          // Calculate median block deltas
+          const medianBlockDeltas = calculateMedianBlockDeltas(
+            simplePairs,
+            incomingAccumulatedAmounts,
+            input.lastN,
+          );
+
+          // Calculate tokens per block
+          for (const [permissionId, streams] of Object.entries(
+            weightedMedianAmounts,
+          )) {
+            incoming[permissionId] = {};
+            const blockDeltas = medianBlockDeltas[permissionId];
+
+            if (blockDeltas) {
+              for (const [streamId, amount] of Object.entries(streams)) {
+                const blockDelta = blockDeltas[streamId];
+                if (
+                  amount !== null &&
+                  blockDelta !== null &&
+                  blockDelta !== undefined &&
+                  blockDelta > 0
+                ) {
+                  incoming[permissionId][streamId] = amount / blockDelta;
+                } else {
+                  incoming[permissionId][streamId] = null;
+                }
+              }
+            }
+          }
+        }
+
+        // Process outgoing streams (without weights)
+        const outgoing: Record<string, Record<string, number | null>> = {};
+        if (outgoingPermissionStreamPairs.length > 0) {
+          const outgoingAccumulatedAmounts = await queryAccumulatedAmounts(
+            ctx,
+            outgoingPermissionStreamPairs,
+          );
+
+          // Calculate median amounts
+          const medianAmounts = calculateMedianAmounts(
+            outgoingPermissionStreamPairs,
+            outgoingAccumulatedAmounts,
+            input.lastN,
+          );
+
+          // Calculate median block deltas
+          const medianBlockDeltas = calculateMedianBlockDeltas(
+            outgoingPermissionStreamPairs,
+            outgoingAccumulatedAmounts,
+            input.lastN,
+          );
+
+          // Calculate tokens per block
+          for (const [permissionId, streams] of Object.entries(medianAmounts)) {
+            outgoing[permissionId] = {};
+            const blockDeltas = medianBlockDeltas[permissionId];
+
+            if (blockDeltas) {
+              for (const [streamId, amount] of Object.entries(streams)) {
+                const blockDelta = blockDeltas[streamId];
+                if (
+                  amount !== null &&
+                  blockDelta !== null &&
+                  blockDelta !== undefined &&
+                  blockDelta > 0
+                ) {
+                  outgoing[permissionId][streamId] = amount / blockDelta;
+                } else {
+                  outgoing[permissionId][streamId] = null;
+                }
+              }
+            }
+          }
+        }
+
+        result[accountId] = { incoming, outgoing };
+      }
+
+      return result;
+    }),
+
   streamsByAccountPerBlock: publicProcedure
     .input(
       z.object({
