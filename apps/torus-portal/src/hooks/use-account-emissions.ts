@@ -3,7 +3,10 @@ import { useMemo } from "react";
 import { api } from "~/trpc/react";
 
 import { useAccountStreamsSummary } from "./use-account-streams";
-import { calculateAgentTokensPerWeek, useTokensPerWeek } from "./use-tokens-per-week";
+import {
+  calculateAgentTokensPerWeek,
+  useTokensPerWeek,
+} from "./use-tokens-per-week";
 
 interface UseAccountEmissionsProps {
   accountId: string;
@@ -53,7 +56,7 @@ interface AccountEmissionsResult {
 }
 
 export function useAccountEmissions(
-  props: UseAccountEmissionsProps
+  props: UseAccountEmissionsProps,
 ): AccountEmissionsResult {
   const tokensPerWeek = useTokensPerWeek();
 
@@ -63,7 +66,7 @@ export function useAccountEmissions(
       {
         refetchOnWindowFocus: false,
         refetchOnMount: false,
-      }
+      },
     );
 
   const userStreamsSummary = useAccountStreamsSummary({
@@ -71,7 +74,8 @@ export function useAccountEmissions(
   });
 
   const result = useMemo<AccountEmissionsResult>(() => {
-    const isLoading = tokensPerWeek.isLoading || isAgentLoading || userStreamsSummary.isLoading;
+    const isLoading =
+      tokensPerWeek.isLoading || isAgentLoading || userStreamsSummary.isLoading;
     const isError = tokensPerWeek.isError || userStreamsSummary.isError;
 
     if (isLoading || isError || !agentRootEmissions) {
@@ -106,13 +110,16 @@ export function useAccountEmissions(
       tokensPerWeek.effectiveEmissionAmount,
       tokensPerWeek.incentivesRatioValue,
       agentWeightValue,
-      weightPenaltyValue
+      weightPenaltyValue,
     );
 
     // Get stream values
-    const incomingTokensPerWeek = userStreamsSummary.incoming.totalTokensPerWeek;
-    const outgoingTokensPerWeek = userStreamsSummary.outgoing.totalTokensPerWeek;
-    const netStreamsTokensPerWeek = incomingTokensPerWeek - outgoingTokensPerWeek;
+    const incomingTokensPerWeek =
+      userStreamsSummary.incoming.totalTokensPerWeek;
+    const outgoingTokensPerWeek =
+      userStreamsSummary.outgoing.totalTokensPerWeek;
+    const netStreamsTokensPerWeek =
+      incomingTokensPerWeek - outgoingTokensPerWeek;
 
     // Calculate total agent network emission
     const agentNetworkEmission = rootTokensPerWeek + netStreamsTokensPerWeek;
@@ -149,10 +156,12 @@ export function useAccountEmissions(
 
     // Format display values
     const formatTokens = (value: number) => {
-      return value.toLocaleString("en-US", {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2,
-      }) + " TORUS";
+      return (
+        value.toLocaleString("en-US", {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2,
+        }) + " TORUS"
+      );
     };
 
     const displayValues = {

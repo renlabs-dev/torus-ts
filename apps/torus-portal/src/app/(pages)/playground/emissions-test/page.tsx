@@ -1,10 +1,16 @@
 "use client";
 
-import { useAccountEmissions } from "~/hooks/use-account-emissions";
-import { Card, CardContent, CardHeader, CardTitle } from "@torus-ts/ui/components/card";
+import { Alert, AlertDescription } from "@torus-ts/ui/components/alert";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@torus-ts/ui/components/card";
 import { Separator } from "@torus-ts/ui/components/separator";
 import { Skeleton } from "@torus-ts/ui/components/skeleton";
-import { Alert, AlertDescription } from "@torus-ts/ui/components/alert";
+
+import { useAccountEmissions } from "~/hooks/use-account-emissions";
 
 const TEST_ACCOUNT = "5E2X371Jg62WWmKVVhDNgfFNtjXTSKMQDGGWKgqimKUgZ9gX";
 
@@ -24,7 +30,7 @@ export default function EmissionsTestPage() {
   return (
     <div className="container mx-auto p-6 max-w-4xl">
       <h1 className="text-3xl font-bold mb-6">Account Emissions Test</h1>
-      
+
       <Card className="mb-6">
         <CardHeader>
           <CardTitle>Test Account</CardTitle>
@@ -43,7 +49,8 @@ export default function EmissionsTestPage() {
             {emissions.displayValues.agentNetworkEmission}
           </div>
           <p className="text-sm text-muted-foreground mt-2">
-            {emissions.emissions.total.percentage.toFixed(4)}% of network emissions
+            {emissions.emissions.total.percentage.toFixed(4)}% of network
+            emissions
           </p>
         </CardContent>
       </Card>
@@ -75,7 +82,8 @@ export default function EmissionsTestPage() {
                 {emissions.displayValues.netStreams}
               </div>
               <p className="text-sm text-muted-foreground">
-                {emissions.emissions.streams.net.percentage.toFixed(4)}% of network
+                {emissions.emissions.streams.net.percentage.toFixed(4)}% of
+                network
               </p>
             </div>
           </CardContent>
