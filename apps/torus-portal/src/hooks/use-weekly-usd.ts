@@ -1,16 +1,13 @@
 import { useMemo } from "react";
 
-import { CONSTANTS } from "@torus-network/sdk/constants";
-
-import {
-  useGetTorusPrice,
-  useIncentivesRatio,
-  useRecyclingPercentage,
-  useTreasuryEmissionFee,
-} from "@torus-ts/query-provider/hooks";
-import { useTorus } from "@torus-ts/torus-provider";
+import { useGetTorusPrice } from "@torus-ts/query-provider/hooks";
 
 import { api as extAPI } from "~/trpc/react";
+
+import {
+  calculateAgentTokensPerWeek,
+  useTokensPerWeek,
+} from "./use-tokens-per-week";
 
 interface AgentUsdCalculationResult {
   isLoading: boolean;
@@ -36,7 +33,7 @@ export function useWeeklyUsdCalculation(
     isLoading: isTorusPriceLoading,
     isError: isTorusPriceError,
   } = useGetTorusPrice();
-  // Use local torusPrice state with caching configuration
+
   // Queries the computed weight of the agent
   const {
     data: computedWeightedAgents,
@@ -52,90 +49,44 @@ export function useWeeklyUsdCalculation(
     },
   );
 
-  const { api } = useTorus();
-
-  // Gets the information of Recycling Percentage
+  // Use the new tokens per week hook
   const {
-    data: recyclingPercentage,
-    isLoading: isRecyclingPercentageLoading,
-    isError: isRecyclingPercentageError,
-  } = useRecyclingPercentage(api);
-
-  // Gets the information of Treasury Emission Fee
-  const {
-    data: treasuryEmissionFee,
-    isLoading: isTreasuryEmissionFeeLoading,
-    isError: isTreasuryEmissionFeeError,
-  } = useTreasuryEmissionFee(api);
-
-  // Gets the information of Incentives Ratio
-  const {
-    data: incentivesRatio,
-    isLoading: isIncentivesRatioLoading,
-    isError: isIncentivesRatioError,
-  } = useIncentivesRatio(api);
+    isLoading: isTokensPerWeekLoading,
+    isError: isTokensPerWeekError,
+    effectiveEmissionAmount,
+    incentivesRatioValue,
+  } = useTokensPerWeek();
 
   // Loads all queries at once, and if any of them are wrong, the whole result is wrong
   const isLoading =
     isTorusPriceLoading ||
     isComputedWeightLoading ||
-    isRecyclingPercentageLoading ||
-    isTreasuryEmissionFeeLoading ||
-    isIncentivesRatioLoading ||
+    isTokensPerWeekLoading ||
     computedWeightedAgents === undefined;
 
   const isError =
-    isTorusPriceError ||
-    isComputedWeightError ||
-    isRecyclingPercentageError ||
-    isTreasuryEmissionFeeError ||
-    isIncentivesRatioError;
+    isTorusPriceError || isComputedWeightError || isTokensPerWeekError;
 
   // Calculate tokens per week
   const tokensPerWeek = useMemo(() => {
     // Early return conditions
     if (isLoading || isError || computedWeightedAgents === null) return 0;
 
-    // Constants and input parameters (keeping percentage values)
-    const BLOCKS_PER_WEEK =
-      CONSTANTS.TIME.ONE_WEEK / CONSTANTS.TIME.BLOCK_TIME_SECONDS;
-    const fullWeeklyEmission =
-      CONSTANTS.EMISSION.BLOCK_EMISSION * BLOCKS_PER_WEEK;
-
-    // Parse values, providing defaults if null/undefined
-    const incentivesRatioValue = Number(incentivesRatio) || 100;
-    const recyclingRateValue = Number(recyclingPercentage) || 0;
-    const treasuryFeeValue = Number(treasuryEmissionFee) || 1;
     const weightPenaltyValue = props.weightFactor ?? 1;
-    const agentWeightValue = computedWeightedAgents.percComputedWeight * 100; // Assuming this is already decimal
+    const agentWeightValue = computedWeightedAgents.percComputedWeight * 100;
 
-    // Calculate emission percentage accounting for recycling
-    const emissionRemainderPercent = 100 - recyclingRateValue;
-
-    // Calculate the treasury fee amount
-    const treasuryFeeAmount =
-      (emissionRemainderPercent * treasuryFeeValue) / 100;
-
-    // Calculate the effective emission percentage
-    const effectiveEmissionPercent =
-      emissionRemainderPercent - treasuryFeeAmount;
-
-    const effectiveEmissionAmount =
-      (effectiveEmissionPercent / 100) * fullWeeklyEmission;
-
-    return (
-      effectiveEmissionAmount *
-      (incentivesRatioValue / 100) *
-      (agentWeightValue / 100) *
-      (1 - weightPenaltyValue / 100)
+    return calculateAgentTokensPerWeek(
+      effectiveEmissionAmount,
+      incentivesRatioValue,
+      agentWeightValue,
+      weightPenaltyValue,
     );
   }, [
     isLoading,
     isError,
     computedWeightedAgents,
-    incentivesRatio,
-    recyclingPercentage,
-    treasuryEmissionFee,
+    effectiveEmissionAmount,
+    incentivesRatioValue,
     props.weightFactor,
   ]);
 

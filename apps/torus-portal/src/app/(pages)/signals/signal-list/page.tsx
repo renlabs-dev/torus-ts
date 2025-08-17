@@ -25,6 +25,7 @@ export default function SignalsPage() {
         title="Demand Signals"
         description="View and manage network demand signals."
       />
+
       <Tabs value={activeTab} onValueChange={setActiveTab} className="mt-6">
         <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="all">All Active</TabsTrigger>
