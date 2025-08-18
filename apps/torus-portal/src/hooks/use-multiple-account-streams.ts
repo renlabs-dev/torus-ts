@@ -26,18 +26,19 @@ interface AccountStreamsResult {
   outgoing: StreamSummary;
   isLoading: boolean;
   isError: boolean;
+  hasAnyCalculating: boolean;
 }
 
-interface UseAccountStreamsProps {
-  accountId: string;
+interface UseMultipleAccountStreamsProps {
+  accountIds: string[];
   lastN?: number;
 }
 
 const BLOCKS_PER_WEEK =
   CONSTANTS.TIME.ONE_WEEK / CONSTANTS.TIME.BLOCK_TIME_SECONDS;
+
 function processStreamData(
   streams: Record<string, Record<string, number | null>>,
-  // type: "incoming" | "outgoing",
 ): StreamSummary {
   const streamList: StreamData[] = [];
   let totalTokensPerBlock = 0;
@@ -90,87 +91,71 @@ function processStreamData(
   };
 }
 
-export function useAccountStreams(
-  props: UseAccountStreamsProps,
-): AccountStreamsResult {
+export function useMultipleAccountStreams(
+  props: UseMultipleAccountStreamsProps,
+): Record<string, AccountStreamsResult> {
   const { data, isLoading, isError } =
-    api.permission.streamsByAccountPerBlock.useQuery(
+    api.permission.streamsByMultipleAccountsPerBlock.useQuery(
       {
-        accountId: props.accountId,
+        accountIds: props.accountIds,
         lastN: props.lastN ?? 7,
       },
       {
+        enabled: props.accountIds.length > 0,
         refetchOnWindowFocus: false,
         refetchOnMount: false,
       },
     );
 
-  const result = useMemo<AccountStreamsResult>(() => {
-    if (!data) {
-      return {
-        incoming: {
-          totalTokensPerBlock: 0,
-          totalTokensPerWeek: 0,
-          totalPercentage: 0,
-          streams: [],
-          isCalculating: false,
-          hasPartialData: false,
-        },
-        outgoing: {
-          totalTokensPerBlock: 0,
-          totalTokensPerWeek: 0,
-          totalPercentage: 0,
-          streams: [],
-          isCalculating: false,
-          hasPartialData: false,
-        },
+  return useMemo(() => {
+    const result: Record<string, AccountStreamsResult> = {};
+
+    for (const accountId of props.accountIds) {
+      const accountData = data?.[accountId];
+
+      if (!accountData) {
+        result[accountId] = {
+          incoming: {
+            totalTokensPerBlock: 0,
+            totalTokensPerWeek: 0,
+            totalPercentage: 0,
+            streams: [],
+            isCalculating: false,
+            hasPartialData: false,
+          },
+          outgoing: {
+            totalTokensPerBlock: 0,
+            totalTokensPerWeek: 0,
+            totalPercentage: 0,
+            streams: [],
+            isCalculating: false,
+            hasPartialData: false,
+          },
+          isLoading,
+          isError,
+          hasAnyCalculating: false,
+        };
+        continue;
+      }
+
+      const incoming = processStreamData(accountData.incoming);
+      const outgoing = processStreamData(accountData.outgoing);
+
+      const hasAnyCalculating =
+        incoming.isCalculating ||
+        outgoing.isCalculating ||
+        incoming.hasPartialData ||
+        outgoing.hasPartialData;
+
+      result[accountId] = {
+        incoming,
+        outgoing,
         isLoading,
         isError,
+        hasAnyCalculating,
       };
     }
 
-    const incoming = processStreamData(data.incoming);
-    const outgoing = processStreamData(data.outgoing);
-
-    return {
-      incoming,
-      outgoing,
-      isLoading,
-      isError,
-    };
-  }, [data, isLoading, isError]);
-
-  return result;
-}
-
-export function useAccountStreamsSummary(props: UseAccountStreamsProps) {
-  const streams = useAccountStreams(props);
-
-  return useMemo(() => {
-    const delta =
-      streams.incoming.totalTokensPerBlock -
-      streams.outgoing.totalTokensPerBlock;
-    const deltaTokensPerWeek =
-      streams.incoming.totalTokensPerWeek - streams.outgoing.totalTokensPerWeek;
-
-    const isFullyCalculated =
-      !streams.incoming.isCalculating &&
-      !streams.outgoing.isCalculating &&
-      !streams.incoming.hasPartialData &&
-      !streams.outgoing.hasPartialData;
-    return {
-      ...streams,
-      delta: {
-        tokensPerBlock: delta,
-        tokensPerWeek: deltaTokensPerWeek,
-        isPositive: delta > 0,
-      },
-      isFullyCalculated,
-      hasAnyCalculating:
-        streams.incoming.isCalculating ||
-        streams.outgoing.isCalculating ||
-        streams.incoming.hasPartialData ||
-        streams.outgoing.hasPartialData,
-    };
-  }, [streams]);
+    return result;
+  }, [data, isLoading, isError, props.accountIds]);
 }
