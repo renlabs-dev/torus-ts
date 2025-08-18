@@ -234,7 +234,7 @@ export function GraphSheetDetailsPermission({
         </CardHeader>
         <CardContent>
           <AddressWithAgent
-            address={permissionData.grantorAccountId}
+            address={permissionData.delegatorAccountId}
             className="mb-2"
           />
           <p className="text-xs text-muted-foreground">
@@ -253,7 +253,7 @@ export function GraphSheetDetailsPermission({
           </CardHeader>
           <CardContent>
             <AddressWithAgent
-              address={permissionData.granteeAccountId}
+              address={permissionData.recipientAccountId}
               className="mb-2"
             />
             <p className="text-xs text-muted-foreground">

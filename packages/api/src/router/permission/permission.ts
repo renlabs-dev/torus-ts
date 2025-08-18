@@ -5,6 +5,7 @@ import { SS58_SCHEMA } from "@torus-network/sdk/types";
 import { queryEmissionPermissions } from "@torus-network/sdk/chain";
 
 import { and, eq, isNull, or, sql } from "@torus-ts/db";
+import type { createDb } from "@torus-ts/db/client";
 import {
   accumulatedStreamAmountsSchema,
   emissionDistributionTargetsSchema,
@@ -13,11 +14,9 @@ import {
   namespacePermissionPathsSchema,
   namespacePermissionsSchema,
   permissionsSchema,
-  streamDelegationView,
 } from "@torus-ts/db/schema";
 
 import { publicProcedure } from "../../trpc";
-import type { createDb } from "@torus-ts/db/client";
 
 async function queryAccumulatedAmounts(
   ctx: { db: ReturnType<typeof createDb> },
@@ -746,13 +745,6 @@ export const permissionRouter = {
           emissionDistributionTargetsSchema.permissionId,
         ),
       )
-      .leftJoin(
-        accumulatedStreamAmountsSchema,
-        eq(
-          permissionsSchema.permissionId,
-          accumulatedStreamAmountsSchema.permissionId,
-        ),
-      )
       .where(isNull(permissionsSchema.deletedAt))
       .orderBy(
         permissionsSchema.createdAt,
@@ -760,38 +752,6 @@ export const permissionRouter = {
         emissionDistributionTargetsSchema.targetAccountId,
       );
   }),
-
-  // Stream delegation view endpoints
-  streamDelegations: publicProcedure.query(({ ctx }) => {
-    return ctx.db.select().from(streamDelegationView);
-  }),
-
-  streamDelegationsByAgent: publicProcedure
-    .input(z.object({ agentKey: SS58_SCHEMA }))
-    .query(({ ctx, input }) => {
-      return ctx.db
-        .select()
-        .from(streamDelegationView)
-        .where(eq(streamDelegationView.agentKey, input.agentKey));
-    }),
-
-  streamDelegationsByStreamId: publicProcedure
-    .input(z.object({ streamId: z.string().length(66) }))
-    .query(({ ctx, input }) => {
-      return ctx.db
-        .select()
-        .from(streamDelegationView)
-        .where(eq(streamDelegationView.streamId, input.streamId));
-    }),
-
-  streamDelegationsByRootGrantor: publicProcedure
-    .input(z.object({ rootGrantor: SS58_SCHEMA }))
-    .query(({ ctx, input }) => {
-      return ctx.db
-        .select()
-        .from(streamDelegationView)
-        .where(eq(streamDelegationView.rootGrantor, input.rootGrantor));
-    }),
 
   streamsByTarget: publicProcedure
     .input(z.object({ targetAccountId: SS58_SCHEMA }))
@@ -869,6 +829,7 @@ export const permissionRouter = {
       const incomingStreamsByTarget = await getStreamsByTarget(ctx, {
         targetAccountId: input.accountId,
       });
+      console.log(incomingStreamsByTarget);
       const incomingPermissionStreamPairs = extractPermissionStreamPairs(
         incomingStreamsByTarget,
       );
@@ -980,6 +941,7 @@ export const permissionRouter = {
         }
       }
 
+      //incoming: Record<string, Record<string, number | null>> -> PermissionId, <StreamId, Tokens Per Block or null (if its null it means it still calculating)>
       return {
         incoming,
         outgoing,

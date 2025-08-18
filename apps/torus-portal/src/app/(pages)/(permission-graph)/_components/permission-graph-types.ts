@@ -1,5 +1,6 @@
 import type { inferProcedureOutput } from "@trpc/server";
 import type { LinkObject, NodeObject } from "r3f-forcegraph";
+import type * as THREE from "three";
 
 import type { AppRouter } from "@torus-ts/api";
 
@@ -19,13 +20,16 @@ export interface CustomGraphNode extends NodeObject {
   signalData?: SignalData;
   permissionData?: PermissionNodeData;
   agentData?: AgentNodeData;
+  // Pre-computed Three.js objects for performance
+  precomputedGeometry?: THREE.BufferGeometry;
+  precomputedMaterial?: THREE.Material;
 }
 
 export interface PermissionNodeData {
   permissionId: string;
   permissionType: "emission" | "capability";
-  grantorAccountId: string;
-  granteeAccountId: string;
+  delegatorAccountId: string;
+  recipientAccountId: string;
   scope?: string;
   duration?: string | null;
   namespacePaths?: string[];
