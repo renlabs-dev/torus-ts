@@ -795,7 +795,7 @@ export async function runStreamAccumulationUpdate(lastBlock: LastBlock) {
  * @param props - Contains API connection and state for tracking the last processed block
  */
 export async function agentFetcherWorker(props: WorkerProps) {
-  let lastStreamAccumulationBlock = 0;
+  let _lastStreamAccumulationBlock = 0;
 
   while (true) {
     const fetchWorkerRes = await tryAsync(
@@ -827,7 +827,7 @@ export async function agentFetcherWorker(props: WorkerProps) {
         await runProposalsFetch(lastBlock);
         await runPermissionsFetch(lastBlock);
         await runStreamAccumulationUpdate(lastBlock);
-        lastStreamAccumulationBlock = lastBlockNumber;
+        _lastStreamAccumulationBlock = lastBlockNumber;
       })(),
     );
     if (log.ifResultIsErr(fetchWorkerRes)) {

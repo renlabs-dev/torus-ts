@@ -2,6 +2,7 @@ import type { TRPCRouterRecord } from "@trpc/server";
 import { z } from "zod";
 
 import { SS58_SCHEMA } from "@torus-network/sdk/types";
+import { queryEmissionPermissions } from "@torus-network/sdk/chain";
 
 import { and, eq, isNull, or, sql } from "@torus-ts/db";
 import type { createDb } from "@torus-ts/db/client";
@@ -549,6 +550,70 @@ export const permissionRouter = {
     }),
 
   // Stream endpoints
+  streamsReceived: publicProcedure
+    .input(z.object({ accountId: SS58_SCHEMA }))
+    .query(async ({ ctx, input }) => {
+      const api = await ctx.wsAPI;
+
+      const [permissionsError, emissionPermissions] =
+        await queryEmissionPermissions(api, (permission) => {
+          return permission.scope.targets.has(input.accountId);
+        });
+
+      if (permissionsError) {
+        throw new Error(
+          `Failed to query permissions: ${permissionsError.message}`,
+        );
+      }
+
+      // Build the result object {grantor: {permissionId: {streamId: delegatedPercent}}}
+      const result: Record<string, Record<string, Record<string, number>>> = {};
+
+      // Process each permission where the account is a target
+      for (const [permissionId, permission] of emissionPermissions) {
+        // Get the account's weight from targets
+        const accountWeight = permission.scope.targets.get(input.accountId);
+        if (!accountWeight) continue;
+
+        // Calculate total weight for normalization
+        let totalWeight = 0n;
+        for (const weight of permission.scope.targets.values()) {
+          totalWeight += weight;
+        }
+
+        if (totalWeight === 0n) continue;
+
+        // Calculate normalized weight (as percentage 0-1)
+        const normalizedWeight = Number(accountWeight) / Number(totalWeight);
+
+        // Check if allocation is Streams type
+        const allocation = permission.scope.allocation;
+        if ("Streams" in allocation) {
+          // Get the grantor address
+          const grantor = permission.delegator;
+
+          // Initialize nested structure if needed
+          if (!result[grantor]) {
+            result[grantor] = {};
+          }
+          if (!result[grantor][permissionId]) {
+            result[grantor][permissionId] = {};
+          }
+
+          // Iterate through the streams Map
+          for (const [streamId, percentage] of allocation.Streams) {
+            // Convert Percent type to decimal (e.g., 50% = 0.5)
+            const streamPercentage = percentage / 100;
+            // Calculate the account's share of this stream
+            const delegatedPercent = normalizedWeight * streamPercentage;
+            result[grantor][permissionId][streamId] = delegatedPercent;
+          }
+        }
+      }
+
+      return result;
+    }),
+
   streamAllocations: publicProcedure.query(({ ctx }) => {
     return ctx.db.query.emissionStreamAllocationsSchema.findMany({
       orderBy: (streams, { asc }) => [asc(streams.permissionId)],
