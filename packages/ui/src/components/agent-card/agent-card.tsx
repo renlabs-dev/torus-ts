@@ -3,7 +3,7 @@
 import Link from "next/link";
 
 import { Card } from "../card";
-import { AgentCardContent } from "./agent-card-content";
+import { AgentCardContent, type AccountEmissionData } from "./agent-card-content";
 import { AgentCardFooter } from "./agent-card-footer";
 import { AgentCardHeader } from "./agent-card-header";
 import { CardHoverEffect } from "./agent-card-hover-effect";
@@ -33,6 +33,8 @@ export interface AgentCardProps {
   isMetadataLoading?: boolean;
   footerContent?: React.ReactNode;
   userWeightPower?: string | bigint | null;
+  // Enhanced emission data
+  emissionData?: AccountEmissionData;
 }
 
 export function AgentCard(props: Readonly<AgentCardProps>) {
@@ -58,6 +60,7 @@ export function AgentCard(props: Readonly<AgentCardProps>) {
     isMetadataLoading = false,
     footerContent,
     userWeightPower,
+    emissionData,
   } = props;
 
   const cardContent = (
@@ -84,6 +87,7 @@ export function AgentCard(props: Readonly<AgentCardProps>) {
         tokensPerWeek={tokensPerWeek}
         isLoading={isMetadataLoading}
         isStatsLoading={isLoading}
+        emissionData={emissionData}
       />
 
       <div className="mt-auto">

@@ -4,6 +4,7 @@ import { useTorus } from "@torus-ts/torus-provider";
 import { Card } from "@torus-ts/ui/components/card";
 import { AgentCardHeader } from "@torus-ts/ui/components/agent-card/agent-card-header";
 import { AgentCardFooter } from "@torus-ts/ui/components/agent-card/agent-card-footer";
+import { AgentCardContent } from "@torus-ts/ui/components/agent-card/agent-card-content";
 import { CardHoverEffect } from "@torus-ts/ui/components/agent-card/agent-card-hover-effect";
 import Link from "next/link";
 
@@ -14,7 +15,6 @@ import { useUserWeightPower } from "~/hooks/use-user-weight-power";
 import { usePostPenaltyEmission } from "~/hooks/use-post-penalty-emission";
 import { useDelegateAgentStore } from "~/stores/delegateAgentStore";
 import type { AccountEmissionData } from "~/hooks/use-multiple-account-emissions";
-import { EnhancedAgentCardContent } from "./enhanced-agent-card-content";
 
 interface AgentCardProps {
   id: number;
@@ -103,7 +103,7 @@ export function AgentCard(props: Readonly<AgentCardProps>) {
         isMetadataLoading={isMetadataLoading}
       />
 
-      <EnhancedAgentCardContent
+      <AgentCardContent
         shortDescription={shortDescription}
         agentKey={props.agentKey}
         percComputedWeight={postPenaltyPercComputedWeight}
