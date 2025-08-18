@@ -130,6 +130,14 @@ function getDeterministicParticleSpeed(seed: string): number {
   );
 }
 
+function createParticleProperties(seed: string, particleCount?: number) {
+  return {
+    linkDirectionalParticles: particleCount ?? graphConstants.linkConfig.particleConfig.particles,
+    linkDirectionalParticleSpeed: getDeterministicParticleSpeed(seed),
+    linkDirectionalParticleResolution: graphConstants.linkConfig.particleAnimation.resolution,
+  };
+}
+
 function getDeterministicZ(seed: string, range: number): number {
   return getDeterministicValue(seed + "_z", -range / 2, range / 2);
 }
@@ -408,11 +416,7 @@ export function createSimplifiedGraphData(
         target: agent.key,
         id: `allocation-${agent.key}`,
         linkColor: graphConstants.linkConfig.linkColors.allocatorLink,
-        linkDirectionalParticles:
-          graphConstants.linkConfig.particleConfig.particles,
-        linkDirectionalParticleSpeed: getDeterministicParticleSpeed(agent.key),
-        linkDirectionalParticleResolution:
-          graphConstants.linkConfig.particleAnimation.resolution,
+        ...createParticleProperties(agent.key),
       });
     }
   });
@@ -531,8 +535,7 @@ export function createSimplifiedGraphData(
         target: permissionNodeId,
         id: `grant-${permissionId}`,
         linkColor: graphConstants.linkConfig.linkColors.namespacePermissionLink,
-        linkDirectionalParticleSpeed:
-          getDeterministicParticleSpeed(permissionId),
+        ...createParticleProperties(permissionId),
       });
 
       // Edge: permission node -> recipient (target_agent)
@@ -542,8 +545,7 @@ export function createSimplifiedGraphData(
         target: recipientId,
         id: `receive-${permissionId}`,
         linkColor: graphConstants.linkConfig.linkColors.namespacePermissionLink,
-        linkDirectionalParticleSpeed:
-          getDeterministicParticleSpeed(permissionId),
+        ...createParticleProperties(permissionId),
       });
     }
 
@@ -596,12 +598,7 @@ export function createSimplifiedGraphData(
         target: permissionNodeId,
         id: `grant-${permissionId}`,
         linkColor: graphConstants.linkConfig.linkColors.emissionPermissionLink,
-        linkDirectionalParticles:
-          graphConstants.linkConfig.particleConfig.particles,
-        linkDirectionalParticleSpeed:
-          getDeterministicParticleSpeed(permissionId),
-        linkDirectionalParticleResolution:
-          graphConstants.linkConfig.particleAnimation.resolution,
+        ...createParticleProperties(permissionId),
       });
 
       // Edge: permission node -> recipient (target_agent) (only if no distribution targets and recipient exists and is different)
@@ -623,12 +620,7 @@ export function createSimplifiedGraphData(
           id: `receive-${permissionId}`,
           linkColor:
             graphConstants.linkConfig.linkColors.emissionPermissionLink,
-          linkDirectionalParticles:
-            graphConstants.linkConfig.particleConfig.particles,
-          linkDirectionalParticleSpeed:
-            getDeterministicParticleSpeed(permissionId),
-          linkDirectionalParticleResolution:
-            graphConstants.linkConfig.particleAnimation.resolution,
+          ...createParticleProperties(permissionId),
         });
       }
     }
@@ -650,6 +642,13 @@ export function createSimplifiedGraphData(
       }
 
       // Edge: permission node -> target
+      const particleCount = Math.max(
+        1,
+        Math.ceil(
+          (permission.emission_distribution_targets.weight / 65535) * 3,
+        ),
+      );
+      
       links.push({
         linkType: "permission_target",
         source: permissionNodeId,
@@ -657,15 +656,7 @@ export function createSimplifiedGraphData(
         id: `distribution-${permissionId}-${targetId}`,
         linkColor: graphConstants.linkConfig.linkColors.emissionPermissionLink,
         linkWidth: graphConstants.linkConfig.linkWidth * 0.7,
-        linkDirectionalParticles: Math.max(
-          1,
-          Math.ceil(
-            (permission.emission_distribution_targets.weight / 65535) * 3,
-          ),
-        ),
-        linkDirectionalParticleSpeed: getDeterministicParticleSpeed(targetId),
-        linkDirectionalParticleResolution:
-          graphConstants.linkConfig.particleAnimation.resolution,
+        ...createParticleProperties(targetId, particleCount),
       });
     }
   });
@@ -701,8 +692,8 @@ export function createSimplifiedGraphData(
           source: signal.agentKey,
           target: `signal-${signal.id}`,
           id: `signal-link-${signal.id}`,
-          linkDirectionalParticles: 0,
           linkColor: graphConstants.linkConfig.linkColors.signalLink,
+          ...createParticleProperties(signal.agentKey),
         });
       } else {
         // Create agent node if it doesn't exist
@@ -715,8 +706,8 @@ export function createSimplifiedGraphData(
           source: signal.agentKey,
           target: `signal-${signal.id}`,
           id: `signal-link-${signal.id}`,
-          linkDirectionalParticles: 0,
           linkColor: graphConstants.linkConfig.linkColors.signalLink,
+          ...createParticleProperties(signal.agentKey),
         });
       }
     });
