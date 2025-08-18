@@ -14,7 +14,6 @@ import { CopyButton } from "@torus-ts/ui/components/copy-button";
 import { useWeeklyUsdCalculation } from "~/hooks/use-weekly-usd";
 
 import { ReportAgent } from "./report-agent";
-import { UpdateAgentButton } from "./update-agent-button/update-agent-button";
 
 interface AgentInfoCardProps {
   agent: NonNullable<inferProcedureOutput<AppRouter["agent"]["byId"]>>;
@@ -103,7 +102,6 @@ export function AgentInfoCard({ agent }: AgentInfoCardProps) {
       </CardContent>
       <div className="flex flex-col space-y-2">
         <ReportAgent agentKey={agent.key} />
-        <UpdateAgentButton agentKey={agent.key} />
       </div>
     </Card>
   );

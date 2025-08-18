@@ -33,6 +33,7 @@ import {
   sleep,
 } from "../common";
 import type {
+  NewAccumulatedStreamAmount,
   NewApplication,
   NewEmissionDistributionTarget,
   NewEmissionPermission,
@@ -52,6 +53,7 @@ import {
   getAllPermissionIds,
   queryProposalsDB,
   SubspaceAgentToDatabase,
+  upsertAccumulatedStreamAmounts,
   upsertAgentData,
   upsertPermissions,
   upsertProposal,
@@ -686,6 +688,106 @@ export async function runPermissionsFetch(lastBlock: LastBlock) {
 }
 
 /**
+ * Updates accumulated stream amounts every 100 blocks.
+ * This queries all accumulated amounts once and filters locally for efficiency.
+ *
+ * @param lastBlock - Contains blockchain API instance frozen at a specific block height
+ */
+export async function runStreamAccumulationUpdate(lastBlock: LastBlock) {
+  const lastBlockNumber = lastBlock.blockNumber;
+  log.info(`Block ${lastBlockNumber}: running stream accumulation update`);
+
+  // First query all permissions to have the context available
+  const permissionsQueryResult = await queryPermissions(lastBlock.apiAtBlock);
+  const [permissionsMapErr, permissionsMap] = permissionsQueryResult;
+  if (permissionsMapErr) {
+    log.error(
+      `Block ${lastBlockNumber}: queryPermissions failed:`,
+      permissionsMapErr,
+    );
+    return;
+  }
+
+  // Query all accumulated stream amounts from storage
+  const streamAccumulationsResult = await queryAllAccumulatedStreamAmounts(
+    lastBlock.apiAtBlock,
+  );
+  const [streamAccumulationsErr, streamAccumulations] =
+    streamAccumulationsResult;
+
+  if (streamAccumulationsErr) {
+    log.error(
+      `Block ${lastBlockNumber}: queryAllAccumulatedStreamAmounts failed:`,
+      streamAccumulationsErr,
+    );
+    return;
+  }
+
+  log.info(
+    `Block ${lastBlockNumber}: found ${streamAccumulations.length} accumulated stream amounts`,
+  );
+
+  // Transform accumulated stream amounts to database format with permission context
+  const dbStreamAmounts: NewAccumulatedStreamAmount[] = [];
+
+  log.info(
+    `Block ${lastBlockNumber}: processing ${streamAccumulations.length} stream accumulations`,
+  );
+
+  for (const accumulation of streamAccumulations) {
+    const permission = permissionsMap.get(accumulation.permissionId);
+
+    if (!permission) {
+      log.warn(
+        `Permission ${accumulation.permissionId} not found for stream accumulation`,
+      );
+      continue;
+    }
+
+    const streamAmount = {
+      grantorAccountId: accumulation.delegator,
+      streamId: accumulation.streamId,
+      permissionId: accumulation.permissionId,
+      accumulatedAmount: accumulation.amount.toString(),
+      lastExecutedBlock: match(permission.lastExecution)({
+        Some: (block) => block,
+        None: () => null,
+      }),
+      atBlock: lastBlockNumber,
+      executionCount: Number(permission.executionCount),
+    };
+
+    log.debug(
+      `Block ${lastBlockNumber}: stream amount - delegator: ${streamAmount.grantorAccountId}, streamId: ${streamAmount.streamId}, amount: ${streamAmount.accumulatedAmount}`,
+    );
+
+    dbStreamAmounts.push(streamAmount);
+  }
+
+  if (dbStreamAmounts.length > 0) {
+    log.info(
+      `Block ${lastBlockNumber}: upserting ${dbStreamAmounts.length} accumulated stream amounts`,
+    );
+
+    const upsertRes = await tryAsync(
+      upsertAccumulatedStreamAmounts(dbStreamAmounts),
+    );
+
+    if (log.ifResultIsErr(upsertRes)) {
+      log.error(
+        `Block ${lastBlockNumber}: failed to upsert stream amounts:`,
+        upsertRes[0],
+      );
+      return;
+    }
+
+    log.info(`Block ${lastBlockNumber}: stream accumulations synchronized`);
+  } else {
+    log.info(`Block ${lastBlockNumber}: no stream amounts to upsert`);
+  }
+}
+
+/**
  * Blockchain data synchronization in an infinite loop.
  * Processes each new block once, skips already processed blocks, and handles
  * all errors internally to ensure the synchronization process never terminates.
@@ -693,6 +795,8 @@ export async function runPermissionsFetch(lastBlock: LastBlock) {
  * @param props - Contains API connection and state for tracking the last processed block
  */
 export async function agentFetcherWorker(props: WorkerProps) {
+  let _lastStreamAccumulationBlock = 0;
+
   while (true) {
     const fetchWorkerRes = await tryAsync(
       (async () => {
@@ -722,6 +826,8 @@ export async function agentFetcherWorker(props: WorkerProps) {
         await runApplicationsFetch(lastBlock);
         await runProposalsFetch(lastBlock);
         await runPermissionsFetch(lastBlock);
+        await runStreamAccumulationUpdate(lastBlock);
+        _lastStreamAccumulationBlock = lastBlockNumber;
       })(),
     );
     if (log.ifResultIsErr(fetchWorkerRes)) {

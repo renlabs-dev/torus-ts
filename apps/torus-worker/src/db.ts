@@ -19,6 +19,7 @@ import {
 } from "@torus-ts/db";
 import { createDb } from "@torus-ts/db/client";
 import {
+  accumulatedStreamAmountsSchema,
   agentApplicationVoteSchema,
   agentSchema,
   cadreCandidateSchema,
@@ -67,6 +68,8 @@ export type NewPermissionRevocationArbiter =
   typeof permissionRevocationArbitersSchema.$inferInsert;
 export type NewPermissionHierarchy =
   typeof permissionHierarchiesSchema.$inferInsert;
+export type NewAccumulatedStreamAmount =
+  typeof accumulatedStreamAmountsSchema.$inferInsert;
 
 export type Transaction = Parameters<Parameters<typeof db.transaction>[0]>[0];
 export type NewApplication = typeof whitelistApplicationSchema.$inferInsert;
@@ -770,5 +773,33 @@ export async function deletePermissions(
   await db
     .delete(permissionsSchema)
     .where(inArray(permissionsSchema.permissionId, permissionIds))
+    .execute();
+}
+
+/**
+ * Upsert accumulated stream amounts
+ */
+export async function upsertAccumulatedStreamAmounts(
+  streamAmounts: NewAccumulatedStreamAmount[],
+): Promise<void> {
+  if (streamAmounts.length === 0) return;
+
+  await db
+    .insert(accumulatedStreamAmountsSchema)
+    .values(streamAmounts)
+    .onConflictDoUpdate({
+      target: [
+        accumulatedStreamAmountsSchema.grantorAccountId,
+        accumulatedStreamAmountsSchema.streamId,
+        accumulatedStreamAmountsSchema.permissionId,
+        accumulatedStreamAmountsSchema.executionCount,
+      ],
+      set: {
+        atBlock: sql`excluded.at_block`,
+        accumulatedAmount: sql`excluded.accumulated_amount`,
+        lastUpdated: sql`excluded.last_updated`,
+        lastExecutedBlock: sql`excluded.last_executed_block`,
+      },
+    })
     .execute();
 }

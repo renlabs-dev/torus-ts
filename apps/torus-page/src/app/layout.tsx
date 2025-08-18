@@ -1,11 +1,16 @@
-import { Layout } from "@torus-ts/ui/components/layout";
-import * as React from "react";
 import "@torus-ts/ui/globals.css";
+
+import * as React from "react";
+
 import { GoogleAnalytics } from "@next/third-parties/google";
-import PlausibleProvider from "next-plausible";
-import { EnvScript } from "~/env";
 import type { Metadata } from "next";
+import PlausibleProvider from "next-plausible";
 import { Fira_Mono as FiraMono } from "next/font/google";
+
+import { Layout } from "@torus-ts/ui/components/layout";
+
+import { EnvScript } from "~/env";
+
 import { Footer } from "./_components/footer";
 import { HoverHeader } from "./_components/hover-header";
 
@@ -28,7 +33,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <PlausibleProvider domain="torus.network" trackOutboundLinks hash>
+    <PlausibleProvider domain="torus.network" trackOutboundLinks>
       <Layout font={firaMono} headScripts={[EnvScript]}>
         <HoverHeader />
         {children}

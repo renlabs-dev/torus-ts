@@ -3,20 +3,21 @@
 import { AgentCard } from "@torus-ts/ui/components/agent-card/agent-card";
 import { AgentItemSkeleton } from "@torus-ts/ui/components/agent-card/agent-card-skeleton-loader";
 
+import { useQueryAgentMetadata } from "~/hooks/use-agent-metadata";
 import { useBlobUrl } from "~/hooks/use-blob-url";
 import { api } from "~/trpc/react";
 
-import type { UpdateAgentForm } from "./update-agent-dialog-form-schema";
+import type { UpdateAgentForm } from "./update-agent-form-schema";
 
-interface UpdateAgentDialogPreviewProps {
+interface UpdateAgentPreviewProps {
   agentKey: string;
   form: UpdateAgentForm;
 }
 
-export function UpdateAgentDialogPreview({
+export function UpdateAgentPreview({
   agentKey,
   form,
-}: UpdateAgentDialogPreviewProps) {
+}: UpdateAgentPreviewProps) {
   const { data: agent, isLoading } = api.agent.byKeyLastBlock.useQuery(
     { key: agentKey },
     {
@@ -26,9 +27,18 @@ export function UpdateAgentDialogPreview({
     },
   );
 
+  const { data: agentMetadata } = useQueryAgentMetadata(
+    agent?.metadataUri ?? "",
+    {
+      fetchImages: true,
+      enabled: !!agent?.metadataUri,
+    },
+  );
+
   const formValues = form.getValues();
   const previewImage = form.watch("imageFile");
   const previewImageBlobUrl = useBlobUrl(previewImage);
+  const currentImageBlobUrl = useBlobUrl(agentMetadata?.images.icon);
 
   if (isLoading || !agent) {
     return (
@@ -52,7 +62,7 @@ export function UpdateAgentDialogPreview({
         <AgentCard
           name={formValues.name ?? ""}
           agentKey={agentKey}
-          iconUrl={previewImageBlobUrl}
+          iconUrl={previewImageBlobUrl ?? currentImageBlobUrl}
           shortDescription={formValues.shortDescription}
           socials={socials}
           website={formValues.website}

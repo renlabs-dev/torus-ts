@@ -75,10 +75,10 @@ export function PermissionGraphCommand() {
         id: `permission-${permission.id}`,
         type: "emission",
         name: `Emission Permission`,
-        grantor: smallAddress(permission.grantorAccountId),
-        grantee: smallAddress(permission.granteeAccountId),
+        grantor: smallAddress(permission.delegatorAccountId),
+        grantee: smallAddress(permission.recipientAccountId),
         searchText:
-          `${permission.id} ${permission.grantorAccountId} ${permission.granteeAccountId} emission`.toLowerCase(),
+          `${permission.id} ${permission.delegatorAccountId} ${permission.recipientAccountId} emission`.toLowerCase(),
       }),
     );
 
@@ -88,10 +88,10 @@ export function PermissionGraphCommand() {
         id: `permission-${permission.id}`,
         type: "namespace",
         name: `Capability Permission`,
-        grantor: smallAddress(permission.grantorAccountId),
-        grantee: smallAddress(permission.granteeAccountId),
+        grantor: smallAddress(permission.delegatorAccountId),
+        grantee: smallAddress(permission.recipientAccountId),
         searchText:
-          `${permission.id} ${permission.grantorAccountId} ${permission.granteeAccountId} namespace capability`.toLowerCase(),
+          `${permission.id} ${permission.delegatorAccountId} ${permission.recipientAccountId} namespace capability`.toLowerCase(),
       }),
     );
 

@@ -25,6 +25,7 @@ import {
   delegateEmissionPermission,
   delegateNamespacePermission,
   deleteNamespace,
+  deregisterAgent,
   registerAgent,
   revokePermission,
   updateAgent,
@@ -117,14 +118,11 @@ interface TorusContextType {
   updateDelegatingVotingPower: (
     updateDelegating: UpdateDelegatingVotingPower,
   ) => Promise<void>;
-
   signHex: (msgHex: `0x${string}`) => Promise<{
     signature: `0x${string}`;
     address: string;
   }>;
-
   getExistentialDeposit: () => bigint | undefined;
-
   // TRANSACTIONS
   transferTransaction: ({
     to,
@@ -132,17 +130,14 @@ interface TorusContextType {
   }: Omit<Transfer, "callback" | "refetchHandler">) =>
     | SubmittableExtrinsic<"promise", ISubmittableResult>
     | undefined;
-
   addStakeTransaction: ({
     validator,
     amount,
   }: Omit<Stake, "callback" | "refetchHandler">) => TransactionExtrinsicPromise;
-
   removeStakeTransaction: ({
     validator,
     amount,
   }: Omit<Stake, "callback" | "refetchHandler">) => TransactionExtrinsicPromise;
-
   transferStakeTransaction: ({
     fromValidator,
     toValidator,
@@ -151,25 +146,20 @@ interface TorusContextType {
     TransferStake,
     "callback" | "refetchHandler"
   >) => TransactionExtrinsicPromise;
-
   delegateEmissionPermissionTransaction: (
     props: Omit<DelegateEmissionPermission, "api"> & TransactionHelpers,
   ) => Promise<void>;
-
   delegateNamespacePermissionTransaction: (
     props: Omit<DelegateNamespacePermission, "api"> & TransactionHelpers,
   ) => Promise<void>;
   updateEmissionPermissionTransaction: (
     props: Omit<UpdateEmissionPermission, "api"> & TransactionHelpers,
   ) => Promise<void>;
-
   revokePermissionTransaction: (props: RevokePermission) => Promise<void>;
-
   createNamespaceTransaction: (props: CreateNamespace) => Promise<void>;
-
   deleteNamespaceTransaction: (props: DeleteNamespace) => Promise<void>;
-
   remarkTransaction: (props: RemarkTransaction) => Promise<void>;
+  deregisterAgentTransaction: (props: TransactionHelpers) => Promise<void>;
 }
 
 const TorusContext = createContext<TorusContextType | null>(null);
@@ -949,6 +939,29 @@ export function TorusProvider({
     });
   }
 
+  async function deregisterAgentTransaction({
+    callback,
+    refetchHandler,
+  }: TransactionHelpers): Promise<void> {
+    if (!api) {
+      console.log("API not connected");
+      return;
+    }
+
+    const transaction = deregisterAgent(api);
+
+    await sendTransaction({
+      api,
+      torusApi,
+      selectedAccount,
+      callback,
+      transaction,
+      transactionType: "Deregister Agent",
+      wsEndpoint,
+      refetchHandler,
+    });
+  }
+
   async function remarkTransaction({
     remark,
     callback,
@@ -1017,6 +1030,7 @@ export function TorusProvider({
         createNamespaceTransaction,
         deleteNamespaceTransaction,
         remarkTransaction,
+        deregisterAgentTransaction,
         wsEndpoint,
       }}
     >

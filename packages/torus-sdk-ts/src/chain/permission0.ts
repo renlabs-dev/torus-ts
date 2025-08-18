@@ -173,7 +173,7 @@ export type EnforcementReferendum = z.infer<
 
 // ---- Main Permission Contract ----
 
-export const PERMISSION_CONTRACT_SCHEMA = sb_struct({
+const PERMISSION_CONTRACT_SHAPE = {
   delegator: sb_address,
   recipient: sb_address,
   scope: PERMISSION_SCOPE_SCHEMA,
@@ -185,9 +185,17 @@ export const PERMISSION_CONTRACT_SCHEMA = sb_struct({
   maxInstances: sb_bigint, // u32 as bigint
   children: sb_array(PERMISSION_ID_SCHEMA), // BoundedBTreeSet serialized as array
   createdAt: sb_blocks,
+};
+
+export const PERMISSION_CONTRACT_SCHEMA = sb_struct(PERMISSION_CONTRACT_SHAPE);
+
+export const EMISSION_CONTRACT_SCHEMA = sb_struct({
+  ...PERMISSION_CONTRACT_SHAPE,
+  scope: EMISSION_SCOPE_SCHEMA,
 });
 
 export type PermissionContract = z.infer<typeof PERMISSION_CONTRACT_SCHEMA>;
+export type EmissionContract = z.infer<typeof EMISSION_CONTRACT_SCHEMA>;
 
 // ==== Query Functions ====
 
@@ -318,6 +326,53 @@ export async function queryPermissionsByParticipants(
   if (parsed.success === false) return makeErr(parsed.error);
 
   return makeOk(parsed.data);
+}
+
+/**
+ * Query all emission permissions from the blockchain.
+ * Filters all permissions to return only those with Emission scope,
+ * then applies the provided filter function.
+ *
+ * @param api - The blockchain API instance
+ * @param filterFn - Additional filter to apply to emission permissions
+ * @return A map of PermissionId -> EmissionContract for filtered emission permissions
+ */
+export async function queryEmissionPermissions(
+  api: Api,
+  filterFn: (permission: EmissionContract) => boolean,
+): Promise<
+  Result<
+    Map<PermissionId, EmissionContract>,
+    SbQueryError | ZError<H256> | ZError<PermissionContract>
+  >
+> {
+  const [permissionsError, allPermissions] = await queryPermissions(api);
+  if (permissionsError) return makeErr(permissionsError);
+
+  const emissionPermissions = new Map<PermissionId, EmissionContract>();
+
+  for (const [permissionId, permission] of allPermissions) {
+    match(permission.scope)({
+      Emission: (emissionScope) => {
+        // Reconstruct as EmissionContract with the extracted emission scope
+        const emissionPermission: EmissionContract = {
+          ...permission,
+          scope: emissionScope,
+        };
+        if (filterFn(emissionPermission)) {
+          emissionPermissions.set(permissionId, emissionPermission);
+        }
+      },
+      Curator: () => {
+        // Skip curator permissions
+      },
+      Namespace: () => {
+        // Skip namespace permissions
+      },
+    });
+  }
+
+  return makeOk(emissionPermissions);
 }
 
 /**

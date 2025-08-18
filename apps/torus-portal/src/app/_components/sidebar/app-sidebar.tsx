@@ -13,6 +13,7 @@ import {
   PackageX,
   Radio,
   RadioTower,
+  Settings,
 } from "lucide-react";
 import Link from "next/link";
 
@@ -88,13 +89,8 @@ const data = {
       ],
     },
     {
-      title: "Network Operations",
+      title: "Signals",
       items: [
-        {
-          title: "Register Agent",
-          url: "/network-operations/register-agent",
-          icon: CircleFadingPlus,
-        },
         {
           title: "Create Signal",
           url: "/signals/create-signal",
@@ -104,6 +100,21 @@ const data = {
           title: "View Signals",
           url: "/signals/signal-list",
           icon: RadioTower,
+        },
+      ],
+    },
+    {
+      title: "Network Operations",
+      items: [
+        {
+          title: "Register Agent",
+          url: "/network-operations/register-agent",
+          icon: CircleFadingPlus,
+        },
+        {
+          title: "Manage Agent",
+          url: "/network-operations/manage-agent",
+          icon: Settings,
         },
       ],
     },

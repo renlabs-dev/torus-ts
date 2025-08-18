@@ -17,27 +17,25 @@ import type {
   UpdateAgentForm,
   UpdateAgentFormData,
   UpdateAgentMutation,
-} from "./update-agent-dialog-form-schema";
+} from "./update-agent-form-schema";
 import {
   ACCEPTED_FILE_TYPES,
   MAX_FILE_SIZE,
   updateAgentSchema,
-} from "./update-agent-dialog-form-schema";
+} from "./update-agent-form-schema";
 
-interface UpdateAgentDialogFormProps {
+interface UpdateAgentFormFieldsProps {
   agentKey: string;
   updateAgentMutation: UpdateAgentMutation;
-  setActiveTab: (tab: string) => void;
-  setIsOpen?: (isOpen: boolean) => void;
   form: UpdateAgentForm;
   currentImagePreview?: string | null;
 }
 
-export function UpdateAgentDialogForm({
+export function UpdateAgentFormFields({
   updateAgentMutation,
   form,
   currentImagePreview,
-}: UpdateAgentDialogFormProps) {
+}: UpdateAgentFormFieldsProps) {
   const imageFile = form.watch("imageFile");
   const imageBlobUrl = imageFile ? URL.createObjectURL(imageFile) : null;
 

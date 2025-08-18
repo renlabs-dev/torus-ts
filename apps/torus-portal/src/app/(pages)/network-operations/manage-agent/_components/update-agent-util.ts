@@ -1,7 +1,8 @@
 "use client";
 
-import type { UpdateAgentFormData } from "./update-agent-dialog-form-schema";
 import { tryAsync } from "@torus-network/torus-utils/try-catch";
+
+import type { UpdateAgentFormData } from "./update-agent-form-schema";
 
 export const strToFile = (
   str: string,
