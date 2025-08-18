@@ -33,11 +33,8 @@ interface UseAccountStreamsProps {
   lastN?: number;
 }
 
-const BLOCKS_PER_WEEK =
-  CONSTANTS.TIME.ONE_WEEK / CONSTANTS.TIME.BLOCK_TIME_SECONDS;
 function processStreamData(
   streams: Record<string, Record<string, number | null>>,
-  // type: "incoming" | "outgoing",
 ): StreamSummary {
   const streamList: StreamData[] = [];
   let totalTokensPerBlock = 0;
@@ -51,7 +48,9 @@ function processStreamData(
       } else {
         hasValidValues = true;
         const tokensPerBlock = tokensPerBlockRaw / 10 ** 18;
-        const tokensPerWeek = tokensPerBlock * BLOCKS_PER_WEEK;
+        const tokensPerWeek =
+          tokensPerBlock *
+          (CONSTANTS.TIME.ONE_WEEK / CONSTANTS.TIME.BLOCK_TIME_SECONDS);
 
         streamList.push({
           permissionId,
@@ -75,7 +74,9 @@ function processStreamData(
         : 0,
   }));
 
-  const totalTokensPerWeek = totalTokensPerBlock * BLOCKS_PER_WEEK;
+  const totalTokensPerWeek =
+    totalTokensPerBlock *
+    (CONSTANTS.TIME.ONE_WEEK / CONSTANTS.TIME.BLOCK_TIME_SECONDS);
   const totalPercentage = processedStreams.reduce(
     (sum, s) => sum + s.percentage,
     0,
