@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 
 import type { TransactionResult } from "@torus-ts/torus-provider";
 import { useTorus } from "@torus-ts/torus-provider";
@@ -9,6 +10,13 @@ import { Button } from "@torus-ts/ui/components/button";
 import { Input } from "@torus-ts/ui/components/input";
 import { Label } from "@torus-ts/ui/components/label";
 import { toast, useToast } from "@torus-ts/ui/hooks/use-toast";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@torus-ts/ui/components/card";
 
 import { tryCatch } from "~/utils/try-catch";
 
@@ -121,36 +129,54 @@ function RemarkForm({
   isSending: boolean;
 }) {
   return (
-    <div className="max-w-md mx-auto mt-8 p-6 border rounded-lg">
-      <h1 className="text-2xl font-bold mb-6">Send Remark</h1>
+    <div className="max-w-md mx-auto mt-8 space-y-6">
+      <div className="p-6 border rounded-lg">
+        <h1 className="text-2xl font-bold mb-6">Send Remark</h1>
 
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div>
-          <Label htmlFor="remark">Remark Text</Label>
-          <Input
-            id="remark"
-            type="text"
-            value={remarkText}
-            onChange={(e) => setRemarkText(e.target.value)}
-            placeholder="Enter your remark..."
-            disabled={isSending}
-          />
-        </div>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <Label htmlFor="remark">Remark Text</Label>
+            <Input
+              id="remark"
+              type="text"
+              value={remarkText}
+              onChange={(e) => setRemarkText(e.target.value)}
+              placeholder="Enter your remark..."
+              disabled={isSending}
+            />
+          </div>
 
-        <Button
-          type="submit"
-          className="w-full"
-          disabled={!isAccountConnected || !remarkText.trim() || isSending}
-        >
-          {isSending ? "Sending..." : "Send Remark"}
-        </Button>
-      </form>
+          <Button
+            type="submit"
+            className="w-full"
+            disabled={!isAccountConnected || !remarkText.trim() || isSending}
+          >
+            {isSending ? "Sending..." : "Send Remark"}
+          </Button>
+        </form>
 
-      {!isAccountConnected && (
-        <p className="text-sm text-muted-foreground mt-4">
-          Please connect your wallet to send a remark.
-        </p>
-      )}
+        {!isAccountConnected && (
+          <p className="text-sm text-muted-foreground mt-4">
+            Please connect your wallet to send a remark.
+          </p>
+        )}
+      </div>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Available Test Pages</CardTitle>
+          <CardDescription>
+            Test different features and procedures
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Link href="/playground/streams-received">
+            <Button variant="outline" className="w-full">
+              Streams Received Test
+            </Button>
+          </Link>
+        </CardContent>
+      </Card>
     </div>
   );
 }

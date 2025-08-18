@@ -6,7 +6,12 @@ import SuperJSON from "superjson";
 import { Button } from "@torus-ts/ui/components/button";
 import { Input } from "@torus-ts/ui/components/input";
 import { Label } from "@torus-ts/ui/components/label";
-import { Card, CardContent, CardHeader, CardTitle } from "@torus-ts/ui/components/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@torus-ts/ui/components/card";
 
 import { api } from "~/trpc/react";
 
@@ -17,28 +22,35 @@ type AccountStreamData = {
   incoming: PermissionStreamData;
   outgoing: PermissionStreamData;
 };
-type StreamsByTargetData = Record<string, { streamIds: string[]; normalizedWeight: number }>;
+type StreamsByTargetData = Record<
+  string,
+  { streamIds: string[]; normalizedWeight: number }
+>;
 
 // Simple JSON Visualizer Component
 function JsonVisualizer({ data, title }: { data: unknown; title: string }) {
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
-  
+
   const toggleExpanded = (path: string) => {
-    setExpanded(prev => ({ ...prev, [path]: !prev[path] }));
+    setExpanded((prev) => ({ ...prev, [path]: !prev[path] }));
   };
 
   const renderValue = (value: unknown, path: string): React.ReactNode => {
     if (value === null) return <span className="text-gray-500">null</span>;
-    if (value === undefined) return <span className="text-gray-500">undefined</span>;
-    if (typeof value === "string") return <span className="text-green-600">"{value}"</span>;
-    if (typeof value === "number") return <span className="text-blue-600">{value}</span>;
-    if (typeof value === "boolean") return <span className="text-purple-600">{value.toString()}</span>;
-    
+    if (value === undefined)
+      return <span className="text-gray-500">undefined</span>;
+    if (typeof value === "string")
+      return <span className="text-green-600">"{value}"</span>;
+    if (typeof value === "number")
+      return <span className="text-blue-600">{value}</span>;
+    if (typeof value === "boolean")
+      return <span className="text-purple-600">{value.toString()}</span>;
+
     if (Array.isArray(value)) {
       const isExpanded = expanded[path] ?? false;
       return (
         <div>
-          <button 
+          <button
             onClick={() => toggleExpanded(path)}
             className="text-blue-500 hover:text-blue-700 cursor-pointer"
           >
@@ -57,13 +69,13 @@ function JsonVisualizer({ data, title }: { data: unknown; title: string }) {
         </div>
       );
     }
-    
+
     if (typeof value === "object" && value !== null) {
       const isExpanded = expanded[path] ?? true; // Objects expanded by default
       const keys = Object.keys(value as Record<string, unknown>);
       return (
         <div>
-          <button 
+          <button
             onClick={() => toggleExpanded(path)}
             className="text-blue-500 hover:text-blue-700 cursor-pointer"
           >
@@ -71,9 +83,13 @@ function JsonVisualizer({ data, title }: { data: unknown; title: string }) {
           </button>
           {isExpanded && (
             <div className="ml-4 border-l border-gray-200 pl-2 mt-1">
-              {keys.map(objectKey => (
+              {keys.map((objectKey) => (
                 <div key={objectKey} className="py-1">
-                  <span className="text-red-600">"{objectKey}"</span>: {renderValue((value as Record<string, unknown>)[objectKey], `${path}.${objectKey}`)}
+                  <span className="text-red-600">"{objectKey}"</span>:{" "}
+                  {renderValue(
+                    (value as Record<string, unknown>)[objectKey],
+                    `${path}.${objectKey}`,
+                  )}
                 </div>
               ))}
             </div>
@@ -81,7 +97,7 @@ function JsonVisualizer({ data, title }: { data: unknown; title: string }) {
         </div>
       );
     }
-    
+
     return <span>{String(value)}</span>;
   };
 
@@ -100,23 +116,32 @@ function JsonVisualizer({ data, title }: { data: unknown; title: string }) {
 }
 
 export default function UltimaWeaponPage() {
-  const [targetAccountId, setTargetAccountId] = useState("5D5FbRRUvQxdQnJLgNW6BdgZ86CRGreKRahzhxmdSj2REBnt");
-  const [result, setResult] = useState<StreamsByTargetData | PermissionStreamData | AccountStreamData | { error: string } | null>(null);
-  const [activeEndpoint, setActiveEndpoint] = useState<"both" | "perBlock">("perBlock");
-
+  const [targetAccountId, setTargetAccountId] = useState(
+    "5D5FbRRUvQxdQnJLgNW6BdgZ86CRGreKRahzhxmdSj2REBnt",
+  );
+  const [result, setResult] = useState<
+    | StreamsByTargetData
+    | PermissionStreamData
+    | AccountStreamData
+    | { error: string }
+    | null
+  >(null);
+  const [activeEndpoint, setActiveEndpoint] = useState<"both" | "perBlock">(
+    "perBlock",
+  );
 
   const bothQuery = api.permission.streamsByAccountWithAccumulations.useQuery(
     { accountId: targetAccountId },
     {
       enabled: false, // Don't auto-fetch
-    }
+    },
   );
 
   const perBlockQuery = api.permission.streamsByAccountPerBlock.useQuery(
     { accountId: targetAccountId, lastN: 7 },
     {
       enabled: false, // Don't auto-fetch
-    }
+    },
   );
 
   const handleTest = () => {
@@ -124,81 +149,126 @@ export default function UltimaWeaponPage() {
     console.log("🗡️ Target account:", targetAccountId);
     console.log("🗡️ Active endpoint:", activeEndpoint);
     setResult(null);
-    
+
     const queryToUse = activeEndpoint === "both" ? bothQuery : perBlockQuery;
-    
-    void queryToUse.refetch().then((response) => {
-      console.log("🗡️ Refetch response:", response);
-      if (response.data) {
-        console.log("🗡️ Setting result data:", response.data);
-        
-        // Special console log for endpoints
-        if (activeEndpoint === "both") {
-          console.log("🗡️ streamsByAccountWithAccumulations result:");
-          const data = response.data as AccountStreamData;
-          console.log("  - Incoming streams:", data.incoming);
-          console.log("  - Outgoing streams:", data.outgoing);
-          console.log("  - Incoming permission count:", Object.keys(data.incoming).length);
-          console.log("  - Outgoing permission count:", Object.keys(data.outgoing).length);
-          
-          // Show details for incoming
-          console.log("📥 INCOMING:");
-          for (const [permissionId, streams] of Object.entries(data.incoming)) {
-            console.log(`  - Permission ${permissionId}:`);
-            for (const [streamId, amount] of Object.entries(streams as Record<string, number | null>)) {
-              console.log(`    - Stream ${streamId}: ${amount ?? 'null (insufficient data)'}`);
+
+    void queryToUse
+      .refetch()
+      .then((response) => {
+        console.log("🗡️ Refetch response:", response);
+        if (response.data) {
+          console.log("🗡️ Setting result data:", response.data);
+
+          // Special console log for endpoints
+          if (activeEndpoint === "both") {
+            console.log("🗡️ streamsByAccountWithAccumulations result:");
+            const data = response.data as AccountStreamData;
+            console.log("  - Incoming streams:", data.incoming);
+            console.log("  - Outgoing streams:", data.outgoing);
+            console.log(
+              "  - Incoming permission count:",
+              Object.keys(data.incoming).length,
+            );
+            console.log(
+              "  - Outgoing permission count:",
+              Object.keys(data.outgoing).length,
+            );
+
+            // Show details for incoming
+            console.log("📥 INCOMING:");
+            for (const [permissionId, streams] of Object.entries(
+              data.incoming,
+            )) {
+              console.log(`  - Permission ${permissionId}:`);
+              for (const [streamId, amount] of Object.entries(
+                streams as Record<string, number | null>,
+              )) {
+                console.log(
+                  `    - Stream ${streamId}: ${amount ?? "null (insufficient data)"}`,
+                );
+              }
+            }
+
+            // Show details for outgoing
+            console.log("📤 OUTGOING:");
+            for (const [permissionId, streams] of Object.entries(
+              data.outgoing,
+            )) {
+              console.log(`  - Permission ${permissionId}:`);
+              for (const [streamId, amount] of Object.entries(
+                streams as Record<string, number | null>,
+              )) {
+                console.log(
+                  `    - Stream ${streamId}: ${amount ?? "null (insufficient data)"}`,
+                );
+              }
+            }
+          } else if (activeEndpoint === "perBlock") {
+            console.log("🗡️ streamsByAccountPerBlock result:");
+            const data = response.data as AccountStreamData;
+            console.log("  - Incoming streams (per block):", data.incoming);
+            console.log("  - Outgoing streams (per block):", data.outgoing);
+            console.log(
+              "  - Incoming permission count:",
+              Object.keys(data.incoming).length,
+            );
+            console.log(
+              "  - Outgoing permission count:",
+              Object.keys(data.outgoing).length,
+            );
+
+            // Show details for incoming
+            console.log("📥 INCOMING (tokens/block):");
+            for (const [permissionId, streams] of Object.entries(
+              data.incoming,
+            )) {
+              console.log(`  - Permission ${permissionId}:`);
+              for (const [streamId, rate] of Object.entries(
+                streams as Record<string, number | null>,
+              )) {
+                console.log(
+                  `    - Stream ${streamId}: ${rate === null ? "null (insufficient data)" : `${rate.toString()} tokens/block`}`,
+                );
+              }
+            }
+
+            // Show details for outgoing
+            console.log("📤 OUTGOING (tokens/block):");
+            for (const [permissionId, streams] of Object.entries(
+              data.outgoing,
+            )) {
+              console.log(`  - Permission ${permissionId}:`);
+              for (const [streamId, rate] of Object.entries(
+                streams as Record<string, number | null>,
+              )) {
+                console.log(
+                  `    - Stream ${streamId}: ${rate === null ? "null (insufficient data)" : `${rate.toString()} tokens/block`}`,
+                );
+              }
             }
           }
-          
-          // Show details for outgoing
-          console.log("📤 OUTGOING:");
-          for (const [permissionId, streams] of Object.entries(data.outgoing)) {
-            console.log(`  - Permission ${permissionId}:`);
-            for (const [streamId, amount] of Object.entries(streams as Record<string, number | null>)) {
-              console.log(`    - Stream ${streamId}: ${amount ?? 'null (insufficient data)'}`);
-            }
-          }
-        } else if (activeEndpoint === "perBlock") {
-          console.log("🗡️ streamsByAccountPerBlock result:");
-          const data = response.data as AccountStreamData;
-          console.log("  - Incoming streams (per block):", data.incoming);
-          console.log("  - Outgoing streams (per block):", data.outgoing);
-          console.log("  - Incoming permission count:", Object.keys(data.incoming).length);
-          console.log("  - Outgoing permission count:", Object.keys(data.outgoing).length);
-          
-          // Show details for incoming
-          console.log("📥 INCOMING (tokens/block):");
-          for (const [permissionId, streams] of Object.entries(data.incoming)) {
-            console.log(`  - Permission ${permissionId}:`);
-            for (const [streamId, rate] of Object.entries(streams as Record<string, number | null>)) {
-              console.log(`    - Stream ${streamId}: ${rate === null ? 'null (insufficient data)' : `${rate.toString()} tokens/block`}`);
-            }
-          }
-          
-          // Show details for outgoing
-          console.log("📤 OUTGOING (tokens/block):");
-          for (const [permissionId, streams] of Object.entries(data.outgoing)) {
-            console.log(`  - Permission ${permissionId}:`);
-            for (const [streamId, rate] of Object.entries(streams as Record<string, number | null>)) {
-              console.log(`    - Stream ${streamId}: ${rate === null ? 'null (insufficient data)' : `${rate.toString()} tokens/block`}`);
-            }
-          }
+
+          setResult(response.data);
+        } else if (response.error) {
+          console.error("🗡️ Refetch error:", response.error);
+          setResult({ error: response.error.message });
         }
-        
-        setResult(response.data);
-      } else if (response.error) {
-        console.error("🗡️ Refetch error:", response.error);
-        setResult({ error: response.error.message });
-      }
-    }).catch((error: unknown) => {
-      console.error("🗡️ Refetch catch error:", error);
-      const errorMessage = error instanceof Error ? error.message : String(error);
-      setResult({ error: errorMessage });
-    });
+      })
+      .catch((error: unknown) => {
+        console.error("🗡️ Refetch catch error:", error);
+        const errorMessage =
+          error instanceof Error ? error.message : String(error);
+        setResult({ error: errorMessage });
+      });
   };
 
   const currentQuery = activeEndpoint === "both" ? bothQuery : perBlockQuery;
-  console.log("🗡️ Current state - result:", result, "isLoading:", currentQuery.isLoading);
+  console.log(
+    "🗡️ Current state - result:",
+    result,
+    "isLoading:",
+    currentQuery.isLoading,
+  );
   console.log("🗡️ Result is null?", result === null);
   console.log("🗡️ Active endpoint:", activeEndpoint);
 
@@ -207,7 +277,8 @@ export default function UltimaWeaponPage() {
       <div className="text-center">
         <h1 className="text-3xl font-bold mb-2">🗡️ UltimaWeapon</h1>
         <p className="text-muted-foreground">
-          Test the streamsByAccountWithAccumulations and streamsByAccountPerBlock API endpoints
+          Test the streamsByAccountWithAccumulations and
+          streamsByAccountPerBlock API endpoints
         </p>
       </div>
 
@@ -253,34 +324,42 @@ export default function UltimaWeaponPage() {
             disabled={currentQuery.isLoading}
             className="w-full"
           >
-            {currentQuery.isLoading ? "Querying..." : `Test ${activeEndpoint === "both" ? "streamsByAccountWithAccumulations" : "streamsByAccountPerBlock"} API`}
+            {currentQuery.isLoading
+              ? "Querying..."
+              : `Test ${activeEndpoint === "both" ? "streamsByAccountWithAccumulations" : "streamsByAccountPerBlock"} API`}
           </Button>
 
           {currentQuery.isLoading && (
             <div className="text-sm text-blue-600">Loading...</div>
           )}
-          
 
-          {result && !('error' in result) && activeEndpoint === "both" && 'incoming' in result && (
-            <div className="text-sm text-muted-foreground">
-              Incoming: {Object.keys(result.incoming).length} permission(s), 
-              Outgoing: {Object.keys(result.outgoing).length} permission(s)
-            </div>
-          )}
+          {result &&
+            !("error" in result) &&
+            activeEndpoint === "both" &&
+            "incoming" in result && (
+              <div className="text-sm text-muted-foreground">
+                Incoming: {Object.keys(result.incoming).length} permission(s),
+                Outgoing: {Object.keys(result.outgoing).length} permission(s)
+              </div>
+            )}
 
-          {result && !('error' in result) && activeEndpoint === "perBlock" && 'incoming' in result && (
-            <div className="text-sm text-muted-foreground">
-              Per Block - Incoming: {Object.keys(result.incoming).length} permission(s), 
-              Outgoing: {Object.keys(result.outgoing).length} permission(s)
-            </div>
-          )}
+          {result &&
+            !("error" in result) &&
+            activeEndpoint === "perBlock" &&
+            "incoming" in result && (
+              <div className="text-sm text-muted-foreground">
+                Per Block - Incoming: {Object.keys(result.incoming).length}{" "}
+                permission(s), Outgoing: {Object.keys(result.outgoing).length}{" "}
+                permission(s)
+              </div>
+            )}
         </CardContent>
       </Card>
 
       {result !== null && (
-        <JsonVisualizer 
-          data={result} 
-          title={`API Results for ${targetAccountId.slice(0, 12)}...`} 
+        <JsonVisualizer
+          data={result}
+          title={`API Results for ${targetAccountId.slice(0, 12)}...`}
         />
       )}
     </div>

@@ -7,7 +7,10 @@
  */
 
 import { DelegationTreeManager } from "./chain/delegation-tree-builder.js";
-import { queryAgentNamespacePermissions } from "./chain/permission0.js";
+import {
+  queryAgentNamespacePermissions,
+  queryEmissionPermissions,
+} from "./chain/permission0.js";
 import type { SS58Address } from "./types/address.js";
 import { connectToChainRpc } from "./utils/index.js";
 
@@ -235,8 +238,132 @@ async function main() {
       console.log("⚠️  No test address available for delegation tree");
     }
 
-    // Test 4: Test isWeaker method for RevocationTerms
-    console.log("\n⚖️ Test 4: Testing isWeaker method for RevocationTerms...");
+    // Test 4: Test queryEmissionPermissions
+    console.log("\n💰 Test 4: Testing queryEmissionPermissions...");
+
+    // Test 4.1: Get all emission permissions
+    console.log("\n📋 Test 4.1: Fetching all emission permissions");
+    const [emissionError1, allEmissions] = await queryEmissionPermissions(
+      api,
+      () => true, // Accept all emission permissions
+    );
+
+    if (emissionError1) {
+      console.error("❌ Error fetching all emissions:", emissionError1);
+    } else {
+      console.log(`✅ Found ${allEmissions.size} emission permissions`);
+
+      // Log first few for inspection
+      let count = 0;
+      for (const [permId, emission] of allEmissions) {
+        if (count >= 3) break;
+        console.log(`\n🔍 Permission ${permId.slice(0, 8)}...:`);
+        console.log(`  Delegator: ${emission.delegator}`);
+        console.log(`  Recipient: ${emission.recipient}`);
+        console.log(`  Accumulating: ${emission.scope.accumulating}`);
+
+        // Show allocation type
+        if ("Streams" in emission.scope.allocation) {
+          console.log(
+            `  Allocation: Streams (${emission.scope.allocation.Streams.size} streams)`,
+          );
+          for (const [streamId, percentage] of emission.scope.allocation
+            .Streams) {
+            console.log(
+              `    - Stream ${streamId.slice(0, 8)}...: ${percentage}%`,
+            );
+          }
+        } else if ("FixedAmount" in emission.scope.allocation) {
+          console.log(
+            `  Allocation: FixedAmount (${emission.scope.allocation.FixedAmount})`,
+          );
+        }
+
+        // Show distribution type
+        if ("Manual" in emission.scope.distribution) {
+          console.log(`  Distribution: Manual`);
+        } else if ("Automatic" in emission.scope.distribution) {
+          console.log(
+            `  Distribution: Automatic (threshold: ${emission.scope.distribution.Automatic})`,
+          );
+        } else if ("AtBlock" in emission.scope.distribution) {
+          console.log(
+            `  Distribution: AtBlock (${emission.scope.distribution.AtBlock})`,
+          );
+        } else if ("Interval" in emission.scope.distribution) {
+          console.log(
+            `  Distribution: Interval (${emission.scope.distribution.Interval} blocks)`,
+          );
+        }
+
+        count++;
+      }
+    }
+
+    // Test 4.2: Filter for specific recipient
+    console.log("\n📋 Test 4.2: Filtering by recipient");
+    const [emissionError2, recipientEmissions] = await queryEmissionPermissions(
+      api,
+      (perm) => perm.recipient === testAddress,
+    );
+
+    if (emissionError2) {
+      console.error("❌ Error filtering by recipient:", emissionError2);
+    } else {
+      console.log(
+        `✅ Found ${recipientEmissions.size} emissions for ${testAddress}`,
+      );
+    }
+
+    // Test 4.3: Filter for stream-based allocations
+    console.log("\n📋 Test 4.3: Filtering for stream-based allocations");
+    const [emissionError3, streamEmissions] = await queryEmissionPermissions(
+      api,
+      (perm) => "Streams" in perm.scope.allocation,
+    );
+
+    if (emissionError3) {
+      console.error("❌ Error filtering streams:", emissionError3);
+    } else {
+      console.log(`✅ Found ${streamEmissions.size} stream-based emissions`);
+    }
+
+    // Test 4.4: Filter for accumulating emissions
+    console.log("\n📋 Test 4.4: Filtering for accumulating emissions");
+    const [emissionError4, accumulatingEmissions] =
+      await queryEmissionPermissions(
+        api,
+        (perm) => perm.scope.accumulating === true,
+      );
+
+    if (emissionError4) {
+      console.error("❌ Error filtering accumulating:", emissionError4);
+    } else {
+      console.log(
+        `✅ Found ${accumulatingEmissions.size} accumulating emissions`,
+      );
+    }
+
+    // Test 4.5: Complex filter - accumulating emissions with manual distribution
+    console.log(
+      "\n📋 Test 4.5: Complex filter - accumulating + manual distribution",
+    );
+    const [emissionError5, complexFiltered] = await queryEmissionPermissions(
+      api,
+      (perm) =>
+        perm.scope.accumulating === true && "Manual" in perm.scope.distribution,
+    );
+
+    if (emissionError5) {
+      console.error("❌ Error with complex filter:", emissionError5);
+    } else {
+      console.log(
+        `✅ Found ${complexFiltered.size} accumulating emissions with manual distribution`,
+      );
+    }
+
+    // Test 5: Test isWeaker method for RevocationTerms
+    console.log("\n⚖️ Test 5: Testing isWeaker method for RevocationTerms...");
 
     // Test cases based on the Substrate runtime implementation
     const testCases = [
