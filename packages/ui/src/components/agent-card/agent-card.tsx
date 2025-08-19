@@ -9,6 +9,48 @@ import { AgentCardHeader } from "./agent-card-header";
 import { CardHoverEffect } from "./agent-card-hover-effect";
 import type { SocialKind } from "./agent-card-socials-info";
 
+export interface AccountEmissionData {
+  isLoading: boolean;
+  isError: boolean;
+  root: {
+    tokensPerWeek: number;
+    percentage: number;
+  };
+  streams: {
+    incoming: {
+      tokensPerWeek: number;
+      percentage: number;
+      count: number;
+    };
+    outgoing: {
+      tokensPerWeek: number;
+      percentage: number;
+      count: number;
+    };
+    net: {
+      tokensPerWeek: number;
+      percentage: number;
+    };
+  };
+  total: {
+    tokensPerWeek: number;
+    percentage: number;
+  };
+  totalWithoutOutgoing: {
+    tokensPerWeek: number;
+    percentage: number;
+  };
+  displayValues: {
+    totalWithoutOutgoing: string;
+    totalEmission: string;
+    rootEmission: string;
+    incomingStreams: string;
+    outgoingStreams: string;
+    netStreams: string;
+  };
+  hasCalculatingStreams: boolean;
+}
+
 export interface AgentCardProps {
   id?: number;
   name: string;
@@ -25,7 +67,7 @@ export interface AgentCardProps {
   showHoverEffect?: boolean;
   isAgentDelegated?: boolean;
   isAgentSelected?: boolean;
-  tokensPerWeek?: string;
+  emissionData?: AccountEmissionData;
   currentPercentage?: number;
   onPercentageChange?: (value: number) => void;
   isAccountConnected?: boolean;
@@ -50,7 +92,7 @@ export function AgentCard(props: Readonly<AgentCardProps>) {
     showHoverEffect = true,
     isAgentDelegated,
     isAgentSelected,
-    tokensPerWeek,
+    emissionData,
     currentPercentage,
     onPercentageChange,
     isAccountConnected,
@@ -81,7 +123,7 @@ export function AgentCard(props: Readonly<AgentCardProps>) {
         percComputedWeight={percComputedWeight}
         prePenaltyPercent={prePenaltyPercent}
         penaltyFactor={penaltyFactor}
-        tokensPerWeek={tokensPerWeek}
+        emissionData={emissionData}
         isLoading={isMetadataLoading}
         isStatsLoading={isLoading}
       />

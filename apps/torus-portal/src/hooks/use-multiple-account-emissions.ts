@@ -3,7 +3,10 @@ import { useMemo } from "react";
 import { api } from "~/trpc/react";
 
 import { useMultipleAccountStreams } from "./use-multiple-account-streams";
-import { calculateAgentTokensPerWeek, useTokensPerWeek } from "./use-tokens-per-week";
+import {
+  calculateAgentTokensPerWeek,
+  useTokensPerWeek,
+} from "./use-tokens-per-week";
 
 export interface AccountEmissionData {
   isLoading: boolean;
@@ -53,20 +56,30 @@ interface UseMultipleAccountEmissionsProps {
 }
 
 export function useMultipleAccountEmissions(
-  props: UseMultipleAccountEmissionsProps
+  props: UseMultipleAccountEmissionsProps,
 ): Record<string, AccountEmissionData> {
   const tokensPerWeek = useTokensPerWeek();
 
   // Batch query for all agent weights
-  const { data: agentWeightsMap, isLoading: isAgentWeightsLoading } =
+  const { data: agentWeightsList, isLoading: isAgentWeightsLoading } =
     api.computedAgentWeight.byAgentKeys.useQuery(
       { agentKeys: props.accountIds },
       {
         enabled: props.accountIds.length > 0,
         refetchOnWindowFocus: false,
         refetchOnMount: false,
-      }
+      },
     );
+
+  // Convert list to map for easier access
+  const agentWeightsMap = useMemo(() => {
+    if (!agentWeightsList) return {};
+    const map: Record<string, { percComputedWeight: number }> = {};
+    for (const agent of agentWeightsList) {
+      map[agent.agentKey] = { percComputedWeight: agent.percComputedWeight };
+    }
+    return map;
+  }, [agentWeightsList]);
 
   // Batch query for all account streams
   const batchStreamsData = useMultipleAccountStreams({
@@ -77,13 +90,16 @@ export function useMultipleAccountEmissions(
     const result: Record<string, AccountEmissionData> = {};
 
     for (const accountId of props.accountIds) {
-      const agentRootEmissions = agentWeightsMap?.[accountId];
+      const agentRootEmissions = agentWeightsMap[accountId];
       const streamData = batchStreamsData[accountId];
-      
-      const isLoading = tokensPerWeek.isLoading || isAgentWeightsLoading || (streamData?.isLoading ?? true);
+
+      const isLoading =
+        tokensPerWeek.isLoading ||
+        isAgentWeightsLoading ||
+        (streamData?.isLoading ?? true);
       const isError = tokensPerWeek.isError || (streamData?.isError ?? false);
 
-      if (isLoading || isError || !agentRootEmissions || !streamData) {
+      if (isLoading || isError) {
         result[accountId] = {
           isLoading,
           isError,
@@ -108,20 +124,47 @@ export function useMultipleAccountEmissions(
         continue;
       }
 
-      // Calculate root emission
+      // Handle agents without stream data (shouldn't happen but defensive)
+      if (!streamData) {
+        result[accountId] = {
+          isLoading: false,
+          isError: false,
+          root: { tokensPerWeek: 0, percentage: 0 },
+          streams: {
+            incoming: { tokensPerWeek: 0, percentage: 0, count: 0 },
+            outgoing: { tokensPerWeek: 0, percentage: 0, count: 0 },
+            net: { tokensPerWeek: 0, percentage: 0 },
+          },
+          total: { tokensPerWeek: 0, percentage: 0 },
+          totalWithoutOutgoing: { tokensPerWeek: 0, percentage: 0 },
+          displayValues: {
+            totalWithoutOutgoing: "0.00 TORUS",
+            totalEmission: "0.00 TORUS",
+            rootEmission: "0.00 TORUS",
+            incomingStreams: "0.00 TORUS",
+            outgoingStreams: "0.00 TORUS",
+            netStreams: "0.00 TORUS",
+          },
+          hasCalculatingStreams: false,
+        };
+        continue;
+      }
+
+      // Calculate root emission (0 for non-whitelisted agents)
       const weightPenaltyValue = props.weightFactors?.[accountId] ?? 1;
-      const agentWeightValue = agentRootEmissions.percComputedWeight * 100;
-      const rootTokensPerWeek = calculateAgentTokensPerWeek(
+      const agentWeightValue = agentRootEmissions?.percComputedWeight ? agentRootEmissions.percComputedWeight * 100 : 0;
+      const rootTokensPerWeek = agentWeightValue > 0 ? calculateAgentTokensPerWeek(
         tokensPerWeek.effectiveEmissionAmount,
         tokensPerWeek.incentivesRatioValue,
         agentWeightValue,
-        weightPenaltyValue
-      );
+        weightPenaltyValue,
+      ) : 0;
 
       // Get stream values
       const incomingTokensPerWeek = streamData.incoming.totalTokensPerWeek;
       const outgoingTokensPerWeek = streamData.outgoing.totalTokensPerWeek;
-      const netStreamsTokensPerWeek = incomingTokensPerWeek - outgoingTokensPerWeek;
+      const netStreamsTokensPerWeek =
+        incomingTokensPerWeek - outgoingTokensPerWeek;
 
       // Calculate totals
       const totalEmission = rootTokensPerWeek + netStreamsTokensPerWeek;
@@ -164,10 +207,12 @@ export function useMultipleAccountEmissions(
 
       // Format display values
       const formatTokens = (value: number) => {
-        return value.toLocaleString("en-US", {
-          minimumFractionDigits: 2,
-          maximumFractionDigits: 2,
-        }) + " TORUS";
+        return (
+          value.toLocaleString("en-US", {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2,
+          }) + " TORUS"
+        );
       };
 
       const displayValues = {
