@@ -379,9 +379,6 @@ async function getStreamsByTarget(
 
   for (const target of filteredTargets) {
     const permissionId = target.permissionId;
-    console.log(
-      `target.normalizedWeight: ${target.normalizedWeight}, target: ${target.targetAccountId}, permissionId: ${permissionId}`,
-    );
 
     if (!result.has(permissionId)) {
       result.set(permissionId, {

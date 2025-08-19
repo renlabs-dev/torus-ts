@@ -5,7 +5,6 @@ import type {
   RemAmount,
   TorAmount,
 } from "@torus-network/torus-utils/torus/token";
-
 import {
   fromRems,
   makeTorAmount,
@@ -155,16 +154,6 @@ export function useMultipleAccountStreams(
 
       const incoming = processStreamData(accountData.incoming);
       const outgoing = processStreamData(accountData.outgoing);
-
-      console.log(`STREAMS DEBUG - accountId: ${accountId}`);
-      console.log(
-        `  incoming.totalTokensPerBlock: ${incoming.totalTokensPerBlock.toNumber()}`,
-      );
-      console.log(
-        `  outgoing.totalTokensPerBlock: ${outgoing.totalTokensPerBlock.toNumber()}`,
-      );
-      console.log(`  incoming streams count: ${incoming.streams.length}`);
-      console.log(`  outgoing streams count: ${outgoing.streams.length}`);
 
       const hasAnyCalculating =
         incoming.isCalculating ||

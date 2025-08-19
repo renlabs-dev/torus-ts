@@ -1,10 +1,10 @@
 import { useMemo } from "react";
 
+import type { TorAmount } from "@torus-network/torus-utils/torus/token";
 import {
   formatTorusToken,
   makeTorAmount,
 } from "@torus-network/torus-utils/torus/token";
-import type { TorAmount } from "@torus-network/torus-utils/torus/token";
 
 import { api } from "~/trpc/react";
 
@@ -167,27 +167,10 @@ export function useMultipleAccountEmissions(
               .multipliedBy(makeTorAmount(1 - weightPenaltyValue / 100))
           : makeTorAmount(0);
 
-      console.log(`DEBUG - accountId: ${accountId}`);
-      console.log(
-        `  baseWeeklyTokens: ${tokensPerWeek.baseWeeklyTokens.toNumber()}`,
-      );
-      console.log(`  agentWeightValue: ${agentWeightValue}`);
-      console.log(`  weightPenaltyValue: ${weightPenaltyValue}`);
-      console.log(`  rootTokensPerWeek: ${rootTokensPerWeek.toNumber()}`);
-
       // Get stream values
       const incomingTokensPerWeek = streamData.incoming.totalTokensPerWeek;
       const outgoingTokensPerWeek = streamData.outgoing.totalTokensPerWeek;
 
-      console.log(
-        `  incomingTokensPerWeek: ${incomingTokensPerWeek.toNumber()}`,
-      );
-      console.log(
-        `  outgoingTokensPerWeek: ${outgoingTokensPerWeek.toNumber()}`,
-      );
-      console.log(
-        `  outgoing vs root+incoming: ${outgoingTokensPerWeek.toNumber()} vs ${rootTokensPerWeek.plus(incomingTokensPerWeek).toNumber()}`,
-      );
       const netStreamsTokensPerWeek = incomingTokensPerWeek.minus(
         outgoingTokensPerWeek,
       );

@@ -1,14 +1,14 @@
 import { useMemo } from "react";
 
 import { CONSTANTS } from "@torus-network/sdk/constants";
-import {
-  fromRems,
-  makeTorAmount,
-  toRems,
-} from "@torus-network/torus-utils/torus/token";
 import type {
   RemAmount,
   TorAmount,
+} from "@torus-network/torus-utils/torus/token";
+import {
+  fromRems,
+  makeTorAmount,
+  safeToRems,
 } from "@torus-network/torus-utils/torus/token";
 
 import {
@@ -121,7 +121,7 @@ export function useTokensPerWeek(): TokensPerWeekResult {
       makeTorAmount(incentivesRatioValue / 100),
     );
 
-    const baseWeeklyTokensRems = toRems(baseWeeklyTokens) as RemAmount;
+    const baseWeeklyTokensRems = safeToRems(baseWeeklyTokens) as RemAmount;
 
     return {
       baseWeeklyTokens,
