@@ -121,7 +121,10 @@ export function safeToRems(amount: TorAmount): bigint {
   // Use toFormat() with no decimal places to avoid scientific notation
   // which causes BigInt conversion to fail on large numbers
   const integerResult = result.integerValue();
-  const stringResult = integerResult.toFormat(0, { groupSeparator: '', decimalSeparator: '.' });
+  const stringResult = integerResult.toFormat(0, {
+    groupSeparator: "",
+    decimalSeparator: ".",
+  });
   return BigInt(stringResult);
 }
 
