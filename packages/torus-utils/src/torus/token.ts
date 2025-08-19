@@ -83,7 +83,7 @@ export function fromRems(value: bigint): TorAmount {
  * ```
  */
 export function toRems(amount: TorAmount): bigint {
-  return BigInt(amount.times(DECIMALS_BN_MULTIPLIER).toString());
+  return BigInt(amount.times(DECIMALS_BN_MULTIPLIER).toFixed(0));
 }
 
 /**
@@ -101,6 +101,31 @@ export function toRems(amount: TorAmount): bigint {
 export function parseTorusTokens(txt: string): TorAmount {
   // TODO: improve parsing?
   return makeTorAmount(txt);
+}
+
+/**
+ * Safely converts standard unit (TORUS) representation value to Rems.
+ * Handles large numbers that might cause scientific notation issues with BigInt conversion.
+ *
+ * @param amount - Amount in TORUS
+ * @returns Amount in Rems (smallest unit)
+ *
+ * @example
+ * ```ts
+ * safeToRems(makeTorAmount("1"))   // 1000000000000000000n
+ * safeToRems(makeTorAmount("0.5")) // 500000000000000000n
+ * ```
+ */
+export function safeToRems(amount: TorAmount): bigint {
+  const result = amount.times(DECIMALS_BN_MULTIPLIER);
+  // Use toFormat() with no decimal places to avoid scientific notation
+  // which causes BigInt conversion to fail on large numbers
+  const integerResult = result.integerValue();
+  const stringResult = integerResult.toFormat(0, {
+    groupSeparator: "",
+    decimalSeparator: ".",
+  });
+  return BigInt(stringResult);
 }
 
 /**

@@ -1,8 +1,9 @@
 import type { TRPCRouterRecord } from "@trpc/server";
 import { z } from "zod";
 
-import { SS58_SCHEMA } from "@torus-network/sdk/types";
 import { queryEmissionPermissions } from "@torus-network/sdk/chain";
+import { SS58_SCHEMA } from "@torus-network/sdk/types";
+import type { RemAmount } from "@torus-network/torus-utils/torus/token";
 
 import { and, eq, isNull, or, sql } from "@torus-ts/db";
 import type { createDb } from "@torus-ts/db/client";
@@ -17,6 +18,14 @@ import {
 } from "@torus-ts/db/schema";
 
 import { publicProcedure } from "../../trpc";
+
+type StreamsPerBlockResult = Record<
+  string,
+  {
+    incoming: Record<string, Record<string, RemAmount | null>>;
+    outgoing: Record<string, Record<string, RemAmount | null>>;
+  }
+>;
 
 async function queryAccumulatedAmounts(
   ctx: { db: ReturnType<typeof createDb> },
@@ -370,9 +379,6 @@ async function getStreamsByTarget(
 
   for (const target of filteredTargets) {
     const permissionId = target.permissionId;
-    console.log(
-      `target.normalizedWeight: ${target.normalizedWeight}, target: ${target.targetAccountId}, permissionId: ${permissionId}`,
-    );
 
     if (!result.has(permissionId)) {
       result.set(permissionId, {
@@ -400,6 +406,139 @@ async function getStreamsByTarget(
       },
     ]),
   );
+}
+
+async function getAllStreams(ctx: {
+  db: ReturnType<typeof createDb>;
+}): Promise<
+  Record<
+    string,
+    Record<string, { streamIds: string[]; normalizedWeight: number }>
+  >
+> {
+  // Get ALL targets with normalized weights using window function in a single query
+  const targets = await ctx.db
+    .select({
+      permissionId: emissionDistributionTargetsSchema.permissionId,
+      streamId: emissionDistributionTargetsSchema.streamId,
+      targetAccountId: emissionDistributionTargetsSchema.targetAccountId,
+      weight: emissionDistributionTargetsSchema.weight,
+      normalizedWeight:
+        sql<number>`CAST(${emissionDistributionTargetsSchema.weight} AS decimal(18,10)) / NULLIF(SUM(${emissionDistributionTargetsSchema.weight}) OVER (PARTITION BY ${emissionDistributionTargetsSchema.permissionId}, ${emissionDistributionTargetsSchema.streamId}), 0)`.as(
+          "normalized_weight",
+        ),
+    })
+    .from(emissionDistributionTargetsSchema);
+
+  // Build the result map: {targetAccountId: {permissionId: {streamIds: string[], normalizedWeight: number}}}
+  const result: Record<
+    string,
+    Record<string, { streamIds: string[]; normalizedWeight: number }>
+  > = {};
+
+  for (const target of targets) {
+    const { targetAccountId, permissionId, streamId, normalizedWeight } =
+      target;
+
+    // Initialize target account if not exists
+    if (!result[targetAccountId]) {
+      result[targetAccountId] = {};
+    }
+
+    // Initialize permission if not exists
+    if (!result[targetAccountId][permissionId]) {
+      result[targetAccountId][permissionId] = {
+        streamIds: [],
+        normalizedWeight,
+      };
+    }
+
+    // Add stream ID if not already present
+    if (
+      streamId &&
+      !result[targetAccountId][permissionId].streamIds.includes(streamId)
+    ) {
+      result[targetAccountId][permissionId].streamIds.push(streamId);
+    }
+  }
+
+  return result;
+}
+
+async function getAllOutgoingStreamsByGrantor(ctx: {
+  db: ReturnType<typeof createDb>;
+}): Promise<Record<string, Record<string, { streamIds: string[] }>>> {
+  // Get ALL permissions where keys are grantors in a single query
+  const permissions = await ctx.db
+    .select({
+      permissionId: permissionsSchema.permissionId,
+      grantorAccountId: permissionsSchema.grantorAccountId,
+    })
+    .from(permissionsSchema)
+    .where(isNull(permissionsSchema.deletedAt));
+
+  if (permissions.length === 0) {
+    return {};
+  }
+
+  // Get ALL stream allocations for these permissions in a single query
+  const streamAllocations = await ctx.db
+    .select({
+      permissionId: emissionStreamAllocationsSchema.permissionId,
+      streamId: emissionStreamAllocationsSchema.streamId,
+    })
+    .from(emissionStreamAllocationsSchema)
+    .where(
+      or(
+        ...permissions.map((p) =>
+          eq(emissionStreamAllocationsSchema.permissionId, p.permissionId),
+        ),
+      ),
+    );
+
+  // Build the result map: {grantorAccountId: {permissionId: {streamIds: string[]}}}
+  const result: Record<string, Record<string, { streamIds: string[] }>> = {};
+
+  // Create a lookup map for permission to grantor
+  const permissionToGrantor = new Map<string, string>();
+  for (const permission of permissions) {
+    permissionToGrantor.set(
+      permission.permissionId,
+      permission.grantorAccountId,
+    );
+  }
+
+  // Group stream IDs by grantor and permission
+  for (const allocation of streamAllocations) {
+    const grantorAccountId = permissionToGrantor.get(allocation.permissionId);
+    if (!grantorAccountId) continue;
+
+    // Initialize grantor account if not exists
+    if (!result[grantorAccountId]) {
+      result[grantorAccountId] = {};
+    }
+
+    // Initialize permission if not exists
+    if (!result[grantorAccountId][allocation.permissionId]) {
+      result[grantorAccountId][allocation.permissionId] = {
+        streamIds: [],
+      };
+    }
+
+    // Add stream ID if not already present
+    if (
+      allocation.streamId &&
+      !result[grantorAccountId][allocation.permissionId]?.streamIds.includes(
+        allocation.streamId,
+      )
+    ) {
+      result[grantorAccountId][allocation.permissionId]?.streamIds.push(
+        allocation.streamId,
+      );
+    }
+  }
+
+  return result;
 }
 
 export const permissionRouter = {
@@ -817,134 +956,143 @@ export const permissionRouter = {
       };
     }),
 
-  streamsByAccountPerBlock: publicProcedure
+  streamsByMultipleAccountsPerBlock: publicProcedure
     .input(
       z.object({
-        accountId: SS58_SCHEMA,
+        accountIds: z.array(SS58_SCHEMA),
         lastN: z.number().int().positive().default(7),
       }),
     )
     .query(async ({ ctx, input }) => {
-      // Get incoming streams (where account is target)
-      const incomingStreamsByTarget = await getStreamsByTarget(ctx, {
-        targetAccountId: input.accountId,
-      });
-      console.log(incomingStreamsByTarget);
-      const incomingPermissionStreamPairs = extractPermissionStreamPairs(
-        incomingStreamsByTarget,
-      );
+      const result: StreamsPerBlockResult = {};
 
-      // Get outgoing streams (where account is grantor)
-      const outgoingStreamsByGrantor = await getOutgoingStreamsByGrantor(ctx, {
-        grantorAccountId: input.accountId,
-      });
-      const outgoingPermissionStreamPairs = extractSimplePermissionStreamPairs(
-        outgoingStreamsByGrantor,
-      );
+      // Get ALL streams data in TWO single queries - MAXIMUM PERFORMANCE IMPROVEMENT
+      const [allIncomingStreamsData, allOutgoingStreamsData] =
+        await Promise.all([
+          getAllStreams(ctx),
+          getAllOutgoingStreamsByGrantor(ctx),
+        ]);
 
-      // Process incoming streams (with weights)
-      const incoming: Record<string, Record<string, number | null>> = {};
-      if (incomingPermissionStreamPairs.length > 0) {
-        const simplePairs = incomingPermissionStreamPairs.map(
-          ({ permissionId, streamId }) => ({ permissionId, streamId }),
-        );
-        const incomingAccumulatedAmounts = await queryAccumulatedAmounts(
-          ctx,
-          simplePairs,
-        );
-
-        // Calculate median amounts
-        const medianAmounts = calculateMedianAmounts(
-          simplePairs,
-          incomingAccumulatedAmounts,
-          input.lastN,
-        );
-        const weightedMedianAmounts = applyWeightsToMedianAmounts(
-          medianAmounts,
+      // Process each account
+      for (const accountId of input.accountIds) {
+        // Get incoming streams (where account is target) from pre-fetched data
+        const incomingStreamsByTarget = allIncomingStreamsData[accountId] ?? {};
+        const incomingPermissionStreamPairs = extractPermissionStreamPairs(
           incomingStreamsByTarget,
         );
 
-        // Calculate median block deltas
-        const medianBlockDeltas = calculateMedianBlockDeltas(
-          simplePairs,
-          incomingAccumulatedAmounts,
-          input.lastN,
-        );
+        // Get outgoing streams (where account is grantor) from pre-fetched data
+        const outgoingStreamsByGrantor =
+          allOutgoingStreamsData[accountId] ?? {};
+        const outgoingPermissionStreamPairs =
+          extractSimplePermissionStreamPairs(outgoingStreamsByGrantor);
 
-        // Calculate tokens per block
-        for (const [permissionId, streams] of Object.entries(
-          weightedMedianAmounts,
-        )) {
-          incoming[permissionId] = {};
-          const blockDeltas = medianBlockDeltas[permissionId];
+        // Process incoming streams (with weights)
+        const incoming: Record<string, Record<string, RemAmount | null>> = {};
+        if (incomingPermissionStreamPairs.length > 0) {
+          const simplePairs = incomingPermissionStreamPairs.map(
+            ({ permissionId, streamId }) => ({ permissionId, streamId }),
+          );
+          const incomingAccumulatedAmounts = await queryAccumulatedAmounts(
+            ctx,
+            simplePairs,
+          );
 
-          if (blockDeltas) {
-            for (const [streamId, amount] of Object.entries(streams)) {
-              const blockDelta = blockDeltas[streamId];
-              if (
-                amount !== null &&
-                blockDelta !== null &&
-                blockDelta !== undefined &&
-                blockDelta > 0
-              ) {
-                incoming[permissionId][streamId] = amount / blockDelta;
-              } else {
-                incoming[permissionId][streamId] = null;
+          // Calculate median amounts
+          const medianAmounts = calculateMedianAmounts(
+            simplePairs,
+            incomingAccumulatedAmounts,
+            input.lastN,
+          );
+          const weightedMedianAmounts = applyWeightsToMedianAmounts(
+            medianAmounts,
+            incomingStreamsByTarget,
+          );
+
+          // Calculate median block deltas
+          const medianBlockDeltas = calculateMedianBlockDeltas(
+            simplePairs,
+            incomingAccumulatedAmounts,
+            input.lastN,
+          );
+
+          // Calculate tokens per block
+          for (const [permissionId, streams] of Object.entries(
+            weightedMedianAmounts,
+          )) {
+            incoming[permissionId] = {};
+            const blockDeltas = medianBlockDeltas[permissionId];
+
+            if (blockDeltas) {
+              for (const [streamId, amount] of Object.entries(streams)) {
+                const blockDelta = blockDeltas[streamId];
+                if (
+                  amount !== null &&
+                  blockDelta !== null &&
+                  blockDelta !== undefined &&
+                  blockDelta > 0
+                ) {
+                  incoming[permissionId][streamId] = BigInt(
+                    Math.floor(amount / blockDelta),
+                  ) as RemAmount;
+                } else {
+                  incoming[permissionId][streamId] = null;
+                }
               }
             }
           }
         }
-      }
 
-      // Process outgoing streams (without weights)
-      const outgoing: Record<string, Record<string, number | null>> = {};
-      if (outgoingPermissionStreamPairs.length > 0) {
-        const outgoingAccumulatedAmounts = await queryAccumulatedAmounts(
-          ctx,
-          outgoingPermissionStreamPairs,
-        );
+        // Process outgoing streams (without weights)
+        const outgoing: Record<string, Record<string, RemAmount | null>> = {};
+        if (outgoingPermissionStreamPairs.length > 0) {
+          const outgoingAccumulatedAmounts = await queryAccumulatedAmounts(
+            ctx,
+            outgoingPermissionStreamPairs,
+          );
 
-        // Calculate median amounts
-        const medianAmounts = calculateMedianAmounts(
-          outgoingPermissionStreamPairs,
-          outgoingAccumulatedAmounts,
-          input.lastN,
-        );
+          // Calculate median amounts
+          const medianAmounts = calculateMedianAmounts(
+            outgoingPermissionStreamPairs,
+            outgoingAccumulatedAmounts,
+            input.lastN,
+          );
 
-        // Calculate median block deltas
-        const medianBlockDeltas = calculateMedianBlockDeltas(
-          outgoingPermissionStreamPairs,
-          outgoingAccumulatedAmounts,
-          input.lastN,
-        );
+          // Calculate median block deltas
+          const medianBlockDeltas = calculateMedianBlockDeltas(
+            outgoingPermissionStreamPairs,
+            outgoingAccumulatedAmounts,
+            input.lastN,
+          );
 
-        // Calculate tokens per block
-        for (const [permissionId, streams] of Object.entries(medianAmounts)) {
-          outgoing[permissionId] = {};
-          const blockDeltas = medianBlockDeltas[permissionId];
+          // Calculate tokens per block
+          for (const [permissionId, streams] of Object.entries(medianAmounts)) {
+            outgoing[permissionId] = {};
+            const blockDeltas = medianBlockDeltas[permissionId];
 
-          if (blockDeltas) {
-            for (const [streamId, amount] of Object.entries(streams)) {
-              const blockDelta = blockDeltas[streamId];
-              if (
-                amount !== null &&
-                blockDelta !== null &&
-                blockDelta !== undefined &&
-                blockDelta > 0
-              ) {
-                outgoing[permissionId][streamId] = amount / blockDelta;
-              } else {
-                outgoing[permissionId][streamId] = null;
+            if (blockDeltas) {
+              for (const [streamId, amount] of Object.entries(streams)) {
+                const blockDelta = blockDeltas[streamId];
+                if (
+                  amount !== null &&
+                  blockDelta !== null &&
+                  blockDelta !== undefined &&
+                  blockDelta > 0
+                ) {
+                  outgoing[permissionId][streamId] = BigInt(
+                    Math.floor(amount / blockDelta),
+                  ) as RemAmount;
+                } else {
+                  outgoing[permissionId][streamId] = null;
+                }
               }
             }
           }
         }
+
+        result[accountId] = { incoming, outgoing };
       }
 
-      //incoming: Record<string, Record<string, number | null>> -> PermissionId, <StreamId, Tokens Per Block or null (if its null it means it still calculating)>
-      return {
-        incoming,
-        outgoing,
-      };
+      return result;
     }),
 } satisfies TRPCRouterRecord;

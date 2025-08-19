@@ -1,6 +1,15 @@
 import { useMemo } from "react";
 
 import { CONSTANTS } from "@torus-network/sdk/constants";
+import type {
+  RemAmount,
+  TorAmount,
+} from "@torus-network/torus-utils/torus/token";
+import {
+  fromRems,
+  makeTorAmount,
+  safeToRems,
+} from "@torus-network/torus-utils/torus/token";
 
 import {
   useIncentivesRatio,
@@ -12,8 +21,9 @@ import { useTorus } from "@torus-ts/torus-provider";
 interface TokensPerWeekResult {
   isLoading: boolean;
   isError: boolean;
-  baseWeeklyTokens: number;
-  effectiveEmissionAmount: number;
+  baseWeeklyTokens: TorAmount;
+  baseWeeklyTokensRems: RemAmount;
+  effectiveEmissionAmount: TorAmount;
   incentivesRatioValue: number;
   recyclingRateValue: number;
   treasuryFeeValue: number;
@@ -60,6 +70,7 @@ export function useTokensPerWeek(): TokensPerWeekResult {
   // Calculate effective emission amount and base weekly tokens
   const {
     baseWeeklyTokens,
+    baseWeeklyTokensRems,
     effectiveEmissionAmount,
     incentivesRatioValue,
     recyclingRateValue,
@@ -67,9 +78,11 @@ export function useTokensPerWeek(): TokensPerWeekResult {
   } = useMemo(() => {
     // Early return conditions
     if (isLoading || isError) {
+      const zeroAmount = makeTorAmount(0);
       return {
-        baseWeeklyTokens: 0,
-        effectiveEmissionAmount: 0,
+        baseWeeklyTokens: zeroAmount,
+        baseWeeklyTokensRems: BigInt(0) as RemAmount,
+        effectiveEmissionAmount: zeroAmount,
         incentivesRatioValue: 0,
         recyclingRateValue: 0,
         treasuryFeeValue: 0,
@@ -79,8 +92,9 @@ export function useTokensPerWeek(): TokensPerWeekResult {
     // Constants and input parameters (keeping percentage values)
     const BLOCKS_PER_WEEK =
       CONSTANTS.TIME.ONE_WEEK / CONSTANTS.TIME.BLOCK_TIME_SECONDS;
-    const fullWeeklyEmission =
-      CONSTANTS.EMISSION.BLOCK_EMISSION * BLOCKS_PER_WEEK;
+    const fullWeeklyEmission = fromRems(
+      CONSTANTS.EMISSION.REMS_BLOCK_EMISSION * BigInt(BLOCKS_PER_WEEK),
+    );
 
     // Parse values, providing defaults if null/undefined
     const incentivesRatioValue = Number(incentivesRatio) || 100;
@@ -98,15 +112,20 @@ export function useTokensPerWeek(): TokensPerWeekResult {
     const effectiveEmissionPercent =
       emissionRemainderPercent - treasuryFeeAmount;
 
-    const effectiveEmissionAmount =
-      (effectiveEmissionPercent / 100) * fullWeeklyEmission;
+    const effectiveEmissionAmount = fullWeeklyEmission.multipliedBy(
+      makeTorAmount(effectiveEmissionPercent / 100),
+    );
 
     // Calculate base weekly tokens with incentives ratio
-    const baseWeeklyTokens =
-      effectiveEmissionAmount * (incentivesRatioValue / 100);
+    const baseWeeklyTokens = effectiveEmissionAmount.multipliedBy(
+      makeTorAmount(incentivesRatioValue / 100),
+    );
+
+    const baseWeeklyTokensRems = safeToRems(baseWeeklyTokens) as RemAmount;
 
     return {
       baseWeeklyTokens,
+      baseWeeklyTokensRems,
       effectiveEmissionAmount,
       incentivesRatioValue,
       recyclingRateValue,
@@ -124,6 +143,7 @@ export function useTokensPerWeek(): TokensPerWeekResult {
     isLoading,
     isError,
     baseWeeklyTokens,
+    baseWeeklyTokensRems,
     effectiveEmissionAmount,
     incentivesRatioValue,
     recyclingRateValue,
@@ -139,15 +159,13 @@ export function useTokensPerWeek(): TokensPerWeekResult {
  * @param weightPenaltyValue - The weight penalty percentage (0-100)
  */
 export function calculateAgentTokensPerWeek(
-  effectiveEmissionAmount: number,
+  effectiveEmissionAmount: TorAmount,
   incentivesRatioValue: number,
   agentWeightValue: number,
   weightPenaltyValue: number,
-): number {
-  return (
-    effectiveEmissionAmount *
-    (incentivesRatioValue / 100) *
-    (agentWeightValue / 100) *
-    (1 - weightPenaltyValue / 100)
-  );
+): TorAmount {
+  return effectiveEmissionAmount
+    .multipliedBy(makeTorAmount(incentivesRatioValue / 100))
+    .multipliedBy(makeTorAmount(agentWeightValue / 100))
+    .multipliedBy(makeTorAmount(1 - weightPenaltyValue / 100));
 }
