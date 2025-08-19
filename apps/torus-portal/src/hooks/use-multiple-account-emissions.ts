@@ -1,42 +1,45 @@
 import { useMemo } from "react";
 
+import {
+  formatTorusToken,
+  makeTorAmount,
+} from "@torus-network/torus-utils/torus/token";
+import type { TorAmount } from "@torus-network/torus-utils/torus/token";
+
 import { api } from "~/trpc/react";
 
 import { useMultipleAccountStreams } from "./use-multiple-account-streams";
-import {
-  calculateAgentTokensPerWeek,
-  useTokensPerWeek,
-} from "./use-tokens-per-week";
+import { useTokensPerWeek } from "./use-tokens-per-week";
 
 export interface AccountEmissionData {
   isLoading: boolean;
   isError: boolean;
   root: {
-    tokensPerWeek: number;
+    tokensPerWeek: TorAmount;
     percentage: number;
   };
   streams: {
     incoming: {
-      tokensPerWeek: number;
+      tokensPerWeek: TorAmount;
       percentage: number;
       count: number;
     };
     outgoing: {
-      tokensPerWeek: number;
+      tokensPerWeek: TorAmount;
       percentage: number;
       count: number;
     };
     net: {
-      tokensPerWeek: number;
+      tokensPerWeek: TorAmount;
       percentage: number;
     };
   };
   total: {
-    tokensPerWeek: number;
+    tokensPerWeek: TorAmount;
     percentage: number;
   };
   totalWithoutOutgoing: {
-    tokensPerWeek: number;
+    tokensPerWeek: TorAmount;
     percentage: number;
   };
   displayValues: {
@@ -100,17 +103,18 @@ export function useMultipleAccountEmissions(
       const isError = tokensPerWeek.isError || (streamData?.isError ?? false);
 
       if (isLoading || isError) {
+        const zeroAmount = makeTorAmount(0);
         result[accountId] = {
           isLoading,
           isError,
-          root: { tokensPerWeek: 0, percentage: 0 },
+          root: { tokensPerWeek: zeroAmount, percentage: 0 },
           streams: {
-            incoming: { tokensPerWeek: 0, percentage: 0, count: 0 },
-            outgoing: { tokensPerWeek: 0, percentage: 0, count: 0 },
-            net: { tokensPerWeek: 0, percentage: 0 },
+            incoming: { tokensPerWeek: zeroAmount, percentage: 0, count: 0 },
+            outgoing: { tokensPerWeek: zeroAmount, percentage: 0, count: 0 },
+            net: { tokensPerWeek: zeroAmount, percentage: 0 },
           },
-          total: { tokensPerWeek: 0, percentage: 0 },
-          totalWithoutOutgoing: { tokensPerWeek: 0, percentage: 0 },
+          total: { tokensPerWeek: zeroAmount, percentage: 0 },
+          totalWithoutOutgoing: { tokensPerWeek: zeroAmount, percentage: 0 },
           displayValues: {
             totalWithoutOutgoing: "0.00 TORUS",
             totalEmission: "0.00 TORUS",
@@ -126,17 +130,18 @@ export function useMultipleAccountEmissions(
 
       // Handle agents without stream data (shouldn't happen but defensive)
       if (!streamData) {
+        const zeroAmount = makeTorAmount(0);
         result[accountId] = {
           isLoading: false,
           isError: false,
-          root: { tokensPerWeek: 0, percentage: 0 },
+          root: { tokensPerWeek: zeroAmount, percentage: 0 },
           streams: {
-            incoming: { tokensPerWeek: 0, percentage: 0, count: 0 },
-            outgoing: { tokensPerWeek: 0, percentage: 0, count: 0 },
-            net: { tokensPerWeek: 0, percentage: 0 },
+            incoming: { tokensPerWeek: zeroAmount, percentage: 0, count: 0 },
+            outgoing: { tokensPerWeek: zeroAmount, percentage: 0, count: 0 },
+            net: { tokensPerWeek: zeroAmount, percentage: 0 },
           },
-          total: { tokensPerWeek: 0, percentage: 0 },
-          totalWithoutOutgoing: { tokensPerWeek: 0, percentage: 0 },
+          total: { tokensPerWeek: zeroAmount, percentage: 0 },
+          totalWithoutOutgoing: { tokensPerWeek: zeroAmount, percentage: 0 },
           displayValues: {
             totalWithoutOutgoing: "0.00 TORUS",
             totalEmission: "0.00 TORUS",
@@ -157,67 +162,100 @@ export function useMultipleAccountEmissions(
         : 0;
       const rootTokensPerWeek =
         agentWeightValue > 0
-          ? calculateAgentTokensPerWeek(
-              tokensPerWeek.effectiveEmissionAmount,
-              tokensPerWeek.incentivesRatioValue,
-              agentWeightValue,
-              weightPenaltyValue,
-            )
-          : 0;
+          ? tokensPerWeek.baseWeeklyTokens
+              .multipliedBy(makeTorAmount(agentWeightValue / 100))
+              .multipliedBy(makeTorAmount(1 - weightPenaltyValue / 100))
+          : makeTorAmount(0);
+
+      console.log(`DEBUG - accountId: ${accountId}`);
+      console.log(
+        `  baseWeeklyTokens: ${tokensPerWeek.baseWeeklyTokens.toNumber()}`,
+      );
+      console.log(`  agentWeightValue: ${agentWeightValue}`);
+      console.log(`  weightPenaltyValue: ${weightPenaltyValue}`);
+      console.log(`  rootTokensPerWeek: ${rootTokensPerWeek.toNumber()}`);
 
       // Get stream values
       const incomingTokensPerWeek = streamData.incoming.totalTokensPerWeek;
       const outgoingTokensPerWeek = streamData.outgoing.totalTokensPerWeek;
-      const netStreamsTokensPerWeek =
-        incomingTokensPerWeek - outgoingTokensPerWeek;
+
+      console.log(
+        `  incomingTokensPerWeek: ${incomingTokensPerWeek.toNumber()}`,
+      );
+      console.log(
+        `  outgoingTokensPerWeek: ${outgoingTokensPerWeek.toNumber()}`,
+      );
+      console.log(
+        `  outgoing vs root+incoming: ${outgoingTokensPerWeek.toNumber()} vs ${rootTokensPerWeek.plus(incomingTokensPerWeek).toNumber()}`,
+      );
+      const netStreamsTokensPerWeek = incomingTokensPerWeek.minus(
+        outgoingTokensPerWeek,
+      );
 
       // Calculate totals
-      const totalEmission = rootTokensPerWeek + netStreamsTokensPerWeek;
-      const totalWithoutOutgoing = rootTokensPerWeek + incomingTokensPerWeek;
+      const totalEmission = rootTokensPerWeek.plus(netStreamsTokensPerWeek);
+      const totalWithoutOutgoing = rootTokensPerWeek.plus(
+        incomingTokensPerWeek,
+      );
 
       // Calculate percentages relative to base weekly tokens
-      const baseWeekly = tokensPerWeek.baseWeeklyTokens || 1;
+      const baseWeekly = tokensPerWeek.baseWeeklyTokens.isZero()
+        ? makeTorAmount(1)
+        : tokensPerWeek.baseWeeklyTokens;
 
       const root = {
         tokensPerWeek: rootTokensPerWeek,
-        percentage: (rootTokensPerWeek / baseWeekly) * 100,
+        percentage: rootTokensPerWeek
+          .dividedBy(baseWeekly)
+          .multipliedBy(makeTorAmount(100))
+          .toNumber(),
       };
 
       const streams = {
         incoming: {
           tokensPerWeek: incomingTokensPerWeek,
-          percentage: (incomingTokensPerWeek / baseWeekly) * 100,
+          percentage: incomingTokensPerWeek
+            .dividedBy(baseWeekly)
+            .multipliedBy(makeTorAmount(100))
+            .toNumber(),
           count: streamData.incoming.streams.length,
         },
         outgoing: {
           tokensPerWeek: outgoingTokensPerWeek,
-          percentage: (outgoingTokensPerWeek / baseWeekly) * 100,
+          percentage: outgoingTokensPerWeek
+            .dividedBy(baseWeekly)
+            .multipliedBy(makeTorAmount(100))
+            .toNumber(),
           count: streamData.outgoing.streams.length,
         },
         net: {
           tokensPerWeek: netStreamsTokensPerWeek,
-          percentage: (netStreamsTokensPerWeek / baseWeekly) * 100,
+          percentage: netStreamsTokensPerWeek
+            .dividedBy(baseWeekly)
+            .multipliedBy(makeTorAmount(100))
+            .toNumber(),
         },
       };
 
       const total = {
         tokensPerWeek: totalEmission,
-        percentage: (totalEmission / baseWeekly) * 100,
+        percentage: totalEmission
+          .dividedBy(baseWeekly)
+          .multipliedBy(makeTorAmount(100))
+          .toNumber(),
       };
 
       const totalWithoutOutgoingData = {
         tokensPerWeek: totalWithoutOutgoing,
-        percentage: (totalWithoutOutgoing / baseWeekly) * 100,
+        percentage: totalWithoutOutgoing
+          .dividedBy(baseWeekly)
+          .multipliedBy(makeTorAmount(100))
+          .toNumber(),
       };
 
       // Format display values
-      const formatTokens = (value: number) => {
-        return (
-          value.toLocaleString("en-US", {
-            minimumFractionDigits: 2,
-            maximumFractionDigits: 2,
-          }) + " TORUS"
-        );
+      const formatTokens = (value: TorAmount) => {
+        return formatTorusToken(value, 2) + " TORUS";
       };
 
       const displayValues = {

@@ -1,20 +1,29 @@
 import { useMemo } from "react";
 
 import { CONSTANTS } from "@torus-network/sdk/constants";
+import type {
+  RemAmount,
+  TorAmount,
+} from "@torus-network/torus-utils/torus/token";
+
+import {
+  fromRems,
+  makeTorAmount,
+} from "@torus-network/torus-utils/torus/token";
 
 import { api } from "~/trpc/react";
 
 interface StreamData {
   permissionId: string;
   streamId: string;
-  tokensPerBlock: number;
-  tokensPerWeek: number;
+  tokensPerBlock: TorAmount;
+  tokensPerWeek: TorAmount;
   percentage: number;
 }
 
 interface StreamSummary {
-  totalTokensPerBlock: number;
-  totalTokensPerWeek: number;
+  totalTokensPerBlock: TorAmount;
+  totalTokensPerWeek: TorAmount;
   totalPercentage: number;
   streams: StreamData[];
   isCalculating: boolean;
@@ -38,10 +47,10 @@ const BLOCKS_PER_WEEK =
   CONSTANTS.TIME.ONE_WEEK / CONSTANTS.TIME.BLOCK_TIME_SECONDS;
 
 function processStreamData(
-  streams: Record<string, Record<string, number | null>>,
+  streams: Record<string, Record<string, RemAmount | null>>,
 ): StreamSummary {
   const streamList: StreamData[] = [];
-  let totalTokensPerBlock = 0;
+  let totalTokensPerBlock = makeTorAmount(0);
   let hasNullValues = false;
   let hasValidValues = false;
 
@@ -51,8 +60,10 @@ function processStreamData(
         hasNullValues = true;
       } else {
         hasValidValues = true;
-        const tokensPerBlock = tokensPerBlockRaw / 10 ** 18;
-        const tokensPerWeek = tokensPerBlock * BLOCKS_PER_WEEK;
+        const tokensPerBlock = fromRems(tokensPerBlockRaw);
+        const tokensPerWeek = tokensPerBlock.multipliedBy(
+          makeTorAmount(BLOCKS_PER_WEEK),
+        );
 
         streamList.push({
           permissionId,
@@ -62,7 +73,7 @@ function processStreamData(
           percentage: 0, // Will be calculated after totals
         });
 
-        totalTokensPerBlock += tokensPerBlock;
+        totalTokensPerBlock = totalTokensPerBlock.plus(tokensPerBlock);
       }
     }
   }
@@ -70,13 +81,16 @@ function processStreamData(
   // Calculate percentages based on total
   const processedStreams = streamList.map((stream) => ({
     ...stream,
-    percentage:
-      totalTokensPerBlock > 0
-        ? (stream.tokensPerBlock / totalTokensPerBlock) * 100
-        : 0,
+    percentage: totalTokensPerBlock.isGreaterThan(makeTorAmount(0))
+      ? stream.tokensPerBlock
+          .dividedBy(totalTokensPerBlock)
+          .multipliedBy(makeTorAmount(100))
+          .toNumber()
+      : 0,
   }));
-
-  const totalTokensPerWeek = totalTokensPerBlock * BLOCKS_PER_WEEK;
+  const totalTokensPerWeek = totalTokensPerBlock.multipliedBy(
+    makeTorAmount(BLOCKS_PER_WEEK),
+  );
   const totalPercentage = processedStreams.reduce(
     (sum, s) => sum + s.percentage,
     0,
@@ -114,18 +128,19 @@ export function useMultipleAccountStreams(
       const accountData = data?.[accountId];
 
       if (!accountData) {
+        const zeroAmount = makeTorAmount(0);
         result[accountId] = {
           incoming: {
-            totalTokensPerBlock: 0,
-            totalTokensPerWeek: 0,
+            totalTokensPerBlock: zeroAmount,
+            totalTokensPerWeek: zeroAmount,
             totalPercentage: 0,
             streams: [],
             isCalculating: false,
             hasPartialData: false,
           },
           outgoing: {
-            totalTokensPerBlock: 0,
-            totalTokensPerWeek: 0,
+            totalTokensPerBlock: zeroAmount,
+            totalTokensPerWeek: zeroAmount,
             totalPercentage: 0,
             streams: [],
             isCalculating: false,
@@ -140,6 +155,16 @@ export function useMultipleAccountStreams(
 
       const incoming = processStreamData(accountData.incoming);
       const outgoing = processStreamData(accountData.outgoing);
+
+      console.log(`STREAMS DEBUG - accountId: ${accountId}`);
+      console.log(
+        `  incoming.totalTokensPerBlock: ${incoming.totalTokensPerBlock.toNumber()}`,
+      );
+      console.log(
+        `  outgoing.totalTokensPerBlock: ${outgoing.totalTokensPerBlock.toNumber()}`,
+      );
+      console.log(`  incoming streams count: ${incoming.streams.length}`);
+      console.log(`  outgoing streams count: ${outgoing.streams.length}`);
 
       const hasAnyCalculating =
         incoming.isCalculating ||

@@ -9,35 +9,37 @@ import { AgentCardHeader } from "./agent-card-header";
 import { CardHoverEffect } from "./agent-card-hover-effect";
 import type { SocialKind } from "./agent-card-socials-info";
 
+import type { TorAmount } from "@torus-network/torus-utils/torus/token";
+
 export interface AccountEmissionData {
   isLoading: boolean;
   isError: boolean;
   root: {
-    tokensPerWeek: number;
+    tokensPerWeek: TorAmount;
     percentage: number;
   };
   streams: {
     incoming: {
-      tokensPerWeek: number;
+      tokensPerWeek: TorAmount;
       percentage: number;
       count: number;
     };
     outgoing: {
-      tokensPerWeek: number;
+      tokensPerWeek: TorAmount;
       percentage: number;
       count: number;
     };
     net: {
-      tokensPerWeek: number;
+      tokensPerWeek: TorAmount;
       percentage: number;
     };
   };
   total: {
-    tokensPerWeek: number;
+    tokensPerWeek: TorAmount;
     percentage: number;
   };
   totalWithoutOutgoing: {
-    tokensPerWeek: number;
+    tokensPerWeek: TorAmount;
     percentage: number;
   };
   displayValues: {

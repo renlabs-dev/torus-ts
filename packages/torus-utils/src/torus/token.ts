@@ -83,7 +83,7 @@ export function fromRems(value: bigint): TorAmount {
  * ```
  */
 export function toRems(amount: TorAmount): bigint {
-  return BigInt(amount.times(DECIMALS_BN_MULTIPLIER).toString());
+  return BigInt(amount.times(DECIMALS_BN_MULTIPLIER).toFixed(0));
 }
 
 /**
