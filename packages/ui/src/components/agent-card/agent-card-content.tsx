@@ -55,11 +55,13 @@ function AgentStats({
     );
   };
 
-  const percentageDisplay = emissionData?.totalWithoutOutgoing.percentage
-    ? formatPercentage(emissionData.totalWithoutOutgoing.percentage)
-    : typeof percComputedWeight === "number"
-      ? formatPercentage(percComputedWeight * 100)
-      : "0.00%";
+  const twp = emissionData?.totalWithoutOutgoing.percentage;
+  const percentageDisplay =
+    typeof twp === "number"
+      ? formatPercentage(twp)
+      : typeof percComputedWeight === "number"
+        ? formatPercentage(percComputedWeight * 100)
+        : "0.00%";
 
   return (
     <div className="relative z-30 flex w-full flex-wrap items-center justify-between gap-3">

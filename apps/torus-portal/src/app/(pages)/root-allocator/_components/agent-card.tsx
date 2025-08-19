@@ -62,9 +62,10 @@ export function AgentCard(props: Readonly<AgentCardProps>) {
   const currentPercentage = getAgentPercentage(props.agentKey);
 
   // Use the root emission percentage (agent's weight allocation, not total with streams)
-  const postPenaltyPercComputedWeight = agentEmissionData?.root.percentage
-    ? agentEmissionData.root.percentage / 100
-    : props.percComputedWeight;
+  const postPenaltyPercComputedWeight =
+    agentEmissionData?.root.percentage != null
+      ? agentEmissionData.root.percentage / 100
+      : props.percComputedWeight;
 
   const allocatorAddress = env("NEXT_PUBLIC_TORUS_ALLOCATOR_ADDRESS");
   const isAllocatorAgent = props.agentKey === allocatorAddress;
