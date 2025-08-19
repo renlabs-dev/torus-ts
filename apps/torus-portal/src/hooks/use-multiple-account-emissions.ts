@@ -152,13 +152,18 @@ export function useMultipleAccountEmissions(
 
       // Calculate root emission (0 for non-whitelisted agents)
       const weightPenaltyValue = props.weightFactors?.[accountId] ?? 1;
-      const agentWeightValue = agentRootEmissions?.percComputedWeight ? agentRootEmissions.percComputedWeight * 100 : 0;
-      const rootTokensPerWeek = agentWeightValue > 0 ? calculateAgentTokensPerWeek(
-        tokensPerWeek.effectiveEmissionAmount,
-        tokensPerWeek.incentivesRatioValue,
-        agentWeightValue,
-        weightPenaltyValue,
-      ) : 0;
+      const agentWeightValue = agentRootEmissions?.percComputedWeight
+        ? agentRootEmissions.percComputedWeight * 100
+        : 0;
+      const rootTokensPerWeek =
+        agentWeightValue > 0
+          ? calculateAgentTokensPerWeek(
+              tokensPerWeek.effectiveEmissionAmount,
+              tokensPerWeek.incentivesRatioValue,
+              agentWeightValue,
+              weightPenaltyValue,
+            )
+          : 0;
 
       // Get stream values
       const incomingTokensPerWeek = streamData.incoming.totalTokensPerWeek;

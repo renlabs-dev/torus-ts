@@ -132,9 +132,11 @@ function getDeterministicParticleSpeed(seed: string): number {
 
 function createParticleProperties(seed: string, particleCount?: number) {
   return {
-    linkDirectionalParticles: particleCount ?? graphConstants.linkConfig.particleConfig.particles,
+    linkDirectionalParticles:
+      particleCount ?? graphConstants.linkConfig.particleConfig.particles,
     linkDirectionalParticleSpeed: getDeterministicParticleSpeed(seed),
-    linkDirectionalParticleResolution: graphConstants.linkConfig.particleAnimation.resolution,
+    linkDirectionalParticleResolution:
+      graphConstants.linkConfig.particleAnimation.resolution,
   };
 }
 
@@ -648,7 +650,7 @@ export function createSimplifiedGraphData(
           (permission.emission_distribution_targets.weight / 65535) * 3,
         ),
       );
-      
+
       links.push({
         linkType: "permission_target",
         source: permissionNodeId,
