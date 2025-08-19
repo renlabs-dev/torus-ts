@@ -1,6 +1,6 @@
 "use client";
 
-import { Coins, Globe, Key } from "lucide-react";
+import { Coins, Key, Route } from "lucide-react";
 
 import { smallAddress } from "@torus-network/torus-utils/torus/address";
 
@@ -30,7 +30,6 @@ function AgentStats({
   emissionData,
   agentKey,
   isLoading = false,
-  prePenaltyPercent,
   penaltyFactor,
 }: {
   agentKey: string;
@@ -67,8 +66,12 @@ function AgentStats({
       <HoverCard>
         <HoverCardTrigger>
           <Label className="flex items-center gap-1.5 text-xs font-semibold">
-            <Globe size={14} />
-            {isLoading ? "Loading..." : percentageDisplay}
+            <Route size={14} />
+            {isLoading ? (
+              <span className="animate-pulse">00.00%</span>
+            ) : (
+              percentageDisplay
+            )}
           </Label>
         </HoverCardTrigger>
         <HoverCardContent className="z-[9999] w-80" side="top" align="center">
@@ -135,7 +138,11 @@ function AgentStats({
         <HoverCardTrigger>
           <Label className="flex items-center gap-1 text-xs font-semibold">
             <Coins size={16} />
-            {isLoading ? "Loading..." : tokensPerWeekDisplay}
+            {isLoading ? (
+              <span className="animate-pulse">00.00 TORUS/Week</span>
+            ) : (
+              <span>{tokensPerWeekDisplay}/Week</span>
+            )}
           </Label>
         </HoverCardTrigger>
         <HoverCardContent className="z-[9999] w-80" side="top" align="center">

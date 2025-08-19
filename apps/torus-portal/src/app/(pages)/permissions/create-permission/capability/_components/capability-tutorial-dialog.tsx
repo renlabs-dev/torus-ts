@@ -2,7 +2,7 @@
 
 import React from "react";
 
-import { CheckCircle, Route, Settings } from "lucide-react";
+import { CheckCircle, Infinity as InfinityIcon, Settings } from "lucide-react";
 
 import {
   AlertDialog,
@@ -18,7 +18,7 @@ import { useCapabilityTutorialStore } from "~/stores/capabilityTutorialStore";
 
 export const capabilityTutorialData = {
   "1": {
-    icon: <Route className="h-5 w-5" />,
+    icon: <InfinityIcon className="h-5 w-5" />,
     description: "Select your capability paths to re-delegate",
     steps: [
       <div key="own-paths" className="flex items-center gap-2">
@@ -27,7 +27,7 @@ export const capabilityTutorialData = {
           className="text-center px-1.5 py-1.5 rounded-sm text-xs bg-green-600 text-white border
             border-border"
         >
-          <Route size={11} />
+          <InfinityIcon size={11} />
         </div>
         unlimited instances available
       </div>,
