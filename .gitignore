@@ -2,6 +2,9 @@
 /data/
 /tmp/
 
+# Git worktrees
+/worktrees
+
 # Local files
 *.local*
 
