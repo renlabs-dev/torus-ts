@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
-import { checkSS58 } from "../types/address.js";
-import { generateRootStreamId } from "./permission0.js";
+import { checkSS58 } from "../../types/address.js";
+import { generateRootStreamId } from "./permission0-storage.js";
 
 describe("permission0", () => {
   describe("generateRootStreamId", () => {

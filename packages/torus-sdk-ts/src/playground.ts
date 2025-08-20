@@ -6,11 +6,11 @@
  * Run with: npx tsx src/playground.ts
  */
 
-import { DelegationTreeManager } from "./chain/delegation-tree-builder.js";
+import { DelegationTreeManager } from "./chain/common/delegation-tree-builder.js";
 import {
   queryAgentNamespacePermissions,
   queryEmissionPermissions,
-} from "./chain/permission0.js";
+} from "./chain/permission0/permission0-storage.js";
 import type { SS58Address } from "./types/address.js";
 import { connectToChainRpc } from "./utils/index.js";
 

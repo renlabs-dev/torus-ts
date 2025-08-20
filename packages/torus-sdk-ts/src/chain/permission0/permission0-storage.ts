@@ -1,10 +1,6 @@
-import type { ApiPromise } from "@polkadot/api";
-import type { Bytes, Option, u16 } from "@polkadot/types";
-import { BTreeMap, BTreeSet } from "@polkadot/types";
-import type { AccountId32, H256, Percent } from "@polkadot/types/interfaces";
+import type { H256 } from "@polkadot/types/interfaces";
 import { blake2AsHex, decodeAddress } from "@polkadot/util-crypto";
 import { if_let, match } from "rustie";
-import { z } from "zod";
 
 import { getOrSetDefault } from "@torus-network/torus-utils/collections";
 import { BasicLogger } from "@torus-network/torus-utils/logger";
@@ -13,191 +9,33 @@ import { makeErr, makeOk } from "@torus-network/torus-utils/result";
 import { tryAsync } from "@torus-network/torus-utils/try-catch";
 import type { Nullable } from "@torus-network/torus-utils/typing";
 
-import type { SS58Address } from "../types/address.js";
-import type { ToBigInt, ZError } from "../types/index.js";
+import type { SS58Address } from "../../types/address.js";
+import type { ToBigInt, ZError } from "../../types/index.js";
 import {
   sb_address,
   sb_array,
   sb_balance,
-  sb_bigint,
-  sb_blocks,
-  sb_bool,
-  sb_enum,
   sb_h256,
-  sb_map,
-  sb_null,
   sb_option,
-  sb_percent,
   sb_some,
-  sb_struct,
-} from "../types/index.js";
-import type { Api } from "./common/index.js";
-import { SbQueryError } from "./common/index.js";
-import { sb_namespace_path } from "./torus0/namespace.js";
+} from "../../types/index.js";
+import type { Api } from "../common/fees.js";
+import { SbQueryError } from "../common/fees.js";
+import type {
+  AccumulatedStreamEntry,
+  CuratorPermissions,
+  EmissionContract,
+  PermissionContract,
+  PermissionId,
+  StreamId,
+} from "./permission0-types.js";
+import {
+  PERMISSION_CONTRACT_SCHEMA,
+  PERMISSION_ID_SCHEMA,
+  STREAM_ID_SCHEMA,
+} from "./permission0-types.js";
 
 const logger = BasicLogger.create({ name: "torus-sdk-ts.modules.permission0" });
-
-// ==== Data types ====
-
-export const PERMISSION_ID_SCHEMA = sb_h256;
-export const STREAM_ID_SCHEMA = sb_h256;
-
-// TODO: branded types on PermissionId and StreamId
-export type PermissionId = z.infer<typeof PERMISSION_ID_SCHEMA>;
-export type StreamId = z.infer<typeof STREAM_ID_SCHEMA>;
-
-// Schema for accumulated stream amounts storage key: (AccountId, StreamId, PermissionId)
-export const ACCUMULATED_STREAM_KEY_SCHEMA = sb_struct({
-  delegator: sb_address,
-  streamId: STREAM_ID_SCHEMA,
-  permissionId: PERMISSION_ID_SCHEMA,
-});
-
-export const ACCUMULATED_STREAM_ENTRY_SCHEMA = sb_struct({
-  delegator: sb_address,
-  streamId: STREAM_ID_SCHEMA,
-  permissionId: PERMISSION_ID_SCHEMA,
-  amount: sb_balance,
-});
-
-export type AccumulatedStreamEntry = z.infer<
-  typeof ACCUMULATED_STREAM_ENTRY_SCHEMA
->;
-
-// ---- Curator Permissions (Bitflags) ----
-
-export const CURATOR_PERMISSIONS_SCHEMA = sb_struct({
-  bits: sb_bigint,
-});
-
-export type CuratorPermissions = z.infer<typeof CURATOR_PERMISSIONS_SCHEMA>;
-
-// Curator permission flag constants
-export const CURATOR_FLAGS = {
-  ROOT: 0b0000_0001n,
-  APPLICATION_REVIEW: 0b0000_0010n,
-  WHITELIST_MANAGE: 0b0000_0100n,
-  PENALTY_CONTROL: 0b0000_1000n,
-} as const;
-
-// ---- Emission Types ----
-
-export const EMISSION_ALLOCATION_SCHEMA = sb_enum({
-  Streams: sb_map(STREAM_ID_SCHEMA, sb_percent),
-  FixedAmount: sb_balance,
-});
-
-export const DISTRIBUTION_CONTROL_SCHEMA = sb_enum({
-  Manual: sb_null,
-  Automatic: sb_balance, // threshold amount
-  AtBlock: sb_blocks,
-  Interval: sb_blocks,
-});
-
-export const EMISSION_SCOPE_SCHEMA = sb_struct({
-  allocation: EMISSION_ALLOCATION_SCHEMA,
-  distribution: DISTRIBUTION_CONTROL_SCHEMA,
-  targets: sb_map(sb_address, sb_bigint),
-  accumulating: sb_bool,
-});
-
-export type EmissionAllocation = z.infer<typeof EMISSION_ALLOCATION_SCHEMA>;
-export type DistributionControl = z.infer<typeof DISTRIBUTION_CONTROL_SCHEMA>;
-export type EmissionScope = z.infer<typeof EMISSION_SCOPE_SCHEMA>;
-
-// ---- Curator Types ----
-
-export const CURATOR_SCOPE_SCHEMA = sb_struct({
-  flags:
-    // CURATOR_PERMISSIONS_SCHEMA, // FIXME: z.unknown() hole on schema
-    z.unknown(),
-  cooldown: sb_option(sb_blocks),
-});
-
-export type CuratorScope = z.infer<typeof CURATOR_SCOPE_SCHEMA>;
-
-// ---- Namespace Types ----
-
-export const NAMESPACE_SCOPE_SCHEMA = sb_struct({
-  paths: sb_map(sb_option(PERMISSION_ID_SCHEMA), sb_array(sb_namespace_path)),
-});
-
-export type NamespaceScope = z.infer<typeof NAMESPACE_SCOPE_SCHEMA>;
-
-// ---- Permission Scope ----
-
-export const PERMISSION_SCOPE_SCHEMA = sb_enum({
-  Emission: EMISSION_SCOPE_SCHEMA,
-  Curator: CURATOR_SCOPE_SCHEMA,
-  Namespace: NAMESPACE_SCOPE_SCHEMA,
-});
-
-export type PermissionScope = z.infer<typeof PERMISSION_SCOPE_SCHEMA>;
-
-// ---- Duration and Control Types ----
-
-export const PERMISSION_DURATION_SCHEMA = sb_enum({
-  UntilBlock: sb_blocks,
-  Indefinite: sb_null,
-});
-
-export const REVOCATION_TERMS_SCHEMA = sb_enum({
-  Irrevocable: sb_null,
-  RevocableByDelegator: sb_null,
-  RevocableByArbiters: sb_struct({
-    accounts: sb_array(sb_address),
-    requiredVotes: sb_bigint, // u32 as bigint
-  }),
-  RevocableAfter: sb_blocks,
-});
-
-export const ENFORCEMENT_AUTHORITY_SCHEMA = sb_enum({
-  None: sb_null,
-  ControlledBy: sb_struct({
-    controllers: sb_array(sb_address),
-    requiredVotes: sb_bigint, // u32 as bigint
-  }),
-});
-
-export const ENFORCEMENT_REFERENDUM_SCHEMA = sb_enum({
-  EmissionAccumulation: sb_bool,
-  Execution: sb_null,
-});
-
-export type PermissionDuration = z.infer<typeof PERMISSION_DURATION_SCHEMA>;
-export type RevocationTerms = z.infer<typeof REVOCATION_TERMS_SCHEMA>;
-export type EnforcementAuthority = z.infer<typeof ENFORCEMENT_AUTHORITY_SCHEMA>;
-export type EnforcementReferendum = z.infer<
-  typeof ENFORCEMENT_REFERENDUM_SCHEMA
->;
-
-// ---- Main Permission Contract ----
-
-const PERMISSION_CONTRACT_SHAPE = {
-  delegator: sb_address,
-  recipient: sb_address,
-  scope: PERMISSION_SCOPE_SCHEMA,
-  duration: PERMISSION_DURATION_SCHEMA,
-  revocation: REVOCATION_TERMS_SCHEMA,
-  enforcement: ENFORCEMENT_AUTHORITY_SCHEMA,
-  lastExecution: sb_option(sb_blocks),
-  executionCount: sb_bigint, // u32 as bigint
-  maxInstances: sb_bigint, // u32 as bigint
-  children: sb_array(PERMISSION_ID_SCHEMA), // BoundedBTreeSet serialized as array
-  createdAt: sb_blocks,
-};
-
-export const PERMISSION_CONTRACT_SCHEMA = sb_struct(PERMISSION_CONTRACT_SHAPE);
-
-export const EMISSION_CONTRACT_SCHEMA = sb_struct({
-  ...PERMISSION_CONTRACT_SHAPE,
-  scope: EMISSION_SCOPE_SCHEMA,
-});
-
-export type PermissionContract = z.infer<typeof PERMISSION_CONTRACT_SCHEMA>;
-export type EmissionContract = z.infer<typeof EMISSION_CONTRACT_SCHEMA>;
-
-// ==== Query Functions ====
 
 /**
  * Query a specific permission by ID.
@@ -914,171 +752,4 @@ export async function queryDelegationStreamsByAccount(
   }
 
   return makeOk(delegationStreams);
-}
-
-// ==== Transaction Functions ====
-
-/**
- * Delegate an emission permission to a recipient
- */
-export interface DelegateEmissionPermission {
-  api: ApiPromise;
-  recipient: string;
-  allocation: EmissionAllocation;
-  targets: [SS58Address, number][];
-  distribution: DistributionControl;
-  duration: PermissionDuration;
-  revocation: RevocationTerms;
-  enforcement: EnforcementAuthority;
-}
-
-/**
- * TODO: test
- * TODO: docs
- */
-export function delegateEmissionPermission({
-  api,
-  recipient,
-  allocation,
-  targets,
-  distribution,
-  duration,
-  revocation,
-  enforcement,
-}: DelegateEmissionPermission) {
-  const targetsMap = new Map(targets);
-
-  const targetsMap_ = new BTreeMap<AccountId32, u16>(
-    api.registry,
-    "AccountId32",
-    "u32",
-    targetsMap,
-  );
-
-  return api.tx.permission0.delegateEmissionPermission(
-    recipient,
-    allocation,
-    targetsMap_,
-    distribution,
-    duration,
-    revocation,
-    enforcement,
-  );
-}
-
-export function togglePermission(
-  api: ApiPromise,
-  permissionId: PermissionId,
-  enable: boolean,
-) {
-  return api.tx.permission0.togglePermissionAccumulation(permissionId, enable);
-}
-
-export interface UpdateEmissionPermission {
-  api: ApiPromise;
-  permissionId: PermissionId;
-  newTargets?: [SS58Address, number][];
-  newStreams?: Map<StreamId, number>;
-  newDistributionControl?: DistributionControl;
-}
-
-/**
-  If you call as a recipient:
-  you can only provide the new_targets,
-  whenever you want, no limits. if the recipient sends
-  new_streams/new_distribution_control, the extrinsic fails.
-
-  If you call as a delegator:
-  you can send all the values, 
-  but only if the revocation term: is RevocableByDelegator
-  is RevocableAfter(N) and CurrentBlock > N
-  think of it as the revocation term defining whether
-  the delegator can modify the contract without
-  breaching the "terms of service"
- */
-export function updateEmissionPermission({
-  api,
-  permissionId,
-  newTargets,
-  newStreams,
-  newDistributionControl,
-}: UpdateEmissionPermission) {
-  const targetsMap = newTargets
-    ? new BTreeMap<AccountId32, u16>(
-        api.registry,
-        "AccountId32",
-        "u16",
-        new Map(newTargets),
-      )
-    : new BTreeMap<AccountId32, u16>(
-        api.registry,
-        "AccountId32",
-        "u16",
-        new Map(),
-      );
-
-  const streamsMap = newStreams
-    ? new BTreeMap<H256, Percent>(api.registry, "H256", "Percent", newStreams)
-    : null;
-
-  return api.tx.permission0.updateEmissionPermission(
-    permissionId,
-    targetsMap,
-    streamsMap,
-    newDistributionControl ?? null,
-  );
-}
-
-/**
- * Revoke a permission. The caller must met revocation constraints or be a root key.
- **/
-export function revokePermission(api: ApiPromise, permissionId: PermissionId) {
-  return api.tx.permission0.revokePermission(permissionId);
-}
-
-export interface DelegateNamespacePermission {
-  api: ApiPromise;
-  recipient: SS58Address;
-  paths: Map<H256 | null, string[]>;
-  duration: PermissionDuration;
-  revocation: RevocationTerms;
-  instances: number;
-}
-
-/**
- * Delegate a permission over namespaces
- */
-export function delegateNamespacePermission({
-  api,
-  recipient,
-  paths,
-  duration,
-  revocation,
-  instances,
-}: DelegateNamespacePermission) {
-  // Convert the paths map to BTreeMap with BTreeSet values
-  const pathsMap = new BTreeMap<Option<H256>, BTreeSet<Bytes>>(
-    api.registry,
-    "Option<H256>",
-    "BTreeSet<Bytes>",
-    new Map(),
-  );
-
-  for (const [parent, pathList] of paths.entries()) {
-    const btreeSet = new BTreeSet<Bytes>(api.registry, "Bytes", pathList);
-    // Convert null to Option<H256>
-    const optionParent =
-      parent === null
-        ? api.createType("Option<H256>", null)
-        : api.createType("Option<H256>", parent);
-    pathsMap.set(optionParent, btreeSet);
-  }
-
-  return api.tx.permission0.delegateNamespacePermission(
-    recipient,
-    pathsMap,
-    duration,
-    revocation,
-    instances,
-  );
 }

@@ -1,3 +1,9 @@
+/* eslint-disable @typescript-eslint/no-unsafe-return */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable @typescript-eslint/no-unsafe-call */
+/* eslint-disable @typescript-eslint/no-unsafe-argument */
+// TODO: fix eslint errors
 import { match } from "rustie";
 
 import type {
@@ -8,6 +14,7 @@ import type {
   PermissionContract,
   PermissionId,
   Proposal,
+  StreamId,
 } from "@torus-network/sdk/chain";
 import {
   queryAgents,
@@ -186,7 +193,7 @@ function emissionToDatabase(
   const streamAllocations: NewEmissionStreamAllocation[] = match(
     emission.allocation,
   )({
-    Streams: (streams) =>
+    Streams: (streams: Map<StreamId, number>) =>
       Array.from(streams.entries()).map(([streamId, percentage]) => ({
         permissionId: permissionId,
         streamId: streamId,

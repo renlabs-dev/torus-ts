@@ -7,11 +7,95 @@ import {
   sb_balance,
   sb_bigint,
   sb_option_default,
+  sb_some,
 } from "../../types/index.js";
-import type { Api } from "../common/index.js";
-import { handleDoubleMapEntries } from "../common/index.js";
+import type { Api } from "../common/fees.js";
+import { handleDoubleMapEntries, handleMapEntries } from "../common/fees.js";
+import type { NamespaceEntry } from "./torus0-types.js";
+import {
+  AGENT_SCHEMA,
+  NAMESPACE_METADATA_SCHEMA,
+  NAMESPACE_OWNERSHIP_SCHEMA,
+  sb_namespace_path,
+} from "./torus0-types.js";
 
-// ==== Balances & Staking ====
+// ==== Agents ====
+
+export async function queryAgents(api: Api) {
+  const [queryError, q] = await tryAsync(api.query.torus0.agents.entries());
+  if (queryError !== undefined) {
+    console.error("Error querying agents:", queryError);
+    throw queryError;
+  }
+
+  const [handleError, result] = trySync(() =>
+    handleMapEntries(q, sb_address, sb_some(AGENT_SCHEMA)),
+  );
+  if (handleError !== undefined) {
+    console.error("Error handling agents map entries:", handleError);
+    throw handleError;
+  }
+
+  const [agents, errs] = result;
+  for (const err of errs) {
+    console.error("ERROR:", err);
+    throw new Error("Error in queryAgents");
+  }
+
+  return agents;
+}
+
+// ==== Namespace ====
+
+export async function queryNamespaceEntriesOf(
+  api: Api,
+  agent: SS58Address,
+): Promise<NamespaceEntry[]> {
+  const ownership = { Account: agent };
+
+  const [queryErr, queryRes] = await tryAsync(
+    api.query.torus0.namespaces.entries(ownership),
+  );
+  if (queryErr !== undefined) {
+    throw queryErr;
+  }
+
+  const [handleError, result] = trySync(() =>
+    handleDoubleMapEntries(
+      queryRes,
+      NAMESPACE_OWNERSHIP_SCHEMA,
+      sb_namespace_path,
+      sb_some(NAMESPACE_METADATA_SCHEMA),
+    ),
+  );
+
+  if (handleError !== undefined) {
+    throw handleError;
+  }
+
+  const [entriesMap] = result;
+  const namespaceEntries: NamespaceEntry[] = [];
+
+  for (const [_ownershipKey, pathsMap] of entriesMap) {
+    // match(ownershipKey)({
+    //   Account(_accountAddress) {},
+    //   System() {},
+    // });
+    for (const [pathSegments, metadata] of pathsMap) {
+      namespaceEntries.push({
+        path: pathSegments,
+        createdAt: metadata.createdAt,
+        deposit: metadata.deposit,
+      });
+    }
+  }
+
+  return namespaceEntries;
+}
+
+// ==== Staking ====
+
+const sb_balance_option_zero = sb_option_default(sb_balance, 0n);
 
 export async function queryMinAllowedStake(api: Api): Promise<bigint> {
   const [queryError, q] = await tryAsync(api.query.torus0.minAllowedStake());
@@ -28,8 +112,6 @@ export async function queryMinAllowedStake(api: Api): Promise<bigint> {
 
   return minAllowedStake;
 }
-
-const sb_balance_option_zero = sb_option_default(sb_balance, 0n);
 
 export async function queryTotalStake(api: Api): Promise<Balance> {
   const [queryError, q] = await tryAsync(api.query.torus0.totalStake());

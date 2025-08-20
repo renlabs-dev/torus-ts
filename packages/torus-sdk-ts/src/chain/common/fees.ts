@@ -4,15 +4,13 @@ import type {
   SignerOptions,
   SubmittableExtrinsic,
 } from "@polkadot/api/types";
-import type { AccountId, Extrinsic, Header } from "@polkadot/types/interfaces";
-import type { IU8a } from "@polkadot/types/types";
+import type { AccountId, Extrinsic } from "@polkadot/types/interfaces";
 
 import type { Result } from "@torus-network/torus-utils/result";
 import { makeErr, makeOk } from "@torus-network/torus-utils/result";
-import { tryAsync, trySync } from "@torus-network/torus-utils/try-catch";
+import { tryAsync } from "@torus-network/torus-utils/try-catch";
 
-import type { Blocks } from "../../types/index.js";
-import { sb_balance, sb_blocks } from "../../types/index.js";
+import { sb_balance } from "../../types/index.js";
 
 export type Api = ApiDecoration<"promise"> | ApiPromise;
 
@@ -98,52 +96,4 @@ export async function queryExtFee(
   }
   const fee = payInfo.partialFee.toBigInt();
   return makeOk({ fee });
-}
-
-// ==== Misc ====
-
-// TODO: queryLastBlock should return Result
-export async function queryLastBlock(api: ApiPromise): Promise<LastBlock> {
-  const [headerError, blockHeader] = await tryAsync(api.rpc.chain.getHeader());
-  if (headerError !== undefined) {
-    console.error("Error getting block header:", headerError);
-    throw headerError;
-  }
-
-  const [apiError, apiAtBlock] = await tryAsync(api.at(blockHeader.hash));
-  if (apiError !== undefined) {
-    console.error("Error getting API at block:", apiError);
-    throw apiError;
-  }
-
-  const [parseError, blockNumber] = trySync(() =>
-    sb_blocks.parse(blockHeader.number),
-  );
-  if (parseError !== undefined) {
-    console.error("Error parsing block number:", parseError);
-    throw parseError;
-  }
-
-  const [hashError, blockHashHex] = trySync(() => blockHeader.hash.toHex());
-  if (hashError !== undefined) {
-    console.error("Error converting block hash to hex:", hashError);
-    throw hashError;
-  }
-
-  const lastBlock = {
-    blockHeader,
-    blockNumber,
-    blockHash: blockHeader.hash,
-    blockHashHex,
-    apiAtBlock,
-  };
-
-  return lastBlock;
-}
-export interface LastBlock {
-  blockHeader: Header;
-  blockNumber: Blocks;
-  blockHash: IU8a;
-  blockHashHex: `${string}`;
-  apiAtBlock: Api;
 }

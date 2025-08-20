@@ -3,7 +3,7 @@ import { tryAsync, trySync } from "@torus-network/torus-utils/try-catch";
 import type { SS58Address } from "../types/address.js";
 import type { Balance } from "../types/index.js";
 import { sb_balance } from "../types/index.js";
-import type { Api } from "./common/index.js";
+import type { Api } from "./common/fees.js";
 
 export async function queryTotalIssuance(api: Api): Promise<Balance> {
   const [queryError, q] = await tryAsync(api.query.balances.totalIssuance());
