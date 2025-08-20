@@ -1,3 +1,5 @@
+import type { ApiPromise } from "@polkadot/api";
+
 import { tryAsync, trySync } from "@torus-network/torus-utils/try-catch";
 
 import type { SS58Address } from "../types/address.js";
@@ -41,4 +43,28 @@ export async function queryFreeBalance(
   }
 
   return balance;
+}
+
+// ==== Transactions ====
+
+/**
+ * Transfer balance allowing the recipient account to be killed (go below existential deposit)
+ */
+export function transferAllowDeath(
+  api: ApiPromise,
+  to: SS58Address,
+  amount: bigint,
+) {
+  return api.tx.balances.transferAllowDeath(to, amount);
+}
+
+/**
+ * Transfer balance keeping the recipient account alive (above existential deposit)
+ */
+export function transferKeepAlive(
+  api: ApiPromise,
+  to: SS58Address,
+  amount: bigint,
+) {
+  return api.tx.balances.transferKeepAlive(to, amount);
 }

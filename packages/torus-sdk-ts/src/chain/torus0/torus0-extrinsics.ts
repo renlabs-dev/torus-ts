@@ -48,3 +48,35 @@ export function createNamespace(api: ApiPromise, path: string) {
 export function deleteNamespace(api: ApiPromise, path: string) {
   return api.tx.torus0.deleteNamespace(path);
 }
+
+// ==== Staking ====
+
+/**
+ * Add stake to a validator
+ */
+export function addStake(api: ApiPromise, validator: string, amount: bigint) {
+  return api.tx.torus0.addStake(validator, amount);
+}
+
+/**
+ * Remove stake from a validator
+ */
+export function removeStake(
+  api: ApiPromise,
+  validator: string,
+  amount: bigint,
+) {
+  return api.tx.torus0.removeStake(validator, amount);
+}
+
+/**
+ * Transfer stake from one validator to another
+ */
+export function transferStake(
+  api: ApiPromise,
+  fromValidator: string,
+  toValidator: string,
+  amount: bigint,
+) {
+  return api.tx.torus0.transferStake(fromValidator, toValidator, amount);
+}

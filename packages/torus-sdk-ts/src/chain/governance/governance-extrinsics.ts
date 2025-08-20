@@ -313,3 +313,78 @@ export function addEmissionProposal({
     data,
   );
 }
+
+// ==== Proposal Voting ====
+
+/**
+ * Vote on a governance proposal
+ */
+export function voteProposal(
+  api: ApiPromise,
+  proposalId: number,
+  vote: boolean,
+) {
+  return api.tx.governance.voteProposal(proposalId, vote);
+}
+
+/**
+ * Remove vote from a governance proposal
+ */
+export function removeVoteProposal(api: ApiPromise, proposalId: number) {
+  return api.tx.governance.removeVoteProposal(proposalId);
+}
+
+/**
+ * Create a custom governance proposal
+ */
+export function addGlobalCustomProposal(api: ApiPromise, ipfsHash: string) {
+  return api.tx.governance.addGlobalCustomProposal(ipfsHash);
+}
+
+/**
+ * Submit an agent application for whitelist
+ */
+export function submitApplication(
+  api: ApiPromise,
+  applicationKey: SS58Address,
+  ipfsHash: string,
+  removing: boolean,
+) {
+  return api.tx.governance.submitApplication(
+    applicationKey,
+    ipfsHash,
+    removing,
+  );
+}
+
+/**
+ * Create a DAO treasury transfer proposal
+ */
+export function addDaoTreasuryTransferProposal(
+  api: ApiPromise,
+  value: bigint,
+  destinationKey: SS58Address,
+  data: string,
+) {
+  return api.tx.governance.addDaoTreasuryTransferProposal(
+    value,
+    destinationKey,
+    data,
+  );
+}
+
+// ==== Vote Delegation ====
+
+/**
+ * Enable vote delegation for the current account
+ */
+export function enableVoteDelegation(api: ApiPromise) {
+  return api.tx.governance.enableVoteDelegation();
+}
+
+/**
+ * Disable vote delegation for the current account
+ */
+export function disableVoteDelegation(api: ApiPromise) {
+  return api.tx.governance.disableVoteDelegation();
+}
