@@ -1,23 +1,28 @@
 "use client";
 
+import { useState } from "react";
+
 import type {
   QueryObserverResult,
   RefetchOptions,
 } from "@tanstack/react-query";
+import { TicketX } from "lucide-react";
+import { match } from "rustie";
+
 import type { ProposalStatus, VoteWithStake } from "@torus-network/sdk/chain";
-import type { TransactionResult } from "@torus-ts/torus-provider/types";
+import { removeVoteProposal, voteProposal } from "@torus-network/sdk/chain";
+
+import { useTorus } from "@torus-ts/torus-provider";
+import { useSendTransaction } from "@torus-ts/torus-provider/use-send-transaction";
 import { Button } from "@torus-ts/ui/components/button";
 import {
   ToggleGroup,
   ToggleGroupItem,
 } from "@torus-ts/ui/components/toggle-group";
-import { TransactionStatus } from "@torus-ts/ui/components/transaction-status";
+
 import { useGovernance } from "~/context/governance-provider";
 import type { VoteStatus } from "~/utils/types";
-import { TicketX } from "lucide-react";
-import { useState } from "react";
-import { match } from "rustie";
-import { tryAsync } from "@torus-network/torus-utils/try-catch";
+
 import { GovernanceStatusNotOpen } from "../governance-status-not-open";
 import { VotePowerSettings } from "./vote-power-settings";
 
@@ -34,10 +39,10 @@ const CardBarebones = (props: { children: React.ReactNode }) => {
 
 const AlreadyVotedCardContent = (props: {
   voted: VoteStatus;
-  votingStatus: TransactionResult;
   handleRemoveVote: () => void;
+  isPending: boolean;
 }) => {
-  const { voted, votingStatus, handleRemoveVote } = props;
+  const { voted, handleRemoveVote, isPending } = props;
 
   const getVotedText = (voted: VoteStatus) => {
     if (voted === "FAVORABLE") {
@@ -55,34 +60,30 @@ const AlreadyVotedCardContent = (props: {
           font-semibold text-white transition duration-200"
         onClick={handleRemoveVote}
         type="button"
+        disabled={isPending}
       >
-        Remove Vote <TicketX className="h-5 w-5" />
+        {isPending ? "Removing..." : "Remove Vote"}{" "}
+        <TicketX className="h-5 w-5" />
       </Button>
-      {votingStatus.status && (
-        <TransactionStatus
-          status={votingStatus.status}
-          message={votingStatus.message}
-        />
-      )}
     </div>
   );
 };
 
 const VoteCardFunctionsContent = (props: {
   vote: VoteStatus;
-  votingStatus: TransactionResult;
   isAccountConnected: boolean;
   isPowerUser: boolean;
   handleVote: () => void;
   setVote: (vote: VoteStatus) => void;
+  isPending: boolean;
 }) => {
   const {
     handleVote,
     setVote,
     vote,
-    votingStatus,
     isPowerUser,
     isAccountConnected,
+    isPending,
   } = props;
 
   function handleVotePreference(value: VoteStatus | "") {
@@ -99,7 +100,7 @@ const VoteCardFunctionsContent = (props: {
           onValueChange={(voteType: VoteStatus | "") =>
             handleVotePreference(voteType)
           }
-          disabled={votingStatus.status === "PENDING" || !isPowerUser}
+          disabled={isPending || !isPowerUser}
           className="flex w-full gap-2"
         >
           {voteOptions.map((option) => (
@@ -107,9 +108,9 @@ const VoteCardFunctionsContent = (props: {
               key={option}
               variant="outline"
               value={option}
-              className={`w-full capitalize ${votingStatus.status === "PENDING" && "cursor-not-allowed"}
+              className={`w-full capitalize ${isPending && "cursor-not-allowed"}
               ${option === vote ? "border-white" : "border-muted bg-card"}`}
-              disabled={votingStatus.status === "PENDING"}
+              disabled={isPending}
             >
               {option.toLocaleLowerCase()}
             </ToggleGroupItem>
@@ -119,26 +120,19 @@ const VoteCardFunctionsContent = (props: {
         <Button
           variant="outline"
           className={`w-full
-            ${vote === "UNVOTED" || votingStatus.status === "PENDING" ? "cursor-not-allowed text-gray-400" : ""} `}
-          disabled={
-            vote === "UNVOTED" ||
-            votingStatus.status === "PENDING" ||
-            !isPowerUser
-          }
+            ${vote === "UNVOTED" || isPending ? "cursor-not-allowed text-gray-400" : ""} `}
+          disabled={vote === "UNVOTED" || isPending || !isPowerUser}
           onClick={handleVote}
           type="button"
         >
-          {vote === "UNVOTED" ? "Choose a vote" : "Send Vote"}
+          {vote === "UNVOTED"
+            ? "Choose a vote"
+            : isPending
+              ? "Voting..."
+              : "Send Vote"}
         </Button>
 
         {isAccountConnected && <VotePowerSettings />}
-
-        {votingStatus.status && (
-          <TransactionStatus
-            status={votingStatus.status}
-            message={votingStatus.message}
-          />
-        )}
       </div>
       {!isAccountConnected && (
         <div className="absolute inset-0 z-50 flex w-full items-center justify-center text-lg">
@@ -168,71 +162,52 @@ export function ProposalVoteCard(props: Readonly<ProposalVoteCardProps>) {
     proposalStatus,
     votersListRefetch,
   } = props;
-  const {
-    isAccountConnected,
-    isAccountPowerUser,
-    proposals,
-    removeVoteProposal,
-    voteProposal,
-  } = useGovernance();
+  const { isAccountConnected, isAccountPowerUser, proposals } = useGovernance();
+
+  const { api, selectedAccount, torusApi, wsEndpoint } = useTorus();
+  const { web3FromAddress } = torusApi;
+
+  const { sendTx, isPending } = useSendTransaction({
+    api,
+    selectedAccount,
+    wsEndpoint,
+    web3FromAddress,
+    transactionType: "Vote on Proposal",
+  });
 
   const [vote, setVote] = useState<VoteStatus>("UNVOTED");
-  const [votingStatus, setVotingStatus] = useState<TransactionResult>({
-    status: null,
-    finalized: false,
-    message: null,
-  });
 
   const refetchHandler = async () => {
     await Promise.all([proposals.refetch(), votersListRefetch()]);
   };
 
-  function handleCallback(callbackReturn: TransactionResult): void {
-    setVotingStatus(callbackReturn);
-  }
-
   async function handleVote(): Promise<void> {
+    if (!api || !sendTx) return;
+
     const voteBoolean = vote === "FAVORABLE";
 
-    const [error, _] = await tryAsync(
-      voteProposal({
-        proposalId,
-        vote: voteBoolean,
-        callback: handleCallback,
-        refetchHandler,
-      }),
-    );
+    await sendTx(voteProposal(api, proposalId, voteBoolean));
 
-    if (error !== undefined) {
-      setVotingStatus({
-        status: "ERROR",
-        finalized: true,
-        message: "Error voting",
-      });
+    // todo refetch handler
+    const todoRefetcher = true;
+
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+    if (todoRefetcher) {
+      await refetchHandler();
     }
   }
 
   async function handleRemoveVote(): Promise<void> {
-    setVotingStatus({
-      status: "STARTING",
-      finalized: false,
-      message: "Starting vote removal",
-    });
+    if (!api || !sendTx) return;
 
-    const [error, _] = await tryAsync(
-      removeVoteProposal({
-        proposalId,
-        callback: handleCallback,
-        refetchHandler,
-      }),
-    );
+    await sendTx(removeVoteProposal(api, proposalId));
 
-    if (error !== undefined) {
-      setVotingStatus({
-        status: "ERROR",
-        finalized: true,
-        message: "Error removing vote",
-      });
+    // todo refetch handler
+    const todoRefetcher = true;
+
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+    if (todoRefetcher) {
+      await refetchHandler();
     }
   }
 
@@ -242,7 +217,7 @@ export function ProposalVoteCard(props: Readonly<ProposalVoteCardProps>) {
         <AlreadyVotedCardContent
           handleRemoveVote={handleRemoveVote}
           voted={voted}
-          votingStatus={votingStatus}
+          isPending={isPending}
         />
       </CardBarebones>
     );
@@ -258,7 +233,7 @@ export function ProposalVoteCard(props: Readonly<ProposalVoteCardProps>) {
             vote={vote}
             setVote={setVote}
             isPowerUser={isAccountPowerUser}
-            votingStatus={votingStatus}
+            isPending={isPending}
           />
         </CardBarebones>
       );

@@ -46,7 +46,6 @@ export function Unstake() {
     estimateFee,
     selectedAccount,
     minAllowedStake,
-    getExistentialDeposit,
   } = useWallet();
 
   const addTransaction = useTransactionsStore((state) => state.addTransaction);
@@ -65,8 +64,7 @@ export function Unstake() {
 
   const minAllowedStakeData =
     minAllowedStake.data ?? MIN_ALLOWED_STAKE_SAFEGUARD;
-  const existentialDepositValue =
-    getExistentialDeposit() ?? MIN_EXISTENTIAL_BALANCE;
+
   const freeBalance = accountFreeBalance.data ?? 0n;
 
   const [stakedAmount, setStakedAmount] = useState<bigint | null>(null);
@@ -88,7 +86,7 @@ export function Unstake() {
 
   const unstakeFormSchema = createUnstakeFormSchema(
     minAllowedStakeData,
-    existentialDepositValue,
+    MIN_EXISTENTIAL_BALANCE,
     freeBalance,
     feeRef,
     stakedAmount,

@@ -1,16 +1,27 @@
 "use client";
 
-import { zodResolver } from "@hookform/resolvers/zod";
-import { checkSS58 } from "@torus-network/sdk/types";
-import type { TransactionResult } from "@torus-ts/torus-provider/types";
-import { useToast } from "@torus-ts/ui/hooks/use-toast";
 import { useCallback, useEffect, useRef, useState } from "react";
+
+import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
+
+import { addStake } from "@torus-network/sdk/chain";
+import type { SS58Address } from "@torus-network/sdk/types";
+import { checkSS58 } from "@torus-network/sdk/types";
+import type { BrandTag } from "@torus-network/torus-utils";
+import { toNano } from "@torus-network/torus-utils/torus/token";
+import { tryAsync } from "@torus-network/torus-utils/try-catch";
+
+import { useTorus } from "@torus-ts/torus-provider";
+import { useSendTransaction } from "@torus-ts/torus-provider/use-send-transaction";
+import { useToast } from "@torus-ts/ui/hooks/use-toast";
+
 import { useUsdPrice } from "~/context/usd-price-provider";
 import { useWallet } from "~/context/wallet-provider";
 import { env } from "~/env";
 import type { UpdatedTransaction } from "~/store/transactions-store";
 import { useTransactionsStore } from "~/store/transactions-store";
+
 import type { FeeLabelHandle } from "../../../_components/fee-label";
 import type { ReviewTransactionDialogHandle } from "../../../_components/review-transaction-dialog";
 import { ReviewTransactionDialog } from "../../../_components/review-transaction-dialog";
@@ -18,9 +29,6 @@ import { handleEstimateFee } from "./stake-fee-handler";
 import { StakeForm } from "./stake-form";
 import type { StakeFormValues } from "./stake-form-schema";
 import { createStakeActionFormSchema } from "./stake-form-schema";
-import type { BrandTag } from "@torus-network/torus-utils";
-import { tryAsync } from "@torus-network/torus-utils/try-catch";
-import type { SS58Address } from "@torus-network/sdk/types";
 
 export const MIN_ALLOWED_STAKE_SAFEGUARD = 500000000000000000n;
 export const MIN_EXISTENTIAL_BALANCE = 100000000000000000n;
@@ -34,19 +42,16 @@ export function Stake() {
     selectedAccount,
     addStakeTransaction,
     estimateFee,
-    getExistentialDeposit,
+
     minAllowedStake,
   } = useWallet();
 
   const addTransaction = useTransactionsStore((state) => state.addTransaction);
-  const isTransactionError = useTransactionsStore(
-    (state) => state.isTransactionError,
+  const markTransactionSuccess = useTransactionsStore(
+    (state) => state.markTransactionSuccess,
   );
-  const isTransactionCompleted = useTransactionsStore(
-    (state) => state.isTransactionCompleted,
-  );
-  const updateTransaction = useTransactionsStore(
-    (state) => state.updateTransaction,
+  const markTransactionError = useTransactionsStore(
+    (state) => state.markTransactionError,
   );
 
   const { toast } = useToast();
@@ -54,9 +59,6 @@ export function Stake() {
 
   const minAllowedStakeData =
     minAllowedStake.data ?? MIN_ALLOWED_STAKE_SAFEGUARD;
-
-  const existentialDepositValue =
-    getExistentialDeposit() ?? MIN_EXISTENTIAL_BALANCE;
 
   const freeBalance = accountFreeBalance.data ?? 0n;
 
@@ -77,7 +79,7 @@ export function Stake() {
 
   const stakeActionFormSchema = createStakeActionFormSchema(
     minAllowedStakeData,
-    existentialDepositValue,
+    MIN_EXISTENTIAL_BALANCE,
     freeBalance,
     feeRef as React.RefObject<FeeLabelHandle>,
   );

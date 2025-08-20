@@ -3,9 +3,8 @@ import { persist } from "zustand/middleware";
 
 import type { SS58Address } from "@torus-network/sdk/types";
 
-import type { TransactionResult } from "@torus-ts/torus-provider/types";
-
 export type TransactionType = "stake" | "unstake" | "send" | "transfer-stake";
+export type TransactionStatus = "PENDING" | "SUCCESS" | "ERROR";
 
 export interface Transaction {
   id: string;
@@ -14,7 +13,7 @@ export interface Transaction {
   toAddress: SS58Address;
   amount: string;
   fee: string;
-  status: Exclude<TransactionResult["status"], "STARTING" | null>;
+  status: TransactionStatus;
   createdAt: string;
   hash?: string;
   metadata?: Record<string, unknown>;
@@ -52,8 +51,8 @@ interface TransactionsState {
     options?: TransactionQueryOptions,
   ) => TransactionQueryResult;
   getTransactionById: (id: string) => Transaction | undefined;
-  isTransactionCompleted: (status: TransactionResult["status"]) => boolean;
-  isTransactionError: (status: TransactionResult["status"]) => boolean;
+  markTransactionSuccess: (id: string, hash?: string) => void;
+  markTransactionError: (id: string, error?: string) => void;
   clearTransactions: (walletAddress: SS58Address) => void;
   getLastTransactionTimestamp: () => number;
 }
@@ -170,10 +169,43 @@ export const useTransactionsStore = create<TransactionsState>()(
           .flat()
           .find((tx) => tx.id === id),
 
-      isTransactionCompleted: (status) =>
-        status === "SUCCESS" || status === "ERROR",
+      markTransactionSuccess: (id, hash) => {
+        set((state) => ({
+          transactions: Object.fromEntries(
+            Object.entries(state.transactions).map(([address, txs]) => [
+              address,
+              txs.map((tx) =>
+                tx.id === id
+                  ? {
+                      ...tx,
+                      status: "SUCCESS" as const,
+                      hash: hash ?? "completed",
+                    }
+                  : tx,
+              ),
+            ]),
+          ),
+        }));
+      },
 
-      isTransactionError: (status) => status === "ERROR",
+      markTransactionError: (id, error) => {
+        set((state) => ({
+          transactions: Object.fromEntries(
+            Object.entries(state.transactions).map(([address, txs]) => [
+              address,
+              txs.map((tx) =>
+                tx.id === id
+                  ? {
+                      ...tx,
+                      status: "ERROR" as const,
+                      metadata: { ...tx.metadata, error },
+                    }
+                  : tx,
+              ),
+            ]),
+          ),
+        }));
+      },
 
       clearTransactions: (walletAddress) =>
         set((state) => {

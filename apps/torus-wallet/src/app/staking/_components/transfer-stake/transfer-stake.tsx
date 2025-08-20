@@ -40,7 +40,6 @@ export function TransferStake() {
     minAllowedStake,
     transferStakeTransaction,
     estimateFee,
-    getExistentialDeposit,
   } = useWallet();
 
   const addTransaction = useTransactionsStore((state) => state.addTransaction);
@@ -59,8 +58,7 @@ export function TransferStake() {
 
   const minAllowedStakeData =
     minAllowedStake.data ?? MIN_ALLOWED_STAKE_SAFEGUARD;
-  const existentialDepositValue =
-    getExistentialDeposit() ?? MIN_EXISTENTIAL_BALANCE;
+
   const freeBalance = accountFreeBalance.data ?? 0n;
 
   const maxAmountRef = useRef<string>("");
@@ -86,7 +84,7 @@ export function TransferStake() {
 
   const transferStakeFormSchema = createTransferStakeFormSchema(
     minAllowedStakeData,
-    existentialDepositValue,
+    MIN_EXISTENTIAL_BALANCE,
     freeBalance,
     feeRef,
     maxAmountRef,

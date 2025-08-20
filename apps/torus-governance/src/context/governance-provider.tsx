@@ -38,13 +38,6 @@ import type {
   ProposalState,
 } from "@torus-ts/torus-provider";
 import { useTorus } from "@torus-ts/torus-provider";
-import type {
-  AddAgentApplication,
-  AddCustomProposal,
-  AddDaoTreasuryTransferProposal,
-  RemoveVote,
-  Vote,
-} from "@torus-ts/torus-provider/types";
 import { Header } from "@torus-ts/ui/components/header";
 import { WalletDropdown } from "@torus-ts/ui/components/wallet-dropdown/wallet-dropdown";
 
@@ -66,11 +59,6 @@ interface GovernanceContextType {
     Error
   >;
   accountStakedBalance: bigint | undefined;
-  AddAgentApplication: (application: AddAgentApplication) => Promise<void>;
-  addCustomProposal: (proposal: AddCustomProposal) => Promise<void>;
-  addDaoTreasuryTransferProposal: (
-    proposal: AddDaoTreasuryTransferProposal,
-  ) => Promise<void>;
   agentApplications: UseQueryResult<ApplicationState[], Error>;
   agents: UseQueryResult<Map<SS58Address, Agent>, Error>;
   agentApplicationsWithMeta: ApplicationState[] | undefined;
@@ -83,13 +71,11 @@ interface GovernanceContextType {
   lastBlock: UseQueryResult<LastBlock, Error>;
   proposals: UseQueryResult<Proposal[], Error>;
   proposalsWithMeta: ProposalState[] | undefined;
-  removeVoteProposal: (removeVote: RemoveVote) => Promise<void>;
   rewardAllocation: UseQueryResult<bigint, Error>;
   selectedAccount: InjectedAccountWithMeta | null;
   stakeOut: UseQueryResult<StakeData, Error>;
   torusCacheUrl: string;
   unrewardedProposals: UseQueryResult<number[], Error>;
-  voteProposal: (vote: Vote) => Promise<void>;
   burnAmount: UseQueryResult<bigint, Error>;
   authenticateUser: () => Promise<void>;
   isUserAuthenticated: boolean | null;
@@ -106,19 +92,14 @@ export function GovernanceProvider({
   // == API Context ==
   const {
     accounts,
-    AddAgentApplication,
-    addCustomProposal,
-    addDaoTreasuryTransferProposal,
     api,
     handleGetWallets,
     handleLogout,
     handleSelectWallet,
     isAccountConnected,
     isInitialized,
-    removeVoteProposal,
     selectedAccount,
     torusCacheUrl,
-    voteProposal,
   } = useTorus();
 
   const lastBlock = useLastBlock(api);
@@ -218,9 +199,6 @@ export function GovernanceProvider({
         accountFreeBalance,
         accountsNotDelegatingVoting,
         accountStakedBalance,
-        AddAgentApplication,
-        addCustomProposal,
-        addDaoTreasuryTransferProposal,
         agentApplications,
         agentApplicationsWithMeta,
         agents,
@@ -237,13 +215,11 @@ export function GovernanceProvider({
         networkConfigs,
         proposals,
         proposalsWithMeta,
-        removeVoteProposal,
         rewardAllocation,
         selectedAccount,
         stakeOut,
         torusCacheUrl,
         unrewardedProposals,
-        voteProposal,
         whitelist,
       }}
     >

@@ -1,9 +1,21 @@
 "use client";
 
+import { useState } from "react";
+
 import { zodResolver } from "@hookform/resolvers/zod";
+import MarkdownPreview from "@uiw/react-markdown-preview";
+import { useFileUploader } from "hooks/use-file-uploader";
+import { useRouter } from "next/navigation";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+
+import { addDaoTreasuryTransferProposal } from "@torus-network/sdk/chain";
+import type { SS58Address } from "@torus-network/sdk/types";
 import { formatToken, toNano } from "@torus-network/torus-utils/torus/token";
-import { tryAsync } from "@torus-network/torus-utils/try-catch";
+
+import { useTorus } from "@torus-ts/torus-provider";
 import type { TransactionResult } from "@torus-ts/torus-provider/types";
+import { useSendTransaction } from "@torus-ts/torus-provider/use-send-transaction";
 import { Button } from "@torus-ts/ui/components/button";
 import {
   Form,
@@ -24,13 +36,8 @@ import {
 import { Textarea } from "@torus-ts/ui/components/text-area";
 import { TransactionStatus } from "@torus-ts/ui/components/transaction-status";
 import { useToast } from "@torus-ts/ui/hooks/use-toast";
-import MarkdownPreview from "@uiw/react-markdown-preview";
+
 import { useGovernance } from "~/context/governance-provider";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
-import { useForm } from "react-hook-form";
-import { z } from "zod";
-import { useFileUploader } from "hooks/use-file-uploader";
 
 const transferDaoTreasuryProposalSchema = z.object({
   destinationKey: z.string().min(1, "Destination is required"),
@@ -49,9 +56,19 @@ export function CreateTransferDaoTreasuryProposal() {
     networkConfigs,
     isAccountConnected,
     accountFreeBalance,
-    addDaoTreasuryTransferProposal,
     selectedAccount,
   } = useGovernance();
+
+  const { api, torusApi, wsEndpoint } = useTorus();
+  const { web3FromAddress } = torusApi;
+
+  const { sendTx, isPending } = useSendTransaction({
+    api,
+    selectedAccount,
+    wsEndpoint,
+    web3FromAddress,
+    transactionType: "Create Treasury Transfer Proposal",
+  });
 
   const { toast } = useToast();
 
@@ -108,25 +125,26 @@ export function CreateTransferDaoTreasuryProposal() {
     const ipfsUri = `ipfs://${cid}`;
 
     if (Number(accountFreeBalance.data) > daoApplicationCost) {
-      const [propError, _] = await tryAsync(
-        addDaoTreasuryTransferProposal({
-          value: getValues("value"),
-          destinationKey: getValues("destinationKey"),
-          data: ipfsUri,
-          callback: (tx) => setTransactionStatus(tx),
-        }),
+      if (!api || !sendTx) {
+        toast.error("API not ready");
+        return;
+      }
+
+      await sendTx(
+        addDaoTreasuryTransferProposal(
+          api,
+          toNano(parseFloat(getValues("value"))),
+          getValues("destinationKey") as SS58Address,
+          ipfsUri,
+        ),
       );
 
-      if (propError !== undefined) {
-        toast.error(
-          propError.message || "Error creating DAO treasury transfer proposal",
-        );
-        setTransactionStatus({
-          status: "ERROR",
-          finalized: true,
-          message: "Error creating proposal",
-        });
-        return;
+      // todo refetch handler
+      const todoRefetcher = true;
+
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+      if (todoRefetcher) {
+        router.push("/proposals");
       }
     } else {
       toast.error(
@@ -165,15 +183,20 @@ export function CreateTransferDaoTreasuryProposal() {
   const getButtonSubmitLabel = ({
     uploading,
     isAccountConnected,
+    isPending,
   }: {
     uploading: boolean;
     isAccountConnected: boolean;
+    isPending: boolean;
   }) => {
     if (!isAccountConnected) {
       return "Connect a wallet to submit";
     }
     if (uploading) {
       return "Uploading...";
+    }
+    if (isPending) {
+      return "Submitting...";
     }
     return "Submit transfer dao treasury proposal";
   };
@@ -299,9 +322,14 @@ export function CreateTransferDaoTreasuryProposal() {
           size="lg"
           type="submit"
           variant="default"
-          disabled={!userHasEnoughBalance || !form.formState.isValid}
+          disabled={
+            !userHasEnoughBalance ||
+            !form.formState.isValid ||
+            uploading ||
+            isPending
+          }
         >
-          {getButtonSubmitLabel({ uploading, isAccountConnected })}
+          {getButtonSubmitLabel({ uploading, isAccountConnected, isPending })}
         </Button>
 
         {transactionStatus.status && (
