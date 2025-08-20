@@ -1,16 +1,18 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo } from "react";
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Trash2 } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
+import { deleteNamespace } from "@torus-network/sdk/chain";
 import type { SS58Address } from "@torus-network/sdk/types";
 
 import { useNamespaceEntriesOf } from "@torus-ts/query-provider/hooks";
 import { useTorus } from "@torus-ts/torus-provider";
+import { useSendTransaction } from "@torus-ts/torus-provider/use-send-transaction";
 import { Button } from "@torus-ts/ui/components/button";
 import {
   Form,
@@ -34,7 +36,6 @@ import { cn } from "@torus-ts/ui/lib/utils";
 
 import PortalFormHeader from "~/app/_components/portal-form-header";
 import { truncateMobileValue } from "~/utils/truncate-mobile-value";
-import { tryCatch } from "~/utils/try-catch";
 
 import { DeleteCapabilityPreview } from "./delete-capability-preview";
 import { DeleteCapabilitySegmentSelector } from "./delete-capability-segment-selector";
@@ -55,13 +56,20 @@ export function DeleteCapabilityForm({
     isInitialized,
     api,
     selectedAccount,
-    deleteNamespaceTransaction,
+    torusApi,
+    wsEndpoint,
   } = useTorus();
+  const { web3FromAddress } = torusApi;
   const { toast } = useToast();
   const isMobile = useIsMobile();
-  const [transactionStatus, setTransactionStatus] = useState<
-    "idle" | "loading" | "success" | "error"
-  >("idle");
+
+  const { sendTx, isPending } = useSendTransaction({
+    api,
+    selectedAccount,
+    wsEndpoint,
+    web3FromAddress,
+    transactionType: "Delete Namespace",
+  });
 
   const form = useForm<DeleteCapabilityFormData>({
     resolver: zodResolver(DELETE_CAPABILITY_SCHEMA),
@@ -129,43 +137,24 @@ export function DeleteCapabilityForm({
       return;
     }
 
+    if (!api || !sendTx) {
+      toast.error("API not ready");
+      return;
+    }
+
     const pathToDelete = selectedPath.path
       .slice(0, data.segmentToDelete + 1)
       .join(".");
 
-    setTransactionStatus("loading");
-    const { error } = await tryCatch(
-      deleteNamespaceTransaction({
-        path: pathToDelete,
-        callback: (result) => {
-          if (result.status === "SUCCESS" && result.finalized) {
-            setTransactionStatus("success");
-            toast.success(
-              `Capability permission "${pathToDelete}" deleted successfully`,
-            );
-            form.reset();
-            void namespaceEntries.refetch();
-          }
+    await sendTx(deleteNamespace(api, pathToDelete));
 
-          if (result.status === "ERROR") {
-            setTransactionStatus("error");
-            toast.error(
-              result.message ?? "Failed to delete capability permission",
-            );
-          }
-        },
-        refetchHandler: async () => {
-          // Refetch namespace entries after successful deletion
-          await namespaceEntries.refetch();
-        },
-      }),
-    );
+    // todo refetch handler
+    const todoRefetcher = true;
 
-    if (error) {
-      console.error("Error deleting capability permission:", error);
-      setTransactionStatus("error");
-      toast.error("Failed to delete capability permission");
-      return;
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+    if (todoRefetcher) {
+      form.reset();
+      await namespaceEntries.refetch();
     }
   }
 
@@ -256,13 +245,11 @@ export function DeleteCapabilityForm({
               !isAccountConnected ||
               !selectedPath ||
               watchedSegment < 2 ||
-              transactionStatus === "loading"
+              isPending
             }
           >
             <Trash2 className="h-4 w-4 mr-2" />
-            {transactionStatus === "loading"
-              ? "Deleting..."
-              : "Delete Capability"}
+            {isPending ? "Deleting..." : "Delete Capability"}
           </Button>
         </div>
       </form>

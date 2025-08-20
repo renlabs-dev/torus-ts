@@ -1,16 +1,16 @@
 "use client";
 
-import { useState } from "react";
-
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import type { z } from "zod";
 
+import { registerAgent } from "@torus-network/sdk/chain";
 import type { SS58Address } from "@torus-network/sdk/types";
 import { cidToIpfsUri } from "@torus-network/torus-utils/ipfs";
 
 import { useAgents } from "@torus-ts/query-provider/hooks";
 import { useTorus } from "@torus-ts/torus-provider";
+import { useSendTransaction } from "@torus-ts/torus-provider/use-send-transaction";
 import { Button } from "@torus-ts/ui/components/button";
 import { DestructiveAlertWithDescription } from "@torus-ts/ui/components/destructive-alert-with-description";
 import { Form } from "@torus-ts/ui/components/form";
@@ -42,11 +42,18 @@ export function RegisterAgentForm({
     selectedAccount,
     isAccountConnected,
     isInitialized,
-    registerAgentTransaction,
+    torusApi,
+    wsEndpoint,
   } = useTorus();
-  const [transactionStatus, setTransactionStatus] = useState<
-    "idle" | "loading" | "success" | "error"
-  >("idle");
+  const { web3FromAddress } = torusApi;
+
+  const { sendTx, isPending } = useSendTransaction({
+    api,
+    selectedAccount,
+    wsEndpoint,
+    web3FromAddress,
+    transactionType: "Register Agent",
+  });
 
   const form = useForm<RegisterAgentFormData>({
     disabled: !isAccountConnected,
@@ -73,7 +80,10 @@ export function RegisterAgentForm({
     : false;
 
   async function handleSubmit(data: z.infer<typeof REGISTER_AGENT_SCHEMA>) {
-    setTransactionStatus("loading");
+    if (!api || !sendTx) {
+      toast.error("API not ready");
+      return;
+    }
 
     // First, pin the metadata (and icon if present) to IPFS
     const { data: metadataResult, error: metadataError } = await tryCatch(
@@ -82,25 +92,16 @@ export function RegisterAgentForm({
 
     if (metadataError) {
       console.error("Error pinning metadata:", metadataError);
-      setTransactionStatus("error");
       toast.error(metadataError.message);
       return;
     }
 
     if (!metadataResult.cid) {
-      setTransactionStatus("error");
       toast.error("Failed to pin metadata to IPFS");
       return;
     }
 
     console.info("Pinned metadata at:", cidToIpfsUri(metadataResult.cid));
-
-    // Ensure we have a connected account
-    if (!selectedAccount?.address) {
-      setTransactionStatus("error");
-      toast.error("No account connected");
-      return;
-    }
 
     // Parse URL
     const parsedAgentApiUrl =
@@ -108,31 +109,21 @@ export function RegisterAgentForm({
         ? "null:"
         : data.agentApiUrl;
 
-    // Execute the transaction
-    const { error } = await tryCatch(
-      registerAgentTransaction({
+    await sendTx(
+      registerAgent({
+        api,
         name: data.name,
         url: parsedAgentApiUrl,
         metadata: cidToIpfsUri(metadataResult.cid),
-        callback: (result) => {
-          if (result.status === "SUCCESS" && result.finalized) {
-            setTransactionStatus("success");
-            form.reset();
-          }
-
-          if (result.status === "ERROR") {
-            setTransactionStatus("error");
-            toast.error(result.message ?? "Failed to register agent");
-          }
-        },
       }),
     );
 
-    if (error) {
-      console.error("Error registering agent:", error);
-      setTransactionStatus("error");
-      toast.error("Failed to register agent");
-      return;
+    // todo refetch handler
+    const todoRefetcher = true;
+
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+    if (todoRefetcher) {
+      form.reset();
     }
   }
 
@@ -187,7 +178,7 @@ export function RegisterAgentForm({
               isAccountConnected &&
                 formValues.name &&
                 formValues.name.trim().length > 0 &&
-                transactionStatus !== "loading",
+                !isPending,
             )}
             isLoading={agentRegistrationFee.isLoading}
             error={agentRegistrationFee.error}
@@ -200,15 +191,9 @@ export function RegisterAgentForm({
             type="submit"
             variant="outline"
             className="w-full"
-            disabled={
-              !isAccountConnected ||
-              transactionStatus === "loading" ||
-              isAlreadyRegistered
-            }
+            disabled={!isAccountConnected || isPending || isAlreadyRegistered}
           >
-            {transactionStatus === "loading"
-              ? "Registering..."
-              : "Register Agent"}
+            {isPending ? "Registering..." : "Register Agent"}
           </Button>
         </div>
       </form>

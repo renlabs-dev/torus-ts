@@ -52,7 +52,7 @@ export const revocationSchema = z.discriminatedUnion("type", [
 ]);
 
 // Main form schema
-export const createCapabilityPermissionSchema = z.object({
+export const CREATE_CAPABILITY_PERMISSION_SCHEMA = z.object({
   recipient: SS58_SCHEMA,
   namespacePaths: z
     .array(z.string())
@@ -70,7 +70,7 @@ export const createCapabilityPermissionSchema = z.object({
 });
 
 export type CreateCapabilityPermissionFormData = z.infer<
-  typeof createCapabilityPermissionSchema
+  typeof CREATE_CAPABILITY_PERMISSION_SCHEMA
 >;
 
 export type CreateCapabilityPermissionForm =

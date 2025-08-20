@@ -4,10 +4,12 @@ import { useState } from "react";
 
 import { useRouter } from "next/navigation";
 
+import { deregisterAgent } from "@torus-network/sdk/chain";
+
 import { useTorus } from "@torus-ts/torus-provider";
+import { useSendTransaction } from "@torus-ts/torus-provider/use-send-transaction";
 import { Button } from "@torus-ts/ui/components/button";
-import type { TransactionResult } from "@torus-ts/ui/components/transaction-status";
-import { TransactionStatus } from "@torus-ts/ui/components/transaction-status";
+import { useToast } from "@torus-ts/ui/hooks/use-toast";
 import { Trash2 } from "lucide-react";
 
 import { DeregisterAgentDialog } from "./deregister-agent-dialog";
@@ -20,40 +22,36 @@ export function DeregisterAgentButton({
   agentName,
 }: DeregisterAgentButtonProps) {
   const router = useRouter();
-  const { deregisterAgentTransaction } = useTorus();
+  const { toast } = useToast();
+  const { api, selectedAccount, torusApi, wsEndpoint } = useTorus();
+  const { web3FromAddress } = torusApi;
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [isDeregistering, setIsDeregistering] = useState(false);
-  const [transactionStatus, setTransactionStatus] = useState<TransactionResult>(
-    {
-      status: null,
-      message: null,
-      finalized: false,
-    },
-  );
+
+  const { sendTx, isPending } = useSendTransaction({
+    api,
+    selectedAccount,
+    wsEndpoint,
+    web3FromAddress,
+    transactionType: "Deregister Agent",
+  });
 
   const handleDeregister = async () => {
-    setIsDeregistering(true);
+    if (!api || !sendTx) {
+      toast.error("API not ready");
+      return;
+    }
 
-    await deregisterAgentTransaction({
-      callback: (tx) => {
-        if (tx.status === "SUCCESS" && !tx.message?.includes("included")) {
-          setIsDialogOpen(false);
-          setIsDeregistering(false);
-          // Redirect to agents list or home after successful deregistration
-          router.push("/root-allocator");
-        }
+    await sendTx(deregisterAgent(api));
 
-        if (tx.status === "ERROR") {
-          setIsDeregistering(false);
-        }
+    // todo refetch handler
+    const todoRefetcher = true;
 
-        setTransactionStatus(tx);
-      },
-      refetchHandler: () => {
-        // Optionally refresh data after transaction
-        return Promise.resolve(router.refresh());
-      },
-    });
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+    if (todoRefetcher) {
+      setIsDialogOpen(false);
+      // Redirect to agents list or home after successful deregistration
+      router.push("/root-allocator");
+    }
   };
 
   return (
@@ -63,7 +61,7 @@ export function DeregisterAgentButton({
         size="sm"
         onClick={() => setIsDialogOpen(true)}
         className="flex items-center gap-2"
-        disabled={isDeregistering}
+        disabled={isPending}
       >
         <Trash2 className="h-4 w-4" />
         Deregister Agent
@@ -74,17 +72,8 @@ export function DeregisterAgentButton({
         onOpenChange={setIsDialogOpen}
         agentName={agentName}
         onConfirm={handleDeregister}
-        isDeregistering={isDeregistering}
+        isDeregistering={isPending}
       />
-
-      {transactionStatus.status && (
-        <div className="mt-4">
-          <TransactionStatus
-            status={transactionStatus.status}
-            message={transactionStatus.message}
-          />
-        </div>
-      )}
     </>
   );
 }

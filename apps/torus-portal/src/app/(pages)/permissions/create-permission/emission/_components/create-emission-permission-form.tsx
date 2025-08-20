@@ -1,14 +1,16 @@
 "use client";
 
-import { useCallback, useState } from "react";
+import { useCallback } from "react";
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2 } from "lucide-react";
 import { useForm } from "react-hook-form";
 
+import { delegateEmissionPermission } from "@torus-network/sdk/chain";
 import type { SS58Address } from "@torus-network/sdk/types";
 
 import { useTorus } from "@torus-ts/torus-provider";
+import { useSendTransaction } from "@torus-ts/torus-provider/use-send-transaction";
 import { Button } from "@torus-ts/ui/components/button";
 import { Form } from "@torus-ts/ui/components/form";
 import { WalletConnectionWarning } from "@torus-ts/ui/components/wallet-connection-warning";
@@ -25,16 +27,23 @@ import { transformFormDataToSDK } from "./create-emission-permission-form-utils"
 
 export function CreateEmissionPermissionForm() {
   const {
-    delegateEmissionPermissionTransaction,
     selectedAccount,
     isAccountConnected,
     isInitialized,
     api,
+    torusApi,
+    wsEndpoint,
   } = useTorus();
+  const { web3FromAddress } = torusApi;
   const { toast } = useToast();
-  const [transactionStatus, setTransactionStatus] = useState<
-    "idle" | "loading" | "success" | "error"
-  >("idle");
+
+  const { sendTx, isPending } = useSendTransaction({
+    api,
+    selectedAccount,
+    wsEndpoint,
+    web3FromAddress,
+    transactionType: "Delegate Emission Permission",
+  });
 
   const form = useForm<CreateEmissionPermissionFormData>({
     resolver: zodResolver(createEmissionPermissionSchema),
@@ -65,45 +74,34 @@ export function CreateEmissionPermissionForm() {
 
   const handleSubmit = useCallback(
     async (data: CreateEmissionPermissionFormData) => {
-      try {
-        setTransactionStatus("loading");
-        const transformedData = transformFormDataToSDK(data);
-
-        await delegateEmissionPermissionTransaction({
-          recipient: selectedAccount?.address as SS58Address,
-          ...transformedData,
-          callback: (result) => {
-            if (result.status === "SUCCESS" && result.finalized) {
-              setTransactionStatus("success");
-
-              // Reset form
-              form.reset();
-            } else if (result.status === "ERROR") {
-              setTransactionStatus("error");
-              toast({
-                title: "Error",
-                description:
-                  result.message ?? "Failed to delegate emission permission",
-                variant: "destructive",
-              });
-            }
-          },
-          refetchHandler: async () => {
-            // No-op for now, could be used to refetch data after transaction
-          },
-        });
-      } catch (error) {
-        console.error("Error granting permission:", error);
-        setTransactionStatus("error");
+      if (!api || !sendTx || !selectedAccount?.address) {
         toast({
           title: "Error",
-          description: `Failed to grant permission: ${error as string}`,
+          description: "API not ready or account not connected",
           variant: "destructive",
         });
+        return;
+      }
+
+      const transformedData = transformFormDataToSDK(data);
+
+      await sendTx(delegateEmissionPermission({
+        api,
+        recipient: selectedAccount.address as SS58Address,
+        ...transformedData,
+      }));
+
+      // todo refetch handler
+      const todoRefetcher = true;
+
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+      if (todoRefetcher) {
+        form.reset();
       }
     },
     [
-      delegateEmissionPermissionTransaction,
+      api,
+      sendTx,
       selectedAccount?.address,
       form,
       toast,
@@ -149,9 +147,9 @@ export function CreateEmissionPermissionForm() {
             form="emission-permission-form"
             className="w-full"
             variant="outline"
-            disabled={!isAccountConnected || transactionStatus === "loading"}
+            disabled={!isAccountConnected || isPending}
           >
-            {transactionStatus === "loading" ? (
+            {isPending ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 Creating...

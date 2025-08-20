@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-import type { SS58Address } from "@torus-network/sdk/types";
+import type { SS58Address } from "../types/index.js";
 
 import { Agent } from "../agent/index.js";
 

@@ -14,7 +14,7 @@ import {
   sb_option,
   sb_percent,
   sb_struct,
-} from "@torus-network/sdk/types/index.js";
+} from "../../types/index.js";
 
 import { sb_namespace_path } from "../torus0/torus0-types.js";
 
