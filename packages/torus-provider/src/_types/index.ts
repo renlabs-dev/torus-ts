@@ -2,6 +2,8 @@
 
 import type { EmissionProposal, PermissionId } from "@torus-network/sdk/chain";
 
+export type { ExtrinsicTracker } from "@torus-network/sdk/extrinsics";
+
 export interface TransactionResult {
   finalized: boolean;
   message: string | null;

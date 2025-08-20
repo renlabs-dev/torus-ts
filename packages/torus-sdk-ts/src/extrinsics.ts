@@ -12,6 +12,13 @@ import { match } from "rustie";
 import { assert } from "tsafe";
 import { z } from "zod";
 
+import { AsyncPushStream } from "@torus-network/torus-utils/async";
+import { chainErr, ParseError } from "@torus-network/torus-utils/error";
+import type { Result } from "@torus-network/torus-utils/result";
+import { makeErr, makeOk } from "@torus-network/torus-utils/result";
+import { tryAsync } from "@torus-network/torus-utils/try-catch";
+import { zodParseResult } from "@torus-network/torus-utils/typing";
+
 import type { HexH256 } from "./types/index.js";
 import {
   sb_array,
@@ -25,12 +32,6 @@ import {
   sb_struct,
   sb_struct_obj,
 } from "./types/index.js";
-import { AsyncPushStream } from "@torus-network/torus-utils/async";
-import { chainErr, ParseError } from "@torus-network/torus-utils/error";
-import type { Result } from "@torus-network/torus-utils/result";
-import { makeErr, makeOk } from "@torus-network/torus-utils/result";
-import { tryAsync } from "@torus-network/torus-utils/try-catch";
-import { zodParseResult } from "@torus-network/torus-utils/typing";
 
 // ==== Raw Extrinsic State ====
 
@@ -685,16 +686,18 @@ export async function sendTxWithTracker(
         void emitter.emit("inBlock", update);
         void emitter.emit("status", update);
         stream.push(update);
-        // switch (update.kind) {
-        //   case "Finalized":
-        //     void finality.resolve({
-        //       ...update,
-        //       kind: update.kind, // lol
-        //     });
-        //     break;
-        //   default:
-        //     break;
-        // }
+        switch (update.kind) {
+          case "Finalized":
+            var updateFix = {
+              ...update,
+              kind: update.kind, // lol
+            };
+            // void finality.resolve(updateFix);
+            void emitter.emit("finalized", updateFix);
+            break;
+          default:
+            break;
+        }
       },
       Warning: ({ txHash, kind }) => {
         const update: TxWarningEvent = makeUpdate({

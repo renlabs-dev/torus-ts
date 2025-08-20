@@ -16,6 +16,8 @@ import { sendTxWithTracker } from "@torus-network/sdk/extrinsics";
 import type { HexH256 } from "@torus-network/sdk/types";
 import { chainErr, strErr } from "@torus-network/torus-utils/error";
 import { BasicLogger } from "@torus-network/torus-utils/logger";
+import type { Result } from "@torus-network/torus-utils/result";
+import { makeErr, makeOk } from "@torus-network/torus-utils/result";
 import { trySync } from "@torus-network/torus-utils/try-catch";
 
 import { toast } from "@torus-ts/ui/hooks/use-toast";
@@ -29,6 +31,16 @@ import {
 import { useWallet } from "./use-send-transaction-setup";
 
 const logger = BasicLogger.create({ name: "use-send-transaction" });
+
+/**
+ * Wallet interface for transaction signing operations.
+ *
+ * Provides the web3FromAddress method needed for transaction signing.
+ * This can be either a full wallet object (like TorusApiState) or just the function itself.
+ */
+export interface Wallet {
+  web3FromAddress: ((address: string) => Promise<InjectedExtension>) | null;
+}
 
 /**
  * Generates a Polkadot.js Apps explorer link for viewing a transaction.
@@ -113,7 +125,7 @@ export type SendTxFn = <T extends ISubmittableResult>(
     Parameters<SubmittableExtrinsic<"promise">["signAndSend"]>[1],
     "nonce" | "tip"
   >,
-) => Promise<void>;
+) => Promise<Result<{ tracker: ExtrinsicTracker }, Error>>;
 
 /**
  * Output interface for the useSendTransaction hook.
@@ -134,7 +146,7 @@ export interface UseSendTxOutput extends TxHelper {
  * @param api - Polkadot API instance
  * @param wsEndpoint - WebSocket endpoint for blockchain connection
  * @param selectedAccount - Currently selected wallet account
- * @param web3FromAddress - Function to get wallet injector for an address
+ * @param wallet - Wallet object or web3FromAddress function for transaction signing
  * @param transactionType - Human-readable transaction type for error messages
  */
 export function useSendTransaction({
@@ -142,15 +154,22 @@ export function useSendTransaction({
   wsEndpoint,
   selectedAccount,
   transactionType,
-  web3FromAddress,
+  wallet,
 }: {
   api: ApiPromise | null;
   wsEndpoint: string | null;
   selectedAccount: InjectedAccountWithMeta | null;
-  web3FromAddress: ((address: string) => Promise<InjectedExtension>) | null;
+  wallet: Wallet | ((address: string) => Promise<InjectedExtension>) | null;
   transactionType: string;
 }): UseSendTxOutput {
-  const wallet = useWallet({ api, selectedAccount, web3FromAddress });
+  // Extract web3FromAddress from wallet parameter - supports both wallet objects and direct function
+  const web3FromAddress =
+    typeof wallet === "function" ? wallet : (wallet?.web3FromAddress ?? null);
+  const walletWithExtracted = useWallet({
+    api,
+    selectedAccount,
+    web3FromAddress,
+  });
 
   const [txStage, setTxStage] = useState<TxStage>({
     Idle: { extrinsic: null },
@@ -174,12 +193,12 @@ export function useSendTransaction({
   };
 
   useEffect(() => {
-    if (!api || !wsEndpoint || !wallet) {
+    if (!api || !wsEndpoint || !walletWithExtracted) {
       // logger.warn("API or wallet not ready");
       return;
     }
 
-    const { injector, metadataHash } = wallet;
+    const { injector, metadataHash } = walletWithExtracted;
 
     const [txOptionsError, baseTxOptions] = trySync(() => ({
       signer: injector.signer,
@@ -206,10 +225,11 @@ export function useSendTransaction({
         Parameters<SubmittableExtrinsic<"promise">["signAndSend"]>[1],
         "nonce" | "tip"
       > = {},
-    ): Promise<void> => {
+    ): Promise<Result<{ tracker: ExtrinsicTracker }, Error>> => {
       if (!selectedAccount) {
-        setErrState(strErr("No account selected"));
-        return;
+        const error = strErr("No account selected");
+        setErrState(error);
+        return makeErr(error);
       }
 
       // Cancel any existing tracker
@@ -234,7 +254,7 @@ export function useSendTransaction({
       );
       if (sendError !== undefined) {
         setErrState(sendError);
-        return;
+        return makeErr(sendError);
       }
       currentTracker = tracker;
 
@@ -250,6 +270,8 @@ export function useSendTransaction({
           toastId: currentToastId,
         });
       });
+
+      return makeOk({ tracker });
     };
 
     setSendFn({ sendTx });
@@ -259,7 +281,7 @@ export function useSendTransaction({
         currentTracker.cancel();
       }
     };
-  }, [api, wsEndpoint, wallet, selectedAccount, web3FromAddress]);
+  }, [api, wsEndpoint, walletWithExtracted, selectedAccount, web3FromAddress]);
 
   const txHelper = useMemo(() => txStageToTxHelper(txStage), [txStage]);
 
