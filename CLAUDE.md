@@ -275,6 +275,28 @@ type casts.
 
 Reference: <https://github.com/steinerkelvin/rustie-ts>
 
+### Result<T,E> Error Handling
+
+Use the canonical pattern for handling `Result<T,E>` types from `@torus-network/torus-utils/result`:
+
+```ts
+// ✅ Correct: Canonical Result<T,E> handling pattern
+const [error, data] = await someFunction();
+if (error !== undefined) {
+  // Handle error case
+  console.error('Operation failed:', error);
+  return;
+}
+// Use data safely here - error is guaranteed to be undefined
+console.log('Success:', data);
+```
+
+**Do not use** other patterns like:
+
+- `isOk()` helper functions
+- `.success` or `.data` property access
+- try/catch wrapping
+
 ### Substrate Integration
 
 - **Permission IDs**: Always use the Substrate H256 hash (66 chars) for external APIs

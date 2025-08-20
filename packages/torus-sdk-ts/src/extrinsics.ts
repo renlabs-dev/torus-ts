@@ -685,16 +685,18 @@ export async function sendTxWithTracker(
         void emitter.emit("inBlock", update);
         void emitter.emit("status", update);
         stream.push(update);
-        // switch (update.kind) {
-        //   case "Finalized":
-        //     void finality.resolve({
-        //       ...update,
-        //       kind: update.kind, // lol
-        //     });
-        //     break;
-        //   default:
-        //     break;
-        // }
+        switch (update.kind) {
+          case "Finalized":
+            var updateFix = {
+              ...update,
+              kind: update.kind, // lol
+            };
+            // void finality.resolve(updateFix);
+            void emitter.emit("finalized", updateFix);
+            break;
+          default:
+            break;
+        }
       },
       Warning: ({ txHash, kind }) => {
         const update: TxWarningEvent = makeUpdate({

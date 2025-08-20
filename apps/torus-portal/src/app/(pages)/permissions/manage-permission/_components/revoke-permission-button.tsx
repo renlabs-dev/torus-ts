@@ -2,6 +2,7 @@
 
 import { useQueryClient } from "@tanstack/react-query";
 import { Trash2 } from "lucide-react";
+import { match } from "rustie";
 
 import { revokePermission } from "@torus-network/sdk/chain";
 
@@ -45,28 +46,49 @@ export function RevokePermissionButton({
     transactionType: "Revoke Permission",
   });
 
+  const refreshData = async () => {
+    await queryClient.invalidateQueries({ queryKey: ["user_permissions"] });
+    await queryClient.invalidateQueries({
+      queryKey: ["permissions_by_grantor", selectedAccount?.address],
+    });
+    await queryClient.invalidateQueries({
+      queryKey: ["permissions_by_grantee", selectedAccount?.address],
+    });
+  };
+
   const handleRevoke = async () => {
     if (!api || !sendTx) {
       toast.error("API not ready");
       return;
     }
 
-    await sendTx(revokePermission(api, permissionId as `0x${string}`));
-
-    // todo refetch handler
-    const todoRefetcher = true;
-
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-    if (todoRefetcher) {
-      onSuccess?.();
-      await queryClient.invalidateQueries({ queryKey: ["user_permissions"] });
-      await queryClient.invalidateQueries({
-        queryKey: ["permissions_by_grantor", selectedAccount?.address],
-      });
-      await queryClient.invalidateQueries({
-        queryKey: ["permissions_by_grantee", selectedAccount?.address],
-      });
+    const [sendErr, sendRes] = await sendTx(
+      revokePermission(api, permissionId as `0x${string}`),
+    );
+    if (sendErr !== undefined) {
+      // Error is already handled by useSendTransaction
+      return;
     }
+    const { tracker } = sendRes;
+
+    // Subscribe to inBlock event (which includes both InBlock and Finalized variants)
+    tracker.on("inBlock", (event) => {
+      // Refresh data immediately when transaction is included in a block
+      void refreshData();
+
+      // Check if this is the Finalized variant and if execution was successful
+      if (event.kind === "Finalized") {
+        match(event.outcome)({
+          Success: () => {
+            onSuccess?.();
+          },
+          Failed: () => {
+            // Transaction was finalized but failed execution
+            // Don't call onSuccess
+          },
+        });
+      }
+    });
   };
 
   return (

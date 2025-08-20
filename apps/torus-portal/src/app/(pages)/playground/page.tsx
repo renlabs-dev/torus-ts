@@ -4,7 +4,13 @@ import React, { useMemo, useState } from "react";
 
 import type { InjectedAccountWithMeta } from "@polkadot/extension-inject/types";
 import Link from "next/link";
+import { match } from "rustie";
 
+import type {
+  ExtrinsicTracker,
+  RuntimeOutcome,
+  TxInBlockEvent,
+} from "@torus-network/sdk/extrinsics";
 import { fromNano, toNano } from "@torus-network/torus-utils/torus/token";
 
 import type { TransactionResult } from "@torus-ts/torus-provider";
@@ -72,6 +78,149 @@ export default function Playground() {
   );
 }
 
+interface TransactionEvent {
+  txHash: string;
+  timestamp: Date;
+  blockHash: string;
+  outcome: "Success" | "Failed";
+  kind: "InBlock" | "Finalized" | "Error";
+  error?: string;
+}
+
+const parseOutcome = (outcome: RuntimeOutcome) => {
+  return match(outcome)<{
+    outcome: "Success" | "Failed";
+    error?: string;
+  }>({
+    Success: () => ({ outcome: "Success" as const }),
+    Failed: ({ error }) => ({
+      outcome: "Failed" as const,
+      error: JSON.stringify(error),
+    }),
+  });
+};
+
+const createTransactionEvent = (
+  txHash: string,
+  blockHash: string,
+  outcome: "Success" | "Failed",
+  kind: "InBlock" | "Finalized" | "Error",
+  error?: string,
+): TransactionEvent => ({
+  txHash,
+  timestamp: new Date(),
+  blockHash,
+  outcome,
+  kind,
+  error,
+});
+
+const createEventFromBlockchainEvent = (
+  event: TxInBlockEvent,
+): TransactionEvent => {
+  const { outcome, error } = parseOutcome(event.outcome);
+  return {
+    txHash: event.txHash,
+    timestamp: new Date(),
+    blockHash: event.blockHash,
+    outcome,
+    kind: event.kind as "InBlock" | "Finalized",
+    error,
+  };
+};
+
+const addToEventList = (
+  setEvents: React.Dispatch<React.SetStateAction<TransactionEvent[]>>,
+  event: TransactionEvent,
+) => {
+  setEvents((prev) => [event, ...prev]);
+};
+
+const TransactionEventItem = ({ event }: { event: TransactionEvent }) => (
+  <div className="border border-gray-200 rounded-md p-3 text-sm bg-gray-50/5">
+    <div className="flex items-center justify-between mb-2">
+      <div className="font-medium flex items-center gap-2">
+        <span
+          className={
+            event.outcome === "Success" ? "text-green-600" : "text-red-600"
+          }
+        >
+          {event.outcome}
+        </span>
+        <span className="text-xs px-2 py-1 rounded bg-blue-100 text-blue-700">
+          {event.kind}
+        </span>
+      </div>
+      <div className="text-xs text-muted-foreground">
+        {event.timestamp.toLocaleTimeString()}
+      </div>
+    </div>
+    <div className="text-xs font-mono break-all">
+      <span className="text-muted-foreground">TX:</span> {event.txHash}
+    </div>
+    <div className="text-xs font-mono break-all">
+      <span className="text-muted-foreground">Block:</span> {event.blockHash}
+    </div>
+    {event.error && (
+      <div className="text-xs text-red-600 mt-1">
+        <span className="text-muted-foreground">Error:</span> {event.error}
+      </div>
+    )}
+  </div>
+);
+
+const EventsList = ({
+  events,
+  keyPrefix,
+  emptyMessage,
+}: {
+  events: TransactionEvent[];
+  keyPrefix: string;
+  emptyMessage: string;
+}) =>
+  events.length === 0 ? (
+    <div className="text-sm text-muted-foreground">{emptyMessage}</div>
+  ) : (
+    <div className="space-y-2 max-h-48 overflow-y-auto">
+      {events.map((event, index) => (
+        <TransactionEventItem
+          key={`${keyPrefix}-${event.txHash}-${index}`}
+          event={event}
+        />
+      ))}
+    </div>
+  );
+
+const setupTrackerSubscriptions = (
+  tracker: ExtrinsicTracker,
+  setInBlockEvents: React.Dispatch<React.SetStateAction<TransactionEvent[]>>,
+  setFinalizedEvents: React.Dispatch<React.SetStateAction<TransactionEvent[]>>,
+) => {
+  tracker.on("inBlock", (event: TxInBlockEvent) => {
+    console.log("IN BLOCK EVENT", event);
+    const eventItem = createEventFromBlockchainEvent(event);
+    addToEventList(setInBlockEvents, eventItem);
+  });
+
+  tracker.on("finalized", (event: TxInBlockEvent) => {
+    console.log("FINALIZED EVENT", event);
+    const eventItem = createEventFromBlockchainEvent(event);
+    addToEventList(setFinalizedEvents, eventItem);
+  });
+
+  tracker.on("error", (event) => {
+    const eventItem = createTransactionEvent(
+      event.error.message || "Unknown",
+      "N/A",
+      "Failed",
+      "Error",
+      event.error.message,
+    );
+    // Add error events to both lists for visibility
+    addToEventList(setInBlockEvents, eventItem);
+  });
+};
+
 function NewTransferPlayground() {
   const { api, selectedAccount, torusApi, wsEndpoint, isAccountConnected } =
     useTorus();
@@ -82,6 +231,10 @@ function NewTransferPlayground() {
   );
   const [amount, setAmount] = useState("1");
   const [useInvalidNonce, setUseInvalidNonce] = useState(false);
+  const [inBlockEvents, setInBlockEvents] = useState<TransactionEvent[]>([]);
+  const [finalizedEvents, setFinalizedEvents] = useState<TransactionEvent[]>(
+    [],
+  );
 
   const estimateTx =
     api?.tx.balances.transferAllowDeath(
@@ -126,7 +279,7 @@ function NewTransferPlayground() {
     }
   }, [fee]);
 
-  function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
 
     if (!api || !sendTx) {
@@ -157,13 +310,18 @@ function NewTransferPlayground() {
 
     const tx = api.tx.balances.transferAllowDeath(recipientAddress, remAmount);
 
-    // If checkbox is checked, use an invalid nonce to cause an error
-    if (useInvalidNonce) {
-      // Use an invalid nonce that will likely cause the transaction to fail
-      void sendTx(tx, { nonce: 1 });
-    } else {
-      void sendTx(tx);
+    // Send transaction and capture tracker
+    const [sendErr, sendRes] = useInvalidNonce
+      ? await sendTx(tx, { nonce: 1 })
+      : await sendTx(tx);
+
+    if (sendErr !== undefined) {
+      console.error("Error sending transfer:", sendErr);
+      return;
     }
+
+    const { tracker } = sendRes;
+    setupTrackerSubscriptions(tracker, setInBlockEvents, setFinalizedEvents);
   }
 
   return (
@@ -335,6 +493,37 @@ function NewTransferPlayground() {
               <div className="text-xs font-mono mt-1 break-all">{txHash}</div>
             </div>
           )}
+        </div>
+      </div>
+
+      {/* Transaction Event History */}
+      <div className="mt-6 space-y-4">
+        <div className="font-semibold text-muted-foreground">
+          Transaction Event History
+        </div>
+
+        {/* In Block Events */}
+        <div className="p-4 bg-muted/30 rounded-md">
+          <div className="font-medium text-blue-600 mb-3">
+            In Block Events ({inBlockEvents.length})
+          </div>
+          <EventsList
+            events={inBlockEvents}
+            keyPrefix="in-block"
+            emptyMessage="No events yet"
+          />
+        </div>
+
+        {/* Finalized Events */}
+        <div className="p-4 bg-muted/30 rounded-md">
+          <div className="font-medium text-green-600 mb-3">
+            Finalized Events ({finalizedEvents.length})
+          </div>
+          <EventsList
+            events={finalizedEvents}
+            keyPrefix="finalized"
+            emptyMessage="No events yet"
+          />
         </div>
       </div>
     </div>

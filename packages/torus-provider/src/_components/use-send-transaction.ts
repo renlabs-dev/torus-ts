@@ -16,6 +16,8 @@ import { sendTxWithTracker } from "@torus-network/sdk/extrinsics";
 import type { HexH256 } from "@torus-network/sdk/types";
 import { chainErr, strErr } from "@torus-network/torus-utils/error";
 import { BasicLogger } from "@torus-network/torus-utils/logger";
+import type { Result } from "@torus-network/torus-utils/result";
+import { makeErr, makeOk } from "@torus-network/torus-utils/result";
 import { trySync } from "@torus-network/torus-utils/try-catch";
 
 import { toast } from "@torus-ts/ui/hooks/use-toast";
@@ -113,7 +115,7 @@ export type SendTxFn = <T extends ISubmittableResult>(
     Parameters<SubmittableExtrinsic<"promise">["signAndSend"]>[1],
     "nonce" | "tip"
   >,
-) => Promise<void>;
+) => Promise<Result<{ tracker: ExtrinsicTracker }, Error>>;
 
 /**
  * Output interface for the useSendTransaction hook.
@@ -206,10 +208,11 @@ export function useSendTransaction({
         Parameters<SubmittableExtrinsic<"promise">["signAndSend"]>[1],
         "nonce" | "tip"
       > = {},
-    ): Promise<void> => {
+    ): Promise<Result<{ tracker: ExtrinsicTracker }, Error>> => {
       if (!selectedAccount) {
-        setErrState(strErr("No account selected"));
-        return;
+        const error = strErr("No account selected");
+        setErrState(error);
+        return makeErr(error);
       }
 
       // Cancel any existing tracker
@@ -234,7 +237,7 @@ export function useSendTransaction({
       );
       if (sendError !== undefined) {
         setErrState(sendError);
-        return;
+        return makeErr(sendError);
       }
       currentTracker = tracker;
 
@@ -250,6 +253,8 @@ export function useSendTransaction({
           toastId: currentToastId,
         });
       });
+
+      return makeOk({ tracker });
     };
 
     setSendFn({ sendTx });
