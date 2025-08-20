@@ -6,9 +6,8 @@ import { AgentCard as UIAgentCard } from "@torus-ts/ui/components/agent-card/age
 import { env } from "~/env";
 import { useQueryAgentMetadata } from "~/hooks/use-agent-metadata";
 import { useBlobUrl } from "~/hooks/use-blob-url";
+import { useMultipleAccountEmissions } from "~/hooks/use-multiple-account-emissions";
 import { useUserWeightPower } from "~/hooks/use-user-weight-power";
-import { useWeeklyUsdCalculation } from "~/hooks/use-weekly-usd";
-import { usePostPenaltyEmission } from "~/hooks/use-post-penalty-emission";
 import { useDelegateAgentStore } from "~/stores/delegateAgentStore";
 
 interface AgentCardProps {
@@ -35,11 +34,16 @@ export function AgentCard(props: Readonly<AgentCardProps>) {
     removeZeroPercentageAgents,
   } = useDelegateAgentStore();
 
-  const { displayTokensPerWeek, isLoading: isWeeklyUsdLoading } =
-    useWeeklyUsdCalculation({
-      agentKey: props.agentKey,
-      weightFactor: props.weightFactor,
-    });
+  const comprehensiveEmissions = useMultipleAccountEmissions({
+    accountIds: [props.agentKey],
+    weightFactors:
+      props.weightFactor !== null
+        ? { [props.agentKey]: props.weightFactor }
+        : undefined,
+  });
+
+  const agentEmissionData = comprehensiveEmissions[props.agentKey];
+  const isEmissionsLoading = agentEmissionData?.isLoading ?? true;
 
   const { data: metadataResult, isLoading: isMetadataLoading } =
     useQueryAgentMetadata(props.metadataUri ?? "");
@@ -57,11 +61,11 @@ export function AgentCard(props: Readonly<AgentCardProps>) {
   );
   const currentPercentage = getAgentPercentage(props.agentKey);
 
-  // Calculate post-penalty emission percentage using custom hook
-  const postPenaltyPercComputedWeight = usePostPenaltyEmission(
-    props.percComputedWeight,
-    props.weightFactor,
-  );
+  // Use the root emission percentage (agent's weight allocation, not total with streams)
+  const postPenaltyPercComputedWeight =
+    agentEmissionData?.root.percentage != null
+      ? agentEmissionData.root.percentage / 100
+      : props.percComputedWeight;
 
   const allocatorAddress = env("NEXT_PUBLIC_TORUS_ALLOCATOR_ADDRESS");
   const isAllocatorAgent = props.agentKey === allocatorAddress;
@@ -101,7 +105,7 @@ export function AgentCard(props: Readonly<AgentCardProps>) {
       showHoverEffect={true}
       isAgentDelegated={isAgentDelegated}
       isAgentSelected={isAgentSelected}
-      tokensPerWeek={displayTokensPerWeek}
+      emissionData={agentEmissionData}
       currentPercentage={
         props.isWhitelisted && !isAllocatorAgent ? currentPercentage : undefined
       }
@@ -111,7 +115,7 @@ export function AgentCard(props: Readonly<AgentCardProps>) {
           : undefined
       }
       isAccountConnected={!!selectedAccount?.address}
-      isLoading={!isInitialized || isWeeklyUsdLoading}
+      isLoading={!isInitialized || isEmissionsLoading}
       isMetadataLoading={isMetadataLoading}
       userWeightPower={userWeightPower}
     />

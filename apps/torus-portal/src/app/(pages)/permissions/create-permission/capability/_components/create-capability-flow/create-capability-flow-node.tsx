@@ -1,7 +1,7 @@
 import { memo } from "react";
 
 import { Handle, Position } from "@xyflow/react";
-import { MouseOff, Route } from "lucide-react";
+import { Infinity as InfinityIcon, MouseOff } from "lucide-react";
 
 import type { PermissionId } from "@torus-network/sdk/chain";
 
@@ -102,7 +102,7 @@ export const NamespacePathNode = memo(function NamespacePathNode({
                 title={`${isInfinite ? "Unlimited" : countNumber} available instances${isDisabled ? (isBlocked ? " (blocked)" : " (no instances available)") : ""}`}
               >
                 {isInfinite ? (
-                  <Route size={15} className="font-bold" />
+                  <InfinityIcon size={15} className="font-bold" />
                 ) : (
                   <span className="font-bold">{countNumber}</span>
                 )}
