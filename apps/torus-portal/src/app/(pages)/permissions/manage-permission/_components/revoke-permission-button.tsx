@@ -1,17 +1,12 @@
 "use client";
 
-import { useState } from "react";
-
-import type { InferSelectModel } from "drizzle-orm";
-import { Trash2 } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
+import { Trash2 } from "lucide-react";
 
-import type {
-  emissionPermissionsSchema,
-  namespacePermissionsSchema,
-  permissionsSchema,
-} from "@torus-ts/db/schema";
+import { revokePermission } from "@torus-network/sdk/chain";
+
 import { useTorus } from "@torus-ts/torus-provider";
+import { useSendTransaction } from "@torus-ts/torus-provider/use-send-transaction";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -26,23 +21,6 @@ import {
 import { Button } from "@torus-ts/ui/components/button";
 import { useToast } from "@torus-ts/ui/hooks/use-toast";
 
-import { tryCatch } from "~/utils/try-catch";
-
-// Types for the new database structure
-type PermissionData = InferSelectModel<typeof permissionsSchema>;
-type EmissionPermissionData = InferSelectModel<
-  typeof emissionPermissionsSchema
->;
-type NamespacePermissionData = InferSelectModel<
-  typeof namespacePermissionsSchema
->;
-
-export interface PermissionWithDetails {
-  permissions: PermissionData;
-  emission_permissions: EmissionPermissionData | null;
-  namespace_permissions: NamespacePermissionData | null;
-}
-
 interface RevokePermissionButtonProps {
   permissionId: string;
   onSuccess?: () => void;
@@ -53,47 +31,41 @@ export function RevokePermissionButton({
   onSuccess,
 }: RevokePermissionButtonProps) {
   const { toast } = useToast();
-  const queryClient = useQueryClient();
-  const { isAccountConnected, revokePermissionTransaction, selectedAccount } =
+  const { api, torusApi, wsEndpoint, isAccountConnected, selectedAccount } =
     useTorus();
-  const [transactionStatus, setTransactionStatus] = useState<
-    "idle" | "loading" | "success" | "error"
-  >("idle");
+  const { web3FromAddress } = torusApi;
+
+  const queryClient = useQueryClient();
+
+  const { sendTx, isPending } = useSendTransaction({
+    api,
+    selectedAccount,
+    wsEndpoint,
+    web3FromAddress,
+    transactionType: "Revoke Permission",
+  });
 
   const handleRevoke = async () => {
-    setTransactionStatus("loading");
+    if (!api || !sendTx) {
+      toast.error("API not ready");
+      return;
+    }
 
-    const { error } = await tryCatch(
-      revokePermissionTransaction({
-        permissionId: permissionId as `0x${string}`,
-        callback: (result) => {
-          if (result.status === "SUCCESS" && result.finalized) {
-            setTransactionStatus("success");
-            onSuccess?.();
-          }
+    await sendTx(revokePermission(api, permissionId as `0x${string}`));
 
-          if (result.status === "ERROR") {
-            setTransactionStatus("error");
-            toast.error(result.message ?? "Failed to revoke permission");
-          }
-        },
-        refetchHandler: async () => {
-          // Invalidate all permission-related queries to ensure UI updates
-          await queryClient.invalidateQueries({ queryKey: ["permissions"] });
-          await queryClient.invalidateQueries({
-            queryKey: ["permissions_by_grantor", selectedAccount?.address],
-          });
-          await queryClient.invalidateQueries({
-            queryKey: ["permissions_by_grantee", selectedAccount?.address],
-          });
-        },
-      }),
-    );
+    // todo refetch handler
+    const todoRefetcher = true;
 
-    if (error) {
-      console.error("Error revoking permission:", error);
-      setTransactionStatus("error");
-      toast.error("Failed to revoke permission");
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+    if (todoRefetcher) {
+      onSuccess?.();
+      await queryClient.invalidateQueries({ queryKey: ["permissions"] });
+      await queryClient.invalidateQueries({
+        queryKey: ["permissions_by_grantor", selectedAccount?.address],
+      });
+      await queryClient.invalidateQueries({
+        queryKey: ["permissions_by_grantee", selectedAccount?.address],
+      });
     }
   };
 
@@ -103,16 +75,10 @@ export function RevokePermissionButton({
         <Button
           variant="destructive"
           size="sm"
-          disabled={
-            !isAccountConnected ||
-            !permissionId ||
-            transactionStatus === "loading"
-          }
+          disabled={!isAccountConnected || !permissionId || isPending}
         >
           <Trash2 className="h-4 w-4 mr-2" />
-          {transactionStatus === "loading"
-            ? "Revoking..."
-            : "Revoke Permission"}
+          {isPending ? "Revoking..." : "Revoke Permission"}
         </Button>
       </AlertDialogTrigger>
       <AlertDialogContent>
@@ -128,9 +94,9 @@ export function RevokePermissionButton({
           <AlertDialogAction
             onClick={handleRevoke}
             className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-            disabled={transactionStatus === "loading"}
+            disabled={isPending}
           >
-            {transactionStatus === "loading" ? "Revoking..." : "Revoke"}
+            {isPending ? "Revoking..." : "Revoke"}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

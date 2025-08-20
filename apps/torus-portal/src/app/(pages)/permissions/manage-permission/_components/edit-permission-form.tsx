@@ -1,12 +1,18 @@
 "use client";
 
-import { useCallback, useRef, useState, useEffect } from "react";
-import { useSearchParams } from "next/navigation";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useSearchParams } from "next/navigation";
 import { useForm } from "react-hook-form";
 import type { z } from "zod";
 
+import type { InferSelectModel } from "@torus-ts/db";
+import type {
+  emissionPermissionsSchema,
+  namespacePermissionsSchema,
+  permissionsSchema,
+} from "@torus-ts/db/schema";
 import { useTorus } from "@torus-ts/torus-provider";
 import { Button } from "@torus-ts/ui/components/button";
 import { Form } from "@torus-ts/ui/components/form";
@@ -31,8 +37,21 @@ import {
   prepareFormDataForSDK,
 } from "./edit-permission-utils";
 import { PermissionTypeInfo } from "./permission-type-info";
-import type { PermissionWithDetails } from "./revoke-permission-button";
 import { RevokePermissionButton } from "./revoke-permission-button";
+
+type PermissionData = InferSelectModel<typeof permissionsSchema>;
+type EmissionPermissionData = InferSelectModel<
+  typeof emissionPermissionsSchema
+>;
+type NamespacePermissionData = InferSelectModel<
+  typeof namespacePermissionsSchema
+>;
+
+export interface PermissionWithDetails {
+  permissions: PermissionData;
+  emission_permissions: EmissionPermissionData | null;
+  namespace_permissions: NamespacePermissionData | null;
+}
 
 export function EditPermissionForm({
   className,

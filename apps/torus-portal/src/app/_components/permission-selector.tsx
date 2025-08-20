@@ -44,8 +44,8 @@ import {
 } from "@torus-ts/ui/components/form";
 import { useIsMobile } from "@torus-ts/ui/hooks/use-mobile";
 
+import type { PermissionWithDetails } from "../(pages)/permissions/manage-permission/_components/edit-permission-form";
 // Import the expected interface from the form
-import type { PermissionWithDetails } from "../(pages)/permissions/manage-permission/_components/revoke-permission-button";
 import { AddressWithAgent } from "./address-with-agent";
 
 // Helper function to safely extract capability paths
