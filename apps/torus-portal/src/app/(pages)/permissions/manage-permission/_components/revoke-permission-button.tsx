@@ -34,7 +34,6 @@ export function RevokePermissionButton({
   const { toast } = useToast();
   const { api, torusApi, wsEndpoint, isAccountConnected, selectedAccount } =
     useTorus();
-  const { web3FromAddress } = torusApi;
 
   const queryClient = useQueryClient();
 
@@ -42,7 +41,7 @@ export function RevokePermissionButton({
     api,
     selectedAccount,
     wsEndpoint,
-    web3FromAddress,
+    wallet: torusApi,
     transactionType: "Revoke Permission",
   });
 

@@ -224,7 +224,6 @@ const setupTrackerSubscriptions = (
 function NewTransferPlayground() {
   const { api, selectedAccount, torusApi, wsEndpoint, isAccountConnected } =
     useTorus();
-  const { web3FromAddress } = torusApi;
 
   const [recipient, setRecipient] = useState(
     "5CSPN5CCbxjEVyAjDqzdaerMxMAbkcex7KMME7vmFWxDXfLb",
@@ -264,7 +263,7 @@ function NewTransferPlayground() {
     api,
     selectedAccount,
     wsEndpoint,
-    web3FromAddress,
+    wallet: torusApi,
     transactionType: "Transfer",
   });
 
