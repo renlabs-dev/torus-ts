@@ -10,11 +10,11 @@ import type {
 import { queryPermission } from "@torus-network/sdk/chain";
 import type { SS58Address } from "@torus-network/sdk/types";
 
+import type { PermissionWithDetails } from "./edit-permission-form";
 import type {
   DistributionControlFormData,
   EditPermissionFormData,
 } from "./edit-permission-schema";
-import type { PermissionWithDetails } from "./revoke-permission-button";
 
 export function getPermissionType(
   permissionData: PermissionWithDetails | null,

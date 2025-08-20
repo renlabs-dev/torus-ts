@@ -19,6 +19,7 @@ cmd_with_env() {
     source .env
     set +a
   fi
+  echo >&2 "Running (with .env loaded): $*"
   "$@"
 }
 
@@ -82,16 +83,18 @@ cmd_dev() {
     set +a
   fi
 
-  turbo "$turbo_cmd" dev "${flags[@]}" -F "$app_name" -- "${app_args[@]}"
+  local turbo_cmd=(turbo "$turbo_cmd" dev "${flags[@]}" -F "$app_name" -- "${app_args[@]}")
+  echo >&2 "Running: ${turbo_cmd[*]}"
+  "${turbo_cmd[@]}"
 }
 
 if [ -z "$1" ]; then
   usage_exit
 fi
-cmd="$1"
+command="$1"
 shift 1
 
-case "$cmd" in
+case "$command" in
 with-env)
   cmd_with_env "$@"
   ;;

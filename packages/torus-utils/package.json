@@ -24,6 +24,10 @@
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
     },
+    "./async": {
+      "types": "./dist/async.d.ts",
+      "default": "./dist/async.js"
+    },
     "./auth": {
       "types": "./dist/auth.d.ts",
       "default": "./dist/auth.js"
@@ -76,13 +80,17 @@
       "types": "./dist/discord-bot-interaction.d.ts",
       "default": "./dist/discord-bot-interaction.js"
     },
+    "./date-time": {
+      "types": "./dist/date-time.d.ts",
+      "default": "./dist/date-time.js"
+    },
     "./logger": {
       "types": "./dist/logger.d.ts",
       "default": "./dist/logger.js"
     },
-    "./date-time": {
-      "types": "./dist/date-time.d.ts",
-      "default": "./dist/date-time.js"
+    "./misc": {
+      "types": "./dist/misc.d.ts",
+      "default": "./dist/misc.js"
     },
     "./torus": {
       "types": "./dist/torus/index.d.ts",

@@ -16,8 +16,9 @@
 .env.*
 !.env.example
 
-# Claude Code
+# AI assistants
 **/.claude/settings.local.json
+/.crush
 
 # Node.js / dependencies
 **/node_modules

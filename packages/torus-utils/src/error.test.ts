@@ -1,7 +1,130 @@
 import { describe, expect, it } from "vitest";
 
 import type { MultiError } from "./error.js";
-import { chainErr, ErrorArray } from "./error.js";
+import {
+  chainErr,
+  ensureError,
+  ErrorArray,
+  isError,
+  isErrorLike,
+} from "./error.js";
+
+describe("isError", () => {
+  it("returns true for Error instances", () => {
+    expect(isError(new Error("x"))).toBe(true);
+    expect(isError(new TypeError("x"))).toBe(true);
+    class CustomError extends Error {}
+    expect(isError(new CustomError("x"))).toBe(true);
+  });
+
+  it("returns false for non-Error values", () => {
+    expect(isError(undefined)).toBe(false);
+    expect(isError(null)).toBe(false);
+    expect(isError("err")).toBe(false);
+    expect(isError(123)).toBe(false);
+    expect(isError({ message: "x" })).toBe(false);
+    const ea = new ErrorArray([new Error("a"), new Error("b")]);
+    expect(isError(ea)).toBe(false);
+  });
+});
+
+describe("isErrorLike", () => {
+  it("returns true for Error objects", () => {
+    expect(isErrorLike(new Error("boom"))).toBe(true);
+    const e = new Error("boom");
+    e.stack = "stack";
+    expect(isErrorLike(e)).toBe(true);
+  });
+
+  it("returns true for plain objects with name and message", () => {
+    expect(isErrorLike({ name: "E", message: "m" })).toBe(true);
+    expect(isErrorLike({ name: "E", message: "m", stack: "s" })).toBe(true);
+    expect(isErrorLike({ name: "E", message: "m", cause: { code: "X" } })).toBe(
+      true,
+    );
+  });
+
+  it("returns false when required fields are missing or wrong type", () => {
+    expect(isErrorLike({ message: "m" })).toBe(false);
+    expect(isErrorLike({ name: "E" })).toBe(false);
+    expect(isErrorLike({ name: 1, message: "m" })).toBe(false);
+    expect(isErrorLike({ name: "E", message: 1 })).toBe(false);
+    expect(isErrorLike({ name: "E", message: "m", stack: 1 })).toBe(false);
+  });
+
+  it("returns false for non-objects", () => {
+    expect(isErrorLike(undefined)).toBe(false);
+    expect(isErrorLike(null)).toBe(false);
+    expect(isErrorLike("e")).toBe(false);
+    expect(isErrorLike(1)).toBe(false);
+    expect(isErrorLike(true)).toBe(false);
+  });
+});
+
+describe("ensureError", () => {
+  it("returns same instance for Error inputs", () => {
+    const err = new Error("x");
+    expect(ensureError(err)).toBe(err);
+  });
+
+  it("stringifies plain objects with JSON.stringify", () => {
+    const obj = { a: 1, b: "x" };
+    const res = ensureError(obj);
+    expect(res).toBeInstanceOf(Error);
+    expect(res.message).toBe(JSON.stringify(obj));
+  });
+
+  it("stringifies circular objects safely", () => {
+    const obj: { self?: unknown } = {};
+    obj.self = obj;
+    const res = ensureError(obj);
+    expect(res.message).toBe('{"self":"[Circular]"}');
+  });
+
+  it("handles primitives", () => {
+    expect(ensureError(undefined).message).toBe("undefined");
+    expect(ensureError(null).message).toBe("null");
+    expect(ensureError(123).message).toBe("123");
+    expect(ensureError(true).message).toBe("true");
+    expect(ensureError("abc").message).toBe("abc");
+    expect(ensureError(Symbol("s")).message).toBe("Symbol(s)");
+  });
+
+  it("handles BigInt using fallback", () => {
+    expect(ensureError(10n).message).toBe("10");
+  });
+
+  it("handles functions using String()", () => {
+    const fn = () => void 0;
+    expect(ensureError(fn).message).toBe(String(fn));
+  });
+
+  it("reconstructs error-like objects and preserves name/message", () => {
+    const plain = { name: "MyErr", message: "boom" };
+    const res = ensureError(plain);
+    expect(res).toBeInstanceOf(Error);
+    expect(res.name).toBe("MyErr");
+    expect(res.message).toBe("boom");
+    expect(res.cause).toBe(plain);
+  });
+
+  it("respects provided stack and cause on error-like objects", () => {
+    const inner = new Error("inner");
+    const plain = { name: "X", message: "m", stack: "stack", cause: inner };
+    const res = ensureError(plain);
+    expect(res.name).toBe("X");
+    expect(res.message).toBe("m");
+    expect(res.stack).toBe("stack");
+    expect(res.cause).toBe(inner);
+  });
+
+  it("formats arrays as Aggregate prefix with JSON", () => {
+    const arr = [1, 2];
+    const res = ensureError(arr);
+    expect(res.message.startsWith("Aggregate(2): ")).toBe(true);
+    expect(res.message.endsWith("[1,2]")).toBe(true);
+  });
+});
 
 describe("chainErr", () => {
   it("should chain error messages with default Error constructor", () => {
@@ -91,7 +214,6 @@ describe("chainErr", () => {
 
     expect(chainedError.stack).toBeDefined();
     expect(originalError.stack).toBeDefined();
-    // Stack traces should be different since they're different error objects
     expect(chainedError.stack).not.toBe(originalError.stack);
   });
 
@@ -207,7 +329,6 @@ describe("ErrorArray", () => {
     delete error1.stack;
 
     const errorArray = new ErrorArray([error1]);
-    console.log(errorArray.stack);
     expect(errorArray.stack).toContain("Error 1 (TestError) no stack");
   });
 
@@ -237,14 +358,10 @@ describe("ErrorArray", () => {
     const error2 = new Error("Second error");
     const errorArray = new ErrorArray([error1, error2]);
 
-    // Test array methods
     expect(errorArray.map((e) => e.message)).toEqual([
       "First error",
       "Second error",
     ]);
-    // expect(errorArray.filter((e) => e.message.includes("First"))).toEqual([
-    //   error1,
-    // ]);
     expect(errorArray.find((e) => e.message === "Second error")).toBe(error2);
   });
 
@@ -270,17 +387,14 @@ describe("ErrorArray", () => {
     const error2 = new Error("Second error");
     const errorArray = new ErrorArray([error1, error2]);
 
-    // Should work as Error
     const asError: Error = errorArray;
     expect(asError.name).toBe(errorArray.name);
     expect(asError.message).toBe(errorArray.message);
 
-    // Should work as Array
     const asArray: Error[] = errorArray;
     expect(asArray.length).toBe(2);
     expect(asArray[0]).toBe(error1);
 
-    // Should work as MultiError
     const asMultiError: MultiError = errorArray;
     expect(asMultiError.name).toBe(errorArray.name);
     expect(asMultiError.length).toBe(2);

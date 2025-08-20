@@ -63,7 +63,7 @@ export function bigintDivision(a: bigint, b: bigint, precision = 8n): number {
 
 // == Time ==
 
-export { getExpirationTime, getCreationTime } from "./date-time.js";
+export { getCreationTime, getExpirationTime } from "./date-time.js";
 
 // == String ==
 
