@@ -59,7 +59,7 @@ export function RevokePermissionButton({
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     if (todoRefetcher) {
       onSuccess?.();
-      await queryClient.invalidateQueries({ queryKey: ["permissions"] });
+      await queryClient.invalidateQueries({ queryKey: ["user_permissions"] });
       await queryClient.invalidateQueries({
         queryKey: ["permissions_by_grantor", selectedAccount?.address],
       });
