@@ -96,6 +96,8 @@ export async function processApplicationsWorker(props: WorkerProps) {
     );
   }
 
+  let evenIteration = true;
+
   while (true) {
     const workerRes = await tryAsync(
       (async () => {
@@ -155,19 +157,28 @@ export async function processApplicationsWorker(props: WorkerProps) {
 
         log.info(`Penalty threshold: ${penaltyVoteThreshold}`);
 
-        const factorsRes = await tryAsync(
-          getPenaltyFactors(penaltyVoteThreshold),
-        );
-        if (log.ifResultIsErr(factorsRes)) return;
-        const [_factorsErr, factors] = factorsRes;
+        let factors: {
+          agentKey: SS58Address;
+          nthBiggestPenaltyFactor: number;
+        }[] = [];
 
-        const keysResetRes = await tryAsync(
-          getKeysToReset(props.api, penaltyVoteThreshold),
-        );
-        if (log.ifResultIsErr(keysResetRes)) return;
-        const [_keysResetErr, keysResetToPenaltyZero] = keysResetRes;
-
-        factors.push(...keysResetToPenaltyZero);
+        if (evenIteration) {
+          log.info("Even iteration: processing penalty factors");
+          const factorsRes = await tryAsync(
+            getPenaltyFactors(penaltyVoteThreshold),
+          );
+          if (log.ifResultIsErr(factorsRes)) return;
+          const [_factorsErr, penaltyFactors] = factorsRes;
+          factors = penaltyFactors;
+        } else {
+          log.info("Odd iteration: checking for keys to reset");
+          const keysResetRes = await tryAsync(
+            getKeysToReset(props.api, penaltyVoteThreshold),
+          );
+          if (log.ifResultIsErr(keysResetRes)) return;
+          const [_keysResetErr, keysResetToPenaltyZero] = keysResetRes;
+          factors = keysResetToPenaltyZero;
+        }
 
         if (factors.length === 0) {
           log.info("No penalty changes needed");
@@ -177,7 +188,7 @@ export async function processApplicationsWorker(props: WorkerProps) {
           processPenalty(props.api, mnemonic, factors),
         );
         if (log.ifResultIsErr(processPenaltyRes)) return;
-
+        console.log(`Mein Factors: ${JSON.stringify(factors)}`);
         if (factors.length > 0) {
           log.info("Penalty processing completed");
         }
@@ -187,6 +198,8 @@ export async function processApplicationsWorker(props: WorkerProps) {
     if (log.ifResultIsErr(workerRes)) {
       await sleep(retryDelay);
     }
+
+    evenIteration = !evenIteration;
   }
 }
 
@@ -387,7 +400,6 @@ export async function getPenaltyFactors(cadreThreshold: number) {
  * @returns List of agents whose penalties should be reset to zero
  */
 async function getKeysToReset(api: ApiPromise, penaltyThreshold: number) {
-  return [];
   const agentPenaltyVotes = await getAgentKeysWithPenalties();
   const voteCountByAgentKey = new Map(
     agentPenaltyVotes.map(({ agentKey, count }) => [agentKey, count]),
