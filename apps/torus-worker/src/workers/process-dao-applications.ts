@@ -188,7 +188,6 @@ export async function processApplicationsWorker(props: WorkerProps) {
           processPenalty(props.api, mnemonic, factors),
         );
         if (log.ifResultIsErr(processPenaltyRes)) return;
-        console.log(`Mein Factors: ${JSON.stringify(factors)}`);
         if (factors.length > 0) {
           log.info("Penalty processing completed");
         }
