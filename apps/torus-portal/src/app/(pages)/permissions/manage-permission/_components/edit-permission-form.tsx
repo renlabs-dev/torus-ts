@@ -70,7 +70,7 @@ export function EditPermissionForm({
     wsEndpoint,
   } = useTorus();
 
-  const { sendTx, isPending } = useSendTransaction({
+  const { sendTx, isPending, isSigning } = useSendTransaction({
     api,
     selectedAccount,
     wsEndpoint,
@@ -227,10 +227,10 @@ export function EditPermissionForm({
                     variant="outline"
                     className="w-full"
                     disabled={
-                      !isAccountConnected || !selectedPermissionId || isPending
+                      !isAccountConnected || !selectedPermissionId || isPending || isSigning
                     }
                   >
-                    {isPending ? "Updating..." : "Update Permission"}
+                    {(isPending || isSigning) ? "Updating..." : "Update Permission"}
                   </Button>
                 </>
               )}

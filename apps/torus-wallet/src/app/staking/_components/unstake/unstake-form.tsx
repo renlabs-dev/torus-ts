@@ -27,6 +27,7 @@ interface UnstakeFormProps {
   maxUnstakeAmount: string;
   estimatedFee: bigint | undefined;
   isPending: boolean;
+  isSigning: boolean;
   handleSelectValidator: (
     address: BrandTag<"SS58Address"> & string,
   ) => Promise<void>;
@@ -43,6 +44,7 @@ export function UnstakeForm({
   maxUnstakeAmount,
   estimatedFee,
   isPending,
+  isSigning,
   handleSelectValidator,
   onReviewClick,
   handleAmountChange,
@@ -105,7 +107,7 @@ export function UnstakeForm({
             type="button"
             variant="outline"
             onClick={onReviewClick}
-            disabled={!selectedAccount?.address || isPending}
+            disabled={!selectedAccount?.address || isPending || isSigning}
           >
             {isPending ? "Processing..." : "Review & Submit Transaction"}
           </Button>

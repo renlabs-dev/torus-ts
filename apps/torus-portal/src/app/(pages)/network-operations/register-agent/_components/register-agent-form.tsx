@@ -46,7 +46,7 @@ export function RegisterAgentForm({
     wsEndpoint,
   } = useTorus();
 
-  const { sendTx, isPending } = useSendTransaction({
+  const { sendTx, isPending, isSigning } = useSendTransaction({
     api,
     selectedAccount,
     wsEndpoint,
@@ -192,7 +192,7 @@ export function RegisterAgentForm({
             type="submit"
             variant="outline"
             className="w-full"
-            disabled={!isAccountConnected || isPending || isAlreadyRegistered}
+            disabled={!isAccountConnected || isPending || isSigning || isAlreadyRegistered}
           >
             {isPending ? "Registering..." : "Register Agent"}
           </Button>

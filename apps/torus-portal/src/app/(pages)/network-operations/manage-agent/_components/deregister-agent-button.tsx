@@ -26,7 +26,7 @@ export function DeregisterAgentButton({
   const { api, selectedAccount, torusApi, wsEndpoint } = useTorus();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
-  const { sendTx, isPending } = useSendTransaction({
+  const { sendTx, isPending, isSigning } = useSendTransaction({
     api,
     selectedAccount,
     wsEndpoint,
@@ -62,7 +62,7 @@ export function DeregisterAgentButton({
         size="sm"
         onClick={() => setIsDialogOpen(true)}
         className="flex items-center gap-2"
-        disabled={isPending}
+        disabled={isPending || isSigning}
       >
         <Trash2 className="h-4 w-4" />
         Deregister Agent
@@ -73,7 +73,7 @@ export function DeregisterAgentButton({
         onOpenChange={setIsDialogOpen}
         agentName={agentName}
         onConfirm={handleDeregister}
-        isDeregistering={isPending}
+        isDeregistering={isPending || isSigning}
       />
     </>
   );

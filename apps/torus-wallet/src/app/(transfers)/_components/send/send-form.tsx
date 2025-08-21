@@ -29,6 +29,7 @@ interface SendFormProps {
   handleAmountChange: (newAmount: string) => Promise<void>;
   minAllowedStakeData: bigint;
   isPending: boolean;
+  isSigning: boolean;
 }
 
 export function SendForm({
@@ -41,6 +42,7 @@ export function SendForm({
   handleAmountChange,
   minAllowedStakeData,
   isPending,
+  isSigning,
 }: SendFormProps) {
   const formRef = useRef<HTMLFormElement>(null);
 
@@ -93,7 +95,7 @@ export function SendForm({
             type="button"
             variant="outline"
             onClick={onReviewClick}
-            disabled={!selectedAccount?.address || isPending}
+            disabled={!selectedAccount?.address || isPending || isSigning}
           >
             {isPending ? "Processing..." : "Review & Submit Send Transaction"}
           </Button>

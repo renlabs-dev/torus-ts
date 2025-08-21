@@ -78,7 +78,7 @@ export function TransferEVM() {
     wsEndpoint,
   } = useTorus();
 
-  const { sendTx, isPending } = useSendTransaction({
+  const { sendTx, isPending, isSigning } = useSendTransaction({
     api,
     selectedAccount,
     wsEndpoint,
@@ -484,6 +484,7 @@ export function TransferEVM() {
             className="w-full"
             disabled={
               isPending ||
+              isSigning ||
               !amount ||
               (mode === "bridge" && !userInputEthAddr) ||
               (mode === "withdraw" && !selectedAccount)

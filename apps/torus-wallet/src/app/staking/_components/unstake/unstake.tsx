@@ -50,7 +50,7 @@ export function Unstake() {
 
   const { api, torusApi, wsEndpoint } = useTorus();
 
-  const { sendTx, isPending } = useSendTransaction({
+  const { sendTx, isPending, isSigning } = useSendTransaction({
     api,
     selectedAccount,
     wsEndpoint,
@@ -227,6 +227,7 @@ export function Unstake() {
         maxUnstakeAmount={maxUnstakeAmount}
         estimatedFee={estimatedFee}
         isPending={isPending}
+        isSigning={isSigning}
         handleSelectValidator={handleSelectValidator}
         onReviewClick={handleReviewClick}
         handleAmountChange={handleAmountChange}

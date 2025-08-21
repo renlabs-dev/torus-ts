@@ -42,7 +42,7 @@ export function Stake() {
 
   const { api, torusApi, wsEndpoint } = useTorus();
 
-  const { sendTx, isPending } = useSendTransaction({
+  const { sendTx, isPending, isSigning } = useSendTransaction({
     api,
     selectedAccount,
     wsEndpoint,
@@ -198,6 +198,7 @@ export function Stake() {
         maxTransferableAmount={maxTransferableAmount}
         estimatedFee={estimatedFee}
         isPending={isPending}
+        isSigning={isSigning}
         handleSelectValidator={handleSelectValidator}
         onReviewClick={handleReviewClick}
         handleAmountChange={handleAmountChange}

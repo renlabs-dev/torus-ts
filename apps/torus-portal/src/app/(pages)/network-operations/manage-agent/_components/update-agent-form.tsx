@@ -45,7 +45,7 @@ export function UpdateAgentForm({ agentKey }: UpdateAgentFormProps) {
   const router = useRouter();
   const { api, selectedAccount, torusApi, wsEndpoint } = useTorus();
 
-  const { sendTx, isPending } = useSendTransaction({
+  const { sendTx, isPending, isSigning } = useSendTransaction({
     api,
     selectedAccount,
     wsEndpoint,
@@ -156,7 +156,7 @@ export function UpdateAgentForm({ agentKey }: UpdateAgentFormProps) {
 
   const updateAgentMutation = useMemo(
     () => ({
-      isPending: isUploading || isPending,
+      isPending: isUploading || isPending || isSigning,
       handleImageChange,
       mutate: async (data: UpdateAgentFormData) => {
         if (!api || !sendTx) {
@@ -192,6 +192,7 @@ export function UpdateAgentForm({ agentKey }: UpdateAgentFormProps) {
     [
       isUploading,
       isPending,
+      isSigning,
       handleImageChange,
       api,
       sendTx,

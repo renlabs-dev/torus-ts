@@ -60,7 +60,7 @@ export function CreateTransferDaoTreasuryProposal() {
 
   const { api, torusApi, wsEndpoint } = useTorus();
 
-  const { sendTx, isPending } = useSendTransaction({
+  const { sendTx, isPending, isSigning } = useSendTransaction({
     api,
     selectedAccount,
     wsEndpoint,
@@ -309,7 +309,8 @@ export function CreateTransferDaoTreasuryProposal() {
             !userHasEnoughBalance ||
             !form.formState.isValid ||
             uploading ||
-            isPending
+            isPending ||
+            isSigning
           }
         >
           {getButtonSubmitLabel({ uploading, isAccountConnected, isPending })}

@@ -21,7 +21,7 @@ import { useGovernance } from "~/context/governance-provider";
 export function VotePowerSettings() {
   const { api, selectedAccount, torusApi, wsEndpoint } = useTorus();
 
-  const { sendTx, isPending } = useSendTransaction({
+  const { sendTx, isPending, isSigning } = useSendTransaction({
     api,
     selectedAccount,
     wsEndpoint,
@@ -90,7 +90,7 @@ export function VotePowerSettings() {
             void handleVote();
           }}
           variant="outline"
-          disabled={isPending}
+          disabled={isPending || isSigning}
         >
           {isAccountPowerUser ? "Delegate voting power" : "Become a Power User"}
         </Button>

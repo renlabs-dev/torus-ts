@@ -37,7 +37,7 @@ export function Send() {
 
   const { api, torusApi, wsEndpoint } = useTorus();
 
-  const { sendTx, isPending } = useSendTransaction({
+  const { sendTx, isPending, isSigning } = useSendTransaction({
     api,
     selectedAccount,
     wsEndpoint,
@@ -182,6 +182,7 @@ export function Send() {
         handleAmountChange={handleAmountChange}
         minAllowedStakeData={minAllowedStakeData}
         isPending={isPending}
+        isSigning={isSigning}
       />
       <ReviewTransactionDialog
         ref={reviewDialogRef}

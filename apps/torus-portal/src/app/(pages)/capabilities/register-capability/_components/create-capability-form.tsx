@@ -50,7 +50,7 @@ export function RegisterCapabilityForm({
   } = useTorus();
   const [selectedPrefix, setSelectedPrefix] = useState("");
 
-  const { sendTx, isPending } = useSendTransaction({
+  const { sendTx, isPending, isSigning } = useSendTransaction({
     api,
     selectedAccount,
     wsEndpoint,
@@ -222,7 +222,7 @@ export function RegisterCapabilityForm({
               isAccountConnected &&
                 selectedPrefix &&
                 fullPath.trim().length > 0 &&
-                !isPending,
+                !isPending && !isSigning,
             )}
             isLoading={namespaceFee.isLoading}
             error={namespaceFee.error}
@@ -240,10 +240,11 @@ export function RegisterCapabilityForm({
               !selectedPrefix ||
               (watchedMethod === "custom" && !watchedCustomMethod?.trim()) ||
               (watchedMethod === "none" && !watchedPath.trim()) ||
-              isPending
+              isPending ||
+              isSigning
             }
           >
-            {isPending ? "Registering..." : "Register Capability"}
+            {(isPending || isSigning) ? "Registering..." : "Register Capability"}
           </Button>
         </div>
       </form>

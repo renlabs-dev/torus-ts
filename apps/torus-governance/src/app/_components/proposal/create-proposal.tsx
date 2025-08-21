@@ -55,7 +55,7 @@ export function CreateProposal() {
   const { api, torusApi, wsEndpoint } = useTorus();
   const queryClient = useQueryClient();
 
-  const { sendTx, isPending } = useSendTransaction({
+  const { sendTx, isPending, isSigning } = useSendTransaction({
     api,
     selectedAccount,
     wsEndpoint,
@@ -267,7 +267,8 @@ export function CreateProposal() {
             !userHasEnoughBalance ||
             !form.formState.isValid ||
             uploading ||
-            isPending
+            isPending ||
+            isSigning
           }
         >
           {getButtonSubmitLabel({ uploading, isAccountConnected, isPending })}

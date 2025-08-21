@@ -27,6 +27,7 @@ interface TransferStakeFormProps {
   maxTransferStakeAmount: string;
   estimatedFee: bigint | undefined;
   isPending: boolean;
+  isSigning: boolean;
   handleSelectFromValidatorAction: (
     address: BrandTag<"SS58Address"> & string,
   ) => Promise<void>;
@@ -47,6 +48,7 @@ export function TransferStakeForm({
   maxTransferStakeAmount,
   estimatedFee,
   isPending,
+  isSigning,
   handleSelectFromValidatorAction,
   handleSelectToValidatorAction,
   onReviewClickAction,
@@ -131,7 +133,7 @@ export function TransferStakeForm({
             type="button"
             variant="outline"
             onClick={onReviewClickAction}
-            disabled={!selectedAccount?.address || isPending}
+            disabled={!selectedAccount?.address || isPending || isSigning}
           >
             {isPending ? "Processing..." : "Review & Submit Transaction"}
           </Button>

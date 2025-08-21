@@ -57,7 +57,7 @@ export function CreateCapabilityPermissionForm({
   } = useTorus();
   const { toast } = useToast();
 
-  const { sendTx, isPending } = useSendTransaction({
+  const { sendTx, isPending, isSigning } = useSendTransaction({
     api,
     selectedAccount,
     wsEndpoint,
@@ -203,10 +203,10 @@ export function CreateCapabilityPermissionForm({
             className="w-full"
             variant="outline"
             disabled={
-              !isAccountConnected || isPending || selectedPaths.length === 0
+              !isAccountConnected || isPending || isSigning || selectedPaths.length === 0
             }
           >
-            {isPending ? (
+            {(isPending || isSigning) ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 Creating permission...
