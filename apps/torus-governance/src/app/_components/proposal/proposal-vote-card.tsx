@@ -108,7 +108,7 @@ const VoteCardFunctionsContent = (props: {
               key={option}
               variant="outline"
               value={option}
-              className={`w-full capitalize ${isPending && "cursor-not-allowed"}
+              className={`w-full capitalize ${isPending ? "cursor-not-allowed" : ""}
               ${option === vote ? "border-white" : "border-muted bg-card"}`}
               disabled={isPending}
             >

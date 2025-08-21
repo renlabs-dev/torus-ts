@@ -14,7 +14,6 @@ import type { SS58Address } from "@torus-network/sdk/types";
 import { formatToken, toNano } from "@torus-network/torus-utils/torus/token";
 
 import { useTorus } from "@torus-ts/torus-provider";
-import type { TransactionResult } from "@torus-ts/torus-provider/types";
 import { useSendTransaction } from "@torus-ts/torus-provider/use-send-transaction";
 import { Button } from "@torus-ts/ui/components/button";
 import {
@@ -34,7 +33,6 @@ import {
   TabsTrigger,
 } from "@torus-ts/ui/components/tabs";
 import { Textarea } from "@torus-ts/ui/components/text-area";
-import { TransactionStatus } from "@torus-ts/ui/components/transaction-status";
 import { useToast } from "@torus-ts/ui/hooks/use-toast";
 
 import { useGovernance } from "~/context/governance-provider";
@@ -72,13 +70,6 @@ export function CreateTransferDaoTreasuryProposal() {
   const { toast } = useToast();
 
   const [activeTab, setActiveTab] = useState("edit");
-  const [transactionStatus, setTransactionStatus] = useState<TransactionResult>(
-    {
-      status: null,
-      message: null,
-      finalized: false,
-    },
-  );
 
   const form = useForm<TransferDaoTreasuryProposalFormData>({
     disabled: !isAccountConnected,
@@ -109,7 +100,6 @@ export function CreateTransferDaoTreasuryProposal() {
 
   async function handleFileUpload(fileToUpload: File): Promise<void> {
     const { success, cid } = await uploadFile(fileToUpload, {
-      setTransactionStatus,
       errorMessage: "Error uploading agent application file",
     });
 
@@ -132,7 +122,7 @@ export function CreateTransferDaoTreasuryProposal() {
       const [sendErr, sendRes] = await sendTx(
         addDaoTreasuryTransferProposal(
           api,
-          toNano(parseFloat(getValues("value"))),
+          toNano(getValues("value")),
           getValues("destinationKey") as SS58Address,
           ipfsUri,
         ),
@@ -151,12 +141,7 @@ export function CreateTransferDaoTreasuryProposal() {
       toast.error(
         `Insufficient balance to create a transfer dao treasury proposal. Required: ${daoApplicationCost} but got ${formatToken(accountFreeBalance.data)}`,
       );
-      setTransactionStatus({
-        status: "ERROR",
-        finalized: true,
-        message:
-          "Insufficient balance to create transfer dao treasury proposal",
-      });
+
       return;
     }
 
@@ -164,12 +149,6 @@ export function CreateTransferDaoTreasuryProposal() {
   }
 
   const onSubmit = async (data: TransferDaoTreasuryProposalFormData) => {
-    setTransactionStatus({
-      status: "STARTING",
-      finalized: false,
-      message: "Starting transfer dao treasury proposal creation...",
-    });
-
     const proposalData = JSON.stringify({
       title: data.title,
       body: data.body,
@@ -332,13 +311,6 @@ export function CreateTransferDaoTreasuryProposal() {
         >
           {getButtonSubmitLabel({ uploading, isAccountConnected, isPending })}
         </Button>
-
-        {transactionStatus.status && (
-          <TransactionStatus
-            status={transactionStatus.status}
-            message={transactionStatus.message}
-          />
-        )}
       </form>
     </Form>
   );

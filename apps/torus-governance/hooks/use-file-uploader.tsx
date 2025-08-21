@@ -1,9 +1,10 @@
 "use client";
-import { useToast } from "@torus-ts/ui/hooks/use-toast";
-import { tryAsync } from "@torus-network/torus-utils/try-catch";
 import { useState } from "react";
-import type { TransactionResult } from "@torus-ts/torus-provider/types";
+
 import { BasicLogger } from "@torus-network/torus-utils/logger";
+import { tryAsync } from "@torus-network/torus-utils/try-catch";
+
+import { useToast } from "@torus-ts/ui/hooks/use-toast";
 
 // Create a dedicated logger for file upload operations
 const log = new BasicLogger({ name: "file-uploader-torus-governance" });
@@ -13,7 +14,6 @@ interface FileUploadOptions {
   onUploadComplete?: () => void;
   onUploadError?: (error: Error) => void;
   errorMessage?: string;
-  setTransactionStatus?: (status: TransactionResult) => void;
 }
 
 interface UploadResult {
@@ -35,7 +35,6 @@ export function useFileUploader() {
       onUploadComplete,
       onUploadError,
       errorMessage = "Error uploading file",
-      setTransactionStatus,
     } = options;
 
     // Log the start of the upload with file details
@@ -66,14 +65,6 @@ export function useFileUploader() {
       setUploading(false);
       toast.error(fetchError.message || errorMessage);
 
-      if (setTransactionStatus) {
-        setTransactionStatus({
-          status: "ERROR",
-          finalized: true,
-          message: "Error uploading file",
-        });
-      }
-
       onUploadError?.(fetchError);
       onUploadComplete?.();
       return { success: false, error: fetchError };
@@ -89,14 +80,6 @@ export function useFileUploader() {
 
       setUploading(false);
       toast.error(`Server error: ${res.status}`);
-
-      if (setTransactionStatus) {
-        setTransactionStatus({
-          status: "ERROR",
-          finalized: true,
-          message: `HTTP Error: ${res.status}`,
-        });
-      }
 
       onUploadError?.(statusError);
       onUploadComplete?.();
@@ -120,14 +103,6 @@ export function useFileUploader() {
 
       toast.error("Error parsing response data");
 
-      if (setTransactionStatus) {
-        setTransactionStatus({
-          status: "ERROR",
-          finalized: true,
-          message: "Error parsing response",
-        });
-      }
-
       onUploadError?.(jsonError);
       return { success: false, error: jsonError };
     }
@@ -139,14 +114,6 @@ export function useFileUploader() {
       log.error("File upload invalid CID received", responseData);
 
       toast.error("Error uploading file");
-
-      if (setTransactionStatus) {
-        setTransactionStatus({
-          status: "ERROR",
-          finalized: true,
-          message: "Failed to get valid file CID",
-        });
-      }
 
       onUploadError?.(error);
       return { success: false, error };
