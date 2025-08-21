@@ -98,7 +98,7 @@ export function CreateEmissionPermissionForm() {
 
       const { tracker } = sendRes;
 
-      tracker.on("inBlock", () => {
+      tracker.on("finalized", () => {
         form.reset();
       });
     },

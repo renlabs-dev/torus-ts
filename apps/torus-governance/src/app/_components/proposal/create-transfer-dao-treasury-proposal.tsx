@@ -3,6 +3,7 @@
 import { useState } from "react";
 
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useQueryClient } from "@tanstack/react-query";
 import MarkdownPreview from "@uiw/react-markdown-preview";
 import { useFileUploader } from "hooks/use-file-uploader";
 import { useRouter } from "next/navigation";
@@ -97,6 +98,7 @@ export function CreateTransferDaoTreasuryProposal() {
   })();
 
   const { uploadFile, uploading } = useFileUploader();
+  const queryClient = useQueryClient();
 
   async function handleFileUpload(fileToUpload: File): Promise<void> {
     const { success, cid } = await uploadFile(fileToUpload, {
@@ -135,6 +137,7 @@ export function CreateTransferDaoTreasuryProposal() {
       const { tracker } = sendRes;
 
       tracker.on("finalized", () => {
+        void queryClient.invalidateQueries({ queryKey: ["proposals"] });
         router.push("/proposals");
       });
     } else {

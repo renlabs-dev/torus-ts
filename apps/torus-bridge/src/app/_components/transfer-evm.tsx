@@ -201,7 +201,7 @@ export function TransferEVM() {
 
     const { tracker } = sendRes;
 
-    tracker.on("inBlock", () => {
+    tracker.on("finalized", () => {
       setAmount("");
       setUserInputEthAddr("");
       void refetchHandler();

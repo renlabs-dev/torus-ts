@@ -194,7 +194,7 @@ export function CreateAgentApplication() {
       }
 
       const { tracker } = sendRes;
-      tracker.on("inBlock", () => {
+      tracker.on("finalized", () => {
         void agentApplications.refetch();
         localStorage.removeItem("agentApplicationFormData");
       });

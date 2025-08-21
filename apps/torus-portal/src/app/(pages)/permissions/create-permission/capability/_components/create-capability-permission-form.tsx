@@ -129,7 +129,7 @@ export function CreateCapabilityPermissionForm({
 
     const { tracker } = sendRes;
 
-    tracker.on("inBlock", () => {
+    tracker.on("finalized", () => {
       onSuccess?.();
       form.reset();
     });

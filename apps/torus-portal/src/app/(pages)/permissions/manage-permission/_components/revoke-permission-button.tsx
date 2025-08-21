@@ -70,7 +70,7 @@ export function RevokePermissionButton({
 
     const { tracker } = sendRes;
 
-    tracker.on("inBlock", () => {
+    tracker.on("finalized", () => {
       onSuccess?.();
       void refreshData();
     });

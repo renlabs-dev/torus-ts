@@ -153,7 +153,7 @@ export function DeleteCapabilityForm({
 
     const { tracker } = sendRes;
 
-    tracker.on("inBlock", () => {
+    tracker.on("finalized", () => {
       form.reset();
       void namespaceEntries.refetch();
     });

@@ -129,7 +129,7 @@ export function RegisterCapabilityForm({
 
     const { tracker } = sendRes;
 
-    tracker.on("inBlock", () => {
+    tracker.on("finalized", () => {
       form.reset();
       setSelectedPrefix("");
       void namespaceEntries.refetch();

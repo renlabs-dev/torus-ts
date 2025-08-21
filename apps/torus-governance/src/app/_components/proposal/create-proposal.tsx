@@ -3,6 +3,7 @@
 import { useState } from "react";
 
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useQueryClient } from "@tanstack/react-query";
 import MarkdownPreview from "@uiw/react-markdown-preview";
 import { useFileUploader } from "hooks/use-file-uploader";
 import { useRouter } from "next/navigation";
@@ -52,6 +53,7 @@ export function CreateProposal() {
   } = useGovernance();
 
   const { api, torusApi, wsEndpoint } = useTorus();
+  const queryClient = useQueryClient();
 
   const { sendTx, isPending } = useSendTransaction({
     api,
@@ -128,6 +130,7 @@ export function CreateProposal() {
       const { tracker } = sendRes;
 
       tracker.on("finalized", () => {
+        void queryClient.invalidateQueries({ queryKey: ["proposals"] });
         router.push("/proposals");
       });
     } else {
