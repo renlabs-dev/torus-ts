@@ -34,14 +34,13 @@ export function CreateEmissionPermissionForm() {
     torusApi,
     wsEndpoint,
   } = useTorus();
-  const { web3FromAddress } = torusApi;
   const { toast } = useToast();
 
   const { sendTx, isPending } = useSendTransaction({
     api,
     selectedAccount,
     wsEndpoint,
-    web3FromAddress,
+    wallet: torusApi,
     transactionType: "Delegate Emission Permission",
   });
 
@@ -85,27 +84,25 @@ export function CreateEmissionPermissionForm() {
 
       const transformedData = transformFormDataToSDK(data);
 
-      await sendTx(delegateEmissionPermission({
-        api,
-        recipient: selectedAccount.address as SS58Address,
-        ...transformedData,
-      }));
+      const [sendErr, sendRes] = await sendTx(
+        delegateEmissionPermission({
+          api,
+          recipient: selectedAccount.address as SS58Address,
+          ...transformedData,
+        }),
+      );
 
-      // todo refetch handler
-      const todoRefetcher = true;
-
-      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-      if (todoRefetcher) {
-        form.reset();
+      if (sendErr !== undefined) {
+        return; // Error already handled by sendTx
       }
+
+      const { tracker } = sendRes;
+
+      tracker.on("inBlock", () => {
+        form.reset();
+      });
     },
-    [
-      api,
-      sendTx,
-      selectedAccount?.address,
-      form,
-      toast,
-    ],
+    [api, sendTx, selectedAccount?.address, form, toast],
   );
 
   return (

@@ -1,4 +1,3 @@
-import type { TransactionResult } from "@torus-ts/torus-provider/types";
 import { Button } from "@torus-ts/ui/components/button";
 import { Card } from "@torus-ts/ui/components/card";
 import {
@@ -9,13 +8,11 @@ import {
   FormLabel,
   FormMessage,
 } from "@torus-ts/ui/components/form";
-import { TransactionStatus } from "@torus-ts/ui/components/transaction-status";
 
 import { useRef } from "react";
 import type { UseFormReturn } from "react-hook-form";
 import { AllocatorSelector } from "../../../_components/allocator-selector";
 import { CurrencySwap } from "../../../_components/currency-swap";
-import type { FeeLabelHandle } from "../../../_components/fee-label";
 import { FeeLabel } from "../../../_components/fee-label";
 import type { StakeFormValues } from "./stake-form-schema";
 import type { BrandTag } from "@torus-network/torus-utils";
@@ -25,8 +22,8 @@ interface StakeFormProps {
   selectedAccount: { address: string } | null;
   minAllowedStakeData: bigint;
   maxAmountRef: React.RefObject<string>;
-  feeRef: React.RefObject<FeeLabelHandle | null>;
-  transactionStatus: TransactionResult;
+  estimatedFee: bigint | undefined;
+  isPending: boolean;
   handleSelectValidator: (
     address: BrandTag<"SS58Address"> & string,
   ) => Promise<void>;
@@ -40,8 +37,8 @@ export function StakeForm({
   selectedAccount,
   minAllowedStakeData,
   maxAmountRef,
-  feeRef,
-  transactionStatus,
+  estimatedFee,
+  isPending,
   handleSelectValidator,
   onReviewClick,
   handleAmountChange,
@@ -98,21 +95,15 @@ export function StakeForm({
             )}
           />
 
-          <FeeLabel ref={feeRef} accountConnected={!!selectedAccount} />
+          <FeeLabel accountConnected={!!selectedAccount} fee={estimatedFee} />
 
-          {transactionStatus.status && (
-            <TransactionStatus
-              status={transactionStatus.status}
-              message={transactionStatus.message}
-            />
-          )}
           <Button
             type="button"
             variant="outline"
             onClick={onReviewClick}
-            disabled={!selectedAccount?.address || form.formState.isSubmitting}
+            disabled={!selectedAccount?.address || isPending}
           >
-            Review & Submit Transaction
+            {isPending ? "Processing..." : "Review & Submit Transaction"}
           </Button>
         </form>
       </Form>

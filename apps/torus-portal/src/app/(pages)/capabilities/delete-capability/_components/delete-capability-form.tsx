@@ -59,7 +59,6 @@ export function DeleteCapabilityForm({
     torusApi,
     wsEndpoint,
   } = useTorus();
-  const { web3FromAddress } = torusApi;
   const { toast } = useToast();
   const isMobile = useIsMobile();
 
@@ -67,7 +66,7 @@ export function DeleteCapabilityForm({
     api,
     selectedAccount,
     wsEndpoint,
-    web3FromAddress,
+    wallet: torusApi,
     transactionType: "Delete Namespace",
   });
 
@@ -146,16 +145,18 @@ export function DeleteCapabilityForm({
       .slice(0, data.segmentToDelete + 1)
       .join(".");
 
-    await sendTx(deleteNamespace(api, pathToDelete));
+    const [sendErr, sendRes] = await sendTx(deleteNamespace(api, pathToDelete));
 
-    // todo refetch handler
-    const todoRefetcher = true;
-
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-    if (todoRefetcher) {
-      form.reset();
-      await namespaceEntries.refetch();
+    if (sendErr !== undefined) {
+      return; // Error already handled by sendTx
     }
+
+    const { tracker } = sendRes;
+
+    tracker.on("inBlock", () => {
+      form.reset();
+      void namespaceEntries.refetch();
+    });
   }
 
   return (

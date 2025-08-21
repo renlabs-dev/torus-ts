@@ -54,13 +54,12 @@ export function CreateProposal() {
   } = useGovernance();
 
   const { api, torusApi, wsEndpoint } = useTorus();
-  const { web3FromAddress } = torusApi;
 
   const { sendTx, isPending } = useSendTransaction({
     api,
     selectedAccount,
     wsEndpoint,
-    web3FromAddress,
+    wallet: torusApi,
     transactionType: "Create Custom Proposal",
   });
   const { toast } = useToast();
@@ -128,15 +127,19 @@ export function CreateProposal() {
         return;
       }
 
-      await sendTx(addGlobalCustomProposal(api, ipfsUri));
+      const [sendErr, sendRes] = await sendTx(
+        addGlobalCustomProposal(api, ipfsUri),
+      );
 
-      // todo refetch handler
-      const todoRefetcher = true;
-
-      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-      if (todoRefetcher) {
-        router.push("/proposals");
+      if (sendErr !== undefined) {
+        return; // Error already handled by sendTx
       }
+
+      const { tracker } = sendRes;
+
+      tracker.on("finalized", () => {
+        router.push("/proposals");
+      });
     } else {
       toast.error(
         `Insufficient balance to create proposal. Required: ${proposalCost} but got ${formatToken(accountFreeBalance.data)}`,

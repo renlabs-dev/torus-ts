@@ -67,13 +67,12 @@ export function CreateAgentApplication() {
   } = useGovernance();
 
   const { api, torusApi, wsEndpoint } = useTorus();
-  const { web3FromAddress } = torusApi;
 
   const { sendTx, isPending } = useSendTransaction({
     api,
     selectedAccount,
     wsEndpoint,
-    web3FromAddress,
+    wallet: torusApi,
     transactionType: "Submit Agent Application",
   });
   const { toast } = useToast();
@@ -190,7 +189,7 @@ export function CreateAgentApplication() {
         return;
       }
 
-      await sendTx(
+      const [sendErr, sendRes] = await sendTx(
         submitApplication(
           api,
           getValues("applicationKey") as SS58Address,
@@ -199,13 +198,15 @@ export function CreateAgentApplication() {
         ),
       );
 
-      // todo refetch handler
-      const todoRefetcher = true;
-
-      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-      if (todoRefetcher) {
-        await agentApplications.refetch();
+      if (sendErr !== undefined) {
+        return; // Error already handled by sendTx
       }
+
+      const { tracker } = sendRes;
+
+      tracker.on("inBlock", () => {
+        void agentApplications.refetch();
+      });
     } else {
       toast.error(
         `Insufficient balance to create Agent Application. Required: ${daoApplicationCost} but got ${formatToken(accountFreeBalance.data)}`,

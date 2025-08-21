@@ -20,13 +20,12 @@ import { useGovernance } from "~/context/governance-provider";
 
 export function VotePowerSettings() {
   const { api, selectedAccount, torusApi, wsEndpoint } = useTorus();
-  const { web3FromAddress } = torusApi;
 
   const { sendTx, isPending } = useSendTransaction({
     api,
     selectedAccount,
     wsEndpoint,
-    web3FromAddress,
+    wallet: torusApi,
     transactionType: "Update Vote Delegation",
   });
   const { accountsNotDelegatingVoting, isAccountPowerUser } = useGovernance();
@@ -38,15 +37,17 @@ export function VotePowerSettings() {
       ? enableVoteDelegation(api)
       : disableVoteDelegation(api);
 
-    await sendTx(transaction);
+    const [sendErr, sendRes] = await sendTx(transaction);
 
-    // todo refetch handler
-    const todoRefetcher = true;
-
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-    if (todoRefetcher) {
-      await accountsNotDelegatingVoting.refetch();
+    if (sendErr !== undefined) {
+      return; // Error already handled by sendTx
     }
+
+    const { tracker } = sendRes;
+
+    tracker.on("finalized", () => {
+      void accountsNotDelegatingVoting.refetch();
+    });
   }
 
   const tooltipText =

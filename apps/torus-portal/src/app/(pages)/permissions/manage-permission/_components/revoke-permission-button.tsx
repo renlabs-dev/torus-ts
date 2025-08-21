@@ -63,29 +63,16 @@ export function RevokePermissionButton({
     const [sendErr, sendRes] = await sendTx(
       revokePermission(api, permissionId as `0x${string}`),
     );
+
     if (sendErr !== undefined) {
-      // Error is already handled by useSendTransaction
-      return;
+      return; // Error already handled by sendTx
     }
+
     const { tracker } = sendRes;
 
-    // Subscribe to inBlock event (which includes both InBlock and Finalized variants)
-    tracker.on("inBlock", (event) => {
-      // Refresh data immediately when transaction is included in a block
+    tracker.on("inBlock", () => {
+      onSuccess?.();
       void refreshData();
-
-      // Check if this is the Finalized variant and if execution was successful
-      if (event.kind === "Finalized") {
-        match(event.outcome)({
-          Success: () => {
-            onSuccess?.();
-          },
-          Failed: () => {
-            // Transaction was finalized but failed execution
-            // Don't call onSuccess
-          },
-        });
-      }
     });
   };
 

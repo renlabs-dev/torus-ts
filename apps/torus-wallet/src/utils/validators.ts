@@ -30,7 +30,7 @@ export function meetsMinimumStake(amount: string, minStake: bigint): boolean {
  */
 export function isAboveExistentialDeposit(
   amount: string,
-  fee: string,
+  fee: bigint,
   freeBalance: bigint,
   existentialDeposit: bigint,
 ): boolean {
@@ -39,12 +39,12 @@ export function isAboveExistentialDeposit(
   }
   try {
     const stake = toNano(amount);
-    const feeNano = toNano(fee);
+
     // Check for potential overflow
-    if (stake > freeBalance || feeNano > freeBalance - stake) {
+    if (stake > freeBalance || fee > freeBalance - stake) {
       return false;
     }
-    return freeBalance - stake - feeNano >= existentialDeposit;
+    return freeBalance - stake - fee >= existentialDeposit;
   } catch {
     return false;
   }

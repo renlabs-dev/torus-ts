@@ -15,12 +15,12 @@ import {
   useWalletClient,
 } from "wagmi";
 
+import { transferAllowDeath } from "@torus-network/sdk/chain";
 import {
   convertH160ToSS58,
   waitForTransactionReceipt,
   withdrawFromTorusEvm,
 } from "@torus-network/sdk/evm";
-import { transferAllowDeath } from "@torus-network/sdk/chain";
 import type { SS58Address } from "@torus-network/sdk/types";
 import { smallAddress } from "@torus-network/torus-utils/torus/address";
 import { toNano } from "@torus-network/torus-utils/torus/token";
@@ -28,8 +28,8 @@ import { tryAsync, trySync } from "@torus-network/torus-utils/try-catch";
 
 import { useFreeBalance } from "@torus-ts/query-provider/hooks";
 import { useTorus } from "@torus-ts/torus-provider";
-import { useSendTransaction } from "@torus-ts/torus-provider/use-send-transaction";
 import type { TransactionResult } from "@torus-ts/torus-provider/types";
+import { useSendTransaction } from "@torus-ts/torus-provider/use-send-transaction";
 import { Button } from "@torus-ts/ui/components/button";
 import {
   Card,
@@ -69,15 +69,20 @@ export function TransferEVM() {
   const multiProvider = useMultiProvider();
   const { toast } = useToast();
 
-  const { selectedAccount, isInitialized, isAccountConnected, api, torusApi, wsEndpoint } =
-    useTorus();
-  const { web3FromAddress } = torusApi;
+  const {
+    selectedAccount,
+    isInitialized,
+    isAccountConnected,
+    api,
+    torusApi,
+    wsEndpoint,
+  } = useTorus();
 
   const { sendTx, isPending } = useSendTransaction({
     api,
     selectedAccount,
     wsEndpoint,
-    web3FromAddress,
+    wallet: torusApi,
     transactionType: "Bridge Transfer",
   });
   const { data: walletClient } = useWalletClient();
@@ -183,23 +188,24 @@ export function TransferEVM() {
     await Promise.all([refetchTorusEvmBalance(), accountFreeBalance.refetch()]);
   }, [refetchTorusEvmBalance, accountFreeBalance]);
 
-
   const handleBridge = useCallback(async () => {
     if (!amount || !evmSS58Addr || !api || !sendTx) return;
 
-    await sendTx(
-      transferAllowDeath(api, evmSS58Addr, amountRems)
+    const [sendErr, sendRes] = await sendTx(
+      transferAllowDeath(api, evmSS58Addr, amountRems),
     );
-    
-    // todo refetch handler
-    const todoRefetcher = true;
-    
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-    if (todoRefetcher) {
+
+    if (sendErr !== undefined) {
+      return; // Error already handled by sendTx
+    }
+
+    const { tracker } = sendRes;
+
+    tracker.on("inBlock", () => {
       setAmount("");
       setUserInputEthAddr("");
-      await refetchHandler();
-    }
+      void refetchHandler();
+    });
   }, [amount, evmSS58Addr, api, sendTx, amountRems, refetchHandler]);
 
   const handleWithdraw = useCallback(async () => {

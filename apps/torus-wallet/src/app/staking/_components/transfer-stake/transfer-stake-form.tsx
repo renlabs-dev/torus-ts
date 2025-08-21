@@ -1,7 +1,12 @@
 "use client";
 
+import type { RefObject } from "react";
+
+import type { UseFormReturn } from "react-hook-form";
+
+import type { BrandTag } from "@torus-network/torus-utils";
+
 import type { InjectedAccountWithMeta } from "@torus-ts/torus-provider";
-import type { TransactionResult } from "@torus-ts/torus-provider/types";
 import { Button } from "@torus-ts/ui/components/button";
 import { Card } from "@torus-ts/ui/components/card";
 import {
@@ -12,22 +17,18 @@ import {
   FormLabel,
   FormMessage,
 } from "@torus-ts/ui/components/form";
-import { TransactionStatus } from "@torus-ts/ui/components/transaction-status";
-import type { RefObject } from "react";
-import type { UseFormReturn } from "react-hook-form";
+
 import { AllocatorSelector } from "../../../_components/allocator-selector";
 import { CurrencySwap } from "../../../_components/currency-swap";
-import type { FeeLabelHandle } from "../../../_components/fee-label";
 import { FeeLabel } from "../../../_components/fee-label";
 import type { TransferStakeFormValues } from "./transfer-stake-form-schema";
-import type { BrandTag } from "@torus-network/torus-utils";
 
 interface TransferStakeFormProps {
   form: UseFormReturn<TransferStakeFormValues>;
   selectedAccount: InjectedAccountWithMeta | null;
   maxAmountRef: RefObject<string>;
-  feeRef: RefObject<FeeLabelHandle | null>;
-  transactionStatus: TransactionResult;
+  estimatedFee: bigint | undefined;
+  isPending: boolean;
   handleSelectFromValidatorAction: (
     address: BrandTag<"SS58Address"> & string,
   ) => Promise<void>;
@@ -46,8 +47,8 @@ export function TransferStakeForm({
   form,
   selectedAccount,
   maxAmountRef,
-  feeRef,
-  transactionStatus,
+  estimatedFee,
+  isPending,
   handleSelectFromValidatorAction,
   handleSelectToValidatorAction,
   onReviewClickAction,
@@ -126,21 +127,15 @@ export function TransferStakeForm({
             )}
           />
 
-          <FeeLabel ref={feeRef} accountConnected={!!selectedAccount} />
+          <FeeLabel accountConnected={!!selectedAccount} fee={estimatedFee} />
 
-          {transactionStatus.status && (
-            <TransactionStatus
-              status={transactionStatus.status}
-              message={transactionStatus.message}
-            />
-          )}
           <Button
             type="button"
             variant="outline"
             onClick={onReviewClickAction}
-            disabled={!selectedAccount?.address || form.formState.isSubmitting}
+            disabled={!selectedAccount?.address || isPending}
           >
-            Review & Submit Transaction
+            {isPending ? "Processing..." : "Review & Submit Transaction"}
           </Button>
         </form>
       </Form>

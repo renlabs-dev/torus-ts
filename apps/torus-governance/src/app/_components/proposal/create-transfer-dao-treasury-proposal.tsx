@@ -60,13 +60,12 @@ export function CreateTransferDaoTreasuryProposal() {
   } = useGovernance();
 
   const { api, torusApi, wsEndpoint } = useTorus();
-  const { web3FromAddress } = torusApi;
 
   const { sendTx, isPending } = useSendTransaction({
     api,
     selectedAccount,
     wsEndpoint,
-    web3FromAddress,
+    wallet: torusApi,
     transactionType: "Create Treasury Transfer Proposal",
   });
 
@@ -130,7 +129,7 @@ export function CreateTransferDaoTreasuryProposal() {
         return;
       }
 
-      await sendTx(
+      const [sendErr, sendRes] = await sendTx(
         addDaoTreasuryTransferProposal(
           api,
           toNano(parseFloat(getValues("value"))),
@@ -139,13 +138,15 @@ export function CreateTransferDaoTreasuryProposal() {
         ),
       );
 
-      // todo refetch handler
-      const todoRefetcher = true;
-
-      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-      if (todoRefetcher) {
-        router.push("/proposals");
+      if (sendErr !== undefined) {
+        return; // Error already handled by sendTx
       }
+
+      const { tracker } = sendRes;
+
+      tracker.on("finalized", () => {
+        router.push("/proposals");
+      });
     } else {
       toast.error(
         `Insufficient balance to create a transfer dao treasury proposal. Required: ${daoApplicationCost} but got ${formatToken(accountFreeBalance.data)}`,

@@ -2,8 +2,6 @@
 
 import { createContext, useContext } from "react";
 
-import type { SubmittableExtrinsic } from "@polkadot/api/types";
-import type { ISubmittableResult } from "@polkadot/types/types";
 import type { UseQueryResult } from "@tanstack/react-query";
 
 import type { StakeData } from "@torus-network/sdk/cached-queries";
@@ -23,12 +21,6 @@ import type { InjectedAccountWithMeta } from "@torus-ts/torus-provider";
 import { useTorus } from "@torus-ts/torus-provider";
 
 import { env } from "~/env";
-
-export type { ISubmittableResult, SubmittableExtrinsic };
-
-export type TransactionExtrinsicPromise =
-  | SubmittableExtrinsic<"promise", ISubmittableResult>
-  | undefined;
 
 interface WalletContextType {
   isInitialized: boolean;
@@ -88,8 +80,6 @@ export function WalletProvider({ children }: WalletProviderProps) {
     isLoading: isFeeLoading,
     error: feeError,
   } = useTransactionFee(placeholderTx, placeholderAddr);
-
-  console.log(estimatedFee, isFeeLoading, feeError);
 
   return (
     <WalletContext.Provider

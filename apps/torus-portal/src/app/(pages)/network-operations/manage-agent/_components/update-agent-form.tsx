@@ -44,13 +44,12 @@ interface UpdateAgentFormProps {
 export function UpdateAgentForm({ agentKey }: UpdateAgentFormProps) {
   const router = useRouter();
   const { api, selectedAccount, torusApi, wsEndpoint } = useTorus();
-  const { web3FromAddress } = torusApi;
 
   const { sendTx, isPending } = useSendTransaction({
     api,
     selectedAccount,
     wsEndpoint,
-    web3FromAddress,
+    wallet: torusApi,
     transactionType: "Update Agent",
   });
   const [isUploading, setIsUploading] = useState(false);
@@ -172,20 +171,22 @@ export function UpdateAgentForm({ agentKey }: UpdateAgentFormProps) {
           currentImageBlobUrl ?? undefined,
         );
 
-        await sendTx(
+        const [sendErr, sendRes] = await sendTx(
           updateAgent(api, apiUrl ?? "", cidToIpfsUri(cid), null, null),
         );
 
-        // todo refetch handler
-        const todoRefetcher = true;
+        if (sendErr !== undefined) {
+          return; // Error already handled by sendTx
+        }
 
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-        if (todoRefetcher) {
+        const { tracker } = sendRes;
+
+        tracker.on("finalized", () => {
           setIsUploading(false);
           router.refresh();
           setHasUnsavedChanges(false);
           setActiveTab("edit");
-        }
+        });
       },
     }),
     [

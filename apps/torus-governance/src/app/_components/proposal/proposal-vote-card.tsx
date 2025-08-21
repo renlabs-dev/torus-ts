@@ -165,13 +165,12 @@ export function ProposalVoteCard(props: Readonly<ProposalVoteCardProps>) {
   const { isAccountConnected, isAccountPowerUser, proposals } = useGovernance();
 
   const { api, selectedAccount, torusApi, wsEndpoint } = useTorus();
-  const { web3FromAddress } = torusApi;
 
   const { sendTx, isPending } = useSendTransaction({
     api,
     selectedAccount,
     wsEndpoint,
-    web3FromAddress,
+    wallet: torusApi,
     transactionType: "Vote on Proposal",
   });
 
@@ -186,29 +185,37 @@ export function ProposalVoteCard(props: Readonly<ProposalVoteCardProps>) {
 
     const voteBoolean = vote === "FAVORABLE";
 
-    await sendTx(voteProposal(api, proposalId, voteBoolean));
+    const [sendErr, sendRes] = await sendTx(
+      voteProposal(api, proposalId, voteBoolean),
+    );
 
-    // todo refetch handler
-    const todoRefetcher = true;
-
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-    if (todoRefetcher) {
-      await refetchHandler();
+    if (sendErr !== undefined) {
+      return; // Error already handled by sendTx
     }
+
+    const { tracker } = sendRes;
+
+    tracker.on("finalized", () => {
+      void refetchHandler();
+    });
   }
 
   async function handleRemoveVote(): Promise<void> {
     if (!api || !sendTx) return;
 
-    await sendTx(removeVoteProposal(api, proposalId));
+    const [sendErr, sendRes] = await sendTx(
+      removeVoteProposal(api, proposalId),
+    );
 
-    // todo refetch handler
-    const todoRefetcher = true;
-
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-    if (todoRefetcher) {
-      await refetchHandler();
+    if (sendErr !== undefined) {
+      return; // Error already handled by sendTx
     }
+
+    const { tracker } = sendRes;
+
+    tracker.on("finalized", () => {
+      void refetchHandler();
+    });
   }
 
   if (voted !== "UNVOTED") {

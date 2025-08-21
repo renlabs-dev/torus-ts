@@ -45,13 +45,12 @@ export function RegisterAgentForm({
     torusApi,
     wsEndpoint,
   } = useTorus();
-  const { web3FromAddress } = torusApi;
 
   const { sendTx, isPending } = useSendTransaction({
     api,
     selectedAccount,
     wsEndpoint,
-    web3FromAddress,
+    wallet: torusApi,
     transactionType: "Register Agent",
   });
 
@@ -109,7 +108,7 @@ export function RegisterAgentForm({
         ? "null:"
         : data.agentApiUrl;
 
-    await sendTx(
+    const [sendErr, sendRes] = await sendTx(
       registerAgent({
         api,
         name: data.name,
@@ -118,13 +117,15 @@ export function RegisterAgentForm({
       }),
     );
 
-    // todo refetch handler
-    const todoRefetcher = true;
-
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-    if (todoRefetcher) {
-      form.reset();
+    if (sendErr !== undefined) {
+      return; // Error already handled by sendTx
     }
+
+    const { tracker } = sendRes;
+
+    tracker.on("inBlock", () => {
+      form.reset();
+    });
   }
 
   const formValues = form.watch();

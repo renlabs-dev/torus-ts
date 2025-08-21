@@ -31,23 +31,19 @@ export function Send() {
     useWallet();
 
   const { api, torusApi, wsEndpoint } = useTorus();
-  const { web3FromAddress } = torusApi;
 
-  const { sendTx, isPending, isError, isFinalized, isExecuted } =
-    useSendTransaction({
-      api,
-      selectedAccount,
-      wsEndpoint,
-      web3FromAddress,
-      transactionType: "Transfer",
-    });
+  const { sendTx, isPending } = useSendTransaction({
+    api,
+    selectedAccount,
+    wsEndpoint,
+    wallet: torusApi,
+    transactionType: "Transfer",
+  });
 
   const addTransaction = useTransactionsStore((state) => state.addTransaction);
+
   const markTransactionSuccess = useTransactionsStore(
     (state) => state.markTransactionSuccess,
-  );
-  const markTransactionError = useTransactionsStore(
-    (state) => state.markTransactionError,
   );
 
   const { toast } = useToast();
@@ -110,7 +106,7 @@ export function Send() {
       type: "send",
       fromAddress: selectedAccount.address as SS58Address,
       toAddress: values.recipient,
-      amount: values.amount,
+      amount: formatToken(toNano(values.amount), 12), // Convert to nano and format
       fee: estimatedFee ? formatToken(estimatedFee, 12) : "Estimating...",
       status: "PENDING",
       metadata: {
@@ -120,47 +116,33 @@ export function Send() {
 
     currentTxIdRef.current = txId;
 
-    await sendTx(
+    const [sendErr, sendRes] = await sendTx(
       transferAllowDeath(
         api,
         values.recipient as SS58Address,
         toNano(values.amount),
       ),
     );
-  };
 
-  // Watch transaction status and update store accordingly
-  useEffect(() => {
-    const txId = currentTxIdRef.current;
-    if (!txId || !isFinalized) return;
-
-    if (isError) {
-      markTransactionError(txId, "Transaction failed");
-    } else if (isExecuted) {
-      markTransactionSuccess(txId);
-
-      // todo refetch handler
-      const todoRefetcher = true;
-
-      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-      if (todoRefetcher) {
-        void refetchHandler().then(() => {
-          reset();
-        });
-      }
+    if (sendErr !== undefined) {
+      return; // Error already handled by sendTx
     }
 
-    // Clear the transaction ID reference
-    currentTxIdRef.current = null;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [
-    isFinalized,
-    isError,
-    isExecuted,
-    markTransactionSuccess,
-    markTransactionError,
-    reset,
-  ]);
+    const { tracker } = sendRes;
+
+    tracker.on("finalized", (event) => {
+      // Update transaction store with actual transaction hash
+      if (currentTxIdRef.current) {
+        markTransactionSuccess(currentTxIdRef.current, event.blockHash);
+        currentTxIdRef.current = null;
+      }
+
+      form.reset();
+      void refetchHandler().then(() => {
+        reset();
+      });
+    });
+  };
 
   useEffect(() => {
     reset();

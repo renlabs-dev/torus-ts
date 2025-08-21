@@ -48,14 +48,13 @@ export function RegisterCapabilityForm({
     torusApi,
     wsEndpoint,
   } = useTorus();
-  const { web3FromAddress } = torusApi;
   const [selectedPrefix, setSelectedPrefix] = useState("");
 
   const { sendTx, isPending } = useSendTransaction({
     api,
     selectedAccount,
     wsEndpoint,
-    web3FromAddress,
+    wallet: torusApi,
     transactionType: "Create Namespace",
   });
 
@@ -122,17 +121,19 @@ export function RegisterCapabilityForm({
       return;
     }
 
-    await sendTx(createNamespace(api, fullPath));
+    const [sendErr, sendRes] = await sendTx(createNamespace(api, fullPath));
 
-    // todo refetch handler
-    const todoRefetcher = true;
+    if (sendErr !== undefined) {
+      return; // Error already handled by sendTx
+    }
 
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-    if (todoRefetcher) {
+    const { tracker } = sendRes;
+
+    tracker.on("inBlock", () => {
       form.reset();
       setSelectedPrefix("");
-      await namespaceEntries.refetch();
-    }
+      void namespaceEntries.refetch();
+    });
   }
 
   return (

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 
+import { Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 import { deregisterAgent } from "@torus-network/sdk/chain";
@@ -10,7 +11,6 @@ import { useTorus } from "@torus-ts/torus-provider";
 import { useSendTransaction } from "@torus-ts/torus-provider/use-send-transaction";
 import { Button } from "@torus-ts/ui/components/button";
 import { useToast } from "@torus-ts/ui/hooks/use-toast";
-import { Trash2 } from "lucide-react";
 
 import { DeregisterAgentDialog } from "./deregister-agent-dialog";
 
@@ -24,14 +24,13 @@ export function DeregisterAgentButton({
   const router = useRouter();
   const { toast } = useToast();
   const { api, selectedAccount, torusApi, wsEndpoint } = useTorus();
-  const { web3FromAddress } = torusApi;
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   const { sendTx, isPending } = useSendTransaction({
     api,
     selectedAccount,
     wsEndpoint,
-    web3FromAddress,
+    wallet: torusApi,
     transactionType: "Deregister Agent",
   });
 
@@ -41,17 +40,19 @@ export function DeregisterAgentButton({
       return;
     }
 
-    await sendTx(deregisterAgent(api));
+    const [sendErr, sendRes] = await sendTx(deregisterAgent(api));
 
-    // todo refetch handler
-    const todoRefetcher = true;
+    if (sendErr !== undefined) {
+      return; // Error already handled by sendTx
+    }
 
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-    if (todoRefetcher) {
+    const { tracker } = sendRes;
+
+    tracker.on("finalized", () => {
       setIsDialogOpen(false);
       // Redirect to agents list or home after successful deregistration
       router.push("/root-allocator");
-    }
+    });
   };
 
   return (

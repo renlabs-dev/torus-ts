@@ -69,13 +69,12 @@ export function EditPermissionForm({
     torusApi,
     wsEndpoint,
   } = useTorus();
-  const { web3FromAddress } = torusApi;
 
   const { sendTx, isPending } = useSendTransaction({
     api,
     selectedAccount,
     wsEndpoint,
-    web3FromAddress,
+    wallet: torusApi,
     transactionType: "Update Emission Permission",
   });
   const [selectedPermissionId, setSelectedPermissionId] = useState<string>("");
@@ -136,22 +135,24 @@ export function EditPermissionForm({
 
     const sdkData = prepareFormDataForSDK(data);
 
-    await sendTx(
+    const [sendErr, sendRes] = await sendTx(
       updateEmissionPermission({
         api,
         ...sdkData,
       }),
     );
 
-    // todo refetch handler
-    const todoRefetcher = true;
+    if (sendErr !== undefined) {
+      return; // Error already handled by sendTx
+    }
 
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-    if (todoRefetcher) {
+    const { tracker } = sendRes;
+
+    tracker.on("finalized", () => {
       form.reset();
       setSelectedPermissionId("");
       setHasLoadedPermission(false);
-    }
+    });
   }
 
   return (

@@ -11,9 +11,7 @@ import {
   sb_string,
   sb_struct,
 } from "../../types/index.js";
-import {
-  validateNamespacePath,
-} from "../../types/namespace/index.js";
+import { validateNamespacePath } from "../../types/namespace/index.js";
 
 // ==== Agents ====
 

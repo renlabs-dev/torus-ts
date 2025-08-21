@@ -71,13 +71,12 @@ export function AddEmissionProposalForm({
     torusApi,
     wsEndpoint,
   } = useTorus();
-  const { web3FromAddress } = torusApi;
 
   const { sendTx, isPending } = useSendTransaction({
     api,
     selectedAccount,
     wsEndpoint,
-    web3FromAddress,
+    wallet: torusApi,
     transactionType: "Add Emission Proposal",
   });
   const { toast } = useToast();
@@ -112,7 +111,7 @@ export function AddEmissionProposalForm({
       return;
     }
 
-    await sendTx(
+    const [sendErr, sendRes] = await sendTx(
       addEmissionProposal({
         api,
         recyclingPercentage: formData.recyclingPercentage,
@@ -122,14 +121,16 @@ export function AddEmissionProposalForm({
       }),
     );
 
-    // todo refetch handler
-    const todoRefetcher = true;
+    if (sendErr !== undefined) {
+      return; // Error already handled by sendTx
+    }
 
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-    if (todoRefetcher) {
+    const { tracker } = sendRes;
+
+    tracker.on("inBlock", () => {
       form.reset();
       onSuccess?.();
-    }
+    });
   }
 
   async function onSubmit(data: AddEmissionProposalFormData) {
