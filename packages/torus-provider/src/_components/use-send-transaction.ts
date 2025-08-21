@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 import type { ApiPromise } from "@polkadot/api";
 import type { SubmittableExtrinsic } from "@polkadot/api/types";
@@ -135,6 +135,8 @@ export type SendTxFn = <T extends ISubmittableResult>(
 export interface UseSendTxOutput extends TxHelper {
   txStage: TxStage;
   sendTx: SendTxFn | null;
+  /** Cancels any active transaction tracking and dismisses related toast notifications */
+  cancelTracking: () => void;
 }
 
 /**
@@ -178,6 +180,20 @@ export function useSendTransaction({
     sendTx: null,
   });
 
+  const currentTracker = useRef<ExtrinsicTracker | null>(null);
+  const currentToastId = useRef<string | number | null>(null);
+
+  const cancelTracking = () => {
+    if (currentTracker.current != null) {
+      currentTracker.current.cancel();
+      currentTracker.current = null;
+    }
+    if (currentToastId.current != null) {
+      toast.dismiss(currentToastId.current);
+      currentToastId.current = null;
+    }
+  };
+
   const setErrState = (
     err: Error,
     {
@@ -216,9 +232,6 @@ export function useSendTransaction({
       return;
     }
 
-    let currentTracker: ExtrinsicTracker | null = null;
-    let currentToastId: string | number;
-
     const sendTx = async <T extends ISubmittableResult>(
       tx: SubmittableExtrinsic<"promise", T>,
       options: Pick<
@@ -234,15 +247,16 @@ export function useSendTransaction({
 
       // Cancel any existing tracker
       // TODO: maybe lock sending when transaction some is in progress?
-      if (currentTracker) {
-        currentTracker.cancel();
-        currentTracker = null;
+      if (currentTracker.current) {
+        currentTracker.current.cancel();
+        currentTracker.current = null;
       }
 
       // Clear any previous state and set to signing stage
       setTxStage({ Signing: { extrinsic: tx } });
 
-      currentToastId = toast.loading(TOAST_MESSAGES.PREPARING);
+      const toastId = toast.loading(TOAST_MESSAGES.PREPARING);
+      currentToastId.current = toastId;
 
       const txOptions = { ...baseTxOptions, ...options };
 
@@ -256,10 +270,11 @@ export function useSendTransaction({
         setErrState(sendError);
         return makeErr(sendError);
       }
-      currentTracker = tracker;
+
+      currentTracker.current = tracker;
 
       // Listen to all status events
-      currentTracker.on("status", (event: TxEvent) => {
+      tracker.on("status", (event: TxEvent) => {
         setTxStage({ Submitted: { event } });
         handleTxEvent({
           event,
@@ -267,7 +282,7 @@ export function useSendTransaction({
           setErrState,
           transactionType,
           wsEndpoint,
-          toastId: currentToastId,
+          toastId,
         });
       });
 
@@ -277,8 +292,9 @@ export function useSendTransaction({
     setSendFn({ sendTx });
 
     return () => {
-      if (currentTracker) {
-        currentTracker.cancel();
+      if (currentTracker.current) {
+        // // We won't cancel the tracker so the toasts keep updating
+        // currentTracker.current.cancel();
       }
     };
   }, [api, wsEndpoint, walletWithExtracted, selectedAccount, web3FromAddress]);
@@ -289,6 +305,7 @@ export function useSendTransaction({
     txStage,
     ...sendFn,
     ...txHelper,
+    cancelTracking,
   };
 }
 
@@ -390,9 +407,10 @@ const handleFinalizedTxEvent = ({
   const outcome = event.outcome;
   const blockHash = event.blockHash;
 
+  toast.dismiss(toastId);
+
   match(outcome)({
     Success: () => {
-      toast.dismiss(toastId);
       toast.success(`${transactionType} ${TOAST_MESSAGES.SUCCESS}`, undefined, {
         label: "View on Block Explorer",
         onClick: () =>
@@ -411,7 +429,7 @@ const handleFinalizedTxEvent = ({
       );
 
       setErrState(strErr(errorMessage));
-      toast.dismiss(toastId);
+
       toast.error(errorMessage);
     },
   });

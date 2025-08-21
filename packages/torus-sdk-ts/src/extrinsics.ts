@@ -602,7 +602,13 @@ export async function sendTxWithTracker(
   // const finality = defer<TxInBlockEvent & { kind: "Finalized" }>();
 
   // eslint-disable-next-line prefer-const
-  let unsubscribe: (() => void) | undefined;
+  let unsubscribeExt: (() => void) | undefined;
+
+  const teardown = () => {
+    unsubscribeExt?.();
+    emitter.clearListeners();
+    stream.end();
+  };
 
   // -- Async iterator using AsyncPushStream --
   const stream = new AsyncPushStream<TxEvent>();
@@ -629,11 +635,11 @@ export async function sendTxWithTracker(
           txHash,
           internalError: error,
         });
+        stream.push(update);
         void emitter.emit("internalError", update);
         void emitter.emit("status", update);
-        stream.push(update);
         // Internal error is terminal for the event stream
-        unsubscribe?.();
+        teardown();
       },
       Invalid: ({ txHash, reason }) => {
         const update: TxInvalidEvent = makeUpdate({
@@ -641,29 +647,31 @@ export async function sendTxWithTracker(
           txHash,
           reason,
         });
+        stream.push(update);
         void emitter.emit("invalid", update);
         void emitter.emit("status", update);
-        stream.push(update);
         // Invalid is terminal for the event stream
-        unsubscribe?.();
+        teardown();
       },
       Pool: ({ txHash, kind }) => {
         const update: TxPoolEvent = makeUpdate({
           txHash,
           kind,
         });
+        stream.push(update);
         void emitter.emit("inPool", update);
         void emitter.emit("status", update);
-        stream.push(update);
       },
       Evicted: ({ txHash, kind }) => {
         const update: TxEvictedEvent = makeUpdate({
           txHash,
           kind,
         });
+        stream.push(update);
         void emitter.emit("evicted", update);
         void emitter.emit("status", update);
-        stream.push(update);
+        // Evicted is terminal for the event stream
+        teardown();
       },
       Included: ({
         kind,
@@ -683,9 +691,9 @@ export async function sendTxWithTracker(
           events,
           outcome,
         });
+        stream.push(update);
         void emitter.emit("inBlock", update);
         void emitter.emit("status", update);
-        stream.push(update);
         switch (update.kind) {
           case "Finalized":
             var updateFix = {
@@ -694,6 +702,7 @@ export async function sendTxWithTracker(
             };
             // void finality.resolve(updateFix);
             void emitter.emit("finalized", updateFix);
+            teardown();
             break;
           default:
             break;
@@ -711,21 +720,6 @@ export async function sendTxWithTracker(
     });
   };
 
-  // try {
-  //   extrinsic
-  //     .signAndSend(signer, options ?? {}, updateHandler)
-  //     .then((u) => (unsubscribe = u))
-  //     .catch((e) => {
-  //       const error = ensureError(e);
-  //       console.log("ERROR on signAndSend:", e);
-  //       void emitter.emit("error", { kind: "Error", error });
-  //     });
-  // } catch (e) {
-  //   const error = ensureError(e);
-  //   console.log("ERROR on signAndSend:", e);
-  //   void emitter.emit("error", { kind: "Error", error });
-  // }
-
   const [sendError, unsubscribeRes] = await tryAsync(
     extrinsic.signAndSend(signer, options ?? {}, updateHandler),
   );
@@ -737,7 +731,7 @@ export async function sendTxWithTracker(
     return makeErr(txError);
   }
 
-  unsubscribe = unsubscribeRes;
+  unsubscribeExt = unsubscribeRes;
 
   const tracker: ExtrinsicTracker = {
     emitter,
@@ -748,7 +742,7 @@ export async function sendTxWithTracker(
     events: emitter.events.bind(emitter),
 
     cancel() {
-      unsubscribe();
+      unsubscribeExt();
       emitter.clearListeners();
       stream.end();
     },
