@@ -89,7 +89,10 @@ async function queryAccumulatedAmountsInTimeframe(
   // Add timeframe conditions using Drizzle operators
   if (timeframe.startBlock !== null) {
     conditions.push(
-      gte(accumulatedStreamAmountsSchema.lastExecutedBlock, timeframe.startBlock),
+      gte(
+        accumulatedStreamAmountsSchema.lastExecutedBlock,
+        timeframe.startBlock,
+      ),
     );
   }
   if (timeframe.endBlock !== null) {
@@ -604,7 +607,10 @@ async function getStreamPermissionPairsForAccount(
     .from(emissionDistributionTargetsSchema)
     .where(eq(emissionDistributionTargetsSchema.targetAccountId, accountId));
 
-  return targets.filter((t) => t.streamId !== null) as { permissionId: string; streamId: string }[];
+  return targets.filter((t) => t.streamId !== null) as {
+    permissionId: string;
+    streamId: string;
+  }[];
 }
 
 async function getNormalizedWeightsForAccount(
@@ -636,7 +642,7 @@ async function getNormalizedWeightsForAccount(
       permissionWeights[target.streamId] = target.normalizedWeight;
     }
   }
-  
+
   return normalizedWeights;
 }
 
@@ -645,12 +651,12 @@ function applyNormalizedWeightsToAmounts(
   normalizedWeights: Record<string, Record<string, number>>,
 ): Record<string, Record<string, bigint>> {
   const result: Record<string, Record<string, bigint>> = {};
-  
+
   for (const [permissionId, streams] of Object.entries(amounts)) {
     if (!result[permissionId]) {
       result[permissionId] = {};
     }
-    
+
     for (const [streamId, amount] of Object.entries(streams)) {
       const normalizedWeight = normalizedWeights[permissionId]?.[streamId];
       if (normalizedWeight && amount) {
@@ -660,7 +666,7 @@ function applyNormalizedWeightsToAmounts(
       }
     }
   }
-  
+
   return result;
 }
 
@@ -1254,17 +1260,22 @@ export const permissionRouter = {
       );
 
       // Build accumulated amounts by permission and stream
-      const amountsByPermissionStream: Record<string, Record<string, bigint>> = {};
+      const amountsByPermissionStream: Record<
+        string,
+        Record<string, bigint>
+      > = {};
       for (const amount of accumulatedAmounts) {
         const { permissionId, streamId, accumulatedAmount } = amount;
-        
+
         if (accumulatedAmount) {
           if (!amountsByPermissionStream[permissionId]) {
             amountsByPermissionStream[permissionId] = {};
           }
 
-          const amountBigInt = BigInt(Math.floor(parseFloat(accumulatedAmount)));
-          
+          const amountBigInt = BigInt(
+            Math.floor(parseFloat(accumulatedAmount)),
+          );
+
           // Sum up all distributions in the timeframe for this stream
           if (amountsByPermissionStream[permissionId][streamId]) {
             amountsByPermissionStream[permissionId][streamId] += amountBigInt;
@@ -1275,6 +1286,9 @@ export const permissionRouter = {
       }
 
       // Apply normalized weights to get the target's share
-      return applyNormalizedWeightsToAmounts(amountsByPermissionStream, normalizedWeights);
+      return applyNormalizedWeightsToAmounts(
+        amountsByPermissionStream,
+        normalizedWeights,
+      );
     }),
 } satisfies TRPCRouterRecord;
