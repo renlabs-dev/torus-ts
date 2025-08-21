@@ -1,4 +1,3 @@
-import type { RefObject } from "react";
 import { useRef } from "react";
 
 import type { UseFormReturn } from "react-hook-form";
@@ -24,7 +23,7 @@ interface SendFormProps {
   form: UseFormReturn<SendFormValues>;
   selectedAccount: { address: string } | null;
   usdPrice: number;
-  maxAmountRef: RefObject<string>;
+  maxTransferableAmount: string;
   estimatedFee: bigint | undefined;
   onReviewClick: () => Promise<void>;
   handleAmountChange: (newAmount: string) => Promise<void>;
@@ -36,7 +35,7 @@ export function SendForm({
   form,
   selectedAccount,
   usdPrice,
-  maxAmountRef,
+  maxTransferableAmount,
   estimatedFee,
   onReviewClick,
   handleAmountChange,
@@ -78,7 +77,7 @@ export function SendForm({
                     amount={field.value}
                     usdPrice={usdPrice}
                     disabled={!selectedAccount?.address}
-                    availableFunds={maxAmountRef.current}
+                    availableFunds={maxTransferableAmount}
                     onAmountChangeAction={handleAmountChange}
                     minAllowedStakeData={minAllowedStakeData}
                   />

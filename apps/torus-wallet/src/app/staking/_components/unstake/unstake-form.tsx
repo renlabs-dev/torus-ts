@@ -1,7 +1,5 @@
 "use client";
 
-import type { RefObject } from "react";
-
 import type { UseFormReturn } from "react-hook-form";
 
 import type { BrandTag } from "@torus-network/torus-utils";
@@ -26,7 +24,7 @@ import type { UnstakeFormValues } from "./unstake-form-schema";
 interface UnstakeFormProps {
   form: UseFormReturn<UnstakeFormValues>;
   selectedAccount: InjectedAccountWithMeta | null;
-  maxAmountRef: RefObject<string>;
+  maxUnstakeAmount: string;
   estimatedFee: bigint | undefined;
   isPending: boolean;
   handleSelectValidator: (
@@ -42,7 +40,7 @@ interface UnstakeFormProps {
 export function UnstakeForm({
   form,
   selectedAccount,
-  maxAmountRef,
+  maxUnstakeAmount,
   estimatedFee,
   isPending,
   handleSelectValidator,
@@ -91,7 +89,7 @@ export function UnstakeForm({
                     amount={field.value}
                     usdPrice={usdPrice}
                     disabled={!selectedAccount?.address}
-                    availableFunds={maxAmountRef.current || "0"}
+                    availableFunds={maxUnstakeAmount || "0"}
                     onAmountChangeAction={handleAmountChange}
                     minAllowedStakeData={minAllowedStakeData}
                   />

@@ -1,3 +1,7 @@
+import type { UseFormReturn } from "react-hook-form";
+
+import type { BrandTag } from "@torus-network/torus-utils";
+
 import { Button } from "@torus-ts/ui/components/button";
 import { Card } from "@torus-ts/ui/components/card";
 import {
@@ -9,19 +13,16 @@ import {
   FormMessage,
 } from "@torus-ts/ui/components/form";
 
-import { useRef } from "react";
-import type { UseFormReturn } from "react-hook-form";
 import { AllocatorSelector } from "../../../_components/allocator-selector";
 import { CurrencySwap } from "../../../_components/currency-swap";
 import { FeeLabel } from "../../../_components/fee-label";
 import type { StakeFormValues } from "./stake-form-schema";
-import type { BrandTag } from "@torus-network/torus-utils";
 
 interface StakeFormProps {
   form: UseFormReturn<StakeFormValues>;
   selectedAccount: { address: string } | null;
   minAllowedStakeData: bigint;
-  maxAmountRef: React.RefObject<string>;
+  maxTransferableAmount: string;
   estimatedFee: bigint | undefined;
   isPending: boolean;
   handleSelectValidator: (
@@ -36,7 +37,7 @@ export function StakeForm({
   form,
   selectedAccount,
   minAllowedStakeData,
-  maxAmountRef,
+  maxTransferableAmount,
   estimatedFee,
   isPending,
   handleSelectValidator,
@@ -44,16 +45,10 @@ export function StakeForm({
   handleAmountChange,
   usdPrice,
 }: StakeFormProps) {
-  const formRef = useRef<HTMLFormElement>(null);
-
   return (
     <Card className="animate-fade w-full p-6">
       <Form {...form}>
-        <form
-          ref={formRef}
-          className="flex w-full flex-col gap-6"
-          aria-label="Stake form"
-        >
+        <form className="flex w-full flex-col gap-6" aria-label="Stake form">
           <FormField
             control={form.control}
             name="recipient"
@@ -85,7 +80,7 @@ export function StakeForm({
                     amount={field.value}
                     usdPrice={usdPrice}
                     disabled={!selectedAccount?.address}
-                    availableFunds={maxAmountRef.current}
+                    availableFunds={maxTransferableAmount}
                     onAmountChangeAction={handleAmountChange}
                     minAllowedStakeData={minAllowedStakeData}
                   />
