@@ -1,20 +1,21 @@
 import { match } from "rustie";
+
 import type { Result } from "@torus-network/torus-utils/result";
 import { makeErr, makeOk } from "@torus-network/torus-utils/result";
 
-import type { SS58Address } from "../types/address.js";
-import type { NamespacePath } from "../types/namespace/namespace-path.js";
-import type { Api, SbQueryError } from "./common/index.js";
+import type { SS58Address } from "../../types/address.js";
+import type { NamespacePath } from "../../types/namespace/namespace-path.js";
+import {
+  queryAgentNamespacePermissions,
+  queryPermission,
+} from "../permission0/permission0-storage.js";
 import type {
   PermissionContract,
   PermissionId,
   RevocationTerms,
-} from "./permission0.js";
-import {
-  queryAgentNamespacePermissions,
-  queryPermission,
-} from "./permission0.js";
-import { queryNamespaceEntriesOf } from "./torus0/namespace.js";
+} from "../permission0/permission0-types.js";
+import { queryNamespaceEntriesOf } from "../torus0/torus0-storage.js";
+import type { Api, SbQueryError } from "./fees.js";
 
 /**
  * Utility function to compute the intersection of two sets

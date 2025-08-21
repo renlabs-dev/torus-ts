@@ -1,18 +1,15 @@
-import type { RefObject } from "react";
-
 import { z } from "zod";
 
 import { isSS58 } from "@torus-network/sdk/types";
 import { toNano } from "@torus-network/torus-utils/torus/token";
 
-import type { FeeLabelHandle } from "~/app/_components/fee-label";
 import { isWithinTransferLimit } from "~/utils/validators";
 
 export type SendFormValues = z.infer<ReturnType<typeof createSendFormSchema>>;
 
 export const createSendFormSchema = (
   accountFreeBalance: bigint | null,
-  feeRef: RefObject<FeeLabelHandle | null>,
+  estimatedFee: bigint | undefined,
 ) =>
   z.object({
     recipient: z
@@ -32,9 +29,7 @@ export const createSendFormSchema = (
       })
       .refine(
         (amount) => {
-          const estimatedFee = feeRef.current?.getEstimatedFee();
-
-          if (estimatedFee === undefined || estimatedFee === null) {
+          if (estimatedFee === undefined) {
             return false;
           }
 

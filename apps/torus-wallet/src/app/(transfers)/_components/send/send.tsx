@@ -1,46 +1,49 @@
 "use client";
 
+import { useEffect, useRef } from "react";
+
 import { zodResolver } from "@hookform/resolvers/zod";
-import type { TransactionResult } from "@torus-ts/torus-provider/types";
-import { useToast } from "@torus-ts/ui/hooks/use-toast";
-import { useCallback, useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
-import { useUsdPrice } from "~/context/usd-price-provider";
-import { useWallet } from "~/context/wallet-provider";
-import { env } from "~/env";
-import type { UpdatedTransaction } from "~/store/transactions-store";
-import { useTransactionsStore } from "~/store/transactions-store";
+
+import { transferAllowDeath } from "@torus-network/sdk/chain";
+import type { SS58Address } from "@torus-network/sdk/types";
+import { formatToken, toNano } from "@torus-network/torus-utils/torus/token";
+import { tryAsync } from "@torus-network/torus-utils/try-catch";
+
+import { useTorus } from "@torus-ts/torus-provider";
+import { useSendTransaction } from "@torus-ts/torus-provider/use-send-transaction";
+import { useToast } from "@torus-ts/ui/hooks/use-toast";
+
 import type { ReviewTransactionDialogHandle } from "~/app/_components/review-transaction-dialog";
 import { ReviewTransactionDialog } from "~/app/_components/review-transaction-dialog";
-import type { FeeLabelHandle } from "~/app/_components/fee-label";
-import { createSendFormSchema } from "./send-form-schema";
-import { handleEstimateFee } from "./send-fee-handler";
+import { useUsdPrice } from "~/context/usd-price-provider";
+import { useWallet } from "~/context/wallet-provider";
+import { useTransactionsStore } from "~/store/transactions-store";
+
 import { SendForm } from "./send-form";
 import type { SendFormValues } from "./send-form-schema";
-import { tryAsync } from "@torus-network/torus-utils/try-catch";
-import type { SS58Address } from "@torus-network/sdk/types";
+import { createSendFormSchema } from "./send-form-schema";
 
 export const MIN_ALLOWED_STAKE_SAFEGUARD = 500000000000000000n;
 
 export function Send() {
-  const {
-    estimateFee,
-    accountFreeBalance,
-    transfer,
+  const { accountFreeBalance, selectedAccount, minAllowedStake, estimatedFee } =
+    useWallet();
+
+  const { api, torusApi, wsEndpoint } = useTorus();
+
+  const { sendTx, isPending } = useSendTransaction({
+    api,
     selectedAccount,
-    transferTransaction,
-    minAllowedStake,
-  } = useWallet();
+    wsEndpoint,
+    wallet: torusApi,
+    transactionType: "Transfer",
+  });
 
   const addTransaction = useTransactionsStore((state) => state.addTransaction);
-  const isTransactionError = useTransactionsStore(
-    (state) => state.isTransactionError,
-  );
-  const isTransactionCompleted = useTransactionsStore(
-    (state) => state.isTransactionCompleted,
-  );
-  const updateTransaction = useTransactionsStore(
-    (state) => state.updateTransaction,
+
+  const markTransactionSuccess = useTransactionsStore(
+    (state) => state.markTransactionSuccess,
   );
 
   const { toast } = useToast();
@@ -49,21 +52,13 @@ export function Send() {
   const minAllowedStakeData =
     minAllowedStake.data ?? MIN_ALLOWED_STAKE_SAFEGUARD;
 
-  const feeRef = useRef<FeeLabelHandle>(null);
   const maxAmountRef = useRef<string>("");
   const reviewDialogRef = useRef<ReviewTransactionDialogHandle>(null);
-
-  const [transactionStatus, setTransactionStatus] = useState<TransactionResult>(
-    {
-      status: null,
-      message: null,
-      finalized: false,
-    },
-  );
+  const currentTxIdRef = useRef<string | null>(null);
 
   const sendActionFormSchema = createSendFormSchema(
     accountFreeBalance.data ?? null,
-    feeRef,
+    estimatedFee,
   );
 
   const form = useForm<SendFormValues>({
@@ -77,18 +72,6 @@ export function Send() {
 
   const { reset, setValue, getValues, trigger } = form;
 
-  const handleEstimateFeeCallback = useCallback(async () => {
-    await handleEstimateFee({
-      feeRef,
-      maxAmountRef,
-      transferTransaction,
-      estimateFee,
-      allocatorAddress: env("NEXT_PUBLIC_TORUS_ALLOCATOR_ADDRESS"),
-      accountFreeBalance: accountFreeBalance.data ?? 0n,
-      toast,
-    });
-  }, [accountFreeBalance.data, estimateFee, transferTransaction, toast]);
-
   const handleAmountChange = async (torusAmount: string) => {
     setValue("amount", torusAmount);
     const [error, _success] = await tryAsync(trigger("amount"));
@@ -97,31 +80,6 @@ export function Send() {
       return;
     }
     return;
-  };
-
-  const handleTransactionCallback = (
-    callbackReturn: TransactionResult,
-    txId: string,
-  ) => {
-    setTransactionStatus(callbackReturn);
-
-    if (!isTransactionCompleted(callbackReturn.status)) return;
-
-    const isError = isTransactionError(callbackReturn.status);
-
-    const updatedTransaction: UpdatedTransaction = isError
-      ? {
-          status: "ERROR",
-          metadata: { error: "Transaction failed" },
-        }
-      : {
-          status: "SUCCESS",
-          hash: callbackReturn.hash ?? "unknown",
-        };
-
-    updateTransaction(txId, updatedTransaction);
-
-    reset();
   };
 
   const refetchHandler = async () => {
@@ -134,14 +92,13 @@ export function Send() {
   };
 
   const onSubmit = async (values: SendFormValues) => {
-    setTransactionStatus({
-      status: "STARTING",
-      finalized: false,
-      message: "Awaiting signature",
-    });
-
     if (!selectedAccount?.address) {
       toast.error("No account selected");
+      return;
+    }
+
+    if (!api || !sendTx) {
+      toast.error("API not ready");
       return;
     }
 
@@ -149,41 +106,46 @@ export function Send() {
       type: "send",
       fromAddress: selectedAccount.address as SS58Address,
       toAddress: values.recipient,
-      amount: values.amount,
-      fee: feeRef.current?.getEstimatedFee() ?? "0",
+      amount: formatToken(toNano(values.amount), 12), // Convert to nano and format
+      fee: estimatedFee ? formatToken(estimatedFee, 12) : "Estimating...",
       status: "PENDING",
       metadata: {
         usdPrice: usdPrice,
       },
     });
 
-    const [errorTransfer] = await tryAsync(
-      transfer({
-        to: values.recipient,
-        amount: values.amount,
-        callback: (args) => handleTransactionCallback(args, txId),
-        refetchHandler,
-      }),
+    currentTxIdRef.current = txId;
+
+    const [sendErr, sendRes] = await sendTx(
+      transferAllowDeath(
+        api,
+        values.recipient as SS58Address,
+        toNano(values.amount),
+      ),
     );
 
-    if (errorTransfer !== undefined) {
-      updateTransaction(txId, {
-        status: "ERROR",
-        metadata: { error: errorTransfer.message },
-      });
-
-      toast.error(errorTransfer.message);
+    if (sendErr !== undefined) {
+      return; // Error already handled by sendTx
     }
+
+    const { tracker } = sendRes;
+
+    tracker.on("finalized", (event) => {
+      // Update transaction store with actual transaction hash
+      if (currentTxIdRef.current) {
+        markTransactionSuccess(currentTxIdRef.current, event.blockHash);
+        currentTxIdRef.current = null;
+      }
+
+      form.reset();
+      void refetchHandler().then(() => {
+        reset();
+      });
+    });
   };
 
   useEffect(() => {
-    if (!selectedAccount?.address) return;
-    void handleEstimateFeeCallback();
-  }, [handleEstimateFeeCallback, selectedAccount?.address]);
-
-  useEffect(() => {
     reset();
-    feeRef.current?.updateFee(null);
   }, [selectedAccount?.address, reset]);
 
   const handleReviewClick = async () => {
@@ -211,18 +173,18 @@ export function Send() {
         selectedAccount={selectedAccount}
         usdPrice={usdPrice}
         maxAmountRef={maxAmountRef}
-        feeRef={feeRef}
-        transactionStatus={transactionStatus}
+        estimatedFee={estimatedFee}
         onReviewClick={handleReviewClick}
         handleAmountChange={handleAmountChange}
         minAllowedStakeData={minAllowedStakeData}
+        isPending={isPending}
       />
       <ReviewTransactionDialog
         ref={reviewDialogRef}
         from={selectedAccount?.address}
         to={recipient}
         amount={amount}
-        fee={feeRef.current?.getEstimatedFee() ?? "0"}
+        fee={formatToken(estimatedFee ?? 0n, 12)}
         onConfirm={handleConfirmTransaction}
       />
     </div>

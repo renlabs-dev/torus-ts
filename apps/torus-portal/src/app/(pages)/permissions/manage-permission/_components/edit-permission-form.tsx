@@ -7,6 +7,8 @@ import { useSearchParams } from "next/navigation";
 import { useForm } from "react-hook-form";
 import type { z } from "zod";
 
+import { updateEmissionPermission } from "@torus-network/sdk/chain";
+
 import type { InferSelectModel } from "@torus-ts/db";
 import type {
   emissionPermissionsSchema,
@@ -14,6 +16,7 @@ import type {
   permissionsSchema,
 } from "@torus-ts/db/schema";
 import { useTorus } from "@torus-ts/torus-provider";
+import { useSendTransaction } from "@torus-ts/torus-provider/use-send-transaction";
 import { Button } from "@torus-ts/ui/components/button";
 import { Form } from "@torus-ts/ui/components/form";
 import { WalletConnectionWarning } from "@torus-ts/ui/components/wallet-connection-warning";
@@ -23,7 +26,6 @@ import { cn } from "@torus-ts/ui/lib/utils";
 import { PermissionSelector } from "~/app/_components/permission-selector";
 import PortalFormHeader from "~/app/_components/portal-form-header";
 import { PortalFormSeparator } from "~/app/_components/portal-form-separator";
-import { tryCatch } from "~/utils/try-catch";
 
 import { DistributionControlField } from "./edit-permission-fields/distribution-control-field";
 import { StreamsField } from "./edit-permission-fields/streams-field";
@@ -64,13 +66,19 @@ export function EditPermissionForm({
     isAccountConnected,
     isInitialized,
     selectedAccount,
-    updateEmissionPermissionTransaction,
+    torusApi,
+    wsEndpoint,
   } = useTorus();
+
+  const { sendTx, isPending } = useSendTransaction({
+    api,
+    selectedAccount,
+    wsEndpoint,
+    wallet: torusApi,
+    transactionType: "Update Emission Permission",
+  });
   const [selectedPermissionId, setSelectedPermissionId] = useState<string>("");
   const [hasLoadedPermission, setHasLoadedPermission] = useState(false);
-  const [transactionStatus, setTransactionStatus] = useState<
-    "idle" | "loading" | "success" | "error"
-  >("idle");
   const currentPermissionDataRef = useRef<PermissionWithDetails | null>(null);
 
   const permissionType = getPermissionType(currentPermissionDataRef.current);
@@ -120,43 +128,31 @@ export function EditPermissionForm({
   );
 
   async function handleSubmit(data: z.infer<typeof EDIT_PERMISSION_SCHEMA>) {
-    if (!api) {
-      toast.error("API not initialized");
+    if (!api || !sendTx) {
+      toast.error("API not ready");
       return;
     }
-
-    setTransactionStatus("loading");
 
     const sdkData = prepareFormDataForSDK(data);
 
-    const { error } = await tryCatch(
-      updateEmissionPermissionTransaction({
+    const [sendErr, sendRes] = await sendTx(
+      updateEmissionPermission({
+        api,
         ...sdkData,
-        callback: (result) => {
-          if (result.status === "SUCCESS" && result.finalized) {
-            setTransactionStatus("success");
-            form.reset();
-            setSelectedPermissionId("");
-            setHasLoadedPermission(false);
-          }
-
-          if (result.status === "ERROR") {
-            setTransactionStatus("error");
-            toast.error(result.message ?? "Failed to update permission");
-          }
-        },
-        refetchHandler: async () => {
-          // No-op for now, could be used to refetch data after transaction
-        },
       }),
     );
 
-    if (error) {
-      console.error("Error updating permission:", error);
-      setTransactionStatus("error");
-      toast.error("Failed to update permission");
-      return;
+    if (sendErr !== undefined) {
+      return; // Error already handled by sendTx
     }
+
+    const { tracker } = sendRes;
+
+    tracker.on("finalized", () => {
+      form.reset();
+      setSelectedPermissionId("");
+      setHasLoadedPermission(false);
+    });
   }
 
   return (
@@ -231,14 +227,10 @@ export function EditPermissionForm({
                     variant="outline"
                     className="w-full"
                     disabled={
-                      !isAccountConnected ||
-                      !selectedPermissionId ||
-                      transactionStatus === "loading"
+                      !isAccountConnected || !selectedPermissionId || isPending
                     }
                   >
-                    {transactionStatus === "loading"
-                      ? "Updating..."
-                      : "Update Permission"}
+                    {isPending ? "Updating..." : "Update Permission"}
                   </Button>
                 </>
               )}

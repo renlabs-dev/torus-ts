@@ -8,6 +8,7 @@ import type {
   PermissionContract,
   PermissionId,
   Proposal,
+  StreamId,
 } from "@torus-network/sdk/chain";
 import {
   queryAgents,
@@ -186,7 +187,7 @@ function emissionToDatabase(
   const streamAllocations: NewEmissionStreamAllocation[] = match(
     emission.allocation,
   )({
-    Streams: (streams) =>
+    Streams: (streams: Map<StreamId, number>) =>
       Array.from(streams.entries()).map(([streamId, percentage]) => ({
         permissionId: permissionId,
         streamId: streamId,

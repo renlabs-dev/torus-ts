@@ -6,10 +6,11 @@ import { Plus } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
+import { addEmissionProposal } from "@torus-network/sdk/chain";
 import { formatToken } from "@torus-network/torus-utils/torus/legacy";
-import { tryAsync } from "@torus-network/torus-utils/try-catch";
 
 import { useTorus } from "@torus-ts/torus-provider";
+import { useSendTransaction } from "@torus-ts/torus-provider/use-send-transaction";
 import { Button } from "@torus-ts/ui/components/button";
 import {
   Form,
@@ -62,7 +63,22 @@ export function AddEmissionProposalForm({
   onSuccess,
   ...props
 }: AddEmissionProposalFormProps) {
-  const { isAccountConnected, isInitialized, addEmissionProposal } = useTorus();
+  const {
+    isAccountConnected,
+    isInitialized,
+    api,
+    selectedAccount,
+    torusApi,
+    wsEndpoint,
+  } = useTorus();
+
+  const { sendTx, isPending } = useSendTransaction({
+    api,
+    selectedAccount,
+    wsEndpoint,
+    wallet: torusApi,
+    transactionType: "Add Emission Proposal",
+  });
   const { toast } = useToast();
   const { uploadFile, uploading } = useFileUploader();
   const { networkConfigs } = useGovernance();
@@ -90,33 +106,31 @@ export function AddEmissionProposalForm({
     const ipfsUri = `ipfs://${cid}`;
     const formData = form.getValues();
 
-    const [error] = await tryAsync(
+    if (!api || !sendTx) {
+      toast.error("API not ready");
+      return;
+    }
+
+    const [sendErr, sendRes] = await sendTx(
       addEmissionProposal({
+        api,
         recyclingPercentage: formData.recyclingPercentage,
         treasuryPercentage: formData.treasuryPercentage,
         incentivesRatio: formData.incentivesRatio,
         data: ipfsUri,
-        callback: (result) => {
-          if (result.status === "SUCCESS" && result.finalized) {
-            toast.success("Emission proposal created successfully");
-            form.reset();
-            onSuccess?.();
-          }
-
-          if (result.status === "ERROR") {
-            toast.error(result.message ?? "Failed to create emission proposal");
-          }
-        },
-        refetchHandler: async () => {
-          // Refetch proposals if needed
-        },
       }),
     );
 
-    if (error) {
-      toast.error(error.message || "Error creating emission proposal");
-      return;
+    if (sendErr !== undefined) {
+      return; // Error already handled by sendTx
     }
+
+    const { tracker } = sendRes;
+
+    tracker.on("inBlock", () => {
+      form.reset();
+      onSuccess?.();
+    });
   }
 
   async function onSubmit(data: AddEmissionProposalFormData) {
@@ -305,10 +319,14 @@ export function AddEmissionProposalForm({
           <Button
             type="submit"
             className="w-full"
-            disabled={!isAccountConnected || uploading}
+            disabled={!isAccountConnected || uploading || isPending}
           >
             <Plus className="h-4 w-4 mr-2" />
-            {uploading ? "Uploading..." : "Create Emission Proposal"}
+            {uploading
+              ? "Uploading..."
+              : isPending
+                ? "Creating..."
+                : "Create Emission Proposal"}
           </Button>
         </div>
       </form>

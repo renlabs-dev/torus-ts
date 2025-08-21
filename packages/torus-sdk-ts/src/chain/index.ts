@@ -1,8 +1,31 @@
-export * from "./common/index.js";
+// ==== Common utilities ====
+export * from "./common/fees.js";
 
-export * from "./balance.js";
-export * from "./governance.js";
-export * from "./torus0/index.js";
-export * from "./emission0.js";
-export * from "./permission0.js";
-export * from "./delegation-tree-builder.js";
+// ==== Balance queries ====
+export * from "./balances.js";
+
+// ==== Governance pallet modules ====
+export * from "./governance/governance-types.js";
+export * from "./governance/governance-storage.js";
+export * from "./governance/governance-extrinsics.js";
+
+// ==== Torus0 pallet modules ====
+export * from "./torus0/torus0-types.js";
+export * from "./torus0/torus0-storage.js";
+export * from "./torus0/torus0-extrinsics.js";
+
+// ==== Emission0 pallet module ====
+export * from "./emission0/emission0-storage.js";
+export * from "./emission0/emission0-extrinsics.js";
+
+// ==== Permission0 pallet modules ====
+export * from "./permission0/permission0-types.js";
+export * from "./permission0/permission0-storage.js";
+export * from "./permission0/permission0-extrinsics.js";
+
+// ==== Tree building utilities ====
+export * from "./common/delegation-tree-builder.js";
+export * from "./common/fees.js";
+
+// ==== RPC utilities ====
+export * from "./rpc.js";

@@ -11,7 +11,7 @@ applications, services, and shared packages for the Torus Network ecosystem.
 ### Architecture Components
 
 - **Apps**: User-facing web applications
-  - `torus-allocator`: Agent weight allocation interface  
+  - `torus-allocator`: Agent weight allocation interface
   - `torus-wallet`: Token management and staking interface
   - `torus-bridge`: Cross-chain token bridge
   - `torus-governance`: DAO voting and proposals
@@ -91,7 +91,7 @@ just test
 ### Database Operations
 
 ```sh
-# Apply/push schema changes  
+# Apply/push schema changes
 just db-push
 # Alternative: just db-apply
 
@@ -180,7 +180,7 @@ The database uses Drizzle ORM with PostgreSQL and follows these conventions:
 #### Core Agent System
 
 - `agent`: Registered network participants
-- `user_agent_weight`: User weight allocations  
+- `user_agent_weight`: User weight allocations
 - `computed_agent_weight`: Aggregated agent weights
 
 #### Permission System (Updated Architecture - June 2025)
@@ -198,7 +198,7 @@ The database uses Drizzle ORM with PostgreSQL and follows these conventions:
 - `namespace_permission_paths`: Namespace paths for each permission
 - `accumulated_stream_amounts`: Runtime state for stream accumulation
 
-#### Governance System  
+#### Governance System
 
 - `proposal`: Network governance proposals
 - `whitelist_application`: Agent application requests
@@ -219,7 +219,7 @@ The database uses Drizzle ORM with PostgreSQL and follows these conventions:
 ### Database Migration Guidelines
 
 1. **Always use `IF EXISTS`** when dropping tables/types in migrations
-2. **Increment storage version** when modifying existing table structures  
+2. **Increment storage version** when modifying existing table structures
 3. **Test migrations** on realistic data before applying to production
 4. **Use Atlas** for migration generation and management
 5. **Permission Updates**: When updating permission schema, ensure agent-fetcher transformation logic is updated
@@ -251,15 +251,16 @@ When working with database fields, follow these conventions:
 
 ```ts
 // ✅ Correct: Use schema property names
-const permission = await db.select().from(permissionsSchema).where(
-  eq(permissionsSchema.grantorKey, address)
-);
+const permission = await db
+  .select()
+  .from(permissionsSchema)
+  .where(eq(permissionsSchema.grantorKey, address));
 
 // ❌ Incorrect: Don't use snake_case property access
-permission.grantor_key // This won't work with new schema
+permission.grantor_key; // This won't work with new schema
 
-// ✅ Correct: Use camelCase property access  
-permission.grantorKey // This works with Drizzle schema
+// ✅ Correct: Use camelCase property access
+permission.grantorKey; // This works with Drizzle schema
 ```
 
 ### Rustie ADT Format
@@ -267,13 +268,17 @@ permission.grantorKey // This works with Drizzle schema
 When working with rustie Enum types, values are represented as:
 
 ```ts
-{ VariantName: contents }
+{
+  VariantName: contents;
+}
 ```
 
 Use rustie utilities (`match`, `if_let` etc.) instead of switch statements or
 type casts.
 
 Reference: <https://github.com/steinerkelvin/rustie-ts>
+
+# <<<<<<< HEAD
 
 ### Result<T,E> Error Handling
 
@@ -284,11 +289,11 @@ Use the canonical pattern for handling `Result<T,E>` types from `@torus-network/
 const [error, data] = await someFunction();
 if (error !== undefined) {
   // Handle error case
-  console.error('Operation failed:', error);
+  console.error("Operation failed:", error);
   return;
 }
 // Use data safely here - error is guaranteed to be undefined
-console.log('Success:', data);
+console.log("Success:", data);
 ```
 
 **Do not use** other patterns like:
@@ -296,6 +301,8 @@ console.log('Success:', data);
 - `isOk()` helper functions
 - `.success` or `.data` property access
 - try/catch wrapping
+
+> > > > > > > origin/dev
 
 ### Substrate Integration
 

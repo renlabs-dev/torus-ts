@@ -12,7 +12,14 @@ import { match } from "rustie";
 import { assert } from "tsafe";
 import { z } from "zod";
 
-import type { HexH256 } from "@torus-network/sdk/types";
+import { AsyncPushStream } from "@torus-network/torus-utils/async";
+import { chainErr, ParseError } from "@torus-network/torus-utils/error";
+import type { Result } from "@torus-network/torus-utils/result";
+import { makeErr, makeOk } from "@torus-network/torus-utils/result";
+import { tryAsync } from "@torus-network/torus-utils/try-catch";
+import { zodParseResult } from "@torus-network/torus-utils/typing";
+
+import type { HexH256 } from "./types/index.js";
 import {
   sb_array,
   sb_bigint,
@@ -24,13 +31,7 @@ import {
   sb_string,
   sb_struct,
   sb_struct_obj,
-} from "@torus-network/sdk/types";
-import { AsyncPushStream } from "@torus-network/torus-utils/async";
-import { chainErr, ParseError } from "@torus-network/torus-utils/error";
-import type { Result } from "@torus-network/torus-utils/result";
-import { makeErr, makeOk } from "@torus-network/torus-utils/result";
-import { tryAsync } from "@torus-network/torus-utils/try-catch";
-import { zodParseResult } from "@torus-network/torus-utils/typing";
+} from "./types/index.js";
 
 // ==== Raw Extrinsic State ====
 

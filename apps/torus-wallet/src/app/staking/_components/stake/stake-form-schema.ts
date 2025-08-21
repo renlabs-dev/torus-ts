@@ -1,5 +1,3 @@
-import type { RefObject } from "react";
-
 import { z } from "zod";
 
 import { isSS58 } from "@torus-network/sdk/types";
@@ -12,13 +10,11 @@ import {
   meetsMinimumStake,
 } from "~/utils/validators";
 
-import type { FeeLabelHandle } from "../../../_components/fee-label";
-
 export const createStakeActionFormSchema = (
   minAllowedStakeData: bigint,
   existencialDepositValue: bigint,
   accountFreeBalance: bigint,
-  feeRef: RefObject<FeeLabelHandle | null>,
+  estimatedFee: bigint | undefined,
 ) =>
   z.object({
     recipient: z
@@ -36,7 +32,7 @@ export const createStakeActionFormSchema = (
         (value) =>
           isAboveExistentialDeposit(
             value,
-            feeRef.current?.getEstimatedFee() ?? "0",
+            estimatedFee ?? 0n,
             accountFreeBalance,
             existencialDepositValue,
           ),
@@ -48,7 +44,7 @@ export const createStakeActionFormSchema = (
         (value) =>
           doesNotExceedMaxStake(
             value,
-            feeRef.current?.getEstimatedFee() ?? "0",
+            estimatedFee ?? 0n,
             accountFreeBalance,
             existencialDepositValue,
           ),

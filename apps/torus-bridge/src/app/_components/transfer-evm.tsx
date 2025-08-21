@@ -15,6 +15,7 @@ import {
   useWalletClient,
 } from "wagmi";
 
+import { transferAllowDeath } from "@torus-network/sdk/chain";
 import {
   convertH160ToSS58,
   waitForTransactionReceipt,
@@ -28,6 +29,7 @@ import { tryAsync, trySync } from "@torus-network/torus-utils/try-catch";
 import { useFreeBalance } from "@torus-ts/query-provider/hooks";
 import { useTorus } from "@torus-ts/torus-provider";
 import type { TransactionResult } from "@torus-ts/torus-provider/types";
+import { useSendTransaction } from "@torus-ts/torus-provider/use-send-transaction";
 import { Button } from "@torus-ts/ui/components/button";
 import {
   Card,
@@ -67,8 +69,22 @@ export function TransferEVM() {
   const multiProvider = useMultiProvider();
   const { toast } = useToast();
 
-  const { transfer, selectedAccount, isInitialized, isAccountConnected, api } =
-    useTorus();
+  const {
+    selectedAccount,
+    isInitialized,
+    isAccountConnected,
+    api,
+    torusApi,
+    wsEndpoint,
+  } = useTorus();
+
+  const { sendTx, isPending } = useSendTransaction({
+    api,
+    selectedAccount,
+    wsEndpoint,
+    wallet: torusApi,
+    transactionType: "Bridge Transfer",
+  });
   const { data: walletClient } = useWalletClient();
   const { chain, address } = useAccount();
   const { switchChain } = useSwitchChain();
@@ -172,41 +188,25 @@ export function TransferEVM() {
     await Promise.all([refetchTorusEvmBalance(), accountFreeBalance.refetch()]);
   }, [refetchTorusEvmBalance, accountFreeBalance]);
 
-  const handleCallback = useCallback((callbackReturn: TransactionResult) => {
-    setTransactionStatus(callbackReturn);
-    if (callbackReturn.status === "SUCCESS") {
-      setAmount("");
-      setUserInputEthAddr("");
-    }
-  }, []);
-
   const handleBridge = useCallback(async () => {
-    if (!amount || !evmSS58Addr) return;
+    if (!amount || !evmSS58Addr || !api || !sendTx) return;
 
-    setTransactionStatus({
-      status: "PENDING",
-      message: "Accept the transaction in your wallet",
-      finalized: false,
-    });
-
-    const [error] = await tryAsync(
-      transfer({
-        amount: amount,
-        to: evmSS58Addr,
-        refetchHandler,
-        callback: handleCallback,
-      }),
+    const [sendErr, sendRes] = await sendTx(
+      transferAllowDeath(api, evmSS58Addr, amountRems),
     );
 
-    if (error !== undefined) {
-      console.error("Error during bridge transfer:", error);
-      setTransactionStatus({
-        status: "ERROR",
-        message: "Something went wrong with your transaction",
-        finalized: true,
-      });
+    if (sendErr !== undefined) {
+      return; // Error already handled by sendTx
     }
-  }, [amount, evmSS58Addr, transfer, refetchHandler, handleCallback]);
+
+    const { tracker } = sendRes;
+
+    tracker.on("inBlock", () => {
+      setAmount("");
+      setUserInputEthAddr("");
+      void refetchHandler();
+    });
+  }, [amount, evmSS58Addr, api, sendTx, amountRems, refetchHandler]);
 
   const handleWithdraw = useCallback(async () => {
     // Check for required values
@@ -483,7 +483,7 @@ export function TransferEVM() {
             onClick={mode === "bridge" ? handleBridge : handleWithdraw}
             className="w-full"
             disabled={
-              transactionStatus.status === "PENDING" ||
+              isPending ||
               !amount ||
               (mode === "bridge" && !userInputEthAddr) ||
               (mode === "withdraw" && !selectedAccount)

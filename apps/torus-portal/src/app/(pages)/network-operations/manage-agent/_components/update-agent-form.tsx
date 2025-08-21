@@ -14,21 +14,21 @@ import {
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 
+import { updateAgent } from "@torus-network/sdk/chain";
+
 import { useTorus } from "@torus-ts/torus-provider";
+import { useSendTransaction } from "@torus-ts/torus-provider/use-send-transaction";
 import { Button } from "@torus-ts/ui/components/button";
-import { Separator } from "@torus-ts/ui/components/separator";
 import {
   Tabs,
   TabsContent,
   TabsList,
   TabsTrigger,
 } from "@torus-ts/ui/components/tabs";
-import type { TransactionResult } from "@torus-ts/ui/components/transaction-status";
-import { TransactionStatus } from "@torus-ts/ui/components/transaction-status";
 
 import { useQueryAgentMetadata } from "~/hooks/use-agent-metadata";
 import { useBlobUrl } from "~/hooks/use-blob-url";
-import { api } from "~/trpc/react";
+import { api as trpcApi } from "~/trpc/react";
 
 import { DeregisterAgentButton } from "./deregister-agent-button";
 import { UpdateAgentFormFields } from "./update-agent-form-fields";
@@ -43,7 +43,15 @@ interface UpdateAgentFormProps {
 
 export function UpdateAgentForm({ agentKey }: UpdateAgentFormProps) {
   const router = useRouter();
-  const { updateAgentTransaction } = useTorus();
+  const { api, selectedAccount, torusApi, wsEndpoint } = useTorus();
+
+  const { sendTx, isPending } = useSendTransaction({
+    api,
+    selectedAccount,
+    wsEndpoint,
+    wallet: torusApi,
+    transactionType: "Update Agent",
+  });
   const [isUploading, setIsUploading] = useState(false);
   const [currentImagePreview, setCurrentImagePreview] = useState<string | null>(
     null,
@@ -51,15 +59,7 @@ export function UpdateAgentForm({ agentKey }: UpdateAgentFormProps) {
   const [_hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [activeTab, setActiveTab] = useState("edit");
 
-  const [transactionStatus, setTransactionStatus] = useState<TransactionResult>(
-    {
-      status: null,
-      message: null,
-      finalized: false,
-    },
-  );
-
-  const { data: agent } = api.agent.byKeyLastBlock.useQuery(
+  const { data: agent } = trpcApi.agent.byKeyLastBlock.useQuery(
     { key: agentKey },
     { enabled: !!agentKey, refetchOnWindowFocus: false },
   );
@@ -156,9 +156,13 @@ export function UpdateAgentForm({ agentKey }: UpdateAgentFormProps) {
 
   const updateAgentMutation = useMemo(
     () => ({
-      isPending: isUploading,
+      isPending: isUploading || isPending,
       handleImageChange,
       mutate: async (data: UpdateAgentFormData) => {
+        if (!api || !sendTx) {
+          return;
+        }
+
         setIsUploading(true);
         const { apiUrl } = data;
 
@@ -167,31 +171,30 @@ export function UpdateAgentForm({ agentKey }: UpdateAgentFormProps) {
           currentImageBlobUrl ?? undefined,
         );
 
-        await updateAgentTransaction({
-          url: apiUrl ?? "",
-          metadata: cidToIpfsUri(cid),
-          callback: (tx) => {
-            if (tx.status === "SUCCESS" && !tx.message?.includes("included")) {
-              setIsUploading(false);
-              router.refresh();
-              setHasUnsavedChanges(false);
-              setActiveTab("edit");
-            }
+        const [sendErr, sendRes] = await sendTx(
+          updateAgent(api, apiUrl ?? "", cidToIpfsUri(cid), null, null),
+        );
 
-            if (tx.status === "ERROR") {
-              setIsUploading(false);
-            }
+        if (sendErr !== undefined) {
+          return; // Error already handled by sendTx
+        }
 
-            setTransactionStatus(tx);
-          },
+        const { tracker } = sendRes;
+
+        tracker.on("finalized", () => {
+          setIsUploading(false);
+          router.refresh();
+          setHasUnsavedChanges(false);
+          setActiveTab("edit");
         });
       },
     }),
     [
       isUploading,
+      isPending,
       handleImageChange,
-      updateAgentTransaction,
-      setTransactionStatus,
+      api,
+      sendTx,
       currentImageBlobUrl,
       router,
     ],
@@ -319,16 +322,6 @@ export function UpdateAgentForm({ agentKey }: UpdateAgentFormProps) {
           </TabsContent>
         </div>
       </Tabs>
-
-      {transactionStatus.status && (
-        <div className="mt-6">
-          <Separator className="mb-4" />
-          <TransactionStatus
-            status={transactionStatus.status}
-            message={transactionStatus.message}
-          />
-        </div>
-      )}
     </>
   );
 }

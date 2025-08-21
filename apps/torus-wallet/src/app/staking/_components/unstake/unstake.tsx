@@ -1,29 +1,31 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 
+import { removeStake } from "@torus-network/sdk/chain";
 import type { SS58Address } from "@torus-network/sdk/types";
 import { checkSS58 } from "@torus-network/sdk/types";
 import type { BrandTag } from "@torus-network/torus-utils";
-import { fromNano } from "@torus-network/torus-utils/torus/token";
+import {
+  formatToken,
+  fromNano,
+  toNano,
+} from "@torus-network/torus-utils/torus/token";
 import { tryAsync } from "@torus-network/torus-utils/try-catch";
 
-import type { TransactionResult } from "@torus-ts/torus-provider/types";
+import { useTorus } from "@torus-ts/torus-provider";
+import { useSendTransaction } from "@torus-ts/torus-provider/use-send-transaction";
 import { useToast } from "@torus-ts/ui/hooks/use-toast";
 
 import { useUsdPrice } from "~/context/usd-price-provider";
 import { useWallet } from "~/context/wallet-provider";
-import { env } from "~/env";
-import type { UpdatedTransaction } from "~/store/transactions-store";
 import { useTransactionsStore } from "~/store/transactions-store";
 
-import type { FeeLabelHandle } from "../../../_components/fee-label";
 import type { ReviewTransactionDialogHandle } from "../../../_components/review-transaction-dialog";
 import { ReviewTransactionDialog } from "../../../_components/review-transaction-dialog";
-import { handleEstimateFee } from "./unstake-fee-handler";
 import { UnstakeForm } from "./unstake-form";
 import type { UnstakeFormValues } from "./unstake-form-schema";
 import { createUnstakeFormSchema } from "./unstake-form-schema";
@@ -38,26 +40,27 @@ interface StakedValidator {
 
 export function Unstake() {
   const {
-    removeStake,
     accountStakedBy,
     accountFreeBalance,
-    removeStakeTransaction,
     stakeOut,
-    estimateFee,
     selectedAccount,
     minAllowedStake,
-    getExistentialDeposit,
+    estimatedFee,
   } = useWallet();
 
+  const { api, torusApi, wsEndpoint } = useTorus();
+
+  const { sendTx, isPending } = useSendTransaction({
+    api,
+    selectedAccount,
+    wsEndpoint,
+    wallet: torusApi,
+    transactionType: "Unstake",
+  });
+
   const addTransaction = useTransactionsStore((state) => state.addTransaction);
-  const isTransactionError = useTransactionsStore(
-    (state) => state.isTransactionError,
-  );
-  const isTransactionCompleted = useTransactionsStore(
-    (state) => state.isTransactionCompleted,
-  );
-  const updateTransaction = useTransactionsStore(
-    (state) => state.updateTransaction,
+  const markTransactionSuccess = useTransactionsStore(
+    (state) => state.markTransactionSuccess,
   );
 
   const { toast } = useToast();
@@ -65,32 +68,21 @@ export function Unstake() {
 
   const minAllowedStakeData =
     minAllowedStake.data ?? MIN_ALLOWED_STAKE_SAFEGUARD;
-  const existentialDepositValue =
-    getExistentialDeposit() ?? MIN_EXISTENTIAL_BALANCE;
+
   const freeBalance = accountFreeBalance.data ?? 0n;
 
   const [stakedAmount, setStakedAmount] = useState<bigint | null>(null);
-  const [transactionStatus, setTransactionStatus] = useState<TransactionResult>(
-    {
-      status: null,
-      message: null,
-      finalized: false,
-    },
-  );
-  const [currentView, setCurrentView] = useState<"wallet" | "stakedValidators">(
-    "wallet",
-  );
 
-  const feeRef = useRef<FeeLabelHandle>(null);
   const maxAmountRef = useRef<string>("");
   const reviewDialogRef = useRef<ReviewTransactionDialogHandle>(null);
+  const currentTxIdRef = useRef<string | null>(null);
   const formRef = useRef<HTMLFormElement>(null);
 
   const unstakeFormSchema = createUnstakeFormSchema(
     minAllowedStakeData,
-    existentialDepositValue,
+    MIN_EXISTENTIAL_BALANCE,
     freeBalance,
-    feeRef,
+    estimatedFee,
     stakedAmount,
   );
 
@@ -121,24 +113,18 @@ export function Unstake() {
     };
   }, [accountStakedBy.data, watch]);
 
-  const estimateFeeHandler = useCallback(async () => {
-    await handleEstimateFee({
-      feeRef,
-      removeStakeTransaction,
-      estimateFee,
-      allocatorAddress: env("NEXT_PUBLIC_TORUS_ALLOCATOR_ADDRESS"),
-      toast,
-    });
-  }, [estimateFee, removeStakeTransaction, toast]);
-
-  useEffect(() => {
-    if (!selectedAccount?.address || currentView !== "wallet") return;
-    void estimateFeeHandler();
-  }, [estimateFeeHandler, selectedAccount?.address, currentView]);
+  const handleAmountChange = async (torusAmount: string) => {
+    setValue("amount", torusAmount);
+    const [error, _success] = await tryAsync(trigger("amount"));
+    if (error !== undefined) {
+      toast.error(error.message);
+      return;
+    }
+    return;
+  };
 
   useEffect(() => {
     reset();
-    feeRef.current?.updateFee(null);
   }, [selectedAccount?.address, reset]);
 
   const refetchHandler = async () => {
@@ -156,39 +142,14 @@ export function Unstake() {
     }
   };
 
-  const handleCallback = (callbackReturn: TransactionResult, txId: string) => {
-    setTransactionStatus(callbackReturn);
-
-    if (!isTransactionCompleted(callbackReturn.status)) return;
-
-    const isError = isTransactionError(callbackReturn.status);
-
-    const updatedTransaction: UpdatedTransaction = isError
-      ? {
-          status: "ERROR",
-          metadata: { error: "Transaction failed" },
-        }
-      : {
-          status: "SUCCESS",
-          hash: callbackReturn.hash ?? "unknown",
-        };
-
-    updateTransaction(txId, updatedTransaction);
-
-    if (callbackReturn.status === "SUCCESS") {
-      reset();
-    }
-  };
-
   const onSubmit = async (values: UnstakeFormValues) => {
-    setTransactionStatus({
-      status: "STARTING",
-      finalized: false,
-      message: "Awaiting Signature",
-    });
-
     if (!selectedAccount?.address) {
       toast.error("No account selected");
+      return;
+    }
+
+    if (!api || !sendTx) {
+      toast.error("API not ready");
       return;
     }
 
@@ -196,51 +157,42 @@ export function Unstake() {
       type: "unstake",
       fromAddress: selectedAccount.address as SS58Address,
       toAddress: values.validator,
-      amount: values.amount,
-      fee: feeRef.current?.getEstimatedFee() ?? "0",
+      amount: formatToken(toNano(values.amount), 12), // Convert to nano and format
+      fee: estimatedFee ? formatToken(estimatedFee, 12) : "Estimating...",
       status: "PENDING",
       metadata: {
         usdPrice: usdPrice,
       },
     });
 
-    const [error] = await tryAsync(
-      removeStake({
-        validator: checkSS58(values.validator),
-        amount: values.amount,
-        callback: (args) => handleCallback(args, txId),
-        refetchHandler,
-      }),
+    currentTxIdRef.current = txId;
+
+    const [sendErr, sendRes] = await sendTx(
+      removeStake(api, checkSS58(values.validator), toNano(values.amount)),
     );
 
-    if (error !== undefined) {
-      updateTransaction(txId, {
-        status: "ERROR",
-        metadata: { error: error.message },
-      });
-
-      setTransactionStatus({
-        status: "ERROR",
-        finalized: true,
-        message: error.message || "Transaction failed",
-      });
-      toast.error("Failed to unstake tokens");
+    if (sendErr !== undefined) {
+      return; // Error already handled by sendTx
     }
-  };
 
-  const handleAmountChange = async (newAmount: string) => {
-    setValue("amount", newAmount);
-    const [error] = await tryAsync(trigger("amount"));
-    if (error !== undefined) {
-      console.error("Failed to validate amount:", error);
-    }
+    const { tracker } = sendRes;
+
+    tracker.on("finalized", (event) => {
+      // Update transaction store with actual transaction hash
+      if (currentTxIdRef.current) {
+        markTransactionSuccess(currentTxIdRef.current, event.blockHash);
+        currentTxIdRef.current = null;
+      }
+
+      form.reset();
+      void refetchHandler();
+    });
   };
 
   const handleSelectValidator = async (
     address: BrandTag<"SS58Address"> & string,
   ) => {
     setValue("validator", address);
-    setCurrentView("wallet");
     const [error] = await tryAsync(trigger("validator"));
     if (error !== undefined) {
       console.error("Failed to validate validator:", error);
@@ -248,23 +200,22 @@ export function Unstake() {
   };
 
   const handleReviewClick = async () => {
-    const [triggerError, isValid] = await tryAsync(trigger());
-
-    if (triggerError !== undefined) {
-      console.error("Form validation failed:", triggerError);
-      toast.error("Form validation failed");
+    const [error, isValid] = await tryAsync(trigger());
+    if (error !== undefined) {
+      toast.error(error.message);
       return;
     }
-
     if (isValid) {
       reviewDialogRef.current?.openDialog();
     }
   };
 
-  const onConfirm = () => {
+  const handleConfirmTransaction = () => {
     const values = getValues();
     void onSubmit(values);
   };
+
+  const { validator, amount } = getValues();
 
   return (
     <div className="flex w-full flex-col gap-4 md:flex-row">
@@ -274,8 +225,8 @@ export function Unstake() {
         usdPrice={usdPrice}
         minAllowedStakeData={minAllowedStakeData}
         maxAmountRef={maxAmountRef}
-        feeRef={feeRef}
-        transactionStatus={transactionStatus}
+        estimatedFee={estimatedFee}
+        isPending={isPending}
         handleSelectValidator={handleSelectValidator}
         onReviewClick={handleReviewClick}
         handleAmountChange={handleAmountChange}
@@ -284,10 +235,10 @@ export function Unstake() {
       <ReviewTransactionDialog
         ref={reviewDialogRef}
         from={selectedAccount?.address}
-        to={getValues().validator}
-        amount={getValues().amount}
-        fee={feeRef.current?.getEstimatedFee() ?? "0"}
-        onConfirm={onConfirm}
+        to={validator}
+        amount={amount}
+        fee={formatToken(estimatedFee ?? 0n, 12)}
+        onConfirm={handleConfirmTransaction}
       />
     </div>
   );

@@ -5,7 +5,7 @@ import { queryEmissionPermissions } from "@torus-network/sdk/chain";
 import { SS58_SCHEMA } from "@torus-network/sdk/types";
 import type { RemAmount } from "@torus-network/torus-utils/torus/token";
 
-import { and, eq, isNull, or, sql } from "@torus-ts/db";
+import { and, eq, gte, isNull, lte, or, sql } from "@torus-ts/db";
 import type { createDb } from "@torus-ts/db/client";
 import {
   accumulatedStreamAmountsSchema,
@@ -57,6 +57,60 @@ async function queryAccumulatedAmounts(
         ),
       ),
     )
+    .orderBy(accumulatedStreamAmountsSchema.executionCount);
+}
+
+async function queryAccumulatedAmountsInTimeframe(
+  ctx: { db: ReturnType<typeof createDb> },
+  permissionStreamPairs: {
+    permissionId: string;
+    streamId: string;
+  }[],
+  timeframe: {
+    startBlock: number | null;
+    endBlock: number | null;
+  },
+) {
+  if (permissionStreamPairs.length === 0) {
+    return [];
+  }
+
+  const conditions = [
+    or(
+      ...permissionStreamPairs.map((pair) =>
+        and(
+          eq(accumulatedStreamAmountsSchema.permissionId, pair.permissionId),
+          eq(accumulatedStreamAmountsSchema.streamId, pair.streamId),
+        ),
+      ),
+    ),
+  ];
+
+  // Add timeframe conditions using Drizzle operators
+  if (timeframe.startBlock !== null) {
+    conditions.push(
+      gte(
+        accumulatedStreamAmountsSchema.lastExecutedBlock,
+        timeframe.startBlock,
+      ),
+    );
+  }
+  if (timeframe.endBlock !== null) {
+    conditions.push(
+      lte(accumulatedStreamAmountsSchema.lastExecutedBlock, timeframe.endBlock),
+    );
+  }
+
+  return await ctx.db
+    .select({
+      permissionId: accumulatedStreamAmountsSchema.permissionId,
+      streamId: accumulatedStreamAmountsSchema.streamId,
+      executionCount: accumulatedStreamAmountsSchema.executionCount,
+      accumulatedAmount: accumulatedStreamAmountsSchema.accumulatedAmount,
+      lastExecutedBlock: accumulatedStreamAmountsSchema.lastExecutedBlock,
+    })
+    .from(accumulatedStreamAmountsSchema)
+    .where(and(...conditions))
     .orderBy(accumulatedStreamAmountsSchema.executionCount);
 }
 
@@ -535,6 +589,81 @@ async function getAllOutgoingStreamsByGrantor(ctx: {
       result[grantorAccountId][allocation.permissionId]?.streamIds.push(
         allocation.streamId,
       );
+    }
+  }
+
+  return result;
+}
+
+async function getStreamPermissionPairsForAccount(
+  ctx: { db: ReturnType<typeof createDb> },
+  accountId: string,
+): Promise<{ permissionId: string; streamId: string }[]> {
+  const targets = await ctx.db
+    .select({
+      permissionId: emissionDistributionTargetsSchema.permissionId,
+      streamId: emissionDistributionTargetsSchema.streamId,
+    })
+    .from(emissionDistributionTargetsSchema)
+    .where(eq(emissionDistributionTargetsSchema.targetAccountId, accountId));
+
+  return targets.filter((t) => t.streamId !== null) as {
+    permissionId: string;
+    streamId: string;
+  }[];
+}
+
+async function getNormalizedWeightsForAccount(
+  ctx: { db: ReturnType<typeof createDb> },
+  accountId: string,
+): Promise<Record<string, Record<string, number>>> {
+  const targets = await ctx.db
+    .select({
+      permissionId: emissionDistributionTargetsSchema.permissionId,
+      streamId: emissionDistributionTargetsSchema.streamId,
+      weight: emissionDistributionTargetsSchema.weight,
+      normalizedWeight:
+        sql<number>`CAST(${emissionDistributionTargetsSchema.weight} AS decimal(18,10)) / NULLIF(SUM(${emissionDistributionTargetsSchema.weight}) OVER (PARTITION BY ${emissionDistributionTargetsSchema.permissionId}, ${emissionDistributionTargetsSchema.streamId}), 0)`.as(
+          "normalized_weight",
+        ),
+    })
+    .from(emissionDistributionTargetsSchema)
+    .where(eq(emissionDistributionTargetsSchema.targetAccountId, accountId));
+
+  const normalizedWeights: Record<string, Record<string, number>> = {};
+  for (const target of targets) {
+    let permissionWeights = normalizedWeights[target.permissionId];
+    if (!permissionWeights) {
+      permissionWeights = {};
+      normalizedWeights[target.permissionId] = permissionWeights;
+    }
+
+    if (target.streamId) {
+      permissionWeights[target.streamId] = target.normalizedWeight;
+    }
+  }
+
+  return normalizedWeights;
+}
+
+function applyNormalizedWeightsToAmounts(
+  amounts: Record<string, Record<string, bigint>>,
+  normalizedWeights: Record<string, Record<string, number>>,
+): Record<string, Record<string, bigint>> {
+  const result: Record<string, Record<string, bigint>> = {};
+
+  for (const [permissionId, streams] of Object.entries(amounts)) {
+    if (!result[permissionId]) {
+      result[permissionId] = {};
+    }
+
+    for (const [streamId, amount] of Object.entries(streams)) {
+      const normalizedWeight = normalizedWeights[permissionId]?.[streamId];
+      if (normalizedWeight && amount) {
+        result[permissionId][streamId] = BigInt(
+          Math.floor(Number(amount) * normalizedWeight),
+        );
+      }
     }
   }
 
@@ -1094,5 +1223,72 @@ export const permissionRouter = {
       }
 
       return result;
+    }),
+
+  streamEmissionsInTimeframe: publicProcedure
+    .input(
+      z.object({
+        accountId: SS58_SCHEMA,
+        timeframe: z.object({
+          startBlock: z.number().int().nullable(),
+          endBlock: z.number().int().nullable(),
+        }),
+      }),
+    )
+    .query(async ({ ctx, input }) => {
+      // Get all stream-permission pairs where the account is a target
+      const streamPermissionPairs = await getStreamPermissionPairsForAccount(
+        ctx,
+        input.accountId,
+      );
+
+      if (streamPermissionPairs.length === 0) {
+        return {};
+      }
+
+      // Query accumulated amounts within the timeframe
+      const accumulatedAmounts = await queryAccumulatedAmountsInTimeframe(
+        ctx,
+        streamPermissionPairs,
+        input.timeframe,
+      );
+
+      // Get normalized weights for the account
+      const normalizedWeights = await getNormalizedWeightsForAccount(
+        ctx,
+        input.accountId,
+      );
+
+      // Build accumulated amounts by permission and stream
+      const amountsByPermissionStream: Record<
+        string,
+        Record<string, bigint>
+      > = {};
+      for (const amount of accumulatedAmounts) {
+        const { permissionId, streamId, accumulatedAmount } = amount;
+
+        if (accumulatedAmount) {
+          if (!amountsByPermissionStream[permissionId]) {
+            amountsByPermissionStream[permissionId] = {};
+          }
+
+          const amountBigInt = BigInt(
+            Math.floor(parseFloat(accumulatedAmount)),
+          );
+
+          // Sum up all distributions in the timeframe for this stream
+          if (amountsByPermissionStream[permissionId][streamId]) {
+            amountsByPermissionStream[permissionId][streamId] += amountBigInt;
+          } else {
+            amountsByPermissionStream[permissionId][streamId] = amountBigInt;
+          }
+        }
+      }
+
+      // Apply normalized weights to get the target's share
+      return applyNormalizedWeightsToAmounts(
+        amountsByPermissionStream,
+        normalizedWeights,
+      );
     }),
 } satisfies TRPCRouterRecord;

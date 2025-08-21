@@ -30,7 +30,7 @@ export function meetsMinimumStake(amount: string, minStake: bigint): boolean {
  */
 export function isAboveExistentialDeposit(
   amount: string,
-  fee: string,
+  fee: bigint,
   freeBalance: bigint,
   existentialDeposit: bigint,
 ): boolean {
@@ -39,12 +39,12 @@ export function isAboveExistentialDeposit(
   }
   try {
     const stake = toNano(amount);
-    const feeNano = toNano(fee);
+
     // Check for potential overflow
-    if (stake > freeBalance || feeNano > freeBalance - stake) {
+    if (stake > freeBalance || fee > freeBalance - stake) {
       return false;
     }
-    return freeBalance - stake - feeNano >= existentialDeposit;
+    return freeBalance - stake - fee >= existentialDeposit;
   } catch {
     return false;
   }
@@ -60,7 +60,7 @@ export function isAboveExistentialDeposit(
  */
 export function doesNotExceedMaxStake(
   amount: string,
-  fee: string,
+  fee: bigint,
   freeBalance: bigint,
   existentialDeposit: bigint,
 ): boolean {
@@ -69,12 +69,12 @@ export function doesNotExceedMaxStake(
   }
   try {
     const stake = toNano(amount);
-    const feeNano = toNano(fee);
-    // Check if feeNano + existentialDeposit would overflow
-    if (feeNano > freeBalance || existentialDeposit > freeBalance - feeNano) {
+
+    // Check if fee + existentialDeposit would overflow
+    if (fee > freeBalance || existentialDeposit > freeBalance - fee) {
       return false;
     }
-    const maxStake = freeBalance - feeNano - existentialDeposit;
+    const maxStake = freeBalance - fee - existentialDeposit;
     return stake <= maxStake;
   } catch {
     return false;
@@ -85,18 +85,17 @@ export function doesNotExceedMaxStake(
  */
 export function isWithinTransferLimit(
   amount: string,
-  fee: string,
+  fee: bigint,
   freeBalance: bigint,
 ): boolean {
   if (freeBalance < 0n) {
     return false;
   }
   try {
-    const feeNano = toNano(fee);
-    if (feeNano > freeBalance) {
+    if (fee > freeBalance) {
       return false;
     }
-    const maxTransferable = freeBalance > feeNano ? freeBalance - feeNano : 0n;
+    const maxTransferable = freeBalance > fee ? freeBalance - fee : 0n;
     const amountNano = toNano(amount);
     return amountNano <= maxTransferable;
   } catch {

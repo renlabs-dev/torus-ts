@@ -9,10 +9,12 @@ import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
+import { addGlobalCustomProposal } from "@torus-network/sdk/chain";
 import { formatToken } from "@torus-network/torus-utils/torus/token";
-import { tryAsync } from "@torus-network/torus-utils/try-catch";
 
+import { useTorus } from "@torus-ts/torus-provider";
 import type { TransactionResult } from "@torus-ts/torus-provider/types";
+import { useSendTransaction } from "@torus-ts/torus-provider/use-send-transaction";
 import { Button } from "@torus-ts/ui/components/button";
 import {
   Form,
@@ -46,11 +48,20 @@ export function CreateProposal() {
   const router = useRouter();
   const {
     isAccountConnected,
-    addCustomProposal,
     accountFreeBalance,
     networkConfigs,
     selectedAccount,
   } = useGovernance();
+
+  const { api, torusApi, wsEndpoint } = useTorus();
+
+  const { sendTx, isPending } = useSendTransaction({
+    api,
+    selectedAccount,
+    wsEndpoint,
+    wallet: torusApi,
+    transactionType: "Create Custom Proposal",
+  });
   const { toast } = useToast();
 
   const [activeTab, setActiveTab] = useState("edit");
@@ -111,22 +122,24 @@ export function CreateProposal() {
 
     const ipfsUri = `ipfs://${cid}`;
     if (Number(accountFreeBalance.data) > proposalCost) {
-      const [propError, _] = await tryAsync(
-        addCustomProposal({
-          IpfsHash: ipfsUri,
-          callback: (tx) => setTransactionStatus(tx),
-        }),
-      );
-
-      if (propError !== undefined) {
-        toast.error(propError.message || "Error creating proposal");
-        setTransactionStatus({
-          status: "ERROR",
-          finalized: true,
-          message: "Error creating proposal",
-        });
+      if (!api || !sendTx) {
+        toast.error("API not ready");
         return;
       }
+
+      const [sendErr, sendRes] = await sendTx(
+        addGlobalCustomProposal(api, ipfsUri),
+      );
+
+      if (sendErr !== undefined) {
+        return; // Error already handled by sendTx
+      }
+
+      const { tracker } = sendRes;
+
+      tracker.on("finalized", () => {
+        router.push("/proposals");
+      });
     } else {
       toast.error(
         `Insufficient balance to create proposal. Required: ${proposalCost} but got ${formatToken(accountFreeBalance.data)}`,
@@ -163,15 +176,20 @@ export function CreateProposal() {
   const getButtonSubmitLabel = ({
     uploading,
     isAccountConnected,
+    isPending,
   }: {
     uploading: boolean;
     isAccountConnected: boolean;
+    isPending: boolean;
   }) => {
     if (!isAccountConnected) {
       return "Connect a wallet to submit";
     }
     if (uploading) {
       return "Uploading...";
+    }
+    if (isPending) {
+      return "Submitting...";
     }
     return "Submit Proposal";
   };
@@ -262,9 +280,14 @@ export function CreateProposal() {
           size="lg"
           type="submit"
           variant="default"
-          disabled={!userHasEnoughBalance || !form.formState.isValid}
+          disabled={
+            !userHasEnoughBalance ||
+            !form.formState.isValid ||
+            uploading ||
+            isPending
+          }
         >
-          {getButtonSubmitLabel({ uploading, isAccountConnected })}
+          {getButtonSubmitLabel({ uploading, isAccountConnected, isPending })}
         </Button>
 
         {transactionStatus.status && (

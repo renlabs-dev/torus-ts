@@ -1,104 +1,62 @@
 import type { ApiPromise } from "@polkadot/api";
-import { z } from "zod";
+import type { Header } from "@polkadot/types/interfaces";
+import type { IU8a } from "@polkadot/types/types";
 
 import { strToByteArray } from "@torus-network/torus-utils";
 import type { Result } from "@torus-network/torus-utils/result";
 import { makeErr, makeOk } from "@torus-network/torus-utils/result";
 import { tryAsync, trySync } from "@torus-network/torus-utils/try-catch";
 
-import type { SS58Address } from "../../types/address.js";
-import {
-  sb_address,
-  sb_bigint,
-  sb_enum,
-  sb_null,
-  sb_some,
-  sb_string,
-  sb_struct,
-} from "../../types/index.js";
-import {
-  namespacePathParser,
-  validateNamespacePath,
-} from "../../types/namespace/index.js";
-import type { Api } from "../common/index.js";
-import { handleDoubleMapEntries } from "../common/index.js";
+import type { Blocks, SS58Address } from "../types/index.js";
+import { namespacePathParser, sb_blocks } from "../types/index.js";
+import type { Api } from "./common/fees.js";
 
-export const sb_namespace_path = sb_string.transform((path, ctx) => {
-  const [err, segments] = validateNamespacePath(path);
-  if (err !== undefined) {
-    ctx.addIssue({
-      code: "custom",
-      path: ctx.path,
-      message: err,
-    });
-    return z.NEVER;
-  }
-  return segments;
-});
-
-const NAMESPACE_OWNERSHIP_SCHEMA = sb_enum({
-  System: sb_null,
-  Account: sb_address,
-});
-
-const NAMESPACE_METADATA_SCHEMA = sb_struct({
-  createdAt: sb_bigint,
-  deposit: sb_bigint,
-});
-
-export interface NamespaceEntry {
-  path: string[];
-  createdAt: bigint;
-  deposit: bigint;
+export interface LastBlock {
+  blockHeader: Header;
+  blockNumber: Blocks;
+  blockHash: IU8a;
+  blockHashHex: `${string}`;
+  apiAtBlock: Api;
 }
 
-export async function queryNamespaceEntriesOf(
-  api: Api,
-  agent: SS58Address,
-): Promise<NamespaceEntry[]> {
-  const ownership = { Account: agent };
+// TODO: queryLastBlock should return Result
+export async function queryLastBlock(api: ApiPromise): Promise<LastBlock> {
+  const [headerError, blockHeader] = await tryAsync(api.rpc.chain.getHeader());
+  if (headerError !== undefined) {
+    console.error("Error getting block header:", headerError);
+    throw headerError;
+  }
 
-  const [queryErr, queryRes] = await tryAsync(
-    api.query.torus0.namespaces.entries(ownership),
+  const [apiError, apiAtBlock] = await tryAsync(api.at(blockHeader.hash));
+  if (apiError !== undefined) {
+    console.error("Error getting API at block:", apiError);
+    throw apiError;
+  }
+
+  const [parseError, blockNumber] = trySync(() =>
+    sb_blocks.parse(blockHeader.number),
   );
-  if (queryErr !== undefined) {
-    throw queryErr;
+  if (parseError !== undefined) {
+    console.error("Error parsing block number:", parseError);
+    throw parseError;
   }
 
-  const [handleError, result] = trySync(() =>
-    handleDoubleMapEntries(
-      queryRes,
-      NAMESPACE_OWNERSHIP_SCHEMA,
-      sb_namespace_path,
-      sb_some(NAMESPACE_METADATA_SCHEMA),
-    ),
-  );
-
-  if (handleError !== undefined) {
-    throw handleError;
+  const [hashError, blockHashHex] = trySync(() => blockHeader.hash.toHex());
+  if (hashError !== undefined) {
+    console.error("Error converting block hash to hex:", hashError);
+    throw hashError;
   }
 
-  const [entriesMap] = result;
-  const namespaceEntries: NamespaceEntry[] = [];
+  const lastBlock = {
+    blockHeader,
+    blockNumber,
+    blockHash: blockHeader.hash,
+    blockHashHex,
+    apiAtBlock,
+  };
 
-  for (const [_ownershipKey, pathsMap] of entriesMap) {
-    // match(ownershipKey)({
-    //   Account(_accountAddress) {},
-    //   System() {},
-    // });
-    for (const [pathSegments, metadata] of pathsMap) {
-      namespaceEntries.push({
-        path: pathSegments,
-        createdAt: metadata.createdAt,
-        deposit: metadata.deposit,
-      });
-    }
-  }
-
-  return namespaceEntries;
+  return lastBlock;
 }
-
-// ---- Namespace Path Creation Cost ----
 
 /**
  * Queries the cost of creating a namespace path.
@@ -186,20 +144,4 @@ export async function queryNamespacePathCreationCost(
   }
 
   return makeOk(parsedResult);
-}
-
-// ==== Transactions ====
-
-/**
- * Create a new namespace, automatically creating missing intermediate nodes
- */
-export function createNamespace(api: ApiPromise, path: string) {
-  return api.tx.torus0.createNamespace(path);
-}
-
-/**
- * Delete a namespace and all its children
- */
-export function deleteNamespace(api: ApiPromise, path: string) {
-  return api.tx.torus0.deleteNamespace(path);
 }

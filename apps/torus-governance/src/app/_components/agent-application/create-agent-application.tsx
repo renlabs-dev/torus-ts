@@ -10,10 +10,14 @@ import Link from "next/link";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
+import { submitApplication } from "@torus-network/sdk/chain";
+import type { SS58Address } from "@torus-network/sdk/types";
 import { formatToken } from "@torus-network/torus-utils/torus/token";
-import { tryAsync, trySync } from "@torus-network/torus-utils/try-catch";
+import { trySync } from "@torus-network/torus-utils/try-catch";
 
+import { useTorus } from "@torus-ts/torus-provider";
 import type { TransactionResult } from "@torus-ts/torus-provider/types";
+import { useSendTransaction } from "@torus-ts/torus-provider/use-send-transaction";
 import { Button } from "@torus-ts/ui/components/button";
 import { Checkbox } from "@torus-ts/ui/components/checkbox";
 import {
@@ -56,12 +60,21 @@ type AgentApplicationFormData = z.infer<typeof agentApplicationSchema>;
 export function CreateAgentApplication() {
   const {
     isAccountConnected,
-    AddAgentApplication,
     accountFreeBalance,
     agentApplications,
     selectedAccount,
     networkConfigs,
   } = useGovernance();
+
+  const { api, torusApi, wsEndpoint } = useTorus();
+
+  const { sendTx, isPending } = useSendTransaction({
+    api,
+    selectedAccount,
+    wsEndpoint,
+    wallet: torusApi,
+    transactionType: "Submit Agent Application",
+  });
   const { toast } = useToast();
 
   const [activeTab, setActiveTab] = useState("edit");
@@ -148,10 +161,6 @@ export function CreateAgentApplication() {
     return accountFreeBalance.data > networkConfigs.data.agentApplicationCost;
   })();
 
-  const refetchHandler = async () => {
-    await agentApplications.refetch();
-  };
-
   const { uploadFile, uploading } = useFileUploader();
 
   async function handleFileUpload(fileToUpload: File): Promise<void> {
@@ -175,24 +184,29 @@ export function CreateAgentApplication() {
 
     if (accountFreeBalance.data > daoApplicationCost) {
       const ipfsUri = `ipfs://${cid}`;
-      const [error, _] = await tryAsync(
-        AddAgentApplication({
-          applicationKey: getValues("applicationKey"),
-          IpfsHash: ipfsUri,
-          removing: false,
-          callback: (tx) => setTransactionStatus(tx),
-          refetchHandler,
-        }),
-      );
-      if (error !== undefined) {
-        toast.error(error.message || "Error submitting agent application");
-        setTransactionStatus({
-          status: "ERROR",
-          finalized: true,
-          message: "Failed to submit agent application",
-        });
+      if (!api || !sendTx) {
+        toast.error("API not ready");
         return;
       }
+
+      const [sendErr, sendRes] = await sendTx(
+        submitApplication(
+          api,
+          getValues("applicationKey") as SS58Address,
+          ipfsUri,
+          false,
+        ),
+      );
+
+      if (sendErr !== undefined) {
+        return; // Error already handled by sendTx
+      }
+
+      const { tracker } = sendRes;
+
+      tracker.on("inBlock", () => {
+        void agentApplications.refetch();
+      });
     } else {
       toast.error(
         `Insufficient balance to create Agent Application. Required: ${daoApplicationCost} but got ${formatToken(accountFreeBalance.data)}`,
@@ -422,10 +436,17 @@ export function CreateAgentApplication() {
             variant="default"
             className="flex items-center gap-2"
             disabled={
-              !userHasEnoughBalance || !form.formState.isValid || uploading
+              !userHasEnoughBalance ||
+              !form.formState.isValid ||
+              uploading ||
+              isPending
             }
           >
-            {uploading ? "Awaiting Signature" : "Submit Application"}
+            {uploading
+              ? "Uploading..."
+              : isPending
+                ? "Submitting..."
+                : "Submit Application"}
           </Button>
         )}
         {transactionStatus.status && (

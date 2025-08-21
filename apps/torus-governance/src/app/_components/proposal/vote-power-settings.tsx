@@ -1,39 +1,52 @@
 "use client";
 
+import { Info } from "lucide-react";
+
+import {
+  disableVoteDelegation,
+  enableVoteDelegation,
+} from "@torus-network/sdk/chain";
+
 import { useTorus } from "@torus-ts/torus-provider";
-import type { TransactionResult } from "@torus-ts/torus-provider/types";
+import { useSendTransaction } from "@torus-ts/torus-provider/use-send-transaction";
 import { Button } from "@torus-ts/ui/components/button";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@torus-ts/ui/components/popover";
-import { TransactionStatus } from "@torus-ts/ui/components/transaction-status";
+
 import { useGovernance } from "~/context/governance-provider";
-import { Info } from "lucide-react";
-import { useState } from "react";
 
 export function VotePowerSettings() {
-  const { updateDelegatingVotingPower } = useTorus();
+  const { api, selectedAccount, torusApi, wsEndpoint } = useTorus();
+
+  const { sendTx, isPending } = useSendTransaction({
+    api,
+    selectedAccount,
+    wsEndpoint,
+    wallet: torusApi,
+    transactionType: "Update Vote Delegation",
+  });
   const { accountsNotDelegatingVoting, isAccountPowerUser } = useGovernance();
 
-  const [status, setStatus] = useState<TransactionResult>({
-    status: null,
-    finalized: false,
-    message: null,
-  });
+  async function handleVote(): Promise<void> {
+    if (!api || !sendTx) return;
 
-  function handleCallback(callbackReturn: TransactionResult): void {
-    setStatus(callbackReturn);
-  }
+    const transaction = isAccountPowerUser
+      ? enableVoteDelegation(api)
+      : disableVoteDelegation(api);
 
-  function handleVote(): void {
-    void updateDelegatingVotingPower({
-      isDelegating: isAccountPowerUser,
-      callback: handleCallback,
-      refetchHandler: async () => {
-        await accountsNotDelegatingVoting.refetch();
-      },
+    const [sendErr, sendRes] = await sendTx(transaction);
+
+    if (sendErr !== undefined) {
+      return; // Error already handled by sendTx
+    }
+
+    const { tracker } = sendRes;
+
+    tracker.on("finalized", () => {
+      void accountsNotDelegatingVoting.refetch();
     });
   }
 
@@ -74,16 +87,13 @@ export function VotePowerSettings() {
         <Button
           className="flex w-full items-center py-2.5 font-semibold transition duration-200"
           onClick={() => {
-            handleVote();
+            void handleVote();
           }}
           variant="outline"
+          disabled={isPending}
         >
           {isAccountPowerUser ? "Delegate voting power" : "Become a Power User"}
         </Button>
-
-        {status.status && (
-          <TransactionStatus status={status.status} message={status.message} />
-        )}
       </PopoverContent>
     </Popover>
   );
