@@ -37,11 +37,12 @@ export function Stake() {
     selectedAccount,
     minAllowedStake,
     estimatedFee,
+    maxTransferableAmount,
   } = useWallet();
 
   const { api, torusApi, wsEndpoint } = useTorus();
 
-  const { sendTx, isPending } = useSendTransaction({
+  const { sendTx, isPending, isSigning } = useSendTransaction({
     api,
     selectedAccount,
     wsEndpoint,
@@ -62,7 +63,6 @@ export function Stake() {
 
   const freeBalance = accountFreeBalance.data ?? 0n;
 
-  const maxAmountRef = useRef<string>("");
   const reviewDialogRef = useRef<ReviewTransactionDialogHandle>(null);
   const currentTxIdRef = useRef<string | null>(null);
 
@@ -195,9 +195,10 @@ export function Stake() {
         selectedAccount={selectedAccount}
         usdPrice={usdPrice}
         minAllowedStakeData={minAllowedStakeData}
-        maxAmountRef={maxAmountRef}
+        maxTransferableAmount={maxTransferableAmount}
         estimatedFee={estimatedFee}
         isPending={isPending}
+        isSigning={isSigning}
         handleSelectValidator={handleSelectValidator}
         onReviewClick={handleReviewClick}
         handleAmountChange={handleAmountChange}

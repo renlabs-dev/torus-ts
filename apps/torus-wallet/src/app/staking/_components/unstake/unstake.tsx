@@ -50,7 +50,7 @@ export function Unstake() {
 
   const { api, torusApi, wsEndpoint } = useTorus();
 
-  const { sendTx, isPending } = useSendTransaction({
+  const { sendTx, isPending, isSigning } = useSendTransaction({
     api,
     selectedAccount,
     wsEndpoint,
@@ -72,8 +72,8 @@ export function Unstake() {
   const freeBalance = accountFreeBalance.data ?? 0n;
 
   const [stakedAmount, setStakedAmount] = useState<bigint | null>(null);
+  const [maxUnstakeAmount, setMaxUnstakeAmount] = useState<string>("");
 
-  const maxAmountRef = useRef<string>("");
   const reviewDialogRef = useRef<ReviewTransactionDialogHandle>(null);
   const currentTxIdRef = useRef<string | null>(null);
   const formRef = useRef<HTMLFormElement>(null);
@@ -101,10 +101,10 @@ export function Unstake() {
         );
         if (staked) {
           setStakedAmount(staked.stake);
-          maxAmountRef.current = fromNano(staked.stake);
+          setMaxUnstakeAmount(fromNano(staked.stake));
         } else {
           setStakedAmount(null);
-          maxAmountRef.current = "";
+          setMaxUnstakeAmount("");
         }
       }
     });
@@ -224,9 +224,10 @@ export function Unstake() {
         selectedAccount={selectedAccount}
         usdPrice={usdPrice}
         minAllowedStakeData={minAllowedStakeData}
-        maxAmountRef={maxAmountRef}
+        maxUnstakeAmount={maxUnstakeAmount}
         estimatedFee={estimatedFee}
         isPending={isPending}
+        isSigning={isSigning}
         handleSelectValidator={handleSelectValidator}
         onReviewClick={handleReviewClick}
         handleAmountChange={handleAmountChange}

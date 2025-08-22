@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -44,7 +44,7 @@ export function TransferStake() {
 
   const { api, torusApi, wsEndpoint } = useTorus();
 
-  const { sendTx, isPending } = useSendTransaction({
+  const { sendTx, isPending, isSigning } = useSendTransaction({
     api,
     selectedAccount,
     wsEndpoint,
@@ -65,7 +65,8 @@ export function TransferStake() {
 
   const freeBalance = accountFreeBalance.data ?? 0n;
 
-  const maxAmountRef = useRef<string>("");
+  const [maxTransferStakeAmount, setMaxTransferStakeAmount] =
+    useState<string>("");
   const stakedValidators = useMemo(
     () => accountStakedBy.data ?? [],
     [accountStakedBy.data],
@@ -80,7 +81,7 @@ export function TransferStake() {
     MIN_EXISTENTIAL_BALANCE,
     freeBalance,
     estimatedFee,
-    maxAmountRef,
+    { current: maxTransferStakeAmount },
   );
 
   const form = useForm<TransferStakeFormValues>({
@@ -102,9 +103,9 @@ export function TransferStake() {
           v.address === validatorAddress,
       );
       if (validatorData) {
-        maxAmountRef.current = fromNano(validatorData.stake.toString());
+        setMaxTransferStakeAmount(fromNano(validatorData.stake.toString()));
       } else {
-        maxAmountRef.current = "0";
+        setMaxTransferStakeAmount("0");
         console.warn(
           `Validator ${validatorAddress} not found in staked validators`,
         );
@@ -140,7 +141,7 @@ export function TransferStake() {
 
   useEffect(() => {
     reset();
-    maxAmountRef.current = "";
+    setMaxTransferStakeAmount("");
   }, [selectedAccount?.address, reset]);
 
   const refetchHandler = async () => {
@@ -256,9 +257,10 @@ export function TransferStake() {
         form={form}
         selectedAccount={selectedAccount}
         usdPrice={usdPrice}
-        maxAmountRef={maxAmountRef}
+        maxTransferStakeAmount={maxTransferStakeAmount}
         estimatedFee={estimatedFee}
         isPending={isPending}
+        isSigning={isSigning}
         handleSelectFromValidatorAction={handleSelectFromValidator}
         handleSelectToValidatorAction={handleSelectToValidator}
         onReviewClickAction={handleReviewClick}

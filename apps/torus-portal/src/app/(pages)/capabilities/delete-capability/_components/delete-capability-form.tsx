@@ -62,7 +62,7 @@ export function DeleteCapabilityForm({
   const { toast } = useToast();
   const isMobile = useIsMobile();
 
-  const { sendTx, isPending } = useSendTransaction({
+  const { sendTx, isPending, isSigning } = useSendTransaction({
     api,
     selectedAccount,
     wsEndpoint,
@@ -153,7 +153,7 @@ export function DeleteCapabilityForm({
 
     const { tracker } = sendRes;
 
-    tracker.on("inBlock", () => {
+    tracker.on("finalized", () => {
       form.reset();
       void namespaceEntries.refetch();
     });
@@ -246,11 +246,12 @@ export function DeleteCapabilityForm({
               !isAccountConnected ||
               !selectedPath ||
               watchedSegment < 2 ||
-              isPending
+              isPending ||
+              isSigning
             }
           >
             <Trash2 className="h-4 w-4 mr-2" />
-            {isPending ? "Deleting..." : "Delete Capability"}
+            {isPending || isSigning ? "Deleting..." : "Delete Capability"}
           </Button>
         </div>
       </form>

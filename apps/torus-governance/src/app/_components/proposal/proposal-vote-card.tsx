@@ -41,8 +41,9 @@ const AlreadyVotedCardContent = (props: {
   voted: VoteStatus;
   handleRemoveVote: () => void;
   isPending: boolean;
+  isSigning: boolean;
 }) => {
-  const { voted, handleRemoveVote, isPending } = props;
+  const { voted, handleRemoveVote, isPending, isSigning } = props;
 
   const getVotedText = (voted: VoteStatus) => {
     if (voted === "FAVORABLE") {
@@ -60,7 +61,7 @@ const AlreadyVotedCardContent = (props: {
           font-semibold text-white transition duration-200"
         onClick={handleRemoveVote}
         type="button"
-        disabled={isPending}
+        disabled={isPending || isSigning}
       >
         {isPending ? "Removing..." : "Remove Vote"}{" "}
         <TicketX className="h-5 w-5" />
@@ -76,6 +77,7 @@ const VoteCardFunctionsContent = (props: {
   handleVote: () => void;
   setVote: (vote: VoteStatus) => void;
   isPending: boolean;
+  isSigning: boolean;
 }) => {
   const {
     handleVote,
@@ -84,6 +86,7 @@ const VoteCardFunctionsContent = (props: {
     isPowerUser,
     isAccountConnected,
     isPending,
+    isSigning,
   } = props;
 
   function handleVotePreference(value: VoteStatus | "") {
@@ -100,7 +103,7 @@ const VoteCardFunctionsContent = (props: {
           onValueChange={(voteType: VoteStatus | "") =>
             handleVotePreference(voteType)
           }
-          disabled={isPending || !isPowerUser}
+          disabled={isPending || isSigning || !isPowerUser}
           className="flex w-full gap-2"
         >
           {voteOptions.map((option) => (
@@ -108,9 +111,9 @@ const VoteCardFunctionsContent = (props: {
               key={option}
               variant="outline"
               value={option}
-              className={`w-full capitalize ${isPending && "cursor-not-allowed"}
+              className={`w-full capitalize ${isPending ? "cursor-not-allowed" : ""}
               ${option === vote ? "border-white" : "border-muted bg-card"}`}
-              disabled={isPending}
+              disabled={isPending || isSigning}
             >
               {option.toLocaleLowerCase()}
             </ToggleGroupItem>
@@ -121,7 +124,9 @@ const VoteCardFunctionsContent = (props: {
           variant="outline"
           className={`w-full
             ${vote === "UNVOTED" || isPending ? "cursor-not-allowed text-gray-400" : ""} `}
-          disabled={vote === "UNVOTED" || isPending || !isPowerUser}
+          disabled={
+            vote === "UNVOTED" || isPending || isSigning || !isPowerUser
+          }
           onClick={handleVote}
           type="button"
         >
@@ -166,7 +171,7 @@ export function ProposalVoteCard(props: Readonly<ProposalVoteCardProps>) {
 
   const { api, selectedAccount, torusApi, wsEndpoint } = useTorus();
 
-  const { sendTx, isPending } = useSendTransaction({
+  const { sendTx, isPending, isSigning } = useSendTransaction({
     api,
     selectedAccount,
     wsEndpoint,
@@ -225,6 +230,7 @@ export function ProposalVoteCard(props: Readonly<ProposalVoteCardProps>) {
           handleRemoveVote={handleRemoveVote}
           voted={voted}
           isPending={isPending}
+          isSigning={isSigning}
         />
       </CardBarebones>
     );
@@ -241,6 +247,7 @@ export function ProposalVoteCard(props: Readonly<ProposalVoteCardProps>) {
             setVote={setVote}
             isPowerUser={isAccountPowerUser}
             isPending={isPending}
+            isSigning={isSigning}
           />
         </CardBarebones>
       );

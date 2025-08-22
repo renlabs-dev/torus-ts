@@ -1,7 +1,5 @@
 "use client";
 
-import type { RefObject } from "react";
-
 import type { UseFormReturn } from "react-hook-form";
 
 import type { BrandTag } from "@torus-network/torus-utils";
@@ -26,9 +24,10 @@ import type { UnstakeFormValues } from "./unstake-form-schema";
 interface UnstakeFormProps {
   form: UseFormReturn<UnstakeFormValues>;
   selectedAccount: InjectedAccountWithMeta | null;
-  maxAmountRef: RefObject<string>;
+  maxUnstakeAmount: string;
   estimatedFee: bigint | undefined;
   isPending: boolean;
+  isSigning: boolean;
   handleSelectValidator: (
     address: BrandTag<"SS58Address"> & string,
   ) => Promise<void>;
@@ -42,9 +41,10 @@ interface UnstakeFormProps {
 export function UnstakeForm({
   form,
   selectedAccount,
-  maxAmountRef,
+  maxUnstakeAmount,
   estimatedFee,
   isPending,
+  isSigning,
   handleSelectValidator,
   onReviewClick,
   handleAmountChange,
@@ -91,7 +91,7 @@ export function UnstakeForm({
                     amount={field.value}
                     usdPrice={usdPrice}
                     disabled={!selectedAccount?.address}
-                    availableFunds={maxAmountRef.current || "0"}
+                    availableFunds={maxUnstakeAmount || "0"}
                     onAmountChangeAction={handleAmountChange}
                     minAllowedStakeData={minAllowedStakeData}
                   />
@@ -107,7 +107,7 @@ export function UnstakeForm({
             type="button"
             variant="outline"
             onClick={onReviewClick}
-            disabled={!selectedAccount?.address || isPending}
+            disabled={!selectedAccount?.address || isPending || isSigning}
           >
             {isPending ? "Processing..." : "Review & Submit Transaction"}
           </Button>

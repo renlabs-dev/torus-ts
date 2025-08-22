@@ -72,7 +72,7 @@ export function AddEmissionProposalForm({
     wsEndpoint,
   } = useTorus();
 
-  const { sendTx, isPending } = useSendTransaction({
+  const { sendTx, isPending, isSigning } = useSendTransaction({
     api,
     selectedAccount,
     wsEndpoint,
@@ -127,7 +127,7 @@ export function AddEmissionProposalForm({
 
     const { tracker } = sendRes;
 
-    tracker.on("inBlock", () => {
+    tracker.on("finalized", () => {
       form.reset();
       onSuccess?.();
     });
@@ -319,7 +319,9 @@ export function AddEmissionProposalForm({
           <Button
             type="submit"
             className="w-full"
-            disabled={!isAccountConnected || uploading || isPending}
+            disabled={
+              !isAccountConnected || uploading || isPending || isSigning
+            }
           >
             <Plus className="h-4 w-4 mr-2" />
             {uploading

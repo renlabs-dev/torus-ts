@@ -7,6 +7,7 @@ import type { UseQueryResult } from "@tanstack/react-query";
 import type { StakeData } from "@torus-network/sdk/cached-queries";
 import type { LastBlock } from "@torus-network/sdk/chain";
 import type { Balance, SS58Address } from "@torus-network/sdk/types";
+import { fromNano } from "@torus-network/torus-utils/torus/token";
 
 import {
   useCachedStakeOut,
@@ -41,6 +42,8 @@ interface WalletContextType {
   estimatedFee: bigint | undefined;
   isFeeLoading: boolean;
   feeError: Error | null;
+  // Maximum transferable amount (as string for forms)
+  maxTransferableAmount: string;
 }
 
 const WalletContext = createContext<WalletContextType | null>(null);
@@ -81,6 +84,27 @@ export function WalletProvider({ children }: WalletProviderProps) {
     error: feeError,
   } = useTransactionFee(placeholderTx, placeholderAddr);
 
+  // Calculate maximum transferable amount
+  const freeBalance = accountFreeBalance.data ?? 0n;
+  const MIN_EXISTENTIAL_BALANCE = 100000000000000000n; // 0.1 TORUS
+
+  const maxTransferableAmount = (() => {
+    if (!torus.selectedAccount?.address || freeBalance <= 0n || !estimatedFee) {
+      return "";
+    }
+
+    // Apply 225% buffer to estimated fee (matching old implementation)
+    const feeBuffer = 225n;
+    const adjustedFee = (estimatedFee * feeBuffer) / 100n;
+
+    // Calculate max transferable amount considering fee and existential deposit
+    const totalReserved = adjustedFee + MIN_EXISTENTIAL_BALANCE;
+    const maxTransferable =
+      freeBalance > totalReserved ? freeBalance - totalReserved : 0n;
+
+    return fromNano(maxTransferable);
+  })();
+
   return (
     <WalletContext.Provider
       value={{
@@ -95,6 +119,7 @@ export function WalletProvider({ children }: WalletProviderProps) {
         estimatedFee,
         isFeeLoading,
         feeError,
+        maxTransferableAmount,
       }}
     >
       {children}

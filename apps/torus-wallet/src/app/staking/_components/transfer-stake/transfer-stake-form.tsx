@@ -1,7 +1,5 @@
 "use client";
 
-import type { RefObject } from "react";
-
 import type { UseFormReturn } from "react-hook-form";
 
 import type { BrandTag } from "@torus-network/torus-utils";
@@ -26,9 +24,10 @@ import type { TransferStakeFormValues } from "./transfer-stake-form-schema";
 interface TransferStakeFormProps {
   form: UseFormReturn<TransferStakeFormValues>;
   selectedAccount: InjectedAccountWithMeta | null;
-  maxAmountRef: RefObject<string>;
+  maxTransferStakeAmount: string;
   estimatedFee: bigint | undefined;
   isPending: boolean;
+  isSigning: boolean;
   handleSelectFromValidatorAction: (
     address: BrandTag<"SS58Address"> & string,
   ) => Promise<void>;
@@ -37,7 +36,7 @@ interface TransferStakeFormProps {
   ) => Promise<void>;
   onReviewClickAction: () => Promise<void>;
   handleAmountChangeAction: (amount: string) => Promise<void>;
-  formRef: RefObject<HTMLFormElement | null>;
+  formRef: React.RefObject<HTMLFormElement | null>;
   fromValidatorValue: string;
   usdPrice: number;
   minAllowedStakeData: bigint;
@@ -46,9 +45,10 @@ interface TransferStakeFormProps {
 export function TransferStakeForm({
   form,
   selectedAccount,
-  maxAmountRef,
+  maxTransferStakeAmount,
   estimatedFee,
   isPending,
+  isSigning,
   handleSelectFromValidatorAction,
   handleSelectToValidatorAction,
   onReviewClickAction,
@@ -117,7 +117,7 @@ export function TransferStakeForm({
                     amount={field.value}
                     usdPrice={usdPrice}
                     disabled={!selectedAccount?.address}
-                    availableFunds={maxAmountRef.current || "0"}
+                    availableFunds={maxTransferStakeAmount || "0"}
                     onAmountChangeAction={handleAmountChangeAction}
                     minAllowedStakeData={minAllowedStakeData}
                   />
@@ -133,7 +133,7 @@ export function TransferStakeForm({
             type="button"
             variant="outline"
             onClick={onReviewClickAction}
-            disabled={!selectedAccount?.address || isPending}
+            disabled={!selectedAccount?.address || isPending || isSigning}
           >
             {isPending ? "Processing..." : "Review & Submit Transaction"}
           </Button>

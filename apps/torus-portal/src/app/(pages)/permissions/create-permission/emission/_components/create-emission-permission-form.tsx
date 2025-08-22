@@ -36,7 +36,7 @@ export function CreateEmissionPermissionForm() {
   } = useTorus();
   const { toast } = useToast();
 
-  const { sendTx, isPending } = useSendTransaction({
+  const { sendTx, isPending, isSigning } = useSendTransaction({
     api,
     selectedAccount,
     wsEndpoint,
@@ -98,7 +98,7 @@ export function CreateEmissionPermissionForm() {
 
       const { tracker } = sendRes;
 
-      tracker.on("inBlock", () => {
+      tracker.on("finalized", () => {
         form.reset();
       });
     },
@@ -144,9 +144,9 @@ export function CreateEmissionPermissionForm() {
             form="emission-permission-form"
             className="w-full"
             variant="outline"
-            disabled={!isAccountConnected || isPending}
+            disabled={!isAccountConnected || isPending || isSigning}
           >
-            {isPending ? (
+            {isPending || isSigning ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 Creating...

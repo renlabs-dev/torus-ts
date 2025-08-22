@@ -27,12 +27,17 @@ import { createSendFormSchema } from "./send-form-schema";
 export const MIN_ALLOWED_STAKE_SAFEGUARD = 500000000000000000n;
 
 export function Send() {
-  const { accountFreeBalance, selectedAccount, minAllowedStake, estimatedFee } =
-    useWallet();
+  const {
+    accountFreeBalance,
+    selectedAccount,
+    minAllowedStake,
+    estimatedFee,
+    maxTransferableAmount,
+  } = useWallet();
 
   const { api, torusApi, wsEndpoint } = useTorus();
 
-  const { sendTx, isPending } = useSendTransaction({
+  const { sendTx, isPending, isSigning } = useSendTransaction({
     api,
     selectedAccount,
     wsEndpoint,
@@ -52,7 +57,6 @@ export function Send() {
   const minAllowedStakeData =
     minAllowedStake.data ?? MIN_ALLOWED_STAKE_SAFEGUARD;
 
-  const maxAmountRef = useRef<string>("");
   const reviewDialogRef = useRef<ReviewTransactionDialogHandle>(null);
   const currentTxIdRef = useRef<string | null>(null);
 
@@ -172,12 +176,13 @@ export function Send() {
         form={form}
         selectedAccount={selectedAccount}
         usdPrice={usdPrice}
-        maxAmountRef={maxAmountRef}
+        maxTransferableAmount={maxTransferableAmount}
         estimatedFee={estimatedFee}
         onReviewClick={handleReviewClick}
         handleAmountChange={handleAmountChange}
         minAllowedStakeData={minAllowedStakeData}
         isPending={isPending}
+        isSigning={isSigning}
       />
       <ReviewTransactionDialog
         ref={reviewDialogRef}

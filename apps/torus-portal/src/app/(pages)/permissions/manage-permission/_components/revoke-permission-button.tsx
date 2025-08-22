@@ -36,7 +36,7 @@ export function RevokePermissionButton({
 
   const queryClient = useQueryClient();
 
-  const { sendTx, isPending } = useSendTransaction({
+  const { sendTx, isPending, isSigning } = useSendTransaction({
     api,
     selectedAccount,
     wsEndpoint,
@@ -70,7 +70,7 @@ export function RevokePermissionButton({
 
     const { tracker } = sendRes;
 
-    tracker.on("inBlock", () => {
+    tracker.on("finalized", () => {
       onSuccess?.();
       void refreshData();
     });
@@ -101,7 +101,7 @@ export function RevokePermissionButton({
           <AlertDialogAction
             onClick={handleRevoke}
             className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-            disabled={isPending}
+            disabled={isPending || isSigning}
           >
             {isPending ? "Revoking..." : "Revoke"}
           </AlertDialogAction>

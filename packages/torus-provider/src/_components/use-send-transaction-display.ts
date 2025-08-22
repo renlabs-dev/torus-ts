@@ -1,6 +1,6 @@
 import type { ApiPromise } from "@polkadot/api";
 import type { Enum } from "rustie";
-import { if_let, match } from "rustie";
+import { match } from "rustie";
 
 import type { SbDispatchError, TxEvent } from "@torus-network/sdk/extrinsics";
 import type { HexH256 } from "@torus-network/sdk/types";
@@ -303,34 +303,36 @@ export function mapDispatchErrorToMessage(
 
     BadOrigin: () => `${prefix}Invalid transaction origin`,
 
-    Module: ({ index, error: errorIndex, message }) => {
-      return if_let(message, "Some")(
-        (msg) => `${prefix}${msg}`,
-        () => {
-          // Try to resolve module error using registry
-          if (api) {
-            const [moduleError, metaError] = trySync(() => {
-              // Use the simplified module error lookup
-              return api.registry.findMetaError({
-                index: api.registry.createType("u8", index),
-                error: api.registry.createType("u8", errorIndex),
-              });
-            });
-            if (moduleError !== undefined) {
-              console.warn(moduleError);
-            }
+    // Module: ({ index, error: errorIndex }) => {
+    Module: (error) => {
+      // Try to resolve module error using registry
+      if (api) {
+        const [moduleError, metaError] = trySync(() => {
+          // Use the simplified module error lookup
+          // return api.registry.findMetaError({
+          //   index: api.registry.createType("u8", index),
+          //   error: api.registry.createType("u8", Number(errorIndex)),
+          // });
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-explicit-any
+          return api.registry.findMetaError(error as any);
+        });
+        if (moduleError !== undefined) {
+          console.warn(moduleError);
+        }
 
-            if (moduleError === undefined) {
-              const { section, name, docs } = metaError;
-              const docString = docs.length > 0 ? ` - ${docs.join(" ")}` : "";
-              return `${prefix}${section}.${name}${docString}`;
-            }
-          }
+        if (moduleError === undefined) {
+          const { section, name, docs } = metaError;
+          const docString = docs.length > 0 ? ` - ${docs.join(" ")}` : "";
+          return `${prefix}${section}.${name}${docString}`;
+        }
+      }
 
-          // Fallback to generic module error
-          return `${prefix}Module error ${index}.${errorIndex}`;
-        },
-      );
+      // Fallback to generic module error
+
+      // return `${prefix}Module error ${index}.${errorIndex}`;
+
+      // eslint-disable-next-line @typescript-eslint/no-base-to-string
+      return `${prefix}Module error ${String(error)}`;
     },
 
     ConsumerRemaining: () =>
