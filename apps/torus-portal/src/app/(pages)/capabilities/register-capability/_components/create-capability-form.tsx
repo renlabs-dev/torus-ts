@@ -222,7 +222,8 @@ export function RegisterCapabilityForm({
               isAccountConnected &&
                 selectedPrefix &&
                 fullPath.trim().length > 0 &&
-                !isPending && !isSigning,
+                !isPending &&
+                !isSigning,
             )}
             isLoading={namespaceFee.isLoading}
             error={namespaceFee.error}
@@ -244,7 +245,7 @@ export function RegisterCapabilityForm({
               isSigning
             }
           >
-            {(isPending || isSigning) ? "Registering..." : "Register Capability"}
+            {isPending || isSigning ? "Registering..." : "Register Capability"}
           </Button>
         </div>
       </form>

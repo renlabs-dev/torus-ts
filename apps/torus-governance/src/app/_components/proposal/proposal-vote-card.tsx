@@ -124,7 +124,9 @@ const VoteCardFunctionsContent = (props: {
           variant="outline"
           className={`w-full
             ${vote === "UNVOTED" || isPending ? "cursor-not-allowed text-gray-400" : ""} `}
-          disabled={vote === "UNVOTED" || isPending || isSigning || !isPowerUser}
+          disabled={
+            vote === "UNVOTED" || isPending || isSigning || !isPowerUser
+          }
           onClick={handleVote}
           type="button"
         >

@@ -192,7 +192,12 @@ export function RegisterAgentForm({
             type="submit"
             variant="outline"
             className="w-full"
-            disabled={!isAccountConnected || isPending || isSigning || isAlreadyRegistered}
+            disabled={
+              !isAccountConnected ||
+              isPending ||
+              isSigning ||
+              isAlreadyRegistered
+            }
           >
             {isPending ? "Registering..." : "Register Agent"}
           </Button>

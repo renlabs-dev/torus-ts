@@ -227,10 +227,15 @@ export function EditPermissionForm({
                     variant="outline"
                     className="w-full"
                     disabled={
-                      !isAccountConnected || !selectedPermissionId || isPending || isSigning
+                      !isAccountConnected ||
+                      !selectedPermissionId ||
+                      isPending ||
+                      isSigning
                     }
                   >
-                    {(isPending || isSigning) ? "Updating..." : "Update Permission"}
+                    {isPending || isSigning
+                      ? "Updating..."
+                      : "Update Permission"}
                   </Button>
                 </>
               )}

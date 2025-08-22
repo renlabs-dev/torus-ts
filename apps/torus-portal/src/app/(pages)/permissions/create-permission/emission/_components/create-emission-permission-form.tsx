@@ -146,7 +146,7 @@ export function CreateEmissionPermissionForm() {
             variant="outline"
             disabled={!isAccountConnected || isPending || isSigning}
           >
-            {(isPending || isSigning) ? (
+            {isPending || isSigning ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 Creating...

@@ -251,7 +251,7 @@ export function DeleteCapabilityForm({
             }
           >
             <Trash2 className="h-4 w-4 mr-2" />
-            {(isPending || isSigning) ? "Deleting..." : "Delete Capability"}
+            {isPending || isSigning ? "Deleting..." : "Delete Capability"}
           </Button>
         </div>
       </form>

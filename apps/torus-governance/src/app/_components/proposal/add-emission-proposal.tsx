@@ -319,7 +319,9 @@ export function AddEmissionProposalForm({
           <Button
             type="submit"
             className="w-full"
-            disabled={!isAccountConnected || uploading || isPending || isSigning}
+            disabled={
+              !isAccountConnected || uploading || isPending || isSigning
+            }
           >
             <Plus className="h-4 w-4 mr-2" />
             {uploading
