@@ -238,23 +238,53 @@ export function NodeDetailsCard({
                             </div>
 
                             {details.namespace_permissions &&
-                              details.namespace_permission_paths
-                                ?.namespacePath && (
-                                <div>
-                                  <span className="text-xs text-gray-500">
-                                    Capability path
-                                  </span>
-                                  <div className="text-sm text-gray-300 font-mono break-all">
-                                    <ShortenedCapabilityPath
-                                      path={
-                                        details.namespace_permission_paths
-                                          .namespacePath
-                                      }
-                                      showTooltip={true}
-                                    />
+                              (() => {
+                                // Get all capability paths from all database entries with the same permission_id
+                                const allPermissionEntries =
+                                  allPermissions?.filter(
+                                    (p) =>
+                                      p.permissions.permissionId ===
+                                      details.permissions.permissionId,
+                                  ) ?? [];
+
+                                const allPaths = new Set<string>();
+                                for (const entry of allPermissionEntries) {
+                                  if (
+                                    entry.namespace_permission_paths
+                                      ?.namespacePath
+                                  ) {
+                                    allPaths.add(
+                                      entry.namespace_permission_paths
+                                        .namespacePath,
+                                    );
+                                  }
+                                }
+
+                                const paths = Array.from(allPaths);
+
+                                if (paths.length === 0) {
+                                  return null;
+                                }
+
+                                return (
+                                  <div>
+                                    <span className="text-xs text-gray-500">
+                                      Capability path
+                                      {paths.length > 1 ? "s" : ""}
+                                    </span>
+                                    <div className="text-sm text-gray-300 font-mono break-all space-y-1">
+                                      {paths.map((path, index) => (
+                                        <div key={index}>
+                                          <ShortenedCapabilityPath
+                                            path={path}
+                                            showTooltip={true}
+                                          />
+                                        </div>
+                                      ))}
+                                    </div>
                                   </div>
-                                </div>
-                              )}
+                                );
+                              })()}
                           </>
                         )}
                       </AccordionContent>

@@ -33,6 +33,81 @@ export const formatCapabilityPath = (path: string): string => {
   return `${first}.${second}.[…].${last}`;
 };
 
+/**
+ * Safely extracts capability paths from various data formats.
+ * Handles arrays, strings, Maps, objects, and other complex structures.
+ *
+ * @param namespacePaths - The namespace paths data (can be various formats)
+ * @returns Object containing paths array and concatenated path string
+ *
+ * @example
+ * ```ts
+ * getCapabilityPaths(["agent.path1", "agent.path2"])
+ * // Returns: { paths: ["agent.path1", "agent.path2"], pathString: "agent.path1 agent.path2" }
+ *
+ * getCapabilityPaths("agent.single.path")
+ * // Returns: { paths: ["agent.single.path"], pathString: "agent.single.path" }
+ * ```
+ */
+export function getCapabilityPaths(namespacePaths: unknown): {
+  paths: string[];
+  pathString: string;
+} {
+  const extractPaths = (data: unknown): string[] => {
+    if (Array.isArray(data)) return data.map(String);
+    if (typeof data === "string") {
+      return data.includes(",") ? data.split(",").map((s) => s.trim()) : [data];
+    }
+
+    if (data && typeof data === "object") {
+      try {
+        if (data instanceof Map) {
+          const paths: string[] = [];
+          for (const value of data.values()) {
+            if (Array.isArray(value)) {
+              paths.push(
+                ...value.map((item) =>
+                  Array.isArray(item) ? item.join(".") : String(item),
+                ),
+              );
+            } else {
+              paths.push(String(value));
+            }
+          }
+          return paths.filter(Boolean);
+        }
+
+        if ("values" in data && typeof data.values === "function") {
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+          const values = Array.from(data.values() as Iterable<unknown>);
+          return values
+            .flatMap((v) => (Array.isArray(v) ? v.map(String) : [String(v)]))
+            .filter(Boolean);
+        }
+
+        const keys = Object.keys(data).sort((a, b) => {
+          const [numA, numB] = [parseInt(a, 10), parseInt(b, 10)];
+          return !isNaN(numA) && !isNaN(numB)
+            ? numA - numB
+            : a.localeCompare(b);
+        });
+
+        return keys
+          .map((key) => String((data as Record<string, unknown>)[key]))
+          .filter(Boolean);
+      } catch {
+        return [];
+      }
+    }
+
+    return [];
+  };
+
+  const paths = extractPaths(namespacePaths);
+  // Use space to preserve token boundaries for search use-cases.
+  return { paths, pathString: paths.join(" ") };
+}
+
 interface CapabilityPathProps {
   path: string;
   className?: string;

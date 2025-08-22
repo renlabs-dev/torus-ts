@@ -347,28 +347,54 @@ export function GraphSheetDetailsPermission({
 
       {/* Capability Paths (for capability permissions) */}
       {permissionData.permissionType === "capability" &&
-        permissionData.namespacePaths &&
-        permissionData.namespacePaths.length > 0 && (
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Layers className="w-5 h-5" />
-                Capability Paths
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-2">
-                {permissionData.namespacePaths.map((path, index) => (
-                  <div key={index} className="flex items-center gap-2">
-                    <Badge variant="secondary" className="font-mono text-sm">
-                      <ShortenedCapabilityPath path={path} showTooltip={true} />
-                    </Badge>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        )}
+        (() => {
+          // Extract all capability paths from ALL database entries with the same permission_id
+          // The database stores multiple entries with the same permission_id but different paths
+          const allPermissionEntries =
+            allPermissions?.filter(
+              (p) => p.permissions.permissionId === permissionData.permissionId,
+            ) ?? [];
+
+          // Collect all unique paths from all entries
+          const allPaths = new Set<string>();
+          for (const entry of allPermissionEntries) {
+            if (entry.namespace_permission_paths?.namespacePath) {
+              // Each entry has one path, collect them all
+              allPaths.add(entry.namespace_permission_paths.namespacePath);
+            }
+          }
+
+          const paths = Array.from(allPaths);
+
+          if (paths.length === 0) {
+            return null;
+          }
+
+          return (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Layers className="w-5 h-5" />
+                  Capability Path{paths.length > 1 ? "s" : ""}
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-2">
+                  {paths.map((path, index) => (
+                    <div key={index} className="flex items-center gap-2">
+                      <Badge variant="secondary" className="font-mono text-sm">
+                        <ShortenedCapabilityPath
+                          path={path}
+                          showTooltip={true}
+                        />
+                      </Badge>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          );
+        })()}
     </div>
   );
 }

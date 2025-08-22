@@ -5,6 +5,8 @@ import { smallAddress } from "@torus-network/torus-utils/torus/address";
 
 import type { AppRouter } from "@torus-ts/api";
 
+import { getCapabilityPaths } from "~/utils/capability-path";
+
 import type {
   allPermissions,
   CustomGraphLink,
@@ -512,7 +514,9 @@ export function createSimplifiedGraphData(
                 : (permission.permissions.durationBlockNumber?.toString() ??
                   null),
             namespacePaths: permission.namespace_permission_paths
-              ? [permission.namespace_permission_paths.namespacePath]
+              ? getCapabilityPaths(
+                  permission.namespace_permission_paths.namespacePath,
+                ).paths
               : [],
           },
         };
