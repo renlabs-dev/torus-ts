@@ -27,6 +27,7 @@ import {
 import { Separator } from "@torus-ts/ui/components/separator";
 
 import { AddressWithAgent } from "~/app/_components/address-with-agent";
+import { ShortenedCapabilityPath } from "~/utils/capability-path";
 
 import type {
   allPermissions,
@@ -344,7 +345,7 @@ export function GraphSheetDetailsPermission({
           </Card>
         )}
 
-      {/* Namespace Paths (for capability permissions) */}
+      {/* Capability Paths (for capability permissions) */}
       {permissionData.permissionType === "capability" &&
         permissionData.namespacePaths &&
         permissionData.namespacePaths.length > 0 && (
@@ -352,7 +353,7 @@ export function GraphSheetDetailsPermission({
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Layers className="w-5 h-5" />
-                Namespace Paths
+                Capability Paths
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -360,7 +361,7 @@ export function GraphSheetDetailsPermission({
                 {permissionData.namespacePaths.map((path, index) => (
                   <div key={index} className="flex items-center gap-2">
                     <Badge variant="secondary" className="font-mono text-sm">
-                      {path}
+                      <ShortenedCapabilityPath path={path} showTooltip={true} />
                     </Badge>
                   </div>
                 ))}

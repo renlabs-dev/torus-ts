@@ -47,6 +47,7 @@ import { useIsMobile } from "@torus-ts/ui/hooks/use-mobile";
 import type { PermissionWithDetails } from "../(pages)/permissions/manage-permission/_components/edit-permission-form";
 // Import the expected interface from the form
 import { AddressWithAgent } from "./address-with-agent";
+import { ShortenedCapabilityPath, formatCapabilityPath } from "~/utils/capability-path";
 
 // Helper function to safely extract capability paths
 function getCapabilityPaths(namespacePaths: unknown): {
@@ -247,7 +248,7 @@ export function PermissionSelector(props: PermissionSelectorProps) {
       <div className="space-y-0.5">
         {paths.map((path, index) => (
           <div key={index} className="truncate" title={path}>
-            Capability{paths.length > 1 ? ` ${index + 1}` : ""}: {path}
+            Capability{paths.length > 1 ? ` ${index + 1}` : ""}: <ShortenedCapabilityPath path={path} showTooltip={false} />
           </div>
         ))}
       </div>
@@ -262,77 +263,6 @@ export function PermissionSelector(props: PermissionSelectorProps) {
       ? "text-muted-foreground break-all"
       : "ml-2 text-muted-foreground break-all";
 
-  // Helper function to truncate capability namespace paths intelligently
-  // Format: agent.agent-name.path.subpath -> agent.agent-name...subpath
-  const truncateNamespacePath = (
-    path: string,
-    maxLength: number = 25,
-  ): string => {
-    if (path.length <= maxLength) return path;
-
-    const parts = path.split(".");
-    if (parts.length <= 2) {
-      // If only 1-2 parts, truncate the longest part
-      if (parts.length === 1) {
-        return parts[0]!.length > maxLength
-          ? parts[0]!.substring(0, maxLength - 3) + "..."
-          : parts[0]!;
-      } else {
-        const joined = parts.join(".");
-        return joined.length > maxLength
-          ? parts[0] +
-              "..." +
-              parts[1]!.substring(
-                Math.max(
-                  0,
-                  parts[1]!.length - (maxLength - parts[0]!.length - 6),
-                ),
-              )
-          : joined;
-      }
-    }
-
-    const start = parts.slice(0, 2).join("."); // agent.agent-name
-    const end = parts[parts.length - 1]; // subpath
-    if (!end) {
-      // Fallback: truncate path if necessary
-      return path.length > maxLength
-        ? path.substring(0, maxLength - 3) + "..."
-        : path;
-    }
-
-    const truncated = `${start}...${end}`;
-
-    // If the start itself is too long, truncate it
-    if (start.length > maxLength - 6) {
-      // Reserve space for "...end"
-      const firstPart = parts[0]!;
-      const secondPart = parts[1]!;
-      const availableForSecond = maxLength - firstPart.length - 7; // "agent...end"
-
-      if (availableForSecond > 3) {
-        const truncatedSecond =
-          secondPart.substring(0, availableForSecond) + "...";
-        return `${firstPart}.${truncatedSecond}...${end}`;
-      } else {
-        // If even the first part is too long, truncate it
-        return `${firstPart.substring(0, maxLength - 6)}...${end}`;
-      }
-    }
-
-    // If truncated is still too long, truncate the end part
-    if (truncated.length > maxLength && end.length > 8) {
-      const availableForEnd = maxLength - start.length - 6; // "start...end"
-      if (availableForEnd > 3) {
-        const shortenedEnd = end.substring(0, availableForEnd) + "...";
-        return `${start}...${shortenedEnd}`;
-      }
-    }
-
-    return truncated.length > maxLength
-      ? `${start.substring(0, maxLength - 6)}...${end}`
-      : truncated;
-  };
 
   // Enhanced search data with agent names and grouping
   const searchData = useMemo(() => {
@@ -541,14 +471,9 @@ export function PermissionSelector(props: PermissionSelectorProps) {
     const { pathString: capabilityPath } = getCapabilityPaths(namespacePaths);
 
     let displayName = `${displayId} (${permissionType})`;
-    if (capabilityPath) {
-      const truncatedPath =
-        permissionType === "Capability"
-          ? truncateNamespacePath(capabilityPath, 35)
-          : capabilityPath.length > 35
-            ? capabilityPath.substring(0, 32) + "..."
-            : capabilityPath;
-      displayName += ` - ${truncatedPath}`;
+    if (capabilityPath && permissionType === "Capability") {
+      const formattedPath = formatCapabilityPath(capabilityPath);
+      displayName += ` - ${formattedPath}`;
     }
 
     return displayName;
@@ -721,7 +646,13 @@ export function PermissionSelector(props: PermissionSelectorProps) {
       if (capabilityPaths.length === 1) {
         detailRows.push({
           label: "Capability Path",
-          value: capabilityPaths[0]!,
+          component: (
+            <ShortenedCapabilityPath 
+              path={capabilityPaths[0]!} 
+              showTooltip={true}
+              className="text-sm font-mono"
+            />
+          ),
         });
       } else {
         detailRows.push({
@@ -730,7 +661,11 @@ export function PermissionSelector(props: PermissionSelectorProps) {
             <div className="space-y-1">
               {capabilityPaths.map((path, index) => (
                 <div key={index} className="text-sm">
-                  {index + 1}. {path}
+                  {index + 1}. <ShortenedCapabilityPath 
+                    path={path} 
+                    showTooltip={true}
+                    className="font-mono"
+                  />
                 </div>
               ))}
             </div>

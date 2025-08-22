@@ -1,5 +1,6 @@
-import { ArrowDownLeft, ArrowUpRight } from "lucide-react";
 import { useMemo } from "react";
+
+import { ArrowDownLeft, ArrowUpRight } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 import { smallAddress } from "@torus-network/torus-utils/torus/address";
@@ -19,6 +20,8 @@ import {
   TabsList,
   TabsTrigger,
 } from "@torus-ts/ui/components/tabs";
+
+import { ShortenedCapabilityPath } from "~/utils/capability-path";
 
 import type {
   allPermissions,
@@ -214,7 +217,7 @@ export function NodeDetailsCard({
                               </div>
                             </div>
 
-                            <div className="grid grid-cols-1 gap-3">
+                            <div className="grid grid-cols-2 gap-2">
                               <div>
                                 <span className="text-xs text-gray-500">
                                   Permission ID
@@ -242,10 +245,13 @@ export function NodeDetailsCard({
                                     Capability path
                                   </span>
                                   <div className="text-sm text-gray-300 font-mono break-all">
-                                    {
-                                      details.namespace_permission_paths
-                                        .namespacePath
-                                    }
+                                    <ShortenedCapabilityPath
+                                      path={
+                                        details.namespace_permission_paths
+                                          .namespacePath
+                                      }
+                                      showTooltip={true}
+                                    />
                                   </div>
                                 </div>
                               )}
