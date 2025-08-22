@@ -55,19 +55,30 @@ export function isErrorLike(v: unknown): v is ErrorLike {
 }
 
 /** Safe JSON that won't explode on cycles; optional length cap */
-function safeStringify(value: unknown, maxLen = 1000): string {
+export function safeStringify(
+  value: unknown,
+  maxLen: number | null = 1000,
+  space?: string | number,
+): string {
   const seen = new WeakSet();
-  const json = JSON.stringify(value, (_k, v: unknown) => {
-    if (typeof v === "object" && v !== null) {
-      if (seen.has(v)) return "[Circular]";
-      seen.add(v);
-    }
-    if (typeof v === "bigint") return v.toString(); // JSON can't do bigint
-    if (typeof v === "symbol") return String(v);
-    if (typeof v === "function") return `[Function ${v.name || "anonymous"}]`;
-    return v;
-  });
-  return json.length > maxLen ? json.slice(0, maxLen) + "…[truncated]" : json;
+  const json = JSON.stringify(
+    value,
+    (_k, v: unknown) => {
+      if (typeof v === "object" && v !== null) {
+        if (seen.has(v)) return "[Circular]";
+        seen.add(v);
+      }
+      if (typeof v === "bigint") return v.toString(); // JSON can't do bigint
+      if (typeof v === "symbol") return String(v);
+      if (typeof v === "function") return `[Function ${v.name || "anonymous"}]`;
+      return v;
+    },
+    space,
+  );
+  if (maxLen === null || json.length <= maxLen) {
+    return json;
+  }
+  return json.slice(0, maxLen) + "…[truncated]";
 }
 
 /** Turns a value into a string representation that can be used for error messages */
