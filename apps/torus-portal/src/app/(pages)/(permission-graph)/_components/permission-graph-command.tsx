@@ -69,9 +69,9 @@ export function PermissionGraphCommand() {
         `${agent.accountId} ${agent.name} ${agent.role}`.toLowerCase(),
     }));
 
-    // Process emission permissions
+    // Process emission permissions (ensure unique keys)
     const emissionPermissions = graphData.permissions.emission.map(
-      (permission) => ({
+      (permission, index) => ({
         id: `permission-${permission.id}`,
         type: "emission",
         name: `Emission Permission`,
@@ -79,12 +79,13 @@ export function PermissionGraphCommand() {
         grantee: smallAddress(permission.recipientAccountId),
         searchText:
           `${permission.id} ${permission.delegatorAccountId} ${permission.recipientAccountId} emission`.toLowerCase(),
+        uniqueKey: `emission-${permission.id}-${index}`, // Add unique key with index
       }),
     );
 
-    // Process namespace permissions
+    // Process namespace permissions (ensure unique keys)
     const namespacePermissions = graphData.permissions.namespace.map(
-      (permission) => ({
+      (permission, index) => ({
         id: `permission-${permission.id}`,
         type: "namespace",
         name: `Capability Permission`,
@@ -92,6 +93,7 @@ export function PermissionGraphCommand() {
         grantee: smallAddress(permission.recipientAccountId),
         searchText:
           `${permission.id} ${permission.delegatorAccountId} ${permission.recipientAccountId} namespace capability`.toLowerCase(),
+        uniqueKey: `namespace-${permission.id}-${index}`, // Add unique key with index
       }),
     );
 
@@ -199,7 +201,7 @@ export function PermissionGraphCommand() {
             <CommandGroup heading="Emission Permissions">
               {searchData.emissionPermissions.map((permission) => (
                 <CommandItem
-                  key={`emission-${permission.id}`}
+                  key={permission.uniqueKey}
                   value={permission.searchText}
                   onSelect={() => handleSelect(permission.id)}
                 >
@@ -222,7 +224,7 @@ export function PermissionGraphCommand() {
             <CommandGroup heading="Capabilities Permissions">
               {searchData.namespacePermissions.map((permission) => (
                 <CommandItem
-                  key={`namespace-${permission.id}`}
+                  key={permission.uniqueKey}
                   value={permission.searchText}
                   onSelect={() => handleSelect(permission.id)}
                 >
