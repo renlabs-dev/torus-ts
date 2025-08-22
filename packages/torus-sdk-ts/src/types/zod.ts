@@ -8,8 +8,10 @@ import {
   Option as polkadot_Option,
   Struct,
   Text,
+  U8aFixed,
 } from "@polkadot/types";
 import type { AnyJson, Codec } from "@polkadot/types/types";
+import { u8aToBn } from "@polkadot/util";
 import { match } from "rustie";
 import type { Equals } from "tsafe";
 import { assert } from "tsafe";
@@ -505,3 +507,17 @@ export const sb_map = <
       return result;
     });
 };
+
+// ====
+
+const U8aFixed_schema = z.custom<U8aFixed>(
+  (val) => val instanceof U8aFixed,
+  "not a Uint8Array",
+);
+
+export const sb_u8a_fixed = U8aFixed_schema.transform((val) => val.toU8a());
+
+// export const sb_u8a_fixed_to_bigint = sb_u8a_fixed.transform((val) => {
+//   const bn = u8aToBn(val, { isLe: true, isNegative: false });
+//   return BigInt(bn.toString());
+// });

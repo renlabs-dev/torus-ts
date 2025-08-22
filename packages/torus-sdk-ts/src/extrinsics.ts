@@ -5,7 +5,7 @@
 import type { ApiPromise, SubmittableResult } from "@polkadot/api";
 import type { SubmittableExtrinsic } from "@polkadot/api-base/types";
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { ExtrinsicStatus } from "@polkadot/types/interfaces";
+import { DispatchError, ExtrinsicStatus } from "@polkadot/types/interfaces";
 import Emittery from "emittery";
 import type { Enum } from "rustie";
 import { match } from "rustie";
@@ -27,7 +27,6 @@ import {
   sb_h256,
   sb_null,
   sb_number,
-  sb_option,
   sb_string,
   sb_struct,
   sb_struct_obj,
@@ -145,15 +144,20 @@ export const sb_dispatch_error = sb_enum({
   CannotLookup: sb_null,
   /** A bad origin. */
   BadOrigin: sb_null,
+
   /** A custom error in a module (pallet). */
-  Module: sb_struct({
-    /** Module (pallet) index. */
-    index: sb_number,
-    /** Error within the module. */
-    error: sb_number,
-    /** Optional error message. */
-    message: sb_option(sb_string),
-  }),
+
+  // TODO: this parser is not working and the associated Polkadot.js types are weird
+  // Module: sb_struct({
+  //   /** Module (pallet) index. */
+  //   index: sb_number,
+  //   /** Error within the module. */
+  //   error: sb_u8a_fixed,
+  //   // /** Optional error message. */
+  //   // message: sb_option(sb_string),
+  // }),
+  Module: z.unknown(),
+
   /** At least one consumer is remaining so the account cannot be destroyed. */
   ConsumerRemaining: sb_null,
   /** There are no providers so the account cannot be created. */
