@@ -69,7 +69,7 @@ export const graphConstants = {
       signalLink: "#69ff5c",
       defaultLink: "#6b7280",
     },
-    linkWidth: 0.8,
+    linkWidth: 0.9,
     arrowConfig: {
       defaultArrowLength: 6,
       defaultArrowRelPos: 0.93,
