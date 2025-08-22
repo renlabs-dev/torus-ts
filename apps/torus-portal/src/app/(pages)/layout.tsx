@@ -36,7 +36,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <PlausibleProvider domain="torus.network" trackOutboundLinks>
+    <PlausibleProvider
+      domain="portal.torus.network,rollup.torus.network"
+      trackOutboundLinks
+    >
       <Layout font={geistMono} headScripts={[EnvScript]}>
         <ReactQueryProvider>
           <TorusProvider

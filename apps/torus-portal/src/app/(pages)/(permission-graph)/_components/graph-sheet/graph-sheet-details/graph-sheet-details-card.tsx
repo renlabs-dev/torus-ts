@@ -172,8 +172,8 @@ export function NodeDetailsCard({
                           <div className="flex items-center justify-between">
                             <span className="font-medium text-white">
                               {details?.namespace_permissions
-                                ? "capability permission"
-                                : "permission"}
+                                ? "Capability permission"
+                                : "Permission"}
                             </span>
                           </div>
                           <GraphSheetDetailsLinkButtons
@@ -312,8 +312,8 @@ export function NodeDetailsCard({
                           <div className="flex items-center justify-between">
                             <span className="font-medium text-white">
                               {details?.emission_permissions
-                                ? "emission permission"
-                                : "permission"}
+                                ? "Emission permission"
+                                : "Permission"}
                             </span>
                           </div>
                           <GraphSheetDetailsLinkButtons

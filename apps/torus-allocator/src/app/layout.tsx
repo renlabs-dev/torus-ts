@@ -30,7 +30,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <PlausibleProvider domain="torus.network" trackOutboundLinks>
+    <PlausibleProvider
+      domain="allocator.torus.network,rollup.torus.network"
+      trackOutboundLinks
+    >
       <Layout font={firaMono} headScripts={[EnvScript]}>
         {children}
         <GoogleAnalytics gaId="G-7YCMH64Q4J" />

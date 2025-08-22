@@ -33,7 +33,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <PlausibleProvider domain="torus.network" trackOutboundLinks>
+    <PlausibleProvider
+      domain="torus.network,rollup.torus.network"
+      trackOutboundLinks
+    >
       <Layout font={firaMono} headScripts={[EnvScript]}>
         <HoverHeader />
         {children}

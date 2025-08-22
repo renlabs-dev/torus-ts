@@ -37,7 +37,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <PlausibleProvider domain="torus.network" trackOutboundLinks>
+    <PlausibleProvider
+      domain="dao.torus.network,rollup.torus.network"
+      trackOutboundLinks
+    >
       <Layout font={firaMono} headScripts={[EnvScript]}>
         <TorusProvider
           wsEndpoint={env("NEXT_PUBLIC_TORUS_RPC_URL")}
