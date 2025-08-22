@@ -45,7 +45,7 @@ export function useComputedCandidateVotes(
     return {
       accept: votes.filter((v) => v.vote === "ACCEPT").length,
       refuse: votes.filter((v) => v.vote === "REFUSE").length,
-      revoke: curatorVotes?.length ?? 0,
+      revoke: curatorVotes?.filter((v) => v.vote === "REMOVE").length ?? 0,
     };
   }
 
