@@ -4,14 +4,17 @@ import {
   Bytes,
   Enum,
   GenericAccountId,
+  Int,
   Null,
   Option as polkadot_Option,
   Struct,
   Text,
   U8aFixed,
+  UInt,
 } from "@polkadot/types";
+import { AbstractInt } from "@polkadot/types-codec/abstract";
 import type { AnyJson, Codec } from "@polkadot/types/types";
-import { u8aToBn } from "@polkadot/util";
+import { BN, u8aToBn } from "@polkadot/util";
 import { match } from "rustie";
 import type { Equals } from "tsafe";
 import { assert } from "tsafe";
@@ -297,11 +300,33 @@ export const sb_some = <T extends ZodTypeAny>(
 
 // == Boolean ==
 
-export const bool_schema = z.custom<bool>((val) => val instanceof bool);
+export const bool_schema = z.custom<bool>(
+  (val) => val instanceof bool,
+  "not a Substrate bool",
+);
 
 export const sb_bool = bool_schema.transform((val) => val.toPrimitive());
 
 // == Numbers ==
+
+export const AbstractInt_schema = z.custom<AbstractInt>(
+  (val) => val instanceof AbstractInt,
+  "not a Substrate AbstractInt",
+);
+
+export const UInt_schema = z.custom<UInt>(
+  (val) => val instanceof UInt,
+  "not a Substrate UInt",
+);
+
+export const Int_schema = z.custom<Int>(
+  (val) => val instanceof Int,
+  "not a Substrate Int",
+);
+
+export const sb_uint_bn = UInt_schema.transform((val) => val.toBn());
+
+export const sb_int_bn = Int_schema.transform((val) => val.toBn());
 
 export interface ToBigInt {
   toBigInt(): bigint;
@@ -508,16 +533,19 @@ export const sb_map = <
     });
 };
 
-// ====
+// ==== Uint Array ====
 
-const U8aFixed_schema = z.custom<U8aFixed>(
+export const U8aFixed_schema = z.custom<U8aFixed>(
   (val) => val instanceof U8aFixed,
   "not a Uint8Array",
 );
 
-export const sb_u8a_fixed = U8aFixed_schema.transform((val) => val.toU8a());
+export const sb_u8a = U8aFixed_schema.transform((val) => val.toU8a());
 
-// export const sb_u8a_fixed_to_bigint = sb_u8a_fixed.transform((val) => {
-//   const bn = u8aToBn(val, { isLe: true, isNegative: false });
-//   return BigInt(bn.toString());
-// });
+export const sb_u8a_fixed_to_bn = sb_u8a.transform((val) =>
+  u8aToBn(val, { isLe: true, isNegative: false }),
+);
+
+// export const sb_u8a_fixed_to_bigint = sb_u8a_fixed_to_bn.transform((val) =>
+//   BigInt(val.toString()),
+// );

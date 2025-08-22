@@ -30,6 +30,8 @@ import {
   sb_string,
   sb_struct,
   sb_struct_obj,
+  U8aFixed_schema,
+  UInt_schema,
 } from "./types/index.js";
 
 // ==== Raw Extrinsic State ====
@@ -148,15 +150,15 @@ export const sb_dispatch_error = sb_enum({
   /** A custom error in a module (pallet). */
 
   // TODO: this parser is not working and the associated Polkadot.js types are weird
-  // Module: sb_struct({
-  //   /** Module (pallet) index. */
-  //   index: sb_number,
-  //   /** Error within the module. */
-  //   error: sb_u8a_fixed,
-  //   // /** Optional error message. */
-  //   // message: sb_option(sb_string),
-  // }),
-  Module: z.unknown(),
+  // Module: z.unknown(),
+  Module: sb_struct({
+    /** Module (pallet) index. */
+    index: UInt_schema,
+    /** Error within the module. */
+    error: U8aFixed_schema,
+    // /** Optional error message. */
+    // message: sb_option(sb_string),
+  }),
 
   /** At least one consumer is remaining so the account cannot be destroyed. */
   ConsumerRemaining: sb_null,

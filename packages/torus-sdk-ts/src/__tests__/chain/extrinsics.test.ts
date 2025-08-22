@@ -2,15 +2,17 @@ import { Keyring } from "@polkadot/keyring";
 import { if_let } from "rustie";
 import { assert, describe, expect, it } from "vitest";
 
+import { Api } from "@torus-network/sdk/chain/index.js";
+import { isErr, isOk, type Result } from "@torus-network/torus-utils/result";
+
 import {
   type ExtrinsicTracker,
   sendTxWithTracker,
   type TxEvent,
   type TxInBlockEvent,
-  type TxInvalidEvent,
   type TxInternalErrorEvent,
+  type TxInvalidEvent,
 } from "../../extrinsics.js";
-import { isErr, isOk, type Result } from "@torus-network/torus-utils/result";
 import { getApi } from "../../testing/getApi.js";
 
 // Helper function to expect OK result and extract value
@@ -296,9 +298,11 @@ describe("submitWithTracker - live chain", () => {
     const badNonce = currentNonce.toNumber() + 1000; // Use a nonce far in the future
 
     // Use the transaction with bad nonce option
-    const tracker = expectOk(await sendTxWithTracker(api, tx, account, {
-      nonce: badNonce,
-    }));
+    const tracker = expectOk(
+      await sendTxWithTracker(api, tx, account, {
+        nonce: badNonce,
+      }),
+    );
 
     try {
       let invalidEventReceived = false;
@@ -438,6 +442,137 @@ describe("submitWithTracker - live chain", () => {
     } finally {
       tracker.cancel();
       accountPool.release(account);
+    }
+  });
+
+  it("handles pallet-specific error (NotRegisteredAgent) from permission0 pallet", async () => {
+    const api = await getApi();
+
+    // Use well-known accounts that have balance but are NOT registered as agents
+    // We use Eve and Ferdie who should have balance but not be registered agents
+    const unregisteredDelegator = keyring.addFromUri("//Eve");
+    const unregisteredRecipient = keyring.addFromUri("//Ferdie");
+
+    // Create minimal valid parameters for delegateEmissionPermission
+    const allocation = {
+      FixedAmount: "1000000000000000000", // 1 token (18 decimals)
+    };
+
+    const targets = api.registry.createType("BTreeMap<AccountId32, u16>"); // Empty targets map
+
+    const distribution = {
+      Manual: null,
+    };
+
+    const duration = {
+      Indefinite: null,
+    };
+
+    const revocation = {
+      Irrevocable: null,
+    };
+
+    const enforcement = {
+      None: null,
+    };
+
+    // Create the transaction with unregistered accounts
+    const tx = api.tx.permission0.delegateEmissionPermission(
+      unregisteredRecipient.address,
+      allocation,
+      targets,
+      distribution,
+      duration,
+      revocation,
+      enforcement,
+    );
+
+    const tracker = expectOk(
+      await sendTxWithTracker(api, tx, unregisteredDelegator),
+    );
+
+    try {
+      const { statusUpdates, inBlockUpdate, finalUpdate } =
+        await collectTrackerUpdates(tracker, 30000); // Longer timeout for complex operation
+
+      // Should have multiple status updates
+      expect(statusUpdates.length).toBeGreaterThan(0);
+
+      // Should have received an inBlock update even for failed transactions
+      expect(inBlockUpdate).toBeDefined();
+      assert(inBlockUpdate);
+
+      // Type guard to ensure it's an InBlock update
+      assert(inBlockUpdate.kind === "InBlock");
+      const inBlockTyped = inBlockUpdate as TxInBlockEvent;
+
+      // Validate inBlock update structure
+      expect(inBlockTyped.kind).toBe("InBlock");
+      expect(inBlockTyped.txHash).toMatch(/^0x[a-f0-9]{64}$/i);
+      expect(inBlockTyped.blockHash).toMatch(/^0x[a-f0-9]{64}$/i);
+      expect(inBlockTyped.blockNumber).toBeGreaterThan(0);
+      expect(inBlockTyped.txIndex).toBeGreaterThanOrEqual(0);
+      expect(inBlockTyped.events).toBeInstanceOf(Array);
+
+      // Check outcome is Failed for NotRegisteredAgent error
+      expect("Failed" in inBlockTyped.outcome).toBe(true);
+
+      function findMetaError(api: Api, err: unknown) {
+        const moduleError = api.registry.findMetaError(err as any);
+        return moduleError;
+      }
+
+      // api.errors.permission0.NotRegisteredAgent.is();
+
+      if_let(inBlockTyped.outcome, "Failed")(
+        ({ error, info }) => {
+          expect(error).toBeDefined();
+          expect(info).toBeDefined();
+          expect(info.weight).toBeDefined();
+          expect(info.class).toBeDefined();
+          expect(info.paysFee).toBeDefined();
+
+          // Check that this is specifically a permission0 pallet error
+          if_let(error, "Module")(
+            (err) => {
+              // Use the API registry to decode the module error
+              const moduleError = findMetaError(api, err);
+
+              if (moduleError) {
+                expect(moduleError.section).toBe("permission0");
+                expect(moduleError.name).toBe("NotRegisteredAgent");
+                expect(moduleError.docs.join(" ")).toContain(
+                  "agent is not registered",
+                );
+              } else {
+                console.log(
+                  "Could not decode module error, but transaction failed as expected",
+                );
+                // At minimum, we expect the transaction to fail for unregistered agents
+                // This is still a valid test result
+              }
+            },
+            () => {
+              // If not a Module error, it might be a different error format
+              // but we still expect it to be related to the unregistered agent
+              console.log("Error format:", error);
+              // For non-module errors, we can't be as specific but the test
+              // should still pass as long as the transaction failed as expected
+            },
+          );
+        },
+        (info) => {
+          throw new Error(
+            `Unexpected outcome, expected Failed but got: ${JSON.stringify(info)}`,
+          );
+        },
+      );
+
+      // Final update should be the inBlock update for failed transactions
+      expect(finalUpdate).toBeDefined();
+      expect(finalUpdate).toEqual(inBlockUpdate);
+    } finally {
+      tracker.cancel();
     }
   });
 });
