@@ -5,7 +5,7 @@ import { queryEmissionPermissions } from "@torus-network/sdk/chain";
 import { SS58_SCHEMA } from "@torus-network/sdk/types";
 import type { RemAmount } from "@torus-network/torus-utils/torus/token";
 
-import { and, eq, gte, isNull, lte, or, sql } from "@torus-ts/db";
+import { and, eq, gte, isNotNull, isNull, lte, or, sql } from "@torus-ts/db";
 import type { createDb } from "@torus-ts/db/client";
 import {
   accumulatedStreamAmountsSchema,
@@ -1008,9 +1008,12 @@ export const permissionRouter = {
       )
       .leftJoin(
         emissionDistributionTargetsSchema,
-        eq(
-          permissionsSchema.permissionId,
-          emissionDistributionTargetsSchema.permissionId,
+        and(
+          eq(
+            permissionsSchema.permissionId,
+            emissionDistributionTargetsSchema.permissionId,
+          ),
+          isNotNull(emissionDistributionTargetsSchema.atBlock),
         ),
       )
       .where(isNull(permissionsSchema.deletedAt))
