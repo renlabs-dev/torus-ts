@@ -54,7 +54,7 @@ export interface TxHelper {
 export const TOAST_MESSAGES = {
   PREPARING: "Signing transaction...",
   READY: "Transaction signed and submitted to pool...",
-  BROADCASTING: "Broadcasting transaction to peers...",
+  BROADCASTED: "Broadcasted transaction to peers...",
   IN_BLOCK: "Transaction included in block...",
   FINALIZING: "Waiting for finalization...",
   SUCCESS: "Transaction completed successfully",

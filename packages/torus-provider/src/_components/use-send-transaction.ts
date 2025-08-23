@@ -343,7 +343,7 @@ const handleTxEvent = ({
       break;
 
     case "Broadcast":
-      toast.loading(TOAST_MESSAGES.BROADCASTING, { id: toastId });
+      toast.loading(TOAST_MESSAGES.BROADCASTED, { id: toastId });
       break;
 
     case "InBlock":
