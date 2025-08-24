@@ -23,8 +23,13 @@ export function useGraphData() {
       cacheOptions,
     );
 
-  const { data: allAgents, isLoading: isLoadingAgents } =
-    trpcApi.agent.all.useQuery(undefined, cacheOptions);
+  const { data: allAgentsData, isLoading: isLoadingAgents } =
+    trpcApi.agent.allIncludingNonWhitelisted.useQuery(undefined, cacheOptions);
+
+  // Filter whitelisted agents for hypergraph logic (maintains root vs target distinction)
+  const allAgents = useMemo(() => {
+    return allAgentsData?.filter((agent) => agent.isWhitelisted) ?? [];
+  }, [allAgentsData]);
 
   const { data: allComputedWeights, isLoading: isLoadingWeights } =
     trpcApi.computedAgentWeight.all.useQuery(undefined, cacheOptions);
@@ -37,7 +42,7 @@ export function useGraphData() {
     if (
       isLoadingAgents ||
       isLoadingPermissions ||
-      !allAgents ||
+      !allAgentsData ||
       !allPermissions
     ) {
       return null;
@@ -49,9 +54,11 @@ export function useGraphData() {
       allPermissions,
       allocatorAddress,
       allSignals,
+      allAgentsData,
     );
   }, [
     allAgents,
+    allAgentsData,
     allPermissions,
     allocatorAddress,
     allSignals,

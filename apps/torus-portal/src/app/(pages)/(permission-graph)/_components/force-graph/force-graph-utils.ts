@@ -288,6 +288,7 @@ export function createSimplifiedGraphData(
   allPermissions: AllPermission[],
   allocatorAddress: string,
   signals?: SignalsList,
+  allAgentsData?: Agent[],
 ): ExtractedGraphData | null {
   // Don't render anything if there's no data
   if (agents.length === 0 || allPermissions.length === 0) {
@@ -330,11 +331,17 @@ export function createSimplifiedGraphData(
 
   // Create a map to track all agent nodes (from agents list + permissions)
   const allAgentNodes = new Map<string, CustomGraphNode>();
-  const allAgentData = new Map<string, Agent>();
+  const allAgentDataMap = new Map<string, Agent>();
+  const whitelistedAgentKeys = new Set<string>();
 
-  // First, map all existing agents
+  // First, map ALL agents for name lookups (if provided)
+  (allAgentsData ?? agents).forEach((agent) => {
+    allAgentDataMap.set(agent.key, agent);
+  });
+
+  // Track which agents are whitelisted (for root vs target distinction)
   agents.forEach((agent) => {
-    allAgentData.set(agent.key, agent);
+    whitelistedAgentKeys.add(agent.key);
   });
 
   // Helper function to create or get agent node
@@ -344,16 +351,17 @@ export function createSimplifiedGraphData(
       return existingNode;
     }
 
-    const existingAgent = allAgentData.get(agentKey);
+    const existingAgent = allAgentDataMap.get(agentKey);
+    const isWhitelistedAgent = whitelistedAgentKeys.has(agentKey);
     const agentNode: CustomGraphNode = {
       id: agentKey,
       name: existingAgent?.name ?? smallAddress(agentKey),
-      color: existingAgent
+      color: isWhitelistedAgent
         ? graphConstants.nodeConfig.nodeColors.rootNode
         : graphConstants.nodeConfig.nodeColors.targetNode,
       fullAddress: agentKey,
-      role: existingAgent ? "Root Agent" : "Target Agent",
-      nodeType: existingAgent ? "root_agent" : "target_agent",
+      role: isWhitelistedAgent ? "Root Agent" : "Target Agent",
+      nodeType: isWhitelistedAgent ? "root_agent" : "target_agent",
       agentData: {
         accountId: agentKey,
         isWhitelisted: existingAgent?.isWhitelisted ?? undefined,
@@ -402,11 +410,12 @@ export function createSimplifiedGraphData(
       nodesMap.set(agentKey, agentNode);
     }
 
-    const existingAgent = allAgentData.get(agentKey);
+    const existingAgent = allAgentDataMap.get(agentKey);
+    const isWhitelistedAgent = whitelistedAgentKeys.has(agentKey);
     extractedAgents.push({
       accountId: agentKey,
       name: existingAgent?.name ?? smallAddress(agentKey),
-      role: existingAgent ? "Root Agent" : "Target Agent",
+      role: isWhitelistedAgent ? "Root Agent" : "Target Agent",
       isWhitelisted: existingAgent?.isWhitelisted ?? undefined,
     });
   });
