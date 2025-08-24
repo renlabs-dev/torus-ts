@@ -222,6 +222,10 @@ export function PermissionSelector(props: PermissionSelectorProps) {
           item.permissionId,
           getCapabilityPaths(item.namespacePaths).pathString,
           "emission",
+          item.contract.delegator,
+          item.contract.recipient,
+          item.delegatorAgentName,
+          item.recipientAgentName,
         ]
           .filter(Boolean)
           .join(" ")
@@ -236,6 +240,10 @@ export function PermissionSelector(props: PermissionSelectorProps) {
           item.permissionId,
           getCapabilityPaths(item.namespacePaths).pathString,
           "capability",
+          item.contract.delegator,
+          item.contract.recipient,
+          item.delegatorAgentName,
+          item.recipientAgentName,
         ]
           .filter(Boolean)
           .join(" ")

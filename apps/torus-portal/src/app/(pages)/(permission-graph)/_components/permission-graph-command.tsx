@@ -2,7 +2,7 @@
 
 import React, { useCallback, useMemo, useState } from "react";
 
-import { Package, Radio, Search, Users, Zap } from "lucide-react";
+import { Check, Package, Radio, Search, Users, Zap } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 
 import { smallAddress } from "@torus-network/torus-utils/torus/address";
@@ -26,6 +26,9 @@ export function PermissionGraphCommand() {
   const [open, setOpen] = useState(false);
   const isMobile = useIsMobile();
   const { graphData } = useGraphData();
+
+  // Get current selection from URL
+  const selectedId = searchParams.get("id");
 
   const handleSelect = useCallback(
     (nodeId: string) => {
@@ -71,30 +74,46 @@ export function PermissionGraphCommand() {
 
     // Process emission permissions (ensure unique keys)
     const emissionPermissions = graphData.permissions.emission.map(
-      (permission, index) => ({
-        id: `permission-${permission.id}`,
-        type: "emission",
-        name: `Emission Permission`,
-        grantor: smallAddress(permission.delegatorAccountId),
-        grantee: smallAddress(permission.recipientAccountId),
-        searchText:
-          `${permission.id} ${permission.delegatorAccountId} ${permission.recipientAccountId} emission`.toLowerCase(),
-        uniqueKey: `emission-${permission.id}-${index}`, // Add unique key with index
-      }),
+      (permission, index) => {
+        // Find agent names for delegator and recipient
+        const delegatorAgent = uniqueAgents.get(permission.delegatorAccountId);
+        const recipientAgent = uniqueAgents.get(permission.recipientAccountId);
+
+        return {
+          id: `permission-${permission.id}`,
+          type: "emission",
+          name: `Emission Permission`,
+          grantor: smallAddress(permission.delegatorAccountId),
+          grantee: smallAddress(permission.recipientAccountId),
+          grantorName: delegatorAgent?.name,
+          granteeName: recipientAgent?.name,
+          searchText:
+            `${permission.id} ${permission.delegatorAccountId} ${permission.recipientAccountId} ${delegatorAgent?.name ?? ""} ${recipientAgent?.name ?? ""} emission`.toLowerCase(),
+          uniqueKey: `emission-${permission.id}-${index}`,
+        };
+      },
     );
 
     // Process namespace permissions (ensure unique keys)
     const namespacePermissions = graphData.permissions.namespace.map(
-      (permission, index) => ({
-        id: `permission-${permission.id}`,
-        type: "namespace",
-        name: `Capability Permission`,
-        grantor: smallAddress(permission.delegatorAccountId),
-        grantee: smallAddress(permission.recipientAccountId),
-        searchText:
-          `${permission.id} ${permission.delegatorAccountId} ${permission.recipientAccountId} namespace capability`.toLowerCase(),
-        uniqueKey: `namespace-${permission.id}-${index}`, // Add unique key with index
-      }),
+      (permission, index) => {
+        // Find agent names for delegator and recipient
+        const delegatorAgent = uniqueAgents.get(permission.delegatorAccountId);
+        const recipientAgent = uniqueAgents.get(permission.recipientAccountId);
+
+        return {
+          id: `permission-${permission.id}`,
+          type: "namespace",
+          name: `Capability Permission`,
+          grantor: smallAddress(permission.delegatorAccountId),
+          grantee: smallAddress(permission.recipientAccountId),
+          grantorName: delegatorAgent?.name,
+          granteeName: recipientAgent?.name,
+          searchText:
+            `${permission.id} ${permission.delegatorAccountId} ${permission.recipientAccountId} ${delegatorAgent?.name ?? ""} ${recipientAgent?.name ?? ""} namespace capability`.toLowerCase(),
+          uniqueKey: `namespace-${permission.id}-${index}`,
+        };
+      },
     );
 
     // Process signals
@@ -154,92 +173,118 @@ export function PermissionGraphCommand() {
 
           {searchData.signals.length > 0 && (
             <CommandGroup heading="Signals">
-              {searchData.signals.map((signal) => (
-                <CommandItem
-                  key={signal.id}
-                  value={signal.searchText}
-                  onSelect={() => handleSelect(signal.id)}
-                >
-                  <Radio className="mr-2 h-4 w-4" />
-                  <div className="flex flex-col">
-                    <span>{signal.name}</span>
-                    <span className="text-xs text-muted-foreground">
-                      From: {formatNodeDisplay(signal.agentKey)}
-                    </span>
-                  </div>
-                </CommandItem>
-              ))}
+              {searchData.signals.map((signal) => {
+                const isSelected = selectedId === signal.id;
+                return (
+                  <CommandItem
+                    key={signal.id}
+                    value={signal.searchText}
+                    onSelect={() => handleSelect(signal.id)}
+                  >
+                    <Radio className="mr-2 h-4 w-4" />
+                    <div className="flex flex-col flex-1">
+                      <div className="flex items-center justify-between">
+                        <span>{signal.name}</span>
+                        {isSelected && <Check className="h-4 w-4 ml-2" />}
+                      </div>
+                      <span className="text-xs text-muted-foreground">
+                        From: {formatNodeDisplay(signal.agentKey)}
+                      </span>
+                    </div>
+                  </CommandItem>
+                );
+              })}
             </CommandGroup>
           )}
 
           {searchData.agents.length > 0 && (
             <CommandGroup heading="Agents">
-              {searchData.agents.map((agent) => (
-                <CommandItem
-                  key={`agent-${agent.id}`}
-                  value={agent.searchText}
-                  onSelect={() => handleSelect(agent.id)}
-                >
-                  <Users className="mr-2 h-4 w-4" />
-                  <div className="flex flex-col">
-                    <span>
-                      {agent.name}{" "}
+              {searchData.agents.map((agent) => {
+                const isSelected = selectedId === agent.id;
+                return (
+                  <CommandItem
+                    key={`agent-${agent.id}`}
+                    value={agent.searchText}
+                    onSelect={() => handleSelect(agent.id)}
+                  >
+                    <Users className="mr-2 h-4 w-4" />
+                    <div className="flex flex-col flex-1">
+                      <div className="flex items-center justify-between">
+                        <span>
+                          {agent.name}{" "}
+                          <span className="text-xs text-muted-foreground">
+                            ({agent.role})
+                          </span>
+                        </span>
+                        {isSelected && <Check className="h-4 w-4 ml-2" />}
+                      </div>
                       <span className="text-xs text-muted-foreground">
-                        ({agent.role})
+                        {formatNodeDisplay(agent.id)}
                       </span>
-                    </span>
-                    <span className="text-xs text-muted-foreground">
-                      {formatNodeDisplay(agent.id)}
-                    </span>
-                  </div>
-                </CommandItem>
-              ))}
+                    </div>
+                  </CommandItem>
+                );
+              })}
             </CommandGroup>
           )}
 
           {searchData.emissionPermissions.length > 0 && (
             <CommandGroup heading="Emission Permissions">
-              {searchData.emissionPermissions.map((permission) => (
-                <CommandItem
-                  key={permission.uniqueKey}
-                  value={permission.searchText}
-                  onSelect={() => handleSelect(permission.id)}
-                >
-                  <Zap className="mr-2 h-4 w-4" />
-                  <div className="flex flex-col">
-                    <span>
-                      {permission.name} from {permission.grantor} to{" "}
-                      {permission.grantee}
-                    </span>
-                    <span className="text-xs text-muted-foreground">
-                      {formatNodeDisplay(permission.id)}
-                    </span>
-                  </div>
-                </CommandItem>
-              ))}
+              {searchData.emissionPermissions.map((permission) => {
+                const isSelected = selectedId === permission.id;
+                return (
+                  <CommandItem
+                    key={permission.uniqueKey}
+                    value={permission.searchText}
+                    onSelect={() => handleSelect(permission.id)}
+                  >
+                    <Zap className="mr-2 h-4 w-4" />
+                    <div className="flex flex-col flex-1">
+                      <div className="flex items-center justify-between">
+                        <span>
+                          {permission.name} from{" "}
+                          {permission.grantorName ?? permission.grantor} to{" "}
+                          {permission.granteeName ?? permission.grantee}
+                        </span>
+                        {isSelected && <Check className="h-4 w-4 ml-2" />}
+                      </div>
+                      <span className="text-xs text-muted-foreground">
+                        {formatNodeDisplay(permission.id)}
+                      </span>
+                    </div>
+                  </CommandItem>
+                );
+              })}
             </CommandGroup>
           )}
 
           {searchData.namespacePermissions.length > 0 && (
             <CommandGroup heading="Capabilities Permissions">
-              {searchData.namespacePermissions.map((permission) => (
-                <CommandItem
-                  key={permission.uniqueKey}
-                  value={permission.searchText}
-                  onSelect={() => handleSelect(permission.id)}
-                >
-                  <Package className="mr-2 h-4 w-4" />
-                  <div className="flex flex-col">
-                    <span>
-                      {permission.name} from {permission.grantor} to{" "}
-                      {permission.grantee}
-                    </span>
-                    <span className="text-xs text-muted-foreground">
-                      {formatNodeDisplay(permission.id)}
-                    </span>
-                  </div>
-                </CommandItem>
-              ))}
+              {searchData.namespacePermissions.map((permission) => {
+                const isSelected = selectedId === permission.id;
+                return (
+                  <CommandItem
+                    key={permission.uniqueKey}
+                    value={permission.searchText}
+                    onSelect={() => handleSelect(permission.id)}
+                  >
+                    <Package className="mr-2 h-4 w-4" />
+                    <div className="flex flex-col flex-1">
+                      <div className="flex items-center justify-between">
+                        <span>
+                          {permission.name} from{" "}
+                          {permission.grantorName ?? permission.grantor} to{" "}
+                          {permission.granteeName ?? permission.grantee}
+                        </span>
+                        {isSelected && <Check className="h-4 w-4 ml-2" />}
+                      </div>
+                      <span className="text-xs text-muted-foreground">
+                        {formatNodeDisplay(permission.id)}
+                      </span>
+                    </div>
+                  </CommandItem>
+                );
+              })}
             </CommandGroup>
           )}
         </CommandList>

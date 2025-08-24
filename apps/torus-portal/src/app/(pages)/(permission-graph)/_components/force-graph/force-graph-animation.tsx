@@ -266,6 +266,7 @@ const ForceGraph = memo(
             Number(link.linkDirectionalArrowRelPos) ||
             graphConstants.linkConfig.arrowConfig.defaultArrowRelPos
           }
+          linkOpacity={0.4}
           linkCurvature={(link: LinkObject) => Number(link.linkCurvature)}
           linkColor={(link: LinkObject) => {
             const linkColor = String(link.linkColor);
