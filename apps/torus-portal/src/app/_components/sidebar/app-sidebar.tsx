@@ -3,17 +3,17 @@
 import * as React from "react";
 
 import {
+  CircleArrowOutUpRight,
   CircleFadingPlus,
   Currency,
   FilePen,
-  FilePlus,
-  FileText,
   Network,
   PackagePlus,
   PackageX,
   Radio,
   RadioTower,
   Settings,
+  Zap,
 } from "lucide-react";
 import Link from "next/link";
 
@@ -59,12 +59,12 @@ const data = {
         {
           title: "Capability Permission",
           url: "/permissions/create-permission/capability",
-          icon: FileText,
+          icon: CircleArrowOutUpRight,
         },
         {
           title: "Emission Permission",
           url: "/permissions/create-permission/emission",
-          icon: FilePlus,
+          icon: Zap,
         },
         {
           title: "Manage Permissions",
