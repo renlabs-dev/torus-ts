@@ -243,8 +243,11 @@ export const agentRouter = {
       // When showing all agents (isWhitelisted is undefined), order by whitelist status first
       // EXCEPT when ordering by createdAt which should be pure chronological order
       let orderByClause;
-      const shouldPrioritizeWhitelist = isWhitelisted === undefined && orderBy !== "createdAt.desc" && orderBy !== "createdAt.asc";
-      
+      const shouldPrioritizeWhitelist =
+        isWhitelisted === undefined &&
+        orderBy !== "createdAt.desc" &&
+        orderBy !== "createdAt.asc";
+
       if (shouldPrioritizeWhitelist) {
         // Show whitelisted agents first, then non-whitelisted, then order by computed weight
         orderByClause = sql`${agentSchema.isWhitelisted} desc, ${computedAgentWeightSchema.percComputedWeight} desc nulls last`;

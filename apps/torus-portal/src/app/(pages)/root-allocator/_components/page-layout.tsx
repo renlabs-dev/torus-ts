@@ -10,11 +10,7 @@ interface PageLayoutProps {
   children: ReactNode;
 }
 
-export function PageLayout({ 
-  search, 
-  currentView, 
-  children 
-}: PageLayoutProps) {
+export function PageLayout({ search, currentView, children }: PageLayoutProps) {
   return (
     <div className="flex flex-col space-y-6">
       <div className="flex w-full flex-col items-center gap-4 md:flex-row md:justify-between">

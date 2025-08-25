@@ -28,7 +28,7 @@ function AgentBadge({
 }) {
   const badges = [];
 
-  // Show Selected/Delegated status badges
+  // Show Selected/Delegated status badge (mutually exclusive)
   if (isAgentSelected) {
     badges.push(
       <Badge
@@ -38,9 +38,7 @@ function AgentBadge({
         Delegated
       </Badge>,
     );
-  }
-
-  if (isAgentDelegated) {
+  } else if (isAgentDelegated) {
     badges.push(
       <Badge
         key="selected"

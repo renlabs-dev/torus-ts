@@ -2,14 +2,13 @@
 
 import Link from "next/link";
 
+import type { TorAmount } from "@torus-network/torus-utils/torus/token";
+
 import { Card } from "../card";
 import { AgentCardContent } from "./agent-card-content";
 import { AgentCardFooter } from "./agent-card-footer";
 import { AgentCardHeader } from "./agent-card-header";
-import { CardHoverEffect } from "./agent-card-hover-effect";
 import type { SocialKind } from "./agent-card-socials-info";
-
-import type { TorAmount } from "@torus-network/torus-utils/torus/token";
 
 export interface AccountEmissionData {
   isLoading: boolean;
@@ -108,8 +107,6 @@ export function AgentCard(props: Readonly<AgentCardProps>) {
 
   const cardContent = (
     <>
-      {showHoverEffect && <CardHoverEffect />}
-
       <AgentCardHeader
         name={name}
         agentKey={agentKey}
