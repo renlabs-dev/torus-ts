@@ -7,7 +7,7 @@ import { Fira_Mono as FiraMono } from "next/font/google";
 
 import { Layout } from "@torus-ts/ui/components/layout";
 
-import { EnvScript } from "~/env";
+import { EnvScript, env } from "~/env";
 
 const APP_NAME = "Allocator";
 
@@ -29,9 +29,14 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const isMainnet = env("NEXT_PUBLIC_TORUS_CHAIN_ENV") === "mainnet";
+  const domains = isMainnet
+    ? "allocator.torus.network,rollup.torus.network"
+    : "allocator.testnet.torus.network,testnet.rollup.torus.network";
+
   return (
     <PlausibleProvider
-      domain="allocator.torus.network,rollup.torus.network"
+      domain={domains}
       trackOutboundLinks
     >
       <Layout font={firaMono} headScripts={[EnvScript]}>
