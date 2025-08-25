@@ -15,7 +15,7 @@ import {
 const views = [
   { label: "All Agents", value: "/root-allocator" },
   { label: "Root Agents", value: "/root-allocator/root-agents" },
-  { label: "New Root Agents", value: "/root-allocator/new-agents" },
+  { label: "New Agents", value: "/root-allocator/new-agents" },
   { label: "My Allocated Agents", value: "/root-allocator/allocated-agents" },
 ];
 
