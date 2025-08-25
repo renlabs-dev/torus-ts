@@ -241,12 +241,15 @@ export const agentRouter = {
       }
 
       // When showing all agents (isWhitelisted is undefined), order by whitelist status first
+      // EXCEPT when ordering by createdAt which should be pure chronological order
       let orderByClause;
-      if (isWhitelisted === undefined) {
+      const shouldPrioritizeWhitelist = isWhitelisted === undefined && orderBy !== "createdAt.desc" && orderBy !== "createdAt.asc";
+      
+      if (shouldPrioritizeWhitelist) {
         // Show whitelisted agents first, then non-whitelisted, then order by computed weight
         orderByClause = sql`${agentSchema.isWhitelisted} desc, ${computedAgentWeightSchema.percComputedWeight} desc nulls last`;
       } else {
-        // When filtering by whitelist status, use the original ordering
+        // When filtering by whitelist status or ordering by createdAt, use the original ordering
         orderByClause = sql`${computedAgentWeightSchema.percComputedWeight} desc nulls last`;
       }
 
@@ -254,14 +257,14 @@ export const agentRouter = {
         const [field, direction = "asc"] = orderBy.split(".");
         if (field === "emission") {
           // Order by computed weight percentage as proxy for emission
-          if (isWhitelisted === undefined) {
+          if (shouldPrioritizeWhitelist) {
             orderByClause = sql`${agentSchema.isWhitelisted} desc, ${computedAgentWeightSchema.percComputedWeight} ${sql.raw(direction.toUpperCase())} nulls last`;
           } else {
             orderByClause = sql`${computedAgentWeightSchema.percComputedWeight} ${sql.raw(direction.toUpperCase())} nulls last`;
           }
         } else {
           const column = agentSchema[field as keyof typeof agentSchema];
-          if (isWhitelisted === undefined) {
+          if (shouldPrioritizeWhitelist) {
             orderByClause = sql`${agentSchema.isWhitelisted} desc, ${column} ${sql.raw(direction.toUpperCase())}`;
           } else {
             orderByClause = sql`${column} ${sql.raw(direction.toUpperCase())}`;
