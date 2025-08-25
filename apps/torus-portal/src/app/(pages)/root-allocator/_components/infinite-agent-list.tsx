@@ -14,7 +14,7 @@ type AgentType = InfiniteAgentData["agents"][number];
 
 interface InfiniteAgentListProps {
   search?: string | null;
-  orderBy?: "createdAt.desc" | "emission.desc" | "emission.asc" | undefined;
+  orderBy?: "createdAt.desc" | "createdAt.asc" | "emission.desc" | "emission.asc" | undefined;
   isWhitelisted?: boolean;
 }
 
