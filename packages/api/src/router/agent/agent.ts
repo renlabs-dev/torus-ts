@@ -33,8 +33,8 @@ export const agentRouter = {
         page: z.number().int().positive().default(1),
         limit: z.number().int().positive().default(9),
         search: z.string().optional(),
-        orderBy: z.enum(["createdAt.asc", "createdAt.desc"]).optional(),
-        isWhitelisted: z.boolean().optional().default(true),
+        orderBy: z.enum(["createdAt.asc", "createdAt.desc", "emission.desc", "emission.asc"]).optional(),
+        isWhitelisted: z.boolean().optional(),
       }),
     )
     .query(async ({ ctx, input }) => {
@@ -64,10 +64,17 @@ export const agentRouter = {
 
       // Base query configuration for filtering
       let baseWhereClause = and(
-        eq(agentSchema.isWhitelisted, isWhitelisted),
         isNull(agentSchema.deletedAt),
         gte(agentSchema.atBlock, agentsLastBlock[0].value),
       );
+      
+      // Add isWhitelisted filter only if specified
+      if (isWhitelisted !== undefined) {
+        baseWhereClause = and(
+          baseWhereClause,
+          eq(agentSchema.isWhitelisted, isWhitelisted),
+        );
+      }
 
       if (search) {
         baseWhereClause = and(
@@ -90,12 +97,33 @@ export const agentRouter = {
         )
         .where(baseWhereClause);
 
-      let orderByClause = sql`${computedAgentWeightSchema.percComputedWeight} desc nulls last`;
+      // When showing all agents (isWhitelisted is undefined), order by whitelist status first
+      let orderByClause;
+      if (isWhitelisted === undefined) {
+        // Show whitelisted agents first, then non-whitelisted, then order by computed weight
+        orderByClause = sql`${agentSchema.isWhitelisted} desc, ${computedAgentWeightSchema.percComputedWeight} desc nulls last`;
+      } else {
+        // When filtering by whitelist status, use the original ordering
+        orderByClause = sql`${computedAgentWeightSchema.percComputedWeight} desc nulls last`;
+      }
 
       if (orderBy) {
         const [field, direction = "asc"] = orderBy.split(".");
-        const column = agentSchema[field as keyof typeof agentSchema];
-        orderByClause = sql`${column} ${sql.raw(direction.toUpperCase())}`;
+        if (field === "emission") {
+          // Order by computed weight percentage as proxy for emission
+          if (isWhitelisted === undefined) {
+            orderByClause = sql`${agentSchema.isWhitelisted} desc, ${computedAgentWeightSchema.percComputedWeight} ${sql.raw(direction.toUpperCase())} nulls last`;
+          } else {
+            orderByClause = sql`${computedAgentWeightSchema.percComputedWeight} ${sql.raw(direction.toUpperCase())} nulls last`;
+          }
+        } else {
+          const column = agentSchema[field as keyof typeof agentSchema];
+          if (isWhitelisted === undefined) {
+            orderByClause = sql`${agentSchema.isWhitelisted} desc, ${column} ${sql.raw(direction.toUpperCase())}`;
+          } else {
+            orderByClause = sql`${column} ${sql.raw(direction.toUpperCase())}`;
+          }
+        }
       }
 
       // Run paginated query and total count query in parallel

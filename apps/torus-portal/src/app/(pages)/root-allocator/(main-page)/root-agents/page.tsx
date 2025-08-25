@@ -1,13 +1,10 @@
 import { parseSearchParams } from "~/utils/parse-search-params";
 
-import { AgentList } from "../_components/agent-list";
-import { PageLayout } from "../_components/page-layout";
+import { AgentList } from "../../_components/agent-list";
+import { PageLayout } from "../../_components/page-layout";
 
 export default async function Page(props: {
-  searchParams: Promise<{
-    page?: string;
-    search?: string;
-  }>;
+  searchParams: Promise<{ page?: string; search?: string }>;
 }) {
   const searchParams = await props.searchParams;
   const { page, search } = parseSearchParams(searchParams);
@@ -16,7 +13,8 @@ export default async function Page(props: {
     <PageLayout search={search}>
       <AgentList 
         page={page} 
-        search={search}
+        search={search} 
+        isWhitelisted={true}
       />
     </PageLayout>
   );

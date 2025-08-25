@@ -69,6 +69,7 @@ export interface AgentCardProps {
   showHoverEffect?: boolean;
   isAgentDelegated?: boolean;
   isAgentSelected?: boolean;
+  isWhitelisted?: boolean;
   emissionData?: AccountEmissionData;
   currentPercentage?: number;
   onPercentageChange?: (value: number) => void;
@@ -94,6 +95,7 @@ export function AgentCard(props: Readonly<AgentCardProps>) {
     showHoverEffect = true,
     isAgentDelegated,
     isAgentSelected,
+    isWhitelisted,
     emissionData,
     currentPercentage,
     onPercentageChange,
@@ -116,6 +118,7 @@ export function AgentCard(props: Readonly<AgentCardProps>) {
         website={website}
         isAgentDelegated={isAgentDelegated}
         isAgentSelected={isAgentSelected}
+        isWhitelisted={isWhitelisted}
         isMetadataLoading={isMetadataLoading}
       />
 

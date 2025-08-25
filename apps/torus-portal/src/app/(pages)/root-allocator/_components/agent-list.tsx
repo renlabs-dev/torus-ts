@@ -8,7 +8,7 @@ export const ITEMS_PER_PAGE = 9;
 interface FetchAgentCardsProps {
   page?: number;
   search?: string | null;
-  orderBy?: "createdAt.desc" | undefined;
+  orderBy?: "createdAt.desc" | "emission.desc" | "emission.asc" | undefined;
   isWhitelisted?: boolean;
 }
 
@@ -16,7 +16,7 @@ export async function AgentList({
   page = 1,
   search = undefined,
   orderBy,
-  isWhitelisted = true,
+  isWhitelisted,
 }: FetchAgentCardsProps) {
   const result = await api.agent.paginated({
     page,

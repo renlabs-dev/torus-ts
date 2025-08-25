@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 
 import {
   Select,
@@ -13,22 +13,17 @@ import {
 } from "@torus-ts/ui/components/select";
 
 const views = [
-  { label: "Root Agents", value: "/root-allocator" },
+  { label: "All Agents", value: "/root-allocator" },
+  { label: "Root Agents", value: "/root-allocator/root-agents" },
   { label: "New Root Agents", value: "/root-allocator/new-agents" },
   { label: "My Allocated Agents", value: "/root-allocator/allocated-agents" },
-  { label: "Registered Agents", value: "/root-allocator/?isWhitelisted=false" },
 ];
 
 export function ViewSelector() {
   const router = useRouter();
   const pathname = usePathname();
-  const searchParams = useSearchParams();
 
   const getInitialView = () => {
-    const isWhitelisted = searchParams.get("isWhitelisted");
-    if (pathname === "/root-allocator" && isWhitelisted === "false") {
-      return "/root-allocator/?isWhitelisted=false";
-    }
     const matchingView = views.find((view) => view.value === pathname);
     return matchingView ? matchingView.value : "/root-allocator";
   };
