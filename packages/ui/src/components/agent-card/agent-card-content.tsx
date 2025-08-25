@@ -76,7 +76,7 @@ function AgentStats({
             )}
           </Label>
         </HoverCardTrigger>
-        <HoverCardContent className="z-[9999] w-80" side="top" align="center">
+        <HoverCardContent className="z-[9999] w-80" side="right" align="center">
           <div className="space-y-3">
             <p className="text-sm font-medium">Emission Percentage Breakdown</p>
             {emissionData ? (
