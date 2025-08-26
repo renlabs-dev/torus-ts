@@ -6,6 +6,7 @@ import { useFieldArray } from "react-hook-form";
 import type { Api } from "@torus-network/sdk/chain";
 import { checkSS58 } from "@torus-network/sdk/types";
 
+import { useTorus } from "@torus-ts/torus-provider";
 import { Button } from "@torus-ts/ui/components/button";
 import {
   FormControl,
@@ -17,6 +18,8 @@ import {
 import { Input } from "@torus-ts/ui/components/input";
 
 import { useAvailableStreams } from "~/hooks/use-available-streams";
+import { useMultipleAccountEmissions } from "~/hooks/use-multiple-account-emissions";
+import { calculateEmissionValue } from "~/utils/calculate-emission-value";
 
 import type { CreateEmissionPermissionForm } from "../create-emission-permission-form-schema";
 
@@ -36,10 +39,20 @@ export function AllocationField({
   api,
   selectedAccountAddress,
 }: AllocationFieldProps) {
+  const { selectedAccount } = useTorus();
+
   const availableStreams = useAvailableStreams(
     api,
     checkSS58IfDefined(selectedAccountAddress),
   );
+
+  const emissionsData = useMultipleAccountEmissions({
+    accountIds: selectedAccount?.address ? [selectedAccount.address] : [],
+  });
+
+  const accountEmissions = selectedAccount?.address
+    ? emissionsData[selectedAccount.address]
+    : null;
 
   const {
     fields: streamFields,
@@ -188,6 +201,14 @@ export function AllocationField({
                           disabled={!isAccountConnected}
                         />
                       </FormControl>
+                      <div className="text-xs text-green-400 mt-1">
+                        {calculateEmissionValue(
+                          Number(percentageField.value) || 0,
+                          accountEmissions,
+                          isAccountConnected,
+                          selectedAccount?.address,
+                        )}
+                      </div>
                       <div className="min-h-[20px]">
                         <FormMessage />
                       </div>
@@ -198,6 +219,38 @@ export function AllocationField({
             </div>
           );
         })}
+
+        {/* Total Emission Display */}
+        {streamFields.length > 0 && (
+          <div className="mt-4 p-3 bg-muted/20 rounded-md border">
+            <div className="text-sm">
+              <span className="text-muted-foreground font-medium">
+                Total Stream Allocation:{" "}
+              </span>
+              <span className="text-green-400 font-semibold">
+                {(() => {
+                  const totalPercentage = streamFields.reduce(
+                    (total, _, index) => {
+                      const percentage =
+                        Number(
+                          form.watch(`allocation.streams.${index}.percentage`),
+                        ) || 0;
+                      return total + percentage;
+                    },
+                    0,
+                  );
+
+                  return calculateEmissionValue(
+                    totalPercentage,
+                    accountEmissions,
+                    isAccountConnected,
+                    selectedAccount?.address,
+                  );
+                })()}
+              </span>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
