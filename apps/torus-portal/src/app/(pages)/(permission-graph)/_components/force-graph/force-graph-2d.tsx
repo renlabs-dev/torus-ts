@@ -3,6 +3,11 @@
 import { useCallback, useEffect, useRef } from "react";
 
 import * as d3 from "d3";
+import type {
+  Simulation,
+  SimulationLinkDatum,
+  SimulationNodeDatum,
+} from "d3-force";
 import { Viewport } from "pixi-viewport";
 import * as PIXI from "pixi.js";
 
@@ -12,6 +17,13 @@ import type {
   CustomGraphNode,
 } from "../permission-graph-types";
 import { graphConstants } from "./force-graph-constants";
+
+type D3SimulationNode = CustomGraphNode &
+  SimulationNodeDatum & {
+    gfx?: PIXI.Graphics;
+  };
+
+type D3SimulationLink = CustomGraphLink & SimulationLinkDatum<D3SimulationNode>;
 
 interface ForceGraph2DProps {
   graphData: CustomGraphData;
@@ -51,9 +63,9 @@ function getNodeColor(node: CustomGraphNode, userAddress?: string): string {
 export function ForceGraphCanvas2D(props: ForceGraph2DProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const appRef = useRef<PIXI.Application | null>(null);
-  const simulationRef = useRef<d3.Simulation<
-    d3.SimulationNodeDatum,
-    d3.SimulationLinkDatum<d3.SimulationNodeDatum>
+  const simulationRef = useRef<Simulation<
+    D3SimulationNode,
+    D3SimulationLink
   > | null>(null);
   const onNodeClickRef = useRef(props.onNodeClick);
 
@@ -66,8 +78,12 @@ export function ForceGraphCanvas2D(props: ForceGraph2DProps) {
       nodesData: CustomGraphNode[],
       linksData: CustomGraphLink[],
     ) => {
-      const nodes = nodesData.map((d) => ({ ...d }));
-      const links = linksData.map((d) => ({ ...d }));
+      const nodes: D3SimulationNode[] = nodesData.map((d) => ({
+        ...d,
+      })) as D3SimulationNode[];
+      const links: D3SimulationLink[] = linksData.map((d) => ({
+        ...d,
+      })) as D3SimulationLink[];
 
       const containerRect = container.getBoundingClientRect();
       const height = containerRect.height;
@@ -122,17 +138,15 @@ export function ForceGraphCanvas2D(props: ForceGraph2DProps) {
       }
 
       const simulation = d3
-        .forceSimulation(nodes as d3.SimulationNodeDatum[])
+        .forceSimulation<D3SimulationNode>(nodes)
         .force(
           "link",
           d3
-            .forceLink(
-              links as d3.SimulationLinkDatum<d3.SimulationNodeDatum>[],
-            )
-            .id((d: any) => d.id)
-            .distance((d: any) => {
-              const source = d.source as CustomGraphNode;
-              const target = d.target as CustomGraphNode;
+            .forceLink<D3SimulationNode, D3SimulationLink>(links)
+            .id((d) => d.id)
+            .distance((d) => {
+              const source = d.source as D3SimulationNode;
+              const target = d.target as D3SimulationNode;
               // Increase distance for nodes with more connections to spread them out
               const baseDistance = graphConstants.physics.linkDistance;
               const sourceRadius = getNodeRadius(source.nodeType);
@@ -151,9 +165,7 @@ export function ForceGraphCanvas2D(props: ForceGraph2DProps) {
           "collision",
           d3
             .forceCollide()
-            .radius(
-              (d: any) => getNodeRadius((d as CustomGraphNode).nodeType) + 15,
-            ) // Larger collision radius
+            .radius((d) => getNodeRadius((d as D3SimulationNode).nodeType) + 15) // Larger collision radius
             .iterations(3), // More collision iterations
         )
         // Add radial force to spread nodes in circular pattern around center
@@ -174,7 +186,7 @@ export function ForceGraphCanvas2D(props: ForceGraph2DProps) {
         const color = getNodeColor(node, props.userAddress);
 
         const nodeGraphics = new PIXI.Graphics();
-        (node as any).gfx = nodeGraphics;
+        node.gfx = nodeGraphics;
 
         nodeGraphics.alpha = 1.0;
         nodeGraphics.lineStyle(1, 0xd3d3d3);
@@ -228,7 +240,7 @@ export function ForceGraphCanvas2D(props: ForceGraph2DProps) {
       const ticked = () => {
         nodes.forEach((node) => {
           const { x, y } = node;
-          const gfx = (node as any).gfx;
+          const gfx = node.gfx;
           if (gfx && x !== undefined && y !== undefined) {
             gfx.position = new PIXI.Point(x, y);
           }
@@ -239,12 +251,10 @@ export function ForceGraphCanvas2D(props: ForceGraph2DProps) {
         visualLinks.removeChildren();
 
         links.forEach((link) => {
-          const source = link.source as CustomGraphNode;
-          const target = link.target as CustomGraphNode;
+          const source = link.source as D3SimulationNode;
+          const target = link.target as D3SimulationNode;
 
           if (
-            source &&
-            target &&
             source.x !== undefined &&
             source.y !== undefined &&
             target.x !== undefined &&
@@ -276,7 +286,7 @@ export function ForceGraphCanvas2D(props: ForceGraph2DProps) {
         destroy: () => {
           simulation.stop();
           nodes.forEach((node) => {
-            const gfx = (node as any).gfx;
+            const gfx = node.gfx;
             if (gfx) {
               gfx.destroy();
             }
