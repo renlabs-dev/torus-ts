@@ -189,9 +189,7 @@ export function ForceGraphCanvas2D(props: ForceGraph2DProps) {
         node.gfx = nodeGraphics;
 
         nodeGraphics.alpha = 1.0;
-        nodeGraphics.lineStyle(1, 0xd3d3d3);
-        nodeGraphics.beginFill(hexToPixi(color));
-
+        
         // Different shapes for different node types
         if (node.nodeType === "permission") {
           // Draw diamond shape for permissions
@@ -205,7 +203,7 @@ export function ForceGraphCanvas2D(props: ForceGraph2DProps) {
             -radius,
             0, // left
           ];
-          nodeGraphics.drawPolygon(points);
+          nodeGraphics.poly(points).fill({ color: hexToPixi(color) }).stroke({ width: 1, color: 0xd3d3d3 });
         } else if (node.nodeType === "signal") {
           // Draw triangle for signals
           const points = [
@@ -216,13 +214,11 @@ export function ForceGraphCanvas2D(props: ForceGraph2DProps) {
             radius,
             radius, // bottom right
           ];
-          nodeGraphics.drawPolygon(points);
+          nodeGraphics.poly(points).fill({ color: hexToPixi(color) }).stroke({ width: 1, color: 0xd3d3d3 });
         } else {
           // Draw circle for other node types
-          nodeGraphics.drawCircle(0, 0, radius);
+          nodeGraphics.circle(0, 0, radius).fill({ color: hexToPixi(color) }).stroke({ width: 1, color: 0xd3d3d3 });
         }
-
-        nodeGraphics.endFill();
 
         // Event handlers
         nodeGraphics.on("click", (e: PIXI.FederatedPointerEvent) => {
@@ -267,14 +263,13 @@ export function ForceGraphCanvas2D(props: ForceGraph2DProps) {
 
             const linkWidth =
               link.linkWidth ?? graphConstants.linkConfig.linkWidth;
-            visualLinks.lineStyle(linkWidth, hexToPixi(linkColor), alpha);
-            visualLinks.moveTo(source.x, source.y);
-            visualLinks.lineTo(target.x, target.y);
+            visualLinks
+              .moveTo(source.x, source.y)
+              .lineTo(target.x, target.y)
+              .stroke({ width: linkWidth, color: hexToPixi(linkColor), alpha });
           }
         });
 
-        // Important: End the fill to make sure links are drawn
-        visualLinks.endFill();
       };
 
       simulation.on("tick", ticked);
@@ -321,5 +316,5 @@ export function ForceGraphCanvas2D(props: ForceGraph2DProps) {
     };
   }, [props.graphData.nodes, props.graphData.links, runForceGraph2D]);
 
-  return <div ref={containerRef} className="fixed inset-0 z-0 bg-gray-900" />;
+  return <div ref={containerRef} className="fixed inset-0 z-0 bg-background" />;
 }
