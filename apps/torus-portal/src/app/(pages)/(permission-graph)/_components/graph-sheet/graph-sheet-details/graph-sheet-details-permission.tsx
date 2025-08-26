@@ -27,6 +27,8 @@ import {
 import { Separator } from "@torus-ts/ui/components/separator";
 
 import { AddressWithAgent } from "~/app/_components/address-with-agent";
+import { useMultipleAccountEmissions } from "~/hooks/use-multiple-account-emissions";
+import { calculateEmissionValue } from "~/utils/calculate-emission-value";
 import { ShortenedCapabilityPath } from "~/utils/capability-path";
 
 import type {
@@ -92,6 +94,27 @@ export function GraphSheetDetailsPermission({
       };
     });
   }, [allPermissions, permissionData]);
+
+  // Get emission data for all target accounts and the delegator
+  const allAccountIds = useMemo(() => {
+    const accounts = new Set<string>();
+
+    // Add delegator account
+    if (permissionData?.delegatorAccountId) {
+      accounts.add(permissionData.delegatorAccountId);
+    }
+
+    // Add all distribution target accounts
+    distributionTargets.forEach((target) => {
+      accounts.add(target.targetAccountId);
+    });
+
+    return Array.from(accounts);
+  }, [permissionData, distributionTargets]);
+
+  const emissionsData = useMultipleAccountEmissions({
+    accountIds: allAccountIds,
+  });
 
   if (!permissionData) {
     return (
@@ -283,22 +306,35 @@ export function GraphSheetDetailsPermission({
                         address={entry.targetAccountId}
                         className="mb-2"
                       />
-                      <div className="flex flex-wrap gap-2">
-                        {entry.streams.map((s, idx) => (
-                          <span
-                            key={`${entry.targetAccountId}-${s.streamId ?? "default"}-${idx}`}
-                            className="items-center flex gap-1"
-                          >
-                            {s.streamId && (
+                      <div className="space-y-2">
+                        <div className="flex flex-wrap gap-2">
+                          {entry.streams.map((s, idx) => (
+                            <span
+                              key={`${entry.targetAccountId}-${s.streamId ?? "default"}-${idx}`}
+                              className="items-center flex gap-1"
+                            >
+                              {s.streamId && (
+                                <Badge variant="secondary">
+                                  Stream: {smallAddress(s.streamId, 4)}
+                                </Badge>
+                              )}
                               <Badge variant="secondary">
-                                Stream: {smallAddress(s.streamId, 6)}
+                                Weight: {s.weight}
                               </Badge>
-                            )}
-                            <Badge variant="secondary">
-                              Weight: {s.weight}
-                            </Badge>
-                          </span>
-                        ))}
+                              <Badge variant="secondary">
+                                {calculateEmissionValue(
+                                  entry.streams.reduce(
+                                    (total, s) => total + s.weight,
+                                    0,
+                                  ),
+                                  emissionsData[entry.targetAccountId],
+                                  true,
+                                  entry.targetAccountId,
+                                )}
+                              </Badge>
+                            </span>
+                          ))}
+                        </div>
                       </div>
                     </div>
                     {i < distributionTargets.length - 1 && (
@@ -322,22 +358,40 @@ export function GraphSheetDetailsPermission({
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <h4 className="font-medium mb-2">Stream ID</h4>
-                  <Badge variant="secondary">
+              <div className="flex flex-col">
+                <div className="flex gap-2">
+                  <h4 className="font-medium mb-2 text-muted-foreground">
+                    Stream ID:
+                  </h4>
+                  <p>
                     {smallAddress(
                       detailedPermission.emission_stream_allocations.streamId,
+                      14,
                     )}
-                  </Badge>
+                  </p>
                 </div>
-                <div>
-                  <h4 className="font-medium mb-2">Percentage</h4>
-                  <p className="text-sm text-muted-foreground">
+                <div className="flex gap-2">
+                  <h4 className="font-medium mb-2 text-muted-foreground">
+                    Allocated Percentage:
+                  </h4>
+                  <p>
                     {detailedPermission.emission_stream_allocations.percentage.toFixed(
                       2,
                     )}
                     %
+                  </p>
+                </div>
+                <div className="flex gap-2">
+                  <h4 className="font-medium mb-2 text-muted-foreground">
+                    Amount:
+                  </h4>
+                  <p className="text-green-500">
+                    {calculateEmissionValue(
+                      detailedPermission.emission_stream_allocations.percentage,
+                      emissionsData[permissionData.delegatorAccountId],
+                      true,
+                      permissionData.delegatorAccountId,
+                    )}
                   </p>
                 </div>
               </div>
