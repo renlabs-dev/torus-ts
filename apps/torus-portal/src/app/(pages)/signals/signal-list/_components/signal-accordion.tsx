@@ -12,6 +12,9 @@ import { Badge } from "@torus-ts/ui/components/badge";
 import { Button } from "@torus-ts/ui/components/button";
 import { MarkdownView } from "@torus-ts/ui/components/markdown-view";
 
+import { useMultipleAccountEmissions } from "~/hooks/use-multiple-account-emissions";
+import { calculateEmissionValue } from "~/utils/calculate-emission-value";
+
 interface SignalWithMetadata {
   id: number;
   title: string;
@@ -47,6 +50,14 @@ export default function SignalAccordion({
   isFulfillingSignal = false,
   variant = "active",
 }: SignalAccordionProps) {
+  // Get unique agent keys from signals for batch emission query
+  const uniqueAgentKeys = [
+    ...new Set(signals.map((signal) => signal.agentKey)),
+  ];
+
+  const emissionsData = useMultipleAccountEmissions({
+    accountIds: uniqueAgentKeys,
+  });
   const getItemClassName = () => {
     switch (variant) {
       case "fulfilled":
@@ -110,7 +121,7 @@ export default function SignalAccordion({
           <AccordionContent>
             <div className="space-y-4">
               <div className="flex md:flex-row flex-col gap-2 items-center justify-between">
-                <div className="grid grid-cols-2 gap-4 flex-1">
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-4 flex-1">
                   <div>
                     <p className="text-sm text-muted-foreground">
                       Agent Weight
@@ -127,40 +138,20 @@ export default function SignalAccordion({
                       {signal.proposedAllocation}%
                     </p>
                   </div>
-                </div>
-                {signal.isCurrentUser && variant === "active" && (
-                  <div className="flex gap-2">
-                    {onFulfill && (
-                      <Button
-                        variant="default"
-                        size="sm"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          onFulfill(signal.id);
-                        }}
-                        disabled={isFulfillingSignal}
-                        className="bg-green-500 hover:bg-green-600"
-                      >
-                        <Radio className="w-4 h-4" />
-                        {isFulfillingSignal ? "Fulfilling..." : "Fulfill"}
-                      </Button>
-                    )}
-                    {onDelete && (
-                      <Button
-                        variant="destructive"
-                        size="sm"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          onDelete(signal.id);
-                        }}
-                        disabled={isDeletingSignal}
-                      >
-                        <Trash2 className="w-4 h-4" />
-                        {isDeletingSignal ? "Deleting..." : "Delete"}
-                      </Button>
-                    )}
+                  <div>
+                    <p className="text-sm text-muted-foreground">
+                      Emission Value
+                    </p>
+                    <p className="text-lg font-semibold text-green-400">
+                      {calculateEmissionValue(
+                        signal.proposedAllocation,
+                        emissionsData[signal.agentKey],
+                        true, // Always true for signal list display
+                        signal.agentKey,
+                      )}
+                    </p>
                   </div>
-                )}
+                </div>
               </div>
 
               {signal.description && (
@@ -197,6 +188,40 @@ export default function SignalAccordion({
                       </Badge>
                     )}
                   </div>
+                </div>
+              )}
+
+              {signal.isCurrentUser && variant === "active" && (
+                <div className="flex gap-2 w-full justify-end border-t border-border pt-2">
+                  {onFulfill && (
+                    <Button
+                      variant="default"
+                      size="sm"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onFulfill(signal.id);
+                      }}
+                      disabled={isFulfillingSignal}
+                      className="bg-green-500 hover:bg-green-600"
+                    >
+                      <Radio className="w-4 h-4" />
+                      {isFulfillingSignal ? "Fulfilling..." : "Fulfill"}
+                    </Button>
+                  )}
+                  {onDelete && (
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onDelete(signal.id);
+                      }}
+                      disabled={isDeletingSignal}
+                    >
+                      <Trash2 className="w-4 h-4" />
+                      {isDeletingSignal ? "Deleting..." : "Delete"}
+                    </Button>
+                  )}
                 </div>
               )}
             </div>
