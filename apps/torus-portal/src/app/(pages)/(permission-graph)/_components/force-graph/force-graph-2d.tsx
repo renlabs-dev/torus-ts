@@ -144,36 +144,21 @@ export function ForceGraphCanvas2D(props: ForceGraph2DProps) {
           d3
             .forceLink<D3SimulationNode, D3SimulationLink>(links)
             .id((d) => d.id)
-            .distance((d) => {
-              const source = d.source as D3SimulationNode;
-              const target = d.target as D3SimulationNode;
-              // Increase distance for nodes with more connections to spread them out
-              const baseDistance = graphConstants.physics.linkDistance;
-              const sourceRadius = getNodeRadius(source.nodeType);
-              const targetRadius = getNodeRadius(target.nodeType);
-              return baseDistance + sourceRadius + targetRadius + 20;
-            }),
+            .distance(200), // Increased link distance for less densityxw
         )
         .force(
           "charge",
-          d3
-            .forceManyBody()
-            .strength(graphConstants.physics.chargeStrength * 1.5),
-        ) // Stronger repulsion
-        .force("center", d3.forceCenter(width / 2, height / 2).strength(0.1)) // Weaker centering force
+          d3.forceManyBody().strength(-120), // Stronger repulsion to spread nodes out
+        )
+        .force("center", d3.forceCenter(width / 2, height / 2).strength(0.03)) // Very weak centering
         .force(
           "collision",
           d3
             .forceCollide()
-            .radius((d) => getNodeRadius((d as D3SimulationNode).nodeType) + 15) // Larger collision radius
-            .iterations(3), // More collision iterations
+            .radius((d) => getNodeRadius((d as D3SimulationNode).nodeType) + 25) // Larger collision radius
+            .iterations(2), // Fewer iterations for better performance
         )
-        // Add radial force to spread nodes in circular pattern around center
-        .force(
-          "radial",
-          d3.forceRadial(200, width / 2, height / 2).strength(0.02),
-        )
-        .velocityDecay(0.4); // Lower velocity decay for more spreading
+        .velocityDecay(0.2); // Much lower velocity decay for faster settling
 
       simulationRef.current = simulation;
 
@@ -189,7 +174,7 @@ export function ForceGraphCanvas2D(props: ForceGraph2DProps) {
         node.gfx = nodeGraphics;
 
         nodeGraphics.alpha = 1.0;
-        
+
         // Different shapes for different node types
         if (node.nodeType === "permission") {
           // Draw diamond shape for permissions
@@ -203,7 +188,10 @@ export function ForceGraphCanvas2D(props: ForceGraph2DProps) {
             -radius,
             0, // left
           ];
-          nodeGraphics.poly(points).fill({ color: hexToPixi(color) }).stroke({ width: 1, color: 0xd3d3d3 });
+          nodeGraphics
+            .poly(points)
+            .fill({ color: hexToPixi(color) })
+            .stroke({ width: 1, color: 0xd3d3d3 });
         } else if (node.nodeType === "signal") {
           // Draw triangle for signals
           const points = [
@@ -214,10 +202,16 @@ export function ForceGraphCanvas2D(props: ForceGraph2DProps) {
             radius,
             radius, // bottom right
           ];
-          nodeGraphics.poly(points).fill({ color: hexToPixi(color) }).stroke({ width: 1, color: 0xd3d3d3 });
+          nodeGraphics
+            .poly(points)
+            .fill({ color: hexToPixi(color) })
+            .stroke({ width: 1, color: 0xd3d3d3 });
         } else {
           // Draw circle for other node types
-          nodeGraphics.circle(0, 0, radius).fill({ color: hexToPixi(color) }).stroke({ width: 1, color: 0xd3d3d3 });
+          nodeGraphics
+            .circle(0, 0, radius)
+            .fill({ color: hexToPixi(color) })
+            .stroke({ width: 1, color: 0xd3d3d3 });
         }
 
         // Event handlers
@@ -259,17 +253,15 @@ export function ForceGraphCanvas2D(props: ForceGraph2DProps) {
             const linkColor =
               link.linkColor ??
               graphConstants.linkConfig.linkColors.defaultLink;
-            const alpha = 0.4;
+            const alpha = 0.2;
 
-            const linkWidth =
-              link.linkWidth ?? graphConstants.linkConfig.linkWidth;
+            const linkWidth = graphConstants.linkConfig.linkWidth;
             visualLinks
               .moveTo(source.x, source.y)
               .lineTo(target.x, target.y)
               .stroke({ width: linkWidth, color: hexToPixi(linkColor), alpha });
           }
         });
-
       };
 
       simulation.on("tick", ticked);
