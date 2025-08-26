@@ -21,9 +21,10 @@ export function calculateEmissionValue(
   if (percentage === 0) return "0.00 TORUS/week";
 
   const percentageFactor = percentage / 100;
-  const incomingEmissions = accountEmissions.streams.incoming.tokensPerWeek.plus(
-    accountEmissions.root.tokensPerWeek,
-  );
+  const incomingEmissions =
+    accountEmissions.streams.incoming.tokensPerWeek.plus(
+      accountEmissions.root.tokensPerWeek,
+    );
 
   const calculatedValue = incomingEmissions.multipliedBy(
     makeTorAmount(percentageFactor),
