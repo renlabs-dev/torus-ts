@@ -23,16 +23,13 @@ import { useToast } from "@torus-ts/ui/hooks/use-toast";
 import { useUsdPrice } from "~/context/usd-price-provider";
 import { useWallet } from "~/context/wallet-provider";
 import { useTransactionsStore } from "~/store/transactions-store";
+import { MIN_ALLOWED_STAKE_SAFEGUARD, MIN_EXISTENTIAL_BALANCE } from "~/utils/constants";
 
 import type { ReviewTransactionDialogHandle } from "../../../_components/review-transaction-dialog";
 import { ReviewTransactionDialog } from "../../../_components/review-transaction-dialog";
 import { UnstakeForm } from "./unstake-form";
 import type { UnstakeFormValues } from "./unstake-form-schema";
 import { createUnstakeFormSchema } from "./unstake-form-schema";
-
-// TODO: remove duplicate
-const MIN_ALLOWED_STAKE_SAFEGUARD = 500000000000000000n;
-const MIN_EXISTENTIAL_BALANCE = 100000000000000000n;
 
 interface StakedValidator {
   address: string;

@@ -19,16 +19,13 @@ import { useToast } from "@torus-ts/ui/hooks/use-toast";
 import { useUsdPrice } from "~/context/usd-price-provider";
 import { useWallet } from "~/context/wallet-provider";
 import { useTransactionsStore } from "~/store/transactions-store";
+import { MIN_ALLOWED_STAKE_SAFEGUARD, MIN_EXISTENTIAL_BALANCE } from "~/utils/constants";
 
 import type { ReviewTransactionDialogHandle } from "../../../_components/review-transaction-dialog";
 import { ReviewTransactionDialog } from "../../../_components/review-transaction-dialog";
 import { StakeForm } from "./stake-form";
 import type { StakeFormValues } from "./stake-form-schema";
 import { createStakeActionFormSchema } from "./stake-form-schema";
-
-// TODO: remove duplicate
-const MIN_ALLOWED_STAKE_SAFEGUARD = 500000000000000000n;
-const MIN_EXISTENTIAL_BALANCE = 100000000000000000n;
 
 export function Stake() {
   const {

@@ -24,6 +24,7 @@
   },
   "dependencies": {
     "@torus-network/sdk": "workspace:*",
+    "superjson": "2.2.1",
     "zod": "catalog:"
   },
   "devDependencies": {
