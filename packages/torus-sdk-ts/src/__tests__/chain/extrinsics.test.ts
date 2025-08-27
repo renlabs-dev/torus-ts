@@ -477,14 +477,15 @@ describe("submitWithTracker - live chain", () => {
     };
 
     // Create the transaction with unregistered accounts
-    const tx = api.tx.permission0.delegateEmissionPermission(
-      unregisteredRecipient.address,
+    const tx = api.tx.permission0.delegateStreamPermission(
+      targets, // recipients (formerly targets)
       allocation,
-      targets,
       distribution,
       duration,
       revocation,
       enforcement,
+      unregisteredRecipient.address, // recipientManager (formerly recipient)
+      unregisteredRecipient.address, // weightSetter (formerly recipient)
     );
 
     const tracker = expectOk(

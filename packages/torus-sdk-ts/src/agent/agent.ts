@@ -399,8 +399,10 @@ export class AgentServer {
                     const existingGrantees =
                       this.delegatedNamespacePermissions.get(normalizedPath) ??
                       [];
-                    if (!existingGrantees.includes(permission.recipient)) {
-                      existingGrantees.push(permission.recipient);
+                    // Extract recipient from namespace scope
+                    const recipient = namespaceScope.recipient;
+                    if (!existingGrantees.includes(recipient)) {
+                      existingGrantees.push(recipient);
                       this.delegatedNamespacePermissions.set(
                         normalizedPath,
                         existingGrantees,
@@ -418,16 +420,16 @@ export class AgentServer {
                   allPaths.push(...pathsArray.map((p) => p.join(".")));
                 }
                 console.log(
-                  `Cached namespace permission ${permissionId} for grantee ${permission.recipient} with paths:`,
+                  `Cached namespace permission ${permissionId} for grantee ${namespaceScope.recipient} with paths:`,
                   allPaths,
                 );
               }
               console.log(
-                `Cached namespace permission ${permissionId} for recipient ${permission.recipient}`,
+                `Cached namespace permission ${permissionId} for recipient ${namespaceScope.recipient}`,
               );
             },
-            Emission: () => {
-              // Skip emission permissions
+            Stream: () => {
+              // Skip stream permissions
             },
             Curator: () => {
               // Skip curator permissions

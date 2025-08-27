@@ -62,50 +62,53 @@ export function delegateNamespacePermission({
 }
 
 /**
- * Delegate an emission permission to a recipient
+ * Delegate a stream permission with multiple recipients
  */
-export interface DelegateEmissionPermission {
+export interface DelegateStreamPermission {
   api: ApiPromise;
-  recipient: string;
+  recipients: [SS58Address, number][];
   allocation: EmissionAllocation;
-  targets: [SS58Address, number][];
   distribution: DistributionControl;
   duration: PermissionDuration;
   revocation: RevocationTerms;
   enforcement: EnforcementAuthority;
+  recipientManager?: SS58Address;
+  weightSetter?: SS58Address;
 }
 
 /**
  * TODO: test
  * TODO: docs
  */
-export function delegateEmissionPermission({
+export function delegateStreamPermission({
   api,
-  recipient,
+  recipients,
   allocation,
-  targets,
   distribution,
   duration,
   revocation,
   enforcement,
-}: DelegateEmissionPermission) {
-  const targetsMap = new Map(targets);
+  recipientManager,
+  weightSetter,
+}: DelegateStreamPermission) {
+  const recipientsMap = new Map(recipients);
 
-  const targetsMap_ = new BTreeMap<AccountId32, u16>(
+  const recipientsMap_ = new BTreeMap<AccountId32, u16>(
     api.registry,
     "AccountId32",
     "u32",
-    targetsMap,
+    recipientsMap,
   );
 
-  return api.tx.permission0.delegateEmissionPermission(
-    recipient,
+  return api.tx.permission0.delegateStreamPermission(
+    recipientsMap_,
     allocation,
-    targetsMap_,
     distribution,
     duration,
     revocation,
     enforcement,
+    recipientManager ?? null,
+    weightSetter ?? null,
   );
 }
 
@@ -117,12 +120,14 @@ export function togglePermission(
   return api.tx.permission0.togglePermissionAccumulation(permissionId, enable);
 }
 
-export interface UpdateEmissionPermission {
+export interface UpdateStreamPermission {
   api: ApiPromise;
   permissionId: PermissionId;
-  newTargets?: [SS58Address, number][];
+  newRecipients?: [SS58Address, number][];
   newStreams?: Map<StreamId, number>;
   newDistributionControl?: DistributionControl;
+  recipientManager?: SS58Address;
+  weightSetter?: SS58Address;
 }
 
 /**
@@ -139,19 +144,21 @@ export interface UpdateEmissionPermission {
   the delegator can modify the contract without
   breaching the "terms of service"
  */
-export function updateEmissionPermission({
+export function updateStreamPermission({
   api,
   permissionId,
-  newTargets,
+  newRecipients,
   newStreams,
   newDistributionControl,
-}: UpdateEmissionPermission) {
-  const targetsMap = newTargets
+  recipientManager,
+  weightSetter,
+}: UpdateStreamPermission) {
+  const recipientsMap = newRecipients
     ? new BTreeMap<AccountId32, u16>(
         api.registry,
         "AccountId32",
         "u16",
-        new Map(newTargets),
+        new Map(newRecipients),
       )
     : new BTreeMap<AccountId32, u16>(
         api.registry,
@@ -164,11 +171,13 @@ export function updateEmissionPermission({
     ? new BTreeMap<H256, Percent>(api.registry, "H256", "Percent", newStreams)
     : null;
 
-  return api.tx.permission0.updateEmissionPermission(
+  return api.tx.permission0.updateStreamPermission(
     permissionId,
-    targetsMap,
+    recipientsMap,
     streamsMap,
     newDistributionControl ?? null,
+    recipientManager ?? null,
+    weightSetter ?? null,
   );
 }
 

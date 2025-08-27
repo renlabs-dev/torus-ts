@@ -525,7 +525,7 @@ export const permissionsSchema = createTable(
     id: uuid("id").primaryKey().defaultRandom(), // Internal database ID
     permissionId: varchar("permission_id", { length: 66 }).notNull().unique(), // Substrate H256 hash
     grantorAccountId: ss58Address("grantor_account_id").notNull(),
-    granteeAccountId: ss58Address("grantee_account_id").notNull(),
+    granteeAccountId: ss58Address("grantee_account_id"),
 
     durationType: permissionDurationType("duration_type").notNull(),
     durationBlockNumber: bigint("duration_block_number"), // NULL for indefinite
@@ -714,6 +714,9 @@ export const emissionPermissionsSchema = createTable(
 
     accumulating: boolean("accumulating").notNull().default(true),
 
+    weightSetter: ss58Address("weight_setter").array().notNull(),
+    recipientManager: ss58Address("recipient_manager").array().notNull(),
+
     ...timeFields(),
   },
   (t) => [
@@ -863,7 +866,7 @@ export const namespacePermissionsSchema = createTable("namespace_permissions", {
   permissionId: varchar("permission_id", { length: 66 })
     .primaryKey()
     .references(() => permissionsSchema.permissionId, { onDelete: "cascade" }),
-
+  recipient: ss58Address("recipient").notNull(), // old grantee
   ...timeFields(),
 });
 

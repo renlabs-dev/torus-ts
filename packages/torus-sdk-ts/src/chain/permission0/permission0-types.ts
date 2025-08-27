@@ -59,9 +59,9 @@ export const CURATOR_FLAGS = {
   PENALTY_CONTROL: 0b0000_1000n,
 } as const;
 
-// ---- Emission Types ----
+// ---- Stream Types (formerly Emission) ----
 
-export const EMISSION_ALLOCATION_SCHEMA = sb_enum({
+export const STREAM_ALLOCATION_SCHEMA = sb_enum({
   Streams: sb_map(STREAM_ID_SCHEMA, sb_percent),
   FixedAmount: sb_balance,
 });
@@ -73,12 +73,18 @@ export const DISTRIBUTION_CONTROL_SCHEMA = sb_enum({
   Interval: sb_blocks,
 });
 
-export const EMISSION_SCOPE_SCHEMA = sb_struct({
-  allocation: EMISSION_ALLOCATION_SCHEMA,
+export const STREAM_SCOPE_SCHEMA = sb_struct({
+  allocation: STREAM_ALLOCATION_SCHEMA,
   distribution: DISTRIBUTION_CONTROL_SCHEMA,
-  targets: sb_map(sb_address, sb_bigint),
+  recipients: sb_map(sb_address, sb_bigint), // Multiple recipients with weights
+  recipientManagers: sb_array(sb_address), // BoundedBTreeSet serialized as array (camelCase in JSON)
+  weightSetters: sb_array(sb_address), // BoundedBTreeSet serialized as array (camelCase in JSON)
   accumulating: sb_bool,
 });
+
+// Backward compatibility aliases
+export const EMISSION_ALLOCATION_SCHEMA = STREAM_ALLOCATION_SCHEMA;
+export const EMISSION_SCOPE_SCHEMA = STREAM_SCOPE_SCHEMA;
 
 // ---- Curator Types ----
 
@@ -94,6 +100,7 @@ export type CuratorScope = z.infer<typeof CURATOR_SCOPE_SCHEMA>;
 // ---- Namespace Types ----
 
 export const NAMESPACE_SCOPE_SCHEMA = sb_struct({
+  recipient: sb_address,
   paths: sb_map(sb_option(PERMISSION_ID_SCHEMA), sb_array(sb_namespace_path)),
 });
 
@@ -102,7 +109,7 @@ export type NamespaceScope = z.infer<typeof NAMESPACE_SCOPE_SCHEMA>;
 // ---- Permission Scope ----
 
 export const PERMISSION_SCOPE_SCHEMA = sb_enum({
-  Emission: EMISSION_SCOPE_SCHEMA,
+  Stream: STREAM_SCOPE_SCHEMA, // Updated from Emission to Stream
   Curator: CURATOR_SCOPE_SCHEMA,
   Namespace: NAMESPACE_SCOPE_SCHEMA,
 });
@@ -150,7 +157,7 @@ export type EnforcementReferendum = z.infer<
 
 const PERMISSION_CONTRACT_SHAPE = {
   delegator: sb_address,
-  recipient: sb_address,
+  // Note: recipient field removed - now stored in scope-specific structures
   scope: PERMISSION_SCOPE_SCHEMA,
   duration: PERMISSION_DURATION_SCHEMA,
   revocation: REVOCATION_TERMS_SCHEMA,
@@ -164,13 +171,19 @@ const PERMISSION_CONTRACT_SHAPE = {
 
 export const PERMISSION_CONTRACT_SCHEMA = sb_struct(PERMISSION_CONTRACT_SHAPE);
 
-export const EMISSION_CONTRACT_SCHEMA = sb_struct({
+export const STREAM_CONTRACT_SCHEMA = sb_struct({
   ...PERMISSION_CONTRACT_SHAPE,
-  scope: EMISSION_SCOPE_SCHEMA,
+  scope: STREAM_SCOPE_SCHEMA,
 });
 
 export type PermissionContract = z.infer<typeof PERMISSION_CONTRACT_SCHEMA>;
-export type EmissionContract = z.infer<typeof EMISSION_CONTRACT_SCHEMA>;
-export type EmissionAllocation = z.infer<typeof EMISSION_ALLOCATION_SCHEMA>;
+export type StreamContract = z.infer<typeof STREAM_CONTRACT_SCHEMA>;
+export type StreamAllocation = z.infer<typeof STREAM_ALLOCATION_SCHEMA>;
 export type DistributionControl = z.infer<typeof DISTRIBUTION_CONTROL_SCHEMA>;
-export type EmissionScope = z.infer<typeof EMISSION_SCOPE_SCHEMA>;
+export type StreamScope = z.infer<typeof STREAM_SCOPE_SCHEMA>;
+
+// Backward compatibility aliases
+export const EMISSION_CONTRACT_SCHEMA = STREAM_CONTRACT_SCHEMA;
+export type EmissionContract = StreamContract;
+export type EmissionAllocation = StreamAllocation;
+export type EmissionScope = StreamScope;

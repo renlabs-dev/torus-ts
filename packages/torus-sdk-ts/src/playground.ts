@@ -259,7 +259,9 @@ async function main() {
         if (count >= 3) break;
         console.log(`\n🔍 Permission ${permId.slice(0, 8)}...:`);
         console.log(`  Delegator: ${emission.delegator}`);
-        console.log(`  Recipient: ${emission.recipient}`);
+        // Extract first recipient from stream scope
+        const firstRecipient = Array.from(emission.scope.recipients.keys())[0];
+        console.log(`  First Recipient: ${firstRecipient ?? "None"}`);
         console.log(`  Accumulating: ${emission.scope.accumulating}`);
 
         // Show allocation type
@@ -304,7 +306,7 @@ async function main() {
     console.log("\n📋 Test 4.2: Filtering by recipient");
     const [emissionError2, recipientEmissions] = await queryEmissionPermissions(
       api,
-      (perm) => perm.recipient === testAddress,
+      (perm) => perm.scope.recipients.has(testAddress),
     );
 
     if (emissionError2) {
