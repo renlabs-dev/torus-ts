@@ -152,6 +152,10 @@ declare module '@polkadot/api-base/types/consts' {
     };
     permission0: {
       /**
+       * Max operations a bulk extrinsic can perform per extrinsic call.
+       **/
+      maxBulkOperationsPerCall: u32 & AugmentedConst<ApiType>;
+      /**
        * Maximum number of children a single permission can have.
        **/
       maxChildrenPerPermission: u32 & AugmentedConst<ApiType>;
@@ -168,6 +172,10 @@ declare module '@polkadot/api-base/types/consts' {
        **/
       maxNamespacesPerPermission: u32 & AugmentedConst<ApiType>;
       /**
+       * Maximum number of recipients per permission.
+       **/
+      maxRecipientsPerPermission: u32 & AugmentedConst<ApiType>;
+      /**
        * Maximum number of revokers.
        **/
       maxRevokersPerPermission: u32 & AugmentedConst<ApiType>;
@@ -175,10 +183,6 @@ declare module '@polkadot/api-base/types/consts' {
        * Maximum number of delegated streams per permission.
        **/
       maxStreamsPerPermission: u32 & AugmentedConst<ApiType>;
-      /**
-       * Maximum number of targets per permission.
-       **/
-      maxTargetsPerPermission: u32 & AugmentedConst<ApiType>;
       /**
        * Minimum threshold for auto-distribution
        **/
