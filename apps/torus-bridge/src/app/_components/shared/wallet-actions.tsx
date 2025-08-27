@@ -91,7 +91,7 @@ function WalletOptions() {
   );
 }
 
-export function WalletActions() {
+function WalletActions() {
   const searchParams = useSearchParams();
 
   const view = searchParams.get("view") as "wallet" | null;

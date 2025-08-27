@@ -13,7 +13,6 @@
     "tsafe": "catalog:"
   },
   "devDependencies": {
-    "@torus-ts/eslint-config": "workspace:*",
     "@torus-ts/tsconfig": "workspace:*"
   },
   "peerDependencies": {

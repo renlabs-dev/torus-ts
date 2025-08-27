@@ -36,7 +36,7 @@ interface AddressFieldProps {
   className?: string;
 }
 
-export function AddressField({
+function AddressField({
   value,
   onValueChange,
   disabled,

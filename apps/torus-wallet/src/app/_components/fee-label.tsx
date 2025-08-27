@@ -11,7 +11,7 @@ interface FeeLabelProps {
   fee?: bigint; // Optional fee prop for simplified usage
 }
 
-export interface FeeLabelHandle {
+interface FeeLabelHandle {
   updateFee: (newFee: string | null) => void;
   setLoading: (loading: boolean) => void;
   getEstimatedFee: () => string | null;

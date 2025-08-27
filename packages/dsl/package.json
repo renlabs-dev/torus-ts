@@ -24,12 +24,10 @@
   },
   "dependencies": {
     "@torus-network/sdk": "workspace:*",
-    "tsafe": "catalog:",
     "zod": "catalog:"
   },
   "devDependencies": {
     "@torus-ts/eslint-config": "workspace:*",
-    "@torus-ts/prettier-config": "workspace:*",
     "@torus-ts/tsconfig": "workspace:*",
     "@types/node": "catalog:",
     "eslint": "catalog:",

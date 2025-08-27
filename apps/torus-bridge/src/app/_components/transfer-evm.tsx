@@ -557,7 +557,7 @@ const linkStyle: CSSProperties = {
   cursor: "pointer",
 };
 
-export const renderWaitingForValidation = (hash: string) => (
+const renderWaitingForValidation = (hash: string) => (
   <div style={divStyle}>
     <p>Validating transaction in block.</p>
     <a
@@ -571,7 +571,7 @@ export const renderWaitingForValidation = (hash: string) => (
   </div>
 );
 
-export const renderSuccessfulyFinalized = (hash: string) => (
+const renderSuccessfulyFinalized = (hash: string) => (
   <div style={divStyle}>
     <p>Transfer completed successfully</p>
     <a

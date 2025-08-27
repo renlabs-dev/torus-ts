@@ -11,7 +11,7 @@ import { useGovernance } from "~/context/governance-provider";
 import { handleCustomAgentApplications } from "~/utils";
 
 // Common function to map status values
-export const mapStatusToView = (status: AgentApplication["status"]): string => {
+const mapStatusToView = (status: AgentApplication["status"]): string => {
   return match(status)({
     Open: () => "active",
     Resolved: ({ accepted }: { accepted: boolean }) =>

@@ -31,7 +31,7 @@ export function getChainDisplayName(
   return displayName ?? metadata.displayName ?? toTitleCase(metadata.name);
 }
 
-export function isPermissionlessChain(
+function isPermissionlessChain(
   multiProvider: MultiProtocolProvider,
   chain: ChainName,
 ) {

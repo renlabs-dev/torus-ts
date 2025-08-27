@@ -24,7 +24,8 @@ import { SendForm } from "./send-form";
 import type { SendFormValues } from "./send-form-schema";
 import { createSendFormSchema } from "./send-form-schema";
 
-export const MIN_ALLOWED_STAKE_SAFEGUARD = 500000000000000000n;
+// TODO: remove duplicate
+const MIN_ALLOWED_STAKE_SAFEGUARD = 500000000000000000n;
 
 export function Send() {
   const {

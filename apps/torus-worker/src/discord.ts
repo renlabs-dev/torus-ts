@@ -1,6 +1,6 @@
 import axios from "axios";
 
-export interface EmbedField {
+interface EmbedField {
   name: string;
   value: string;
   inline?: boolean;

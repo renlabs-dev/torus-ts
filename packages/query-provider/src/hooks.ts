@@ -145,7 +145,7 @@ export function useFreeBalance(
 
 export function useTreasuryEmissionFee(
   api: Api | Nullish,
-): UseQueryResult<Proposal[], Error> {
+) {
   return useQuery({
     queryKey: ["treasury_emission_fee"],
     enabled: api != null,

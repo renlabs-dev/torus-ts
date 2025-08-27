@@ -51,7 +51,7 @@ interface SelectCardProps {
   iconTo: string;
 }
 
-export function SelectCard(props: Readonly<SelectCardProps>) {
+function SelectCard(props: Readonly<SelectCardProps>) {
   return (
     <AlertDialogAction
       asChild

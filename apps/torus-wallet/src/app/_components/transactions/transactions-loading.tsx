@@ -5,7 +5,7 @@ interface TransactionLoadingStateProps {
   className?: string;
 }
 
-export function TransactionLoadingState({
+function TransactionLoadingState({
   message = "Loading...",
   size = "md",
   variant = "inline",

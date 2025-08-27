@@ -80,6 +80,7 @@ export default tseslint.config(
       ],
       "@typescript-eslint/no-inferrable-types": "off",
       "@typescript-eslint/no-non-null-assertion": "error",
+      "@typescript-eslint/prefer-nullish-coalescing": "off",
       "import/consistent-type-specifier-style": ["error", "prefer-top-level"],
     },
   },

@@ -36,7 +36,7 @@ export const decodeSessionToken = (
   jwtSecret: string,
 ): SessionData | undefined => {
   const [verifyError, verifyResult] = trySync(() =>
-    jwt.verify(token, jwtSecret, JWT_OPTIONS),
+    jwt.verify(token, jwtSecret, JWT_OPTIONS as jwt.VerifyOptions),
   );
   if (verifyError !== undefined) {
     console.error("Failed to verify token:", verifyError.message);

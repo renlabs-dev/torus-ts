@@ -75,7 +75,7 @@ export function getStakeFromDataStringified() {
  * @param api API instance for blockchain queries
  * @param lastBlock Latest block information
  */
-export const updateStakeFrom = async (
+const updateStakeFrom = async (
   api: ApiPromise,
   lastBlock: LastBlock,
 ) => {
@@ -105,7 +105,7 @@ export const updateStakeFrom = async (
  * @param lastBlock - Latest block information including block number
  * @returns Promise that resolves when the operation completes
  */
-export const updateStakeOut = async (api: ApiPromise, lastBlock: LastBlock) => {
+const updateStakeOut = async (api: ApiPromise, lastBlock: LastBlock) => {
   const queryErrorMsg = () =>
     `Error updating StakeOut data for block ${lastBlock.blockNumber}:`;
   const queryRes = await tryAsync(queryStakeOut(api));

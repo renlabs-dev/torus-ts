@@ -80,7 +80,7 @@ function validateTotalAllocation<T extends AllocationItem>(
   }
 }
 
-export const TARGET_SCHEMA = z.object({
+const TARGET_SCHEMA = z.object({
   address: z.string().min(1, "Agent address is required"),
   percentage: z
     .number()
@@ -88,7 +88,7 @@ export const TARGET_SCHEMA = z.object({
     .max(100, "Percentage must be between 0 and 100"),
 });
 
-export const STREAM_ENTRY_SCHEMA = z.object({
+const STREAM_ENTRY_SCHEMA = z.object({
   streamId: z
     .string()
     .min(1, "Stream ID is required")
@@ -102,7 +102,7 @@ export const STREAM_ENTRY_SCHEMA = z.object({
     .max(100, "Percentage must be between 0 and 100"),
 });
 
-export const DISTRIBUTION_CONTROL_SCHEMA = z.union([
+const DISTRIBUTION_CONTROL_SCHEMA = z.union([
   z.object({ Manual: z.null() }),
   z.object({ Automatic: z.bigint().nonnegative() }),
   z.object({ AtBlock: z.number().int().nonnegative() }),

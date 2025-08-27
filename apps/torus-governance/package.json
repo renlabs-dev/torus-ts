@@ -38,23 +38,18 @@
     "react": "catalog:react19",
     "react-dom": "catalog:react19",
     "rustie": "catalog:",
-    "shadcn-dropzone": "^0.2.1",
     "superjson": "2.2.1",
     "three": "catalog:",
     "three-stdlib": "^2.35.15",
-    "tsafe": "catalog:",
     "zod": "catalog:"
   },
   "devDependencies": {
-    "@next/eslint-plugin-next": "catalog:",
-    "@tailwindcss/typography": "catalog:",
     "@torus-ts/eslint-config": "workspace:*",
     "@torus-ts/tsconfig": "workspace:*",
     "@types/node": "catalog:",
     "@types/react": "catalog:react19",
     "@types/react-dom": "catalog:react19",
     "@types/three": "catalog:",
-    "jiti": "catalog:",
     "postcss": "catalog:",
     "tailwindcss": "catalog:",
     "typescript": "catalog:"

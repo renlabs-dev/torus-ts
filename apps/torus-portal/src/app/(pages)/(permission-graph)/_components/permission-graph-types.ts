@@ -25,7 +25,7 @@ export interface CustomGraphNode extends NodeObject {
   precomputedMaterial?: THREE.Material;
 }
 
-export interface PermissionNodeData {
+interface PermissionNodeData {
   permissionId: string;
   permissionType: "emission" | "capability";
   delegatorAccountId: string;
@@ -35,13 +35,13 @@ export interface PermissionNodeData {
   namespacePaths?: string[];
 }
 
-export interface AgentNodeData {
+interface AgentNodeData {
   accountId: string;
   isWhitelisted?: boolean;
   isAllocated?: boolean;
 }
 
-export interface SignalData {
+interface SignalData {
   id: number;
   title: string;
   description: string;

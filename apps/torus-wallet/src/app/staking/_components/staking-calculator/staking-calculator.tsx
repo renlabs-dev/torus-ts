@@ -30,7 +30,7 @@ export interface ProjectedData {
   initial: number;
 }
 
-export const MONTHLY_COMPOUNDS = 12;
+const MONTHLY_COMPOUNDS = 12;
 export const FORECAST_MONTHS = 24;
 export const FORECAST_PERIODS = [3, 6, 12, 24];
 

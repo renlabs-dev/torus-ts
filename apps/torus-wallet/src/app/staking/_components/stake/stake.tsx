@@ -26,8 +26,9 @@ import { StakeForm } from "./stake-form";
 import type { StakeFormValues } from "./stake-form-schema";
 import { createStakeActionFormSchema } from "./stake-form-schema";
 
-export const MIN_ALLOWED_STAKE_SAFEGUARD = 500000000000000000n;
-export const MIN_EXISTENTIAL_BALANCE = 100000000000000000n;
+// TODO: remove duplicate
+const MIN_ALLOWED_STAKE_SAFEGUARD = 500000000000000000n;
+const MIN_EXISTENTIAL_BALANCE = 100000000000000000n;
 
 export function Stake() {
   const {

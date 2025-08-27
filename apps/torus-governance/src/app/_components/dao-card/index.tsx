@@ -1,5 +1,7 @@
 "use client";
 
+import type { ReactNode } from "react";
+
 import {
   Card,
   CardContent,
@@ -7,9 +9,8 @@ import {
   CardTitle,
 } from "@torus-ts/ui/components/card";
 import { cn } from "@torus-ts/ui/lib/utils";
-import type { ReactNode } from "react";
 
-export interface DaoCardProps {
+interface DaoCardProps {
   title?: ReactNode;
   topRightContent?: ReactNode;
   metaContent?: ReactNode;
@@ -53,7 +54,7 @@ export function DaoCard({
           <CardTitle
             className={cn(
               `line-clamp-3 text-xl font-semibold text-white lg:pb-0 xl:line-clamp-2 break-all
-              word-break-break-word overflow-hidden`,
+              overflow-hidden`,
               variant === "small" ? "text-sm" : "text-xl",
             )}
           >

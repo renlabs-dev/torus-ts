@@ -8,7 +8,7 @@ interface TransactionEmptyStateProps {
   variant?: "default" | "compact";
 }
 
-export function TransactionEmptyState({
+function TransactionEmptyState({
   title = "No transactions found",
   description,
   icon,
@@ -47,16 +47,6 @@ export function TransactionsEmptyDefault() {
     <TransactionEmptyState
       title="No transactions found"
       description="Your transaction history will appear here once you start using your wallet"
-    />
-  );
-}
-
-export function TransactionsEmptyFiltered() {
-  return (
-    <TransactionEmptyState
-      title="No matching transactions"
-      description="Try adjusting your filters or clearing them to see more results"
-      variant="compact"
     />
   );
 }

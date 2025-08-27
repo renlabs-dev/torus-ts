@@ -12,7 +12,6 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@hookform/resolvers": "^3.9.1",
     "@radix-ui/react-accordion": "^1.2.3",
     "@radix-ui/react-alert-dialog": "^1.1.2",
     "@radix-ui/react-avatar": "^1.1.10",
@@ -35,7 +34,6 @@
     "@radix-ui/react-toggle": "^1.1.0",
     "@radix-ui/react-toggle-group": "^1.1.0",
     "@radix-ui/react-tooltip": "^1.1.8",
-    "@tanstack/react-table": "^8.20.5",
     "@torus-network/torus-utils": "workspace:*",
     "@uiw/react-markdown-preview": "^5.1.1",
     "class-variance-authority": "^0.7.1",
@@ -44,7 +42,6 @@
     "embla-carousel-react": "^8.6.0",
     "input-otp": "^1.2.4",
     "lucide-react": "0.456.0",
-    "next-themes": "^0.4.3",
     "react": "catalog:react19",
     "react-dom": "catalog:react19",
     "react-hook-form": "^7.53.2",
@@ -57,9 +54,7 @@
   },
   "devDependencies": {
     "@torus-ts/eslint-config": "workspace:*",
-    "@torus-ts/prettier-config": "workspace:*",
     "@torus-ts/tsconfig": "workspace:*",
-    "@turbo/gen": "^2.3.3",
     "@types/node": "^22.9.0",
     "@types/react": "catalog:react19",
     "autoprefixer": "^10.4.20",

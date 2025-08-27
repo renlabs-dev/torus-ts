@@ -33,7 +33,7 @@ import { tryAsync } from "@torus-network/torus-utils/try-catch";
 import { createMutationHandler } from "@torus-network/torus-utils/mutation-handler";
 
 //  "LIKE" | "DISLIKE"
-export type CommentInteractionReactionType = NonNullable<
+type CommentInteractionReactionType = NonNullable<
   inferProcedureOutput<AppRouter["commentInteraction"]["byId"]>
 >["reactionType"];
 
@@ -82,7 +82,7 @@ const LoadingComments = () => {
   );
 };
 
-export type Comments = NonNullable<
+type Comments = NonNullable<
   inferProcedureOutput<AppRouter["comment"]["byId"]>
 >;
 

@@ -5,7 +5,7 @@ import { z } from "zod";
  * Validates that the total percentage across all items does not exceed 100%.
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function createPercentageArrayValidator<T extends Record<string, any>>(
+function createPercentageArrayValidator<T extends Record<string, any>>(
   getPercentage: (item: T) => string | number,
   options: {
     /** Field name for error path targeting (defaults to 'percentage') */

@@ -30,8 +30,9 @@ import { UnstakeForm } from "./unstake-form";
 import type { UnstakeFormValues } from "./unstake-form-schema";
 import { createUnstakeFormSchema } from "./unstake-form-schema";
 
-export const MIN_ALLOWED_STAKE_SAFEGUARD = 500000000000000000n;
-export const MIN_EXISTENTIAL_BALANCE = 100000000000000000n;
+// TODO: remove duplicate
+const MIN_ALLOWED_STAKE_SAFEGUARD = 500000000000000000n;
+const MIN_EXISTENTIAL_BALANCE = 100000000000000000n;
 
 interface StakedValidator {
   address: string;

@@ -1,7 +1,4 @@
-import type {
-  Agent as TorusAgent,
-  GovernanceItemType,
-} from "@torus-network/sdk/chain";
+import type { Agent as TorusAgent } from "@torus-network/sdk/chain";
 import type { SS58Address } from "@torus-network/sdk/types";
 import { checkSS58 } from "@torus-network/sdk/types";
 import { getOrSetDefault } from "@torus-network/torus-utils/collections";
@@ -31,7 +28,6 @@ import {
   emissionDistributionTargetsSchema,
   emissionPermissionsSchema,
   emissionStreamAllocationsSchema,
-  governanceNotificationSchema,
   namespacePermissionPathsSchema,
   namespacePermissionsSchema,
   penalizeAgentVotesSchema,
@@ -46,10 +42,9 @@ import {
 
 const db = createDb();
 
-export type NewVote = typeof cadreVoteSchema.$inferInsert;
-export type Agent = typeof agentSchema.$inferInsert;
+
+type Agent = typeof agentSchema.$inferInsert;
 export type AgentWeight = typeof computedAgentWeightSchema.$inferInsert;
-export type NewNotification = typeof governanceNotificationSchema.$inferInsert;
 export type NewProposal = typeof proposalSchema.$inferInsert;
 export type NewPermission = typeof permissionsSchema.$inferInsert;
 export type NewEmissionPermission =
@@ -71,7 +66,7 @@ export type NewPermissionHierarchy =
 export type NewAccumulatedStreamAmount =
   typeof accumulatedStreamAmountsSchema.$inferInsert;
 
-export type Transaction = Parameters<Parameters<typeof db.transaction>[0]>[0];
+type Transaction = Parameters<Parameters<typeof db.transaction>[0]>[0];
 export type NewApplication = typeof whitelistApplicationSchema.$inferInsert;
 export type ApplicationDB = typeof whitelistApplicationSchema.$inferSelect;
 export type CadreCandidate = typeof cadreCandidateSchema.$inferSelect;
@@ -193,10 +188,6 @@ export interface VotesByKey extends VotesByIdBase {
   appId: SS58Address;
 }
 
-export async function vote(new_vote: NewVote) {
-  await db.insert(cadreVoteSchema).values(new_vote);
-}
-
 export async function toggleWhitelistNotification(proposal: ApplicationDB) {
   await db
     .update(whitelistApplicationSchema)
@@ -310,10 +301,7 @@ export async function queryTotalVotesPerCadre(): Promise<VotesByKey[]> {
   }));
 }
 
-export async function archiveCadreVotes(
-  applicantKey: SS58Address,
-  tx: Transaction,
-) {
+async function archiveCadreVotes(applicantKey: SS58Address, tx: Transaction) {
   const votes = await tx
     .select()
     .from(cadreVoteSchema)
@@ -375,21 +363,6 @@ export async function refuseCadreApplication(userKey: SS58Address) {
 
     await archiveCadreVotes(userKey, tx);
   });
-}
-
-export async function getGovItemIdsByType(
-  type: GovernanceItemType,
-): Promise<number[]> {
-  const result = await db
-    .select({
-      itemId: governanceNotificationSchema.itemId,
-    })
-    .from(governanceNotificationSchema)
-    .where(eq(governanceNotificationSchema.itemType, type));
-
-  const itemIds = result.map((row) => row.itemId);
-
-  return itemIds;
 }
 
 export async function countCadreKeys(): Promise<number> {

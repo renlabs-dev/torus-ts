@@ -1,5 +1,9 @@
 "use client";
 
+import { Check } from "lucide-react";
+import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation";
+
 import { Button } from "@torus-ts/ui/components/button";
 import { Card } from "@torus-ts/ui/components/card";
 import {
@@ -10,17 +14,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@torus-ts/ui/components/select";
-import { Check } from "lucide-react";
-import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
 
 const navOptions = [
   { title: "Whitelist Applications", href: "/whitelist-applications" },
   { title: "DAO Dashboard", href: "/dao-dashboard" },
   { title: "Proposals", href: "/proposals" },
 ] as const;
-
-export type GovernanceViewMode = (typeof navOptions)[number]["href"];
 
 export function SidebarNav() {
   const pathname = usePathname();

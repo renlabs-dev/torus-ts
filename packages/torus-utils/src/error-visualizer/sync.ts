@@ -10,7 +10,7 @@ interface UserData {
   age: number;
 }
 
-export const syncUtils = {
+const syncUtils = {
   parseJSON: (jsonString: string): unknown => {
     return JSON.parse(jsonString);
   },
@@ -42,7 +42,7 @@ export const syncUtils = {
 };
 
 // Example with successful calculation
-export function exampleSuccessfulCalculation(): void {
+function exampleSuccessfulCalculation(): void {
   console.log("\n--- Example: Successful Calculation ---");
 
   const [error, result] = trySyncStr(() => syncUtils.divideNumbers(10, 2));
@@ -55,7 +55,7 @@ export function exampleSuccessfulCalculation(): void {
 }
 
 // Example with division by zero
-export function exampleDivisionByZero(): void {
+function exampleDivisionByZero(): void {
   console.log("\n--- Example: Division by Zero ---");
 
   const [error, result] = trySyncStr(() => syncUtils.divideNumbers(10, 0));
@@ -68,7 +68,7 @@ export function exampleDivisionByZero(): void {
 }
 
 // Example with valid JSON parsing
-export function exampleValidJSON(): void {
+function exampleValidJSON(): void {
   console.log("\n--- Example: Valid JSON Parsing ---");
 
   const validJSON = '{"name": "John", "age": 30}';
@@ -82,7 +82,7 @@ export function exampleValidJSON(): void {
 }
 
 // Example with invalid JSON
-export function exampleInvalidJSON(): void {
+function exampleInvalidJSON(): void {
   console.log("\n--- Example: Invalid JSON ---");
 
   const invalidJSON = '{name: "John", age: 30}'; // Missing quotes around name
@@ -98,7 +98,7 @@ export function exampleInvalidJSON(): void {
 }
 
 // Example with raw error
-export function exampleWithRawError(): void {
+function exampleWithRawError(): void {
   console.log("\n--- Example: With Raw Error ---");
 
   const invalidJSON = "{{}"; // Malformed JSON

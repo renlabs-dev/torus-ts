@@ -30,8 +30,9 @@ import { TransferStakeForm } from "./transfer-stake-form";
 import type { TransferStakeFormValues } from "./transfer-stake-form-schema";
 import { createTransferStakeFormSchema } from "./transfer-stake-form-schema";
 
-export const MIN_ALLOWED_STAKE_SAFEGUARD = 500000000000000000n;
-export const MIN_EXISTENTIAL_BALANCE = 100000000000000000n;
+// TODO: remove duplicate
+const MIN_ALLOWED_STAKE_SAFEGUARD = 500000000000000000n;
+const MIN_EXISTENTIAL_BALANCE = 100000000000000000n;
 
 export function TransferStake() {
   const {

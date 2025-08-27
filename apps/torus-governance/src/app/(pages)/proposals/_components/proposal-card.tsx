@@ -13,7 +13,7 @@ import { ProposalStatusLabel } from "../../../_components/proposal/proposal-stat
 import { ProposalTypeLabel } from "../../../_components/proposal/proposal-type-label";
 import { ProposalVoteLabel } from "../../../_components/proposal/proposal-vote-label";
 
-export interface ProposalCardProps {
+interface ProposalCardProps {
   title: string | null;
   author: SS58Address;
   proposalStatus?: ProposalStatus;

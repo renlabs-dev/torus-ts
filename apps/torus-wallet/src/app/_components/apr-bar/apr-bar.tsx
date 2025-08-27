@@ -12,14 +12,7 @@ import { useRewardIntervalProgress } from "~/hooks/useRewardInterval";
 import { APRBarBase } from "./apr-bar-base";
 import { AppBarDataGroup, AppBarSeparator } from "./apr-bar-shared";
 
-export interface APRData {
-  apr: number;
-  totalStake: bigint;
-  stakedPercentage: number;
-  usdPrice: number;
-}
-
-export interface APRInfo {
+interface APRInfo {
   label: string;
   value: string;
   unit?: string;
