@@ -199,7 +199,7 @@ export class BigNumberBrand<Tag extends string>
     return this._wrap(this.value.abs());
   }
 
-  comparedTo(n: BigNumberBrand<Tag>, base?: number): number {
+  comparedTo(n: BigNumberBrand<Tag>, base?: number): 0 | 1 | -1 | null {
     return this.value.comparedTo(n.value, base);
   }
 

@@ -257,7 +257,7 @@ export async function processAllVotes(
  * @param vote_threshold - Minimum votes required to execute governance actions
  * @param applications_map - Reference map of application details from the blockchain
  */
-export async function processVotesOnProposal(
+async function processVotesOnProposal(
   api: ApiPromise,
   mnemonic: string,
   vote_info: VotesByNumericId,
@@ -330,7 +330,7 @@ export async function processVotesOnProposal(
  * @param last_block_number - Current blockchain height
  * @returns Vote tallies for active pending applications
  */
-export async function getVotesOnPending(
+async function getVotesOnPending(
   applications_map: Record<number, AgentApplication>,
   last_block_number: number,
 ): Promise<VotesByNumericId[]> {
@@ -353,7 +353,7 @@ export async function getVotesOnPending(
  *
  * @returns Number of votes required to pass governance actions
  */
-export async function getCadreThreshold() {
+async function getCadreThreshold() {
   const keys = await countCadreKeys();
   return Math.floor(keys / 2) + 1;
 }
@@ -364,7 +364,7 @@ export async function getCadreThreshold() {
  *
  * @returns Number of votes required to apply or remove agent penalties
  */
-export async function getPenaltyThreshold() {
+async function getPenaltyThreshold() {
   const keys = await countCadreKeys();
   const threshold = Math.floor(Math.sqrt(keys)) + 1;
   log.info(`Penalty threshold: ${threshold} (from ${keys} cadre members)`);
@@ -378,7 +378,7 @@ export async function getPenaltyThreshold() {
  * @param cadreThreshold - Minimum votes needed to apply a penalty
  * @returns List of agents with their calculated penalty factors
  */
-export async function getPenaltyFactors(cadreThreshold: number) {
+async function getPenaltyFactors(cadreThreshold: number) {
   const nth_factor = Math.max(cadreThreshold - 1, 1);
   const penalizations = await pendingPenalizations(cadreThreshold, nth_factor);
   log.info(
@@ -441,7 +441,7 @@ async function getKeysToReset(api: ApiPromise, penaltyThreshold: number) {
  * @param mnemonic - Curator account credentials for submitting transactions
  * @param penaltiesToApply - List of agents with their calculated penalty factors
  */
-export async function processPenalty(
+async function processPenalty(
   api: ApiPromise,
   mnemonic: string,
   penaltiesToApply: {

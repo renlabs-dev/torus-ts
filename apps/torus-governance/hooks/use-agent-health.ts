@@ -5,7 +5,7 @@ import { useMemo } from "react";
 import type { AppRouter } from "@torus-ts/api";
 import type { inferProcedureOutput } from "@trpc/server";
 
-export type AgentWithAggregatedPenalties = NonNullable<
+type AgentWithAggregatedPenalties = NonNullable<
   inferProcedureOutput<AppRouter["agent"]["allWithAggregatedPenalties"]>
 >;
 
@@ -16,7 +16,7 @@ export interface DialogPenaltiesState {
   agentName: string;
 }
 
-export interface UseAgentHealthParams {
+interface UseAgentHealthParams {
   searchParam?: string | null;
   statusFilter?: string | null;
 }

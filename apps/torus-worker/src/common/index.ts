@@ -24,17 +24,13 @@ import type {
   NewApplication,
   NewProposal,
   VotesByKey as VoteByKey,
-  VotesByNumericId as VoteById,
 } from "../db";
 import {
   addCadreMember,
-  countCadreKeys,
   getCadreDiscord,
-  pendingPenalizations,
   queryAgentApplicationsDB,
   queryCadreCandidates,
   queryProposalsDB,
-  queryTotalVotesPerApp,
   queryTotalVotesPerCadre,
   refuseCadreApplication,
   removeCadreMember,
@@ -51,11 +47,6 @@ export interface WorkerProps {
 }
 
 const log = BasicLogger.create({ name: "common-indexer" });
-
-// ---- Constants ----
-
-export const APPLICATION_EXPIRATION_TIME =
-  CONSTANTS.TIME.BLOCK_TIME_SECONDS * CONSTANTS.TIME.ONE_WEEK; // 7 days in blocks
 
 // ---- Helpers ----
 
@@ -230,20 +221,6 @@ export const applicationIsPending = (app: AgentApplication) =>
   getApplicationVoteStatus(app) != "locked";
 
 /**
- * Checks if an application is in "open" state or has been accepted.
- * Used to determine if the application should appear in active listings.
- *
- * @param app - Agent application to evaluate
- * @returns Whether the application is either open or accepted
- */
-export const applicationIsOpen = (app: AgentApplication) =>
-  match(app.status)({
-    Open: () => true,
-    Resolved: ({ accepted }) => accepted,
-    Expired: () => false,
-  });
-
-/**
  * Retrieves and filters applications from the blockchain.
  * Transforms the array response into a map indexed by application ID for
  * more efficient lookups during processing.
@@ -348,53 +325,12 @@ export async function getCadreCandidates(
   return cadreCandidates.filter(filterFn);
 }
 
-/**
- * Retrieves votes on pending applications
- *
- * @param applications_map - Map of application IDs to application objects
- * @param last_block_number - The last processed block number
- * @returns An array of votes on pending applications
- */
-export async function getVotesOnPending(
-  applications_map: Record<number, AgentApplication>,
-  last_block_number: number,
-): Promise<VoteById[]> {
-  const queryVotesRes = await tryAsync(queryTotalVotesPerApp());
-  if (log.ifResultIsErr(queryVotesRes)) return [];
-  const [_queryVotesErr, votes] = queryVotesRes;
-
-  const votes_on_pending = votes.filter((vote) => {
-    const app = applications_map[vote.appId];
-    if (app == null) return false;
-    return applicationIsOpen(app) && app.expiresAt > last_block_number;
-  });
-  return votes_on_pending;
-}
-
 export async function getCadreVotes(): Promise<VoteByKey[]> {
   const queryVotesRes = await tryAsync(queryTotalVotesPerCadre());
   if (log.ifResultIsErr(queryVotesRes)) return [];
   const [_queryVotesErr, votes] = queryVotesRes;
 
   return votes;
-}
-
-export async function getCadreThreshold() {
-  const countKeysRes = await tryAsync(countCadreKeys());
-  if (log.ifResultIsErr(countKeysRes)) return 1; // Default to 1 if there's an error
-  const [_countKeysErr, keys] = countKeysRes;
-
-  return Math.floor(keys / 2) + 1;
-}
-
-export async function getPenaltyFactors(cadreThreshold: number) {
-  const pendingPenalizationsRes = await tryAsync(
-    pendingPenalizations(cadreThreshold, Math.max(cadreThreshold - 1, 1)),
-  );
-  if (log.ifResultIsErr(pendingPenalizationsRes)) return [];
-  const [_pendingPenalizationsErr, penalizations] = pendingPenalizationsRes;
-
-  return penalizations;
 }
 
 /**

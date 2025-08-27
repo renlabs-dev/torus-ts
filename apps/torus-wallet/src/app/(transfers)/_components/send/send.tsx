@@ -19,12 +19,11 @@ import { ReviewTransactionDialog } from "~/app/_components/review-transaction-di
 import { useUsdPrice } from "~/context/usd-price-provider";
 import { useWallet } from "~/context/wallet-provider";
 import { useTransactionsStore } from "~/store/transactions-store";
+import { MIN_ALLOWED_STAKE_SAFEGUARD } from "~/utils/constants";
 
 import { SendForm } from "./send-form";
 import type { SendFormValues } from "./send-form-schema";
 import { createSendFormSchema } from "./send-form-schema";
-
-export const MIN_ALLOWED_STAKE_SAFEGUARD = 500000000000000000n;
 
 export function Send() {
   const {

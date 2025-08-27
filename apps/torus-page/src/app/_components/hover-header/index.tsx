@@ -1,9 +1,13 @@
 "use client";
 
+import { useEffect, useRef, useState } from "react";
+
+import type { Variants } from "motion/react";
+import { AnimatePresence, motion } from "motion/react";
+
 import { Icons } from "@torus-ts/ui/components/icons";
 import { cn } from "@torus-ts/ui/lib/utils";
-import { AnimatePresence, motion } from "framer-motion";
-import { useEffect, useRef, useState } from "react";
+
 import { ANIMATIONS } from "./_components/data";
 import { ButtonsSection } from "./_components/desktop/buttons-section";
 import { LinesSVG } from "./_components/desktop/lines-svg";
@@ -132,7 +136,7 @@ export function HoverHeader() {
           <motion.div
             className="bg-primary/15 absolute inset-0 rounded-2xl blur-md"
             animate="pulse"
-            variants={glowVariants}
+            variants={glowVariants as Variants}
             custom={calculateGlowSize(cursorPosition.x, cursorPosition.y) / 1.2}
           />
         </motion.button>
@@ -158,7 +162,7 @@ export function HoverHeader() {
                 fill="#09090B"
                 stroke="#27272a"
                 strokeWidth="2"
-                variants={ANIMATIONS.DRAW}
+                variants={ANIMATIONS.DRAW as Variants}
               />
             </motion.svg>
           )}

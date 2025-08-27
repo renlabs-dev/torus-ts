@@ -105,7 +105,7 @@ function assignPrecomputedObjects(node: CustomGraphNode) {
 }
 
 // Infer Agent type from tRPC router
-export type Agent = NonNullable<
+type Agent = NonNullable<
   inferProcedureOutput<AppRouter["agent"]["all"]>
 >[number];
 
@@ -146,16 +146,10 @@ function getDeterministicZ(seed: string, range: number): number {
   return getDeterministicValue(seed + "_z", -range / 2, range / 2);
 }
 
-export interface ComputedWeight {
-  agentKey: string;
-  agentName: string;
-  percComputedWeight: number;
-}
-
 // Type for allWithCompletePermissions data
-export type AllPermission = allPermissions[number];
+type AllPermission = allPermissions[number];
 
-export interface ExtractedGraphData {
+interface ExtractedGraphData {
   nodes: CustomGraphNode[];
   links: CustomGraphLink[];
   permissions: {

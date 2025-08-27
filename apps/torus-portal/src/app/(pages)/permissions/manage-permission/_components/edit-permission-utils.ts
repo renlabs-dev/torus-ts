@@ -40,7 +40,7 @@ export function canEditPermission(
   return permissionData.permissions.grantorAccountId === userAddress;
 }
 
-export function transformPermissionToFormData(
+function transformPermissionToFormData(
   permission: PermissionContract,
 ): Partial<EditPermissionFormData> {
   const formData: Partial<EditPermissionFormData> = {};

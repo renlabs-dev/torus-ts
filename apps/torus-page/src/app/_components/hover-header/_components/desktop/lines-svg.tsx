@@ -1,4 +1,6 @@
-import { motion } from "framer-motion";
+import type { Variants } from "motion/react";
+import { motion } from "motion/react";
+
 import { ANIMATIONS } from "../data";
 
 export function LinesSVG({
@@ -26,7 +28,7 @@ export function LinesSVG({
         stroke="#27272a"
         strokeWidth="3"
         strokeLinecap="round"
-        variants={ANIMATIONS.DRAW}
+        variants={ANIMATIONS.DRAW as Variants}
         custom={0}
       />
       <motion.path
@@ -35,7 +37,7 @@ export function LinesSVG({
         stroke="#27272a"
         strokeWidth="3"
         strokeLinecap="round"
-        variants={ANIMATIONS.DRAW}
+        variants={ANIMATIONS.DRAW as Variants}
         custom={0}
       />
       <motion.line
@@ -46,7 +48,7 @@ export function LinesSVG({
         stroke="#27272a"
         strokeWidth="3"
         strokeLinecap="round"
-        variants={ANIMATIONS.DRAW}
+        variants={ANIMATIONS.DRAW as Variants}
         custom={1}
       />
       <motion.line
@@ -58,7 +60,7 @@ export function LinesSVG({
         stroke="#27272a"
         strokeWidth="3"
         strokeLinecap="round"
-        variants={ANIMATIONS.DRAW}
+        variants={ANIMATIONS.DRAW as Variants}
         custom={-1}
       />
       {/* Left group of lines */}
@@ -70,7 +72,7 @@ export function LinesSVG({
             stroke="#27272a"
             strokeWidth="3"
             strokeLinecap="round"
-            variants={ANIMATIONS.DRAW}
+            variants={ANIMATIONS.DRAW as Variants}
             custom={0}
           />
           <motion.path
@@ -79,7 +81,7 @@ export function LinesSVG({
             stroke="#27272a"
             strokeWidth="3"
             strokeLinecap="round"
-            variants={ANIMATIONS.DRAW}
+            variants={ANIMATIONS.DRAW as Variants}
             custom={0}
           />
           <motion.line
@@ -90,7 +92,7 @@ export function LinesSVG({
             stroke="#27272a"
             strokeWidth="3"
             strokeLinecap="round"
-            variants={ANIMATIONS.DRAW}
+            variants={ANIMATIONS.DRAW as Variants}
             custom={0}
           />
         </>
@@ -104,7 +106,7 @@ export function LinesSVG({
             stroke="#27272a"
             strokeWidth="3"
             strokeLinecap="round"
-            variants={ANIMATIONS.DRAW}
+            variants={ANIMATIONS.DRAW as Variants}
             custom={0}
           />
           <motion.path
@@ -113,7 +115,7 @@ export function LinesSVG({
             stroke="#27272a"
             strokeWidth="3"
             strokeLinecap="round"
-            variants={ANIMATIONS.DRAW}
+            variants={ANIMATIONS.DRAW as Variants}
             custom={0}
           />
           <motion.line
@@ -124,7 +126,7 @@ export function LinesSVG({
             stroke="#27272a"
             strokeWidth="3"
             strokeLinecap="round"
-            variants={ANIMATIONS.DRAW}
+            variants={ANIMATIONS.DRAW as Variants}
             custom={0.5}
           />
         </>

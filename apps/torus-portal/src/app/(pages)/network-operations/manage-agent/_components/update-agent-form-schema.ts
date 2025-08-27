@@ -30,7 +30,7 @@ const ensureHttpsProtocol = (val: string | undefined): string => {
 export const MAX_FILE_SIZE = 512_000; // 512KB
 export const ACCEPTED_FILE_TYPES = ["png", "jpg", "jpeg", "gif", "webp"];
 
-export const updateAgentSocialsSchema = z.object({
+const updateAgentSocialsSchema = z.object({
   twitter: z
     .string()
     .trim()
@@ -110,25 +110,7 @@ export const updateAgentSchema = z.object({
   socials: updateAgentSocialsSchema,
 });
 
-export const updateAgentError = {
-  AgentDoesNotExist: "Agent does not exist",
-};
-
 export type UpdateAgentFormData = z.infer<typeof updateAgentSchema>;
-
-export interface AgentType {
-  name?: string | null;
-  apiUrl?: string | null;
-}
-
-export interface MetadataType {
-  title?: string;
-  short_description?: string;
-  description?: string;
-  website?: string;
-  socials?: Record<string, string>;
-  image_url?: string;
-}
 
 export interface UpdateAgentMutation {
   isPending: boolean;

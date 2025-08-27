@@ -11,7 +11,7 @@ import { api } from "~/trpc/react";
 import { useMultipleAccountStreams } from "./use-multiple-account-streams";
 import { useTokensPerWeek } from "./use-tokens-per-week";
 
-export interface AccountEmissionData {
+interface AccountEmissionData {
   isLoading: boolean;
   isError: boolean;
   root: {

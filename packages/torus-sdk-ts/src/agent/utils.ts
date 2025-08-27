@@ -44,9 +44,9 @@ const TokenDataSchema = z.object({
   userPublicKey: z.string().describe("SR25519 public key in hex format"),
 });
 
-export type TokenData = z.infer<typeof TokenDataSchema>;
+type TokenData = z.infer<typeof TokenDataSchema>;
 
-export type AuthErrorCode =
+type AuthErrorCode =
   | JWTErrorCode
   | "MISSING_AUTH_HEADERS"
   | "UNSUPPORTED_AUTH_METHOD"

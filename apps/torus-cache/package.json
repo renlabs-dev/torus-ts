@@ -32,7 +32,6 @@
     "zod": "catalog:"
   },
   "devDependencies": {
-    "@polkadot/api-augment": "catalog:",
     "@torus-ts/eslint-config": "workspace:*",
     "@torus-ts/prettier-config": "workspace:*",
     "@torus-ts/tsconfig": "workspace:*",
@@ -41,10 +40,7 @@
     "@types/node": "catalog:",
     "dotenv-cli": "catalog:",
     "eslint": "catalog:",
-    "node-fetch": "^3.3.2",
-    "nodemon": "^3.1.4",
     "prettier": "catalog:",
-    "tsx": "catalog:",
     "typescript": "catalog:"
   }
 }

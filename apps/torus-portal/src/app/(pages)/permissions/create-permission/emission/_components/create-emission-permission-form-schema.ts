@@ -10,7 +10,7 @@ const validatePositiveNumber = (value: string) => {
   return !isNaN(num) && num > 0;
 };
 
-export const allocationSchema = z.discriminatedUnion("type", [
+const allocationSchema = z.discriminatedUnion("type", [
   z.object({
     type: z.literal("FixedAmount"),
     amount: z
@@ -40,7 +40,7 @@ export const allocationSchema = z.discriminatedUnion("type", [
   }),
 ]);
 
-export const distributionSchema = z.discriminatedUnion("type", [
+const distributionSchema = z.discriminatedUnion("type", [
   z.object({
     type: z.literal("Manual"),
   }),
@@ -73,7 +73,7 @@ export const distributionSchema = z.discriminatedUnion("type", [
   }),
 ]);
 
-export const durationSchema = z.discriminatedUnion("type", [
+const durationSchema = z.discriminatedUnion("type", [
   z.object({
     type: z.literal("Indefinite"),
   }),
@@ -89,7 +89,7 @@ export const durationSchema = z.discriminatedUnion("type", [
   }),
 ]);
 
-export const revocationSchema = z.discriminatedUnion("type", [
+const revocationSchema = z.discriminatedUnion("type", [
   z.object({
     type: z.literal("Irrevocable"),
   }),
@@ -119,7 +119,7 @@ export const revocationSchema = z.discriminatedUnion("type", [
   }),
 ]);
 
-export const enforcementSchema = z.discriminatedUnion("type", [
+const enforcementSchema = z.discriminatedUnion("type", [
   z.object({
     type: z.literal("None"),
   }),

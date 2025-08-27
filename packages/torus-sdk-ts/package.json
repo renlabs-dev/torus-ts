@@ -76,13 +76,10 @@
     "@polkadot/util": "13.4.3",
     "@polkadot/util-crypto": "^13.4.3",
     "@torus-network/torus-utils": "workspace:*",
-    "@uidotdev/usehooks": "catalog:",
     "@wagmi/core": "2.16.3",
     "base64url": "^3.0.1",
     "emittery": "catalog:",
     "hono": "^4.7.6",
-    "hono-rate-limiter": "^0.4.2",
-    "jsonwebtoken": "^9.0.2",
     "multiformats": "catalog:",
     "rustie": "catalog:",
     "superjson": "2.2.1",
@@ -91,10 +88,8 @@
     "zod": "catalog:"
   },
   "devDependencies": {
-    "@polkadot/typegen": "catalog:",
     "@torus-ts/eslint-config": "workspace:*",
     "@torus-ts/tsconfig": "workspace:*",
-    "@types/jsonwebtoken": "^9.0.9",
     "tsx": "catalog:",
     "vitest": "catalog:"
   }

@@ -1,24 +1,17 @@
 import type { ChainName, IToken, Token, WarpCore } from "@hyperlane-xyz/sdk";
 import { isNullish } from "@hyperlane-xyz/utils";
-import { useStore } from "../../utils/store";
+
 import { trySync } from "@torus-network/torus-utils/try-catch";
+
+import { useStore } from "../../utils/store";
 
 export function useWarpCore() {
   return useStore((s) => s.warpCore);
 }
 
-export function useTokens() {
-  return useWarpCore().tokens;
-}
-
 export function useTokenByIndex(tokenIndex?: number) {
   const warpCore = useWarpCore();
   return getTokenByIndex(warpCore, tokenIndex);
-}
-
-export function useIndexForToken(token?: IToken): number | undefined {
-  const warpCore = useWarpCore();
-  return getIndexForToken(warpCore, token);
 }
 
 export function getTokenByIndex(warpCore: WarpCore, tokenIndex?: number) {

@@ -16,8 +16,6 @@ import { checkSS58 } from "@torus-network/sdk/types";
 import { BasicLogger } from "@torus-network/torus-utils/logger";
 import { tryAsync } from "@torus-network/torus-utils/try-catch";
 
-import { createDb } from "@torus-ts/db/client";
-
 import { sleep } from "../common";
 import { parseEnvOrExit } from "../common/env";
 import type { AgentWeight } from "../db";
@@ -28,14 +26,12 @@ import {
   normalizeWeightsToPercent,
 } from "../weights";
 
-export const env = parseEnvOrExit(
+const env = parseEnvOrExit(
   z.object({
     NEXT_PUBLIC_TORUS_RPC_URL: z.string().url(),
     TORUS_ALLOCATOR_MNEMONIC: z.string().nonempty(),
   }),
 )(process.env);
-
-export const db = createDb();
 
 const log = BasicLogger.create({ name: "weight-aggregator" });
 const retryDelay = CONSTANTS.TIME.BLOCK_TIME_MILLISECONDS;
@@ -114,7 +110,7 @@ export async function weightAggregatorWorker(api: ApiPromise) {
  * @param keypair - Allocator account with permission to set weights
  * @param lastBlock - Block number for tracking when weights were calculated
  */
-export async function weightAggregatorTask(
+async function weightAggregatorTask(
   api: ApiPromise,
   keypair: KeyringPair,
   lastBlock: number,

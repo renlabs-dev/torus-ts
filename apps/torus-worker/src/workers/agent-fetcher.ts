@@ -517,7 +517,7 @@ export async function runAgentFetch(lastBlock: LastBlock) {
  *
  * @param lastBlock - Contains blockchain API instance frozen at a specific block height
  */
-export async function runApplicationsFetch(lastBlock: LastBlock) {
+async function runApplicationsFetch(lastBlock: LastBlock) {
   const lastBlockNumber = lastBlock.blockNumber;
   log.info(`Block ${lastBlockNumber}: running applications fetch`);
 
@@ -552,7 +552,7 @@ export async function runApplicationsFetch(lastBlock: LastBlock) {
  *
  * @param lastBlock - Contains blockchain API instance frozen at a specific block height
  */
-export async function runProposalsFetch(lastBlock: LastBlock) {
+async function runProposalsFetch(lastBlock: LastBlock) {
   const lastBlockNumber = lastBlock.blockNumber;
   log.info(`Block ${lastBlockNumber}: running proposals fetch`);
 
@@ -602,7 +602,7 @@ export async function runProposalsFetch(lastBlock: LastBlock) {
  *
  * @param lastBlock - Contains blockchain API instance frozen at a specific block height
  */
-export async function runPermissionsFetch(lastBlock: LastBlock) {
+async function runPermissionsFetch(lastBlock: LastBlock) {
   const lastBlockNumber = lastBlock.blockNumber;
   log.info(`Block ${lastBlockNumber}: running permissions fetch`);
 
@@ -694,7 +694,7 @@ export async function runPermissionsFetch(lastBlock: LastBlock) {
  *
  * @param lastBlock - Contains blockchain API instance frozen at a specific block height
  */
-export async function runStreamAccumulationUpdate(lastBlock: LastBlock) {
+async function runStreamAccumulationUpdate(lastBlock: LastBlock) {
   const lastBlockNumber = lastBlock.blockNumber;
   log.info(`Block ${lastBlockNumber}: running stream accumulation update`);
 
