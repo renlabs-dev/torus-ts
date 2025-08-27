@@ -143,9 +143,7 @@ export function useFreeBalance(
   });
 }
 
-export function useTreasuryEmissionFee(
-  api: Api | Nullish,
-) {
+export function useTreasuryEmissionFee(api: Api | Nullish) {
   return useQuery({
     queryKey: ["treasury_emission_fee"],
     enabled: api != null,

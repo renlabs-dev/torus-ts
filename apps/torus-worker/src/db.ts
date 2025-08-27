@@ -42,7 +42,6 @@ import {
 
 const db = createDb();
 
-
 type Agent = typeof agentSchema.$inferInsert;
 export type AgentWeight = typeof computedAgentWeightSchema.$inferInsert;
 export type NewProposal = typeof proposalSchema.$inferInsert;

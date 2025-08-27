@@ -82,9 +82,7 @@ const LoadingComments = () => {
   );
 };
 
-type Comments = NonNullable<
-  inferProcedureOutput<AppRouter["comment"]["byId"]>
->;
+type Comments = NonNullable<inferProcedureOutput<AppRouter["comment"]["byId"]>>;
 
 interface CommentsHeaderProps {
   sortBy: SorterTypes;

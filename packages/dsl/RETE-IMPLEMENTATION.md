@@ -41,13 +41,11 @@ const constraint = {
 Facts represent the current state of the world and are classified into:
 
 - **Account Facts**:
-
   - `StakeOfFact`: The stake amount of an account
   - `WeightSetFact`: The weight set from one account to another
   - `WeightPowerFromFact`: The weight power from one account to another
 
 - **Permission Facts**:
-
   - `PermissionExistsFact`: Whether a permission exists
   - `PermissionEnabledFact`: Whether a permission is enabled
   - `MaxDelegationDepthFact`: The maximum delegation depth for a permission
@@ -63,12 +61,10 @@ Facts are stored in Working Memory and indexed by account ID or permission ID fo
 The Rete network consists of:
 
 - **Alpha Network**: Filters individual facts
-
   - Indexed by fact type and entity ID (account/permission)
   - Facts are updated in place when new values arrive
 
 - **Beta Network**: Joins related facts
-
   - Builds on alpha memories to create combinations of facts
   - Maintains history of combinations (tokens)
 
@@ -96,7 +92,6 @@ We have implemented:
 2. **Fact Extraction**: Functions to extract facts from constraints.
 
 3. **Rete Network**:
-
    - Alpha network with fact indexing
    - Beta network with token joining
    - Production nodes for constraint activation

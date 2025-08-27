@@ -220,7 +220,6 @@ export const getApplicationVoteStatus = (
 export const applicationIsPending = (app: AgentApplication) =>
   getApplicationVoteStatus(app) != "locked";
 
-
 /**
  * Retrieves and filters applications from the blockchain.
  * Transforms the array response into a map indexed by application ID for
