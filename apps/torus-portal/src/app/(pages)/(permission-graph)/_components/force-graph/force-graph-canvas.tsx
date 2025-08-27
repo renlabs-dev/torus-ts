@@ -118,7 +118,7 @@ export function ForceGraphCanvas({
       <Canvas
         camera={{ position: [0, 0, 600], far: 8000 }}
         shadows
-        performance={{ min: 0.5 }}
+        performance={{ min: 0.2, max: 0.4 }}
       >
         <Suspense fallback={null}>
           <ForceGraphScene

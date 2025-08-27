@@ -3,6 +3,7 @@ import React from "react";
 import type { inferProcedureOutput } from "@trpc/server";
 
 import type { AppRouter } from "@torus-ts/api";
+import { useTorus } from "@torus-ts/torus-provider";
 import {
   FormControl,
   FormItem,
@@ -10,6 +11,9 @@ import {
   FormMessage,
 } from "@torus-ts/ui/components/form";
 import { Slider } from "@torus-ts/ui/components/slider";
+
+import { useMultipleAccountEmissions } from "~/hooks/use-multiple-account-emissions";
+import { calculateEmissionValue } from "~/utils/calculate-emission-value";
 
 interface CreateSignalSliderFieldProps {
   field: {
@@ -20,6 +24,16 @@ interface CreateSignalSliderFieldProps {
 }
 
 export function CreateSignalSliderField(props: CreateSignalSliderFieldProps) {
+  const { selectedAccount, isAccountConnected } = useTorus();
+
+  const emissionsData = useMultipleAccountEmissions({
+    accountIds: selectedAccount?.address ? [selectedAccount.address] : [],
+  });
+
+  const accountEmissions = selectedAccount?.address
+    ? emissionsData[selectedAccount.address]
+    : null;
+
   const totalExistingAllocation = props.existingSignals.reduce(
     (total, signal) => total + signal.proposedAllocation,
     0,
@@ -46,12 +60,27 @@ export function CreateSignalSliderField(props: CreateSignalSliderFieldProps) {
         <span className="text-muted-foreground">
           Available: <span className="text-white">{maxAllowedAllocation}%</span>
         </span>
-        <span className="text-md font-medium">{props.field.value || 0}%</span>
+        <span className="text-md font-medium">
+          {props.field.value || 0}% (
+          {calculateEmissionValue(
+            props.field.value || 0,
+            accountEmissions,
+            isAccountConnected,
+            selectedAccount?.address,
+          )}
+          )
+        </span>
       </div>
       {totalExistingAllocation ? (
         <div className="text-xs text-muted-foreground mt-1">
-          You have already allocated {totalExistingAllocation}% across{" "}
-          {props.existingSignals.length} signals
+          You have already allocated {totalExistingAllocation}% (
+          {calculateEmissionValue(
+            totalExistingAllocation,
+            accountEmissions,
+            isAccountConnected,
+            selectedAccount?.address,
+          )}
+          ) across {props.existingSignals.length} signals
         </div>
       ) : null}
       <FormMessage />
