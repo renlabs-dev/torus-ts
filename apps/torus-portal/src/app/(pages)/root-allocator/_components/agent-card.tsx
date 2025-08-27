@@ -118,6 +118,7 @@ export function AgentCard(props: Readonly<AgentCardProps>) {
       isLoading={!isInitialized || isEmissionsLoading}
       isMetadataLoading={isMetadataLoading}
       userWeightPower={userWeightPower}
+      isWhitelisted={props.isWhitelisted}
     />
   );
 }

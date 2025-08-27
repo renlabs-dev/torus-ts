@@ -1,22 +1,37 @@
 import { parseSearchParams } from "~/utils/parse-search-params";
 
-import { AgentList } from "../_components/agent-list";
+import type { AgentView } from "../_components/agent-view-toggle";
+import { InfiniteAgentList } from "../_components/infinite-agent-list";
 import { PageLayout } from "../_components/page-layout";
 
 export default async function Page(props: {
   searchParams: Promise<{
-    page?: string;
     search?: string;
-    isWhitelisted?: string;
+    view?: string;
   }>;
 }) {
   const searchParams = await props.searchParams;
-  const { page, search } = parseSearchParams(searchParams);
-  const isWhitelisted = searchParams.isWhitelisted !== "false";
+  const { search } = parseSearchParams(searchParams);
+
+  const view = searchParams.view ?? "all";
+
+  const getListProps = () => {
+    switch (view) {
+      case "root":
+        return { isWhitelisted: true };
+      case "new":
+        return { orderBy: "createdAt.desc" as const };
+      case "oldest":
+        return { orderBy: "createdAt.asc" as const };
+      case "all":
+      default:
+        return {};
+    }
+  };
 
   return (
-    <PageLayout search={search}>
-      <AgentList page={page} search={search} isWhitelisted={isWhitelisted} />
+    <PageLayout search={search} currentView={view as AgentView}>
+      <InfiniteAgentList search={search} {...getListProps()} />
     </PageLayout>
   );
 }

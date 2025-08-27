@@ -2,14 +2,13 @@
 
 import Link from "next/link";
 
+import type { TorAmount } from "@torus-network/torus-utils/torus/token";
+
 import { Card } from "../card";
 import { AgentCardContent } from "./agent-card-content";
 import { AgentCardFooter } from "./agent-card-footer";
 import { AgentCardHeader } from "./agent-card-header";
-import { CardHoverEffect } from "./agent-card-hover-effect";
 import type { SocialKind } from "./agent-card-socials-info";
-
-import type { TorAmount } from "@torus-network/torus-utils/torus/token";
 
 export interface AccountEmissionData {
   isLoading: boolean;
@@ -69,6 +68,7 @@ export interface AgentCardProps {
   showHoverEffect?: boolean;
   isAgentDelegated?: boolean;
   isAgentSelected?: boolean;
+  isWhitelisted?: boolean;
   emissionData?: AccountEmissionData;
   currentPercentage?: number;
   onPercentageChange?: (value: number) => void;
@@ -94,6 +94,7 @@ export function AgentCard(props: Readonly<AgentCardProps>) {
     showHoverEffect = true,
     isAgentDelegated,
     isAgentSelected,
+    isWhitelisted,
     emissionData,
     currentPercentage,
     onPercentageChange,
@@ -106,8 +107,6 @@ export function AgentCard(props: Readonly<AgentCardProps>) {
 
   const cardContent = (
     <>
-      {showHoverEffect && <CardHoverEffect />}
-
       <AgentCardHeader
         name={name}
         agentKey={agentKey}
@@ -116,6 +115,7 @@ export function AgentCard(props: Readonly<AgentCardProps>) {
         website={website}
         isAgentDelegated={isAgentDelegated}
         isAgentSelected={isAgentSelected}
+        isWhitelisted={isWhitelisted}
         isMetadataLoading={isMetadataLoading}
       />
 
