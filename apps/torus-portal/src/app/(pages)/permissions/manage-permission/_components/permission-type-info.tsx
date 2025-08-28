@@ -1,11 +1,10 @@
-import { AlertCircle, Info, Lock } from "lucide-react";
-
 import {
   Card,
   CardDescription,
   CardHeader,
   CardTitle,
 } from "@torus-ts/ui/components/card";
+import { AlertCircle, Info, Lock } from "lucide-react";
 
 interface PermissionTypeInfoProps {
   permissionType: "emission" | "capability" | "unknown";
@@ -21,7 +20,7 @@ export function PermissionTypeInfo({
     return (
       <Card className="border-warning bg-warning/5">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-warning">
+          <CardTitle className="text-warning flex items-center gap-2">
             <AlertCircle className="h-5 w-5" />
             Capability Permission
           </CardTitle>
@@ -38,7 +37,7 @@ export function PermissionTypeInfo({
     return (
       <Card className="border-muted">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-muted-foreground">
+          <CardTitle className="text-muted-foreground flex items-center gap-2">
             <Lock className="h-5 w-5" />
             Read-Only Permission
           </CardTitle>
@@ -55,7 +54,7 @@ export function PermissionTypeInfo({
     return (
       <Card className="border-muted">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-muted-foreground">
+          <CardTitle className="text-muted-foreground flex items-center gap-2">
             <Info className="h-5 w-5" />
             No Permission Selected
           </CardTitle>

@@ -1,5 +1,4 @@
 import { z } from "zod";
-
 import { nowISOString } from "./date-time.js";
 
 export const AUTH_REQ_SCHEMA = z.object({

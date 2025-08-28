@@ -19,14 +19,14 @@ import {
   uniswapWallet,
   walletConnectWallet,
 } from "@rainbow-me/rainbowkit/wallets";
+import { trySync } from "@torus-network/torus-utils/try-catch";
 import { useMultiProvider } from "~/hooks/use-multi-provider";
 import type { PropsWithChildren } from "react";
-import { useMemo, useState, useEffect } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { createClient, http } from "viem";
 import { createConfig, WagmiProvider } from "wagmi";
 import { config } from "../consts/config";
 import { useWarpCore } from "../hooks/token";
-import { trySync } from "@torus-network/torus-utils/try-catch";
 
 export function initWagmi(multiProvider: MultiProtocolProvider) {
   const [chainsError, chains] = trySync(() =>

@@ -1,17 +1,15 @@
 "use client";
 
-import * as React from "react";
-import { createContext, useContext, useEffect, useState } from "react";
-
 import { ApiPromise, WsProvider } from "@polkadot/api";
 import type {
   InjectedAccountWithMeta,
   InjectedExtension,
 } from "@polkadot/extension-inject/types";
-
 import type { AgentApplication, Api, Proposal } from "@torus-network/sdk/chain";
 import type { CustomMetadataState } from "@torus-network/sdk/metadata";
 import { tryAsync } from "@torus-network/torus-utils/try-catch";
+import * as React from "react";
+import { createContext, useContext, useEffect, useState } from "react";
 
 export type { InjectedAccountWithMeta } from "@polkadot/extension-inject/types";
 export type { TransactionResult } from "./_types";

@@ -1,4 +1,5 @@
 import type { AuthReq } from "@torus-network/torus-utils/auth";
+import { tryAsync, trySync } from "@torus-network/torus-utils/try-catch";
 import type { TRPCRouterRecord } from "@trpc/server";
 import { TRPCError } from "@trpc/server";
 import * as jwt from "jsonwebtoken";
@@ -6,7 +7,6 @@ import { z } from "zod";
 import { createSessionToken } from "../auth";
 import { SIGNED_PAYLOAD_SCHEMA, verifySignedData } from "../auth/sign";
 import { publicProcedure } from "../trpc";
-import { tryAsync, trySync } from "@torus-network/torus-utils/try-catch";
 
 // Maps nonce -> timestamp
 const seenNonces = new Map<string, number>();

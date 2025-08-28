@@ -46,10 +46,7 @@ export function AgentApplicationExpandedVoteBars({ id }: { id: number }) {
           {votes}/{threshold}
         </span>
       </div>
-      <div
-        className="bg-primary-foreground border-border relative h-6 w-full overflow-hidden
-          rounded-full border"
-      >
+      <div className="bg-primary-foreground border-border relative h-6 w-full overflow-hidden rounded-full border">
         <div
           className="absolute h-full rounded-full bg-white/40"
           style={{ width: `${width}%` }}

@@ -3,7 +3,6 @@ import type { Bytes } from "@polkadot/types";
 import type { Percent } from "@polkadot/types/interfaces";
 import type { AnyNumber } from "@polkadot/types/types";
 import { z } from "zod";
-
 import type { SS58Address } from "../../types/address.js";
 import {
   sb_address,

@@ -1,13 +1,12 @@
-import type { Node, Edge } from "@xyflow/react";
-
-import type { ConstraintNodeData } from "./constraint-node-types";
-import { createChildNodeId, createEdgeId } from "./constraint-node-types";
+import type { Edge, Node } from "@xyflow/react";
 import type {
   BaseConstraintType,
   BoolExprType,
   Constraint,
   NumExprType,
 } from "~/utils/dsl";
+import type { ConstraintNodeData } from "./constraint-node-types";
+import { createChildNodeId, createEdgeId } from "./constraint-node-types";
 
 export function constraintToNodes(constraint: Constraint): {
   nodes: Node<ConstraintNodeData>[];

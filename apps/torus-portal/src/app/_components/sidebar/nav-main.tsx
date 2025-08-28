@@ -1,8 +1,5 @@
 "use client";
 
-import type { LucideIcon } from "lucide-react";
-import Link from "next/link";
-
 import {
   SidebarGroup,
   SidebarGroupLabel,
@@ -10,6 +7,8 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@torus-ts/ui/components/sidebar";
+import type { LucideIcon } from "lucide-react";
+import Link from "next/link";
 
 export function NavMain({
   items,

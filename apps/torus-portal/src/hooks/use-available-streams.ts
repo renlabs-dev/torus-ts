@@ -1,8 +1,6 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { assert } from "tsafe";
-
 import type { Api, StreamId } from "@torus-network/sdk/chain";
 import {
   buildAvailableStreamsFor,
@@ -12,6 +10,7 @@ import {
 import type { SS58Address } from "@torus-network/sdk/types";
 import type { Nullish } from "@torus-network/torus-utils";
 import { chainErr } from "@torus-network/torus-utils/error";
+import { assert } from "tsafe";
 
 interface AvailableStream {
   streamId: StreamId;

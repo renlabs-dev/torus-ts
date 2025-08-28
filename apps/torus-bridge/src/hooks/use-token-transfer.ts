@@ -7,6 +7,7 @@ import {
   useActiveChains,
   useTransactionFns,
 } from "@hyperlane-xyz/widgets";
+import { tryAsync, trySync } from "@torus-network/torus-utils/try-catch";
 import { useToast } from "@torus-ts/ui/hooks/use-toast";
 import { useTxSuccessToast } from "~/app/_components/toast/tx-success-toast";
 import { useCallback, useState } from "react";
@@ -19,7 +20,6 @@ import type { TransferContext, TransferFormValues } from "../utils/types";
 import { TransferStatus } from "../utils/types";
 import { getTokenByIndex, useWarpCore } from "./token";
 import { useMultiProvider } from "./use-multi-provider";
-import { tryAsync, trySync } from "@torus-network/torus-utils/try-catch";
 
 const CHAIN_MISMATCH_ERROR = "ChainMismatchError";
 const TRANSFER_TIMEOUT_ERROR1 = "block height exceeded";

@@ -1,17 +1,13 @@
 "use client";
 
-import { useState } from "react";
-
-import { Trash2 } from "lucide-react";
-import { useRouter } from "next/navigation";
-
 import { deregisterAgent } from "@torus-network/sdk/chain";
-
 import { useTorus } from "@torus-ts/torus-provider";
 import { useSendTransaction } from "@torus-ts/torus-provider/use-send-transaction";
 import { Button } from "@torus-ts/ui/components/button";
 import { useToast } from "@torus-ts/ui/hooks/use-toast";
-
+import { Trash2 } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
 import { DeregisterAgentDialog } from "./deregister-agent-dialog";
 
 interface DeregisterAgentButtonProps {

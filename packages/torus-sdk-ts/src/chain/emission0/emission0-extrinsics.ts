@@ -1,8 +1,6 @@
 import type { ApiPromise } from "@polkadot/api";
 import type { KeyringPair } from "@polkadot/keyring/types";
-
 import { tryAsync, trySync } from "@torus-network/torus-utils/try-catch";
-
 import type { SS58Address } from "../../types/address.js";
 
 export async function setChainWeights(

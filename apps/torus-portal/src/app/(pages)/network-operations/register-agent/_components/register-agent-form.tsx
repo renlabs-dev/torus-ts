@@ -1,13 +1,9 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
-import type { z } from "zod";
-
 import { registerAgent } from "@torus-network/sdk/chain";
 import type { SS58Address } from "@torus-network/sdk/types";
 import { cidToIpfsUri } from "@torus-network/torus-utils/ipfs";
-
 import { useAgents } from "@torus-ts/query-provider/hooks";
 import { useTorus } from "@torus-ts/torus-provider";
 import { useSendTransaction } from "@torus-ts/torus-provider/use-send-transaction";
@@ -17,13 +13,13 @@ import { Form } from "@torus-ts/ui/components/form";
 import { WalletConnectionWarning } from "@torus-ts/ui/components/wallet-connection-warning";
 import { useToast } from "@torus-ts/ui/hooks/use-toast";
 import { cn } from "@torus-ts/ui/lib/utils";
-
 import { FeeTooltip } from "~/app/_components/fee-tooltip";
 import PortalFormHeader from "~/app/_components/portal-form-header";
 import { PortalFormSeparator } from "~/app/_components/portal-form-separator";
 import { useAgentRegistrationFee } from "~/hooks/use-agent-registration-fee";
 import { tryCatch } from "~/utils/try-catch";
-
+import { useForm } from "react-hook-form";
+import type { z } from "zod";
 import { RegisterAgentIconField } from "./register-agent-icon-field";
 import { RegisterAgentInfoFields } from "./register-agent-info-fields";
 import { RegisterAgentPreview } from "./register-agent-preview";
@@ -160,7 +156,7 @@ export function RegisterAgentForm({
           />
         )}
 
-        <div className="grid gap-6 max-w-3xl">
+        <div className="grid max-w-3xl gap-6">
           <RegisterAgentInfoFields control={form.control} />
 
           <RegisterAgentIconField control={form.control} />

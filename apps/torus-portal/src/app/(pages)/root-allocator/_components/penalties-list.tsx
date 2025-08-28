@@ -1,6 +1,7 @@
 "use client";
 
 import { smallAddress } from "@torus-network/torus-utils/torus/address";
+import { tryAsync } from "@torus-network/torus-utils/try-catch";
 import type { AppRouter } from "@torus-ts/api";
 import { Button } from "@torus-ts/ui/components/button";
 import { Card, CardTitle } from "@torus-ts/ui/components/card";
@@ -8,7 +9,6 @@ import { useToast } from "@torus-ts/ui/hooks/use-toast";
 import { copyToClipboard } from "@torus-ts/ui/lib/utils";
 import type { inferProcedureOutput } from "@trpc/server";
 import { useLayoutEffect, useState } from "react";
-import { tryAsync } from "@torus-network/torus-utils/try-catch";
 
 type PenaltyList = NonNullable<
   inferProcedureOutput<AppRouter["penalty"]["byAgentKey"]>
@@ -69,9 +69,7 @@ export function PenaltyList(props: Readonly<VoterListProps>) {
           <Button
             variant="outline"
             key={cadreKey}
-            className="animate-fade-down border-muted bg-card animate-delay-500 hover:bg-accent
-              hover:text-muted-foreground flex w-full items-center justify-between px-4 py-6
-              hover:cursor-pointer"
+            className="animate-fade-down border-muted bg-card animate-delay-500 hover:bg-accent hover:text-muted-foreground flex w-full items-center justify-between px-4 py-6 hover:cursor-pointer"
             onClick={() => handleCopyAddress(cadreKey)}
           >
             {smallAddress(cadreKey)}
@@ -79,9 +77,7 @@ export function PenaltyList(props: Readonly<VoterListProps>) {
           </Button>
         ))}
         <span
-          className={`fixed -bottom-5 flex w-full items-end justify-center
-            ${isAtBottom ? "animate-fade h-0" : "animate-fade h-8"} to-background
-            bg-gradient-to-b from-transparent transition-all duration-100`}
+          className={`fixed -bottom-5 flex w-full items-end justify-center ${isAtBottom ? "animate-fade h-0" : "animate-fade h-8"} to-background bg-gradient-to-b from-transparent transition-all duration-100`}
         />
       </div>
     </Card>

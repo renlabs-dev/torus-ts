@@ -1,7 +1,5 @@
 import { ApiPromise, WsProvider } from "@polkadot/api";
-
 import { memo } from "@torus-network/torus-utils/misc";
-
 import { getEnv } from "./env.js";
 
 /**

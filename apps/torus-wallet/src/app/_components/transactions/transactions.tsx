@@ -1,17 +1,17 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
-import { useUsdPrice } from "~/context/usd-price-provider";
 import type { InjectedAccountWithMeta } from "@torus-ts/torus-provider";
-import { TransactionItem } from "./transactions-item";
+import { useUsdPrice } from "~/context/usd-price-provider";
+import { useTransactions } from "~/hooks/useTransactions";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { TransactionsEmptyDefault } from "./transactions-empty-state";
 import { TransactionFilters } from "./transactions-filters";
 import type { TransactionsFilterValues } from "./transactions-filters";
-import { useTransactions } from "~/hooks/useTransactions";
+import { TransactionItem } from "./transactions-item";
 import {
   TransactionsInitialLoading,
   TransactionsLoadingMore,
 } from "./transactions-loading";
-import { TransactionsEmptyDefault } from "./transactions-empty-state";
 
 interface TransactionsProps {
   selectedAccount: InjectedAccountWithMeta | null;
@@ -75,7 +75,7 @@ export function Transactions({ selectedAccount }: TransactionsProps) {
   }, [debouncedLoadMore, isLoading, transactions.length]);
 
   return (
-    <div className="flex flex-col gap-4 h-full min-h-0">
+    <div className="flex h-full min-h-0 flex-col gap-4">
       <TransactionFilters
         onFiltersChange={setFilters}
         totalTransactions={totalTransactions}
@@ -84,7 +84,7 @@ export function Transactions({ selectedAccount }: TransactionsProps) {
       />
       <div
         ref={scrollRef}
-        className="flex-1 flex flex-col gap-4 overflow-y-auto no-scrollbar min-h-0"
+        className="no-scrollbar flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto"
         style={{ maxHeight: "calc(100vh - 200px)" }}
       >
         {transactions.length > 0 ? (

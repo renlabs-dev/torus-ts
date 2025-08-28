@@ -1,19 +1,16 @@
-import { FolderUp } from "lucide-react";
-import Image from "next/image";
-import type { Control } from "react-hook-form";
-import { Controller } from "react-hook-form";
-import type { DropzoneState } from "shadcn-dropzone";
-import Dropzone from "shadcn-dropzone";
-
 import { smallFilename } from "@torus-network/torus-utils/files";
-
 import {
   FormControl,
   FormField,
   FormItem,
   FormMessage,
 } from "@torus-ts/ui/components/form";
-
+import { FolderUp } from "lucide-react";
+import Image from "next/image";
+import type { Control } from "react-hook-form";
+import { Controller } from "react-hook-form";
+import type { DropzoneState } from "shadcn-dropzone";
+import Dropzone from "shadcn-dropzone";
 import type { RegisterAgentFormData } from "./register-agent-schema";
 
 interface RegisterAgentIconFieldProps {

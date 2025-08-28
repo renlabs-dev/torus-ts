@@ -1,21 +1,19 @@
 "use client";
 
-import { useRef, useState } from "react";
-
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
 } from "@torus-ts/ui/components/dialog";
-
+import { useRef, useState } from "react";
+import { CapabilityTutorialDialog } from "./_components/capability-tutorial-dialog";
 import { CreateCapabilityFlowProvider } from "./_components/create-capability-flow/create-capability-flow";
 import type {
   CapabilityFlowRef,
   PathWithPermission,
 } from "./_components/create-capability-flow/create-capability-flow-types";
 import { CreateCapabilityPermissionForm } from "./_components/create-capability-permission-form";
-import { CapabilityTutorialDialog } from "./_components/capability-tutorial-dialog";
 
 export default function CapabilityV2Page() {
   const [selectedPaths, setSelectedPaths] = useState<string[]>([]);
@@ -47,7 +45,7 @@ export default function CapabilityV2Page() {
       />
 
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-h-[90vh] max-w-2xl overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Create Capability Permission</DialogTitle>
           </DialogHeader>

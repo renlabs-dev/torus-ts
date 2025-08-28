@@ -1,12 +1,9 @@
-import { useCallback, useState } from "react";
-
-import type { Edge, Node } from "@xyflow/react";
-
 import type {
   DelegationTreeManager,
   PermissionId,
 } from "@torus-network/sdk/chain";
-
+import type { Edge, Node } from "@xyflow/react";
+import { useCallback, useState } from "react";
 import type { NamespacePathNodeData } from "../create-capability-flow-types";
 
 interface UsePermissionSelectionProps {

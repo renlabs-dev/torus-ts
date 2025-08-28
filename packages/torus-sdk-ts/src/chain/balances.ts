@@ -1,7 +1,5 @@
 import type { ApiPromise } from "@polkadot/api";
-
 import { tryAsync, trySync } from "@torus-network/torus-utils/try-catch";
-
 import type { SS58Address } from "../types/address.js";
 import type { Balance } from "../types/index.js";
 import { sb_balance } from "../types/index.js";

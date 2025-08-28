@@ -1,7 +1,3 @@
-import { Plus, Trash2 } from "lucide-react";
-import type { Control } from "react-hook-form";
-import { useFieldArray, useWatch } from "react-hook-form";
-
 import { Button } from "@torus-ts/ui/components/button";
 import {
   FormControl,
@@ -11,9 +7,10 @@ import {
 } from "@torus-ts/ui/components/form";
 import { Input } from "@torus-ts/ui/components/input";
 import { cn } from "@torus-ts/ui/lib/utils";
-
 import { FormAddressField } from "~/app/_components/address-field";
-
+import { Plus, Trash2 } from "lucide-react";
+import type { Control } from "react-hook-form";
+import { useFieldArray, useWatch } from "react-hook-form";
 import type { EditPermissionFormData } from "../edit-permission-schema";
 
 interface TargetsFieldProps {
@@ -49,7 +46,7 @@ export function TargetsField({ control }: TargetsFieldProps) {
 
   return (
     <div className="grid gap-4">
-      <div className="flex justify-between items-center">
+      <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <h3 className="font-medium">Targets</h3>
           <span
@@ -69,13 +66,13 @@ export function TargetsField({ control }: TargetsFieldProps) {
           className="bg-white/70"
           onClick={() => appendTarget({ address: "", percentage: 0 })}
         >
-          <Plus className="h-4 w-4 mr-2" />
+          <Plus className="mr-2 h-4 w-4" />
           Add Target
         </Button>
       </div>
 
       {targetFields.map((field, index) => (
-        <div key={field.id} className="flex gap-2 items-end">
+        <div key={field.id} className="flex items-end gap-2">
           <FormField
             control={control}
             name={`newTargets.${index}.address`}

@@ -1,7 +1,6 @@
 import { BigNumber } from "bignumber.js";
 import type { Equals, Extends, Not } from "tsafe";
 import { assert } from "tsafe";
-
 import { buildTaggedBigNumberClass } from "../bignumber.js";
 import type { Brand } from "../index.js";
 import { DECIMALS } from "./constants.js";

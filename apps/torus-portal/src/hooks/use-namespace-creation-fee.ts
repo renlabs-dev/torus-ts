@@ -1,15 +1,12 @@
-import { useMemo } from "react";
-
 import type { ApiPromise } from "@polkadot/api";
-
 import type { Api } from "@torus-network/sdk/chain";
 import { createNamespace } from "@torus-network/sdk/chain";
 import type { SS58Address } from "@torus-network/sdk/types";
-
 import {
   useNamespacePathCreationCost,
   useTransactionFee,
 } from "@torus-ts/query-provider/hooks";
+import { useMemo } from "react";
 
 interface NamespaceCreationFeeResult {
   isLoading: boolean;

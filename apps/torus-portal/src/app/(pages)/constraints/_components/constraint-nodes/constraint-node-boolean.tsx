@@ -1,40 +1,40 @@
 "use client";
 
-import { useCallback } from "react";
+import { BoolExpr, CompOp } from "@torus-ts/dsl";
+import type { BoolExprType } from "@torus-ts/dsl";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
 } from "@torus-ts/ui/components/select";
-import {
-  ConstraintSelect,
-  ConstraintSelectIconItem,
-} from "./node-styled-components";
+import type { Edge, Node } from "@xyflow/react";
 import {
   Ban,
-  Plus,
-  GitBranch,
-  Scale,
-  Equal,
-  ChevronUp,
   ChevronDown,
-  ChevronsUp,
   ChevronsDown,
+  ChevronsUp,
+  ChevronUp,
+  Equal,
+  GitBranch,
+  Plus,
+  Scale,
   Workflow,
 } from "lucide-react";
-import { BoolExpr, CompOp } from "@torus-ts/dsl";
-import type { BoolExprType } from "@torus-ts/dsl";
+import { useCallback } from "react";
+import {
+  PermissionNodeContainer,
+  useChildNodeManagement,
+} from "./constraint-node-container";
 import type {
   BooleanNodeData,
   NodeCreationResult,
 } from "./constraint-node-types";
 import { createChildNodeId, createEdgeId } from "./constraint-node-types";
 import {
-  PermissionNodeContainer,
-  useChildNodeManagement,
-} from "./constraint-node-container";
-import type { Edge, Node } from "@xyflow/react";
+  ConstraintSelect,
+  ConstraintSelectIconItem,
+} from "./node-styled-components";
 
 interface PermissionNodeBooleanProps {
   id: string;
@@ -351,11 +351,11 @@ export function ConstraintNodeBoolean({
         </ConstraintSelect>
       </PermissionNodeContainer>
       {data.expression.$ === "CompExpr" && (
-        <div className="absolute flex top-[3.25em] w-full justify-center gap-2">
+        <div className="absolute top-[3.25em] flex w-full justify-center gap-2">
           <Select value={data.expression.op} onValueChange={handleCompOpChange}>
             <SelectTrigger
               id={`${id}-op`}
-              className="rounded-full border w-fit h-[2.4em] border-[#B1B1B7] [&>svg]:hidden"
+              className="h-[2.4em] w-fit rounded-full border border-[#B1B1B7] [&>svg]:hidden"
             >
               <span>
                 {data.expression.op === CompOp.Eq && "="}

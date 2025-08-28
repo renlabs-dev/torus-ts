@@ -1,12 +1,6 @@
 "use client";
 
-import * as React from "react";
-import { useCallback, useMemo, useState } from "react";
-
-import { Copy, Search, Users } from "lucide-react";
-
 import { smallAddress } from "@torus-network/torus-utils/torus";
-
 import {
   CommandDialog,
   CommandEmpty,
@@ -25,8 +19,10 @@ import {
 } from "@torus-ts/ui/components/form";
 import { useIsMobile } from "@torus-ts/ui/hooks/use-mobile";
 import { cn } from "@torus-ts/ui/lib/utils";
-
 import { api } from "~/trpc/react";
+import { Copy, Search, Users } from "lucide-react";
+import * as React from "react";
+import { useCallback, useMemo, useState } from "react";
 
 interface AddressFieldProps {
   value?: string;
@@ -125,20 +121,15 @@ function AddressField({
         <div className="flex gap-2">
           <button
             type="button"
-            className="text-sm border p-2.5 gap-6 w-full justify-between flex items-center
-              bg-field-background"
+            className="bg-field-background flex w-full items-center justify-between gap-6 border p-2.5 text-sm"
             onClick={() => setOpen(true)}
             disabled={disabled}
           >
-            <span className="flex items-center gap-2 text-muted-foreground text-nowrap">
-              <Search className="w-4 h-4 text-muted-foreground" />
+            <span className="text-muted-foreground flex items-center gap-2 text-nowrap">
+              <Search className="text-muted-foreground h-4 w-4" />
               <span className="truncate">{displayValue}</span>
             </span>
-            <kbd
-              className="bg-muted sm:inline-flex hidden text-muted-foreground pointer-events-none h-5
-                items-center gap-1 rounded border px-1.5 font-mono text-[10px] font-medium
-                opacity-100 select-none"
-            >
+            <kbd className="bg-muted text-muted-foreground pointer-events-none hidden h-5 select-none items-center gap-1 rounded border px-1.5 font-mono text-[10px] font-medium opacity-100 sm:inline-flex">
               <span className="text-xs">⌘</span>A
             </kbd>
           </button>
@@ -148,7 +139,7 @@ function AddressField({
               copy={value}
               variant="outline"
               message="Address copied to clipboard"
-              className="shrink-0 h-[2.6rem]"
+              className="h-[2.6rem] shrink-0"
             >
               <Copy className="h-4 w-4" />
             </CopyButton>
@@ -182,7 +173,7 @@ function AddressField({
                   <Users className="mr-2 h-4 w-4" />
                   <div className="flex flex-col">
                     <span className="font-medium">Use custom address</span>
-                    <span className="text-xs text-muted-foreground">
+                    <span className="text-muted-foreground text-xs">
                       {searchValue}
                     </span>
                   </div>
@@ -203,7 +194,7 @@ function AddressField({
                     <span className="font-medium">
                       {agent.name ?? smallAddress(agent.key)}
                     </span>
-                    <span className="text-xs text-muted-foreground">
+                    <span className="text-muted-foreground text-xs">
                       {smallAddress(agent.key)}
                     </span>
                   </div>
@@ -222,10 +213,10 @@ function AddressField({
                 >
                   <Users className="mr-2 h-4 w-4" />
                   <div className="flex flex-col">
-                    <span className="font-medium text-muted-foreground">
+                    <span className="text-muted-foreground font-medium">
                       {agent.name ?? smallAddress(agent.key)}
                     </span>
-                    <span className="text-xs text-muted-foreground">
+                    <span className="text-muted-foreground text-xs">
                       {smallAddress(agent.key)}
                     </span>
                   </div>

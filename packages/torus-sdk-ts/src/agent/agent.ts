@@ -7,11 +7,9 @@ import type { Context } from "hono";
 import { cors } from "hono/cors";
 import { match } from "rustie";
 import { z } from "zod";
-
-import type { SS58Address } from "../types/index.js";
-
 import { queryNamespacePermissions } from "../chain/permission0/permission0-storage.js";
 import { queryAgents } from "../chain/torus0/torus0-storage.js";
+import type { SS58Address } from "../types/index.js";
 import { validateNamespacePath } from "../types/namespace/namespace-path.js";
 import { connectToChainRpc } from "../utils/index.js";
 import type { Helpers } from "./helpers.js";

@@ -1,15 +1,12 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 
-import { useEffect, useState } from "react";
-
-import { ArrowBigDown } from "lucide-react";
-import { motion } from "motion/react";
-
 import { Button } from "@torus-ts/ui/components/button";
 import { Card } from "@torus-ts/ui/components/card";
 import { ScrollArea } from "@torus-ts/ui/components/scroll-area";
 import { cn } from "@torus-ts/ui/lib/utils";
-
+import { ArrowBigDown } from "lucide-react";
+import { motion } from "motion/react";
+import { useEffect, useState } from "react";
 import { CustomButton } from "../custom-button";
 import { ANIMATIONS, CONTENT } from "../data";
 

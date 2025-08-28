@@ -1,7 +1,3 @@
-import { useRef } from "react";
-
-import type { UseFormReturn } from "react-hook-form";
-
 import { Button } from "@torus-ts/ui/components/button";
 import { Card } from "@torus-ts/ui/components/card";
 import {
@@ -13,10 +9,10 @@ import {
   FormMessage,
 } from "@torus-ts/ui/components/form";
 import { Input } from "@torus-ts/ui/components/input";
-
 import { CurrencySwap } from "~/app/_components/currency-swap";
 import { FeeLabel } from "~/app/_components/fee-label";
-
+import { useRef } from "react";
+import type { UseFormReturn } from "react-hook-form";
 import type { SendFormValues } from "./send-form-schema";
 
 interface SendFormProps {

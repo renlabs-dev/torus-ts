@@ -1,26 +1,21 @@
 "use client";
 
-import { useEffect, useRef } from "react";
-
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
-
 import { transferAllowDeath } from "@torus-network/sdk/chain";
 import type { SS58Address } from "@torus-network/sdk/types";
 import { formatToken, toNano } from "@torus-network/torus-utils/torus/token";
 import { tryAsync } from "@torus-network/torus-utils/try-catch";
-
 import { useTorus } from "@torus-ts/torus-provider";
 import { useSendTransaction } from "@torus-ts/torus-provider/use-send-transaction";
 import { useToast } from "@torus-ts/ui/hooks/use-toast";
-
 import type { ReviewTransactionDialogHandle } from "~/app/_components/review-transaction-dialog";
 import { ReviewTransactionDialog } from "~/app/_components/review-transaction-dialog";
 import { useUsdPrice } from "~/context/usd-price-provider";
 import { useWallet } from "~/context/wallet-provider";
 import { useTransactionsStore } from "~/store/transactions-store";
 import { MIN_ALLOWED_STAKE_SAFEGUARD } from "~/utils/constants";
-
+import { useEffect, useRef } from "react";
+import { useForm } from "react-hook-form";
 import { SendForm } from "./send-form";
 import type { SendFormValues } from "./send-form-schema";
 import { createSendFormSchema } from "./send-form-schema";

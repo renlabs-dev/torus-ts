@@ -1,9 +1,8 @@
 import type { StorageKey } from "@polkadot/types";
 import type { Codec } from "@polkadot/types/types";
-import type { z, ZodTypeAny } from "zod";
-
 import { assert_error } from "@torus-network/torus-utils";
 import { trySync } from "@torus-network/torus-utils/try-catch";
+import type { z, ZodTypeAny } from "zod";
 
 // ==== Storage maps ====
 

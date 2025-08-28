@@ -1,9 +1,7 @@
 import "dotenv/config";
-
-import { z } from "zod";
-
 import { validateEnvOrExit } from "@torus-network/torus-utils/env";
 import { memo } from "@torus-network/torus-utils/misc";
+import { z } from "zod";
 
 /**
  * Environment configuration for chain tests.

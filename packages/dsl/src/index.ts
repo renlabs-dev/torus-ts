@@ -1,16 +1,16 @@
-// Re-export all types from types.ts
-export * from "./types";
-
 // Import specific types for helper functions
 import type {
-  Constraint as ConstraintType,
-  BoolExprType,
-  BaseConstraintType,
-  NumExprType,
-  CompOp,
-  PermId,
   AccountId,
+  BaseConstraintType,
+  BoolExprType,
+  CompOp,
+  Constraint as ConstraintType,
+  NumExprType,
+  PermId,
 } from "./types";
+
+// Re-export all types from types.ts
+export * from "./types";
 
 /**
  * Helper functions to create constraint expressions

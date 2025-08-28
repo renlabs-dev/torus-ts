@@ -1,5 +1,4 @@
 import type { ApiPromise } from "@polkadot/api";
-
 import type { RegisterAgent } from "./torus0-types.js";
 
 // ==== Agents ====

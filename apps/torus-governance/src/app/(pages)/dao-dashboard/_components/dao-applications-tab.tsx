@@ -1,10 +1,7 @@
 "use client";
 
 import { ContentNotFound } from "@torus-ts/ui/components/content-not-found";
-import { CreateCadreCandidates } from "~/app/_components/agent-application/create-cadre-candidates";
-import { CandidateCard } from "~/app/_components/cadre/candidate-card";
-import { api } from "~/trpc/react";
-import { useState } from "react";
+import { ScrollArea } from "@torus-ts/ui/components/scroll-area";
 import {
   Select,
   SelectContent,
@@ -12,8 +9,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@torus-ts/ui/components/select";
+import { CreateCadreCandidates } from "~/app/_components/agent-application/create-cadre-candidates";
+import { CandidateCard } from "~/app/_components/cadre/candidate-card";
+import { api } from "~/trpc/react";
 import type { CandidacyStatus } from "~/utils/types";
-import { ScrollArea } from "@torus-ts/ui/components/scroll-area";
+import { useState } from "react";
 
 const statusOptions = [
   { label: "Candidates", value: "PENDING" },
@@ -37,7 +37,7 @@ export default function DaoApplicationsTab() {
   };
 
   return (
-    <div className="flex w-full flex-col pb-10 pt-2 animate-fade">
+    <div className="animate-fade flex w-full flex-col pb-10 pt-2">
       <div className="flex w-full flex-col justify-between gap-4 md:flex-row">
         <CreateCadreCandidates />
         <div className="flex w-full items-center md:w-fit">

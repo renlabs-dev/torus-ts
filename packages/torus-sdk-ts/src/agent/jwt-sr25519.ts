@@ -1,4 +1,4 @@
-import { sr25519Verify, sr25519Sign } from "@polkadot/util-crypto";
+import { sr25519Sign, sr25519Verify } from "@polkadot/util-crypto";
 import base64url from "base64url";
 import { z } from "zod";
 

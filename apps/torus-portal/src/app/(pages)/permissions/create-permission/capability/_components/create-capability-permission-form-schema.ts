@@ -1,7 +1,6 @@
+import { SS58_SCHEMA } from "@torus-network/sdk/types";
 import type { UseFormReturn } from "react-hook-form";
 import { z } from "zod";
-
-import { SS58_SCHEMA } from "@torus-network/sdk/types";
 
 // Schema for duration
 const durationSchema = z.discriminatedUnion("type", [

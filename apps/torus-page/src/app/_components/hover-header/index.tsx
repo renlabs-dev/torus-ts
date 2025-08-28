@@ -1,13 +1,10 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-
-import type { Variants } from "motion/react";
-import { AnimatePresence, motion } from "motion/react";
-
 import { Icons } from "@torus-ts/ui/components/icons";
 import { cn } from "@torus-ts/ui/lib/utils";
-
+import type { Variants } from "motion/react";
+import { AnimatePresence, motion } from "motion/react";
+import { useEffect, useRef, useState } from "react";
 import { ANIMATIONS } from "./_components/data";
 import { ButtonsSection } from "./_components/desktop/buttons-section";
 import { LinesSVG } from "./_components/desktop/lines-svg";
@@ -114,8 +111,7 @@ export function HoverHeader() {
       <div
         ref={contentRef}
         className={cn(
-          `animate-fade-down fixed left-0 right-0 top-0 z-50 mt-4 flex w-full flex-col
-          items-center pb-6 pt-2 md:justify-center`,
+          `animate-fade-down fixed left-0 right-0 top-0 z-50 mt-4 flex w-full flex-col items-center pb-6 pt-2 md:justify-center`,
         )}
       >
         <motion.button
@@ -129,8 +125,7 @@ export function HoverHeader() {
           whileTap={{ y: 1 }}
           onHoverStart={() => setIsHovered(true)}
           onHoverEnd={() => setIsHovered(false)}
-          className="hover:background-acent/30 rounded-radius relative z-50 p-3 transition
-            duration-300"
+          className="hover:background-acent/30 rounded-radius relative z-50 p-3 transition duration-300"
         >
           <Icons.Logo className="relative z-10 h-10 w-10" />
           <motion.div

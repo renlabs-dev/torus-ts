@@ -1,5 +1,3 @@
-import { useMemo } from "react";
-
 import { CONSTANTS } from "@torus-network/sdk/constants";
 import type {
   RemAmount,
@@ -9,8 +7,8 @@ import {
   fromRems,
   makeTorAmount,
 } from "@torus-network/torus-utils/torus/token";
-
 import { api } from "~/trpc/react";
+import { useMemo } from "react";
 
 interface StreamData {
   permissionId: string;

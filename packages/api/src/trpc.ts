@@ -8,18 +8,15 @@
  */
 
 import type { ApiPromise } from "@polkadot/api";
-import { initTRPC, TRPCError } from "@trpc/server";
-import superjson from "superjson";
-import { assert } from "tsafe";
-import { z, ZodError } from "zod";
-
 import type { SS58Address } from "@torus-network/sdk/types";
 import { connectToChainRpc } from "@torus-network/sdk/utils";
 import { validateEnvOrExit } from "@torus-network/torus-utils/env";
 import { trySync } from "@torus-network/torus-utils/try-catch";
-
 import { createDb } from "@torus-ts/db/client";
-
+import { initTRPC, TRPCError } from "@trpc/server";
+import superjson from "superjson";
+import { assert } from "tsafe";
+import { z, ZodError } from "zod";
 import type { SessionData } from "./auth";
 import { decodeSessionToken } from "./auth";
 

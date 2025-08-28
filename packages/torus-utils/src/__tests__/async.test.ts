@@ -1,5 +1,4 @@
 import { describe, expect, it } from "vitest";
-
 import { AsyncPushStream, defer } from "../async.js";
 
 const sleep = (ms: number = 0) => new Promise((r) => setTimeout(r, ms));

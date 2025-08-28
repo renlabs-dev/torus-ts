@@ -1,21 +1,17 @@
 import "@torus-ts/ui/globals.css";
-
 import { GoogleAnalytics } from "@next/third-parties/google";
-import PlausibleProvider from "next-plausible";
-
 import { ReactQueryProvider } from "@torus-ts/query-provider";
 import { TorusProvider } from "@torus-ts/torus-provider";
 import { Container } from "@torus-ts/ui/components/container";
 import { Footer } from "@torus-ts/ui/components/footer";
 import { Layout } from "@torus-ts/ui/components/layout";
 import { Toaster } from "@torus-ts/ui/components/toaster";
-
 import { UsdPriceProvider } from "~/context/usd-price-provider";
 import { WalletProvider } from "~/context/wallet-provider";
 import { env, EnvScript } from "~/env";
 import { firaMono } from "~/utils/fonts";
 import { generateMetadata } from "~/utils/seo";
-
+import PlausibleProvider from "next-plausible";
 import { APRBar } from "./_components/apr-bar/apr-bar";
 import { SidebarLinks } from "./_components/sidebar-links";
 import { TransactionsSheet } from "./_components/transactions-sheet";
@@ -63,10 +59,7 @@ export default function RootLayout({
           <APRBar />
           <Container>
             <main className="mx-auto flex min-w-full flex-col items-center gap-3 text-white">
-              <div
-                className="flex w-full max-w-screen-xl flex-col justify-around gap-4 lg:mt-[10vh]
-                  lg:flex-row"
-              >
+              <div className="flex w-full max-w-screen-xl flex-col justify-around gap-4 lg:mt-[10vh] lg:flex-row">
                 <div className="animate-fade flex w-full flex-col gap-4 lg:max-w-[320px]">
                   <SidebarLinks />
                   <WalletBalance />

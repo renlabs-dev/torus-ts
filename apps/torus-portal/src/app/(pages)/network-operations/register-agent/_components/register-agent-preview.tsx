@@ -1,7 +1,5 @@
 import type { SS58Address } from "@torus-network/sdk/types";
-
 import { AllocatorAgentItem } from "@torus-ts/ui/components/allocator-agent-item";
-
 import type { RegisterAgentFormData } from "./register-agent-schema";
 
 interface RegisterAgentPreviewProps {

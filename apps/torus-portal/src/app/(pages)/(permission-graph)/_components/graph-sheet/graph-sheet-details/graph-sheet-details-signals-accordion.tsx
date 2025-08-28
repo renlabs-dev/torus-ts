@@ -1,9 +1,4 @@
-import { useMemo } from "react";
-
-import { Calendar, ExternalLink, Percent, Users } from "lucide-react";
-
 import { smallAddress } from "@torus-network/torus-utils/torus/address";
-
 import {
   Accordion,
   AccordionContent,
@@ -12,9 +7,9 @@ import {
 } from "@torus-ts/ui/components/accordion";
 import { Badge } from "@torus-ts/ui/components/badge";
 import { MarkdownView } from "@torus-ts/ui/components/markdown-view";
-
 import { api } from "~/trpc/react";
-
+import { Calendar, ExternalLink, Percent, Users } from "lucide-react";
+import { useMemo } from "react";
 import type { CustomGraphNode } from "../../permission-graph-types";
 
 interface SignalsAccordionProps {
@@ -34,13 +29,13 @@ export function GraphSheetDetailsSignalsAccordion({
 
   if (isLoading) {
     return (
-      <div className="text-gray-500 text-center mt-8">Loading signals...</div>
+      <div className="mt-8 text-center text-gray-500">Loading signals...</div>
     );
   }
 
   if (nodeSignals.length === 0) {
     return (
-      <div className="text-gray-500 text-center mt-8">
+      <div className="mt-8 text-center text-gray-500">
         No signals found for this agent
       </div>
     );
@@ -64,30 +59,30 @@ export function GraphSheetDetailsSignalsAccordion({
         <AccordionItem
           key={signal.id}
           value={signal.id.toString()}
-          className="border bg-accent mb-2"
+          className="bg-accent mb-2 border"
         >
-          <AccordionTrigger className="px-4 py-3 hover:no-underline hover:bg-gray-700/50 text-left">
-            <div className="flex flex-col gap-1 w-full pr-2">
+          <AccordionTrigger className="px-4 py-3 text-left hover:bg-gray-700/50 hover:no-underline">
+            <div className="flex w-full flex-col gap-1 pr-2">
               <div className="flex items-center justify-between">
-                <span className="font-medium text-white flex items-center gap-2">
-                  <Users className="w-4 h-4" />
+                <span className="flex items-center gap-2 font-medium text-white">
+                  <Users className="h-4 w-4" />
                   {signal.title}
                 </span>
                 <Badge variant="secondary" className="flex items-center gap-1">
-                  <Percent className="w-3 h-3" />
+                  <Percent className="h-3 w-3" />
                   {signal.proposedAllocation}%
                 </Badge>
               </div>
               <div className="flex items-center gap-2 text-xs text-gray-400">
-                <Calendar className="w-3 h-3" />
+                <Calendar className="h-3 w-3" />
                 Created {new Date(signal.createdAt).toLocaleDateString()}
               </div>
             </div>
           </AccordionTrigger>
-          <AccordionContent className="px-4 pb-4 pt-2 space-y-3">
+          <AccordionContent className="space-y-3 px-4 pb-4 pt-2">
             <div>
               <span className="text-xs text-gray-500">Description</span>
-              <div className="text-sm text-gray-300 mt-1 max-w-none overflow-x-auto">
+              <div className="mt-1 max-w-none overflow-x-auto text-sm text-gray-300">
                 <MarkdownView
                   source={signal.description}
                   className="prose prose-xs dark:prose-invert max-w-none"
@@ -98,7 +93,7 @@ export function GraphSheetDetailsSignalsAccordion({
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <span className="text-xs text-gray-500">Agent Key</span>
-                <div className="text-sm text-gray-300 font-mono">
+                <div className="font-mono text-sm text-gray-300">
                   {smallAddress(signal.agentKey, 8)}
                 </div>
               </div>
@@ -114,7 +109,7 @@ export function GraphSheetDetailsSignalsAccordion({
 
             {socialLinks(signal).length > 0 && (
               <div>
-                <span className="text-xs text-gray-500 block mb-2">
+                <span className="mb-2 block text-xs text-gray-500">
                   Contact Information
                 </span>
                 <div className="grid grid-cols-2 gap-2">
@@ -131,10 +126,10 @@ export function GraphSheetDetailsSignalsAccordion({
                           href={`${social.prefix}${social.value}`}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="text-xs text-blue-400 hover:underline flex items-center gap-1"
+                          className="flex items-center gap-1 text-xs text-blue-400 hover:underline"
                         >
                           {social.value}
-                          <ExternalLink className="w-3 h-3" />
+                          <ExternalLink className="h-3 w-3" />
                         </a>
                       ) : (
                         <span className="text-xs text-gray-300">

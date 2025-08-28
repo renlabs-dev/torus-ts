@@ -2,11 +2,9 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 /* eslint-disable @typescript-eslint/require-await */
 
-import { beforeEach, describe, expect, it, vi } from "vitest";
-
 import type { LastBlock } from "@torus-network/sdk/chain";
 import { tryAsync } from "@torus-network/torus-utils/try-catch";
-
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import * as agentFetcher from "../workers/agent-fetcher";
 
 // Mock dependencies

@@ -1,6 +1,8 @@
 "use client";
 
+import { createMutationHandler } from "@torus-network/torus-utils/mutation-handler";
 import { smallAddress } from "@torus-network/torus-utils/torus/address";
+import { tryAsync } from "@torus-network/torus-utils/try-catch";
 import type { AppRouter } from "@torus-ts/api";
 import { useTorus } from "@torus-ts/torus-provider";
 import { Button } from "@torus-ts/ui/components/button";
@@ -29,8 +31,6 @@ import {
   useState,
 } from "react";
 import { ReportComment } from "./report-comment";
-import { tryAsync } from "@torus-network/torus-utils/try-catch";
-import { createMutationHandler } from "@torus-network/torus-utils/mutation-handler";
 
 //  "LIKE" | "DISLIKE"
 type CommentInteractionReactionType = NonNullable<
@@ -114,7 +114,7 @@ const CommentsHeader = (props: CommentsHeaderProps) => {
             variant="outline"
             value={sorter.sortBy}
             className={`px-3 py-1 text-sm ${
-            sortBy === sorter.sortBy
+              sortBy === sorter.sortBy
                 ? "border-white"
                 : "bg-card text-muted-foreground"
             }`}
@@ -286,10 +286,7 @@ export function ViewComment({
 
   return (
     <div className="flex h-full w-full flex-col">
-      <div
-        className="animate-fade-down animate-delay-200 flex h-full min-h-max flex-col items-center
-          justify-between text-white"
-      >
+      <div className="animate-fade-down animate-delay-200 flex h-full min-h-max flex-col items-center justify-between text-white">
         <CommentsHeader
           sortBy={sortBy}
           isLoading={isLoading}
@@ -335,8 +332,7 @@ export function ViewComment({
                       title="Like"
                       onClick={() => handleVote(comment.id, "LIKE")}
                       // disabled={isVoting || !selectedAccount?.address}
-                      className={`flex items-center px-1
-                      ${currentVote === "LIKE" ? "text-green-500" : "hover:text-green-500"}`}
+                      className={`flex items-center px-1 ${currentVote === "LIKE" ? "text-green-500" : "hover:text-green-500"}`}
                     >
                       <ChevronsUp className="h-5 w-5" />
                       <span>{comment.likes}</span>
@@ -346,8 +342,7 @@ export function ViewComment({
                       title="Dislike"
                       onClick={() => handleVote(comment.id, "DISLIKE")}
                       // disabled={isVoting || !selectedAccount?.address}
-                      className={`flex items-center px-1
-                      ${currentVote === "DISLIKE" ? "text-red-500" : "hover:text-red-500"}`}
+                      className={`flex items-center px-1 ${currentVote === "DISLIKE" ? "text-red-500" : "hover:text-red-500"}`}
                     >
                       <ChevronsDown className="h-5 w-5" />
                       <span>{comment.dislikes}</span>
@@ -361,8 +356,7 @@ export function ViewComment({
                     title="Report comment"
                     onClick={() => setCommentIdAction(comment.id)}
                     type="button"
-                    className="absolute bottom-2 right-2 h-7 border border-red-500 px-1.5 text-red-500
-                      opacity-30 transition duration-200 hover:text-red-500 hover:opacity-100"
+                    className="absolute bottom-2 right-2 h-7 border border-red-500 px-1.5 text-red-500 opacity-30 transition duration-200 hover:text-red-500 hover:opacity-100"
                   >
                     <TriangleAlert size={16} />
                   </Button>
@@ -371,9 +365,7 @@ export function ViewComment({
             );
           })}
           <span
-            className={`fixed bottom-0 flex w-full items-end justify-center
-              ${isAtBottom ? "animate-fade h-0" : "animate-fade h-8"} to-background delay-none
-              bg-gradient-to-b from-transparent transition-all duration-75`}
+            className={`fixed bottom-0 flex w-full items-end justify-center ${isAtBottom ? "animate-fade h-0" : "animate-fade h-8"} to-background delay-none bg-gradient-to-b from-transparent transition-all duration-75`}
           />
         </div>
       </div>

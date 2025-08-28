@@ -1,5 +1,4 @@
 import { assert } from "tsafe";
-
 import { ensureError } from "./error.js";
 import type { Result } from "./result/sync.js";
 import { makeErr, makeOk } from "./result/sync.js";

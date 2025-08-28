@@ -1,7 +1,5 @@
 "use client";
 
-import { usePathname } from "next/navigation";
-
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -10,6 +8,7 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@torus-ts/ui/components/breadcrumb";
+import { usePathname } from "next/navigation";
 
 /**
  * Converts kebab-case to Title Case
@@ -64,7 +63,7 @@ export function SidebarBreadcrumb() {
                 )}
               </BreadcrumbItem>
               {!isLast && (
-                <BreadcrumbSeparator className="hidden md:block ml-2" />
+                <BreadcrumbSeparator className="ml-2 hidden md:block" />
               )}
             </div>
           );

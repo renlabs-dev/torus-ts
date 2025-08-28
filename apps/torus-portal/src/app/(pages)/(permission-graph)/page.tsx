@@ -1,13 +1,10 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
-
-import { useRouter, useSearchParams } from "next/navigation";
-
 import { useTorus } from "@torus-ts/torus-provider";
 import { KeyboardShortcutBadge } from "@torus-ts/ui/components/keyboard-shortcut-badge";
 import { Loading } from "@torus-ts/ui/components/loading";
-
+import { useRouter, useSearchParams } from "next/navigation";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { ForceGraphCanvas } from "./_components/force-graph/force-graph-canvas";
 import { useGraphData } from "./_components/force-graph/use-graph-data";
 import { GraphSheet } from "./_components/graph-sheet/graph-sheet";
@@ -114,10 +111,7 @@ export default function PermissionGraphPage() {
 
   if (isLoading || !graphData || !isInitialized)
     return (
-      <div
-        className="fixed inset-0 flex flex-col items-center text-sm justify-center animate-pulse
-          gap-2"
-      >
+      <div className="fixed inset-0 flex animate-pulse flex-col items-center justify-center gap-2 text-sm">
         <span className="flex items-center gap-2">
           <Loading /> Loading...
         </span>

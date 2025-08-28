@@ -5,11 +5,9 @@ import type {
   SubmittableExtrinsic,
 } from "@polkadot/api/types";
 import type { AccountId, Extrinsic } from "@polkadot/types/interfaces";
-
 import type { Result } from "@torus-network/torus-utils/result";
 import { makeErr, makeOk } from "@torus-network/torus-utils/result";
 import { tryAsync } from "@torus-network/torus-utils/try-catch";
-
 import { sb_balance } from "../../types/index.js";
 
 export type Api = ApiDecoration<"promise"> | ApiPromise;

@@ -1,9 +1,9 @@
 "use client";
 
-import { api } from "~/trpc/react";
-import { useMemo } from "react";
 import type { AppRouter } from "@torus-ts/api";
 import type { inferProcedureOutput } from "@trpc/server";
+import { api } from "~/trpc/react";
+import { useMemo } from "react";
 
 type AgentWithAggregatedPenalties = NonNullable<
   inferProcedureOutput<AppRouter["agent"]["allWithAggregatedPenalties"]>

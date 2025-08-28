@@ -1,6 +1,5 @@
 import type { Variants } from "motion/react";
 import { motion } from "motion/react";
-
 import { ANIMATIONS } from "../data";
 
 export function LinesSVGMobile() {

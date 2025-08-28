@@ -23,7 +23,7 @@ export function SelectedPathsDisplay({ paths }: SelectedPathsDisplayProps) {
       <div className="text-sm font-medium">
         Selected Capability Paths ({paths.length})
       </div>
-      <div className="flex flex-wrap gap-2 max-h-24 overflow-y-auto p-2 bg-muted/50 rounded-sm border">
+      <div className="bg-muted/50 flex max-h-24 flex-wrap gap-2 overflow-y-auto rounded-sm border p-2">
         {paths.map((path) => (
           <Badge
             key={path}

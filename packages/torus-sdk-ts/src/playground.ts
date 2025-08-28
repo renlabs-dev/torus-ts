@@ -5,9 +5,7 @@
  *
  * Run with: npx tsx src/playground.ts
  */
-import {
-  DelegationTreeManager,
-} from "./chain/common/delegation-tree-builder.js";
+import { DelegationTreeManager } from "./chain/common/delegation-tree-builder.js";
 import {
   queryAgentNamespacePermissions,
   queryStreamPermissions,

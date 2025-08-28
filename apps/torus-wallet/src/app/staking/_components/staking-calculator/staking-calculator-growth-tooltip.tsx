@@ -1,11 +1,11 @@
 import { ArrowUpRight } from "lucide-react";
 import type { TooltipProps } from "recharts";
+import type { ProjectedData } from "./staking-calculator";
 import {
   calculatePercentGain,
   formatMonth,
   formatPercentage,
 } from "./staking-calculator-utils";
-import type { ProjectedData } from "./staking-calculator";
 
 type StakingCalculatorGrowthTooltipProps = TooltipProps<number, string>;
 
@@ -19,10 +19,7 @@ export function StakingCalculatorGrowthTooltip({
   const growthRate = calculatePercentGain(data.projected, data.initial);
 
   return (
-    <div
-      className="bg-background/95 supports-[backdrop-filter]:bg-background/60 border p-3
-        shadow-xl backdrop-blur"
-    >
+    <div className="bg-background/95 supports-[backdrop-filter]:bg-background/60 border p-3 shadow-xl backdrop-blur">
       <p className="text-muted-foreground text-sm">{formatMonth(data.date)}</p>
       <p className="text-lg font-bold">
         {Math.floor(data.projected).toLocaleString()} TORUS

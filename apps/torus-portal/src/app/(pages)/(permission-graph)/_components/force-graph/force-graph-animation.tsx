@@ -1,12 +1,10 @@
 "use client";
 
-import { memo, useEffect, useMemo, useRef, useState } from "react";
-
 import { useFrame } from "@react-three/fiber";
 import dynamic from "next/dynamic";
 import type { GraphMethods, LinkObject, NodeObject } from "r3f-forcegraph";
+import { memo, useEffect, useMemo, useRef, useState } from "react";
 import * as THREE from "three";
-
 import type {
   CustomGraphData,
   CustomGraphNode,

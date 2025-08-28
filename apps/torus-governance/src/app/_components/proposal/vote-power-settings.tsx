@@ -1,12 +1,9 @@
 "use client";
 
-import { Info } from "lucide-react";
-
 import {
   disableVoteDelegation,
   enableVoteDelegation,
 } from "@torus-network/sdk/chain";
-
 import { useTorus } from "@torus-ts/torus-provider";
 import { useSendTransaction } from "@torus-ts/torus-provider/use-send-transaction";
 import { Button } from "@torus-ts/ui/components/button";
@@ -15,8 +12,8 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@torus-ts/ui/components/popover";
-
 import { useGovernance } from "~/context/governance-provider";
+import { Info } from "lucide-react";
 
 export function VotePowerSettings() {
   const { api, selectedAccount, torusApi, wsEndpoint } = useTorus();
@@ -55,19 +52,13 @@ export function VotePowerSettings() {
 
   return (
     <Popover>
-      <PopoverTrigger
-        className="text-muted-foreground relative mt-2 flex items-center gap-2 hover:text-white
-          hover:underline"
-      >
+      <PopoverTrigger className="text-muted-foreground relative mt-2 flex items-center gap-2 hover:text-white hover:underline">
         <Info size={16} />
         <h3>Vote power settings</h3>
         {!isAccountPowerUser && (
           <>
             <span className="bg-muted absolute -right-2 top-0.5 h-1.5 w-1.5 rounded-full" />
-            <span
-              className="bg-muted-foreground animate-duration-[1500ms] absolute -right-2 top-0.5 h-1.5
-                w-1.5 animate-ping rounded-full"
-            />
+            <span className="bg-muted-foreground animate-duration-[1500ms] absolute -right-2 top-0.5 h-1.5 w-1.5 animate-ping rounded-full" />
           </>
         )}
       </PopoverTrigger>

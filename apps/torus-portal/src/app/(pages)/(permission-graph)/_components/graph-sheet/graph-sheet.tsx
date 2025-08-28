@@ -4,7 +4,6 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@torus-ts/ui/components/sheet";
-
 import type {
   allPermissions,
   CachedAgentData,
@@ -41,7 +40,7 @@ export function GraphSheet(props: GraphSheetProps) {
   return (
     <Sheet open={props.isOpen} onOpenChange={props.onOpenChange} modal={false}>
       <SheetContent
-        className="z-[100] w-full md:min-w-[30em] max-h-screen overflow-y-auto space-y"
+        className="space-y z-[100] max-h-screen w-full overflow-y-auto md:min-w-[30em]"
         onPointerDownOutside={(e) => e.preventDefault()}
         onInteractOutside={(e) => e.preventDefault()}
       >
@@ -63,7 +62,7 @@ export function GraphSheet(props: GraphSheetProps) {
               allPermissions={props.allPermissions}
             />
           ) : (
-            <div className="w-full flex flex-col gap-4">
+            <div className="flex w-full flex-col gap-4">
               <AgentCard
                 nodeId={props.selectedNode.id}
                 fullAddress={props.selectedNode.fullAddress}

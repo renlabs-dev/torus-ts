@@ -1,14 +1,14 @@
 "use client";
 
-import { ListChecks } from "lucide-react";
-import { ScrollArea } from "@torus-ts/ui/components/scroll-area";
 import { ContentNotFound } from "@torus-ts/ui/components/content-not-found";
-import DashboardRedirectCard from "./dashboard-redirect-card";
-import Link from "next/link";
-import { AgentApplicationCard } from "~/app/(pages)/whitelist-applications/_components/agent-application-card";
+import { ScrollArea } from "@torus-ts/ui/components/scroll-area";
 import { CardSkeleton } from "~/app/_components/dao-card/components/card-skeleton";
-import { useAgentApplications } from "hooks/use-agent-applications";
 import { ScrollFadeEffect } from "~/app/_components/scroll-fade-effect";
+import { AgentApplicationCard } from "~/app/(pages)/whitelist-applications/_components/agent-application-card";
+import { useAgentApplications } from "hooks/use-agent-applications";
+import { ListChecks } from "lucide-react";
+import Link from "next/link";
+import DashboardRedirectCard from "./dashboard-redirect-card";
 
 export default function DashboardPendingDaoApplicationsCard() {
   const { applications: pendingApplications, isLoading } = useAgentApplications(
@@ -57,7 +57,7 @@ export default function DashboardPendingDaoApplicationsCard() {
       icon={ListChecks}
     >
       <div className="relative">
-        <ScrollArea className="sm:max-h-32 max-h-48 h-48">
+        <ScrollArea className="h-48 max-h-48 sm:max-h-32">
           <div className="flex flex-col gap-2">{renderContent()}</div>
         </ScrollArea>
         <ScrollFadeEffect />

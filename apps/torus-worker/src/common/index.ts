@@ -1,6 +1,4 @@
 import type { ApiPromise } from "@polkadot/api";
-import { match } from "rustie";
-
 import type {
   AgentApplication,
   Api,
@@ -15,9 +13,8 @@ import {
 import { CONSTANTS } from "@torus-network/sdk/constants";
 import { BasicLogger } from "@torus-network/torus-utils/logger";
 import { tryAsync } from "@torus-network/torus-utils/try-catch";
-
 import { applicationStatusValues } from "@torus-ts/db/schema";
-
+import { match } from "rustie";
 import type {
   ApplicationDB,
   CadreCandidate,

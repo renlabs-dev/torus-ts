@@ -1,5 +1,4 @@
 import { describe, expect, it } from "vitest";
-
 import { memo, once } from "../misc.js";
 
 describe("once", () => {

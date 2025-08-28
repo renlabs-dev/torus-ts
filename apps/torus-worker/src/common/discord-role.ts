@@ -1,8 +1,8 @@
+import { chainErr } from "@torus-network/torus-utils/error";
 import { BasicLogger } from "@torus-network/torus-utils/logger";
 import type { Result } from "@torus-network/torus-utils/result";
 import { makeErr, makeOk } from "@torus-network/torus-utils/result";
 import { tryAsync } from "@torus-network/torus-utils/try-catch";
-import { chainErr } from "@torus-network/torus-utils/error";
 
 const log = BasicLogger.create({ name: "discord-role-management" });
 

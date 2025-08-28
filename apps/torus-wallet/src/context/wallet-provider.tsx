@@ -1,14 +1,10 @@
 "use client";
 
-import { createContext, useContext } from "react";
-
 import type { UseQueryResult } from "@tanstack/react-query";
-
 import type { StakeData } from "@torus-network/sdk/cached-queries";
 import type { LastBlock } from "@torus-network/sdk/chain";
 import type { Balance, SS58Address } from "@torus-network/sdk/types";
 import { fromNano } from "@torus-network/torus-utils/torus/token";
-
 import {
   useCachedStakeOut,
   useFreeBalance,
@@ -20,9 +16,9 @@ import {
 } from "@torus-ts/query-provider/hooks";
 import type { InjectedAccountWithMeta } from "@torus-ts/torus-provider";
 import { useTorus } from "@torus-ts/torus-provider";
-
 import { env } from "~/env";
 import { MIN_EXISTENTIAL_BALANCE } from "~/utils/constants";
+import { createContext, useContext } from "react";
 
 interface WalletContextType {
   isInitialized: boolean;

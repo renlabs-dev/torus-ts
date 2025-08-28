@@ -2,9 +2,7 @@
 
 import type { ProposalData, ProposalStatus } from "@torus-network/sdk/chain";
 import type { SS58Address } from "@torus-network/sdk/types";
-
 import type { VoteStatus } from "~/utils/types";
-
 import { AuthorInfo } from "../../../_components/dao-card/components/author-info";
 import { ExpirationInfo } from "../../../_components/dao-card/components/expiration-info";
 import { ProposalVotePercentageBar } from "../../../_components/dao-card/components/proposal-vote-percentage-bar";

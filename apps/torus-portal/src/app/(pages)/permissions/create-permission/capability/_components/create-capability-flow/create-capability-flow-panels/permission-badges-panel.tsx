@@ -1,10 +1,7 @@
-import type { Node } from "@xyflow/react";
-
 import type { PermissionId } from "@torus-network/sdk/chain";
 import { smallAddress } from "@torus-network/torus-utils/torus";
-
 import { cn } from "@torus-ts/ui/lib/utils";
-
+import type { Node } from "@xyflow/react";
 import { getPermissionClasses } from "../create-capability-flow-colors";
 import { useDelegationTree } from "../create-capability-flow-hooks/use-delegation-tree";
 import type { NamespacePathNodeData } from "../create-capability-flow-types";
@@ -51,8 +48,7 @@ export function PermissionBadgesPanel({
           <div
             key={permissionId}
             className={cn(
-              `flex items-center gap-1 px-2 py-1 rounded-sm text-xs font-mono border
-              backdrop-blur-sm`,
+              `flex items-center gap-1 rounded-sm border px-2 py-1 font-mono text-xs backdrop-blur-sm`,
               isActive
                 ? `${classes.selected} font-semibold`
                 : isSelected
@@ -62,7 +58,7 @@ export function PermissionBadgesPanel({
           >
             <div
               className={cn(
-                "w-3 h-3 border border-border/50 rounded-sm",
+                "border-border/50 h-3 w-3 rounded-sm border",
                 classes.bg,
               )}
             />

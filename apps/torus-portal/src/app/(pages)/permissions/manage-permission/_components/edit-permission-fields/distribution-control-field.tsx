@@ -1,7 +1,3 @@
-import type { Control } from "react-hook-form";
-import { useWatch } from "react-hook-form";
-import { match } from "rustie";
-
 import {
   FormControl,
   FormField,
@@ -17,7 +13,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@torus-ts/ui/components/select";
-
+import type { Control } from "react-hook-form";
+import { useWatch } from "react-hook-form";
+import { match } from "rustie";
 import type { EditPermissionFormData } from "../edit-permission-schema";
 
 interface DistributionControlFieldProps {

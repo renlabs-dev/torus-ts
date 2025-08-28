@@ -1,5 +1,4 @@
 import { CONSTANTS } from "@torus-network/sdk/constants";
-
 import type {
   CachedAgentData,
   CustomGraphData,

@@ -1,7 +1,7 @@
 "use client";
 
+import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect } from "react";
-import { useSearchParams, useRouter } from "next/navigation";
 
 export function useTabWithQueryParam(defaultTab: string = "dashboard") {
   const searchParams = useSearchParams();

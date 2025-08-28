@@ -1,9 +1,7 @@
-import React, { useCallback, useRef } from "react";
-
 import { useThree } from "@react-three/fiber";
+import React, { useCallback, useRef } from "react";
 import * as THREE from "three";
 import type { OrbitControls as OrbitControlsImpl } from "three-stdlib";
-
 import type { CustomGraphNode } from "../permission-graph-types";
 
 export function useCameraFocus(

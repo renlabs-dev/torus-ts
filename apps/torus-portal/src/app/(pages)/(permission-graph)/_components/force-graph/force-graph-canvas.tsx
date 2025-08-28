@@ -1,12 +1,10 @@
 "use client";
 
-import React, { Suspense, useCallback, useRef } from "react";
-
 import { OrbitControls } from "@react-three/drei";
 import { Canvas } from "@react-three/fiber";
 import { Bloom, EffectComposer } from "@react-three/postprocessing";
+import React, { Suspense, useCallback, useRef } from "react";
 import type { OrbitControls as OrbitControlsImpl } from "three-stdlib";
-
 import type {
   CustomGraphData,
   CustomGraphNode,
@@ -114,7 +112,7 @@ export function ForceGraphCanvas({
   );
 
   return (
-    <div className="fixed inset-0 z-0 animate-fade animate-delay-1000">
+    <div className="animate-fade animate-delay-1000 fixed inset-0 z-0">
       <Canvas
         camera={{ position: [0, 0, 600], far: 8000 }}
         shadows

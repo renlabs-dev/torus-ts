@@ -1,12 +1,8 @@
-import type { inferProcedureOutput } from "@trpc/server";
-import * as THREE from "three";
-
 import { smallAddress } from "@torus-network/torus-utils/torus/address";
-
 import type { AppRouter } from "@torus-ts/api";
-
+import type { inferProcedureOutput } from "@trpc/server";
 import { getCapabilityPaths } from "~/utils/capability-path";
-
+import * as THREE from "three";
 import type {
   allPermissions,
   CustomGraphLink,

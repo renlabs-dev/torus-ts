@@ -1,10 +1,9 @@
 import { hexToString, stringToHex } from "@polkadot/util";
 import { cryptoWaitReady, signatureVerify } from "@polkadot/util-crypto";
-import { z } from "zod";
-
 import { checkSS58 } from "@torus-network/sdk/types";
 import { AUTH_REQ_SCHEMA } from "@torus-network/torus-utils/auth";
 import { tryAsync, trySync } from "@torus-network/torus-utils/try-catch";
+import { z } from "zod";
 
 export const SIGNED_PAYLOAD_SCHEMA = z.object({
   payload: z.string({ description: "in hex" }),

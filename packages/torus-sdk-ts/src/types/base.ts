@@ -1,7 +1,6 @@
 import { U8aFixed } from "@polkadot/types";
 import type { H256 } from "@polkadot/types/interfaces";
 import { z } from "zod";
-
 import { sb_bigint, sb_number } from "./zod.js";
 
 export type ZError<T = unknown> = z.ZodError<T>;

@@ -1,14 +1,8 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useFileUploader } from "hooks/use-file-uploader";
-import { Plus } from "lucide-react";
-import { useForm } from "react-hook-form";
-import { z } from "zod";
-
 import { addEmissionProposal } from "@torus-network/sdk/chain";
 import { formatToken } from "@torus-network/torus-utils/torus/legacy";
-
 import { useTorus } from "@torus-ts/torus-provider";
 import { useSendTransaction } from "@torus-ts/torus-provider/use-send-transaction";
 import { Button } from "@torus-ts/ui/components/button";
@@ -26,8 +20,11 @@ import { Textarea } from "@torus-ts/ui/components/text-area";
 import { WalletConnectionWarning } from "@torus-ts/ui/components/wallet-connection-warning";
 import { useToast } from "@torus-ts/ui/hooks/use-toast";
 import { cn } from "@torus-ts/ui/lib/utils";
-
 import { useGovernance } from "~/context/governance-provider";
+import { useFileUploader } from "hooks/use-file-uploader";
+import { Plus } from "lucide-react";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
 
 const ADD_EMISSION_PROPOSAL_SCHEMA = z.object({
   title: z
@@ -323,7 +320,7 @@ export function AddEmissionProposalForm({
               !isAccountConnected || uploading || isPending || isSigning
             }
           >
-            <Plus className="h-4 w-4 mr-2" />
+            <Plus className="mr-2 h-4 w-4" />
             {uploading
               ? "Uploading..."
               : isPending

@@ -1,5 +1,4 @@
 import { describe, expect, it } from "vitest";
-
 import type { MultiError } from "./error.js";
 import {
   chainErr,

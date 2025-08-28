@@ -1,8 +1,6 @@
-import { useMemo } from "react";
-
 import { env } from "~/env";
 import { api as trpcApi } from "~/trpc/react";
-
+import { useMemo } from "react";
 import { createSimplifiedGraphData } from "./force-graph-utils";
 
 export function useGraphData() {

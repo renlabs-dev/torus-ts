@@ -1,10 +1,8 @@
 "use client";
 
-import { Diameter } from "lucide-react";
-
 import { useTorus } from "@torus-ts/torus-provider";
 import { Button } from "@torus-ts/ui/components/button";
-
+import { Diameter } from "lucide-react";
 import { useGraphData } from "./force-graph/use-graph-data";
 import type { CustomGraphNode } from "./permission-graph-types";
 
@@ -36,9 +34,9 @@ export function MyAgentButton({ onNodeClick }: MyAgentButtonProps) {
     <Button
       variant="outline"
       onClick={handleClick}
-      className="h-[2.60rem] rounded animate-fade-up animate-delay-200"
+      className="animate-fade-up animate-delay-200 h-[2.60rem] rounded"
     >
-      <Diameter className="w-4 h-4 mr-0.5" />
+      <Diameter className="mr-0.5 h-4 w-4" />
       Open my agent
     </Button>
   );

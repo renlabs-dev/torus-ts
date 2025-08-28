@@ -2,7 +2,7 @@
 
 export default function Page() {
   return (
-    <main className="w-screen h-screen overflow-hidden md:py-12">
+    <main className="h-screen w-screen overflow-hidden md:py-12">
       {/* <ConstraintFlowWrapper /> */}
     </main>
   );

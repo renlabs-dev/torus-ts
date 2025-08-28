@@ -1,14 +1,12 @@
 import type { H256 } from "@polkadot/types/interfaces";
 import { blake2AsHex, decodeAddress } from "@polkadot/util-crypto";
-import { if_let, match } from "rustie";
-
 import { getOrSetDefault } from "@torus-network/torus-utils/collections";
 import { BasicLogger } from "@torus-network/torus-utils/logger";
 import type { Result } from "@torus-network/torus-utils/result";
 import { makeErr, makeOk } from "@torus-network/torus-utils/result";
 import { tryAsync } from "@torus-network/torus-utils/try-catch";
 import type { Nullable } from "@torus-network/torus-utils/typing";
-
+import { if_let, match } from "rustie";
 import type { SS58Address } from "../../types/address.js";
 import type { ToBigInt, ZError } from "../../types/index.js";
 import {

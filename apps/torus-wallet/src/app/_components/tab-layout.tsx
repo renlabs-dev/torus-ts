@@ -1,13 +1,13 @@
 "use client";
 
-import type { ReactNode } from "react";
-import { Suspense, useState } from "react";
 import {
   Tabs,
   TabsContent,
   TabsList,
   TabsTrigger,
 } from "@torus-ts/ui/components/tabs";
+import type { ReactNode } from "react";
+import { Suspense, useState } from "react";
 import { WalletSkeletonLoader } from "./wallet-skeleton-loader";
 
 export interface TabItem {

@@ -1,9 +1,6 @@
 "use client";
 
-import type { UseFormReturn } from "react-hook-form";
-
 import type { BrandTag } from "@torus-network/torus-utils";
-
 import type { InjectedAccountWithMeta } from "@torus-ts/torus-provider";
 import { Button } from "@torus-ts/ui/components/button";
 import { Card } from "@torus-ts/ui/components/card";
@@ -15,7 +12,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@torus-ts/ui/components/form";
-
+import type { UseFormReturn } from "react-hook-form";
 import { AllocatorSelector } from "../../../_components/allocator-selector";
 import { CurrencySwap } from "../../../_components/currency-swap";
 import { FeeLabel } from "../../../_components/fee-label";

@@ -1,7 +1,6 @@
 import type { Enum } from "rustie";
 import { match } from "rustie";
 import type { SafeParseReturnType, z } from "zod";
-
 import type { Result } from "./result/sync.js";
 import { makeErr, makeOk } from "./result/sync.js";
 

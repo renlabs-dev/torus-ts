@@ -1,7 +1,3 @@
-import { AlertCircle, Plus, Trash2 } from "lucide-react";
-import type { Control } from "react-hook-form";
-import { useFieldArray, useWatch } from "react-hook-form";
-
 import { Button } from "@torus-ts/ui/components/button";
 import {
   FormControl,
@@ -11,7 +7,9 @@ import {
 } from "@torus-ts/ui/components/form";
 import { Input } from "@torus-ts/ui/components/input";
 import { cn } from "@torus-ts/ui/lib/utils";
-
+import { AlertCircle, Plus, Trash2 } from "lucide-react";
+import type { Control } from "react-hook-form";
+import { useFieldArray, useWatch } from "react-hook-form";
 import type { EditPermissionFormData } from "../edit-permission-schema";
 
 interface StreamsFieldProps {
@@ -47,7 +45,7 @@ export function StreamsField({ control }: StreamsFieldProps) {
 
   return (
     <div className="grid gap-4">
-      <div className="flex justify-between items-center">
+      <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <h3>Streams</h3>
           <span
@@ -67,7 +65,7 @@ export function StreamsField({ control }: StreamsFieldProps) {
           className="bg-white/70"
           onClick={() => appendStream({ streamId: "", percentage: 0 })}
         >
-          <Plus className="h-4 w-4 mr-2" />
+          <Plus className="mr-2 h-4 w-4" />
           Add Stream
         </Button>
       </div>
@@ -89,7 +87,7 @@ export function StreamsField({ control }: StreamsFieldProps) {
                         className={cn(isDuplicate && "border-destructive")}
                       />
                       {isDuplicate && (
-                        <AlertCircle className="absolute right-2 top-1/2 -translate-y-1/2 h-4 w-4 text-destructive" />
+                        <AlertCircle className="text-destructive absolute right-2 top-1/2 h-4 w-4 -translate-y-1/2" />
                       )}
                     </div>
                   </FormControl>

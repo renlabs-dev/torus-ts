@@ -1,8 +1,5 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 import "@polkadot/api-augment";
-
-import { useEffect, useState } from "react";
-
 import { ApiPromise, WsProvider } from "@polkadot/api";
 import type { SubmittableExtrinsic } from "@polkadot/api/types";
 import type {
@@ -10,8 +7,6 @@ import type {
   UseQueryResult,
 } from "@tanstack/react-query";
 import { useQueries, useQuery } from "@tanstack/react-query";
-import SuperJSON from "superjson";
-
 import type { StakeData } from "@torus-network/sdk/cached-queries";
 import { queryCachedStakeOut } from "@torus-network/sdk/cached-queries";
 import type {
@@ -59,6 +54,8 @@ import type { SS58Address } from "@torus-network/sdk/types";
 import { BasicLogger } from "@torus-network/torus-utils/logger";
 import { tryAsync } from "@torus-network/torus-utils/try-catch";
 import type { ListItem, Nullish } from "@torus-network/torus-utils/typing";
+import { useEffect, useState } from "react";
+import SuperJSON from "superjson";
 
 const log = BasicLogger.create({ name: "query-provider" });
 
