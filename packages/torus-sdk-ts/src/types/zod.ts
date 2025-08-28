@@ -14,7 +14,7 @@ import {
 } from "@polkadot/types";
 import { AbstractInt } from "@polkadot/types-codec/abstract";
 import type { AnyJson, Codec } from "@polkadot/types/types";
-import { BN, u8aToBn } from "@polkadot/util";
+import { u8aToBn } from "@polkadot/util";
 import { match } from "rustie";
 import type { Equals } from "tsafe";
 import { assert } from "tsafe";

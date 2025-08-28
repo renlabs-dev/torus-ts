@@ -2,15 +2,16 @@
 
 import type { AgentApplication } from "@torus-network/sdk/chain";
 import type { SS58Address } from "@torus-network/sdk/types";
+
 import { AgentActivityLabel } from "../../../_components/agent-application/agent-activity-label";
-import { AgentApplicationVoteLabel } from "../../../_components/agent-application/agent-application-vote-label";
 import type { AgentApplicationVoteType } from "../../../_components/agent-application/agent-application-vote-label";
+import { AgentApplicationVoteLabel } from "../../../_components/agent-application/agent-application-vote-label";
 import { AgentApplicationVotePercentageBar } from "../../../_components/agent-application/agent-application-vote-percentage-bar";
 import { AgentStatusLabel } from "../../../_components/agent-application/agent-status-label";
 import { AuthorInfo } from "../../../_components/dao-card/components/author-info";
 import { DaoCard } from "../../../_components/dao-card/index";
 
-export interface AgentApplicationCardProps {
+interface AgentApplicationCardProps {
   title: string | null;
   author: SS58Address;
   agentApplicationStatus?: AgentApplication["status"];

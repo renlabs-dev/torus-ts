@@ -83,7 +83,7 @@ function SearchBar({
   );
 }
 
-export function TokenList({
+function TokenList({
   origin,
   destination,
   searchQuery,

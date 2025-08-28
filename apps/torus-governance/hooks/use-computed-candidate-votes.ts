@@ -2,13 +2,13 @@ import type { AppRouter } from "@torus-ts/api";
 import type { inferProcedureOutput } from "@trpc/server";
 import { api } from "~/trpc/react";
 
-export interface ComputedVotes {
+interface ComputedVotes {
   accept: number;
   refuse: number;
   revoke: number;
 }
 
-export type CuratorVoteHistory = NonNullable<
+type CuratorVoteHistory = NonNullable<
   inferProcedureOutput<AppRouter["cadreVoteHistory"]["all"]>
 >;
 

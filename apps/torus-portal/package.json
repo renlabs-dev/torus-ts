@@ -16,6 +16,7 @@
     "with-env": "dotenv -e ../../.env --"
   },
   "dependencies": {
+    "@hookform/resolvers": "^3.9.1",
     "@next/third-parties": "catalog:",
     "@react-three/drei": "catalog:",
     "@react-three/fiber": "catalog:",
@@ -44,6 +45,7 @@
     "r3f-forcegraph": "^1.0.8",
     "react": "catalog:react19",
     "react-dom": "catalog:react19",
+    "react-hook-form": "^7.53.2",
     "shadcn-dropzone": "^0.2.1",
     "three": "catalog:",
     "tsafe": "catalog:",
@@ -51,7 +53,6 @@
     "zustand": "^4.5.4"
   },
   "devDependencies": {
-    "@next/eslint-plugin-next": "catalog:",
     "@torus-ts/eslint-config": "workspace:*",
     "@torus-ts/tsconfig": "workspace:*",
     "@types/d3": "^7.4.3",
@@ -60,7 +61,6 @@
     "@types/react": "catalog:react19",
     "@types/react-dom": "catalog:react19",
     "dotenv-cli": "^7.4.2",
-    "jiti": "catalog:",
     "postcss": "catalog:",
     "tailwindcss": "catalog:",
     "typescript": "catalog:"

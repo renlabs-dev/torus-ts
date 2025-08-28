@@ -16,7 +16,7 @@ import {
 
 import { useCapabilityTutorialStore } from "~/stores/capabilityTutorialStore";
 
-export const capabilityTutorialData = {
+const capabilityTutorialData = {
   "1": {
     icon: <InfinityIcon className="h-5 w-5" />,
     description: "Select your capability paths to re-delegate",

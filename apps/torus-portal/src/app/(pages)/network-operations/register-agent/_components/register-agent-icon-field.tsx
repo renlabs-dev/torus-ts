@@ -6,8 +6,6 @@ import type { DropzoneState } from "shadcn-dropzone";
 import Dropzone from "shadcn-dropzone";
 
 import { smallFilename } from "@torus-network/torus-utils/files";
-import type { CID } from "@torus-network/torus-utils/ipfs";
-import { cidToIpfsUri } from "@torus-network/torus-utils/ipfs";
 
 import {
   FormControl,
@@ -137,9 +135,4 @@ export function RegisterAgentIconField({
       )}
     />
   );
-}
-
-// Export a utility function to get the icon IPFS URI
-export function getIconIpfsUri(cid: CID | null): string | undefined {
-  return cid ? cidToIpfsUri(cid) : undefined;
 }

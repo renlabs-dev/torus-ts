@@ -23,14 +23,14 @@ export const graphConstants = {
       allocator: {
         type: "sphere",
         radius: 28,
-        widthSegments: 36,
-        heightSegments: 36,
+        widthSegments: 24,
+        heightSegments: 24,
       },
       rootNode: {
         type: "sphere",
         radius: 15,
-        widthSegments: 24,
-        heightSegments: 24,
+        widthSegments: 16,
+        heightSegments: 16,
       },
       permissionNode: {
         type: "icosahedron",
@@ -40,14 +40,14 @@ export const graphConstants = {
       targetNode: {
         type: "sphere",
         radius: 13,
-        widthSegments: 24,
-        heightSegments: 24,
+        widthSegments: 16,
+        heightSegments: 16,
       },
       userNode: {
         type: "sphere",
         radius: 13,
-        widthSegments: 24,
-        heightSegments: 24,
+        widthSegments: 16,
+        heightSegments: 16,
       },
       signalNode: {
         type: "tetrahedron",

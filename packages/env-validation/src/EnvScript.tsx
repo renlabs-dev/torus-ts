@@ -33,7 +33,7 @@ interface ZodEnvScriptProps extends EnvScriptProps {
  * This component is disables Next.js' caching mechanism to ensure that the
  * environment variables are always up-to-date.
  */
-export const ZodEnvScript: FC<ZodEnvScriptProps> = ({
+const ZodEnvScript: FC<ZodEnvScriptProps> = ({
   nonce,
   skipValidation,
   schema,
@@ -62,7 +62,7 @@ export const ZodEnvScript: FC<ZodEnvScriptProps> = ({
   return <PublicEnvScript nonce={nonce} />;
 };
 
-export interface BuildEnvProviderOptions {
+interface BuildEnvProviderOptions {
   /** Skip validation of environment variables */
   skipValidation?: boolean;
 }

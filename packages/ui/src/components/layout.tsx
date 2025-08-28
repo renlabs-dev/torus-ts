@@ -27,7 +27,11 @@ export function Layout({
 }: Readonly<LayoutProps>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <head>{headScripts?.map((Script) => <Script key={Script.name} />)}</head>
+      <head>
+        {headScripts?.map((Script) => (
+          <Script key={Script.name} />
+        ))}
+      </head>
       <body
         className={cn(
           font.className,

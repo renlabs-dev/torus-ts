@@ -16,7 +16,8 @@
   "dependencies": {
     "prettier": "catalog:",
     "prettier-plugin-tailwindcss": "^0.6.6",
-    "prettier-plugin-classnames": "^0.7.7"
+    "prettier-plugin-classnames": "^0.7.7",
+    "@ianvs/prettier-plugin-sort-imports": "^4.6.2"
   },
   "devDependencies": {
     "@torus-ts/tsconfig": "workspace:*",

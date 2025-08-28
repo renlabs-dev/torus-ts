@@ -24,7 +24,7 @@ import { SbQueryError } from "../common/fees.js";
 import type {
   AccumulatedStreamEntry,
   CuratorPermissions,
-  EmissionContract,
+  StreamContract,
   PermissionContract,
   PermissionId,
   StreamId,
@@ -167,38 +167,38 @@ export async function queryPermissionsByParticipants(
 }
 
 /**
- * Query all emission permissions from the blockchain.
- * Filters all permissions to return only those with Emission scope,
+ * Query all stream permissions from the blockchain (formerly emission permissions).
+ * Filters all permissions to return only those with Stream scope,
  * then applies the provided filter function.
  *
  * @param api - The blockchain API instance
- * @param filterFn - Additional filter to apply to emission permissions
- * @return A map of PermissionId -> EmissionContract for filtered emission permissions
+ * @param filterFn - Additional filter to apply to stream permissions
+ * @return A map of PermissionId -> StreamContract for filtered stream permissions
  */
-export async function queryEmissionPermissions(
+export async function queryStreamPermissions(
   api: Api,
-  filterFn: (permission: EmissionContract) => boolean,
+  filterFn: (permission: StreamContract) => boolean,
 ): Promise<
   Result<
-    Map<PermissionId, EmissionContract>,
+    Map<PermissionId, StreamContract>,
     SbQueryError | ZError<H256> | ZError<PermissionContract>
   >
 > {
   const [permissionsError, allPermissions] = await queryPermissions(api);
   if (permissionsError) return makeErr(permissionsError);
 
-  const emissionPermissions = new Map<PermissionId, EmissionContract>();
+  const streamPermissions = new Map<PermissionId, StreamContract>();
 
   for (const [permissionId, permission] of allPermissions) {
     match(permission.scope)({
-      Emission: (emissionScope) => {
-        // Reconstruct as EmissionContract with the extracted emission scope
-        const emissionPermission: EmissionContract = {
+      Stream: (streamScope) => {
+        // Reconstruct as StreamContract with the extracted stream scope
+        const streamPermission: StreamContract = {
           ...permission,
-          scope: emissionScope,
+          scope: streamScope,
         };
-        if (filterFn(emissionPermission)) {
-          emissionPermissions.set(permissionId, emissionPermission);
+        if (filterFn(streamPermission)) {
+          streamPermissions.set(permissionId, streamPermission);
         }
       },
       Curator: () => {
@@ -210,8 +210,11 @@ export async function queryEmissionPermissions(
     });
   }
 
-  return makeOk(emissionPermissions);
+  return makeOk(streamPermissions);
 }
+
+// Backward compatibility alias
+export const queryEmissionPermissions = queryStreamPermissions;
 
 /**
  * Query all namespace permissions from the blockchain.
@@ -237,8 +240,8 @@ export async function queryNamespacePermissions(
       Namespace: () => {
         namespacePermissions.set(permissionId, permission);
       },
-      Emission: () => {
-        // Skip emission permissions
+      Stream: () => {
+        // Skip stream permissions
       },
       Curator: () => {
         // Skip curator permissions
@@ -250,11 +253,13 @@ export async function queryNamespacePermissions(
 }
 
 /**
- * Query namespace permissions where the specified address is the recipient.
+ * Query namespace permissions where the specified address is a recipient.
+ * Since recipients are now stored in scope-specific structures, this function
+ * checks the namespace scope for recipient information.
  *
  * @param api - The blockchain API instance
  * @param agentAddress - The SS58 address of the agent (recipient)
- * @returns A map of PermissionId -> PermissionContract for permissions where the agent is the recipient
+ * @returns A map of PermissionId -> PermissionContract for permissions where the agent is a recipient
  */
 export async function queryAgentNamespacePermissions(
   api: Api,
@@ -272,8 +277,11 @@ export async function queryAgentNamespacePermissions(
   const agentPermissions = new Map<PermissionId, PermissionContract>();
 
   for (const [permissionId, permission] of allPermissions) {
-    if (permission.recipient === agentAddress) {
-      agentPermissions.set(permissionId, permission);
+    // Check if this namespace permission has the agent as recipient
+    if ("Namespace" in permission.scope) {
+      if (permission.scope.Namespace.recipient === agentAddress) {
+        agentPermissions.set(permissionId, permission);
+      }
     }
   }
 
@@ -531,14 +539,27 @@ export function canExecutePermission(
  * Extract streams from a permission.
  */
 export const extractStreamsFromPermission = (permission: PermissionContract) =>
-  if_let(permission.scope, "Emission")(
-    (emissionScope) =>
-      if_let(emissionScope.allocation, "Streams")(
+  if_let(permission.scope, "Stream")(
+    (streamScope) =>
+      if_let(streamScope.allocation, "Streams")(
         (streams) => streams,
         () => null,
       ),
     () => null,
   );
+
+/**
+ * Extract recipients from a permission based on its scope.
+ */
+export const extractRecipientsFromPermission = (
+  permission: PermissionContract,
+): SS58Address[] => {
+  return match(permission.scope)({
+    Stream: (streamScope) => Array.from(streamScope.recipients.keys()),
+    Namespace: (namespaceScope) => [namespaceScope.recipient],
+    Curator: () => [], // Curator permissions don't have explicit recipients
+  });
+};
 
 /**
  * Check if a permission is enabled by verifying that accumulating = true in an EmissionScope
@@ -558,8 +579,8 @@ export async function isPermissionEnabled(
   }
 
   const isEnabled = match(permission.scope)({
-    Emission(emissionScope) {
-      return emissionScope.accumulating;
+    Stream(streamScope) {
+      return streamScope.accumulating;
     },
     Curator() {
       // Curator permissions don't have an accumulating field
@@ -616,10 +637,15 @@ export function buildAvailableStreamsFor(
 
   if (permissions != null) {
     for (const [_permId, permission] of permissions) {
-      const grantee = permission.recipient;
+      // Check if the agent is a recipient in stream permissions
+      const isRecipient = match(permission.scope)({
+        Stream: (streamScope) => streamScope.recipients.has(agentId),
+        Namespace: (namespaceScope) => namespaceScope.recipient === agentId,
+        Curator: () => false, // Curator permissions don't have recipients in this context
+      });
 
-      // Only add consider permissions that are granted to the agent
-      if (grantee !== agentId) continue;
+      // Only consider permissions that are granted to the agent
+      if (!isRecipient) continue;
 
       const streams = extractStreamsFromPermission(permission);
       if (streams != null) {
@@ -688,12 +714,12 @@ export async function queryDelegationStreamsByAccount(
 
     const delegationInfo: DelegationStreamInfo | null = if_let(
       permission.scope,
-      "Emission",
+      "Stream",
     )(
-      (emissionScope) =>
-        if_let(emissionScope.allocation, "Streams")(
+      (streamScope) =>
+        if_let(streamScope.allocation, "Streams")(
           (streamsMap) => {
-            // This is a stream-based emission permission
+            // This is a stream-based stream permission
             // The streams map contains StreamId -> percentage mappings
             const streamEntries = Array.from(streamsMap.entries());
 
@@ -705,12 +731,17 @@ export async function queryDelegationStreamsByAccount(
               // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
               const [streamId, percentage] = streamEntries[0]!;
 
+              // Note: With multi-recipient support, we need to get the first recipient
+              // TODO: This logic needs to be updated to handle multiple recipients properly
+              const recipients = Array.from(streamScope.recipients.entries());
+              const firstRecipient = recipients[0]?.[0] ?? delegatorAccount; // fallback
+
               return {
                 delegator: delegatorAccount,
-                recipient: permission.recipient,
+                recipient: firstRecipient,
                 streamId,
                 percentage,
-                targets: emissionScope.targets,
+                targets: streamScope.recipients,
                 accumulatedAmount: null,
               } as DelegationStreamInfo;
             }
@@ -728,11 +759,25 @@ export async function queryDelegationStreamsByAccount(
       // Try to get the accumulated amount for this stream delegation
       // TODO: refactor
       await (async () => {
+        // Get the first recipient for querying accumulated streams
+        const firstRecipient = match(permission.scope)({
+          Stream: (streamScope) => {
+            const recipients = Array.from(streamScope.recipients.keys());
+            return recipients.length > 0 ? (recipients[0] ?? null) : null;
+          },
+          Namespace: (namespaceScope) => namespaceScope.recipient,
+          Curator: () => null, // Curator permissions don't have recipients
+        });
+
+        if (firstRecipient === null) {
+          return; // No recipient to query for
+        }
+
         const [err, accumulatedStreams] =
-          await queryAccumulatedStreamsForAccount(api, permission.recipient);
+          await queryAccumulatedStreamsForAccount(api, firstRecipient);
         if (err !== undefined) {
           logger.error(
-            `Failed to query accumulated streams for account ${permission.recipient}:`,
+            `Failed to query accumulated streams for account ${firstRecipient}:`,
             err,
           );
           return;

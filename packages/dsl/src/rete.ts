@@ -1,3 +1,14 @@
+import superjson from "superjson";
+
+import type {
+  BlockFact,
+  Fact,
+  InactiveUnlessRedelegatedFact,
+  PermissionEnabledFact,
+  PermissionExistsFact,
+  StakeOfFact,
+} from "./facts";
+import { extractFactsFromConstraint } from "./facts";
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 /* eslint-disable @typescript-eslint/no-unnecessary-condition */
@@ -5,23 +16,13 @@
 // We basically need zod schema to be able to lint this correcly
 import type {
   AccountId,
-  PermId,
-  NumExprType,
-  Constraint,
-  BoolExprType,
   BaseConstraintType,
+  BoolExprType,
+  Constraint,
+  NumExprType,
+  PermId,
 } from "./types";
 import { CompOp } from "./types";
-import superjson from "superjson";
-import type {
-  Fact,
-  StakeOfFact,
-  PermissionExistsFact,
-  PermissionEnabledFact,
-  InactiveUnlessRedelegatedFact,
-  BlockFact,
-} from "./facts";
-import { extractFactsFromConstraint } from "./facts";
 
 /**
  * Generate a hash string for a fact or token, handling BigInt values

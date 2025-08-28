@@ -5,6 +5,7 @@ import { useFieldArray } from "react-hook-form";
 
 import type { SS58Address } from "@torus-network/sdk/types";
 
+import { useTorus } from "@torus-ts/torus-provider";
 import { Button } from "@torus-ts/ui/components/button";
 import {
   FormControl,
@@ -16,6 +17,8 @@ import {
 import { Input } from "@torus-ts/ui/components/input";
 
 import { FormAddressField } from "~/app/_components/address-field";
+import { useMultipleAccountEmissions } from "~/hooks/use-multiple-account-emissions";
+import { calculateEmissionValue } from "~/utils/calculate-emission-value";
 
 import type { CreateEmissionPermissionForm } from "../create-emission-permission-form-schema";
 
@@ -25,6 +28,8 @@ interface TargetsFieldProps {
 }
 
 export function TargetsField({ form, isAccountConnected }: TargetsFieldProps) {
+  const { selectedAccount } = useTorus();
+
   const {
     fields: targetFields,
     append: appendTarget,
@@ -33,6 +38,20 @@ export function TargetsField({ form, isAccountConnected }: TargetsFieldProps) {
     control: form.control,
     name: "targets",
   });
+
+  const emissionsData = useMultipleAccountEmissions({
+    accountIds: selectedAccount?.address ? [selectedAccount.address] : [],
+  });
+
+  const accountEmissions = selectedAccount?.address
+    ? emissionsData[selectedAccount.address]
+    : null;
+
+  // Calculate total stream percentage to determine what portion targets get
+  const totalStreamPercentage =
+    form.watch("allocation.streams").reduce((total, stream) => {
+      return total + (Number(stream.percentage) || 0);
+    }, 0) || 0;
 
   return (
     <div className="grid gap-3">
@@ -103,6 +122,22 @@ export function TargetsField({ form, isAccountConnected }: TargetsFieldProps) {
                       className="h-[2.6rem]"
                     />
                   </FormControl>
+                  <div className="text-xs text-green-400 mt-1">
+                    {(() => {
+                      const targetWeight = Number(weightField.value) || 0;
+                      const targetPercentage =
+                        totalStreamPercentage > 0
+                          ? (targetWeight / 100) * totalStreamPercentage
+                          : 0;
+
+                      return `${targetWeight}% of ${totalStreamPercentage}% = ${calculateEmissionValue(
+                        targetPercentage,
+                        accountEmissions,
+                        isAccountConnected,
+                        selectedAccount?.address,
+                      )}`;
+                    })()}
+                  </div>
                   <div className="min-h-[20px]">
                     <FormMessage />
                   </div>

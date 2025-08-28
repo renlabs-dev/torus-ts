@@ -22,6 +22,7 @@ import type { InjectedAccountWithMeta } from "@torus-ts/torus-provider";
 import { useTorus } from "@torus-ts/torus-provider";
 
 import { env } from "~/env";
+import { MIN_EXISTENTIAL_BALANCE } from "~/utils/constants";
 
 interface WalletContextType {
   isInitialized: boolean;
@@ -86,7 +87,6 @@ export function WalletProvider({ children }: WalletProviderProps) {
 
   // Calculate maximum transferable amount
   const freeBalance = accountFreeBalance.data ?? 0n;
-  const MIN_EXISTENTIAL_BALANCE = 100000000000000000n; // 0.1 TORUS
 
   const maxTransferableAmount = (() => {
     if (!torus.selectedAccount?.address || freeBalance <= 0n || !estimatedFee) {

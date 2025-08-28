@@ -1,8 +1,10 @@
+import { CircleDotDashed, Diameter } from "lucide-react";
+import { motion } from "motion/react";
+
 import { Card } from "@torus-ts/ui/components/card";
 import { ScrollArea } from "@torus-ts/ui/components/scroll-area";
 import { cn } from "@torus-ts/ui/lib/utils";
-import { motion } from "framer-motion";
-import { CircleDotDashed, Diameter } from "lucide-react";
+
 import { CustomButton } from "../custom-button";
 import { ANIMATIONS, CONTENT } from "../data";
 

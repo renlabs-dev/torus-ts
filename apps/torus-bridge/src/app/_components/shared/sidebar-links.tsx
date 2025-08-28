@@ -23,7 +23,7 @@ const navSidebarOptions = [
   { title: "Base Bridge", href: "/" },
 ] as const;
 
-export const Sidebar = () => {
+const Sidebar = () => {
   const defaultView = navSidebarOptions[1].href;
 
   return (

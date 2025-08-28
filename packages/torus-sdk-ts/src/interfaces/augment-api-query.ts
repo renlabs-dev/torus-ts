@@ -288,15 +288,15 @@ declare module '@polkadot/api-base/types/storage' {
       /**
        * Permissions delegated by a specific account
        **/
-      permissionsByDelegator: AugmentedQuery<ApiType, (arg: AccountId32 | string | Uint8Array) => Observable<Vec<H256>>, [AccountId32]> & QueryableStorageEntry<ApiType, [AccountId32]>;
+      permissionsByDelegator: AugmentedQuery<ApiType, (arg: AccountId32 | string | Uint8Array) => Observable<BTreeSet<H256>>, [AccountId32]> & QueryableStorageEntry<ApiType, [AccountId32]>;
       /**
        * Mapping from (delegator, recipient) to permission IDs
        **/
-      permissionsByParticipants: AugmentedQuery<ApiType, (arg: ITuple<[AccountId32, AccountId32]> | [AccountId32 | string | Uint8Array, AccountId32 | string | Uint8Array]) => Observable<Vec<H256>>, [ITuple<[AccountId32, AccountId32]>]> & QueryableStorageEntry<ApiType, [ITuple<[AccountId32, AccountId32]>]>;
+      permissionsByParticipants: AugmentedQuery<ApiType, (arg: ITuple<[AccountId32, AccountId32]> | [AccountId32 | string | Uint8Array, AccountId32 | string | Uint8Array]) => Observable<BTreeSet<H256>>, [ITuple<[AccountId32, AccountId32]>]> & QueryableStorageEntry<ApiType, [ITuple<[AccountId32, AccountId32]>]>;
       /**
        * Permissions received by a specific account
        **/
-      permissionsByRecipient: AugmentedQuery<ApiType, (arg: AccountId32 | string | Uint8Array) => Observable<Vec<H256>>, [AccountId32]> & QueryableStorageEntry<ApiType, [AccountId32]>;
+      permissionsByRecipient: AugmentedQuery<ApiType, (arg: AccountId32 | string | Uint8Array) => Observable<BTreeSet<H256>>, [AccountId32]> & QueryableStorageEntry<ApiType, [AccountId32]>;
       /**
        * Revocations in progress and the voters
        **/

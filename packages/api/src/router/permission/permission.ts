@@ -743,28 +743,140 @@ export const permissionRouter = {
 
   byGrantee: publicProcedure
     .input(z.object({ granteeAccountId: SS58_SCHEMA }))
-    .query(({ ctx, input }) => {
-      return ctx.db.query.permissionsSchema.findMany({
-        where: and(
-          eq(permissionsSchema.granteeAccountId, input.granteeAccountId),
-          isNull(permissionsSchema.deletedAt),
-        ),
-      });
+    .query(async ({ ctx, input }) => {
+      // Find permissions where the account is in weightSetter OR recipientManager arrays
+      const emissionPermissions = await ctx.db
+        .select({
+          permission: permissionsSchema,
+        })
+        .from(permissionsSchema)
+        .innerJoin(
+          emissionPermissionsSchema,
+          eq(
+            permissionsSchema.permissionId,
+            emissionPermissionsSchema.permissionId,
+          ),
+        )
+        .where(
+          and(
+            or(
+              sql`${input.granteeAccountId} = ANY(${emissionPermissionsSchema.weightSetter})`,
+              sql`${input.granteeAccountId} = ANY(${emissionPermissionsSchema.recipientManager})`,
+            ),
+            isNull(permissionsSchema.deletedAt),
+          ),
+        );
+
+      // Find permissions where the account is a recipient in namespace_permissions
+      const namespacePermissions = await ctx.db
+        .select({
+          permission: permissionsSchema,
+        })
+        .from(permissionsSchema)
+        .innerJoin(
+          namespacePermissionsSchema,
+          eq(
+            permissionsSchema.permissionId,
+            namespacePermissionsSchema.permissionId,
+          ),
+        )
+        .where(
+          and(
+            eq(namespacePermissionsSchema.recipient, input.granteeAccountId),
+            isNull(permissionsSchema.deletedAt),
+          ),
+        );
+
+      // Combine and deduplicate results
+      const allPermissions = [
+        ...emissionPermissions.map((p) => p.permission),
+        ...namespacePermissions.map((p) => p.permission),
+      ];
+
+      // Remove duplicates by permissionId
+      const uniquePermissions = allPermissions.filter(
+        (permission, index, self) =>
+          index ===
+          self.findIndex((p) => p.permissionId === permission.permissionId),
+      );
+
+      return uniquePermissions;
     }),
 
   byAccountId: publicProcedure
     .input(z.object({ accountId: SS58_SCHEMA }))
-    .query(({ ctx, input }) => {
-      return ctx.db.query.permissionsSchema.findMany({
+    .query(async ({ ctx, input }) => {
+      // Find permissions where user is grantor
+      const grantorPermissions = await ctx.db.query.permissionsSchema.findMany({
         where: and(
-          or(
-            eq(permissionsSchema.grantorAccountId, input.accountId),
-            eq(permissionsSchema.granteeAccountId, input.accountId),
-          ),
+          eq(permissionsSchema.grantorAccountId, input.accountId),
           isNull(permissionsSchema.deletedAt),
         ),
-        orderBy: (permissions, { desc }) => [desc(permissions.createdAt)],
       });
+
+      // Find permissions where user is in weightSetter OR recipientManager arrays (emission)
+      const emissionGranteePermissions = await ctx.db
+        .select({
+          permission: permissionsSchema,
+        })
+        .from(permissionsSchema)
+        .innerJoin(
+          emissionPermissionsSchema,
+          eq(
+            permissionsSchema.permissionId,
+            emissionPermissionsSchema.permissionId,
+          ),
+        )
+        .where(
+          and(
+            or(
+              sql`${input.accountId} = ANY(${emissionPermissionsSchema.weightSetter})`,
+              sql`${input.accountId} = ANY(${emissionPermissionsSchema.recipientManager})`,
+            ),
+            isNull(permissionsSchema.deletedAt),
+          ),
+        );
+
+      // Find permissions where user is recipient (namespace)
+      const namespaceGranteePermissions = await ctx.db
+        .select({
+          permission: permissionsSchema,
+        })
+        .from(permissionsSchema)
+        .innerJoin(
+          namespacePermissionsSchema,
+          eq(
+            permissionsSchema.permissionId,
+            namespacePermissionsSchema.permissionId,
+          ),
+        )
+        .where(
+          and(
+            eq(namespacePermissionsSchema.recipient, input.accountId),
+            isNull(permissionsSchema.deletedAt),
+          ),
+        );
+
+      // Combine and deduplicate results
+      const allPermissions = [
+        ...grantorPermissions,
+        ...emissionGranteePermissions.map((p) => p.permission),
+        ...namespaceGranteePermissions.map((p) => p.permission),
+      ];
+
+      // Remove duplicates by permissionId and sort by createdAt desc
+      const uniquePermissions = allPermissions
+        .filter(
+          (permission, index, self) =>
+            index ===
+            self.findIndex((p) => p.permissionId === permission.permissionId),
+        )
+        .sort(
+          (a, b) =>
+            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+        );
+
+      return uniquePermissions;
     }),
 
   allWithEmissionsByAccountId: publicProcedure
@@ -784,7 +896,8 @@ export const permissionRouter = {
           and(
             or(
               eq(permissionsSchema.grantorAccountId, input.accountId),
-              eq(permissionsSchema.granteeAccountId, input.accountId),
+              sql`${input.accountId} = ANY(${emissionPermissionsSchema.weightSetter})`,
+              sql`${input.accountId} = ANY(${emissionPermissionsSchema.recipientManager})`,
             ),
             isNull(permissionsSchema.deletedAt),
           ),
@@ -809,7 +922,7 @@ export const permissionRouter = {
           and(
             or(
               eq(permissionsSchema.grantorAccountId, input.accountId),
-              eq(permissionsSchema.granteeAccountId, input.accountId),
+              eq(namespacePermissionsSchema.recipient, input.accountId),
             ),
             isNull(permissionsSchema.deletedAt),
           ),
@@ -825,7 +938,7 @@ export const permissionRouter = {
 
       const [permissionsError, emissionPermissions] =
         await queryEmissionPermissions(api, (permission) => {
-          return permission.scope.targets.has(input.accountId);
+          return permission.scope.recipients.has(input.accountId);
         });
 
       if (permissionsError) {
@@ -840,12 +953,12 @@ export const permissionRouter = {
       // Process each permission where the account is a target
       for (const [permissionId, permission] of emissionPermissions) {
         // Get the account's weight from targets
-        const accountWeight = permission.scope.targets.get(input.accountId);
+        const accountWeight = permission.scope.recipients.get(input.accountId);
         if (!accountWeight) continue;
 
         // Calculate total weight for normalization
         let totalWeight = 0n;
-        for (const weight of permission.scope.targets.values()) {
+        for (const weight of permission.scope.recipients.values()) {
           totalWeight += weight;
         }
 

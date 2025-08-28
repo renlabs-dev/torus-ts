@@ -14,7 +14,7 @@ interface AppBarDataGroupProps {
   fallback?: React.ReactNode;
 }
 
-export function AppBarLabel({ children }: AppBarLabelProps) {
+function AppBarLabel({ children }: AppBarLabelProps) {
   return <span className="text-white/60">{children}</span>;
 }
 
@@ -22,15 +22,15 @@ export function AppBarSeparator() {
   return <span className="mx-2 text-white/30">|</span>;
 }
 
-export function AppBarArrow() {
+function AppBarArrow() {
   return <span className="mx-1 text-white/40">›</span>;
 }
 
-export function AppBarValue({ children }: AppBarValueProps) {
+function AppBarValue({ children }: AppBarValueProps) {
   return <span className="font-semibold text-white">{children}</span>;
 }
 
-export function AppBarSkeletonValue() {
+function AppBarSkeletonValue() {
   return <div className={"h-4 w-16 animate-pulse rounded bg-gray-700/30"} />;
 }
 

@@ -4,7 +4,7 @@
 import { api } from "~/trpc/react";
 import { tryAsync } from "@torus-network/torus-utils/try-catch";
 import { toast } from "@torus-ts/ui/hooks/use-toast";
-export type VoteType = "ACCEPT" | "REFUSE" | "REMOVE";
+type VoteType = "ACCEPT" | "REFUSE" | "REMOVE";
 
 export function useVoteManagement(
   userKey: string,

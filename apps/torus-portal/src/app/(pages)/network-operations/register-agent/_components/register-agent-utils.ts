@@ -7,7 +7,8 @@ import type { PinFileOnPinataResponse } from "~/app/api/files/route";
 
 import type { RegisterAgentFormData } from "./register-agent-schema";
 
-export const pinFile = async (file: File): Promise<PinFileOnPinataResponse> => {
+// TODO: remove duplicate
+const pinFile = async (file: File): Promise<PinFileOnPinataResponse> => {
   const body = new FormData();
   body.set("file", file);
   const res = await fetch("/api/files", {
@@ -21,7 +22,7 @@ export const pinFile = async (file: File): Promise<PinFileOnPinataResponse> => {
   return { cid };
 };
 
-export const parseUrl = (url: string): string => {
+const parseUrl = (url: string): string => {
   if (url.startsWith("http://") || url.startsWith("https://")) {
     return url;
   } else {
@@ -29,7 +30,7 @@ export const parseUrl = (url: string): string => {
   }
 };
 
-export const strToFile = (
+const strToFile = (
   str: string,
   filename: string,
   type: string = "text/plain",
