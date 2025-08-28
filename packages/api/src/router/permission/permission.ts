@@ -1,13 +1,7 @@
-import type { TRPCRouterRecord } from "@trpc/server";
-import { z } from "zod";
-
-import {
-  queryStreamPermissions,
-  type StreamContract,
-} from "@torus-network/sdk/chain";
+import type { StreamContract } from "@torus-network/sdk/chain";
+import { queryStreamPermissions } from "@torus-network/sdk/chain";
 import { SS58_SCHEMA } from "@torus-network/sdk/types";
 import type { RemAmount } from "@torus-network/torus-utils/torus/token";
-
 import { and, eq, gte, isNotNull, isNull, lte, or, sql } from "@torus-ts/db";
 import type { createDb } from "@torus-ts/db/client";
 import {
@@ -19,7 +13,8 @@ import {
   namespacePermissionsSchema,
   permissionsSchema,
 } from "@torus-ts/db/schema";
-
+import type { TRPCRouterRecord } from "@trpc/server";
+import { z } from "zod";
 import { publicProcedure } from "../../trpc";
 
 type StreamsPerBlockResult = Record<
