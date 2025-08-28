@@ -1,12 +1,7 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 "use client";
 
-import React, { useEffect, useMemo, useState } from "react";
-
 import { useQuery } from "@tanstack/react-query";
-import { Check, ChevronDown, Copy, Package, Zap } from "lucide-react";
-import type { Control } from "react-hook-form";
-
 import type { PermissionContract } from "@torus-network/sdk/chain";
 import {
   queryPermissions,
@@ -16,7 +11,6 @@ import {
 import { CONSTANTS } from "@torus-network/sdk/constants";
 import type { SS58Address } from "@torus-network/sdk/types";
 import { smallAddress } from "@torus-network/torus-utils/subspace";
-
 import { useTorus } from "@torus-ts/torus-provider";
 import { Button } from "@torus-ts/ui/components/button";
 import {
@@ -43,13 +37,14 @@ import {
   FormMessage,
 } from "@torus-ts/ui/components/form";
 import { useIsMobile } from "@torus-ts/ui/hooks/use-mobile";
-
 import {
   formatCapabilityPath,
   getCapabilityPaths,
   ShortenedCapabilityPath,
 } from "~/utils/capability-path";
-
+import { Check, ChevronDown, Copy, Package, Zap } from "lucide-react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
+import type { Control } from "react-hook-form";
 import type { PermissionWithDetails } from "../(pages)/permissions/manage-permission/_components/edit-permission-form";
 // Import the expected interface from the form
 import { AddressWithAgent } from "./address-with-agent";
@@ -168,7 +163,9 @@ export function PermissionSelector(props: PermissionSelectorProps) {
     return userPermissions.map((permission) => ({
       ...permission,
       delegatorAgentName: agentNameMap.get(permission.contract.delegator),
-      recipientAgentName: agentNameMap.get(permission.contract.recipient),
+      recipientAgentName: agentNameMap.get(
+        getRecipientFromContract(permission.contract) || "",
+      ),
     }));
   }, [userPermissions, agentNameMap]);
 
@@ -179,10 +176,35 @@ export function PermissionSelector(props: PermissionSelectorProps) {
   const getPermissionType = (contract: PermissionContract | null) => {
     if (!contract) return "Unknown";
     const scopeType = Object.keys(contract.scope)[0];
-    if (scopeType === "Emission") return "Emission";
+    if (scopeType === "Stream") return "Emission"; // Still display as "Emission" in UI
     if (scopeType === "Namespace") return "Capability";
     if (scopeType === "Curator") return "Curator";
     return "Unknown";
+  };
+
+  // Helper function to get recipient from contract scope
+  const getRecipientFromContract = (
+    contract: PermissionContract,
+  ): string | null => {
+    const scopeType = Object.keys(contract.scope)[0];
+    if (scopeType === "Namespace" && "Namespace" in contract.scope) {
+      return contract.scope.Namespace.recipient;
+    }
+    if (scopeType === "Stream" && "Stream" in contract.scope) {
+      // For stream permissions, get the first recipient (since they can have multiple)
+      const recipients = contract.scope.Stream.recipients;
+      if (recipients instanceof Map && recipients.size > 0) {
+        return Array.from(recipients.keys())[0] || null;
+      }
+      // If recipients is an object (parsed from JSON)
+      if (typeof recipients === "object") {
+        const keys = Object.keys(recipients);
+        return keys.length > 0 ? (keys[0] ?? null) : null;
+      }
+      return null;
+    }
+    // Curator permissions don't have a single recipient
+    return null;
   };
 
   // Helper to render capability paths in CommandItems
@@ -223,7 +245,8 @@ export function PermissionSelector(props: PermissionSelectorProps) {
           getCapabilityPaths(item.namespacePaths).pathString,
           "emission",
           item.contract.delegator,
-          item.contract.recipient,
+          // TODO: Add search support for all recipients in multi-recipient stream permissions
+          getRecipientFromContract(item.contract),
           item.delegatorAgentName,
           item.recipientAgentName,
         ]
@@ -241,7 +264,8 @@ export function PermissionSelector(props: PermissionSelectorProps) {
           getCapabilityPaths(item.namespacePaths).pathString,
           "capability",
           item.contract.delegator,
-          item.contract.recipient,
+          // TODO: Add search support for all recipients in multi-recipient stream permissions
+          getRecipientFromContract(item.contract),
           item.delegatorAgentName,
           item.recipientAgentName,
         ]
@@ -276,127 +300,134 @@ export function PermissionSelector(props: PermissionSelectorProps) {
   );
 
   // Transform network data to match expected format
-  const transformToPermissionWithDetails = (
-    networkData: PermissionWithNetworkData | null,
-  ): PermissionWithDetails | null => {
-    if (!networkData) return null;
+  const transformToPermissionWithDetails = useCallback(
+    (
+      networkData: PermissionWithNetworkData | null,
+    ): PermissionWithDetails | null => {
+      if (!networkData) return null;
 
-    const { permissionId, contract } = networkData;
-    const scopeType = Object.keys(contract.scope)[0];
-    const now = new Date();
+      const { permissionId, contract } = networkData;
+      const scopeType = Object.keys(contract.scope)[0];
+      const now = new Date();
 
-    // Build the permissions object that matches the database schema
-    const permissions: PermissionWithDetails["permissions"] = {
-      id: permissionId, // Use permissionId as id for compatibility
-      permissionId,
-      grantorAccountId: contract.delegator,
-      granteeAccountId: contract.recipient,
-      durationType:
-        Object.keys(contract.duration)[0] === "Indefinite"
-          ? ("indefinite" as const)
-          : ("until_block" as const),
-      durationBlockNumber:
-        "UntilBlock" in contract.duration
-          ? BigInt(contract.duration.UntilBlock)
-          : null,
-      revocationType: (() => {
-        const revType = Object.keys(contract.revocation)[0];
-        if (revType === "Irrevocable") return "irrevocable";
-        if (revType === "RevocableByDelegator") return "revocable_by_delegator";
-        if (revType === "RevocableAfter") return "revocable_after";
-        if (revType === "RevocableByArbiters") return "revocable_by_arbiters";
-        return "irrevocable"; // Default to irrevocable instead of unknown
-      })(),
-      revocationBlockNumber:
-        "RevocableAfter" in contract.revocation
-          ? BigInt(contract.revocation.RevocableAfter)
-          : null,
-      revocationRequiredVotes:
-        "RevocableByArbiters" in contract.revocation
-          ? BigInt(contract.revocation.RevocableByArbiters.requiredVotes)
-          : null,
-      enforcementType:
-        "None" in contract.enforcement
-          ? ("none" as const)
-          : ("controlled_by" as const),
-      enforcementRequiredVotes:
-        "ControlledBy" in contract.enforcement
-          ? BigInt(contract.enforcement.ControlledBy.controllers.length)
-          : null,
-      lastExecutionBlock:
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-        contract.lastExecution && "Some" in contract.lastExecution
-          ? BigInt(contract.lastExecution.Some)
-          : null,
-      executionCount: Number(contract.executionCount),
-      createdAtBlock: BigInt(contract.createdAt),
-      createdAt: now, // Using current date as approximation
-      updatedAt: now,
-      deletedAt: null,
-    };
-
-    // Build emission permissions if applicable
-    let emission_permissions: PermissionWithDetails["emission_permissions"] =
-      null;
-    if (scopeType === "Emission" && "Emission" in contract.scope) {
-      const emissionScope = contract.scope.Emission;
-      const allocationType = Object.keys(emissionScope.allocation)[0];
-      const distributionType = Object.keys(emissionScope.distribution)[0];
-
-      emission_permissions = {
+      // Build the permissions object that matches the database schema
+      const permissions: PermissionWithDetails["permissions"] = {
+        id: permissionId, // Use permissionId as id for compatibility
         permissionId,
-        allocationType:
-          allocationType === "Streams"
-            ? ("streams" as const)
-            : ("fixed_amount" as const),
-        fixedAmount:
-          "FixedAmount" in emissionScope.allocation
-            ? emissionScope.allocation.FixedAmount.toString()
+        grantorAccountId: contract.delegator,
+        granteeAccountId: getRecipientFromContract(contract) || "",
+        durationType:
+          Object.keys(contract.duration)[0] === "Indefinite"
+            ? ("indefinite" as const)
+            : ("until_block" as const),
+        durationBlockNumber:
+          "UntilBlock" in contract.duration
+            ? BigInt(contract.duration.UntilBlock)
             : null,
-        distributionType: distributionType
-          ? (distributionType
-              .toLowerCase()
-              .replace(/([A-Z])/g, "_$1")
-              .toLowerCase()
-              .slice(1) as "manual" | "at_block" | "automatic" | "interval")
-          : "manual",
-        distributionThreshold:
-          "Automatic" in emissionScope.distribution
-            ? emissionScope.distribution.Automatic.toString()
+        revocationType: (() => {
+          const revType = Object.keys(contract.revocation)[0];
+          if (revType === "Irrevocable") return "irrevocable";
+          if (revType === "RevocableByDelegator")
+            return "revocable_by_delegator";
+          if (revType === "RevocableAfter") return "revocable_after";
+          if (revType === "RevocableByArbiters") return "revocable_by_arbiters";
+          return "irrevocable"; // Default to irrevocable instead of unknown
+        })(),
+        revocationBlockNumber:
+          "RevocableAfter" in contract.revocation
+            ? BigInt(contract.revocation.RevocableAfter)
             : null,
-        distributionTargetBlock:
-          "AtBlock" in emissionScope.distribution
-            ? BigInt(emissionScope.distribution.AtBlock)
+        revocationRequiredVotes:
+          "RevocableByArbiters" in contract.revocation
+            ? BigInt(contract.revocation.RevocableByArbiters.requiredVotes)
             : null,
-        distributionIntervalBlocks:
-          "Interval" in emissionScope.distribution
-            ? BigInt(emissionScope.distribution.Interval)
+        enforcementType:
+          "None" in contract.enforcement
+            ? ("none" as const)
+            : ("controlled_by" as const),
+        enforcementRequiredVotes:
+          "ControlledBy" in contract.enforcement
+            ? BigInt(contract.enforcement.ControlledBy.controllers.length)
             : null,
-        accumulating: emissionScope.accumulating,
-        createdAt: now,
+        lastExecutionBlock:
+          // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+          contract.lastExecution && "Some" in contract.lastExecution
+            ? BigInt(contract.lastExecution.Some)
+            : null,
+        executionCount: Number(contract.executionCount),
+        createdAtBlock: BigInt(contract.createdAt),
+        createdAt: now, // Using current date as approximation
         updatedAt: now,
         deletedAt: null,
       };
-    }
 
-    // Build capability permissions if applicable
-    let namespace_permissions: PermissionWithDetails["namespace_permissions"] =
-      null;
-    if (scopeType === "Namespace") {
-      namespace_permissions = {
-        permissionId,
-        createdAt: now,
-        updatedAt: now,
-        deletedAt: null,
+      // Build emission permissions if applicable
+      let emission_permissions: PermissionWithDetails["emission_permissions"] =
+        null;
+      if (scopeType === "Stream" && "Stream" in contract.scope) {
+        const streamScope = contract.scope.Stream;
+        const allocationType = Object.keys(streamScope.allocation)[0];
+        const distributionType = Object.keys(streamScope.distribution)[0];
+
+        emission_permissions = {
+          permissionId,
+          allocationType:
+            allocationType === "Streams"
+              ? ("streams" as const)
+              : ("fixed_amount" as const),
+          fixedAmount:
+            "FixedAmount" in streamScope.allocation
+              ? streamScope.allocation.FixedAmount.toString()
+              : null,
+          distributionType: distributionType
+            ? (distributionType
+                .toLowerCase()
+                .replace(/([A-Z])/g, "_$1")
+                .toLowerCase()
+                .slice(1) as "manual" | "at_block" | "automatic" | "interval")
+            : "manual",
+          distributionThreshold:
+            "Automatic" in streamScope.distribution
+              ? streamScope.distribution.Automatic.toString()
+              : null,
+          distributionTargetBlock:
+            "AtBlock" in streamScope.distribution
+              ? BigInt(streamScope.distribution.AtBlock)
+              : null,
+          distributionIntervalBlocks:
+            "Interval" in streamScope.distribution
+              ? BigInt(streamScope.distribution.Interval)
+              : null,
+          accumulating: streamScope.accumulating,
+          weightSetter: streamScope.weightSetters,
+          recipientManager: streamScope.recipientManagers,
+          createdAt: now,
+          updatedAt: now,
+          deletedAt: null,
+        };
+      }
+
+      // Build capability permissions if applicable
+      let namespace_permissions: PermissionWithDetails["namespace_permissions"] =
+        null;
+      if (scopeType === "Namespace" && "Namespace" in contract.scope) {
+        namespace_permissions = {
+          permissionId,
+          recipient: contract.scope.Namespace.recipient,
+          createdAt: now,
+          updatedAt: now,
+          deletedAt: null,
+        };
+      }
+
+      return {
+        permissions,
+        emission_permissions,
+        namespace_permissions,
       };
-    }
-
-    return {
-      permissions,
-      emission_permissions,
-      namespace_permissions,
-    };
-  };
+    },
+    [],
+  );
 
   function getPlaceholderText() {
     if (!isAccountConnected) return "Connect wallet to view permissions";
@@ -477,7 +508,12 @@ export function PermissionSelector(props: PermissionSelectorProps) {
       );
       props.onPermissionDataChange(transformedData);
     }
-  }, [selectedPermissionData, props.onPermissionDataChange, props]);
+  }, [
+    selectedPermissionData,
+    props.onPermissionDataChange,
+    props,
+    transformToPermissionWithDetails,
+  ]);
 
   function getDetailRows() {
     if (!selectedPermissionData) return [];
@@ -528,7 +564,7 @@ export function PermissionSelector(props: PermissionSelectorProps) {
               copy={selectedPermissionData.permissionId}
               variant="ghost"
               message="Permission ID copied to clipboard"
-              className="h-auto p-1 hover:bg-muted/50"
+              className="hover:bg-muted/50 h-auto p-1"
             >
               <Copy className="h-3 w-3" />
             </CopyButton>
@@ -556,7 +592,7 @@ export function PermissionSelector(props: PermissionSelectorProps) {
               label: "Recipient",
               component: (
                 <AddressWithAgent
-                  address={contract.recipient}
+                  address={getRecipientFromContract(contract) || ""}
                   showCopyButton={true}
                   addressLength={8}
                   className="text-sm"
@@ -603,7 +639,7 @@ export function PermissionSelector(props: PermissionSelectorProps) {
             <ShortenedCapabilityPath
               path={capabilityPaths[0]!}
               showTooltip={true}
-              className="text-sm font-mono"
+              className="font-mono text-sm"
             />
           ),
         });
@@ -647,7 +683,7 @@ export function PermissionSelector(props: PermissionSelectorProps) {
                     variant="outline"
                     role="combobox"
                     aria-expanded={open}
-                    className="w-full justify-between min-w-0"
+                    className="w-full min-w-0 justify-between"
                     disabled={
                       !isAccountConnected ||
                       !hasPermissions ||
@@ -657,7 +693,7 @@ export function PermissionSelector(props: PermissionSelectorProps) {
                     onClick={() => setOpen(true)}
                   >
                     <span
-                      className="truncate text-left flex-1 min-w-0"
+                      className="min-w-0 flex-1 truncate text-left"
                       title={getSelectedPermissionDisplay()}
                     >
                       {getSelectedPermissionDisplay()}
@@ -708,22 +744,22 @@ export function PermissionSelector(props: PermissionSelectorProps) {
                             }
                             setOpen(false);
                           }}
-                          className="flex items-start gap-2 py-2 max-w-full"
+                          className="flex max-w-full items-start gap-2 py-2"
                         >
-                          <Zap className="h-4 w-4 mt-0.5 shrink-0" />
-                          <div className="flex-1 min-w-0 overflow-hidden">
+                          <Zap className="mt-0.5 h-4 w-4 shrink-0" />
+                          <div className="min-w-0 flex-1 overflow-hidden">
                             <div className="flex items-center gap-2">
-                              <span className="font-mono text-sm truncate">
+                              <span className="truncate font-mono text-sm">
                                 {smallAddress(permissionId, 8)}
                               </span>
                               {isSelected && (
                                 <Check className="h-4 w-4 shrink-0" />
                               )}
                             </div>
-                            <div className="text-xs text-muted-foreground space-y-0.5">
+                            <div className="text-muted-foreground space-y-0.5 text-xs">
                               {item.namespacePaths &&
                                 renderCapabilityPaths(item.namespacePaths)}
-                              <div className="truncate text-muted-foreground">
+                              <div className="text-muted-foreground truncate">
                                 <span className="text-xs">
                                   ID: {smallAddress(permissionId, 6)}
                                 </span>
@@ -757,22 +793,22 @@ export function PermissionSelector(props: PermissionSelectorProps) {
                             }
                             setOpen(false);
                           }}
-                          className="flex items-start gap-2 py-2 max-w-full"
+                          className="flex max-w-full items-start gap-2 py-2"
                         >
-                          <Package className="h-4 w-4 mt-0.5 shrink-0" />
-                          <div className="flex-1 min-w-0 overflow-hidden">
+                          <Package className="mt-0.5 h-4 w-4 shrink-0" />
+                          <div className="min-w-0 flex-1 overflow-hidden">
                             <div className="flex items-center gap-2">
-                              <span className="font-mono text-sm truncate">
+                              <span className="truncate font-mono text-sm">
                                 {smallAddress(permissionId, 8)}
                               </span>
                               {isSelected && (
                                 <Check className="h-4 w-4 shrink-0" />
                               )}
                             </div>
-                            <div className="text-xs text-muted-foreground space-y-0.5">
+                            <div className="text-muted-foreground space-y-0.5 text-xs">
                               {item.namespacePaths &&
                                 renderCapabilityPaths(item.namespacePaths)}
-                              <div className="truncate text-muted-foreground">
+                              <div className="text-muted-foreground truncate">
                                 <span className="text-xs">
                                   ID: {smallAddress(permissionId, 6)}
                                 </span>
@@ -798,10 +834,10 @@ export function PermissionSelector(props: PermissionSelectorProps) {
             </CardTitle>
           </CardHeader>
 
-          <CardContent className="text-sm p-4 pt-0">
+          <CardContent className="p-4 pt-0 text-sm">
             {getDetailRows().map((row) => (
               <div key={row.label} className={getDetailRowClassName()}>
-                <span className="font-medium flex-shrink-0">{row.label}:</span>
+                <span className="flex-shrink-0 font-medium">{row.label}:</span>
                 <div className={getDetailValueClassName()}>
                   {row.component ?? row.value}
                 </div>

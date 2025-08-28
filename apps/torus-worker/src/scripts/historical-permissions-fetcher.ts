@@ -1,27 +1,21 @@
 #!/usr/bin/env node
-
-import { ApiPromise, WsProvider } from "@polkadot/api";
 import fs from "fs/promises";
 import path from "path";
-
-import { match } from "rustie";
-
+import { ApiPromise, WsProvider } from "@polkadot/api";
 import type {
   AccumulatedStreamEntry,
-  EmissionScope,
   PermissionContract,
   PermissionId,
+  StreamScope,
 } from "@torus-network/sdk/chain";
 import {
   queryAllAccumulatedStreamAmounts,
   queryPermissions,
 } from "@torus-network/sdk/chain";
-import { BasicLogger } from "@torus-network/torus-utils/logger";
-import { tryAsync, trySync } from "@torus-network/torus-utils/try-catch";
 import type { SS58Address } from "@torus-network/sdk/types";
 import { sb_blocks } from "@torus-network/sdk/types";
-import superjson from "superjson";
-
+import { BasicLogger } from "@torus-network/torus-utils/logger";
+import { tryAsync, trySync } from "@torus-network/torus-utils/try-catch";
 // Import the inferred types from schema - now this will work!
 import type {
   accumulatedStreamAmountsSchema,
@@ -30,6 +24,8 @@ import type {
   emissionStreamAllocationsSchema,
   permissionsSchema,
 } from "@torus-ts/db/schema";
+import { match } from "rustie";
+import superjson from "superjson";
 
 const log = BasicLogger.create({ name: "historical-permissions-fetcher" });
 
@@ -269,15 +265,15 @@ class HistoricalPermissionsFetcher {
         return;
       }
 
-      // Filter to only emission permissions
-      const emissionPermissions = new Map<PermissionId, PermissionContract>();
+      // Filter to only stream permissions
+      const streamPermissions = new Map<PermissionId, PermissionContract>();
       for (const [permissionId, contract] of permissionsMap.entries()) {
-        if ("Emission" in contract.scope) {
-          emissionPermissions.set(permissionId, contract);
+        if ("Stream" in contract.scope) {
+          streamPermissions.set(permissionId, contract);
         }
       }
 
-      if (emissionPermissions.size === 0) {
+      if (streamPermissions.size === 0) {
         log.info(
           `Block ${blockNumber}: no emission permissions found, skipping`,
         );
@@ -297,12 +293,12 @@ class HistoricalPermissionsFetcher {
       }
 
       log.info(
-        `Block ${blockNumber}: found ${emissionPermissions.size} emission permissions and ${streamAccumulations.length} stream accumulations`,
+        `Block ${blockNumber}: found ${streamPermissions.size} stream permissions and ${streamAccumulations.length} stream accumulations`,
       );
 
-      // Process emission permissions
-      for (const [permissionId, contract] of emissionPermissions.entries()) {
-        this.processEmissionPermission(
+      // Process stream permissions
+      for (const [permissionId, contract] of streamPermissions.entries()) {
+        this.processStreamPermission(
           blockNumber,
           blockHashHex,
           permissionId,
@@ -311,9 +307,9 @@ class HistoricalPermissionsFetcher {
         );
       }
 
-      // Process accumulated streams (only for emission permissions)
+      // Process accumulated streams (only for stream permissions)
       for (const accumulation of streamAccumulations) {
-        const permission = emissionPermissions.get(accumulation.permissionId);
+        const permission = streamPermissions.get(accumulation.permissionId);
         if (permission) {
           this.accumulatedStreamsBatch.push({
             blockNumber,
@@ -341,7 +337,7 @@ class HistoricalPermissionsFetcher {
     }
   }
 
-  processEmissionPermission(
+  processStreamPermission(
     blockNumber: number,
     blockHash: string,
     permissionId: PermissionId,
@@ -397,7 +393,7 @@ class HistoricalPermissionsFetcher {
       blockHash,
       permissionId: permissionId,
       grantorAccountId: contract.delegator,
-      granteeAccountId: contract.recipient,
+      granteeAccountId: null, // TODO: jairo please fix me
       durationType,
       durationBlockNumber,
       revocationType,
@@ -415,82 +411,82 @@ class HistoricalPermissionsFetcher {
 
     this.permissionsBatch.push(permissionData);
 
-    // Process emission scope - we know it's emission type since we filtered above
-    if ("Emission" in contract.scope) {
-      const emission = contract.scope.Emission as EmissionScope;
-      this.processEmissionScope(
+    // Process stream scope - we know it's stream type since we filtered above
+    if ("Stream" in contract.scope) {
+      const stream = contract.scope.Stream as StreamScope;
+      this.processStreamScope(
         blockNumber,
         blockHash,
         permissionId,
-        emission,
+        stream,
         contract.delegator,
         streamAccumulations,
       );
     }
   }
 
-  processEmissionScope(
+  processStreamScope(
     blockNumber: number,
     blockHash: string,
     permissionId: PermissionId,
-    emission: EmissionScope,
+    stream: StreamScope,
     delegator: SS58Address,
     streamAccumulations: AccumulatedStreamEntry[],
   ): void {
-    const allocationType = match(emission.allocation)({
-      Streams: () => "streams" as const,
-      FixedAmount: () => "fixed_amount" as const,
-    });
+    // const allocationType = match(stream.allocation)({
+    //   Streams: () => "streams" as const,
+    //   FixedAmount: () => "fixed_amount" as const,
+    // });
 
-    const distributionType = match(emission.distribution)({
-      Manual: () => "manual" as const,
-      Automatic: () => "automatic" as const,
-      AtBlock: () => "at_block" as const,
-      Interval: () => "interval" as const,
-    });
+    // const distributionType = match(stream.distribution)({
+    //   Manual: () => "manual" as const,
+    //   Automatic: () => "automatic" as const,
+    //   AtBlock: () => "at_block" as const,
+    //   Interval: () => "interval" as const,
+    // });
 
-    const distributionThreshold = match(emission.distribution)({
-      Automatic: (auto) => auto.toString(),
-      Manual: () => null,
-      AtBlock: () => null,
-      Interval: () => null,
-    });
+    // const distributionThreshold = match(stream.distribution)({
+    //   Automatic: (auto) => auto.toString(),
+    //   Manual: () => null,
+    //   AtBlock: () => null,
+    //   Interval: () => null,
+    // });
 
-    const distributionTargetBlock = match(emission.distribution)({
-      AtBlock: (atBlock) => BigInt(atBlock.toString()),
-      Manual: () => null,
-      Automatic: () => null,
-      Interval: () => null,
-    });
+    // const distributionTargetBlock = match(stream.distribution)({
+    //   AtBlock: (atBlock) => BigInt(atBlock.toString()),
+    //   Manual: () => null,
+    //   Automatic: () => null,
+    //   Interval: () => null,
+    // });
 
-    const distributionIntervalBlocks = match(emission.distribution)({
-      Interval: (interval) => BigInt(interval.toString()),
-      Manual: () => null,
-      Automatic: () => null,
-      AtBlock: () => null,
-    });
+    // const distributionIntervalBlocks = match(stream.distribution)({
+    //   Interval: (interval) => BigInt(interval.toString()),
+    //   Manual: () => null,
+    //   Automatic: () => null,
+    //   AtBlock: () => null,
+    // });
 
-    const fixedAmount = match(emission.allocation)({
-      FixedAmount: (amount) => amount.toString(),
-      Streams: () => null,
-    });
+    // const fixedAmount = match(stream.allocation)({
+    //   FixedAmount: (amount) => amount.toString(),
+    //   Streams: () => null,
+    // });
 
     // Add emission permission record
-    this.emissionsBatch.push({
-      blockNumber,
-      blockHash,
-      permissionId: permissionId,
-      allocationType,
-      fixedAmount,
-      distributionType,
-      distributionThreshold,
-      distributionTargetBlock,
-      distributionIntervalBlocks,
-      accumulating: emission.accumulating,
-    });
+    // this.emissionsBatch.push({
+    //   blockNumber,
+    //   blockHash,
+    //   permissionId: permissionId,
+    //   allocationType,
+    //   fixedAmount,
+    //   distributionType,
+    //   distributionThreshold,
+    //   distributionTargetBlock,
+    //   distributionIntervalBlocks,
+    //   accumulating: stream.accumulating,
+    // });
 
     // Process stream allocations
-    const streamAllocations = match(emission.allocation)({
+    const streamAllocations = match(stream.allocation)({
       Streams: (streams: Map<string, number>) =>
         Array.from(streams.entries()).map(([streamId, percentage]) => ({
           blockNumber,
@@ -515,7 +511,7 @@ class HistoricalPermissionsFetcher {
     for (const streamAllocation of streamAllocations) {
       // Calculate total weight for this specific (permissionId, streamId) pair
       const totalWeightForThisStream = Array.from(
-        emission.targets.values(),
+        stream.recipients.values(),
       ).reduce((sum, weight) => sum + weight, BigInt(0));
 
       // Get accumulated amount for this specific stream
@@ -523,8 +519,8 @@ class HistoricalPermissionsFetcher {
       const totalAccumulatedForStream =
         accumulationLookup.get(lookupKey) ?? BigInt(0);
 
-      // Distribute to each target based on their normalized weight for this stream
-      for (const [accountId, weight] of emission.targets.entries()) {
+      // Distribute to each recipient based on their normalized weight for this stream
+      for (const [accountId, weight] of stream.recipients.entries()) {
         const accumulatedTokens =
           totalWeightForThisStream > BigInt(0)
             ? (weight * totalAccumulatedForStream) / totalWeightForThisStream

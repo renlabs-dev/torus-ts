@@ -1,6 +1,3 @@
-import type { UseFormReset } from "react-hook-form";
-import { match } from "rustie";
-
 import type {
   Api,
   PermissionContract,
@@ -9,7 +6,8 @@ import type {
 } from "@torus-network/sdk/chain";
 import { queryPermission } from "@torus-network/sdk/chain";
 import type { SS58Address } from "@torus-network/sdk/types";
-
+import type { UseFormReset } from "react-hook-form";
+import { match } from "rustie";
 import type { PermissionWithDetails } from "./edit-permission-form";
 import type {
   DistributionControlFormData,
@@ -45,11 +43,11 @@ function transformPermissionToFormData(
 ): Partial<EditPermissionFormData> {
   const formData: Partial<EditPermissionFormData> = {};
 
-  // Extract emission permission data
+  // Extract stream permission data
   match(permission.scope)({
-    Emission: (emissionScope) => {
-      if (emissionScope.targets.size > 0) {
-        formData.newTargets = Array.from(emissionScope.targets.entries()).map(
+    Stream: (streamScope) => {
+      if (streamScope.recipients.size > 0) {
+        formData.newTargets = Array.from(streamScope.recipients.entries()).map(
           ([address, weight]) => ({
             address,
             percentage: Number(weight), // SDK uses weight, but we display as percentage
@@ -57,7 +55,7 @@ function transformPermissionToFormData(
         );
       }
 
-      match(emissionScope.allocation)({
+      match(streamScope.allocation)({
         Streams: (streamsMap) => {
           if (streamsMap.size > 0) {
             formData.newStreams = Array.from(streamsMap.entries()).map(
@@ -73,7 +71,7 @@ function transformPermissionToFormData(
         },
       });
 
-      const distribution = emissionScope.distribution;
+      const distribution = streamScope.distribution;
       formData.newDistributionControl = match(distribution)({
         Manual: () => ({ Manual: null }),
         Automatic: (threshold) =>
@@ -85,10 +83,10 @@ function transformPermissionToFormData(
       });
     },
     Curator: () => {
-      // Curator permissions don't have emission data
+      // Curator permissions don't have stream data
     },
     Namespace: () => {
-      // Namespace permissions don't have emission data
+      // Namespace permissions don't have stream data
     },
   });
 
@@ -172,7 +170,7 @@ export function prepareFormDataForSDK(data: EditPermissionFormData) {
 
   return {
     permissionId: permissionId as PermissionId,
-    newTargets: sdkTargets,
+    newRecipients: sdkTargets,
     newStreams: sdkStreams,
     newDistributionControl,
   };

@@ -24,9 +24,9 @@ import { SbQueryError } from "../common/fees.js";
 import type {
   AccumulatedStreamEntry,
   CuratorPermissions,
-  StreamContract,
   PermissionContract,
   PermissionId,
+  StreamContract,
   StreamId,
 } from "./permission0-types.js";
 import {
@@ -212,9 +212,6 @@ export async function queryStreamPermissions(
 
   return makeOk(streamPermissions);
 }
-
-// Backward compatibility alias
-export const queryEmissionPermissions = queryStreamPermissions;
 
 /**
  * Query all namespace permissions from the blockchain.
@@ -562,7 +559,7 @@ export const extractRecipientsFromPermission = (
 };
 
 /**
- * Check if a permission is enabled by verifying that accumulating = true in an EmissionScope
+ * Check if a permission is enabled by verifying that accumulating = true in a StreamScope
  */
 export async function isPermissionEnabled(
   api: Api,

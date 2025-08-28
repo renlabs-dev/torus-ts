@@ -1,14 +1,7 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
-
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useSearchParams } from "next/navigation";
-import { useForm } from "react-hook-form";
-import type { z } from "zod";
-
-import { updateEmissionPermission } from "@torus-network/sdk/chain";
-
+import { updateStreamPermission } from "@torus-network/sdk/chain";
 import type { InferSelectModel } from "@torus-ts/db";
 import type {
   emissionPermissionsSchema,
@@ -22,11 +15,13 @@ import { Form } from "@torus-ts/ui/components/form";
 import { WalletConnectionWarning } from "@torus-ts/ui/components/wallet-connection-warning";
 import { useToast } from "@torus-ts/ui/hooks/use-toast";
 import { cn } from "@torus-ts/ui/lib/utils";
-
 import { PermissionSelector } from "~/app/_components/permission-selector";
 import PortalFormHeader from "~/app/_components/portal-form-header";
 import { PortalFormSeparator } from "~/app/_components/portal-form-separator";
-
+import { useSearchParams } from "next/navigation";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { useForm } from "react-hook-form";
+import type { z } from "zod";
 import { DistributionControlField } from "./edit-permission-fields/distribution-control-field";
 import { StreamsField } from "./edit-permission-fields/streams-field";
 import { TargetsField } from "./edit-permission-fields/targets-field";
@@ -75,7 +70,7 @@ export function EditPermissionForm({
     selectedAccount,
     wsEndpoint,
     wallet: torusApi,
-    transactionType: "Update Emission Permission",
+    transactionType: "Update Stream Permission",
   });
   const [selectedPermissionId, setSelectedPermissionId] = useState<string>("");
   const [hasLoadedPermission, setHasLoadedPermission] = useState(false);
@@ -136,7 +131,7 @@ export function EditPermissionForm({
     const sdkData = prepareFormDataForSDK(data);
 
     const [sendErr, sendRes] = await sendTx(
-      updateEmissionPermission({
+      updateStreamPermission({
         api,
         ...sdkData,
       }),

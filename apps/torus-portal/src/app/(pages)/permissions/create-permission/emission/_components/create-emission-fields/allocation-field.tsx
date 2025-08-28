@@ -1,11 +1,5 @@
-import React, { useCallback, useEffect } from "react";
-
-import { Plus, Trash2 } from "lucide-react";
-import { useFieldArray } from "react-hook-form";
-
 import type { Api } from "@torus-network/sdk/chain";
 import { checkSS58 } from "@torus-network/sdk/types";
-
 import { useTorus } from "@torus-ts/torus-provider";
 import { Button } from "@torus-ts/ui/components/button";
 import {
@@ -16,11 +10,12 @@ import {
   FormMessage,
 } from "@torus-ts/ui/components/form";
 import { Input } from "@torus-ts/ui/components/input";
-
 import { useAvailableStreams } from "~/hooks/use-available-streams";
-import { useMultipleAccountEmissions } from "~/hooks/use-multiple-account-emissions";
-import { calculateEmissionValue } from "~/utils/calculate-emission-value";
-
+import { useMultipleAccountStreams } from "~/hooks/use-multiple-account-streams";
+import { calculateIndividualStreamValue } from "~/utils/calculate-emission-value";
+import { Plus, Trash2 } from "lucide-react";
+import React, { useCallback, useEffect } from "react";
+import { useFieldArray } from "react-hook-form";
 import type { CreateEmissionPermissionForm } from "../create-emission-permission-form-schema";
 
 interface AllocationFieldProps {
@@ -46,12 +41,12 @@ export function AllocationField({
     checkSS58IfDefined(selectedAccountAddress),
   );
 
-  const emissionsData = useMultipleAccountEmissions({
+  const streamsData = useMultipleAccountStreams({
     accountIds: selectedAccount?.address ? [selectedAccount.address] : [],
   });
 
-  const accountEmissions = selectedAccount?.address
-    ? emissionsData[selectedAccount.address]
+  const accountStreams = selectedAccount?.address
+    ? streamsData[selectedAccount.address]
     : null;
 
   const {
@@ -112,7 +107,7 @@ export function AllocationField({
                 }
                 disabled={!isAccountConnected}
               >
-                <Plus className="h-4 w-4 mr-2" />
+                <Plus className="mr-2 h-4 w-4" />
                 Add Stream
               </Button>
             </div>
@@ -120,8 +115,8 @@ export function AllocationField({
         )}
 
         {streamFields.length === 0 && (
-          <div className="text-center py-4 border-2 border-dashed rounded-md">
-            <p className="text-sm text-muted-foreground mb-2">
+          <div className="rounded-md border-2 border-dashed py-4 text-center">
+            <p className="text-muted-foreground mb-2 text-sm">
               No streams added yet
             </p>
             <Button
@@ -136,7 +131,7 @@ export function AllocationField({
               }
               disabled={!isAccountConnected}
             >
-              <Plus className="h-4 w-4 mr-2" />
+              <Plus className="mr-2 h-4 w-4" />
               Add First Stream
             </Button>
           </div>
@@ -146,10 +141,22 @@ export function AllocationField({
           return (
             <div
               key={field.id}
-              className="grid gap-3 px-4 pt-4 pb-2 border rounded-md"
+              className="grid gap-3 rounded-md border px-4 pb-2 pt-4"
             >
               <div className="flex items-center justify-between">
-                <h4 className="text-sm font-medium">Stream {index + 1}</h4>
+                <h4 className="text-sm font-medium">
+                  Stream {index + 1} (
+                  {calculateIndividualStreamValue(
+                    Number(
+                      form.watch(`allocation.streams.${index}.percentage`),
+                    ) || 0,
+                    form.watch(`allocation.streams.${index}.streamId`) || "",
+                    accountStreams,
+                    isAccountConnected,
+                    selectedAccount?.address,
+                  )}
+                  )
+                </h4>
                 {streamFields.length > 1 && (
                   <Button
                     type="button"
@@ -201,14 +208,6 @@ export function AllocationField({
                           disabled={!isAccountConnected}
                         />
                       </FormControl>
-                      <div className="text-xs text-green-400 mt-1">
-                        {calculateEmissionValue(
-                          Number(percentageField.value) || 0,
-                          accountEmissions,
-                          isAccountConnected,
-                          selectedAccount?.address,
-                        )}
-                      </div>
                       <div className="min-h-[20px]">
                         <FormMessage />
                       </div>
@@ -222,31 +221,50 @@ export function AllocationField({
 
         {/* Total Emission Display */}
         {streamFields.length > 0 && (
-          <div className="mt-4 p-3 bg-muted/20 rounded-md border">
+          <div className="bg-muted/20 mt-4 rounded-md border p-3">
             <div className="text-sm">
               <span className="text-muted-foreground font-medium">
                 Total Stream Allocation:{" "}
               </span>
-              <span className="text-green-400 font-semibold">
+              <span className="font-semibold text-green-400">
                 {(() => {
-                  const totalPercentage = streamFields.reduce(
-                    (total, _, index) => {
-                      const percentage =
-                        Number(
-                          form.watch(`allocation.streams.${index}.percentage`),
-                        ) || 0;
-                      return total + percentage;
-                    },
-                    0,
-                  );
+                  if (
+                    !isAccountConnected ||
+                    !selectedAccount?.address ||
+                    !accountStreams ||
+                    accountStreams.isLoading ||
+                    accountStreams.isError
+                  ) {
+                    return "calculating...";
+                  }
 
-                  return calculateEmissionValue(
-                    totalPercentage,
-                    accountEmissions,
-                    isAccountConnected,
-                    selectedAccount?.address,
-                  );
-                })()}
+                  // Calculate total from individual streams that are configured
+                  let totalStreamCapacity = 0;
+                  let totalAllocated = 0;
+
+                  streamFields.forEach((_, index) => {
+                    const streamId = form.watch(
+                      `allocation.streams.${index}.streamId`,
+                    );
+                    const percentage =
+                      Number(
+                        form.watch(`allocation.streams.${index}.percentage`),
+                      ) || 0;
+
+                    if (streamId) {
+                      const stream = accountStreams.incoming.streams.find(
+                        (s) => s.streamId === streamId,
+                      );
+                      if (stream) {
+                        const streamCapacity = stream.tokensPerWeek.toNumber();
+                        totalStreamCapacity += streamCapacity;
+                        totalAllocated += (streamCapacity * percentage) / 100;
+                      }
+                    }
+                  });
+
+                  return `${totalAllocated.toFixed(2)}/${totalStreamCapacity.toFixed(2)} TORUS/week`;
+                })()}{" "}
               </span>
             </div>
           </div>
