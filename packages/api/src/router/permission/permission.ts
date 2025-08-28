@@ -1,7 +1,10 @@
 import type { TRPCRouterRecord } from "@trpc/server";
 import { z } from "zod";
 
-import { queryEmissionPermissions } from "@torus-network/sdk/chain";
+import {
+  queryStreamPermissions,
+  type StreamContract,
+} from "@torus-network/sdk/chain";
 import { SS58_SCHEMA } from "@torus-network/sdk/types";
 import type { RemAmount } from "@torus-network/torus-utils/torus/token";
 
@@ -937,7 +940,7 @@ export const permissionRouter = {
       const api = await ctx.wsAPI;
 
       const [permissionsError, emissionPermissions] =
-        await queryEmissionPermissions(api, (permission) => {
+        await queryStreamPermissions(api, (permission: StreamContract) => {
           return permission.scope.recipients.has(input.accountId);
         });
 
