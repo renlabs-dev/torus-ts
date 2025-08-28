@@ -1,14 +1,12 @@
 "use client";
 
-import type { FormEvent } from "react";
-import { useState } from "react";
-
-import { SearchIcon } from "lucide-react";
-import { useRouter } from "next/navigation";
-
 import { Button } from "@torus-ts/ui/components/button";
 import { Input } from "@torus-ts/ui/components/input";
 import { Label } from "@torus-ts/ui/components/label";
+import { SearchIcon } from "lucide-react";
+import { useRouter } from "next/navigation";
+import type { FormEvent } from "react";
+import { useState } from "react";
 
 interface FilterProps {
   defaultValue?: string;
@@ -77,8 +75,7 @@ export const Filter = ({
         <div className="flex w-full items-center gap-2">
           <Label
             htmlFor="search-bar"
-            className="rounded-radius flex w-full max-w-sm flex-1 items-center justify-center border
-              bg-field-background pl-3"
+            className="rounded-radius bg-field-background flex w-full max-w-sm flex-1 items-center justify-center border pl-3"
           >
             <SearchIcon size={16} className="text-muted-foreground" />
             <Input

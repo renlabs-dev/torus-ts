@@ -1,7 +1,5 @@
 "use client";
 
-import { useState } from "react";
-import { Download, FileText, FileSpreadsheet } from "lucide-react";
 import { Button } from "@torus-ts/ui/components/button";
 import {
   DropdownMenu,
@@ -16,6 +14,8 @@ import {
   exportTransactionsAsJSON,
   getAllTransactionsForWallet,
 } from "~/utils/export-transactions";
+import { Download, FileSpreadsheet, FileText } from "lucide-react";
+import { useState } from "react";
 
 interface TransactionExportProps {
   walletAddress: string | undefined;
@@ -66,7 +66,7 @@ export function TransactionExport({
         disabled
         title="No transactions to export"
       >
-        <Download className="h-4 w-4 mr-2" />
+        <Download className="mr-2 h-4 w-4" />
         Export
       </Button>
     );
@@ -76,17 +76,17 @@ export function TransactionExport({
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="outline" size="sm" disabled={disabled ?? isExporting}>
-          <Download className="h-4 w-4 mr-2" />
+          <Download className="mr-2 h-4 w-4" />
           Export
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="z-[90]">
         <DropdownMenuItem onClick={() => handleExport("csv")}>
-          <FileSpreadsheet className="h-4 w-4 mr-2" />
+          <FileSpreadsheet className="mr-2 h-4 w-4" />
           Export as CSV
         </DropdownMenuItem>
         <DropdownMenuItem onClick={() => handleExport("json")}>
-          <FileText className="h-4 w-4 mr-2" />
+          <FileText className="mr-2 h-4 w-4" />
           Export as JSON
         </DropdownMenuItem>
       </DropdownMenuContent>

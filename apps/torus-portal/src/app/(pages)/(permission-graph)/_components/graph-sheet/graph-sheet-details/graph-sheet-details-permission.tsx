@@ -1,5 +1,17 @@
-import { useMemo } from "react";
-
+import { smallAddress } from "@torus-network/torus-utils/torus/address";
+import { Badge } from "@torus-ts/ui/components/badge";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@torus-ts/ui/components/card";
+import { Separator } from "@torus-ts/ui/components/separator";
+import { AddressWithAgent } from "~/app/_components/address-with-agent";
+import { useMultipleAccountEmissions } from "~/hooks/use-multiple-account-emissions";
+import { calculateEmissionValue } from "~/utils/calculate-emission-value";
+import { ShortenedCapabilityPath } from "~/utils/capability-path";
 import {
   AlertCircle,
   Calendar,
@@ -13,24 +25,7 @@ import {
   User,
   UserCheck,
 } from "lucide-react";
-
-import { smallAddress } from "@torus-network/torus-utils/torus/address";
-
-import { Badge } from "@torus-ts/ui/components/badge";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@torus-ts/ui/components/card";
-import { Separator } from "@torus-ts/ui/components/separator";
-
-import { AddressWithAgent } from "~/app/_components/address-with-agent";
-import { useMultipleAccountEmissions } from "~/hooks/use-multiple-account-emissions";
-import { calculateEmissionValue } from "~/utils/calculate-emission-value";
-import { ShortenedCapabilityPath } from "~/utils/capability-path";
-
+import { useMemo } from "react";
 import type {
   allPermissions,
   CustomGraphNode,
@@ -144,7 +139,7 @@ export function GraphSheetDetailsPermission({
         <CardHeader>
           <div className="flex items-center justify-between">
             <CardTitle className="flex items-center gap-2">
-              <Shield className="w-5 h-5" />
+              <Shield className="h-5 w-5" />
               AGENT Permission
             </CardTitle>
             <Badge
@@ -155,7 +150,7 @@ export function GraphSheetDetailsPermission({
               }
               className="flex items-center gap-1"
             >
-              <Layers className="w-3 h-3" />
+              <Layers className="h-3 w-3" />
               {formatScope(permissionData.permissionType)}
             </Badge>
           </div>
@@ -166,20 +161,20 @@ export function GraphSheetDetailsPermission({
         <CardContent className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <h4 className="font-medium mb-2 flex items-center gap-2">
-                <Hash className="w-4 h-4" />
+              <h4 className="mb-2 flex items-center gap-2 font-medium">
+                <Hash className="h-4 w-4" />
                 Permission ID
               </h4>
-              <p className="text-sm text-muted-foreground font-mono break-all">
+              <p className="text-muted-foreground break-all font-mono text-sm">
                 {permissionData.permissionId}
               </p>
             </div>
             <div>
-              <h4 className="font-medium mb-2 flex items-center gap-2">
-                <Key className="w-4 h-4" />
+              <h4 className="mb-2 flex items-center gap-2 font-medium">
+                <Key className="h-4 w-4" />
                 Scope
               </h4>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-muted-foreground text-sm">
                 {permissionData.scope}
               </p>
             </div>
@@ -187,11 +182,11 @@ export function GraphSheetDetailsPermission({
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <h4 className="font-medium mb-2 flex items-center gap-2">
+              <h4 className="mb-2 flex items-center gap-2 font-medium">
                 {isIndefinite ? (
-                  <InfinityIcon className="w-4 h-4" />
+                  <InfinityIcon className="h-4 w-4" />
                 ) : (
-                  <Clock className="w-4 h-4" />
+                  <Clock className="h-4 w-4" />
                 )}
                 Duration
               </h4>
@@ -201,7 +196,7 @@ export function GraphSheetDetailsPermission({
                     variant="secondary"
                     className="flex items-center gap-1"
                   >
-                    <CheckCircle className="w-3 h-3 text-green-500" />
+                    <CheckCircle className="h-3 w-3 text-green-500" />
                     Indefinite
                   </Badge>
                 ) : (
@@ -213,9 +208,9 @@ export function GraphSheetDetailsPermission({
                       className="flex items-center gap-1"
                     >
                       {remainingBlocks > 0 ? (
-                        <CheckCircle className="w-3 h-3 text-green-500" />
+                        <CheckCircle className="h-3 w-3 text-green-500" />
                       ) : (
-                        <AlertCircle className="w-3 h-3 text-red-500" />
+                        <AlertCircle className="h-3 w-3 text-red-500" />
                       )}
                       {formatDuration(remainingBlocks, isIndefinite)}
                     </Badge>
@@ -225,11 +220,11 @@ export function GraphSheetDetailsPermission({
             </div>
             {permissionData.permissionType === "emission" && (
               <div>
-                <h4 className="font-medium mb-2 flex items-center gap-2">
-                  <CheckCircle className="w-4 h-4" />
+                <h4 className="mb-2 flex items-center gap-2 font-medium">
+                  <CheckCircle className="h-4 w-4" />
                   Executions
                 </h4>
-                <p className="text-sm text-muted-foreground">
+                <p className="text-muted-foreground text-sm">
                   {detailedPermission?.permissions.executionCount ?? 0} times
                 </p>
               </div>
@@ -237,8 +232,8 @@ export function GraphSheetDetailsPermission({
           </div>
 
           {detailedPermission?.permissions.createdAt && (
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <Calendar className="w-4 h-4" />
+            <div className="text-muted-foreground flex items-center gap-2 text-sm">
+              <Calendar className="h-4 w-4" />
               Created{" "}
               {new Date(
                 detailedPermission.permissions.createdAt,
@@ -252,7 +247,7 @@ export function GraphSheetDetailsPermission({
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <User className="w-5 h-5" />
+            <User className="h-5 w-5" />
             Delegator
           </CardTitle>
         </CardHeader>
@@ -261,7 +256,7 @@ export function GraphSheetDetailsPermission({
             address={permissionData.delegatorAccountId}
             className="mb-2"
           />
-          <p className="text-xs text-muted-foreground">
+          <p className="text-muted-foreground text-xs">
             Account that delegated this permission
           </p>
         </CardContent>
@@ -271,7 +266,7 @@ export function GraphSheetDetailsPermission({
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <UserCheck className="w-5 h-5" />
+              <UserCheck className="h-5 w-5" />
               Recipient
             </CardTitle>
           </CardHeader>
@@ -280,7 +275,7 @@ export function GraphSheetDetailsPermission({
               address={permissionData.recipientAccountId}
               className="mb-2"
             />
-            <p className="text-xs text-muted-foreground">
+            <p className="text-muted-foreground text-xs">
               Account that received this permission
             </p>
           </CardContent>
@@ -293,7 +288,7 @@ export function GraphSheetDetailsPermission({
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Layers className="w-5 h-5" />
+                <Layers className="h-5 w-5" />
                 Distribution Target{distributionTargets.length > 1 ? "s" : ""}
               </CardTitle>
             </CardHeader>
@@ -311,7 +306,7 @@ export function GraphSheetDetailsPermission({
                           {entry.streams.map((s, idx) => (
                             <span
                               key={`${entry.targetAccountId}-${s.streamId ?? "default"}-${idx}`}
-                              className="items-center flex gap-1"
+                              className="flex items-center gap-1"
                             >
                               {s.streamId && (
                                 <Badge variant="secondary">
@@ -353,14 +348,14 @@ export function GraphSheetDetailsPermission({
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Layers className="w-5 h-5" />
+                <Layers className="h-5 w-5" />
                 Stream Allocation
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="flex flex-col">
                 <div className="flex gap-2">
-                  <h4 className="font-medium mb-2 text-muted-foreground">
+                  <h4 className="text-muted-foreground mb-2 font-medium">
                     Stream ID:
                   </h4>
                   <p>
@@ -371,7 +366,7 @@ export function GraphSheetDetailsPermission({
                   </p>
                 </div>
                 <div className="flex gap-2">
-                  <h4 className="font-medium mb-2 text-muted-foreground">
+                  <h4 className="text-muted-foreground mb-2 font-medium">
                     Allocated Percentage:
                   </h4>
                   <p>
@@ -382,7 +377,7 @@ export function GraphSheetDetailsPermission({
                   </p>
                 </div>
                 <div className="flex gap-2">
-                  <h4 className="font-medium mb-2 text-muted-foreground">
+                  <h4 className="text-muted-foreground mb-2 font-medium">
                     Amount:
                   </h4>
                   <p className="text-green-500">
@@ -428,7 +423,7 @@ export function GraphSheetDetailsPermission({
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <Layers className="w-5 h-5" />
+                  <Layers className="h-5 w-5" />
                   Capability Path{paths.length > 1 ? "s" : ""}
                 </CardTitle>
               </CardHeader>

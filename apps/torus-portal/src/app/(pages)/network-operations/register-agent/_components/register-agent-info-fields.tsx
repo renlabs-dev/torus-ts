@@ -1,7 +1,4 @@
-import type { Control } from "react-hook-form";
-
 import { AGENT_SHORT_DESCRIPTION_MAX_LENGTH } from "@torus-network/sdk/metadata";
-
 import {
   FormControl,
   FormField,
@@ -11,7 +8,7 @@ import {
 } from "@torus-ts/ui/components/form";
 import { Input } from "@torus-ts/ui/components/input";
 import { Textarea } from "@torus-ts/ui/components/text-area";
-
+import type { Control } from "react-hook-form";
 import type { RegisterAgentFormData } from "./register-agent-schema";
 
 interface RegisterAgentInfoTabProps {
@@ -30,7 +27,7 @@ export function RegisterAgentInfoFields({
           <FormItem>
             <FormLabel>
               API URL{" "}
-              <span className="text-sm text-muted-foreground">(Optional)</span>
+              <span className="text-muted-foreground text-sm">(Optional)</span>
             </FormLabel>
             <FormControl>
               <Input
@@ -68,7 +65,7 @@ export function RegisterAgentInfoFields({
         control={control}
         name="shortDescription"
         render={({ field }) => (
-          <FormItem className="flex flex-col max-w-3xl">
+          <FormItem className="flex max-w-3xl flex-col">
             <FormLabel>Introduction</FormLabel>
             <FormControl>
               <Textarea
@@ -91,7 +88,7 @@ export function RegisterAgentInfoFields({
           <FormItem className="flex flex-col">
             <FormLabel>
               Agent Description / Documentation{" "}
-              <span className="text-sm text-muted-foreground">(Optional)</span>
+              <span className="text-muted-foreground text-sm">(Optional)</span>
             </FormLabel>
             <FormControl>
               <Textarea

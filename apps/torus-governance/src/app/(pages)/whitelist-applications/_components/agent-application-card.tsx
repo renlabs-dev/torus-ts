@@ -2,7 +2,6 @@
 
 import type { AgentApplication } from "@torus-network/sdk/chain";
 import type { SS58Address } from "@torus-network/sdk/types";
-
 import { AgentActivityLabel } from "../../../_components/agent-application/agent-activity-label";
 import type { AgentApplicationVoteType } from "../../../_components/agent-application/agent-application-vote-label";
 import { AgentApplicationVoteLabel } from "../../../_components/agent-application/agent-application-vote-label";

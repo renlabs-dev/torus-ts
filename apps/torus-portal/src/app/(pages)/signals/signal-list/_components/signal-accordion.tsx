@@ -1,7 +1,5 @@
 "use client";
 
-import { Check, Radio, Trash2 } from "lucide-react";
-
 import {
   Accordion,
   AccordionContent,
@@ -11,9 +9,9 @@ import {
 import { Badge } from "@torus-ts/ui/components/badge";
 import { Button } from "@torus-ts/ui/components/button";
 import { MarkdownView } from "@torus-ts/ui/components/markdown-view";
-
 import { useMultipleAccountEmissions } from "~/hooks/use-multiple-account-emissions";
 import { calculateEmissionValue } from "~/utils/calculate-emission-value";
+import { Check, Radio, Trash2 } from "lucide-react";
 
 interface SignalWithMetadata {
   id: number;
@@ -73,15 +71,15 @@ export default function SignalAccordion({
     switch (variant) {
       case "fulfilled":
         return (
-          <Badge className="bg-green-500 text-white gap-1 mr-2">
-            <Check className="w-3 h-3" />
+          <Badge className="mr-2 gap-1 bg-green-500 text-white">
+            <Check className="h-3 w-3" />
             Fulfilled
           </Badge>
         );
       case "deleted":
         return (
-          <Badge className="bg-red-500 text-white gap-1 mr-2">
-            <Trash2 className="w-3 h-3" />
+          <Badge className="mr-2 gap-1 bg-red-500 text-white">
+            <Trash2 className="h-3 w-3" />
             Deleted
           </Badge>
         );
@@ -99,12 +97,12 @@ export default function SignalAccordion({
           className={getItemClassName()}
         >
           <AccordionTrigger className="flex items-center justify-between">
-            <div className="flex items-center gap-2 text-left w-full">
+            <div className="flex w-full items-center gap-2 text-left">
               <Badge>#{index + 1}</Badge>
 
               <div>
                 <h3 className="font-medium">{signal.title}</h3>
-                <p className="text-sm text-muted-foreground">
+                <p className="text-muted-foreground text-sm">
                   {signal.agentName}
                 </p>
               </div>
@@ -112,7 +110,7 @@ export default function SignalAccordion({
             <div className="flex">
               {renderStatusBadge()}
               {signal.isCurrentUser && (
-                <Badge className="text-nowrap mr-2 sm:block hidden">
+                <Badge className="mr-2 hidden text-nowrap sm:block">
                   Your Signal
                 </Badge>
               )}
@@ -120,10 +118,10 @@ export default function SignalAccordion({
           </AccordionTrigger>
           <AccordionContent>
             <div className="space-y-4">
-              <div className="flex md:flex-row flex-col gap-2 items-center justify-between">
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-4 flex-1">
+              <div className="flex flex-col items-center justify-between gap-2 md:flex-row">
+                <div className="grid flex-1 grid-cols-2 gap-4 md:grid-cols-3">
                   <div>
-                    <p className="text-sm text-muted-foreground">
+                    <p className="text-muted-foreground text-sm">
                       Agent Weight
                     </p>
                     <p className="text-xl font-semibold">
@@ -131,7 +129,7 @@ export default function SignalAccordion({
                     </p>
                   </div>
                   <div>
-                    <p className="text-sm text-muted-foreground">
+                    <p className="text-muted-foreground text-sm">
                       Proposed Allocation
                     </p>
                     <p className="text-xl font-semibold">
@@ -139,7 +137,7 @@ export default function SignalAccordion({
                     </p>
                   </div>
                   <div>
-                    <p className="text-sm text-muted-foreground">
+                    <p className="text-muted-foreground text-sm">
                       Emission Value
                     </p>
                     <p className="text-lg font-semibold text-green-400">
@@ -155,7 +153,7 @@ export default function SignalAccordion({
               </div>
 
               {signal.description && (
-                <div className="pt-4 bg-muted/50 rounded-md p-4 border">
+                <div className="bg-muted/50 rounded-md border p-4 pt-4">
                   <MarkdownView source={signal.description} />
                 </div>
               )}
@@ -164,8 +162,8 @@ export default function SignalAccordion({
                 signal.github ??
                 signal.telegram ??
                 signal.twitter) && (
-                <div className="pt-4 border-t">
-                  <p className="text-sm text-muted-foreground mb-2">Contact</p>
+                <div className="border-t pt-4">
+                  <p className="text-muted-foreground mb-2 text-sm">Contact</p>
                   <div className="flex flex-wrap gap-2">
                     {signal.discord && (
                       <Badge variant="secondary" className="text-xs">
@@ -192,7 +190,7 @@ export default function SignalAccordion({
               )}
 
               {signal.isCurrentUser && variant === "active" && (
-                <div className="flex gap-2 w-full justify-end border-t border-border pt-2">
+                <div className="border-border flex w-full justify-end gap-2 border-t pt-2">
                   {onFulfill && (
                     <Button
                       variant="default"
@@ -204,7 +202,7 @@ export default function SignalAccordion({
                       disabled={isFulfillingSignal}
                       className="bg-green-500 hover:bg-green-600"
                     >
-                      <Radio className="w-4 h-4" />
+                      <Radio className="h-4 w-4" />
                       {isFulfillingSignal ? "Fulfilling..." : "Fulfill"}
                     </Button>
                   )}
@@ -218,7 +216,7 @@ export default function SignalAccordion({
                       }}
                       disabled={isDeletingSignal}
                     >
-                      <Trash2 className="w-4 h-4" />
+                      <Trash2 className="h-4 w-4" />
                       {isDeletingSignal ? "Deleting..." : "Delete"}
                     </Button>
                   )}

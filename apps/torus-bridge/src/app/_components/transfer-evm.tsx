@@ -1,20 +1,5 @@
 "use client";
 
-import type { CSSProperties } from "react";
-import { useCallback, useEffect, useMemo, useState } from "react";
-
-import { ArrowLeftRight } from "lucide-react";
-import Image from "next/image";
-import { useRouter, useSearchParams } from "next/navigation";
-import type { Config } from "wagmi";
-import {
-  useAccount,
-  useBalance,
-  useClient,
-  useSwitchChain,
-  useWalletClient,
-} from "wagmi";
-
 import { transferAllowDeath } from "@torus-network/sdk/chain";
 import {
   convertH160ToSS58,
@@ -25,7 +10,6 @@ import type { SS58Address } from "@torus-network/sdk/types";
 import { smallAddress } from "@torus-network/torus-utils/torus/address";
 import { toNano } from "@torus-network/torus-utils/torus/token";
 import { tryAsync, trySync } from "@torus-network/torus-utils/try-catch";
-
 import { useFreeBalance } from "@torus-ts/query-provider/hooks";
 import { useTorus } from "@torus-ts/torus-provider";
 import type { TransactionResult } from "@torus-ts/torus-provider/types";
@@ -41,12 +25,24 @@ import { Input } from "@torus-ts/ui/components/input";
 import { Label } from "@torus-ts/ui/components/label";
 import { TransactionStatus } from "@torus-ts/ui/components/transaction-status";
 import { useToast } from "@torus-ts/ui/hooks/use-toast";
-
 import { getChainValuesOnEnv } from "~/config";
 import { initWagmi } from "~/context/evm-wallet-provider";
 import { env } from "~/env";
 import { useMultiProvider } from "~/hooks/use-multi-provider";
 import { updateSearchParams } from "~/utils/query-params";
+import { ArrowLeftRight } from "lucide-react";
+import Image from "next/image";
+import { useRouter, useSearchParams } from "next/navigation";
+import type { CSSProperties } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import type { Config } from "wagmi";
+import {
+  useAccount,
+  useBalance,
+  useClient,
+  useSwitchChain,
+  useWalletClient,
+} from "wagmi";
 
 const DEFAULT_MODE = "bridge";
 
@@ -513,8 +509,7 @@ function ChainField({ label, chainName }: ChainFieldProps) {
         size="lg"
         variant="outline"
         disabled={true}
-        className="hover:bg-background flex w-full items-center justify-between p-2 px-0
-          hover:cursor-default disabled:opacity-100"
+        className="hover:bg-background flex w-full items-center justify-between p-2 px-0 hover:cursor-default disabled:opacity-100"
       >
         <div className="max-w-[1.4rem] border-r p-[0.65em] sm:max-w-fit">
           <Image

@@ -1,7 +1,17 @@
 "use client";
 
-import * as React from "react";
-
+import { Icons } from "@torus-ts/ui/components/icons";
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarFooter,
+  SidebarHeader,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+} from "@torus-ts/ui/components/sidebar";
+import { getLinks } from "@torus-ts/ui/lib/data";
+import { env } from "~/env";
 import {
   CircleArrowOutUpRight,
   CircleFadingPlus,
@@ -16,21 +26,7 @@ import {
   Zap,
 } from "lucide-react";
 import Link from "next/link";
-
-import { Icons } from "@torus-ts/ui/components/icons";
-import {
-  Sidebar,
-  SidebarContent,
-  SidebarFooter,
-  SidebarHeader,
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
-} from "@torus-ts/ui/components/sidebar";
-import { getLinks } from "@torus-ts/ui/lib/data";
-
-import { env } from "~/env";
-
+import * as React from "react";
 import { NavMain } from "./nav-main";
 import { NavSocials } from "./nav-socials";
 
@@ -161,10 +157,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           <SidebarMenuItem>
             <SidebarMenuButton size="lg" asChild>
               <Link href="/">
-                <div
-                  className="flex aspect-square size-8 items-center justify-center rounded-lg
-                    text-sidebar-primary-foreground"
-                >
+                <div className="text-sidebar-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg">
                   <Icons.Logo className="size-5" />
                 </div>
                 <div className="grid flex-1 text-left text-base leading-tight">

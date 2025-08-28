@@ -1,9 +1,7 @@
-import type { TRPCRouterRecord } from "@trpc/server";
-import { z } from "zod";
-
 import { and, eq, gte, inArray, isNull, max } from "@torus-ts/db";
 import { agentSchema, computedAgentWeightSchema } from "@torus-ts/db/schema";
-
+import type { TRPCRouterRecord } from "@trpc/server";
+import { z } from "zod";
 import { publicProcedure } from "../../trpc";
 
 export const computedAgentWeightRouter = {

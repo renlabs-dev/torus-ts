@@ -1,5 +1,3 @@
-import { useMemo } from "react";
-
 import { CONSTANTS } from "@torus-network/sdk/constants";
 import type {
   RemAmount,
@@ -10,13 +8,13 @@ import {
   makeTorAmount,
   safeToRems,
 } from "@torus-network/torus-utils/torus/token";
-
 import {
   useIncentivesRatio,
   useRecyclingPercentage,
   useTreasuryEmissionFee,
 } from "@torus-ts/query-provider/hooks";
 import { useTorus } from "@torus-ts/torus-provider";
+import { useMemo } from "react";
 
 interface TokensPerWeekResult {
   isLoading: boolean;

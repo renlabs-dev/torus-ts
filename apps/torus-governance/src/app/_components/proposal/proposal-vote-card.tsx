@@ -1,17 +1,11 @@
 "use client";
 
-import { useState } from "react";
-
 import type {
   QueryObserverResult,
   RefetchOptions,
 } from "@tanstack/react-query";
-import { TicketX } from "lucide-react";
-import { match } from "rustie";
-
 import type { ProposalStatus, VoteWithStake } from "@torus-network/sdk/chain";
 import { removeVoteProposal, voteProposal } from "@torus-network/sdk/chain";
-
 import { useTorus } from "@torus-ts/torus-provider";
 import { useSendTransaction } from "@torus-ts/torus-provider/use-send-transaction";
 import { Button } from "@torus-ts/ui/components/button";
@@ -19,10 +13,11 @@ import {
   ToggleGroup,
   ToggleGroupItem,
 } from "@torus-ts/ui/components/toggle-group";
-
 import { useGovernance } from "~/context/governance-provider";
 import type { VoteStatus } from "~/utils/types";
-
+import { TicketX } from "lucide-react";
+import { useState } from "react";
+import { match } from "rustie";
 import { GovernanceStatusNotOpen } from "../governance-status-not-open";
 import { VotePowerSettings } from "./vote-power-settings";
 
@@ -57,8 +52,7 @@ const AlreadyVotedCardContent = (props: {
       {getVotedText(voted)}
       <Button
         variant="outline"
-        className="flex w-full items-center justify-between text-nowrap px-4 py-2.5 text-center
-          font-semibold text-white transition duration-200"
+        className="flex w-full items-center justify-between text-nowrap px-4 py-2.5 text-center font-semibold text-white transition duration-200"
         onClick={handleRemoveVote}
         type="button"
         disabled={isPending || isSigning}
@@ -111,8 +105,7 @@ const VoteCardFunctionsContent = (props: {
               key={option}
               variant="outline"
               value={option}
-              className={`w-full capitalize ${isPending ? "cursor-not-allowed" : ""}
-              ${option === vote ? "border-white" : "border-muted bg-card"}`}
+              className={`w-full capitalize ${isPending ? "cursor-not-allowed" : ""} ${option === vote ? "border-white" : "border-muted bg-card"}`}
               disabled={isPending || isSigning}
             >
               {option.toLocaleLowerCase()}
@@ -122,8 +115,7 @@ const VoteCardFunctionsContent = (props: {
 
         <Button
           variant="outline"
-          className={`w-full
-            ${vote === "UNVOTED" || isPending ? "cursor-not-allowed text-gray-400" : ""} `}
+          className={`w-full ${vote === "UNVOTED" || isPending ? "cursor-not-allowed text-gray-400" : ""} `}
           disabled={
             vote === "UNVOTED" || isPending || isSigning || !isPowerUser
           }

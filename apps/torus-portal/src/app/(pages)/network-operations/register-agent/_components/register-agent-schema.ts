@@ -1,7 +1,6 @@
-import { z } from "zod";
-
 import { AGENT_SHORT_DESCRIPTION_MAX_LENGTH } from "@torus-network/sdk/metadata";
 import { agentNameField } from "@torus-network/sdk/types";
+import { z } from "zod";
 
 export const REGISTER_AGENT_SCHEMA = z.object({
   agentApiUrl: z.string().optional(),

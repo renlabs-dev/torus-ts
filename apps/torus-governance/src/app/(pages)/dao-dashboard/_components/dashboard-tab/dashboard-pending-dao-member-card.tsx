@@ -1,14 +1,14 @@
 "use client";
 
-import { UserRound } from "lucide-react";
-import Link from "next/link";
-import { api } from "~/trpc/react";
-import { CardSkeleton } from "~/app/_components/dao-card/components/card-skeleton";
+import { smallAddress } from "@torus-network/torus-utils/torus/address";
 import { ContentNotFound } from "@torus-ts/ui/components/content-not-found";
 import { ScrollArea } from "@torus-ts/ui/components/scroll-area";
-import { smallAddress } from "@torus-network/torus-utils/torus/address";
-import DashboardRedirectCard from "./dashboard-redirect-card";
+import { CardSkeleton } from "~/app/_components/dao-card/components/card-skeleton";
 import { ScrollFadeEffect } from "~/app/_components/scroll-fade-effect";
+import { api } from "~/trpc/react";
+import { UserRound } from "lucide-react";
+import Link from "next/link";
+import DashboardRedirectCard from "./dashboard-redirect-card";
 
 export default function DashboardPendingDaoMemberCard() {
   const { data: pendingCandidates, isLoading } =
@@ -25,7 +25,7 @@ export default function DashboardPendingDaoMemberCard() {
       icon={UserRound}
     >
       <div className="relative">
-        <ScrollArea className="sm:max-h-[7.8rem] h-48 max-h-48">
+        <ScrollArea className="h-48 max-h-48 sm:max-h-[7.8rem]">
           <div className="flex flex-col">
             {isLoading ? (
               <div className="flex flex-col gap-3">
@@ -39,7 +39,7 @@ export default function DashboardPendingDaoMemberCard() {
                 {pendingCandidates?.map((candidate) => (
                   <div
                     key={candidate.userKey}
-                    className="border-b border-border py-2 hover:bg-accent px-1"
+                    className="border-border hover:bg-accent border-b px-1 py-2"
                   >
                     <Link
                       href="/dao-portal"
@@ -49,7 +49,7 @@ export default function DashboardPendingDaoMemberCard() {
                         <span className="font-medium">
                           {candidate.userName ?? "Unknown User"}
                         </span>
-                        <span className="text-sm text-muted-foreground">
+                        <span className="text-muted-foreground text-sm">
                           {smallAddress(candidate.userKey, 10)}
                         </span>
                       </div>

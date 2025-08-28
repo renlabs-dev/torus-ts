@@ -1,14 +1,11 @@
 "use client";
 
-import type { JSX } from "react";
-import React from "react";
-
+import { smallAddress } from "@torus-network/torus-utils/torus";
+import { AddressWithAgent } from "~/app/_components/address-with-agent";
 import type { LucideIcon } from "lucide-react";
 import { HandCoins, Layers, UserPlus } from "lucide-react";
-
-import { smallAddress } from "@torus-network/torus-utils/torus";
-
-import { AddressWithAgent } from "~/app/_components/address-with-agent";
+import type { JSX } from "react";
+import React from "react";
 
 interface IconConfig {
   icon: LucideIcon;
@@ -41,7 +38,7 @@ export function GraphSheetDetailsLinkButtons({
 }: LinkButtonsProps): JSX.Element {
   if (!grantor_key || !grantee_key) {
     return (
-      <div className="flex justify-center items-center gap-2 text-sm text-gray-400 font-mono">
+      <div className="flex items-center justify-center gap-2 font-mono text-sm text-gray-400">
         <span>No details available</span>
       </div>
     );
@@ -98,7 +95,7 @@ export function GraphSheetDetailsLinkButtons({
   };
 
   return (
-    <div className="flex flex-wrap justify-start items-center gap-2 text-sm text-gray-400">
+    <div className="flex flex-wrap items-center justify-start gap-2 text-sm text-gray-400">
       <ShortenedDetailsDisplay
         iconConfig={defaultGrantorIcon}
         address={grantor_key}

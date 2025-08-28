@@ -1,15 +1,11 @@
-import { useEffect, useState } from "react";
-
 import type { ApiPromise } from "@polkadot/api";
 import type { InjectedExtension } from "@polkadot/extension-inject/types";
-
 import { chainErr } from "@torus-network/torus-utils/error";
 import type { Result } from "@torus-network/torus-utils/result";
 import { makeErr, makeOk } from "@torus-network/torus-utils/result";
 import { tryAsync } from "@torus-network/torus-utils/try-catch";
-
 import { toast } from "@torus-ts/ui/hooks/use-toast";
-
+import { useEffect, useState } from "react";
 import type { InjectedAccountWithMeta } from "../torus-provider";
 import { getMerkleizedMetadata, updateMetadata } from "../utils/chain-metadata";
 

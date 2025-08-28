@@ -32,10 +32,7 @@ export default async function AgentApplicationView({
           </Link>
         </Button>
 
-        <div
-          className="flex h-full w-full flex-col justify-between divide-gray-500 text-white
-            lg:flex-row"
-        >
+        <div className="flex h-full w-full flex-col justify-between divide-gray-500 text-white lg:flex-row">
           <AgentApplicationExpandedView paramId={Number(id)} />
         </div>
       </div>

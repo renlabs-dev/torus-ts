@@ -1,15 +1,13 @@
-import type { ReactNode } from "react";
-
 import { Separator } from "@torus-ts/ui/components/separator";
 import {
   SidebarInset,
   SidebarProvider,
   SidebarTrigger,
 } from "@torus-ts/ui/components/sidebar";
-
 import { PortalWalletDropdown } from "~/app/_components/portal-wallet-dropdown";
 import { AppSidebar } from "~/app/_components/sidebar/app-sidebar";
 import { SidebarBreadcrumb } from "~/app/_components/sidebar/sidebar-breadcrumb";
+import type { ReactNode } from "react";
 
 export default function SidebarContainer({
   children,
@@ -20,11 +18,8 @@ export default function SidebarContainer({
     <SidebarProvider defaultOpen={false}>
       <AppSidebar />
       <SidebarInset>
-        <header
-          className="sticky top-0 flex h-16 shrink-0 items-center gap-2 justify-between z-50
-            sm:bg-transparent bg-background"
-        >
-          <div className="flex items-center gap-2 px-4 w-full">
+        <header className="bg-background sticky top-0 z-50 flex h-16 shrink-0 items-center justify-between gap-2 sm:bg-transparent">
+          <div className="flex w-full items-center gap-2 px-4">
             <SidebarTrigger className="-ml-1" />
             <Separator
               orientation="vertical"
@@ -32,7 +27,7 @@ export default function SidebarContainer({
             />
             <SidebarBreadcrumb />
           </div>
-          <div className="flex items-center px-2 sm:px-4 w-fit text-nowrap">
+          <div className="flex w-fit items-center text-nowrap px-2 sm:px-4">
             <PortalWalletDropdown />
           </div>
         </header>

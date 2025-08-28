@@ -1,10 +1,9 @@
 "use client";
-import { useState } from "react";
 
 import { BasicLogger } from "@torus-network/torus-utils/logger";
 import { tryAsync } from "@torus-network/torus-utils/try-catch";
-
 import { useToast } from "@torus-ts/ui/hooks/use-toast";
+import { useState } from "react";
 
 // Create a dedicated logger for file upload operations
 const log = new BasicLogger({ name: "file-uploader-torus-governance" });

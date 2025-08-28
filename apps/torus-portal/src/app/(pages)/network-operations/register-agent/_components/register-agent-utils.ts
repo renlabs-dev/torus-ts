@@ -2,9 +2,7 @@ import { AGENT_METADATA_SCHEMA } from "@torus-network/sdk/metadata";
 import type { CID } from "@torus-network/torus-utils/ipfs";
 import { cidToIpfsUri, PIN_FILE_RESULT } from "@torus-network/torus-utils/ipfs";
 import { tryAsync } from "@torus-network/torus-utils/try-catch";
-
 import type { PinFileOnPinataResponse } from "~/app/api/files/route";
-
 import type { RegisterAgentFormData } from "./register-agent-schema";
 
 // TODO: remove duplicate

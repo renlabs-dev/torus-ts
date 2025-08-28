@@ -2,7 +2,6 @@ import type { ApiPromise } from "@polkadot/api";
 import type { Bytes, Option, u16 } from "@polkadot/types";
 import { BTreeMap, BTreeSet } from "@polkadot/types";
 import type { AccountId32, H256, Percent } from "@polkadot/types/interfaces";
-
 import type { SS58Address } from "../../types/index.js";
 import type {
   DistributionControl,

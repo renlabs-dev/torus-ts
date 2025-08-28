@@ -2,8 +2,6 @@ import type { ApiPromise } from "@polkadot/api";
 import { Keyring } from "@polkadot/api";
 import type { KeyringPair } from "@polkadot/keyring/types";
 import { cryptoWaitReady } from "@polkadot/util-crypto";
-import { z } from "zod";
-
 import type { LastBlock } from "@torus-network/sdk/chain";
 import {
   queryKeyStakedBy,
@@ -15,7 +13,7 @@ import type { SS58Address } from "@torus-network/sdk/types";
 import { checkSS58 } from "@torus-network/sdk/types";
 import { BasicLogger } from "@torus-network/torus-utils/logger";
 import { tryAsync } from "@torus-network/torus-utils/try-catch";
-
+import { z } from "zod";
 import { sleep } from "../common";
 import { parseEnvOrExit } from "../common/env";
 import type { AgentWeight } from "../db";

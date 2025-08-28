@@ -1,14 +1,12 @@
-import { z } from "zod";
-
 import { isSS58 } from "@torus-network/sdk/types";
 import { formatToken } from "@torus-network/torus-utils/torus/token";
-
 import {
   doesNotExceedMaxStake,
   isAboveExistentialDeposit,
   isAmountPositive,
   meetsMinimumStake,
 } from "~/utils/validators";
+import { z } from "zod";
 
 export const createStakeActionFormSchema = (
   minAllowedStakeData: bigint,

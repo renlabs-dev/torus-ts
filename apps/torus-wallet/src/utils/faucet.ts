@@ -3,7 +3,6 @@ import type { VoidFn } from "@polkadot/api/types";
 import type { DispatchError } from "@polkadot/types/interfaces";
 import { u8aToHex } from "@polkadot/util";
 import { decodeAddress } from "@polkadot/util-crypto";
-
 import { queryLastBlock } from "@torus-network/sdk/chain";
 
 interface WorkResult {

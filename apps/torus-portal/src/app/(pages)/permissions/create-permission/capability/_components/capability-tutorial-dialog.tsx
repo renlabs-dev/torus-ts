@@ -1,9 +1,5 @@
 "use client";
 
-import React from "react";
-
-import { CheckCircle, Infinity as InfinityIcon, Settings } from "lucide-react";
-
 import {
   AlertDialog,
   AlertDialogAction,
@@ -13,8 +9,9 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@torus-ts/ui/components/alert-dialog";
-
 import { useCapabilityTutorialStore } from "~/stores/capabilityTutorialStore";
+import { CheckCircle, Infinity as InfinityIcon, Settings } from "lucide-react";
+import React from "react";
 
 const capabilityTutorialData = {
   "1": {
@@ -23,20 +20,14 @@ const capabilityTutorialData = {
     steps: [
       <div key="own-paths" className="flex items-center gap-2">
         Your own paths:
-        <div
-          className="text-center px-1.5 py-1.5 rounded-sm text-xs bg-green-600 text-white border
-            border-border"
-        >
+        <div className="border-border rounded-sm border bg-green-600 px-1.5 py-1.5 text-center text-xs text-white">
           <InfinityIcon size={11} />
         </div>
         unlimited instances available
       </div>,
       <div key="delegated-paths" className="flex items-center gap-2">
         Delegated paths:
-        <div
-          className="text-center px-2 py-1 rounded-sm text-xs bg-blue-600 text-white border
-            border-border"
-        >
+        <div className="border-border rounded-sm border bg-blue-600 px-2 py-1 text-center text-xs text-white">
           5
         </div>
         limited to instances you received
@@ -109,7 +100,7 @@ export function CapabilityTutorialDialog() {
           )}
         </div>
         <div className="border-t pt-3">
-          <div className="text-sm text-muted-foreground">
+          <div className="text-muted-foreground text-sm">
             Need more help? Check out the{" "}
             <a
               href="http://docs.torus.network/how-to-guides/builders/capability-permission/"

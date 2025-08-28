@@ -1,7 +1,4 @@
-import { Calendar, Check, Percent, User, Users } from "lucide-react";
-
 import { smallAddress } from "@torus-network/torus-utils/torus/address";
-
 import { Badge } from "@torus-ts/ui/components/badge";
 import {
   Card,
@@ -11,7 +8,7 @@ import {
   CardTitle,
 } from "@torus-ts/ui/components/card";
 import { MarkdownView } from "@torus-ts/ui/components/markdown-view";
-
+import { Calendar, Check, Percent, User, Users } from "lucide-react";
 import type { CustomGraphNode } from "../../permission-graph-types";
 
 interface SignalDetailsProps {
@@ -49,18 +46,18 @@ export function GraphSheetDetailsSignal({ selectedNode }: SignalDetailsProps) {
         <CardHeader>
           <div className="flex items-center justify-between">
             <CardTitle className="flex items-center gap-2">
-              <Users className="w-5 h-5" />
+              <Users className="h-5 w-5" />
               {signalData.title}
             </CardTitle>
             <div className="flex items-center gap-2">
               {signalData.fulfilled && (
-                <Badge className="bg-green-500 text-white gap-1">
-                  <Check className="w-3 h-3" />
+                <Badge className="gap-1 bg-green-500 text-white">
+                  <Check className="h-3 w-3" />
                   Fulfilled
                 </Badge>
               )}
               <Badge variant="secondary" className="flex items-center gap-1">
-                <Percent className="w-3 h-3" />
+                <Percent className="h-3 w-3" />
                 {signalData.proposedAllocation}
               </Badge>
             </div>
@@ -71,8 +68,8 @@ export function GraphSheetDetailsSignal({ selectedNode }: SignalDetailsProps) {
         </CardHeader>
         <CardContent className="space-y-4">
           <div>
-            <h4 className="font-medium mb-2">Description</h4>
-            <div className="text-sm text-muted-foreground max-w-none overflow-x-auto">
+            <h4 className="mb-2 font-medium">Description</h4>
+            <div className="text-muted-foreground max-w-none overflow-x-auto text-sm">
               <MarkdownView
                 source={signalData.description}
                 className="prose prose-sm dark:prose-invert max-w-none"
@@ -80,8 +77,8 @@ export function GraphSheetDetailsSignal({ selectedNode }: SignalDetailsProps) {
             </div>
           </div>
 
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <Calendar className="w-4 h-4" />
+          <div className="text-muted-foreground flex items-center gap-2 text-sm">
+            <Calendar className="h-4 w-4" />
             Created {new Date(signalData.createdAt).toLocaleDateString()}
           </div>
         </CardContent>
@@ -91,7 +88,7 @@ export function GraphSheetDetailsSignal({ selectedNode }: SignalDetailsProps) {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <User className="w-5 h-5" />
+            <User className="h-5 w-5" />
             Requesting Agent
           </CardTitle>
         </CardHeader>
@@ -101,7 +98,7 @@ export function GraphSheetDetailsSignal({ selectedNode }: SignalDetailsProps) {
               <p className="font-mono text-sm">
                 {smallAddress(signalData.agentKey)}
               </p>
-              <p className="text-xs text-muted-foreground">
+              <p className="text-muted-foreground text-xs">
                 Agent requesting this capability
               </p>
             </div>
@@ -128,12 +125,12 @@ export function GraphSheetDetailsSignal({ selectedNode }: SignalDetailsProps) {
                       href={`${social.prefix}${social.value}`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-sm text-primary hover:underline"
+                      className="text-primary text-sm hover:underline"
                     >
                       {social.value}
                     </a>
                   ) : (
-                    <span className="text-sm text-muted-foreground">
+                    <span className="text-muted-foreground text-sm">
                       {social.value}
                     </span>
                   )}

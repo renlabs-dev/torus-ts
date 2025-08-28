@@ -1,24 +1,19 @@
 "use client";
 
-import { useMemo } from "react";
-
-import { useRouter } from "next/navigation";
-
 import type { SS58Address } from "@torus-network/sdk/types";
 import { formatToken } from "@torus-network/torus-utils/torus/token";
 import { tryAsync } from "@torus-network/torus-utils/try-catch";
-
 import { useKeyStakedBy } from "@torus-ts/query-provider/hooks";
 import { useTorus } from "@torus-ts/torus-provider";
 import { Button } from "@torus-ts/ui/components/button";
 import { Label } from "@torus-ts/ui/components/label";
 import { useToast } from "@torus-ts/ui/hooks/use-toast";
-
 import { env } from "~/env";
 import { useDelegateAgentStore } from "~/stores/delegateAgentStore";
 import useSubmitStore from "~/stores/submitStore";
 import { api } from "~/trpc/react";
-
+import { useRouter } from "next/navigation";
+import { useMemo } from "react";
 import type { StatusConfig } from "./get-submit-status";
 import { StatusLabel } from "./status-label";
 
@@ -242,8 +237,7 @@ export function AllocationActions(props: MenuTriggerProps) {
         <div className="flex flex-row gap-2">
           <Button
             onClick={handleAutoCompletePercentage}
-            className="w-1/2 border-teal-500 bg-teal-500/20 font-bold text-teal-500
-              hover:bg-teal-500/30 hover:text-teal-500"
+            className="w-1/2 border-teal-500 bg-teal-500/20 font-bold text-teal-500 hover:bg-teal-500/30 hover:text-teal-500"
             disabled={totalPercentage === 100 || delegatedAgents.length === 0}
             variant="outline"
           >
@@ -252,8 +246,7 @@ export function AllocationActions(props: MenuTriggerProps) {
 
           <Button
             onClick={handleRemoveAllWeight}
-            className="w-1/2 border-rose-500 bg-rose-500/20 font-bold text-rose-500
-              hover:bg-rose-500/30 hover:text-rose-500"
+            className="w-1/2 border-rose-500 bg-rose-500/20 font-bold text-rose-500 hover:bg-rose-500/30 hover:text-rose-500"
             disabled={!hasItemsToClear}
             variant="outline"
           >
@@ -263,8 +256,7 @@ export function AllocationActions(props: MenuTriggerProps) {
         <Button
           onClick={handleSubmit}
           variant="outline"
-          className="w-full border-green-500 bg-green-500/20 font-bold text-green-500
-            hover:bg-green-500/30 hover:text-green-500"
+          className="w-full border-green-500 bg-green-500/20 font-bold text-green-500 hover:bg-green-500/30 hover:text-green-500"
           disabled={props.submitStatus.disabled || totalPercentage === 0}
           title="Submit Agents"
         >

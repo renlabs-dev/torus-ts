@@ -1,9 +1,9 @@
 "use client";
 
+import { AsciiRenderer } from "@react-three/drei";
+import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import type { JSX } from "react";
 import { useRef } from "react";
-import { Canvas, useFrame, useThree } from "@react-three/fiber";
-import { AsciiRenderer } from "@react-three/drei";
 import type { Mesh } from "three";
 
 export function TorusAnimation() {

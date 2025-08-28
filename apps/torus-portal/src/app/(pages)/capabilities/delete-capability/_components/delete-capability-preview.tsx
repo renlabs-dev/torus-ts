@@ -11,30 +11,30 @@ export function DeleteCapabilityPreview({
     <div className="space-y-4">
       <div className="space-y-2">
         <div className="text-sm font-medium">Deletion Preview:</div>
-        <div className="flex md:items-center text-sm flex-col sm:flex-row">
+        <div className="flex flex-col text-sm sm:flex-row md:items-center">
           {watchedSegment >= 2 ? (
             <>
               {watchedSegment > 0 && (
                 <>
-                  <span className="text-green-600 font-mono">
+                  <span className="font-mono text-green-600">
                     {selectedPath.path.slice(0, watchedSegment).join(".")}
                   </span>
                   <span className="text-muted-foreground">.</span>
                 </>
               )}
-              <span className="text-red-600 font-mono font-medium">
+              <span className="font-mono font-medium text-red-600">
                 {selectedPath.path.slice(watchedSegment).join(".")}
               </span>
             </>
           ) : (
-            <span className="text-green-600 font-mono">
+            <span className="font-mono text-green-600">
               {selectedPath.path.join(".")}
             </span>
           )}
         </div>
-        <div className="text-xs text-muted-foreground">
+        <div className="text-muted-foreground text-xs">
           <span className="text-green-600">■</span> Will remain |
-          <span className="text-red-600 ml-1">■</span> Will be deleted
+          <span className="ml-1 text-red-600">■</span> Will be deleted
         </div>
       </div>
     </div>

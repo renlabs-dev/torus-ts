@@ -1,12 +1,9 @@
-import { useCallback } from "react";
-
-import type { Node } from "@xyflow/react";
-
 import type {
   DelegationTreeManager,
   PermissionId,
 } from "@torus-network/sdk/chain";
-
+import type { Node } from "@xyflow/react";
+import { useCallback } from "react";
 import type { NamespacePathNodeData } from "../create-capability-flow-types";
 
 interface UsePermissionSelectHandlerProps {

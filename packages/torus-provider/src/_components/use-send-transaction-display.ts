@@ -1,10 +1,9 @@
 import type { ApiPromise } from "@polkadot/api";
-import type { Enum } from "rustie";
-import { match } from "rustie";
-
 import type { SbDispatchError, TxEvent } from "@torus-network/sdk/extrinsics";
 import type { HexH256 } from "@torus-network/sdk/types";
 import { trySync } from "@torus-network/torus-utils/try-catch";
+import type { Enum } from "rustie";
+import { match } from "rustie";
 
 // ==== Types (re-exported for use in display functions) ====
 

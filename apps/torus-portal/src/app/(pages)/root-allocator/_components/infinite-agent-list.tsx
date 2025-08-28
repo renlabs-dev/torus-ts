@@ -1,12 +1,9 @@
 "use client";
 
-import { useEffect, useRef } from "react";
-
 import type { RouterOutputs } from "@torus-ts/api";
 import { AgentItemSkeleton } from "@torus-ts/ui/components/agent-card/agent-card-skeleton-loader";
-
 import { api } from "~/trpc/react";
-
+import { useEffect, useRef } from "react";
 import { AgentCard } from "./agent-card";
 
 type InfiniteAgentData = RouterOutputs["agent"]["infinite"];
@@ -127,7 +124,7 @@ export function InfiniteAgentList({
 
       {/* Load more trigger */}
       {isFetchingNextPage && (
-        <div className="grid w-full grid-cols-1 gap-3 lg:grid-cols-2 xl:grid-cols-3 mt-3">
+        <div className="mt-3 grid w-full grid-cols-1 gap-3 lg:grid-cols-2 xl:grid-cols-3">
           {Array.from({ length: 3 }).map((_, i) => (
             <AgentItemSkeleton key={i} />
           ))}

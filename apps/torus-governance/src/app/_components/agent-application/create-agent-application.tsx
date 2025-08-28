@@ -1,20 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
-
 import { zodResolver } from "@hookform/resolvers/zod";
-import MarkdownPreview from "@uiw/react-markdown-preview";
-import { useDiscordAuth } from "hooks/use-discord-auth";
-import { useFileUploader } from "hooks/use-file-uploader";
-import Link from "next/link";
-import { useForm } from "react-hook-form";
-import { z } from "zod";
-
 import { submitApplication } from "@torus-network/sdk/chain";
 import type { SS58Address } from "@torus-network/sdk/types";
 import { formatToken } from "@torus-network/torus-utils/torus/token";
 import { trySync } from "@torus-network/torus-utils/try-catch";
-
 import { useTorus } from "@torus-ts/torus-provider";
 import { useSendTransaction } from "@torus-ts/torus-provider/use-send-transaction";
 import { Button } from "@torus-ts/ui/components/button";
@@ -38,9 +28,14 @@ import {
 } from "@torus-ts/ui/components/tabs";
 import { Textarea } from "@torus-ts/ui/components/text-area";
 import { useToast } from "@torus-ts/ui/hooks/use-toast";
-
+import MarkdownPreview from "@uiw/react-markdown-preview";
 import { useGovernance } from "~/context/governance-provider";
-
+import { useDiscordAuth } from "hooks/use-discord-auth";
+import { useFileUploader } from "hooks/use-file-uploader";
+import Link from "next/link";
+import { useEffect, useState } from "react";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
 import { DiscordAuthButton } from "../discord-auth-button";
 
 const agentApplicationSchema = z.object({
@@ -230,7 +225,7 @@ export function CreateAgentApplication() {
   return (
     <Form {...form}>
       <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
-        <div className="flex flex-row w-full gap-2">
+        <div className="flex w-full flex-row gap-2">
           <FormField
             control={control}
             name="applicationKey"

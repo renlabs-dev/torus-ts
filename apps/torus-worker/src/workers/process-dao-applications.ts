@@ -1,6 +1,4 @@
 import type { ApiPromise } from "@polkadot/api";
-import { z } from "zod";
-
 import type { AgentApplication } from "@torus-network/sdk/chain";
 import {
   acceptApplication,
@@ -14,7 +12,7 @@ import type { SS58Address } from "@torus-network/sdk/types";
 import { validateEnvOrExit } from "@torus-network/torus-utils/env";
 import { BasicLogger } from "@torus-network/torus-utils/logger";
 import { tryAsync } from "@torus-network/torus-utils/try-catch";
-
+import { z } from "zod";
 import type { WorkerProps } from "../common";
 import {
   applicationIsPending,

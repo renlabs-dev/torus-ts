@@ -1,19 +1,15 @@
 "use client";
 
-import { memo, useCallback, useEffect, useMemo, useState } from "react";
-
 import { fetchAgentMetadata } from "@torus-network/sdk/metadata";
 import { smallAddress } from "@torus-network/torus-utils/torus/address";
 import { tryAsync } from "@torus-network/torus-utils/try-catch";
-
 import { AgentCard as UIAgentCard } from "@torus-ts/ui/components/agent-card/agent-card";
 import { AgentItemSkeleton } from "@torus-ts/ui/components/agent-card/agent-card-skeleton-loader";
 import { Card } from "@torus-ts/ui/components/card";
-
 import { useMultipleAccountEmissions } from "~/hooks/use-multiple-account-emissions";
 import { calculatePostPenaltyEmission } from "~/hooks/use-post-penalty-emission";
 import { api } from "~/trpc/react";
-
+import { memo, useCallback, useEffect, useMemo, useState } from "react";
 import type {
   CachedAgentData,
   ComputedWeightsList,
@@ -244,7 +240,7 @@ export const AgentCard = memo(
 
     if (error) {
       return (
-        <Card className="flex-1 flex flex-col z-50 border-none">
+        <Card className="z-50 flex flex-1 flex-col border-none">
           <p className="text-red-500">Error: {error.message}</p>
         </Card>
       );
@@ -252,7 +248,7 @@ export const AgentCard = memo(
 
     if (isLoading) {
       return (
-        <div className="flex-1 flex flex-col z-50 w-full">
+        <div className="z-50 flex w-full flex-1 flex-col">
           <AgentItemSkeleton />
         </div>
       );

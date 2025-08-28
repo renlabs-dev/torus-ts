@@ -1,10 +1,7 @@
-import { forwardRef, useImperativeHandle, useState } from "react";
-
-import { Coins } from "lucide-react";
-
 import { formatToken } from "@torus-network/torus-utils/torus/token";
-
 import { Skeleton } from "@torus-ts/ui/components/skeleton";
+import { Coins } from "lucide-react";
+import { forwardRef, useImperativeHandle, useState } from "react";
 
 interface FeeLabelProps {
   accountConnected: boolean;

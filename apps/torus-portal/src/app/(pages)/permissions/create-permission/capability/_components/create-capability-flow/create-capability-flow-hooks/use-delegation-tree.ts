@@ -1,11 +1,8 @@
 import { useQuery } from "@tanstack/react-query";
-import type { Edge, Node } from "@xyflow/react";
-
 import { DelegationTreeManager } from "@torus-network/sdk/chain";
 import type { SS58Address } from "@torus-network/sdk/types";
-
 import { useTorus } from "@torus-ts/torus-provider";
-
+import type { Edge, Node } from "@xyflow/react";
 import type {
   NamespacePathNodeData,
   PermissionInfo,

@@ -1,6 +1,6 @@
+import { tryAsync } from "@torus-network/torus-utils/try-catch";
 import { appRouter, createTRPCContext } from "@torus-ts/api";
 import { fetchRequestHandler } from "@trpc/server/adapters/fetch";
-import { tryAsync } from "@torus-network/torus-utils/try-catch";
 import { env } from "~/env";
 
 /**

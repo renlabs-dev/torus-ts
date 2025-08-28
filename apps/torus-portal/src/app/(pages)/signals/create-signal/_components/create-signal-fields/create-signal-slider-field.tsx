@@ -1,7 +1,3 @@
-import React from "react";
-
-import type { inferProcedureOutput } from "@trpc/server";
-
 import type { AppRouter } from "@torus-ts/api";
 import { useTorus } from "@torus-ts/torus-provider";
 import {
@@ -11,9 +7,10 @@ import {
   FormMessage,
 } from "@torus-ts/ui/components/form";
 import { Slider } from "@torus-ts/ui/components/slider";
-
+import type { inferProcedureOutput } from "@trpc/server";
 import { useMultipleAccountEmissions } from "~/hooks/use-multiple-account-emissions";
 import { calculateEmissionValue } from "~/utils/calculate-emission-value";
+import React from "react";
 
 interface CreateSignalSliderFieldProps {
   field: {
@@ -53,10 +50,10 @@ export function CreateSignalSliderField(props: CreateSignalSliderFieldProps) {
           max={maxAllowedAllocation}
           min={0}
           step={1}
-          className="-mt-3 -mb-2"
+          className="-mb-2 -mt-3"
         />
       </FormControl>
-      <div className="flex justify-between items-center text-sm">
+      <div className="flex items-center justify-between text-sm">
         <span className="text-muted-foreground">
           Available: <span className="text-white">{maxAllowedAllocation}%</span>
         </span>
@@ -72,7 +69,7 @@ export function CreateSignalSliderField(props: CreateSignalSliderFieldProps) {
         </span>
       </div>
       {totalExistingAllocation ? (
-        <div className="text-xs text-muted-foreground mt-1">
+        <div className="text-muted-foreground mt-1 text-xs">
           You have already allocated {totalExistingAllocation}% (
           {calculateEmissionValue(
             totalExistingAllocation,

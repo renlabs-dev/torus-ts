@@ -1,6 +1,8 @@
 "use client";
 
 import type { AgentApplication } from "@torus-network/sdk/chain";
+import { createMutationHandler } from "@torus-network/torus-utils/mutation-handler";
+import { tryAsync } from "@torus-network/torus-utils/try-catch";
 import { Button } from "@torus-ts/ui/components/button";
 import { Card } from "@torus-ts/ui/components/card";
 import {
@@ -13,8 +15,6 @@ import { api } from "~/trpc/react";
 import { useState } from "react";
 import { match } from "rustie";
 import { GovernanceStatusNotOpen } from "../governance-status-not-open";
-import { tryAsync } from "@torus-network/torus-utils/try-catch";
-import { createMutationHandler } from "@torus-network/torus-utils/mutation-handler";
 
 type WhitelistVoteType = "ACCEPT" | "REFUSE";
 
@@ -56,7 +56,7 @@ const AlreadyVotedCardContent = (props: {
   };
 
   return (
-    <Card className="gap-6 rounded-radius flex flex-col p-6">
+    <Card className="rounded-radius flex flex-col gap-6 p-6">
       {getVotedText(voted)}
       <Button variant="outline" onClick={handleRemoveVote} type="button">
         {voteLoading ? "Awaiting Signature..." : "Remove Vote"}
@@ -90,8 +90,9 @@ const VoteCardFunctionsContent = (props: {
   return (
     <div className="flex w-full flex-col items-end gap-4">
       <div
-        className={`relative z-20 flex w-full flex-col items-start gap-2 ${ (!isAccountConnected ||
-          !isUserCadre) && "opacity-30" }`}
+        className={`relative z-20 flex w-full flex-col items-start gap-2 ${
+          (!isAccountConnected || !isUserCadre) && "opacity-30"
+        }`}
       >
         <ToggleGroup
           type="single"
@@ -105,8 +106,9 @@ const VoteCardFunctionsContent = (props: {
         >
           <ToggleGroupItem
             value={"ACCEPT"}
-            className={`w-full text-green-500 data-[state=on]:text-green-500 ${ voteLoading &&
-              "cursor-not-allowed" } `}
+            className={`w-full text-green-500 data-[state=on]:text-green-500 ${
+              voteLoading && "cursor-not-allowed"
+            } `}
             disabled={voteLoading}
           >
             Accept
@@ -114,8 +116,9 @@ const VoteCardFunctionsContent = (props: {
           <ToggleGroupItem
             variant="outline"
             value={"REFUSE"}
-            className={`w-full text-red-500 data-[state=on]:text-red-500 ${ voteLoading &&
-              "cursor-not-allowed" } `}
+            className={`w-full text-red-500 data-[state=on]:text-red-500 ${
+              voteLoading && "cursor-not-allowed"
+            } `}
             disabled={voteLoading}
           >
             Refuse
@@ -128,7 +131,7 @@ const VoteCardFunctionsContent = (props: {
             vote === "UNVOTED" || voteLoading
               ? "cursor-not-allowed text-gray-400"
               : ""
-            } `}
+          } `}
           disabled={vote === "UNVOTED" || voteLoading || !isUserCadre}
           onClick={handleVote}
           type="button"
@@ -139,19 +142,13 @@ const VoteCardFunctionsContent = (props: {
         </Button>
       </div>
       {!isAccountConnected && (
-        <div
-          className="absolute inset-0 z-50 flex w-full flex-col items-center justify-center pt-12
-            text-sm"
-        >
+        <div className="absolute inset-0 z-50 flex w-full flex-col items-center justify-center pt-12 text-sm">
           <span>Are you a Curator DAO member?</span>
           <span>Please connect your wallet to vote</span>
         </div>
       )}
       {isAccountConnected && !isUserCadre && (
-        <div
-          className="absolute inset-0 z-50 flex w-full flex-col items-center justify-center gap-0.5
-            px-6 pt-6"
-        >
+        <div className="absolute inset-0 z-50 flex w-full flex-col items-center justify-center gap-0.5 px-6 pt-6">
           <span className="my-4">
             You must be a Curator DAO member to be able to vote on agent
             applications.
@@ -366,8 +363,7 @@ export function AgentApplicationVoteTypeCard(props: {
                   onClick={handleRemoveFromWhitelist}
                   type="button"
                   disabled={isMutating}
-                  className="md:overflow-hidden flex w-full border-red-500 bg-red-500/20 text-red-500
-                    hover:bg-red-500/30 hover:text-red-500"
+                  className="flex w-full border-red-500 bg-red-500/20 text-red-500 hover:bg-red-500/30 hover:text-red-500 md:overflow-hidden"
                 >
                   {isMutating
                     ? "Aawiting Signature"

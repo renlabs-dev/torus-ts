@@ -1,8 +1,6 @@
-import { match } from "rustie";
-
 import type { Result } from "@torus-network/torus-utils/result";
 import { makeErr, makeOk } from "@torus-network/torus-utils/result";
-
+import { match } from "rustie";
 import type { SS58Address } from "../../types/address.js";
 import type { NamespacePath } from "../../types/namespace/namespace-path.js";
 import {

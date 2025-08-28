@@ -2,7 +2,6 @@ import type { Agent as TorusAgent } from "@torus-network/sdk/chain";
 import type { SS58Address } from "@torus-network/sdk/types";
 import { checkSS58 } from "@torus-network/sdk/types";
 import { getOrSetDefault } from "@torus-network/torus-utils/collections";
-
 import type { SQL, Table } from "@torus-ts/db";
 import {
   and,

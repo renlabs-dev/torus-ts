@@ -1,9 +1,7 @@
 import { match } from "rustie";
 import { z } from "zod";
-
 import type { SS58Address } from "../types/index.js";
 import { SS58_SCHEMA } from "../types/index.js";
-
 import type { JWTErrorCode } from "./jwt-sr25519.js";
 import { verifyJWT } from "./jwt-sr25519.js";
 

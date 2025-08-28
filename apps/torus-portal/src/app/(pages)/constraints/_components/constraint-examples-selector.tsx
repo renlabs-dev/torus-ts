@@ -8,7 +8,6 @@ import {
   CommandItem,
   CommandList,
 } from "@torus-ts/ui/components/command";
-
 import { constraintExamples } from "./constraint-data/constraint-data-examples";
 
 interface ConstraintExamplesSelectorProps {
@@ -46,7 +45,7 @@ export default function ConstraintExamplesSelector({
               >
                 <div className="flex flex-col">
                   <span className="font-medium">{example.name}</span>
-                  <span className="text-xs text-muted-foreground">
+                  <span className="text-muted-foreground text-xs">
                     {example.description}
                   </span>
                 </div>

@@ -3,10 +3,8 @@
 import { useTorus } from "@torus-ts/torus-provider";
 import { DestructiveAlertWithDescription } from "@torus-ts/ui/components/destructive-alert-with-description";
 import { WalletConnectionWarning } from "@torus-ts/ui/components/wallet-connection-warning";
-
 import PortalFormHeader from "~/app/_components/portal-form-header";
 import { api } from "~/trpc/react";
-
 import { UpdateAgentForm } from "./update-agent-form";
 
 export function ManageAgentForm() {

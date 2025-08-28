@@ -1,18 +1,13 @@
 "use client";
 
-import type { ReactNode } from "react";
-
-import type { inferProcedureOutput } from "@trpc/server";
-import { Copy } from "lucide-react";
-
 import { smallAddress } from "@torus-network/torus-utils/torus/address";
-
 import type { AppRouter } from "@torus-ts/api";
 import { Card, CardContent, CardTitle } from "@torus-ts/ui/components/card";
 import { CopyButton } from "@torus-ts/ui/components/copy-button";
-
+import type { inferProcedureOutput } from "@trpc/server";
 import { useWeeklyUsdCalculation } from "~/hooks/use-weekly-usd";
-
+import { Copy } from "lucide-react";
+import type { ReactNode } from "react";
 import { ReportAgent } from "./report-agent";
 
 interface AgentInfoCardProps {
@@ -48,7 +43,7 @@ const AddressCopyButton = ({ text, label }: AddressCopyButtonProps) => (
     copy={text}
   >
     {label ?? smallAddress(text, 6)}
-    <Copy className="h-4 w-4 ml-1" />
+    <Copy className="ml-1 h-4 w-4" />
   </CopyButton>
 );
 

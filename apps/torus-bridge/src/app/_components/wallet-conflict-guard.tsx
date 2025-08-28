@@ -10,7 +10,7 @@ import {
   CardTitle,
 } from "@torus-ts/ui/components/card";
 import type { PropsWithChildren } from "react";
-import { useEffect, useMemo, useState, useCallback } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 interface Eip1193Provider {
   isCoinbaseWallet?: boolean;
@@ -129,7 +129,7 @@ function WalletConflictOverlay({
         <CardContent className="space-y-4">
           <div className="space-y-2">
             <p className="font-semibold">What’s happening</p>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-muted-foreground text-sm">
               With both wallets active, they compete to handle account requests
               (for example, eth_accounts). This is a known wallet-provider issue
               and is being worked on upstream.
@@ -138,7 +138,7 @@ function WalletConflictOverlay({
 
           <div className="space-y-2">
             <p className="font-semibold">Quick fix</p>
-            <ul className="list-disc pl-5 space-y-1 text-sm text-muted-foreground">
+            <ul className="text-muted-foreground list-disc space-y-1 pl-5 text-sm">
               <li>Keep only one wallet extension enabled at a time.</li>
               <li>Disable all but your preferred wallet, then reload.</li>
             </ul>
@@ -148,7 +148,7 @@ function WalletConflictOverlay({
             <p className="font-semibold">
               How to disable an extension (Chrome/Brave/Edge)
             </p>
-            <ol className="list-decimal pl-5 space-y-1 text-sm text-muted-foreground">
+            <ol className="text-muted-foreground list-decimal space-y-1 pl-5 text-sm">
               <li>
                 Open{" "}
                 <button

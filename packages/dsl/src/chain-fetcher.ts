@@ -1,5 +1,4 @@
 import type { ApiPromise } from "@polkadot/api";
-
 import {
   isPermissionEnabled,
   PERMISSION_ID_SCHEMA,
@@ -10,7 +9,6 @@ import {
 import type { SS58Address } from "@torus-network/sdk/types";
 import { checkSS58, H256_HEX } from "@torus-network/sdk/types";
 import { connectToChainRpc } from "@torus-network/sdk/utils";
-
 import type {
   BlockFact,
   InactiveUnlessRedelegatedFact,

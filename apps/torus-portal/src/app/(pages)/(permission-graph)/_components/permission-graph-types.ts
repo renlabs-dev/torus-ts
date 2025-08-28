@@ -1,8 +1,7 @@
+import type { AppRouter } from "@torus-ts/api";
 import type { inferProcedureOutput } from "@trpc/server";
 import type { LinkObject, NodeObject } from "r3f-forcegraph";
 import type * as THREE from "three";
-
-import type { AppRouter } from "@torus-ts/api";
 
 export interface CustomGraphNode extends NodeObject {
   id: string;

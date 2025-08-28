@@ -1,9 +1,9 @@
 import { z } from "zod";
 import { CompOp } from "./types";
 import type {
-  Constraint,
-  BoolExprType,
   BaseConstraintType,
+  BoolExprType,
+  Constraint,
   NumExprType,
   UInt,
 } from "./types";

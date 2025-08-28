@@ -1,18 +1,14 @@
 "use client";
 
-import { ArrowRight, Copy } from "lucide-react";
-import { DateTime } from "luxon";
-
 import { smallAddress } from "@torus-network/torus-utils/torus/address";
 import { formatToken } from "@torus-network/torus-utils/torus/token";
-
 import { getExplorerLink } from "@torus-ts/torus-provider/use-send-transaction";
 import { CopyButton } from "@torus-ts/ui/components/copy-button";
 import { cn } from "@torus-ts/ui/lib/utils";
-
 import { env } from "~/env";
 import type { Transaction, TransactionType } from "~/store/transactions-store";
-
+import { ArrowRight, Copy } from "lucide-react";
+import { DateTime } from "luxon";
 import { TransactionStatusBadge } from "./transactions-item-status-badge";
 
 interface TransactionItemProps {
@@ -56,11 +52,11 @@ export function TransactionItem({
 
   return (
     <div
-      className="rounded-lg border bg-card p-3 shadow-sm flex flex-col gap-2 text-sm"
+      className="bg-card flex flex-col gap-2 rounded-lg border p-3 text-sm shadow-sm"
       role="region"
       aria-label={`Transaction ${getTransactionTypeDisplay(transaction.type)}`}
     >
-      <div className="flex justify-between items-start">
+      <div className="flex items-start justify-between">
         <span className="font-medium">
           {getTransactionTypeDisplay(transaction.type)}
         </span>
@@ -70,7 +66,7 @@ export function TransactionItem({
         <div>
           <span className="text-muted-foreground">Amount</span>
           <div
-            className="font-medium break-all"
+            className="break-all font-medium"
             aria-label={`Amount: ${formatAmount(transaction.amount)}`}
           >
             {formatAmount(transaction.amount)}
@@ -107,9 +103,9 @@ export function TransactionItem({
               {smallAddress(transaction.fromAddress, 5)}
             </div>
           </div>
-          <div className="flex justify-center items-center">
+          <div className="flex items-center justify-center">
             <ArrowRight
-              className="w-5 h-5 text-muted-foreground"
+              className="text-muted-foreground h-5 w-5"
               aria-hidden="true"
             />
           </div>
@@ -134,7 +130,7 @@ export function TransactionItem({
                 <CopyButton
                   copy={transaction.hash}
                   className={cn(
-                    "h-fit p-0 text-muted-foreground hover:text-white",
+                    "text-muted-foreground h-fit p-0 hover:text-white",
                   )}
                   variant="ghost"
                 >
@@ -147,7 +143,7 @@ export function TransactionItem({
                 href={explorerLink}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="font-mono text-xs text-blue-500 hover:underline block"
+                className="block font-mono text-xs text-blue-500 hover:underline"
                 aria-label="View transaction in block explorer"
               >
                 View in block explorer

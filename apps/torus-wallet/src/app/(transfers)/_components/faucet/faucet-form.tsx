@@ -1,10 +1,5 @@
 // TODO: add "Self" button on faucet form's address field
 
-import { useLayoutEffect, useRef, useState } from "react";
-
-import { ChevronDown, LoaderCircle } from "lucide-react";
-import type { UseFormReturn } from "react-hook-form";
-
 import { Button } from "@torus-ts/ui/components/button";
 import { Card } from "@torus-ts/ui/components/card";
 import {
@@ -22,7 +17,9 @@ import {
   FormMessage,
 } from "@torus-ts/ui/components/form";
 import { Input } from "@torus-ts/ui/components/input";
-
+import { ChevronDown, LoaderCircle } from "lucide-react";
+import { useLayoutEffect, useRef, useState } from "react";
+import type { UseFormReturn } from "react-hook-form";
 import type { FaucetFormValues } from "./faucet-form-schema";
 
 interface FaucetFormProps {

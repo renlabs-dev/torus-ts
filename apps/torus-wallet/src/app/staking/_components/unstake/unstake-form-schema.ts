@@ -1,9 +1,7 @@
-import { z } from "zod";
-
 import { isSS58 } from "@torus-network/sdk/types";
 import { formatToken, toNano } from "@torus-network/torus-utils/torus/token";
-
 import { isAmountPositive, meetsMinimumStake } from "~/utils/validators";
+import { z } from "zod";
 
 export const createUnstakeFormSchema = (
   minAllowedStakeData: bigint,

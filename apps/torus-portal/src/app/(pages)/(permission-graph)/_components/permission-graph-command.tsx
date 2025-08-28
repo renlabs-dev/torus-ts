@@ -1,12 +1,6 @@
 "use client";
 
-import React, { useCallback, useMemo, useState } from "react";
-
-import { Check, Package, Radio, Search, Users, Zap } from "lucide-react";
-import { useRouter, useSearchParams } from "next/navigation";
-
 import { smallAddress } from "@torus-network/torus-utils/torus/address";
-
 import {
   CommandDialog,
   CommandEmpty,
@@ -17,7 +11,9 @@ import {
 } from "@torus-ts/ui/components/command";
 import { DialogTitle } from "@torus-ts/ui/components/dialog";
 import { useIsMobile } from "@torus-ts/ui/hooks/use-mobile";
-
+import { Check, Package, Radio, Search, Users, Zap } from "lucide-react";
+import { useRouter, useSearchParams } from "next/navigation";
+import React, { useCallback, useMemo, useState } from "react";
 import { useGraphData } from "./force-graph/use-graph-data";
 
 export function PermissionGraphCommand() {
@@ -148,19 +144,14 @@ export function PermissionGraphCommand() {
   return (
     <>
       <button
-        className="text-sm border p-2.5 gap-6 md:w-fit w-full justify-between rounded flex
-          items-center bg-background"
+        className="bg-background flex w-full items-center justify-between gap-6 rounded border p-2.5 text-sm md:w-fit"
         onClick={() => setOpen(true)}
       >
-        <span className="flex items-center gap-2 text-muted-foreground text-nowrap">
-          <Search className="w-4 h-4 text-muted-foreground" />
+        <span className="text-muted-foreground flex items-center gap-2 text-nowrap">
+          <Search className="text-muted-foreground h-4 w-4" />
           {title}
         </span>
-        <kbd
-          className="bg-muted text-muted-foreground pointer-events-none inline-flex h-5 items-center
-            gap-1 rounded border px-1.5 font-mono text-[10px] font-medium opacity-100
-            select-none"
-        >
+        <kbd className="bg-muted text-muted-foreground pointer-events-none inline-flex h-5 select-none items-center gap-1 rounded border px-1.5 font-mono text-[10px] font-medium opacity-100">
           <span className="text-xs">⌘</span>J
         </kbd>
       </button>
@@ -182,12 +173,12 @@ export function PermissionGraphCommand() {
                     onSelect={() => handleSelect(signal.id)}
                   >
                     <Radio className="mr-2 h-4 w-4" />
-                    <div className="flex flex-col flex-1">
+                    <div className="flex flex-1 flex-col">
                       <div className="flex items-center justify-between">
                         <span>{signal.name}</span>
-                        {isSelected && <Check className="h-4 w-4 ml-2" />}
+                        {isSelected && <Check className="ml-2 h-4 w-4" />}
                       </div>
-                      <span className="text-xs text-muted-foreground">
+                      <span className="text-muted-foreground text-xs">
                         From: {formatNodeDisplay(signal.agentKey)}
                       </span>
                     </div>
@@ -208,17 +199,17 @@ export function PermissionGraphCommand() {
                     onSelect={() => handleSelect(agent.id)}
                   >
                     <Users className="mr-2 h-4 w-4" />
-                    <div className="flex flex-col flex-1">
+                    <div className="flex flex-1 flex-col">
                       <div className="flex items-center justify-between">
                         <span>
                           {agent.name}{" "}
-                          <span className="text-xs text-muted-foreground">
+                          <span className="text-muted-foreground text-xs">
                             ({agent.role})
                           </span>
                         </span>
-                        {isSelected && <Check className="h-4 w-4 ml-2" />}
+                        {isSelected && <Check className="ml-2 h-4 w-4" />}
                       </div>
-                      <span className="text-xs text-muted-foreground">
+                      <span className="text-muted-foreground text-xs">
                         {formatNodeDisplay(agent.id)}
                       </span>
                     </div>
@@ -239,16 +230,16 @@ export function PermissionGraphCommand() {
                     onSelect={() => handleSelect(permission.id)}
                   >
                     <Zap className="mr-2 h-4 w-4" />
-                    <div className="flex flex-col flex-1">
+                    <div className="flex flex-1 flex-col">
                       <div className="flex items-center justify-between">
                         <span>
                           {permission.name} from{" "}
                           {permission.grantorName ?? permission.grantor} to{" "}
                           {permission.granteeName ?? permission.grantee}
                         </span>
-                        {isSelected && <Check className="h-4 w-4 ml-2" />}
+                        {isSelected && <Check className="ml-2 h-4 w-4" />}
                       </div>
-                      <span className="text-xs text-muted-foreground">
+                      <span className="text-muted-foreground text-xs">
                         {formatNodeDisplay(permission.id)}
                       </span>
                     </div>
@@ -269,16 +260,16 @@ export function PermissionGraphCommand() {
                     onSelect={() => handleSelect(permission.id)}
                   >
                     <Package className="mr-2 h-4 w-4" />
-                    <div className="flex flex-col flex-1">
+                    <div className="flex flex-1 flex-col">
                       <div className="flex items-center justify-between">
                         <span>
                           {permission.name} from{" "}
                           {permission.grantorName ?? permission.grantor} to{" "}
                           {permission.granteeName ?? permission.grantee}
                         </span>
-                        {isSelected && <Check className="h-4 w-4 ml-2" />}
+                        {isSelected && <Check className="ml-2 h-4 w-4" />}
                       </div>
-                      <span className="text-xs text-muted-foreground">
+                      <span className="text-muted-foreground text-xs">
                         {formatNodeDisplay(permission.id)}
                       </span>
                     </div>

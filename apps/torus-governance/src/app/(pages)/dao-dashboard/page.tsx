@@ -6,22 +6,22 @@ import {
   TabsList,
   TabsTrigger,
 } from "@torus-ts/ui/components/tabs";
-import DashboardTab from "./_components/dashboard-tab/dashboard";
+import { useTabWithQueryParam } from "hooks/use-tab-with-query-param";
 import AgentHealthTab from "./_components/agent-health-tab/agent-health-tab";
 import DaoApplicationsTab from "./_components/dao-applications-tab";
-import { useTabWithQueryParam } from "hooks/use-tab-with-query-param";
+import DashboardTab from "./_components/dashboard-tab/dashboard";
 
 export default function DaoDashboardPage() {
   const { tab, handleTabChange } = useTabWithQueryParam("dashboard");
 
   return (
-    <div className="w-full animate-fade">
+    <div className="animate-fade w-full">
       <Tabs
         value={tab}
         onValueChange={handleTabChange}
-        className="min-w-full w-full"
+        className="w-full min-w-full"
       >
-        <TabsList className="grid w-full md:grid-cols-3 h-full">
+        <TabsList className="grid h-full w-full md:grid-cols-3">
           <TabsTrigger value="dashboard" className="min-w-full">
             Dashboard
           </TabsTrigger>

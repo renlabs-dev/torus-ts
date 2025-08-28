@@ -10,11 +10,10 @@
  * Regex: ^[a-z0-9]([a-z0-9-_]{0,61}[a-z0-9])?$
  */
 
-import { z } from "zod";
-
 import type { Brand } from "@torus-network/torus-utils";
 import type { Result } from "@torus-network/torus-utils/result";
 import { makeErr, makeOk } from "@torus-network/torus-utils/result";
+import { z } from "zod";
 
 /**
  * Branded string type for a validated agent name.

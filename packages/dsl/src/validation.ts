@@ -1,6 +1,6 @@
-import type { Constraint } from "./types";
 import { ZodError } from "zod";
 import { ConstraintSchema } from "./schema";
+import type { Constraint } from "./types";
 
 /**
  * Validation error thrown when constraint validation fails

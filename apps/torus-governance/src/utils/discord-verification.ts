@@ -1,5 +1,5 @@
-import { tryAsync } from "@torus-network/torus-utils/try-catch";
 import { BasicLogger } from "@torus-network/torus-utils/logger";
+import { tryAsync } from "@torus-network/torus-utils/try-catch";
 import { env } from "~/env";
 
 const NEXT_PUBLIC_TORUS_CHAIN_ENV = env("NEXT_PUBLIC_TORUS_CHAIN_ENV");

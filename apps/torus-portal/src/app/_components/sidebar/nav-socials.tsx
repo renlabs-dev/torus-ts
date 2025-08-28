@@ -1,5 +1,3 @@
-import * as React from "react";
-
 import {
   SidebarGroup,
   SidebarGroupContent,
@@ -9,6 +7,7 @@ import {
   useSidebar,
 } from "@torus-ts/ui/components/sidebar";
 import { cn } from "@torus-ts/ui/lib/utils";
+import * as React from "react";
 
 export function NavSocials({
   items,

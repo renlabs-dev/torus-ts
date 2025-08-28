@@ -1,6 +1,3 @@
-import type { TRPCRouterRecord } from "@trpc/server";
-import { z } from "zod";
-
 import { and, eq, isNotNull, isNull } from "@torus-ts/db";
 import {
   agentDemandSignalSchema,
@@ -8,7 +5,8 @@ import {
   emissionDistributionTargetsSchema,
 } from "@torus-ts/db/schema";
 import { AGENT_DEMAND_SIGNAL_INSERT_SCHEMA } from "@torus-ts/db/validation";
-
+import type { TRPCRouterRecord } from "@trpc/server";
+import { z } from "zod";
 import { authenticatedProcedure, publicProcedure } from "../../trpc";
 
 export const signalRouter = {

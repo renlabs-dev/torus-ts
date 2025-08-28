@@ -1,16 +1,12 @@
 "use client";
 
-import { useForm } from "react-hook-form";
-import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { Button } from "@torus-ts/ui/components/button";
 import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@torus-ts/ui/components/collapsible";
-import { Button } from "@torus-ts/ui/components/button";
-import { ChevronDown, ChevronUp, FilterIcon } from "lucide-react";
-import { TransactionExport } from "./transaction-export";
 import {
   Form,
   FormControl,
@@ -26,8 +22,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@torus-ts/ui/components/select";
-import { useState } from "react";
 import type { TransactionQueryOptions } from "~/store/transactions-store";
+import { ChevronDown, ChevronUp, FilterIcon } from "lucide-react";
+import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import { TransactionExport } from "./transaction-export";
 
 const transactionsFilterSchema = z.object({
   type: z.string().optional(),
@@ -88,17 +88,17 @@ export function TransactionFilters({
           <TransactionExport walletAddress={walletAddress} />
           <CollapsibleTrigger asChild>
             <Button variant="outline" size="sm">
-              <FilterIcon className="h-4 w-4 mr-2" />
+              <FilterIcon className="mr-2 h-4 w-4" />
               Filters
               {isOpen ? (
-                <ChevronUp className="h-4 w-4 ml-2" />
+                <ChevronUp className="ml-2 h-4 w-4" />
               ) : (
-                <ChevronDown className="h-4 w-4 ml-2" />
+                <ChevronDown className="ml-2 h-4 w-4" />
               )}
             </Button>
           </CollapsibleTrigger>
         </div>
-        <div className="text-xs text-muted-foreground" aria-live="polite">
+        <div className="text-muted-foreground text-xs" aria-live="polite">
           {currentCount} of {totalTransactions} transactions
         </div>
       </div>
@@ -107,7 +107,7 @@ export function TransactionFilters({
         <Form {...form}>
           <form
             onSubmit={form.handleSubmit(onSubmit)}
-            className="space-y-4 border p-4 rounded-md"
+            className="space-y-4 rounded-md border p-4"
           >
             <div className="grid grid-cols-1 gap-4">
               <FormField

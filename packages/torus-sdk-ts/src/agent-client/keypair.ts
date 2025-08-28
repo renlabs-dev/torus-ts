@@ -1,3 +1,4 @@
+import { randomUUID } from "crypto";
 import {
   cryptoWaitReady,
   encodeAddress,
@@ -6,7 +7,6 @@ import {
   sr25519Sign,
 } from "@polkadot/util-crypto";
 import base64url from "base64url";
-import { randomUUID } from "crypto";
 import { getCurrentProtocolVersion } from "../agent/jwt-sr25519.js";
 
 export class Keypair {

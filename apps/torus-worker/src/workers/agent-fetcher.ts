@@ -1,5 +1,3 @@
-import { match } from "rustie";
-
 import type {
   AccumulatedStreamEntry,
   LastBlock,
@@ -22,7 +20,7 @@ import type { SS58Address } from "@torus-network/sdk/types";
 import { checkSS58 } from "@torus-network/sdk/types";
 import { BasicLogger } from "@torus-network/torus-utils/logger";
 import { tryAsync } from "@torus-network/torus-utils/try-catch";
-
+import { match } from "rustie";
 import type { WorkerProps } from "../common";
 import {
   agentApplicationToApplication,

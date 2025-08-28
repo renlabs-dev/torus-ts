@@ -1,10 +1,7 @@
 "use client";
 
 import { useQueryClient } from "@tanstack/react-query";
-import { Trash2 } from "lucide-react";
-
 import { revokePermission } from "@torus-network/sdk/chain";
-
 import { useTorus } from "@torus-ts/torus-provider";
 import { useSendTransaction } from "@torus-ts/torus-provider/use-send-transaction";
 import {
@@ -20,6 +17,7 @@ import {
 } from "@torus-ts/ui/components/alert-dialog";
 import { Button } from "@torus-ts/ui/components/button";
 import { useToast } from "@torus-ts/ui/hooks/use-toast";
+import { Trash2 } from "lucide-react";
 
 interface RevokePermissionButtonProps {
   permissionId: string;
@@ -84,7 +82,7 @@ export function RevokePermissionButton({
           size="sm"
           disabled={!isAccountConnected || !permissionId || isPending}
         >
-          <Trash2 className="h-4 w-4 mr-2" />
+          <Trash2 className="mr-2 h-4 w-4" />
           {isPending ? "Revoking..." : "Revoke Permission"}
         </Button>
       </AlertDialogTrigger>

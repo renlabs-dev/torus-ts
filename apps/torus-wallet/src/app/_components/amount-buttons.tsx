@@ -1,7 +1,5 @@
 import { fromNano, toNano } from "@torus-network/torus-utils/torus/token";
-
 import { Button } from "@torus-ts/ui/components/button";
-
 import { convertTORUSToUSD } from "~/utils/helpers";
 
 const buttonAmounts = [

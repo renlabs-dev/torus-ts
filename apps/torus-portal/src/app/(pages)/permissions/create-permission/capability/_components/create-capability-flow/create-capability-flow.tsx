@@ -1,17 +1,9 @@
 "use client";
 
 import "@xyflow/react/dist/style.css";
-
-import {
-  forwardRef,
-  useCallback,
-  useEffect,
-  useImperativeHandle,
-  useMemo,
-  useState,
-} from "react";
-
 import { useQueryClient } from "@tanstack/react-query";
+import type { DelegationTreeManager } from "@torus-network/sdk/chain";
+import { useTorus } from "@torus-ts/torus-provider";
 import type { Edge, Node } from "@xyflow/react";
 import {
   Background,
@@ -22,15 +14,17 @@ import {
   useNodesState,
   useReactFlow,
 } from "@xyflow/react";
-
-import type { DelegationTreeManager } from "@torus-network/sdk/chain";
-
-import { useTorus } from "@torus-ts/torus-provider";
-
-import LoadingPage from "~/app/(pages)/loading";
 import type { LayoutOptions } from "~/app/_components/react-flow-layout/use-auto-layout";
 import useAutoLayout from "~/app/_components/react-flow-layout/use-auto-layout";
-
+import LoadingPage from "~/app/(pages)/loading";
+import {
+  forwardRef,
+  useCallback,
+  useEffect,
+  useImperativeHandle,
+  useMemo,
+  useState,
+} from "react";
 import { useDelegationTree } from "./create-capability-flow-hooks/use-delegation-tree";
 import { useEdgeStyling } from "./create-capability-flow-hooks/use-edge-styling";
 import { usePermissionSelectHandler } from "./create-capability-flow-hooks/use-permission-select-handler";
@@ -190,10 +184,10 @@ const CreateCapabilityFlow = forwardRef<
 
   if (!isAccountConnected) {
     return (
-      <div className="h-full w-full relative -top-14 flex items-center justify-center">
-        <div className="text-center space-y-2">
+      <div className="relative -top-14 flex h-full w-full items-center justify-center">
+        <div className="space-y-2 text-center">
           <div className="text-lg font-medium">No wallet selected</div>
-          <div className="text-sm text-muted-foreground">
+          <div className="text-muted-foreground text-sm">
             Please connect your wallet to view your paths.
           </div>
         </div>
@@ -204,12 +198,12 @@ const CreateCapabilityFlow = forwardRef<
   // Show error state
   if (error) {
     return (
-      <div className="h-full w-full relative -top-14 flex items-center justify-center">
-        <div className="text-center space-y-2">
-          <div className="text-lg font-medium text-destructive">
+      <div className="relative -top-14 flex h-full w-full items-center justify-center">
+        <div className="space-y-2 text-center">
+          <div className="text-destructive text-lg font-medium">
             Failed to load delegation tree
           </div>
-          <div className="text-sm text-muted-foreground">{error.message}</div>
+          <div className="text-muted-foreground text-sm">{error.message}</div>
         </div>
       </div>
     );
@@ -218,12 +212,12 @@ const CreateCapabilityFlow = forwardRef<
   // Show empty state if no nodes
   if (!delegationData || nodes.length === 0) {
     return (
-      <div className="h-full w-full relative -top-14 flex items-center justify-center">
-        <div className="text-center space-y-2">
+      <div className="relative -top-14 flex h-full w-full items-center justify-center">
+        <div className="space-y-2 text-center">
           <div className="text-lg font-medium">
             No delegation permissions found
           </div>
-          <div className="text-sm text-muted-foreground">
+          <div className="text-muted-foreground text-sm">
             You don't have any namespace permissions to delegate
           </div>
         </div>
@@ -232,7 +226,7 @@ const CreateCapabilityFlow = forwardRef<
   }
 
   return (
-    <div className="h-full w-full relative -top-14">
+    <div className="relative -top-14 h-full w-full">
       <style jsx>{`
         @keyframes dash {
           from {
@@ -270,7 +264,7 @@ const CreateCapabilityFlow = forwardRef<
 
         <Panel
           position="top-left"
-          className="pt-10 space-y-2 z-50 sm:block hidden"
+          className="z-50 hidden space-y-2 pt-10 sm:block"
         >
           <StatsPanel
             selectedCount={rootSelectedPaths.size}
@@ -279,7 +273,7 @@ const CreateCapabilityFlow = forwardRef<
           />
         </Panel>
 
-        <Panel position="top-right" className="pt-10 space-y-2 z-50">
+        <Panel position="top-right" className="z-50 space-y-2 pt-10">
           <PermissionBadgesPanel
             activePermission={activePermission}
             nodes={nodes}
@@ -288,7 +282,7 @@ const CreateCapabilityFlow = forwardRef<
 
         <Panel
           position="bottom-right"
-          className="flex gap-2 z-50 pb-4 shadow-lg"
+          className="z-50 flex gap-2 pb-4 shadow-lg"
         >
           <ActionButtonsPanel
             selectedCount={rootSelectedPaths.size}

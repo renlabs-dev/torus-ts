@@ -1,8 +1,5 @@
 "use client";
 
-import type { PropsWithChildren } from "react";
-import { useMemo } from "react";
-
 import { GasPrice } from "@cosmjs/stargate";
 import { wallets as cosmostationWallets } from "@cosmos-kit/cosmostation";
 import { wallets as keplrWallets } from "@cosmos-kit/keplr";
@@ -11,11 +8,11 @@ import { ChainProvider } from "@cosmos-kit/react";
 import { cosmoshub } from "@hyperlane-xyz/registry";
 import { MultiProtocolProvider } from "@hyperlane-xyz/sdk";
 import { getCosmosKitChainConfigs } from "@hyperlane-xyz/widgets";
-
 import { trySync } from "@torus-network/torus-utils/try-catch";
-
 import { config } from "~/consts/config";
 import { useMultiProvider } from "~/hooks/use-multi-provider";
+import type { PropsWithChildren } from "react";
+import { useMemo } from "react";
 
 export function CosmosWalletProvider({
   children,

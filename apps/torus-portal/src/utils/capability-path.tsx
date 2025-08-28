@@ -141,7 +141,7 @@ export function ShortenedCapabilityPath({
           <span className={`cursor-help ${className}`}>{formattedPath}</span>
         </TooltipTrigger>
         <TooltipContent className="z-[100]">
-          <p className="font-mono text-xs max-w-md break-all">{path}</p>
+          <p className="max-w-md break-all font-mono text-xs">{path}</p>
         </TooltipContent>
       </Tooltip>
     </TooltipProvider>

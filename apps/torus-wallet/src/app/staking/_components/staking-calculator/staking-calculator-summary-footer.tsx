@@ -1,6 +1,6 @@
 import { Leaf } from "lucide-react";
-import { formatPercentage } from "./staking-calculator-utils";
 import { FORECAST_MONTHS } from "./staking-calculator";
+import { formatPercentage } from "./staking-calculator-utils";
 
 interface StakingCalculatorSummaryFooterProps {
   maxProjected: number;

@@ -1,4 +1,4 @@
-import type { Constraint, BoolExprType, BaseConstraintType } from "./types";
+import type { BaseConstraintType, BoolExprType, Constraint } from "./types";
 import { CompOp } from "./types";
 
 /**

@@ -1,6 +1,5 @@
 import { EventEmitter } from "events";
 import { afterAll, beforeAll } from "vitest";
-
 import { getApi } from "./getApi.js";
 
 // TODO: Fix for event listener warnings seems to not be working

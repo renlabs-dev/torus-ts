@@ -1,9 +1,10 @@
 // apps/torus-governance/src/hooks/use-vote-management.ts
 "use client";
 
-import { api } from "~/trpc/react";
 import { tryAsync } from "@torus-network/torus-utils/try-catch";
 import { toast } from "@torus-ts/ui/hooks/use-toast";
+import { api } from "~/trpc/react";
+
 type VoteType = "ACCEPT" | "REFUSE" | "REMOVE";
 
 export function useVoteManagement(

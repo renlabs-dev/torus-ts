@@ -1,5 +1,4 @@
 import { memo } from "react";
-
 import { useGraphData } from "./force-graph/use-graph-data";
 
 export const PermissionGraphOverview = memo(function PermissionGraphOverview() {
@@ -32,8 +31,8 @@ export const PermissionGraphOverview = memo(function PermissionGraphOverview() {
     : 0;
 
   return (
-    <div className="h-9 w-full sm:w-auto flex items-center animate-fade-up animate-delay-500">
-      <div className="px-2 sm:px-4 w-full">
+    <div className="animate-fade-up animate-delay-500 flex h-9 w-full items-center sm:w-auto">
+      <div className="w-full px-2 sm:px-4">
         <div className="flex items-center justify-center gap-3">
           <div className="flex items-center gap-3">
             <Stat label="Agents" value={agentCount} />

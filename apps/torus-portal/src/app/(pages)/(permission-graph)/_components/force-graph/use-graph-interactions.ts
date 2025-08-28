@@ -1,8 +1,8 @@
-import { useCallback } from "react";
 import type { NodeObject } from "r3f-forcegraph";
+import { useCallback } from "react";
 import type {
-  CustomGraphNode,
   CustomGraphLink,
+  CustomGraphNode,
 } from "../permission-graph-types";
 
 export function useGraphInteractions(

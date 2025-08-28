@@ -1,12 +1,7 @@
-import { useEffect, useMemo, useRef, useState } from "react";
-
 import type { ApiPromise } from "@polkadot/api";
 import type { SubmittableExtrinsic } from "@polkadot/api/types";
 import type { InjectedExtension } from "@polkadot/extension-inject/types";
 import type { ISubmittableResult } from "@polkadot/types/types";
-import type { Enum } from "rustie";
-import { match } from "rustie";
-
 import type {
   ExtrinsicTracker,
   TxEvent,
@@ -19,9 +14,10 @@ import { BasicLogger } from "@torus-network/torus-utils/logger";
 import type { Result } from "@torus-network/torus-utils/result";
 import { makeErr, makeOk } from "@torus-network/torus-utils/result";
 import { trySync } from "@torus-network/torus-utils/try-catch";
-
 import { toast } from "@torus-ts/ui/hooks/use-toast";
-
+import { useEffect, useMemo, useRef, useState } from "react";
+import type { Enum } from "rustie";
+import { match } from "rustie";
 import type { InjectedAccountWithMeta } from "../torus-provider";
 import {
   mapDispatchErrorToMessage,

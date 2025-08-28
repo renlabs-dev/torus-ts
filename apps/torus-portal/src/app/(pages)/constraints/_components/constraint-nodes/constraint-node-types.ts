@@ -1,9 +1,9 @@
 import type {
+  BaseConstraintType,
   BoolExprType,
   NumExprType,
-  BaseConstraintType,
 } from "@torus-ts/dsl";
-import type { Node, Edge } from "@xyflow/react";
+import type { Edge, Node } from "@xyflow/react";
 
 export interface BooleanNodeData extends Record<string, unknown> {
   type: "boolean";

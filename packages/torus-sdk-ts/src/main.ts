@@ -1,12 +1,9 @@
 /* eslint-disable */
 import "@polkadot/api/augment";
-
 import { ApiPromise, WsProvider } from "@polkadot/api";
 import { Keyring } from "@polkadot/keyring";
-import { match } from "rustie";
-
 import { BasicLogger } from "@torus-network/torus-utils/logger";
-
+import { match } from "rustie";
 import {
   parseSubmittableResult,
   sb_dispatch_error,
