@@ -35,9 +35,14 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const isMainnet = env("NEXT_PUBLIC_TORUS_CHAIN_ENV") === "mainnet";
+  const domains = isMainnet
+    ? "portal.torus.network,rollup.torus.network"
+    : "portal.testnet.torus.network,testnet.rollup.torus.network";
+
   return (
     <PlausibleProvider
-      domain="portal.torus.network,rollup.torus.network"
+      domain={domains}
       trackOutboundLinks
     >
       <Layout font={geistMono} headScripts={[EnvScript]}>
