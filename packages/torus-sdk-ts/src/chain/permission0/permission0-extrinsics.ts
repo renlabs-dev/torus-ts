@@ -6,11 +6,11 @@ import type { AccountId32, H256, Percent } from "@polkadot/types/interfaces";
 import type { SS58Address } from "../../types/index.js";
 import type {
   DistributionControl,
-  EmissionAllocation,
   EnforcementAuthority,
   PermissionDuration,
   PermissionId,
   RevocationTerms,
+  StreamAllocation,
   StreamId,
 } from "./permission0-types.js";
 
@@ -67,7 +67,7 @@ export function delegateNamespacePermission({
 export interface DelegateStreamPermission {
   api: ApiPromise;
   recipients: [SS58Address, number][];
-  allocation: EmissionAllocation;
+  allocation: StreamAllocation;
   distribution: DistributionControl;
   duration: PermissionDuration;
   revocation: RevocationTerms;

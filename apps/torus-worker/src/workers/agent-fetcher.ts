@@ -2,13 +2,13 @@ import { match } from "rustie";
 
 import type {
   AccumulatedStreamEntry,
-  EmissionScope,
   LastBlock,
   NamespaceScope,
   PermissionContract,
   PermissionId,
   Proposal,
   StreamId,
+  StreamScope,
 } from "@torus-network/sdk/chain";
 import {
   queryAgents,
@@ -126,7 +126,7 @@ async function cleanPermissions(
  */
 function streamToDatabase(
   permissionId: PermissionId,
-  stream: EmissionScope, // Using EmissionScope for backward compatibility
+  stream: StreamScope,
   delegator: SS58Address,
   streamAccumulations: AccumulatedStreamEntry[],
   atBlock: number,

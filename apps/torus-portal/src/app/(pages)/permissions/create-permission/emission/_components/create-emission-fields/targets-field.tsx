@@ -1,10 +1,4 @@
-import React from "react";
-
-import { Plus, Trash2 } from "lucide-react";
-import { useFieldArray } from "react-hook-form";
-
 import type { SS58Address } from "@torus-network/sdk/types";
-
 import { useTorus } from "@torus-ts/torus-provider";
 import { Button } from "@torus-ts/ui/components/button";
 import {
@@ -15,11 +9,12 @@ import {
   FormMessage,
 } from "@torus-ts/ui/components/form";
 import { Input } from "@torus-ts/ui/components/input";
-
 import { FormAddressField } from "~/app/_components/address-field";
 import { useMultipleAccountEmissions } from "~/hooks/use-multiple-account-emissions";
 import { calculateEmissionValue } from "~/utils/calculate-emission-value";
-
+import { Plus, Trash2 } from "lucide-react";
+import React from "react";
+import { useFieldArray } from "react-hook-form";
 import type { CreateEmissionPermissionForm } from "../create-emission-permission-form-schema";
 
 interface TargetsFieldProps {
@@ -66,7 +61,7 @@ export function TargetsField({ form, isAccountConnected }: TargetsFieldProps) {
           }
           disabled={!isAccountConnected}
         >
-          <Plus className="h-4 w-4 mr-2" />
+          <Plus className="mr-2 h-4 w-4" />
           Add Target
         </Button>
       </div>
@@ -74,10 +69,29 @@ export function TargetsField({ form, isAccountConnected }: TargetsFieldProps) {
       {targetFields.map((field, index) => (
         <div
           key={field.id}
-          className="grid gap-3 pt-4 px-4 pb-2 border rounded-md relative"
+          className="relative grid gap-3 rounded-md border px-4 pb-2 pt-4"
         >
           <div className="flex items-center justify-between">
-            <h4 className="text-sm font-medium">Target {index + 1}</h4>
+            <h4 className="text-sm font-medium">
+              Target {index + 1} (
+              {(() => {
+                const targetWeight =
+                  Number(form.watch(`targets.${index}.weight`)) || 0;
+                const targetPercentage =
+                  totalStreamPercentage > 0
+                    ? (targetWeight / 100) * totalStreamPercentage
+                    : 0;
+
+                return `${targetWeight}% of ${totalStreamPercentage}% = ${calculateEmissionValue(
+                  targetPercentage,
+                  accountEmissions,
+                  isAccountConnected,
+                  selectedAccount?.address,
+                  "value-only",
+                )}`;
+              })()}
+              )
+            </h4>
             {targetFields.length > 1 && (
               <Button
                 type="button"
@@ -91,7 +105,7 @@ export function TargetsField({ form, isAccountConnected }: TargetsFieldProps) {
             )}
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-[1fr,120px] gap-3">
+          <div className="grid grid-cols-1 gap-3 md:grid-cols-[1fr,120px]">
             <FormField
               control={form.control}
               name={`targets.${index}.account`}
@@ -122,22 +136,6 @@ export function TargetsField({ form, isAccountConnected }: TargetsFieldProps) {
                       className="h-[2.6rem]"
                     />
                   </FormControl>
-                  <div className="text-xs text-green-400 mt-1">
-                    {(() => {
-                      const targetWeight = Number(weightField.value) || 0;
-                      const targetPercentage =
-                        totalStreamPercentage > 0
-                          ? (targetWeight / 100) * totalStreamPercentage
-                          : 0;
-
-                      return `${targetWeight}% of ${totalStreamPercentage}% = ${calculateEmissionValue(
-                        targetPercentage,
-                        accountEmissions,
-                        isAccountConnected,
-                        selectedAccount?.address,
-                      )}`;
-                    })()}
-                  </div>
                   <div className="min-h-[20px]">
                     <FormMessage />
                   </div>

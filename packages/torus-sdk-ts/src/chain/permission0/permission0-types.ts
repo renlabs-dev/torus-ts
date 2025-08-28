@@ -15,7 +15,6 @@ import {
   sb_percent,
   sb_struct,
 } from "../../types/index.js";
-
 import { sb_namespace_path } from "../torus0/torus0-types.js";
 
 export const PERMISSION_ID_SCHEMA = sb_h256;
@@ -81,10 +80,6 @@ export const STREAM_SCOPE_SCHEMA = sb_struct({
   weightSetters: sb_array(sb_address), // BoundedBTreeSet serialized as array (camelCase in JSON)
   accumulating: sb_bool,
 });
-
-// Backward compatibility aliases
-export const EMISSION_ALLOCATION_SCHEMA = STREAM_ALLOCATION_SCHEMA;
-export const EMISSION_SCOPE_SCHEMA = STREAM_SCOPE_SCHEMA;
 
 // ---- Curator Types ----
 
@@ -181,9 +176,3 @@ export type StreamContract = z.infer<typeof STREAM_CONTRACT_SCHEMA>;
 export type StreamAllocation = z.infer<typeof STREAM_ALLOCATION_SCHEMA>;
 export type DistributionControl = z.infer<typeof DISTRIBUTION_CONTROL_SCHEMA>;
 export type StreamScope = z.infer<typeof STREAM_SCOPE_SCHEMA>;
-
-// Backward compatibility aliases
-export const EMISSION_CONTRACT_SCHEMA = STREAM_CONTRACT_SCHEMA;
-export type EmissionContract = StreamContract;
-export type EmissionAllocation = StreamAllocation;
-export type EmissionScope = StreamScope;

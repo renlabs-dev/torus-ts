@@ -1,21 +1,16 @@
 "use client";
 
-import { useCallback } from "react";
-
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Loader2 } from "lucide-react";
-import { useForm } from "react-hook-form";
-
-import { delegateEmissionPermission } from "@torus-network/sdk/chain";
-import type { SS58Address } from "@torus-network/sdk/types";
-
+import { delegateStreamPermission } from "@torus-network/sdk/chain";
 import { useTorus } from "@torus-ts/torus-provider";
 import { useSendTransaction } from "@torus-ts/torus-provider/use-send-transaction";
 import { Button } from "@torus-ts/ui/components/button";
 import { Form } from "@torus-ts/ui/components/form";
 import { WalletConnectionWarning } from "@torus-ts/ui/components/wallet-connection-warning";
 import { useToast } from "@torus-ts/ui/hooks/use-toast";
-
+import { Loader2 } from "lucide-react";
+import { useCallback } from "react";
+import { useForm } from "react-hook-form";
 import { AllocationField } from "./create-emission-fields/allocation-field";
 import { DistributionField } from "./create-emission-fields/distribution-field";
 import { DurationField } from "./create-emission-fields/duration-field";
@@ -85,10 +80,14 @@ export function CreateEmissionPermissionForm() {
       const transformedData = transformFormDataToSDK(data);
 
       const [sendErr, sendRes] = await sendTx(
-        delegateEmissionPermission({
+        delegateStreamPermission({
           api,
-          recipient: selectedAccount.address as SS58Address,
-          ...transformedData,
+          recipients: transformedData.recipients,
+          allocation: transformedData.allocation,
+          distribution: transformedData.distribution,
+          duration: transformedData.duration,
+          revocation: transformedData.revocation,
+          enforcement: transformedData.enforcement,
         }),
       );
 
