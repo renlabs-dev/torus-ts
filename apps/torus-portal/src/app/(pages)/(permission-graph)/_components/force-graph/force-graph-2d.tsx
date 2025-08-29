@@ -1,5 +1,7 @@
 "use client";
 
+import { useCallback, useEffect, useRef } from "react";
+
 import * as d3 from "d3";
 import type {
   Simulation,
@@ -8,7 +10,7 @@ import type {
 } from "d3-force";
 import { Viewport } from "pixi-viewport";
 import * as PIXI from "pixi.js";
-import { useCallback, useEffect, useRef } from "react";
+
 import type {
   CustomGraphData,
   CustomGraphLink,
@@ -68,20 +70,20 @@ export function ForceGraphCanvas2D(props: ForceGraph2DProps) {
   const onNodeClickRef = useRef(props.onNodeClick);
 
   // Update the ref when props change
-  onNodeClickRef.current = props.onNodeClick;
+  // onNodeClickRef.current = props.onNodeClick;
 
   const runForceGraph2D = useCallback(
     async (
       container: HTMLDivElement,
-      nodesData: CustomGraphNode[],
-      linksData: CustomGraphLink[],
+      nodesData: D3SimulationNode[],
+      linksData: D3SimulationLink[],
     ) => {
-      const nodes: D3SimulationNode[] = nodesData.map((d) => ({
-        ...d,
-      })) as D3SimulationNode[];
-      const links: D3SimulationLink[] = linksData.map((d) => ({
-        ...d,
-      })) as D3SimulationLink[];
+      const nodes = nodesData.map((node) => ({
+        ...node,
+      }));
+      const links = linksData.map((link) => ({
+        ...link,
+      }));
 
       const containerRect = container.getBoundingClientRect();
       const height = containerRect.height;
@@ -142,7 +144,7 @@ export function ForceGraphCanvas2D(props: ForceGraph2DProps) {
           d3
             .forceLink<D3SimulationNode, D3SimulationLink>(links)
             .id((d) => d.id)
-            .distance(200), // Increased link distance for less densityxw
+            .distance(200),
         )
         .force(
           "charge",
@@ -248,9 +250,7 @@ export function ForceGraphCanvas2D(props: ForceGraph2DProps) {
             target.x !== undefined &&
             target.y !== undefined
           ) {
-            const linkColor =
-              link.linkColor ??
-              graphConstants.linkConfig.linkColors.defaultLink;
+            const linkColor = graphConstants.linkConfig.linkColors.defaultLink;
             const alpha = 0.2;
 
             const linkWidth = graphConstants.linkConfig.linkWidth;
