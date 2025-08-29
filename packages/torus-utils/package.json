@@ -121,6 +121,14 @@
     "tsafe": "catalog:",
     "zod": "catalog:"
   },
+  "peerDependencies": {
+    "zod": "catalog:"
+  },
+  "peerDependenciesMeta": {
+    "zod": {
+      "optional": true
+    }
+  },
   "devDependencies": {
     "@torus-ts/eslint-config": "workspace:*",
     "@torus-ts/tsconfig": "workspace:*",
