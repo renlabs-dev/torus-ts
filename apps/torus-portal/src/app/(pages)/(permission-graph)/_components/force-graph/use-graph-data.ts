@@ -1,6 +1,6 @@
 import { env } from "~/env";
 import { api as trpcApi } from "~/trpc/react";
-import { useMemo } from "react";
+
 import { createSimplifiedGraphData } from "./force-graph-utils";
 
 export function useGraphData() {
@@ -24,19 +24,13 @@ export function useGraphData() {
   const { data: allAgentsData, isLoading: isLoadingAgents } =
     trpcApi.agent.allIncludingNonWhitelisted.useQuery(undefined, cacheOptions);
 
-  // Filter whitelisted agents for hypergraph logic (maintains root vs target distinction)
-  const allAgents = useMemo(() => {
-    return allAgentsData?.filter((agent) => agent.isWhitelisted) ?? [];
-  }, [allAgentsData]);
-
   const { data: allComputedWeights, isLoading: isLoadingWeights } =
     trpcApi.computedAgentWeight.all.useQuery(undefined, cacheOptions);
 
   const { data: allSignals, isLoading: isLoadingSignals } =
     trpcApi.signal.all.useQuery(undefined, cacheOptions);
 
-  const graphData = useMemo(() => {
-    // Wait for all data to be loaded before calling the function
+  const graphData = (() => {
     if (
       isLoadingAgents ||
       isLoadingPermissions ||
@@ -46,7 +40,8 @@ export function useGraphData() {
       return null;
     }
 
-    // Only call the function when we have complete data
+    const allAgents = allAgentsData.filter((agent) => agent.isWhitelisted);
+
     return createSimplifiedGraphData(
       allAgents,
       allPermissions,
@@ -54,15 +49,7 @@ export function useGraphData() {
       allSignals,
       allAgentsData,
     );
-  }, [
-    allAgents,
-    allAgentsData,
-    allPermissions,
-    allocatorAddress,
-    allSignals,
-    isLoadingAgents,
-    isLoadingPermissions,
-  ]);
+  })();
 
   const isLoading =
     isLoadingPermissions ||
