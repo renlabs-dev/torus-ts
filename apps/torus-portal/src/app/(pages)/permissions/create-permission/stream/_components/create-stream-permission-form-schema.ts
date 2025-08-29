@@ -136,7 +136,7 @@ const enforcementSchema = z.discriminatedUnion("type", [
   }),
 ]);
 
-export const createEmissionPermissionSchema = z.object({
+export const createStreamPermissionSchema = z.object({
   allocation: allocationSchema,
   recipients: z
     .array(
@@ -159,9 +159,9 @@ export const createEmissionPermissionSchema = z.object({
   enforcement: enforcementSchema,
 });
 
-export type CreateEmissionPermissionFormData = z.infer<
-  typeof createEmissionPermissionSchema
+export type CreateStreamPermissionFormData = z.infer<
+  typeof createStreamPermissionSchema
 >;
 
-export type CreateEmissionPermissionForm =
-  UseFormReturn<CreateEmissionPermissionFormData>;
+export type CreateStreamPermissionForm =
+  UseFormReturn<CreateStreamPermissionFormData>;

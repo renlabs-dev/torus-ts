@@ -11,16 +11,16 @@ import { useToast } from "@torus-ts/ui/hooks/use-toast";
 import { Loader2 } from "lucide-react";
 import { useCallback } from "react";
 import { useForm } from "react-hook-form";
-import { AllocationField } from "./create-emission-fields/allocation-field";
-import { DistributionField } from "./create-emission-fields/distribution-field";
-import { DurationField } from "./create-emission-fields/duration-field";
-import { RecipientsField } from "./create-emission-fields/recipients-field";
-import { RevocationField } from "./create-emission-fields/revocation-field";
-import type { CreateEmissionPermissionFormData } from "./create-emission-permission-form-schema";
-import { createEmissionPermissionSchema } from "./create-emission-permission-form-schema";
-import { transformFormDataToSDK } from "./create-emission-permission-form-utils";
+import { AllocationField } from "./create-stream-fields/allocation-field";
+import { DistributionField } from "./create-stream-fields/distribution-field";
+import { DurationField } from "./create-stream-fields/duration-field";
+import { RecipientsField } from "./create-stream-fields/recipients-field";
+import { RevocationField } from "./create-stream-fields/revocation-field";
+import type { CreateStreamPermissionFormData } from "./create-stream-permission-form-schema";
+import { createStreamPermissionSchema } from "./create-stream-permission-form-schema";
+import { transformFormDataToSDK } from "./create-stream-permission-form-utils";
 
-export function CreateEmissionPermissionForm() {
+export function CreateStreamPermissionForm() {
   const {
     selectedAccount,
     isAccountConnected,
@@ -39,8 +39,8 @@ export function CreateEmissionPermissionForm() {
     transactionType: "Delegate Stream Permission",
   });
 
-  const form = useForm<CreateEmissionPermissionFormData>({
-    resolver: zodResolver(createEmissionPermissionSchema),
+  const form = useForm<CreateStreamPermissionFormData>({
+    resolver: zodResolver(createStreamPermissionSchema),
     mode: "onChange",
     defaultValues: {
       allocation: {
@@ -67,7 +67,7 @@ export function CreateEmissionPermissionForm() {
   });
 
   const handleSubmit = useCallback(
-    async (data: CreateEmissionPermissionFormData) => {
+    async (data: CreateStreamPermissionFormData) => {
       if (!api || !sendTx || !selectedAccount?.address) {
         toast({
           title: "Error",

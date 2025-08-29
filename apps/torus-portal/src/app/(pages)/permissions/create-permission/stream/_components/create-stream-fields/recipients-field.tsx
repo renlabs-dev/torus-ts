@@ -15,23 +15,26 @@ import { calculateEmissionValue } from "~/utils/calculate-emission-value";
 import { Plus, Trash2 } from "lucide-react";
 import React from "react";
 import { useFieldArray } from "react-hook-form";
-import type { CreateEmissionPermissionForm } from "../create-emission-permission-form-schema";
+import type { CreateStreamPermissionForm } from "../create-stream-permission-form-schema";
 
-interface TargetsFieldProps {
-  form: CreateEmissionPermissionForm;
+interface RecipientsFieldProps {
+  form: CreateStreamPermissionForm;
   isAccountConnected: boolean;
 }
 
-export function TargetsField({ form, isAccountConnected }: TargetsFieldProps) {
+export function RecipientsField({
+  form,
+  isAccountConnected,
+}: RecipientsFieldProps) {
   const { selectedAccount } = useTorus();
 
   const {
-    fields: targetFields,
-    append: appendTarget,
-    remove: removeTarget,
+    fields: recipientFields,
+    append: appendRecipient,
+    remove: removeRecipient,
   } = useFieldArray({
     control: form.control,
-    name: "targets",
+    name: "recipients",
   });
 
   const emissionsData = useMultipleAccountEmissions({
@@ -42,7 +45,7 @@ export function TargetsField({ form, isAccountConnected }: TargetsFieldProps) {
     ? emissionsData[selectedAccount.address]
     : null;
 
-  // Calculate total stream percentage to determine what portion targets get
+  // Calculate total stream percentage to determine what portion recipients get
   const totalStreamPercentage =
     form.watch("allocation.streams").reduce((total, stream) => {
       return total + (Number(stream.percentage) || 0);
@@ -51,39 +54,39 @@ export function TargetsField({ form, isAccountConnected }: TargetsFieldProps) {
   return (
     <div className="grid gap-3">
       <div className="flex items-center justify-between">
-        <FormLabel>Target Accounts</FormLabel>
+        <FormLabel>Recipient Accounts</FormLabel>
         <Button
           type="button"
           size="sm"
           className="bg-white/70"
           onClick={() =>
-            appendTarget({ account: "" as SS58Address, weight: "" })
+            appendRecipient({ account: "" as SS58Address, weight: "" })
           }
           disabled={!isAccountConnected}
         >
           <Plus className="mr-2 h-4 w-4" />
-          Add Target
+          Add Recipient
         </Button>
       </div>
 
-      {targetFields.map((field, index) => (
+      {recipientFields.map((field, index) => (
         <div
           key={field.id}
           className="relative grid gap-3 rounded-md border px-4 pb-2 pt-4"
         >
           <div className="flex items-center justify-between">
             <h4 className="text-sm font-medium">
-              Target {index + 1} (
+              Recipient {index + 1} (
               {(() => {
-                const targetWeight =
-                  Number(form.watch(`targets.${index}.weight`)) || 0;
-                const targetPercentage =
+                const recipientWeight =
+                  Number(form.watch(`recipients.${index}.weight`)) || 0;
+                const recipientPercentage =
                   totalStreamPercentage > 0
-                    ? (targetWeight / 100) * totalStreamPercentage
+                    ? (recipientWeight / 100) * totalStreamPercentage
                     : 0;
 
-                return `${targetWeight}% of ${totalStreamPercentage}% = ${calculateEmissionValue(
-                  targetPercentage,
+                return `${recipientWeight}% of ${totalStreamPercentage}% = ${calculateEmissionValue(
+                  recipientPercentage,
                   accountEmissions,
                   isAccountConnected,
                   selectedAccount?.address,
@@ -92,12 +95,12 @@ export function TargetsField({ form, isAccountConnected }: TargetsFieldProps) {
               })()}
               )
             </h4>
-            {targetFields.length > 1 && (
+            {recipientFields.length > 1 && (
               <Button
                 type="button"
                 variant="ghost"
                 size="sm"
-                onClick={() => removeTarget(index)}
+                onClick={() => removeRecipient(index)}
                 disabled={!isAccountConnected}
               >
                 <Trash2 className="h-4 w-4" />
@@ -108,7 +111,7 @@ export function TargetsField({ form, isAccountConnected }: TargetsFieldProps) {
           <div className="grid grid-cols-1 gap-3 md:grid-cols-[1fr,120px]">
             <FormField
               control={form.control}
-              name={`targets.${index}.account`}
+              name={`recipients.${index}.account`}
               render={({ field: accountField }) => (
                 <FormAddressField
                   field={accountField}
@@ -120,7 +123,7 @@ export function TargetsField({ form, isAccountConnected }: TargetsFieldProps) {
 
             <FormField
               control={form.control}
-              name={`targets.${index}.weight`}
+              name={`recipients.${index}.weight`}
               render={({ field: weightField }) => (
                 <FormItem>
                   <FormLabel>Weight</FormLabel>

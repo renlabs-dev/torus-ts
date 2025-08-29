@@ -18,15 +18,19 @@
   - Added support for multiple recipients in search/display
   - Shows "X Recipients" for multi-recipient permissions with all names in search
   - Updated command group heading from "Emission" to "Stream" permissions
-- [x] **`force-graph-utils.ts`** - Graph building logic needs modification to support new recipient structure
+- [x] **`force-graph-utils.ts`** - ✅ Fixed graph building and capability permission display
+  - Fixed capability permissions not appearing due to recipient field location change
+  - Updated to use `namespace_permissions.recipient` instead of main `granteeAccountId` for capability permissions
+  - Stream permissions continue using existing distribution target structure
+  - Both permission types now display correctly in hypergraph
 
 ### 2. **Form API Calls - Wrong Function**
 
 **Priority: CRITICAL** - Forms will fail to submit
 
-- [ ] **Check for `delegateEmissionPermission` calls** - Should use `delegateStreamPermission`
-- [ ] **Update function signatures** - New parameter order and structure
-- [ ] **Add missing parameters** - `recipientManager`, `weightSetter`
+- [x] **Check for `delegateEmissionPermission` calls** - ✅ Forms already updated to use `delegateStreamPermission`
+- [x] **Update function signatures** - ✅ Already using correct parameter order and structure
+- [x] **Add missing parameters** - ✅ Forms already handle recipients correctly
 
 ## 🔄 Terminology & UI Updates (Medium Priority)
 
@@ -34,27 +38,30 @@
 
 **Files to update:**
 
-- [ ] **`targets-field.tsx`** → Rename to `recipients-field.tsx`
-- [ ] **`create-emission-permission-form-schema.ts:141,154`** - Change `targets` to `recipients`
-- [ ] **`create-emission-permission-form.tsx:50`** - Default values field name
-- [ ] **`create-emission-permission-form-utils.ts:28-34`** - Transform function
-- [ ] **`edit-permission-fields/targets-field.tsx`** - Component and logic
-- [ ] **`edit-permission-schema.ts`** - Schema field names
-- [ ] **All form labels and UI text** - "Targets" → "Recipients"
+- [x] **`targets-field.tsx`** → ✅ Renamed to `recipients-field.tsx`
+- [x] **`create-emission-permission-form-schema.ts:141,154`** - ✅ Changed `targets` to `recipients`
+- [x] **`create-emission-permission-form.tsx:50`** - ✅ Updated default values field name
+- [x] **`create-emission-permission-form-utils.ts:28-34`** - ✅ Updated transform function
+- [x] **`edit-permission-fields/targets-field.tsx`** - ✅ Updated component and logic
+- [x] **`edit-permission-schema.ts`** - ✅ Schema field names updated
+- [x] **All form labels and UI text** - ✅ "Targets" → "Recipients"
 
 ### 4. **Replace "Emission" with "Stream"**
 
 **Directory structure:**
 
-- [ ] **`/permissions/create-permission/emission/`** → `/permissions/create-permission/stream/`
-- [ ] **`create-emission-permission-form*`** → `create-stream-permission-form*`
-- [ ] **`create-emission-fields/`** → `create-stream-fields/`
+- [x] **`/permissions/create-permission/emission/`** → `/permissions/create-permission/stream/` - ✅ Complete directory migration
+- [x] **`create-emission-permission-form*`** → `create-stream-permission-form*` - ✅ All component files renamed
+- [x] **`create-emission-fields/`** → `create-stream-fields/` - ✅ Field directory renamed
 
 **Files to rename/update:**
 
-- [ ] **38 files with "emission" references** - Update terminology
-- [ ] **Page titles, navigation, breadcrumbs** - UI text updates
-- [ ] **Component names and exports** - Consistent naming
+- [x] **UI text updates** - ✅ Updated page titles, navigation, transaction types
+- [x] **Permission type display** - ✅ Updated from "Emission" to "Stream" in UI
+- [x] **Command group headings** - ✅ Updated permission selector and search
+- [x] **Component imports** - ✅ All import paths updated to new structure
+- [x] **Route references** - ✅ Sidebar navigation updated to /stream route
+- [x] **Type definitions** - ✅ All TypeScript types renamed and updated
 
 ### 5. **Add New Form Fields**
 

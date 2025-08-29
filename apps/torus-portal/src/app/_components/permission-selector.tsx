@@ -176,7 +176,7 @@ export function PermissionSelector(props: PermissionSelectorProps) {
   const getPermissionType = (contract: PermissionContract | null) => {
     if (!contract) return "Unknown";
     const scopeType = Object.keys(contract.scope)[0];
-    if (scopeType === "Stream") return "Emission"; // Still display as "Emission" in UI
+    if (scopeType === "Stream") return "Stream"; // Updated to match SDK terminology
     if (scopeType === "Namespace") return "Capability";
     if (scopeType === "Curator") return "Curator";
     return "Unknown";
@@ -237,7 +237,7 @@ export function PermissionSelector(props: PermissionSelectorProps) {
       return { emissionPermissions: [], namespacePermissions: [] };
 
     const emissionPermissions = userPermissionsWithNames
-      .filter((item) => getPermissionType(item.contract) === "Emission")
+      .filter((item) => getPermissionType(item.contract) === "Stream")
       .map((item) => ({
         ...item,
         searchText: [
@@ -586,8 +586,8 @@ export function PermissionSelector(props: PermissionSelectorProps) {
           />
         ),
       },
-      // Only show Recipient for non-emission permissions
-      ...(permissionType !== "Emission"
+      // Only show Recipient for non-stream permissions
+      ...(permissionType !== "Stream"
         ? [
             {
               label: "Recipient",
@@ -725,7 +725,7 @@ export function PermissionSelector(props: PermissionSelectorProps) {
                 <CommandEmpty>No permissions found.</CommandEmpty>
 
                 {searchData.emissionPermissions.length > 0 && (
-                  <CommandGroup heading="Emission Permissions">
+                  <CommandGroup heading="Stream Permissions">
                     {searchData.emissionPermissions.map((item) => {
                       const { permissionId } = item;
                       const isSelected =

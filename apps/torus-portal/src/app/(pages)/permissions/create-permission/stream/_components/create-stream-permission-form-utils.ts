@@ -6,9 +6,9 @@ import type {
   StreamAllocation,
 } from "@torus-network/sdk/chain";
 import type { SS58Address } from "@torus-network/sdk/types";
-import type { CreateEmissionPermissionFormData } from "./create-emission-permission-form-schema";
+import type { CreateStreamPermissionFormData } from "./create-stream-permission-form-schema";
 
-export function transformFormDataToSDK(data: CreateEmissionPermissionFormData) {
+export function transformFormDataToSDK(data: CreateStreamPermissionFormData) {
   let allocation: StreamAllocation;
   if (data.allocation.type === "FixedAmount") {
     allocation = {

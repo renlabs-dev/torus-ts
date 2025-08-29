@@ -23,8 +23,8 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import type { z } from "zod";
 import { DistributionControlField } from "./edit-permission-fields/distribution-control-field";
+import { RecipientsField } from "./edit-permission-fields/recipients-field";
 import { StreamsField } from "./edit-permission-fields/streams-field";
-import { TargetsField } from "./edit-permission-fields/targets-field";
 import type { EditPermissionFormData } from "./edit-permission-schema";
 import { EDIT_PERMISSION_SCHEMA } from "./edit-permission-schema";
 import {
@@ -213,7 +213,7 @@ export function EditPermissionForm({
                 <>
                   <DistributionControlField control={form.control} />
 
-                  <TargetsField control={form.control} />
+                  <RecipientsField control={form.control} />
 
                   <StreamsField control={form.control} />
 
