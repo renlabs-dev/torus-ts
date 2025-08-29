@@ -152,31 +152,32 @@ export function PermissionSelector(props: PermissionSelectorProps) {
   }, [allPermissions, permissionsError, userPermissionIds]);
 
   // Helper function to get recipient from contract scope
-  const getRecipientFromContract = useCallback((
-    contract: PermissionContract,
-  ): string | null => {
-    const scopeType = Object.keys(contract.scope)[0];
-    if (scopeType === "Namespace" && "Namespace" in contract.scope) {
-      return contract.scope.Namespace.recipient;
-    }
-    if (scopeType === "Stream" && "Stream" in contract.scope) {
-      // For stream permissions, get the first recipient (since they can have multiple)
-      const recipients = contract.scope.Stream.recipients;
-      if (recipients instanceof Map && recipients.size > 0) {
-        return Array.from(recipients.keys())[0] || null;
+  const getRecipientFromContract = useCallback(
+    (contract: PermissionContract): string | null => {
+      const scopeType = Object.keys(contract.scope)[0];
+      if (scopeType === "Namespace" && "Namespace" in contract.scope) {
+        return contract.scope.Namespace.recipient;
       }
-      // If recipients is an object (parsed from JSON)
-      if (typeof recipients === "object") {
-        const keys = Object.keys(recipients);
-        return keys.length > 0 ? (keys[0] ?? null) : null;
+      if (scopeType === "Stream" && "Stream" in contract.scope) {
+        // For stream permissions, get the first recipient (since they can have multiple)
+        const recipients = contract.scope.Stream.recipients;
+        if (recipients instanceof Map && recipients.size > 0) {
+          return Array.from(recipients.keys())[0] || null;
+        }
+        // If recipients is an object (parsed from JSON)
+        if (typeof recipients === "object") {
+          const keys = Object.keys(recipients);
+          return keys.length > 0 ? (keys[0] ?? null) : null;
+        }
+        return null;
+      }
+      if (scopeType === "Curator" && "Curator" in contract.scope) {
+        return contract.scope.Curator.recipient;
       }
       return null;
-    }
-    if (scopeType === "Curator" && "Curator" in contract.scope) {
-      return contract.scope.Curator.recipient;
-    }
-    return null;
-  }, []);
+    },
+    [],
+  );
 
   // For now, we'll show agent names in the detailed view with AddressWithAgent component
   // Agent names in the dropdown items can be added later when we have proper batch fetching
@@ -208,7 +209,6 @@ export function PermissionSelector(props: PermissionSelectorProps) {
     if (scopeType === "Curator") return "Curator";
     return "Unknown";
   };
-
 
   // Helper to render capability paths in CommandItems
   const renderCapabilityPaths = (namespacePaths: unknown) => {

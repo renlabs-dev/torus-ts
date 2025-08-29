@@ -2,7 +2,6 @@
 
 import * as path from "node:path";
 import { fileURLToPath } from "node:url";
-
 import { includeIgnoreFile } from "@eslint/compat";
 import eslint from "@eslint/js";
 import importPlugin from "eslint-plugin-import";
