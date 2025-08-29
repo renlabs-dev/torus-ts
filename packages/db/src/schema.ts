@@ -866,7 +866,7 @@ export const namespacePermissionsSchema = createTable("namespace_permissions", {
     .primaryKey()
     .references(() => permissionsSchema.permissionId, { onDelete: "cascade" }),
   recipient: ss58Address("recipient").notNull(), // old grantee
-  maxInstances: integer("max_instances").notNull(),
+  maxInstances: integer("max_instances").notNull().default(0), // TODO: remove default
   ...timeFields(),
 });
 
