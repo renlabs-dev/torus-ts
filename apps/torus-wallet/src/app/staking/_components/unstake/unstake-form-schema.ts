@@ -38,7 +38,7 @@ export const createUnstakeFormSchema = (
       if (stakedAmount !== null) {
         if (toNano(data.amount) > stakedAmount) {
           ctx.addIssue({
-            code: z.ZodIssueCode.custom,
+            code: "custom",
             message: "Amount exceeds staked amount",
             path: ["amount"],
           });
