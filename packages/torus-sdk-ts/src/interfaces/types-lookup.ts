@@ -1933,8 +1933,6 @@ declare module '@polkadot/types/lookup' {
     readonly lastUpdate: u64;
     readonly lastExecution: Option<u64>;
     readonly executionCount: u32;
-    readonly maxInstances: u32;
-    readonly children: BTreeSet<H256>;
     readonly createdAt: u64;
   }
 
@@ -1945,7 +1943,7 @@ declare module '@polkadot/types/lookup' {
     readonly isCurator: boolean;
     readonly asCurator: PalletPermission0PermissionCuratorCuratorScope;
     readonly isNamespace: boolean;
-    readonly asNamespace: PalletPermission0PermissionNamespaceScope;
+    readonly asNamespace: PalletPermission0PermissionNamespaceNamespaceScope;
     readonly type: 'Stream' | 'Curator' | 'Namespace';
   }
 
@@ -1964,12 +1962,16 @@ declare module '@polkadot/types/lookup' {
     readonly recipient: AccountId32;
     readonly flags: BTreeMap<Option<H256>, u32>;
     readonly cooldown: Option<u64>;
+    readonly maxInstances: u32;
+    readonly children: BTreeSet<H256>;
   }
 
-  /** @name PalletPermission0PermissionNamespaceScope (264) */
-  interface PalletPermission0PermissionNamespaceScope extends Struct {
+  /** @name PalletPermission0PermissionNamespaceNamespaceScope (266) */
+  interface PalletPermission0PermissionNamespaceNamespaceScope extends Struct {
     readonly recipient: AccountId32;
     readonly paths: BTreeMap<Option<H256>, BTreeSet<Bytes>>;
+    readonly maxInstances: u32;
+    readonly children: BTreeSet<H256>;
   }
 
   /** @name PalletPermission0Error (278) */

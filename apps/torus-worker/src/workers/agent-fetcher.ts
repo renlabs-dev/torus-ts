@@ -260,6 +260,7 @@ function namespaceToDatabase(
   const namespacePermission: NewNamespacePermission = {
     permissionId: permissionId,
     recipient: namespace.recipient,
+    maxInstances: namespace.maxInstances,
   };
 
   // Extract namespace paths from the map structure
@@ -292,7 +293,7 @@ function permissionContractToDatabase(
 ):
   | ({
       permission: NewPermission;
-      hierarchy: NewPermissionHierarchy;
+      hierarchies: NewPermissionHierarchy[];
       enforcementControllers: NewPermissionEnforcementController[];
       revocationArbiters: NewPermissionRevocationArbiter[];
     } & (
@@ -381,12 +382,23 @@ function permissionContractToDatabase(
     createdAtBlock: BigInt(contract.createdAt.toString()),
   };
 
-  // Handle hierarchy - since parent field no longer exists, create self-reference
-  // Children relationships are now managed through the children field on other permissions
-  const hierarchy: NewPermissionHierarchy = {
-    childPermissionId: permissionId,
-    parentPermissionId: permissionId, // Self-reference (no parent in current schema)
-  };
+  // Handle hierarchy - create parent-child relationships based on scope's children field
+  const hierarchy: NewPermissionHierarchy[] = [];
+  
+  // Extract children from the scope
+  const children = match(contract.scope)({
+    Stream: () => [], // Stream scopes don't have children
+    Namespace: (scope) => scope.children,
+    Curator: (scope) => scope.children,
+  });
+  
+  // Create hierarchy entries for each child permission
+  for (const childPermissionId of children) {
+    hierarchy.push({
+      childPermissionId: childPermissionId,
+      parentPermissionId: permissionId,
+    });
+  }
 
   // Initialize common arrays (always empty if not populated)
   let enforcementControllers: NewPermissionEnforcementController[] = [];
@@ -461,7 +473,7 @@ function permissionContractToDatabase(
 
   return {
     permission,
-    hierarchy,
+    hierarchies: hierarchy,
     enforcementControllers,
     revocationArbiters,
     ...scopeSpecificData,
@@ -642,7 +654,7 @@ async function runPermissionsFetch(lastBlock: LastBlock) {
 
   const permissionsData: ({
     permission: NewPermission;
-    hierarchy: NewPermissionHierarchy;
+    hierarchies: NewPermissionHierarchy[];
     enforcementControllers: NewPermissionEnforcementController[];
     revocationArbiters: NewPermissionRevocationArbiter[];
   } & (

@@ -414,6 +414,7 @@ export function PermissionSelector(props: PermissionSelectorProps) {
         namespace_permissions = {
           permissionId,
           recipient: contract.scope.Namespace.recipient,
+          maxInstances: contract.scope.Namespace.maxInstances,
           createdAt: now,
           updatedAt: now,
           deletedAt: null,

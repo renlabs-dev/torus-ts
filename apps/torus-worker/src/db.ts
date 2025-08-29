@@ -518,7 +518,7 @@ export async function getUserWeightMap(): Promise<
 export async function upsertPermissions(
   permissions: ({
     permission: NewPermission;
-    hierarchy: NewPermissionHierarchy;
+    hierarchies: NewPermissionHierarchy[];
     enforcementControllers: NewPermissionEnforcementController[];
     revocationArbiters: NewPermissionRevocationArbiter[];
   } & (
@@ -683,11 +683,11 @@ export async function upsertPermissions(
     }
 
     // Step 10: Bulk insert hierarchies
-    const hierarchies = permissions.map((p) => p.hierarchy);
-    if (hierarchies.length > 0) {
+    const allHierarchies = permissions.flatMap((p) => p.hierarchies);
+    if (allHierarchies.length > 0) {
       await tx
         .insert(permissionHierarchiesSchema)
-        .values(hierarchies)
+        .values(allHierarchies)
         .onConflictDoNothing({
           target: [
             permissionHierarchiesSchema.childPermissionId,
