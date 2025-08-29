@@ -1,3 +1,4 @@
+import { SS58_SCHEMA } from "@torus-network/sdk/types";
 import { z } from "zod";
 
 interface AllocationItem {
@@ -121,6 +122,8 @@ export const EDIT_PERMISSION_SCHEMA = z
     newTargets: z.array(TARGET_SCHEMA).optional(),
     newStreams: z.array(STREAM_ENTRY_SCHEMA).optional(),
     newDistributionControl: DISTRIBUTION_CONTROL_SCHEMA.optional(),
+    recipientManager: SS58_SCHEMA.optional(),
+    weightSetter: SS58_SCHEMA.optional(),
   })
   .superRefine((data, ctx) => {
     // Validate streams total percentage

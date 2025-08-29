@@ -384,14 +384,14 @@ function permissionContractToDatabase(
 
   // Handle hierarchy - create parent-child relationships based on scope's children field
   const hierarchy: NewPermissionHierarchy[] = [];
-  
+
   // Extract children from the scope
   const children = match(contract.scope)({
     Stream: () => [], // Stream scopes don't have children
     Namespace: (scope) => scope.children,
     Curator: (scope) => scope.children,
   });
-  
+
   // Create hierarchy entries for each child permission
   for (const childPermissionId of children) {
     hierarchy.push({

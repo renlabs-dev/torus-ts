@@ -162,8 +162,8 @@ const nodeColorCategories: NodeCategory[] = [
     nodes: [
       {
         color: graphConstants.nodeConfig.nodeColors.emissionPermissionNode,
-        title: "Emission Permission",
-        description: "Controls token emissions and distributions",
+        title: "Stream Permission",
+        description: "Controls token streams and distributions",
         shape: "icosahedron",
       },
       {

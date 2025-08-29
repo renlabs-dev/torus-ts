@@ -4,7 +4,7 @@ import type { AccountEmissionData } from "~/hooks/use-multiple-account-emissions
 
 type DisplayMode = "full" | "fraction" | "value-only";
 
-export function calculateEmissionValue(
+export function calculateStreamValue(
   percentage: number,
   accountEmissions: AccountEmissionData | null | undefined,
   isAccountConnected: boolean,
@@ -22,13 +22,12 @@ export function calculateEmissionValue(
   }
 
   const percentageFactor = percentage / 100;
-  const incomingEmissions =
-    accountEmissions.streams.incoming.tokensPerWeek.plus(
-      accountEmissions.root.tokensPerWeek,
-    );
-  const totalEmissions = incomingEmissions.toNumber();
+  const incomingStreams = accountEmissions.streams.incoming.tokensPerWeek.plus(
+    accountEmissions.root.tokensPerWeek,
+  );
+  const totalStreams = incomingStreams.toNumber();
 
-  const calculatedValue = incomingEmissions.multipliedBy(
+  const calculatedValue = incomingStreams.multipliedBy(
     makeTorAmount(percentageFactor),
   );
   const value = calculatedValue.toNumber();
@@ -37,7 +36,7 @@ export function calculateEmissionValue(
   if (percentage === 0) {
     switch (displayMode) {
       case "fraction":
-        return `0 / ${totalEmissions.toFixed(2)}`;
+        return `0 / ${totalStreams.toFixed(2)}`;
       case "value-only":
         return "0.00 TORUS/week";
       case "full":
@@ -57,7 +56,7 @@ export function calculateEmissionValue(
   // Return based on display mode
   switch (displayMode) {
     case "fraction":
-      return `${formattedValue} / ${totalEmissions.toFixed(2)}`;
+      return `${formattedValue} / ${totalStreams.toFixed(2)}`;
     case "value-only":
       return `${formattedValue} TORUS/week`;
     case "full":

@@ -151,6 +151,34 @@ export function PermissionSelector(props: PermissionSelectorProps) {
     return filtered;
   }, [allPermissions, permissionsError, userPermissionIds]);
 
+  // Helper function to get recipient from contract scope
+  const getRecipientFromContract = useCallback(
+    (contract: PermissionContract): string | null => {
+      const scopeType = Object.keys(contract.scope)[0];
+      if (scopeType === "Namespace" && "Namespace" in contract.scope) {
+        return contract.scope.Namespace.recipient;
+      }
+      if (scopeType === "Stream" && "Stream" in contract.scope) {
+        // For stream permissions, get the first recipient (since they can have multiple)
+        const recipients = contract.scope.Stream.recipients;
+        if (recipients instanceof Map && recipients.size > 0) {
+          return Array.from(recipients.keys())[0] || null;
+        }
+        // If recipients is an object (parsed from JSON)
+        if (typeof recipients === "object") {
+          const keys = Object.keys(recipients);
+          return keys.length > 0 ? (keys[0] ?? null) : null;
+        }
+        return null;
+      }
+      if (scopeType === "Curator" && "Curator" in contract.scope) {
+        return contract.scope.Curator.recipient;
+      }
+      return null;
+    },
+    [],
+  );
+
   // For now, we'll show agent names in the detailed view with AddressWithAgent component
   // Agent names in the dropdown items can be added later when we have proper batch fetching
   const agentNameMap = useMemo(() => {
@@ -167,7 +195,7 @@ export function PermissionSelector(props: PermissionSelectorProps) {
         getRecipientFromContract(permission.contract) || "",
       ),
     }));
-  }, [userPermissions, agentNameMap]);
+  }, [userPermissions, agentNameMap, getRecipientFromContract]);
 
   const hasPermissions =
     userPermissionsWithNames && userPermissionsWithNames.length > 0;
@@ -176,35 +204,10 @@ export function PermissionSelector(props: PermissionSelectorProps) {
   const getPermissionType = (contract: PermissionContract | null) => {
     if (!contract) return "Unknown";
     const scopeType = Object.keys(contract.scope)[0];
-    if (scopeType === "Stream") return "Emission"; // Still display as "Emission" in UI
+    if (scopeType === "Stream") return "Stream"; // Updated to match SDK terminology
     if (scopeType === "Namespace") return "Capability";
     if (scopeType === "Curator") return "Curator";
     return "Unknown";
-  };
-
-  // Helper function to get recipient from contract scope
-  const getRecipientFromContract = (
-    contract: PermissionContract,
-  ): string | null => {
-    const scopeType = Object.keys(contract.scope)[0];
-    if (scopeType === "Namespace" && "Namespace" in contract.scope) {
-      return contract.scope.Namespace.recipient;
-    }
-    if (scopeType === "Stream" && "Stream" in contract.scope) {
-      // For stream permissions, get the first recipient (since they can have multiple)
-      const recipients = contract.scope.Stream.recipients;
-      if (recipients instanceof Map && recipients.size > 0) {
-        return Array.from(recipients.keys())[0] || null;
-      }
-      // If recipients is an object (parsed from JSON)
-      if (typeof recipients === "object") {
-        const keys = Object.keys(recipients);
-        return keys.length > 0 ? (keys[0] ?? null) : null;
-      }
-      return null;
-    }
-    // Curator permissions don't have a single recipient
-    return null;
   };
 
   // Helper to render capability paths in CommandItems
@@ -237,7 +240,7 @@ export function PermissionSelector(props: PermissionSelectorProps) {
       return { emissionPermissions: [], namespacePermissions: [] };
 
     const emissionPermissions = userPermissionsWithNames
-      .filter((item) => getPermissionType(item.contract) === "Emission")
+      .filter((item) => getPermissionType(item.contract) === "Stream")
       .map((item) => ({
         ...item,
         searchText: [
@@ -275,7 +278,7 @@ export function PermissionSelector(props: PermissionSelectorProps) {
       }));
 
     return { emissionPermissions, namespacePermissions };
-  }, [userPermissionsWithNames]);
+  }, [userPermissionsWithNames, getRecipientFromContract]);
 
   // Prioritize delegator permissions for auto-selection
   const getDefaultPermissionId = () => {
@@ -427,7 +430,7 @@ export function PermissionSelector(props: PermissionSelectorProps) {
         namespace_permissions,
       };
     },
-    [],
+    [getRecipientFromContract],
   );
 
   function getPlaceholderText() {
@@ -586,8 +589,8 @@ export function PermissionSelector(props: PermissionSelectorProps) {
           />
         ),
       },
-      // Only show Recipient for non-emission permissions
-      ...(permissionType !== "Emission"
+      // Only show Recipient for non-stream permissions
+      ...(permissionType !== "Stream"
         ? [
             {
               label: "Recipient",
@@ -725,7 +728,7 @@ export function PermissionSelector(props: PermissionSelectorProps) {
                 <CommandEmpty>No permissions found.</CommandEmpty>
 
                 {searchData.emissionPermissions.length > 0 && (
-                  <CommandGroup heading="Emission Permissions">
+                  <CommandGroup heading="Stream Permissions">
                     {searchData.emissionPermissions.map((item) => {
                       const { permissionId } = item;
                       const isSelected =

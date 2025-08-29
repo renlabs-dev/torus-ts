@@ -16,10 +16,10 @@ import type {
 
 export function getPermissionType(
   permissionData: PermissionWithDetails | null,
-): "emission" | "capability" | "unknown" {
+): "stream" | "capability" | "unknown" {
   if (!permissionData) return "unknown";
 
-  if (permissionData.emission_permissions) return "emission";
+  if (permissionData.emission_permissions) return "stream";
   if (permissionData.namespace_permissions) return "capability";
 
   return "unknown";
@@ -31,7 +31,7 @@ export function canEditPermission(
 ): boolean {
   if (!permissionData || !userAddress) return false;
 
-  // Only emission permissions can be edited
+  // Only stream permissions can be edited
   if (!permissionData.emission_permissions) return false;
 
   // Only the grantor (delegator) can edit permissions
@@ -81,6 +81,17 @@ function transformPermissionToFormData(
         Interval: (blockInterval) =>
           ({ Interval: blockInterval }) as DistributionControlFormData,
       });
+
+      // Extract recipient manager and weight setter
+      // Note: These are arrays in the chain data, but the form only supports single values
+      // We'll use the first value if available
+      if (streamScope.recipientManagers.length > 0) {
+        formData.recipientManager = streamScope.recipientManagers[0];
+      }
+
+      if (streamScope.weightSetters.length > 0) {
+        formData.weightSetter = streamScope.weightSetters[0];
+      }
     },
     Curator: () => {
       // Curator permissions don't have stream data
@@ -139,6 +150,8 @@ export async function handlePermissionDataChange({
       newDistributionControl: formData.newDistributionControl ?? {
         Manual: null,
       },
+      recipientManager: formData.recipientManager,
+      weightSetter: formData.weightSetter,
     });
 
     return { originalDistributionControl };
@@ -150,7 +163,14 @@ export async function handlePermissionDataChange({
 }
 
 export function prepareFormDataForSDK(data: EditPermissionFormData) {
-  const { permissionId, newTargets, newStreams, newDistributionControl } = data;
+  const {
+    permissionId,
+    newTargets,
+    newStreams,
+    newDistributionControl,
+    recipientManager,
+    weightSetter,
+  } = data;
 
   const sdkTargets = newTargets?.map(
     ({ address, percentage }): [SS58Address, number] => [
@@ -173,5 +193,7 @@ export function prepareFormDataForSDK(data: EditPermissionFormData) {
     newRecipients: sdkTargets,
     newStreams: sdkStreams,
     newDistributionControl,
+    recipientManager,
+    weightSetter,
   };
 }

@@ -51,11 +51,11 @@ function createPercentageArrayValidator<T extends Record<string, any>>(
 }
 
 /**
- * Creates a superRefine validator specifically for target-like objects with weight strings.
+ * Creates a superRefine validator specifically for recipient-like objects with weight strings.
  */
-export const createTargetWeightValidator = () =>
+export const createRecipientWeightValidator = () =>
   createPercentageArrayValidator(
-    (target: { weight: string }) => target.weight,
+    (recipient: { weight: string }) => recipient.weight,
     {
       percentageField: "weight",
       totalErrorMessage: "Total percent must not exceed 100",

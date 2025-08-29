@@ -26,7 +26,7 @@ export interface CustomGraphNode extends NodeObject {
 
 interface PermissionNodeData {
   permissionId: string;
-  permissionType: "emission" | "capability";
+  permissionType: "stream" | "capability";
   delegatorAccountId: string;
   recipientAccountId: string;
   scope?: string;

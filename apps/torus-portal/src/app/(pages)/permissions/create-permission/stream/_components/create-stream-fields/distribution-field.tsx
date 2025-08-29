@@ -14,10 +14,10 @@ import {
   SelectValue,
 } from "@torus-ts/ui/components/select";
 import React from "react";
-import type { CreateEmissionPermissionForm } from "../create-emission-permission-form-schema";
+import type { CreateStreamPermissionForm } from "../create-stream-permission-form-schema";
 
 interface DistributionFieldProps {
-  form: CreateEmissionPermissionForm;
+  form: CreateStreamPermissionForm;
   isAccountConnected: boolean;
 }
 
