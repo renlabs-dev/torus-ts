@@ -580,7 +580,7 @@ export function createSimplifiedGraphData(
           z: getDeterministicZ(permissionId, 50),
           permissionData: {
             permissionId,
-            permissionType: "emission",
+            permissionType: "stream",
             delegatorAccountId: delegatorId,
             recipientAccountId: recipientId || "",
             scope: "EMISSION",

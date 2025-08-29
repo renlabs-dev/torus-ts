@@ -12,7 +12,7 @@ import {
 import { Input } from "@torus-ts/ui/components/input";
 import { useAvailableStreams } from "~/hooks/use-available-streams";
 import { useMultipleAccountStreams } from "~/hooks/use-multiple-account-streams";
-import { calculateIndividualStreamValue } from "~/utils/calculate-emission-value";
+import { calculateIndividualStreamValue } from "~/utils/calculate-stream-value";
 import { Plus, Trash2 } from "lucide-react";
 import React, { useCallback, useEffect } from "react";
 import { useFieldArray } from "react-hook-form";

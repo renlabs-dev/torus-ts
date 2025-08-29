@@ -11,7 +11,7 @@ import {
 import { Input } from "@torus-ts/ui/components/input";
 import { FormAddressField } from "~/app/_components/address-field";
 import { useMultipleAccountEmissions } from "~/hooks/use-multiple-account-emissions";
-import { calculateEmissionValue } from "~/utils/calculate-emission-value";
+import { calculateStreamValue } from "~/utils/calculate-stream-value";
 import { Plus, Trash2 } from "lucide-react";
 import React from "react";
 import { useFieldArray } from "react-hook-form";
@@ -85,7 +85,7 @@ export function RecipientsField({
                     ? (recipientWeight / 100) * totalStreamPercentage
                     : 0;
 
-                return `${recipientWeight}% of ${totalStreamPercentage}% = ${calculateEmissionValue(
+                return `${recipientWeight}% of ${totalStreamPercentage}% = ${calculateStreamValue(
                   recipientPercentage,
                   accountEmissions,
                   isAccountConnected,

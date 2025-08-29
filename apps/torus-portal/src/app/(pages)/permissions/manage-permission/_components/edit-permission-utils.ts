@@ -16,10 +16,10 @@ import type {
 
 export function getPermissionType(
   permissionData: PermissionWithDetails | null,
-): "emission" | "capability" | "unknown" {
+): "stream" | "capability" | "unknown" {
   if (!permissionData) return "unknown";
 
-  if (permissionData.emission_permissions) return "emission";
+  if (permissionData.emission_permissions) return "stream";
   if (permissionData.namespace_permissions) return "capability";
 
   return "unknown";
@@ -31,7 +31,7 @@ export function canEditPermission(
 ): boolean {
   if (!permissionData || !userAddress) return false;
 
-  // Only emission permissions can be edited
+  // Only stream permissions can be edited
   if (!permissionData.emission_permissions) return false;
 
   // Only the grantor (delegator) can edit permissions

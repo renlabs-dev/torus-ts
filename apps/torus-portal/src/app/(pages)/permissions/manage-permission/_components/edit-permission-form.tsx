@@ -209,7 +209,7 @@ export function EditPermissionForm({
                 isGrantor={isGrantor}
               />
 
-              {permissionType === "emission" && canEdit && (
+              {permissionType === "stream" && canEdit && (
                 <>
                   <DistributionControlField control={form.control} />
 

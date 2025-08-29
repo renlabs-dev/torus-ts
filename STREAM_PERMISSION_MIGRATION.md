@@ -84,49 +84,63 @@
 
 **Files to update:**
 
-- [ ] **`targets-field.tsx`** - Already supports multiple, just rename
-- [ ] **Form validation** - Ensure weight distribution validation works
-- [ ] **`edit-permission-utils.ts:49-56`** - Multi-recipient extraction logic
-- [ ] **Permission display components** - Show all recipients
+- [x] **`recipients-field.tsx`** - ✅ DONE - Multiple recipient support complete in both create and edit forms
+- [x] **Form validation** - ✅ DONE - Weight distribution validation working with `createRecipientWeightValidator`
+- [ ] **`edit-permission-utils.ts:19,22,34-35`** - ❌ NEEDS WORK - Still uses "emission" terminology, should be "stream"
+- [x] **Permission display components** - ✅ DONE - Multi-recipient display completed in hypergraph components
 
 ### 7. **Permission Type Detection**
 
 **Files to update:**
 
-- [ ] **`edit-permission-utils.ts:19`** - Change `"emission"` to `"stream"`
-- [ ] **`edit-permission-utils.ts:22,35`** - Update database field checks
-- [ ] **`permission-type-info.tsx`** - Display logic updates
+- [ ] **`edit-permission-utils.ts:19,22,34-35`** - ❌ NEEDS WORK - Change `"emission"` to `"stream"` in type definitions and logic
+- [ ] **`permission-type-info.tsx:10,36`** - ❌ NEEDS WORK - Interface and conditional logic updates for "stream" terminology
 
 ### 8. **Graph Visualization Updates**
 
 **Files to update:**
 
-- [ ] **`force-graph-constants.ts`** - Color schemes, node types
-- [ ] **`force-graph-utils.ts`** - Node creation for multi-recipient permissions
-- [ ] **`node-color-legend-dropdown.tsx`** - Legend updates
-- [ ] **`permission-graph-types.ts`** - Type definitions
+- [x] **`force-graph-constants.ts`** - ✅ DONE - Color schemes and node types already clean
+- [x] **`force-graph-utils.ts`** - ✅ DONE - Multi-recipient permissions fully implemented
+- [x] **`node-color-legend-dropdown.tsx`** - ✅ DONE - "Emission Permission" updated to "Stream Permission"
+- [ ] **`permission-graph-types.ts:29`** - ❌ NEEDS WORK - Update `permissionType: "emission" | "capability"` to use "stream"
 
 ## 🗄️ Data & Integration (Lower Priority)
 
 ### 9. **Hook Updates**
 
-- [ ] **`use-multiple-account-emissions.ts`** → `use-multiple-account-streams.ts`
-- [ ] **`use-tokens-per-week.ts`** - Calculation logic updates
-- [ ] **`use-can-create-signal.ts`** - Permission checking logic
+- [x] **`use-multiple-account-streams.ts`** - ✅ DONE - New stream-specific hook implemented
+- [x] **`use-tokens-per-week.ts`** - ✅ DONE - No emission references in user-facing content
+- [x] **`use-can-create-signal.ts`** - ✅ DONE - Uses appropriate backend data structure references
 
 ### 10. **Utility Functions**
 
-- [ ] **`calculate-emission-value.ts`** → `calculate-stream-value.ts`
-- [ ] **Permission selector logic** - Multi-recipient handling
+- [ ] **`calculate-emission-value.ts`** - ❌ NEEDS WORK - Rename file and functions to "stream" terminology
+- [x] **Permission selector logic** - ✅ DONE - Multi-recipient handling completed in `permission-selector.tsx`
 
-## 📋 Suggested Implementation Order
+## ✅ **MIGRATION STATUS: ~85% COMPLETE**
 
-1. **Fix Critical Hypergraph Issues** (Items 1-2) - Enables basic functionality
-2. **Update Form API Calls** - Ensures forms work
-3. **Add New Form Fields** (Item 5) - Enhanced UX
-4. **Terminology Updates** (Items 3-4) - Consistency
-5. **Logic Updates** (Items 6-8) - Full functionality
-6. **Data Integration** (Items 9-10) - Polish
+### **🎉 Completed Sections:**
+
+- **✅ Critical Issues (Sections 1-2)** - Hypergraph components and form API calls working
+- **✅ Terminology Updates (Sections 3-4)** - Complete directory migration and UI text updates
+- **✅ New Form Fields (Section 5)** - Optional recipientManager and weightSetter fields added
+- **✅ Core Multi-Recipient Support (Section 6)** - Form components and validation working
+- **✅ Graph Visualization (Section 8)** - Multi-recipient display and legend updates complete
+- **✅ Most Hook Updates (Section 9)** - Stream-specific hooks implemented
+
+### **⚠️ Remaining Work (High Priority):**
+
+1. **`edit-permission-utils.ts`** - Lines 19,22,34-35: Change "emission" → "stream" terminology
+2. **`permission-type-info.tsx`** - Lines 10,36: Update interface and logic for "stream"
+3. **`permission-graph-types.ts`** - Line 29: Update type definition to use "stream"
+4. **`calculate-emission-value.ts`** - Rename file and functions to use "stream" terminology
+
+### **🔄 Optional Cleanup:**
+
+- Consider deprecating `use-multiple-account-emissions.ts` in favor of streams version
+
+## 📋 Original Implementation Order _(Reference)_
 
 ## 🔍 Key Technical Changes Needed
 
