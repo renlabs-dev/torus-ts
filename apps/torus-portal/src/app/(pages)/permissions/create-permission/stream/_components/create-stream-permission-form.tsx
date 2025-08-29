@@ -14,8 +14,10 @@ import { useForm } from "react-hook-form";
 import { AllocationField } from "./create-stream-fields/allocation-field";
 import { DistributionField } from "./create-stream-fields/distribution-field";
 import { DurationField } from "./create-stream-fields/duration-field";
+import { RecipientManagerField } from "./create-stream-fields/recipient-manager-field";
 import { RecipientsField } from "./create-stream-fields/recipients-field";
 import { RevocationField } from "./create-stream-fields/revocation-field";
+import { WeightSetterField } from "./create-stream-fields/weight-setter-field";
 import type { CreateStreamPermissionFormData } from "./create-stream-permission-form-schema";
 import { createStreamPermissionSchema } from "./create-stream-permission-form-schema";
 import { transformFormDataToSDK } from "./create-stream-permission-form-utils";
@@ -107,7 +109,7 @@ export function CreateStreamPermissionForm() {
   return (
     <Form {...form}>
       <form
-        id="emission-permission-form"
+        id="stream-permission-form"
         onSubmit={form.handleSubmit(handleSubmit)}
         className="flex flex-col gap-6"
       >
@@ -141,9 +143,19 @@ export function CreateStreamPermissionForm() {
             isAccountConnected={isAccountConnected}
           />
 
+          <RecipientManagerField
+            form={form}
+            isAccountConnected={isAccountConnected}
+          />
+
+          <WeightSetterField
+            form={form}
+            isAccountConnected={isAccountConnected}
+          />
+
           <Button
             type="submit"
-            form="emission-permission-form"
+            form="stream-permission-form"
             className="w-full"
             variant="outline"
             disabled={!isAccountConnected || isPending || isSigning}

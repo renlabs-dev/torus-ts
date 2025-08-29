@@ -67,13 +67,16 @@
 
 **Priority: MEDIUM** - Enhanced functionality
 
-- [ ] **`create-emission-permission-form-schema.ts`** - Add optional fields:
+- [x] **`create-stream-permission-form-schema.ts`** - ✅ Added optional fields:
   - `recipientManager?: SS58Address`
   - `weightSetter?: SS58Address`
-- [ ] **Create new form components:**
+- [x] **Create new form components:** - ✅ Successfully implemented
   - `recipient-manager-field.tsx`
   - `weight-setter-field.tsx`
-- [ ] **Update form utils** - Handle new optional parameters
+- [x] **Update form utils** - ✅ Handle new optional parameters with conditional inclusion
+- [x] **Form integration** - ✅ New fields added to CreateStreamPermissionForm
+- [x] **Type safety** - ✅ All TypeScript compilation errors resolved
+- [x] **Code quality** - ✅ ESLint passes with no warnings
 
 ## 🔧 Logic & Data Handling (High Priority)
 

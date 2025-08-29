@@ -102,5 +102,8 @@ export function transformFormDataToSDK(data: CreateStreamPermissionFormData) {
     duration,
     revocation,
     enforcement,
+    // Include optional fields if they are provided
+    ...(data.recipientManager && { recipientManager: data.recipientManager }),
+    ...(data.weightSetter && { weightSetter: data.weightSetter }),
   };
 }

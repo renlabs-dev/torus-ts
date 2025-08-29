@@ -157,6 +157,9 @@ export const createStreamPermissionSchema = z.object({
   duration: durationSchema,
   revocation: revocationSchema,
   enforcement: enforcementSchema,
+  // Optional fields for enhanced stream management
+  recipientManager: SS58_SCHEMA.optional(),
+  weightSetter: SS58_SCHEMA.optional(),
 });
 
 export type CreateStreamPermissionFormData = z.infer<
