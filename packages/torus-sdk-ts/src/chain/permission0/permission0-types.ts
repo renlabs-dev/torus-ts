@@ -8,6 +8,7 @@ import {
   sb_bool,
   sb_enum,
   sb_h256,
+  sb_id,
   sb_map,
   sb_null,
   sb_option,
@@ -83,10 +84,11 @@ export const STREAM_SCOPE_SCHEMA = sb_struct({
 // ---- Curator Types ----
 
 export const CURATOR_SCOPE_SCHEMA = sb_struct({
-  flags:
-    // CURATOR_PERMISSIONS_SCHEMA, // FIXME: z.unknown() hole on schema
-    z.unknown(),
+  recipient: sb_address,
+  flags: sb_map(sb_option(PERMISSION_ID_SCHEMA), sb_id), // BTreeMap<Option<H256>, u32>
   cooldown: sb_option(sb_blocks),
+  maxInstances: sb_id, // u32 as number
+  children: sb_array(PERMISSION_ID_SCHEMA), // BTreeSet<H256> serialized as array
 });
 
 export type CuratorScope = z.infer<typeof CURATOR_SCOPE_SCHEMA>;
@@ -96,6 +98,8 @@ export type CuratorScope = z.infer<typeof CURATOR_SCOPE_SCHEMA>;
 export const NAMESPACE_SCOPE_SCHEMA = sb_struct({
   recipient: sb_address,
   paths: sb_map(sb_option(PERMISSION_ID_SCHEMA), sb_array(sb_namespace_path)),
+  maxInstances: sb_id, // u32 as number
+  children: sb_array(PERMISSION_ID_SCHEMA),
 });
 
 export type NamespaceScope = z.infer<typeof NAMESPACE_SCOPE_SCHEMA>;
@@ -151,15 +155,12 @@ export type EnforcementReferendum = z.infer<
 
 const PERMISSION_CONTRACT_SHAPE = {
   delegator: sb_address,
-  // Note: recipient field removed - now stored in scope-specific structures
   scope: PERMISSION_SCOPE_SCHEMA,
   duration: PERMISSION_DURATION_SCHEMA,
   revocation: REVOCATION_TERMS_SCHEMA,
   enforcement: ENFORCEMENT_AUTHORITY_SCHEMA,
   lastExecution: sb_option(sb_blocks),
   executionCount: sb_bigint, // u32 as bigint
-  maxInstances: sb_bigint, // u32 as bigint
-  children: sb_array(PERMISSION_ID_SCHEMA), // BoundedBTreeSet serialized as array
   createdAt: sb_blocks,
 };
 
