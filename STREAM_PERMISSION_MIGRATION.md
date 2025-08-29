@@ -13,7 +13,11 @@
 - [x] **`graph-sheet-details-card.tsx`** - ✅ Fixed to extract recipients by permission type
   - Added `extractRecipients()` helper function to handle Stream vs Namespace permissions
   - Updated both `GraphSheetDetailsLinkButtons` calls to use `recipients` parameter
-- [ ] **`permission-graph-command.tsx`** - Likely has grantee filtering issues
+- [x] **`permission-graph-command.tsx`** - ✅ Fixed multi-recipient filtering and terminology
+  - Updated emission → stream permission processing
+  - Added support for multiple recipients in search/display
+  - Shows "X Recipients" for multi-recipient permissions with all names in search
+  - Updated command group heading from "Emission" to "Stream" permissions
 - [ ] **`force-graph-utils.ts`** - Graph building logic needs multi-recipient support
 
 ### 2. **Form API Calls - Wrong Function**
