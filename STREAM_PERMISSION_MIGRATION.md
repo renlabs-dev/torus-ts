@@ -18,7 +18,7 @@
   - Added support for multiple recipients in search/display
   - Shows "X Recipients" for multi-recipient permissions with all names in search
   - Updated command group heading from "Emission" to "Stream" permissions
-- [ ] **`force-graph-utils.ts`** - Graph building logic needs multi-recipient support
+- [x] **`force-graph-utils.ts`** - Graph building logic needs modification to support new recipient structure
 
 ### 2. **Form API Calls - Wrong Function**
 
