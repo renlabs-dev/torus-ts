@@ -2,7 +2,6 @@ import {
   FormControl,
   FormField,
   FormItem,
-  FormLabel,
   FormMessage,
 } from "@torus-ts/ui/components/form";
 import { FormAddressField } from "~/app/_components/address-field";
@@ -20,14 +19,6 @@ export function WeightSetterField({
 }: WeightSetterFieldProps) {
   return (
     <div className="grid gap-3">
-      <FormLabel className="text-sm font-medium">
-        Weight Setter (Optional)
-      </FormLabel>
-      <p className="text-sm text-gray-500">
-        Account authorized to modify recipient weights for this stream
-        permission. Leave empty if no specific weight setter is required.
-      </p>
-
       <FormField
         control={form.control}
         name="weightSetter"
@@ -41,7 +32,7 @@ export function WeightSetterField({
                   onChange: (value: string) =>
                     field.onChange(value || undefined),
                 }}
-                label="Address (Optional)"
+                label="Weight Setter (Optional)"
                 disabled={!isAccountConnected}
               />
             </FormControl>
@@ -49,6 +40,10 @@ export function WeightSetterField({
           </FormItem>
         )}
       />
+      <p className="text-sm text-gray-500">
+        Account authorized to modify recipient weights for this stream
+        permission. Leave empty if no specific weight setter is required.
+      </p>
     </div>
   );
 }

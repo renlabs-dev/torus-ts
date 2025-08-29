@@ -23,8 +23,10 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import type { z } from "zod";
 import { DistributionControlField } from "./edit-permission-fields/distribution-control-field";
+import { RecipientManagerField } from "./edit-permission-fields/recipient-manager-field";
 import { RecipientsField } from "./edit-permission-fields/recipients-field";
 import { StreamsField } from "./edit-permission-fields/streams-field";
+import { WeightSetterField } from "./edit-permission-fields/weight-setter-field";
 import type { EditPermissionFormData } from "./edit-permission-schema";
 import { EDIT_PERMISSION_SCHEMA } from "./edit-permission-schema";
 import {
@@ -94,6 +96,8 @@ export function EditPermissionForm({
       newTargets: [],
       newStreams: [],
       newDistributionControl: { Manual: null },
+      recipientManager: undefined,
+      weightSetter: undefined,
     },
   });
 
@@ -216,6 +220,16 @@ export function EditPermissionForm({
                   <RecipientsField control={form.control} />
 
                   <StreamsField control={form.control} />
+
+                  <RecipientManagerField
+                    control={form.control}
+                    isAccountConnected={isAccountConnected}
+                  />
+
+                  <WeightSetterField
+                    control={form.control}
+                    isAccountConnected={isAccountConnected}
+                  />
 
                   <Button
                     type="submit"

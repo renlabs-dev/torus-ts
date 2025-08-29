@@ -151,39 +151,8 @@ export function PermissionSelector(props: PermissionSelectorProps) {
     return filtered;
   }, [allPermissions, permissionsError, userPermissionIds]);
 
-  // For now, we'll show agent names in the detailed view with AddressWithAgent component
-  // Agent names in the dropdown items can be added later when we have proper batch fetching
-  const agentNameMap = useMemo(() => {
-    return new Map<string, string>();
-  }, []);
-
-  // Enhanced user permissions with agent names
-  const userPermissionsWithNames = useMemo(() => {
-    if (!userPermissions) return null;
-    return userPermissions.map((permission) => ({
-      ...permission,
-      delegatorAgentName: agentNameMap.get(permission.contract.delegator),
-      recipientAgentName: agentNameMap.get(
-        getRecipientFromContract(permission.contract) || "",
-      ),
-    }));
-  }, [userPermissions, agentNameMap]);
-
-  const hasPermissions =
-    userPermissionsWithNames && userPermissionsWithNames.length > 0;
-
-  // Helper function to determine permission type
-  const getPermissionType = (contract: PermissionContract | null) => {
-    if (!contract) return "Unknown";
-    const scopeType = Object.keys(contract.scope)[0];
-    if (scopeType === "Stream") return "Stream"; // Updated to match SDK terminology
-    if (scopeType === "Namespace") return "Capability";
-    if (scopeType === "Curator") return "Curator";
-    return "Unknown";
-  };
-
   // Helper function to get recipient from contract scope
-  const getRecipientFromContract = (
+  const getRecipientFromContract = useCallback((
     contract: PermissionContract,
   ): string | null => {
     const scopeType = Object.keys(contract.scope)[0];
@@ -203,9 +172,43 @@ export function PermissionSelector(props: PermissionSelectorProps) {
       }
       return null;
     }
-    // Curator permissions don't have a single recipient
+    if (scopeType === "Curator" && "Curator" in contract.scope) {
+      return contract.scope.Curator.recipient;
+    }
     return null;
+  }, []);
+
+  // For now, we'll show agent names in the detailed view with AddressWithAgent component
+  // Agent names in the dropdown items can be added later when we have proper batch fetching
+  const agentNameMap = useMemo(() => {
+    return new Map<string, string>();
+  }, []);
+
+  // Enhanced user permissions with agent names
+  const userPermissionsWithNames = useMemo(() => {
+    if (!userPermissions) return null;
+    return userPermissions.map((permission) => ({
+      ...permission,
+      delegatorAgentName: agentNameMap.get(permission.contract.delegator),
+      recipientAgentName: agentNameMap.get(
+        getRecipientFromContract(permission.contract) || "",
+      ),
+    }));
+  }, [userPermissions, agentNameMap, getRecipientFromContract]);
+
+  const hasPermissions =
+    userPermissionsWithNames && userPermissionsWithNames.length > 0;
+
+  // Helper function to determine permission type
+  const getPermissionType = (contract: PermissionContract | null) => {
+    if (!contract) return "Unknown";
+    const scopeType = Object.keys(contract.scope)[0];
+    if (scopeType === "Stream") return "Stream"; // Updated to match SDK terminology
+    if (scopeType === "Namespace") return "Capability";
+    if (scopeType === "Curator") return "Curator";
+    return "Unknown";
   };
+
 
   // Helper to render capability paths in CommandItems
   const renderCapabilityPaths = (namespacePaths: unknown) => {
@@ -275,7 +278,7 @@ export function PermissionSelector(props: PermissionSelectorProps) {
       }));
 
     return { emissionPermissions, namespacePermissions };
-  }, [userPermissionsWithNames]);
+  }, [userPermissionsWithNames, getRecipientFromContract]);
 
   // Prioritize delegator permissions for auto-selection
   const getDefaultPermissionId = () => {
@@ -427,7 +430,7 @@ export function PermissionSelector(props: PermissionSelectorProps) {
         namespace_permissions,
       };
     },
-    [],
+    [getRecipientFromContract],
   );
 
   function getPlaceholderText() {

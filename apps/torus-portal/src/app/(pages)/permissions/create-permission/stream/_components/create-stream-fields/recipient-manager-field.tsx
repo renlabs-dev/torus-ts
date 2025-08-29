@@ -2,7 +2,6 @@ import {
   FormControl,
   FormField,
   FormItem,
-  FormLabel,
   FormMessage,
 } from "@torus-ts/ui/components/form";
 import { FormAddressField } from "~/app/_components/address-field";
@@ -20,14 +19,6 @@ export function RecipientManagerField({
 }: RecipientManagerFieldProps) {
   return (
     <div className="grid gap-3">
-      <FormLabel className="text-sm font-medium">
-        Recipient Manager (Optional)
-      </FormLabel>
-      <p className="text-sm text-gray-500">
-        Account authorized to manage recipients for this stream permission.
-        Leave empty if no specific manager is required.
-      </p>
-
       <FormField
         control={form.control}
         name="recipientManager"
@@ -41,7 +32,7 @@ export function RecipientManagerField({
                   onChange: (value: string) =>
                     field.onChange(value || undefined),
                 }}
-                label="Address (Optional)"
+                label="Recipient Manager (Optional)"
                 disabled={!isAccountConnected}
               />
             </FormControl>
@@ -49,6 +40,10 @@ export function RecipientManagerField({
           </FormItem>
         )}
       />
+      <p className="text-sm text-gray-500">
+        Account authorized to manage recipients for this stream permission.
+        Leave empty if no specific manager is required.
+      </p>
     </div>
   );
 }
