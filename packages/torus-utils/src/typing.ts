@@ -56,6 +56,9 @@ export type ListItem<L> = L extends (infer T)[] ? T : never;
  */
 export const observeType = <T extends never>(x: T): T => x;
 
+export const typed_keys = <T extends object>(obj: T) =>
+  Object.keys(obj) as (keyof T)[];
+
 // == ADTs ==
 
 // -- Option --
