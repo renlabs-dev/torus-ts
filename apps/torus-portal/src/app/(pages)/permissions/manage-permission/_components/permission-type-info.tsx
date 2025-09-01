@@ -7,7 +7,7 @@ import {
 import { AlertCircle, Info, Lock } from "lucide-react";
 
 interface PermissionTypeInfoProps {
-  permissionType: "emission" | "capability" | "unknown";
+  permissionType: "stream" | "capability" | "unknown";
   canEdit?: boolean;
   isGrantor?: boolean;
 }
@@ -33,7 +33,7 @@ export function PermissionTypeInfo({
     );
   }
 
-  if (permissionType === "emission" && !isGrantor) {
+  if (permissionType === "stream" && !isGrantor) {
     return (
       <Card className="border-muted">
         <CardHeader>

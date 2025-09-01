@@ -323,7 +323,7 @@ export class DelegationTreeManager {
           // (we already know this is a namespace permission due to the filter above)
           const maxInstances = permission.scope.Namespace.maxInstances;
           const children = permission.scope.Namespace.children;
-          
+
           let availableInstances = Number(maxInstances);
 
           // Subtract max_instances of each child permission
@@ -336,7 +336,8 @@ export class DelegationTreeManager {
               // Extract maxInstances from child's scope
               let childMaxInstances = 0;
               if ("Namespace" in childPermission.scope) {
-                childMaxInstances = childPermission.scope.Namespace.maxInstances;
+                childMaxInstances =
+                  childPermission.scope.Namespace.maxInstances;
               } else if ("Curator" in childPermission.scope) {
                 childMaxInstances = childPermission.scope.Curator.maxInstances;
               }

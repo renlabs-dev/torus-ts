@@ -10,7 +10,7 @@ import {
 import { Separator } from "@torus-ts/ui/components/separator";
 import { AddressWithAgent } from "~/app/_components/address-with-agent";
 import { useMultipleAccountEmissions } from "~/hooks/use-multiple-account-emissions";
-import { calculateEmissionValue } from "~/utils/calculate-emission-value";
+import { calculateStreamValue } from "~/utils/calculate-stream-value";
 import { ShortenedCapabilityPath } from "~/utils/capability-path";
 import {
   AlertCircle,
@@ -48,7 +48,7 @@ export function GraphSheetDetailsPermission({
     if (
       !allPermissions ||
       !permissionData ||
-      permissionData.permissionType !== "emission"
+      permissionData.permissionType !== "stream"
     ) {
       return [];
     }
@@ -144,7 +144,7 @@ export function GraphSheetDetailsPermission({
             </CardTitle>
             <Badge
               variant={
-                permissionData.permissionType === "emission"
+                permissionData.permissionType === "stream"
                   ? "default"
                   : "secondary"
               }
@@ -218,7 +218,7 @@ export function GraphSheetDetailsPermission({
                 )}
               </div>
             </div>
-            {permissionData.permissionType === "emission" && (
+            {permissionData.permissionType === "stream" && (
               <div>
                 <h4 className="mb-2 flex items-center gap-2 font-medium">
                   <CheckCircle className="h-4 w-4" />
@@ -262,7 +262,7 @@ export function GraphSheetDetailsPermission({
         </CardContent>
       </Card>
 
-      {permissionData.permissionType !== "emission" && (
+      {permissionData.permissionType !== "stream" && (
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -282,8 +282,8 @@ export function GraphSheetDetailsPermission({
         </Card>
       )}
 
-      {/* Distribution Targets (for emission permissions) */}
-      {permissionData.permissionType === "emission" &&
+      {/* Distribution Targets (for stream permissions) */}
+      {permissionData.permissionType === "stream" &&
         distributionTargets.length > 0 && (
           <Card>
             <CardHeader>
@@ -317,7 +317,7 @@ export function GraphSheetDetailsPermission({
                                 Weight: {s.weight}
                               </Badge>
                               <Badge variant="secondary">
-                                {calculateEmissionValue(
+                                {calculateStreamValue(
                                   entry.streams.reduce(
                                     (total, s) => total + s.weight,
                                     0,
@@ -342,8 +342,8 @@ export function GraphSheetDetailsPermission({
           </Card>
         )}
 
-      {/* Stream Allocation (for emission permissions) */}
-      {permissionData.permissionType === "emission" &&
+      {/* Stream Allocation (for stream permissions) */}
+      {permissionData.permissionType === "stream" &&
         detailedPermission?.emission_stream_allocations && (
           <Card>
             <CardHeader>
@@ -381,7 +381,7 @@ export function GraphSheetDetailsPermission({
                     Amount:
                   </h4>
                   <p className="text-green-500">
-                    {calculateEmissionValue(
+                    {calculateStreamValue(
                       detailedPermission.emission_stream_allocations.percentage,
                       emissionsData[permissionData.delegatorAccountId],
                       true,

@@ -10,7 +10,7 @@ import { Badge } from "@torus-ts/ui/components/badge";
 import { Button } from "@torus-ts/ui/components/button";
 import { MarkdownView } from "@torus-ts/ui/components/markdown-view";
 import { useMultipleAccountEmissions } from "~/hooks/use-multiple-account-emissions";
-import { calculateEmissionValue } from "~/utils/calculate-emission-value";
+import { calculateStreamValue } from "~/utils/calculate-stream-value";
 import { Check, Radio, Trash2 } from "lucide-react";
 
 interface SignalWithMetadata {
@@ -138,10 +138,10 @@ export default function SignalAccordion({
                   </div>
                   <div>
                     <p className="text-muted-foreground text-sm">
-                      Emission Value
+                      Stream Value
                     </p>
                     <p className="text-lg font-semibold text-green-400">
-                      {calculateEmissionValue(
+                      {calculateStreamValue(
                         signal.proposedAllocation,
                         emissionsData[signal.agentKey],
                         true, // Always true for signal list display
