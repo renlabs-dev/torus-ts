@@ -60,7 +60,7 @@ export default function PermissionGraph2DPage() {
       setIsSheetOpen(true);
       const params = new URLSearchParams(searchParams.toString());
       params.set("id", node.id);
-      router.replace(`/permission-graph-2d?${params.toString()}`, {
+      router.replace(`/2d?${params.toString()}`, {
         scroll: false,
       });
     },
@@ -93,9 +93,7 @@ export default function PermissionGraph2DPage() {
     if (!isOpen) {
       const params = new URLSearchParams(searchParams.toString());
       params.delete("id");
-      const newUrl = params.toString()
-        ? `/permission-graph-2d?${params.toString()}`
-        : "/permission-graph-2d";
+      const newUrl = params.toString() ? `/2d?${params.toString()}` : "/2d";
       router.replace(newUrl, { scroll: false });
 
       setTimeout(() => {

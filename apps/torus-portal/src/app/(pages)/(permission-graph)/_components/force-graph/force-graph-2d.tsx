@@ -23,13 +23,6 @@ type D3SimulationNode = CustomGraphNode &
 
 type D3SimulationLink = CustomGraphLink & SimulationLinkDatum<D3SimulationNode>;
 
-interface ForceGraph2DProps {
-  graphData: CustomGraphData;
-  onNodeClick: (node: CustomGraphNode) => void;
-  userAddress?: string;
-  allocatorAddress: string;
-}
-
 function hexToPixi(hex: string): number {
   return parseInt(hex.replace("#", ""), 16);
 }
@@ -58,6 +51,13 @@ function getNodeColor(node: CustomGraphNode, userAddress?: string): string {
   return node.color ?? graphConstants.nodeConfig.nodeColors.default;
 }
 
+interface ForceGraph2DProps {
+  graphData: CustomGraphData;
+  onNodeClick: (node: CustomGraphNode) => void;
+  userAddress?: string;
+  allocatorAddress: string;
+}
+
 export function ForceGraphCanvas2D(props: ForceGraph2DProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const appRef = useRef<PIXI.Application | null>(null);
@@ -66,9 +66,6 @@ export function ForceGraphCanvas2D(props: ForceGraph2DProps) {
     D3SimulationLink
   > | null>(null);
   const onNodeClickRef = useRef(props.onNodeClick);
-
-  // Update the ref when props change
-  // onNodeClickRef.current = props.onNodeClick;
 
   const runForceGraph2D = useCallback(
     async (
@@ -91,7 +88,6 @@ export function ForceGraphCanvas2D(props: ForceGraph2DProps) {
 
       const app = new PIXI.Application();
 
-      // Initialize the app asynchronously (required in PIXI v8)
       await app.init({
         width,
         height,
@@ -115,7 +111,6 @@ export function ForceGraphCanvas2D(props: ForceGraph2DProps) {
 
       app.stage.addChild(viewport);
 
-      // Activate plugins
       viewport
         .drag()
         .pinch()
@@ -126,7 +121,6 @@ export function ForceGraphCanvas2D(props: ForceGraph2DProps) {
           minHeight: height / 4,
         });
 
-      // Center the allocator node (find it and set its position)
       const allocatorNode = nodes.find((n) => n.id === props.allocatorAddress);
       if (allocatorNode) {
         allocatorNode.fx = width / 2;
@@ -142,21 +136,14 @@ export function ForceGraphCanvas2D(props: ForceGraph2DProps) {
           d3
             .forceLink<D3SimulationNode, D3SimulationLink>(links)
             .id((d) => d.id)
-            .distance(200),
+            .distance(100)
+            .strength(0.8),
         )
         .force(
           "charge",
-          d3.forceManyBody().strength(-120), // Stronger repulsion to spread nodes out
+          d3.forceManyBody().strength(-100), // Stronger repulsion to spread nodes out
         )
-        .force("center", d3.forceCenter(width / 2, height / 2).strength(0.03)) // Very weak centering
-        .force(
-          "collision",
-          d3
-            .forceCollide()
-            .radius((d) => getNodeRadius((d as D3SimulationNode).nodeType) + 25) // Larger collision radius
-            .iterations(2), // Fewer iterations for better performance
-        )
-        .velocityDecay(0.2); // Much lower velocity decay for faster settling
+        .force("center", d3.forceCenter(width / 2, height / 2).strength(1)); // Very weak centering
 
       simulationRef.current = simulation;
 
