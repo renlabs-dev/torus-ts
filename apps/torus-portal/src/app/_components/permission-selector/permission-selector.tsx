@@ -35,6 +35,7 @@ import {
 import { useEffect, useState } from "react";
 import type { Control } from "react-hook-form";
 import { getContractDetails } from "./contract-details";
+import { PermissionDetailsCard } from "./permission-details-card";
 import { hasUserRole } from "./permission-filters";
 
 interface PermissionSelectorV2Props {
@@ -267,6 +268,18 @@ export function PermissionSelectorV2(props: PermissionSelectorV2Props) {
               ))}
             </CommandList>
           </CommandDialog>
+
+          {/* Permission Details Card */}
+          {props.selectedPermissionId && (
+            <PermissionDetailsCard
+              permissionId={props.selectedPermissionId}
+              contract={
+                permissionGroups
+                  .flatMap((group) => group.permissions)
+                  .find((p) => p.id === props.selectedPermissionId)?.contract
+              }
+            />
+          )}
         </>
       )}
     />
