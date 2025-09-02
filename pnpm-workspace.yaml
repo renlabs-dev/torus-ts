@@ -44,6 +44,7 @@ catalog:
   "vitest": ^3.2.4
   "emittery": ^1.2.0
   "@uidotdev/usehooks": ^2.4.1
+  "superjson": ^2.2.1
   # Hyperlane
   "viem": ^2.22.1
   "next-plausible": ^3.12.4

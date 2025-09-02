@@ -15,9 +15,15 @@ import type { EditPermissionFormData } from "../edit-permission-schema";
 
 interface RecipientsFieldProps {
   control: Control<EditPermissionFormData>;
+  canEditRecipients?: boolean;
+  isWeightsOnly?: boolean;
 }
 
-export function RecipientsField({ control }: RecipientsFieldProps) {
+export function RecipientsField({
+  control,
+  canEditRecipients = true,
+  isWeightsOnly = false,
+}: RecipientsFieldProps) {
   const {
     fields: recipientFields,
     append: appendRecipient,
@@ -67,6 +73,7 @@ export function RecipientsField({ control }: RecipientsFieldProps) {
           type="button"
           size="sm"
           className="bg-white/70"
+          disabled={!canEditRecipients || isWeightsOnly}
           onClick={() => appendRecipient({ address: "", percentage: 0 })}
         >
           <Plus className="mr-2 h-4 w-4" />
@@ -86,6 +93,7 @@ export function RecipientsField({ control }: RecipientsFieldProps) {
                   <FormAddressField
                     field={field}
                     className={cn(isDuplicate && "border-destructive")}
+                    disabled={!canEditRecipients || isWeightsOnly}
                   />
                 </div>
               );
@@ -104,7 +112,8 @@ export function RecipientsField({ control }: RecipientsFieldProps) {
                     min="0"
                     max="100"
                     className="h-[2.7rem]"
-                    value={field.value || ""}
+                    disabled={!(canEditRecipients || isWeightsOnly)}
+                    value={field.value}
                     onChange={(e) => {
                       const value = parseInt(e.target.value);
                       field.onChange(
@@ -122,6 +131,7 @@ export function RecipientsField({ control }: RecipientsFieldProps) {
             variant="outline"
             size="icon"
             className="h-[2.7rem] w-[2.7rem]"
+            disabled={!canEditRecipients || isWeightsOnly}
             onClick={() => removeRecipient(index)}
           >
             <Trash2 className="h-4 w-4" />

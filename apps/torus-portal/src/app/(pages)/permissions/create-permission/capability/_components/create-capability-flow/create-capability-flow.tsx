@@ -89,6 +89,7 @@ const CreateCapabilityFlow = forwardRef<
     clearSelection();
     setNodes(() => []);
     setEdges(() => []);
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setTreeManager(null);
     void queryClient.invalidateQueries({ queryKey: ["delegationTree"] });
   }, [
@@ -103,6 +104,7 @@ const CreateCapabilityFlow = forwardRef<
     if (delegationData) {
       setNodes(() => [...delegationData.nodes]);
       setEdges(() => [...delegationData.edges]);
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setTreeManager(delegationData.treeManager);
     }
   }, [delegationData, setNodes, setEdges]);

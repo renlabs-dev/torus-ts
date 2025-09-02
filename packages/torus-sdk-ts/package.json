@@ -82,7 +82,7 @@
     "hono": "^4.7.6",
     "multiformats": "catalog:",
     "rustie": "catalog:",
-    "superjson": "2.2.1",
+    "superjson": "catalog:",
     "tsafe": "catalog:",
     "viem": "catalog:",
     "zod": "catalog:"

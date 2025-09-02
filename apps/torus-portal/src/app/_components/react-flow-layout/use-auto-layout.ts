@@ -40,6 +40,7 @@ function useAutoLayout(options: LayoutOptions) {
     // The callback passed to `useEffect` cannot be `async` itself, so instead we
     // create an async function here and call it immediately afterwards.
     const runLayout = async () => {
+      // eslint-disable-next-line react-hooks/immutability
       const layoutAlgorithm = layoutAlgorithms[options.algorithm];
       // Pass in a clone of the nodes and edges so that we don't mutate the
       // original elements.

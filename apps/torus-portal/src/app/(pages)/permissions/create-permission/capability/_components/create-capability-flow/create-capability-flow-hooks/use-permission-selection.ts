@@ -42,6 +42,7 @@ export function usePermissionSelection({
           const currentId = queue.shift()!;
           const children = treeManager.getChildren(currentId);
           descendants.push(...children);
+          // eslint-disable-next-line react-hooks/immutability
           queue.push(...children);
         }
 

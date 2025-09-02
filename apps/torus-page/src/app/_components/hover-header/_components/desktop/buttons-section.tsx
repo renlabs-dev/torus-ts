@@ -6,7 +6,7 @@ import { ScrollArea } from "@torus-ts/ui/components/scroll-area";
 import { cn } from "@torus-ts/ui/lib/utils";
 import { ArrowBigDown } from "lucide-react";
 import { motion } from "motion/react";
-import { useEffect, useState } from "react";
+import React from "react";
 import { CustomButton } from "../custom-button";
 import { ANIMATIONS, CONTENT } from "../data";
 
@@ -27,16 +27,10 @@ export function ButtonsSection({
   isExpanded,
   setIsExpanded,
 }: Readonly<ButtonsSectionProps>) {
-  const [cardPosition, setCardPosition] = useState(40);
   const { desktopButtons, description } = CONTENT;
 
-  useEffect(() => {
-    if (showStarter || showNetwork) {
-      setCardPosition(150);
-    } else {
-      setCardPosition(20);
-    }
-  }, [showStarter, showNetwork]);
+  // Calculate card position based on props - no state needed
+  const cardPosition = showStarter || showNetwork ? 150 : 20;
 
   return (
     <motion.div

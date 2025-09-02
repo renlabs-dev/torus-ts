@@ -344,6 +344,42 @@ export const agentRouter = {
       const indexededResult = result[0];
       return indexededResult ?? null;
     }),
+  namesByKeysLastBlock: publicProcedure
+    .input(z.object({ keys: z.array(z.string()) }))
+    .query(async ({ ctx, input }) => {
+      if (input.keys.length === 0) {
+        return new Map<string, string>();
+      }
+
+      const lastBlock = await ctx.db
+        .select({ value: max(agentSchema.atBlock) })
+        .from(agentSchema)
+        .limit(1);
+
+      if (!lastBlock[0]?.value) {
+        return new Map<string, string>();
+      }
+
+      const results = await ctx.db
+        .select({ key: agentSchema.key, name: agentSchema.name })
+        .from(agentSchema)
+        .where(
+          and(
+            isNull(agentSchema.deletedAt),
+            eq(agentSchema.atBlock, lastBlock[0].value),
+            inArray(agentSchema.key, input.keys),
+          ),
+        );
+
+      const nameMap = new Map<string, string>();
+      results.forEach((agent) => {
+        if (agent.name) {
+          nameMap.set(agent.key, agent.name);
+        }
+      });
+
+      return nameMap;
+    }),
   allWithAggregatedPenalties: publicProcedure.query(async ({ ctx }) => {
     const agents = await ctx.db.query.agentSchema.findMany({
       where: and(

@@ -1,9 +1,9 @@
 import type { TransactionsFilterValues } from "~/app/_components/transactions/transactions-filters";
-import { useTransactionsStore } from "~/store/transactions-store";
 import type {
   Transaction,
   TransactionQueryOptions,
 } from "~/store/transactions-store";
+import { useTransactionsStore } from "~/store/transactions-store";
 import { useCallback, useEffect, useState } from "react";
 
 const ITEMS_PER_PAGE = 10;
@@ -26,49 +26,26 @@ export function useTransactions({
     (state) => state.lastTransactionTimestamp,
   );
 
-  const [page, setPage] = useState(1);
-  const [transactions, setTransactions] = useState<Transaction[]>([]);
-  const [totalTransactions, setTotalTransactions] = useState(0);
-  const [hasMore, setHasMore] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+  const resetKey = `${address || "no-address"}-${JSON.stringify(filters)}-${lastTransactionTimestamp}`;
 
-  function resetState() {
+  const [page, setPage] = useState(() => 1);
+  const [transactions, setTransactions] = useState<Transaction[]>(() => []);
+  const [totalTransactions, setTotalTransactions] = useState(() => 0);
+  const [hasMore, setHasMore] = useState(() => false);
+  const [isLoading, setIsLoading] = useState(() => false);
+  const [currentResetKey, setCurrentResetKey] = useState(resetKey);
+
+  if (currentResetKey !== resetKey) {
+    setCurrentResetKey(resetKey);
+    setPage(1);
     setTransactions([]);
     setTotalTransactions(0);
     setHasMore(false);
     setIsLoading(false);
   }
 
-  // Reset everything when address changes
   useEffect(() => {
     if (!address) {
-      resetState();
-      return;
-    }
-
-    // When address changes, start fresh
-    setPage(1);
-    setTransactions([]);
-  }, [address]);
-
-  // Reset everything when filters change
-  useEffect(() => {
-    setPage(1);
-    setTransactions([]);
-  }, [filters]);
-
-  // Auto-refresh when new transactions are added
-  useEffect(() => {
-    if (lastTransactionTimestamp > 0) {
-      setPage(1);
-      setTransactions([]);
-    }
-  }, [lastTransactionTimestamp]);
-
-  // Main effect: Load transactions when page, address, or filters change
-  useEffect(() => {
-    if (!address) {
-      resetState();
       return;
     }
 

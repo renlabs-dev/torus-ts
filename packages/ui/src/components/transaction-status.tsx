@@ -1,5 +1,7 @@
-import { useState, useEffect, memo } from "react";
+import { memo, useEffect, useState } from "react";
+
 import { CircleAlert, CircleCheck } from "lucide-react";
+
 import { cn } from "../lib/utils";
 import { Loading } from "./loading";
 
@@ -35,18 +37,20 @@ export const TransactionStatus = memo(
     message,
     clearAfter = 10_000,
   }: Readonly<TransactionStatusProps>) => {
-    const [visible, setVisible] = useState(true);
+    const [hiddenAfterDelay, setHiddenAfterDelay] = useState(false);
 
     useEffect(() => {
-      setVisible(true);
-
       if (status === "SUCCESS" || status === "ERROR") {
-        const timer = setTimeout(() => setVisible(false), clearAfter);
+        const timer = setTimeout(() => {
+          setHiddenAfterDelay(true);
+        }, clearAfter);
         return () => clearTimeout(timer);
       }
     }, [status, clearAfter]);
 
-    if (!visible || !message) return null;
+    const shouldShow = !hiddenAfterDelay && message !== null;
+
+    if (!shouldShow) return null;
 
     const { color, Icon } = status
       ? STATUS_CONFIG[status]

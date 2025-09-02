@@ -1,5 +1,5 @@
-import { makeTorAmount } from "@torus-network/torus-utils/torus/token";
 import type { TorAmount } from "@torus-network/torus-utils/torus/token";
+import { makeTorAmount } from "@torus-network/torus-utils/torus/token";
 import { useGetTorusPrice } from "@torus-ts/query-provider/hooks";
 import { api as extAPI } from "~/trpc/react";
 import { useMemo } from "react";
@@ -67,6 +67,7 @@ export function useWeeklyUsdCalculation(
     isTorusPriceError || isComputedWeightError || isTokensPerWeekError;
 
   // Calculate tokens per week
+  // eslint-disable-next-line react-hooks/preserve-manual-memoization
   const tokensPerWeek = useMemo(() => {
     // Early return conditions
     if (isLoading || isError || computedWeightedAgents === null)
@@ -94,9 +95,11 @@ export function useWeeklyUsdCalculation(
   const usdValue = useMemo(() => {
     if (isLoading || isError || !torusPrice) return 0;
     return tokensPerWeek.toNumber() * torusPrice;
+    // eslint-disable-next-line react-hooks/preserve-manual-memoization
   }, [isLoading, isError, tokensPerWeek, torusPrice]);
 
   // EXAMPLE: 5000000.00000 will be displayed: 5,000,000.00 TORUS
+  // eslint-disable-next-line react-hooks/preserve-manual-memoization
   const displayTokensPerWeek = useMemo(() => {
     if (isLoading || isError) return "0.00 TORUS";
     return (
@@ -105,6 +108,7 @@ export function useWeeklyUsdCalculation(
         maximumFractionDigits: 2,
       }) + " TORUS"
     );
+    // eslint-disable-next-line react-hooks/preserve-manual-memoization
   }, [isLoading, isError, tokensPerWeek]);
 
   // EXAMPLE: 50000.0000 will be displayed: $50,000.00

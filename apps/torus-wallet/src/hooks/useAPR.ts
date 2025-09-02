@@ -141,6 +141,7 @@ export function useAPR(): APRResult {
     [queries],
   );
 
+  // eslint-disable-next-line react-hooks/preserve-manual-memoization
   const apr = useMemo(() => {
     if (!isDataComplete) return null;
 

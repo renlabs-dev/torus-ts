@@ -1,44 +1,137 @@
 import type {
-  Api,
   PermissionContract,
   PermissionId,
   StreamId,
 } from "@torus-network/sdk/chain";
-import { queryPermission } from "@torus-network/sdk/chain";
 import type { SS58Address } from "@torus-network/sdk/types";
-import type { UseFormReset } from "react-hook-form";
 import { match } from "rustie";
-import type { PermissionWithDetails } from "./edit-permission-form";
 import type {
   DistributionControlFormData,
   EditPermissionFormData,
 } from "./edit-permission-schema";
 
-export function getPermissionType(
-  permissionData: PermissionWithDetails | null,
-): "stream" | "capability" | "unknown" {
-  if (!permissionData) return "unknown";
+export type FieldType =
+  | "recipients"
+  | "weights"
+  | "streams"
+  | "distributionControl"
+  | "recipientManager"
+  | "weightSetter";
 
-  if (permissionData.emission_permissions) return "stream";
-  if (permissionData.namespace_permissions) return "capability";
+export function getPermissionTypeFromContract(
+  contract: PermissionContract | null,
+): "stream" | "capability" | "curator" | "unknown" {
+  if (!contract) return "unknown";
+
+  if ("Stream" in contract.scope) return "stream";
+  if ("Namespace" in contract.scope) return "capability";
+  if ("Curator" in contract.scope) return "curator";
 
   return "unknown";
 }
 
-export function canEditPermission(
-  permissionData: PermissionWithDetails | null,
+/**
+ * Check if user can edit a specific field based on their role
+ * Based on new-fields.md specification:
+ * - Delegators can update all fields
+ * - Recipient managers can update recipients (add/remove)
+ * - Weight setters can only update recipient weights (not add/remove)
+ */
+export function canUserEditField(
+  contract: PermissionContract | null,
   userAddress: string | undefined,
+  fieldType: FieldType,
 ): boolean {
-  if (!permissionData || !userAddress) return false;
+  if (!contract || !userAddress) return false;
 
   // Only stream permissions can be edited
-  if (!permissionData.emission_permissions) return false;
+  if (!("Stream" in contract.scope)) return false;
 
-  // Only the grantor (delegator) can edit permissions
-  return permissionData.permissions.grantorAccountId === userAddress;
+  const stream = contract.scope.Stream;
+  const isDelegator = contract.delegator === userAddress;
+  const isRecipientManager = stream.recipientManagers.includes(
+    userAddress as SS58Address,
+  );
+  const isWeightSetter = stream.weightSetters.includes(
+    userAddress as SS58Address,
+  );
+
+  switch (fieldType) {
+    case "recipients":
+      return isDelegator || isRecipientManager;
+
+    case "weights":
+      return isDelegator || isRecipientManager || isWeightSetter;
+
+    case "streams":
+      return isDelegator;
+
+    case "distributionControl":
+      return isDelegator;
+
+    case "recipientManager":
+      return isDelegator;
+
+    case "weightSetter":
+      return isDelegator;
+
+    default:
+      return false;
+  }
 }
 
-function transformPermissionToFormData(
+/**
+ * Check if user can only edit weights (not add/remove recipients)
+ * Weight setters can only modify existing recipient weights
+ */
+export function isWeightSetterOnly(
+  contract: PermissionContract | null,
+  userAddress: string | undefined,
+): boolean {
+  if (!contract || !userAddress) return false;
+
+  if (!("Stream" in contract.scope)) return false;
+
+  const stream = contract.scope.Stream;
+  const isDelegator = contract.delegator === userAddress;
+  const isRecipientManager = stream.recipientManagers.includes(
+    userAddress as SS58Address,
+  );
+  const isWeightSetter = stream.weightSetters.includes(
+    userAddress as SS58Address,
+  );
+
+  return isWeightSetter && !isDelegator && !isRecipientManager;
+}
+
+export function canUserRevokePermission(
+  contract: PermissionContract | null,
+  userAddress: string | undefined,
+): boolean {
+  if (!contract || !userAddress) return false;
+
+  return match(contract.revocation)({
+    RevocableByDelegator: () => contract.delegator === userAddress,
+    RevocableByArbiters: (arbiters) =>
+      arbiters.accounts.includes(userAddress as SS58Address) ||
+      contract.delegator === userAddress,
+    RevocableAfter: () => contract.delegator === userAddress,
+    Irrevocable: () => false,
+  });
+}
+
+/**
+ * Check if user can edit any field of the permission
+ * Returns true if user can edit at least one field (weights, recipients, streams, etc.)
+ */
+export function canEditPermissionFromContract(
+  contract: PermissionContract | null,
+  userAddress: string | undefined,
+): boolean {
+  return canUserEditField(contract, userAddress, "weights");
+}
+
+export function transformPermissionToFormData(
   permission: PermissionContract,
 ): Partial<EditPermissionFormData> {
   const formData: Partial<EditPermissionFormData> = {};
@@ -50,7 +143,7 @@ function transformPermissionToFormData(
         formData.newTargets = Array.from(streamScope.recipients.entries()).map(
           ([address, weight]) => ({
             address,
-            percentage: Number(weight), // SDK uses weight, but we display as percentage
+            percentage: Number(weight),
           }),
         );
       }
@@ -102,64 +195,6 @@ function transformPermissionToFormData(
   });
 
   return formData;
-}
-
-export async function handlePermissionDataChange({
-  permissionData,
-  api,
-  form,
-  onError,
-}: {
-  permissionData: PermissionWithDetails | null;
-  api: Api | null;
-  form: {
-    reset: UseFormReset<EditPermissionFormData>;
-  };
-  onError: (message: string) => void;
-}): Promise<{ originalDistributionControl: string } | undefined> {
-  if (!api || !permissionData) return;
-
-  try {
-    const [error, permission] = await queryPermission(
-      api,
-      permissionData.permissions.permissionId as `0x${string}`,
-    );
-
-    if (error || !permission) {
-      onError("Failed to load permission details");
-      return;
-    }
-
-    const formData = transformPermissionToFormData(permission);
-
-    // Get the original distribution control type as a string
-    let originalDistributionControl = "Manual";
-    if (formData.newDistributionControl) {
-      originalDistributionControl = match(formData.newDistributionControl)({
-        Manual: () => "Manual",
-        Automatic: (threshold) => `Automatic (threshold: ${threshold})`,
-        AtBlock: (block) => `At Block ${block}`,
-        Interval: (interval) => `Every ${interval} blocks`,
-      });
-    }
-
-    form.reset({
-      permissionId: permissionData.permissions.permissionId,
-      newTargets: formData.newTargets ?? [],
-      newStreams: formData.newStreams ?? [],
-      newDistributionControl: formData.newDistributionControl ?? {
-        Manual: null,
-      },
-      recipientManager: formData.recipientManager,
-      weightSetter: formData.weightSetter,
-    });
-
-    return { originalDistributionControl };
-  } catch (err) {
-    console.error("Error loading permission data:", err);
-    onError("Failed to load permission details");
-    return undefined;
-  }
 }
 
 export function prepareFormDataForSDK(data: EditPermissionFormData) {
