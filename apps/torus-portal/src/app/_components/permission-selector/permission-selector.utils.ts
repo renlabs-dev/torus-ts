@@ -119,7 +119,6 @@ export function getUserRoles(
   return roles;
 }
 
-
 /**
  * Get the primary role badge text for display
  * Returns the most important role for badge display
