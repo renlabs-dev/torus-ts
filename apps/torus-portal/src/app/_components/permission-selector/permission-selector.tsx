@@ -34,9 +34,13 @@ import {
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import type { Control } from "react-hook-form";
-import { getContractDetails } from "./contract-details";
-import { PermissionDetailsCard } from "./permission-details-card";
-import { hasUserRole } from "./permission-filters";
+import { getContractDetails } from "./permission-selector.contract-details";
+import { PermissionDetailsCard } from "./permission-selector.details-card";
+import {
+  extractAllAddressesFromPermissions,
+  formatAddressWithAgentName,
+  hasUserRole,
+} from "./permission-selector.utils";
 
 interface PermissionSelectorV2Props {
   control: Control<{
@@ -69,37 +73,9 @@ export function PermissionSelectorV2(props: PermissionSelectorV2Props) {
 
   // Collect ALL unique addresses from ALL permissions (not filtered by user role)
   // This way we have agent names cached when user switches wallets
-  const allAddresses = new Set<string>();
-  if (permissions) {
-    [
-      ...permissions.streamPermissions,
-      ...permissions.namespacePermissions,
-      ...permissions.curatorPermissions,
-    ].forEach(([_, contract]) => {
-      allAddresses.add(contract.delegator);
-
-      if ("Stream" in contract.scope) {
-        const recipients = contract.scope.Stream.recipients;
-        if (recipients instanceof Map) {
-          recipients.forEach((_, address) => allAddresses.add(address));
-        } else {
-          Object.keys(recipients).forEach((address) =>
-            allAddresses.add(address),
-          );
-        }
-        contract.scope.Stream.recipientManagers.forEach((address) =>
-          allAddresses.add(address),
-        );
-        contract.scope.Stream.weightSetters.forEach((address) =>
-          allAddresses.add(address),
-        );
-      } else if ("Namespace" in contract.scope) {
-        allAddresses.add(contract.scope.Namespace.recipient);
-      } else if ("Curator" in contract.scope) {
-        allAddresses.add(contract.scope.Curator.recipient);
-      }
-    });
-  }
+  const allAddresses = permissions
+    ? extractAllAddressesFromPermissions(permissions)
+    : new Set<string>();
 
   // Fetch agent names for all addresses in a single batch query
   // Always call this hook, but conditionally enable it
@@ -119,13 +95,7 @@ export function PermissionSelectorV2(props: PermissionSelectorV2Props) {
 
   // Helper function to get formatted address with agent name
   const getFormattedAddress = (address: string | undefined) => {
-    if (!address) return "Unknown Address";
-
-    const agentName = agentNamesMap?.get(address);
-    if (agentName) {
-      return `${agentName} (${smallAddress(address, 8)})`;
-    }
-    return smallAddress(address, 8);
+    return formatAddressWithAgentName(address, agentNamesMap, 8);
   };
 
   // Process and filter permissions with headings and details
