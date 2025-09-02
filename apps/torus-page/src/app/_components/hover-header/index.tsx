@@ -15,7 +15,7 @@ export function HoverHeader() {
   const [isVisible, setIsVisible] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
   const contentRef = useRef<HTMLDivElement>(null);
-  const [cursorPosition, setCursorPosition] = useState({ x: 0, y: 0 });
+  const [glowSize, setGlowSize] = useState(0.8);
 
   const [showStarter, setShowStarter] = useState(false);
   const [showNetwork, setShowNetwork] = useState(false);
@@ -33,7 +33,28 @@ export function HoverHeader() {
 
   useEffect(() => {
     const handleMouseMove = (event: MouseEvent) => {
-      setCursorPosition({ x: event.clientX, y: event.clientY });
+      // Calculate glow size here where ref access is safe
+      const logoRect = contentRef.current?.getBoundingClientRect();
+      if (!logoRect) {
+        setGlowSize(0.8);
+        return;
+      }
+
+      const logoCenterX = logoRect.left + logoRect.width / 2;
+      const logoCenterY = logoRect.top + logoRect.height / 2;
+
+      const distance = calculateDistance(
+        event.clientX,
+        event.clientY,
+        logoCenterX,
+        logoCenterY,
+      );
+      const maxDistance = Math.sqrt(
+        Math.pow(window.innerWidth, 2) + Math.pow(window.innerHeight, 2),
+      );
+
+      const scale = 0.15 + (maxDistance - distance) / maxDistance;
+      setGlowSize(scale / 1.2);
     };
 
     window.addEventListener("mousemove", handleMouseMove);
@@ -52,28 +73,6 @@ export function HoverHeader() {
         ease: "easeInOut",
       },
     }),
-  };
-
-  const calculateGlowSize = (cursorX: number, cursorY: number): number => {
-    const logoRect = contentRef.current?.getBoundingClientRect();
-    if (!logoRect) return 0.8;
-
-    const logoCenterX = logoRect.left + logoRect.width / 2;
-    const logoCenterY = logoRect.top + logoRect.height / 2;
-
-    const distance = calculateDistance(
-      cursorX,
-      cursorY,
-      logoCenterX,
-      logoCenterY,
-    );
-    const maxDistance = Math.sqrt(
-      Math.pow(window.innerWidth, 2) + Math.pow(window.innerHeight, 2),
-    );
-
-    const scale = 0.15 + (maxDistance - distance) / maxDistance;
-
-    return scale;
   };
 
   useEffect(() => {
@@ -132,7 +131,7 @@ export function HoverHeader() {
             className="bg-primary/15 absolute inset-0 rounded-2xl blur-md"
             animate="pulse"
             variants={glowVariants as Variants}
-            custom={calculateGlowSize(cursorPosition.x, cursorPosition.y) / 1.2}
+            custom={glowSize}
           />
         </motion.button>
 

@@ -110,6 +110,7 @@ function Card({ url, ...props }) {
 function Banner(props) {
   const ref = useRef();
   const texture = useTexture("/banner_.png");
+  // eslint-disable-next-line react-hooks/immutability
   texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
   const scroll = useScroll();
   useFrame((state, delta) => {

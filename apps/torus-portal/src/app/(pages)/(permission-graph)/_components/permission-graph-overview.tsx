@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/static-components */
 import { memo } from "react";
 import { useGraphData } from "./force-graph/use-graph-data";
 

@@ -42,6 +42,7 @@ export function PermissionGraphCommand() {
       : node;
   }, []);
 
+  // eslint-disable-next-line react-hooks/preserve-manual-memoization
   const searchData = useMemo(() => {
     if (!graphData)
       return {

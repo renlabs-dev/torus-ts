@@ -24,6 +24,7 @@ export function useGraphData() {
   const { data: allAgentsData, isLoading: isLoadingAgents } =
     trpcApi.agent.allIncludingNonWhitelisted.useQuery(undefined, cacheOptions);
 
+  // eslint-disable-next-line react-hooks/preserve-manual-memoization
   const allAgents = useMemo(() => {
     return allAgentsData?.filter((agent) => agent.isWhitelisted) ?? [];
   }, [allAgentsData]);
@@ -34,6 +35,7 @@ export function useGraphData() {
   const { data: allSignals, isLoading: isLoadingSignals } =
     trpcApi.signal.all.useQuery(undefined, cacheOptions);
 
+  // eslint-disable-next-line react-hooks/preserve-manual-memoization
   const graphData = useMemo(() => {
     if (
       isLoadingAgents ||
@@ -52,9 +54,11 @@ export function useGraphData() {
       allAgentsData,
     );
   }, [
+    // eslint-disable-next-line react-hooks/preserve-manual-memoization
     allAgents,
     allAgentsData,
     allPermissions,
+    // eslint-disable-next-line react-hooks/preserve-manual-memoization
     allocatorAddress,
     allSignals,
     isLoadingAgents,

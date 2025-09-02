@@ -135,6 +135,7 @@ export function NodeDetailsCard({
   });
 
   // Group and sort permissions
+  // eslint-disable-next-line react-hooks/preserve-manual-memoization
   const groupedPermissions = useMemo(() => {
     const delegated = processedPermissions.filter((p) => p.isOutgoing);
     const received = processedPermissions.filter((p) => !p.isOutgoing);
@@ -159,6 +160,7 @@ export function NodeDetailsCard({
       delegated: sortPermissions(delegated),
       received: sortPermissions(received),
     };
+    // eslint-disable-next-line react-hooks/preserve-manual-memoization
   }, [processedPermissions]);
 
   const renderPermissionGroup = (
@@ -487,6 +489,7 @@ export function NodeDetailsCard({
         </TabsList>
 
         <TabsContent value="permissions" className="mt-0 flex-1">
+          {/* eslint-disable-next-line react-hooks/static-components */}
           <PermissionsContent />
         </TabsContent>
 

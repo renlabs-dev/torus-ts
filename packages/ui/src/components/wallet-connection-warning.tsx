@@ -13,22 +13,26 @@ export function WalletConnectionWarning({
   isAccountConnected,
   isInitialized = true,
 }: WalletConnectionWarningProps) {
-  const [showWarning, setShowWarning] = useState(false);
+  const [showDelayedWarning, setShowDelayedWarning] = useState(false);
+
+  const shouldShowWarning = isInitialized && !isAccountConnected;
 
   useEffect(() => {
-    if (!isInitialized || isAccountConnected) {
-      setShowWarning(false);
-      return;
+    if (!shouldShowWarning) {
+      const resetTimer = setTimeout(() => {
+        setShowDelayedWarning(false);
+      }, 0);
+      return () => clearTimeout(resetTimer);
     }
 
     const timer = setTimeout(() => {
-      setShowWarning(true);
+      setShowDelayedWarning(true);
     }, 300);
 
     return () => clearTimeout(timer);
-  }, [isInitialized, isAccountConnected]);
+  }, [shouldShowWarning]);
 
-  if (!showWarning) {
+  if (!shouldShowWarning || !showDelayedWarning) {
     return null;
   }
 

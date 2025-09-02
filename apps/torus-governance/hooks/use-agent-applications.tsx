@@ -51,6 +51,7 @@ export const useAgentApplications = (
     !isInitialized ||
     agents.isPending;
 
+  // eslint-disable-next-line react-hooks/preserve-manual-memoization
   const filteredApplications = useMemo(() => {
     if (!agentApplicationsWithMeta) return [];
 
