@@ -197,7 +197,11 @@ export function transformPermissionToFormData(
   return formData;
 }
 
-export function prepareFormDataForSDK(data: EditPermissionFormData) {
+export function prepareFormDataForSDK(
+  data: EditPermissionFormData,
+  contract: PermissionContract | null,
+  userAddress: string | undefined,
+) {
   const {
     permissionId,
     newTargets,
@@ -223,12 +227,43 @@ export function prepareFormDataForSDK(data: EditPermissionFormData) {
       )
     : undefined;
 
-  return {
+  // Only include fields that the user is authorized to edit
+  // This prevents "notAuthorizedToEdit" errors from the blockchain
+  const result: {
+    permissionId: PermissionId;
+    newRecipients?: [SS58Address, number][];
+    newStreams?: Map<StreamId, number>;
+    newDistributionControl?: typeof newDistributionControl;
+    recipientManager?: SS58Address;
+    weightSetter?: SS58Address;
+  } = {
     permissionId: permissionId as PermissionId,
-    newRecipients: sdkTargets,
-    newStreams: sdkStreams,
-    newDistributionControl,
-    recipientManager,
-    weightSetter,
   };
+
+  // Include recipients if user can edit them
+  if (canUserEditField(contract, userAddress, "recipients") && sdkTargets) {
+    result.newRecipients = sdkTargets;
+  }
+
+  // Include streams if user can edit them
+  if (canUserEditField(contract, userAddress, "streams") && sdkStreams) {
+    result.newStreams = sdkStreams;
+  }
+
+  // Include distribution control if user can edit it
+  if (canUserEditField(contract, userAddress, "distributionControl")) {
+    result.newDistributionControl = newDistributionControl;
+  }
+
+  // Include recipient manager if user can edit it
+  if (canUserEditField(contract, userAddress, "recipientManager")) {
+    result.recipientManager = recipientManager;
+  }
+
+  // Include weight setter if user can edit it
+  if (canUserEditField(contract, userAddress, "weightSetter")) {
+    result.weightSetter = weightSetter;
+  }
+
+  return result;
 }

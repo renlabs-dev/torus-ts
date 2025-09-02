@@ -163,7 +163,11 @@ export function EditPermissionForm({
       return;
     }
 
-    const sdkData = prepareFormDataForSDK(data);
+    const sdkData = prepareFormDataForSDK(
+      data,
+      selectedPermissionContract,
+      selectedAccount?.address,
+    );
 
     const [sendErr, sendRes] = await sendTx(
       updateStreamPermission({
