@@ -1,6 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
+import type { PermissionContract } from "@torus-network/sdk/chain";
 import { updateStreamPermission } from "@torus-network/sdk/chain";
 import type { InferSelectModel } from "@torus-ts/db";
 import type {
@@ -15,11 +16,11 @@ import { Form } from "@torus-ts/ui/components/form";
 import { WalletConnectionWarning } from "@torus-ts/ui/components/wallet-connection-warning";
 import { useToast } from "@torus-ts/ui/hooks/use-toast";
 import { cn } from "@torus-ts/ui/lib/utils";
-import { PermissionSelector } from "~/app/_components/permission-selector";
+import { PermissionSelectorV2 } from "~/app/_components/permission-selector/permission-selector";
 import PortalFormHeader from "~/app/_components/portal-form-header";
 import { PortalFormSeparator } from "~/app/_components/portal-form-separator";
 import { useSearchParams } from "next/navigation";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import type { z } from "zod";
 import { DistributionControlField } from "./edit-permission-fields/distribution-control-field";
@@ -30,10 +31,10 @@ import { WeightSetterField } from "./edit-permission-fields/weight-setter-field"
 import type { EditPermissionFormData } from "./edit-permission-schema";
 import { EDIT_PERMISSION_SCHEMA } from "./edit-permission-schema";
 import {
-  canEditPermission,
-  getPermissionType,
-  handlePermissionDataChange,
+  canEditPermissionFromContract,
+  getPermissionTypeFromContract,
   prepareFormDataForSDK,
+  transformPermissionToFormData,
 } from "./edit-permission-utils";
 import { PermissionTypeInfo } from "./permission-type-info";
 import { RevokePermissionButton } from "./revoke-permission-button";
@@ -74,18 +75,23 @@ export function EditPermissionForm({
     wallet: torusApi,
     transactionType: "Update Stream Permission",
   });
-  const [selectedPermissionId, setSelectedPermissionId] = useState<string>("");
-  const [hasLoadedPermission, setHasLoadedPermission] = useState(false);
-  const currentPermissionDataRef = useRef<PermissionWithDetails | null>(null);
+  // Initialize selectedPermissionId from URL parameter if available
+  const permissionIdFromUrl = searchParams.get("id");
+  const [selectedPermissionId, setSelectedPermissionId] = useState<string>(
+    permissionIdFromUrl || ""
+  );
+  const [selectedPermissionContract, setSelectedPermissionContract] =
+    useState<PermissionContract | null>(null);
 
-  const permissionType = getPermissionType(currentPermissionDataRef.current);
-  const canEdit = canEditPermission(
-    currentPermissionDataRef.current,
+  const permissionType = getPermissionTypeFromContract(
+    selectedPermissionContract,
+  );
+  const canEdit = canEditPermissionFromContract(
+    selectedPermissionContract,
     selectedAccount?.address,
   );
   const isGrantor =
-    currentPermissionDataRef.current?.permissions.grantorAccountId ===
-    selectedAccount?.address;
+    selectedPermissionContract?.delegator === selectedAccount?.address;
 
   const form = useForm<EditPermissionFormData>({
     disabled: !isAccountConnected,
@@ -101,29 +107,34 @@ export function EditPermissionForm({
     },
   });
 
-  // Handle URL parameter population
+  // Set form value when URL parameter is available on initial render
   useEffect(() => {
-    const permissionIdFromUrl = searchParams.get("id");
     if (permissionIdFromUrl && !selectedPermissionId) {
-      setSelectedPermissionId(permissionIdFromUrl);
       form.setValue("permissionId", permissionIdFromUrl);
     }
-  }, [searchParams, selectedPermissionId, form]);
+  }, [permissionIdFromUrl, form, selectedPermissionId]);
 
   const handlePermissionLoad = useCallback(
-    async (permissionData: PermissionWithDetails) => {
-      if (!api) return;
+    (permissionId: string, contract: PermissionContract) => {
+      setSelectedPermissionContract(contract);
 
-      if (permissionData.emission_permissions) {
-        await handlePermissionDataChange({
-          permissionData,
-          api,
-          form,
-          onError: toast.error,
+      // Check if it's a stream permission and load form data
+      if ("Stream" in contract.scope) {
+        const formData = transformPermissionToFormData(contract);
+
+        form.reset({
+          permissionId,
+          newTargets: formData.newTargets ?? [],
+          newStreams: formData.newStreams ?? [],
+          newDistributionControl: formData.newDistributionControl ?? {
+            Manual: null,
+          },
+          recipientManager: formData.recipientManager,
+          weightSetter: formData.weightSetter,
         });
       }
     },
-    [api, form, toast.error],
+    [form],
   );
 
   async function handleSubmit(data: z.infer<typeof EDIT_PERMISSION_SCHEMA>) {
@@ -150,7 +161,7 @@ export function EditPermissionForm({
     tracker.on("finalized", () => {
       form.reset();
       setSelectedPermissionId("");
-      setHasLoadedPermission(false);
+      setSelectedPermissionContract(null);
     });
   }
 
@@ -173,25 +184,13 @@ export function EditPermissionForm({
 
         <div className="grid gap-6">
           <div className="grid gap-4">
-            <PermissionSelector
+            <PermissionSelectorV2
               control={form.control}
               selectedPermissionId={selectedPermissionId}
-              onPermissionIdChange={(value) => {
-                setSelectedPermissionId(value);
-                form.setValue("permissionId", value);
-                setHasLoadedPermission(false);
-              }}
-              onPermissionDataChange={(permissionData) => {
-                if (
-                  permissionData &&
-                  !hasLoadedPermission &&
-                  currentPermissionDataRef.current?.permissions.permissionId !==
-                    permissionData.permissions.permissionId
-                ) {
-                  currentPermissionDataRef.current = permissionData;
-                  setHasLoadedPermission(true);
-                  void handlePermissionLoad(permissionData);
-                }
+              onPermissionSelection={(permissionId, contract) => {
+                setSelectedPermissionId(permissionId);
+                form.setValue("permissionId", permissionId);
+                handlePermissionLoad(permissionId, contract);
               }}
             />
 

@@ -22,6 +22,7 @@ import {
   queryAgentApplications,
   queryAgentBurn,
   queryAgents,
+  queryAllPermissions,
   queryBlockEmission,
   queryDaoTreasuryAddress,
   queryExtFee,
@@ -584,3 +585,22 @@ export function useTransactionFee(
     refetchOnWindowFocus: false,
   });
 }
+
+export const useAllPermissions = (api: Api | Nullish) => {
+  return useQuery({
+    queryKey: ["all_permissions"],
+    enabled: api != null,
+    queryFn: async () => {
+      if (!api) return null;
+      const result = await queryAllPermissions(api);
+      const [error, data] = result;
+      if (error) {
+        console.error("Error querying all permissions:", error);
+        return null;
+      }
+      return data;
+    },
+    staleTime: CONSTANTS.TIME.STAKE_STALE_TIME,
+    refetchOnWindowFocus: false,
+  });
+};

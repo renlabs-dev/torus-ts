@@ -1,44 +1,40 @@
 import type {
-  Api,
   PermissionContract,
   PermissionId,
   StreamId,
 } from "@torus-network/sdk/chain";
-import { queryPermission } from "@torus-network/sdk/chain";
 import type { SS58Address } from "@torus-network/sdk/types";
-import type { UseFormReset } from "react-hook-form";
 import { match } from "rustie";
-import type { PermissionWithDetails } from "./edit-permission-form";
 import type {
   DistributionControlFormData,
   EditPermissionFormData,
 } from "./edit-permission-schema";
 
-export function getPermissionType(
-  permissionData: PermissionWithDetails | null,
+export function getPermissionTypeFromContract(
+  contract: PermissionContract | null,
 ): "stream" | "capability" | "unknown" {
-  if (!permissionData) return "unknown";
+  if (!contract) return "unknown";
 
-  if (permissionData.emission_permissions) return "stream";
-  if (permissionData.namespace_permissions) return "capability";
+  if ("Stream" in contract.scope) return "stream";
+  if ("Namespace" in contract.scope) return "capability";
 
   return "unknown";
 }
 
-export function canEditPermission(
-  permissionData: PermissionWithDetails | null,
+export function canEditPermissionFromContract(
+  contract: PermissionContract | null,
   userAddress: string | undefined,
 ): boolean {
-  if (!permissionData || !userAddress) return false;
+  if (!contract || !userAddress) return false;
 
   // Only stream permissions can be edited
-  if (!permissionData.emission_permissions) return false;
+  if (!("Stream" in contract.scope)) return false;
 
   // Only the grantor (delegator) can edit permissions
-  return permissionData.permissions.grantorAccountId === userAddress;
+  return contract.delegator === userAddress;
 }
 
-function transformPermissionToFormData(
+export function transformPermissionToFormData(
   permission: PermissionContract,
 ): Partial<EditPermissionFormData> {
   const formData: Partial<EditPermissionFormData> = {};
@@ -102,64 +98,6 @@ function transformPermissionToFormData(
   });
 
   return formData;
-}
-
-export async function handlePermissionDataChange({
-  permissionData,
-  api,
-  form,
-  onError,
-}: {
-  permissionData: PermissionWithDetails | null;
-  api: Api | null;
-  form: {
-    reset: UseFormReset<EditPermissionFormData>;
-  };
-  onError: (message: string) => void;
-}): Promise<{ originalDistributionControl: string } | undefined> {
-  if (!api || !permissionData) return;
-
-  try {
-    const [error, permission] = await queryPermission(
-      api,
-      permissionData.permissions.permissionId as `0x${string}`,
-    );
-
-    if (error || !permission) {
-      onError("Failed to load permission details");
-      return;
-    }
-
-    const formData = transformPermissionToFormData(permission);
-
-    // Get the original distribution control type as a string
-    let originalDistributionControl = "Manual";
-    if (formData.newDistributionControl) {
-      originalDistributionControl = match(formData.newDistributionControl)({
-        Manual: () => "Manual",
-        Automatic: (threshold) => `Automatic (threshold: ${threshold})`,
-        AtBlock: (block) => `At Block ${block}`,
-        Interval: (interval) => `Every ${interval} blocks`,
-      });
-    }
-
-    form.reset({
-      permissionId: permissionData.permissions.permissionId,
-      newTargets: formData.newTargets ?? [],
-      newStreams: formData.newStreams ?? [],
-      newDistributionControl: formData.newDistributionControl ?? {
-        Manual: null,
-      },
-      recipientManager: formData.recipientManager,
-      weightSetter: formData.weightSetter,
-    });
-
-    return { originalDistributionControl };
-  } catch (err) {
-    console.error("Error loading permission data:", err);
-    onError("Failed to load permission details");
-    return undefined;
-  }
 }
 
 export function prepareFormDataForSDK(data: EditPermissionFormData) {
