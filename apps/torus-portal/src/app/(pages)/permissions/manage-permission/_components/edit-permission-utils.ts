@@ -227,8 +227,35 @@ export function prepareFormDataForSDK(
       )
     : undefined;
 
-  // Only include fields that the user is authorized to edit
-  // This prevents "notAuthorizedToEdit" errors from the blockchain
+  if (!contract || !userAddress) {
+    return {
+      permissionId: permissionId as PermissionId,
+    };
+  }
+
+  if (!("Stream" in contract.scope)) {
+    return {
+      permissionId: permissionId as PermissionId,
+    };
+  }
+
+  const stream = contract.scope.Stream;
+  const isDelegator = contract.delegator === userAddress;
+  const isWeightSetter = stream.weightSetters.includes(
+    userAddress as SS58Address,
+  );
+  const isRecipientManager = stream.recipientManagers.includes(
+    userAddress as SS58Address,
+  );
+
+  if (isWeightSetter && !isDelegator && !isRecipientManager) {
+    return {
+      permissionId: permissionId as PermissionId,
+      newRecipients: sdkTargets,
+    };
+  }
+
+  // For delegators and recipient managers, include all authorized fields
   const result: {
     permissionId: PermissionId;
     newRecipients?: [SS58Address, number][];
