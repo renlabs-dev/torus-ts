@@ -62,6 +62,7 @@ export function RegisterAgentForm({
       twitter: "",
       github: "",
       telegram: "",
+      discordId: "",
       discord: "",
       website: "",
       icon: undefined,

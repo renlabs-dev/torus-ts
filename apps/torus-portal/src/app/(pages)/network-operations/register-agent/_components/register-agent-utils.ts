@@ -68,6 +68,7 @@ export async function doMetadataPin(
       twitter: data.twitter ? parseUrl(data.twitter) : undefined,
       github: data.github ? parseUrl(data.github) : undefined,
       telegram: data.telegram ? parseUrl(data.telegram) : undefined,
+      discordId: data.discordId || undefined,
       discord: data.discord ? parseUrl(data.discord) : undefined,
     },
   };
