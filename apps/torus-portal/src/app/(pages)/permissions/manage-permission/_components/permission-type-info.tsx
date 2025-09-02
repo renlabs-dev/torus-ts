@@ -7,7 +7,7 @@ import {
 import { AlertCircle, Info } from "lucide-react";
 
 interface PermissionTypeInfoProps {
-  permissionType: "stream" | "capability" | "unknown";
+  permissionType: "stream" | "capability" | "curator" | "unknown";
   canEdit?: boolean;
   isGrantor?: boolean;
   userRole?: string | null; // Primary role badge from getPrimaryRoleBadge

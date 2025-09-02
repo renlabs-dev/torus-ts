@@ -20,11 +20,12 @@ export type FieldType =
 
 export function getPermissionTypeFromContract(
   contract: PermissionContract | null,
-): "stream" | "capability" | "unknown" {
+): "stream" | "capability" | "curator" | "unknown" {
   if (!contract) return "unknown";
 
   if ("Stream" in contract.scope) return "stream";
   if ("Namespace" in contract.scope) return "capability";
+  if ("Curator" in contract.scope) return "curator";
 
   return "unknown";
 }
@@ -103,9 +104,6 @@ export function isWeightSetterOnly(
   return isWeightSetter && !isDelegator && !isRecipientManager;
 }
 
-/**
- * Check if user can revoke a permission based on revocation terms
- */
 export function canUserRevokePermission(
   contract: PermissionContract | null,
   userAddress: string | undefined,
@@ -117,7 +115,7 @@ export function canUserRevokePermission(
     RevocableByArbiters: (arbiters) =>
       arbiters.accounts.includes(userAddress as SS58Address) ||
       contract.delegator === userAddress,
-    RevocableAfter: () => contract.delegator === userAddress, // Delegator can revoke after time
+    RevocableAfter: () => contract.delegator === userAddress,
     Irrevocable: () => false,
   });
 }
@@ -130,7 +128,7 @@ export function canEditPermissionFromContract(
   contract: PermissionContract | null,
   userAddress: string | undefined,
 ): boolean {
-  return canUserEditField(contract, userAddress, "weights"); // If they can edit weights, they can edit something
+  return canUserEditField(contract, userAddress, "weights");
 }
 
 export function transformPermissionToFormData(
@@ -145,7 +143,7 @@ export function transformPermissionToFormData(
         formData.newTargets = Array.from(streamScope.recipients.entries()).map(
           ([address, weight]) => ({
             address,
-            percentage: Number(weight), // SDK uses weight, but we display as percentage
+            percentage: Number(weight),
           }),
         );
       }

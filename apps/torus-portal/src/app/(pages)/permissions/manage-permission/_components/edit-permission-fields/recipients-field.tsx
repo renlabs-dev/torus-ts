@@ -15,8 +15,8 @@ import type { EditPermissionFormData } from "../edit-permission-schema";
 
 interface RecipientsFieldProps {
   control: Control<EditPermissionFormData>;
-  canEditRecipients?: boolean; // Can add/remove recipients
-  isWeightsOnly?: boolean; // Can only edit weights, not add/remove recipients
+  canEditRecipients?: boolean;
+  isWeightsOnly?: boolean;
 }
 
 export function RecipientsField({
@@ -112,7 +112,8 @@ export function RecipientsField({
                     min="0"
                     max="100"
                     className="h-[2.7rem]"
-                    value={field.value || ""}
+                    disabled={!(canEditRecipients || isWeightsOnly)}
+                    value={field.value}
                     onChange={(e) => {
                       const value = parseInt(e.target.value);
                       field.onChange(

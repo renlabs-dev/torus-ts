@@ -292,16 +292,6 @@ export function EditPermissionForm({
                     }
                   />
 
-                  <RecipientManagerField
-                    control={form.control}
-                    isAccountConnected={isAccountConnected}
-                  />
-
-                  <WeightSetterField
-                    control={form.control}
-                    isAccountConnected={isAccountConnected}
-                  />
-
                   <Button
                     type="submit"
                     variant="outline"

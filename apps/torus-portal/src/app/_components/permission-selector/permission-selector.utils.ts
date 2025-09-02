@@ -19,7 +19,7 @@ export function hasUserRole(
       const isRecipient =
         recipients instanceof Map
           ? recipients.has(userAddress)
-          : Object.prototype.hasOwnProperty.call(recipients, userAddress);
+          : userAddress in recipients;
 
       return (
         isRecipient ||
