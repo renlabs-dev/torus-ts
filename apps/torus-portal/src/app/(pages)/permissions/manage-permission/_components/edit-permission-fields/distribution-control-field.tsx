@@ -20,10 +20,12 @@ import type { EditPermissionFormData } from "../edit-permission-schema";
 
 interface DistributionControlFieldProps {
   control: Control<EditPermissionFormData>;
+  disabled?: boolean;
 }
 
 export function DistributionControlField({
   control,
+  disabled = false,
 }: DistributionControlFieldProps) {
   const distributionControl = useWatch({
     control,
@@ -59,6 +61,7 @@ export function DistributionControlField({
               <FormLabel>Distribution Control</FormLabel>
               <Select
                 value={currentType}
+                disabled={disabled}
                 onValueChange={(value) => {
                   switch (value) {
                     case "Manual":
@@ -110,6 +113,7 @@ export function DistributionControlField({
                   <Input
                     type="number"
                     placeholder="Enter threshold amount"
+                    disabled={disabled}
                     value={currentValue.toString() || ""}
                     onChange={(e) => {
                       const value = e.target.value;
@@ -139,6 +143,7 @@ export function DistributionControlField({
                   <Input
                     type="number"
                     placeholder="Enter block number"
+                    disabled={disabled}
                     value={currentValue.toString() || ""}
                     onChange={(e) => {
                       const value = e.target.value;
@@ -169,6 +174,7 @@ export function DistributionControlField({
                   <Input
                     type="number"
                     placeholder="Enter block interval"
+                    disabled={disabled}
                     value={currentValue.toString() || ""}
                     onChange={(e) => {
                       const value = e.target.value;

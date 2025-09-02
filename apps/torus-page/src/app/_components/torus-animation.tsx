@@ -95,7 +95,8 @@ const Torus: FC = () => {
     [uniforms],
   );
 
-  useFrame((state, delta) => {
+  // eslint-disable-next-line react-hooks/immutability
+  useFrame((_state, delta) => {
     if (torusRef.current) {
       uniforms.time.value += 0.1 * 60 * delta;
     }

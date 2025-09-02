@@ -1743,8 +1743,6 @@ export default {
     lastUpdate: 'u64',
     lastExecution: 'Option<u64>',
     executionCount: 'u32',
-    maxInstances: 'u32',
-    children: 'BTreeSet<H256>',
     createdAt: 'u64'
   },
   /**
@@ -1754,7 +1752,7 @@ export default {
     _enum: {
       Stream: 'PalletPermission0PermissionStreamStreamScope',
       Curator: 'PalletPermission0PermissionCuratorCuratorScope',
-      Namespace: 'PalletPermission0PermissionNamespaceScope'
+      Namespace: 'PalletPermission0PermissionNamespaceNamespaceScope'
     }
   },
   /**
@@ -1774,14 +1772,18 @@ export default {
   PalletPermission0PermissionCuratorCuratorScope: {
     recipient: 'AccountId32',
     flags: 'BTreeMap<Option<H256>, u32>',
-    cooldown: 'Option<u64>'
+    cooldown: 'Option<u64>',
+    maxInstances: 'u32',
+    children: 'BTreeSet<H256>'
   },
   /**
-   * Lookup264: pallet_permission0::permission::NamespaceScope<T>
+   * Lookup266: pallet_permission0::permission::namespace::NamespaceScope<T>
    **/
-  PalletPermission0PermissionNamespaceScope: {
+  PalletPermission0PermissionNamespaceNamespaceScope: {
     recipient: 'AccountId32',
-    paths: 'BTreeMap<Option<H256>, BTreeSet<Bytes>>'
+    paths: 'BTreeMap<Option<H256>, BTreeSet<Bytes>>',
+    maxInstances: 'u32',
+    children: 'BTreeSet<H256>'
   },
   /**
    * Lookup278: pallet_permission0::pallet::Error<T>

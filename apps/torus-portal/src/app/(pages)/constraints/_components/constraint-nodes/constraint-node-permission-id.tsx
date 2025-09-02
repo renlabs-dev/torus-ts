@@ -48,6 +48,7 @@ export function ConstraintNodePermissionId({
   // Sync local state with external changes
   useEffect(() => {
     if (data.permissionId !== permissionId) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setPermissionId(data.permissionId || "");
     }
   }, [data.permissionId, permissionId]);

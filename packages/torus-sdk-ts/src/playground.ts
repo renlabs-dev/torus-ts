@@ -51,7 +51,14 @@ async function main() {
           console.log(`  Delegator: ${permission.delegator}`);
           console.log(`  Duration: ${JSON.stringify(permission.duration)}`);
           console.log(`  Revocation: ${JSON.stringify(permission.revocation)}`);
-          console.log(`max instances: ${permission.maxInstances}`);
+          // Extract maxInstances from the scope
+          let maxInstances = 0;
+          if ("Namespace" in permission.scope) {
+            maxInstances = permission.scope.Namespace.maxInstances;
+          } else if ("Curator" in permission.scope) {
+            maxInstances = permission.scope.Curator.maxInstances;
+          }
+          console.log(`max instances: ${maxInstances}`);
 
           // Show namespace paths if available
           if ("Namespace" in permission.scope) {

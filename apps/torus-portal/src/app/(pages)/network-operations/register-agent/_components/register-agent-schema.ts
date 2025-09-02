@@ -19,6 +19,7 @@ export const REGISTER_AGENT_SCHEMA = z.object({
   twitter: z.string().optional(),
   github: z.string().optional(),
   telegram: z.string().optional(),
+  discordId: z.string().min(1, "Discord ID is required"),
   discord: z.string().optional(),
   website: z.string().optional(),
   icon: z.instanceof(File).optional(),

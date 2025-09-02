@@ -115,6 +115,7 @@ export function TransfersDetailsDialog({
   }, [sender, recipient, originTxHash, multiProvider, origin, destination]);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     getMessageUrls().catch((err) => {
       logger.error("Error getting message URLs for details modal", err);
     });

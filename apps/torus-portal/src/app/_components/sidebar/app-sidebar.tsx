@@ -58,8 +58,8 @@ const data = {
           icon: CircleArrowOutUpRight,
         },
         {
-          title: "Emission Permission",
-          url: "/permissions/create-permission/emission",
+          title: "Stream Permission",
+          url: "/permissions/create-permission/stream",
           icon: Zap,
         },
         {

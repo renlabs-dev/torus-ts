@@ -13,6 +13,7 @@ const BlobImage = ({ blob, alt = "Agent Icon" }: BlobImageProps) => {
 
   useEffect(() => {
     const objectUrl = URL.createObjectURL(blob);
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setImageSrc(objectUrl);
 
     // Clean up the object URL when the component unmounts

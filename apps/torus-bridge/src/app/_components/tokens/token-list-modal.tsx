@@ -97,6 +97,7 @@ function TokenList({
   const multiProvider = useMultiProvider();
   const warpCore = useWarpCore();
 
+  // eslint-disable-next-line react-hooks/preserve-manual-memoization
   const tokens = useMemo(() => {
     const q = searchQuery.trim().toLowerCase();
     const multiChainTokens = warpCore.tokens.filter((t) =>

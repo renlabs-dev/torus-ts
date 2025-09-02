@@ -31,7 +31,7 @@
     "@trpc/client": "catalog:",
     "@trpc/server": "catalog:",
     "jsonwebtoken": "^9.0.2",
-    "superjson": "2.2.1",
+    "superjson": "catalog:",
     "zod": "catalog:"
   },
   "devDependencies": {

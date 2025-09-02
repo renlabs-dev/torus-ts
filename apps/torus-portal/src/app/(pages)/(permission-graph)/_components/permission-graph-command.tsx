@@ -42,11 +42,12 @@ export function PermissionGraphCommand() {
       : node;
   }, []);
 
+  // eslint-disable-next-line react-hooks/preserve-manual-memoization
   const searchData = useMemo(() => {
     if (!graphData)
       return {
         agents: [],
-        emissionPermissions: [],
+        streamPermissions: [],
         namespacePermissions: [],
         signals: [],
       };
@@ -68,24 +69,42 @@ export function PermissionGraphCommand() {
         `${agent.accountId} ${agent.name} ${agent.role}`.toLowerCase(),
     }));
 
-    // Process emission permissions (ensure unique keys)
-    const emissionPermissions = graphData.permissions.emission.map(
+    // Process stream permissions (formerly emission)
+    const streamPermissions = graphData.permissions.emission.map(
       (permission, index) => {
-        // Find agent names for delegator and recipient
+        // Find agent names for delegator
         const delegatorAgent = uniqueAgents.get(permission.delegatorAccountId);
-        const recipientAgent = uniqueAgents.get(permission.recipientAccountId);
+
+        // Handle multiple recipients or fallback to single recipient
+        const recipients =
+          permission.distributionTargets?.map(
+            (target) => target.targetAccountId,
+          ) ||
+          (permission.recipientAccountId
+            ? [permission.recipientAccountId]
+            : []);
+
+        const recipientDisplay =
+          recipients.length === 1
+            ? smallAddress(recipients[0] || "")
+            : `${recipients.length} Recipients`;
+
+        const recipientNames = recipients
+          .map((recipientId) => uniqueAgents.get(recipientId)?.name)
+          .filter(Boolean)
+          .join(", ");
 
         return {
           id: `permission-${permission.id}`,
-          type: "emission",
-          name: `Emission Permission`,
+          type: "stream",
+          name: `Stream Permission`,
           grantor: smallAddress(permission.delegatorAccountId),
-          grantee: smallAddress(permission.recipientAccountId),
+          grantee: recipientDisplay,
           grantorName: delegatorAgent?.name,
-          granteeName: recipientAgent?.name,
+          granteeName: recipientNames || undefined,
           searchText:
-            `${permission.id} ${permission.delegatorAccountId} ${permission.recipientAccountId} ${delegatorAgent?.name ?? ""} ${recipientAgent?.name ?? ""} emission`.toLowerCase(),
-          uniqueKey: `emission-${permission.id}-${index}`,
+            `${permission.id} ${permission.delegatorAccountId} ${recipients.join(" ")} ${delegatorAgent?.name ?? ""} ${recipientNames} stream emission`.toLowerCase(),
+          uniqueKey: `stream-${permission.id}-${index}`,
         };
       },
     );
@@ -123,7 +142,7 @@ export function PermissionGraphCommand() {
         `${signal.title} ${signal.description} ${signal.agentKey} signal`.toLowerCase(),
     }));
 
-    return { agents, emissionPermissions, namespacePermissions, signals };
+    return { agents, streamPermissions, namespacePermissions, signals };
   }, [graphData]);
 
   React.useEffect(() => {
@@ -219,9 +238,9 @@ export function PermissionGraphCommand() {
             </CommandGroup>
           )}
 
-          {searchData.emissionPermissions.length > 0 && (
-            <CommandGroup heading="Emission Permissions">
-              {searchData.emissionPermissions.map((permission) => {
+          {searchData.streamPermissions.length > 0 && (
+            <CommandGroup heading="Stream Permissions">
+              {searchData.streamPermissions.map((permission) => {
                 const isSelected = selectedId === permission.id;
                 return (
                   <CommandItem

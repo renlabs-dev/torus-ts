@@ -58,10 +58,27 @@ export function RegisterAgentSocialsFields({
       <div className="flex flex-col gap-4 md:flex-row md:gap-4">
         <FormField
           control={control}
+          name="discordId"
+          render={({ field }) => (
+            <FormItem className="flex flex-1 flex-col">
+              <FormLabel>Discord ID *</FormLabel>
+              <FormControl>
+                <Input
+                  {...field}
+                  placeholder="username or user ID"
+                  type="text"
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={control}
           name="discord"
           render={({ field }) => (
             <FormItem className="flex flex-1 flex-col">
-              <FormLabel>Discord</FormLabel>
+              <FormLabel>Discord Server</FormLabel>
               <FormControl>
                 <Input
                   {...field}
@@ -73,6 +90,9 @@ export function RegisterAgentSocialsFields({
             </FormItem>
           )}
         />
+      </div>
+
+      <div className="flex flex-col gap-4 md:flex-row md:gap-4">
         <FormField
           control={control}
           name="telegram"
@@ -90,25 +110,24 @@ export function RegisterAgentSocialsFields({
             </FormItem>
           )}
         />
+        <FormField
+          control={control}
+          name="website"
+          render={({ field }) => (
+            <FormItem className="flex flex-1 flex-col">
+              <FormLabel>Website</FormLabel>
+              <FormControl>
+                <Input
+                  {...field}
+                  placeholder="www.agent-website.com"
+                  type="text"
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
       </div>
-
-      <FormField
-        control={control}
-        name="website"
-        render={({ field }) => (
-          <FormItem className="flex flex-col">
-            <FormLabel>Website</FormLabel>
-            <FormControl>
-              <Input
-                {...field}
-                placeholder="www.agent-website.com"
-                type="text"
-              />
-            </FormControl>
-            <FormMessage />
-          </FormItem>
-        )}
-      />
     </>
   );
 }

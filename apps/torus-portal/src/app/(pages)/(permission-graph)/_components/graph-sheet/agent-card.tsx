@@ -79,6 +79,7 @@ export const AgentCard = memo(
     // Main effect to handle cached vs fresh data
     useEffect(() => {
       if (!nodeId) {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setIsLoading(false);
         return;
       }
@@ -125,6 +126,7 @@ export const AgentCard = memo(
 
       if (agentQuery.error) {
         console.error("Error fetching agent data:", agentQuery.error);
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setError(new Error("Failed to fetch agent data"));
         setIsLoading(false);
         return;

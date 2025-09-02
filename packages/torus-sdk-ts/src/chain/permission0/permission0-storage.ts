@@ -247,6 +247,48 @@ export async function queryNamespacePermissions(
   return makeOk(namespacePermissions);
 }
 
+export interface AllPermissions {
+  namespacePermissions: Map<PermissionId, PermissionContract>;
+  streamPermissions: Map<PermissionId, PermissionContract>;
+  curatorPermissions: Map<PermissionId, PermissionContract>;
+}
+
+export async function queryAllPermissions(
+  api: Api,
+): Promise<
+  Result<
+    AllPermissions,
+    SbQueryError | ZError<H256> | ZError<PermissionContract>
+  >
+> {
+  const [permissionsError, allPermissions] = await queryPermissions(api);
+  if (permissionsError) return makeErr(permissionsError);
+
+  const namespacePermissions = new Map<PermissionId, PermissionContract>();
+  const streamPermissions = new Map<PermissionId, PermissionContract>();
+  const curatorPermissions = new Map<PermissionId, PermissionContract>();
+
+  for (const [permissionId, permission] of allPermissions) {
+    match(permission.scope)({
+      Namespace: () => {
+        namespacePermissions.set(permissionId, permission);
+      },
+      Stream: () => {
+        streamPermissions.set(permissionId, permission);
+      },
+      Curator: () => {
+        curatorPermissions.set(permissionId, permission);
+      },
+    });
+  }
+
+  return makeOk({
+    namespacePermissions,
+    streamPermissions,
+    curatorPermissions,
+  });
+}
+
 /**
  * Query namespace permissions where the specified address is a recipient.
  * Since recipients are now stored in scope-specific structures, this function

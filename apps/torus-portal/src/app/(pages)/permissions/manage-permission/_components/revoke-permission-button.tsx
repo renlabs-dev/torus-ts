@@ -21,11 +21,13 @@ import { Trash2 } from "lucide-react";
 
 interface RevokePermissionButtonProps {
   permissionId: string;
+  canRevoke: boolean;
   onSuccess?: () => void;
 }
 
 export function RevokePermissionButton({
   permissionId,
+  canRevoke,
   onSuccess,
 }: RevokePermissionButtonProps) {
   const { toast } = useToast();
@@ -80,7 +82,9 @@ export function RevokePermissionButton({
         <Button
           variant="destructive"
           size="sm"
-          disabled={!isAccountConnected || !permissionId || isPending}
+          disabled={
+            !isAccountConnected || !permissionId || isPending || !canRevoke
+          }
         >
           <Trash2 className="mr-2 h-4 w-4" />
           {isPending ? "Revoking..." : "Revoke Permission"}
