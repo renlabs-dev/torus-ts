@@ -12,11 +12,13 @@ import type { EditPermissionFormData } from "../edit-permission-schema";
 interface RecipientManagerFieldProps {
   control: Control<EditPermissionFormData>;
   isAccountConnected: boolean;
+  disabled?: boolean;
 }
 
 export function RecipientManagerField({
   control,
   isAccountConnected,
+  disabled = false,
 }: RecipientManagerFieldProps) {
   return (
     <FormField
@@ -33,7 +35,7 @@ export function RecipientManagerField({
                 onChange: (value: string) => field.onChange(value || undefined),
               }}
               label=""
-              disabled={!isAccountConnected}
+              disabled={!isAccountConnected || disabled}
             />
           </FormControl>
           <div className="text-muted-foreground text-sm">

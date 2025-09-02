@@ -14,9 +14,10 @@ import type { EditPermissionFormData } from "../edit-permission-schema";
 
 interface StreamsFieldProps {
   control: Control<EditPermissionFormData>;
+  disabled?: boolean;
 }
 
-export function StreamsField({ control }: StreamsFieldProps) {
+export function StreamsField({ control, disabled = false }: StreamsFieldProps) {
   const {
     fields: streamFields,
     append: appendStream,
@@ -63,6 +64,7 @@ export function StreamsField({ control }: StreamsFieldProps) {
           type="button"
           size="sm"
           className="bg-white/70"
+          disabled={disabled}
           onClick={() => appendStream({ streamId: "", percentage: 0 })}
         >
           <Plus className="mr-2 h-4 w-4" />
@@ -84,6 +86,7 @@ export function StreamsField({ control }: StreamsFieldProps) {
                       <Input
                         {...field}
                         placeholder="Stream ID (H256)"
+                        disabled={disabled}
                         className={cn(isDuplicate && "border-destructive")}
                       />
                       {isDuplicate && (
@@ -108,6 +111,7 @@ export function StreamsField({ control }: StreamsFieldProps) {
                     placeholder="%"
                     min="0"
                     max="100"
+                    disabled={disabled}
                     value={field.value || ""}
                     onChange={(e) => {
                       const value = parseInt(e.target.value);
@@ -125,6 +129,7 @@ export function StreamsField({ control }: StreamsFieldProps) {
             type="button"
             variant="outline"
             size="icon"
+            disabled={disabled}
             onClick={() => removeStream(index)}
           >
             <Trash2 className="h-4 w-4" />

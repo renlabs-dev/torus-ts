@@ -3,6 +3,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import type { PermissionContract } from "@torus-network/sdk/chain";
 import { updateStreamPermission } from "@torus-network/sdk/chain";
+import type { SS58Address } from "@torus-network/sdk/types";
 import type { InferSelectModel } from "@torus-ts/db";
 import type {
   emissionPermissionsSchema,
@@ -16,7 +17,8 @@ import { Form } from "@torus-ts/ui/components/form";
 import { WalletConnectionWarning } from "@torus-ts/ui/components/wallet-connection-warning";
 import { useToast } from "@torus-ts/ui/hooks/use-toast";
 import { cn } from "@torus-ts/ui/lib/utils";
-import { PermissionSelectorV2 } from "~/app/_components/permission-selector/permission-selector";
+import { PermissionSelector } from "~/app/_components/permission-selector/permission-selector";
+import { getPrimaryRoleBadge } from "~/app/_components/permission-selector/permission-selector.utils";
 import PortalFormHeader from "~/app/_components/portal-form-header";
 import { PortalFormSeparator } from "~/app/_components/portal-form-separator";
 import { useSearchParams } from "next/navigation";
@@ -32,7 +34,10 @@ import type { EditPermissionFormData } from "./edit-permission-schema";
 import { EDIT_PERMISSION_SCHEMA } from "./edit-permission-schema";
 import {
   canEditPermissionFromContract,
+  canUserEditField,
+  canUserRevokePermission,
   getPermissionTypeFromContract,
+  isWeightSetterOnly,
   prepareFormDataForSDK,
   transformPermissionToFormData,
 } from "./edit-permission-utils";
@@ -78,7 +83,7 @@ export function EditPermissionForm({
   // Initialize selectedPermissionId from URL parameter if available
   const permissionIdFromUrl = searchParams.get("id");
   const [selectedPermissionId, setSelectedPermissionId] = useState<string>(
-    permissionIdFromUrl || ""
+    permissionIdFromUrl || "",
   );
   const [selectedPermissionContract, setSelectedPermissionContract] =
     useState<PermissionContract | null>(null);
@@ -92,6 +97,21 @@ export function EditPermissionForm({
   );
   const isGrantor =
     selectedPermissionContract?.delegator === selectedAccount?.address;
+  const canRevoke = canUserRevokePermission(
+    selectedPermissionContract,
+    selectedAccount?.address,
+  );
+  const userRole =
+    selectedPermissionContract && selectedAccount?.address
+      ? getPrimaryRoleBadge(
+          selectedPermissionContract,
+          selectedAccount.address as SS58Address,
+        )
+      : null;
+  const isWeightsOnlyUser = isWeightSetterOnly(
+    selectedPermissionContract,
+    selectedAccount?.address,
+  );
 
   const form = useForm<EditPermissionFormData>({
     disabled: !isAccountConnected,
@@ -184,7 +204,7 @@ export function EditPermissionForm({
 
         <div className="grid gap-6">
           <div className="grid gap-4">
-            <PermissionSelectorV2
+            <PermissionSelector
               control={form.control}
               selectedPermissionId={selectedPermissionId}
               onPermissionSelection={(permissionId, contract) => {
@@ -196,6 +216,7 @@ export function EditPermissionForm({
 
             <RevokePermissionButton
               permissionId={selectedPermissionId}
+              canRevoke={canRevoke}
               onSuccess={() => {
                 setSelectedPermissionId("");
                 form.reset();
@@ -210,24 +231,65 @@ export function EditPermissionForm({
               <PermissionTypeInfo
                 permissionType={permissionType}
                 isGrantor={isGrantor}
+                userRole={userRole}
               />
 
               {permissionType === "stream" && canEdit && (
                 <>
-                  <DistributionControlField control={form.control} />
+                  <DistributionControlField
+                    control={form.control}
+                    disabled={
+                      !canUserEditField(
+                        selectedPermissionContract,
+                        selectedAccount?.address,
+                        "distributionControl",
+                      )
+                    }
+                  />
 
-                  <RecipientsField control={form.control} />
+                  <RecipientsField
+                    control={form.control}
+                    canEditRecipients={canUserEditField(
+                      selectedPermissionContract,
+                      selectedAccount?.address,
+                      "recipients",
+                    )}
+                    isWeightsOnly={isWeightsOnlyUser}
+                  />
 
-                  <StreamsField control={form.control} />
+                  <StreamsField
+                    control={form.control}
+                    disabled={
+                      !canUserEditField(
+                        selectedPermissionContract,
+                        selectedAccount?.address,
+                        "streams",
+                      )
+                    }
+                  />
 
                   <RecipientManagerField
                     control={form.control}
                     isAccountConnected={isAccountConnected}
+                    disabled={
+                      !canUserEditField(
+                        selectedPermissionContract,
+                        selectedAccount?.address,
+                        "recipientManager",
+                      )
+                    }
                   />
 
                   <WeightSetterField
                     control={form.control}
                     isAccountConnected={isAccountConnected}
+                    disabled={
+                      !canUserEditField(
+                        selectedPermissionContract,
+                        selectedAccount?.address,
+                        "weightSetter",
+                      )
+                    }
                   />
 
                   <Button

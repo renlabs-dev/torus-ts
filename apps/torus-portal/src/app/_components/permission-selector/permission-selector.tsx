@@ -5,6 +5,7 @@ import type { SS58Address } from "@torus-network/sdk/types";
 import { smallAddress } from "@torus-network/torus-utils/subspace";
 import { useAllPermissions } from "@torus-ts/query-provider/hooks";
 import { useTorus } from "@torus-ts/torus-provider";
+import { Badge } from "@torus-ts/ui/components/badge";
 import { Button } from "@torus-ts/ui/components/button";
 import {
   CommandDialog,
@@ -39,10 +40,11 @@ import { PermissionDetailsCard } from "./permission-selector.details-card";
 import {
   extractAllAddressesFromPermissions,
   formatAddressWithAgentName,
+  getPrimaryRoleBadge,
   hasUserRole,
 } from "./permission-selector.utils";
 
-interface PermissionSelectorV2Props {
+interface PermissionSelectorProps {
   control: Control<{
     permissionId: string;
   }>;
@@ -53,7 +55,7 @@ interface PermissionSelectorV2Props {
   ) => void;
 }
 
-export function PermissionSelectorV2(props: PermissionSelectorV2Props) {
+export function PermissionSelector(props: PermissionSelectorProps) {
   // State to manage the open/closed status of the command dialog
   const [open, setOpen] = useState(false);
   useEffect(() => {
@@ -197,6 +199,10 @@ export function PermissionSelectorV2(props: PermissionSelectorV2Props) {
                   {group.permissions.map((permission) => {
                     const isSelected =
                       props.selectedPermissionId === permission.id;
+                    const userRoleBadge = getPrimaryRoleBadge(
+                      permission.contract,
+                      userAddress,
+                    );
 
                     return (
                       <CommandItem
@@ -218,6 +224,14 @@ export function PermissionSelectorV2(props: PermissionSelectorV2Props) {
                             <span className="truncate font-mono text-sm">
                               {smallAddress(permission.id, 8)}
                             </span>
+                            {userRoleBadge && (
+                              <Badge
+                                variant="secondary"
+                                className="h-4 shrink-0 px-1 text-xs"
+                              >
+                                {userRoleBadge}
+                              </Badge>
+                            )}
                             {isSelected && (
                               <Check className="h-4 w-4 shrink-0" />
                             )}

@@ -10,6 +10,14 @@ import type {
   EditPermissionFormData,
 } from "./edit-permission-schema";
 
+export type FieldType =
+  | "recipients"
+  | "weights"
+  | "streams"
+  | "distributionControl"
+  | "recipientManager"
+  | "weightSetter";
+
 export function getPermissionTypeFromContract(
   contract: PermissionContract | null,
 ): "stream" | "capability" | "unknown" {
@@ -21,17 +29,108 @@ export function getPermissionTypeFromContract(
   return "unknown";
 }
 
-export function canEditPermissionFromContract(
+/**
+ * Check if user can edit a specific field based on their role
+ * Based on new-fields.md specification:
+ * - Delegators can update all fields
+ * - Recipient managers can update recipients (add/remove)
+ * - Weight setters can only update recipient weights (not add/remove)
+ */
+export function canUserEditField(
   contract: PermissionContract | null,
   userAddress: string | undefined,
+  fieldType: FieldType,
 ): boolean {
   if (!contract || !userAddress) return false;
 
   // Only stream permissions can be edited
   if (!("Stream" in contract.scope)) return false;
 
-  // Only the grantor (delegator) can edit permissions
-  return contract.delegator === userAddress;
+  const stream = contract.scope.Stream;
+  const isDelegator = contract.delegator === userAddress;
+  const isRecipientManager = stream.recipientManagers.includes(
+    userAddress as SS58Address,
+  );
+  const isWeightSetter = stream.weightSetters.includes(
+    userAddress as SS58Address,
+  );
+
+  switch (fieldType) {
+    case "recipients":
+      return isDelegator || isRecipientManager;
+
+    case "weights":
+      return isDelegator || isRecipientManager || isWeightSetter;
+
+    case "streams":
+      return isDelegator;
+
+    case "distributionControl":
+      return isDelegator;
+
+    case "recipientManager":
+      return isDelegator;
+
+    case "weightSetter":
+      return isDelegator;
+
+    default:
+      return false;
+  }
+}
+
+/**
+ * Check if user can only edit weights (not add/remove recipients)
+ * Weight setters can only modify existing recipient weights
+ */
+export function isWeightSetterOnly(
+  contract: PermissionContract | null,
+  userAddress: string | undefined,
+): boolean {
+  if (!contract || !userAddress) return false;
+
+  if (!("Stream" in contract.scope)) return false;
+
+  const stream = contract.scope.Stream;
+  const isDelegator = contract.delegator === userAddress;
+  const isRecipientManager = stream.recipientManagers.includes(
+    userAddress as SS58Address,
+  );
+  const isWeightSetter = stream.weightSetters.includes(
+    userAddress as SS58Address,
+  );
+
+  return isWeightSetter && !isDelegator && !isRecipientManager;
+}
+
+/**
+ * Check if user can revoke a permission based on revocation terms
+ */
+export function canUserRevokePermission(
+  contract: PermissionContract | null,
+  userAddress: string | undefined,
+): boolean {
+  if (!contract || !userAddress) return false;
+
+  return match(contract.revocation)({
+    RevocableByDelegator: () => contract.delegator === userAddress,
+    RevocableByArbiters: (arbiters) =>
+      arbiters.accounts.includes(userAddress as SS58Address) ||
+      contract.delegator === userAddress,
+    RevocableAfter: () => contract.delegator === userAddress, // Delegator can revoke after time
+    Irrevocable: () => false,
+  });
+}
+
+/**
+ * Check if user can edit any field of the permission
+ * Returns true if user can edit at least one field (weights, recipients, streams, etc.)
+ */
+export function canEditPermissionFromContract(
+  contract: PermissionContract | null,
+  userAddress: string | undefined,
+): boolean {
+  return canUserEditField(contract, userAddress, "weights"); // If they can edit weights, they can edit something
 }
 
 export function transformPermissionToFormData(

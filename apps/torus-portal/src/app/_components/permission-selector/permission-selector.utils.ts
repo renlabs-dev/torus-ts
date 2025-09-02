@@ -4,7 +4,8 @@ import { smallAddress } from "@torus-network/torus-utils/subspace";
 import { match } from "rustie";
 
 /**
- * Filter function - check all places user can appear except recipients
+ * Filter function - check all places user can appear including recipients
+ * Shows all permissions where user has any role (for viewing/potential actions)
  */
 export function hasUserRole(
   contract: PermissionContract,
@@ -14,13 +15,24 @@ export function hasUserRole(
 
   const hasScopeRole = match(contract.scope)({
     Stream: (stream) => {
+      const recipients = stream.recipients;
+      const isRecipient =
+        recipients instanceof Map
+          ? recipients.has(userAddress)
+          : Object.prototype.hasOwnProperty.call(recipients, userAddress);
+
       return (
+        isRecipient ||
         stream.recipientManagers.includes(userAddress) ||
         stream.weightSetters.includes(userAddress)
       );
     },
-    Namespace: () => false,
-    Curator: () => false,
+    Namespace: (namespace) => {
+      return namespace.recipient === userAddress;
+    },
+    Curator: (curator) => {
+      return curator.recipient === userAddress;
+    },
   });
 
   if (hasScopeRole) return true;
@@ -34,12 +46,108 @@ export function hasUserRole(
 
   const hasRevocationRole = match(contract.revocation)({
     RevocableByArbiters: (arbiters) => arbiters.accounts.includes(userAddress),
+    RevocableByDelegator: () => contract.delegator === userAddress, // Delegator can revoke
     Irrevocable: () => false,
-    RevocableByDelegator: () => false,
-    RevocableAfter: () => false,
+    RevocableAfter: () => contract.delegator === userAddress, // Delegator can revoke after time
   });
 
   return hasRevocationRole;
+}
+
+/**
+ * Get all roles that a user has for a specific permission
+ * Based on new-fields.md specification
+ */
+export function getUserRoles(
+  contract: PermissionContract,
+  userAddress: SS58Address,
+): string[] {
+  const roles: string[] = [];
+
+  if (contract.delegator === userAddress) {
+    roles.push("Delegator");
+  }
+
+  if ("Stream" in contract.scope) {
+    const stream = contract.scope.Stream;
+
+    const recipients = stream.recipients;
+    const isRecipient =
+      recipients instanceof Map
+        ? recipients.has(userAddress)
+        : Object.prototype.hasOwnProperty.call(recipients, userAddress);
+
+    if (isRecipient) {
+      roles.push("Recipient");
+    }
+
+    if (stream.recipientManagers.includes(userAddress)) {
+      roles.push("Recipient Manager");
+    }
+
+    if (stream.weightSetters.includes(userAddress)) {
+      roles.push("Weight Setter");
+    }
+  }
+
+  if ("Namespace" in contract.scope) {
+    if (contract.scope.Namespace.recipient === userAddress) {
+      roles.push("Recipient");
+    }
+  }
+
+  if ("Curator" in contract.scope) {
+    if (contract.scope.Curator.recipient === userAddress) {
+      roles.push("Recipient");
+    }
+  }
+
+  if ("ControlledBy" in contract.enforcement) {
+    if (contract.enforcement.ControlledBy.controllers.includes(userAddress)) {
+      roles.push("Enforcement Controller");
+    }
+  }
+
+  if ("RevocableByArbiters" in contract.revocation) {
+    if (
+      contract.revocation.RevocableByArbiters.accounts.includes(userAddress)
+    ) {
+      roles.push("Revocation Arbiter");
+    }
+  }
+
+  return roles;
+}
+
+
+/**
+ * Get the primary role badge text for display
+ * Returns the most important role for badge display
+ */
+export function getPrimaryRoleBadge(
+  contract: PermissionContract,
+  userAddress: SS58Address,
+): string | null {
+  const roles = getUserRoles(contract, userAddress);
+
+  if (roles.length === 0) return null;
+
+  const rolePriority = [
+    "Delegator",
+    "Recipient Manager",
+    "Weight Setter",
+    "Recipient",
+    "Enforcement Controller",
+    "Revocation Arbiter",
+  ];
+
+  for (const priority of rolePriority) {
+    if (roles.includes(priority)) {
+      return priority;
+    }
+  }
+
+  return roles[0] || null;
 }
 
 /**
