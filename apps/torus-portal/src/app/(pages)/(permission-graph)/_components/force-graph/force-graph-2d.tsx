@@ -1,7 +1,5 @@
 "use client";
 
-import { useCallback, useEffect, useRef } from "react";
-
 import * as d3 from "d3";
 import type {
   Simulation,
@@ -10,7 +8,7 @@ import type {
 } from "d3-force";
 import { Viewport } from "pixi-viewport";
 import * as PIXI from "pixi.js";
-
+import { useCallback, useEffect, useRef } from "react";
 import type {
   CustomGraphData,
   CustomGraphLink,
@@ -294,7 +292,7 @@ export function ForceGraphCanvas2D(props: ForceGraph2DProps) {
         cleanup = await runForceGraph2D(
           containerRef.current,
           props.graphData.nodes,
-          props.graphData.links,
+          props.graphData.links as D3SimulationLink[],
         );
       }
     };

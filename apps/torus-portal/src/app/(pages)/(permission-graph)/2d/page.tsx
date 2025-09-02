@@ -1,22 +1,19 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
-
-import { useRouter, useSearchParams } from "next/navigation";
-
 import { useTorus } from "@torus-ts/torus-provider";
 import { KeyboardShortcutBadge } from "@torus-ts/ui/components/keyboard-shortcut-badge";
 import { Loading } from "@torus-ts/ui/components/loading";
-
-import { ForceGraphCanvas2D } from "../(permission-graph)/_components/force-graph/force-graph-2d";
-import { useGraphData } from "../(permission-graph)/_components/force-graph/use-graph-data";
-import { GraphSheet } from "../(permission-graph)/_components/graph-sheet/graph-sheet";
-import { PermissionGraphFooter } from "../(permission-graph)/_components/permission-graph-footer";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { ForceGraphCanvas2D } from "../_components/force-graph/force-graph-2d";
+import { useGraphData } from "../_components/force-graph/use-graph-data";
+import { GraphSheet } from "../_components/graph-sheet/graph-sheet";
+import { PermissionGraphFooter } from "../_components/permission-graph-footer";
 import type {
   CachedAgentData,
   CustomGraphNode,
-} from "../(permission-graph)/_components/permission-graph-types";
-import { AgentLRUCache } from "../(permission-graph)/_components/permission-graph-utils";
+} from "../_components/permission-graph-types";
+import { AgentLRUCache } from "../_components/permission-graph-utils";
 
 export default function PermissionGraph2DPage() {
   const router = useRouter();
@@ -45,6 +42,7 @@ export default function PermissionGraph2DPage() {
     if (nodeId && graphData) {
       const node = graphData.nodes.find((n) => n.id === nodeId);
       if (node && (!selectedNode || selectedNode.id !== nodeId)) {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setSelectedNode(node);
         setIsSheetOpen(true);
       }
@@ -108,10 +106,7 @@ export default function PermissionGraph2DPage() {
 
   if (isLoading || !graphData || !isInitialized)
     return (
-      <div
-        className="fixed inset-0 flex flex-col items-center text-sm justify-center animate-pulse
-          gap-2"
-      >
+      <div className="fixed inset-0 flex animate-pulse flex-col items-center justify-center gap-2 text-sm">
         <span className="flex items-center gap-2">
           <Loading /> Loading...
         </span>
