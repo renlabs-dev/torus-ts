@@ -24,7 +24,7 @@ export const JWTPayloadSchema = z
     keyType: z.string().min(1, "Key type is required"),
     addressInfo: z.object({
       addressType: z.string().min(1, "Address type is required"),
-      metadata: z.record(z.any()),
+      metadata: z.record(z.string(), z.any()),
     }),
     iat: z.number().int().positive("Issued at must be positive integer"),
     exp: z.number().int().positive("Expiration must be positive integer"),
