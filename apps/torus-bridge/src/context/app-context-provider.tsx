@@ -26,25 +26,25 @@ export function AppContextProvider({
   }
 
   return (
-    <ProviderRenderer
-      providers={[
-        ReactQueryProvider,
-        WarpContextInitGateProvider,
-        EvmWalletProvider,
-        SolanaWalletProvider,
-        StarknetWalletProvider,
-        CosmosWalletProvider,
-      ]}
+    <TorusProvider
+      wsEndpoint={env("NEXT_PUBLIC_TORUS_RPC_URL")}
+      torusCacheUrl={env("NEXT_PUBLIC_TORUS_CACHE_URL")}
     >
-      <TorusProvider
-        wsEndpoint={env("NEXT_PUBLIC_TORUS_RPC_URL")}
-        torusCacheUrl={env("NEXT_PUBLIC_TORUS_CACHE_URL")}
+      <ProviderRenderer
+        providers={[
+          ReactQueryProvider,
+          WarpContextInitGateProvider,
+          EvmWalletProvider,
+          SolanaWalletProvider,
+          StarknetWalletProvider,
+          CosmosWalletProvider,
+        ]}
       >
         <WalletHeader />
         <Container>{children}</Container>
         <Toaster />
         <Footer torusChainEnv={env("NEXT_PUBLIC_TORUS_CHAIN_ENV")} />
-      </TorusProvider>
-    </ProviderRenderer>
+      </ProviderRenderer>
+    </TorusProvider>
   );
 }
