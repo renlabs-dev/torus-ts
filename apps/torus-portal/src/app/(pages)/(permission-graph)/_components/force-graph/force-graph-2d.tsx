@@ -58,6 +58,23 @@ interface ForceGraph2DProps {
   allocatorAddress: string;
 }
 
+function getNodeTooltipText(node: CustomGraphNode): string {
+  switch (node.nodeType) {
+    case "allocator":
+      return `Allocator: ${node.name || node.id}`;
+    case "root_agent":
+      return `Root Agent: ${node.name || node.id}`;
+    case "target_agent":
+      return `Target Agent: ${node.name || node.id}`;
+    case "permission":
+      return `Permission: ${node.id}`;
+    case "signal":
+      return `Signal: ${node.name || node.id}`;
+    default:
+      return `Node: ${node.name || node.id}`;
+  }
+}
+
 export function ForceGraphCanvas2D(props: ForceGraph2DProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const appRef = useRef<PIXI.Application | null>(null);
@@ -66,6 +83,7 @@ export function ForceGraphCanvas2D(props: ForceGraph2DProps) {
     D3SimulationLink
   > | null>(null);
   const onNodeClickRef = useRef(props.onNodeClick);
+  const tooltipRef = useRef<HTMLDivElement | null>(null);
 
   const runForceGraph2D = useCallback(
     async (
@@ -149,6 +167,25 @@ export function ForceGraphCanvas2D(props: ForceGraph2DProps) {
       const visualLinks = new PIXI.Graphics();
       viewport.addChild(visualLinks);
 
+      // Create tooltip element
+      if (!tooltipRef.current) {
+        const tooltip = document.createElement("div");
+        tooltip.style.position = "fixed";
+        tooltip.style.backgroundColor = "rgba(0, 0, 0, 0.8)";
+        tooltip.style.color = "white";
+        tooltip.style.padding = "8px 12px";
+        tooltip.style.borderRadius = "4px";
+        tooltip.style.fontSize = "14px";
+        tooltip.style.fontFamily = "monospace";
+        tooltip.style.pointerEvents = "none";
+        tooltip.style.zIndex = "1000";
+        tooltip.style.display = "none";
+        tooltip.style.maxWidth = "200px";
+        tooltip.style.wordWrap = "break-word";
+        document.body.appendChild(tooltip);
+        tooltipRef.current = tooltip;
+      }
+
       // Create nodes
       nodes.forEach((node) => {
         const radius = getNodeRadius(node.nodeType);
@@ -202,6 +239,32 @@ export function ForceGraphCanvas2D(props: ForceGraph2DProps) {
         nodeGraphics.on("click", (e: PIXI.FederatedPointerEvent) => {
           e.stopPropagation();
           onNodeClickRef.current(node);
+        });
+
+        // Hover handlers for tooltip
+        nodeGraphics.on("pointerover", (e: PIXI.FederatedPointerEvent) => {
+          if (tooltipRef.current) {
+            tooltipRef.current.textContent = getNodeTooltipText(node);
+            tooltipRef.current.style.display = "block";
+            tooltipRef.current.style.left = `${e.globalX + 10}px`;
+            tooltipRef.current.style.top = `${e.globalY - 10}px`;
+          }
+        });
+
+        nodeGraphics.on("pointermove", (e: PIXI.FederatedPointerEvent) => {
+          if (
+            tooltipRef.current &&
+            tooltipRef.current.style.display === "block"
+          ) {
+            tooltipRef.current.style.left = `${e.globalX + 10}px`;
+            tooltipRef.current.style.top = `${e.globalY - 10}px`;
+          }
+        });
+
+        nodeGraphics.on("pointerout", () => {
+          if (tooltipRef.current) {
+            tooltipRef.current.style.display = "none";
+          }
         });
 
         viewport.addChild(nodeGraphics);
@@ -262,6 +325,11 @@ export function ForceGraphCanvas2D(props: ForceGraph2DProps) {
           });
           visualLinks.destroy();
           app.destroy(true);
+
+          // Hide tooltip
+          if (tooltipRef.current) {
+            tooltipRef.current.style.display = "none";
+          }
         },
       };
     },
@@ -287,6 +355,12 @@ export function ForceGraphCanvas2D(props: ForceGraph2DProps) {
 
     return () => {
       cleanup?.destroy();
+
+      // Clean up tooltip element
+      if (tooltipRef.current) {
+        document.body.removeChild(tooltipRef.current);
+        tooltipRef.current = null;
+      }
     };
   }, [props.graphData.nodes, props.graphData.links, runForceGraph2D]);
 
