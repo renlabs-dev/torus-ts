@@ -82,6 +82,23 @@ check-test filter="*":
 create-package:
   pnpm turbo gen init
 
+# -- Source code dependencies --
+
+# Generate dependency graph visualization as SVG
+# Creates tmp/dependencies.svg showing module dependencies
+madge-dependencies-graph:
+  #!/usr/bin/env bash
+  shopt -s globstar
+  mkdir -p tmp
+  pnpm exec madge -i tmp/dependencies.svg packages/*/src/**/*.ts apps/*/src/**/*.ts
+
+# Detect circular dependencies in the codebase
+# Exits with error code if circular dependencies are found
+madge-circular:
+  #!/usr/bin/env bash
+  shopt -s globstar
+  pnpm exec madge -c packages/*/src/*.ts apps/*/src/**/*.ts
+
 # == Publishing ==
 
 publish:
