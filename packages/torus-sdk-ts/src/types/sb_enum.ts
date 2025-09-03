@@ -1,153 +1,80 @@
-import { Enum } from "@polkadot/types";
-import type {
-  ParseInput,
-  ParseReturnType,
-  ProcessedCreateParams,
-  RawCreateParams,
-  SyncParseReturnType,
-  z,
-  ZodErrorMap,
-  ZodTypeAny,
-  ZodTypeDef,
-} from "zod";
-import {
-  addIssueToContext,
-  INVALID,
-  ZodIssueCode,
-  ZodParsedType,
-  ZodType,
-} from "zod";
+import { Enum as SubstrateEnum } from "@polkadot/types";
+import type { Equals } from "tsafe";
+import { assert } from "tsafe";
+import { z } from "zod";
+import { sb_number } from "./zod.js";
 
-export type ZodSubstrateEnumVariants = Record<string, ZodTypeAny>;
+export type BaseSchema = z.ZodType<unknown, z.ZodTypeDef, unknown>;
 
-export interface ZodSubstrateEnumDef<
-  Options extends ZodSubstrateEnumVariants = ZodSubstrateEnumVariants,
-> extends ZodTypeDef {
-  variants: Options;
-  // typeName: ZodFirstPartyTypeKind.ZodDiscriminatedUnion;
-  typeName: "ZodSubstrateEnum";
-}
+export type ZodSubstrateEnumVariants = Record<string, BaseSchema>;
 
-export type MapZodVariantsToRaw<T extends ZodSubstrateEnumVariants> = {
-  [K in keyof T]: Record<K, z.output<T[K]>>;
-}[keyof T];
+export type zOut<S extends BaseSchema> = z.output<S>;
 
-export class ZodSubstrateEnum<
-  Variants extends ZodSubstrateEnumVariants,
-> extends ZodType<
-  MapZodVariantsToRaw<Variants>,
-  ZodSubstrateEnumDef<Variants>
-  // , input<Variants[string]>
-> {
-  _parse(input: ParseInput): ParseReturnType<this["_output"]> {
-    const { ctx } = this._processInputParams(input);
+export type MapZodVariantsToRaw<V extends ZodSubstrateEnumVariants> = {
+  [K in keyof V & string]: Record<K, zOut<V[K]>>;
+}[keyof V & string];
 
-    if (ctx.parsedType !== ZodParsedType.object) {
-      addIssueToContext(ctx, {
-        code: ZodIssueCode.invalid_type,
-        expected: ZodParsedType.object,
-        received: ctx.parsedType,
-      });
-      return INVALID;
-    }
+/**
+ * Schema validator for Substrate Enum types.
+ */
+export const Enum_schema = z.custom<SubstrateEnum>(
+  (val) => val instanceof SubstrateEnum,
+  "not a Substrate Enum",
+);
 
-    if (!(ctx.data instanceof Enum)) {
-      addIssueToContext(ctx, {
-        code: ZodIssueCode.custom,
+/**
+ * Parser for complex Substrate Enums with typed variants.
+ *
+ * Each variant can contain data that is validated by its associated schema.
+ * The result follows the Rust-like enum pattern: {VariantName: data}.
+ *
+ * @param variants - Object mapping variant names to their schemas
+ * @returns Parser that transforms to discriminated union type
+ *
+ * @example
+ * ```ts
+ * const statusEnum = sb_enum({
+ *   Active: sb_struct({ since: sb_number }),
+ *   Inactive: sb_null,
+ *   Pending: sb_string,
+ * });
+ * // Returns: {Active: {since: number}} | {Inactive: null} | {Pending: string}
+ * ```
+ */
+export const sb_enum = <Variants extends ZodSubstrateEnumVariants>(
+  variants: Variants,
+) =>
+  Enum_schema.transform((input, ctx): MapZodVariantsToRaw<Variants> => {
+    // 1) Must be a polkadot-js Enum instance
+    if (!(input instanceof SubstrateEnum)) {
+      ctx.addIssue({
+        code: "custom",
         message: "Expected Substrate Enum",
       });
-      return INVALID;
+      return z.NEVER; // abort parse
     }
 
-    const variant_name = ctx.data.type;
-
-    if (!Object.hasOwn(this.variants, variant_name)) {
-      addIssueToContext(ctx, {
-        code: ZodIssueCode.custom,
-        message: `Invalid variant name '${variant_name}'`,
+    // 2) Variant must exist in the provided mapping
+    const variantName = input.type;
+    const schema = variants[variantName];
+    if (!schema) {
+      ctx.addIssue({
+        code: "custom",
+        message: `Invalid variant name '${variantName}'`,
       });
-      return INVALID;
+      return z.NEVER;
     }
 
-    const variantType = this.variants[variant_name];
+    // 3) Parse the inner value using the chosen schema
+    //    If the inner parse fails, its ZodError will bubble up correctly.
+    const parsedInner = schema.parse(input.inner);
 
-    if (!variantType) {
-      addIssueToContext(ctx, {
-        code: ZodIssueCode.custom,
-        message: `Invalid variant name '${variant_name}', valid variants are: ${Object.keys(this.variants).join(", ")}`,
-      });
-      return INVALID;
-    }
+    // 4) Wrap as { Variant: value }
+    return { [variantName]: parsedInner } as MapZodVariantsToRaw<Variants>;
+  });
 
-    // Wraps the parsed values in object with the variant name
-    const handleParseResult = (result: SyncParseReturnType<unknown>) => {
-      if (result.status == "aborted") return result;
-      const value = { [variant_name]: result.value };
-      return { ...result, value };
-    };
-
-    const data = ctx.data.inner;
-    const path = [variant_name];
-    const parseInput = { data, path, parent: ctx };
-
-    if (ctx.common.async) {
-      const parseResult = variantType._parseAsync(parseInput);
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-return
-      return parseResult.then(handleParseResult) as any;
-    } else {
-      const parseResult = variantType._parseSync(parseInput);
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-return
-      return handleParseResult(parseResult) as any;
-    }
-  }
-
-  get variants() {
-    return this._def.variants;
-  }
-
-  /**
-   * The constructor of the discriminated union schema. Its behavior is very similar to that of the normal z.union() constructor.
-   * However, it only allows a union of objects, all of which need to share a discriminator property. This property must
-   * have a different value for each object in the union.
-   * @param discriminator the name of the discriminator property
-   * @param types an array of object schemas
-   * @param params
-   */
-  static create<Types extends ZodSubstrateEnumVariants>(
-    this: void,
-    variants: Types,
-    params?: RawCreateParams,
-  ): ZodSubstrateEnum<Types> {
-    return new ZodSubstrateEnum<Types>({
-      typeName: "ZodSubstrateEnum",
-      variants: variants,
-      ...processCreateParams(params),
-    });
-  }
+function _test() {
+  const _s1 = sb_enum({ A: sb_number, B: sb_number });
+  type S1 = z.infer<typeof _s1>;
+  assert<Equals<S1, { A: number } | { B: number }>>();
 }
-
-function processCreateParams(params: RawCreateParams): ProcessedCreateParams {
-  if (!params) return {};
-  const { errorMap, invalid_type_error, required_error, description } = params;
-  if (errorMap && (invalid_type_error || required_error)) {
-    throw new Error(
-      `Can't use "invalid_type_error" or "required_error" in conjunction with custom error map.`,
-    );
-  }
-  if (errorMap) return { errorMap: errorMap, description };
-  const customMap: ZodErrorMap = (iss, ctx) => {
-    const { message } = params;
-
-    if (iss.code === "invalid_enum_value") {
-      return { message: message ?? ctx.defaultError };
-    }
-    if (typeof ctx.data === "undefined") {
-      return { message: message ?? required_error ?? ctx.defaultError };
-    }
-    if (iss.code !== "invalid_type") return { message: ctx.defaultError };
-    return { message: message ?? invalid_type_error ?? ctx.defaultError };
-  };
-  return { errorMap: customMap, description };
-}
-
-export const sb_enum = ZodSubstrateEnum.create;
