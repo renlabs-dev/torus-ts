@@ -91,8 +91,9 @@ export function ForceGraphCanvas2D(props: ForceGraph2DProps) {
       await app.init({
         width,
         height,
-        antialias: true,
         resolution: 1,
+        antialias: true,
+        resizeTo: window,
         backgroundColor: 0x111111,
       });
 
