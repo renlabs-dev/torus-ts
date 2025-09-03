@@ -118,11 +118,12 @@ describe("AgentNameValidation", () => {
     });
 
     it.each(testCases.invalid)(
-      "should reject invalid name '$value' with error '$error'",
+      "should reject invalid name '$value' with custom issue code and error '$error'",
       ({ value, error }) => {
         const result = schema.safeParse(value);
         expect(result.success).toBe(false);
         if (!result.success && result.error.issues[0]) {
+          expect(result.error.issues[0].code).toBe("custom");
           expect(result.error.issues[0].message).toBe(error);
         }
       },

@@ -63,17 +63,21 @@ fix: lint-fix format-fix
 lint-ws:
   pnpm exec pnpm dlx sherif@latest -r unordered-dependencies
 
+# Typecheck and lint
 check filter="*":
-  pnpm exec turbo run typecheck lint -F "{{filter}}"
+  pnpm exec turbo run typecheck lint --continue -F "{{filter}}"
 
+# Run tests
 test filter="*":
   pnpm exec turbo run test --continue -F "{{filter}}"
 
+# Run all tests
 test-all filter="*":
   pnpm exec ./scripts/dev-helper with-env turbo run test:all --continue -F "{{filter}}"
 
+# Typecheck, lint, and run tests
 check-test filter="*":
-  pnpm exec turbo run typecheck lint test -F "{{filter}}"
+  pnpm exec turbo run typecheck lint test --continue -F "{{filter}}"
 
 create-package:
   pnpm turbo gen init

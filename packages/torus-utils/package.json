@@ -44,6 +44,10 @@
       "types": "./dist/typing.d.ts",
       "default": "./dist/typing.js"
     },
+    "./zod": {
+      "types": "./dist/zod.d.ts",
+      "default": "./dist/zod.js"
+    },
     "./collections": {
       "types": "./dist/collections.d.ts",
       "default": "./dist/collections.js"
@@ -118,7 +122,9 @@
     "luxon": "catalog:",
     "multiformats": "catalog:",
     "rustie": "catalog:",
-    "tsafe": "catalog:",
+    "tsafe": "catalog:"
+  },
+  "peerDependencies": {
     "zod": "catalog:"
   },
   "devDependencies": {
@@ -126,7 +132,8 @@
     "@torus-ts/tsconfig": "workspace:*",
     "@types/luxon": "^3.4.2",
     "type-fest": "^4.33.0",
-    "vitest": "catalog:"
+    "vitest": "catalog:",
+    "zod": "catalog:"
   },
   "compilerOptions": {
     "module": "ESNext",

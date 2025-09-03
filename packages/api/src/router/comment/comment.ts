@@ -2,7 +2,7 @@ import { and, eq } from "@torus-ts/db";
 import {
   commentDigestView,
   commentSchema,
-  governanceItemTypeValues,
+  governanceItemType,
 } from "@torus-ts/db/schema";
 import { COMMENT_INSERT_SCHEMA } from "@torus-ts/db/validation";
 import type { TRPCRouterRecord } from "@trpc/server";
@@ -15,7 +15,7 @@ export const commentRouter = {
     .input(
       z.object({
         proposalId: z.number(),
-        type: z.nativeEnum(governanceItemTypeValues),
+        type: z.enum(governanceItemType.enumValues),
       }),
     )
     .query(({ ctx, input }) => {
