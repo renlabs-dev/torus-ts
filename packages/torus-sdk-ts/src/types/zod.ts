@@ -15,15 +15,13 @@ import {
 import { AbstractInt } from "@polkadot/types-codec/abstract";
 import type { AnyJson, Codec } from "@polkadot/types/types";
 import { u8aToBn } from "@polkadot/util";
+import type { Option } from "@torus-network/torus-utils";
 import { match } from "rustie";
 import type { Equals } from "tsafe";
 import { assert } from "tsafe";
 import type { Merge } from "type-fest";
 import type { ZodRawShape, ZodType, ZodTypeAny, ZodTypeDef } from "zod";
 import { z } from "zod";
-
-import type { Option } from "@torus-network/torus-utils";
-
 import { SS58_SCHEMA } from "./address.js";
 
 export * from "./sb_enum.js";
@@ -187,7 +185,7 @@ export const sb_struct_obj = <MS extends ZodRawShape, OS extends ZodRawShape>(
         ctx.addIssue({
           code: "custom",
           message: `Missing key ${key} in Struct (as Map)`,
-          path: [...ctx.path, key],
+          path: [key],
         });
         return z.NEVER;
       }
@@ -202,7 +200,7 @@ export const sb_struct_obj = <MS extends ZodRawShape, OS extends ZodRawShape>(
         ctx.addIssue({
           code: "custom",
           message: `Missing key ${key} in Struct`,
-          path: [...ctx.path, key],
+          path: [key],
         });
         return z.NEVER;
       }
@@ -252,7 +250,7 @@ export const sb_option = <T extends ZodTypeAny>(
         ctx.addIssue({
           code: "custom",
           message: `Error in Option inner value: ${result.error.message}`,
-          path: [...ctx.path, "Some"],
+          path: ["Some"],
         });
         return z.NEVER;
       }
@@ -289,7 +287,7 @@ export const sb_some = <T extends ZodTypeAny>(
           ctx.addIssue({
             code: "custom",
             message: `Expected Some`,
-            path: [...ctx.path, "Some"],
+            path: ["Some"],
           });
           return z.NEVER;
         },

@@ -10,7 +10,7 @@ import { chainErr, ParseError } from "@torus-network/torus-utils/error";
 import type { Result } from "@torus-network/torus-utils/result";
 import { makeErr, makeOk } from "@torus-network/torus-utils/result";
 import { tryAsync } from "@torus-network/torus-utils/try-catch";
-import { zodParseResult } from "@torus-network/torus-utils/typing";
+import { zodParseResult } from "@torus-network/torus-utils/zod";
 import Emittery from "emittery";
 import type { Enum } from "rustie";
 import { match } from "rustie";

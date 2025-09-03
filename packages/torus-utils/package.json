@@ -44,6 +44,10 @@
       "types": "./dist/typing.d.ts",
       "default": "./dist/typing.js"
     },
+    "./zod": {
+      "types": "./dist/zod.d.ts",
+      "default": "./dist/zod.js"
+    },
     "./collections": {
       "types": "./dist/collections.d.ts",
       "default": "./dist/collections.js"

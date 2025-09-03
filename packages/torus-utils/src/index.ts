@@ -1,6 +1,7 @@
 import { assert, AssertionError } from "tsafe";
 
 export * from "./typing.js";
+export * from "./zod.js";
 
 // == Branded Types / Nominal Types ==
 

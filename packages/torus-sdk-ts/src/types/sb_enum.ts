@@ -87,7 +87,7 @@ export class ZodSubstrateEnum<
     };
 
     const data = ctx.data.inner;
-    const path = [...ctx.path, variant_name];
+    const path = [variant_name];
     const parseInput = { data, path, parent: ctx };
 
     if (ctx.common.async) {
