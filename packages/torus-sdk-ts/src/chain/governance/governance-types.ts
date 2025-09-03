@@ -6,7 +6,6 @@ import { z } from "zod";
 import type { SS58Address } from "../../types/address.js";
 import {
   sb_address,
-  sb_amount,
   sb_array,
   sb_bigint,
   sb_blocks,
@@ -103,7 +102,7 @@ export const AGENT_APPLICATION_SCHEMA = sb_struct({
   payerKey: sb_address,
   agentKey: sb_address,
   data: sb_string,
-  cost: sb_amount,
+  cost: sb_bigint,
   expiresAt: sb_blocks,
   status: AGENT_APPLICATION_STATUS_SCHEMA,
 });

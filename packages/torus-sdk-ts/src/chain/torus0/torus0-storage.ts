@@ -8,8 +8,11 @@ import {
   sb_option_default,
   sb_some,
 } from "../../types/index.js";
-import type { Api } from "../common/fees.js";
-import { handleDoubleMapEntries, handleMapEntries } from "../common/fees.js";
+import {
+  handleDoubleMapEntries,
+  handleMapEntries,
+} from "../common/storage-maps.js";
+import type { Api } from "../common/types.js";
 import type { NamespaceEntry } from "./torus0-types.js";
 import {
   AGENT_SCHEMA,

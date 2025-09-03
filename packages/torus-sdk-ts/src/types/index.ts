@@ -1,5 +1,6 @@
 export * from "./zod.js";
-export * from "./base.js";
+export * from "../chain/common/types.js";
+export * from "../chain/common/errors.js";
 
 export * from "./address.js";
 export * from "./namespace/index.js";
