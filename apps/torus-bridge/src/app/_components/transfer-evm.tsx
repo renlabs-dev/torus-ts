@@ -226,6 +226,7 @@ export function TransferEVM() {
             window.open(
               "https://docs.torus.network/wallets/torus-evm-wallet",
               "_blank",
+              "noopener,noreferrer",
             );
           },
         },
