@@ -11,6 +11,8 @@ const config = {
     "@torus-ts/db",
     "@torus-ts/ui",
     "@torus-ts/env-validation",
+    "@starknet-react/core",
+    "@starknet-react/chains",
   ],
 
   productionBrowserSourceMaps: true,
