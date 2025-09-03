@@ -205,7 +205,6 @@ export function TransferEVM() {
   }, [amount, evmSS58Addr, api, sendTx, amountRems, refetchHandler]);
 
   const handleWithdraw = useCallback(async () => {
-    // Check for required values
     if (
       !amount ||
       !walletClient ||
@@ -218,10 +217,19 @@ export function TransferEVM() {
     }
 
     if (chain.id !== torusEvmChainId) {
-      toast({
-        title: "Switching networks...",
-        description: "Please wait while we switch to the Torus EVM network.",
-      });
+      toast.error(
+        "Your wallet does not support automatic network switching. Please check the documentation and configure it manually.",
+        Infinity,
+        {
+          label: "View documentation",
+          onClick: () => {
+            window.open(
+              "https://docs.torus.network/wallets/torus-evm-wallet",
+              "_blank",
+            );
+          },
+        },
+      );
       return;
     }
 
