@@ -130,20 +130,18 @@ export function ForceGraphCanvas2D(props: ForceGraph2DProps) {
       }
 
       const simulation = d3
-        .forceSimulation<D3SimulationNode>(nodes)
+        .forceSimulation(nodes)
         .force(
           "link",
           d3
             .forceLink<D3SimulationNode, D3SimulationLink>(links)
             .id((d) => d.id)
-            .distance(100)
-            .strength(0.8),
+            .distance(60),
         )
-        .force(
-          "charge",
-          d3.forceManyBody().strength(-100), // Stronger repulsion to spread nodes out
-        )
-        .force("center", d3.forceCenter(width / 2, height / 2).strength(1)); // Very weak centering
+        .force("charge", d3.forceManyBody().strength(-300))
+        .force("x", d3.forceX())
+        .force("y", d3.forceY())
+        .force("center", d3.forceCenter(width / 2, height / 2));
 
       simulationRef.current = simulation;
 
@@ -291,5 +289,10 @@ export function ForceGraphCanvas2D(props: ForceGraph2DProps) {
     };
   }, [props.graphData.nodes, props.graphData.links, runForceGraph2D]);
 
-  return <div ref={containerRef} className="bg-background fixed inset-0 z-0" />;
+  return (
+    <div
+      ref={containerRef}
+      className="bg-background animate-fade animate-delay-1000 fixed inset-0 z-0"
+    />
+  );
 }
