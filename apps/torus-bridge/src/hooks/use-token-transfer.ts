@@ -447,4 +447,8 @@ const txCategoryToStatuses: Record<
     TransferStatus.SigningTransfer,
     TransferStatus.ConfirmingTransfer,
   ],
+  [WarpTxCategory.Revoke]: [
+    TransferStatus.SigningApprove,
+    TransferStatus.ConfirmingApprove,
+  ],
 };
