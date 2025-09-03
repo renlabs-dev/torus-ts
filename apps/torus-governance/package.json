@@ -40,7 +40,7 @@
     "react-dom": "catalog:react19",
     "react-hook-form": "^7.53.2",
     "rustie": "catalog:",
-    "superjson": "2.2.1",
+    "superjson": "catalog:",
     "three": "catalog:",
     "three-stdlib": "^2.35.15",
     "zod": "catalog:"

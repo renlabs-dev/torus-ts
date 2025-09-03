@@ -23,6 +23,7 @@ export function TransactionsSheet() {
       const timer = setTimeout(() => setShouldRenderContent(true), 150);
       return () => clearTimeout(timer);
     } else {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setShouldRenderContent(false);
     }
   }, [isOpen]);

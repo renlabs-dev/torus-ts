@@ -43,6 +43,7 @@ export default function PermissionGraphPage() {
     if (nodeId && graphData) {
       const node = graphData.nodes.find((n) => n.id === nodeId);
       if (node && (!selectedNode || selectedNode.id !== nodeId)) {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setSelectedNode(node);
         setIsSheetOpen(true); // Open sheet when node is selected from search
       }

@@ -16,6 +16,7 @@ export function TransferDetails() {
 
   useEffect(() => {
     if (!transferLoading && transfers.length > 0) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setSelectedTransfer(transfers[transfers.length - 1]);
       setIsModalOpen(true);
     }

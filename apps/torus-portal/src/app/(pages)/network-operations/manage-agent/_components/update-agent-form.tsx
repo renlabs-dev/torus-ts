@@ -73,6 +73,7 @@ export function UpdateAgentForm({ agentKey }: UpdateAgentFormProps) {
     if (currentImagePreview && currentImagePreview !== currentImageBlobUrl) {
       URL.revokeObjectURL(currentImagePreview);
     }
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setCurrentImagePreview(currentImageBlobUrl);
   }, [currentImageBlobUrl, currentImagePreview]);
 
@@ -132,6 +133,7 @@ export function UpdateAgentForm({ agentKey }: UpdateAgentFormProps) {
         },
       };
 
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setOriginalFormData(originalData);
       form.reset(originalData);
       setHasUnsavedChanges(false);

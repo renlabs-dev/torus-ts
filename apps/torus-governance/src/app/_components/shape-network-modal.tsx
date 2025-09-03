@@ -83,6 +83,7 @@ export function ShapeNetworkModal() {
       return;
     }
     if (shouldBeOpen) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setIsOpen(true);
       sessionStorage.removeItem("shapeNetworkModalOpen");
     }

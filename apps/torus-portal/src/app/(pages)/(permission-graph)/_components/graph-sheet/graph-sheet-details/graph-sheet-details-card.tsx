@@ -43,6 +43,35 @@ export function NodeDetailsCard({
 }: NodeDetailsCardProps) {
   const router = useRouter();
 
+  // Helper function to extract recipients based on permission type
+  const extractRecipients = (
+    details: NonNullable<allPermissions>[number] | undefined,
+  ): string[] | string | null => {
+    if (!details) return null;
+
+    // For stream (emission) permissions, collect all recipients from distribution targets
+    if (details.emission_permissions && details.emission_distribution_targets) {
+      const targets = Array.isArray(details.emission_distribution_targets)
+        ? details.emission_distribution_targets
+        : [details.emission_distribution_targets];
+
+      const recipients = targets
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+        .map((target) => target?.targetAccountId as string | undefined)
+        .filter((id): id is string => Boolean(id));
+
+      return recipients.length > 0 ? recipients : null;
+    }
+
+    // For namespace (capability) permissions, use single recipient
+    if (details.namespace_permissions) {
+      return details.permissions.granteeAccountId || null;
+    }
+
+    // Fallback to granteeAccountId for other permission types
+    return details.permissions.granteeAccountId || null;
+  };
+
   const processedPermissions = nodePermissions.map((permission) => {
     // Extract permission ID from node ID if it's a permission node
     const getPermissionId = (nodeId: string | number | object | undefined) => {
@@ -106,6 +135,7 @@ export function NodeDetailsCard({
   });
 
   // Group and sort permissions
+  // eslint-disable-next-line react-hooks/preserve-manual-memoization
   const groupedPermissions = useMemo(() => {
     const delegated = processedPermissions.filter((p) => p.isOutgoing);
     const received = processedPermissions.filter((p) => !p.isOutgoing);
@@ -130,6 +160,7 @@ export function NodeDetailsCard({
       delegated: sortPermissions(delegated),
       received: sortPermissions(received),
     };
+    // eslint-disable-next-line react-hooks/preserve-manual-memoization
   }, [processedPermissions]);
 
   const renderPermissionGroup = (
@@ -173,9 +204,7 @@ export function NodeDetailsCard({
                           </div>
                           <GraphSheetDetailsLinkButtons
                             grantor_key={details?.permissions.grantorAccountId}
-                            grantee_key={
-                              details?.permissions.granteeAccountId || undefined
-                            }
+                            recipients={extractRecipients(details)}
                             permission_id={String(
                               details?.permissions.permissionId,
                             )}
@@ -315,9 +344,7 @@ export function NodeDetailsCard({
                           </div>
                           <GraphSheetDetailsLinkButtons
                             grantor_key={details?.permissions.grantorAccountId}
-                            grantee_key={
-                              details?.permissions.granteeAccountId || undefined
-                            }
+                            recipients={extractRecipients(details)}
                             permission_id={String(
                               details?.permissions.permissionId,
                             )}
@@ -462,6 +489,7 @@ export function NodeDetailsCard({
         </TabsList>
 
         <TabsContent value="permissions" className="mt-0 flex-1">
+          {/* eslint-disable-next-line react-hooks/static-components */}
           <PermissionsContent />
         </TabsContent>
 

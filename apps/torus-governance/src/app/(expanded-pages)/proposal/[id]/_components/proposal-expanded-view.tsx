@@ -59,6 +59,7 @@ export function ProposalExpandedView(props: Readonly<CustomContent>) {
     torusCacheUrl,
   } = useGovernance();
 
+  // eslint-disable-next-line react-hooks/preserve-manual-memoization
   const content = useMemo(() => {
     const proposal = proposalsWithMeta?.find(
       (proposal) => proposal.id === paramId,

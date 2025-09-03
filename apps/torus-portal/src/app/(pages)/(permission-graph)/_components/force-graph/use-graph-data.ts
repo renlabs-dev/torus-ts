@@ -24,7 +24,7 @@ export function useGraphData() {
   const { data: allAgentsData, isLoading: isLoadingAgents } =
     trpcApi.agent.allIncludingNonWhitelisted.useQuery(undefined, cacheOptions);
 
-  // Filter whitelisted agents for hypergraph logic (maintains root vs target distinction)
+  // eslint-disable-next-line react-hooks/preserve-manual-memoization
   const allAgents = useMemo(() => {
     return allAgentsData?.filter((agent) => agent.isWhitelisted) ?? [];
   }, [allAgentsData]);
@@ -35,8 +35,8 @@ export function useGraphData() {
   const { data: allSignals, isLoading: isLoadingSignals } =
     trpcApi.signal.all.useQuery(undefined, cacheOptions);
 
+  // eslint-disable-next-line react-hooks/preserve-manual-memoization
   const graphData = useMemo(() => {
-    // Wait for all data to be loaded before calling the function
     if (
       isLoadingAgents ||
       isLoadingPermissions ||
@@ -46,7 +46,6 @@ export function useGraphData() {
       return null;
     }
 
-    // Only call the function when we have complete data
     return createSimplifiedGraphData(
       allAgents,
       allPermissions,
@@ -55,9 +54,11 @@ export function useGraphData() {
       allAgentsData,
     );
   }, [
+    // eslint-disable-next-line react-hooks/preserve-manual-memoization
     allAgents,
     allAgentsData,
     allPermissions,
+    // eslint-disable-next-line react-hooks/preserve-manual-memoization
     allocatorAddress,
     allSignals,
     isLoadingAgents,

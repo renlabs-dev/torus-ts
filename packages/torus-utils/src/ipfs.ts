@@ -17,7 +17,7 @@ export const CID_SCHEMA = z.string().transform((cid, ctx) => {
 
   if (parseError !== undefined) {
     ctx.addIssue({
-      code: z.ZodIssueCode.custom,
+      code: "custom",
       message: `Invalid CID '${cid}', ${parseError.message}`,
     });
     return z.NEVER;
@@ -34,7 +34,7 @@ export const IPFS_URI_SCHEMA = z
     const cidTxt = match?.[1];
     if (!cidTxt) {
       ctx.addIssue({
-        code: z.ZodIssueCode.custom,
+        code: "custom",
         message: `Invalid IPFS URI '${uri}', does not match format 'ipfs://\\d+'`,
       });
       return z.NEVER;

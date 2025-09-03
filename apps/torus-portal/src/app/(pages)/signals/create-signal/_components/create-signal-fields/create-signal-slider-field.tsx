@@ -9,7 +9,7 @@ import {
 import { Slider } from "@torus-ts/ui/components/slider";
 import type { inferProcedureOutput } from "@trpc/server";
 import { useMultipleAccountEmissions } from "~/hooks/use-multiple-account-emissions";
-import { calculateEmissionValue } from "~/utils/calculate-emission-value";
+import { calculateStreamValue } from "~/utils/calculate-stream-value";
 import React from "react";
 
 interface CreateSignalSliderFieldProps {
@@ -59,7 +59,7 @@ export function CreateSignalSliderField(props: CreateSignalSliderFieldProps) {
         </span>
         <span className="text-md font-medium">
           {props.field.value || 0}% (
-          {calculateEmissionValue(
+          {calculateStreamValue(
             props.field.value || 0,
             accountEmissions,
             isAccountConnected,
@@ -71,7 +71,7 @@ export function CreateSignalSliderField(props: CreateSignalSliderFieldProps) {
       {totalExistingAllocation ? (
         <div className="text-muted-foreground mt-1 text-xs">
           You have already allocated {totalExistingAllocation}% (
-          {calculateEmissionValue(
+          {calculateStreamValue(
             totalExistingAllocation,
             accountEmissions,
             isAccountConnected,

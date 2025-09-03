@@ -13,33 +13,42 @@ import type { Control } from "react-hook-form";
 import { useFieldArray, useWatch } from "react-hook-form";
 import type { EditPermissionFormData } from "../edit-permission-schema";
 
-interface TargetsFieldProps {
+interface RecipientsFieldProps {
   control: Control<EditPermissionFormData>;
+  canEditRecipients?: boolean;
+  isWeightsOnly?: boolean;
 }
 
-export function TargetsField({ control }: TargetsFieldProps) {
+export function RecipientsField({
+  control,
+  canEditRecipients = true,
+  isWeightsOnly = false,
+}: RecipientsFieldProps) {
   const {
-    fields: targetFields,
-    append: appendTarget,
-    remove: removeTarget,
+    fields: recipientFields,
+    append: appendRecipient,
+    remove: removeRecipient,
   } = useFieldArray({
     control,
     name: "newTargets",
   });
 
-  // Watch all target values to calculate total
-  const targets = useWatch({
+  // Watch all recipient values to calculate total
+  const recipients = useWatch({
     control,
     name: "newTargets",
   });
 
   const totalPercentage =
-    targets?.reduce((sum, target) => sum + (target.percentage || 0), 0) ?? 0;
+    recipients?.reduce(
+      (sum, recipient) => sum + (recipient.percentage || 0),
+      0,
+    ) ?? 0;
 
   const isOverLimit = totalPercentage > 100;
 
   // Check for duplicate addresses
-  const addresses = targets?.map((t) => t.address).filter(Boolean) ?? [];
+  const addresses = recipients?.map((r) => r.address).filter(Boolean) ?? [];
   const duplicateAddresses = new Set(
     addresses.filter((addr, index) => addresses.indexOf(addr) !== index),
   );
@@ -48,7 +57,7 @@ export function TargetsField({ control }: TargetsFieldProps) {
     <div className="grid gap-4">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <h3 className="font-medium">Targets</h3>
+          <h3 className="font-medium">Recipients</h3>
           <span
             className={cn(
               "text-xs",
@@ -64,14 +73,15 @@ export function TargetsField({ control }: TargetsFieldProps) {
           type="button"
           size="sm"
           className="bg-white/70"
-          onClick={() => appendTarget({ address: "", percentage: 0 })}
+          disabled={!canEditRecipients || isWeightsOnly}
+          onClick={() => appendRecipient({ address: "", percentage: 0 })}
         >
           <Plus className="mr-2 h-4 w-4" />
-          Add Target
+          Add Recipient
         </Button>
       </div>
 
-      {targetFields.map((field, index) => (
+      {recipientFields.map((field, index) => (
         <div key={field.id} className="flex items-end gap-2">
           <FormField
             control={control}
@@ -83,6 +93,7 @@ export function TargetsField({ control }: TargetsFieldProps) {
                   <FormAddressField
                     field={field}
                     className={cn(isDuplicate && "border-destructive")}
+                    disabled={!canEditRecipients || isWeightsOnly}
                   />
                 </div>
               );
@@ -101,7 +112,8 @@ export function TargetsField({ control }: TargetsFieldProps) {
                     min="0"
                     max="100"
                     className="h-[2.7rem]"
-                    value={field.value || ""}
+                    disabled={!(canEditRecipients || isWeightsOnly)}
+                    value={field.value}
                     onChange={(e) => {
                       const value = parseInt(e.target.value);
                       field.onChange(
@@ -119,7 +131,8 @@ export function TargetsField({ control }: TargetsFieldProps) {
             variant="outline"
             size="icon"
             className="h-[2.7rem] w-[2.7rem]"
-            onClick={() => removeTarget(index)}
+            disabled={!canEditRecipients || isWeightsOnly}
+            onClick={() => removeRecipient(index)}
           >
             <Trash2 className="h-4 w-4" />
           </Button>

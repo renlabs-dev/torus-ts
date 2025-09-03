@@ -22,6 +22,25 @@ export function RegisterAgentInfoFields({
     <>
       <FormField
         control={control}
+        name="name"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel>Name</FormLabel>
+            <FormControl>
+              <Input
+                {...field}
+                placeholder="e.g. memory-agent"
+                type="text"
+                required
+                maxLength={30}
+              />
+            </FormControl>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
+      <FormField
+        control={control}
         name="agentApiUrl"
         render={({ field }) => (
           <FormItem>
@@ -40,27 +59,6 @@ export function RegisterAgentInfoFields({
           </FormItem>
         )}
       />
-
-      <FormField
-        control={control}
-        name="name"
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel>Name</FormLabel>
-            <FormControl>
-              <Input
-                {...field}
-                placeholder="e.g. memory-agent"
-                type="text"
-                required
-                maxLength={30}
-              />
-            </FormControl>
-            <FormMessage />
-          </FormItem>
-        )}
-      />
-
       <FormField
         control={control}
         name="shortDescription"
@@ -80,7 +78,6 @@ export function RegisterAgentInfoFields({
           </FormItem>
         )}
       />
-
       <FormField
         control={control}
         name="body"

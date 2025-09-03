@@ -18,61 +18,81 @@ import {
 import { Plus, Trash2 } from "lucide-react";
 import React from "react";
 import { useFieldArray } from "react-hook-form";
-import type { CreateEmissionPermissionForm } from "../create-emission-permission-form-schema";
+import type { CreateStreamPermissionForm } from "../create-stream-permission-form-schema";
 
-interface EnforcementFieldProps {
-  form: CreateEmissionPermissionForm;
+interface RevocationFieldProps {
+  form: CreateStreamPermissionForm;
   isAccountConnected: boolean;
 }
 
-export function EnforcementField({
+export function RevocationField({
   form,
   isAccountConnected,
-}: EnforcementFieldProps) {
-  const enforcementType = form.watch("enforcement.type");
+}: RevocationFieldProps) {
+  const revocationType = form.watch("revocation.type");
 
   const {
-    fields: controllerFields,
-    append: appendController,
-    remove: removeController,
+    fields: arbiterFields,
+    append: appendArbiter,
+    remove: removeArbiter,
   } = useFieldArray({
     control: form.control,
     // @ts-expect-error - TypeScript has issues with conditional schema fields
-    name: "enforcement.controllers" as const,
+    name: "revocation.accounts" as const,
   });
 
   return (
     <div className="grid gap-3">
       <FormField
         control={form.control}
-        name="enforcement.type"
+        name="revocation.type"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>Enforcement Type</FormLabel>
+            <FormLabel>Revocation Type</FormLabel>
             <Select
               value={field.value}
               onValueChange={(value) => {
                 field.onChange(value);
-                if (value === "ControlledBy") {
-                  form.setValue("enforcement", {
-                    type: "ControlledBy",
-                    controllers: [
-                      "5DoVVgN7R6vHw4mvPX8s4EkkR8fgN1UJ5TDfKzab8eW9z89b" as SS58Address,
-                    ],
-                    requiredVotes: "1",
-                  });
-                } else {
-                  form.setValue("enforcement", { type: "None" });
+                switch (value) {
+                  case "Irrevocable":
+                    form.setValue("revocation", { type: "Irrevocable" });
+                    break;
+                  case "RevocableByDelegator":
+                    form.setValue("revocation", {
+                      type: "RevocableByDelegator",
+                    });
+                    break;
+                  case "RevocableByArbiters":
+                    form.setValue("revocation", {
+                      type: "RevocableByArbiters",
+                      accounts: ["" as SS58Address],
+                      requiredVotes: "1",
+                    });
+                    break;
+                  case "RevocableAfter":
+                    form.setValue("revocation", {
+                      type: "RevocableAfter",
+                      blockNumber: "",
+                    });
+                    break;
                 }
               }}
               disabled={!isAccountConnected}
             >
-              <SelectTrigger>
+              <SelectTrigger className="w-full">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="None">No Enforcement</SelectItem>
-                <SelectItem value="ControlledBy">Controlled By</SelectItem>
+                <SelectItem value="Irrevocable">Irrevocable</SelectItem>
+                <SelectItem value="RevocableByDelegator">
+                  Revocable by Delegator
+                </SelectItem>
+                <SelectItem value="RevocableByArbiters">
+                  Revocable by Arbiters
+                </SelectItem>
+                <SelectItem value="RevocableAfter">
+                  Revocable After Block
+                </SelectItem>
               </SelectContent>
             </Select>
             <FormMessage />
@@ -80,32 +100,32 @@ export function EnforcementField({
         )}
       />
 
-      {enforcementType === "ControlledBy" && (
+      {revocationType === "RevocableByArbiters" && (
         <div className="grid gap-3">
           <div className="flex items-center justify-between">
-            <FormLabel>Controllers</FormLabel>
+            <FormLabel>Arbiters</FormLabel>
             <Button
               type="button"
               variant="outline"
               size="sm"
               // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-return
-              onClick={() => (appendController as any)("")}
+              onClick={() => (appendArbiter as any)("")}
               disabled={!isAccountConnected}
             >
               <Plus className="mr-2 h-4 w-4" />
-              Add Controller
+              Add Arbiter
             </Button>
           </div>
-          {controllerFields.map((field, index) => (
+          {arbiterFields.map((field, index) => (
             <div key={field.id} className="flex items-start gap-2">
               <FormField
                 control={form.control}
-                name={`enforcement.controllers.${index}`}
-                render={({ field: controllerField }) => (
+                name={`revocation.accounts.${index}`}
+                render={({ field: arbiterField }) => (
                   <FormItem className="flex-1">
                     <FormControl>
                       <Input
-                        {...controllerField}
+                        {...arbiterField}
                         placeholder="5Dx...abc (SS58 address)"
                         disabled={!isAccountConnected}
                       />
@@ -118,8 +138,8 @@ export function EnforcementField({
                 type="button"
                 variant="outline"
                 size="icon"
-                onClick={() => removeController(index)}
-                disabled={!isAccountConnected || controllerFields.length <= 1}
+                onClick={() => removeArbiter(index)}
+                disabled={!isAccountConnected || arbiterFields.length <= 1}
               >
                 <Trash2 className="h-4 w-4" />
               </Button>
@@ -128,7 +148,7 @@ export function EnforcementField({
 
           <FormField
             control={form.control}
-            name="enforcement.requiredVotes"
+            name="revocation.requiredVotes"
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Required Votes</FormLabel>
@@ -146,6 +166,27 @@ export function EnforcementField({
             )}
           />
         </div>
+      )}
+
+      {revocationType === "RevocableAfter" && (
+        <FormField
+          control={form.control}
+          name="revocation.blockNumber"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Revocable After Block</FormLabel>
+              <FormControl>
+                <Input
+                  {...field}
+                  placeholder="e.g. 1000000"
+                  type="number"
+                  disabled={!isAccountConnected}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
       )}
     </div>
   );

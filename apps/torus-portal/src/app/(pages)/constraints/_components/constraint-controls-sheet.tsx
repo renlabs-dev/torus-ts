@@ -10,7 +10,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@torus-ts/ui/components/sheet";
-import { PermissionSelector } from "~/app/_components/permission-selector";
+import { PermissionSelector } from "~/app/_components/permission-selector/permission-selector";
 import { Info } from "lucide-react";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
@@ -67,7 +67,7 @@ export default function ConstraintControlsSheet({
               <PermissionSelector
                 control={form.control}
                 selectedPermissionId={selectedPermissionId}
-                onPermissionIdChange={onPermissionIdChange}
+                onPermissionSelection={onPermissionIdChange}
               />
             </Form>
 

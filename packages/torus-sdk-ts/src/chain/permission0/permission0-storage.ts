@@ -6,6 +6,7 @@ import type { Result } from "@torus-network/torus-utils/result";
 import { makeErr, makeOk } from "@torus-network/torus-utils/result";
 import { tryAsync } from "@torus-network/torus-utils/try-catch";
 import type { Nullable } from "@torus-network/torus-utils/typing";
+import { prefixPath } from "@torus-network/torus-utils/zod";
 import { if_let, match } from "rustie";
 import type { SS58Address } from "../../types/address.js";
 import type { ToBigInt, ZError } from "../../types/index.js";
@@ -78,22 +79,17 @@ export async function queryPermissions(
   for (const [keysRaw, valueRaw] of query) {
     const [keyRaw] = keysRaw.args;
 
-    const idParsed = PERMISSION_ID_SCHEMA.safeParse(keyRaw, {
-      path: ["storage", "permission0", "permissions", String(keyRaw)],
-    });
+    const idParsed = prefixPath(PERMISSION_ID_SCHEMA.safeParse(keyRaw), [
+      "storage",
+      "permission0",
+      "permissions",
+      String(keyRaw),
+    ]);
     if (idParsed.success === false) return makeErr(idParsed.error);
 
-    const contractParsed = sb_some(PERMISSION_CONTRACT_SCHEMA).safeParse(
-      valueRaw,
-      {
-        path: [
-          "storage",
-          "permission0",
-          "permissions",
-          String(keyRaw),
-          "<value>",
-        ],
-      },
+    const contractParsed = prefixPath(
+      sb_some(PERMISSION_CONTRACT_SCHEMA).safeParse(valueRaw),
+      ["storage", "permission0", "permissions", String(keyRaw), "<value>"],
     );
     if (contractParsed.success === false) return makeErr(contractParsed.error);
 
@@ -247,6 +243,48 @@ export async function queryNamespacePermissions(
   return makeOk(namespacePermissions);
 }
 
+export interface AllPermissions {
+  namespacePermissions: Map<PermissionId, PermissionContract>;
+  streamPermissions: Map<PermissionId, PermissionContract>;
+  curatorPermissions: Map<PermissionId, PermissionContract>;
+}
+
+export async function queryAllPermissions(
+  api: Api,
+): Promise<
+  Result<
+    AllPermissions,
+    SbQueryError | ZError<H256> | ZError<PermissionContract>
+  >
+> {
+  const [permissionsError, allPermissions] = await queryPermissions(api);
+  if (permissionsError) return makeErr(permissionsError);
+
+  const namespacePermissions = new Map<PermissionId, PermissionContract>();
+  const streamPermissions = new Map<PermissionId, PermissionContract>();
+  const curatorPermissions = new Map<PermissionId, PermissionContract>();
+
+  for (const [permissionId, permission] of allPermissions) {
+    match(permission.scope)({
+      Namespace: () => {
+        namespacePermissions.set(permissionId, permission);
+      },
+      Stream: () => {
+        streamPermissions.set(permissionId, permission);
+      },
+      Curator: () => {
+        curatorPermissions.set(permissionId, permission);
+      },
+    });
+  }
+
+  return makeOk({
+    namespacePermissions,
+    streamPermissions,
+    curatorPermissions,
+  });
+}
+
 /**
  * Query namespace permissions where the specified address is a recipient.
  * Since recipients are now stored in scope-specific structures, this function
@@ -307,32 +345,37 @@ export async function queryAllAccumulatedStreamAmounts(
 
     const [delegatorRaw, streamIdRaw, permissionIdRaw] = keyArgs;
 
-    const delegatorParsed = sb_address.safeParse(delegatorRaw, {
-      path: ["storage", "permission0", "accumulatedStreamAmounts", "delegator"],
-    });
+    const delegatorParsed = prefixPath(sb_address.safeParse(delegatorRaw), [
+      "storage",
+      "permission0",
+      "accumulatedStreamAmounts",
+      "delegator",
+    ]);
     if (delegatorParsed.success === false)
       return makeErr(delegatorParsed.error);
 
-    const streamIdParsed = STREAM_ID_SCHEMA.safeParse(streamIdRaw, {
-      path: ["storage", "permission0", "accumulatedStreamAmounts", "streamId"],
-    });
+    const streamIdParsed = prefixPath(STREAM_ID_SCHEMA.safeParse(streamIdRaw), [
+      "storage",
+      "permission0",
+      "accumulatedStreamAmounts",
+      "streamId",
+    ]);
     if (streamIdParsed.success === false) return makeErr(streamIdParsed.error);
 
-    const permissionIdParsed = PERMISSION_ID_SCHEMA.safeParse(permissionIdRaw, {
-      path: [
-        "storage",
-        "permission0",
-        "accumulatedStreamAmounts",
-        "permissionId",
-      ],
-    });
+    const permissionIdParsed = prefixPath(
+      PERMISSION_ID_SCHEMA.safeParse(permissionIdRaw),
+      ["storage", "permission0", "accumulatedStreamAmounts", "permissionId"],
+    );
     if (permissionIdParsed.success === false)
       return makeErr(permissionIdParsed.error);
 
     // Parse balance value - the storage returns Option<BalanceOf<T>>
-    const amountParsed = sb_some(sb_balance).safeParse(valueRaw, {
-      path: ["storage", "permission0", "accumulatedStreamAmounts", "amount"],
-    });
+    const amountParsed = prefixPath(sb_some(sb_balance).safeParse(valueRaw), [
+      "storage",
+      "permission0",
+      "accumulatedStreamAmounts",
+      "amount",
+    ]);
     if (amountParsed.success === false) return makeErr(amountParsed.error);
 
     accumulatedAmounts.push({
@@ -412,41 +455,35 @@ export async function queryAccumulatedStreamsForAccount(
   for (const [keysRaw, valueRaw] of streamTuples) {
     const [_ac, streamIdRaw, permissionIdRaw] = keysRaw.args;
 
-    const streamIdParsed = sb_h256.safeParse(streamIdRaw, {
-      path: [
-        "storage",
-        "permission0",
-        "accumulatedStreamAmounts",
-        String(account),
-        String(streamIdRaw),
-      ],
-    });
+    const streamIdParsed = prefixPath(sb_h256.safeParse(streamIdRaw), [
+      "storage",
+      "permission0",
+      "accumulatedStreamAmounts",
+      String(account),
+      String(streamIdRaw),
+    ]);
     if (streamIdParsed.success === false) return makeErr(streamIdParsed.error);
 
-    const permissionIdParsed = sb_h256.safeParse(permissionIdRaw, {
-      path: [
-        "storage",
-        "permission0",
-        "accumulatedStreamAmounts",
-        String(account),
-        String(streamIdRaw),
-        String(permissionIdRaw),
-      ],
-    });
+    const permissionIdParsed = prefixPath(sb_h256.safeParse(permissionIdRaw), [
+      "storage",
+      "permission0",
+      "accumulatedStreamAmounts",
+      String(account),
+      String(streamIdRaw),
+      String(permissionIdRaw),
+    ]);
     if (permissionIdParsed.success === false)
       return makeErr(permissionIdParsed.error);
 
-    const valueParsed = sb_some(sb_balance).safeParse(valueRaw, {
-      path: [
-        "storage",
-        "permission0",
-        "accumulatedStreamAmounts",
-        String(account),
-        String(streamIdRaw),
-        String(permissionIdRaw),
-        "<value>",
-      ],
-    });
+    const valueParsed = prefixPath(sb_some(sb_balance).safeParse(valueRaw), [
+      "storage",
+      "permission0",
+      "accumulatedStreamAmounts",
+      String(account),
+      String(streamIdRaw),
+      String(permissionIdRaw),
+      "<value>",
+    ]);
     if (valueParsed.success === false) return makeErr(valueParsed.error);
 
     const streamId = streamIdParsed.data;

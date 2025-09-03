@@ -1,5 +1,5 @@
 import { SS58_SCHEMA } from "@torus-network/sdk/types";
-import { createTargetWeightValidator } from "~/utils/percentage-validation";
+import { createRecipientWeightValidator } from "~/utils/percentage-validation";
 import type { UseFormReturn } from "react-hook-form";
 import { z } from "zod";
 
@@ -136,9 +136,9 @@ const enforcementSchema = z.discriminatedUnion("type", [
   }),
 ]);
 
-export const createEmissionPermissionSchema = z.object({
+export const createStreamPermissionSchema = z.object({
   allocation: allocationSchema,
-  targets: z
+  recipients: z
     .array(
       z.object({
         account: SS58_SCHEMA,
@@ -151,17 +151,20 @@ export const createEmissionPermissionSchema = z.object({
           }, "Must be between 0 and 100"),
       }),
     )
-    .min(1, "At least one target is required")
-    .superRefine(createTargetWeightValidator()),
+    .min(1, "At least one recipient is required")
+    .superRefine(createRecipientWeightValidator()),
   distribution: distributionSchema,
   duration: durationSchema,
   revocation: revocationSchema,
   enforcement: enforcementSchema,
+  // Optional fields for enhanced stream management
+  recipientManager: SS58_SCHEMA.optional(),
+  weightSetter: SS58_SCHEMA.optional(),
 });
 
-export type CreateEmissionPermissionFormData = z.infer<
-  typeof createEmissionPermissionSchema
+export type CreateStreamPermissionFormData = z.infer<
+  typeof createStreamPermissionSchema
 >;
 
-export type CreateEmissionPermissionForm =
-  UseFormReturn<CreateEmissionPermissionFormData>;
+export type CreateStreamPermissionForm =
+  UseFormReturn<CreateStreamPermissionFormData>;

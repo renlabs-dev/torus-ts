@@ -154,6 +154,7 @@ export function ViewComment({
 
   const [sortBy, setSortBy] = useState<SorterTypes>("oldest");
 
+  // eslint-disable-next-line react-hooks/preserve-manual-memoization
   const sortedComments = useMemo(() => {
     if (!comments) return [];
     return comments.sort((a, b) => {
@@ -195,6 +196,7 @@ export function ViewComment({
   const handleDeleteVote = createMutationHandler(deleteVoteMutation, toast);
 
   const handleVote = useCallback(
+    // eslint-disable-next-line react-hooks/preserve-manual-memoization
     (commentId: number, reactionType: CommentInteractionReactionType) => {
       if (!selectedAccount?.address) {
         toast.error("Please connect your wallet to vote");
@@ -246,7 +248,9 @@ export function ViewComment({
       selectedAccount?.address,
       comments,
       userVotes,
+      // eslint-disable-next-line react-hooks/preserve-manual-memoization
       handleCastVote,
+      // eslint-disable-next-line react-hooks/preserve-manual-memoization
       handleDeleteVote,
       refetchUserVotes,
       refetch,
