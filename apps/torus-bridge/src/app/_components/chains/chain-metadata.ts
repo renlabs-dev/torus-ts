@@ -17,7 +17,7 @@ export async function assembleChainMetadata(
 ) {
   // Chains must include a cosmos chain or CosmosKit throws errors
   const [metadataParseError, parsedMetadata] = trySync(() =>
-    z.record(ChainMetadataSchema).safeParse({
+    z.record(z.string(), ChainMetadataSchema).safeParse({
       ...(chainsYaml as ChainMap<ChainMetadata>),
       ...chainsTS,
     }),

@@ -6,9 +6,9 @@ import { tryAsync, trySync } from "@torus-network/torus-utils/try-catch";
 import { z } from "zod";
 
 export const SIGNED_PAYLOAD_SCHEMA = z.object({
-  payload: z.string({ description: "in hex" }),
-  signature: z.string({ description: "in hex" }),
-  address: z.string({ description: "in hex" }),
+  payload: z.string(),
+  signature: z.string(),
+  address: z.string(),
 });
 
 export type SignedPayload = z.infer<typeof SIGNED_PAYLOAD_SCHEMA>;

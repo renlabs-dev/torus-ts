@@ -38,7 +38,7 @@ function validateNoDuplicates<T extends Record<string, unknown>>(
       const id = getIdentifier(item);
       if (duplicates.has(id)) {
         ctx.addIssue({
-          code: z.ZodIssueCode.custom,
+          code: "custom",
           message: `Duplicate ${config.itemType}`,
           path: [config.arrayPath, index, config.identifierFieldPath],
         });
@@ -65,7 +65,7 @@ function validateTotalAllocation<T extends AllocationItem>(
   if (total > 100) {
     const unit = config.unit ?? "";
     ctx.addIssue({
-      code: z.ZodIssueCode.custom,
+      code: "custom",
       message: `Total ${config.itemType} must not exceed 100${unit} (currently ${total}${unit})`,
       path: [config.arrayPath],
     });
@@ -73,7 +73,7 @@ function validateTotalAllocation<T extends AllocationItem>(
     // Mark individual items that contribute to the overage
     items.forEach((_, index) => {
       ctx.addIssue({
-        code: z.ZodIssueCode.custom,
+        code: "custom",
         message: `Contributes to total over 100${unit}`,
         path: [config.arrayPath, index, config.valueFieldPath],
       });
