@@ -127,6 +127,8 @@ export function EditPermissionForm({
     },
   });
 
+  const { isDirty } = form.formState;
+
   // Set form value when URL parameter is available on initial render
   useEffect(() => {
     if (permissionIdFromUrl && !selectedPermissionId) {
@@ -303,6 +305,7 @@ export function EditPermissionForm({
                     disabled={
                       !isAccountConnected ||
                       !selectedPermissionId ||
+                      !isDirty ||
                       isPending ||
                       isSigning
                     }

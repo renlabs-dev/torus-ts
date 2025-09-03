@@ -5,6 +5,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@torus-ts/ui/components/form";
+import { cn } from "@torus-ts/ui/lib/utils";
 import { FormAddressField } from "~/app/_components/address-field";
 import type { Control } from "react-hook-form";
 import type { EditPermissionFormData } from "../edit-permission-schema";
@@ -26,7 +27,9 @@ export function WeightSetterField({
       name="weightSetter"
       render={({ field }) => (
         <FormItem>
-          <FormLabel>Weight Setter (Optional)</FormLabel>
+          <FormLabel className={cn(disabled && "text-muted-foreground")}>
+            Weight Setter (Optional)
+          </FormLabel>
           <FormControl>
             <FormAddressField
               field={{
