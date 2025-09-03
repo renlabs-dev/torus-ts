@@ -2,19 +2,15 @@
 
 import { sepolia } from "@starknet-react/chains";
 import {
-  StarknetConfig,
-  publicProvider,
   argent,
   braavos,
+  publicProvider,
+  StarknetConfig,
   useInjectedConnectors,
 } from "@starknet-react/core";
 import type { ReactNode } from "react";
 
-export function StarknetWalletProvider({
-  children,
-}: {
-  children: ReactNode;
-}) {
+export function StarknetWalletProvider({ children }: { children: ReactNode }) {
   const { connectors } = useInjectedConnectors({
     recommended: [argent(), braavos()],
     includeRecommended: "onlyIfNoConnectors",
