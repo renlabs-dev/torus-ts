@@ -110,13 +110,12 @@ export const isValidAgentName = (name: string): boolean => {
  * });
  * ```
  */
-export const agentNameField = () =>
-  z
-    .string()
-    .min(1, errorMessages.required)
-    .refine(
-      (name) => isValidAgentName(name),
-      (name) => ({
-        message: validateAgentName(name)[0] ?? errorMessages.generic,
-      }),
-    );
+export const agentNameField = (): z.ZodType<AgentName, z.ZodTypeDef, string> =>
+  z.string().transform((name, ctx) => {
+    const [error, agentName] = validateAgentName(name);
+    if (error !== undefined) {
+      ctx.addIssue({ code: "custom", message: error });
+      return z.NEVER;
+    }
+    return agentName;
+  });

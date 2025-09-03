@@ -91,7 +91,7 @@ export async function queryNamespacePathCreationCost(
   namespacePath: string,
 ): Promise<Result<{ fee: bigint; deposit: bigint }, Error>> {
   // Validate the namespace path first
-  const { data: path, error: pathError } =
+  const { data: segments, error: pathError } =
     namespacePathParser().safeParse(namespacePath);
   if (pathError !== undefined) {
     return makeErr(new Error(`Invalid namespace path: ${pathError.message}`));
@@ -100,7 +100,9 @@ export async function queryNamespacePathCreationCost(
   // Call the RPC method manually since it's not auto-generated
   // Note: Using provider send method because this RPC method is not auto-decorated
 
-  // Convert the validated path string to bytes as expected by the substrate RPC
+  // Convert the validated path segments to a dot-separated string, then to
+  // bytes as expected by the substrate RPC
+  const path = segments.join(".");
   const pathBytes = strToByteArray(path);
 
   const [rpcError, rpcResult] = await tryAsync(

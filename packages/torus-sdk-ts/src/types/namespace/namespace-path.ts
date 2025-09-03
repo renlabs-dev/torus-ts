@@ -151,17 +151,19 @@ export const isValidNamespaceSegment = (segment: string): boolean => {
  * });
  * ```
  */
-export const namespaceSegmentField = () =>
-  z
-    .string()
-    .min(1, segmentErrorMessages.required)
-    .refine(
-      (segment) => isValidNamespaceSegment(segment),
-      (segment) => ({
-        message:
-          validateNamespaceSegment(segment)[0] ?? segmentErrorMessages.generic,
-      }),
-    );
+export const namespaceSegmentField = (): z.ZodType<
+  NamespaceSegment,
+  z.ZodTypeDef,
+  string
+> =>
+  z.string().transform((segment, ctx) => {
+    const [error, validSegment] = validateNamespaceSegment(segment);
+    if (error !== undefined) {
+      ctx.addIssue({ code: "custom", message: error });
+      return z.NEVER;
+    }
+    return validSegment;
+  });
 
 // ==== Namespace paths ====
 
@@ -242,10 +244,16 @@ export const isValidNamespacePath = (path: string): boolean => {
  * });
  * ```
  */
-export const namespacePathParser = () =>
-  z.string().refine(
-    (path) => isValidNamespacePath(path),
-    (path) => ({
-      message: validateNamespacePath(path)[0] ?? pathErrorMessages.generic,
-    }),
-  );
+export const namespacePathParser = (): z.ZodType<
+  NamespacePath,
+  z.ZodTypeDef,
+  string
+> =>
+  z.string().transform((path, ctx) => {
+    const [error, segments] = validateNamespacePath(path);
+    if (error !== undefined) {
+      ctx.addIssue({ code: "custom", message: error });
+      return z.NEVER;
+    }
+    return segments;
+  });
