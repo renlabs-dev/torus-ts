@@ -5,7 +5,7 @@ import { KeyboardShortcutBadge } from "@torus-ts/ui/components/keyboard-shortcut
 import { Loading } from "@torus-ts/ui/components/loading";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { ForceGraphCanvas2D } from "../_components/force-graph/force-graph-2d";
+import { ForceGraphCanvas2D } from "../_components/force-graph-2d/force-graph-2d";
 import { useGraphData } from "../_components/force-graph/use-graph-data";
 import { GraphSheet } from "../_components/graph-sheet/graph-sheet";
 import { PermissionGraphFooter } from "../_components/permission-graph-footer";
@@ -22,6 +22,9 @@ export default function PermissionGraph2DPage() {
     null,
   );
   const [isSheetOpen, setIsSheetOpen] = useState(false);
+  const [selectedNodeIdForGraph, setSelectedNodeIdForGraph] = useState<
+    string | null
+  >(null);
 
   const agentCache = useRef(new AgentLRUCache(50));
 
@@ -60,7 +63,7 @@ export default function PermissionGraph2DPage() {
       setIsSheetOpen(true);
       const params = new URLSearchParams(searchParams.toString());
       params.set("id", node.id);
-      router.replace(`/2d?${params.toString()}`, {
+      router.replace(`/2d-hypergraph?${params.toString()}`, {
         scroll: false,
       });
     },
@@ -91,9 +94,14 @@ export default function PermissionGraph2DPage() {
   function handleOnOpenChange(isOpen: boolean) {
     setIsSheetOpen(isOpen);
     if (!isOpen) {
+      // Clear graph selection when sheet closes
+      setSelectedNodeIdForGraph(null);
+
       const params = new URLSearchParams(searchParams.toString());
       params.delete("id");
-      const newUrl = params.toString() ? `/2d?${params.toString()}` : "/2d";
+      const newUrl = params.toString()
+        ? `/2d-hypergraph?${params.toString()}`
+        : "/2d-hypergraph";
       router.replace(newUrl, { scroll: false });
 
       setTimeout(() => {
@@ -133,6 +141,8 @@ export default function PermissionGraph2DPage() {
         onNodeClick={handleNodeSelect}
         userAddress={selectedAccount?.address}
         allocatorAddress={allocatorAddress}
+        selectedNodeId={selectedNodeIdForGraph}
+        onSelectionChange={setSelectedNodeIdForGraph}
       />
       <PermissionGraphFooter handleNodeSelect={handleNodeSelect} />
     </main>

@@ -4,6 +4,7 @@ import { NodeColorLegendDropdown } from "./node-color-legend-dropdown";
 import { PermissionGraphCommand } from "./permission-graph-command";
 import { PermissionGraphOverview } from "./permission-graph-overview";
 import type { CustomGraphNode } from "./permission-graph-types";
+import { ViewModeSwitcher } from "./view-mode-switcher";
 
 export function PermissionGraphFooter({
   handleNodeSelect,
@@ -14,6 +15,7 @@ export function PermissionGraphFooter({
     <div className="absolute bottom-3 left-3 right-3 z-50 flex flex-row justify-between gap-2">
       <div className="animate-fade-up flex w-full items-center justify-between gap-2 md:w-fit">
         <PermissionGraphCommand />
+        <ViewModeSwitcher />
         <MyAgentButton onNodeClick={handleNodeSelect} />
       </div>
       <div className="hidden w-full items-center gap-2 xl:flex">
