@@ -1177,9 +1177,6 @@ importers:
       tsafe:
         specifier: 'catalog:'
         version: 1.8.5
-      zod:
-        specifier: 'catalog:'
-        version: 3.25.76
     devDependencies:
       '@torus-ts/eslint-config':
         specifier: workspace:*
@@ -1196,6 +1193,9 @@ importers:
       vitest:
         specifier: 'catalog:'
         version: 3.2.4(@types/debug@4.1.12)(@types/node@22.18.0)(jiti@1.21.7)(terser@5.43.1)(tsx@4.20.5)(yaml@2.8.1)
+      zod:
+        specifier: 'catalog:'
+        version: 3.25.76
 
   packages/ui:
     dependencies:
