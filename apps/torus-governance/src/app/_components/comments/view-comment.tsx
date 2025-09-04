@@ -23,12 +23,7 @@ import {
   ThumbsUp,
   TriangleAlert,
 } from "lucide-react";
-import {
-  useCallback,
-  useEffect,
-  useLayoutEffect,
-  useState,
-} from "react";
+import { useCallback, useEffect, useLayoutEffect, useState } from "react";
 import { ReportComment } from "./report-comment";
 
 //  "LIKE" | "DISLIKE"
@@ -195,7 +190,10 @@ export function ViewComment({
   const handleDeleteVote = createMutationHandler(deleteVoteMutation, toast);
 
   // Convert useCallback to regular function - React Compiler will optimize
-  const handleVote = (commentId: number, reactionType: CommentInteractionReactionType) => {
+  const handleVote = (
+    commentId: number,
+    reactionType: CommentInteractionReactionType,
+  ) => {
     if (!selectedAccount?.address) {
       toast.error("Please connect your wallet to vote");
       return;

@@ -40,7 +40,7 @@ export default function PermissionGraphPage() {
   // Handle initial selected node from query params - async approach to avoid setState in effect
   useEffect(() => {
     const nodeId = searchParams.get("id");
-    
+
     const updateSelection = () => {
       if (nodeId && graphData) {
         const node = graphData.nodes.find((n) => n.id === nodeId);
@@ -59,7 +59,7 @@ export default function PermissionGraphPage() {
       // If we have a node ID but no graph data yet, wait for it
       return;
     }
-    
+
     // Use setTimeout to avoid direct setState in effect
     const timer = setTimeout(updateSelection, 0);
     return () => clearTimeout(timer);

@@ -22,7 +22,8 @@ export function SolanaWalletProvider({
 
   // Effect to run after client-side mounting
   useEffect(() => {
-    setHasMounted(true);
+    const timer = setTimeout(() => setHasMounted(true), 0);
+    return () => clearTimeout(timer);
   }, []);
 
   // TODO support multiple networks
@@ -40,22 +41,18 @@ export function SolanaWalletProvider({
     return result;
   }, [network, hasMounted]);
 
-  const wallets = useMemo(
-    () => {
-      if (!hasMounted) return []; // Return empty array during SSR
+  const wallets = useMemo(() => {
+    if (!hasMounted) return []; // Return empty array during SSR
 
-      const [walletsError, walletsList] = trySync(() => [
-        new LedgerWalletAdapter(),
-      ]);
-      if (walletsError !== undefined) {
-        console.error("Error initializing Solana wallets:", walletsError);
-        return [];
-      }
-      return walletsList;
-    },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [network, hasMounted],
-  );
+    const [walletsError, walletsList] = trySync(() => [
+      new LedgerWalletAdapter(),
+    ]);
+    if (walletsError !== undefined) {
+      console.error("Error initializing Solana wallets:", walletsError);
+      return [];
+    }
+    return walletsList;
+  }, [hasMounted]);
 
   const onError = useCallback((error: WalletError) => {
     logger.error("Error initializing Solana wallet provider", error);

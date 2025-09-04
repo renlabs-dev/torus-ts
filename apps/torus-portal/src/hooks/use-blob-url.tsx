@@ -9,9 +9,11 @@ export const useBlobUrl = (blob: Blob | Nullish) => {
   useEffect(() => {
     if (!blob) return;
     const objectUrl = URL.createObjectURL(blob);
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setUrl(objectUrl);
-    return () => URL.revokeObjectURL(objectUrl);
+    const timer = setTimeout(() => setUrl(objectUrl), 0);
+    return () => {
+      clearTimeout(timer);
+      URL.revokeObjectURL(objectUrl);
+    };
   }, [blob]);
 
   return url;

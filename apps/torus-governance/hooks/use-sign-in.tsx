@@ -26,8 +26,8 @@ export const useSignIn = () => {
 
     const auth = localStorage.getItem("authorization");
     if (!auth) {
-      setIsUserAuthenticated(false);
-      return;
+      const timer = setTimeout(() => setIsUserAuthenticated(false), 0);
+      return () => clearTimeout(timer);
     }
 
     // Async function for session checking with proper error handling
@@ -59,15 +59,14 @@ export const useSignIn = () => {
     }
 
     void checkUserSession();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [viewMode]);
+  }, [viewMode, checkSession, setIsUserAuthenticated]);
 
   useEffect(() => {
     const favoriteWalletAddress = localStorage.getItem("favoriteWalletAddress");
     if (!selectedAccount || favoriteWalletAddress === selectedAccount.address)
       return;
 
-    setIsUserAuthenticated(null);
+    setTimeout(() => setIsUserAuthenticated(null), 0);
 
     // Handle localStorage with proper error handling
     const clearStorage = async () => {

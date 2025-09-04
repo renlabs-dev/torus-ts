@@ -16,8 +16,10 @@ export function TransferDetails() {
 
   // Derive the selected transfer directly from state without useEffect
   const shouldShowModal = !transferLoading && transfers.length > 0;
-  const latestTransfer = shouldShowModal ? transfers[transfers.length - 1] : null;
-  
+  const latestTransfer = shouldShowModal
+    ? transfers[transfers.length - 1]
+    : null;
+
   // Use a different approach - derive state changes in the render phase
   if (latestTransfer && latestTransfer !== selectedTransfer) {
     // This will trigger a re-render with the new state
