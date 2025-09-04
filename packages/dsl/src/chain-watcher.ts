@@ -2,9 +2,9 @@ import type { EventRecord, Header } from "@polkadot/types/interfaces";
 import { queryDelegationStreamsByAccount } from "@torus-network/sdk/chain";
 import {
   checkSS58,
-  parsePermissionAccumulationToggledEvent,
-  parsePermissionExpiredEvent,
-  parsePermissionRevokedEvent,
+  PermissionAccumulationToggledEvent,
+  PermissionExpiredEvent,
+  PermissionRevokedEvent,
 } from "@torus-network/sdk/types";
 import type { ChainAwareReteNetwork } from "./chain-fetcher";
 import type {
@@ -235,7 +235,7 @@ export class TorusChainWatcher {
    */
   private async handlePermissionRevoked(eventData: unknown): Promise<void> {
     try {
-      const parseResult = parsePermissionRevokedEvent(eventData);
+      const parseResult = PermissionRevokedEvent.safeParse(eventData);
 
       if (!parseResult.success) {
         console.warn(
@@ -286,7 +286,7 @@ export class TorusChainWatcher {
    */
   private async handlePermissionExpired(eventData: unknown): Promise<void> {
     try {
-      const parseResult = parsePermissionExpiredEvent(eventData);
+      const parseResult = PermissionExpiredEvent.safeParse(eventData);
 
       if (!parseResult.success) {
         console.warn(
@@ -405,7 +405,8 @@ export class TorusChainWatcher {
     eventData: unknown,
   ): Promise<void> {
     try {
-      const parseResult = parsePermissionAccumulationToggledEvent(eventData);
+      const parseResult =
+        PermissionAccumulationToggledEvent.safeParse(eventData);
 
       if (!parseResult.success) {
         console.warn(
