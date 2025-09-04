@@ -13,21 +13,20 @@ import { DialogTitle } from "@torus-ts/ui/components/dialog";
 import { useIsMobile } from "@torus-ts/ui/hooks/use-mobile";
 import { api as trpcApi } from "~/trpc/react";
 import { Check, Package, Radio, Search, Users, Zap } from "lucide-react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import React, { useCallback, useMemo, useState } from "react";
 import { useGraphData } from "./force-graph/use-graph-data";
 
 export function PermissionGraphCommand() {
   const router = useRouter();
+  const pathname = usePathname();
   const searchParams = useSearchParams();
   const [open, setOpen] = useState(false);
   const isMobile = useIsMobile();
   const { graphData } = useGraphData();
 
-  // Detect current route and parameters
-  const is2DView =
-    typeof window !== "undefined" &&
-    window.location.pathname.includes("2d-hypergraph");
+  // Detect current route and parameters using stable pathname
+  const is2DView = pathname.includes("2d-hypergraph");
   const selectedId = searchParams.get(is2DView ? "agent" : "id");
 
   const handleSelect = useCallback(
@@ -179,17 +178,6 @@ export function PermissionGraphCommand() {
     ];
   }, [graphData, getFormattedAddress]);
 
-  React.useEffect(() => {
-    const down = (e: KeyboardEvent) => {
-      if (e.key === "j" && (e.metaKey || e.ctrlKey)) {
-        e.preventDefault();
-        setOpen((open) => !open);
-      }
-    };
-    document.addEventListener("keydown", down);
-    return () => document.removeEventListener("keydown", down);
-  }, []);
-
   if (!graphData) {
     return (
       <button
@@ -218,9 +206,6 @@ export function PermissionGraphCommand() {
           <Search className="text-muted-foreground h-4 w-4 flex-shrink-0" />
           <span className="truncate">{title}</span>
         </span>
-        <kbd className="bg-muted text-muted-foreground pointer-events-none inline-flex h-5 select-none items-center gap-1 rounded border px-1.5 font-mono text-[10px] font-medium opacity-100">
-          <span className="text-xs">⌘</span>J
-        </kbd>
       </button>
 
       <CommandDialog open={open} onOpenChange={setOpen}>
