@@ -21,7 +21,7 @@ export function PermissionGraphFooter({
         <ViewModeSwitcher />
         <MyAgentButton onNodeClick={handleNodeSelect} />
       </div>
-      <div className="hidden w-full items-center gap-2 xl:flex">
+      <div className="hidden w-full items-center gap-2 2xl:flex">
         <PermissionGraphOverview />
       </div>
       <div className="hidden items-center gap-4 lg:flex">
