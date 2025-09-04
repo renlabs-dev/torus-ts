@@ -9,7 +9,6 @@ import { ForceGraphCanvas2D } from "../_components/force-graph-2d/force-graph-2d
 import { getAvailableSwarms } from "../_components/force-graph-2d/force-graph-2d-utils";
 import { useGraphData } from "../_components/force-graph/use-graph-data";
 import { GraphSheet } from "../_components/graph-sheet/graph-sheet";
-import { PermissionGraphCommand } from "../_components/permission-graph-command";
 import { PermissionGraphFooter } from "../_components/permission-graph-footer";
 import type {
   CachedAgentData,

@@ -1,3 +1,4 @@
+import { smallAddress } from "@torus-network/torus-utils/torus";
 import { graphConstants } from "../force-graph/force-graph-constants";
 import type {
   CustomGraphLink,
@@ -44,7 +45,7 @@ export function getNodeTooltipText(node: CustomGraphNode): string {
     case "target_agent":
       return `Target Agent: ${node.name || node.id}`;
     case "permission":
-      return `Permission: ${node.id}`;
+      return `Permission: ${smallAddress(node.id)}`;
     case "signal":
       return `Signal: ${node.name || node.id}`;
     default:
@@ -116,39 +117,12 @@ export function createTooltipElement(): HTMLDivElement {
   tooltip.style.fontSize = "14px";
   tooltip.style.fontFamily = "monospace";
   tooltip.style.pointerEvents = "none";
-  tooltip.style.zIndex = "1000";
+  tooltip.style.zIndex = "40";
   tooltip.style.display = "none";
   tooltip.style.maxWidth = "200px";
   tooltip.style.wordWrap = "break-word";
   document.body.appendChild(tooltip);
   return tooltip;
-}
-
-export function showTooltip(
-  tooltip: HTMLDivElement,
-  node: CustomGraphNode,
-  x: number,
-  y: number,
-): void {
-  tooltip.textContent = getNodeTooltipText(node);
-  tooltip.style.display = "block";
-  tooltip.style.left = `${x + 10}px`;
-  tooltip.style.top = `${y - 10}px`;
-}
-
-export function updateTooltipPosition(
-  tooltip: HTMLDivElement,
-  x: number,
-  y: number,
-): void {
-  if (tooltip.style.display === "block") {
-    tooltip.style.left = `${x + 10}px`;
-    tooltip.style.top = `${y - 10}px`;
-  }
-}
-
-export function hideTooltip(tooltip: HTMLDivElement): void {
-  tooltip.style.display = "none";
 }
 
 export interface SwarmInfo {
@@ -169,9 +143,10 @@ export function getAvailableSwarms(
   const processedAgents = new Set<string>();
 
   // Find all agent nodes that could be swarm roots
-  const agentNodes = nodes.filter((node) => 
-    (node.nodeType === "root_agent" || node.nodeType === "target_agent") && 
-    node.id !== allocatorAddress
+  const agentNodes = nodes.filter(
+    (node) =>
+      (node.nodeType === "root_agent" || node.nodeType === "target_agent") &&
+      node.id !== allocatorAddress,
   );
 
   agentNodes.forEach((agent) => {
@@ -190,22 +165,31 @@ export function getAvailableSwarms(
 
     // Find permission types involved in this swarm
     const swarmPermissionTypes = new Set<string>();
-    
+
     links.forEach((link) => {
-      const sourceId = typeof link.source === "string" 
-        ? link.source 
-        : (link.source as { id: string }).id;
-      const targetId = typeof link.target === "string" 
-        ? link.target 
-        : (link.target as { id: string }).id;
+      const sourceId =
+        typeof link.source === "string"
+          ? link.source
+          : (link.source as { id: string }).id;
+      const targetId =
+        typeof link.target === "string"
+          ? link.target
+          : (link.target as { id: string }).id;
 
       if (connectedNodes.has(sourceId) || connectedNodes.has(targetId)) {
-        if (link.linkType === "permission_grant" || link.linkType === "permission_receive") {
-          const permissionNode = nodes.find(n => 
-            (n.id === sourceId || n.id === targetId) && n.nodeType === "permission"
+        if (
+          link.linkType === "permission_grant" ||
+          link.linkType === "permission_receive"
+        ) {
+          const permissionNode = nodes.find(
+            (n) =>
+              (n.id === sourceId || n.id === targetId) &&
+              n.nodeType === "permission",
           );
           if (permissionNode?.permissionData) {
-            swarmPermissionTypes.add(permissionNode.permissionData.permissionType);
+            swarmPermissionTypes.add(
+              permissionNode.permissionData.permissionType,
+            );
           }
         }
       }
@@ -213,8 +197,11 @@ export function getAvailableSwarms(
 
     // Mark all nodes in this swarm as processed to avoid duplicates
     connectedNodes.forEach((nodeId) => {
-      const node = nodes.find(n => n.id === nodeId);
-      if (node && (node.nodeType === "root_agent" || node.nodeType === "target_agent")) {
+      const node = nodes.find((n) => n.id === nodeId);
+      if (
+        node &&
+        (node.nodeType === "root_agent" || node.nodeType === "target_agent")
+      ) {
         processedAgents.add(nodeId);
       }
     });

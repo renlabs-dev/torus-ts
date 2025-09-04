@@ -21,10 +21,8 @@ import {
   getConnectedNodesSwarm,
   getNodeColor,
   getNodeRadius,
+  getNodeTooltipText,
   hexToPixi,
-  hideTooltip,
-  showTooltip,
-  updateTooltipPosition,
 } from "./force-graph-2d-utils";
 
 type D3SimulationNode = CustomGraphNode &
@@ -54,6 +52,7 @@ export function ForceGraphCanvas2D(props: ForceGraph2DProps) {
   > | null>(null);
   const onNodeClickRef = useRef(props.onNodeClick);
   const tooltipRef = useRef<HTMLDivElement | null>(null);
+  const tooltipTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Use external selection state if provided, otherwise use internal state
   const [internalSelectedNodeId, setInternalSelectedNodeId] = useState<
@@ -152,6 +151,9 @@ export function ForceGraphCanvas2D(props: ForceGraph2DProps) {
     const width = containerRect.width;
 
     container.innerHTML = "";
+
+    // Clear the node graphics map to avoid stale references
+    nodeGraphicsRef.current.clear();
 
     const app = new PIXI.Application();
 
@@ -291,11 +293,12 @@ export function ForceGraphCanvas2D(props: ForceGraph2DProps) {
           .stroke({ width: 1, color: 0xd3d3d3 });
       }
 
-      // Event handlers
+      nodeGraphics.eventMode = "static";
+      nodeGraphics.cursor = "pointer";
+      nodeGraphics.hitArea = new PIXI.Circle(0, 0, radius);
+
       nodeGraphics.on("click", (e: PIXI.FederatedPointerEvent) => {
         e.stopPropagation();
-
-        // Toggle selection: if clicking the same node, deselect it
         const newSelectedId = selectedNodeId === node.id ? null : node.id;
 
         if (props.onSelectionChange) {
@@ -307,30 +310,42 @@ export function ForceGraphCanvas2D(props: ForceGraph2DProps) {
         onNodeClickRef.current(node);
       });
 
-      // Hover handlers for tooltip
       nodeGraphics.on("pointerover", (e: PIXI.FederatedPointerEvent) => {
         if (tooltipRef.current) {
-          showTooltip(tooltipRef.current, node, e.globalX, e.globalY);
+          tooltipTimeoutRef.current = setTimeout(() => {
+            if (tooltipRef.current) {
+              const rect = app.canvas.getBoundingClientRect();
+              tooltipRef.current.textContent = getNodeTooltipText(node);
+              tooltipRef.current.style.display = "block";
+              tooltipRef.current.style.left = `${rect.left + e.globalX + 10}px`;
+              tooltipRef.current.style.top = `${rect.top + e.globalY - 10}px`;
+            }
+          }, 400);
         }
       });
 
       nodeGraphics.on("pointermove", (e: PIXI.FederatedPointerEvent) => {
-        if (tooltipRef.current) {
-          updateTooltipPosition(tooltipRef.current, e.globalX, e.globalY);
+        if (
+          tooltipRef.current &&
+          tooltipRef.current.style.display === "block"
+        ) {
+          const rect = app.canvas.getBoundingClientRect();
+          tooltipRef.current.style.left = `${rect.left + e.globalX + 10}px`;
+          tooltipRef.current.style.top = `${rect.top + e.globalY - 10}px`;
         }
       });
 
       nodeGraphics.on("pointerout", () => {
+        if (tooltipTimeoutRef.current) {
+          clearTimeout(tooltipTimeoutRef.current);
+          tooltipTimeoutRef.current = null;
+        }
         if (tooltipRef.current) {
-          hideTooltip(tooltipRef.current);
+          tooltipRef.current.style.display = "none";
         }
       });
 
       viewport.addChild(nodeGraphics);
-
-      nodeGraphics.interactive = true;
-      nodeGraphics.cursor = "pointer";
-      nodeGraphics.hitArea = new PIXI.Circle(0, 0, radius);
     });
 
     const ticked = () => {
@@ -399,11 +414,6 @@ export function ForceGraphCanvas2D(props: ForceGraph2DProps) {
         });
         visualLinks.destroy();
         app.destroy(true);
-
-        // Hide tooltip
-        if (tooltipRef.current) {
-          hideTooltip(tooltipRef.current);
-        }
       },
     };
   };
