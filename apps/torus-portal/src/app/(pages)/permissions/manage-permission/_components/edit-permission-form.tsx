@@ -32,6 +32,7 @@ import { StreamsField } from "./edit-permission-fields/streams-field";
 import { WeightSetterField } from "./edit-permission-fields/weight-setter-field";
 import type { EditPermissionFormData } from "./edit-permission-schema";
 import { EDIT_PERMISSION_SCHEMA } from "./edit-permission-schema";
+import { SubmitConfirmationDialog, type ChangeDetail } from "./submit-confirmation-dialog";
 import {
   canEditPermissionFromContract,
   canUserEditField,
@@ -87,6 +88,9 @@ export function EditPermissionForm({
   );
   const [selectedPermissionContract, setSelectedPermissionContract] =
     useState<PermissionContract | null>(null);
+  const [showConfirmation, setShowConfirmation] = useState(false);
+  const [pendingFormData, setPendingFormData] = useState<EditPermissionFormData | null>(null);
+  const [originalFormData, setOriginalFormData] = useState<EditPermissionFormData | null>(null);
 
   const permissionType = getPermissionTypeFromContract(
     selectedPermissionContract,
@@ -144,7 +148,7 @@ export function EditPermissionForm({
       if ("Stream" in contract.scope) {
         const formData = transformPermissionToFormData(contract);
 
-        form.reset({
+        const initialData = {
           permissionId,
           newTargets: formData.newTargets ?? [],
           newStreams: formData.newStreams ?? [],
@@ -153,20 +157,188 @@ export function EditPermissionForm({
           },
           recipientManager: formData.recipientManager,
           weightSetter: formData.weightSetter,
-        });
+        };
+
+        // Store original data for comparison
+        setOriginalFormData(initialData);
+        
+        form.reset(initialData);
       }
     },
     [form],
   );
 
-  async function handleSubmit(data: z.infer<typeof EDIT_PERMISSION_SCHEMA>) {
-    if (!api || !sendTx) {
+  // Helper function to get detailed change information by comparing with original data
+  function getChangeDetails(currentData: EditPermissionFormData): ChangeDetail[] {
+    const changes: ChangeDetail[] = [];
+    const unchanged: ChangeDetail[] = [];
+    
+    if (!originalFormData) return changes;
+    
+    // Compare recipients
+    const originalTargets = originalFormData.newTargets || [];
+    const currentTargets = currentData.newTargets || [];
+    
+    // Check for added recipients
+    currentTargets.forEach((target) => {
+      if (target.address && target.percentage !== undefined) {
+        const existsInOriginal = originalTargets.some(orig => orig.address === target.address);
+        if (!existsInOriginal) {
+          const shortAddress = `${target.address.slice(0, 6)}...${target.address.slice(-4)}`;
+          changes.push({
+            type: 'added',
+            field: 'Recipients',
+            description: `Recipient added: ${shortAddress}`
+          });
+          changes.push({
+            type: 'added',
+            field: 'Recipients',
+            description: `Weight set for ${shortAddress}: ${target.percentage}%`
+          });
+        }
+      }
+    });
+    
+    // Check for modified recipients (weight changes)
+    currentTargets.forEach((target) => {
+      if (target.address && target.percentage !== undefined) {
+        const original = originalTargets.find(orig => orig.address === target.address);
+        if (original && original.percentage !== target.percentage) {
+          const shortAddress = `${target.address.slice(0, 6)}...${target.address.slice(-4)}`;
+          changes.push({
+            type: 'modified',
+            field: 'Recipients',
+            description: `Weight changed for: ${shortAddress}`,
+            oldValue: `${original.percentage}%`,
+            newValue: `${target.percentage}%`
+          });
+        }
+      }
+    });
+    
+    // Check for removed recipients
+    originalTargets.forEach((original) => {
+      if (original.address && original.percentage !== undefined) {
+        const existsInCurrent = currentTargets.some(curr => curr.address === original.address);
+        if (!existsInCurrent) {
+          const shortAddress = `${original.address.slice(0, 6)}...${original.address.slice(-4)}`;
+          changes.push({
+            type: 'removed',
+            field: 'Recipients',
+            description: `Recipient removed: ${shortAddress}`,
+            oldValue: `${original.percentage}%`
+          });
+        }
+      }
+    });
+    
+    // Compare streams
+    const originalStreams = originalFormData.newStreams || [];
+    const currentStreams = currentData.newStreams || [];
+    
+    currentStreams.forEach((stream) => {
+      if (stream.streamId && stream.percentage !== undefined) {
+        const existsInOriginal = originalStreams.some(orig => orig.streamId === stream.streamId);
+        if (!existsInOriginal) {
+          const shortStreamId = `${stream.streamId.slice(0, 10)}...${stream.streamId.slice(-6)}`;
+          changes.push({
+            type: 'added',
+            field: 'Streams',
+            description: `Stream added: ${shortStreamId}`,
+            newValue: `${stream.percentage}%`
+          });
+        }
+      }
+    });
+    
+    // Compare distribution control
+    const originalControl = originalFormData.newDistributionControl;
+    const currentControl = currentData.newDistributionControl;
+    const originalIsManual = originalControl && "Manual" in originalControl;
+    const currentIsManual = currentControl && "Manual" in currentControl;
+    
+    if (originalIsManual && !currentIsManual && currentControl) {
+      const controlType = Object.keys(currentControl)[0];
+      const controlValue = Object.values(currentControl)[0];
+      changes.push({
+        type: 'modified',
+        field: 'Distribution Control',
+        description: `Distribution control changed to: ${controlType}`,
+        oldValue: 'Manual',
+        newValue: controlValue ? `${controlType}: ${controlValue}` : controlType
+      });
+    }
+    
+    // Compare recipient manager
+    if (originalFormData.recipientManager !== currentData.recipientManager) {
+      if (currentData.recipientManager && !originalFormData.recipientManager) {
+        const shortAddress = `${currentData.recipientManager.slice(0, 6)}...${currentData.recipientManager.slice(-4)}`;
+        changes.push({
+          type: 'added',
+          field: 'Recipient Manager',
+          description: `Recipient manager set to: ${shortAddress}`
+        });
+      } else if (currentData.recipientManager && originalFormData.recipientManager) {
+        const shortAddress = `${currentData.recipientManager.slice(0, 6)}...${currentData.recipientManager.slice(-4)}`;
+        const oldShortAddress = `${originalFormData.recipientManager.slice(0, 6)}...${originalFormData.recipientManager.slice(-4)}`;
+        changes.push({
+          type: 'modified',
+          field: 'Recipient Manager',
+          description: `Recipient manager changed`,
+          oldValue: oldShortAddress,
+          newValue: shortAddress
+        });
+      }
+    }
+    
+    // Compare weight setter
+    if (originalFormData.weightSetter !== currentData.weightSetter) {
+      if (currentData.weightSetter && !originalFormData.weightSetter) {
+        const shortAddress = `${currentData.weightSetter.slice(0, 6)}...${currentData.weightSetter.slice(-4)}`;
+        changes.push({
+          type: 'added',
+          field: 'Weight Setter',
+          description: `Weight setter set to: ${shortAddress}`
+        });
+      } else if (currentData.weightSetter && originalFormData.weightSetter) {
+        const shortAddress = `${currentData.weightSetter.slice(0, 6)}...${currentData.weightSetter.slice(-4)}`;
+        const oldShortAddress = `${originalFormData.weightSetter.slice(0, 6)}...${originalFormData.weightSetter.slice(-4)}`;
+        changes.push({
+          type: 'modified',
+          field: 'Weight Setter',
+          description: `Weight setter changed`,
+          oldValue: oldShortAddress,
+          newValue: shortAddress
+        });
+      }
+    }
+    
+    return changes;
+  }
+
+  function handleInitialSubmit(data: z.infer<typeof EDIT_PERMISSION_SCHEMA>) {
+    const changes = getChangeDetails(data);
+    
+    if (changes.length === 0) {
+      toast.error("No changes detected");
+      return;
+    }
+
+    // Store the form data and show confirmation
+    setPendingFormData(data);
+    setShowConfirmation(true);
+  }
+
+  async function handleConfirmedSubmit() {
+    if (!pendingFormData || !api || !sendTx) {
       toast.error("API not ready");
       return;
     }
 
+    setShowConfirmation(false);
+
     const sdkData = prepareFormDataForSDK(
-      data,
+      pendingFormData,
       selectedPermissionContract,
       selectedAccount?.address,
     );
@@ -188,6 +360,7 @@ export function EditPermissionForm({
       form.reset();
       setSelectedPermissionId("");
       setSelectedPermissionContract(null);
+      setPendingFormData(null);
     });
   }
 
@@ -195,7 +368,7 @@ export function EditPermissionForm({
     <Form {...form}>
       <form
         {...props}
-        onSubmit={form.handleSubmit(handleSubmit)}
+        onSubmit={form.handleSubmit(handleInitialSubmit)}
         className={cn("flex flex-col gap-6", className)}
       >
         <PortalFormHeader
@@ -320,6 +493,14 @@ export function EditPermissionForm({
           )}
         </div>
       </form>
+
+      {/* Confirmation Dialog */}
+      <SubmitConfirmationDialog
+        isOpen={showConfirmation}
+        onClose={() => setShowConfirmation(false)}
+        onConfirm={handleConfirmedSubmit}
+        changes={pendingFormData ? getChangeDetails(pendingFormData) : []}
+      />
     </Form>
   );
 }
