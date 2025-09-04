@@ -12,6 +12,16 @@ const config = {
 
   eslint: { ignoreDuringBuilds: true },
   typescript: { ignoreBuildErrors: true },
+
+  webpack: (config) => {
+    // YAML loader for config files
+    config.module.rules.push({
+      test: /\.ya?ml$/,
+      use: "yaml-loader",
+    });
+
+    return config;
+  },
 };
 
 export default config;
