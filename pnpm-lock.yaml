@@ -266,6 +266,9 @@ importers:
       '@torus-network/sdk':
         specifier: workspace:*
         version: link:../../packages/torus-sdk-ts
+      '@torus-network/torus-utils':
+        specifier: workspace:*
+        version: link:../../packages/torus-utils
       '@torus-ts/env-validation':
         specifier: workspace:*
         version: link:../../packages/env-validation
@@ -303,9 +306,6 @@ importers:
         specifier: 'catalog:'
         version: 3.25.76
     devDependencies:
-      '@torus-network/torus-utils':
-        specifier: workspace:*
-        version: link:../../packages/torus-utils
       '@torus-ts/eslint-config':
         specifier: workspace:*
         version: link:../../tooling/eslint

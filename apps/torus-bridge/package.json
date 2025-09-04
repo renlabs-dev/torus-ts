@@ -33,6 +33,7 @@
     "@torus-ts/env-validation": "workspace:*",
     "@torus-ts/query-provider": "workspace:*",
     "@torus-ts/torus-provider": "workspace:*",
+    "@torus-network/torus-utils": "workspace:*",
     "@torus-ts/ui": "workspace:*",
     "formik": "^2.4.6",
     "lucide-react": "catalog:",
@@ -44,7 +45,6 @@
     "zod": "catalog:"
   },
   "devDependencies": {
-    "@torus-network/torus-utils": "workspace:*",
     "@torus-ts/eslint-config": "workspace:*",
     "@torus-ts/tsconfig": "workspace:*",
     "@types/node": "catalog:",
