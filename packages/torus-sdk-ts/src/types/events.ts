@@ -1,7 +1,6 @@
 import { z } from "zod";
 import { SS58_SCHEMA } from "./address.js";
-import { sb_h256 } from "../chain/common/types.js";
-import { sb_bool, sb_option, sb_struct } from "./zod.js";
+import { sb_bool, sb_h256, sb_option, sb_struct } from "../substrate-parsers/index.js";
 
 /**
  * Schema for PermissionAccumulationToggled event data
