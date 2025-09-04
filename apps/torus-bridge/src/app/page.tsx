@@ -1,20 +1,83 @@
 "use client";
 
-import { GuideDialog } from "./_components/guide-dialog";
-import { SelectActionDialog } from "./_components/select-action-dialog";
-import { SidebarLinks } from "./_components/shared/sidebar-links";
-import WalletActions from "./_components/shared/wallet-actions";
-import { WalletBalance } from "./_components/shared/wallet-balance";
+import dynamic from "next/dynamic";
 import { TransferDetails } from "./_components/transfer-details";
 
-export default function HomePage() {
+// Componentes críticos - carregados imediatamente
+const SelectActionDialog = dynamic(
+  () =>
+    import("./_components/select-action-dialog").then((mod) => ({
+      default: mod.SelectActionDialog,
+    })),
+  {
+    loading: () => (
+      <div className="h-32 animate-pulse rounded-lg bg-gray-800" />
+    ),
+  },
+);
+
+// Componentes não críticos - lazy loaded
+const GuideDialog = dynamic(
+  () =>
+    import("./_components/guide-dialog").then((mod) => ({
+      default: mod.GuideDialog,
+    })),
+  {
+    loading: () => (
+      <div className="h-48 animate-pulse rounded-lg bg-gray-800" />
+    ),
+  },
+);
+
+const SidebarLinks = dynamic(
+  () =>
+    import("./_components/shared/sidebar-links").then((mod) => ({
+      default: mod.SidebarLinks,
+    })),
+  {
+    loading: () => (
+      <div className="h-24 animate-pulse rounded-lg bg-gray-800" />
+    ),
+  },
+);
+
+const WalletActions = dynamic(
+  () =>
+    import("./_components/shared/wallet-actions").then((mod) => ({
+      default: mod.WalletActions,
+    })),
+  {
+    loading: () => (
+      <div className="h-40 animate-pulse rounded-lg bg-gray-800" />
+    ),
+  },
+);
+
+const WalletBalance = dynamic(
+  () =>
+    import("./_components/shared/wallet-balance").then((mod) => ({
+      default: mod.WalletBalance,
+    })),
+  {
+    loading: () => (
+      <div className="h-20 animate-pulse rounded-lg bg-gray-800" />
+    ),
+  },
+);
+
+export default function HomePageOptimized() {
   return (
     <main className="mx-auto flex min-w-full flex-col items-start gap-3 text-white lg:mt-[calc(20vh-64px)]">
+      {/* Componente crítico - carrega imediatamente */}
       <TransferDetails />
+
+      {/* Diálogos principais - carregam rápido */}
       <div className="mb-4 mt-12 flex w-full flex-col gap-6 md:mt-0 md:flex-row">
         <SelectActionDialog />
         <GuideDialog />
       </div>
+
+      {/* Sidebar e ações - lazy loaded */}
       <div className="flex w-full flex-col justify-around gap-6 lg:flex-row">
         <div className="animate-fade flex w-full flex-col gap-4 lg:w-4/12">
           <SidebarLinks />
