@@ -8,13 +8,16 @@ import { ViewModeSwitcher } from "./view-mode-switcher";
 
 export function PermissionGraphFooter({
   handleNodeSelect,
+  extraContent,
 }: {
   handleNodeSelect: (node: CustomGraphNode) => void;
+  extraContent?: React.ReactNode;
 }) {
   return (
     <div className="absolute bottom-3 left-3 right-3 z-50 flex flex-row justify-between gap-2">
       <div className="animate-fade-up flex w-full items-center justify-between gap-2 md:w-fit">
         <PermissionGraphCommand />
+        {extraContent}
         <ViewModeSwitcher />
         <MyAgentButton onNodeClick={handleNodeSelect} />
       </div>

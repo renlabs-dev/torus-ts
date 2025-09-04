@@ -17,6 +17,7 @@ import type {
 } from "../permission-graph-types";
 import {
   createTooltipElement,
+  getAvailableSwarms,
   getConnectedNodesSwarm,
   getNodeColor,
   getNodeRadius,
@@ -40,6 +41,8 @@ interface ForceGraph2DProps {
   allocatorAddress: string;
   selectedNodeId?: string | null;
   onSelectionChange?: (nodeId: string | null) => void;
+  selectedSwarmId?: string | null;
+  swarmCenterNodeId?: string | null;
 }
 
 export function ForceGraphCanvas2D(props: ForceGraph2DProps) {
@@ -58,22 +61,72 @@ export function ForceGraphCanvas2D(props: ForceGraph2DProps) {
   >(null);
   const selectedNodeId = props.selectedNodeId ?? internalSelectedNodeId;
 
-  // Calculate highlighted nodes when selection changes
-  const highlightedNodes = useMemo(() => {
-    if (selectedNodeId) {
-      return getConnectedNodesSwarm(
-        selectedNodeId,
+  // Filter graph data when swarm is selected
+  const filteredGraphData = useMemo(() => {
+    if (props.selectedSwarmId && props.swarmCenterNodeId) {
+      const availableSwarms = getAvailableSwarms(
         props.graphData.nodes,
         props.graphData.links,
+        props.allocatorAddress,
+      );
+      const selectedSwarm = availableSwarms.find(
+        (swarm) => swarm.id === props.selectedSwarmId,
+      );
+
+      if (selectedSwarm) {
+        // Filter nodes to only include swarm nodes
+        const swarmNodeIds = selectedSwarm.connectedNodeIds;
+        const filteredNodes = props.graphData.nodes.filter((node) =>
+          swarmNodeIds.has(node.id),
+        );
+
+        // Filter links to only include those connecting swarm nodes
+        const filteredLinks = props.graphData.links.filter((link) => {
+          const sourceId =
+            typeof link.source === "string"
+              ? link.source
+              : (link.source as { id: string }).id;
+          const targetId =
+            typeof link.target === "string"
+              ? link.target
+              : (link.target as { id: string }).id;
+          return swarmNodeIds.has(sourceId) && swarmNodeIds.has(targetId);
+        });
+
+        return {
+          nodes: filteredNodes,
+          links: filteredLinks,
+        };
+      }
+    }
+
+    // Return original data if no swarm is selected
+    return props.graphData;
+  }, [
+    props.selectedSwarmId,
+    props.swarmCenterNodeId,
+    props.graphData,
+    props.allocatorAddress,
+  ]);
+
+  // Calculate highlighted nodes when selection changes
+  const highlightedNodes = useMemo(() => {
+    if (selectedNodeId && !props.selectedSwarmId) {
+      // Only use highlighting in "All Networks" view, not in swarm view
+      return getConnectedNodesSwarm(
+        selectedNodeId,
+        filteredGraphData.nodes,
+        filteredGraphData.links,
         props.allocatorAddress,
       );
     }
     return new Set<string>();
   }, [
     selectedNodeId,
-    props.graphData.nodes,
-    props.graphData.links,
+    filteredGraphData.nodes,
+    filteredGraphData.links,
     props.allocatorAddress,
+    props.selectedSwarmId,
   ]);
 
   const nodeGraphicsRef = useRef<Map<string, PIXI.Graphics>>(new Map());
@@ -136,12 +189,27 @@ export function ForceGraphCanvas2D(props: ForceGraph2DProps) {
         minHeight: height / 4,
       });
 
-    const allocatorNode = nodes.find((n) => n.id === props.allocatorAddress);
-    if (allocatorNode) {
-      allocatorNode.fx = width / 2;
-      allocatorNode.fy = height / 2;
-      allocatorNode.x = width / 2;
-      allocatorNode.y = height / 2;
+    // Determine which node should be centered
+    const centerNodeId = props.swarmCenterNodeId || props.allocatorAddress;
+    const centerNode = nodes.find((n) => n.id === centerNodeId);
+
+    if (centerNode) {
+      centerNode.fx = width / 2;
+      centerNode.fy = height / 2;
+      centerNode.x = width / 2;
+      centerNode.y = height / 2;
+    }
+
+    // If we have a swarm center that's different from allocator, unfix the allocator
+    if (
+      props.swarmCenterNodeId &&
+      props.swarmCenterNodeId !== props.allocatorAddress
+    ) {
+      const allocatorNode = nodes.find((n) => n.id === props.allocatorAddress);
+      if (allocatorNode) {
+        allocatorNode.fx = undefined;
+        allocatorNode.fy = undefined;
+      }
     }
 
     const simulation = d3
@@ -349,8 +417,8 @@ export function ForceGraphCanvas2D(props: ForceGraph2DProps) {
       if (containerRef.current) {
         cleanup = await runForceGraph2D(
           containerRef.current,
-          props.graphData.nodes,
-          props.graphData.links as D3SimulationLink[],
+          filteredGraphData.nodes,
+          filteredGraphData.links as D3SimulationLink[],
         );
       }
     };
@@ -367,7 +435,11 @@ export function ForceGraphCanvas2D(props: ForceGraph2DProps) {
       }
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [props.graphData.nodes, props.graphData.links]);
+  }, [
+    filteredGraphData.nodes,
+    filteredGraphData.links,
+    props.swarmCenterNodeId,
+  ]);
 
   // Separate effect to update highlighting without re-rendering the graph
   useEffect(() => {

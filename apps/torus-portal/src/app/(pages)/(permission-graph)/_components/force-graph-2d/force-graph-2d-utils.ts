@@ -150,3 +150,85 @@ export function updateTooltipPosition(
 export function hideTooltip(tooltip: HTMLDivElement): void {
   tooltip.style.display = "none";
 }
+
+export interface SwarmInfo {
+  id: string;
+  rootAgentId: string;
+  rootAgentName: string;
+  connectedNodeIds: Set<string>;
+  nodeCount: number;
+  permissionTypes: string[];
+}
+
+export function getAvailableSwarms(
+  nodes: CustomGraphNode[],
+  links: CustomGraphLink[],
+  allocatorAddress: string,
+): SwarmInfo[] {
+  const swarms: SwarmInfo[] = [];
+  const processedAgents = new Set<string>();
+
+  // Find all agent nodes that could be swarm roots
+  const agentNodes = nodes.filter((node) => 
+    (node.nodeType === "root_agent" || node.nodeType === "target_agent") && 
+    node.id !== allocatorAddress
+  );
+
+  agentNodes.forEach((agent) => {
+    if (processedAgents.has(agent.id)) return;
+
+    // Get connected nodes for this potential root agent
+    const connectedNodes = getConnectedNodesSwarm(
+      agent.id,
+      nodes,
+      links,
+      allocatorAddress,
+    );
+
+    // A valid swarm should have at least 3 nodes (root + permission + target minimum)
+    if (connectedNodes.size < 3) return;
+
+    // Find permission types involved in this swarm
+    const swarmPermissionTypes = new Set<string>();
+    
+    links.forEach((link) => {
+      const sourceId = typeof link.source === "string" 
+        ? link.source 
+        : (link.source as { id: string }).id;
+      const targetId = typeof link.target === "string" 
+        ? link.target 
+        : (link.target as { id: string }).id;
+
+      if (connectedNodes.has(sourceId) || connectedNodes.has(targetId)) {
+        if (link.linkType === "permission_grant" || link.linkType === "permission_receive") {
+          const permissionNode = nodes.find(n => 
+            (n.id === sourceId || n.id === targetId) && n.nodeType === "permission"
+          );
+          if (permissionNode?.permissionData) {
+            swarmPermissionTypes.add(permissionNode.permissionData.permissionType);
+          }
+        }
+      }
+    });
+
+    // Mark all nodes in this swarm as processed to avoid duplicates
+    connectedNodes.forEach((nodeId) => {
+      const node = nodes.find(n => n.id === nodeId);
+      if (node && (node.nodeType === "root_agent" || node.nodeType === "target_agent")) {
+        processedAgents.add(nodeId);
+      }
+    });
+
+    swarms.push({
+      id: `swarm-${agent.id}`,
+      rootAgentId: agent.id,
+      rootAgentName: agent.name || agent.id,
+      connectedNodeIds: connectedNodes,
+      nodeCount: connectedNodes.size,
+      permissionTypes: Array.from(swarmPermissionTypes),
+    });
+  });
+
+  // Sort swarms by node count (larger swarms first)
+  return swarms.sort((a, b) => b.nodeCount - a.nodeCount);
+}
