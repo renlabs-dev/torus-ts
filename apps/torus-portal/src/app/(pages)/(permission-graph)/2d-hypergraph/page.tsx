@@ -211,6 +211,7 @@ export default function PermissionGraph2DPage() {
         setCachedAgentData={setCachedAgentData}
         isOpen={isSheetOpen}
         onOpenChange={handleOnOpenChange}
+        allocatorAddress={allocatorAddress}
       />
       <ForceGraphCanvas2D
         graphData={graphData}
