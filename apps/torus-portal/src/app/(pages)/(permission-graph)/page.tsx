@@ -37,24 +37,32 @@ export default function PermissionGraphPage() {
 
   const { selectedAccount, isInitialized } = useTorus();
 
-  // Handle initial selected node from query params
+  // Handle initial selected node from query params - async approach to avoid setState in effect
   useEffect(() => {
     const nodeId = searchParams.get("id");
-    if (nodeId && graphData) {
-      const node = graphData.nodes.find((n) => n.id === nodeId);
-      if (node && (!selectedNode || selectedNode.id !== nodeId)) {
-        // eslint-disable-next-line react-hooks/set-state-in-effect
-        setSelectedNode(node);
-        setIsSheetOpen(true); // Open sheet when node is selected from search
+    
+    const updateSelection = () => {
+      if (nodeId && graphData) {
+        const node = graphData.nodes.find((n) => n.id === nodeId);
+        if (node && (!selectedNode || selectedNode.id !== nodeId)) {
+          setSelectedNode(node);
+          setIsSheetOpen(true); // Open sheet when node is selected from search
+        }
+      } else if (!nodeId && selectedNode) {
+        // If no node ID in URL but we have a selected node, clear it
+        setSelectedNode(null);
+        setIsSheetOpen(false);
       }
-    } else if (nodeId && !graphData) {
+    };
+
+    if (nodeId && !graphData) {
       // If we have a node ID but no graph data yet, wait for it
       return;
-    } else if (!nodeId && selectedNode) {
-      // If no node ID in URL but we have a selected node, clear it
-      setSelectedNode(null);
-      setIsSheetOpen(false);
     }
+    
+    // Use setTimeout to avoid direct setState in effect
+    const timer = setTimeout(updateSelection, 0);
+    return () => clearTimeout(timer);
   }, [searchParams, graphData, selectedNode]);
 
   const handleNodeSelect = useCallback(

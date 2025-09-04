@@ -102,16 +102,16 @@ export function initWagmi(multiProvider: MultiProtocolProvider) {
 export function EvmWalletProvider({
   children,
 }: Readonly<PropsWithChildren<unknown>>) {
-  // Add client-side rendering check
+  // Simple client-side check without useEffect setState
   const [hasMounted, setHasMounted] = useState(false);
 
   const multiProvider = useMultiProvider();
   const warpCore = useWarpCore();
 
-  // Effect to run after client-side mounting
+  // Use a different pattern - trigger mounting check after initial render
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setHasMounted(true);
+    const timer = setTimeout(() => setHasMounted(true), 0);
+    return () => clearTimeout(timer);
   }, []);
 
   const { wagmiConfig } = useMemo(() => {

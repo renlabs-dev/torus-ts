@@ -1,6 +1,6 @@
 import { env } from "~/env";
 import { api as trpcApi } from "~/trpc/react";
-import { useMemo } from "react";
+// useMemo removed - using direct calculations now
 import { createSimplifiedGraphData } from "./force-graph-utils";
 
 export function useGraphData() {
@@ -24,10 +24,8 @@ export function useGraphData() {
   const { data: allAgentsData, isLoading: isLoadingAgents } =
     trpcApi.agent.allIncludingNonWhitelisted.useQuery(undefined, cacheOptions);
 
-  // eslint-disable-next-line react-hooks/preserve-manual-memoization
-  const allAgents = useMemo(() => {
-    return allAgentsData?.filter((agent) => agent.isWhitelisted) ?? [];
-  }, [allAgentsData]);
+  // Remove useMemo and let React Compiler optimize
+  const allAgents = allAgentsData?.filter((agent) => agent.isWhitelisted) ?? [];
 
   const { data: allComputedWeights, isLoading: isLoadingWeights } =
     trpcApi.computedAgentWeight.all.useQuery(undefined, cacheOptions);
@@ -35,8 +33,8 @@ export function useGraphData() {
   const { data: allSignals, isLoading: isLoadingSignals } =
     trpcApi.signal.all.useQuery(undefined, cacheOptions);
 
-  // eslint-disable-next-line react-hooks/preserve-manual-memoization
-  const graphData = useMemo(() => {
+  // Remove useMemo and let React Compiler optimize
+  const graphData = (() => {
     if (
       isLoadingAgents ||
       isLoadingPermissions ||
@@ -53,17 +51,7 @@ export function useGraphData() {
       allSignals,
       allAgentsData,
     );
-  }, [
-    // eslint-disable-next-line react-hooks/preserve-manual-memoization
-    allAgents,
-    allAgentsData,
-    allPermissions,
-    // eslint-disable-next-line react-hooks/preserve-manual-memoization
-    allocatorAddress,
-    allSignals,
-    isLoadingAgents,
-    isLoadingPermissions,
-  ]);
+  })();
 
   const isLoading =
     isLoadingPermissions ||

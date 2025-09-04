@@ -2,7 +2,7 @@ import type { TorAmount } from "@torus-network/torus-utils/torus/token";
 import { makeTorAmount } from "@torus-network/torus-utils/torus/token";
 import { useGetTorusPrice } from "@torus-ts/query-provider/hooks";
 import { api as extAPI } from "~/trpc/react";
-import { useMemo } from "react";
+// useMemo removed - using direct calculations now
 import {
   calculateAgentTokensPerWeek,
   useTokensPerWeek,
@@ -66,9 +66,8 @@ export function useWeeklyUsdCalculation(
   const isError =
     isTorusPriceError || isComputedWeightError || isTokensPerWeekError;
 
-  // Calculate tokens per week
-  // eslint-disable-next-line react-hooks/preserve-manual-memoization
-  const tokensPerWeek = useMemo(() => {
+  // Calculate tokens per week - remove manual memoization
+  const tokensPerWeek = (() => {
     // Early return conditions
     if (isLoading || isError || computedWeightedAgents === null)
       return makeTorAmount(0);
@@ -82,25 +81,17 @@ export function useWeeklyUsdCalculation(
       agentWeightValue,
       weightPenaltyValue,
     );
-  }, [
-    isLoading,
-    isError,
-    computedWeightedAgents,
-    effectiveEmissionAmount,
-    incentivesRatioValue,
-    props.weightFactor,
-  ]);
+  })();
 
-  // Calculate USD value of weekly tokens
-  const usdValue = useMemo(() => {
+  // Calculate USD value of weekly tokens - remove manual memoization
+  const usdValue = (() => {
     if (isLoading || isError || !torusPrice) return 0;
     return tokensPerWeek.toNumber() * torusPrice;
-    // eslint-disable-next-line react-hooks/preserve-manual-memoization
-  }, [isLoading, isError, tokensPerWeek, torusPrice]);
+  })();
 
   // EXAMPLE: 5000000.00000 will be displayed: 5,000,000.00 TORUS
-  // eslint-disable-next-line react-hooks/preserve-manual-memoization
-  const displayTokensPerWeek = useMemo(() => {
+  // Remove useMemo and let React Compiler handle optimization
+  const displayTokensPerWeek = (() => {
     if (isLoading || isError) return "0.00 TORUS";
     return (
       tokensPerWeek.toNumber().toLocaleString("en-US", {
@@ -108,11 +99,10 @@ export function useWeeklyUsdCalculation(
         maximumFractionDigits: 2,
       }) + " TORUS"
     );
-    // eslint-disable-next-line react-hooks/preserve-manual-memoization
-  }, [isLoading, isError, tokensPerWeek]);
+  })();
 
   // EXAMPLE: 50000.0000 will be displayed: $50,000.00
-  const displayUsdValue = useMemo(() => {
+  const displayUsdValue = (() => {
     if (isLoading || isError) return "$0.00";
     return usdValue.toLocaleString("en-US", {
       style: "currency",
@@ -120,7 +110,7 @@ export function useWeeklyUsdCalculation(
       minimumFractionDigits: 2,
       maximumFractionDigits: 2,
     });
-  }, [isLoading, isError, usdValue]);
+  })();
 
   return {
     tokensPerWeek,
