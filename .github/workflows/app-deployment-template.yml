@@ -43,16 +43,6 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      # Setup pnpm cache (shared across all apps)
-      - name: Setup pnpm cache
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.local/share/pnpm/store/v3
-          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
-          restore-keys: |
-            ${{ runner.os }}-pnpm-store-
-
       - name: Prepare build
         id: prepare
         run: |

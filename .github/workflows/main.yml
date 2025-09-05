@@ -43,19 +43,6 @@ jobs:
   ###################################
   ###### REGULAR DEPLOYMENTS  #######
   ###################################
-  torus-bridge:
-    needs: turbo-check
-    if: |
-      inputs.skip_build ||
-      contains(github.event.head_commit.message, 'skip build') ||
-      (needs.turbo-check.outputs.torus-bridge == 'true' &&
-      (github.ref_name == 'main' || github.ref_name == 'dev' || github.ref_name == 'cicd'))
-    uses: ./.github/workflows/app-deployment-template.yml
-    secrets: inherit
-    with:
-      app_name: torus-bridge
-      skip_build: ${{ inputs.skip_build || false }}
-
   torus-page:
     needs: turbo-check
     if: |
@@ -108,6 +95,19 @@ jobs:
       app_name: torus-allocator
       skip_build: ${{ inputs.skip_build || false }}
 
+  torus-bridge:
+    needs: turbo-check
+    if: |
+      inputs.skip_build ||
+      contains(github.event.head_commit.message, 'skip build') ||
+      (needs.turbo-check.outputs.torus-bridge == 'true' &&
+      (github.ref_name == 'main' || github.ref_name == 'dev' || github.ref_name == 'cicd'))
+    uses: ./.github/workflows/app-deployment-template.yml
+    secrets: inherit
+    with:
+      app_name: torus-bridge
+      skip_build: ${{ inputs.skip_build || false }}
+
   torus-cache:
     needs: turbo-check
     if: |
@@ -155,18 +155,6 @@ jobs:
   ###################################
   ######## DRY RUN BUILDS  ##########
   ###################################
-  torus-bridge-dry-run:
-    needs: [turbo-check, pr-check]
-    if: |
-      github.ref_name != 'main' &&
-      github.ref_name != 'dev' &&
-      github.ref_name != 'cicd' &&
-      needs.turbo-check.outputs.torus-bridge == 'true'
-    uses: ./.github/workflows/dry-run-build-template.yml
-    secrets: inherit
-    with:
-      app_name: torus-bridge
-
   torus-page-dry-run:
     needs: [turbo-check, pr-check]
     if: |
@@ -219,6 +207,18 @@ jobs:
     with:
       app_name: torus-allocator
 
+  torus-bridge-dry-run:
+    needs: [turbo-check, pr-check]
+    if: |
+      github.ref_name != 'main' &&
+      github.ref_name != 'dev' &&
+      github.ref_name != 'cicd' &&
+      needs.turbo-check.outputs.torus-bridge == 'true'
+    uses: ./.github/workflows/dry-run-build-template.yml
+    secrets: inherit
+    with:
+      app_name: torus-bridge
+
   torus-cache-dry-run:
     needs: [turbo-check, pr-check]
     if: |
@@ -265,94 +265,6 @@ jobs:
   ###################################
   ########### PR PREVIEW ############
   ###################################
-  torus-bridge-pr-activate:
-    needs: turbo-check
-    if: |
-      github.event.pull_request.state == 'open' && !github.event.repository.fork
-      && !github.event.pull_request.draft
-      && github.head_ref != 'main' && github.head_ref != 'dev' &&
-      needs.turbo-check.outputs.torus-bridge == 'true'
-    uses: ./.github/workflows/pr-preview-template.yml
-    secrets: inherit
-    with:
-      app_name: torus-bridge
-
-  torus-bridge-pr-delete:
-    if: |
-      github.event.pull_request.state == 'closed'
-      && github.head_ref != 'main' && github.head_ref != 'dev'
-    uses: ./.github/workflows/pr-preview-template.yml
-    secrets: inherit
-    with:
-      app_name: torus-bridge
-      delete: true
-
-  torus-page-pr-activate:
-    needs: turbo-check
-    if: |
-      github.event.pull_request.state == 'open' && !github.event.repository.fork
-      && !github.event.pull_request.draft
-      && github.head_ref != 'main' && github.head_ref != 'dev' &&
-      needs.turbo-check.outputs.torus-page == 'true'
-    uses: ./.github/workflows/pr-preview-template.yml
-    secrets: inherit
-    with:
-      app_name: torus-page
-
-  torus-page-pr-delete:
-    if: |
-      github.event.pull_request.state == 'closed'
-      && github.head_ref != 'main' && github.head_ref != 'dev'
-    uses: ./.github/workflows/pr-preview-template.yml
-    secrets: inherit
-    with:
-      app_name: torus-page
-      delete: true
-
-  torus-portal-pr-activate:
-    needs: turbo-check
-    if: |
-      github.event.pull_request.state == 'open' && !github.event.repository.fork
-      && !github.event.pull_request.draft
-      && github.head_ref != 'main' && github.head_ref != 'dev' &&
-      needs.turbo-check.outputs.torus-portal == 'true'
-    uses: ./.github/workflows/pr-preview-template.yml
-    secrets: inherit
-    with:
-      app_name: torus-portal
-
-  torus-portal-pr-delete:
-    if: |
-      github.event.pull_request.state == 'closed'
-      && github.head_ref != 'main' && github.head_ref != 'dev'
-    uses: ./.github/workflows/pr-preview-template.yml
-    secrets: inherit
-    with:
-      app_name: torus-portal
-      delete: true
-
-  torus-wallet-pr-activate:
-    needs: turbo-check
-    if: |
-      github.event.pull_request.state == 'open' && !github.event.repository.fork
-      && !github.event.pull_request.draft
-      && github.head_ref != 'main' && github.head_ref != 'dev' &&
-      needs.turbo-check.outputs.torus-wallet == 'true'
-    uses: ./.github/workflows/pr-preview-template.yml
-    secrets: inherit
-    with:
-      app_name: torus-wallet
-
-  torus-wallet-pr-delete:
-    if: |
-      github.event.pull_request.state == 'closed'
-      && github.head_ref != 'main' && github.head_ref != 'dev'
-    uses: ./.github/workflows/pr-preview-template.yml
-    secrets: inherit
-    with:
-      app_name: torus-wallet
-      delete: true
-
   torus-allocator-pr-activate:
     needs: turbo-check
     if: |
@@ -422,41 +334,129 @@ jobs:
       app_name: torus-governance
       delete: true
 
+  torus-page-pr-activate:
+    needs: turbo-check
+    if: |
+      github.event.pull_request.state == 'open' && !github.event.repository.fork
+      && !github.event.pull_request.draft
+      && github.head_ref != 'main' && github.head_ref != 'dev' &&
+      needs.turbo-check.outputs.torus-page == 'true'
+    uses: ./.github/workflows/pr-preview-template.yml
+    secrets: inherit
+    with:
+      app_name: torus-page
+
+  torus-page-pr-delete:
+    if: |
+      github.event.pull_request.state == 'closed'
+      && github.head_ref != 'main' && github.head_ref != 'dev'
+    uses: ./.github/workflows/pr-preview-template.yml
+    secrets: inherit
+    with:
+      app_name: torus-page
+      delete: true
+
+  torus-portal-pr-activate:
+    needs: turbo-check
+    if: |
+      github.event.pull_request.state == 'open' && !github.event.repository.fork
+      && !github.event.pull_request.draft
+      && github.head_ref != 'main' && github.head_ref != 'dev' &&
+      needs.turbo-check.outputs.torus-portal == 'true'
+    uses: ./.github/workflows/pr-preview-template.yml
+    secrets: inherit
+    with:
+      app_name: torus-portal
+
+  torus-portal-pr-delete:
+    if: |
+      github.event.pull_request.state == 'closed'
+      && github.head_ref != 'main' && github.head_ref != 'dev'
+    uses: ./.github/workflows/pr-preview-template.yml
+    secrets: inherit
+    with:
+      app_name: torus-portal
+      delete: true
+
+  torus-wallet-pr-activate:
+    needs: turbo-check
+    if: |
+      github.event.pull_request.state == 'open' && !github.event.repository.fork
+      && !github.event.pull_request.draft
+      && github.head_ref != 'main' && github.head_ref != 'dev' &&
+      needs.turbo-check.outputs.torus-wallet == 'true'
+    uses: ./.github/workflows/pr-preview-template.yml
+    secrets: inherit
+    with:
+      app_name: torus-wallet
+
+  torus-wallet-pr-delete:
+    if: |
+      github.event.pull_request.state == 'closed'
+      && github.head_ref != 'main' && github.head_ref != 'dev'
+    uses: ./.github/workflows/pr-preview-template.yml
+    secrets: inherit
+    with:
+      app_name: torus-wallet
+      delete: true
+
+  torus-bridge-pr-activate:
+    needs: turbo-check
+    if: |
+      github.event.pull_request.state == 'open' && !github.event.repository.fork
+      && !github.event.pull_request.draft
+      && github.head_ref != 'main' && github.head_ref != 'dev' &&
+      needs.turbo-check.outputs.torus-bridge == 'true'
+    uses: ./.github/workflows/pr-preview-template.yml
+    secrets: inherit
+    with:
+      app_name: torus-bridge
+
+  torus-bridge-pr-delete:
+    if: |
+      github.event.pull_request.state == 'closed'
+      && github.head_ref != 'main' && github.head_ref != 'dev'
+    uses: ./.github/workflows/pr-preview-template.yml
+    secrets: inherit
+    with:
+      app_name: torus-bridge
+      delete: true
+
   deployment-summary:
     if: always()
     needs:
       [
         turbo-check,
-        torus-bridge,
         torus-page,
         torus-portal,
         torus-wallet,
         torus-allocator,
+        torus-bridge,
         torus-cache,
         torus-governance,
         torus-worker,
-        torus-bridge-dry-run,
         torus-page-dry-run,
         torus-portal-dry-run,
         torus-wallet-dry-run,
         torus-allocator-dry-run,
+        torus-bridge-dry-run,
         torus-cache-dry-run,
         torus-governance-dry-run,
         torus-worker-dry-run,
-        torus-bridge-pr-activate,
-        torus-page-pr-activate,
-        torus-portal-pr-activate,
-        torus-wallet-pr-activate,
         torus-allocator-pr-activate,
         torus-cache-pr-activate,
         torus-governance-pr-activate,
-        torus-bridge-pr-delete,
-        torus-page-pr-delete,
-        torus-portal-pr-delete,
-        torus-wallet-pr-delete,
+        torus-page-pr-activate,
+        torus-portal-pr-activate,
+        torus-wallet-pr-activate,
+        torus-bridge-pr-activate,
         torus-allocator-pr-delete,
         torus-cache-pr-delete,
         torus-governance-pr-delete,
+        torus-page-pr-delete,
+        torus-portal-pr-delete,
+        torus-wallet-pr-delete,
+        torus-bridge-pr-delete,
       ]
     runs-on: ubicloud-standard-2
     steps:
@@ -483,7 +483,7 @@ jobs:
           echo "" >> $GITHUB_STEP_SUMMARY
 
           # Define application list
-          apps=(torus-bridge torus-page torus-portal torus-wallet torus-allocator torus-cache torus-governance torus-worker)
+          apps=(torus-page torus-portal torus-wallet torus-allocator torus-bridge torus-cache torus-governance torus-worker)
 
           # Production/Dev Deployments
           if [ "${{ github.ref_name }}" == "main" ] || [ "${{ github.ref_name }}" == "dev" ] || [ "${{ github.ref_name }}" == "cicd" ]; then
@@ -546,7 +546,7 @@ jobs:
             echo "|-------------|--------|-------------|" >> $GITHUB_STEP_SUMMARY
 
             # PR preview apps (subset of all apps)
-            pr_apps=(torus-bridge torus-page torus-portal torus-wallet torus-allocator torus-cache torus-governance)
+            pr_apps=(torus-allocator torus-cache torus-governance torus-page torus-portal torus-wallet torus-bridge)
 
             for app in "${pr_apps[@]}"; do
               case "$app" in
