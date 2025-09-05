@@ -6,9 +6,19 @@ ARG APP_NAME
 # ======== base layer ======== #
 FROM node:20-slim AS base
 
+# Install system dependencies for native builds
+RUN apt-get update && apt-get install -y \
+    python3 \
+    python3-dev \
+    build-essential \
+    && rm -rf /var/lib/apt/lists/*
+
 # Setup pnpm
 ENV PNPM_HOME="/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"
+
+# Set Python path for node-gyp
+ENV PYTHON=/usr/bin/python3
 
 RUN corepack enable
 RUN corepack prepare pnpm@9.7.1 --activate
@@ -47,7 +57,10 @@ COPY --from=pruner /build/out/pnpm-lock.yaml ./pnpm-lock.yaml
 
 # Install dependencies using only package.json files to reduce changes
 COPY --from=pruner /build/out/json/ .
-RUN pnpm install --frozen-lockfile
+
+# Use pnpm's built-in cache and optimize installation
+RUN --mount=type=cache,id=pnpm,target=/pnpm/store \
+    pnpm install --frozen-lockfile --prefer-offline
 
 # Build the app
 COPY --from=pruner /build/out/full/ .

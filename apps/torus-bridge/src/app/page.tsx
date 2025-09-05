@@ -26,21 +26,11 @@ const GuideDialog = dynamic(
     loading: () => (
       <div className="h-48 animate-pulse rounded-lg bg-gray-800" />
     ),
+    // Don't load until needed
   },
 );
 
-const SidebarLinks = dynamic(
-  () =>
-    import("./_components/shared/sidebar-links").then((mod) => ({
-      default: mod.SidebarLinks,
-    })),
-  {
-    loading: () => (
-      <div className="h-24 animate-pulse rounded-lg bg-gray-800" />
-    ),
-  },
-);
-
+// Heavy wallet components - only load when wallet is selected
 const WalletActions = dynamic(
   () =>
     import("./_components/shared/wallet-actions").then((mod) => ({
@@ -50,6 +40,7 @@ const WalletActions = dynamic(
     loading: () => (
       <div className="h-40 animate-pulse rounded-lg bg-gray-800" />
     ),
+    // Don't load until user interacts with wallet
   },
 );
 
@@ -62,6 +53,20 @@ const WalletBalance = dynamic(
     loading: () => (
       <div className="h-20 animate-pulse rounded-lg bg-gray-800" />
     ),
+    // Don't load until user interacts with wallet
+  },
+);
+
+const SidebarLinks = dynamic(
+  () =>
+    import("./_components/shared/sidebar-links").then((mod) => ({
+      default: mod.SidebarLinks,
+    })),
+  {
+    loading: () => (
+      <div className="h-24 animate-pulse rounded-lg bg-gray-800" />
+    ),
+    // Load after main content
   },
 );
 
