@@ -13,8 +13,8 @@ RUN apt-get update && apt-get install -y \
     build-essential \
     && rm -rf /var/lib/apt/lists/*
 
-# Setup pnpm
-ENV PNPM_HOME="/pnpm"
+# Setup pnpm with same path as GitHub Actions cache
+ENV PNPM_HOME="/root/.local/share/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"
 
 # Set Python path for node-gyp
@@ -59,7 +59,8 @@ COPY --from=pruner /build/out/pnpm-lock.yaml ./pnpm-lock.yaml
 COPY --from=pruner /build/out/json/ .
 
 # Use pnpm's built-in cache and optimize installation
-RUN --mount=type=cache,id=pnpm,target=/pnpm/store \
+# Cache path must match GitHub Actions cache path for maximum reuse
+RUN --mount=type=cache,id=pnpm,target=/root/.local/share/pnpm/store/v3 \
     pnpm install --frozen-lockfile --prefer-offline
 
 # Build the app
