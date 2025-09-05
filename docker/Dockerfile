@@ -6,19 +6,9 @@ ARG APP_NAME
 # ======== base layer ======== #
 FROM node:20-slim AS base
 
-# Install system dependencies for native builds
-RUN apt-get update && apt-get install -y \
-    python3 \
-    python3-dev \
-    build-essential \
-    && rm -rf /var/lib/apt/lists/*
-
-# Setup pnpm with same path as GitHub Actions cache
-ENV PNPM_HOME="/root/.local/share/pnpm"
+# Setup pnpm
+ENV PNPM_HOME="/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"
-
-# Set Python path for node-gyp
-ENV PYTHON=/usr/bin/python3
 
 RUN corepack enable
 RUN corepack prepare pnpm@9.7.1 --activate
@@ -57,14 +47,7 @@ COPY --from=pruner /build/out/pnpm-lock.yaml ./pnpm-lock.yaml
 
 # Install dependencies using only package.json files to reduce changes
 COPY --from=pruner /build/out/json/ .
-
-COPY node_modules ./node_modules
-COPY apps/${APP_NAME}/node_modules ./apps/${APP_NAME}/node_modules
-
-# Use pnpm's built-in cache and optimize installation
-# Cache path must match GitHub Actions cache path for maximum reuse
-RUN --mount=type=cache,id=pnpm,target=/root/.local/share/pnpm/store/v3 \
-    pnpm install --offline --frozen-lockfile
+RUN pnpm install --frozen-lockfile
 
 # Build the app
 COPY --from=pruner /build/out/full/ .
