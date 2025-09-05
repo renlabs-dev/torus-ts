@@ -2,7 +2,6 @@
 const config = {
   reactStrictMode: true,
 
-  // Optimize build performance
   experimental: {
     // Optimize imports for heavy packages
     optimizePackageImports: [
