@@ -1,9 +1,7 @@
 import type { ApiPromise } from "@polkadot/api";
 import { Keyring } from "@polkadot/api";
 import { encodeAddress } from "@polkadot/util-crypto";
-
 import { tryAsync, trySync } from "@torus-network/torus-utils/try-catch";
-
 import type { SS58Address } from "../../types/index.js";
 import type { EmissionProposal } from "./governance-types.js";
 

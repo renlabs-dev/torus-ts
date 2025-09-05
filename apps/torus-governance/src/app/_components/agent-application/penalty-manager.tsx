@@ -3,6 +3,8 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import type { AgentApplication } from "@torus-network/sdk/chain";
 import type { SS58Address } from "@torus-network/sdk/types";
+import { createMutationHandler } from "@torus-network/torus-utils/mutation-handler";
+import type { AppRouter } from "@torus-ts/api";
 import { Button } from "@torus-ts/ui/components/button";
 import {
   Card,
@@ -11,24 +13,6 @@ import {
   CardTitle,
 } from "@torus-ts/ui/components/card";
 import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@torus-ts/ui/components/form";
-
-import { Textarea } from "@torus-ts/ui/components/text-area";
-import { useToast } from "@torus-ts/ui/hooks/use-toast";
-import { useGovernance } from "~/context/governance-provider";
-import { api } from "~/trpc/react";
-import * as React from "react";
-import { useForm } from "react-hook-form";
-import { z } from "zod";
-import type { inferProcedureInput } from "@trpc/server";
-import type { AppRouter } from "@torus-ts/api";
-import {
   Dialog,
   DialogContent,
   DialogDescription,
@@ -36,8 +20,23 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@torus-ts/ui/components/dialog";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@torus-ts/ui/components/form";
 import { Slider } from "@torus-ts/ui/components/slider";
-import { createMutationHandler } from "@torus-network/torus-utils/mutation-handler";
+import { Textarea } from "@torus-ts/ui/components/text-area";
+import { useToast } from "@torus-ts/ui/hooks/use-toast";
+import type { inferProcedureInput } from "@trpc/server";
+import { useGovernance } from "~/context/governance-provider";
+import { api } from "~/trpc/react";
+import * as React from "react";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
 
 const MAX_CONTENT_CHARACTERS = 240;
 
@@ -164,9 +163,9 @@ export function PenaltyManager({
               {appliedPenalty.penaltyFactor}%
             </span>
           </div>
-          <div className="flex flex-col text-sm gap-1">
+          <div className="flex flex-col gap-1 text-sm">
             <p className="text-muted-foreground">Penalty reason</p>
-            <span className="break-words whitespace-pre-wrap">
+            <span className="whitespace-pre-wrap break-words">
               {appliedPenalty.content}
             </span>
           </div>
@@ -198,8 +197,8 @@ export function PenaltyManager({
         <Button variant="destructive">Apply Penalty</Button>
       </DialogTrigger>
 
-      <DialogContent className="flex-wrap flex-col max-w-xl border gap-6">
-        <DialogHeader className="flex-col flex-wrap text-left gap-2">
+      <DialogContent className="max-w-xl flex-col flex-wrap gap-6 border">
+        <DialogHeader className="flex-col flex-wrap gap-2 text-left">
           <DialogTitle className="text-2xl font-bold">
             Apply Penalty
           </DialogTitle>
@@ -229,9 +228,9 @@ export function PenaltyManager({
                         min={1}
                         step={1}
                         variant="destructive"
-                        className="-mt-3 -mb-3"
+                        className="-mb-3 -mt-3"
                       />
-                      <div className="text-right text-xs text-red-500/60 font-medium">
+                      <div className="text-right text-xs font-medium text-red-500/60">
                         {field.value}%
                       </div>
                     </div>
@@ -256,7 +255,7 @@ export function PenaltyManager({
                       />
                       <span
                         className={`absolute bottom-2 right-2 text-sm ${
-                        remainingChars <= 50
+                          remainingChars <= 50
                             ? "text-yellow-400"
                             : "text-gray-400"
                         }`}
@@ -282,7 +281,7 @@ export function PenaltyManager({
             </Button>
 
             {!selectedAccount?.address && (
-              <p className="text-sm text-yellow-500 text-left">
+              <p className="text-left text-sm text-yellow-500">
                 Please connect your wallet to submit a request.
               </p>
             )}

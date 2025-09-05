@@ -1,11 +1,11 @@
 "use client";
 
-import { api } from "~/trpc/react";
-import { useMemo } from "react";
 import type { AppRouter } from "@torus-ts/api";
 import type { inferProcedureOutput } from "@trpc/server";
+import { api } from "~/trpc/react";
+import { useMemo } from "react";
 
-export type AgentWithAggregatedPenalties = NonNullable<
+type AgentWithAggregatedPenalties = NonNullable<
   inferProcedureOutput<AppRouter["agent"]["allWithAggregatedPenalties"]>
 >;
 
@@ -16,7 +16,7 @@ export interface DialogPenaltiesState {
   agentName: string;
 }
 
-export interface UseAgentHealthParams {
+interface UseAgentHealthParams {
   searchParam?: string | null;
   statusFilter?: string | null;
 }
@@ -38,6 +38,7 @@ export function useAgentHealth({
     [cadreListData?.length],
   );
 
+  // eslint-disable-next-line react-hooks/preserve-manual-memoization
   const filteredAgents = useMemo(() => {
     if (!agentsWithPenalties) return [];
 
@@ -56,6 +57,7 @@ export function useAgentHealth({
         (agent): agent is AgentWithAggregatedPenalties[number] =>
           agent !== null,
       );
+    // eslint-disable-next-line react-hooks/preserve-manual-memoization
   }, [agentsWithPenalties, searchParam, statusFilter, penaltyThreshold]);
 
   return {

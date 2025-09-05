@@ -3,45 +3,15 @@ import type { VoidFn } from "@polkadot/api/types";
 import type { DispatchError } from "@polkadot/types/interfaces";
 import { u8aToHex } from "@polkadot/util";
 import { decodeAddress } from "@polkadot/util-crypto";
-import { z } from "zod";
-
 import { queryLastBlock } from "@torus-network/sdk/chain";
 
-export type FirstFaucetRequestData = z.infer<
-  typeof FirstFaucetRequestDataScheme
->;
-
-export const FirstFaucetRequestDataScheme = z.object({
-  recipient: z.string(),
-  block: z.number(),
-  nonce: z.string().transform((val) => BigInt(val)),
-  hash: z.string(),
-  token: z.string(),
-});
-
-export interface WorkResult {
+interface WorkResult {
   hash: Uint8Array;
   nonce: Uint8Array;
   block: number;
 }
 
-export function u256FromBytes(bytes: Uint8Array): bigint {
-  let result = 0n;
-  const len = bytes.length;
-
-  for (let i = 0; i < len; i++) {
-    const byte = bytes[i];
-    if (byte === undefined) {
-      throw new Error("Byte array contained undefined value");
-    }
-
-    result += BigInt(byte) << (8n * BigInt(len - 1 - i)); // Big-endian
-  }
-
-  return result;
-}
-
-export class MultiWorkerManager {
+class MultiWorkerManager {
   private workers: Worker[] = [];
   private workerCount: number;
   private decodedAddress: Uint8Array;

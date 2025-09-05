@@ -2,11 +2,9 @@
 
 import { AgentCard } from "@torus-ts/ui/components/agent-card/agent-card";
 import { AgentItemSkeleton } from "@torus-ts/ui/components/agent-card/agent-card-skeleton-loader";
-
 import { useQueryAgentMetadata } from "~/hooks/use-agent-metadata";
 import { useBlobUrl } from "~/hooks/use-blob-url";
 import { api } from "~/trpc/react";
-
 import type { UpdateAgentForm } from "./update-agent-form-schema";
 
 interface UpdateAgentPreviewProps {
@@ -42,7 +40,7 @@ export function UpdateAgentPreview({
 
   if (isLoading || !agent) {
     return (
-      <div className="mx-auto max-w-lg my-6">
+      <div className="mx-auto my-6 max-w-lg">
         <AgentItemSkeleton />
       </div>
     );
@@ -57,8 +55,8 @@ export function UpdateAgentPreview({
   if (formValues.website) socials.website = formValues.website;
 
   return (
-    <div className="mx-auto max-w-lg my-6">
-      <div className="relative pointer-events-none">
+    <div className="mx-auto my-6 max-w-lg">
+      <div className="pointer-events-none relative">
         <AgentCard
           name={formValues.name ?? ""}
           agentKey={agentKey}

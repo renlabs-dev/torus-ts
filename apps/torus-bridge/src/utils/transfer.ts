@@ -6,9 +6,9 @@ import type {
   TypedTransactionReceipt,
 } from "@hyperlane-xyz/sdk";
 import { MultiProtocolCore, ProviderType } from "@hyperlane-xyz/sdk";
+import { trySync } from "@torus-network/torus-utils/try-catch";
 import { logger } from "./logger";
 import { SentTransferStatuses, TransferStatus } from "./types";
-import { trySync } from "@torus-network/torus-utils/try-catch";
 
 export function tryGetMsgIdFromTransferReceipt(
   multiProvider: MultiProtocolProvider,

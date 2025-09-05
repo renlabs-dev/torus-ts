@@ -1,15 +1,14 @@
 "use client";
 
-import { KeyboardOff } from "lucide-react";
-import DashboardRedirectCard from "./dashboard-redirect-card";
 import { smallAddress } from "@torus-network/torus-utils/torus/address";
 import { Badge } from "@torus-ts/ui/components/badge";
-import { CopyButton } from "@torus-ts/ui/components/copy-button";
-import { Coins } from "lucide-react";
-import { ScrollArea } from "@torus-ts/ui/components/scroll-area";
 import { ContentNotFound } from "@torus-ts/ui/components/content-not-found";
-import { useAgentHealth } from "hooks/use-agent-health";
+import { CopyButton } from "@torus-ts/ui/components/copy-button";
+import { ScrollArea } from "@torus-ts/ui/components/scroll-area";
 import { ScrollFadeEffect } from "~/app/_components/scroll-fade-effect";
+import { useAgentHealth } from "hooks/use-agent-health";
+import { Coins, KeyboardOff } from "lucide-react";
+import DashboardRedirectCard from "./dashboard-redirect-card";
 
 const EmissionHealthFactorBadge = ({
   penaltyFactor,
@@ -70,7 +69,7 @@ export default function DashboardAgentHealthCard() {
       title="Agents Health"
     >
       <div className="relative">
-        <ScrollArea className="sm:h-[22em] h-48">
+        <ScrollArea className="h-48 sm:h-[22em]">
           {isFetching ? (
             <div className="text-sm">Loading...</div>
           ) : filteredAgents.length === 0 ? (
@@ -83,7 +82,7 @@ export default function DashboardAgentHealthCard() {
                   className="border-border bg-card/50 hover:bg-accent flex flex-col py-2"
                 >
                   <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2 justify-between w-full">
+                    <div className="flex w-full items-center justify-between gap-2">
                       <CopyButton
                         copy={agent.key}
                         variant="link"

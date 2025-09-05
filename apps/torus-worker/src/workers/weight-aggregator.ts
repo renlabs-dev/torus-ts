@@ -2,8 +2,6 @@ import type { ApiPromise } from "@polkadot/api";
 import { Keyring } from "@polkadot/api";
 import type { KeyringPair } from "@polkadot/keyring/types";
 import { cryptoWaitReady } from "@polkadot/util-crypto";
-import { z } from "zod";
-
 import type { LastBlock } from "@torus-network/sdk/chain";
 import {
   queryKeyStakedBy,
@@ -15,9 +13,7 @@ import type { SS58Address } from "@torus-network/sdk/types";
 import { checkSS58 } from "@torus-network/sdk/types";
 import { BasicLogger } from "@torus-network/torus-utils/logger";
 import { tryAsync } from "@torus-network/torus-utils/try-catch";
-
-import { createDb } from "@torus-ts/db/client";
-
+import { z } from "zod";
 import { sleep } from "../common";
 import { parseEnvOrExit } from "../common/env";
 import type { AgentWeight } from "../db";
@@ -28,14 +24,12 @@ import {
   normalizeWeightsToPercent,
 } from "../weights";
 
-export const env = parseEnvOrExit(
+const env = parseEnvOrExit(
   z.object({
     NEXT_PUBLIC_TORUS_RPC_URL: z.string().url(),
     TORUS_ALLOCATOR_MNEMONIC: z.string().nonempty(),
   }),
 )(process.env);
-
-export const db = createDb();
 
 const log = BasicLogger.create({ name: "weight-aggregator" });
 const retryDelay = CONSTANTS.TIME.BLOCK_TIME_MILLISECONDS;
@@ -114,7 +108,7 @@ export async function weightAggregatorWorker(api: ApiPromise) {
  * @param keypair - Allocator account with permission to set weights
  * @param lastBlock - Block number for tracking when weights were calculated
  */
-export async function weightAggregatorTask(
+async function weightAggregatorTask(
   api: ApiPromise,
   keypair: KeyringPair,
   lastBlock: number,

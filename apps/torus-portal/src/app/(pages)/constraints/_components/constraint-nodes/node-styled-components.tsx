@@ -1,6 +1,6 @@
 "use client";
 
-import { forwardRef } from "react";
+import { Input } from "@torus-ts/ui/components/input";
 import {
   Select,
   SelectContent,
@@ -8,7 +8,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@torus-ts/ui/components/select";
-import { Input } from "@torus-ts/ui/components/input";
+import { forwardRef } from "react";
 
 type ColorVariant =
   | "red"
@@ -68,9 +68,7 @@ export function ConstraintSelect({
     <Select value={value} onValueChange={onValueChange} disabled={disabled}>
       <SelectTrigger
         id={id}
-        className={`border transition-all pr-0 duration-200 rounded-full px-3 backdrop-blur-xl
-          ${getColorClasses(colorVariant)} ${className}
-          ${isRenderingField ? "rounded-t-md rounded-b-none" : "rounded-md"}`}
+        className={`rounded-full border px-3 pr-0 backdrop-blur-xl transition-all duration-200 ${getColorClasses(colorVariant)} ${className} ${isRenderingField ? "rounded-b-none rounded-t-md" : "rounded-md"}`}
       >
         <SelectValue />
       </SelectTrigger>
@@ -173,7 +171,7 @@ export const ConstraintInput = forwardRef<
           {...props}
         />
         {hasError && errorMessage && (
-          <p className="text-red-500 text-xs mt-1">{errorMessage}</p>
+          <p className="mt-1 text-xs text-red-500">{errorMessage}</p>
         )}
       </div>
     );

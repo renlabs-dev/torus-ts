@@ -1,10 +1,9 @@
 "use client";
 
 import { tryAsync } from "@torus-network/torus-utils/try-catch";
-
 import type { UpdateAgentFormData } from "./update-agent-form-schema";
 
-export const strToFile = (
+const strToFile = (
   str: string,
   filename: string,
   type = "application/json",
@@ -13,7 +12,7 @@ export const strToFile = (
   return new File([blob], filename, { type });
 };
 
-export const pinFile = async (file: File): Promise<{ cid: string }> => {
+const pinFile = async (file: File): Promise<{ cid: string }> => {
   const data = new FormData();
   data.set("file", file);
   const res = await fetch("/api/files", { method: "POST", body: data });
@@ -23,7 +22,7 @@ export const pinFile = async (file: File): Promise<{ cid: string }> => {
 
 export const cidToIpfsUri = (cid: string): string => `ipfs://${cid}`;
 
-export const blobUrlToFile = async (
+const blobUrlToFile = async (
   blobUrl: string,
   filename: string,
 ): Promise<File> => {

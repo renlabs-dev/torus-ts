@@ -1,9 +1,9 @@
+import { inArray } from "@torus-ts/db";
 import { userDiscordInfoSchema } from "@torus-ts/db/schema";
 import { USER_DISCORD_INFO_INSERT_SCHEMA } from "@torus-ts/db/validation";
 import type { TRPCRouterRecord } from "@trpc/server";
-import { authenticatedProcedure, publicProcedure } from "../../trpc";
-import { inArray } from "@torus-ts/db";
 import { z } from "zod";
+import { authenticatedProcedure, publicProcedure } from "../../trpc";
 
 export const discordInfoRouter = {
   // POST

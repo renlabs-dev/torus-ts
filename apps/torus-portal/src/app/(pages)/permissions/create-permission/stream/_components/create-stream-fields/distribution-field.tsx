@@ -1,5 +1,3 @@
-import React from "react";
-
 import {
   FormControl,
   FormField,
@@ -15,11 +13,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@torus-ts/ui/components/select";
-
-import type { CreateEmissionPermissionForm } from "../create-emission-permission-form-schema";
+import React from "react";
+import type { CreateStreamPermissionForm } from "../create-stream-permission-form-schema";
 
 interface DistributionFieldProps {
-  form: CreateEmissionPermissionForm;
+  form: CreateStreamPermissionForm;
   isAccountConnected: boolean;
 }
 

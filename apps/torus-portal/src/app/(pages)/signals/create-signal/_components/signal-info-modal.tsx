@@ -1,7 +1,5 @@
 "use client";
 
-import { HelpCircle } from "lucide-react";
-
 import { Button } from "@torus-ts/ui/components/button";
 import {
   Dialog,
@@ -12,6 +10,7 @@ import {
   DialogTrigger,
 } from "@torus-ts/ui/components/dialog";
 import { MarkdownView } from "@torus-ts/ui/components/markdown-view";
+import { HelpCircle } from "lucide-react";
 
 export function SignalInfoModal() {
   const jsonExample = `{
@@ -30,7 +29,7 @@ export function SignalInfoModal() {
           <HelpCircle className="h-4 w-4" />
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+      <DialogContent className="max-h-[80vh] max-w-2xl overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Understanding Signals</DialogTitle>
           <DialogDescription>
@@ -42,12 +41,12 @@ export function SignalInfoModal() {
         <div className="space-y-6">
           <div className="space-y-4">
             <h3 className="font-semibold">Signal Example:</h3>
-            <div className="bg-muted/50 rounded p-4 flex flex-col gap-4">
+            <div className="bg-muted/50 flex flex-col gap-4 rounded p-4">
               <span>
                 <strong>Title:</strong> Reddit Scraper API Provider
               </span>
             </div>
-            <div className="bg-muted/50 rounded p-4 flex flex-col gap-4">
+            <div className="bg-muted/50 flex flex-col gap-4 rounded p-4">
               <span>
                 <strong>Description:</strong> Looking for an agent that exposes
                 a Reddit scraping API.
@@ -69,7 +68,7 @@ export function SignalInfoModal() {
 
                 <div>
                   <strong>Sample expected payload:</strong>
-                  <pre className="bg-background rounded p-3 my-2 text-xs overflow-x-auto">
+                  <pre className="bg-background my-2 overflow-x-auto rounded p-3 text-xs">
                     <MarkdownView source={jsonExample} />
                   </pre>
                 </div>
@@ -80,14 +79,14 @@ export function SignalInfoModal() {
                 </span>
               </div>
             </div>
-            <div className="bg-muted/50 rounded p-4 flex flex-col gap-4">
+            <div className="bg-muted/50 flex flex-col gap-4 rounded p-4">
               <span>
                 <strong>Proposed Allocation:</strong> 5%
               </span>
             </div>
           </div>
 
-          <div className="pt-4 border-t">
+          <div className="border-t pt-4">
             <p className="text-muted-foreground mb-3">
               Still have questions? Check out our{" "}
               <a

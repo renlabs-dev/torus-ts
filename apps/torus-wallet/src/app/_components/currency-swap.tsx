@@ -1,16 +1,11 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
-
-import { ArrowLeftRight } from "lucide-react";
-
 import { fromNano, toNano } from "@torus-network/torus-utils/torus/token";
-
 import { Button } from "@torus-ts/ui/components/button";
 import { Input } from "@torus-ts/ui/components/input";
-
 import { convertTORUSToUSD, convertUSDToTorus } from "~/utils/helpers";
-
+import { ArrowLeftRight } from "lucide-react";
+import { useCallback, useEffect, useState } from "react";
 import { AmountButtons } from "./amount-buttons";
 
 interface CurrencySwapProps {
@@ -83,8 +78,8 @@ export function CurrencySwap({
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex flex-col sm:flex-row items-center gap-4">
-        <div className="flex flex-col w-full sm:w-1/2">
+      <div className="flex flex-col items-center gap-4 sm:flex-row">
+        <div className="flex w-full flex-col sm:w-1/2">
           <Input
             value={inputAmount}
             onChange={(e) => handleAmountChange(e.target.value)}
@@ -97,7 +92,7 @@ export function CurrencySwap({
         </div>
         <div className="flex items-center justify-center py-2 sm:py-0">
           <Button
-            className="text-3xl border-none bg-transparent font-normal text-[#A1A1AA]"
+            className="border-none bg-transparent text-3xl font-normal text-[#A1A1AA]"
             type="button"
             variant="outline"
             onClick={handleCurrencySwitch}
@@ -106,7 +101,7 @@ export function CurrencySwap({
             <ArrowLeftRight size={16} />
           </Button>
         </div>
-        <div className="flex flex-col w-full sm:w-1/2">
+        <div className="flex w-full flex-col sm:w-1/2">
           <Input
             value={displayAmount}
             placeholder={`Amount of ${inputType === "TORUS" ? "USD" : "TORUS"}`}

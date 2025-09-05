@@ -10,11 +10,10 @@
  * Regex: ^[a-z0-9]([a-z0-9-_]{0,61}[a-z0-9])?$
  */
 
-import { z } from "zod";
-
 import type { Brand } from "@torus-network/torus-utils";
 import type { Result } from "@torus-network/torus-utils/result";
 import { makeErr, makeOk } from "@torus-network/torus-utils/result";
+import { z } from "zod";
 
 /**
  * Branded string type for a validated agent name.
@@ -111,13 +110,12 @@ export const isValidAgentName = (name: string): boolean => {
  * });
  * ```
  */
-export const agentNameField = () =>
-  z
-    .string()
-    .min(1, errorMessages.required)
-    .refine(
-      (name) => isValidAgentName(name),
-      (name) => ({
-        message: validateAgentName(name)[0] ?? errorMessages.generic,
-      }),
-    );
+export const agentNameField = (): z.ZodType<AgentName, z.ZodTypeDef, string> =>
+  z.string().transform((name, ctx) => {
+    const [error, agentName] = validateAgentName(name);
+    if (error !== undefined) {
+      ctx.addIssue({ code: "custom", message: error });
+      return z.NEVER;
+    }
+    return agentName;
+  });

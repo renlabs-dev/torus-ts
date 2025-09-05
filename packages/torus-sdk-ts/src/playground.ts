@@ -5,12 +5,12 @@
  *
  * Run with: npx tsx src/playground.ts
  */
-
 import { DelegationTreeManager } from "./chain/common/delegation-tree-builder.js";
 import {
   queryAgentNamespacePermissions,
-  queryEmissionPermissions,
+  queryStreamPermissions,
 } from "./chain/permission0/permission0-storage.js";
+import type { StreamContract } from "./chain/permission0/permission0-types.js";
 import type { SS58Address } from "./types/address.js";
 import { connectToChainRpc } from "./utils/index.js";
 
@@ -51,7 +51,14 @@ async function main() {
           console.log(`  Delegator: ${permission.delegator}`);
           console.log(`  Duration: ${JSON.stringify(permission.duration)}`);
           console.log(`  Revocation: ${JSON.stringify(permission.revocation)}`);
-          console.log(`max instances: ${permission.maxInstances}`);
+          // Extract maxInstances from the scope
+          let maxInstances = 0;
+          if ("Namespace" in permission.scope) {
+            maxInstances = permission.scope.Namespace.maxInstances;
+          } else if ("Curator" in permission.scope) {
+            maxInstances = permission.scope.Curator.maxInstances;
+          }
+          console.log(`max instances: ${maxInstances}`);
 
           // Show namespace paths if available
           if ("Namespace" in permission.scope) {
@@ -238,12 +245,12 @@ async function main() {
       console.log("⚠️  No test address available for delegation tree");
     }
 
-    // Test 4: Test queryEmissionPermissions
-    console.log("\n💰 Test 4: Testing queryEmissionPermissions...");
+    // Test 4: Test queryStreamPermissions
+    console.log("\n💰 Test 4: Testing queryStreamPermissions...");
 
     // Test 4.1: Get all emission permissions
     console.log("\n📋 Test 4.1: Fetching all emission permissions");
-    const [emissionError1, allEmissions] = await queryEmissionPermissions(
+    const [emissionError1, allEmissions] = await queryStreamPermissions(
       api,
       () => true, // Accept all emission permissions
     );
@@ -259,7 +266,9 @@ async function main() {
         if (count >= 3) break;
         console.log(`\n🔍 Permission ${permId.slice(0, 8)}...:`);
         console.log(`  Delegator: ${emission.delegator}`);
-        console.log(`  Recipient: ${emission.recipient}`);
+        // Extract first recipient from stream scope
+        const firstRecipient = Array.from(emission.scope.recipients.keys())[0];
+        console.log(`  First Recipient: ${firstRecipient ?? "None"}`);
         console.log(`  Accumulating: ${emission.scope.accumulating}`);
 
         // Show allocation type
@@ -302,9 +311,9 @@ async function main() {
 
     // Test 4.2: Filter for specific recipient
     console.log("\n📋 Test 4.2: Filtering by recipient");
-    const [emissionError2, recipientEmissions] = await queryEmissionPermissions(
+    const [emissionError2, recipientEmissions] = await queryStreamPermissions(
       api,
-      (perm) => perm.recipient === testAddress,
+      (perm: StreamContract) => perm.scope.recipients.has(testAddress),
     );
 
     if (emissionError2) {
@@ -317,9 +326,9 @@ async function main() {
 
     // Test 4.3: Filter for stream-based allocations
     console.log("\n📋 Test 4.3: Filtering for stream-based allocations");
-    const [emissionError3, streamEmissions] = await queryEmissionPermissions(
+    const [emissionError3, streamEmissions] = await queryStreamPermissions(
       api,
-      (perm) => "Streams" in perm.scope.allocation,
+      (perm: StreamContract) => "Streams" in perm.scope.allocation,
     );
 
     if (emissionError3) {
@@ -331,9 +340,9 @@ async function main() {
     // Test 4.4: Filter for accumulating emissions
     console.log("\n📋 Test 4.4: Filtering for accumulating emissions");
     const [emissionError4, accumulatingEmissions] =
-      await queryEmissionPermissions(
+      await queryStreamPermissions(
         api,
-        (perm) => perm.scope.accumulating === true,
+        (perm: StreamContract) => perm.scope.accumulating === true,
       );
 
     if (emissionError4) {
@@ -348,9 +357,9 @@ async function main() {
     console.log(
       "\n📋 Test 4.5: Complex filter - accumulating + manual distribution",
     );
-    const [emissionError5, complexFiltered] = await queryEmissionPermissions(
+    const [emissionError5, complexFiltered] = await queryStreamPermissions(
       api,
-      (perm) =>
+      (perm: StreamContract) =>
         perm.scope.accumulating === true && "Manual" in perm.scope.distribution,
     );
 

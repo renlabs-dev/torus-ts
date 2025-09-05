@@ -3,9 +3,6 @@
 // @ts-nocheck
 
 import "./util";
-
-import { useRef, useState } from "react";
-
 import {
   Cloud,
   Clouds,
@@ -17,10 +14,11 @@ import {
 } from "@react-three/drei";
 import { Canvas, useFrame } from "@react-three/fiber";
 import { easing } from "maath";
+import { useRef, useState } from "react";
 import * as THREE from "three";
 
 export const Animation = () => (
-  <div className="relative w-full h-72 overflow-hidden">
+  <div className="relative h-72 w-full overflow-hidden">
     <div className="absolute inset-0">
       <Canvas
         camera={{ position: [0, 0, 100], fov: 6 }}
@@ -112,6 +110,7 @@ function Card({ url, ...props }) {
 function Banner(props) {
   const ref = useRef();
   const texture = useTexture("/banner_.png");
+  // eslint-disable-next-line react-hooks/immutability
   texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
   const scroll = useScroll();
   useFrame((state, delta) => {

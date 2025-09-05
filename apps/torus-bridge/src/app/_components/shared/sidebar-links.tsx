@@ -23,7 +23,7 @@ const navSidebarOptions = [
   { title: "Base Bridge", href: "/" },
 ] as const;
 
-export const Sidebar = () => {
+const Sidebar = () => {
   const defaultView = navSidebarOptions[1].href;
 
   return (
@@ -50,8 +50,7 @@ export const Sidebar = () => {
               <Link href={view.href} key={view.href} prefetch>
                 <Button
                   variant="ghost"
-                  className={`w-full justify-between gap-4 border-none px-3 text-base
-                  ${view.title === "Base Bridge" ? "bg-accent" : ""}`}
+                  className={`w-full justify-between gap-4 border-none px-3 text-base ${view.title === "Base Bridge" ? "bg-accent" : ""}`}
                 >
                   {view.title}
                   <Check

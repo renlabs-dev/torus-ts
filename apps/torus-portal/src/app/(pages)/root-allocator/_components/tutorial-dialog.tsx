@@ -19,7 +19,7 @@ import React from "react";
 
 const links = getLinks(env("NEXT_PUBLIC_TORUS_CHAIN_ENV"));
 
-export const tutorialData = {
+const tutorialData = {
   "1": {
     icon: <Wallet className="h-5 w-5" />,
     description: "Set Up Your Wallet",

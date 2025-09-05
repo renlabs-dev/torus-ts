@@ -3,12 +3,11 @@ import type {
   InjectedAccountWithMeta,
   InjectedExtension,
 } from "@polkadot/extension-inject/types";
+import type { SbExtrinsicStatus } from "@torus-network/sdk/extrinsics";
 import type { Enum } from "rustie";
 import { match } from "rustie";
 import { create } from "zustand";
 import { immer } from "zustand/middleware/immer";
-
-import type { SbExtrinsicStatus } from "@torus-network/sdk/extrinsics";
 
 // TODO: finish implementing this refactor with a single storage for transactions
 

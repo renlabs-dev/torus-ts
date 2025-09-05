@@ -1,12 +1,9 @@
 "use client";
 
-import { useMemo } from "react";
-
 import { useTorus } from "@torus-ts/torus-provider";
-
 import { calculatePostPenaltyEmission } from "~/hooks/use-post-penalty-emission";
 import { api } from "~/trpc/react";
-
+import { useMemo } from "react";
 import SignalAccordion from "./signal-accordion";
 
 export default function FulfilledSignalsView() {
@@ -55,7 +52,7 @@ export default function FulfilledSignalsView() {
 
   if (isLoadingSignals || isLoadingWeights) {
     return (
-      <div className="flex items-center justify-center mt-6 p-6 bg-muted rounded-md">
+      <div className="bg-muted mt-6 flex items-center justify-center rounded-md p-6">
         <div className="text-muted-foreground">
           Loading fulfilled signals...
         </div>
@@ -65,7 +62,7 @@ export default function FulfilledSignalsView() {
 
   if (rankedSignals.length === 0) {
     return (
-      <div className="flex items-center justify-center mt-6 p-6 bg-muted rounded-md">
+      <div className="bg-muted mt-6 flex items-center justify-center rounded-md p-6">
         <div className="text-muted-foreground">No fulfilled signals found.</div>
       </div>
     );

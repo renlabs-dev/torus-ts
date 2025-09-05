@@ -5,7 +5,7 @@ interface TransactionLoadingStateProps {
   className?: string;
 }
 
-export function TransactionLoadingState({
+function TransactionLoadingState({
   message = "Loading...",
   size = "md",
   variant = "inline",
@@ -31,12 +31,10 @@ export function TransactionLoadingState({
 
   return (
     <div
-      className={`text-muted-foreground ${containerClasses[size]} ${variantClasses[variant]}
-        ${className}`}
+      className={`text-muted-foreground ${containerClasses[size]} ${variantClasses[variant]} ${className}`}
     >
       <div
-        className={`animate-spin ${sizeClasses[size]} border-2 border-current border-t-transparent
-          rounded-full`}
+        className={`animate-spin ${sizeClasses[size]} rounded-full border-2 border-current border-t-transparent`}
       />
       {message}
     </div>

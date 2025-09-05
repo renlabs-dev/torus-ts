@@ -1,8 +1,6 @@
-import { match } from "rustie";
-
 import type { Result } from "@torus-network/torus-utils/result";
 import { makeErr, makeOk } from "@torus-network/torus-utils/result";
-
+import { match } from "rustie";
 import type { SS58Address } from "../../types/address.js";
 import type { NamespacePath } from "../../types/namespace/namespace-path.js";
 import {
@@ -321,16 +319,29 @@ export class DelegationTreeManager {
 
           // Step 6: Calculate available instances using Substrate formula:
           // available_instances = max_instances - sum(child.max_instances for all children)
-          let availableInstances = Number(permission.maxInstances);
+          // Extract maxInstances and children from the namespace scope
+          // (we already know this is a namespace permission due to the filter above)
+          const maxInstances = permission.scope.Namespace.maxInstances;
+          const children = permission.scope.Namespace.children;
+
+          let availableInstances = Number(maxInstances);
 
           // Subtract max_instances of each child permission
-          for (const childId of permission.children) {
+          for (const childId of children) {
             const [childError, childPermission] = await queryPermission(
               api,
               childId,
             );
             if (childError === undefined && childPermission !== null) {
-              availableInstances -= Number(childPermission.maxInstances);
+              // Extract maxInstances from child's scope
+              let childMaxInstances = 0;
+              if ("Namespace" in childPermission.scope) {
+                childMaxInstances =
+                  childPermission.scope.Namespace.maxInstances;
+              } else if ("Curator" in childPermission.scope) {
+                childMaxInstances = childPermission.scope.Curator.maxInstances;
+              }
+              availableInstances -= Number(childMaxInstances);
             }
             // If child not found or error, we treat it as 0 (saturating_sub behavior)
           }

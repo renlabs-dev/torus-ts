@@ -1,19 +1,15 @@
 import "@torus-ts/ui/globals.css";
-
 import { GoogleAnalytics } from "@next/third-parties/google";
-import type { Metadata } from "next";
-import PlausibleProvider from "next-plausible";
-import { Fira_Mono as FiraMono } from "next/font/google";
-
 import { TorusProvider } from "@torus-ts/torus-provider";
 import { Footer } from "@torus-ts/ui/components/footer";
 import { Layout } from "@torus-ts/ui/components/layout";
 import { Toaster } from "@torus-ts/ui/components/toaster";
-
 import { GovernanceProvider } from "~/context/governance-provider";
 import { env, EnvScript } from "~/env";
 import { TRPCReactProvider } from "~/trpc/react";
-
+import type { Metadata } from "next";
+import PlausibleProvider from "next-plausible";
+import { Fira_Mono as FiraMono } from "next/font/google";
 import DiscordAuthProvider from "../context/auth-provider";
 
 const APP_NAME = "Torus DAO";

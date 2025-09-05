@@ -1,11 +1,8 @@
-import type { RefObject } from "react";
-
-import { z } from "zod";
-
 import { isSS58 } from "@torus-network/sdk/types";
 import { formatToken, toNano } from "@torus-network/torus-utils/torus/token";
-
 import { isAmountPositive, meetsMinimumStake } from "~/utils/validators";
+import type { RefObject } from "react";
+import { z } from "zod";
 
 export const createTransferStakeFormSchema = (
   minAllowedStakeData: bigint,

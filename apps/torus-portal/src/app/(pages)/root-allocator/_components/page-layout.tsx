@@ -1,5 +1,4 @@
 import type { ReactNode } from "react";
-
 import type { AgentView } from "./agent-view-toggle";
 import { AgentViewToggle } from "./agent-view-toggle";
 import { Filter } from "./filter-content";

@@ -3,7 +3,6 @@
 import type { InjectedAccountWithMeta } from "@torus-ts/torus-provider";
 import { Button } from "@torus-ts/ui/components/button";
 import { Label } from "@torus-ts/ui/components/label";
-
 import { useVoteManagement } from "../../../../../../hooks/use-vote-manager";
 
 interface HandleRemoveDaoMemberProps {

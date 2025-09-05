@@ -1,7 +1,5 @@
 import type { Percent } from "@polkadot/types/interfaces";
-
 import { tryAsync, trySync } from "@torus-network/torus-utils/try-catch";
-
 import { sb_bigint } from "../../types/index.js";
 import type { Api } from "../common/fees.js";
 

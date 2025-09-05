@@ -1,16 +1,15 @@
 import type {
   DistributionControl,
-  EmissionAllocation,
   EnforcementAuthority,
   PermissionDuration,
   RevocationTerms,
+  StreamAllocation,
 } from "@torus-network/sdk/chain";
 import type { SS58Address } from "@torus-network/sdk/types";
+import type { CreateStreamPermissionFormData } from "./create-stream-permission-form-schema";
 
-import type { CreateEmissionPermissionFormData } from "./create-emission-permission-form-schema";
-
-export function transformFormDataToSDK(data: CreateEmissionPermissionFormData) {
-  let allocation: EmissionAllocation;
+export function transformFormDataToSDK(data: CreateStreamPermissionFormData) {
+  let allocation: StreamAllocation;
   if (data.allocation.type === "FixedAmount") {
     allocation = {
       FixedAmount: BigInt(parseFloat(data.allocation.amount) * 1e6),
@@ -26,9 +25,9 @@ export function transformFormDataToSDK(data: CreateEmissionPermissionFormData) {
     };
   }
 
-  const targets = data.targets.map(
-    (target) =>
-      [target.account as SS58Address, parseInt(target.weight)] as [
+  const recipients = data.recipients.map(
+    (recipient) =>
+      [recipient.account as SS58Address, parseInt(recipient.weight)] as [
         SS58Address,
         number,
       ],
@@ -98,10 +97,13 @@ export function transformFormDataToSDK(data: CreateEmissionPermissionFormData) {
 
   return {
     allocation,
-    targets,
+    recipients,
     distribution,
     duration,
     revocation,
     enforcement,
+    // Include optional fields if they are provided
+    ...(data.recipientManager && { recipientManager: data.recipientManager }),
+    ...(data.weightSetter && { weightSetter: data.weightSetter }),
   };
 }

@@ -1,6 +1,5 @@
 import type { ApiPromise } from "@polkadot/api";
 import { z } from "zod";
-
 import {
   sb_address,
   sb_bigint,

@@ -1,3 +1,4 @@
+import { SS58_SCHEMA } from "@torus-network/sdk/types";
 import { z } from "zod";
 
 interface AllocationItem {
@@ -37,7 +38,7 @@ function validateNoDuplicates<T extends Record<string, unknown>>(
       const id = getIdentifier(item);
       if (duplicates.has(id)) {
         ctx.addIssue({
-          code: z.ZodIssueCode.custom,
+          code: "custom",
           message: `Duplicate ${config.itemType}`,
           path: [config.arrayPath, index, config.identifierFieldPath],
         });
@@ -64,7 +65,7 @@ function validateTotalAllocation<T extends AllocationItem>(
   if (total > 100) {
     const unit = config.unit ?? "";
     ctx.addIssue({
-      code: z.ZodIssueCode.custom,
+      code: "custom",
       message: `Total ${config.itemType} must not exceed 100${unit} (currently ${total}${unit})`,
       path: [config.arrayPath],
     });
@@ -72,7 +73,7 @@ function validateTotalAllocation<T extends AllocationItem>(
     // Mark individual items that contribute to the overage
     items.forEach((_, index) => {
       ctx.addIssue({
-        code: z.ZodIssueCode.custom,
+        code: "custom",
         message: `Contributes to total over 100${unit}`,
         path: [config.arrayPath, index, config.valueFieldPath],
       });
@@ -80,7 +81,7 @@ function validateTotalAllocation<T extends AllocationItem>(
   }
 }
 
-export const TARGET_SCHEMA = z.object({
+const TARGET_SCHEMA = z.object({
   address: z.string().min(1, "Agent address is required"),
   percentage: z
     .number()
@@ -88,7 +89,7 @@ export const TARGET_SCHEMA = z.object({
     .max(100, "Percentage must be between 0 and 100"),
 });
 
-export const STREAM_ENTRY_SCHEMA = z.object({
+const STREAM_ENTRY_SCHEMA = z.object({
   streamId: z
     .string()
     .min(1, "Stream ID is required")
@@ -102,7 +103,7 @@ export const STREAM_ENTRY_SCHEMA = z.object({
     .max(100, "Percentage must be between 0 and 100"),
 });
 
-export const DISTRIBUTION_CONTROL_SCHEMA = z.union([
+const DISTRIBUTION_CONTROL_SCHEMA = z.union([
   z.object({ Manual: z.null() }),
   z.object({ Automatic: z.bigint().nonnegative() }),
   z.object({ AtBlock: z.number().int().nonnegative() }),
@@ -121,6 +122,8 @@ export const EDIT_PERMISSION_SCHEMA = z
     newTargets: z.array(TARGET_SCHEMA).optional(),
     newStreams: z.array(STREAM_ENTRY_SCHEMA).optional(),
     newDistributionControl: DISTRIBUTION_CONTROL_SCHEMA.optional(),
+    recipientManager: SS58_SCHEMA.optional(),
+    weightSetter: SS58_SCHEMA.optional(),
   })
   .superRefine((data, ctx) => {
     // Validate streams total percentage

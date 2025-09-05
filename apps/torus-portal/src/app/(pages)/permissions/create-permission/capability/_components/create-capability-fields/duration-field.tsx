@@ -1,5 +1,3 @@
-import React from "react";
-
 import {
   FormControl,
   FormDescription,
@@ -16,7 +14,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@torus-ts/ui/components/select";
-
+import React from "react";
 import type { CreateCapabilityPermissionForm } from "../create-capability-permission-form-schema";
 
 interface DurationFieldProps {

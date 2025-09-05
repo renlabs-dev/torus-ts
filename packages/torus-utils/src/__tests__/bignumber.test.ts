@@ -1,6 +1,5 @@
 import { BigNumber } from "bignumber.js";
 import { describe, expect, expectTypeOf, it } from "vitest";
-
 import { BigNumberBrand, buildTaggedBigNumberClass } from "../bignumber.js";
 
 /**

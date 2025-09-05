@@ -1,10 +1,4 @@
-import React from "react";
-
-import { Plus, Trash2 } from "lucide-react";
-import { useFieldArray } from "react-hook-form";
-
 import type { SS58Address } from "@torus-network/sdk/types";
-
 import { Button } from "@torus-ts/ui/components/button";
 import {
   FormControl,
@@ -21,11 +15,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@torus-ts/ui/components/select";
-
-import type { CreateEmissionPermissionForm } from "../create-emission-permission-form-schema";
+import { Plus, Trash2 } from "lucide-react";
+import React from "react";
+import { useFieldArray } from "react-hook-form";
+import type { CreateStreamPermissionForm } from "../create-stream-permission-form-schema";
 
 interface RevocationFieldProps {
-  form: CreateEmissionPermissionForm;
+  form: CreateStreamPermissionForm;
   isAccountConnected: boolean;
 }
 
@@ -116,12 +112,12 @@ export function RevocationField({
               onClick={() => (appendArbiter as any)("")}
               disabled={!isAccountConnected}
             >
-              <Plus className="h-4 w-4 mr-2" />
+              <Plus className="mr-2 h-4 w-4" />
               Add Arbiter
             </Button>
           </div>
           {arbiterFields.map((field, index) => (
-            <div key={field.id} className="flex gap-2 items-start">
+            <div key={field.id} className="flex items-start gap-2">
               <FormField
                 control={form.control}
                 name={`revocation.accounts.${index}`}

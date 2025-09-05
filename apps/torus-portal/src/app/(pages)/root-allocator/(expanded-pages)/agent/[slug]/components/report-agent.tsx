@@ -1,12 +1,6 @@
 "use client";
 
-import * as React from "react";
-
 import { zodResolver } from "@hookform/resolvers/zod";
-import { TriangleAlert } from "lucide-react";
-import { useForm } from "react-hook-form";
-import { z } from "zod";
-
 import { Button } from "@torus-ts/ui/components/button";
 import {
   Dialog,
@@ -34,8 +28,11 @@ import {
 } from "@torus-ts/ui/components/select";
 import { Textarea } from "@torus-ts/ui/components/text-area";
 import { useToast } from "@torus-ts/ui/hooks/use-toast";
-
 import { api } from "~/trpc/react";
+import { TriangleAlert } from "lucide-react";
+import * as React from "react";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
 
 const reportSchema = z.object({
   reason: z.enum([
@@ -99,8 +96,7 @@ export function ReportAgent({ agentKey }: Readonly<ReportAgentProps>) {
         type="button"
         variant="outline"
         asChild
-        className="flex w-full items-center gap-1.5 border-red-500 p-3 text-red-500 opacity-65
-          transition duration-200 hover:text-red-500 hover:opacity-100"
+        className="flex w-full items-center gap-1.5 border-red-500 p-3 text-red-500 opacity-65 transition duration-200 hover:text-red-500 hover:opacity-100"
       >
         <DialogTrigger>
           <TriangleAlert className="h-4 w-3" /> Report Agent to DAO

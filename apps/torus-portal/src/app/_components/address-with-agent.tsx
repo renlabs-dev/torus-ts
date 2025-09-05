@@ -1,9 +1,6 @@
 "use client";
 
-import { Copy } from "lucide-react";
-
 import { smallAddress } from "@torus-network/torus-utils/torus/address";
-
 import { CopyButton } from "@torus-ts/ui/components/copy-button";
 import {
   Tooltip,
@@ -11,8 +8,8 @@ import {
   TooltipTrigger,
 } from "@torus-ts/ui/components/tooltip";
 import { cn } from "@torus-ts/ui/lib/utils";
-
 import { api } from "~/trpc/react";
+import { Copy } from "lucide-react";
 
 interface AddressWithAgentProps {
   address: string;
@@ -39,20 +36,17 @@ export function AddressWithAgent({
           copy={address}
           variant="ghost"
           message="Address copied to clipboard"
-          className="h-auto p-1 hover:bg-muted/50"
+          className="hover:bg-muted/50 h-auto p-1"
         >
           <Copy className="h-3 w-3" />
         </CopyButton>
       )}
 
-      <div className="flex items-center gap-1 min-w-0">
+      <div className="flex min-w-0 items-center gap-1">
         {agentName && <span className="text-sm">{agentName}</span>}
         <Tooltip>
           <TooltipTrigger asChild>
-            <span
-              className="font-mono text-sm cursor-help hover:text-foreground/60 text-muted-foreground
-                transition-colors"
-            >
+            <span className="hover:text-foreground/60 text-muted-foreground cursor-help font-mono text-sm transition-colors">
               ({truncatedAddress})
             </span>
           </TooltipTrigger>

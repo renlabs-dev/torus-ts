@@ -10,11 +10,10 @@
  * Regex: ^[a-z0-9]([a-z0-9-_+]{0,61}[a-z0-9])?$
  */
 
-import { z } from "zod";
-
 import type { Brand } from "@torus-network/torus-utils";
 import type { Result } from "@torus-network/torus-utils/result";
 import { makeErr, makeOk } from "@torus-network/torus-utils/result";
+import { z } from "zod";
 
 /**
  * Branded string type for a validated single segment of a namespace path.
@@ -152,17 +151,19 @@ export const isValidNamespaceSegment = (segment: string): boolean => {
  * });
  * ```
  */
-export const namespaceSegmentField = () =>
-  z
-    .string()
-    .min(1, segmentErrorMessages.required)
-    .refine(
-      (segment) => isValidNamespaceSegment(segment),
-      (segment) => ({
-        message:
-          validateNamespaceSegment(segment)[0] ?? segmentErrorMessages.generic,
-      }),
-    );
+export const namespaceSegmentField = (): z.ZodType<
+  NamespaceSegment,
+  z.ZodTypeDef,
+  string
+> =>
+  z.string().transform((segment, ctx) => {
+    const [error, validSegment] = validateNamespaceSegment(segment);
+    if (error !== undefined) {
+      ctx.addIssue({ code: "custom", message: error });
+      return z.NEVER;
+    }
+    return validSegment;
+  });
 
 // ==== Namespace paths ====
 
@@ -243,10 +244,16 @@ export const isValidNamespacePath = (path: string): boolean => {
  * });
  * ```
  */
-export const namespacePathParser = () =>
-  z.string().refine(
-    (path) => isValidNamespacePath(path),
-    (path) => ({
-      message: validateNamespacePath(path)[0] ?? pathErrorMessages.generic,
-    }),
-  );
+export const namespacePathParser = (): z.ZodType<
+  NamespacePath,
+  z.ZodTypeDef,
+  string
+> =>
+  z.string().transform((path, ctx) => {
+    const [error, segments] = validateNamespacePath(path);
+    if (error !== undefined) {
+      ctx.addIssue({ code: "custom", message: error });
+      return z.NEVER;
+    }
+    return segments;
+  });

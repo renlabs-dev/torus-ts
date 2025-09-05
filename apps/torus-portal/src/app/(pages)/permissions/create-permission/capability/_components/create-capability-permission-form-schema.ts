@@ -1,10 +1,9 @@
+import { SS58_SCHEMA } from "@torus-network/sdk/types";
 import type { UseFormReturn } from "react-hook-form";
 import { z } from "zod";
 
-import { SS58_SCHEMA } from "@torus-network/sdk/types";
-
 // Schema for duration
-export const durationSchema = z.discriminatedUnion("type", [
+const durationSchema = z.discriminatedUnion("type", [
   z.object({
     type: z.literal("Indefinite"),
   }),
@@ -21,7 +20,7 @@ export const durationSchema = z.discriminatedUnion("type", [
 ]);
 
 // Schema for revocation terms
-export const revocationSchema = z.discriminatedUnion("type", [
+const revocationSchema = z.discriminatedUnion("type", [
   z.object({
     type: z.literal("Irrevocable"),
   }),

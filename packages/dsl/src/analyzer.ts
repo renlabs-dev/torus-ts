@@ -1,9 +1,9 @@
 import type {
-  Constraint,
-  BoolExprType,
   BaseConstraintType,
-  NumExprType,
+  BoolExprType,
   CompOp,
+  Constraint,
+  NumExprType,
 } from "./types";
 
 /**

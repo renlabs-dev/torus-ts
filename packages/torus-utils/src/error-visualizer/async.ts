@@ -4,7 +4,7 @@ import { tryAsync, tryAsyncStr } from "../try-catch.js";
 // You also can youse the mocks created here for your examples
 
 // Mock API client for examples
-export const apiClient = {
+const apiClient = {
   fetchUserData: async (userId: number): Promise<Record<string, unknown>> => {
     // Simulate network delay
     await new Promise((resolve) => setTimeout(resolve, 500));
@@ -38,7 +38,7 @@ export const apiClient = {
 };
 
 // Example with successful user fetch
-export async function exampleSuccessfulFetch(): Promise<void> {
+async function exampleSuccessfulFetch(): Promise<void> {
   console.log("\n--- Example: Successful User Fetch ---");
 
   const [error, userData] = await tryAsyncStr(apiClient.fetchUserData(1));
@@ -51,7 +51,7 @@ export async function exampleSuccessfulFetch(): Promise<void> {
 }
 
 // Example with failed user fetch
-export async function exampleFailedFetch(): Promise<void> {
+async function exampleFailedFetch(): Promise<void> {
   console.log("\n--- Example: Failed User Fetch (Invalid ID) ---");
 
   const [error, userData] = await tryAsyncStr(apiClient.fetchUserData(-1));
@@ -64,7 +64,7 @@ export async function exampleFailedFetch(): Promise<void> {
 }
 
 // Example with creating agent data
-export async function exampleCreateAgents(): Promise<void> {
+async function exampleCreateAgents(): Promise<void> {
   console.log("\n--- Example: Creating Agent Data ---");
 
   const agents = [
@@ -84,7 +84,7 @@ export async function exampleCreateAgents(): Promise<void> {
 }
 
 // Example with raw error object
-export async function exampleWithRawError(): Promise<void> {
+async function exampleWithRawError(): Promise<void> {
   console.log("\n--- Example: With Raw Error Object ---");
 
   const [error, result] = await tryAsync<Record<string, unknown>>(
@@ -101,7 +101,7 @@ export async function exampleWithRawError(): Promise<void> {
 }
 
 // Example with async function
-export async function exampleWithAsyncFunction(): Promise<void> {
+async function exampleWithAsyncFunction(): Promise<void> {
   console.log("\n--- Example: With Async Function ---");
 
   const [error, data] = await tryAsyncStr(

@@ -1,5 +1,4 @@
 import type { EventRecord, Header } from "@polkadot/types/interfaces";
-
 import { queryDelegationStreamsByAccount } from "@torus-network/sdk/chain";
 import {
   checkSS58,
@@ -7,7 +6,6 @@ import {
   parsePermissionExpiredEvent,
   parsePermissionRevokedEvent,
 } from "@torus-network/sdk/types";
-
 import type { ChainAwareReteNetwork } from "./chain-fetcher";
 import type {
   BlockFact,

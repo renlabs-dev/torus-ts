@@ -1,15 +1,10 @@
 "use client";
 
-import { useState } from "react";
-
 import type { UseQueryResult } from "@tanstack/react-query";
-import { CheckIcon, ChevronsUpDownIcon, PlusCircleIcon } from "lucide-react";
-
 import type { Balance, SS58Address } from "@torus-network/sdk/types";
 import { checkSS58 } from "@torus-network/sdk/types";
 import type { BrandTag } from "@torus-network/torus-utils";
 import { formatToken } from "@torus-network/torus-utils/torus/token";
-
 import { Button } from "@torus-ts/ui/components/button";
 import {
   Command,
@@ -25,9 +20,10 @@ import {
   PopoverTrigger,
 } from "@torus-ts/ui/components/popover";
 import { cn } from "@torus-ts/ui/lib/utils";
-
 import { useWallet } from "~/context/wallet-provider";
 import { env } from "~/env";
+import { CheckIcon, ChevronsUpDownIcon, PlusCircleIcon } from "lucide-react";
+import { useState } from "react";
 
 interface Validator {
   name: string;
@@ -148,7 +144,7 @@ export function AllocatorSelector({
     <>
       {open && (
         <div
-          className="fixed inset-0 bg-black/50 z-40"
+          className="fixed inset-0 z-40 bg-black/50"
           onClick={() => setOpen(false)}
         />
       )}
@@ -169,8 +165,8 @@ export function AllocatorSelector({
             <ChevronsUpDownIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />
           </Button>
         </PopoverTrigger>
-        <PopoverContent className="p-0 w-[450px] z-50 border rounded-lg">
-          <Command className="rounded-lg border shadow-md max-h-[80vh]">
+        <PopoverContent className="z-50 w-[450px] rounded-lg border p-0">
+          <Command className="max-h-[80vh] rounded-lg border shadow-md">
             <CommandInput
               placeholder="Search allocator or enter address..."
               className="h-12"
@@ -187,16 +183,16 @@ export function AllocatorSelector({
                   <CommandItem
                     value={searchTerm}
                     onSelect={handleAddCustomAllocator}
-                    className="py-3 bg-muted/50"
+                    className="bg-muted/50 py-3"
                   >
-                    <div className="flex items-center w-full gap-2">
-                      <PlusCircleIcon className="h-4 w-4 mr-1" />
+                    <div className="flex w-full items-center gap-2">
+                      <PlusCircleIcon className="mr-1 h-4 w-4" />
                       <div className="flex flex-col">
                         <span className="font-medium">Custom Allocator</span>
-                        <span className="text-xs text-muted-foreground">
+                        <span className="text-muted-foreground text-xs">
                           {searchTerm}
                         </span>
-                        <span className="italic text-muted-foreground text-[0.7rem]">
+                        <span className="text-muted-foreground text-[0.7rem] italic">
                           Add custom allocator address
                         </span>
                       </div>
@@ -218,13 +214,13 @@ export function AllocatorSelector({
                       }
                       className="py-3"
                     >
-                      <div className="flex items-center w-full gap-2">
+                      <div className="flex w-full items-center gap-2">
                         <div className="flex flex-col">
                           <span className="font-medium">{validator.name}</span>
-                          <span className="text-xs text-muted-foreground">
+                          <span className="text-muted-foreground text-xs">
                             {validator.address}
                           </span>
-                          <span className="italic text-muted-foreground text-[0.7rem]">
+                          <span className="text-muted-foreground text-[0.7rem] italic">
                             {validator.description}
                           </span>
                         </div>

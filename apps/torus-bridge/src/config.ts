@@ -1,10 +1,10 @@
-export interface ChainValues {
+interface ChainValues {
   name: string;
   displayName: string;
   chainId: number;
 }
 
-export type ChainEnv = "mainnet" | "testnet";
+type ChainEnv = "mainnet" | "testnet";
 
 export const evmChainValues = {
   torus: {

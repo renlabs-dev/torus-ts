@@ -1,7 +1,5 @@
 "use client";
 
-import { InfoIcon } from "lucide-react";
-
 import { Button } from "@torus-ts/ui/components/button";
 import {
   DropdownMenu,
@@ -11,7 +9,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@torus-ts/ui/components/dropdown-menu";
-
+import { InfoIcon } from "lucide-react";
 import { graphConstants } from "./force-graph/force-graph-constants";
 
 // Shape components for different node types
@@ -24,7 +22,7 @@ function SphereShape({
 }) {
   return (
     <div
-      className="w-3 h-3 rounded-full flex-shrink-0"
+      className="h-3 w-3 flex-shrink-0 rounded-full"
       style={{
         backgroundColor: color,
         border: borderColor ? `1px solid ${borderColor}` : undefined,
@@ -164,8 +162,8 @@ const nodeColorCategories: NodeCategory[] = [
     nodes: [
       {
         color: graphConstants.nodeConfig.nodeColors.emissionPermissionNode,
-        title: "Emission Permission",
-        description: "Controls token emissions and distributions",
+        title: "Stream Permission",
+        description: "Controls token streams and distributions",
         shape: "icosahedron",
       },
       {
@@ -210,22 +208,22 @@ export function NodeColorLegendDropdown() {
         <Button
           variant="link"
           size="sm"
-          className="h-8 animate-fade-up animate-delay-[900ms]"
+          className="animate-fade-up animate-delay-[900ms] h-8"
         >
-          <InfoIcon className="w-4 h-4 mr-1" />
+          <InfoIcon className="mr-1 h-4 w-4" />
           Graph Legend
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="start" className="w-72">
         {nodeColorCategories.map((category) => (
           <div key={category.label}>
-            <DropdownMenuLabel className="text-sm font-semibold text-foreground px-2 py-1.5">
+            <DropdownMenuLabel className="text-foreground px-2 py-1.5 text-sm font-semibold">
               {category.label}
             </DropdownMenuLabel>
             {category.nodes.map((node, nodeIndex) => (
               <DropdownMenuItem
                 key={`${category.label}-${nodeIndex}`}
-                className="flex items-start gap-3 py-2 px-2 cursor-default focus:bg-muted/50"
+                className="focus:bg-muted/50 flex cursor-default items-start gap-3 px-2 py-2"
               >
                 <div className="mt-0.5">
                   <NodeShape
@@ -234,11 +232,11 @@ export function NodeColorLegendDropdown() {
                     borderColor={node.borderColor}
                   />
                 </div>
-                <div className="flex-1 min-w-0">
-                  <div className="font-medium text-sm leading-tight">
+                <div className="min-w-0 flex-1">
+                  <div className="text-sm font-medium leading-tight">
                     {node.title}
                   </div>
-                  <div className="text-xs text-muted-foreground mt-0.5 leading-relaxed">
+                  <div className="text-muted-foreground mt-0.5 text-xs leading-relaxed">
                     {node.description}
                   </div>
                 </div>
@@ -249,22 +247,22 @@ export function NodeColorLegendDropdown() {
         ))}
         {connectionCategories.map((category) => (
           <div key={category.label}>
-            <DropdownMenuLabel className="text-sm font-semibold text-foreground px-2 py-1.5">
+            <DropdownMenuLabel className="text-foreground px-2 py-1.5 text-sm font-semibold">
               {category.label}
             </DropdownMenuLabel>
             {category.connections.map((connection, connectionIndex) => (
               <DropdownMenuItem
                 key={`${category.label}-${connectionIndex}`}
-                className="flex items-start gap-3 py-2 px-2 cursor-default focus:bg-muted/50"
+                className="focus:bg-muted/50 flex cursor-default items-start gap-3 px-2 py-2"
               >
                 <div className="mt-1">
                   <ConnectionShape color={connection.color} />
                 </div>
-                <div className="flex-1 min-w-0">
-                  <div className="font-medium text-sm leading-tight">
+                <div className="min-w-0 flex-1">
+                  <div className="text-sm font-medium leading-tight">
                     {connection.title}
                   </div>
-                  <div className="text-xs text-muted-foreground mt-0.5 leading-relaxed">
+                  <div className="text-muted-foreground mt-0.5 text-xs leading-relaxed">
                     {connection.description}
                   </div>
                 </div>

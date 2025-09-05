@@ -14,30 +14,26 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@next/third-parties": "catalog:",
     "@react-three/drei": "catalog:",
     "@react-three/fiber": "catalog:",
-    "three": "catalog:",
-    "@react-spring/three": "^9.7.5",
-    "@torus-ts/ui": "workspace:*",
     "@torus-ts/env-validation": "workspace:*",
-    "@next/third-parties": "catalog:",
+    "@torus-ts/ui": "workspace:*",
     "lucide-react": "catalog:",
-    "motion": "^11.15.0",
+    "motion": "^12.23.12",
     "next": "catalog:",
     "next-plausible": "catalog:",
     "react": "catalog:react19",
-    "react-dom": "catalog:react19"
+    "react-dom": "catalog:react19",
+    "three": "catalog:"
   },
   "devDependencies": {
-    "@types/three": "catalog:",
-    "@next/eslint-plugin-next": "catalog:",
-    "@tailwindcss/typography": "catalog:",
     "@torus-ts/eslint-config": "workspace:*",
     "@torus-ts/tsconfig": "workspace:*",
     "@types/node": "catalog:",
     "@types/react": "catalog:react19",
     "@types/react-dom": "catalog:react19",
-    "jiti": "catalog:",
+    "@types/three": "catalog:",
     "postcss": "catalog:",
     "tailwindcss": "catalog:",
     "typescript": "catalog:"

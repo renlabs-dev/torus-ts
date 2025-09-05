@@ -1,5 +1,4 @@
 import { z } from "zod";
-
 import { SS58_SCHEMA } from "./address.js";
 import { sb_h256 } from "./base.js";
 import { sb_bool, sb_option, sb_struct } from "./zod.js";

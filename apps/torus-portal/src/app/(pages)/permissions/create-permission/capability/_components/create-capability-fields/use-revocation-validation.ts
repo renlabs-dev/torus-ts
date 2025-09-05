@@ -1,5 +1,3 @@
-import { useCallback, useMemo } from "react";
-
 import type {
   Api,
   PermissionId,
@@ -9,7 +7,7 @@ import {
   DelegationTreeManager,
   queryPermission,
 } from "@torus-network/sdk/chain";
-
+import { useCallback, useMemo } from "react";
 import type { PathWithPermission } from "../create-capability-flow/create-capability-flow-types";
 import type { CreateCapabilityPermissionFormData } from "../create-capability-permission-form-schema";
 

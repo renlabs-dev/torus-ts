@@ -1,10 +1,9 @@
+import type { SS58Address } from "@torus-network/sdk/types";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
-import type { SS58Address } from "@torus-network/sdk/types";
-
 export type TransactionType = "stake" | "unstake" | "send" | "transfer-stake";
-export type TransactionStatus = "PENDING" | "SUCCESS" | "ERROR";
+type TransactionStatus = "PENDING" | "SUCCESS" | "ERROR";
 
 export interface Transaction {
   id: string;
@@ -19,7 +18,7 @@ export interface Transaction {
   metadata?: Record<string, unknown>;
 }
 
-export type UpdatedTransaction = Partial<Transaction>;
+type UpdatedTransaction = Partial<Transaction>;
 
 export interface TransactionQueryOptions {
   page?: number;

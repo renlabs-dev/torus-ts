@@ -9,7 +9,7 @@ import type { ApiTypes, AugmentedEvent } from '@polkadot/api-base/types';
 import type { Bytes, Null, Option, Result, U8aFixed, Vec, bool, u128, u32, u64 } from '@polkadot/types-codec';
 import type { ITuple } from '@polkadot/types-codec/types';
 import type { AccountId32, H160, H256, Percent } from '@polkadot/types/interfaces/runtime';
-import type { EthereumLog, EvmCoreErrorExitReason, FrameSupportDispatchDispatchInfo, FrameSupportTokensMiscBalanceStatus, PalletMultisigTimepoint, PalletPermission0PermissionEmissionDistributionReason, PalletPermission0PermissionEnforcementReferendum, PalletTorus0NamespaceNamespaceOwnership, SpConsensusGrandpaAppPublic, SpRuntimeDispatchError, TorusRuntimeRuntimeTask } from '@polkadot/types/lookup';
+import type { EthereumLog, EvmCoreErrorExitReason, FrameSupportDispatchDispatchInfo, FrameSupportTokensMiscBalanceStatus, PalletMultisigTimepoint, PalletPermission0PermissionEnforcementReferendum, PalletPermission0PermissionStreamDistributionReason, PalletTorus0NamespaceNamespaceOwnership, SpConsensusGrandpaAppPublic, SpRuntimeDispatchError, TorusRuntimeRuntimeTask } from '@polkadot/types/lookup';
 
 export type __AugmentedEvent<ApiType extends ApiTypes> = AugmentedEvent<ApiType>;
 
@@ -284,10 +284,6 @@ declare module '@polkadot/api-base/types/events' {
        **/
       AccumulatedEmission: AugmentedEvent<ApiType, [permissionId: H256, streamId: H256, amount: u128], { permissionId: H256, streamId: H256, amount: u128 }>;
       /**
-       * An emission distribution happened
-       **/
-      EmissionDistribution: AugmentedEvent<ApiType, [permissionId: H256, streamId: Option<H256>, target: AccountId32, amount: u128, reason: PalletPermission0PermissionEmissionDistributionReason], { permissionId: H256, streamId: Option<H256>, target: AccountId32, amount: u128, reason: PalletPermission0PermissionEmissionDistributionReason }>;
-      /**
        * Enforcement authority set for permission
        **/
       EnforcementAuthoritySet: AugmentedEvent<ApiType, [permissionId: H256, controllersCount: u32, requiredVotes: u32], { permissionId: H256, controllersCount: u32, requiredVotes: u32 }>;
@@ -302,7 +298,7 @@ declare module '@polkadot/api-base/types/events' {
       /**
        * Permission delegated from delegator to recipient with ID
        **/
-      PermissionDelegated: AugmentedEvent<ApiType, [delegator: AccountId32, recipient: AccountId32, permissionId: H256], { delegator: AccountId32, recipient: AccountId32, permissionId: H256 }>;
+      PermissionDelegated: AugmentedEvent<ApiType, [delegator: AccountId32, permissionId: H256], { delegator: AccountId32, permissionId: H256 }>;
       /**
        * Permission was executed by enforcement authority
        **/
@@ -310,11 +306,15 @@ declare module '@polkadot/api-base/types/events' {
       /**
        * Permission expired with ID
        **/
-      PermissionExpired: AugmentedEvent<ApiType, [delegator: AccountId32, recipient: AccountId32, permissionId: H256], { delegator: AccountId32, recipient: AccountId32, permissionId: H256 }>;
+      PermissionExpired: AugmentedEvent<ApiType, [delegator: AccountId32, permissionId: H256], { delegator: AccountId32, permissionId: H256 }>;
       /**
        * Permission revoked with ID
        **/
-      PermissionRevoked: AugmentedEvent<ApiType, [delegator: AccountId32, recipient: AccountId32, revokedBy: Option<AccountId32>, permissionId: H256], { delegator: AccountId32, recipient: AccountId32, revokedBy: Option<AccountId32>, permissionId: H256 }>;
+      PermissionRevoked: AugmentedEvent<ApiType, [delegator: AccountId32, revokedBy: Option<AccountId32>, permissionId: H256], { delegator: AccountId32, revokedBy: Option<AccountId32>, permissionId: H256 }>;
+      /**
+       * An stream distribution happened
+       **/
+      StreamDistribution: AugmentedEvent<ApiType, [permissionId: H256, streamId: Option<H256>, recipient: AccountId32, amount: u128, reason: PalletPermission0PermissionStreamDistributionReason], { permissionId: H256, streamId: Option<H256>, recipient: AccountId32, amount: u128, reason: PalletPermission0PermissionStreamDistributionReason }>;
       /**
        * Generic event
        **/

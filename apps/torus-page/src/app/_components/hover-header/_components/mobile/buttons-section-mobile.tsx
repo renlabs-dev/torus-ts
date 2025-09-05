@@ -1,8 +1,8 @@
 import { Card } from "@torus-ts/ui/components/card";
 import { ScrollArea } from "@torus-ts/ui/components/scroll-area";
 import { cn } from "@torus-ts/ui/lib/utils";
-import { motion } from "framer-motion";
 import { CircleDotDashed, Diameter } from "lucide-react";
+import { motion } from "motion/react";
 import { CustomButton } from "../custom-button";
 import { ANIMATIONS, CONTENT } from "../data";
 
@@ -35,8 +35,7 @@ export function ButtonsSectionMobile() {
       <motion.div
         variants={ANIMATIONS.BUTTON}
         custom={5}
-        className="absolute bottom-[3.8em] flex w-full max-w-[42rem] items-center justify-around
-          gap-[12.5em]"
+        className="absolute bottom-[3.8em] flex w-full max-w-[42rem] items-center justify-around gap-[12.5em]"
       >
         <div className="full bg-border flex h-12 w-12 items-center justify-center rounded-full">
           <CircleDotDashed className="h-6 w-6" />

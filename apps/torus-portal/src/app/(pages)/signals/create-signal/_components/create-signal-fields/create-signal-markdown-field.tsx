@@ -38,7 +38,7 @@ export function CreateSignalMarkdownField({
             />
           </TabsContent>
           <TabsContent value="preview">
-            <div className="min-h-[200px] rounded-md border p-3 bg-muted/50">
+            <div className="bg-muted/50 min-h-[200px] rounded-md border p-3">
               {field.value ? (
                 <MarkdownView
                   source={field.value}

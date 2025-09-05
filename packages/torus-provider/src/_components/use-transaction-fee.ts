@@ -1,9 +1,7 @@
-import { useEffect, useState } from "react";
-
 import type { ApiPromise } from "@polkadot/api";
 import type { SubmittableExtrinsic } from "@polkadot/api/types";
-
 import { queryExtFee } from "@torus-network/sdk/chain";
+import { useEffect, useState } from "react";
 
 /**
  * Output interface for the useTransactionFee hook.

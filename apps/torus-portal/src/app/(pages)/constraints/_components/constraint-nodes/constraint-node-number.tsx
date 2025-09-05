@@ -1,14 +1,10 @@
 "use client";
 
-import { useCallback, useState } from "react";
-
-import { Clock, Coins, Hash, Minus, Plus } from "lucide-react";
-
 import { SS58_SCHEMA } from "@torus-network/sdk/types";
-
 import type { NumExprType } from "~/utils/dsl";
 import { NumExpr } from "~/utils/dsl";
-
+import { Clock, Coins, Hash, Minus, Plus } from "lucide-react";
+import { useCallback, useState } from "react";
 import { uintSchema } from "../constraint-validation-schemas";
 import {
   PermissionNodeContainer,

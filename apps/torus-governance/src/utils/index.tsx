@@ -1,13 +1,11 @@
-import { if_let, match } from "rustie";
-
 import type { ProposalStatus } from "@torus-network/sdk/chain";
 import type { CustomMetadataState } from "@torus-network/sdk/metadata";
 import { bigintDivision } from "@torus-network/torus-utils";
 import { formatToken } from "@torus-network/torus-utils/torus/token";
-
 import type { ProposalState } from "@torus-ts/torus-provider";
+import { if_let, match } from "rustie";
 
-export interface ProposalCardFields {
+interface ProposalCardFields {
   title: string | null;
   body: string | null;
   invalid?: boolean;
@@ -50,7 +48,7 @@ export const PARAM_FIELD_DISPLAY_NAMES = {
   voteMode: "Vote Mode",
 } as const;
 
-export const paramNameToDisplayName = (paramName: string): string => {
+const paramNameToDisplayName = (paramName: string): string => {
   return (
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     PARAM_FIELD_DISPLAY_NAMES[
@@ -207,20 +205,9 @@ export function handleProposalVotesAgainst(proposalStatus: ProposalStatus) {
   );
 }
 
-export function handleProposalStakeVoted(
-  proposalStatus: ProposalStatus,
-): string {
-  return if_let(proposalStatus, "Expired")(
-    () => "—",
-    ({ stakeFor, stakeAgainst }) =>
-      // open, accepted, refused
-      formatToken(Number(stakeFor + stakeAgainst)),
-  );
-}
-
 // == Agent Applications ==
 
-export interface AgentApplicationCardFields {
+interface AgentApplicationCardFields {
   title: string | null;
   body: string | null;
 }

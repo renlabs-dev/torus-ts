@@ -1,23 +1,21 @@
 "use client";
 
-import { useState } from "react";
 import { Button } from "@torus-ts/ui/components/button";
+import { Form } from "@torus-ts/ui/components/form";
 import {
   Sheet,
   SheetContent,
+  SheetFooter,
   SheetHeader,
   SheetTitle,
   SheetTrigger,
-  SheetFooter,
 } from "@torus-ts/ui/components/sheet";
-import { Form } from "@torus-ts/ui/components/form";
-import { useForm } from "react-hook-form";
-
-import ConstraintExamplesSelector from "./constraint-examples-selector";
-
+import { PermissionSelector } from "~/app/_components/permission-selector/permission-selector";
 import { Info } from "lucide-react";
+import { useState } from "react";
+import { useForm } from "react-hook-form";
+import ConstraintExamplesSelector from "./constraint-examples-selector";
 import { ConstraintTutorialDialog } from "./constraint-tutorial-dialog";
-import { PermissionSelector } from "~/app/_components/permission-selector";
 
 interface ConstraintControlsSheetProps {
   selectedExample: string;
@@ -47,13 +45,13 @@ export default function ConstraintControlsSheet({
     <Sheet open={isOpen} onOpenChange={setIsOpen}>
       <SheetTrigger asChild>
         <Button variant="outline" className="shadow-lg">
-          <Info className="h-4 w-4 mr-1" />
+          <Info className="mr-1 h-4 w-4" />
           Open Constraint Details
         </Button>
       </SheetTrigger>
       <SheetContent
         side="right"
-        className="md:w-96 w-full z-[75] flex flex-col justify-between h-full"
+        className="z-[75] flex h-full w-full flex-col justify-between md:w-96"
       >
         <div>
           <SheetHeader>
@@ -69,7 +67,7 @@ export default function ConstraintControlsSheet({
               <PermissionSelector
                 control={form.control}
                 selectedPermissionId={selectedPermissionId}
-                onPermissionIdChange={onPermissionIdChange}
+                onPermissionSelection={onPermissionIdChange}
               />
             </Form>
 

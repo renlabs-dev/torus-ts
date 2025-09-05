@@ -1,14 +1,8 @@
 "use client";
 
-import { useState } from "react";
-
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
-import type { z } from "zod";
-
 import { createNamespace } from "@torus-network/sdk/chain";
 import type { SS58Address } from "@torus-network/sdk/types";
-
 import { useNamespaceEntriesOf } from "@torus-ts/query-provider/hooks";
 import { useTorus } from "@torus-ts/torus-provider";
 import { useSendTransaction } from "@torus-ts/torus-provider/use-send-transaction";
@@ -25,11 +19,12 @@ import { Input } from "@torus-ts/ui/components/input";
 import { WalletConnectionWarning } from "@torus-ts/ui/components/wallet-connection-warning";
 import { useToast } from "@torus-ts/ui/hooks/use-toast";
 import { cn } from "@torus-ts/ui/lib/utils";
-
 import { FeeTooltip } from "~/app/_components/fee-tooltip";
 import PortalFormHeader from "~/app/_components/portal-form-header";
 import { useNamespaceCreationFee } from "~/hooks/use-namespace-creation-fee";
-
+import { useState } from "react";
+import { useForm } from "react-hook-form";
+import type { z } from "zod";
 import { RegisterCapabilityMethodField } from "./create-capability-method-field";
 import { RegisterCapabilityPathPreview } from "./create-capability-path-preview";
 import { RegisterCapabilityPrefixField } from "./create-capability-prefix-field";
@@ -192,7 +187,7 @@ export function RegisterCapabilityForm({
           />
 
           {watchedMethod === "custom" && (
-            <div className="grid gap-2 animate-fade-down">
+            <div className="animate-fade-down grid gap-2">
               <FormField
                 control={form.control}
                 name="customMethod"

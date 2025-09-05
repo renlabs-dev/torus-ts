@@ -1,31 +1,28 @@
 "use client";
 
-import { useCallback } from "react";
-
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Loader2 } from "lucide-react";
-import { useForm } from "react-hook-form";
-
-import { delegateEmissionPermission } from "@torus-network/sdk/chain";
-import type { SS58Address } from "@torus-network/sdk/types";
-
+import { delegateStreamPermission } from "@torus-network/sdk/chain";
 import { useTorus } from "@torus-ts/torus-provider";
 import { useSendTransaction } from "@torus-ts/torus-provider/use-send-transaction";
 import { Button } from "@torus-ts/ui/components/button";
 import { Form } from "@torus-ts/ui/components/form";
 import { WalletConnectionWarning } from "@torus-ts/ui/components/wallet-connection-warning";
 import { useToast } from "@torus-ts/ui/hooks/use-toast";
+import { Loader2 } from "lucide-react";
+import { useCallback } from "react";
+import { useForm } from "react-hook-form";
+import { AllocationField } from "./create-stream-fields/allocation-field";
+import { DistributionField } from "./create-stream-fields/distribution-field";
+import { DurationField } from "./create-stream-fields/duration-field";
+import { RecipientManagerField } from "./create-stream-fields/recipient-manager-field";
+import { RecipientsField } from "./create-stream-fields/recipients-field";
+import { RevocationField } from "./create-stream-fields/revocation-field";
+import { WeightSetterField } from "./create-stream-fields/weight-setter-field";
+import type { CreateStreamPermissionFormData } from "./create-stream-permission-form-schema";
+import { createStreamPermissionSchema } from "./create-stream-permission-form-schema";
+import { transformFormDataToSDK } from "./create-stream-permission-form-utils";
 
-import { AllocationField } from "./create-emission-fields/allocation-field";
-import { DistributionField } from "./create-emission-fields/distribution-field";
-import { DurationField } from "./create-emission-fields/duration-field";
-import { RevocationField } from "./create-emission-fields/revocation-field";
-import { TargetsField } from "./create-emission-fields/targets-field";
-import type { CreateEmissionPermissionFormData } from "./create-emission-permission-form-schema";
-import { createEmissionPermissionSchema } from "./create-emission-permission-form-schema";
-import { transformFormDataToSDK } from "./create-emission-permission-form-utils";
-
-export function CreateEmissionPermissionForm() {
+export function CreateStreamPermissionForm() {
   const {
     selectedAccount,
     isAccountConnected,
@@ -41,18 +38,18 @@ export function CreateEmissionPermissionForm() {
     selectedAccount,
     wsEndpoint,
     wallet: torusApi,
-    transactionType: "Delegate Emission Permission",
+    transactionType: "Delegate Stream Permission",
   });
 
-  const form = useForm<CreateEmissionPermissionFormData>({
-    resolver: zodResolver(createEmissionPermissionSchema),
+  const form = useForm<CreateStreamPermissionFormData>({
+    resolver: zodResolver(createStreamPermissionSchema),
     mode: "onChange",
     defaultValues: {
       allocation: {
         type: "Streams",
         streams: [],
       },
-      targets: [{ account: "", weight: "" }],
+      recipients: [{ account: "", weight: "" }],
       distribution: {
         type: "Interval",
         blocks: "",
@@ -72,7 +69,7 @@ export function CreateEmissionPermissionForm() {
   });
 
   const handleSubmit = useCallback(
-    async (data: CreateEmissionPermissionFormData) => {
+    async (data: CreateStreamPermissionFormData) => {
       if (!api || !sendTx || !selectedAccount?.address) {
         toast({
           title: "Error",
@@ -85,10 +82,14 @@ export function CreateEmissionPermissionForm() {
       const transformedData = transformFormDataToSDK(data);
 
       const [sendErr, sendRes] = await sendTx(
-        delegateEmissionPermission({
+        delegateStreamPermission({
           api,
-          recipient: selectedAccount.address as SS58Address,
-          ...transformedData,
+          recipients: transformedData.recipients,
+          allocation: transformedData.allocation,
+          distribution: transformedData.distribution,
+          duration: transformedData.duration,
+          revocation: transformedData.revocation,
+          enforcement: transformedData.enforcement,
         }),
       );
 
@@ -108,7 +109,7 @@ export function CreateEmissionPermissionForm() {
   return (
     <Form {...form}>
       <form
-        id="emission-permission-form"
+        id="stream-permission-form"
         onSubmit={form.handleSubmit(handleSubmit)}
         className="flex flex-col gap-6"
       >
@@ -137,11 +138,24 @@ export function CreateEmissionPermissionForm() {
             selectedAccountAddress={selectedAccount?.address}
           />
 
-          <TargetsField form={form} isAccountConnected={isAccountConnected} />
+          <RecipientsField
+            form={form}
+            isAccountConnected={isAccountConnected}
+          />
+
+          <RecipientManagerField
+            form={form}
+            isAccountConnected={isAccountConnected}
+          />
+
+          <WeightSetterField
+            form={form}
+            isAccountConnected={isAccountConnected}
+          />
 
           <Button
             type="submit"
-            form="emission-permission-form"
+            form="stream-permission-form"
             className="w-full"
             variant="outline"
             disabled={!isAccountConnected || isPending || isSigning}
@@ -154,7 +168,7 @@ export function CreateEmissionPermissionForm() {
             ) : !isAccountConnected ? (
               "Connect Wallet to Continue"
             ) : (
-              "Delegate Emission Permission"
+              "Delegate Stream Permission"
             )}
           </Button>
         </div>

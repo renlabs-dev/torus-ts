@@ -1,4 +1,3 @@
-import { formatMonth } from "./staking-calculator-utils";
 import {
   Area,
   AreaChart,
@@ -7,8 +6,9 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import { StakingCalculatorGrowthTooltip } from "./staking-calculator-growth-tooltip";
 import type { ProjectedData } from "./staking-calculator";
+import { StakingCalculatorGrowthTooltip } from "./staking-calculator-growth-tooltip";
+import { formatMonth } from "./staking-calculator-utils";
 
 interface StakingCalculatorGrowthChartProps {
   projectedGrowth: ProjectedData[];

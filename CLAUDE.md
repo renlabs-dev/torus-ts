@@ -111,8 +111,8 @@ just db-dump
 
 When making changes, target specific packages for faster feedback:
 
-- Format: `just format-fix "@torus-ts/utils"`
-- Lint: `just lint-fix "@torus-ts/utils"`
+- Format: `just format-fix "@torus-network/torus-utils"`
+- Lint: `just lint-fix "@torus-network/torus-utils"`
 - Test: `just test "@torus-network/torus-utils"`
 
 ### Error Handling Priorities

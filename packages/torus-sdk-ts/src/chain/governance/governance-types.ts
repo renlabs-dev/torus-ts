@@ -3,7 +3,6 @@ import type { Bytes } from "@polkadot/types";
 import type { Percent } from "@polkadot/types/interfaces";
 import type { AnyNumber } from "@polkadot/types/types";
 import { z } from "zod";
-
 import type { SS58Address } from "../../types/address.js";
 import {
   sb_address,
@@ -27,7 +26,7 @@ export type GovernanceItemType = "PROPOSAL" | "AGENT_APPLICATION";
 
 /** Based on `PalletGovernanceProposalProposalData` */
 export const PROPOSAL_DATA_SCHEMA = sb_enum({
-  GlobalParams: sb_to_primitive.pipe(z.record(z.unknown())),
+  GlobalParams: sb_to_primitive.pipe(z.record(z.string(), z.unknown())),
   GlobalCustom: sb_null,
   TransferDaoTreasury: sb_struct({
     account: sb_address,

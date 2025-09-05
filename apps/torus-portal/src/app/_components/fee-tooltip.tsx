@@ -1,15 +1,13 @@
 "use client";
 
-import { CircleDollarSign } from "lucide-react";
-
 import { formatToken } from "@torus-network/torus-utils/torus/token";
-
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from "@torus-ts/ui/components/tooltip";
+import { CircleDollarSign } from "lucide-react";
 
 interface FeeItem {
   label: string;
@@ -54,7 +52,7 @@ export function FeeTooltip({
 
   if (error) {
     return (
-      <div className="flex items-center gap-2 text-sm text-destructive">
+      <div className="text-destructive flex items-center gap-2 text-sm">
         <CircleDollarSign className="h-4 w-4" />
         <span>
           {title}: {error}
@@ -73,7 +71,7 @@ export function FeeTooltip({
     <TooltipProvider>
       <Tooltip>
         <TooltipTrigger asChild>
-          <div className="flex items-center gap-2 text-sm w-fit">
+          <div className="flex w-fit items-center gap-2 text-sm">
             <CircleDollarSign className="h-4 w-4" />
             <span className="flex items-center gap-2">
               <span>{title}:</span>
@@ -87,24 +85,24 @@ export function FeeTooltip({
             {feeItems.map((item, index) => (
               <div
                 key={index}
-                className="flex justify-between items-start gap-4"
+                className="flex items-start justify-between gap-4"
               >
                 <div>
                   <div className="font-medium">{item.label}</div>
                 </div>
-                <div className="text-right whitespace-nowrap">
+                <div className="whitespace-nowrap text-right">
                   {formatToken(item.amount, 6)} TORUS
                 </div>
               </div>
             ))}
             <div className="border-t pt-2">
-              <div className="flex justify-between items-center font-medium">
+              <div className="flex items-center justify-between font-medium">
                 <span>Total:</span>
                 <span>{totalInTorus} TORUS</span>
               </div>
             </div>
             {note && (
-              <div className="text-xs text-gray-600 border-t pt-2">{note}</div>
+              <div className="border-t pt-2 text-xs text-gray-600">{note}</div>
             )}
           </div>
         </TooltipContent>

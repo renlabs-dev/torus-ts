@@ -1,14 +1,14 @@
 import DashboardAgentHealthCard from "./dashboard-agent-health-card";
 import DashboardInfoCards from "./dashboard-info-cards";
-import DashboardPendingWhitelistCard from "./dashboard-pending-whitelist-card";
 import DashboardPendingDaoMemberCard from "./dashboard-pending-dao-member-card";
+import DashboardPendingWhitelistCard from "./dashboard-pending-whitelist-card";
 
 export default function DashboardTab() {
   return (
-    <div className="flex flex-col gap-4 pt-2 animate-fade">
+    <div className="animate-fade flex flex-col gap-4 pt-2">
       <DashboardInfoCards />
-      <div className="flex flex-col md:flex-row gap-4">
-        <div className="md:w-[65%] flex flex-col gap-4">
+      <div className="flex flex-col gap-4 md:flex-row">
+        <div className="flex flex-col gap-4 md:w-[65%]">
           <DashboardPendingWhitelistCard />
           <DashboardPendingDaoMemberCard />
         </div>

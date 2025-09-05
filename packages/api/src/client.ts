@@ -1,11 +1,11 @@
 import { createAuthReqData } from "@torus-network/torus-utils/auth";
+import { tryAsync, trySync } from "@torus-network/torus-utils/try-catch";
 import type { TRPCLink } from "@trpc/client";
 import { createTRPCClient, httpBatchLink, TRPCClientError } from "@trpc/client";
 import { observable } from "@trpc/server/observable";
 import SuperJSON from "superjson";
 import { signData } from "./auth/sign";
 import type { AppRouter } from "./root";
-import { tryAsync, trySync } from "@torus-network/torus-utils/try-catch";
 
 // == Auth ==
 export const makeAuthenticateUserFn = (

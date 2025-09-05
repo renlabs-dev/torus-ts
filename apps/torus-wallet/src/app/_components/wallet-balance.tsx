@@ -1,19 +1,14 @@
 "use client";
 
-import { Suspense, useMemo } from "react";
-
-import { Copy, Lock, Scale, Unlock } from "lucide-react";
-import Image from "next/image";
-
 import { smallAddress } from "@torus-network/torus-utils/torus/address";
 import { formatToken } from "@torus-network/torus-utils/torus/token";
-
 import { Card } from "@torus-ts/ui/components/card";
 import { CopyButton } from "@torus-ts/ui/components/copy-button";
 import { Skeleton } from "@torus-ts/ui/components/skeleton";
-
 import { useWallet } from "~/context/wallet-provider";
-
+import { Copy, Lock, Scale, Unlock } from "lucide-react";
+import Image from "next/image";
+import { Suspense, useMemo } from "react";
 import { TorusAnimation } from "./torus-animation";
 
 const BALANCE_ICONS = {
@@ -107,13 +102,13 @@ export function WalletBalance() {
 
   return (
     <div className="xs:flex-row flex min-h-fit flex-col lg:flex-col">
-      <Card className="flex w-full flex-col gap-[2.40em] px-7 py-5 relative">
-        <div className="absolute inset-0 overflow-hidden opacity-20 z-0">
+      <Card className="relative flex w-full flex-col gap-[2.40em] px-7 py-5">
+        <div className="absolute inset-0 z-0 overflow-hidden opacity-20">
           <Suspense fallback={null}>
             <TorusAnimation />
           </Suspense>
         </div>
-        <div className="relative z-10 gap-10 flex flex-col">
+        <div className="relative z-10 flex flex-col gap-10">
           <WalletHeader address={selectedAccount?.address} />
           <div className="flex flex-col gap-[1.85em]">
             {balances.map((balance) => (

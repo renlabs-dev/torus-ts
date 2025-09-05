@@ -1,14 +1,13 @@
 import type { H256 } from "@polkadot/types/interfaces";
 import { blake2AsHex, decodeAddress } from "@polkadot/util-crypto";
-import { if_let, match } from "rustie";
-
 import { getOrSetDefault } from "@torus-network/torus-utils/collections";
 import { BasicLogger } from "@torus-network/torus-utils/logger";
 import type { Result } from "@torus-network/torus-utils/result";
 import { makeErr, makeOk } from "@torus-network/torus-utils/result";
 import { tryAsync } from "@torus-network/torus-utils/try-catch";
 import type { Nullable } from "@torus-network/torus-utils/typing";
-
+import { prefixPath } from "@torus-network/torus-utils/zod";
+import { if_let, match } from "rustie";
 import type { SS58Address } from "../../types/address.js";
 import type { ToBigInt, ZError } from "../../types/index.js";
 import {
@@ -24,9 +23,9 @@ import { SbQueryError } from "../common/fees.js";
 import type {
   AccumulatedStreamEntry,
   CuratorPermissions,
-  EmissionContract,
   PermissionContract,
   PermissionId,
+  StreamContract,
   StreamId,
 } from "./permission0-types.js";
 import {
@@ -80,22 +79,17 @@ export async function queryPermissions(
   for (const [keysRaw, valueRaw] of query) {
     const [keyRaw] = keysRaw.args;
 
-    const idParsed = PERMISSION_ID_SCHEMA.safeParse(keyRaw, {
-      path: ["storage", "permission0", "permissions", String(keyRaw)],
-    });
+    const idParsed = prefixPath(PERMISSION_ID_SCHEMA.safeParse(keyRaw), [
+      "storage",
+      "permission0",
+      "permissions",
+      String(keyRaw),
+    ]);
     if (idParsed.success === false) return makeErr(idParsed.error);
 
-    const contractParsed = sb_some(PERMISSION_CONTRACT_SCHEMA).safeParse(
-      valueRaw,
-      {
-        path: [
-          "storage",
-          "permission0",
-          "permissions",
-          String(keyRaw),
-          "<value>",
-        ],
-      },
+    const contractParsed = prefixPath(
+      sb_some(PERMISSION_CONTRACT_SCHEMA).safeParse(valueRaw),
+      ["storage", "permission0", "permissions", String(keyRaw), "<value>"],
     );
     if (contractParsed.success === false) return makeErr(contractParsed.error);
 
@@ -167,38 +161,38 @@ export async function queryPermissionsByParticipants(
 }
 
 /**
- * Query all emission permissions from the blockchain.
- * Filters all permissions to return only those with Emission scope,
+ * Query all stream permissions from the blockchain (formerly emission permissions).
+ * Filters all permissions to return only those with Stream scope,
  * then applies the provided filter function.
  *
  * @param api - The blockchain API instance
- * @param filterFn - Additional filter to apply to emission permissions
- * @return A map of PermissionId -> EmissionContract for filtered emission permissions
+ * @param filterFn - Additional filter to apply to stream permissions
+ * @return A map of PermissionId -> StreamContract for filtered stream permissions
  */
-export async function queryEmissionPermissions(
+export async function queryStreamPermissions(
   api: Api,
-  filterFn: (permission: EmissionContract) => boolean,
+  filterFn: (permission: StreamContract) => boolean,
 ): Promise<
   Result<
-    Map<PermissionId, EmissionContract>,
+    Map<PermissionId, StreamContract>,
     SbQueryError | ZError<H256> | ZError<PermissionContract>
   >
 > {
   const [permissionsError, allPermissions] = await queryPermissions(api);
   if (permissionsError) return makeErr(permissionsError);
 
-  const emissionPermissions = new Map<PermissionId, EmissionContract>();
+  const streamPermissions = new Map<PermissionId, StreamContract>();
 
   for (const [permissionId, permission] of allPermissions) {
     match(permission.scope)({
-      Emission: (emissionScope) => {
-        // Reconstruct as EmissionContract with the extracted emission scope
-        const emissionPermission: EmissionContract = {
+      Stream: (streamScope) => {
+        // Reconstruct as StreamContract with the extracted stream scope
+        const streamPermission: StreamContract = {
           ...permission,
-          scope: emissionScope,
+          scope: streamScope,
         };
-        if (filterFn(emissionPermission)) {
-          emissionPermissions.set(permissionId, emissionPermission);
+        if (filterFn(streamPermission)) {
+          streamPermissions.set(permissionId, streamPermission);
         }
       },
       Curator: () => {
@@ -210,7 +204,7 @@ export async function queryEmissionPermissions(
     });
   }
 
-  return makeOk(emissionPermissions);
+  return makeOk(streamPermissions);
 }
 
 /**
@@ -237,8 +231,8 @@ export async function queryNamespacePermissions(
       Namespace: () => {
         namespacePermissions.set(permissionId, permission);
       },
-      Emission: () => {
-        // Skip emission permissions
+      Stream: () => {
+        // Skip stream permissions
       },
       Curator: () => {
         // Skip curator permissions
@@ -249,12 +243,56 @@ export async function queryNamespacePermissions(
   return makeOk(namespacePermissions);
 }
 
+export interface AllPermissions {
+  namespacePermissions: Map<PermissionId, PermissionContract>;
+  streamPermissions: Map<PermissionId, PermissionContract>;
+  curatorPermissions: Map<PermissionId, PermissionContract>;
+}
+
+export async function queryAllPermissions(
+  api: Api,
+): Promise<
+  Result<
+    AllPermissions,
+    SbQueryError | ZError<H256> | ZError<PermissionContract>
+  >
+> {
+  const [permissionsError, allPermissions] = await queryPermissions(api);
+  if (permissionsError) return makeErr(permissionsError);
+
+  const namespacePermissions = new Map<PermissionId, PermissionContract>();
+  const streamPermissions = new Map<PermissionId, PermissionContract>();
+  const curatorPermissions = new Map<PermissionId, PermissionContract>();
+
+  for (const [permissionId, permission] of allPermissions) {
+    match(permission.scope)({
+      Namespace: () => {
+        namespacePermissions.set(permissionId, permission);
+      },
+      Stream: () => {
+        streamPermissions.set(permissionId, permission);
+      },
+      Curator: () => {
+        curatorPermissions.set(permissionId, permission);
+      },
+    });
+  }
+
+  return makeOk({
+    namespacePermissions,
+    streamPermissions,
+    curatorPermissions,
+  });
+}
+
 /**
- * Query namespace permissions where the specified address is the recipient.
+ * Query namespace permissions where the specified address is a recipient.
+ * Since recipients are now stored in scope-specific structures, this function
+ * checks the namespace scope for recipient information.
  *
  * @param api - The blockchain API instance
  * @param agentAddress - The SS58 address of the agent (recipient)
- * @returns A map of PermissionId -> PermissionContract for permissions where the agent is the recipient
+ * @returns A map of PermissionId -> PermissionContract for permissions where the agent is a recipient
  */
 export async function queryAgentNamespacePermissions(
   api: Api,
@@ -272,8 +310,11 @@ export async function queryAgentNamespacePermissions(
   const agentPermissions = new Map<PermissionId, PermissionContract>();
 
   for (const [permissionId, permission] of allPermissions) {
-    if (permission.recipient === agentAddress) {
-      agentPermissions.set(permissionId, permission);
+    // Check if this namespace permission has the agent as recipient
+    if ("Namespace" in permission.scope) {
+      if (permission.scope.Namespace.recipient === agentAddress) {
+        agentPermissions.set(permissionId, permission);
+      }
     }
   }
 
@@ -304,32 +345,37 @@ export async function queryAllAccumulatedStreamAmounts(
 
     const [delegatorRaw, streamIdRaw, permissionIdRaw] = keyArgs;
 
-    const delegatorParsed = sb_address.safeParse(delegatorRaw, {
-      path: ["storage", "permission0", "accumulatedStreamAmounts", "delegator"],
-    });
+    const delegatorParsed = prefixPath(sb_address.safeParse(delegatorRaw), [
+      "storage",
+      "permission0",
+      "accumulatedStreamAmounts",
+      "delegator",
+    ]);
     if (delegatorParsed.success === false)
       return makeErr(delegatorParsed.error);
 
-    const streamIdParsed = STREAM_ID_SCHEMA.safeParse(streamIdRaw, {
-      path: ["storage", "permission0", "accumulatedStreamAmounts", "streamId"],
-    });
+    const streamIdParsed = prefixPath(STREAM_ID_SCHEMA.safeParse(streamIdRaw), [
+      "storage",
+      "permission0",
+      "accumulatedStreamAmounts",
+      "streamId",
+    ]);
     if (streamIdParsed.success === false) return makeErr(streamIdParsed.error);
 
-    const permissionIdParsed = PERMISSION_ID_SCHEMA.safeParse(permissionIdRaw, {
-      path: [
-        "storage",
-        "permission0",
-        "accumulatedStreamAmounts",
-        "permissionId",
-      ],
-    });
+    const permissionIdParsed = prefixPath(
+      PERMISSION_ID_SCHEMA.safeParse(permissionIdRaw),
+      ["storage", "permission0", "accumulatedStreamAmounts", "permissionId"],
+    );
     if (permissionIdParsed.success === false)
       return makeErr(permissionIdParsed.error);
 
     // Parse balance value - the storage returns Option<BalanceOf<T>>
-    const amountParsed = sb_some(sb_balance).safeParse(valueRaw, {
-      path: ["storage", "permission0", "accumulatedStreamAmounts", "amount"],
-    });
+    const amountParsed = prefixPath(sb_some(sb_balance).safeParse(valueRaw), [
+      "storage",
+      "permission0",
+      "accumulatedStreamAmounts",
+      "amount",
+    ]);
     if (amountParsed.success === false) return makeErr(amountParsed.error);
 
     accumulatedAmounts.push({
@@ -409,41 +455,35 @@ export async function queryAccumulatedStreamsForAccount(
   for (const [keysRaw, valueRaw] of streamTuples) {
     const [_ac, streamIdRaw, permissionIdRaw] = keysRaw.args;
 
-    const streamIdParsed = sb_h256.safeParse(streamIdRaw, {
-      path: [
-        "storage",
-        "permission0",
-        "accumulatedStreamAmounts",
-        String(account),
-        String(streamIdRaw),
-      ],
-    });
+    const streamIdParsed = prefixPath(sb_h256.safeParse(streamIdRaw), [
+      "storage",
+      "permission0",
+      "accumulatedStreamAmounts",
+      String(account),
+      String(streamIdRaw),
+    ]);
     if (streamIdParsed.success === false) return makeErr(streamIdParsed.error);
 
-    const permissionIdParsed = sb_h256.safeParse(permissionIdRaw, {
-      path: [
-        "storage",
-        "permission0",
-        "accumulatedStreamAmounts",
-        String(account),
-        String(streamIdRaw),
-        String(permissionIdRaw),
-      ],
-    });
+    const permissionIdParsed = prefixPath(sb_h256.safeParse(permissionIdRaw), [
+      "storage",
+      "permission0",
+      "accumulatedStreamAmounts",
+      String(account),
+      String(streamIdRaw),
+      String(permissionIdRaw),
+    ]);
     if (permissionIdParsed.success === false)
       return makeErr(permissionIdParsed.error);
 
-    const valueParsed = sb_some(sb_balance).safeParse(valueRaw, {
-      path: [
-        "storage",
-        "permission0",
-        "accumulatedStreamAmounts",
-        String(account),
-        String(streamIdRaw),
-        String(permissionIdRaw),
-        "<value>",
-      ],
-    });
+    const valueParsed = prefixPath(sb_some(sb_balance).safeParse(valueRaw), [
+      "storage",
+      "permission0",
+      "accumulatedStreamAmounts",
+      String(account),
+      String(streamIdRaw),
+      String(permissionIdRaw),
+      "<value>",
+    ]);
     if (valueParsed.success === false) return makeErr(valueParsed.error);
 
     const streamId = streamIdParsed.data;
@@ -531,9 +571,9 @@ export function canExecutePermission(
  * Extract streams from a permission.
  */
 export const extractStreamsFromPermission = (permission: PermissionContract) =>
-  if_let(permission.scope, "Emission")(
-    (emissionScope) =>
-      if_let(emissionScope.allocation, "Streams")(
+  if_let(permission.scope, "Stream")(
+    (streamScope) =>
+      if_let(streamScope.allocation, "Streams")(
         (streams) => streams,
         () => null,
       ),
@@ -541,7 +581,20 @@ export const extractStreamsFromPermission = (permission: PermissionContract) =>
   );
 
 /**
- * Check if a permission is enabled by verifying that accumulating = true in an EmissionScope
+ * Extract recipients from a permission based on its scope.
+ */
+export const extractRecipientsFromPermission = (
+  permission: PermissionContract,
+): SS58Address[] => {
+  return match(permission.scope)({
+    Stream: (streamScope) => Array.from(streamScope.recipients.keys()),
+    Namespace: (namespaceScope) => [namespaceScope.recipient],
+    Curator: () => [], // Curator permissions don't have explicit recipients
+  });
+};
+
+/**
+ * Check if a permission is enabled by verifying that accumulating = true in a StreamScope
  */
 export async function isPermissionEnabled(
   api: Api,
@@ -558,8 +611,8 @@ export async function isPermissionEnabled(
   }
 
   const isEnabled = match(permission.scope)({
-    Emission(emissionScope) {
-      return emissionScope.accumulating;
+    Stream(streamScope) {
+      return streamScope.accumulating;
     },
     Curator() {
       // Curator permissions don't have an accumulating field
@@ -616,10 +669,15 @@ export function buildAvailableStreamsFor(
 
   if (permissions != null) {
     for (const [_permId, permission] of permissions) {
-      const grantee = permission.recipient;
+      // Check if the agent is a recipient in stream permissions
+      const isRecipient = match(permission.scope)({
+        Stream: (streamScope) => streamScope.recipients.has(agentId),
+        Namespace: (namespaceScope) => namespaceScope.recipient === agentId,
+        Curator: () => false, // Curator permissions don't have recipients in this context
+      });
 
-      // Only add consider permissions that are granted to the agent
-      if (grantee !== agentId) continue;
+      // Only consider permissions that are granted to the agent
+      if (!isRecipient) continue;
 
       const streams = extractStreamsFromPermission(permission);
       if (streams != null) {
@@ -688,12 +746,12 @@ export async function queryDelegationStreamsByAccount(
 
     const delegationInfo: DelegationStreamInfo | null = if_let(
       permission.scope,
-      "Emission",
+      "Stream",
     )(
-      (emissionScope) =>
-        if_let(emissionScope.allocation, "Streams")(
+      (streamScope) =>
+        if_let(streamScope.allocation, "Streams")(
           (streamsMap) => {
-            // This is a stream-based emission permission
+            // This is a stream-based stream permission
             // The streams map contains StreamId -> percentage mappings
             const streamEntries = Array.from(streamsMap.entries());
 
@@ -705,12 +763,17 @@ export async function queryDelegationStreamsByAccount(
               // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
               const [streamId, percentage] = streamEntries[0]!;
 
+              // Note: With multi-recipient support, we need to get the first recipient
+              // TODO: This logic needs to be updated to handle multiple recipients properly
+              const recipients = Array.from(streamScope.recipients.entries());
+              const firstRecipient = recipients[0]?.[0] ?? delegatorAccount; // fallback
+
               return {
                 delegator: delegatorAccount,
-                recipient: permission.recipient,
+                recipient: firstRecipient,
                 streamId,
                 percentage,
-                targets: emissionScope.targets,
+                targets: streamScope.recipients,
                 accumulatedAmount: null,
               } as DelegationStreamInfo;
             }
@@ -728,11 +791,25 @@ export async function queryDelegationStreamsByAccount(
       // Try to get the accumulated amount for this stream delegation
       // TODO: refactor
       await (async () => {
+        // Get the first recipient for querying accumulated streams
+        const firstRecipient = match(permission.scope)({
+          Stream: (streamScope) => {
+            const recipients = Array.from(streamScope.recipients.keys());
+            return recipients.length > 0 ? (recipients[0] ?? null) : null;
+          },
+          Namespace: (namespaceScope) => namespaceScope.recipient,
+          Curator: () => null, // Curator permissions don't have recipients
+        });
+
+        if (firstRecipient === null) {
+          return; // No recipient to query for
+        }
+
         const [err, accumulatedStreams] =
-          await queryAccumulatedStreamsForAccount(api, permission.recipient);
+          await queryAccumulatedStreamsForAccount(api, firstRecipient);
         if (err !== undefined) {
           logger.error(
-            `Failed to query accumulated streams for account ${permission.recipient}:`,
+            `Failed to query accumulated streams for account ${firstRecipient}:`,
             err,
           );
           return;

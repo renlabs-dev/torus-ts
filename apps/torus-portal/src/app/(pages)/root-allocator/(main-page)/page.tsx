@@ -1,5 +1,4 @@
 import { parseSearchParams } from "~/utils/parse-search-params";
-
 import type { AgentView } from "../_components/agent-view-toggle";
 import { InfiniteAgentList } from "../_components/infinite-agent-list";
 import { PageLayout } from "../_components/page-layout";

@@ -1,12 +1,9 @@
-import { useCallback, useState } from "react";
-
-import type { Edge, Node } from "@xyflow/react";
-
 import type {
   DelegationTreeManager,
   PermissionId,
 } from "@torus-network/sdk/chain";
-
+import type { Edge, Node } from "@xyflow/react";
+import { useCallback, useState } from "react";
 import type { NamespacePathNodeData } from "../create-capability-flow-types";
 
 interface UsePermissionSelectionProps {
@@ -45,6 +42,7 @@ export function usePermissionSelection({
           const currentId = queue.shift()!;
           const children = treeManager.getChildren(currentId);
           descendants.push(...children);
+          // eslint-disable-next-line react-hooks/immutability
           queue.push(...children);
         }
 

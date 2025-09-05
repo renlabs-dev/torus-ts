@@ -1,24 +1,18 @@
-import { Suspense } from "react";
-
-import { ArrowLeft } from "lucide-react";
-import Link from "next/link";
-import { notFound } from "next/navigation";
-
 import { fetchAgentMetadata } from "@torus-network/sdk/metadata";
 import { tryAsync } from "@torus-network/torus-utils/try-catch";
-
 import { AgentIcon } from "@torus-ts/ui/components/agent-card/agent-icon";
 import { Button } from "@torus-ts/ui/components/button";
 import { Card } from "@torus-ts/ui/components/card";
 import { Container } from "@torus-ts/ui/components/container";
 import { Label } from "@torus-ts/ui/components/label";
-
-import { calculatePostPenaltyEmission } from "~/hooks/use-post-penalty-emission";
 import { MarkdownView } from "@torus-ts/ui/components/markdown-view";
 import { Skeleton } from "@torus-ts/ui/components/skeleton";
-
+import { calculatePostPenaltyEmission } from "~/hooks/use-post-penalty-emission";
 import { api } from "~/trpc/server";
-
+import { ArrowLeft } from "lucide-react";
+import Link from "next/link";
+import { notFound } from "next/navigation";
+import { Suspense } from "react";
 import { PenaltyList } from "../../../_components/penalties-list";
 import { AgentInfoCard } from "./components/agent-info-card";
 import { ExpandedViewSocials } from "./components/expanded-view-socials";
@@ -121,7 +115,7 @@ export default async function AgentPage({ params }: Readonly<AgentPageProps>) {
               >
                 <AgentIcon alt={`${mdl.name} icon`} icon={icon} />
               </Suspense>
-              <div className="flex w-fit flex-col gap-6 p-6 md:p-0 md:pt-6 md:pr-6">
+              <div className="flex w-fit flex-col gap-6 p-6 md:p-0 md:pr-6 md:pt-6">
                 <h1 className="text-start text-3xl font-semibold">
                   {mdl.name}
                 </h1>

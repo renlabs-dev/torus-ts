@@ -7,44 +7,44 @@
   "type": "module",
   "exports": {
     "./agent": {
-      "default": "./dist/agent/index.js",
-      "types": "./dist/agent/index.d.ts"
+      "types": "./dist/agent/index.d.ts",
+      "default": "./dist/agent/index.js"
     },
     "./agent-client": {
-      "default": "./dist/agent-client/index.js",
-      "types": "./dist/agent-client/index.d.ts"
+      "types": "./dist/agent-client/index.d.ts",
+      "default": "./dist/agent-client/index.js"
     },
     "./cached-queries": {
-      "default": "./dist/cached-queries.js",
-      "types": "./dist/cached-queries.d.ts"
+      "types": "./dist/cached-queries.d.ts",
+      "default": "./dist/cached-queries.js"
     },
     "./chain": {
-      "default": "./dist/chain/index.js",
-      "types": "./dist/chain/index.d.ts"
+      "types": "./dist/chain/index.d.ts",
+      "default": "./dist/chain/index.js"
     },
     "./constants": {
-      "default": "./dist/constants.js",
-      "types": "./dist/constants.d.ts"
+      "types": "./dist/constants.d.ts",
+      "default": "./dist/constants.js"
     },
     "./evm": {
-      "default": "./dist/evm.js",
-      "types": "./dist/evm.d.ts"
+      "types": "./dist/evm.d.ts",
+      "default": "./dist/evm.js"
     },
     "./extrinsics": {
-      "default": "./dist/extrinsics.js",
-      "types": "./dist/extrinsics.d.ts"
+      "types": "./dist/extrinsics.d.ts",
+      "default": "./dist/extrinsics.js"
     },
     "./metadata": {
-      "default": "./dist/metadata/index.js",
-      "types": "./dist/metadata/index.d.ts"
+      "types": "./dist/metadata/index.d.ts",
+      "default": "./dist/metadata/index.js"
     },
     "./types": {
-      "default": "./dist/types/index.js",
-      "types": "./dist/types/index.d.ts"
+      "types": "./dist/types/index.d.ts",
+      "default": "./dist/types/index.js"
     },
     "./utils": {
-      "default": "./dist/utils/index.js",
-      "types": "./dist/utils/index.d.ts"
+      "types": "./dist/utils/index.d.ts",
+      "default": "./dist/utils/index.js"
     }
   },
   "files": [
@@ -76,16 +76,13 @@
     "@polkadot/util": "13.4.3",
     "@polkadot/util-crypto": "^13.4.3",
     "@torus-network/torus-utils": "workspace:*",
-    "@uidotdev/usehooks": "catalog:",
     "@wagmi/core": "2.16.3",
     "base64url": "^3.0.1",
     "emittery": "catalog:",
     "hono": "^4.7.6",
-    "hono-rate-limiter": "^0.4.2",
-    "jsonwebtoken": "^9.0.2",
     "multiformats": "catalog:",
     "rustie": "catalog:",
-    "superjson": "2.2.1",
+    "superjson": "catalog:",
     "tsafe": "catalog:",
     "viem": "catalog:",
     "zod": "catalog:"
@@ -94,7 +91,6 @@
     "@polkadot/typegen": "catalog:",
     "@torus-ts/eslint-config": "workspace:*",
     "@torus-ts/tsconfig": "workspace:*",
-    "@types/jsonwebtoken": "^9.0.9",
     "tsx": "catalog:",
     "vitest": "catalog:"
   }

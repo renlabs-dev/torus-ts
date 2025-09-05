@@ -2,7 +2,8 @@
 
 import { Icons } from "@torus-ts/ui/components/icons";
 import { cn } from "@torus-ts/ui/lib/utils";
-import { AnimatePresence, motion } from "framer-motion";
+import type { Variants } from "motion/react";
+import { AnimatePresence, motion } from "motion/react";
 import { useEffect, useRef, useState } from "react";
 import { ANIMATIONS } from "./_components/data";
 import { ButtonsSection } from "./_components/desktop/buttons-section";
@@ -14,7 +15,7 @@ export function HoverHeader() {
   const [isVisible, setIsVisible] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
   const contentRef = useRef<HTMLDivElement>(null);
-  const [cursorPosition, setCursorPosition] = useState({ x: 0, y: 0 });
+  const [glowSize, setGlowSize] = useState(0.8);
 
   const [showStarter, setShowStarter] = useState(false);
   const [showNetwork, setShowNetwork] = useState(false);
@@ -32,7 +33,28 @@ export function HoverHeader() {
 
   useEffect(() => {
     const handleMouseMove = (event: MouseEvent) => {
-      setCursorPosition({ x: event.clientX, y: event.clientY });
+      // Calculate glow size here where ref access is safe
+      const logoRect = contentRef.current?.getBoundingClientRect();
+      if (!logoRect) {
+        setGlowSize(0.8);
+        return;
+      }
+
+      const logoCenterX = logoRect.left + logoRect.width / 2;
+      const logoCenterY = logoRect.top + logoRect.height / 2;
+
+      const distance = calculateDistance(
+        event.clientX,
+        event.clientY,
+        logoCenterX,
+        logoCenterY,
+      );
+      const maxDistance = Math.sqrt(
+        Math.pow(window.innerWidth, 2) + Math.pow(window.innerHeight, 2),
+      );
+
+      const scale = 0.15 + (maxDistance - distance) / maxDistance;
+      setGlowSize(scale / 1.2);
     };
 
     window.addEventListener("mousemove", handleMouseMove);
@@ -51,28 +73,6 @@ export function HoverHeader() {
         ease: "easeInOut",
       },
     }),
-  };
-
-  const calculateGlowSize = (cursorX: number, cursorY: number): number => {
-    const logoRect = contentRef.current?.getBoundingClientRect();
-    if (!logoRect) return 0.8;
-
-    const logoCenterX = logoRect.left + logoRect.width / 2;
-    const logoCenterY = logoRect.top + logoRect.height / 2;
-
-    const distance = calculateDistance(
-      cursorX,
-      cursorY,
-      logoCenterX,
-      logoCenterY,
-    );
-    const maxDistance = Math.sqrt(
-      Math.pow(window.innerWidth, 2) + Math.pow(window.innerHeight, 2),
-    );
-
-    const scale = 0.15 + (maxDistance - distance) / maxDistance;
-
-    return scale;
   };
 
   useEffect(() => {
@@ -110,8 +110,7 @@ export function HoverHeader() {
       <div
         ref={contentRef}
         className={cn(
-          `animate-fade-down fixed left-0 right-0 top-0 z-50 mt-4 flex w-full flex-col
-          items-center pb-6 pt-2 md:justify-center`,
+          `animate-fade-down fixed left-0 right-0 top-0 z-50 mt-4 flex w-full flex-col items-center pb-6 pt-2 md:justify-center`,
         )}
       >
         <motion.button
@@ -125,15 +124,14 @@ export function HoverHeader() {
           whileTap={{ y: 1 }}
           onHoverStart={() => setIsHovered(true)}
           onHoverEnd={() => setIsHovered(false)}
-          className="hover:background-acent/30 rounded-radius relative z-50 p-3 transition
-            duration-300"
+          className="hover:background-acent/30 rounded-radius relative z-50 p-3 transition duration-300"
         >
           <Icons.Logo className="relative z-10 h-10 w-10" />
           <motion.div
             className="bg-primary/15 absolute inset-0 rounded-2xl blur-md"
             animate="pulse"
-            variants={glowVariants}
-            custom={calculateGlowSize(cursorPosition.x, cursorPosition.y) / 1.2}
+            variants={glowVariants as Variants}
+            custom={glowSize}
           />
         </motion.button>
 
@@ -158,7 +156,7 @@ export function HoverHeader() {
                 fill="#09090B"
                 stroke="#27272a"
                 strokeWidth="2"
-                variants={ANIMATIONS.DRAW}
+                variants={ANIMATIONS.DRAW as Variants}
               />
             </motion.svg>
           )}

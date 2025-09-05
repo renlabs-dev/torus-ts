@@ -1,9 +1,5 @@
 "use client";
 
-import { useState } from "react";
-
-import { AlertTriangle } from "lucide-react";
-
 import { Button } from "@torus-ts/ui/components/button";
 import { Checkbox } from "@torus-ts/ui/components/checkbox";
 import { DestructiveAlertWithDescription } from "@torus-ts/ui/components/destructive-alert-with-description";
@@ -18,6 +14,8 @@ import {
 import { Input } from "@torus-ts/ui/components/input";
 import { Label } from "@torus-ts/ui/components/label";
 import { Separator } from "@torus-ts/ui/components/separator";
+import { AlertTriangle } from "lucide-react";
+import { useState } from "react";
 
 interface DeregisterAgentDialogProps {
   open: boolean;
@@ -69,7 +67,7 @@ export function DeregisterAgentDialog({
 
   return (
     <Dialog open={open} onOpenChange={handleDialogClose}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-h-[90vh] max-w-2xl overflow-y-auto">
         <DialogHeader className="space-y-3">
           <div className="flex items-center gap-2">
             <AlertTriangle className="h-5 w-5" />
@@ -207,8 +205,8 @@ export function DeregisterAgentDialog({
             />
           </div>
 
-          <div className="rounded-md border border-destructive bg-destructive/10 p-4">
-            <p className="text-sm font-semibold text-destructive text-center">
+          <div className="border-destructive bg-destructive/10 rounded-md border p-4">
+            <p className="text-destructive text-center text-sm font-semibold">
               This is your final warning. Once deleted, your agent cannot be
               restored.
             </p>

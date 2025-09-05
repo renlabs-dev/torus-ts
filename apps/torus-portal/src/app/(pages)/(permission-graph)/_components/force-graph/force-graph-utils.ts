@@ -1,12 +1,8 @@
-import type { inferProcedureOutput } from "@trpc/server";
-import * as THREE from "three";
-
 import { smallAddress } from "@torus-network/torus-utils/torus/address";
-
 import type { AppRouter } from "@torus-ts/api";
-
+import type { inferProcedureOutput } from "@trpc/server";
 import { getCapabilityPaths } from "~/utils/capability-path";
-
+import * as THREE from "three";
 import type {
   allPermissions,
   CustomGraphLink,
@@ -105,7 +101,7 @@ function assignPrecomputedObjects(node: CustomGraphNode) {
 }
 
 // Infer Agent type from tRPC router
-export type Agent = NonNullable<
+type Agent = NonNullable<
   inferProcedureOutput<AppRouter["agent"]["all"]>
 >[number];
 
@@ -146,16 +142,10 @@ function getDeterministicZ(seed: string, range: number): number {
   return getDeterministicValue(seed + "_z", -range / 2, range / 2);
 }
 
-export interface ComputedWeight {
-  agentKey: string;
-  agentName: string;
-  percComputedWeight: number;
-}
-
 // Type for allWithCompletePermissions data
-export type AllPermission = allPermissions[number];
+type AllPermission = allPermissions[number];
 
-export interface ExtractedGraphData {
+interface ExtractedGraphData {
   nodes: CustomGraphNode[];
   links: CustomGraphLink[];
   permissions: {
@@ -443,7 +433,7 @@ export function createSimplifiedGraphData(
     const delegatorId = permission.permissions.grantorAccountId;
     const recipientId = permission.permissions.granteeAccountId;
 
-    // Determine permission type
+    // Determine permission type (keep emission for internal logic, display as stream)
     const permissionType = permission.emission_permissions
       ? "emission"
       : permission.namespace_permissions
@@ -452,10 +442,12 @@ export function createSimplifiedGraphData(
 
     // Extract permission data for search
     if (permissionType === "capability") {
+      const namespaceRecipient =
+        permission.namespace_permissions?.recipient || recipientId;
       extractedNamespacePermissions.push({
         id: permissionId,
         delegatorAccountId: delegatorId || "",
-        recipientAccountId: recipientId || "",
+        recipientAccountId: namespaceRecipient || "",
         scope: permissionType.toUpperCase(),
         duration:
           permission.permissions.durationType === "indefinite"
@@ -487,12 +479,15 @@ export function createSimplifiedGraphData(
     }
 
     // Create edges based on permission relationships
-    if (
-      permissionType === "capability" &&
-      delegatorId &&
-      recipientId &&
-      delegatorId !== recipientId
-    ) {
+    if (permissionType === "capability" && delegatorId) {
+      // For namespace permissions, get recipient from namespace data
+      const namespaceRecipient =
+        permission.namespace_permissions?.recipient || recipientId;
+
+      if (!namespaceRecipient || delegatorId === namespaceRecipient) {
+        // Skip if no recipient or self-delegation
+        return;
+      }
       // For namespace permissions: delegator (root_agent) creates permission for recipient (target_agent)
       const permissionNodeId = `permission-${permissionId}`;
 
@@ -515,7 +510,7 @@ export function createSimplifiedGraphData(
             permissionId,
             permissionType: "capability",
             delegatorAccountId: delegatorId,
-            recipientAccountId: recipientId,
+            recipientAccountId: namespaceRecipient,
             scope: "CAPABILITY",
             duration:
               permission.permissions.durationType === "indefinite"
@@ -538,9 +533,9 @@ export function createSimplifiedGraphData(
         const delegatorNode = getOrCreateAgentNode(delegatorId);
         nodesMap.set(delegatorId, delegatorNode);
       }
-      if (!nodesMap.has(recipientId)) {
-        const recipientNode = getOrCreateAgentNode(recipientId);
-        nodesMap.set(recipientId, recipientNode);
+      if (!nodesMap.has(namespaceRecipient)) {
+        const recipientNode = getOrCreateAgentNode(namespaceRecipient);
+        nodesMap.set(namespaceRecipient, recipientNode);
       }
 
       // Edge: delegator (root_agent) -> permission node
@@ -557,14 +552,14 @@ export function createSimplifiedGraphData(
       links.push({
         linkType: "permission_receive",
         source: permissionNodeId,
-        target: recipientId,
+        target: namespaceRecipient,
         id: `receive-${permissionId}`,
         linkColor: graphConstants.linkConfig.linkColors.namespacePermissionLink,
         ...createParticleProperties(permissionId),
       });
     }
 
-    // For emission permissions: delegator (root_agent) creates emission permission with targets
+    // For stream permissions: delegator (root_agent) creates stream permission with targets
     if (permissionType === "emission" && delegatorId) {
       const permissionNodeId = `permission-${permissionId}`;
 
@@ -572,20 +567,20 @@ export function createSimplifiedGraphData(
       if (!createdPermissionNodes.has(permissionNodeId)) {
         createdPermissionNodes.add(permissionNodeId);
 
-        // Create emission permission node
+        // Create stream permission node
         const permissionNode: CustomGraphNode = {
           id: permissionNodeId,
           name: `Stream ${smallAddress(permissionId)}`,
           color: graphConstants.nodeConfig.nodeColors.emissionPermissionNode,
           fullAddress: permissionId,
-          role: "Emission Permission",
+          role: "Stream Permission",
           nodeType: "permission",
           x: 0,
           y: 0,
           z: getDeterministicZ(permissionId, 50),
           permissionData: {
             permissionId,
-            permissionType: "emission",
+            permissionType: "stream",
             delegatorAccountId: delegatorId,
             recipientAccountId: recipientId || "",
             scope: "EMISSION",

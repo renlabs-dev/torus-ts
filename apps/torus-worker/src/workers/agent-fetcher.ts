@@ -1,14 +1,12 @@
-import { match } from "rustie";
-
 import type {
   AccumulatedStreamEntry,
-  EmissionScope,
   LastBlock,
   NamespaceScope,
   PermissionContract,
   PermissionId,
   Proposal,
   StreamId,
+  StreamScope,
 } from "@torus-network/sdk/chain";
 import {
   queryAgents,
@@ -22,7 +20,7 @@ import type { SS58Address } from "@torus-network/sdk/types";
 import { checkSS58 } from "@torus-network/sdk/types";
 import { BasicLogger } from "@torus-network/torus-utils/logger";
 import { tryAsync } from "@torus-network/torus-utils/try-catch";
-
+import { match } from "rustie";
 import type { WorkerProps } from "../common";
 import {
   agentApplicationToApplication,
@@ -122,11 +120,11 @@ async function cleanPermissions(
 }
 
 /**
- * Transforms emission permission data to database format
+ * Transforms stream permission data to database format (formerly emission)
  */
-function emissionToDatabase(
+function streamToDatabase(
   permissionId: PermissionId,
-  emission: EmissionScope,
+  stream: StreamScope,
   delegator: SS58Address,
   streamAccumulations: AccumulatedStreamEntry[],
   atBlock: number,
@@ -135,40 +133,40 @@ function emissionToDatabase(
   streamAllocations: NewEmissionStreamAllocation[];
   distributionTargets: NewEmissionDistributionTarget[];
 } {
-  const allocationType = match(emission.allocation)({
+  const allocationType = match(stream.allocation)({
     Streams: () => "streams" as const,
     FixedAmount: () => "fixed_amount" as const,
   });
 
-  const distributionType = match(emission.distribution)({
+  const distributionType = match(stream.distribution)({
     Manual: () => "manual" as const,
     Automatic: () => "automatic" as const,
     AtBlock: () => "at_block" as const,
     Interval: () => "interval" as const,
   });
 
-  const distributionThreshold = match(emission.distribution)({
+  const distributionThreshold = match(stream.distribution)({
     Automatic: (auto) => auto.toString(),
     Manual: () => null,
     AtBlock: () => null,
     Interval: () => null,
   });
 
-  const distributionTargetBlock = match(emission.distribution)({
+  const distributionTargetBlock = match(stream.distribution)({
     AtBlock: (atBlock) => BigInt(atBlock.toString()),
     Manual: () => null,
     Automatic: () => null,
     Interval: () => null,
   });
 
-  const distributionIntervalBlocks = match(emission.distribution)({
+  const distributionIntervalBlocks = match(stream.distribution)({
     Interval: (interval) => BigInt(interval.toString()),
     Manual: () => null,
     Automatic: () => null,
     AtBlock: () => null,
   });
 
-  const fixedAmount = match(emission.allocation)({
+  const fixedAmount = match(stream.allocation)({
     FixedAmount: (amount) => amount.toString(),
     Streams: () => null,
   });
@@ -181,11 +179,13 @@ function emissionToDatabase(
     distributionThreshold,
     distributionTargetBlock,
     distributionIntervalBlocks,
-    accumulating: emission.accumulating,
+    accumulating: stream.accumulating,
+    weightSetter: [delegator],
+    recipientManager: [delegator],
   };
 
   const streamAllocations: NewEmissionStreamAllocation[] = match(
-    emission.allocation,
+    stream.allocation,
   )({
     Streams: (streams: Map<StreamId, number>) =>
       Array.from(streams.entries()).map(([streamId, percentage]) => ({
@@ -208,12 +208,13 @@ function emissionToDatabase(
   }
 
   // Calculate total weight for proportional distribution
-  const totalWeight = Array.from(emission.targets.values()).reduce(
+  // Note: With the new multi-recipient structure, this logic may need updates
+  const totalWeight = Array.from(stream.recipients.values()).reduce(
     (sum, weight) => sum + weight,
     BigInt(0),
   );
 
-  for (const [accountId, weight] of emission.targets.entries()) {
+  for (const [accountId, weight] of stream.recipients.entries()) {
     for (const streamAllocation of streamAllocations) {
       // Look up accumulated amount for this permission's delegator (the account that owns/delegates the stream)
       // The accumulated amount is stored under (delegator, streamId, permissionId)
@@ -258,6 +259,8 @@ function namespaceToDatabase(
 } {
   const namespacePermission: NewNamespacePermission = {
     permissionId: permissionId,
+    recipient: namespace.recipient,
+    maxInstances: namespace.maxInstances,
   };
 
   // Extract namespace paths from the map structure
@@ -290,7 +293,7 @@ function permissionContractToDatabase(
 ):
   | ({
       permission: NewPermission;
-      hierarchy: NewPermissionHierarchy;
+      hierarchies: NewPermissionHierarchy[];
       enforcementControllers: NewPermissionEnforcementController[];
       revocationArbiters: NewPermissionRevocationArbiter[];
     } & (
@@ -305,9 +308,9 @@ function permissionContractToDatabase(
         }
     ))
   | null {
-  // Process emission and namespace permissions, skip curator permissions
+  // Process stream and namespace permissions, skip curator permissions
   const shouldProcess = match(contract.scope)({
-    Emission: () => true,
+    Stream: () => true,
     Namespace: () => true,
     Curator: () => false,
   });
@@ -363,7 +366,7 @@ function permissionContractToDatabase(
   const permission: NewPermission = {
     permissionId: permissionId,
     grantorAccountId: contract.delegator,
-    granteeAccountId: contract.recipient,
+    granteeAccountId: null, // No longer using grantee field - recipients are now in weightSetter/recipientManager arrays
     durationType,
     durationBlockNumber,
     revocationType,
@@ -379,12 +382,23 @@ function permissionContractToDatabase(
     createdAtBlock: BigInt(contract.createdAt.toString()),
   };
 
-  // Handle hierarchy - since parent field no longer exists, create self-reference
-  // Children relationships are now managed through the children field on other permissions
-  const hierarchy: NewPermissionHierarchy = {
-    childPermissionId: permissionId,
-    parentPermissionId: permissionId, // Self-reference (no parent in current schema)
-  };
+  // Handle hierarchy - create parent-child relationships based on scope's children field
+  const hierarchy: NewPermissionHierarchy[] = [];
+
+  // Extract children from the scope
+  const children = match(contract.scope)({
+    Stream: () => [], // Stream scopes don't have children
+    Namespace: (scope) => scope.children,
+    Curator: (scope) => scope.children,
+  });
+
+  // Create hierarchy entries for each child permission
+  for (const childPermissionId of children) {
+    hierarchy.push({
+      childPermissionId: childPermissionId,
+      parentPermissionId: permissionId,
+    });
+  }
 
   // Initialize common arrays (always empty if not populated)
   let enforcementControllers: NewPermissionEnforcementController[] = [];
@@ -439,10 +453,10 @@ function permissionContractToDatabase(
       };
 
   // TODO: MAKE THIS PRETTIER
-  if ("Emission" in contract.scope) {
-    scopeSpecificData = emissionToDatabase(
+  if ("Stream" in contract.scope) {
+    scopeSpecificData = streamToDatabase(
       permissionId,
-      contract.scope.Emission,
+      contract.scope.Stream,
       contract.delegator,
       streamAccumulations,
       atBlock,
@@ -459,7 +473,7 @@ function permissionContractToDatabase(
 
   return {
     permission,
-    hierarchy,
+    hierarchies: hierarchy,
     enforcementControllers,
     revocationArbiters,
     ...scopeSpecificData,
@@ -517,7 +531,7 @@ export async function runAgentFetch(lastBlock: LastBlock) {
  *
  * @param lastBlock - Contains blockchain API instance frozen at a specific block height
  */
-export async function runApplicationsFetch(lastBlock: LastBlock) {
+async function runApplicationsFetch(lastBlock: LastBlock) {
   const lastBlockNumber = lastBlock.blockNumber;
   log.info(`Block ${lastBlockNumber}: running applications fetch`);
 
@@ -552,7 +566,7 @@ export async function runApplicationsFetch(lastBlock: LastBlock) {
  *
  * @param lastBlock - Contains blockchain API instance frozen at a specific block height
  */
-export async function runProposalsFetch(lastBlock: LastBlock) {
+async function runProposalsFetch(lastBlock: LastBlock) {
   const lastBlockNumber = lastBlock.blockNumber;
   log.info(`Block ${lastBlockNumber}: running proposals fetch`);
 
@@ -602,7 +616,7 @@ export async function runProposalsFetch(lastBlock: LastBlock) {
  *
  * @param lastBlock - Contains blockchain API instance frozen at a specific block height
  */
-export async function runPermissionsFetch(lastBlock: LastBlock) {
+async function runPermissionsFetch(lastBlock: LastBlock) {
   const lastBlockNumber = lastBlock.blockNumber;
   log.info(`Block ${lastBlockNumber}: running permissions fetch`);
 
@@ -640,7 +654,7 @@ export async function runPermissionsFetch(lastBlock: LastBlock) {
 
   const permissionsData: ({
     permission: NewPermission;
-    hierarchy: NewPermissionHierarchy;
+    hierarchies: NewPermissionHierarchy[];
     enforcementControllers: NewPermissionEnforcementController[];
     revocationArbiters: NewPermissionRevocationArbiter[];
   } & (
@@ -694,7 +708,7 @@ export async function runPermissionsFetch(lastBlock: LastBlock) {
  *
  * @param lastBlock - Contains blockchain API instance frozen at a specific block height
  */
-export async function runStreamAccumulationUpdate(lastBlock: LastBlock) {
+async function runStreamAccumulationUpdate(lastBlock: LastBlock) {
   const lastBlockNumber = lastBlock.blockNumber;
   log.info(`Block ${lastBlockNumber}: running stream accumulation update`);
 
@@ -757,10 +771,6 @@ export async function runStreamAccumulationUpdate(lastBlock: LastBlock) {
       atBlock: lastBlockNumber,
       executionCount: Number(permission.executionCount),
     };
-
-    log.debug(
-      `Block ${lastBlockNumber}: stream amount - delegator: ${streamAmount.grantorAccountId}, streamId: ${streamAmount.streamId}, amount: ${streamAmount.accumulatedAmount}`,
-    );
 
     dbStreamAmounts.push(streamAmount);
   }

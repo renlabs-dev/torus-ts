@@ -1,21 +1,7 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
-
 import { zodResolver } from "@hookform/resolvers/zod";
-import {
-  ArrowLeft,
-  ArrowRight,
-  Eye,
-  LoaderCircle,
-  Pencil,
-  Save,
-} from "lucide-react";
-import { useRouter } from "next/navigation";
-import { useForm } from "react-hook-form";
-
 import { updateAgent } from "@torus-network/sdk/chain";
-
 import { useTorus } from "@torus-ts/torus-provider";
 import { useSendTransaction } from "@torus-ts/torus-provider/use-send-transaction";
 import { Button } from "@torus-ts/ui/components/button";
@@ -25,11 +11,20 @@ import {
   TabsList,
   TabsTrigger,
 } from "@torus-ts/ui/components/tabs";
-
 import { useQueryAgentMetadata } from "~/hooks/use-agent-metadata";
 import { useBlobUrl } from "~/hooks/use-blob-url";
 import { api as trpcApi } from "~/trpc/react";
-
+import {
+  ArrowLeft,
+  ArrowRight,
+  Eye,
+  LoaderCircle,
+  Pencil,
+  Save,
+} from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { useForm } from "react-hook-form";
 import { DeregisterAgentButton } from "./deregister-agent-button";
 import { UpdateAgentFormFields } from "./update-agent-form-fields";
 import type { UpdateAgentFormData } from "./update-agent-form-schema";
@@ -78,6 +73,7 @@ export function UpdateAgentForm({ agentKey }: UpdateAgentFormProps) {
     if (currentImagePreview && currentImagePreview !== currentImageBlobUrl) {
       URL.revokeObjectURL(currentImagePreview);
     }
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setCurrentImagePreview(currentImageBlobUrl);
   }, [currentImageBlobUrl, currentImagePreview]);
 
@@ -137,6 +133,7 @@ export function UpdateAgentForm({ agentKey }: UpdateAgentFormProps) {
         },
       };
 
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setOriginalFormData(originalData);
       form.reset(originalData);
       setHasUnsavedChanges(false);
@@ -247,20 +244,20 @@ export function UpdateAgentForm({ agentKey }: UpdateAgentFormProps) {
         onValueChange={handleTabChange}
         className="w-full"
       >
-        <TabsList className="grid w-full grid-cols-2 mb-6">
+        <TabsList className="mb-6 grid w-full grid-cols-2">
           <TabsTrigger value="edit" disabled={updateAgentMutation.isPending}>
-            <Pencil className="h-4 w-4 mr-2" />
+            <Pencil className="mr-2 h-4 w-4" />
             <span>Edit Details</span>
           </TabsTrigger>
           <TabsTrigger value="preview" disabled={updateAgentMutation.isPending}>
-            <Eye className="h-4 w-4 mr-2" />
+            <Eye className="mr-2 h-4 w-4" />
             <span>Preview</span>
           </TabsTrigger>
         </TabsList>
 
         <div className="relative">
           <TabsContent value="edit" className="mt-4 space-y-4">
-            <div className="rounded-md border bg-muted/20 p-4">
+            <div className="bg-muted/20 rounded-md border p-4">
               <UpdateAgentFormFields
                 agentKey={agentKey}
                 form={form}
@@ -269,7 +266,7 @@ export function UpdateAgentForm({ agentKey }: UpdateAgentFormProps) {
               />
             </div>
 
-            <div className="flex justify-between items-center mt-6">
+            <div className="mt-6 flex items-center justify-between">
               <DeregisterAgentButton agentName={agent?.name ?? ""} />
               <Button
                 type="button"
@@ -284,17 +281,17 @@ export function UpdateAgentForm({ agentKey }: UpdateAgentFormProps) {
           </TabsContent>
 
           <TabsContent value="preview" className="mt-4">
-            <div className="rounded-md border bg-muted/20 p-6">
-              <h3 className="text-lg font-medium mb-4 text-center">
+            <div className="bg-muted/20 rounded-md border p-6">
+              <h3 className="mb-4 text-center text-lg font-medium">
                 Agent Preview
               </h3>
               <UpdateAgentPreview agentKey={agentKey} form={form} />
-              <p className="text-sm text-muted-foreground text-center mt-4">
+              <p className="text-muted-foreground mt-4 text-center text-sm">
                 This is how your agent will appear to users.
               </p>
             </div>
 
-            <div className="flex justify-between mt-6">
+            <div className="mt-6 flex justify-between">
               <Button
                 type="button"
                 variant="outline"

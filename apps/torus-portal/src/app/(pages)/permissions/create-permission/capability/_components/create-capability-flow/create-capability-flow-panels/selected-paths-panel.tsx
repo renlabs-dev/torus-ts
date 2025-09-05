@@ -1,5 +1,4 @@
 import type { Node } from "@xyflow/react";
-
 import type { NamespacePathNodeData } from "../create-capability-flow-types";
 
 interface SelectedPathsPanelProps {
@@ -20,12 +19,9 @@ export function SelectedPathsPanel({
   const descendantCount = selectedPaths.size - rootSelectedPaths.size;
 
   return (
-    <div
-      className="bg-muted/50 backdrop-blur-md border-border border rounded-sm p-2 z-50 shadow-lg
-        space-y-1 max-w-screen-sm"
-    >
+    <div className="bg-muted/50 border-border z-50 max-w-screen-sm space-y-1 rounded-sm border p-2 shadow-lg backdrop-blur-md">
       <div className="text-sm font-medium text-white">Root Selected Paths:</div>
-      <div className="text-xs space-y-1 max-h-32 overflow-y-auto">
+      <div className="max-h-32 space-y-1 overflow-y-auto text-xs">
         {Array.from(rootSelectedPaths).map((nodeId) => {
           const node = nodes.find((n) => n.id === nodeId);
           return (
@@ -36,7 +32,7 @@ export function SelectedPathsPanel({
         })}
       </div>
       {descendantCount > 0 && (
-        <div className="text-xs text-white/80 pt-23 border-t border-white/20">
+        <div className="pt-23 border-t border-white/20 text-xs text-white/80">
           + {descendantCount} descendant paths (visual only)
         </div>
       )}

@@ -1,5 +1,4 @@
 import { assert } from "tsafe";
-
 import type { NonEmpty, Result } from "./sync.js";
 import { empty, makeErr, makeOk } from "./sync.js";
 

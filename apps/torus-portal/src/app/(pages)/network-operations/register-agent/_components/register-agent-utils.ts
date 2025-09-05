@@ -2,12 +2,11 @@ import { AGENT_METADATA_SCHEMA } from "@torus-network/sdk/metadata";
 import type { CID } from "@torus-network/torus-utils/ipfs";
 import { cidToIpfsUri, PIN_FILE_RESULT } from "@torus-network/torus-utils/ipfs";
 import { tryAsync } from "@torus-network/torus-utils/try-catch";
-
 import type { PinFileOnPinataResponse } from "~/app/api/files/route";
-
 import type { RegisterAgentFormData } from "./register-agent-schema";
 
-export const pinFile = async (file: File): Promise<PinFileOnPinataResponse> => {
+// TODO: remove duplicate
+const pinFile = async (file: File): Promise<PinFileOnPinataResponse> => {
   const body = new FormData();
   body.set("file", file);
   const res = await fetch("/api/files", {
@@ -21,7 +20,7 @@ export const pinFile = async (file: File): Promise<PinFileOnPinataResponse> => {
   return { cid };
 };
 
-export const parseUrl = (url: string): string => {
+const parseUrl = (url: string): string => {
   if (url.startsWith("http://") || url.startsWith("https://")) {
     return url;
   } else {
@@ -29,7 +28,7 @@ export const parseUrl = (url: string): string => {
   }
 };
 
-export const strToFile = (
+const strToFile = (
   str: string,
   filename: string,
   type: string = "text/plain",
@@ -69,6 +68,7 @@ export async function doMetadataPin(
       twitter: data.twitter ? parseUrl(data.twitter) : undefined,
       github: data.github ? parseUrl(data.github) : undefined,
       telegram: data.telegram ? parseUrl(data.telegram) : undefined,
+      discordId: data.discordId || undefined,
       discord: data.discord ? parseUrl(data.discord) : undefined,
     },
   };

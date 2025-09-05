@@ -1,9 +1,7 @@
 import { match } from "rustie";
 import { z } from "zod";
-
 import type { SS58Address } from "../types/index.js";
 import { SS58_SCHEMA } from "../types/index.js";
-
 import type { JWTErrorCode } from "./jwt-sr25519.js";
 import { verifyJWT } from "./jwt-sr25519.js";
 
@@ -44,9 +42,9 @@ const TokenDataSchema = z.object({
   userPublicKey: z.string().describe("SR25519 public key in hex format"),
 });
 
-export type TokenData = z.infer<typeof TokenDataSchema>;
+type TokenData = z.infer<typeof TokenDataSchema>;
 
-export type AuthErrorCode =
+type AuthErrorCode =
   | JWTErrorCode
   | "MISSING_AUTH_HEADERS"
   | "UNSUPPORTED_AUTH_METHOD"

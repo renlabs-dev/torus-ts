@@ -1,6 +1,3 @@
-import { FileImage, Globe, Terminal } from "lucide-react";
-import Image from "next/image";
-
 import {
   Form,
   FormControl,
@@ -12,7 +9,8 @@ import {
 import { Input } from "@torus-ts/ui/components/input";
 import { Separator } from "@torus-ts/ui/components/separator";
 import { Textarea } from "@torus-ts/ui/components/text-area";
-
+import { FileImage, Globe, Terminal } from "lucide-react";
+import Image from "next/image";
 import type {
   UpdateAgentForm,
   UpdateAgentFormData,
@@ -115,7 +113,7 @@ export function UpdateAgentFormFields({
                     maxLength={200}
                   />
                 </FormControl>
-                <p className="text-xs text-muted-foreground mt-1">
+                <p className="text-muted-foreground mt-1 text-xs">
                   {field.value.length || 0}/
                   {updateAgentSchema.shape.shortDescription.maxLength}{" "}
                   characters
@@ -143,7 +141,7 @@ This agent specializes in providing technical support by analyzing issues and of
                     className="resize-y"
                   />
                 </FormControl>
-                <p className="text-xs text-muted-foreground mt-1">
+                <p className="text-muted-foreground mt-1 text-xs">
                   {field.value.length || 0}/
                   {updateAgentSchema.shape.description.maxLength} characters
                 </p>
@@ -158,7 +156,7 @@ This agent specializes in providing technical support by analyzing issues and of
         <div className="space-y-4">
           <h3 className="text-lg font-medium">Technical Information</h3>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <FormField
               control={form.control}
               name="website"
@@ -206,8 +204,8 @@ This agent specializes in providing technical support by analyzing issues and of
                 <FormLabel className="flex items-center gap-2">
                   <FileImage className="h-4 w-4" /> Agent Icon
                 </FormLabel>
-                <div className="flex flex-col sm:flex-row gap-4 items-start">
-                  <div className="flex-1 w-full">
+                <div className="flex flex-col items-start gap-4 sm:flex-row">
+                  <div className="w-full flex-1">
                     <FormControl>
                       <Input
                         type="file"
@@ -216,7 +214,7 @@ This agent specializes in providing technical support by analyzing issues and of
                         className="cursor-pointer"
                       />
                     </FormControl>
-                    <p className="text-xs text-muted-foreground mt-1">
+                    <p className="text-muted-foreground mt-1 text-xs">
                       Square Image (Max 512x512) • Max{" "}
                       {(MAX_FILE_SIZE / 1000).toFixed(0)}KB •{" "}
                       {acceptedFileTypesMessage}
@@ -225,7 +223,7 @@ This agent specializes in providing technical support by analyzing issues and of
                   </div>
 
                   {(field.value ?? currentImagePreview) && (
-                    <div className="rounded-md overflow-hidden w-24 h-24 border flex-shrink-0 bg-muted">
+                    <div className="bg-muted h-24 w-24 flex-shrink-0 overflow-hidden rounded-md border">
                       <Image
                         src={
                           field.value
@@ -233,7 +231,7 @@ This agent specializes in providing technical support by analyzing issues and of
                             : (currentImagePreview ?? "")
                         }
                         alt="Agent Icon Preview"
-                        className="w-full h-full object-cover"
+                        className="h-full w-full object-cover"
                         width={256}
                         height={256}
                       />
@@ -249,7 +247,7 @@ This agent specializes in providing technical support by analyzing issues and of
 
         <div className="space-y-4">
           <h3 className="text-lg font-medium">Social Links</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <FormField
               control={form.control}
               name="socials.discord"
@@ -323,7 +321,7 @@ This agent specializes in providing technical support by analyzing issues and of
               )}
             />
           </div>
-          <p className="text-xs text-muted-foreground">
+          <p className="text-muted-foreground text-xs">
             Social links are optional but recommended to help users connect with
             your project
           </p>

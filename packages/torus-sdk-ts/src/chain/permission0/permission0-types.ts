@@ -1,5 +1,4 @@
-import { z } from "zod";
-
+import type { z } from "zod";
 import {
   sb_address,
   sb_array,
@@ -9,13 +8,13 @@ import {
   sb_bool,
   sb_enum,
   sb_h256,
+  sb_id,
   sb_map,
   sb_null,
   sb_option,
   sb_percent,
   sb_struct,
 } from "../../types/index.js";
-
 import { sb_namespace_path } from "../torus0/torus0-types.js";
 
 export const PERMISSION_ID_SCHEMA = sb_h256;
@@ -59,9 +58,9 @@ export const CURATOR_FLAGS = {
   PENALTY_CONTROL: 0b0000_1000n,
 } as const;
 
-// ---- Emission Types ----
+// ---- Stream Types (formerly Emission) ----
 
-export const EMISSION_ALLOCATION_SCHEMA = sb_enum({
+export const STREAM_ALLOCATION_SCHEMA = sb_enum({
   Streams: sb_map(STREAM_ID_SCHEMA, sb_percent),
   FixedAmount: sb_balance,
 });
@@ -73,20 +72,23 @@ export const DISTRIBUTION_CONTROL_SCHEMA = sb_enum({
   Interval: sb_blocks,
 });
 
-export const EMISSION_SCOPE_SCHEMA = sb_struct({
-  allocation: EMISSION_ALLOCATION_SCHEMA,
+export const STREAM_SCOPE_SCHEMA = sb_struct({
+  allocation: STREAM_ALLOCATION_SCHEMA,
   distribution: DISTRIBUTION_CONTROL_SCHEMA,
-  targets: sb_map(sb_address, sb_bigint),
+  recipients: sb_map(sb_address, sb_bigint), // Multiple recipients with weights
+  recipientManagers: sb_array(sb_address), // BoundedBTreeSet serialized as array (camelCase in JSON)
+  weightSetters: sb_array(sb_address), // BoundedBTreeSet serialized as array (camelCase in JSON)
   accumulating: sb_bool,
 });
 
 // ---- Curator Types ----
 
 export const CURATOR_SCOPE_SCHEMA = sb_struct({
-  flags:
-    // CURATOR_PERMISSIONS_SCHEMA, // FIXME: z.unknown() hole on schema
-    z.unknown(),
+  recipient: sb_address,
+  flags: sb_map(sb_option(PERMISSION_ID_SCHEMA), sb_id), // BTreeMap<Option<H256>, u32>
   cooldown: sb_option(sb_blocks),
+  maxInstances: sb_id, // u32 as number
+  children: sb_array(PERMISSION_ID_SCHEMA), // BTreeSet<H256> serialized as array
 });
 
 export type CuratorScope = z.infer<typeof CURATOR_SCOPE_SCHEMA>;
@@ -94,7 +96,10 @@ export type CuratorScope = z.infer<typeof CURATOR_SCOPE_SCHEMA>;
 // ---- Namespace Types ----
 
 export const NAMESPACE_SCOPE_SCHEMA = sb_struct({
+  recipient: sb_address,
   paths: sb_map(sb_option(PERMISSION_ID_SCHEMA), sb_array(sb_namespace_path)),
+  maxInstances: sb_id, // u32 as number
+  children: sb_array(PERMISSION_ID_SCHEMA),
 });
 
 export type NamespaceScope = z.infer<typeof NAMESPACE_SCOPE_SCHEMA>;
@@ -102,7 +107,7 @@ export type NamespaceScope = z.infer<typeof NAMESPACE_SCOPE_SCHEMA>;
 // ---- Permission Scope ----
 
 export const PERMISSION_SCOPE_SCHEMA = sb_enum({
-  Emission: EMISSION_SCOPE_SCHEMA,
+  Stream: STREAM_SCOPE_SCHEMA, // Updated from Emission to Stream
   Curator: CURATOR_SCOPE_SCHEMA,
   Namespace: NAMESPACE_SCOPE_SCHEMA,
 });
@@ -150,27 +155,24 @@ export type EnforcementReferendum = z.infer<
 
 const PERMISSION_CONTRACT_SHAPE = {
   delegator: sb_address,
-  recipient: sb_address,
   scope: PERMISSION_SCOPE_SCHEMA,
   duration: PERMISSION_DURATION_SCHEMA,
   revocation: REVOCATION_TERMS_SCHEMA,
   enforcement: ENFORCEMENT_AUTHORITY_SCHEMA,
   lastExecution: sb_option(sb_blocks),
   executionCount: sb_bigint, // u32 as bigint
-  maxInstances: sb_bigint, // u32 as bigint
-  children: sb_array(PERMISSION_ID_SCHEMA), // BoundedBTreeSet serialized as array
   createdAt: sb_blocks,
 };
 
 export const PERMISSION_CONTRACT_SCHEMA = sb_struct(PERMISSION_CONTRACT_SHAPE);
 
-export const EMISSION_CONTRACT_SCHEMA = sb_struct({
+export const STREAM_CONTRACT_SCHEMA = sb_struct({
   ...PERMISSION_CONTRACT_SHAPE,
-  scope: EMISSION_SCOPE_SCHEMA,
+  scope: STREAM_SCOPE_SCHEMA,
 });
 
 export type PermissionContract = z.infer<typeof PERMISSION_CONTRACT_SCHEMA>;
-export type EmissionContract = z.infer<typeof EMISSION_CONTRACT_SCHEMA>;
-export type EmissionAllocation = z.infer<typeof EMISSION_ALLOCATION_SCHEMA>;
+export type StreamContract = z.infer<typeof STREAM_CONTRACT_SCHEMA>;
+export type StreamAllocation = z.infer<typeof STREAM_ALLOCATION_SCHEMA>;
 export type DistributionControl = z.infer<typeof DISTRIBUTION_CONTROL_SCHEMA>;
-export type EmissionScope = z.infer<typeof EMISSION_SCOPE_SCHEMA>;
+export type StreamScope = z.infer<typeof STREAM_SCOPE_SCHEMA>;

@@ -1,4 +1,5 @@
-import { motion } from "framer-motion";
+import type { Variants } from "motion/react";
+import { motion } from "motion/react";
 import { ANIMATIONS } from "../data";
 
 export function LinesSVGMobile() {
@@ -20,7 +21,7 @@ export function LinesSVGMobile() {
         stroke="#27272a"
         strokeWidth="6"
         strokeLinecap="round"
-        variants={ANIMATIONS.DRAW}
+        variants={ANIMATIONS.DRAW as Variants}
         custom={0}
       />
       <motion.path
@@ -29,7 +30,7 @@ export function LinesSVGMobile() {
         stroke="#27272a"
         strokeWidth="6"
         strokeLinecap="round"
-        variants={ANIMATIONS.DRAW}
+        variants={ANIMATIONS.DRAW as Variants}
         custom={0}
       />
       <motion.line
@@ -40,7 +41,7 @@ export function LinesSVGMobile() {
         stroke="#27272a"
         strokeWidth="6"
         strokeLinecap="round"
-        variants={ANIMATIONS.DRAW}
+        variants={ANIMATIONS.DRAW as Variants}
         custom={1}
       />
       {/* Left group of lines */}
@@ -50,7 +51,7 @@ export function LinesSVGMobile() {
         stroke="#27272a"
         strokeWidth="6"
         strokeLinecap="round"
-        variants={ANIMATIONS.DRAW}
+        variants={ANIMATIONS.DRAW as Variants}
         custom={1.2}
       />
       {/* Right group of lines */}
@@ -60,7 +61,7 @@ export function LinesSVGMobile() {
         stroke="#27272a"
         strokeWidth="6"
         strokeLinecap="round"
-        variants={ANIMATIONS.DRAW}
+        variants={ANIMATIONS.DRAW as Variants}
         custom={1.2}
       />
     </motion.svg>

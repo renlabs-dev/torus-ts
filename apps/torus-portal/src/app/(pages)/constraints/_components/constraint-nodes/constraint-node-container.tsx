@@ -1,9 +1,8 @@
 "use client";
 
+import { Handle, Position, useReactFlow } from "@xyflow/react";
 import type { ReactNode } from "react";
 import { useCallback, useEffect } from "react";
-import { Handle, Position, useReactFlow } from "@xyflow/react";
-
 import type {
   ConstraintNodeData,
   NodeCreationResult,
@@ -68,7 +67,7 @@ export function PermissionNodeContainer({
   ]);
 
   return (
-    <div className="w-full flex flex-col items-center">
+    <div className="flex w-full flex-col items-center">
       {children}
 
       {hasTargetHandle && <Handle type="target" position={Position.Top} />}

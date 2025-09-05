@@ -1,8 +1,8 @@
-import { useCallback } from "react";
 import type { NodeObject } from "r3f-forcegraph";
+import { useCallback } from "react";
 import type {
-  CustomGraphNode,
   CustomGraphLink,
+  CustomGraphNode,
 } from "../permission-graph-types";
 
 export function useGraphInteractions(
@@ -11,6 +11,7 @@ export function useGraphInteractions(
   _selectedNodeId?: string | null,
 ) {
   const handleNodeClick = useCallback(
+    // eslint-disable-next-line react-hooks/preserve-manual-memoization
     (node: NodeObject) => {
       const originalNode = graphData.nodes.find((n) => n.id === node.id);
       if (originalNode) {

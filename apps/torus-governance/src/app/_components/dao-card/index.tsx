@@ -9,7 +9,7 @@ import {
 import { cn } from "@torus-ts/ui/lib/utils";
 import type { ReactNode } from "react";
 
-export interface DaoCardProps {
+interface DaoCardProps {
   title?: ReactNode;
   topRightContent?: ReactNode;
   metaContent?: ReactNode;
@@ -28,13 +28,12 @@ export function DaoCard({
     <Card
       className={cn(
         "hover:bg-accent w-full transition duration-500",
-        variant === "small" ? "py-1 border-none border-b" : "p-4 lg:p-6",
+        variant === "small" ? "border-b border-none py-1" : "p-4 lg:p-6",
       )}
     >
       <CardHeader
         className={cn(
-          `flex flex-col-reverse justify-between space-y-0 px-0 pb-3 pt-0
-          md:flex-col-reverse xl:flex-row`,
+          `flex flex-col-reverse justify-between space-y-0 px-0 pb-3 pt-0 md:flex-col-reverse xl:flex-row`,
           variant === "small" ? "pb-0" : "pb-3",
         )}
       >
@@ -52,8 +51,7 @@ export function DaoCard({
         {title && (
           <CardTitle
             className={cn(
-              `line-clamp-3 text-xl font-semibold text-white lg:pb-0 xl:line-clamp-2 break-all
-              word-break-break-word overflow-hidden`,
+              `line-clamp-3 overflow-hidden break-all text-xl font-semibold text-white lg:pb-0 xl:line-clamp-2`,
               variant === "small" ? "text-sm" : "text-xl",
             )}
           >

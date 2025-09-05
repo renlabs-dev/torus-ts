@@ -1,19 +1,14 @@
 "use client";
 
-import { useState } from "react";
-
 import { zodResolver } from "@hookform/resolvers/zod";
 import type { ApiPromise } from "@polkadot/api";
-import { useForm } from "react-hook-form";
-
 import { tryAsync } from "@torus-network/torus-utils/try-catch";
-
 import { useTorus } from "@torus-ts/torus-provider";
 import { useToast } from "@torus-ts/ui/hooks/use-toast";
-
 import { useWallet } from "~/context/wallet-provider";
 import { callFaucetExtrinsic, doWork } from "~/utils/faucet";
-
+import { useState } from "react";
+import { useForm } from "react-hook-form";
 import { FaucetForm } from "./faucet-form";
 import type { FaucetFormValues } from "./faucet-form-schema";
 import { FaucetFormSchema } from "./faucet-form-schema";

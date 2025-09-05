@@ -1,11 +1,10 @@
 "use client";
 
-import { useRouter, useSearchParams } from "next/navigation";
-
 import {
   ToggleGroup,
   ToggleGroupItem,
 } from "@torus-ts/ui/components/toggle-group";
+import { useRouter, useSearchParams } from "next/navigation";
 
 export type AgentView = "all" | "root" | "new" | "oldest";
 

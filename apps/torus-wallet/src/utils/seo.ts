@@ -1,7 +1,7 @@
-import type { Metadata } from "next";
 import { env } from "~/env";
+import type { Metadata } from "next";
 
-export interface MetadataProps {
+interface MetadataProps {
   title?: string;
   description?: string;
   keywords?: string[];

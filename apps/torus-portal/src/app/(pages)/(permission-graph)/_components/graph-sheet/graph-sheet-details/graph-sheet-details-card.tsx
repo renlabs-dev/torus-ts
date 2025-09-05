@@ -1,10 +1,4 @@
-import { useMemo } from "react";
-
-import { ArrowDownLeft, ArrowUpRight } from "lucide-react";
-import { useRouter } from "next/navigation";
-
 import { smallAddress } from "@torus-network/torus-utils/torus/address";
-
 import {
   Accordion,
   AccordionContent,
@@ -20,9 +14,10 @@ import {
   TabsList,
   TabsTrigger,
 } from "@torus-ts/ui/components/tabs";
-
 import { ShortenedCapabilityPath } from "~/utils/capability-path";
-
+import { ArrowDownLeft, ArrowUpRight } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useMemo } from "react";
 import type {
   allPermissions,
   CustomGraphData,
@@ -47,6 +42,35 @@ export function NodeDetailsCard({
   selectedNode,
 }: NodeDetailsCardProps) {
   const router = useRouter();
+
+  // Helper function to extract recipients based on permission type
+  const extractRecipients = (
+    details: NonNullable<allPermissions>[number] | undefined,
+  ): string[] | string | null => {
+    if (!details) return null;
+
+    // For stream (emission) permissions, collect all recipients from distribution targets
+    if (details.emission_permissions && details.emission_distribution_targets) {
+      const targets = Array.isArray(details.emission_distribution_targets)
+        ? details.emission_distribution_targets
+        : [details.emission_distribution_targets];
+
+      const recipients = targets
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+        .map((target) => target?.targetAccountId as string | undefined)
+        .filter((id): id is string => Boolean(id));
+
+      return recipients.length > 0 ? recipients : null;
+    }
+
+    // For namespace (capability) permissions, use single recipient
+    if (details.namespace_permissions) {
+      return details.permissions.granteeAccountId || null;
+    }
+
+    // Fallback to granteeAccountId for other permission types
+    return details.permissions.granteeAccountId || null;
+  };
 
   const processedPermissions = nodePermissions.map((permission) => {
     // Extract permission ID from node ID if it's a permission node
@@ -111,6 +135,7 @@ export function NodeDetailsCard({
   });
 
   // Group and sort permissions
+  // eslint-disable-next-line react-hooks/preserve-manual-memoization
   const groupedPermissions = useMemo(() => {
     const delegated = processedPermissions.filter((p) => p.isOutgoing);
     const received = processedPermissions.filter((p) => !p.isOutgoing);
@@ -135,6 +160,7 @@ export function NodeDetailsCard({
       delegated: sortPermissions(delegated),
       received: sortPermissions(received),
     };
+    // eslint-disable-next-line react-hooks/preserve-manual-memoization
   }, [processedPermissions]);
 
   const renderPermissionGroup = (
@@ -143,10 +169,10 @@ export function NodeDetailsCard({
     icon: React.ReactNode,
   ) => (
     <div className="mb-6">
-      <div className="flex items-center gap-2 mb-3 px-2">
+      <div className="mb-3 flex items-center gap-2 px-2">
         {icon}
         <h3 className="font-semibold text-white">{title}</h3>
-        <span className="text-sm text-muted-foreground">
+        <span className="text-muted-foreground text-sm">
           ({permissions.length})
         </span>
       </div>
@@ -155,7 +181,7 @@ export function NodeDetailsCard({
           {/* Capabilities section */}
           {permissions.some((p) => p.details?.namespace_permissions) && (
             <div className="mb-4">
-              <div className="text-sm text-gray-400 mb-2 px-2">
+              <div className="mb-2 px-2 text-sm text-gray-400">
                 Capabilities
               </div>
               <div className="border-l-2 border-blue-500/30 pl-2">
@@ -165,10 +191,10 @@ export function NodeDetailsCard({
                     <AccordionItem
                       key={`${sourceId}-${targetId}`}
                       value={`${sourceId}-${targetId}`}
-                      className="border bg-accent mb-2"
+                      className="bg-accent mb-2 border"
                     >
-                      <AccordionTrigger className="px-4 py-3 hover:no-underline hover:bg-gray-700/50 text-left">
-                        <div className="flex flex-col gap-1 w-full pr-2">
+                      <AccordionTrigger className="px-4 py-3 text-left hover:bg-gray-700/50 hover:no-underline">
+                        <div className="flex w-full flex-col gap-1 pr-2">
                           <div className="flex items-center justify-between">
                             <span className="font-medium text-white">
                               {details?.namespace_permissions
@@ -178,14 +204,14 @@ export function NodeDetailsCard({
                           </div>
                           <GraphSheetDetailsLinkButtons
                             grantor_key={details?.permissions.grantorAccountId}
-                            grantee_key={details?.permissions.granteeAccountId}
+                            recipients={extractRecipients(details)}
                             permission_id={String(
                               details?.permissions.permissionId,
                             )}
                           />
                         </div>
                       </AccordionTrigger>
-                      <AccordionContent className="px-4 pb-4 pt-2 space-y-3">
+                      <AccordionContent className="space-y-3 px-4 pb-4 pt-2">
                         {details && (
                           <>
                             <div className="grid grid-cols-2 gap-2">
@@ -228,7 +254,7 @@ export function NodeDetailsCard({
                                       `?id=permission-${details.permissions.permissionId}`,
                                     );
                                   }}
-                                  className="text-sm text-blue-400 hover:text-blue-300 cursor-pointer underline"
+                                  className="cursor-pointer text-sm text-blue-400 underline hover:text-blue-300"
                                 >
                                   {smallAddress(
                                     String(details.permissions.permissionId),
@@ -272,7 +298,7 @@ export function NodeDetailsCard({
                                       Capability path
                                       {paths.length > 1 ? "s" : ""}
                                     </span>
-                                    <div className="text-sm text-gray-300 font-mono break-all space-y-1">
+                                    <div className="space-y-1 break-all font-mono text-sm text-gray-300">
                                       {paths.map((path, index) => (
                                         <div key={index}>
                                           <ShortenedCapabilityPath
@@ -297,7 +323,7 @@ export function NodeDetailsCard({
           {/* Emissions section */}
           {permissions.some((p) => p.details?.emission_permissions) && (
             <div>
-              <div className="text-sm text-gray-400 mb-2 px-2">Emissions</div>
+              <div className="mb-2 px-2 text-sm text-gray-400">Emissions</div>
               <div className="border-l-2 border-green-500/30 pl-2">
                 {permissions
                   .filter((p) => p.details?.emission_permissions)
@@ -305,10 +331,10 @@ export function NodeDetailsCard({
                     <AccordionItem
                       key={`${sourceId}-${targetId}`}
                       value={`${sourceId}-${targetId}`}
-                      className="border bg-accent mb-2"
+                      className="bg-accent mb-2 border"
                     >
-                      <AccordionTrigger className="px-4 py-3 hover:no-underline hover:bg-gray-700/50 text-left">
-                        <div className="flex flex-col gap-1 w-full pr-2">
+                      <AccordionTrigger className="px-4 py-3 text-left hover:bg-gray-700/50 hover:no-underline">
+                        <div className="flex w-full flex-col gap-1 pr-2">
                           <div className="flex items-center justify-between">
                             <span className="font-medium text-white">
                               {details?.emission_permissions
@@ -318,14 +344,14 @@ export function NodeDetailsCard({
                           </div>
                           <GraphSheetDetailsLinkButtons
                             grantor_key={details?.permissions.grantorAccountId}
-                            grantee_key={details?.permissions.granteeAccountId}
+                            recipients={extractRecipients(details)}
                             permission_id={String(
                               details?.permissions.permissionId,
                             )}
                           />
                         </div>
                       </AccordionTrigger>
-                      <AccordionContent className="px-4 pb-4 pt-2 space-y-3">
+                      <AccordionContent className="space-y-3 px-4 pb-4 pt-2">
                         {details && (
                           <>
                             <div className="grid grid-cols-2 gap-2">
@@ -376,7 +402,7 @@ export function NodeDetailsCard({
                                       `?id=permission-${details.permissions.permissionId}`,
                                     );
                                   }}
-                                  className="text-sm text-blue-400 hover:text-blue-300 cursor-pointer underline"
+                                  className="cursor-pointer text-sm text-blue-400 underline hover:text-blue-300"
                                 >
                                   {smallAddress(
                                     String(details.permissions.permissionId),
@@ -398,7 +424,7 @@ export function NodeDetailsCard({
                                       variant="ghost"
                                       className="h-auto p-0"
                                     >
-                                      <span className="text-blue-400 hover:text-blue-300 cursor-pointer underline">
+                                      <span className="cursor-pointer text-blue-400 underline hover:text-blue-300">
                                         {smallAddress(
                                           String(
                                             details.emission_stream_allocations
@@ -433,7 +459,7 @@ export function NodeDetailsCard({
             renderPermissionGroup(
               groupedPermissions.delegated,
               "Delegated",
-              <ArrowUpRight className="h-4 w-4 text-muted-foreground" />,
+              <ArrowUpRight className="text-muted-foreground h-4 w-4" />,
             )}
 
           {/* Received Permissions - only show if there are received permissions */}
@@ -441,11 +467,11 @@ export function NodeDetailsCard({
             renderPermissionGroup(
               groupedPermissions.received,
               "Received",
-              <ArrowDownLeft className="h-4 w-4 text-muted-foreground" />,
+              <ArrowDownLeft className="text-muted-foreground h-4 w-4" />,
             )}
         </Accordion>
       ) : (
-        <div className="text-gray-500 text-center mt-8">
+        <div className="mt-8 text-center text-gray-500">
           No permissions found for this agent
         </div>
       )}
@@ -455,18 +481,19 @@ export function NodeDetailsCard({
   if (!graphData) return null;
 
   return (
-    <Card className="w-full flex-1 flex flex-col z-50 border-none">
-      <Tabs defaultValue="permissions" className="w-full flex flex-col flex-1">
-        <TabsList className="grid w-full grid-cols-2 mb-4">
+    <Card className="z-50 flex w-full flex-1 flex-col border-none">
+      <Tabs defaultValue="permissions" className="flex w-full flex-1 flex-col">
+        <TabsList className="mb-4 grid w-full grid-cols-2">
           <TabsTrigger value="permissions">Permissions</TabsTrigger>
           <TabsTrigger value="signals">Signals</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="permissions" className="flex-1 mt-0">
+        <TabsContent value="permissions" className="mt-0 flex-1">
+          {/* eslint-disable-next-line react-hooks/static-components */}
           <PermissionsContent />
         </TabsContent>
 
-        <TabsContent value="signals" className="flex-1 mt-0">
+        <TabsContent value="signals" className="mt-0 flex-1">
           <ScrollArea className="h-[calc(100vh-32rem)] pb-4 md:pb-0">
             <GraphSheetDetailsSignalsAccordion selectedNode={selectedNode} />
           </ScrollArea>

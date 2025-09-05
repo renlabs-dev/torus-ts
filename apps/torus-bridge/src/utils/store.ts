@@ -3,6 +3,7 @@ import { GithubRegistry } from "@hyperlane-xyz/registry";
 import type { ChainMap, ChainMetadata } from "@hyperlane-xyz/sdk";
 import { MultiProtocolProvider, WarpCore } from "@hyperlane-xyz/sdk";
 import { objFilter } from "@hyperlane-xyz/utils";
+import { tryAsync, trySync } from "@torus-network/torus-utils/try-catch";
 import { assembleChainMetadata } from "~/app/_components/chains/chain-metadata";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
@@ -11,7 +12,6 @@ import { config } from "../consts/config";
 import { logger } from "./logger";
 import type { TransferContext } from "./types";
 import { FinalTransferStatuses, TransferStatus } from "./types";
-import { tryAsync, trySync } from "@torus-network/torus-utils/try-catch";
 
 // Increment this when persist state has breaking changes
 const PERSIST_STATE_VERSION = 2;

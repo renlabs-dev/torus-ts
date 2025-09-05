@@ -45,6 +45,7 @@ export function TokenSelectField({ name, disabled }: Readonly<Props>) {
       newIsAutomatic = false;
     }
     void helpers.setValue(newFieldValue);
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setIsAutomaticSelection(newIsAutomatic);
   }, [warpCore, origin, destination, helpers]);
 

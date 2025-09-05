@@ -14,16 +14,14 @@ import {
 } from "@polkadot/types";
 import { AbstractInt } from "@polkadot/types-codec/abstract";
 import type { AnyJson, Codec } from "@polkadot/types/types";
-import { BN, u8aToBn } from "@polkadot/util";
+import { u8aToBn } from "@polkadot/util";
+import type { Option } from "@torus-network/torus-utils";
 import { match } from "rustie";
 import type { Equals } from "tsafe";
 import { assert } from "tsafe";
 import type { Merge } from "type-fest";
 import type { ZodRawShape, ZodType, ZodTypeAny, ZodTypeDef } from "zod";
 import { z } from "zod";
-
-import type { Option } from "@torus-network/torus-utils";
-
 import { SS58_SCHEMA } from "./address.js";
 
 export * from "./sb_enum.js";
@@ -58,7 +56,7 @@ export const z_map = <T extends ZodRawShape>(
           typeof key !== "symbol"
         ) {
           ctx.addIssue({
-            code: z.ZodIssueCode.custom,
+            code: "custom",
             message: `Map key must be a string, number, or symbol. Received ${typeof key}`,
           });
           continue;
@@ -88,7 +86,7 @@ export const ToPrimitive_schema = z.custom<ToPrimitive>((val) => {
   // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
   if (!("toPrimitive" in val && typeof val.toPrimitive === "function")) {
     // ctx.addIssue({
-    //   code: z.ZodIssueCode.custom,
+    //   code: "custom",
     //   message: "toPrimitive not present, it's not a Codec",
     // });
     // return z.NEVER;
@@ -185,9 +183,9 @@ export const sb_struct_obj = <MS extends ZodRawShape, OS extends ZodRawShape>(
       const value = inputValue.get(key);
       if (value === undefined) {
         ctx.addIssue({
-          code: z.ZodIssueCode.custom,
+          code: "custom",
           message: `Missing key ${key} in Struct (as Map)`,
-          path: [...ctx.path, key],
+          path: [key],
         });
         return z.NEVER;
       }
@@ -200,9 +198,9 @@ export const sb_struct_obj = <MS extends ZodRawShape, OS extends ZodRawShape>(
       const val = inputObj[key];
       if (val === undefined) {
         ctx.addIssue({
-          code: z.ZodIssueCode.custom,
+          code: "custom",
           message: `Missing key ${key} in Struct`,
-          path: [...ctx.path, key],
+          path: [key],
         });
         return z.NEVER;
       }
@@ -250,9 +248,9 @@ export const sb_option = <T extends ZodTypeAny>(
       const result = inner.safeParse(val.unwrap());
       if (!result.success) {
         ctx.addIssue({
-          code: z.ZodIssueCode.custom,
+          code: "custom",
           message: `Error in Option inner value: ${result.error.message}`,
-          path: [...ctx.path, "Some"],
+          path: ["Some"],
         });
         return z.NEVER;
       }
@@ -287,9 +285,9 @@ export const sb_some = <T extends ZodTypeAny>(
       match(val)({
         None: () => {
           ctx.addIssue({
-            code: z.ZodIssueCode.custom,
+            code: "custom",
             message: `Expected Some`,
-            path: [...ctx.path, "Some"],
+            path: ["Some"],
           });
           return z.NEVER;
         },
@@ -345,7 +343,7 @@ export const ToBigInt_schema = z.custom<ToBigInt>((val) => {
   // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
   if (!("toBigInt" in val && typeof val.toBigInt === "function")) {
     // ctx.addIssue({
-    //   code: z.ZodIssueCode.custom,
+    //   code: "custom",
     //   message: "toBigInt not present, it's not a Codec convertible to BigInt",
     // });
     // return z.NEVER;
@@ -361,7 +359,7 @@ export const sb_number = ToBigInt_schema.transform((val, ctx): number => {
   const result = Number(num);
   if (!Number.isSafeInteger(result)) {
     ctx.addIssue({
-      code: z.ZodIssueCode.custom,
+      code: "custom",
       message: `Expected a safe Number integer, got ${num}`,
     });
     return z.NEVER;
@@ -374,7 +372,7 @@ export const sb_number_int = sb_number.pipe(z.number().int());
 export const sb_percent = sb_number_int.transform((val, ctx) => {
   if (val < 0 || val > 100) {
     ctx.addIssue({
-      code: z.ZodIssueCode.custom,
+      code: "custom",
       message: `Percent must be between 0 and 100`,
     });
   }
@@ -400,7 +398,7 @@ export const sb_string = Text_schema.or(Bytes_schema).transform<string>(
     }
     if (!val.isUtf8) {
       ctx.addIssue({
-        code: z.ZodIssueCode.custom,
+        code: "custom",
         message: `Bytes is not valid UTF8`,
       });
       return z.NEVER;
@@ -426,7 +424,7 @@ export const sb_basic_enum = <
   Enum_schema.transform((val, ctx) => {
     if (!val.isBasic) {
       ctx.addIssue({
-        code: z.ZodIssueCode.custom,
+        code: "custom",
         message: `Enum is not basic (no values)`,
       });
     }
@@ -472,7 +470,7 @@ export const sb_array = <T, S extends ZodType<T, z.ZodTypeDef, unknown>>(
         const result = inner.safeParse(v);
         if (!result.success) {
           ctx.addIssue({
-            code: z.ZodIssueCode.custom,
+            code: "custom",
             // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
             message: `Error in array element ${i}: ${result.error.message}`,
           });
@@ -509,7 +507,7 @@ export const sb_map = <
         const parsedKey = keySchema.safeParse(keyRaw);
         if (parsedKey.success === false) {
           ctx.addIssue({
-            code: z.ZodIssueCode.custom,
+            code: "custom",
             message: `Error in map key: ${parsedKey.error.message}`,
           });
           return z.NEVER;
@@ -517,7 +515,7 @@ export const sb_map = <
         const parsedValue = valueSchema.safeParse(valueRaw);
         if (parsedValue.success === false) {
           ctx.addIssue({
-            code: z.ZodIssueCode.custom,
+            code: "custom",
             message: `Error in map value: ${parsedValue.error.message}`,
           });
           return z.NEVER;

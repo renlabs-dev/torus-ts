@@ -1,6 +1,6 @@
 import { CONSTANTS } from "@torus-network/sdk/constants";
-import { useEffect, useState } from "react";
 import { useWallet } from "~/context/wallet-provider";
+import { useEffect, useState } from "react";
 
 export function useRewardIntervalProgress() {
   const { lastBlock, rewardInterval } = useWallet();
