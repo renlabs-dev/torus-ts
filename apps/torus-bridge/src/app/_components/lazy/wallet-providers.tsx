@@ -2,7 +2,6 @@
 
 import dynamic from "next/dynamic";
 
-// Lazy load heavy wallet providers
 const EvmWalletProvider = dynamic(
   () =>
     import("../../../context/evm-wallet-provider").then((mod) => ({
