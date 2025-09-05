@@ -47,6 +47,24 @@ jobs:
       - name: PNPM setup
         uses: ./.github/actions/setup
 
+      - name: Setup pnpm node_modules cache
+        id: pnpm-cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.local/share/pnpm/store/v3
+            node_modules
+            apps/*/node_modules
+            packages/*/node_modules
+          key: ${{ runner.os }}-pnpm-full-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-full-
+
+      - name: Install dependencies
+        if: steps.pnpm-cache.outputs.cache-hit != 'true'
+        run: |
+          pnpm install --frozen-lockfile
+
       - name: Get apps list
         run: |
           ls -d apps/* | sed 's/apps\///' | jq -R -s -c 'split("\n")[:-1]' > packages_to_track.json
@@ -115,6 +133,17 @@ jobs:
           done < <(jq -c '.[]' packages_to_track.json)
 
           echo "" >> $GITHUB_STEP_SUMMARY
+
+          # Add cache information
+          if [ "${{ steps.pnpm-cache.outputs.cache-hit }}" == "true" ]; then
+            echo "### 📦 Dependencies Cache" >> $GITHUB_STEP_SUMMARY
+            echo "✅ **Cache Hit** - Using cached node_modules" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "### 📦 Dependencies Cache" >> $GITHUB_STEP_SUMMARY
+            echo "🔄 **Cache Miss** - Installing fresh dependencies" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+          fi
 
           # Add trigger information
           if [ "${{ github.event_name }}" == "pull_request" ]; then

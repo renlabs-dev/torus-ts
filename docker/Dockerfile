@@ -58,10 +58,13 @@ COPY --from=pruner /build/out/pnpm-lock.yaml ./pnpm-lock.yaml
 # Install dependencies using only package.json files to reduce changes
 COPY --from=pruner /build/out/json/ .
 
+COPY node_modules ./node_modules
+COPY apps/${APP_NAME}/node_modules ./apps/${APP_NAME}/node_modules
+
 # Use pnpm's built-in cache and optimize installation
 # Cache path must match GitHub Actions cache path for maximum reuse
 RUN --mount=type=cache,id=pnpm,target=/root/.local/share/pnpm/store/v3 \
-    pnpm install --frozen-lockfile --prefer-offline
+    pnpm install --offline --frozen-lockfile
 
 # Build the app
 COPY --from=pruner /build/out/full/ .
