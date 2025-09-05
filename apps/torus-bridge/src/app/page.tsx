@@ -44,7 +44,7 @@ const SidebarLinks = dynamic(
 const WalletActions = dynamic(
   () =>
     import("./_components/shared/wallet-actions").then((mod) => ({
-      default: mod.WalletActions,
+      default: mod.default,
     })),
   {
     loading: () => (
