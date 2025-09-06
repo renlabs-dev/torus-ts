@@ -57,7 +57,14 @@ export function RecipientsField({
     <div className="grid gap-4">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <h3 className="font-medium">Recipients</h3>
+          <h3
+            className={cn(
+              "font-medium",
+              (!canEditRecipients || isWeightsOnly) && "text-muted-foreground",
+            )}
+          >
+            Recipients
+          </h3>
           <span
             className={cn(
               "text-xs",
@@ -82,60 +89,62 @@ export function RecipientsField({
       </div>
 
       {recipientFields.map((field, index) => (
-        <div key={field.id} className="flex items-end gap-2">
-          <FormField
-            control={control}
-            name={`newTargets.${index}.address`}
-            render={({ field }) => {
-              const isDuplicate = duplicateAddresses.has(field.value);
-              return (
-                <div className="flex-1">
-                  <FormAddressField
-                    field={field}
-                    className={cn(isDuplicate && "border-destructive")}
-                    disabled={!canEditRecipients || isWeightsOnly}
-                  />
-                </div>
-              );
-            }}
-          />
-          <FormField
-            control={control}
-            name={`newTargets.${index}.percentage`}
-            render={({ field }) => (
-              <FormItem className="w-32">
-                <FormControl>
-                  <Input
-                    {...field}
-                    type="number"
-                    placeholder="%"
-                    min="0"
-                    max="100"
-                    className="h-[2.7rem]"
-                    disabled={!(canEditRecipients || isWeightsOnly)}
-                    value={field.value}
-                    onChange={(e) => {
-                      const value = parseInt(e.target.value);
-                      field.onChange(
-                        isNaN(value) ? 0 : Math.min(100, Math.max(0, value)),
-                      );
-                    }}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <Button
-            type="button"
-            variant="outline"
-            size="icon"
-            className="h-[2.7rem] w-[2.7rem]"
-            disabled={!canEditRecipients || isWeightsOnly}
-            onClick={() => removeRecipient(index)}
-          >
-            <Trash2 className="h-4 w-4" />
-          </Button>
+        <div key={field.id} className="space-y-1">
+          <div className="flex items-start gap-2">
+            <FormField
+              control={control}
+              name={`newTargets.${index}.address`}
+              render={({ field }) => {
+                const isDuplicate = duplicateAddresses.has(field.value);
+                return (
+                  <div className="flex-1">
+                    <FormAddressField
+                      field={field}
+                      className={cn(isDuplicate && "border-destructive")}
+                      disabled={!canEditRecipients || isWeightsOnly}
+                    />
+                  </div>
+                );
+              }}
+            />
+            <FormField
+              control={control}
+              name={`newTargets.${index}.percentage`}
+              render={({ field }) => (
+                <FormItem className="w-32">
+                  <FormControl>
+                    <Input
+                      {...field}
+                      type="number"
+                      placeholder="%"
+                      min="0"
+                      max="100"
+                      className="h-[2.7rem]"
+                      disabled={!(canEditRecipients || isWeightsOnly)}
+                      value={field.value}
+                      onChange={(e) => {
+                        const value = parseInt(e.target.value);
+                        field.onChange(
+                          isNaN(value) ? 0 : Math.min(100, Math.max(0, value)),
+                        );
+                      }}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <Button
+              type="button"
+              variant="outline"
+              size="icon"
+              className="mt-0 h-[2.7rem] w-[2.7rem]"
+              disabled={!canEditRecipients || isWeightsOnly}
+              onClick={() => removeRecipient(index)}
+            >
+              <Trash2 className="h-4 w-4" />
+            </Button>
+          </div>
         </div>
       ))}
     </div>
