@@ -224,7 +224,7 @@ export function TransferEVM() {
           label: "View documentation",
           onClick: () => {
             window.open(
-              "https://docs.torus.network/wallets/torus-evm-wallet",
+              "https://docs.torus.network/how-to-guides/holders/bridge-from-base/#:~:text=Do%20not%20see%20Torus%20EVM%3F",
               "_blank",
               "noopener,noreferrer",
             );
