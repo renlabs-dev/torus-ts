@@ -31,6 +31,7 @@ export default function PermissionGraph2DPage() {
   const [swarmCenterNodeId, setSwarmCenterNodeId] = useState<string | null>(
     null,
   );
+  const [isInitialQueryParamsProcessed, setIsInitialQueryParamsProcessed] = useState(false);
 
   const agentCache = useRef(new AgentLRUCache(50));
 
@@ -88,6 +89,11 @@ export default function PermissionGraph2DPage() {
         setIsSheetOpen(false);
         setSelectedNodeIdForGraph(null);
       }
+      
+      // Mark initial query params as processed
+      if (!isInitialQueryParamsProcessed) {
+        setIsInitialQueryParamsProcessed(true);
+      }
     }
   }, [
     searchParams,
@@ -95,6 +101,7 @@ export default function PermissionGraph2DPage() {
     selectedNode,
     selectedSwarmId,
     allocatorAddress,
+    isInitialQueryParamsProcessed,
   ]);
 
   const handleNodeSelect = useCallback(
@@ -186,7 +193,7 @@ export default function PermissionGraph2DPage() {
     router.replace(newUrl, { scroll: false });
   }, [router, searchParams]);
 
-  if (isLoading || !graphData || !isInitialized)
+  if (isLoading || !graphData || !isInitialized || !isInitialQueryParamsProcessed)
     return (
       <div className="fixed inset-0 flex animate-pulse flex-col items-center justify-center gap-2 text-sm">
         <span className="flex items-center gap-2">
