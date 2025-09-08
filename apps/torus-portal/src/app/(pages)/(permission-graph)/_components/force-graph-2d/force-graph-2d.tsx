@@ -460,15 +460,16 @@ export function ForceGraphCanvas2D(props: ForceGraph2DProps) {
       const isSelected = selectedNodeId === nodeId;
       const isHighlighted = highlightedNodes.has(nodeId);
       const hasSelection = selectedNodeId !== null;
+      const isSwarmView = props.selectedSwarmId !== null;
 
       let opacity = 1.0;
-      if (hasSelection && !isSelected && !isHighlighted) {
+      if (hasSelection && !isSelected && !isHighlighted && !isSwarmView) {
         opacity = 0.1;
       }
 
       nodeGraphics.alpha = opacity;
     });
-  }, [selectedNodeId, highlightedNodes]);
+  }, [selectedNodeId, highlightedNodes, props.selectedSwarmId]);
 
   return (
     <div
