@@ -31,7 +31,8 @@ export default function PermissionGraph2DPage() {
   const [swarmCenterNodeId, setSwarmCenterNodeId] = useState<string | null>(
     null,
   );
-  const [isInitialQueryParamsProcessed, setIsInitialQueryParamsProcessed] = useState(false);
+  const [isInitialQueryParamsProcessed, setIsInitialQueryParamsProcessed] =
+    useState(false);
 
   const agentCache = useRef(new AgentLRUCache(50));
 
@@ -52,7 +53,7 @@ export default function PermissionGraph2DPage() {
     const swarmParam = searchParams.get("swarm");
 
     if (graphData) {
-      if (swarmParam && !selectedSwarmId) {
+      if (swarmParam) {
         const availableSwarms = getAvailableSwarms(
           graphData.nodes,
           graphData.links,
@@ -62,7 +63,7 @@ export default function PermissionGraph2DPage() {
           (s) => s.rootAgentName.toLowerCase() === swarmParam.toLowerCase(),
         );
 
-        if (swarm) {
+        if (swarm && selectedSwarmId !== swarm.id) {
           const rootAgent = graphData.nodes.find(
             (n) => n.id === swarm.rootAgentId,
           );
@@ -89,7 +90,7 @@ export default function PermissionGraph2DPage() {
         setIsSheetOpen(false);
         setSelectedNodeIdForGraph(null);
       }
-      
+
       // Mark initial query params as processed
       if (!isInitialQueryParamsProcessed) {
         setIsInitialQueryParamsProcessed(true);
@@ -110,13 +111,14 @@ export default function PermissionGraph2DPage() {
       setIsSheetOpen(true);
       setSelectedNodeIdForGraph(node.id);
 
-      const params = new URLSearchParams(searchParams.toString());
+      const currentUrl = new URL(window.location.href);
+      const params = new URLSearchParams(currentUrl.search);
       params.set("agent", node.id);
       router.replace(`/2d-hypergraph?${params.toString()}`, {
         scroll: false,
       });
     },
-    [router, searchParams],
+    [router],
   );
 
   const getCachedAgentData = useCallback(
@@ -193,7 +195,12 @@ export default function PermissionGraph2DPage() {
     router.replace(newUrl, { scroll: false });
   }, [router, searchParams]);
 
-  if (isLoading || !graphData || !isInitialized || !isInitialQueryParamsProcessed)
+  if (
+    isLoading ||
+    !graphData ||
+    !isInitialized ||
+    !isInitialQueryParamsProcessed
+  )
     return (
       <div className="fixed inset-0 flex animate-pulse flex-col items-center justify-center gap-2 text-sm">
         <span className="flex items-center gap-2">
