@@ -38,7 +38,12 @@ export function ViewSwarmButton({
     return swarms.find((swarm) => swarm.connectedNodeIds.has(selectedNode.id));
   }, [graphData, selectedNode.id, allocatorAddress]);
 
-  if (!nodeSwarm) {
+  // Don't show button for allocator node, permission nodes, or if no swarm found
+  if (
+    !nodeSwarm ||
+    selectedNode.id === allocatorAddress ||
+    selectedNode.nodeType === "permission"
+  ) {
     return null;
   }
 

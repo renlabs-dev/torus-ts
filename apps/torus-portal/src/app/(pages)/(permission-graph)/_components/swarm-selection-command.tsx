@@ -147,7 +147,7 @@ export function SwarmSelectionCommand({
                         <span>
                           {swarm.rootAgentName}{" "}
                           <span className="text-muted-foreground text-xs">
-                            ({swarm.nodeCount} nodes)
+                            ({swarm.nodeCount - 1} nodes)
                           </span>
                         </span>
                         {isSelected && <Check className="ml-2 h-4 w-4" />}
@@ -155,9 +155,6 @@ export function SwarmSelectionCommand({
                       <div className="flex items-center justify-between text-xs">
                         <span className="text-muted-foreground">
                           {formatNodeDisplay(swarm.rootAgentId)}
-                        </span>
-                        <span className="text-muted-foreground">
-                          {permissionTypesText} permissions
                         </span>
                       </div>
                     </div>
