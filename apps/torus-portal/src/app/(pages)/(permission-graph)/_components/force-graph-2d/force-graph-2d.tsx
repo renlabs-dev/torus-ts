@@ -301,18 +301,30 @@ export function ForceGraphCanvas2D(props: ForceGraph2DProps) {
       nodeGraphics.cursor = "pointer";
       nodeGraphics.hitArea = new PIXI.Circle(0, 0, radius);
 
-      nodeGraphics.on("click", (e: PIXI.FederatedPointerEvent) => {
+      let clickTimeout: NodeJS.Timeout | null = null;
+      const handleNodeClick = (e: PIXI.FederatedPointerEvent) => {
         e.stopPropagation();
-        const newSelectedId = selectedNodeId === node.id ? null : node.id;
 
-        if (props.onSelectionChange) {
-          props.onSelectionChange(newSelectedId);
-        } else {
-          setInternalSelectedNodeId(newSelectedId);
+        if (clickTimeout) {
+          clearTimeout(clickTimeout);
         }
 
-        onNodeClickRef.current(node);
-      });
+        clickTimeout = setTimeout(() => {
+          const newSelectedId = selectedNodeId === node.id ? null : node.id;
+
+          if (props.onSelectionChange) {
+            props.onSelectionChange(newSelectedId);
+          } else {
+            setInternalSelectedNodeId(newSelectedId);
+          }
+
+          onNodeClickRef.current(node);
+          clickTimeout = null;
+        }, 10);
+      };
+
+      nodeGraphics.on("tap", handleNodeClick);
+      nodeGraphics.on("click", handleNodeClick);
 
       nodeGraphics.on("pointerover", (e: PIXI.FederatedPointerEvent) => {
         if (tooltipRef.current) {
