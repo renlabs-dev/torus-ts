@@ -5,6 +5,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@torus-ts/ui/components/form";
+import { cn } from "@torus-ts/ui/lib/utils";
 import { FormAddressField } from "~/app/_components/address-field";
 import type { Control } from "react-hook-form";
 import type { EditPermissionFormData } from "../edit-permission-schema";
@@ -26,7 +27,9 @@ export function RecipientManagerField({
       name="recipientManager"
       render={({ field }) => (
         <FormItem>
-          <FormLabel>Recipient Manager (Optional)</FormLabel>
+          <FormLabel className={cn(disabled && "text-muted-foreground")}>
+            Recipient Manager (Optional)
+          </FormLabel>
           <FormControl>
             <FormAddressField
               field={{

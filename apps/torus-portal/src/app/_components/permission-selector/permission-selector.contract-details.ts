@@ -67,10 +67,7 @@ export function getContractDetails(
 
     Curator: (curator): ContractDetails => ({
       type: "Curator",
-      details: [
-        `Delegator: ${formatAddress(contract.delegator)}`,
-        `Recipient: ${formatAddress(curator.recipient)}`,
-      ],
+      details: [`Recipient: ${formatAddress(curator.recipient)}`],
     }),
   });
 }

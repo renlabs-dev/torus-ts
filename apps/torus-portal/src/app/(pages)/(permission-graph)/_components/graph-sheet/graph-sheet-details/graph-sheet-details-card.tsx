@@ -16,7 +16,7 @@ import {
 } from "@torus-ts/ui/components/tabs";
 import { ShortenedCapabilityPath } from "~/utils/capability-path";
 import { ArrowDownLeft, ArrowUpRight } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useMemo } from "react";
 import type {
   allPermissions,
@@ -42,6 +42,13 @@ export function NodeDetailsCard({
   selectedNode,
 }: NodeDetailsCardProps) {
   const router = useRouter();
+  const pathname = usePathname();
+
+  // Helper function to get correct parameter name based on current page
+  const getNodeParam = (nodeId: string) => {
+    const paramName = pathname.includes("/2d-hypergraph") ? "agent" : "id";
+    return `?${paramName}=${nodeId}`;
+  };
 
   // Helper function to extract recipients based on permission type
   const extractRecipients = (
@@ -251,7 +258,9 @@ export function NodeDetailsCard({
                                 <button
                                   onClick={() => {
                                     router.push(
-                                      `?id=permission-${details.permissions.permissionId}`,
+                                      getNodeParam(
+                                        `permission-${details.permissions.permissionId}`,
+                                      ),
                                     );
                                   }}
                                   className="cursor-pointer text-sm text-blue-400 underline hover:text-blue-300"
@@ -399,7 +408,9 @@ export function NodeDetailsCard({
                                 <button
                                   onClick={() => {
                                     router.push(
-                                      `?id=permission-${details.permissions.permissionId}`,
+                                      getNodeParam(
+                                        `permission-${details.permissions.permissionId}`,
+                                      ),
                                     );
                                   }}
                                   className="cursor-pointer text-sm text-blue-400 underline hover:text-blue-300"

@@ -13,6 +13,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@torus-ts/ui/components/select";
+import { cn } from "@torus-ts/ui/lib/utils";
 import type { Control } from "react-hook-form";
 import { useWatch } from "react-hook-form";
 import { match } from "rustie";
@@ -58,7 +59,9 @@ export function DistributionControlField({
 
           return (
             <FormItem>
-              <FormLabel>Distribution Control</FormLabel>
+              <FormLabel className={cn(disabled && "text-muted-foreground")}>
+                Distribution Control
+              </FormLabel>
               <Select
                 value={currentType}
                 disabled={disabled}
@@ -108,7 +111,9 @@ export function DistributionControlField({
                 : 0n;
             return (
               <FormItem>
-                <FormLabel>Threshold Amount</FormLabel>
+                <FormLabel className={cn(disabled && "text-muted-foreground")}>
+                  Threshold Amount
+                </FormLabel>
                 <FormControl>
                   <Input
                     type="number"
@@ -138,7 +143,9 @@ export function DistributionControlField({
               field.value && "AtBlock" in field.value ? field.value.AtBlock : 0;
             return (
               <FormItem>
-                <FormLabel>Block Number</FormLabel>
+                <FormLabel className={cn(disabled && "text-muted-foreground")}>
+                  Block Number
+                </FormLabel>
                 <FormControl>
                   <Input
                     type="number"
@@ -169,7 +176,9 @@ export function DistributionControlField({
                 : 0;
             return (
               <FormItem>
-                <FormLabel>Block Interval</FormLabel>
+                <FormLabel className={cn(disabled && "text-muted-foreground")}>
+                  Block Interval
+                </FormLabel>
                 <FormControl>
                   <Input
                     type="number"

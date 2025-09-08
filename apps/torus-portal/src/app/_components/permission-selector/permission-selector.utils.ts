@@ -207,3 +207,58 @@ export function extractAllAddressesFromPermissions(permissions: {
 
   return allAddresses;
 }
+
+/**
+ * Sort all permissions by user role priority, with delegator permissions first
+ */
+export function sortPermissionsByRole(
+  permissions: {
+    streamPermissions: Map<string, PermissionContract>;
+    namespacePermissions: Map<string, PermissionContract>;
+    curatorPermissions: Map<string, PermissionContract>;
+  },
+  userAddress: SS58Address,
+): {
+  streamPermissions: Map<string, PermissionContract>;
+  namespacePermissions: Map<string, PermissionContract>;
+  curatorPermissions: Map<string, PermissionContract>;
+} {
+  // Helper function to sort a single permission Map
+  const sortPermissionMap = (
+    permissionMap: Map<string, PermissionContract>,
+  ) => {
+    const entries = Array.from(permissionMap.entries());
+
+    entries.sort(([_idA, contractA], [_idB, contractB]) => {
+      const roleA = getPrimaryRoleBadge(contractA, userAddress);
+      const roleB = getPrimaryRoleBadge(contractB, userAddress);
+
+      // Use the same role priority as getPrimaryRoleBadge
+      const rolePriority = [
+        "Delegator",
+        "Recipient Manager",
+        "Weight Setter",
+        "Recipient",
+        "Enforcement Controller",
+        "Revocation Arbiter",
+      ];
+
+      const priorityA = roleA
+        ? rolePriority.indexOf(roleA)
+        : rolePriority.length;
+      const priorityB = roleB
+        ? rolePriority.indexOf(roleB)
+        : rolePriority.length;
+
+      return priorityA - priorityB;
+    });
+
+    return new Map(entries);
+  };
+
+  return {
+    streamPermissions: sortPermissionMap(permissions.streamPermissions),
+    namespacePermissions: sortPermissionMap(permissions.namespacePermissions),
+    curatorPermissions: sortPermissionMap(permissions.curatorPermissions),
+  };
+}

@@ -48,7 +48,7 @@ export function StreamsField({ control, disabled = false }: StreamsFieldProps) {
     <div className="grid gap-4">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <h3>Streams</h3>
+          <h3 className={cn(disabled && "text-muted-foreground")}>Streams</h3>
           <span
             className={cn(
               "text-xs",

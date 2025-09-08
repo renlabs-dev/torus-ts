@@ -42,6 +42,7 @@ import {
   formatAddressWithAgentName,
   getPrimaryRoleBadge,
   hasUserRole,
+  sortPermissionsByRole,
 } from "./permission-selector.utils";
 
 interface PermissionSelectorProps {
@@ -95,6 +96,8 @@ export function PermissionSelector(props: PermissionSelectorProps) {
 
   const userAddress = selectedAccount.address as SS58Address;
 
+  const sortedPermissions = sortPermissionsByRole(permissions, userAddress);
+
   // Helper function to get formatted address with agent name
   const getFormattedAddress = (address: string | undefined) => {
     return formatAddressWithAgentName(address, agentNamesMap, 8);
@@ -106,7 +109,7 @@ export function PermissionSelector(props: PermissionSelectorProps) {
       type: "Stream",
       icon: Zap,
       heading: "Stream Permissions",
-      permissions: [...permissions.streamPermissions]
+      permissions: [...sortedPermissions.streamPermissions]
         .filter(([_, contract]) => hasUserRole(contract, userAddress))
         .map(([id, contract]) => ({
           id,
@@ -118,7 +121,7 @@ export function PermissionSelector(props: PermissionSelectorProps) {
       type: "Capability",
       icon: CircleArrowOutUpRight,
       heading: "Capability Permissions",
-      permissions: [...permissions.namespacePermissions]
+      permissions: [...sortedPermissions.namespacePermissions]
         .filter(([_, contract]) => hasUserRole(contract, userAddress))
         .map(([id, contract]) => ({
           id,
@@ -130,7 +133,7 @@ export function PermissionSelector(props: PermissionSelectorProps) {
       type: "Curator",
       icon: VenetianMask,
       heading: "Curator Permissions",
-      permissions: [...permissions.curatorPermissions]
+      permissions: [...sortedPermissions.curatorPermissions]
         .filter(([_, contract]) => hasUserRole(contract, userAddress))
         .map(([id, contract]) => ({
           id,

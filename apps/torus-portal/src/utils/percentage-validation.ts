@@ -1,4 +1,4 @@
-import { z } from "zod";
+import type { z } from "zod";
 
 /**
  * Creates a Zod superRefine validator for arrays of items with percentage fields.
