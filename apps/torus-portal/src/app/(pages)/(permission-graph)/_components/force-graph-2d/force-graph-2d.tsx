@@ -395,14 +395,14 @@ export function ForceGraphCanvas2D(props: ForceGraph2DProps) {
           const targetHighlighted = highlightedNodesRef.current.has(target.id);
           const hasSelection = selectedNodeIdRef.current !== null;
 
-          let alpha = 0.5;
+          let alpha = 0.7;
           if (hasSelection) {
             if (sourceHighlighted && targetHighlighted) {
-              alpha = 0.8;
-            } else if (sourceHighlighted || targetHighlighted) {
               alpha = 0.4;
+            } else if (sourceHighlighted || targetHighlighted) {
+              alpha = 0.5;
             } else {
-              alpha = 0.15;
+              alpha = 0.2;
             }
           }
 
