@@ -73,13 +73,12 @@ export function ForceGraphCanvas2D(props: ForceGraph2DProps) {
       );
 
       if (selectedSwarm) {
-        // Filter nodes to only include swarm nodes
         const swarmNodeIds = selectedSwarm.connectedNodeIds;
-        const filteredNodes = props.graphData.nodes.filter((node) =>
-          swarmNodeIds.has(node.id),
+        const filteredNodes = props.graphData.nodes.filter(
+          (node) =>
+            swarmNodeIds.has(node.id) && node.id !== props.allocatorAddress,
         );
 
-        // Filter links to only include those connecting swarm nodes
         const filteredLinks = props.graphData.links.filter((link) => {
           const sourceId =
             typeof link.source === "string"
@@ -89,7 +88,12 @@ export function ForceGraphCanvas2D(props: ForceGraph2DProps) {
             typeof link.target === "string"
               ? link.target
               : (link.target as { id: string }).id;
-          return swarmNodeIds.has(sourceId) && swarmNodeIds.has(targetId);
+          return (
+            swarmNodeIds.has(sourceId) &&
+            swarmNodeIds.has(targetId) &&
+            sourceId !== props.allocatorAddress &&
+            targetId !== props.allocatorAddress
+          );
         });
 
         return {
