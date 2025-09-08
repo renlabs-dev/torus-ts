@@ -325,21 +325,30 @@ export function GraphSheetDetailsPermission({
                               <Badge variant="secondary">
                                 {(() => {
                                   // Find the stream allocation percentage for this permission
-                                  const streamAllocation = allPermissions?.find(
-                                    (p) => p.permissions.permissionId === permissionData.permissionId
-                                  )?.emission_stream_allocations?.percentage || 0;
-                                  
+                                  const streamAllocation =
+                                    allPermissions?.find(
+                                      (p) =>
+                                        p.permissions.permissionId ===
+                                        permissionData.permissionId,
+                                    )?.emission_stream_allocations
+                                      ?.percentage || 0;
+
                                   // Calculate normalized weight percentage
-                                  const normalizedWeightPercentage = entry.totalWeight > 0 
-                                    ? (entry.streams.reduce(
-                                        (total, s) => total + s.weight,
-                                        0,
-                                      ) / entry.totalWeight) * streamAllocation
-                                    : 0;
-                                  
+                                  const normalizedWeightPercentage =
+                                    entry.totalWeight > 0
+                                      ? (entry.streams.reduce(
+                                          (total, s) => total + s.weight,
+                                          0,
+                                        ) /
+                                          entry.totalWeight) *
+                                        streamAllocation
+                                      : 0;
+
                                   return calculateStreamValue(
                                     normalizedWeightPercentage,
-                                    emissionsData[permissionData.delegatorAccountId],
+                                    emissionsData[
+                                      permissionData.delegatorAccountId
+                                    ],
                                     true,
                                     permissionData.delegatorAccountId,
                                   );
