@@ -39,35 +39,35 @@ describe("Chain Storage Queries", () => {
       );
       expect(hasValidVariant).toBe(true);
 
-      // // If it's a GlobalParams proposal, validate the updated schema structure
-      // if ("GlobalParams" in firstProposal.data) {
-      //   const globalParams = firstProposal.data.GlobalParams;
+      // If it's a GlobalParams proposal, validate the updated schema structure
+      if ("GlobalParams" in firstProposal.data) {
+        const globalParams = firstProposal.data.GlobalParams;
 
-      //   expect(typeof globalParams.minNameLength).toBe("number");
-      //   expect(typeof globalParams.maxNameLength).toBe("number");
-      //   expect(typeof globalParams.minWeightControlFee).toBe("number");
-      //   expect(typeof globalParams.minStakingFee).toBe("number");
-      //   expect(typeof globalParams.dividendsParticipationWeight).toBe("number");
-      //   expect(typeof globalParams.proposalCost).toBe("bigint");
+        expect(typeof globalParams.minNameLength).toBe("number");
+        expect(typeof globalParams.maxNameLength).toBe("number");
+        expect(typeof globalParams.minWeightControlFee).toBe("number");
+        expect(typeof globalParams.minStakingFee).toBe("number");
+        expect(typeof globalParams.dividendsParticipationWeight).toBe("number");
+        expect(typeof globalParams.proposalCost).toBe("bigint");
 
-      //   // Validate namespace pricing config structure
-      //   expect(globalParams.namespacePricingConfig).toBeDefined();
-      //   expect(typeof globalParams.namespacePricingConfig.depositPerByte).toBe(
-      //     "bigint",
-      //   );
-      //   expect(typeof globalParams.namespacePricingConfig.baseFee).toBe(
-      //     "bigint",
-      //   );
-      //   expect(typeof globalParams.namespacePricingConfig.countMidpoint).toBe(
-      //     "number",
-      //   );
-      //   expect(typeof globalParams.namespacePricingConfig.feeSteepness).toBe(
-      //     "number",
-      //   );
-      //   expect(
-      //     typeof globalParams.namespacePricingConfig.maxFeeMultiplier,
-      //   ).toBe("number");
-      // }
+        // Validate namespace pricing config structure
+        expect(globalParams.namespacePricingConfig).toBeDefined();
+        expect(typeof globalParams.namespacePricingConfig.depositPerByte).toBe(
+          "bigint",
+        );
+        expect(typeof globalParams.namespacePricingConfig.baseFee).toBe(
+          "bigint",
+        );
+        expect(typeof globalParams.namespacePricingConfig.countMidpoint).toBe(
+          "number",
+        );
+        expect(typeof globalParams.namespacePricingConfig.feeSteepness).toBe(
+          "number",
+        );
+        expect(
+          typeof globalParams.namespacePricingConfig.maxFeeMultiplier,
+        ).toBe("number");
+      }
 
       // If it's a TransferDaoTreasury proposal, validate structure
       if ("TransferDaoTreasury" in firstProposal.data) {
