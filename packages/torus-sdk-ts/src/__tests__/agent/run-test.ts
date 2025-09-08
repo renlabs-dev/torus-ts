@@ -36,7 +36,7 @@ async function runServerClientTest() {
   console.log("📡 Starting test server...");
   const serverProcess = spawn(
     "node",
-    ["--loader", "tsx/esm", "./src/__tests__/test-server.ts"],
+    ["--loader", "tsx/esm", "./src/__tests__/agent/test-server.ts"],
     {
       cwd: process.cwd(),
       stdio: "inherit",
