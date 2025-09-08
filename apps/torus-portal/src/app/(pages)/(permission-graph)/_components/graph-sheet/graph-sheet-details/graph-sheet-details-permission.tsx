@@ -60,10 +60,12 @@ export function GraphSheetDetailsPermission({
       Map<string, { streamId?: string | null; weight: number }>
     >();
 
+    let totalWeight = 0;
     for (const p of allPermissions) {
       if (p.permissions.permissionId !== permissionData.permissionId) continue;
       const target = p.emission_distribution_targets;
       if (!target?.targetAccountId) continue;
+      totalWeight += target.weight;
       const targetId = target.targetAccountId;
       const streamKey = target.streamId ?? "default";
       if (!grouped.has(targetId)) grouped.set(targetId, new Map());
@@ -87,6 +89,7 @@ export function GraphSheetDetailsPermission({
       return {
         targetAccountId,
         streams: Array.from(streams.values()),
+        totalWeight, // Add total weight for normalization
       };
     });
   }, [allPermissions, permissionData]);
@@ -320,15 +323,27 @@ export function GraphSheetDetailsPermission({
                                 Weight: {s.weight}
                               </Badge>
                               <Badge variant="secondary">
-                                {calculateStreamValue(
-                                  entry.streams.reduce(
-                                    (total, s) => total + s.weight,
-                                    0,
-                                  ),
-                                  emissionsData[entry.targetAccountId],
-                                  true,
-                                  entry.targetAccountId,
-                                )}
+                                {(() => {
+                                  // Find the stream allocation percentage for this permission
+                                  const streamAllocation = allPermissions?.find(
+                                    (p) => p.permissions.permissionId === permissionData.permissionId
+                                  )?.emission_stream_allocations?.percentage || 0;
+                                  
+                                  // Calculate normalized weight percentage
+                                  const normalizedWeightPercentage = entry.totalWeight > 0 
+                                    ? (entry.streams.reduce(
+                                        (total, s) => total + s.weight,
+                                        0,
+                                      ) / entry.totalWeight) * streamAllocation
+                                    : 0;
+                                  
+                                  return calculateStreamValue(
+                                    normalizedWeightPercentage,
+                                    emissionsData[permissionData.delegatorAccountId],
+                                    true,
+                                    permissionData.delegatorAccountId,
+                                  );
+                                })()}
                               </Badge>
                             </span>
                           ))}
