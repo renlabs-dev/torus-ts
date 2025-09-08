@@ -26,6 +26,7 @@ export * from "./emission0/emission0-extrinsics.js";
 export * from "./permission0/permission0-types.js";
 export * from "./permission0/permission0-storage.js";
 export * from "./permission0/permission0-extrinsics.js";
+export * from "./permission0/permission0-events.js";
 
 // ==== RPC utilities ====
 export * from "./rpc.js";
