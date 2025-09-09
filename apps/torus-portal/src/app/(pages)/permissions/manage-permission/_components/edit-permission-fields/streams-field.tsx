@@ -1,7 +1,3 @@
-import { AlertCircle, Plus, Trash2 } from "lucide-react";
-import type { Control } from "react-hook-form";
-import { useFieldArray, useWatch } from "react-hook-form";
-
 import { Button } from "@torus-ts/ui/components/button";
 import {
   FormControl,
@@ -11,14 +7,17 @@ import {
 } from "@torus-ts/ui/components/form";
 import { Input } from "@torus-ts/ui/components/input";
 import { cn } from "@torus-ts/ui/lib/utils";
-
+import { AlertCircle, Plus, Trash2 } from "lucide-react";
+import type { Control } from "react-hook-form";
+import { useFieldArray, useWatch } from "react-hook-form";
 import type { EditPermissionFormData } from "../edit-permission-schema";
 
 interface StreamsFieldProps {
   control: Control<EditPermissionFormData>;
+  disabled?: boolean;
 }
 
-export function StreamsField({ control }: StreamsFieldProps) {
+export function StreamsField({ control, disabled = false }: StreamsFieldProps) {
   const {
     fields: streamFields,
     append: appendStream,
@@ -47,9 +46,9 @@ export function StreamsField({ control }: StreamsFieldProps) {
 
   return (
     <div className="grid gap-4">
-      <div className="flex justify-between items-center">
+      <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <h3>Streams</h3>
+          <h3 className={cn(disabled && "text-muted-foreground")}>Streams</h3>
           <span
             className={cn(
               "text-xs",
@@ -65,9 +64,10 @@ export function StreamsField({ control }: StreamsFieldProps) {
           type="button"
           size="sm"
           className="bg-white/70"
+          disabled={disabled}
           onClick={() => appendStream({ streamId: "", percentage: 0 })}
         >
-          <Plus className="h-4 w-4 mr-2" />
+          <Plus className="mr-2 h-4 w-4" />
           Add Stream
         </Button>
       </div>
@@ -86,10 +86,11 @@ export function StreamsField({ control }: StreamsFieldProps) {
                       <Input
                         {...field}
                         placeholder="Stream ID (H256)"
+                        disabled={disabled}
                         className={cn(isDuplicate && "border-destructive")}
                       />
                       {isDuplicate && (
-                        <AlertCircle className="absolute right-2 top-1/2 -translate-y-1/2 h-4 w-4 text-destructive" />
+                        <AlertCircle className="text-destructive absolute right-2 top-1/2 h-4 w-4 -translate-y-1/2" />
                       )}
                     </div>
                   </FormControl>
@@ -110,6 +111,7 @@ export function StreamsField({ control }: StreamsFieldProps) {
                     placeholder="%"
                     min="0"
                     max="100"
+                    disabled={disabled}
                     value={field.value || ""}
                     onChange={(e) => {
                       const value = parseInt(e.target.value);
@@ -127,6 +129,7 @@ export function StreamsField({ control }: StreamsFieldProps) {
             type="button"
             variant="outline"
             size="icon"
+            disabled={disabled}
             onClick={() => removeStream(index)}
           >
             <Trash2 className="h-4 w-4" />

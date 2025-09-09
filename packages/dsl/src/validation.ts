@@ -1,6 +1,6 @@
-import type { Constraint } from "./types";
 import { ZodError } from "zod";
 import { ConstraintSchema } from "./schema";
+import type { Constraint } from "./types";
 
 /**
  * Validation error thrown when constraint validation fails
@@ -29,7 +29,7 @@ export function validateConstraint(data: any): Constraint {
   } catch (error) {
     if (error instanceof ZodError) {
       // Convert ZodError to ConstraintValidationError
-      const firstError = error.errors[0];
+      const firstError = error.issues[0];
       if (firstError) {
         const path = firstError.path.join(".");
         throw new ConstraintValidationError(path, firstError.message);

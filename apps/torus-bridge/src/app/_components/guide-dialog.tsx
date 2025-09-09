@@ -16,7 +16,7 @@ import Link from "next/link";
 
 const links = getLinks(env("NEXT_PUBLIC_TORUS_CHAIN_ENV"));
 
-export const tutorialData = [
+const tutorialData = [
   <Button
     key="subwallet"
     asChild

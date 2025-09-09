@@ -1,20 +1,6 @@
 "use client";
 
-import type { CSSProperties } from "react";
-import { useCallback, useEffect, useMemo, useState } from "react";
-
-import { ArrowLeftRight } from "lucide-react";
-import Image from "next/image";
-import { useRouter, useSearchParams } from "next/navigation";
-import type { Config } from "wagmi";
-import {
-  useAccount,
-  useBalance,
-  useClient,
-  useSwitchChain,
-  useWalletClient,
-} from "wagmi";
-
+import { transferAllowDeath } from "@torus-network/sdk/chain";
 import {
   convertH160ToSS58,
   waitForTransactionReceipt,
@@ -24,10 +10,10 @@ import type { SS58Address } from "@torus-network/sdk/types";
 import { smallAddress } from "@torus-network/torus-utils/torus/address";
 import { toNano } from "@torus-network/torus-utils/torus/token";
 import { tryAsync, trySync } from "@torus-network/torus-utils/try-catch";
-
 import { useFreeBalance } from "@torus-ts/query-provider/hooks";
 import { useTorus } from "@torus-ts/torus-provider";
 import type { TransactionResult } from "@torus-ts/torus-provider/types";
+import { useSendTransaction } from "@torus-ts/torus-provider/use-send-transaction";
 import { Button } from "@torus-ts/ui/components/button";
 import {
   Card,
@@ -39,12 +25,24 @@ import { Input } from "@torus-ts/ui/components/input";
 import { Label } from "@torus-ts/ui/components/label";
 import { TransactionStatus } from "@torus-ts/ui/components/transaction-status";
 import { useToast } from "@torus-ts/ui/hooks/use-toast";
-
 import { getChainValuesOnEnv } from "~/config";
 import { initWagmi } from "~/context/evm-wallet-provider";
 import { env } from "~/env";
 import { useMultiProvider } from "~/hooks/use-multi-provider";
 import { updateSearchParams } from "~/utils/query-params";
+import { ArrowLeftRight } from "lucide-react";
+import Image from "next/image";
+import { useRouter, useSearchParams } from "next/navigation";
+import type { CSSProperties } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import type { Config } from "wagmi";
+import {
+  useAccount,
+  useBalance,
+  useClient,
+  useSwitchChain,
+  useWalletClient,
+} from "wagmi";
 
 const DEFAULT_MODE = "bridge";
 
@@ -67,8 +65,22 @@ export function TransferEVM() {
   const multiProvider = useMultiProvider();
   const { toast } = useToast();
 
-  const { transfer, selectedAccount, isInitialized, isAccountConnected, api } =
-    useTorus();
+  const {
+    selectedAccount,
+    isInitialized,
+    isAccountConnected,
+    api,
+    torusApi,
+    wsEndpoint,
+  } = useTorus();
+
+  const { sendTx, isPending, isSigning } = useSendTransaction({
+    api,
+    selectedAccount,
+    wsEndpoint,
+    wallet: torusApi,
+    transactionType: "Bridge Transfer",
+  });
   const { data: walletClient } = useWalletClient();
   const { chain, address } = useAccount();
   const { switchChain } = useSwitchChain();
@@ -172,41 +184,25 @@ export function TransferEVM() {
     await Promise.all([refetchTorusEvmBalance(), accountFreeBalance.refetch()]);
   }, [refetchTorusEvmBalance, accountFreeBalance]);
 
-  const handleCallback = useCallback((callbackReturn: TransactionResult) => {
-    setTransactionStatus(callbackReturn);
-    if (callbackReturn.status === "SUCCESS") {
-      setAmount("");
-      setUserInputEthAddr("");
-    }
-  }, []);
-
   const handleBridge = useCallback(async () => {
-    if (!amount || !evmSS58Addr) return;
+    if (!amount || !evmSS58Addr || !api || !sendTx) return;
 
-    setTransactionStatus({
-      status: "PENDING",
-      message: "Accept the transaction in your wallet",
-      finalized: false,
-    });
-
-    const [error] = await tryAsync(
-      transfer({
-        amount: amount,
-        to: evmSS58Addr,
-        refetchHandler,
-        callback: handleCallback,
-      }),
+    const [sendErr, sendRes] = await sendTx(
+      transferAllowDeath(api, evmSS58Addr, amountRems),
     );
 
-    if (error !== undefined) {
-      console.error("Error during bridge transfer:", error);
-      setTransactionStatus({
-        status: "ERROR",
-        message: "Something went wrong with your transaction",
-        finalized: true,
-      });
+    if (sendErr !== undefined) {
+      return; // Error already handled by sendTx
     }
-  }, [amount, evmSS58Addr, transfer, refetchHandler, handleCallback]);
+
+    const { tracker } = sendRes;
+
+    tracker.on("finalized", () => {
+      setAmount("");
+      setUserInputEthAddr("");
+      void refetchHandler();
+    });
+  }, [amount, evmSS58Addr, api, sendTx, amountRems, refetchHandler]);
 
   const handleWithdraw = useCallback(async () => {
     // Check for required values
@@ -483,7 +479,8 @@ export function TransferEVM() {
             onClick={mode === "bridge" ? handleBridge : handleWithdraw}
             className="w-full"
             disabled={
-              transactionStatus.status === "PENDING" ||
+              isPending ||
+              isSigning ||
               !amount ||
               (mode === "bridge" && !userInputEthAddr) ||
               (mode === "withdraw" && !selectedAccount)
@@ -512,8 +509,7 @@ function ChainField({ label, chainName }: ChainFieldProps) {
         size="lg"
         variant="outline"
         disabled={true}
-        className="hover:bg-background flex w-full items-center justify-between p-2 px-0
-          hover:cursor-default disabled:opacity-100"
+        className="hover:bg-background flex w-full items-center justify-between p-2 px-0 hover:cursor-default disabled:opacity-100"
       >
         <div className="max-w-[1.4rem] border-r p-[0.65em] sm:max-w-fit">
           <Image
@@ -556,7 +552,7 @@ const linkStyle: CSSProperties = {
   cursor: "pointer",
 };
 
-export const renderWaitingForValidation = (hash: string) => (
+const renderWaitingForValidation = (hash: string) => (
   <div style={divStyle}>
     <p>Validating transaction in block.</p>
     <a
@@ -570,7 +566,7 @@ export const renderWaitingForValidation = (hash: string) => (
   </div>
 );
 
-export const renderSuccessfulyFinalized = (hash: string) => (
+const renderSuccessfulyFinalized = (hash: string) => (
   <div style={divStyle}>
     <p>Transfer completed successfully</p>
     <a

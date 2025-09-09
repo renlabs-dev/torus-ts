@@ -1,7 +1,7 @@
 "use client";
 
-import { signIn, signOut, useSession } from "next-auth/react";
 import { tryAsync } from "@torus-network/torus-utils/try-catch";
+import { signIn, signOut, useSession } from "next-auth/react";
 
 interface ExtendedUser {
   name?: string | null;

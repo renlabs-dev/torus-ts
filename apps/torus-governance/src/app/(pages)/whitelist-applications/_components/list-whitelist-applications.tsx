@@ -1,14 +1,14 @@
 "use client";
 
 import { ContentNotFound } from "@torus-ts/ui/components/content-not-found";
+import { ScrollArea } from "@torus-ts/ui/components/scroll-area";
 import { CardSkeleton } from "~/app/_components/dao-card/components/card-skeleton";
 import { AgentApplicationCard } from "~/app/(pages)/whitelist-applications/_components/agent-application-card";
 import { useGovernance } from "~/context/governance-provider";
 import { api } from "~/trpc/react";
+import { useAgentApplications } from "hooks/use-agent-applications";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { useAgentApplications } from "hooks/use-agent-applications";
-import { ScrollArea } from "@torus-ts/ui/components/scroll-area";
 
 const ListCardsLoadingSkeleton = () => {
   const delayValues = [200, 500, 700, 1000];

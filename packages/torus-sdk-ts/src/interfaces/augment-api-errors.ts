@@ -474,7 +474,7 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       DuplicatePermissionInBlock: AugmentedError<ApiType>;
       /**
-       * Fixed amount emissions can only be triggered once, manually or at a block
+       * Fixed amount streams can only be triggered once, manually or at a block
        **/
       FixedAmountCanOnlyBeTriggeredOnce: AugmentedError<ApiType>;
       /**
@@ -511,9 +511,13 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       InvalidPercentage: AugmentedError<ApiType>;
       /**
-       * Invalid emission weight set to target
+       * Invalid stream weight set to recipient
        **/
-      InvalidTargetWeight: AugmentedError<ApiType>;
+      InvalidRecipientWeight: AugmentedError<ApiType>;
+      /**
+       * Stream managers must have up to two entries and always contain the delegator,
+       **/
+      InvalidStreamManagers: AugmentedError<ApiType>;
       /**
        * Invalid threshold
        **/
@@ -539,11 +543,11 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       NoAccumulatedAmount: AugmentedError<ApiType>;
       /**
-       * No targets specified
+       * No recipients specified
        **/
-      NoTargetsSpecified: AugmentedError<ApiType>;
+      NoRecipientsSpecified: AugmentedError<ApiType>;
       /**
-       * Not authorized to edit a stream emission permission.
+       * Not authorized to edit a permission.
        **/
       NotAuthorizedToEdit: AugmentedError<ApiType>;
       /**
@@ -555,7 +559,7 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       NotAuthorizedToToggle: AugmentedError<ApiType>;
       /**
-       * Stream emission permission is not editable
+       * Permission is not editable
        **/
       NotEditable: AugmentedError<ApiType>;
       /**
@@ -621,6 +625,10 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       TooManyNamespaces: AugmentedError<ApiType>;
       /**
+       * Too many recipients
+       **/
+      TooManyRecipients: AugmentedError<ApiType>;
+      /**
        * Too many revokers
        **/
       TooManyRevokers: AugmentedError<ApiType>;
@@ -628,10 +636,6 @@ declare module '@polkadot/api-base/types/errors' {
        * Too many streams
        **/
       TooManyStreams: AugmentedError<ApiType>;
-      /**
-       * Too many targets
-       **/
-      TooManyTargets: AugmentedError<ApiType>;
       /**
        * Total allocation exceeded 100%
        **/

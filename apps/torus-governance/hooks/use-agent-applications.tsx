@@ -1,17 +1,14 @@
 "use client";
 
-import { useMemo } from "react";
-
-import { match } from "rustie";
-
 import type { AgentApplication } from "@torus-network/sdk/chain";
 import type { SS58Address } from "@torus-network/sdk/types";
-
 import { useGovernance } from "~/context/governance-provider";
 import { handleCustomAgentApplications } from "~/utils";
+import { useMemo } from "react";
+import { match } from "rustie";
 
 // Common function to map status values
-export const mapStatusToView = (status: AgentApplication["status"]): string => {
+const mapStatusToView = (status: AgentApplication["status"]): string => {
   return match(status)({
     Open: () => "active",
     Resolved: ({ accepted }: { accepted: boolean }) =>
@@ -54,6 +51,7 @@ export const useAgentApplications = (
     !isInitialized ||
     agents.isPending;
 
+  // eslint-disable-next-line react-hooks/preserve-manual-memoization
   const filteredApplications = useMemo(() => {
     if (!agentApplicationsWithMeta) return [];
 

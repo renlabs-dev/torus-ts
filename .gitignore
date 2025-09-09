@@ -2,8 +2,14 @@
 /data/
 /tmp/
 
+# Git worktrees
+/worktrees
+
 # Local files
 *.local*
+
+# Git hooks
+/.pre-commit-config.yaml
 
 # Nix / direnv
 /.direnv/
@@ -13,8 +19,9 @@
 .env.*
 !.env.example
 
-# Claude Code
+# AI assistants
 **/.claude/settings.local.json
+/.crush
 
 # Node.js / dependencies
 **/node_modules

@@ -1,7 +1,6 @@
 import { createSeoMetadata } from "@torus-ts/ui/components/seo";
 import { env } from "~/env";
 import PortalFormContainer from "~/app/_components/portal-form-container";
-
 import { DeleteCapabilityForm } from "./_components/delete-capability-form";
 
 export const metadata = () =>

@@ -20,16 +20,15 @@
     "test:analyzer": "tsx tests/analyzer-test.ts",
     "test:serialization": "tsx tests/serialization-test.ts",
     "test:validation": "tsx tests/validation-test.ts",
-    "test:all": "pnpm test && pnpm test:schema && pnpm test:analyzer && pnpm test:serialization && pnpm test:validation"
+    "test:__all": "pnpm test && pnpm test:schema && pnpm test:analyzer && pnpm test:serialization && pnpm test:validation"
   },
   "dependencies": {
     "@torus-network/sdk": "workspace:*",
-    "tsafe": "catalog:",
+    "superjson": "catalog:",
     "zod": "catalog:"
   },
   "devDependencies": {
     "@torus-ts/eslint-config": "workspace:*",
-    "@torus-ts/prettier-config": "workspace:*",
     "@torus-ts/tsconfig": "workspace:*",
     "@types/node": "catalog:",
     "eslint": "catalog:",

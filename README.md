@@ -132,3 +132,62 @@ just gen-types "https://custom-node.example.com"
 - `types.ts` - Core type definitions
 
 Generated types provide full TypeScript support for blockchain interactions and must match the target network's runtime version.
+
+## Testing
+
+The project uses a tiered testing structure:
+
+### Test Types
+
+**Unit Tests (`test`)**
+
+- Fast, deterministic tests
+- No external dependencies
+- Run in all packages
+
+**Chain Query Tests (`test:chain-query`)**
+
+- Fast read-only tests against live blockchain
+- Query storage, fetch data, no transactions
+- ~2-3 seconds to run
+- No nonce conflicts, could potentially run in parallel
+
+**Chain Transaction Tests (`test:chain-tx`)**
+
+- Slower tests that submit transactions
+- Modify blockchain state, require account funding
+- ~60+ seconds to run  
+- Single-threaded to avoid nonce conflicts
+
+**All Chain Tests (`test:chain`)**
+
+- Runs both query and transaction tests
+- Network-dependent
+- Only in packages that interact with the chain (e.g., `@torus-network/sdk`)
+- Always executed (no caching)
+- Chain tests read the `TEST_CHAIN_RPC_URL` environment variable to connect to the blockchain
+
+### Running Tests
+
+```sh
+# Run unit tests only
+just test
+
+# Run unit tests in specific package
+just test "@torus-network/torus-utils"
+
+# Run all tests (unit + chain)
+just test-all
+
+# Run all tests in specific package
+just test-all "@torus-network/sdk"
+```
+
+### Package.json Requirements
+
+Each package must maintain these script names for the test system to work:
+
+- `test` - Unit tests (required in all packages)
+- `test:chain` - Chain integration tests (optional, only where needed)
+
+The turbo configuration automatically runs both test types where they exist, and gracefully skips missing scripts.

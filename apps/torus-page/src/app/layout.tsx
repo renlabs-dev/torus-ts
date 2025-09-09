@@ -1,11 +1,13 @@
-import { Layout } from "@torus-ts/ui/components/layout";
-import * as React from "react";
 import "@torus-ts/ui/globals.css";
 import { GoogleAnalytics } from "@next/third-parties/google";
 import { EnvScript, env } from "~/env";
 
 import { createSeoMetadata } from "@torus-ts/ui/components/seo";
+import { Layout } from "@torus-ts/ui/components/layout";
+import type { Metadata } from "next";
+import PlausibleProvider from "next-plausible";
 import { Fira_Mono as FiraMono } from "next/font/google";
+import * as React from "react";
 import { Footer } from "./_components/footer";
 import { HoverHeader } from "./_components/hover-header";
 
@@ -38,11 +40,16 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <Layout font={firaMono} headScripts={[EnvScript]}>
-      <HoverHeader />
-      {children}
-      <Footer />
-      <GoogleAnalytics gaId="G-7YCMH64Q4J" />
-    </Layout>
+    <PlausibleProvider
+      domain="torus.network,rollup.torus.network"
+      trackOutboundLinks
+    >
+      <Layout font={firaMono} headScripts={[EnvScript]}>
+        <HoverHeader />
+        {children}
+        <Footer />
+        <GoogleAnalytics gaId="G-7YCMH64Q4J" />
+      </Layout>
+    </PlausibleProvider>
   );
 }

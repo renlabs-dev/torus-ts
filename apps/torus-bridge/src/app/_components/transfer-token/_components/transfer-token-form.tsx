@@ -41,6 +41,7 @@ export function TransferTokenForm() {
   const multiProvider = useMultiProvider();
   const { accounts } = useAccounts(multiProvider, config.addressBlacklist);
 
+  // eslint-disable-next-line react-hooks/preserve-manual-memoization
   const initialValues = useMemo<TransferFormValues>(() => {
     if (fromParam && toParam) {
       return {
@@ -62,6 +63,7 @@ export function TransferTokenForm() {
       amount: "",
       recipient: "",
     };
+    // eslint-disable-next-line react-hooks/preserve-manual-memoization
   }, [warpCore, fromParam, toParam]);
 
   const validate = (values: TransferFormValues) =>

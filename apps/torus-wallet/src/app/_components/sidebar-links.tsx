@@ -82,8 +82,7 @@ function NavButton({ path, label, value }: NavButtonProps) {
       key={value}
       asChild
       variant="ghost"
-      className={`w-full justify-between gap-4 border-none ${isActive(path) ? "bg-accent" : ""}
-        px-3 text-base`}
+      className={`w-full justify-between gap-4 border-none ${isActive(path) ? "bg-accent" : ""} px-3 text-base`}
     >
       <Link href={value === "bridge" ? bridgeLink : path}>
         {label}

@@ -1,52 +1,64 @@
-import { useMemo } from "react";
-
-import { useLastBlock } from "@torus-ts/query-provider/hooks";
-import { useTorus } from "@torus-ts/torus-provider";
-
 import { env } from "~/env";
 import { api as trpcApi } from "~/trpc/react";
-
+import { useMemo } from "react";
 import { createSimplifiedGraphData } from "./force-graph-utils";
 
 export function useGraphData() {
-  const { api } = useTorus();
-  const lastBlock = useLastBlock(api);
-
   const allocatorAddress = env("NEXT_PUBLIC_TORUS_ALLOCATOR_ADDRESS");
 
-  const { data: allPermissions, isLoading: isLoadingPermissions } =
-    trpcApi.permission.allWithCompletePermissions.useQuery();
+  const cacheOptions = {
+    staleTime: Infinity,
+    gcTime: 1000 * 60 * 60 * 1,
+    refetchOnMount: false,
+    refetchOnReconnect: false,
+    refetchOnWindowFocus: false,
+    refetchInterval: false as const,
+  };
 
-  const { data: allAgents, isLoading: isLoadingAgents } =
-    trpcApi.agent.all.useQuery();
+  const { data: allPermissions, isLoading: isLoadingPermissions } =
+    trpcApi.permission.allWithCompletePermissions.useQuery(
+      undefined,
+      cacheOptions,
+    );
+
+  const { data: allAgentsData, isLoading: isLoadingAgents } =
+    trpcApi.agent.allIncludingNonWhitelisted.useQuery(undefined, cacheOptions);
+
+  // eslint-disable-next-line react-hooks/preserve-manual-memoization
+  const allAgents = useMemo(() => {
+    return allAgentsData?.filter((agent) => agent.isWhitelisted) ?? [];
+  }, [allAgentsData]);
 
   const { data: allComputedWeights, isLoading: isLoadingWeights } =
-    trpcApi.computedAgentWeight.all.useQuery();
+    trpcApi.computedAgentWeight.all.useQuery(undefined, cacheOptions);
 
   const { data: allSignals, isLoading: isLoadingSignals } =
-    trpcApi.signal.all.useQuery();
+    trpcApi.signal.all.useQuery(undefined, cacheOptions);
 
+  // eslint-disable-next-line react-hooks/preserve-manual-memoization
   const graphData = useMemo(() => {
-    // Wait for all data to be loaded before calling the function
     if (
       isLoadingAgents ||
       isLoadingPermissions ||
-      !allAgents ||
+      !allAgentsData ||
       !allPermissions
     ) {
       return null;
     }
 
-    // Only call the function when we have complete data
     return createSimplifiedGraphData(
       allAgents,
       allPermissions,
       allocatorAddress,
       allSignals,
+      allAgentsData,
     );
   }, [
+    // eslint-disable-next-line react-hooks/preserve-manual-memoization
     allAgents,
+    allAgentsData,
     allPermissions,
+    // eslint-disable-next-line react-hooks/preserve-manual-memoization
     allocatorAddress,
     allSignals,
     isLoadingAgents,
@@ -57,13 +69,13 @@ export function useGraphData() {
     isLoadingPermissions ||
     isLoadingAgents ||
     isLoadingWeights ||
-    isLoadingSignals ||
-    lastBlock.isLoading;
+    isLoadingSignals;
 
   return {
     isLoading,
 
     graphData,
+    allocatorAddress,
 
     allSignals,
     allPermissions,

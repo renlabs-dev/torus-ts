@@ -1,12 +1,7 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
-
-import { Key } from "lucide-react";
-
 import type { SS58Address } from "@torus-network/sdk/types";
 import { H256_HEX } from "@torus-network/sdk/types";
-
 import { usePermissionsByDelegator } from "@torus-ts/query-provider/hooks";
 import { useTorus } from "@torus-ts/torus-provider";
 import {
@@ -16,7 +11,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@torus-ts/ui/components/select";
-
+import { Key } from "lucide-react";
+import { useCallback, useEffect, useState } from "react";
 import {
   PermissionNodeContainer,
   useChildNodeManagement,
@@ -52,6 +48,7 @@ export function ConstraintNodePermissionId({
   // Sync local state with external changes
   useEffect(() => {
     if (data.permissionId !== permissionId) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setPermissionId(data.permissionId || "");
     }
   }, [data.permissionId, permissionId]);
@@ -64,7 +61,7 @@ export function ConstraintNodePermissionId({
 
       if (!validation.success && value.length > 0) {
         setPermissionIdError(
-          validation.error.errors[0]?.message ?? "Invalid permission ID",
+          validation.error.issues[0]?.message ?? "Invalid permission ID",
         );
       } else {
         setPermissionIdError("");
@@ -95,11 +92,8 @@ export function ConstraintNodePermissionId({
               onValueChange={handlePermissionIdChange}
               disabled={shouldDisablePermissionSelect}
             >
-              <SelectTrigger className="w-fit pl-[0.05em] pr-1 gap-2 text-zinc-300 border border-[#B1B1B6] rounded-full">
-                <div
-                  className="flex items-center gap-2 bg-accent z-50 px-3 py-[0.45em] rounded-full
-                    rounded-r-none"
-                >
+              <SelectTrigger className="w-fit gap-2 rounded-full border border-[#B1B1B6] pl-[0.05em] pr-1 text-zinc-300">
+                <div className="bg-accent z-50 flex items-center gap-2 rounded-full rounded-r-none px-3 py-[0.45em]">
                   <Key className="h-4 w-4" />
                   <span className="text-nowrap font-medium">Permission ID</span>
                 </div>
@@ -128,7 +122,7 @@ export function ConstraintNodePermissionId({
           </div>
 
           {permissionIdError && (
-            <p className="text-red-500 text-xs mt-1">{permissionIdError}</p>
+            <p className="mt-1 text-xs text-red-500">{permissionIdError}</p>
           )}
         </div>
       </div>

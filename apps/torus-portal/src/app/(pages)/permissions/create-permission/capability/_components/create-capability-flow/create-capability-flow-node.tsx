@@ -1,12 +1,8 @@
-import { memo } from "react";
-
-import { Handle, Position } from "@xyflow/react";
-import { MouseOff, Route } from "lucide-react";
-
 import type { PermissionId } from "@torus-network/sdk/chain";
-
 import { cn } from "@torus-ts/ui/lib/utils";
-
+import { Handle, Position } from "@xyflow/react";
+import { Infinity as InfinityIcon, MouseOff } from "lucide-react";
+import { memo } from "react";
 import { getPermissionClasses } from "./create-capability-flow-colors";
 import type { NamespacePathNodeData } from "./create-capability-flow-types";
 
@@ -55,10 +51,9 @@ export const NamespacePathNode = memo(function NamespacePathNode({
   return (
     <div
       className={cn(
-        `px-2 py-2 backdrop-blur-xl border flex gap-1 items-center rounded-sm
-        cursor-default pr-3`,
+        `flex cursor-default items-center gap-1 rounded-sm border px-2 py-2 pr-3 backdrop-blur-xl`,
         !isAccessible &&
-          "cursor-not-allowed bg-stone-700/10 text-stone-500/70 border-stone-500/10",
+          "cursor-not-allowed border-stone-500/10 bg-stone-700/10 text-stone-500/70",
         isAccessible && "bg-muted border-border",
         hasSelectedPermission &&
           data.selectedPermission &&
@@ -83,15 +78,14 @@ export const NamespacePathNode = memo(function NamespacePathNode({
                 key={permission.permissionId}
                 data-node-id={data.label}
                 className={cn(
-                  `text-sm rounded-sm px-2 py-1 font-mono font-bold transition-all border
-                    border-border`,
-                  "flex items-center gap-1 justify-center min-w-8 h-8 ",
+                  `border-border rounded-sm border px-2 py-1 font-mono text-sm font-bold transition-all`,
+                  "flex h-8 min-w-8 items-center justify-center gap-1",
                   getPermissionClasses(permission.permissionId).bg,
 
                   isDisabled &&
-                    "bg-gray-300 text-gray-500 cursor-not-allowed opacity-50",
+                    "cursor-not-allowed bg-gray-300 text-gray-500 opacity-50",
                   !isDisabled &&
-                    "text-white hover:opacity-80 transition-opacity",
+                    "text-white transition-opacity hover:opacity-80",
                   isSelected && !isDisabled && "text-white",
                 )}
                 onClick={(e) =>
@@ -102,7 +96,7 @@ export const NamespacePathNode = memo(function NamespacePathNode({
                 title={`${isInfinite ? "Unlimited" : countNumber} available instances${isDisabled ? (isBlocked ? " (blocked)" : " (no instances available)") : ""}`}
               >
                 {isInfinite ? (
-                  <Route size={15} className="font-bold" />
+                  <InfinityIcon size={15} className="font-bold" />
                 ) : (
                   <span className="font-bold">{countNumber}</span>
                 )}
@@ -115,8 +109,7 @@ export const NamespacePathNode = memo(function NamespacePathNode({
           <button
             disabled
             className={cn(
-              `text-xs rounded-sm p-1 font-mono font-semibold border border-border min-w-[28px]
-                items-center h-7 flex justify-center`,
+              `border-border flex h-7 min-w-[28px] items-center justify-center rounded-sm border p-1 font-mono text-xs font-semibold`,
             )}
           >
             <MouseOff size={12} className="font-bold" />
@@ -124,7 +117,7 @@ export const NamespacePathNode = memo(function NamespacePathNode({
         )
       )}
 
-      <div className="font-mono text-sm leading-tight pl-1" title={data.label}>
+      <div className="pl-1 font-mono text-sm leading-tight" title={data.label}>
         {getDisplayPath(data.label)}
       </div>
 

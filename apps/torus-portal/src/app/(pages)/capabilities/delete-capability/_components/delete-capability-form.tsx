@@ -1,16 +1,11 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
-
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Trash2 } from "lucide-react";
-import { useForm } from "react-hook-form";
-import { z } from "zod";
-
+import { deleteNamespace } from "@torus-network/sdk/chain";
 import type { SS58Address } from "@torus-network/sdk/types";
-
 import { useNamespaceEntriesOf } from "@torus-ts/query-provider/hooks";
 import { useTorus } from "@torus-ts/torus-provider";
+import { useSendTransaction } from "@torus-ts/torus-provider/use-send-transaction";
 import { Button } from "@torus-ts/ui/components/button";
 import {
   Form,
@@ -31,11 +26,12 @@ import { WalletConnectionWarning } from "@torus-ts/ui/components/wallet-connecti
 import { useIsMobile } from "@torus-ts/ui/hooks/use-mobile";
 import { useToast } from "@torus-ts/ui/hooks/use-toast";
 import { cn } from "@torus-ts/ui/lib/utils";
-
 import PortalFormHeader from "~/app/_components/portal-form-header";
 import { truncateMobileValue } from "~/utils/truncate-mobile-value";
-import { tryCatch } from "~/utils/try-catch";
-
+import { Trash2 } from "lucide-react";
+import { useCallback, useEffect, useMemo } from "react";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
 import { DeleteCapabilityPreview } from "./delete-capability-preview";
 import { DeleteCapabilitySegmentSelector } from "./delete-capability-segment-selector";
 
@@ -55,13 +51,19 @@ export function DeleteCapabilityForm({
     isInitialized,
     api,
     selectedAccount,
-    deleteNamespaceTransaction,
+    torusApi,
+    wsEndpoint,
   } = useTorus();
   const { toast } = useToast();
   const isMobile = useIsMobile();
-  const [transactionStatus, setTransactionStatus] = useState<
-    "idle" | "loading" | "success" | "error"
-  >("idle");
+
+  const { sendTx, isPending, isSigning } = useSendTransaction({
+    api,
+    selectedAccount,
+    wsEndpoint,
+    wallet: torusApi,
+    transactionType: "Delete Namespace",
+  });
 
   const form = useForm<DeleteCapabilityFormData>({
     resolver: zodResolver(DELETE_CAPABILITY_SCHEMA),
@@ -129,44 +131,27 @@ export function DeleteCapabilityForm({
       return;
     }
 
+    if (!api || !sendTx) {
+      toast.error("API not ready");
+      return;
+    }
+
     const pathToDelete = selectedPath.path
       .slice(0, data.segmentToDelete + 1)
       .join(".");
 
-    setTransactionStatus("loading");
-    const { error } = await tryCatch(
-      deleteNamespaceTransaction({
-        path: pathToDelete,
-        callback: (result) => {
-          if (result.status === "SUCCESS" && result.finalized) {
-            setTransactionStatus("success");
-            toast.success(
-              `Capability permission "${pathToDelete}" deleted successfully`,
-            );
-            form.reset();
-            void namespaceEntries.refetch();
-          }
+    const [sendErr, sendRes] = await sendTx(deleteNamespace(api, pathToDelete));
 
-          if (result.status === "ERROR") {
-            setTransactionStatus("error");
-            toast.error(
-              result.message ?? "Failed to delete capability permission",
-            );
-          }
-        },
-        refetchHandler: async () => {
-          // Refetch namespace entries after successful deletion
-          await namespaceEntries.refetch();
-        },
-      }),
-    );
-
-    if (error) {
-      console.error("Error deleting capability permission:", error);
-      setTransactionStatus("error");
-      toast.error("Failed to delete capability permission");
-      return;
+    if (sendErr !== undefined) {
+      return; // Error already handled by sendTx
     }
+
+    const { tracker } = sendRes;
+
+    tracker.on("finalized", () => {
+      form.reset();
+      void namespaceEntries.refetch();
+    });
   }
 
   return (
@@ -195,15 +180,15 @@ export function DeleteCapabilityForm({
                 <FormLabel>Select Capability a Path</FormLabel>
                 <FormControl>
                   {!isAccountConnected ? (
-                    <div className="text-sm text-muted-foreground sm:h-10 border flex items-center px-4">
+                    <div className="text-muted-foreground flex items-center border px-4 text-sm sm:h-10">
                       Connect your wallet to see your capabilities
                     </div>
                   ) : namespaceEntries.isLoading ? (
-                    <div className="text-sm text-muted-foreground sm:h-10 border flex items-center px-4">
+                    <div className="text-muted-foreground flex items-center border px-4 text-sm sm:h-10">
                       Loading your capabilitys...
                     </div>
                   ) : deletablePaths.length === 0 ? (
-                    <div className="text-sm text-muted-foreground sm:h-10 border flex items-center px-4">
+                    <div className="text-muted-foreground flex items-center border px-4 text-sm sm:h-10">
                       No capabilities found. Create a capability first.
                     </div>
                   ) : (
@@ -256,13 +241,12 @@ export function DeleteCapabilityForm({
               !isAccountConnected ||
               !selectedPath ||
               watchedSegment < 2 ||
-              transactionStatus === "loading"
+              isPending ||
+              isSigning
             }
           >
-            <Trash2 className="h-4 w-4 mr-2" />
-            {transactionStatus === "loading"
-              ? "Deleting..."
-              : "Delete Capability"}
+            <Trash2 className="mr-2 h-4 w-4" />
+            {isPending || isSigning ? "Deleting..." : "Delete Capability"}
           </Button>
         </div>
       </form>

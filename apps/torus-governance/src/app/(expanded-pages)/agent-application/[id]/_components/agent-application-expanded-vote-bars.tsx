@@ -46,10 +46,7 @@ export function AgentApplicationExpandedVoteBars({ id }: { id: number }) {
           {votes}/{threshold}
         </span>
       </div>
-      <div
-        className="bg-primary-foreground border-border relative h-6 w-full overflow-hidden
-          rounded-full border"
-      >
+      <div className="bg-primary-foreground border-border relative h-6 w-full overflow-hidden rounded-full border">
         <div
           className="absolute h-full rounded-full bg-white/40"
           style={{ width: `${width}%` }}
@@ -62,13 +59,14 @@ export function AgentApplicationExpandedVoteBars({ id }: { id: number }) {
     <Card className="animate-fade-down flex w-full flex-col gap-6 p-6">
       <h3 className="font-medium text-white">Vote Progress</h3>
 
+      {/* eslint-disable-next-line react-hooks/static-components */}
       <VoteBar
         label="Favorable"
         votes={favorableVotes}
         threshold={threshold}
         width={favorableWidth}
       />
-
+      {/* eslint-disable-next-line react-hooks/static-components */}
       <VoteBar
         label="Against"
         votes={againstVotes}

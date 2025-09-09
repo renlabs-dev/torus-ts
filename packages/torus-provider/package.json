@@ -7,7 +7,9 @@
     ".": "./src/torus-provider.tsx",
     "./types": "./src/_types/index.ts",
     "./send-transaction": "./src/_components/send-transaction.tsx",
-    "./send-transaction-v2": "./src/_components/send-transaction-v2.tsx"
+    "./use-send-transaction": "./src/_components/use-send-transaction.ts",
+    "./use-send-transaction-display": "./src/_components/use-send-transaction-display.ts",
+    "./use-transaction-fee": "./src/_components/use-transaction-fee.ts"
   },
   "license": "MIT",
   "scripts": {
@@ -26,10 +28,7 @@
     "@polkadot/types": "catalog:",
     "@polkadot/extension-inject": "catalog:",
     "@polkadot-api/merkleize-metadata": "^1.1.13",
-    "react": "catalog:react19",
-    "react-dom": "catalog:react19",
-    "zod": "catalog:",
-    "zustand": "catalog:"
+    "react": "catalog:react19"
   },
   "devDependencies": {
     "@torus-ts/eslint-config": "workspace:*",
@@ -40,8 +39,7 @@
     "prettier": "catalog:",
     "typescript": "catalog:",
     "@types/node": "catalog:",
-    "@types/react": "catalog:react19",
-    "@types/react-dom": "catalog:react19"
+    "@types/react": "catalog:react19"
   },
   "prettier": "@torus-ts/prettier-config"
 }

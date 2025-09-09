@@ -1,9 +1,8 @@
+import type { SS58Address } from "@torus-network/sdk/types";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
-import type { SS58Address } from "@torus-network/sdk/types";
-
-export interface DelegatedAgent {
+interface DelegatedAgent {
   id: number;
   name: string;
   address: string;

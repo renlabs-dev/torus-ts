@@ -1,11 +1,9 @@
 import type { H256 } from "@polkadot/types/interfaces";
-
 import type {
   PermissionDuration,
   RevocationTerms,
 } from "@torus-network/sdk/chain";
 import type { SS58Address } from "@torus-network/sdk/types";
-
 import type { PathWithPermission } from "./create-capability-flow/create-capability-flow-types";
 import type { CreateCapabilityPermissionFormData } from "./create-capability-permission-form-schema";
 

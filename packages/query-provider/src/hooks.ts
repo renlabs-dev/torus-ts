@@ -1,8 +1,5 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 import "@polkadot/api-augment";
-
-import { useEffect, useState } from "react";
-
 import { ApiPromise, WsProvider } from "@polkadot/api";
 import type { SubmittableExtrinsic } from "@polkadot/api/types";
 import type {
@@ -10,8 +7,6 @@ import type {
   UseQueryResult,
 } from "@tanstack/react-query";
 import { useQueries, useQuery } from "@tanstack/react-query";
-import SuperJSON from "superjson";
-
 import type { StakeData } from "@torus-network/sdk/cached-queries";
 import { queryCachedStakeOut } from "@torus-network/sdk/cached-queries";
 import type {
@@ -27,6 +22,7 @@ import {
   queryAgentApplications,
   queryAgentBurn,
   queryAgents,
+  queryAllPermissions,
   queryBlockEmission,
   queryDaoTreasuryAddress,
   queryExtFee,
@@ -59,6 +55,8 @@ import type { SS58Address } from "@torus-network/sdk/types";
 import { BasicLogger } from "@torus-network/torus-utils/logger";
 import { tryAsync } from "@torus-network/torus-utils/try-catch";
 import type { ListItem, Nullish } from "@torus-network/torus-utils/typing";
+import { useEffect, useState } from "react";
+import SuperJSON from "superjson";
 
 const log = BasicLogger.create({ name: "query-provider" });
 
@@ -143,9 +141,7 @@ export function useFreeBalance(
   });
 }
 
-export function useTreasuryEmissionFee(
-  api: Api | Nullish,
-): UseQueryResult<Proposal[], Error> {
+export function useTreasuryEmissionFee(api: Api | Nullish) {
   return useQuery({
     queryKey: ["treasury_emission_fee"],
     enabled: api != null,
@@ -589,3 +585,22 @@ export function useTransactionFee(
     refetchOnWindowFocus: false,
   });
 }
+
+export const useAllPermissions = (api: Api | Nullish) => {
+  return useQuery({
+    queryKey: ["all_permissions"],
+    enabled: api != null,
+    queryFn: async () => {
+      if (!api) return null;
+      const result = await queryAllPermissions(api);
+      const [error, data] = result;
+      if (error) {
+        console.error("Error querying all permissions:", error);
+        return null;
+      }
+      return data;
+    },
+    staleTime: CONSTANTS.TIME.STAKE_STALE_TIME,
+    refetchOnWindowFocus: false,
+  });
+};

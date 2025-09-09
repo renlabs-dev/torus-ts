@@ -1,12 +1,9 @@
-import { useMemo } from "react";
-
 import { checkSS58 } from "@torus-network/sdk/types";
 import { formatToken } from "@torus-network/torus-utils/torus/token";
-
 import { useKeyStakedBy } from "@torus-ts/query-provider/hooks";
 import { useTorus } from "@torus-ts/torus-provider";
-
 import { env } from "~/env";
+import { useMemo } from "react";
 
 export function useUserWeightPower() {
   const { selectedAccount, api: torusApi } = useTorus();

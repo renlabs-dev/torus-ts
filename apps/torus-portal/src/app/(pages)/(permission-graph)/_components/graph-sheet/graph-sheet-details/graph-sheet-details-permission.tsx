@@ -1,5 +1,17 @@
-import { useMemo } from "react";
-
+import { smallAddress } from "@torus-network/torus-utils/torus/address";
+import { Badge } from "@torus-ts/ui/components/badge";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@torus-ts/ui/components/card";
+import { Separator } from "@torus-ts/ui/components/separator";
+import { AddressWithAgent } from "~/app/_components/address-with-agent";
+import { useMultipleAccountEmissions } from "~/hooks/use-multiple-account-emissions";
+import { calculateStreamValue } from "~/utils/calculate-stream-value";
+import { ShortenedCapabilityPath } from "~/utils/capability-path";
 import {
   AlertCircle,
   Calendar,
@@ -13,20 +25,7 @@ import {
   User,
   UserCheck,
 } from "lucide-react";
-
-import { smallAddress } from "@torus-network/torus-utils/torus/address";
-
-import { Badge } from "@torus-ts/ui/components/badge";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@torus-ts/ui/components/card";
-
-import { AddressWithAgent } from "~/app/_components/address-with-agent";
-
+import { useMemo } from "react";
 import type {
   allPermissions,
   CustomGraphNode,
@@ -44,44 +43,76 @@ export function GraphSheetDetailsPermission({
 }: GraphSheetDetailsPermissionProps) {
   const permissionData = selectedNode.permissionData;
 
-  // Group distribution targets for this permission (there can be multiple rows due to JOIN)
+  // Group distribution targets by target account to avoid duplicates and show streams per target
+  // eslint-disable-next-line react-hooks/preserve-manual-memoization
   const distributionTargets = useMemo(() => {
     if (
       !allPermissions ||
       !permissionData ||
-      permissionData.permissionType !== "emission"
+      permissionData.permissionType !== "stream"
     ) {
       return [];
     }
 
-    const targets = allPermissions
-      .filter((p) => p.permissions.permissionId === permissionData.permissionId)
-      .filter((p) => p.emission_distribution_targets?.targetAccountId)
-      .map((p) => {
-        const target = p.emission_distribution_targets;
-        if (!target) return null;
-        return {
-          targetAccountId: target.targetAccountId,
-          weight: target.weight,
+    // targetAccountId -> (streamKey -> { streamId, weight })
+    const grouped = new Map<
+      string,
+      Map<string, { streamId?: string | null; weight: number }>
+    >();
+
+    for (const p of allPermissions) {
+      if (p.permissions.permissionId !== permissionData.permissionId) continue;
+      const target = p.emission_distribution_targets;
+      if (!target?.targetAccountId) continue;
+      const targetId = target.targetAccountId;
+      const streamKey = target.streamId ?? "default";
+      if (!grouped.has(targetId)) grouped.set(targetId, new Map());
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      const streams = grouped.get(targetId)!;
+      if (!streams.has(streamKey)) {
+        streams.set(streamKey, {
           streamId: target.streamId,
-        };
-      })
-      .filter(
-        (target): target is NonNullable<typeof target> => target !== null,
-      );
+          weight: target.weight,
+        });
+      }
+    }
 
-    // Remove duplicates by creating a unique key
-    const uniqueTargets = targets.filter(
-      (target, index, array) =>
-        array.findIndex(
-          (t) =>
-            t.targetAccountId === target.targetAccountId &&
-            t.streamId === target.streamId,
-        ) === index,
-    );
-
-    return uniqueTargets;
+    return Array.from(grouped.entries()).map(([targetAccountId, streams]) => {
+      const values = Array.from(streams.values());
+      const hasSpecificStreams = values.some((s) => s.streamId);
+      // If there are specific streams, drop the default aggregate to avoid duplicated weights
+      if (hasSpecificStreams && streams.has("default")) {
+        streams.delete("default");
+      }
+      return {
+        targetAccountId,
+        streams: Array.from(streams.values()),
+      };
+    });
   }, [allPermissions, permissionData]);
+
+  // Get emission data for all target accounts and the delegator
+  // eslint-disable-next-line react-hooks/preserve-manual-memoization
+  const allAccountIds = useMemo(() => {
+    const accounts = new Set<string>();
+
+    // Add delegator account
+    if (permissionData?.delegatorAccountId) {
+      accounts.add(permissionData.delegatorAccountId);
+    }
+
+    // Add all distribution target accounts
+    distributionTargets.forEach((target) => {
+      accounts.add(target.targetAccountId);
+    });
+
+    return Array.from(accounts);
+    // eslint-disable-next-line react-hooks/preserve-manual-memoization
+  }, [permissionData, distributionTargets]);
+
+  const emissionsData = useMultipleAccountEmissions({
+    accountIds: allAccountIds,
+  });
 
   if (!permissionData) {
     return (
@@ -111,18 +142,18 @@ export function GraphSheetDetailsPermission({
         <CardHeader>
           <div className="flex items-center justify-between">
             <CardTitle className="flex items-center gap-2">
-              <Shield className="w-5 h-5" />
+              <Shield className="h-5 w-5" />
               AGENT Permission
             </CardTitle>
             <Badge
               variant={
-                permissionData.permissionType === "emission"
+                permissionData.permissionType === "stream"
                   ? "default"
                   : "secondary"
               }
               className="flex items-center gap-1"
             >
-              <Layers className="w-3 h-3" />
+              <Layers className="h-3 w-3" />
               {formatScope(permissionData.permissionType)}
             </Badge>
           </div>
@@ -133,20 +164,20 @@ export function GraphSheetDetailsPermission({
         <CardContent className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <h4 className="font-medium mb-2 flex items-center gap-2">
-                <Hash className="w-4 h-4" />
+              <h4 className="mb-2 flex items-center gap-2 font-medium">
+                <Hash className="h-4 w-4" />
                 Permission ID
               </h4>
-              <p className="text-sm text-muted-foreground font-mono break-all">
+              <p className="text-muted-foreground break-all font-mono text-sm">
                 {permissionData.permissionId}
               </p>
             </div>
             <div>
-              <h4 className="font-medium mb-2 flex items-center gap-2">
-                <Key className="w-4 h-4" />
+              <h4 className="mb-2 flex items-center gap-2 font-medium">
+                <Key className="h-4 w-4" />
                 Scope
               </h4>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-muted-foreground text-sm">
                 {permissionData.scope}
               </p>
             </div>
@@ -154,11 +185,11 @@ export function GraphSheetDetailsPermission({
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <h4 className="font-medium mb-2 flex items-center gap-2">
+              <h4 className="mb-2 flex items-center gap-2 font-medium">
                 {isIndefinite ? (
-                  <InfinityIcon className="w-4 h-4" />
+                  <InfinityIcon className="h-4 w-4" />
                 ) : (
-                  <Clock className="w-4 h-4" />
+                  <Clock className="h-4 w-4" />
                 )}
                 Duration
               </h4>
@@ -168,7 +199,7 @@ export function GraphSheetDetailsPermission({
                     variant="secondary"
                     className="flex items-center gap-1"
                   >
-                    <CheckCircle className="w-3 h-3 text-green-500" />
+                    <CheckCircle className="h-3 w-3 text-green-500" />
                     Indefinite
                   </Badge>
                 ) : (
@@ -180,9 +211,9 @@ export function GraphSheetDetailsPermission({
                       className="flex items-center gap-1"
                     >
                       {remainingBlocks > 0 ? (
-                        <CheckCircle className="w-3 h-3 text-green-500" />
+                        <CheckCircle className="h-3 w-3 text-green-500" />
                       ) : (
-                        <AlertCircle className="w-3 h-3 text-red-500" />
+                        <AlertCircle className="h-3 w-3 text-red-500" />
                       )}
                       {formatDuration(remainingBlocks, isIndefinite)}
                     </Badge>
@@ -190,13 +221,13 @@ export function GraphSheetDetailsPermission({
                 )}
               </div>
             </div>
-            {permissionData.permissionType === "emission" && (
+            {permissionData.permissionType === "stream" && (
               <div>
-                <h4 className="font-medium mb-2 flex items-center gap-2">
-                  <CheckCircle className="w-4 h-4" />
+                <h4 className="mb-2 flex items-center gap-2 font-medium">
+                  <CheckCircle className="h-4 w-4" />
                   Executions
                 </h4>
-                <p className="text-sm text-muted-foreground">
+                <p className="text-muted-foreground text-sm">
                   {detailedPermission?.permissions.executionCount ?? 0} times
                 </p>
               </div>
@@ -204,8 +235,8 @@ export function GraphSheetDetailsPermission({
           </div>
 
           {detailedPermission?.permissions.createdAt && (
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <Calendar className="w-4 h-4" />
+            <div className="text-muted-foreground flex items-center gap-2 text-sm">
+              <Calendar className="h-4 w-4" />
               Created{" "}
               {new Date(
                 detailedPermission.permissions.createdAt,
@@ -219,75 +250,94 @@ export function GraphSheetDetailsPermission({
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <User className="w-5 h-5" />
+            <User className="h-5 w-5" />
             Delegator
           </CardTitle>
         </CardHeader>
         <CardContent>
           <AddressWithAgent
-            address={permissionData.grantorAccountId}
+            address={permissionData.delegatorAccountId}
             className="mb-2"
           />
-          <p className="text-xs text-muted-foreground">
+          <p className="text-muted-foreground text-xs">
             Account that delegated this permission
           </p>
         </CardContent>
       </Card>
 
-      {permissionData.permissionType !== "emission" && (
+      {permissionData.permissionType !== "stream" && (
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <UserCheck className="w-5 h-5" />
+              <UserCheck className="h-5 w-5" />
               Recipient
             </CardTitle>
           </CardHeader>
           <CardContent>
             <AddressWithAgent
-              address={permissionData.granteeAccountId}
+              address={permissionData.recipientAccountId}
               className="mb-2"
             />
-            <p className="text-xs text-muted-foreground">
+            <p className="text-muted-foreground text-xs">
               Account that received this permission
             </p>
           </CardContent>
         </Card>
       )}
 
-      {/* Distribution Targets (for emission permissions) */}
-      {permissionData.permissionType === "emission" &&
+      {/* Distribution Targets (for stream permissions) */}
+      {permissionData.permissionType === "stream" &&
         distributionTargets.length > 0 && (
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Layers className="w-5 h-5" />
+                <Layers className="h-5 w-5" />
                 Distribution Target{distributionTargets.length > 1 ? "s" : ""}
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
-                {distributionTargets.map((target) => (
-                  <div
-                    key={`${target.targetAccountId}-${target.streamId ?? "default"}`}
-                    className="flex flex-col items-start justify-between"
-                  >
-                    <AddressWithAgent
-                      address={target.targetAccountId}
-                      className="mb-2"
-                    />
-                    <span className="text-xs text-muted-foreground">
-                      {target.streamId && (
-                        <span className="items-center flex gap-1">
-                          <Badge variant="secondary">
-                            Stream: {smallAddress(target.streamId, 6)}
-                          </Badge>
-
-                          <Badge variant="secondary">
-                            Weight: {target.weight}
-                          </Badge>
-                        </span>
-                      )}
-                    </span>
+                {distributionTargets.map((entry, i) => (
+                  <div key={entry.targetAccountId} className="w-full">
+                    <div className="flex flex-col items-start justify-between">
+                      <AddressWithAgent
+                        address={entry.targetAccountId}
+                        className="mb-2"
+                      />
+                      <div className="space-y-2">
+                        <div className="flex flex-wrap gap-2">
+                          {entry.streams.map((s, idx) => (
+                            <span
+                              key={`${entry.targetAccountId}-${s.streamId ?? "default"}-${idx}`}
+                              className="flex items-center gap-1"
+                            >
+                              {s.streamId && (
+                                <Badge variant="secondary">
+                                  Stream: {smallAddress(s.streamId, 4)}
+                                </Badge>
+                              )}
+                              <Badge variant="secondary">
+                                Weight: {s.weight}
+                              </Badge>
+                              <Badge variant="secondary">
+                                {calculateStreamValue(
+                                  entry.streams.reduce(
+                                    (total, s) => total + s.weight,
+                                    0,
+                                  ),
+                                  emissionsData[entry.targetAccountId],
+                                  true,
+                                  entry.targetAccountId,
+                                )}
+                              </Badge>
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                    {i < distributionTargets.length - 1 && (
+                      <Separator className="my-3" />
+                    )}
                   </div>
                 ))}
               </div>
@@ -295,33 +345,51 @@ export function GraphSheetDetailsPermission({
           </Card>
         )}
 
-      {/* Stream Allocation (for emission permissions) */}
-      {permissionData.permissionType === "emission" &&
+      {/* Stream Allocation (for stream permissions) */}
+      {permissionData.permissionType === "stream" &&
         detailedPermission?.emission_stream_allocations && (
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Layers className="w-5 h-5" />
+                <Layers className="h-5 w-5" />
                 Stream Allocation
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <h4 className="font-medium mb-2">Stream ID</h4>
-                  <Badge variant="secondary">
+              <div className="flex flex-col">
+                <div className="flex gap-2">
+                  <h4 className="text-muted-foreground mb-2 font-medium">
+                    Stream ID:
+                  </h4>
+                  <p>
                     {smallAddress(
                       detailedPermission.emission_stream_allocations.streamId,
+                      14,
                     )}
-                  </Badge>
+                  </p>
                 </div>
-                <div>
-                  <h4 className="font-medium mb-2">Percentage</h4>
-                  <p className="text-sm text-muted-foreground">
+                <div className="flex gap-2">
+                  <h4 className="text-muted-foreground mb-2 font-medium">
+                    Allocated Percentage:
+                  </h4>
+                  <p>
                     {detailedPermission.emission_stream_allocations.percentage.toFixed(
                       2,
                     )}
                     %
+                  </p>
+                </div>
+                <div className="flex gap-2">
+                  <h4 className="text-muted-foreground mb-2 font-medium">
+                    Amount:
+                  </h4>
+                  <p className="text-green-500">
+                    {calculateStreamValue(
+                      detailedPermission.emission_stream_allocations.percentage,
+                      emissionsData[permissionData.delegatorAccountId],
+                      true,
+                      permissionData.delegatorAccountId,
+                    )}
                   </p>
                 </div>
               </div>
@@ -329,30 +397,56 @@ export function GraphSheetDetailsPermission({
           </Card>
         )}
 
-      {/* Namespace Paths (for capability permissions) */}
+      {/* Capability Paths (for capability permissions) */}
       {permissionData.permissionType === "capability" &&
-        permissionData.namespacePaths &&
-        permissionData.namespacePaths.length > 0 && (
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Layers className="w-5 h-5" />
-                Namespace Paths
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-2">
-                {permissionData.namespacePaths.map((path, index) => (
-                  <div key={index} className="flex items-center gap-2">
-                    <Badge variant="secondary" className="font-mono text-sm">
-                      {path}
-                    </Badge>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        )}
+        (() => {
+          // Extract all capability paths from ALL database entries with the same permission_id
+          // The database stores multiple entries with the same permission_id but different paths
+          const allPermissionEntries =
+            allPermissions?.filter(
+              (p) => p.permissions.permissionId === permissionData.permissionId,
+            ) ?? [];
+
+          // Collect all unique paths from all entries
+          const allPaths = new Set<string>();
+          for (const entry of allPermissionEntries) {
+            if (entry.namespace_permission_paths?.namespacePath) {
+              // Each entry has one path, collect them all
+              allPaths.add(entry.namespace_permission_paths.namespacePath);
+            }
+          }
+
+          const paths = Array.from(allPaths);
+
+          if (paths.length === 0) {
+            return null;
+          }
+
+          return (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Layers className="h-5 w-5" />
+                  Capability Path{paths.length > 1 ? "s" : ""}
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-2">
+                  {paths.map((path, index) => (
+                    <div key={index} className="flex items-center gap-2">
+                      <Badge variant="secondary" className="font-mono text-sm">
+                        <ShortenedCapabilityPath
+                          path={path}
+                          showTooltip={true}
+                        />
+                      </Badge>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          );
+        })()}
     </div>
   );
 }

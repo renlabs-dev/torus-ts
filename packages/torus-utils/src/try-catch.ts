@@ -1,60 +1,10 @@
+import { ensureError } from "./error.js";
 import { BasicLogger } from "./logger.js";
 import { AsyncResultObj } from "./result/async.js";
 import type { Result } from "./result/index.js";
 import { empty, makeErr, makeOk } from "./result/index.js";
 
 const log = BasicLogger.create({ name: "try-catch" });
-
-/**
- * Type guard to check if a value is an instance of Error.
- *
- * @param error - The value to check.
- * @returns True if the value is an Error instance, false otherwise.
- *
- * @example
- * if (isError(result)) {
- *   console.error(result.message);
- * }
- */
-export function isError(error: unknown): error is Error {
-  return error instanceof Error;
-}
-
-/**
- * Ensures that the provided value is converted to an Error object.
- *
- * If the input is already an Error, returns it unchanged. Otherwise, attempts
- * to create a new Error with a stringified version of the input.
- *
- * @param maybeError - The value to convert to an Error
- * @returns An Error object
- *
- * @example
- * ```ts
- * // Returns original error
- * ensureError(new Error('test')); // Error: test
- *
- * // Converts object to Error
- * ensureError({ message: 'test' }); // Error: {"message":"test"}
- *
- * // Handles non-stringifiable values
- * ensureError(undefined); // Error: undefined
- * ```
- */
-// TODO: add unit tests for `ensureError`
-export function ensureError(maybeError: unknown): Error {
-  if (isError(maybeError)) {
-    return maybeError;
-  }
-
-  try {
-    return new Error(JSON.stringify(maybeError));
-  } catch {
-    // Fallback in case there's an error stringifying the maybeError with
-    // circular references for example.
-    return new Error(String(maybeError));
-  }
-}
 
 // ==== Sync ====
 

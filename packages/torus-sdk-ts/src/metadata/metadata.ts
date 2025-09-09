@@ -1,12 +1,10 @@
-import type { ZodSchema } from "zod";
-import { z } from "zod";
-
 import type { OldResult } from "@torus-network/torus-utils";
 import {
   buildIpfsGatewayUrl,
   IPFS_URI_SCHEMA,
 } from "@torus-network/torus-utils/ipfs";
-
+import type { ZodSchema } from "zod";
+import { z } from "zod";
 import type { AgentMetadata } from "./agent-metadata.js";
 import { AGENT_METADATA_SCHEMA } from "./agent-metadata.js";
 
@@ -90,7 +88,7 @@ export async function fetchCustomMetadata(
 
   if (!r.success) {
     return appendErrorInfo(
-      r.error.errors.map((e) => e.message).join("\n"),
+      r.error.issues.map((e) => e.message).join("\n"),
       `for ${kind} ${entryId}`,
     );
   }

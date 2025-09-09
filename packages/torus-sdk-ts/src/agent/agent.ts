@@ -7,11 +7,10 @@ import type { Context } from "hono";
 import { cors } from "hono/cors";
 import { match } from "rustie";
 import { z } from "zod";
-
-import type { SS58Address } from "@torus-network/sdk/types";
-
-import { queryNamespacePermissions } from "../chain/permission0.js";
-import { queryAgents } from "../chain/torus0/agents.js";
+import { queryNamespacePermissions } from "../chain/permission0/permission0-storage.js";
+import { queryAgents } from "../chain/torus0/torus0-storage.js";
+import type { SS58Address } from "../types/index.js";
+import { validateNamespacePath } from "../types/namespace/namespace-path.js";
 import { connectToChainRpc } from "../utils/index.js";
 import type { Helpers } from "./helpers.js";
 import { checkTransaction } from "./helpers.js";
@@ -196,6 +195,8 @@ export class AgentServer {
   private initPromise: Promise<void> | null = null;
   /** Subscription to blockchain events for real-time permission updates */
   private eventSubscription: (() => void) | null = null;
+  /** RPC URL used for blockchain connection */
+  private rpcUrl: string | null = null;
 
   /**
    * Creates a new Agent instance
@@ -229,9 +230,9 @@ export class AgentServer {
    * @private
    */
   private async init() {
-    const wsUrl = selectRpcUrl();
+    this.rpcUrl = selectRpcUrl();
 
-    this.api = await connectToChainRpc(wsUrl);
+    this.api = await connectToChainRpc(this.rpcUrl);
 
     // Resolve agent name from blockchain
     await this.resolveAgentName();
@@ -261,11 +262,17 @@ export class AgentServer {
         this.agentName = matchingAgent.name;
         console.log(`Resolved agent name: ${this.agentName}`);
       } else {
-        throw new Error(`Agent not found for key: ${this.options.agentKey}`);
+        console.error(
+          `Failed to resolve agent name for key: ${this.options.agentKey}. Agent not found on chain: ${this.rpcUrl}`,
+        );
+        process.exit(1);
       }
     } catch (error) {
-      console.error("Failed to resolve agent name:", error);
-      throw error;
+      console.error(
+        `Failed to resolve agent name on chain ${this.rpcUrl}:`,
+        error,
+      );
+      process.exit(1);
     }
   }
 
@@ -390,8 +397,10 @@ export class AgentServer {
                     const existingGrantees =
                       this.delegatedNamespacePermissions.get(normalizedPath) ??
                       [];
-                    if (!existingGrantees.includes(permission.recipient)) {
-                      existingGrantees.push(permission.recipient);
+                    // Extract recipient from namespace scope
+                    const recipient = namespaceScope.recipient;
+                    if (!existingGrantees.includes(recipient)) {
+                      existingGrantees.push(recipient);
                       this.delegatedNamespacePermissions.set(
                         normalizedPath,
                         existingGrantees,
@@ -409,16 +418,16 @@ export class AgentServer {
                   allPaths.push(...pathsArray.map((p) => p.join(".")));
                 }
                 console.log(
-                  `Cached namespace permission ${permissionId} for grantee ${permission.recipient} with paths:`,
+                  `Cached namespace permission ${permissionId} for grantee ${namespaceScope.recipient} with paths:`,
                   allPaths,
                 );
               }
               console.log(
-                `Cached namespace permission ${permissionId} for recipient ${permission.recipient}`,
+                `Cached namespace permission ${permissionId} for recipient ${namespaceScope.recipient}`,
               );
             },
-            Emission: () => {
-              // Skip emission permissions
+            Stream: () => {
+              // Skip stream permissions
             },
             Curator: () => {
               // Skip curator permissions
@@ -467,6 +476,7 @@ export class AgentServer {
 
   /**
    * Checks if a user has permission to access a specific namespace path using cached permissions.
+   * Implements cascading permissions - if a user has access to a parent namespace, they have access to all child namespaces.
    * @param userAddress - The SS58 address of the user
    * @param namespacePath - The namespace path to check (e.g., 'agent.alice.memory.twitter')
    * @returns boolean - true if the user has permission, false otherwise
@@ -477,14 +487,47 @@ export class AgentServer {
   ): boolean {
     const normalizedPath = namespacePath.toLowerCase();
 
-    const exactMatchGrantees =
-      this.delegatedNamespacePermissions.get(normalizedPath);
-    if (exactMatchGrantees?.includes(userAddress)) {
-      console.log(
-        `User ${userAddress} has exact permission for ${normalizedPath}`,
-      );
-      return true;
+    // Validate and parse the requested namespace path into segments
+    const [error, requestedSegments] = validateNamespacePath(normalizedPath);
+    if (error || !requestedSegments) {
+      console.error(`Invalid namespace path: ${error}`);
+      return false;
     }
+
+    // Check each granted permission to see if it's a parent of the requested path
+    for (const [grantedPath, grantees] of this.delegatedNamespacePermissions) {
+      if (!grantees.includes(userAddress)) continue;
+
+      // Parse the granted path into segments
+      const [grantedError, grantedSegments] =
+        validateNamespacePath(grantedPath);
+      if (grantedError || !grantedSegments) {
+        console.error(`Invalid granted namespace path: ${grantedError}`);
+        continue;
+      }
+
+      // Check if granted path is a parent of (or equal to) the requested path
+      // All segments of the granted path must match the start of the requested path
+      if (grantedSegments.length <= requestedSegments.length) {
+        const isParentPath = grantedSegments.every(
+          (segment, index) => segment === requestedSegments[index],
+        );
+
+        if (isParentPath) {
+          if (grantedSegments.length === requestedSegments.length) {
+            console.log(
+              `User ${userAddress} has exact permission for ${normalizedPath}`,
+            );
+          } else {
+            console.log(
+              `User ${userAddress} has cascading permission for ${normalizedPath} via granted path ${grantedPath}`,
+            );
+          }
+          return true;
+        }
+      }
+    }
+
     console.log(
       `User ${userAddress} does not have permission for namespace ${normalizedPath}`,
     );

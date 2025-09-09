@@ -12,16 +12,16 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@torus-ts/ui/components/dialog";
+import { ScrollArea } from "@torus-ts/ui/components/scroll-area";
 import { getLinks } from "@torus-ts/ui/lib/data";
 import { env } from "~/env";
+import { useAgentHealth } from "hooks/use-agent-health";
+import type { DialogPenaltiesState, PenaltyList } from "hooks/use-agent-health";
 import { ArrowRight, Coins } from "lucide-react";
 import { DateTime } from "luxon";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useRef, useState } from "react";
-import { useAgentHealth } from "hooks/use-agent-health";
-import type { DialogPenaltiesState, PenaltyList } from "hooks/use-agent-health";
-import { ScrollArea } from "@torus-ts/ui/components/scroll-area";
 
 const links = getLinks(env("NEXT_PUBLIC_TORUS_CHAIN_ENV"));
 
@@ -94,10 +94,7 @@ const AgentPenaltiesCard = ({
   };
 
   return (
-    <Card
-      className="hover:bg-accent flex w-full flex-col justify-between gap-4 p-6 transition
-        sm:flex-row sm:items-center sm:gap-2"
-    >
+    <Card className="hover:bg-accent flex w-full flex-col justify-between gap-4 p-6 transition sm:flex-row sm:items-center sm:gap-2">
       <div className="flex flex-col items-start gap-1">
         <div className="flex items-center gap-2">
           <CopyButton
@@ -161,9 +158,7 @@ const PenaltiesList = ({ penalties }: { penalties?: PenaltyList }) => {
                     {smallAddress(penalty.cadreKey, 10)}
                   </CopyButton>
                   <span
-                    className={`bg-muted-foreground/5 items-center rounded-full px-1.5 py-0.5
-                    ${getPenaltyStatusColors(penalty.executed)} text-xs font-medium ring-1
-                    ring-inset`}
+                    className={`bg-muted-foreground/5 items-center rounded-full px-1.5 py-0.5 ${getPenaltyStatusColors(penalty.executed)} text-xs font-medium ring-1 ring-inset`}
                   >
                     {penalty.executed ? "EXECUTED" : "PENDING"}
                   </span>

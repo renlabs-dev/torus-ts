@@ -1,9 +1,7 @@
+import { and, eq, gte, inArray, isNull, max } from "@torus-ts/db";
+import { agentSchema, computedAgentWeightSchema } from "@torus-ts/db/schema";
 import type { TRPCRouterRecord } from "@trpc/server";
 import { z } from "zod";
-
-import { and, eq, gte, isNull, max } from "@torus-ts/db";
-import { agentSchema, computedAgentWeightSchema } from "@torus-ts/db/schema";
-
 import { publicProcedure } from "../../trpc";
 
 export const computedAgentWeightRouter = {
@@ -56,5 +54,19 @@ export const computedAgentWeightRouter = {
       }
 
       return result;
+    }),
+  byAgentKeys: publicProcedure
+    .input(z.object({ agentKeys: z.array(z.string()) }))
+    .query(async ({ ctx, input }) => {
+      if (input.agentKeys.length === 0) {
+        return null;
+      }
+
+      return await ctx.db.query.computedAgentWeightSchema.findMany({
+        where: and(
+          inArray(computedAgentWeightSchema.agentKey, input.agentKeys),
+          isNull(computedAgentWeightSchema.deletedAt),
+        ),
+      });
     }),
 } satisfies TRPCRouterRecord;

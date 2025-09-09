@@ -1,8 +1,9 @@
 import { asc, eq, isNull, sql, sum } from "drizzle-orm";
 import {
-  bigint as drizzleBigint,
   boolean,
   check,
+  bigint as drizzleBigint,
+  timestamp as drizzleTimestamp,
   index,
   integer,
   numeric,
@@ -10,17 +11,16 @@ import {
   pgMaterializedView,
   pgTableCreator,
   pgView,
+  primaryKey,
   real,
   serial,
   text,
-  timestamp as drizzleTimestamp,
   unique,
   uuid,
   varchar,
 } from "drizzle-orm/pg-core";
 import type { Equals } from "tsafe";
 import { assert } from "tsafe";
-
 import { extract_pgenum_values } from "./utils";
 
 export const createTable = pgTableCreator((name) => `${name}`);
@@ -524,7 +524,7 @@ export const permissionsSchema = createTable(
     id: uuid("id").primaryKey().defaultRandom(), // Internal database ID
     permissionId: varchar("permission_id", { length: 66 }).notNull().unique(), // Substrate H256 hash
     grantorAccountId: ss58Address("grantor_account_id").notNull(),
-    granteeAccountId: ss58Address("grantee_account_id").notNull(),
+    granteeAccountId: ss58Address("grantee_account_id"),
 
     durationType: permissionDurationType("duration_type").notNull(),
     durationBlockNumber: bigint("duration_block_number"), // NULL for indefinite
@@ -713,6 +713,9 @@ export const emissionPermissionsSchema = createTable(
 
     accumulating: boolean("accumulating").notNull().default(true),
 
+    weightSetter: ss58Address("weight_setter").array().notNull(),
+    recipientManager: ss58Address("recipient_manager").array().notNull(),
+
     ...timeFields(),
   },
   (t) => [
@@ -810,6 +813,11 @@ export const emissionDistributionTargetsSchema = createTable(
 
 /**
  * Accumulated stream amounts (runtime state)
+ * This table is meant for tracking historical amounts, so
+ * it shouldn`t be relied upon for current accumulation ammounts.
+ * For that, we have the column `accumulated_tokens` in the
+ * `emission_distribution_targets` table.
+ *
  */
 export const accumulatedStreamAmountsSchema = createTable(
   "accumulated_stream_amounts",
@@ -828,14 +836,24 @@ export const accumulatedStreamAmountsSchema = createTable(
       .notNull()
       .default("0"),
     lastUpdated: timestampzNow("last_updated"),
+    lastExecutedBlock: integer("last_executed_block"),
+    atBlock: integer("at_block").notNull(),
+    executionCount: integer("execution_count").notNull().default(0),
   },
   (t) => [
-    {
-      primaryKey: { columns: [t.grantorAccountId, t.streamId, t.permissionId] },
-    },
-    index("accumulated_streams_grantor_stream_idx").on(
+    primaryKey({
+      columns: [
+        t.grantorAccountId,
+        t.streamId,
+        t.permissionId,
+        t.executionCount,
+      ],
+    }),
+    unique().on(
       t.grantorAccountId,
       t.streamId,
+      t.permissionId,
+      t.executionCount,
     ),
   ],
 );
@@ -847,7 +865,8 @@ export const namespacePermissionsSchema = createTable("namespace_permissions", {
   permissionId: varchar("permission_id", { length: 66 })
     .primaryKey()
     .references(() => permissionsSchema.permissionId, { onDelete: "cascade" }),
-
+  recipient: ss58Address("recipient").notNull(), // old grantee
+  maxInstances: integer("max_instances").notNull().default(0), // TODO: remove default
   ...timeFields(),
 });
 

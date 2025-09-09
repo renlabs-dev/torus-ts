@@ -1,4 +1,4 @@
-import type { TransactionResult } from "@torus-ts/torus-provider/types";
+import type { BrandTag } from "@torus-network/torus-utils";
 import { Button } from "@torus-ts/ui/components/button";
 import { Card } from "@torus-ts/ui/components/card";
 import {
@@ -9,24 +9,20 @@ import {
   FormLabel,
   FormMessage,
 } from "@torus-ts/ui/components/form";
-import { TransactionStatus } from "@torus-ts/ui/components/transaction-status";
-
-import { useRef } from "react";
 import type { UseFormReturn } from "react-hook-form";
 import { AllocatorSelector } from "../../../_components/allocator-selector";
 import { CurrencySwap } from "../../../_components/currency-swap";
-import type { FeeLabelHandle } from "../../../_components/fee-label";
 import { FeeLabel } from "../../../_components/fee-label";
 import type { StakeFormValues } from "./stake-form-schema";
-import type { BrandTag } from "@torus-network/torus-utils";
 
 interface StakeFormProps {
   form: UseFormReturn<StakeFormValues>;
   selectedAccount: { address: string } | null;
   minAllowedStakeData: bigint;
-  maxAmountRef: React.RefObject<string>;
-  feeRef: React.RefObject<FeeLabelHandle | null>;
-  transactionStatus: TransactionResult;
+  maxTransferableAmount: string;
+  estimatedFee: bigint | undefined;
+  isPending: boolean;
+  isSigning: boolean;
   handleSelectValidator: (
     address: BrandTag<"SS58Address"> & string,
   ) => Promise<void>;
@@ -39,24 +35,19 @@ export function StakeForm({
   form,
   selectedAccount,
   minAllowedStakeData,
-  maxAmountRef,
-  feeRef,
-  transactionStatus,
+  maxTransferableAmount,
+  estimatedFee,
+  isPending,
+  isSigning,
   handleSelectValidator,
   onReviewClick,
   handleAmountChange,
   usdPrice,
 }: StakeFormProps) {
-  const formRef = useRef<HTMLFormElement>(null);
-
   return (
     <Card className="animate-fade w-full p-6">
       <Form {...form}>
-        <form
-          ref={formRef}
-          className="flex w-full flex-col gap-6"
-          aria-label="Stake form"
-        >
+        <form className="flex w-full flex-col gap-6" aria-label="Stake form">
           <FormField
             control={form.control}
             name="recipient"
@@ -88,7 +79,7 @@ export function StakeForm({
                     amount={field.value}
                     usdPrice={usdPrice}
                     disabled={!selectedAccount?.address}
-                    availableFunds={maxAmountRef.current}
+                    availableFunds={maxTransferableAmount}
                     onAmountChangeAction={handleAmountChange}
                     minAllowedStakeData={minAllowedStakeData}
                   />
@@ -98,21 +89,15 @@ export function StakeForm({
             )}
           />
 
-          <FeeLabel ref={feeRef} accountConnected={!!selectedAccount} />
+          <FeeLabel accountConnected={!!selectedAccount} fee={estimatedFee} />
 
-          {transactionStatus.status && (
-            <TransactionStatus
-              status={transactionStatus.status}
-              message={transactionStatus.message}
-            />
-          )}
           <Button
             type="button"
             variant="outline"
             onClick={onReviewClick}
-            disabled={!selectedAccount?.address || form.formState.isSubmitting}
+            disabled={!selectedAccount?.address || isPending || isSigning}
           >
-            Review & Submit Transaction
+            {isPending ? "Processing..." : "Review & Submit Transaction"}
           </Button>
         </form>
       </Form>

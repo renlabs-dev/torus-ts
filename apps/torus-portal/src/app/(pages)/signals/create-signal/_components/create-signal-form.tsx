@@ -1,9 +1,6 @@
 "use client";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { Radio } from "lucide-react";
-import { useForm } from "react-hook-form";
-import type { z } from "zod";
 
+import { zodResolver } from "@hookform/resolvers/zod";
 import { AGENT_DEMAND_SIGNAL_INSERT_SCHEMA } from "@torus-ts/db/validation";
 import { useTorus } from "@torus-ts/torus-provider";
 import { Button } from "@torus-ts/ui/components/button";
@@ -18,12 +15,13 @@ import {
 import { Input } from "@torus-ts/ui/components/input";
 import { useToast } from "@torus-ts/ui/hooks/use-toast";
 import { cn } from "@torus-ts/ui/lib/utils";
-
 import PortalFormHeader from "~/app/_components/portal-form-header";
 import { useCanCreateSignal } from "~/hooks/use-can-create-signal";
 import { api } from "~/trpc/react";
 import { tryCatch } from "~/utils/try-catch";
-
+import { Radio } from "lucide-react";
+import { useForm } from "react-hook-form";
+import type { z } from "zod";
 import { AgentEmissionsWarning } from "./agent-emissions-warning";
 import { CreateSignalMarkdownField } from "./create-signal-fields/create-signal-markdown-field";
 import { CreateSignalSliderField } from "./create-signal-fields/create-signal-slider-field";
@@ -146,16 +144,13 @@ export function CreateSignalForm({
             />
           </div>
 
-          <div
-            className="after:border-border relative text-center text-sm after:absolute after:inset-0
-              after:top-1/2 after:z-0 after:flex after:items-center after:border-t"
-          >
-            <span className="bg-[#131315] text-muted-foreground relative z-10 px-2">
+          <div className="after:border-border relative text-center text-sm after:absolute after:inset-0 after:top-1/2 after:z-0 after:flex after:items-center after:border-t">
+            <span className="text-muted-foreground relative z-10 bg-[#131315] px-2">
               Contact Information
             </span>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <FormField
               control={form.control}
               name="discord"
@@ -239,7 +234,7 @@ export function CreateSignalForm({
               !canCreate
             }
           >
-            <Radio className="w-4 h-4 mr-1" />
+            <Radio className="mr-1 h-4 w-4" />
             {createSignalMutation.isPending ? "Creating..." : "Create Signal"}
           </Button>
         </div>

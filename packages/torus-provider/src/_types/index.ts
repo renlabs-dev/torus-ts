@@ -1,7 +1,8 @@
 // == Transactions ==
 
 import type { EmissionProposal, PermissionId } from "@torus-network/sdk/chain";
-import type { SS58Address } from "@torus-network/sdk/types";
+
+export type { ExtrinsicTracker } from "@torus-network/sdk/extrinsics";
 
 export interface TransactionResult {
   finalized: boolean;

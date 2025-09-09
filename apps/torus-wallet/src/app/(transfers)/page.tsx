@@ -1,8 +1,8 @@
+import type { TabItem } from "~/app/_components/tab-layout";
+import { TabLayout } from "~/app/_components/tab-layout";
 import { Faucet } from "~/app/(transfers)/_components/faucet/faucet";
 import { Receive } from "~/app/(transfers)/_components/receive/receive";
 import { Send } from "~/app/(transfers)/_components/send/send";
-import type { TabItem } from "~/app/_components/tab-layout";
-import { TabLayout } from "~/app/_components/tab-layout";
 import { createSeoMetadata } from "@torus-ts/ui/components/seo";
 import { env } from "~/env";
 

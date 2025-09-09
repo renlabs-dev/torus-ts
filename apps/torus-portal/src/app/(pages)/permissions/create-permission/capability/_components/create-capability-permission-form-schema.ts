@@ -1,10 +1,9 @@
+import { SS58_SCHEMA } from "@torus-network/sdk/types";
 import type { UseFormReturn } from "react-hook-form";
 import { z } from "zod";
 
-import { SS58_SCHEMA } from "@torus-network/sdk/types";
-
 // Schema for duration
-export const durationSchema = z.discriminatedUnion("type", [
+const durationSchema = z.discriminatedUnion("type", [
   z.object({
     type: z.literal("Indefinite"),
   }),
@@ -21,7 +20,7 @@ export const durationSchema = z.discriminatedUnion("type", [
 ]);
 
 // Schema for revocation terms
-export const revocationSchema = z.discriminatedUnion("type", [
+const revocationSchema = z.discriminatedUnion("type", [
   z.object({
     type: z.literal("Irrevocable"),
   }),
@@ -52,7 +51,7 @@ export const revocationSchema = z.discriminatedUnion("type", [
 ]);
 
 // Main form schema
-export const createCapabilityPermissionSchema = z.object({
+export const CREATE_CAPABILITY_PERMISSION_SCHEMA = z.object({
   recipient: SS58_SCHEMA,
   namespacePaths: z
     .array(z.string())
@@ -70,7 +69,7 @@ export const createCapabilityPermissionSchema = z.object({
 });
 
 export type CreateCapabilityPermissionFormData = z.infer<
-  typeof createCapabilityPermissionSchema
+  typeof CREATE_CAPABILITY_PERMISSION_SCHEMA
 >;
 
 export type CreateCapabilityPermissionForm =

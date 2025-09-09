@@ -1,4 +1,3 @@
-import type { TransactionResult } from "@torus-ts/torus-provider/types";
 import { Button } from "@torus-ts/ui/components/button";
 import { Card } from "@torus-ts/ui/components/card";
 import {
@@ -10,37 +9,36 @@ import {
   FormMessage,
 } from "@torus-ts/ui/components/form";
 import { Input } from "@torus-ts/ui/components/input";
-import { TransactionStatus } from "@torus-ts/ui/components/transaction-status";
-import type { RefObject } from "react";
+import { CurrencySwap } from "~/app/_components/currency-swap";
+import { FeeLabel } from "~/app/_components/fee-label";
 import { useRef } from "react";
 import type { UseFormReturn } from "react-hook-form";
-import { CurrencySwap } from "~/app/_components/currency-swap";
-import type { FeeLabelHandle } from "~/app/_components/fee-label";
-import { FeeLabel } from "~/app/_components/fee-label";
 import type { SendFormValues } from "./send-form-schema";
 
 interface SendFormProps {
   form: UseFormReturn<SendFormValues>;
   selectedAccount: { address: string } | null;
   usdPrice: number;
-  maxAmountRef: RefObject<string>;
-  feeRef: RefObject<FeeLabelHandle | null>;
-  transactionStatus: TransactionResult;
+  maxTransferableAmount: string;
+  estimatedFee: bigint | undefined;
   onReviewClick: () => Promise<void>;
   handleAmountChange: (newAmount: string) => Promise<void>;
   minAllowedStakeData: bigint;
+  isPending: boolean;
+  isSigning: boolean;
 }
 
 export function SendForm({
   form,
   selectedAccount,
   usdPrice,
-  maxAmountRef,
-  feeRef,
-  transactionStatus,
+  maxTransferableAmount,
+  estimatedFee,
   onReviewClick,
   handleAmountChange,
   minAllowedStakeData,
+  isPending,
+  isSigning,
 }: SendFormProps) {
   const formRef = useRef<HTMLFormElement>(null);
 
@@ -77,7 +75,7 @@ export function SendForm({
                     amount={field.value}
                     usdPrice={usdPrice}
                     disabled={!selectedAccount?.address}
-                    availableFunds={maxAmountRef.current}
+                    availableFunds={maxTransferableAmount}
                     onAmountChangeAction={handleAmountChange}
                     minAllowedStakeData={minAllowedStakeData}
                   />
@@ -87,22 +85,15 @@ export function SendForm({
             )}
           />
 
-          <FeeLabel ref={feeRef} accountConnected={!!selectedAccount} />
-
-          {transactionStatus.status && (
-            <TransactionStatus
-              status={transactionStatus.status}
-              message={transactionStatus.message}
-            />
-          )}
+          <FeeLabel accountConnected={!!selectedAccount} fee={estimatedFee} />
 
           <Button
             type="button"
             variant="outline"
             onClick={onReviewClick}
-            disabled={!selectedAccount?.address}
+            disabled={!selectedAccount?.address || isPending || isSigning}
           >
-            Review & Submit Send Transaction
+            {isPending ? "Processing..." : "Review & Submit Send Transaction"}
           </Button>
         </form>
       </Form>

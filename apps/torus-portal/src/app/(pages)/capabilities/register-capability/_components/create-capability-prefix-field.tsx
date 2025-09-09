@@ -1,9 +1,5 @@
-import { useMemo } from "react";
-
 import type { UseQueryResult } from "@tanstack/react-query";
-
 import type { NamespaceEntry } from "@torus-network/sdk/chain";
-
 import { FormControl, FormItem, FormLabel } from "@torus-ts/ui/components/form";
 import {
   Select,
@@ -13,8 +9,8 @@ import {
   SelectValue,
 } from "@torus-ts/ui/components/select";
 import { useIsMobile } from "@torus-ts/ui/hooks/use-mobile";
-
 import { truncateMobileValue } from "~/utils/truncate-mobile-value";
+import { useMemo } from "react";
 
 interface RegisterCapabilityPrefixFieldProps {
   selectedPrefix: string;
@@ -31,6 +27,7 @@ export function RegisterCapabilityPrefixField({
 }: RegisterCapabilityPrefixFieldProps) {
   const isMobile = useIsMobile();
 
+  // eslint-disable-next-line react-hooks/preserve-manual-memoization
   const prefixOptions = useMemo(() => {
     if (!namespaceEntries.data || namespaceEntries.data.length === 0) {
       return [];
@@ -62,15 +59,15 @@ export function RegisterCapabilityPrefixField({
       <FormLabel>Select a Capability Prefix</FormLabel>
       <FormControl>
         {!isAccountConnected ? (
-          <div className="text-sm text-muted-foreground p-3 border h-10 flex items-center">
+          <div className="text-muted-foreground flex h-10 items-center border p-3 text-sm">
             Connect wallet...
           </div>
         ) : namespaceEntries.isLoading ? (
-          <div className="text-sm text-muted-foreground p-3 border h-10 flex items-center">
+          <div className="text-muted-foreground flex h-10 items-center border p-3 text-sm">
             Loading namespaces...
           </div>
         ) : prefixOptions.length === 0 ? (
-          <div className="text-sm text-destructive p-3 border sm:h-10 flex items-center">
+          <div className="text-destructive flex items-center border p-3 text-sm sm:h-10">
             Registration required. Please register your agent before registering
             a capability.
           </div>

@@ -10,10 +10,7 @@ export const metadata = {} as const;
 
 export default function HomePage() {
   return (
-    <main
-      className="mx-auto flex min-w-full flex-col items-start gap-3 text-white
-        lg:mt-[calc(20vh-64px)]"
-    >
+    <main className="mx-auto flex min-w-full flex-col items-start gap-3 text-white lg:mt-[calc(20vh-64px)]">
       <TransferDetails />
       <div className="mb-4 mt-12 flex w-full flex-col gap-6 md:mt-0 md:flex-row">
         <SelectActionDialog />

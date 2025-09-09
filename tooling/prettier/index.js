@@ -8,8 +8,8 @@
 const config = {
   plugins: [
     "@ianvs/prettier-plugin-sort-imports",
-    "prettier-plugin-tailwindcss",
     "prettier-plugin-classnames",
+    "prettier-plugin-tailwindcss",
   ],
   tailwindFunctions: ["cn", "cva"],
   overrides: [

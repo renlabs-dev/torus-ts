@@ -1,3 +1,4 @@
+import { tryAsync } from "@torus-network/torus-utils/try-catch";
 import { Button } from "@torus-ts/ui/components/button";
 import { ConnectAwareSubmitButton } from "~/app/_components/buttons/connect-aware-submit-button";
 import { useChainDisplayName } from "~/hooks/chain/use-chain-display-name";
@@ -6,7 +7,6 @@ import { useTokenTransfer } from "~/hooks/use-token-transfer";
 import { useStore } from "~/utils/store";
 import type { TransferFormValues } from "~/utils/types";
 import { useFormikContext } from "formik";
-import { tryAsync } from "@torus-network/torus-utils/try-catch";
 
 export function ButtonSection({
   isReview,

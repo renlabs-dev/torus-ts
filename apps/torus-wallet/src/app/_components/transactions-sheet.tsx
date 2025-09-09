@@ -1,9 +1,5 @@
 "use client";
 
-import { useEffect, useState } from "react";
-
-import { ReceiptText } from "lucide-react";
-
 import { Button } from "@torus-ts/ui/components/button";
 import {
   Sheet,
@@ -12,9 +8,9 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@torus-ts/ui/components/sheet";
-
 import { useWallet } from "~/context/wallet-provider";
-
+import { ReceiptText } from "lucide-react";
+import { useEffect, useState } from "react";
 import { Transactions } from "./transactions/transactions";
 
 export function TransactionsSheet() {
@@ -27,6 +23,7 @@ export function TransactionsSheet() {
       const timer = setTimeout(() => setShouldRenderContent(true), 150);
       return () => clearTimeout(timer);
     } else {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setShouldRenderContent(false);
     }
   }, [isOpen]);
@@ -37,12 +34,12 @@ export function TransactionsSheet() {
         <Button
           size="sm"
           variant="default"
-          className="fixed bottom-6 md:bottom-16 right-6 h-12 w-12 rounded-full shadow-lg"
+          className="fixed bottom-6 right-6 h-12 w-12 rounded-full shadow-lg md:bottom-16"
         >
           <ReceiptText size={20} />
         </Button>
       </SheetTrigger>
-      <SheetContent className="z-[70] w-400px] flex h-full flex-col gap-4">
+      <SheetContent className="w-400px] z-[70] flex h-full flex-col gap-4">
         <SheetHeader>
           <SheetTitle className="text-lg font-semibold">
             Transactions
@@ -55,13 +52,13 @@ export function TransactionsSheet() {
             <Transactions selectedAccount={selectedAccount} />
           )}
           {shouldRenderContent && !selectedAccount && (
-            <div className="flex-1 flex items-center justify-center text-muted-foreground">
+            <div className="text-muted-foreground flex flex-1 items-center justify-center">
               No account selected
             </div>
           )}
           {isOpen && !shouldRenderContent && (
-            <div className="flex-1 flex items-center justify-center">
-              <div className="animate-spin h-6 w-6 border-2 border-current border-t-transparent rounded-full" />
+            <div className="flex flex-1 items-center justify-center">
+              <div className="h-6 w-6 animate-spin rounded-full border-2 border-current border-t-transparent" />
             </div>
           )}
         </div>

@@ -1,7 +1,6 @@
 import { createSeoMetadata } from "@torus-ts/ui/components/seo";
 import { env } from "~/env";
 import PortalFormContainer from "~/app/_components/portal-form-container";
-
 import { EditPermissionForm } from "./_components/edit-permission-form";
 
 export const metadata = () =>

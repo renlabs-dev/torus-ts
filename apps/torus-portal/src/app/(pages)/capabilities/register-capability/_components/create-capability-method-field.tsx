@@ -1,6 +1,3 @@
-import type { Control } from "react-hook-form";
-import type { z } from "zod";
-
 import {
   FormControl,
   FormDescription,
@@ -13,7 +10,8 @@ import {
   ToggleGroup,
   ToggleGroupItem,
 } from "@torus-ts/ui/components/toggle-group";
-
+import type { Control } from "react-hook-form";
+import type { z } from "zod";
 import type { REGISTER_CAPABILITY_SCHEMA } from "./create-capability-schema";
 import { HTTP_METHODS } from "./create-capability-schema";
 
@@ -45,7 +43,7 @@ export function RegisterCapabilityMethodField({
                   onMethodChange(value);
                 }
               }}
-              className="justify-start flex-wrap gap-2"
+              className="flex-wrap justify-start gap-2"
               disabled={isDisabled}
             >
               {HTTP_METHODS.map((method) => (

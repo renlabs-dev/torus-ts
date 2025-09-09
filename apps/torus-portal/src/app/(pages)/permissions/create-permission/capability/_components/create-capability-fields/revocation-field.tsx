@@ -1,11 +1,5 @@
-import React, { useEffect, useState } from "react";
-
-import { AlertTriangle, Plus, Trash2 } from "lucide-react";
-import { useFieldArray } from "react-hook-form";
-
 import type { Api } from "@torus-network/sdk/chain";
 import type { SS58Address } from "@torus-network/sdk/types";
-
 import { Alert, AlertDescription } from "@torus-ts/ui/components/alert";
 import { Button } from "@torus-ts/ui/components/button";
 import {
@@ -24,7 +18,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@torus-ts/ui/components/select";
-
+import { AlertTriangle, Plus, Trash2 } from "lucide-react";
+import React, { useEffect, useState } from "react";
+import { useFieldArray } from "react-hook-form";
 import type { PathWithPermission } from "../create-capability-flow/create-capability-flow-types";
 import type { CreateCapabilityPermissionForm } from "../create-capability-permission-form-schema";
 import type { RevocationValidationError } from "./use-revocation-validation";
@@ -212,7 +208,7 @@ export function RevocationField({
 
       {/* Loading state */}
       {validating && hasParentPermissions && (
-        <div className="text-sm text-muted-foreground">
+        <div className="text-muted-foreground text-sm">
           Validating revocation strength...
         </div>
       )}
@@ -228,12 +224,12 @@ export function RevocationField({
               onClick={() => appendArbiter("")}
               disabled={!isAccountConnected}
             >
-              <Plus className="h-4 w-4 mr-2" />
+              <Plus className="mr-2 h-4 w-4" />
               Add Arbiter
             </Button>
           </div>
           {arbiterFields.map((field, index) => (
-            <div key={field.id} className="flex gap-2 items-start">
+            <div key={field.id} className="flex items-start gap-2">
               <FormField
                 control={form.control}
                 name={`revocation.accounts.${index}`}

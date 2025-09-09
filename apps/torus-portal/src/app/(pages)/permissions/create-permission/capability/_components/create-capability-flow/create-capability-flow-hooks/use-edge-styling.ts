@@ -1,7 +1,5 @@
-import { useCallback, useMemo } from "react";
-
 import type { Edge, Node } from "@xyflow/react";
-
+import { useCallback, useMemo } from "react";
 import type { NamespacePathNodeData } from "../create-capability-flow-types";
 
 interface UseEdgeStylingProps {

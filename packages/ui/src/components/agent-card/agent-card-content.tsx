@@ -1,6 +1,6 @@
 "use client";
 
-import { Coins, Globe, Key } from "lucide-react";
+import { Coins, Key, Route } from "lucide-react";
 
 import { smallAddress } from "@torus-network/torus-utils/torus/address";
 
@@ -10,13 +10,14 @@ import { CardContent } from "../card";
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "../hover-card";
 import { Label } from "../label";
 import { Separator } from "../separator";
+import type { AccountEmissionData } from "./agent-card";
 import { SkeletonAgentCardContent } from "./agent-card-skeleton-loader";
 
 interface AgentCardContentProps {
   shortDescription?: string;
   agentKey: string;
   percComputedWeight?: number | null;
-  tokensPerWeek?: string;
+  emissionData?: AccountEmissionData;
   isLoading?: boolean;
   isStatsLoading?: boolean;
   // Optional: show penalty details in tooltip when provided
@@ -26,15 +27,14 @@ interface AgentCardContentProps {
 
 function AgentStats({
   percComputedWeight,
-  tokensPerWeek,
+  emissionData,
   agentKey,
   isLoading = false,
-  prePenaltyPercent,
   penaltyFactor,
 }: {
   agentKey: string;
   percComputedWeight?: number | null;
-  tokensPerWeek?: string;
+  emissionData?: AccountEmissionData;
   usdValue?: string;
   isLoading?: boolean;
   prePenaltyPercent?: number | null;
@@ -42,47 +42,96 @@ function AgentStats({
 }) {
   const isMobile = useIsMobile();
 
-  const shouldShowTokensPerWeek =
-    tokensPerWeek &&
-    !tokensPerWeek.startsWith("0.00") &&
-    !tokensPerWeek.startsWith("0 ");
+  const tokensPerWeekDisplay =
+    emissionData?.displayValues.totalWithoutOutgoing ?? "0.00 TORUS";
 
-  // Always show stats section to display address and other info
-  // Individual stats will show "-" for missing values
+  // Format percentage display
+  const formatPercentage = (value: number) => {
+    return (
+      value.toLocaleString("en-US", {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+      }) + "%"
+    );
+  };
+
+  const twp = emissionData?.totalWithoutOutgoing.percentage;
+  const percentageDisplay =
+    typeof twp === "number"
+      ? formatPercentage(twp)
+      : typeof percComputedWeight === "number"
+        ? formatPercentage(percComputedWeight * 100)
+        : "0.00%";
 
   return (
     <div className="relative z-30 flex w-full flex-wrap items-center justify-between gap-3">
       <HoverCard>
         <HoverCardTrigger>
           <Label className="flex items-center gap-1.5 text-xs font-semibold">
-            <Globe size={14} />
-            {typeof percComputedWeight === "number"
-              ? `${(percComputedWeight * 100).toFixed(2)}%`
-              : "-"}
+            <Route size={14} />
+            {isLoading ? (
+              <span className="animate-pulse">00.00%</span>
+            ) : (
+              percentageDisplay
+            )}
           </Label>
         </HoverCardTrigger>
-        <HoverCardContent className="w-80">
-          <div className="space-y-2">
-            <p className="text-sm">Current emission allocated to this agent.</p>
-            {typeof penaltyFactor === "number" &&
-              !Number.isNaN(penaltyFactor) &&
-              penaltyFactor > 0 && (
-                <div className="space-y-1 text-xs text-muted-foreground">
-                  {typeof prePenaltyPercent === "number" &&
-                    !Number.isNaN(prePenaltyPercent) && (
-                      <div>
-                        Before penalty: {(prePenaltyPercent * 100).toFixed(2)}%
-                      </div>
-                    )}
-                  <div>Penalty applied: {penaltyFactor.toFixed(2)}%</div>
-                  {typeof percComputedWeight === "number" &&
-                    !Number.isNaN(percComputedWeight) && (
-                      <div>
-                        After penalty: {(percComputedWeight * 100).toFixed(2)}%
-                      </div>
-                    )}
+        <HoverCardContent className="z-[9999] w-80" side="right" align="center">
+          <div className="space-y-3">
+            <p className="text-sm font-medium">Emission Percentage Breakdown</p>
+            {emissionData ? (
+              <div className="space-y-2 text-xs">
+                <div className="space-y-1">
+                  <div className="flex justify-between">
+                    <span>Root emission:</span>
+                    <span className="font-mono">
+                      {formatPercentage(emissionData.root.percentage)}
+                      {typeof penaltyFactor === "number" &&
+                        !Number.isNaN(penaltyFactor) &&
+                        penaltyFactor > 0 && (
+                          <span className="ml-1 text-muted-foreground">
+                            (-{penaltyFactor.toFixed(1)}%)
+                          </span>
+                        )}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Incoming streams:</span>
+                    <span className="font-mono">
+                      {formatPercentage(
+                        emissionData.streams.incoming.percentage,
+                      )}
+                    </span>
+                  </div>
+                  <div className="mb-1 flex justify-between">
+                    <span>Outgoing streams:</span>
+                    <span className="font-mono">
+                      {formatPercentage(
+                        emissionData.streams.outgoing.percentage,
+                      )}
+                    </span>
+                  </div>
+                  <div className="flex justify-between border-t pt-1 font-medium">
+                    <span>Total (without outgoing):</span>
+                    <span className="font-mono">
+                      {formatPercentage(
+                        emissionData.totalWithoutOutgoing.percentage,
+                      )}
+                    </span>
+                  </div>
                 </div>
-              )}
+
+                {emissionData.hasCalculatingStreams && (
+                  <div className="border-t pt-2 text-xs text-yellow-600 dark:text-yellow-400">
+                    ⚠️ Some streams are still calculating
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="space-y-1 text-xs text-muted-foreground">
+                <p className="text-sm">Loading emission data...</p>
+              </div>
+            )}
           </div>
         </HoverCardContent>
       </HoverCard>
@@ -91,21 +140,63 @@ function AgentStats({
         <HoverCardTrigger>
           <Label className="flex items-center gap-1 text-xs font-semibold">
             <Coins size={16} />
-            {isLoading
-              ? "Loading..."
-              : shouldShowTokensPerWeek
-                ? tokensPerWeek
-                : "-"}
+            {isLoading ? (
+              <span className="animate-pulse">00.00 TORUS/Week</span>
+            ) : (
+              <span>{tokensPerWeekDisplay}/Week</span>
+            )}
           </Label>
         </HoverCardTrigger>
-        <HoverCardContent className="w-80">
-          <p className="text-sm">Tokens per week.</p>
+        <HoverCardContent className="z-[9999] w-80" side="top" align="center">
+          <div className="space-y-3">
+            <p className="text-sm font-medium">Tokens Breakdown</p>
+            {emissionData ? (
+              <div className="space-y-2 text-xs">
+                <div className="space-y-1">
+                  <div className="flex justify-between">
+                    <span>Root emission:</span>
+                    <span className="font-mono">
+                      {emissionData.displayValues.rootEmission}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Incoming streams:</span>
+                    <span className="font-mono">
+                      {emissionData.displayValues.incomingStreams}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Outgoing streams:</span>
+                    <span className="font-mono">
+                      {emissionData.displayValues.outgoingStreams}
+                    </span>
+                  </div>
+                  <div className="flex justify-between border-t pt-1 font-medium">
+                    <span>Total (without outgoing):</span>
+                    <span className="font-mono">
+                      {emissionData.displayValues.totalWithoutOutgoing}
+                    </span>
+                  </div>
+                </div>
+
+                {emissionData.hasCalculatingStreams && (
+                  <div className="border-t pt-2 text-xs text-yellow-600 dark:text-yellow-400">
+                    ⚠️ Some streams are still calculating
+                  </div>
+                )}
+              </div>
+            ) : (
+              <p className="text-sm text-muted-foreground">
+                Loading emission data...
+              </p>
+            )}
+          </div>
         </HoverCardContent>
       </HoverCard>
 
       <Label className="flex items-center gap-1 text-xs font-semibold">
         <Key size={14} />
-        {smallAddress(agentKey, isMobile ? 3 : 6)}
+        {smallAddress(agentKey, isMobile ? 3 : 4)}
       </Label>
     </div>
   );
@@ -115,7 +206,7 @@ export function AgentCardContent({
   shortDescription,
   agentKey,
   percComputedWeight,
-  tokensPerWeek,
+  emissionData,
   isLoading = false,
   isStatsLoading = false,
   prePenaltyPercent,
@@ -132,7 +223,7 @@ export function AgentCardContent({
           <AgentStats
             agentKey={agentKey}
             percComputedWeight={percComputedWeight}
-            tokensPerWeek={tokensPerWeek}
+            emissionData={emissionData}
             isLoading={isStatsLoading}
             prePenaltyPercent={prePenaltyPercent}
             penaltyFactor={penaltyFactor}

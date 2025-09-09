@@ -36,7 +36,6 @@
  * - `formatToken` → `formatTorusToken` with proper rounding
  */
 import { describe, expect, it } from "vitest";
-
 import { formatToken, fromNano, toNano } from "./legacy.js";
 
 describe("legacy token utilities", () => {

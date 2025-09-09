@@ -1,19 +1,12 @@
 "use client";
 
-import { useEffect, useState } from "react";
-
 import { zodResolver } from "@hookform/resolvers/zod";
-import MarkdownPreview from "@uiw/react-markdown-preview";
-import { useDiscordAuth } from "hooks/use-discord-auth";
-import { useFileUploader } from "hooks/use-file-uploader";
-import Link from "next/link";
-import { useForm } from "react-hook-form";
-import { z } from "zod";
-
+import { submitApplication } from "@torus-network/sdk/chain";
+import type { SS58Address } from "@torus-network/sdk/types";
 import { formatToken } from "@torus-network/torus-utils/torus/token";
-import { tryAsync, trySync } from "@torus-network/torus-utils/try-catch";
-
-import type { TransactionResult } from "@torus-ts/torus-provider/types";
+import { trySync } from "@torus-network/torus-utils/try-catch";
+import { useTorus } from "@torus-ts/torus-provider";
+import { useSendTransaction } from "@torus-ts/torus-provider/use-send-transaction";
 import { Button } from "@torus-ts/ui/components/button";
 import { Checkbox } from "@torus-ts/ui/components/checkbox";
 import {
@@ -34,11 +27,15 @@ import {
   TabsTrigger,
 } from "@torus-ts/ui/components/tabs";
 import { Textarea } from "@torus-ts/ui/components/text-area";
-import { TransactionStatus } from "@torus-ts/ui/components/transaction-status";
 import { useToast } from "@torus-ts/ui/hooks/use-toast";
-
+import MarkdownPreview from "@uiw/react-markdown-preview";
 import { useGovernance } from "~/context/governance-provider";
-
+import { useDiscordAuth } from "hooks/use-discord-auth";
+import { useFileUploader } from "hooks/use-file-uploader";
+import Link from "next/link";
+import { useEffect, useState } from "react";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
 import { DiscordAuthButton } from "../discord-auth-button";
 
 const agentApplicationSchema = z.object({
@@ -56,22 +53,25 @@ type AgentApplicationFormData = z.infer<typeof agentApplicationSchema>;
 export function CreateAgentApplication() {
   const {
     isAccountConnected,
-    AddAgentApplication,
     accountFreeBalance,
     agentApplications,
     selectedAccount,
     networkConfigs,
   } = useGovernance();
+
+  const { api, torusApi, wsEndpoint } = useTorus();
+
+  const { sendTx, isPending, isSigning } = useSendTransaction({
+    api,
+    selectedAccount,
+    wsEndpoint,
+    wallet: torusApi,
+    transactionType: "Submit Agent Application",
+  });
   const { toast } = useToast();
 
   const [activeTab, setActiveTab] = useState("edit");
-  const [transactionStatus, setTransactionStatus] = useState<TransactionResult>(
-    {
-      status: null,
-      message: null,
-      finalized: false,
-    },
-  );
+
   const { discordId, signIn, isAuthenticated } = useDiscordAuth();
 
   // Load saved form data from localStorage
@@ -148,15 +148,10 @@ export function CreateAgentApplication() {
     return accountFreeBalance.data > networkConfigs.data.agentApplicationCost;
   })();
 
-  const refetchHandler = async () => {
-    await agentApplications.refetch();
-  };
-
   const { uploadFile, uploading } = useFileUploader();
 
   async function handleFileUpload(fileToUpload: File): Promise<void> {
     const { success, cid } = await uploadFile(fileToUpload, {
-      setTransactionStatus,
       errorMessage: "Error uploading agent application file",
     });
 
@@ -175,24 +170,29 @@ export function CreateAgentApplication() {
 
     if (accountFreeBalance.data > daoApplicationCost) {
       const ipfsUri = `ipfs://${cid}`;
-      const [error, _] = await tryAsync(
-        AddAgentApplication({
-          applicationKey: getValues("applicationKey"),
-          IpfsHash: ipfsUri,
-          removing: false,
-          callback: (tx) => setTransactionStatus(tx),
-          refetchHandler,
-        }),
-      );
-      if (error !== undefined) {
-        toast.error(error.message || "Error submitting agent application");
-        setTransactionStatus({
-          status: "ERROR",
-          finalized: true,
-          message: "Failed to submit agent application",
-        });
+      if (!api || !sendTx) {
+        toast.error("API not ready");
         return;
       }
+
+      const [sendErr, sendRes] = await sendTx(
+        submitApplication(
+          api,
+          getValues("applicationKey") as SS58Address,
+          ipfsUri,
+          false,
+        ),
+      );
+
+      if (sendErr !== undefined) {
+        return; // Error already handled by sendTx
+      }
+
+      const { tracker } = sendRes;
+      tracker.on("finalized", () => {
+        void agentApplications.refetch();
+        localStorage.removeItem("agentApplicationFormData");
+      });
     } else {
       toast.error(
         `Insufficient balance to create Agent Application. Required: ${daoApplicationCost} but got ${formatToken(accountFreeBalance.data)}`,
@@ -206,12 +206,6 @@ export function CreateAgentApplication() {
       toast.error("Please connect your Discord account first");
       return;
     }
-
-    setTransactionStatus({
-      status: "STARTING",
-      finalized: false,
-      message: "Starting Agent Application creation...",
-    });
 
     const daoData = JSON.stringify({
       discord_id: discordId,
@@ -231,7 +225,7 @@ export function CreateAgentApplication() {
   return (
     <Form {...form}>
       <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
-        <div className="flex flex-row w-full gap-2">
+        <div className="flex w-full flex-row gap-2">
           <FormField
             control={control}
             name="applicationKey"
@@ -422,17 +416,19 @@ export function CreateAgentApplication() {
             variant="default"
             className="flex items-center gap-2"
             disabled={
-              !userHasEnoughBalance || !form.formState.isValid || uploading
+              !userHasEnoughBalance ||
+              !form.formState.isValid ||
+              uploading ||
+              isPending ||
+              isSigning
             }
           >
-            {uploading ? "Awaiting Signature" : "Submit Application"}
+            {uploading
+              ? "Uploading..."
+              : isPending
+                ? "Submitting..."
+                : "Submit Application"}
           </Button>
-        )}
-        {transactionStatus.status && (
-          <TransactionStatus
-            status={transactionStatus.status}
-            message={transactionStatus.message}
-          />
         )}
       </form>
     </Form>

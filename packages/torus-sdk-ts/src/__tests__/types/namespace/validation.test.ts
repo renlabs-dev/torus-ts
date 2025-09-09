@@ -140,11 +140,12 @@ describe("NamespaceSegmentValidation", () => {
     );
 
     it.each(testCases.invalid)(
-      "should reject invalid segment '$value' with error '$error'",
+      "should reject invalid segment '$value' with custom issue code and error '$error'",
       ({ value, error }) => {
         const result = schema.safeParse(value);
         expect(result.success).toBe(false);
         if (!result.success && result.error.issues[0]) {
+          expect(result.error.issues[0].code).toBe("custom");
           expect(result.error.issues[0].message).toBe(error);
         }
       },
@@ -288,18 +289,23 @@ describe("NamespacePathValidation", () => {
     const schema = namespacePathParser();
 
     it.each(testCases.valid)(
-      "should validate valid path '$path'",
-      ({ path }) => {
-        expect(schema.safeParse(path).success).toBe(true);
+      "should validate valid path '$path' and return segments array",
+      ({ path, segments }) => {
+        const result = schema.safeParse(path);
+        expect(result.success).toBe(true);
+        if (result.success) {
+          expect(result.data).toEqual(segments);
+        }
       },
     );
 
     it.each(testCases.invalid)(
-      "should reject invalid path '$path' with error '$error'",
+      "should reject invalid path '$path' with custom issue code and error '$error'",
       ({ path, error }) => {
         const result = schema.safeParse(path);
         expect(result.success).toBe(false);
         if (!result.success && result.error.issues[0]) {
+          expect(result.error.issues[0].code).toBe("custom");
           expect(result.error.issues[0].message).toBe(error);
         }
       },

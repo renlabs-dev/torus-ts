@@ -1,12 +1,12 @@
 "use client";
 
 import { createAuthReqData } from "@torus-network/torus-utils/auth";
+import { tryAsync } from "@torus-network/torus-utils/try-catch";
 import { useTorus } from "@torus-ts/torus-provider";
 import { env } from "~/env";
 import { api } from "~/trpc/react";
 import { useSearchParams } from "next/navigation";
 import { signData } from "node_modules/@torus-ts/api/src/auth/sign";
-import { tryAsync } from "@torus-network/torus-utils/try-catch";
 import { useEffect, useState } from "react";
 
 export const useSignIn = () => {

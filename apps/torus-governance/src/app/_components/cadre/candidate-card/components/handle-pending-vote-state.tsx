@@ -3,8 +3,8 @@
 import type { InjectedAccountWithMeta } from "@torus-ts/torus-provider";
 import { Button } from "@torus-ts/ui/components/button";
 import { cn } from "@torus-ts/ui/lib/utils";
-import { HandleVoteLabel } from "./handle-vote-label";
 import { useVoteManagement } from "../../../../../../hooks/use-vote-manager";
+import { HandleVoteLabel } from "./handle-vote-label";
 
 interface HandlePendingVoteStateProps {
   userKey: string;
@@ -60,8 +60,7 @@ export function HandlePendingVoteState(props: HandlePendingVoteStateProps) {
         <Button
           onClick={() => handleVote("REFUSE")}
           variant="outline"
-          className="flex w-full border-red-500 bg-red-500/20 text-red-500 hover:bg-red-500/30
-            hover:text-red-500 sm:w-auto"
+          className="flex w-full border-red-500 bg-red-500/20 text-red-500 hover:bg-red-500/30 hover:text-red-500 sm:w-auto"
           title="Reject"
           disabled={isPending || !props.isUserCadre}
         >
@@ -70,8 +69,7 @@ export function HandlePendingVoteState(props: HandlePendingVoteStateProps) {
         <Button
           onClick={() => handleVote("ACCEPT")}
           variant="outline"
-          className="flex w-full border-green-500 bg-green-500/20 text-green-500
-            hover:bg-green-500/30 hover:text-green-500 sm:w-auto"
+          className="flex w-full border-green-500 bg-green-500/20 text-green-500 hover:bg-green-500/30 hover:text-green-500 sm:w-auto"
           title="Approve"
           disabled={isPending || !props.isUserCadre}
         >

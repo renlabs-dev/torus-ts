@@ -11,13 +11,12 @@ export function CardSkeleton({ variant }: CardSkeletonProps) {
     <Card
       className={cn(
         "animate-fade transition duration-500",
-        variant === "small" ? "py-1 border-none border-b" : "p-4 lg:p-6",
+        variant === "small" ? "border-b border-none py-1" : "p-4 lg:p-6",
       )}
     >
       <CardHeader
         className={cn(
-          `flex flex-col-reverse items-start justify-between space-y-0 px-0 pt-0
-          md:flex-col-reverse xl:flex-row`,
+          `flex flex-col-reverse items-start justify-between space-y-0 px-0 pt-0 md:flex-col-reverse xl:flex-row`,
           variant === "small" ? "pb-0" : "pb-5",
         )}
       >

@@ -1,38 +1,62 @@
 "use client";
 
-import { useCallback, useRef, useState, useEffect } from "react";
-import { useSearchParams } from "next/navigation";
-
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
-import type { z } from "zod";
-
+import type { PermissionContract } from "@torus-network/sdk/chain";
+import { updateStreamPermission } from "@torus-network/sdk/chain";
+import type { SS58Address } from "@torus-network/sdk/types";
+import type { InferSelectModel } from "@torus-ts/db";
+import type {
+  emissionPermissionsSchema,
+  namespacePermissionsSchema,
+  permissionsSchema,
+} from "@torus-ts/db/schema";
 import { useTorus } from "@torus-ts/torus-provider";
+import { useSendTransaction } from "@torus-ts/torus-provider/use-send-transaction";
 import { Button } from "@torus-ts/ui/components/button";
 import { Form } from "@torus-ts/ui/components/form";
 import { WalletConnectionWarning } from "@torus-ts/ui/components/wallet-connection-warning";
 import { useToast } from "@torus-ts/ui/hooks/use-toast";
 import { cn } from "@torus-ts/ui/lib/utils";
-
-import { PermissionSelector } from "~/app/_components/permission-selector";
+import { PermissionSelector } from "~/app/_components/permission-selector/permission-selector";
+import { getPrimaryRoleBadge } from "~/app/_components/permission-selector/permission-selector.utils";
 import PortalFormHeader from "~/app/_components/portal-form-header";
 import { PortalFormSeparator } from "~/app/_components/portal-form-separator";
-import { tryCatch } from "~/utils/try-catch";
-
+import { useSearchParams } from "next/navigation";
+import { useCallback, useEffect, useState } from "react";
+import { useForm } from "react-hook-form";
+import type { z } from "zod";
 import { DistributionControlField } from "./edit-permission-fields/distribution-control-field";
+import { RecipientManagerField } from "./edit-permission-fields/recipient-manager-field";
+import { RecipientsField } from "./edit-permission-fields/recipients-field";
 import { StreamsField } from "./edit-permission-fields/streams-field";
-import { TargetsField } from "./edit-permission-fields/targets-field";
+import { WeightSetterField } from "./edit-permission-fields/weight-setter-field";
 import type { EditPermissionFormData } from "./edit-permission-schema";
 import { EDIT_PERMISSION_SCHEMA } from "./edit-permission-schema";
 import {
-  canEditPermission,
-  getPermissionType,
-  handlePermissionDataChange,
+  canEditPermissionFromContract,
+  canUserEditField,
+  canUserRevokePermission,
+  getPermissionTypeFromContract,
+  isWeightSetterOnly,
   prepareFormDataForSDK,
+  transformPermissionToFormData,
 } from "./edit-permission-utils";
 import { PermissionTypeInfo } from "./permission-type-info";
-import type { PermissionWithDetails } from "./revoke-permission-button";
 import { RevokePermissionButton } from "./revoke-permission-button";
+
+type PermissionData = InferSelectModel<typeof permissionsSchema>;
+type EmissionPermissionData = InferSelectModel<
+  typeof emissionPermissionsSchema
+>;
+type NamespacePermissionData = InferSelectModel<
+  typeof namespacePermissionsSchema
+>;
+
+export interface PermissionWithDetails {
+  permissions: PermissionData;
+  emission_permissions: EmissionPermissionData | null;
+  namespace_permissions: NamespacePermissionData | null;
+}
 
 export function EditPermissionForm({
   className,
@@ -45,23 +69,49 @@ export function EditPermissionForm({
     isAccountConnected,
     isInitialized,
     selectedAccount,
-    updateEmissionPermissionTransaction,
+    torusApi,
+    wsEndpoint,
   } = useTorus();
-  const [selectedPermissionId, setSelectedPermissionId] = useState<string>("");
-  const [hasLoadedPermission, setHasLoadedPermission] = useState(false);
-  const [transactionStatus, setTransactionStatus] = useState<
-    "idle" | "loading" | "success" | "error"
-  >("idle");
-  const currentPermissionDataRef = useRef<PermissionWithDetails | null>(null);
 
-  const permissionType = getPermissionType(currentPermissionDataRef.current);
-  const canEdit = canEditPermission(
-    currentPermissionDataRef.current,
+  const { sendTx, isPending, isSigning } = useSendTransaction({
+    api,
+    selectedAccount,
+    wsEndpoint,
+    wallet: torusApi,
+    transactionType: "Update Stream Permission",
+  });
+  // Initialize selectedPermissionId from URL parameter if available
+  const permissionIdFromUrl = searchParams.get("id");
+  const [selectedPermissionId, setSelectedPermissionId] = useState<string>(
+    permissionIdFromUrl || "",
+  );
+  const [selectedPermissionContract, setSelectedPermissionContract] =
+    useState<PermissionContract | null>(null);
+
+  const permissionType = getPermissionTypeFromContract(
+    selectedPermissionContract,
+  );
+  const canEdit = canEditPermissionFromContract(
+    selectedPermissionContract,
     selectedAccount?.address,
   );
   const isGrantor =
-    currentPermissionDataRef.current?.permissions.grantorAccountId ===
-    selectedAccount?.address;
+    selectedPermissionContract?.delegator === selectedAccount?.address;
+  const canRevoke = canUserRevokePermission(
+    selectedPermissionContract,
+    selectedAccount?.address,
+  );
+  const userRole =
+    selectedPermissionContract && selectedAccount?.address
+      ? getPrimaryRoleBadge(
+          selectedPermissionContract,
+          selectedAccount.address as SS58Address,
+        )
+      : null;
+  const isWeightsOnlyUser = isWeightSetterOnly(
+    selectedPermissionContract,
+    selectedAccount?.address,
+  );
 
   const form = useForm<EditPermissionFormData>({
     disabled: !isAccountConnected,
@@ -72,72 +122,73 @@ export function EditPermissionForm({
       newTargets: [],
       newStreams: [],
       newDistributionControl: { Manual: null },
+      recipientManager: undefined,
+      weightSetter: undefined,
     },
   });
 
-  // Handle URL parameter population
+  const { isDirty } = form.formState;
+
+  // Set form value when URL parameter is available on initial render
   useEffect(() => {
-    const permissionIdFromUrl = searchParams.get("id");
     if (permissionIdFromUrl && !selectedPermissionId) {
-      setSelectedPermissionId(permissionIdFromUrl);
       form.setValue("permissionId", permissionIdFromUrl);
     }
-  }, [searchParams, selectedPermissionId, form]);
+  }, [permissionIdFromUrl, form, selectedPermissionId]);
 
   const handlePermissionLoad = useCallback(
-    async (permissionData: PermissionWithDetails) => {
-      if (!api) return;
+    (permissionId: string, contract: PermissionContract) => {
+      setSelectedPermissionContract(contract);
 
-      if (permissionData.emission_permissions) {
-        await handlePermissionDataChange({
-          permissionData,
-          api,
-          form,
-          onError: toast.error,
+      // Check if it's a stream permission and load form data
+      if ("Stream" in contract.scope) {
+        const formData = transformPermissionToFormData(contract);
+
+        form.reset({
+          permissionId,
+          newTargets: formData.newTargets ?? [],
+          newStreams: formData.newStreams ?? [],
+          newDistributionControl: formData.newDistributionControl ?? {
+            Manual: null,
+          },
+          recipientManager: formData.recipientManager,
+          weightSetter: formData.weightSetter,
         });
       }
     },
-    [api, form, toast.error],
+    [form],
   );
 
   async function handleSubmit(data: z.infer<typeof EDIT_PERMISSION_SCHEMA>) {
-    if (!api) {
-      toast.error("API not initialized");
+    if (!api || !sendTx) {
+      toast.error("API not ready");
       return;
     }
 
-    setTransactionStatus("loading");
+    const sdkData = prepareFormDataForSDK(
+      data,
+      selectedPermissionContract,
+      selectedAccount?.address,
+    );
 
-    const sdkData = prepareFormDataForSDK(data);
-
-    const { error } = await tryCatch(
-      updateEmissionPermissionTransaction({
+    const [sendErr, sendRes] = await sendTx(
+      updateStreamPermission({
+        api,
         ...sdkData,
-        callback: (result) => {
-          if (result.status === "SUCCESS" && result.finalized) {
-            setTransactionStatus("success");
-            form.reset();
-            setSelectedPermissionId("");
-            setHasLoadedPermission(false);
-          }
-
-          if (result.status === "ERROR") {
-            setTransactionStatus("error");
-            toast.error(result.message ?? "Failed to update permission");
-          }
-        },
-        refetchHandler: async () => {
-          // No-op for now, could be used to refetch data after transaction
-        },
       }),
     );
 
-    if (error) {
-      console.error("Error updating permission:", error);
-      setTransactionStatus("error");
-      toast.error("Failed to update permission");
-      return;
+    if (sendErr !== undefined) {
+      return; // Error already handled by sendTx
     }
+
+    const { tracker } = sendRes;
+
+    tracker.on("finalized", () => {
+      form.reset();
+      setSelectedPermissionId("");
+      setSelectedPermissionContract(null);
+    });
   }
 
   return (
@@ -162,27 +213,16 @@ export function EditPermissionForm({
             <PermissionSelector
               control={form.control}
               selectedPermissionId={selectedPermissionId}
-              onPermissionIdChange={(value) => {
-                setSelectedPermissionId(value);
-                form.setValue("permissionId", value);
-                setHasLoadedPermission(false);
-              }}
-              onPermissionDataChange={(permissionData) => {
-                if (
-                  permissionData &&
-                  !hasLoadedPermission &&
-                  currentPermissionDataRef.current?.permissions.permissionId !==
-                    permissionData.permissions.permissionId
-                ) {
-                  currentPermissionDataRef.current = permissionData;
-                  setHasLoadedPermission(true);
-                  void handlePermissionLoad(permissionData);
-                }
+              onPermissionSelection={(permissionId, contract) => {
+                setSelectedPermissionId(permissionId);
+                form.setValue("permissionId", permissionId);
+                handlePermissionLoad(permissionId, contract);
               }}
             />
 
             <RevokePermissionButton
               permissionId={selectedPermissionId}
+              canRevoke={canRevoke}
               onSuccess={() => {
                 setSelectedPermissionId("");
                 form.reset();
@@ -197,15 +237,66 @@ export function EditPermissionForm({
               <PermissionTypeInfo
                 permissionType={permissionType}
                 isGrantor={isGrantor}
+                userRole={userRole}
               />
 
-              {permissionType === "emission" && canEdit && (
+              {permissionType === "stream" && canEdit && (
                 <>
-                  <DistributionControlField control={form.control} />
+                  <DistributionControlField
+                    control={form.control}
+                    disabled={
+                      !canUserEditField(
+                        selectedPermissionContract,
+                        selectedAccount?.address,
+                        "distributionControl",
+                      )
+                    }
+                  />
 
-                  <TargetsField control={form.control} />
+                  <RecipientsField
+                    control={form.control}
+                    canEditRecipients={canUserEditField(
+                      selectedPermissionContract,
+                      selectedAccount?.address,
+                      "recipients",
+                    )}
+                    isWeightsOnly={isWeightsOnlyUser}
+                  />
 
-                  <StreamsField control={form.control} />
+                  <StreamsField
+                    control={form.control}
+                    disabled={
+                      !canUserEditField(
+                        selectedPermissionContract,
+                        selectedAccount?.address,
+                        "streams",
+                      )
+                    }
+                  />
+
+                  <RecipientManagerField
+                    control={form.control}
+                    isAccountConnected={isAccountConnected}
+                    disabled={
+                      !canUserEditField(
+                        selectedPermissionContract,
+                        selectedAccount?.address,
+                        "recipientManager",
+                      )
+                    }
+                  />
+
+                  <WeightSetterField
+                    control={form.control}
+                    isAccountConnected={isAccountConnected}
+                    disabled={
+                      !canUserEditField(
+                        selectedPermissionContract,
+                        selectedAccount?.address,
+                        "weightSetter",
+                      )
+                    }
+                  />
 
                   <Button
                     type="submit"
@@ -214,10 +305,12 @@ export function EditPermissionForm({
                     disabled={
                       !isAccountConnected ||
                       !selectedPermissionId ||
-                      transactionStatus === "loading"
+                      !isDirty ||
+                      isPending ||
+                      isSigning
                     }
                   >
-                    {transactionStatus === "loading"
+                    {isPending || isSigning
                       ? "Updating..."
                       : "Update Permission"}
                   </Button>

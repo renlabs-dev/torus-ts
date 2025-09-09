@@ -4,7 +4,6 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@torus-ts/ui/components/sheet";
-
 import type {
   allPermissions,
   CachedAgentData,
@@ -13,6 +12,7 @@ import type {
   CustomGraphNode,
   SignalsList,
 } from "../permission-graph-types";
+import { ViewSwarmButton } from "../view-swarm-button";
 import { AgentCard } from "./agent-card";
 import { GraphSheetDetails } from "./graph-sheet-details/graph-sheet-details";
 import { GraphSheetDetailsPermission } from "./graph-sheet-details/graph-sheet-details-permission";
@@ -28,6 +28,7 @@ interface GraphSheetProps {
   setCachedAgentData?: (nodeId: string, data: CachedAgentData) => void;
   isOpen: boolean;
   onOpenChange: (isOpen: boolean) => void;
+  allocatorAddress: string;
 }
 
 export function GraphSheet(props: GraphSheetProps) {
@@ -41,7 +42,7 @@ export function GraphSheet(props: GraphSheetProps) {
   return (
     <Sheet open={props.isOpen} onOpenChange={props.onOpenChange} modal={false}>
       <SheetContent
-        className="z-[100] w-full md:min-w-[30em] max-h-screen overflow-y-auto space-y"
+        className="space-y z-[100] max-h-screen w-full overflow-y-auto md:min-w-[30em]"
         onPointerDownOutside={(e) => e.preventDefault()}
         onInteractOutside={(e) => e.preventDefault()}
       >
@@ -58,12 +59,24 @@ export function GraphSheet(props: GraphSheetProps) {
           {isSignalNode ? (
             <GraphSheetDetailsSignal selectedNode={props.selectedNode} />
           ) : isPermissionNode ? (
-            <GraphSheetDetailsPermission
-              selectedNode={props.selectedNode}
-              allPermissions={props.allPermissions}
-            />
+            <div className="flex w-full flex-col gap-4">
+              <ViewSwarmButton
+                selectedNode={props.selectedNode}
+                graphData={props.graphData}
+                allocatorAddress={props.allocatorAddress}
+              />
+              <GraphSheetDetailsPermission
+                selectedNode={props.selectedNode}
+                allPermissions={props.allPermissions}
+              />
+            </div>
           ) : (
-            <div className="w-full flex flex-col gap-4">
+            <div className="flex w-full flex-col gap-4">
+              <ViewSwarmButton
+                selectedNode={props.selectedNode}
+                graphData={props.graphData}
+                allocatorAddress={props.allocatorAddress}
+              />
               <AgentCard
                 nodeId={props.selectedNode.id}
                 fullAddress={props.selectedNode.fullAddress}

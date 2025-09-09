@@ -1,3 +1,4 @@
+import { tryAsync } from "@torus-network/torus-utils/try-catch";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -8,10 +9,9 @@ import {
   AlertDialogTitle,
 } from "@torus-ts/ui/components/alert-dialog";
 import { useToast } from "@torus-ts/ui/hooks/use-toast";
-import { forwardRef, useImperativeHandle, useMemo, useState } from "react";
 import { useUsdPrice } from "~/context/usd-price-provider";
 import { convertTORUSToUSD } from "~/utils/helpers";
-import { tryAsync } from "@torus-network/torus-utils/try-catch";
+import { forwardRef, useImperativeHandle, useMemo, useState } from "react";
 
 export interface ReviewTransactionDialogHandle {
   openDialog: () => void;
@@ -70,7 +70,6 @@ export const ReviewTransactionDialog = forwardRef<
       toast.error(error.message);
       onError?.(error);
     } else {
-      toast.success("Transaction started successfully");
       onSuccess?.();
     }
 

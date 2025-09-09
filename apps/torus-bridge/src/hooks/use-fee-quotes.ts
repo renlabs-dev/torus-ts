@@ -5,11 +5,11 @@ import {
   useAccounts,
 } from "@hyperlane-xyz/widgets";
 import { useQuery } from "@tanstack/react-query";
+import { tryAsync, trySync } from "@torus-network/torus-utils/try-catch";
 import { logger } from "../utils/logger";
 import type { TransferFormValues } from "../utils/types";
 import { getTokenByIndex, useWarpCore } from "./token";
 import { useMultiProvider } from "./use-multi-provider";
-import { tryAsync, trySync } from "@torus-network/torus-utils/try-catch";
 
 const FEE_QUOTE_REFRESH_INTERVAL = 15_000; // 10s
 

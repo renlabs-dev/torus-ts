@@ -1,13 +1,12 @@
-import type { Node, Edge } from "@xyflow/react";
-
-import type { ConstraintNodeData } from "./constraint-nodes/constraint-node-types";
-import { constraintValidationSchema } from "./constraint-validation-schemas";
 import type {
   BaseConstraintType,
   BoolExprType,
   Constraint,
   NumExprType,
 } from "@torus-ts/dsl";
+import type { Edge, Node } from "@xyflow/react";
+import type { ConstraintNodeData } from "./constraint-nodes/constraint-node-types";
+import { constraintValidationSchema } from "./constraint-validation-schemas";
 
 type NodeMap = Record<string, Node<ConstraintNodeData>>;
 
@@ -139,7 +138,7 @@ export function validateConstraintForm(
     const validationResult = constraintValidationSchema.safeParse(constraint);
     if (!validationResult.success) {
       // Convert Zod errors to our format
-      validationResult.error.errors.forEach((error) => {
+      validationResult.error.issues.forEach((error) => {
         errors.push({
           nodeId: "constraint",
           field: error.path.join("."),

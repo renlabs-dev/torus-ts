@@ -1,11 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
-
-import { ClipboardPlus, Coins, FileText, Grid2x2Plus } from "lucide-react";
-
 import { trySync } from "@torus-network/torus-utils/try-catch";
-
 import { useTorus } from "@torus-ts/torus-provider";
 import { Button } from "@torus-ts/ui/components/button";
 import {
@@ -24,9 +19,9 @@ import {
   SelectValue,
 } from "@torus-ts/ui/components/select";
 import { WalletConnectionWarning } from "@torus-ts/ui/components/wallet-connection-warning";
-
 import { useGovernance } from "~/context/governance-provider";
-
+import { ClipboardPlus, Coins, FileText, Grid2x2Plus } from "lucide-react";
+import { useEffect, useState } from "react";
 import { CreateAgentApplication } from "./agent-application/create-agent-application";
 import { AddEmissionProposalForm } from "./proposal/add-emission-proposal";
 import { CreateProposal } from "./proposal/create-proposal";
@@ -88,6 +83,7 @@ export function ShapeNetworkModal() {
       return;
     }
     if (shouldBeOpen) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setIsOpen(true);
       sessionStorage.removeItem("shapeNetworkModalOpen");
     }
@@ -115,10 +111,7 @@ export function ShapeNetworkModal() {
           Shape the network
         </Button>
       </DialogTrigger>
-      <DialogContent
-        className="border-muted max-h-[80%] w-full max-w-[100vw] gap-6 overflow-y-auto md:w-[80%]
-          md:max-w-screen-xl"
-      >
+      <DialogContent className="border-muted max-h-[80%] w-full max-w-[100vw] gap-6 overflow-y-auto md:w-[80%] md:max-w-screen-xl">
         <DialogHeader>
           <DialogTitle className="text-xl font-bold">
             Shape the network

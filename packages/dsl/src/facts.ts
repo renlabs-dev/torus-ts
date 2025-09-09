@@ -1,12 +1,12 @@
 import type {
   AccountId,
+  BaseConstraintType,
+  BoolExprType,
+  CompOp,
+  Constraint,
+  NumExprType,
   PermId,
   UInt,
-  NumExprType,
-  BoolExprType,
-  BaseConstraintType,
-  Constraint,
-  CompOp,
 } from "./types";
 
 /**

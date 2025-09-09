@@ -1,21 +1,5 @@
 "use client";
 
-import * as React from "react";
-
-import {
-  CircleFadingPlus,
-  Currency,
-  FilePen,
-  FilePlus,
-  FileText,
-  Network,
-  PackagePlus,
-  PackageX,
-  Radio,
-  RadioTower,
-} from "lucide-react";
-import Link from "next/link";
-
 import { Icons } from "@torus-ts/ui/components/icons";
 import {
   Sidebar,
@@ -27,9 +11,22 @@ import {
   SidebarMenuItem,
 } from "@torus-ts/ui/components/sidebar";
 import { getLinks } from "@torus-ts/ui/lib/data";
-
 import { env } from "~/env";
-
+import {
+  CircleArrowOutUpRight,
+  CircleFadingPlus,
+  Currency,
+  FilePen,
+  Network,
+  PackagePlus,
+  PackageX,
+  Radio,
+  RadioTower,
+  Settings,
+  Zap,
+} from "lucide-react";
+import Link from "next/link";
+import * as React from "react";
 import { NavMain } from "./nav-main";
 import { NavSocials } from "./nav-socials";
 
@@ -58,12 +55,12 @@ const data = {
         {
           title: "Capability Permission",
           url: "/permissions/create-permission/capability",
-          icon: FileText,
+          icon: CircleArrowOutUpRight,
         },
         {
-          title: "Emission Permission",
-          url: "/permissions/create-permission/emission",
-          icon: FilePlus,
+          title: "Stream Permission",
+          url: "/permissions/create-permission/stream",
+          icon: Zap,
         },
         {
           title: "Manage Permissions",
@@ -88,13 +85,8 @@ const data = {
       ],
     },
     {
-      title: "Network Operations",
+      title: "Signals",
       items: [
-        {
-          title: "Register Agent",
-          url: "/network-operations/register-agent",
-          icon: CircleFadingPlus,
-        },
         {
           title: "Create Signal",
           url: "/signals/create-signal",
@@ -104,6 +96,21 @@ const data = {
           title: "View Signals",
           url: "/signals/signal-list",
           icon: RadioTower,
+        },
+      ],
+    },
+    {
+      title: "Network Operations",
+      items: [
+        {
+          title: "Register Agent",
+          url: "/network-operations/register-agent",
+          icon: CircleFadingPlus,
+        },
+        {
+          title: "Manage Agent",
+          url: "/network-operations/manage-agent",
+          icon: Settings,
         },
       ],
     },
@@ -150,10 +157,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           <SidebarMenuItem>
             <SidebarMenuButton size="lg" asChild>
               <Link href="/">
-                <div
-                  className="flex aspect-square size-8 items-center justify-center rounded-lg
-                    text-sidebar-primary-foreground"
-                >
+                <div className="text-sidebar-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg">
                   <Icons.Logo className="size-5" />
                 </div>
                 <div className="grid flex-1 text-left text-base leading-tight">

@@ -1,14 +1,8 @@
 "use client";
 
-import { useMemo } from "react";
-
-import { LoaderCircle } from "lucide-react";
-
 import type { ProposalStatus } from "@torus-network/sdk/chain";
 import type { SS58Address } from "@torus-network/sdk/types";
-
 import { useProcessVotesAndStakes } from "@torus-ts/query-provider/hooks";
-
 import { CreateComment } from "~/app/_components/comments/create-comment";
 import { ViewComment } from "~/app/_components/comments/view-comment";
 import { DetailsCard } from "~/app/_components/details-card";
@@ -20,9 +14,10 @@ import { VoterList } from "~/app/_components/proposal/voter-list";
 import { VoteData } from "~/app/_components/vote-data";
 import { useGovernance } from "~/context/governance-provider";
 import type { VoteStatus } from "~/utils/types";
-
-import { handleCustomProposal } from "../../../../../utils";
+import { LoaderCircle } from "lucide-react";
+import { useMemo } from "react";
 import { ProposalStatusLabel } from "../../../../_components/proposal/proposal-status-label";
+import { handleCustomProposal } from "../../../../../utils";
 
 interface CustomContent {
   paramId: number;
@@ -64,6 +59,7 @@ export function ProposalExpandedView(props: Readonly<CustomContent>) {
     torusCacheUrl,
   } = useGovernance();
 
+  // eslint-disable-next-line react-hooks/preserve-manual-memoization
   const content = useMemo(() => {
     const proposal = proposalsWithMeta?.find(
       (proposal) => proposal.id === paramId,
@@ -165,7 +161,7 @@ export function ProposalExpandedView(props: Readonly<CustomContent>) {
         </div>
 
         {/* Right/Bottom Column - Responsive */}
-        <div className="flex flex-col gap-6 w-full md:w-1/3">
+        <div className="flex w-full flex-col gap-6 md:w-1/3">
           <DetailsCard {...detailsCardProps} />
 
           {/* Only show VoteData on mobile when proposal is open */}

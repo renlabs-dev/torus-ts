@@ -1,5 +1,3 @@
-import { Info } from "lucide-react";
-
 import { Label } from "@torus-ts/ui/components/label";
 import {
   Tooltip,
@@ -7,9 +5,9 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@torus-ts/ui/components/tooltip";
-
 import { useUserWeightPower } from "~/hooks/use-user-weight-power";
 import { useTutorialStore } from "~/stores/tutorialStore";
+import { Info } from "lucide-react";
 
 export function WeightPowerLabel() {
   const { openTutorial } = useTutorialStore();

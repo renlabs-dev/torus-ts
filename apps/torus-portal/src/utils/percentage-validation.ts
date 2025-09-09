@@ -1,11 +1,11 @@
-import { z } from "zod";
+import type { z } from "zod";
 
 /**
  * Creates a Zod superRefine validator for arrays of items with percentage fields.
  * Validates that the total percentage across all items does not exceed 100%.
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function createPercentageArrayValidator<T extends Record<string, any>>(
+function createPercentageArrayValidator<T extends Record<string, any>>(
   getPercentage: (item: T) => string | number,
   options: {
     /** Field name for error path targeting (defaults to 'percentage') */
@@ -33,7 +33,7 @@ export function createPercentageArrayValidator<T extends Record<string, any>>(
     if (total > 100) {
       // Add issue to the array as a whole
       ctx.addIssue({
-        code: z.ZodIssueCode.custom,
+        code: "custom",
         message: `${totalErrorMessage} (got ${total})`,
         path: [],
       });
@@ -41,7 +41,7 @@ export function createPercentageArrayValidator<T extends Record<string, any>>(
       // Tag specific items that contribute to the overage
       items.forEach((item, index) => {
         ctx.addIssue({
-          code: z.ZodIssueCode.custom,
+          code: "custom",
           message: itemErrorMessage,
           path: [index, percentageField],
         });
@@ -51,11 +51,11 @@ export function createPercentageArrayValidator<T extends Record<string, any>>(
 }
 
 /**
- * Creates a superRefine validator specifically for target-like objects with weight strings.
+ * Creates a superRefine validator specifically for recipient-like objects with weight strings.
  */
-export const createTargetWeightValidator = () =>
+export const createRecipientWeightValidator = () =>
   createPercentageArrayValidator(
-    (target: { weight: string }) => target.weight,
+    (recipient: { weight: string }) => recipient.weight,
     {
       percentageField: "weight",
       totalErrorMessage: "Total percent must not exceed 100",

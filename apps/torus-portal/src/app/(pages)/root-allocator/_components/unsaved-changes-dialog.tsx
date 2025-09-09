@@ -1,12 +1,12 @@
 import {
   AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
   AlertDialogContent,
-  AlertDialogHeader,
-  AlertDialogTitle,
   AlertDialogDescription,
   AlertDialogFooter,
-  AlertDialogCancel,
-  AlertDialogAction,
+  AlertDialogHeader,
+  AlertDialogTitle,
 } from "@torus-ts/ui/components/alert-dialog";
 import { TriangleAlert } from "lucide-react";
 
@@ -37,9 +37,7 @@ export const UnsavedChangesDialog: React.FC<UnsavedChangesDialogProps> = ({
           <AlertDialogCancel onClick={onCancel}>Cancel</AlertDialogCancel>
           <AlertDialogAction
             onClick={onConfirm}
-            className="flex items-center gap-1.5 border-red-500 p-3 text-red-500 opacity-65 transition
-              duration-200 hover:text-red-500 hover:opacity-100 border bg-transparent
-              hover:bg-transparent"
+            className="flex items-center gap-1.5 border border-red-500 bg-transparent p-3 text-red-500 opacity-65 transition duration-200 hover:bg-transparent hover:text-red-500 hover:opacity-100"
           >
             <TriangleAlert /> Discard changes
           </AlertDialogAction>

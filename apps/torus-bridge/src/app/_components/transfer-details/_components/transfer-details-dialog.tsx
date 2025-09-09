@@ -4,6 +4,7 @@ import {
   useTimeout,
   useWalletDetails,
 } from "@hyperlane-xyz/widgets";
+import { tryAsync, trySync } from "@torus-network/torus-utils/try-catch";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -29,7 +30,6 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { getIconByTransferStatus } from "./get-icon-by-transfer-status";
 import { getTransferStatusLabel } from "./get-transfer-status-label";
 import { TransferProperty } from "./transfer-property";
-import { tryAsync, trySync } from "@torus-network/torus-utils/try-catch";
 
 export function TransfersDetailsDialog({
   isOpen,
@@ -115,6 +115,7 @@ export function TransfersDetailsDialog({
   }, [sender, recipient, originTxHash, multiProvider, origin, destination]);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     getMessageUrls().catch((err) => {
       logger.error("Error getting message URLs for details modal", err);
     });

@@ -5,11 +5,12 @@ import { env } from "~/env";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import { useRouter, useSearchParams } from "next/navigation";
-
 import { useTorus } from "@torus-ts/torus-provider";
 import { KeyboardShortcutBadge } from "@torus-ts/ui/components/keyboard-shortcut-badge";
 import { Loading } from "@torus-ts/ui/components/loading";
-
+import { env } from "~/env";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { ForceGraphCanvas } from "./_components/force-graph/force-graph-canvas";
 import { useGraphData } from "./_components/force-graph/use-graph-data";
 import { GraphSheet } from "./_components/graph-sheet/graph-sheet";
@@ -44,12 +45,14 @@ export default function PermissionGraphPage() {
     null,
   );
   const [isSheetOpen, setIsSheetOpen] = useState(false);
+  const resetCameraRef = useRef<(() => void) | null>(null);
 
   const agentCache = useRef(new AgentLRUCache(50));
 
   const {
     graphData,
     isLoading,
+    allocatorAddress,
     allComputedWeights,
     allSignals,
     allPermissions,
@@ -63,6 +66,7 @@ export default function PermissionGraphPage() {
     if (nodeId && graphData) {
       const node = graphData.nodes.find((n) => n.id === nodeId);
       if (node && (!selectedNode || selectedNode.id !== nodeId)) {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setSelectedNode(node);
         setIsSheetOpen(true); // Open sheet when node is selected from search
       }
@@ -113,6 +117,11 @@ export default function PermissionGraphPage() {
   function handleOnOpenChange(isOpen: boolean) {
     setIsSheetOpen(isOpen);
     if (!isOpen) {
+      if (resetCameraRef.current) {
+        resetCameraRef.current();
+        resetCameraRef.current = null;
+      }
+
       const params = new URLSearchParams(searchParams.toString());
       params.delete("id");
       const newUrl = params.toString() ? `/?${params.toString()}` : "/";
@@ -126,10 +135,7 @@ export default function PermissionGraphPage() {
 
   if (isLoading || !graphData || !isInitialized)
     return (
-      <div
-        className="fixed inset-0 flex flex-col items-center text-sm justify-center animate-pulse
-          gap-2"
-      >
+      <div className="fixed inset-0 flex animate-pulse flex-col items-center justify-center gap-2 text-sm">
         <h1 className="sr-only">Permission Graph - Torus Portal</h1>
         <span className="flex items-center gap-2">
           <Loading /> Loading...
@@ -154,11 +160,18 @@ export default function PermissionGraphPage() {
         setCachedAgentData={setCachedAgentData}
         isOpen={isSheetOpen}
         onOpenChange={handleOnOpenChange}
+        allocatorAddress={env("NEXT_PUBLIC_TORUS_ALLOCATOR_ADDRESS")}
       />
       <ForceGraphCanvas
         data={graphData}
         onNodeClick={handleNodeSelect}
         userAddress={selectedAccount?.address}
+        onResetCamera={(resetFn) => {
+          resetCameraRef.current = resetFn;
+        }}
+        initialNode={selectedNode}
+        selectedNodeId={selectedNode?.id}
+        allocatorAddress={allocatorAddress}
       />
       <PermissionGraphFooter handleNodeSelect={handleNodeSelect} />
     </main>

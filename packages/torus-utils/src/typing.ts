@@ -1,6 +1,5 @@
 import type { Enum } from "rustie";
 import { match } from "rustie";
-import type { SafeParseReturnType, z } from "zod";
 
 /**
  * A type that can be either null or undefined, used to help handle nullable or
@@ -54,6 +53,9 @@ export type ListItem<L> = L extends (infer T)[] ? T : never;
  */
 export const observeType = <T extends never>(x: T): T => x;
 
+export const typed_keys = <T extends object>(obj: T) =>
+  Object.keys(obj) as (keyof T)[];
+
 // == ADTs ==
 
 // -- Option --
@@ -87,26 +89,4 @@ export function flattenResult<T, E>(x: OldResult<T, E>): T | null {
       return null;
     },
   });
-}
-
-// ==== Zod ====
-
-/**
- * Parse a typed value using a Zod schema, instead of accepting any value.
- */
-export function parseTyped<Z extends z.ZodType<unknown>>(
-  schema: Z,
-  val: z.input<Z>,
-): z.output<Z> {
-  return schema.parse(val);
-}
-
-/**
- * SafeParse a typed value using a Zod schema, instead of accepting any value.
- */
-export function safeParseTyped<Z extends z.ZodType>(
-  schema: Z,
-  val: z.input<Z>,
-): SafeParseReturnType<z.input<Z>, z.output<Z>> {
-  return schema.safeParse(val);
 }

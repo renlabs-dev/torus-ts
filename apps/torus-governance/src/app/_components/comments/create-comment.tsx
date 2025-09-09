@@ -1,14 +1,8 @@
 "use client";
 
-import * as React from "react";
-
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
-import { z } from "zod";
-
 import { fromRems } from "@torus-network/torus-utils/torus/token";
 import { tryAsync } from "@torus-network/torus-utils/try-catch";
-
 import { Button } from "@torus-ts/ui/components/button";
 import {
   Form,
@@ -20,9 +14,11 @@ import {
 import { Input } from "@torus-ts/ui/components/input";
 import { Textarea } from "@torus-ts/ui/components/text-area";
 import { useToast } from "@torus-ts/ui/hooks/use-toast";
-
 import { useGovernance } from "~/context/governance-provider";
 import { api } from "~/trpc/react";
+import * as React from "react";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
 
 const MAX_CHARACTERS = 2000;
 const MAX_NAME_CHARACTERS = 25;
@@ -185,10 +181,7 @@ export function CreateComment({
   };
 
   return (
-    <div
-      className="animate-fade-down animate-delay-700 hidden h-fit min-h-max flex-col items-center
-        justify-between text-white md:flex"
-    >
+    <div className="animate-fade-down animate-delay-700 hidden h-fit min-h-max flex-col items-center justify-between text-white md:flex">
       <div className="mb-2 w-full pb-1">
         <h2 className="text-start text-lg font-semibold">Create a Comment</h2>
       </div>
@@ -207,8 +200,7 @@ export function CreateComment({
                     <Textarea
                       placeholder="Type your message here..."
                       {...field}
-                      className="rounded-radius border-muted bg-card placeholder:text-muted-foreground h-24
-                        w-full resize-none border p-3 text-white"
+                      className="rounded-radius border-muted bg-card placeholder:text-muted-foreground h-24 w-full resize-none border p-3 text-white"
                       maxLength={MAX_CHARACTERS}
                     />
                   </FormControl>
@@ -229,8 +221,7 @@ export function CreateComment({
                       type="text"
                       placeholder="Type your name (optional)"
                       {...field}
-                      className="rounded-radius border-muted bg-card placeholder:text-muted-foreground w-full
-                        border p-3 text-white"
+                      className="rounded-radius border-muted bg-card placeholder:text-muted-foreground w-full border p-3 text-white"
                       maxLength={MAX_NAME_CHARACTERS}
                     />
                   </FormControl>

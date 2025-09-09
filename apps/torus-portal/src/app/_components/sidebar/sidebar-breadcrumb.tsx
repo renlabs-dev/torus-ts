@@ -1,7 +1,5 @@
 "use client";
 
-import { usePathname } from "next/navigation";
-
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -10,6 +8,7 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@torus-ts/ui/components/breadcrumb";
+import { usePathname } from "next/navigation";
 
 /**
  * Converts kebab-case to Title Case
@@ -25,11 +24,13 @@ function formatSegment(segment: string): string {
 export function SidebarBreadcrumb() {
   const pathname = usePathname();
 
-  // Split pathname into segments and filter out empty strings
   const segments = pathname.split("/").filter(Boolean);
 
-  // Special case for root path
-  if (pathname === "/" || segments.length === 0) {
+  if (
+    pathname === "/" ||
+    pathname === "/2d-hypergraph" ||
+    segments.length === 0
+  ) {
     return (
       <Breadcrumb>
         <BreadcrumbList>
@@ -38,7 +39,9 @@ export function SidebarBreadcrumb() {
           </BreadcrumbItem>
           <BreadcrumbSeparator className="hidden md:block" />
           <BreadcrumbItem>
-            <BreadcrumbPage>Hypergraph</BreadcrumbPage>
+            <BreadcrumbPage>
+              {pathname === "/2d-hypergraph" ? "2D Hypergraph" : "Hypergraph"}
+            </BreadcrumbPage>
           </BreadcrumbItem>
         </BreadcrumbList>
       </Breadcrumb>
@@ -64,7 +67,7 @@ export function SidebarBreadcrumb() {
                 )}
               </BreadcrumbItem>
               {!isLast && (
-                <BreadcrumbSeparator className="hidden md:block ml-2" />
+                <BreadcrumbSeparator className="ml-2 hidden md:block" />
               )}
             </div>
           );

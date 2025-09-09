@@ -31,7 +31,7 @@ catalog:
   "tailwindcss": ^3.4.10
   "postcss": ^8.4.41
   "typescript": ^5.5.4
-  "zod": ^3.23.8
+  "zod": ^3.25.0
   "zustand": ^5.0.6
   "jiti": ^1.21.6
   "next": ^15.3.0
@@ -41,9 +41,13 @@ catalog:
   "tsx": ^4.19.1
   "luxon": ^3.5.0
   "lucide-react": ^0.475.0
-  "vitest": ^1.5.1
+  "vitest": ^3.2.4
+  "emittery": ^1.2.0
+  "@uidotdev/usehooks": ^2.4.1
+  "superjson": ^2.2.1
   # Hyperlane
   "viem": ^2.22.1
+  "next-plausible": ^3.12.4
 
 catalogs:
   react18:

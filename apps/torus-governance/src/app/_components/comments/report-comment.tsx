@@ -1,7 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import type { AppRouter } from "@torus-ts/api";
+import { createMutationHandler } from "@torus-network/torus-utils/mutation-handler";
 import { Button } from "@torus-ts/ui/components/button";
 import { Card, CardContent, CardHeader } from "@torus-ts/ui/components/card";
 import {
@@ -20,17 +20,11 @@ import {
   SelectValue,
 } from "@torus-ts/ui/components/select";
 import { Textarea } from "@torus-ts/ui/components/text-area";
-import type { inferProcedureOutput } from "@trpc/server";
+import { useToast } from "@torus-ts/ui/hooks/use-toast";
 import { api } from "~/trpc/react";
 import { X } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import { createMutationHandler } from "@torus-network/torus-utils/mutation-handler";
-import { useToast } from "@torus-ts/ui/hooks/use-toast";
-
-export type commentReportReason = NonNullable<
-  inferProcedureOutput<AppRouter["commentReport"]["byId"]>
->["reason"];
 
 const reportCommentSchema = z.object({
   reason: z.enum([

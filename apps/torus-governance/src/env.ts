@@ -1,9 +1,7 @@
-import { z } from "zod";
-
 import { SS58_SCHEMA } from "@torus-network/sdk/types";
-
 import { buildZodEnvScript } from "@torus-ts/env-validation";
 import { chainEnvSchema } from "@torus-ts/ui/lib/data";
+import { z } from "zod";
 
 const AUTH_ORIGIN_DEFAULT = "dao.torus.network";
 
@@ -18,7 +16,7 @@ if (process?.env) {
 }
 
 // warning: DO NOT expose any sensitive data on the schema default values!
-export const envSchema = {
+const envSchema = {
   NODE_ENV: NodeEnvSchema.default("development"),
   JWT_SECRET: z.string().min(8),
   POSTGRES_URL: z.string().url(),

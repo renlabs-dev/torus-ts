@@ -1,13 +1,9 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
-
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Loader2 } from "lucide-react";
-import { useForm } from "react-hook-form";
-
-// import type { SS58Address } from "@torus-network/sdk/types";
+import { delegateNamespacePermission } from "@torus-network/sdk/chain";
 import { useTorus } from "@torus-ts/torus-provider";
+import { useSendTransaction } from "@torus-ts/torus-provider/use-send-transaction";
 import { Button } from "@torus-ts/ui/components/button";
 import {
   Form,
@@ -21,16 +17,18 @@ import {
 import { Input } from "@torus-ts/ui/components/input";
 import { WalletConnectionWarning } from "@torus-ts/ui/components/wallet-connection-warning";
 import { useToast } from "@torus-ts/ui/hooks/use-toast";
-
 import { FormAddressField } from "~/app/_components/address-field";
-
+import { Loader2 } from "lucide-react";
+import { useEffect } from "react";
+import { useForm } from "react-hook-form";
+import type { z } from "zod";
 import { DurationField } from "./create-capability-fields/duration-field";
 import { RevocationField } from "./create-capability-fields/revocation-field";
 import { SelectedPathsDisplay } from "./create-capability-fields/selected-paths-display";
 import { useRevocationValidation } from "./create-capability-fields/use-revocation-validation";
 import type { PathWithPermission } from "./create-capability-flow/create-capability-flow-types";
 import type { CreateCapabilityPermissionFormData } from "./create-capability-permission-form-schema";
-import { createCapabilityPermissionSchema } from "./create-capability-permission-form-schema";
+import { CREATE_CAPABILITY_PERMISSION_SCHEMA } from "./create-capability-permission-form-schema";
 import { transformFormDataToSDK } from "./create-capability-permission-form-utils";
 
 interface CreateCapabilityPermissionFormProps {
@@ -45,16 +43,22 @@ export function CreateCapabilityPermissionForm({
   onSuccess,
 }: CreateCapabilityPermissionFormProps) {
   const {
-    delegateNamespacePermissionTransaction,
     isAccountConnected,
-    // selectedAccount,
+    selectedAccount,
     api,
     isInitialized,
+    torusApi,
+    wsEndpoint,
   } = useTorus();
   const { toast } = useToast();
-  const [transactionStatus, setTransactionStatus] = useState<
-    "idle" | "loading" | "success" | "error"
-  >("idle");
+
+  const { sendTx, isPending, isSigning } = useSendTransaction({
+    api,
+    selectedAccount,
+    wsEndpoint,
+    wallet: torusApi,
+    transactionType: "Delegate Namespace Permission",
+  });
 
   // Set up revocation validation
   const { validateRevocationStrength, hasParentPermissions } =
@@ -64,7 +68,7 @@ export function CreateCapabilityPermissionForm({
     });
 
   const form = useForm<CreateCapabilityPermissionFormData>({
-    resolver: zodResolver(createCapabilityPermissionSchema),
+    resolver: zodResolver(CREATE_CAPABILITY_PERMISSION_SCHEMA),
     defaultValues: {
       recipient: "",
       namespacePaths: selectedPaths,
@@ -83,69 +87,48 @@ export function CreateCapabilityPermissionForm({
     form.setValue("namespacePaths", selectedPaths);
   }, [selectedPaths, form]);
 
-  const handleSubmit = useCallback(
-    async (data: CreateCapabilityPermissionFormData) => {
-      if (data.namespacePaths.length === 0) {
-        toast.error("No capability paths selected");
+  async function handleSubmit(
+    data: z.infer<typeof CREATE_CAPABILITY_PERMISSION_SCHEMA>,
+  ) {
+    if (!api || !sendTx) {
+      toast.error("API not ready");
+      return;
+    }
+
+    if (data.namespacePaths.length === 0) {
+      toast.error("No capability paths selected");
+      return;
+    }
+
+    // Validate revocation strength before submitting
+    if (hasParentPermissions) {
+      const validationErrors = await validateRevocationStrength(data);
+      if (validationErrors.length > 0) {
+        toast.error("Please fix revocation strength issues before submitting");
         return;
       }
+    }
 
-      // Validate revocation strength before submitting
-      if (hasParentPermissions && api) {
-        const validationErrors = await validateRevocationStrength(data);
-        if (validationErrors.length > 0) {
-          toast.error(
-            "Please fix revocation strength issues before submitting",
-          );
-          return;
-        }
-      }
+    const transformedData = transformFormDataToSDK(data, pathsWithPermissions);
 
-      try {
-        setTransactionStatus("loading");
-        const transformedData = transformFormDataToSDK(
-          data,
-          pathsWithPermissions,
-        );
+    const [sendErr, sendRes] = await sendTx(
+      delegateNamespacePermission({
+        api,
+        ...transformedData,
+      }),
+    );
 
-        await delegateNamespacePermissionTransaction({
-          ...transformedData,
-          callback: (result) => {
-            if (result.status === "SUCCESS" && result.finalized) {
-              setTransactionStatus("success");
-              toast.success(
-                `Successfully created capability permission for ${data.namespacePaths.length} path${data.namespacePaths.length > 1 ? "s" : ""}`,
-              );
-              onSuccess?.();
-              form.reset();
-            } else if (result.status === "ERROR") {
-              setTransactionStatus("error");
-              toast.error(
-                result.message ?? "Failed to grant capability permission",
-              );
-            }
-          },
-          refetchHandler: async () => {
-            // No-op for now, could be used to refetch data after transaction
-          },
-        });
-      } catch (error) {
-        console.error("Error granting permission:", error);
-        setTransactionStatus("error");
-        toast.error("Failed to grant capability permission");
-      }
-    },
-    [
-      delegateNamespacePermissionTransaction,
-      toast,
-      form,
-      onSuccess,
-      pathsWithPermissions,
-      hasParentPermissions,
-      api,
-      validateRevocationStrength,
-    ],
-  );
+    if (sendErr !== undefined) {
+      return; // Error already handled by sendTx
+    }
+
+    const { tracker } = sendRes;
+
+    tracker.on("finalized", () => {
+      onSuccess?.();
+      form.reset();
+    });
+  }
 
   return (
     <Form {...form}>
@@ -216,11 +199,12 @@ export function CreateCapabilityPermissionForm({
             variant="outline"
             disabled={
               !isAccountConnected ||
-              transactionStatus === "loading" ||
+              isPending ||
+              isSigning ||
               selectedPaths.length === 0
             }
           >
-            {transactionStatus === "loading" ? (
+            {isPending || isSigning ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 Creating permission...

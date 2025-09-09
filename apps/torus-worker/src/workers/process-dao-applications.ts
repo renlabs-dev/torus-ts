@@ -1,6 +1,4 @@
 import type { ApiPromise } from "@polkadot/api";
-import { z } from "zod";
-
 import type { AgentApplication } from "@torus-network/sdk/chain";
 import {
   acceptApplication,
@@ -14,7 +12,7 @@ import type { SS58Address } from "@torus-network/sdk/types";
 import { validateEnvOrExit } from "@torus-network/torus-utils/env";
 import { BasicLogger } from "@torus-network/torus-utils/logger";
 import { tryAsync } from "@torus-network/torus-utils/try-catch";
-
+import { z } from "zod";
 import type { WorkerProps } from "../common";
 import {
   applicationIsPending,
@@ -96,6 +94,8 @@ export async function processApplicationsWorker(props: WorkerProps) {
     );
   }
 
+  let evenIteration = true;
+
   while (true) {
     const workerRes = await tryAsync(
       (async () => {
@@ -155,19 +155,28 @@ export async function processApplicationsWorker(props: WorkerProps) {
 
         log.info(`Penalty threshold: ${penaltyVoteThreshold}`);
 
-        const factorsRes = await tryAsync(
-          getPenaltyFactors(penaltyVoteThreshold),
-        );
-        if (log.ifResultIsErr(factorsRes)) return;
-        const [_factorsErr, factors] = factorsRes;
+        let factors: {
+          agentKey: SS58Address;
+          nthBiggestPenaltyFactor: number;
+        }[] = [];
 
-        const keysResetRes = await tryAsync(
-          getKeysToReset(props.api, penaltyVoteThreshold),
-        );
-        if (log.ifResultIsErr(keysResetRes)) return;
-        const [_keysResetErr, keysResetToPenaltyZero] = keysResetRes;
-
-        factors.push(...keysResetToPenaltyZero);
+        if (evenIteration) {
+          log.info("Even iteration: processing penalty factors");
+          const factorsRes = await tryAsync(
+            getPenaltyFactors(penaltyVoteThreshold),
+          );
+          if (log.ifResultIsErr(factorsRes)) return;
+          const [_factorsErr, penaltyFactors] = factorsRes;
+          factors = penaltyFactors;
+        } else {
+          log.info("Odd iteration: checking for keys to reset");
+          const keysResetRes = await tryAsync(
+            getKeysToReset(props.api, penaltyVoteThreshold),
+          );
+          if (log.ifResultIsErr(keysResetRes)) return;
+          const [_keysResetErr, keysResetToPenaltyZero] = keysResetRes;
+          factors = keysResetToPenaltyZero;
+        }
 
         if (factors.length === 0) {
           log.info("No penalty changes needed");
@@ -177,7 +186,6 @@ export async function processApplicationsWorker(props: WorkerProps) {
           processPenalty(props.api, mnemonic, factors),
         );
         if (log.ifResultIsErr(processPenaltyRes)) return;
-
         if (factors.length > 0) {
           log.info("Penalty processing completed");
         }
@@ -187,6 +195,8 @@ export async function processApplicationsWorker(props: WorkerProps) {
     if (log.ifResultIsErr(workerRes)) {
       await sleep(retryDelay);
     }
+
+    evenIteration = !evenIteration;
   }
 }
 
@@ -245,7 +255,7 @@ export async function processAllVotes(
  * @param vote_threshold - Minimum votes required to execute governance actions
  * @param applications_map - Reference map of application details from the blockchain
  */
-export async function processVotesOnProposal(
+async function processVotesOnProposal(
   api: ApiPromise,
   mnemonic: string,
   vote_info: VotesByNumericId,
@@ -318,7 +328,7 @@ export async function processVotesOnProposal(
  * @param last_block_number - Current blockchain height
  * @returns Vote tallies for active pending applications
  */
-export async function getVotesOnPending(
+async function getVotesOnPending(
   applications_map: Record<number, AgentApplication>,
   last_block_number: number,
 ): Promise<VotesByNumericId[]> {
@@ -341,7 +351,7 @@ export async function getVotesOnPending(
  *
  * @returns Number of votes required to pass governance actions
  */
-export async function getCadreThreshold() {
+async function getCadreThreshold() {
   const keys = await countCadreKeys();
   return Math.floor(keys / 2) + 1;
 }
@@ -352,7 +362,7 @@ export async function getCadreThreshold() {
  *
  * @returns Number of votes required to apply or remove agent penalties
  */
-export async function getPenaltyThreshold() {
+async function getPenaltyThreshold() {
   const keys = await countCadreKeys();
   const threshold = Math.floor(Math.sqrt(keys)) + 1;
   log.info(`Penalty threshold: ${threshold} (from ${keys} cadre members)`);
@@ -366,7 +376,7 @@ export async function getPenaltyThreshold() {
  * @param cadreThreshold - Minimum votes needed to apply a penalty
  * @returns List of agents with their calculated penalty factors
  */
-export async function getPenaltyFactors(cadreThreshold: number) {
+async function getPenaltyFactors(cadreThreshold: number) {
   const nth_factor = Math.max(cadreThreshold - 1, 1);
   const penalizations = await pendingPenalizations(cadreThreshold, nth_factor);
   log.info(
@@ -387,7 +397,6 @@ export async function getPenaltyFactors(cadreThreshold: number) {
  * @returns List of agents whose penalties should be reset to zero
  */
 async function getKeysToReset(api: ApiPromise, penaltyThreshold: number) {
-  return [];
   const agentPenaltyVotes = await getAgentKeysWithPenalties();
   const voteCountByAgentKey = new Map(
     agentPenaltyVotes.map(({ agentKey, count }) => [agentKey, count]),
@@ -430,7 +439,7 @@ async function getKeysToReset(api: ApiPromise, penaltyThreshold: number) {
  * @param mnemonic - Curator account credentials for submitting transactions
  * @param penaltiesToApply - List of agents with their calculated penalty factors
  */
-export async function processPenalty(
+async function processPenalty(
   api: ApiPromise,
   mnemonic: string,
   penaltiesToApply: {

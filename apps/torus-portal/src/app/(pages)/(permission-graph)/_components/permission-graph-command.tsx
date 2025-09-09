@@ -1,12 +1,6 @@
 "use client";
 
-import React, { useCallback, useMemo, useState } from "react";
-
-import { Package, Radio, Search, Users, Zap } from "lucide-react";
-import { useRouter, useSearchParams } from "next/navigation";
-
 import { smallAddress } from "@torus-network/torus-utils/torus/address";
-
 import {
   CommandDialog,
   CommandEmpty,
@@ -17,108 +11,186 @@ import {
 } from "@torus-ts/ui/components/command";
 import { DialogTitle } from "@torus-ts/ui/components/dialog";
 import { useIsMobile } from "@torus-ts/ui/hooks/use-mobile";
-
+import { api as trpcApi } from "~/trpc/react";
+import { Check, Package, Radio, Search, Users, Zap } from "lucide-react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import React, { useCallback, useMemo, useState } from "react";
 import { useGraphData } from "./force-graph/use-graph-data";
 
 export function PermissionGraphCommand() {
   const router = useRouter();
+  const pathname = usePathname();
   const searchParams = useSearchParams();
   const [open, setOpen] = useState(false);
   const isMobile = useIsMobile();
   const { graphData } = useGraphData();
 
+  // Detect current route and parameters using stable pathname
+  const is2DView = pathname.includes("2d-hypergraph");
+  const selectedId = searchParams.get(is2DView ? "agent" : "id");
+
   const handleSelect = useCallback(
     (nodeId: string) => {
       const params = new URLSearchParams(searchParams.toString());
-      params.set("id", nodeId);
-      router.replace(`/?${params.toString()}`, { scroll: false });
+      const paramName = is2DView ? "agent" : "id";
+      params.set(paramName, nodeId);
+
+      const basePath = is2DView ? "/2d-hypergraph" : "/";
+      router.replace(`${basePath}?${params.toString()}`, { scroll: false });
       setOpen(false);
     },
-    [router, searchParams],
+    [router, searchParams, is2DView],
   );
 
-  const formatNodeDisplay = useCallback((node: string) => {
-    return node.length > 20
-      ? `${node.substring(0, 10)}...${node.substring(node.length - 8)}`
-      : node;
-  }, []);
+  const allAddresses = useMemo(() => {
+    if (!graphData) return new Set<string>();
 
-  const searchData = useMemo(() => {
-    if (!graphData)
-      return {
-        agents: [],
-        emissionPermissions: [],
-        namespacePermissions: [],
-        signals: [],
-      };
+    const addresses = new Set<string>();
 
-    // Extract unique agents (avoid duplicates)
-    const uniqueAgents = new Map<string, (typeof graphData.agents)[number]>();
     graphData.agents.forEach((agent) => {
-      if (!uniqueAgents.has(agent.accountId)) {
-        uniqueAgents.set(agent.accountId, agent);
-      }
+      addresses.add(agent.accountId);
     });
 
-    const agents = Array.from(uniqueAgents.values()).map((agent) => ({
-      id: agent.accountId,
-      type: "agent",
-      name: agent.name,
-      role: agent.role,
-      searchText:
-        `${agent.accountId} ${agent.name} ${agent.role}`.toLowerCase(),
-    }));
+    graphData.permissions.emission.forEach((permission) => {
+      addresses.add(permission.delegatorAccountId);
+      if (permission.recipientAccountId) {
+        addresses.add(permission.recipientAccountId);
+      }
+      permission.distributionTargets?.forEach((target) => {
+        addresses.add(target.targetAccountId);
+      });
+    });
 
-    // Process emission permissions
-    const emissionPermissions = graphData.permissions.emission.map(
-      (permission) => ({
-        id: `permission-${permission.id}`,
-        type: "emission",
-        name: `Emission Permission`,
-        grantor: smallAddress(permission.grantorAccountId),
-        grantee: smallAddress(permission.granteeAccountId),
-        searchText:
-          `${permission.id} ${permission.grantorAccountId} ${permission.granteeAccountId} emission`.toLowerCase(),
-      }),
-    );
+    graphData.permissions.namespace.forEach((permission) => {
+      addresses.add(permission.delegatorAccountId);
+      addresses.add(permission.recipientAccountId);
+    });
 
-    // Process namespace permissions
-    const namespacePermissions = graphData.permissions.namespace.map(
-      (permission) => ({
-        id: `permission-${permission.id}`,
-        type: "namespace",
-        name: `Capability Permission`,
-        grantor: smallAddress(permission.grantorAccountId),
-        grantee: smallAddress(permission.granteeAccountId),
-        searchText:
-          `${permission.id} ${permission.grantorAccountId} ${permission.granteeAccountId} namespace capability`.toLowerCase(),
-      }),
-    );
+    graphData.signals.forEach((signal) => {
+      addresses.add(signal.agentKey);
+    });
 
-    // Process signals
-    const signals = graphData.signals.map((signal) => ({
-      id: `signal-${signal.id}`,
-      type: "signal",
-      name: signal.title,
-      description: signal.description,
-      agentKey: signal.agentKey,
-      searchText:
-        `${signal.title} ${signal.description} ${signal.agentKey} signal`.toLowerCase(),
-    }));
-
-    return { agents, emissionPermissions, namespacePermissions, signals };
+    return addresses;
   }, [graphData]);
 
-  React.useEffect(() => {
-    const down = (e: KeyboardEvent) => {
-      if (e.key === "j" && (e.metaKey || e.ctrlKey)) {
-        e.preventDefault();
-        setOpen((open) => !open);
+  const { data: agentNamesMap } = trpcApi.agent.namesByKeysLastBlock.useQuery(
+    { keys: Array.from(allAddresses) },
+    { enabled: allAddresses.size > 0 && !!graphData },
+  );
+
+  const getFormattedAddress = useCallback(
+    (address: string | undefined, length = 8) => {
+      if (!address) return "Unknown";
+      const agentName = agentNamesMap?.get(address);
+      if (agentName) {
+        return `${agentName} (${smallAddress(address, length)})`;
       }
-    };
-    document.addEventListener("keydown", down);
-    return () => document.removeEventListener("keydown", down);
-  }, []);
+      return smallAddress(address, length);
+    },
+    [agentNamesMap],
+  );
+
+  // eslint-disable-next-line react-hooks/preserve-manual-memoization
+  const searchGroups = useMemo(() => {
+    if (!graphData) return [];
+
+    return [
+      {
+        type: "agent",
+        icon: Users,
+        heading: "Agents",
+        items: Array.from(
+          new Map(
+            graphData.agents.map((agent) => [
+              agent.accountId,
+              {
+                id: agent.accountId,
+                displayName: agent.name || smallAddress(agent.accountId),
+                subtitle: `${agent.role} • ${smallAddress(agent.accountId)}`,
+                searchText:
+                  `${agent.accountId} ${agent.name} ${agent.role}`.toLowerCase(),
+              },
+            ]),
+          ).values(),
+        ),
+      },
+      {
+        type: "stream",
+        icon: Zap,
+        heading: "Stream Permissions",
+        items: Array.from(
+          new Map(
+            graphData.permissions.emission.map((permission) => [
+              permission.id,
+              {
+                id: `permission-${permission.id}`,
+                displayName: "Stream Permission",
+                subtitle: `From: ${getFormattedAddress(permission.delegatorAccountId, 4)} → To: ${
+                  permission.distributionTargets?.length
+                    ? `${permission.distributionTargets.length} recipients`
+                    : getFormattedAddress(permission.recipientAccountId, 4)
+                }`,
+                searchText:
+                  `${permission.id} ${permission.delegatorAccountId} stream emission`.toLowerCase(),
+              },
+            ]),
+          ).values(),
+        ),
+      },
+      {
+        type: "namespace",
+        icon: Package,
+        heading: "Capability Permissions",
+        items: Array.from(
+          new Map(
+            graphData.permissions.namespace.map((permission) => [
+              permission.id,
+              {
+                id: `permission-${permission.id}`,
+                displayName: "Capability Permission",
+                subtitle: `From: ${getFormattedAddress(permission.delegatorAccountId, 4)} → To: ${getFormattedAddress(permission.recipientAccountId, 4)}`,
+                searchText:
+                  `${permission.id} ${permission.delegatorAccountId} ${permission.recipientAccountId} namespace capability`.toLowerCase(),
+              },
+            ]),
+          ).values(),
+        ),
+      },
+      {
+        type: "signal",
+        icon: Radio,
+        heading: "Signals",
+        items: Array.from(
+          new Map(
+            graphData.signals.map((signal) => [
+              signal.id,
+              {
+                id: `signal-${signal.id}`,
+                displayName: signal.title,
+                subtitle: `From: ${getFormattedAddress(signal.agentKey, 4)}`,
+                searchText:
+                  `${signal.title} ${signal.description} ${signal.agentKey} signal`.toLowerCase(),
+              },
+            ]),
+          ).values(),
+        ),
+      },
+    ];
+  }, [graphData, getFormattedAddress]);
+
+  if (!graphData) {
+    return (
+      <button
+        className="bg-background flex w-full items-center justify-between gap-6 rounded border p-2.5 text-sm md:w-fit"
+        disabled
+      >
+        <span className="text-muted-foreground flex items-center gap-2">
+          <Search className="text-muted-foreground h-4 w-4" />
+          Loading...
+        </span>
+      </button>
+    );
+  }
 
   const title = isMobile
     ? "Search..."
@@ -127,118 +199,53 @@ export function PermissionGraphCommand() {
   return (
     <>
       <button
-        className="text-sm border p-2.5 gap-6 md:w-fit w-full justify-between rounded flex
-          items-center bg-background"
+        className="bg-background flex w-full items-center justify-between gap-6 rounded border p-2.5 text-sm md:w-fit"
         onClick={() => setOpen(true)}
       >
-        <span className="flex items-center gap-2 text-muted-foreground text-nowrap">
-          <Search className="w-4 h-4 text-muted-foreground" />
-          {title}
+        <span className="text-muted-foreground flex min-w-0 flex-1 items-center gap-2 truncate">
+          <Search className="text-muted-foreground h-4 w-4 flex-shrink-0" />
+          <span className="truncate">{title}</span>
         </span>
-        <kbd
-          className="bg-muted text-muted-foreground pointer-events-none inline-flex h-5 items-center
-            gap-1 rounded border px-1.5 font-mono text-[10px] font-medium opacity-100
-            select-none"
-        >
-          <span className="text-xs">⌘</span>J
-        </kbd>
       </button>
+
       <CommandDialog open={open} onOpenChange={setOpen}>
         <DialogTitle className="hidden">{title}</DialogTitle>
-
         <CommandInput placeholder={title} />
         <CommandList>
           <CommandEmpty>No results found.</CommandEmpty>
 
-          {searchData.signals.length > 0 && (
-            <CommandGroup heading="Signals">
-              {searchData.signals.map((signal) => (
-                <CommandItem
-                  key={signal.id}
-                  value={signal.searchText}
-                  onSelect={() => handleSelect(signal.id)}
-                >
-                  <Radio className="mr-2 h-4 w-4" />
-                  <div className="flex flex-col">
-                    <span>{signal.name}</span>
-                    <span className="text-xs text-muted-foreground">
-                      From: {formatNodeDisplay(signal.agentKey)}
-                    </span>
-                  </div>
-                </CommandItem>
-              ))}
-            </CommandGroup>
-          )}
-
-          {searchData.agents.length > 0 && (
-            <CommandGroup heading="Agents">
-              {searchData.agents.map((agent) => (
-                <CommandItem
-                  key={`agent-${agent.id}`}
-                  value={agent.searchText}
-                  onSelect={() => handleSelect(agent.id)}
-                >
-                  <Users className="mr-2 h-4 w-4" />
-                  <div className="flex flex-col">
-                    <span>
-                      {agent.name}{" "}
-                      <span className="text-xs text-muted-foreground">
-                        ({agent.role})
-                      </span>
-                    </span>
-                    <span className="text-xs text-muted-foreground">
-                      {formatNodeDisplay(agent.id)}
-                    </span>
-                  </div>
-                </CommandItem>
-              ))}
-            </CommandGroup>
-          )}
-
-          {searchData.emissionPermissions.length > 0 && (
-            <CommandGroup heading="Emission Permissions">
-              {searchData.emissionPermissions.map((permission) => (
-                <CommandItem
-                  key={`emission-${permission.id}`}
-                  value={permission.searchText}
-                  onSelect={() => handleSelect(permission.id)}
-                >
-                  <Zap className="mr-2 h-4 w-4" />
-                  <div className="flex flex-col">
-                    <span>
-                      {permission.name} from {permission.grantor} to{" "}
-                      {permission.grantee}
-                    </span>
-                    <span className="text-xs text-muted-foreground">
-                      {formatNodeDisplay(permission.id)}
-                    </span>
-                  </div>
-                </CommandItem>
-              ))}
-            </CommandGroup>
-          )}
-
-          {searchData.namespacePermissions.length > 0 && (
-            <CommandGroup heading="Capabilities Permissions">
-              {searchData.namespacePermissions.map((permission) => (
-                <CommandItem
-                  key={`namespace-${permission.id}`}
-                  value={permission.searchText}
-                  onSelect={() => handleSelect(permission.id)}
-                >
-                  <Package className="mr-2 h-4 w-4" />
-                  <div className="flex flex-col">
-                    <span>
-                      {permission.name} from {permission.grantor} to{" "}
-                      {permission.grantee}
-                    </span>
-                    <span className="text-xs text-muted-foreground">
-                      {formatNodeDisplay(permission.id)}
-                    </span>
-                  </div>
-                </CommandItem>
-              ))}
-            </CommandGroup>
+          {searchGroups.map(
+            (group) =>
+              group.items.length > 0 && (
+                <CommandGroup key={group.type} heading={group.heading}>
+                  {group.items.map((item) => {
+                    const isSelected = selectedId === item.id;
+                    return (
+                      <CommandItem
+                        key={item.id}
+                        value={`${item.searchText} ${item.displayName} ${item.subtitle}`}
+                        className="flex max-w-full items-start gap-2 py-2"
+                        onSelect={() => handleSelect(item.id)}
+                      >
+                        <group.icon className="mt-0.5 h-3 w-3 shrink-0" />
+                        <div className="min-w-0 flex-1 overflow-hidden">
+                          <div className="flex items-center justify-between">
+                            <span className="truncate text-sm">
+                              {item.displayName}
+                            </span>
+                            {isSelected && (
+                              <Check className="ml-2 h-4 w-4 shrink-0" />
+                            )}
+                          </div>
+                          <div className="text-muted-foreground truncate text-xs">
+                            {item.subtitle}
+                          </div>
+                        </div>
+                      </CommandItem>
+                    );
+                  })}
+                </CommandGroup>
+              ),
           )}
         </CommandList>
       </CommandDialog>

@@ -1,18 +1,13 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
-
-import { DateTime } from "luxon";
-
 import { formatToken } from "@torus-network/torus-utils/torus/token";
-
 import { useCachedStakeOut } from "@torus-ts/query-provider/hooks";
 import { useTorus } from "@torus-ts/torus-provider";
 import { Card } from "@torus-ts/ui/components/card";
-
 import { env } from "~/env";
 import { useAPR } from "~/hooks/useAPR";
-
+import { DateTime } from "luxon";
+import { useEffect, useMemo, useState } from "react";
 import { StakingCalculatorAmountInput } from "./staking-calculator-amount-input";
 import { StakingCalculatorForecastPeriods } from "./staking-calculator-forecast-periods";
 import { StakingCalculatorGrowthChart } from "./staking-calculator-growth-chart";
@@ -30,7 +25,7 @@ export interface ProjectedData {
   initial: number;
 }
 
-export const MONTHLY_COMPOUNDS = 12;
+const MONTHLY_COMPOUNDS = 12;
 export const FORECAST_MONTHS = 24;
 export const FORECAST_PERIODS = [3, 6, 12, 24];
 

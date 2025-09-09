@@ -1,16 +1,22 @@
-import type { ApiPromise } from "@polkadot/api";
+import type { ApiPromise, SubmittableResult } from "@polkadot/api";
 import type {
   InjectedAccountWithMeta,
   InjectedExtension,
 } from "@polkadot/extension-inject/types";
+import type { SbExtrinsicStatus } from "@torus-network/sdk/extrinsics";
 import type { Enum } from "rustie";
 import { match } from "rustie";
 import { create } from "zustand";
 import { immer } from "zustand/middleware/immer";
 
-import type { TxStage } from "../transactions";
+// TODO: finish implementing this refactor with a single storage for transactions
 
-// TODO: finish implementing this refactor
+export type TxStage = Enum<{
+  Empty: null;
+  Signing: null;
+  Submitted: { result: SubmittableResult; extStatus: SbExtrinsicStatus }; // same parser you wrote
+  Error: { error: Error };
+}>;
 
 export type WalletStatus = Enum<{
   Unavailable: null;

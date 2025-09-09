@@ -1,5 +1,3 @@
-import { X } from "lucide-react";
-
 import { Button } from "@torus-ts/ui/components/button";
 import {
   FormControl,
@@ -8,6 +6,7 @@ import {
   FormLabel,
 } from "@torus-ts/ui/components/form";
 import { cn } from "@torus-ts/ui/lib/utils";
+import { X } from "lucide-react";
 
 interface DeleteCapabilitySegmentSelectorProps {
   selectedPath: { path: string[] };
@@ -27,8 +26,8 @@ export function DeleteCapabilitySegmentSelector({
       <FormLabel>Select Segment to Delete</FormLabel>
       <FormControl>
         <div className="space-y-4">
-          <div className="flex flex-wrap items-center p-4 border rounded-lg bg-muted/50">
-            <div className="flex items-center font-mono text-sm mr-1">
+          <div className="bg-muted/50 flex flex-wrap items-center rounded-lg border p-4">
+            <div className="mr-1 flex items-center font-mono text-sm">
               {selectedPath.path.slice(0, 2).join(".")}
               <span>.</span>
             </div>
@@ -41,13 +40,13 @@ export function DeleteCapabilitySegmentSelector({
                 <div key={index} className="flex items-center">
                   <div
                     className={cn(
-                      "flex items-center bg-background border rounded-lg",
+                      "bg-background flex items-center rounded-lg border",
                       willBeDeleted && "border-destructive",
                     )}
                   >
                     <span
                       className={cn(
-                        "px-3 py-1 font-mono text-sm border-r",
+                        "border-r px-3 py-1 font-mono text-sm",
                         willBeDeleted && "text-destructive border-destructive",
                       )}
                     >
@@ -67,7 +66,7 @@ export function DeleteCapabilitySegmentSelector({
                     </Button>
                   </div>
                   {index < selectedPath.path.length - 1 && (
-                    <span className="mx-1 text-muted-foreground">.</span>
+                    <span className="text-muted-foreground mx-1">.</span>
                   )}
                 </div>
               );

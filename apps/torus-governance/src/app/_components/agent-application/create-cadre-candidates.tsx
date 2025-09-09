@@ -23,12 +23,13 @@ import { cn } from "@torus-ts/ui/lib/utils";
 import type { inferProcedureInput } from "@trpc/server";
 import { useGovernance } from "~/context/governance-provider";
 import { api } from "~/trpc/react";
+import { isUserInServer } from "~/utils/discord-verification";
+import { useDiscordAuth } from "hooks/use-discord-auth";
 import { useSearchParams } from "next/navigation";
 import * as React from "react";
 import { useForm } from "react-hook-form";
 import { DiscordAuthButton } from "../discord-auth-button";
-import { useDiscordAuth } from "hooks/use-discord-auth";
-import { isUserInServer } from "~/utils/discord-verification";
+
 const MAX_CONTENT_CHARACTERS = 500;
 
 type CreateCadreCandidateFormData = NonNullable<
@@ -336,7 +337,7 @@ export function CreateCadreCandidates() {
                 href="https://discord.gg/invite/torus"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-blue-400 hover:text-blue-300 underline"
+                className="text-blue-400 underline hover:text-blue-300"
               >
                 Torus Discord community
               </a>{" "}
@@ -391,7 +392,7 @@ export function CreateCadreCandidates() {
                         />
                         <span
                           className={`absolute bottom-2 right-2 text-sm ${
-                          remainingChars <= 50
+                            remainingChars <= 50
                               ? "text-yellow-400"
                               : "text-gray-400"
                           }`}
@@ -414,9 +415,7 @@ export function CreateCadreCandidates() {
                 }}
                 variant="outline"
                 className={cn(
-                  `flex w-full items-center justify-center border border-blue-500 bg-blue-500/20
-                  py-5 text-sm font-semibold text-blue-500 hover:bg-blue-600/20
-                  hover:text-blue-400`,
+                  `flex w-full items-center justify-center border border-blue-500 bg-blue-500/20 py-5 text-sm font-semibold text-blue-500 hover:bg-blue-600/20 hover:text-blue-400`,
                   handleDisableState() ? "cursor-not-allowed opacity-50" : "",
                 )}
                 disabled={handleDisableState()}

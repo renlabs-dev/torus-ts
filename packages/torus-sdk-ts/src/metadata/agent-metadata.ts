@@ -1,12 +1,11 @@
-import { CID } from "multiformats";
-import { z } from "zod";
-
 import { typed_non_null_entries } from "@torus-network/torus-utils";
 import {
   buildIpfsGatewayUrl,
   IPFS_URI_SCHEMA,
 } from "@torus-network/torus-utils/ipfs";
 import { tryAsync, trySync } from "@torus-network/torus-utils/try-catch";
+import { CID } from "multiformats";
+import { z } from "zod";
 
 export const AGENT_SHORT_DESCRIPTION_MAX_LENGTH = 201;
 
@@ -37,6 +36,7 @@ export const AGENT_METADATA_SCHEMA = z.object({
   socials: z
     .object({
       discord: zUrl.optional(),
+      discordId: z.string().optional(),
       github: zUrl.optional(),
       telegram: zUrl.optional(),
       twitter: zUrl.optional(),

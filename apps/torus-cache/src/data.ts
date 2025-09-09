@@ -1,6 +1,4 @@
 import type { ApiPromise } from "@polkadot/api";
-import SuperJSON from "superjson";
-
 import type { StakeData } from "@torus-network/sdk/cached-queries";
 import type { LastBlock } from "@torus-network/sdk/chain";
 import {
@@ -10,7 +8,7 @@ import {
 } from "@torus-network/sdk/chain";
 import { BasicLogger } from "@torus-network/torus-utils/logger";
 import { tryAsync, trySync } from "@torus-network/torus-utils/try-catch";
-
+import SuperJSON from "superjson";
 import { setup } from "./server";
 import { sleep } from "./utils";
 
@@ -75,10 +73,7 @@ export function getStakeFromDataStringified() {
  * @param api API instance for blockchain queries
  * @param lastBlock Latest block information
  */
-export const updateStakeFrom = async (
-  api: ApiPromise,
-  lastBlock: LastBlock,
-) => {
+const updateStakeFrom = async (api: ApiPromise, lastBlock: LastBlock) => {
   const queryErrorMsg = () =>
     `Error updating StakeFrom data for block ${lastBlock.blockNumber}:`;
   const queryStateQuintRes = await tryAsync(queryStakeIn(api));
@@ -105,7 +100,7 @@ export const updateStakeFrom = async (
  * @param lastBlock - Latest block information including block number
  * @returns Promise that resolves when the operation completes
  */
-export const updateStakeOut = async (api: ApiPromise, lastBlock: LastBlock) => {
+const updateStakeOut = async (api: ApiPromise, lastBlock: LastBlock) => {
   const queryErrorMsg = () =>
     `Error updating StakeOut data for block ${lastBlock.blockNumber}:`;
   const queryRes = await tryAsync(queryStakeOut(api));

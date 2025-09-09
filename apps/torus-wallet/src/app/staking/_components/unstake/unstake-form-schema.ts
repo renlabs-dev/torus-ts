@@ -1,19 +1,13 @@
-import type { RefObject } from "react";
-
-import { z } from "zod";
-
 import { isSS58 } from "@torus-network/sdk/types";
 import { formatToken, toNano } from "@torus-network/torus-utils/torus/token";
-
 import { isAmountPositive, meetsMinimumStake } from "~/utils/validators";
-
-import type { FeeLabelHandle } from "../../../_components/fee-label";
+import { z } from "zod";
 
 export const createUnstakeFormSchema = (
   minAllowedStakeData: bigint,
   existencialDepositValue: bigint,
   accountFreeBalance: bigint,
-  feeRef: RefObject<FeeLabelHandle | null>,
+  estimatedFee: bigint | undefined,
   stakedAmount: bigint | null,
 ) =>
   z
@@ -33,8 +27,7 @@ export const createUnstakeFormSchema = (
         })
         .refine(
           () =>
-            (accountFreeBalance || 0n) -
-              toNano(feeRef.current?.getEstimatedFee() ?? "0") >=
+            (accountFreeBalance || 0n) - (estimatedFee ?? 0n) >=
             existencialDepositValue,
           {
             message: `This transaction fee would make your account go below the existential deposit (${formatToken(existencialDepositValue)} TORUS). Top up your balance before unstaking.`,
@@ -45,7 +38,7 @@ export const createUnstakeFormSchema = (
       if (stakedAmount !== null) {
         if (toNano(data.amount) > stakedAmount) {
           ctx.addIssue({
-            code: z.ZodIssueCode.custom,
+            code: "custom",
             message: "Amount exceeds staked amount",
             path: ["amount"],
           });

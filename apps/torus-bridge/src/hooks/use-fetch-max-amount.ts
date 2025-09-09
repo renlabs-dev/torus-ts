@@ -11,9 +11,9 @@ import { useMutation } from "@tanstack/react-query";
 import { tryAsync, trySync } from "@torus-network/torus-utils/try-catch";
 import { useToast } from "@torus-ts/ui/hooks/use-toast";
 import { useMultiProvider } from "~/hooks/use-multi-provider";
+import { isPromise } from "~/utils/helpers";
 import { logger } from "../utils/logger";
 import { useWarpCore } from "./token";
-import { isPromise } from "~/utils/helpers";
 
 interface FetchMaxParams {
   accounts: Record<ProtocolType, AccountInfo>;

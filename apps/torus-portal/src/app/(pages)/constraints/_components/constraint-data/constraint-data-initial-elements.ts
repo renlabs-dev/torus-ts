@@ -1,5 +1,5 @@
-import type { Node, Edge } from "@xyflow/react";
 import { BoolExpr } from "@torus-ts/dsl";
+import type { Edge, Node } from "@xyflow/react";
 import type { ConstraintNodeData } from "../constraint-nodes/constraint-node-types";
 
 export const nodes: Node<ConstraintNodeData>[] = [

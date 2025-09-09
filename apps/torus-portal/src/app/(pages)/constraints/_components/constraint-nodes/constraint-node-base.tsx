@@ -1,15 +1,11 @@
 "use client";
 
-import { useCallback, useState } from "react";
-
-import { CheckCircle, Pause, Play } from "lucide-react";
-
 import { H256_HEX } from "@torus-network/sdk/types";
-
 import type { BaseConstraintType } from "@torus-ts/dsl";
 import { BaseConstraint } from "@torus-ts/dsl";
 import { Badge } from "@torus-ts/ui/components/badge";
-
+import { CheckCircle, Pause, Play } from "lucide-react";
+import { useCallback, useState } from "react";
 import {
   PermissionNodeContainer,
   useChildNodeManagement,
@@ -101,7 +97,7 @@ export function ConstraintNodeBase({ id, data }: PermissionNodeBaseProps) {
 
       if (!validation.success && value.length > 0) {
         setPermissionIdError(
-          validation.error.errors[0]?.message ?? "Invalid permission ID",
+          validation.error.issues[0]?.message ?? "Invalid permission ID",
         );
       } else {
         setPermissionIdError("");
@@ -192,7 +188,7 @@ export function ConstraintNodeBase({ id, data }: PermissionNodeBaseProps) {
 
       {data.expression.$ === "InactiveUnlessRedelegated" && (
         <div className="relative w-full space-y-[0.05em]">
-          <Badge className="text-xs cursor-default absolute scale-90 top-[0.4em] right-[0.3em] z-50">
+          <Badge className="absolute right-[0.3em] top-[0.4em] z-50 scale-90 cursor-default text-xs">
             SS58
           </Badge>
           <ConstraintInput
@@ -213,7 +209,7 @@ export function ConstraintNodeBase({ id, data }: PermissionNodeBaseProps) {
             placeholder="Enter account ID"
           />
 
-          <Badge className="text-xs cursor-default absolute scale-90 top-[3.4em] right-[0.3em] z-50">
+          <Badge className="absolute right-[0.3em] top-[3.4em] z-50 scale-90 cursor-default text-xs">
             Percent
           </Badge>
           <ConstraintInput

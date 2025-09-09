@@ -1,15 +1,10 @@
 "use client";
 
-import { createContext, useContext } from "react";
-
-import type { SubmittableExtrinsic } from "@polkadot/api/types";
-import type { ISubmittableResult } from "@polkadot/types/types";
 import type { UseQueryResult } from "@tanstack/react-query";
-
 import type { StakeData } from "@torus-network/sdk/cached-queries";
 import type { LastBlock } from "@torus-network/sdk/chain";
 import type { Balance, SS58Address } from "@torus-network/sdk/types";
-
+import { fromNano } from "@torus-network/torus-utils/torus/token";
 import {
   useCachedStakeOut,
   useFreeBalance,
@@ -17,22 +12,13 @@ import {
   useLastBlock,
   useMinAllowedStake,
   useRewardInterval,
+  useTransactionFee,
 } from "@torus-ts/query-provider/hooks";
 import type { InjectedAccountWithMeta } from "@torus-ts/torus-provider";
 import { useTorus } from "@torus-ts/torus-provider";
-import type {
-  Stake,
-  Transfer,
-  TransferStake,
-} from "@torus-ts/torus-provider/types";
-
 import { env } from "~/env";
-
-export type { ISubmittableResult, SubmittableExtrinsic };
-
-export type TransactionExtrinsicPromise =
-  | SubmittableExtrinsic<"promise", ISubmittableResult>
-  | undefined;
+import { MIN_EXISTENTIAL_BALANCE } from "~/utils/constants";
+import { createContext, useContext } from "react";
 
 interface WalletContextType {
   isInitialized: boolean;
@@ -45,41 +31,16 @@ interface WalletContextType {
     { address: SS58Address; stake: Balance }[],
     Error
   >;
-  estimateFee: (
-    transaction: SubmittableExtrinsic<"promise", ISubmittableResult>,
-  ) => Promise<bigint | null>;
-  addStake: (stake: Stake) => Promise<void>;
-  transfer: (transfer: Transfer) => Promise<void>;
-  transferStake: (transfer: TransferStake) => Promise<void>;
-  removeStake: (stake: Stake) => Promise<void>;
   stakeOut: UseQueryResult<StakeData, Error>;
-  getExistentialDeposit: () => bigint | undefined;
   minAllowedStake: UseQueryResult<bigint, Error>;
-  transferTransaction: ({
-    to,
-    amount,
-  }: Omit<
-    Transfer,
-    "callback" | "refetchHandler"
-  >) => TransactionExtrinsicPromise;
-  addStakeTransaction: ({
-    validator,
-    amount,
-  }: Omit<Stake, "callback" | "refetchHandler">) => TransactionExtrinsicPromise;
-  removeStakeTransaction: ({
-    validator,
-    amount,
-  }: Omit<Stake, "callback" | "refetchHandler">) => TransactionExtrinsicPromise;
-  transferStakeTransaction: ({
-    fromValidator,
-    toValidator,
-    amount,
-  }: Omit<
-    TransferStake,
-    "callback" | "refetchHandler"
-  >) => TransactionExtrinsicPromise;
   lastBlock: UseQueryResult<LastBlock, Error>;
   rewardInterval: UseQueryResult<bigint, Error>;
+  // Simplified fee estimation
+  estimatedFee: bigint | undefined;
+  isFeeLoading: boolean;
+  feeError: Error | null;
+  // Maximum transferable amount (as string for forms)
+  maxTransferableAmount: string;
 }
 
 const WalletContext = createContext<WalletContextType | null>(null);
@@ -108,6 +69,38 @@ export function WalletProvider({ children }: WalletProviderProps) {
     ? stakeOut.data?.perAddr[torus.selectedAccount.address]
     : undefined;
 
+  const placeholderAddr =
+    "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY" as SS58Address;
+
+  const placeholderTx =
+    torus.api?.tx.balances.transferAllowDeath(placeholderAddr, 100) ?? null;
+
+  const {
+    data: estimatedFee,
+    isLoading: isFeeLoading,
+    error: feeError,
+  } = useTransactionFee(placeholderTx, placeholderAddr);
+
+  // Calculate maximum transferable amount
+  const freeBalance = accountFreeBalance.data ?? 0n;
+
+  const maxTransferableAmount = (() => {
+    if (!torus.selectedAccount?.address || freeBalance <= 0n || !estimatedFee) {
+      return "";
+    }
+
+    // Apply 225% buffer to estimated fee (matching old implementation)
+    const feeBuffer = 225n;
+    const adjustedFee = (estimatedFee * feeBuffer) / 100n;
+
+    // Calculate max transferable amount considering fee and existential deposit
+    const totalReserved = adjustedFee + MIN_EXISTENTIAL_BALANCE;
+    const maxTransferable =
+      freeBalance > totalReserved ? freeBalance - totalReserved : 0n;
+
+    return fromNano(maxTransferable);
+  })();
+
   return (
     <WalletContext.Provider
       value={{
@@ -119,6 +112,10 @@ export function WalletProvider({ children }: WalletProviderProps) {
         stakeOut,
         lastBlock,
         rewardInterval,
+        estimatedFee,
+        isFeeLoading,
+        feeError,
+        maxTransferableAmount,
       }}
     >
       {children}

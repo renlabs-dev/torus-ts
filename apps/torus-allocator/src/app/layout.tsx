@@ -1,5 +1,4 @@
 import "@torus-ts/ui/globals.css";
-
 import { GoogleAnalytics } from "@next/third-parties/google";
 
 import { createSeoMetadata } from "@torus-ts/ui/components/seo";
@@ -7,8 +6,9 @@ import { env } from "~/env";
 import { Fira_Mono as FiraMono } from "next/font/google";
 
 import { Layout } from "@torus-ts/ui/components/layout";
-
 import { EnvScript } from "~/env";
+import type { Metadata } from "next";
+import PlausibleProvider from "next-plausible";
 
 export const metadata = () =>
   createSeoMetadata({
@@ -39,9 +39,14 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <Layout font={firaMono} headScripts={[EnvScript]}>
-      {children}
-      <GoogleAnalytics gaId="G-7YCMH64Q4J" />
-    </Layout>
+    <PlausibleProvider
+      domain="allocator.torus.network,rollup.torus.network"
+      trackOutboundLinks
+    >
+      <Layout font={firaMono} headScripts={[EnvScript]}>
+        {children}
+        <GoogleAnalytics gaId="G-7YCMH64Q4J" />
+      </Layout>
+    </PlausibleProvider>
   );
 }

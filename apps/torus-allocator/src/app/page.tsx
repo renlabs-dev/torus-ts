@@ -1,10 +1,8 @@
 import { createSeoMetadata } from "@torus-ts/ui/components/seo";
-import Link from "next/link";
-
 import { Button } from "@torus-ts/ui/components/button";
 import { getLinks } from "@torus-ts/ui/lib/data";
-
 import { env } from "~/env";
+import Link from "next/link";
 
 export const metadata = () =>
   createSeoMetadata({
@@ -28,9 +26,9 @@ export default function Page() {
 
   return (
     <div className="flex min-h-screen items-center justify-center">
-      <div className="text-center space-y-4">
+      <div className="space-y-4 text-center">
         <h1 className="text-2xl font-semibold">The Allocator has moved!</h1>
-        <p className="text-gray-600 mb-4">
+        <p className="mb-4 text-gray-600">
           The Allocator is now integrated into the Torus Portal.
         </p>
         <Button variant="outline">

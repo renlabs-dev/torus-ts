@@ -9,7 +9,7 @@ import type { ApiTypes, AugmentedSubmittable, SubmittableExtrinsic, SubmittableE
 import type { BTreeMap, BTreeSet, Bytes, Compact, Option, U256, U8aFixed, Vec, bool, u128, u16, u32, u64, u8 } from '@polkadot/types-codec';
 import type { AnyNumber, IMethod, ITuple } from '@polkadot/types-codec/types';
 import type { AccountId32, Call, H160, H256, MultiAddress, Percent } from '@polkadot/types/interfaces/runtime';
-import type { EthereumTransactionTransactionV2, PalletBalancesAdjustmentDirection, PalletGovernanceProposalGlobalParamsData, PalletMultisigTimepoint, PalletPermission0PermissionEmissionDistributionControl, PalletPermission0PermissionEmissionEmissionAllocation, PalletPermission0PermissionEnforcementAuthority, PalletPermission0PermissionPermissionDuration, PalletPermission0PermissionRevocationTerms, SpConsensusGrandpaEquivocationProof, SpCoreVoid, SpWeightsWeightV2Weight, TorusRuntimeRuntimeTask } from '@polkadot/types/lookup';
+import type { EthereumTransactionTransactionV2, PalletBalancesAdjustmentDirection, PalletGovernanceProposalGlobalParamsData, PalletMultisigTimepoint, PalletPermission0PermissionEnforcementAuthority, PalletPermission0PermissionPermissionDuration, PalletPermission0PermissionRevocationTerms, PalletPermission0PermissionStreamDistributionControl, PalletPermission0PermissionStreamStreamAllocation, SpConsensusGrandpaEquivocationProof, SpCoreVoid, SpWeightsWeightV2Weight, TorusRuntimeRuntimeTask } from '@polkadot/types/lookup';
 
 export type __AugmentedSubmittable = AugmentedSubmittable<() => unknown>;
 export type __SubmittableExtrinsic<ApiType extends ApiTypes> = SubmittableExtrinsic<ApiType>;
@@ -422,17 +422,23 @@ declare module '@polkadot/api-base/types/submittable' {
     };
     permission0: {
       /**
+       * Delegate a permission over namespaces to multiple recipients.
+       * Note: this extrinsic creates _multiple_ permissions with the same
+       * properties.
+       **/
+      bulkDelegateNamespacePermission: AugmentedSubmittable<(recipients: BTreeSet<AccountId32>, paths: BTreeMap<Option<H256>, BTreeSet<Bytes>>, duration: PalletPermission0PermissionPermissionDuration | { UntilBlock: any } | { Indefinite: any } | string | Uint8Array, revocation: PalletPermission0PermissionRevocationTerms | { Irrevocable: any } | { RevocableByDelegator: any } | { RevocableByArbiters: any } | { RevocableAfter: any } | string | Uint8Array, instances: u32 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [BTreeSet<AccountId32>, BTreeMap<Option<H256>, BTreeSet<Bytes>>, PalletPermission0PermissionPermissionDuration, PalletPermission0PermissionRevocationTerms, u32]>;
+      /**
        * Delegate a permission for curator delegation
        **/
       delegateCuratorPermission: AugmentedSubmittable<(recipient: AccountId32 | string | Uint8Array, flags: BTreeMap<Option<H256>, u32>, cooldown: Option<u64> | null | Uint8Array | u64 | AnyNumber, duration: PalletPermission0PermissionPermissionDuration | { UntilBlock: any } | { Indefinite: any } | string | Uint8Array, revocation: PalletPermission0PermissionRevocationTerms | { Irrevocable: any } | { RevocableByDelegator: any } | { RevocableByArbiters: any } | { RevocableAfter: any } | string | Uint8Array, instances: u32 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [AccountId32, BTreeMap<Option<H256>, u32>, Option<u64>, PalletPermission0PermissionPermissionDuration, PalletPermission0PermissionRevocationTerms, u32]>;
       /**
-       * Delegate a permission for emission delegation
-       **/
-      delegateEmissionPermission: AugmentedSubmittable<(recipient: AccountId32 | string | Uint8Array, allocation: PalletPermission0PermissionEmissionEmissionAllocation | { Streams: any } | { FixedAmount: any } | string | Uint8Array, targets: BTreeMap<AccountId32, u16>, distribution: PalletPermission0PermissionEmissionDistributionControl | { Manual: any } | { Automatic: any } | { AtBlock: any } | { Interval: any } | string | Uint8Array, duration: PalletPermission0PermissionPermissionDuration | { UntilBlock: any } | { Indefinite: any } | string | Uint8Array, revocation: PalletPermission0PermissionRevocationTerms | { Irrevocable: any } | { RevocableByDelegator: any } | { RevocableByArbiters: any } | { RevocableAfter: any } | string | Uint8Array, enforcement: PalletPermission0PermissionEnforcementAuthority | { None: any } | { ControlledBy: any } | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [AccountId32, PalletPermission0PermissionEmissionEmissionAllocation, BTreeMap<AccountId32, u16>, PalletPermission0PermissionEmissionDistributionControl, PalletPermission0PermissionPermissionDuration, PalletPermission0PermissionRevocationTerms, PalletPermission0PermissionEnforcementAuthority]>;
-      /**
        * Delegate a permission over namespaces
        **/
       delegateNamespacePermission: AugmentedSubmittable<(recipient: AccountId32 | string | Uint8Array, paths: BTreeMap<Option<H256>, BTreeSet<Bytes>>, duration: PalletPermission0PermissionPermissionDuration | { UntilBlock: any } | { Indefinite: any } | string | Uint8Array, revocation: PalletPermission0PermissionRevocationTerms | { Irrevocable: any } | { RevocableByDelegator: any } | { RevocableByArbiters: any } | { RevocableAfter: any } | string | Uint8Array, instances: u32 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [AccountId32, BTreeMap<Option<H256>, BTreeSet<Bytes>>, PalletPermission0PermissionPermissionDuration, PalletPermission0PermissionRevocationTerms, u32]>;
+      /**
+       * Delegate a permission for stream delegation
+       **/
+      delegateStreamPermission: AugmentedSubmittable<(recipients: BTreeMap<AccountId32, u16>, allocation: PalletPermission0PermissionStreamStreamAllocation | { Streams: any } | { FixedAmount: any } | string | Uint8Array, distribution: PalletPermission0PermissionStreamDistributionControl | { Manual: any } | { Automatic: any } | { AtBlock: any } | { Interval: any } | string | Uint8Array, duration: PalletPermission0PermissionPermissionDuration | { UntilBlock: any } | { Indefinite: any } | string | Uint8Array, revocation: PalletPermission0PermissionRevocationTerms | { Irrevocable: any } | { RevocableByDelegator: any } | { RevocableByArbiters: any } | { RevocableAfter: any } | string | Uint8Array, enforcement: PalletPermission0PermissionEnforcementAuthority | { None: any } | { ControlledBy: any } | string | Uint8Array, recipientManager: Option<AccountId32> | null | Uint8Array | AccountId32 | string, weightSetter: Option<AccountId32> | null | Uint8Array | AccountId32 | string) => SubmittableExtrinsic<ApiType>, [BTreeMap<AccountId32, u16>, PalletPermission0PermissionStreamStreamAllocation, PalletPermission0PermissionStreamDistributionControl, PalletPermission0PermissionPermissionDuration, PalletPermission0PermissionRevocationTerms, PalletPermission0PermissionEnforcementAuthority, Option<AccountId32>, Option<AccountId32>]>;
       /**
        * Execute a permission through enforcement authority
        * The caller must be authorized as a controller or be the root key
@@ -443,7 +449,7 @@ declare module '@polkadot/api-base/types/submittable' {
        **/
       executePermission: AugmentedSubmittable<(permissionId: H256 | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [H256]>;
       /**
-       * Revoke a permission. The caller must met revocation constraints or be a root key.
+       * Revoke a permission. The caller must meet revocation constraints or be a root key.
        **/
       revokePermission: AugmentedSubmittable<(permissionId: H256 | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [H256]>;
       /**
@@ -457,9 +463,13 @@ declare module '@polkadot/api-base/types/submittable' {
        **/
       togglePermissionAccumulation: AugmentedSubmittable<(permissionId: H256 | string | Uint8Array, accumulating: bool | boolean | Uint8Array) => SubmittableExtrinsic<ApiType>, [H256, bool]>;
       /**
-       * Allows Delegator/Recipient to edit stream emission permission
+       * Allows a delegator to update the number of instances of a permission
        **/
-      updateEmissionPermission: AugmentedSubmittable<(permissionId: H256 | string | Uint8Array, newTargets: BTreeMap<AccountId32, u16>, newStreams: Option<BTreeMap<H256, Percent>> | null | Uint8Array | BTreeMap<H256, Percent>, newDistributionControl: Option<PalletPermission0PermissionEmissionDistributionControl> | null | Uint8Array | PalletPermission0PermissionEmissionDistributionControl | { Manual: any } | { Automatic: any } | { AtBlock: any } | { Interval: any } | string) => SubmittableExtrinsic<ApiType>, [H256, BTreeMap<AccountId32, u16>, Option<BTreeMap<H256, Percent>>, Option<PalletPermission0PermissionEmissionDistributionControl>]>;
+      updateNamespacePermission: AugmentedSubmittable<(permissionId: H256 | string | Uint8Array, maxInstances: u32 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [H256, u32]>;
+      /**
+       * Allows Delegator/Recipient to edit stream permission
+       **/
+      updateStreamPermission: AugmentedSubmittable<(permissionId: H256 | string | Uint8Array, newRecipients: Option<BTreeMap<AccountId32, u16>> | null | Uint8Array | BTreeMap<AccountId32, u16>, newStreams: Option<BTreeMap<H256, Percent>> | null | Uint8Array | BTreeMap<H256, Percent>, newDistributionControl: Option<PalletPermission0PermissionStreamDistributionControl> | null | Uint8Array | PalletPermission0PermissionStreamDistributionControl | { Manual: any } | { Automatic: any } | { AtBlock: any } | { Interval: any } | string, newRecipientManager: Option<Option<AccountId32>> | null | Uint8Array | Option<AccountId32> | AccountId32 | string, newWeightSetter: Option<Option<AccountId32>> | null | Uint8Array | Option<AccountId32> | AccountId32 | string) => SubmittableExtrinsic<ApiType>, [H256, Option<BTreeMap<AccountId32, u16>>, Option<BTreeMap<H256, Percent>>, Option<PalletPermission0PermissionStreamDistributionControl>, Option<Option<AccountId32>>, Option<Option<AccountId32>>]>;
       /**
        * Generic tx
        **/

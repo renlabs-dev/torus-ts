@@ -1,13 +1,24 @@
 "use client";
 
-import { Clock as ClockIcon } from "lucide-react";
 import React, {
-  useState,
-  useEffect,
-  useCallback,
-  useMemo,
   Suspense,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
 } from "react";
+
+import { Clock as ClockIcon } from "lucide-react";
+
+const DATE_FORMAT_OPTIONS: Intl.DateTimeFormatOptions = {
+  weekday: "short",
+  year: "numeric",
+  month: "short",
+  day: "numeric",
+  hour: "2-digit",
+  minute: "2-digit",
+  hour12: false,
+};
 
 export default function Clock() {
   const [date, setDate] = useState(new Date());
@@ -21,22 +32,9 @@ export default function Clock() {
     return () => clearInterval(timerID);
   }, [tick]);
 
-  const options = useMemo(
-    () => ({
-      weekday: "short",
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-      hour12: false,
-    }),
-    [],
-  );
-
   const dateTimeString = useMemo(
-    () => date.toLocaleString("en-GB", options as Intl.DateTimeFormatOptions),
-    [date, options],
+    () => date.toLocaleString("en-GB", DATE_FORMAT_OPTIONS),
+    [date],
   );
 
   return (

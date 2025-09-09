@@ -1,12 +1,14 @@
+import { formatToken } from "@torus-network/torus-utils/torus/token";
 import { Skeleton } from "@torus-ts/ui/components/skeleton";
 import { Coins } from "lucide-react";
 import { forwardRef, useImperativeHandle, useState } from "react";
 
 interface FeeLabelProps {
   accountConnected: boolean;
+  fee?: bigint; // Optional fee prop for simplified usage
 }
 
-export interface FeeLabelHandle {
+interface FeeLabelHandle {
   updateFee: (newFee: string | null) => void;
   setLoading: (loading: boolean) => void;
   getEstimatedFee: () => string | null;
@@ -22,33 +24,36 @@ function FeeMessage({ children }: { children: React.ReactNode }) {
 }
 
 export const FeeLabel = forwardRef<FeeLabelHandle, FeeLabelProps>(
-  ({ accountConnected }, ref) => {
+  ({ accountConnected, fee }, ref) => {
     const [estimatedFee, setEstimatedFee] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(false);
+
+    // Use prop fee when available, otherwise use internal state
+    const displayFee = fee !== undefined ? formatToken(fee, 12) : estimatedFee;
 
     useImperativeHandle(
       ref,
       () => ({
         updateFee: setEstimatedFee,
         setLoading: setIsLoading,
-        getEstimatedFee: () => estimatedFee,
+        getEstimatedFee: () => displayFee,
       }),
-      [estimatedFee],
+      [displayFee],
     );
 
     if (isLoading) {
       return <Skeleton className="h-5 w-64" />;
     }
 
-    if (!accountConnected && !estimatedFee) {
+    if (!accountConnected || !displayFee) {
       return <FeeMessage>Connect wallet to estimate fee</FeeMessage>;
     }
 
-    if (!estimatedFee) {
+    if (!displayFee) {
       return <FeeMessage>Add recipient to estimate fee</FeeMessage>;
     }
 
-    return <FeeMessage>Estimated fee: {estimatedFee} TORUS</FeeMessage>;
+    return <FeeMessage>Transaction fee: {displayFee} TORUS</FeeMessage>;
   },
 );
 

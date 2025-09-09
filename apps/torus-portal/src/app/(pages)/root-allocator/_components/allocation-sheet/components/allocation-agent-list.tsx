@@ -1,13 +1,10 @@
-import { X } from "lucide-react";
-
 import { smallAddress } from "@torus-network/torus-utils/torus/address";
-
 import { Button } from "@torus-ts/ui/components/button";
 import { Input } from "@torus-ts/ui/components/input";
 import { Label } from "@torus-ts/ui/components/label";
 import { ScrollArea } from "@torus-ts/ui/components/scroll-area";
-
 import { useDelegateAgentStore } from "~/stores/delegateAgentStore";
+import { X } from "lucide-react";
 
 export function AllocationAgentList() {
   const { delegatedAgents, getAgentPercentage, removeAgent, updatePercentage } =
@@ -23,8 +20,7 @@ export function AllocationAgentList() {
             .map((agent) => (
               <div
                 key={agent.address}
-                className={`border-muted-foreground/20 flex flex-col gap-1.5 border-b py-4 first:border-t
-                  last:border-b-0`}
+                className={`border-muted-foreground/20 flex flex-col gap-1.5 border-b py-4 first:border-t last:border-b-0`}
               >
                 <span className="font-medium">{agent.name}</span>
                 <div className="flex items-center justify-between">

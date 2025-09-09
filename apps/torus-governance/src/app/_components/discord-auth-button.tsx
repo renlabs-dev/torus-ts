@@ -1,11 +1,11 @@
 "use client";
 
+import { tryAsync } from "@torus-network/torus-utils/try-catch";
 import { Button } from "@torus-ts/ui/components/button";
 import type { ButtonProps } from "@torus-ts/ui/components/button";
 import { Icons } from "@torus-ts/ui/components/icons";
-import { tryAsync } from "@torus-network/torus-utils/try-catch";
-import { useDiscordAuth } from "../../../hooks/use-discord-auth";
 import * as React from "react";
+import { useDiscordAuth } from "../../../hooks/use-discord-auth";
 
 interface DiscordAuthButtonProps
   extends Omit<ButtonProps, "onClick" | "onError"> {
@@ -83,7 +83,7 @@ export function DiscordAuthButton({
     return (
       <div className={connectedClassName}>
         <div className="flex items-center gap-2">
-          <Icons.Discord className="h-4 w-4 text-muted-foreground" />
+          <Icons.Discord className="text-muted-foreground h-4 w-4" />
           <span className="text-muted-foreground">Discord ID:</span>
           <span className="font-mono">{discordId}</span>
         </div>

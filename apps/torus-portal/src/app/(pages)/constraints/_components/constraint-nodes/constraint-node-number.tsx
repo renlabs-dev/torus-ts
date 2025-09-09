@@ -1,14 +1,10 @@
 "use client";
 
-import { useCallback, useState } from "react";
-
-import { Clock, Coins, Hash, Minus, Plus } from "lucide-react";
-
 import { SS58_SCHEMA } from "@torus-network/sdk/types";
-
 import type { NumExprType } from "~/utils/dsl";
 import { NumExpr } from "~/utils/dsl";
-
+import { Clock, Coins, Hash, Minus, Plus } from "lucide-react";
+import { useCallback, useState } from "react";
 import { uintSchema } from "../constraint-validation-schemas";
 import {
   PermissionNodeContainer,
@@ -147,7 +143,7 @@ export function ConstraintNodeNumber({ id, data }: PermissionNodeNumberProps) {
       const validation = uintSchema.safeParse(value);
 
       if (!validation.success) {
-        setInputError(validation.error.errors[0]?.message ?? "Invalid value");
+        setInputError(validation.error.issues[0]?.message ?? "Invalid value");
         return;
       }
 
@@ -169,7 +165,7 @@ export function ConstraintNodeNumber({ id, data }: PermissionNodeNumberProps) {
 
       if (!validation.success && value.length > 0) {
         setAccountError(
-          validation.error.errors[0]?.message ?? "Invalid account ID",
+          validation.error.issues[0]?.message ?? "Invalid account ID",
         );
       } else {
         setAccountError("");

@@ -8,7 +8,7 @@ interface TransactionEmptyStateProps {
   variant?: "default" | "compact";
 }
 
-export function TransactionEmptyState({
+function TransactionEmptyState({
   title = "No transactions found",
   description,
   icon,
@@ -19,21 +19,20 @@ export function TransactionEmptyState({
 
   return (
     <div
-      className={`flex-1 flex flex-col items-center justify-center rounded-lg border bg-card
-        text-muted-foreground text-sm ${heightClass} ${className}`}
+      className={`bg-card text-muted-foreground flex flex-1 flex-col items-center justify-center rounded-lg border text-sm ${heightClass} ${className}`}
       aria-live="polite"
     >
       {icon ? (
-        <div className="mb-3 text-muted-foreground/60">{icon}</div>
+        <div className="text-muted-foreground/60 mb-3">{icon}</div>
       ) : (
-        <div className="mb-3 text-muted-foreground/40">
+        <div className="text-muted-foreground/40 mb-3">
           <Receipt size={48} />
         </div>
       )}
       <div className="text-center">
         <p className="font-medium">{title}</p>
         {description && (
-          <p className="text-xs text-muted-foreground/80 mt-1 max-w-[200px]">
+          <p className="text-muted-foreground/80 mt-1 max-w-[200px] text-xs">
             {description}
           </p>
         )}
@@ -47,16 +46,6 @@ export function TransactionsEmptyDefault() {
     <TransactionEmptyState
       title="No transactions found"
       description="Your transaction history will appear here once you start using your wallet"
-    />
-  );
-}
-
-export function TransactionsEmptyFiltered() {
-  return (
-    <TransactionEmptyState
-      title="No matching transactions"
-      description="Try adjusting your filters or clearing them to see more results"
-      variant="compact"
     />
   );
 }

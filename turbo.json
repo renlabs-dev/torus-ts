@@ -48,6 +48,24 @@
       "dependsOn": ["^build"],
       "outputs": []
     },
+    "test:chain-query": {
+      "dependsOn": ["^build"],
+      "outputs": [],
+      "cache": false
+    },
+    "test:chain-tx": {
+      "dependsOn": ["^build"],
+      "outputs": [],
+      "cache": false
+    },
+    "test:chain": {
+      "dependsOn": ["^build", "test:chain-query", "test:chain-tx"],
+      "outputs": [],
+      "cache": false
+    },
+    "test:all": {
+      "dependsOn": ["test", "test:chain"]
+    },
     "publish": {
       "dependsOn": ["build", "test"],
       "outputs": []
@@ -85,7 +103,8 @@
     "NEXT_PUBLIC_WALLET_CONNECT_ID",
     "NEXT_PUBLIC_CHAIN_ENV",
     "NOTIFICATIONS_START_BLOCK",
-    "TORUS_RPC_URLS"
+    "TORUS_RPC_URLS",
+    "TEST_CHAIN_RPC_URL"
   ],
   "globalPassThroughEnv": [
     "NODE_ENV",

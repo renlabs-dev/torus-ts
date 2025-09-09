@@ -94,7 +94,7 @@ export function AgentApplicationExpandedView(props: Readonly<CustomContent>) {
 
       <div className="animate-fade-down flex w-full flex-col md:flex-row md:justify-between md:gap-8">
         {/* Main Content Column */}
-        <div className="flex h-full w-full flex-col gap-8 md:w-2/3 mb-4">
+        <div className="mb-4 flex h-full w-full flex-col gap-8 md:w-2/3">
           <ExpandedViewContent body={content.body} title={content.title} />
           <ViewComment itemType="AGENT_APPLICATION" id={content.id} />
           <CreateComment id={content.id} itemType="AGENT_APPLICATION" />
@@ -102,10 +102,7 @@ export function AgentApplicationExpandedView(props: Readonly<CustomContent>) {
         </div>
 
         {/* Right/Bottom Column */}
-        <div
-          className="flex flex-col gap-4 w-full md:w-1/3 md:animate-fade-down
-            md:animate-delay-[1400ms]"
-        >
+        <div className="md:animate-fade-down md:animate-delay-[1400ms] flex w-full flex-col gap-4 md:w-1/3">
           <CreateCadreCandidates />
           <DetailsCard {...detailsCardProps} />
           <AgentApplicationVoteTypeCard

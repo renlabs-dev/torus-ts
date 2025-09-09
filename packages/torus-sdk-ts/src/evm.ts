@@ -4,12 +4,10 @@ import {
   decodeAddress,
   encodeAddress,
 } from "@polkadot/util-crypto";
+import { tryAsync, trySync } from "@torus-network/torus-utils/try-catch";
 import { assert } from "tsafe";
 import type { Chain, WalletClient } from "viem";
 import { encodeFunctionData } from "viem";
-
-import { tryAsync, trySync } from "@torus-network/torus-utils/try-catch";
-
 import type { SS58Address } from "./types/address.js";
 
 export { waitForTransactionReceipt } from "@wagmi/core";

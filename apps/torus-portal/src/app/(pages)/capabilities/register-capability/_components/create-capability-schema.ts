@@ -1,9 +1,8 @@
-import { z } from "zod";
-
 import {
   isValidNamespaceSegment,
   namespacePathParser,
 } from "@torus-network/sdk/types";
+import { z } from "zod";
 
 export const HTTP_METHODS = [
   "get",

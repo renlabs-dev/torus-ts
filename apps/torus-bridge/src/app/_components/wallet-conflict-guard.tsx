@@ -10,65 +10,82 @@ import {
   CardTitle,
 } from "@torus-ts/ui/components/card";
 import type { PropsWithChildren } from "react";
-import { useEffect, useMemo, useState, useCallback } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 interface Eip1193Provider {
   isCoinbaseWallet?: boolean;
   providers?: Eip1193Provider[];
 }
 
+function isTronLinkInstalled(): boolean {
+  if (typeof window === "undefined") return false;
+  const maybeWindow = window as unknown as Record<string, unknown>;
+  // TronLink typically injects either `tronLink` and/or `tronWeb`
+  const hasTronLinkObject = Boolean(maybeWindow.tronLink);
+  const hasTronWebObject = Boolean(maybeWindow.tronWeb);
+  return hasTronLinkObject || hasTronWebObject;
+}
+
 function isCoinbaseWalletInstalled(): boolean {
-  // Check if we're in a browser environment
-  if (typeof window === "undefined" || !window.ethereum) {
+  // Browser environment check
+  if (typeof window === "undefined") {
     return false;
   }
 
-  const ethereum = window.ethereum as unknown as Eip1193Provider;
+  const win = window as unknown as Record<string, unknown>;
 
-  // Handle single provider case
-  if (!ethereum.providers) {
-    return Boolean(ethereum.isCoinbaseWallet);
+  // Coinbase Wallet often exposes globals
+  const hasGlobalFlag = Boolean(
+    win.coinbaseWalletExtension ?? win.walletLinkExtension,
+  );
+
+  const ethereum = win.ethereum as
+    | (Eip1193Provider & Record<string, unknown>)
+    | undefined;
+
+  if (!ethereum) {
+    return hasGlobalFlag;
   }
 
-  // Handle multiple providers case
-  const providers = ethereum.providers;
-  if (!Array.isArray(providers)) {
-    return false;
-  }
+  const providerHasCoinbaseFlag = (provider: unknown): boolean => {
+    if (!provider || typeof provider !== "object") return false;
+    const p = provider as Record<string, unknown>;
+    const direct = Boolean(p.isCoinbaseWallet ?? p.isWalletLink);
+    const nested = Array.isArray(p.providers)
+      ? p.providers.some((sub) => providerHasCoinbaseFlag(sub))
+      : false;
+    return direct || nested;
+  };
 
-  return providers.some((provider: unknown) => {
-    if (!provider || typeof provider !== "object") {
-      return false;
-    }
+  // Single or multiple providers
+  const hasFlagOnEthereum = providerHasCoinbaseFlag(ethereum);
+  const hasFlagOnAnyProvider = Array.isArray(ethereum.providers)
+    ? ethereum.providers.some((p) => providerHasCoinbaseFlag(p))
+    : false;
 
-    const typedProvider = provider as Record<string, unknown>;
-
-    // Check nested providers (some wallets wrap other wallets)
-    if (Array.isArray(typedProvider.providers)) {
-      return typedProvider.providers.some((subProvider: unknown) => {
-        if (!subProvider || typeof subProvider !== "object") {
-          return false;
-        }
-        return Boolean(
-          (subProvider as Record<string, unknown>).isCoinbaseWallet,
-        );
-      });
-    }
-
-    // Check direct provider
-    return Boolean(typedProvider.isCoinbaseWallet);
-  });
+  return hasGlobalFlag || hasFlagOnEthereum || hasFlagOnAnyProvider;
 }
 
 function useWalletConflictDetection() {
   const [isReady, setIsReady] = useState(false);
   const [hasPhantom, setHasPhantom] = useState(false);
   const [hasCoinbase, setHasCoinbase] = useState(false);
+  const [hasTronLink, setHasTronLink] = useState(false);
 
-  const hasConflict = useMemo(
-    () => hasPhantom && hasCoinbase,
-    [hasPhantom, hasCoinbase],
-  );
+  const hasConflict = useMemo(() => {
+    const enabledCount = [hasPhantom, hasCoinbase, hasTronLink].filter(
+      Boolean,
+    ).length;
+    return enabledCount >= 2;
+  }, [hasPhantom, hasCoinbase, hasTronLink]);
+
+  const detectedWallets = useMemo(() => {
+    const names: string[] = [];
+    if (hasPhantom) names.push("Phantom");
+    if (hasCoinbase) names.push("Coinbase Wallet");
+    if (hasTronLink) names.push("TronLink");
+    return names;
+  }, [hasPhantom, hasCoinbase, hasTronLink]);
 
   useEffect(() => {
     let isActive = true;
@@ -77,6 +94,7 @@ function useWalletConflictDetection() {
 
       setHasPhantom(phantomWallet().installed ?? false);
       setHasCoinbase(isCoinbaseWalletInstalled());
+      setHasTronLink(isTronLinkInstalled());
       setTimeout(() => isActive && setIsReady(true), 300);
     };
 
@@ -87,13 +105,15 @@ function useWalletConflictDetection() {
     };
   }, []);
 
-  return { isReady, hasConflict };
+  return { isReady, hasConflict, detectedWallets };
 }
 
 function WalletConflictOverlay({
   onCopyExtensionsUrl,
+  detectedWallets,
 }: {
   onCopyExtensionsUrl: () => void;
+  detectedWallets: string[];
 }) {
   return (
     <div className="mx-auto max-w-xl p-6">
@@ -101,15 +121,15 @@ function WalletConflictOverlay({
         <CardHeader>
           <CardTitle>Wallet conflict detected</CardTitle>
           <CardDescription>
-            Two wallet extensions are enabled (Phantom and Coinbase Wallet).
-            This makes it unclear which one should respond and can break the
+            Multiple wallet extensions are enabled ({detectedWallets.join(", ")}
+            ). This makes it unclear which one should respond and can break the
             Bridge.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
             <p className="font-semibold">What’s happening</p>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-muted-foreground text-sm">
               With both wallets active, they compete to handle account requests
               (for example, eth_accounts). This is a known wallet-provider issue
               and is being worked on upstream.
@@ -118,15 +138,9 @@ function WalletConflictOverlay({
 
           <div className="space-y-2">
             <p className="font-semibold">Quick fix</p>
-            <ul className="list-disc pl-5 space-y-1 text-sm text-muted-foreground">
+            <ul className="text-muted-foreground list-disc space-y-1 pl-5 text-sm">
               <li>Keep only one wallet extension enabled at a time.</li>
-              <li>
-                If you want to use{" "}
-                <span className="font-medium">Coinbase Wallet</span>, disable
-                Phantom. If you want{" "}
-                <span className="font-medium">Phantom</span>, disable Coinbase
-                Wallet. Then reload this page.
-              </li>
+              <li>Disable all but your preferred wallet, then reload.</li>
             </ul>
           </div>
 
@@ -134,7 +148,7 @@ function WalletConflictOverlay({
             <p className="font-semibold">
               How to disable an extension (Chrome/Brave/Edge)
             </p>
-            <ol className="list-decimal pl-5 space-y-1 text-sm text-muted-foreground">
+            <ol className="text-muted-foreground list-decimal space-y-1 pl-5 text-sm">
               <li>
                 Open{" "}
                 <button
@@ -145,7 +159,7 @@ function WalletConflictOverlay({
                 </button>{" "}
                 (click to copy)
               </li>
-              <li>Find “Phantom” or “Coinbase Wallet”</li>
+              <li>Find the listed wallet extensions</li>
               <li>Toggle it off (or remove)</li>
               <li>Reload this page</li>
             </ol>
@@ -165,7 +179,8 @@ function WalletConflictOverlay({
 }
 
 export function WalletConflictGuard({ children }: PropsWithChildren) {
-  const { isReady, hasConflict } = useWalletConflictDetection();
+  const { isReady, hasConflict, detectedWallets } =
+    useWalletConflictDetection();
 
   const handleCopyExtensionsUrl = useCallback(async () => {
     await navigator.clipboard.writeText("chrome://extensions");
@@ -174,7 +189,10 @@ export function WalletConflictGuard({ children }: PropsWithChildren) {
   if (!isReady) return null;
   if (hasConflict) {
     return (
-      <WalletConflictOverlay onCopyExtensionsUrl={handleCopyExtensionsUrl} />
+      <WalletConflictOverlay
+        onCopyExtensionsUrl={handleCopyExtensionsUrl}
+        detectedWallets={detectedWallets}
+      />
     );
   }
   return <>{children}</>;

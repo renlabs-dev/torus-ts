@@ -23,7 +23,7 @@ export const metadata = () =>
 
 export default function HomePage() {
   return (
-    <div className="flex w-full flex-col gap-4 pb-16 animate-fade">
+    <div className="animate-fade flex w-full flex-col gap-4 pb-16">
       <div className="flex w-full flex-col justify-between gap-3 pb-2 lg:flex-row">
         <FilterContent
           statusOptions={[

@@ -1,4 +1,4 @@
-h1:/flweUwXq4w5R+Oy4VWmoFAr1qMR+IvLolAFFwIpdOE=
+h1:KqJNIY4WDqewCRbHN0G9bWDvvjsmyxa7z5MwFL1n3aA=
 20250331002414.sql h1:fO+bA46lvxVUFMADmjjiAsA57EqYc+NSmcWu+KxRoEw=
 20250331002504.sql h1:5o1HYuLb8zySkJZIoiVeIwk/FDTGxBoFA9jFsM1t7cw=
 20250331020820.sql h1:arLqO+apCTs27kacBxpD/s/vrRkRkhB+HXRiVuIeDmU=
@@ -14,3 +14,9 @@ h1:/flweUwXq4w5R+Oy4VWmoFAr1qMR+IvLolAFFwIpdOE=
 20250719232839_agent-cascade-delete.sql h1:7tgIQMtdEiRdY3W3uDQhGqKZwgyw4vXJdfXo3Chi77g=
 20250803041431_stream-view.sql h1:tJjJ0WgMwk6LuTRX14bcaKBRP/OmbU8q5ukq52CbCzs=
 20250805172619_target-stream-id.sql h1:u5qKVZ9DHBHMYyYR14H8oY8L6XKFRuSQPnaU/Zrwc94=
+20250813031009_accumulated-stream-amounts.sql h1:JsqvZlRZ17poyGsmHsf+WuXmoK+F4BuF8g4uTgywN6U=
+20250814170621_fix-accumulatedStreamAmounts-pk.sql h1:gdvFVfFjgo1z4H+XYoBfyrOtX3/3Nwl5H/rItI73ge0=
+20250814214020_explode-my-problems.sql h1:bW8TIVMQKHXy6yMiLQQrngDW2tabNUQZxISBvy4CFz4=
+20250814214240_recreate-problem.sql h1:PppQzKBOvlp+Qvjp9+aR1kHN+O4ldgkxHiWuCHzo8Hs=
+20250828184403_chain-spec-24.sql h1:Pt7Ohmdjl+Oij3gY1j14TS+Kqx7O4iJokXyjlz/xwAU=
+20250829160959_chain-spec-25.sql h1:sEKVLyq00GGPEVp6d/G/nzlpOJW6BO9DE2ZRZoIPZ08=

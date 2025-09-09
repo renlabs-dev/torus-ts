@@ -2,8 +2,8 @@
 /* eslint-disable @typescript-eslint/no-empty-function */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import type { Err, Result } from "./result/index.js";
 import { nowISOString } from "./date-time.js";
+import type { Err, Result } from "./result/index.js";
 
 function getCallerInfo(): string {
   const stack = new Error().stack;

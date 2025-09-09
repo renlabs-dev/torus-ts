@@ -1,5 +1,4 @@
 import "@torus-ts/ui/globals.css";
-
 import { GoogleAnalytics } from "@next/third-parties/google";
 
 import { Geist_Mono as GeistMono } from "next/font/google";
@@ -12,7 +11,8 @@ import { createSeoMetadata } from "@torus-ts/ui/components/seo";
 
 import { env, EnvScript } from "~/env";
 import { TRPCReactProvider } from "~/trpc/react";
-
+import type { Metadata } from "next";
+import PlausibleProvider from "next-plausible";
 import SidebarContainer from "../_components/sidebar/sidebar-container";
 
 export const metadata = () =>
@@ -44,19 +44,24 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <Layout font={geistMono} headScripts={[EnvScript]}>
-      <ReactQueryProvider>
-        <TorusProvider
-          wsEndpoint={env("NEXT_PUBLIC_TORUS_RPC_URL")}
-          torusCacheUrl={env("NEXT_PUBLIC_TORUS_CACHE_URL")}
-        >
-          <TRPCReactProvider>
-            <SidebarContainer>{children}</SidebarContainer>
-            <Toaster />
-            <GoogleAnalytics gaId="G-7YCMH64Q4J" />
-          </TRPCReactProvider>
-        </TorusProvider>
-      </ReactQueryProvider>
-    </Layout>
+    <PlausibleProvider
+      domain="portal.torus.network,rollup.torus.network"
+      trackOutboundLinks
+    >
+      <Layout font={geistMono} headScripts={[EnvScript]}>
+        <ReactQueryProvider>
+          <TorusProvider
+            wsEndpoint={env("NEXT_PUBLIC_TORUS_RPC_URL")}
+            torusCacheUrl={env("NEXT_PUBLIC_TORUS_CACHE_URL")}
+          >
+            <TRPCReactProvider>
+              <SidebarContainer>{children}</SidebarContainer>
+              <Toaster />
+              <GoogleAnalytics gaId="G-7YCMH64Q4J" />
+            </TRPCReactProvider>
+          </TorusProvider>
+        </ReactQueryProvider>
+      </Layout>
+    </PlausibleProvider>
   );
 }

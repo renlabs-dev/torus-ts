@@ -31,6 +31,7 @@
     "@torus-ts/ui": "workspace:*",
     "lucide-react": "catalog:",
     "next": "catalog:",
+    "next-plausible": "catalog:",
     "react": "catalog:react19",
     "react-dom": "catalog:react19",
     "react-hook-form": "^7.53.2",
@@ -38,15 +39,12 @@
     "zod": "catalog:"
   },
   "devDependencies": {
-    "@next/eslint-plugin-next": "catalog:",
-    "@tailwindcss/typography": "catalog:",
     "@types/three": "catalog:",
     "@torus-ts/eslint-config": "workspace:*",
     "@torus-ts/tsconfig": "workspace:*",
     "@types/node": "catalog:",
     "@types/react": "catalog:react19",
     "@types/react-dom": "catalog:react19",
-    "jiti": "catalog:",
     "postcss": "catalog:",
     "tailwindcss": "catalog:",
     "typescript": "catalog:"

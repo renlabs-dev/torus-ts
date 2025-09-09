@@ -22,16 +22,13 @@
   "dependencies": {
     "@torus-network/sdk": "workspace:*",
     "@torus-network/torus-utils": "workspace:*",
-    "next": "catalog:",
-    "react": "catalog:react19",
-    "react-dom": "catalog:react19"
+    "react": "catalog:react19"
   },
   "devDependencies": {
     "@torus-ts/eslint-config": "workspace:*",
     "@torus-ts/tsconfig": "workspace:*",
     "@types/node": "catalog:",
     "@types/react": "catalog:react19",
-    "@types/react-dom": "catalog:react19",
     "typescript": "catalog:"
   }
 }

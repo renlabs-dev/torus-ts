@@ -1,0 +1,73 @@
+"use client";
+
+import { AgentCard } from "@torus-ts/ui/components/agent-card/agent-card";
+import { AgentItemSkeleton } from "@torus-ts/ui/components/agent-card/agent-card-skeleton-loader";
+import { useQueryAgentMetadata } from "~/hooks/use-agent-metadata";
+import { useBlobUrl } from "~/hooks/use-blob-url";
+import { api } from "~/trpc/react";
+import type { UpdateAgentForm } from "./update-agent-form-schema";
+
+interface UpdateAgentPreviewProps {
+  agentKey: string;
+  form: UpdateAgentForm;
+}
+
+export function UpdateAgentPreview({
+  agentKey,
+  form,
+}: UpdateAgentPreviewProps) {
+  const { data: agent, isLoading } = api.agent.byKeyLastBlock.useQuery(
+    { key: agentKey },
+    {
+      enabled: !!agentKey,
+      refetchOnWindowFocus: false,
+      staleTime: Infinity,
+    },
+  );
+
+  const { data: agentMetadata } = useQueryAgentMetadata(
+    agent?.metadataUri ?? "",
+    {
+      fetchImages: true,
+      enabled: !!agent?.metadataUri,
+    },
+  );
+
+  const formValues = form.getValues();
+  const previewImage = form.watch("imageFile");
+  const previewImageBlobUrl = useBlobUrl(previewImage);
+  const currentImageBlobUrl = useBlobUrl(agentMetadata?.images.icon);
+
+  if (isLoading || !agent) {
+    return (
+      <div className="mx-auto my-6 max-w-lg">
+        <AgentItemSkeleton />
+      </div>
+    );
+  }
+
+  const socials: Record<string, string> = {};
+  if (formValues.socials.discord) socials.discord = formValues.socials.discord;
+  if (formValues.socials.twitter) socials.twitter = formValues.socials.twitter;
+  if (formValues.socials.github) socials.github = formValues.socials.github;
+  if (formValues.socials.telegram)
+    socials.telegram = formValues.socials.telegram;
+  if (formValues.website) socials.website = formValues.website;
+
+  return (
+    <div className="mx-auto my-6 max-w-lg">
+      <div className="pointer-events-none relative">
+        <AgentCard
+          name={formValues.name ?? ""}
+          agentKey={agentKey}
+          iconUrl={previewImageBlobUrl ?? currentImageBlobUrl}
+          shortDescription={formValues.shortDescription}
+          socials={socials}
+          website={formValues.website}
+          percComputedWeight={null}
+          showHoverEffect={false}
+        />
+      </div>
+    </div>
+  );
+}

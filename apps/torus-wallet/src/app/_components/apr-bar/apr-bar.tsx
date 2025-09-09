@@ -1,25 +1,14 @@
 "use client";
 
-import { Fragment, useMemo } from "react";
-
 import { formatToken } from "@torus-network/torus-utils/torus/token";
-
 import { useGetTorusPrice } from "@torus-ts/query-provider/hooks";
-
 import { useAPR } from "~/hooks/useAPR";
 import { useRewardIntervalProgress } from "~/hooks/useRewardInterval";
-
+import { Fragment, useMemo } from "react";
 import { APRBarBase } from "./apr-bar-base";
 import { AppBarDataGroup, AppBarSeparator } from "./apr-bar-shared";
 
-export interface APRData {
-  apr: number;
-  totalStake: bigint;
-  stakedPercentage: number;
-  usdPrice: number;
-}
-
-export interface APRInfo {
+interface APRInfo {
   label: string;
   value: string;
   unit?: string;

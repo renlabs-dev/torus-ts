@@ -1,19 +1,15 @@
 "use client";
 
-import { memo, useCallback, useEffect, useMemo, useState } from "react";
-
 import { fetchAgentMetadata } from "@torus-network/sdk/metadata";
 import { smallAddress } from "@torus-network/torus-utils/torus/address";
 import { tryAsync } from "@torus-network/torus-utils/try-catch";
-
 import { AgentCard as UIAgentCard } from "@torus-ts/ui/components/agent-card/agent-card";
 import { AgentItemSkeleton } from "@torus-ts/ui/components/agent-card/agent-card-skeleton-loader";
 import { Card } from "@torus-ts/ui/components/card";
-
-import { useWeeklyUsdCalculation } from "~/hooks/use-weekly-usd";
+import { useMultipleAccountEmissions } from "~/hooks/use-multiple-account-emissions";
 import { calculatePostPenaltyEmission } from "~/hooks/use-post-penalty-emission";
 import { api } from "~/trpc/react";
-
+import { memo, useCallback, useEffect, useMemo, useState } from "react";
 import type {
   CachedAgentData,
   ComputedWeightsList,
@@ -47,18 +43,25 @@ export const AgentCard = memo(
     const [error, setError] = useState<Error | null>(null);
     const [weightFactor, setWeightFactor] = useState<number>(0);
 
-    const { displayTokensPerWeek, isLoading: isWeeklyUsdLoading } =
-      useWeeklyUsdCalculation({
-        agentKey: fullAddress ?? nodeId,
-        weightFactor: 0, // No weight penalty in portal
-      });
-
     const computedWeight = useMemo(() => {
       if (!allComputedWeights) return null;
       return allComputedWeights.find((weight) => weight.agentKey === nodeId);
     }, [allComputedWeights, nodeId]);
 
     const agentQuery = api.agent.byKeyLastBlock.useQuery({ key: nodeId });
+
+    const comprehensiveEmissions = useMultipleAccountEmissions({
+      accountIds: fullAddress ? [fullAddress] : [],
+      weightFactors:
+        agentQuery.data?.weightFactor !== null && fullAddress
+          ? { [fullAddress]: agentQuery.data?.weightFactor ?? null }
+          : undefined,
+    });
+
+    const agentEmissionData = fullAddress
+      ? comprehensiveEmissions[fullAddress]
+      : undefined;
+    const isEmissionsLoading = agentEmissionData?.isLoading ?? true;
 
     const fetchMetadata = useCallback(async (metadataUri: string) => {
       const [metadataError, metadata] = await tryAsync(
@@ -76,6 +79,7 @@ export const AgentCard = memo(
     // Main effect to handle cached vs fresh data
     useEffect(() => {
       if (!nodeId) {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setIsLoading(false);
         return;
       }
@@ -122,6 +126,7 @@ export const AgentCard = memo(
 
       if (agentQuery.error) {
         console.error("Error fetching agent data:", agentQuery.error);
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setError(new Error("Failed to fetch agent data"));
         setIsLoading(false);
         return;
@@ -237,7 +242,7 @@ export const AgentCard = memo(
 
     if (error) {
       return (
-        <Card className="flex-1 flex flex-col z-50 border-none">
+        <Card className="z-50 flex flex-1 flex-col border-none">
           <p className="text-red-500">Error: {error.message}</p>
         </Card>
       );
@@ -245,7 +250,7 @@ export const AgentCard = memo(
 
     if (isLoading) {
       return (
-        <div className="flex-1 flex flex-col z-50 w-full">
+        <div className="z-50 flex w-full flex-1 flex-col">
           <AgentItemSkeleton />
         </div>
       );
@@ -262,8 +267,8 @@ export const AgentCard = memo(
         percComputedWeight={weightFactor}
         prePenaltyPercent={computedWeight?.percComputedWeight ?? null}
         penaltyFactor={agentQuery.data?.weightFactor ?? null}
-        tokensPerWeek={displayTokensPerWeek}
-        isLoading={isWeeklyUsdLoading}
+        emissionData={agentEmissionData}
+        isLoading={isEmissionsLoading}
         href={`/root-allocator/agent/${nodeId}`}
       />
     );
