@@ -1,13 +1,9 @@
 "use client";
 
-import { createSeoMetadata } from "@torus-ts/ui/components/seo";
-import { env } from "~/env";
-import { useCallback, useEffect, useRef, useState } from "react";
-
-import { useRouter, useSearchParams } from "next/navigation";
 import { useTorus } from "@torus-ts/torus-provider";
 import { KeyboardShortcutBadge } from "@torus-ts/ui/components/keyboard-shortcut-badge";
 import { Loading } from "@torus-ts/ui/components/loading";
+import { createSeoMetadata } from "@torus-ts/ui/components/seo";
 import { env } from "~/env";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";

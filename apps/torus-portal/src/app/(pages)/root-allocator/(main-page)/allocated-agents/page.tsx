@@ -3,10 +3,9 @@
 import { createSeoMetadata } from "@torus-ts/ui/components/seo";
 import { env } from "~/env";
 import { useDelegateAgentStore } from "~/stores/delegateAgentStore";
-
 import { AgentCard } from "../../_components/agent-card";
+import { AgentViewToggle } from "../../_components/agent-view-toggle";
 import { Filter } from "../../_components/filter-content";
-import { ViewSelector } from "../../_components/view-selector";
 
 export const metadata = () =>
   createSeoMetadata({
@@ -32,7 +31,7 @@ export default function AllocatedAgentsPage() {
     <div className="flex flex-col space-y-6">
       <div className="flex w-full flex-col-reverse items-center justify-between gap-4 md:flex-row">
         <Filter />
-        <ViewSelector />
+        <AgentViewToggle />
       </div>
 
       {delegatedAgents.length === 0 ? (

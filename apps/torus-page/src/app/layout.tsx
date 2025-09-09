@@ -1,10 +1,8 @@
 import "@torus-ts/ui/globals.css";
 import { GoogleAnalytics } from "@next/third-parties/google";
-import { EnvScript, env } from "~/env";
-
-import { createSeoMetadata } from "@torus-ts/ui/components/seo";
 import { Layout } from "@torus-ts/ui/components/layout";
-import type { Metadata } from "next";
+import { createSeoMetadata } from "@torus-ts/ui/components/seo";
+import { env, EnvScript } from "~/env";
 import PlausibleProvider from "next-plausible";
 import { Fira_Mono as FiraMono } from "next/font/google";
 import * as React from "react";

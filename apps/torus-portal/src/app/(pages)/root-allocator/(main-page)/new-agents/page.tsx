@@ -1,8 +1,7 @@
 import { createSeoMetadata } from "@torus-ts/ui/components/seo";
 import { env } from "~/env";
 import { parseSearchParams } from "~/utils/parse-search-params";
-
-import { AgentList } from "../../_components/agent-list";
+import { InfiniteAgentList } from "../../_components/infinite-agent-list";
 import { PageLayout } from "../../_components/page-layout";
 
 export const metadata = () =>
@@ -29,8 +28,8 @@ export default async function Page(props: {
   const { page, search } = parseSearchParams(searchParams);
 
   return (
-    <PageLayout search={search}>
-      <AgentList page={page} search={search} orderBy="createdAt.desc" />
+    <PageLayout search={search} currentView="new">
+      <InfiniteAgentList search={search} orderBy="createdAt.desc" />
     </PageLayout>
   );
 }

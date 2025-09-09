@@ -1,8 +1,6 @@
 "use client";
 
 import { createSeoMetadata } from "@torus-ts/ui/components/seo";
-import { env } from "~/env";
-import { useState } from "react";
 import {
   Tabs,
   TabsContent,
@@ -11,6 +9,7 @@ import {
 } from "@torus-ts/ui/components/tabs";
 import PortalFormContainer from "~/app/_components/portal-form-container";
 import PortalFormHeader from "~/app/_components/portal-form-header";
+import { env } from "~/env";
 import { useState } from "react";
 import AllSignalsView from "./_components/all-signals-view";
 import DeletedSignalsView from "./_components/deleted-signals-view";
