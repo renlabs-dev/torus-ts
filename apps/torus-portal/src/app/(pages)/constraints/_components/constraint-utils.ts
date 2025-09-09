@@ -138,7 +138,7 @@ export function validateConstraintForm(
     const validationResult = constraintValidationSchema.safeParse(constraint);
     if (!validationResult.success) {
       // Convert Zod errors to our format
-      validationResult.error.errors.forEach((error) => {
+      validationResult.error.issues.forEach((error) => {
         errors.push({
           nodeId: "constraint",
           field: error.path.join("."),

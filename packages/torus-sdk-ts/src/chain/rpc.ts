@@ -7,7 +7,7 @@ import { makeErr, makeOk } from "@torus-network/torus-utils/result";
 import { tryAsync, trySync } from "@torus-network/torus-utils/try-catch";
 import type { Blocks, SS58Address } from "../types/index.js";
 import { namespacePathParser, sb_blocks } from "../types/index.js";
-import type { Api } from "./common/fees.js";
+import type { Api } from "./common/types.js";
 
 export interface LastBlock {
   blockHeader: Header;

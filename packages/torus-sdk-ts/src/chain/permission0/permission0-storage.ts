@@ -18,8 +18,8 @@ import {
   sb_option,
   sb_some,
 } from "../../types/index.js";
-import type { Api } from "../common/fees.js";
-import { SbQueryError } from "../common/fees.js";
+import { SbQueryError } from "../common/errors.js";
+import type { Api } from "../common/types.js";
 import type {
   AccumulatedStreamEntry,
   CuratorPermissions,

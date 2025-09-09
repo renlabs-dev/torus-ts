@@ -48,8 +48,18 @@
       "dependsOn": ["^build"],
       "outputs": []
     },
-    "test:chain": {
+    "test:chain-query": {
       "dependsOn": ["^build"],
+      "outputs": [],
+      "cache": false
+    },
+    "test:chain-tx": {
+      "dependsOn": ["^build"],
+      "outputs": [],
+      "cache": false
+    },
+    "test:chain": {
+      "dependsOn": ["^build", "test:chain-query", "test:chain-tx"],
       "outputs": [],
       "cache": false
     },

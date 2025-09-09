@@ -1,5 +1,9 @@
 // ==== Common utilities ====
+export * from "./common/types.js";
+export * from "./common/errors.js";
+export * from "./common/storage-maps.js";
 export * from "./common/fees.js";
+export * from "./common/delegation-tree-builder.js";
 
 // ==== Balance queries ====
 export * from "./balances.js";
@@ -22,10 +26,7 @@ export * from "./emission0/emission0-extrinsics.js";
 export * from "./permission0/permission0-types.js";
 export * from "./permission0/permission0-storage.js";
 export * from "./permission0/permission0-extrinsics.js";
-
-// ==== Tree building utilities ====
-export * from "./common/delegation-tree-builder.js";
-export * from "./common/fees.js";
+export * from "./permission0/permission0-events.js";
 
 // ==== RPC utilities ====
 export * from "./rpc.js";

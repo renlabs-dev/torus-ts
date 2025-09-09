@@ -2,7 +2,8 @@ import { Enum as SubstrateEnum } from "@polkadot/types";
 import type { Equals } from "tsafe";
 import { assert } from "tsafe";
 import { z } from "zod";
-import { sb_number } from "./zod.js";
+import { sb_number } from "./primitives.js";
+import type { ZodRawCreateParams } from "./struct.js";
 
 export type BaseSchema = z.ZodType<unknown, z.ZodTypeDef, unknown>;
 
@@ -15,7 +16,7 @@ export type MapZodVariantsToRaw<V extends ZodSubstrateEnumVariants> = {
 }[keyof V & string];
 
 /**
- * Schema validator for Substrate Enum types.
+ * Schema validator for Substrate `Enum` types.
  */
 export const Enum_schema = z.custom<SubstrateEnum>(
   (val) => val instanceof SubstrateEnum,
@@ -23,10 +24,10 @@ export const Enum_schema = z.custom<SubstrateEnum>(
 );
 
 /**
- * Parser for complex Substrate Enums with typed variants.
+ * Parser for complex Substrate `Enum` types with typed variants.
  *
  * Each variant can contain data that is validated by its associated schema.
- * The result follows the Rust-like enum pattern: {VariantName: data}.
+ * The result follows the Rust-like enum pattern: `{VariantName: data}`.
  *
  * @param variants - Object mapping variant names to their schemas
  * @returns Parser that transforms to discriminated union type
@@ -38,7 +39,7 @@ export const Enum_schema = z.custom<SubstrateEnum>(
  *   Inactive: sb_null,
  *   Pending: sb_string,
  * });
- * // Returns: {Active: {since: number}} | {Inactive: null} | {Pending: string}
+ * // Returns: `{Active: {since: number}} | {Inactive: null} | {Pending: string}`
  * ```
  */
 export const sb_enum = <Variants extends ZodSubstrateEnumVariants>(
@@ -72,6 +73,23 @@ export const sb_enum = <Variants extends ZodSubstrateEnumVariants>(
     // 4) Wrap as { Variant: value }
     return { [variantName]: parsedInner } as MapZodVariantsToRaw<Variants>;
   });
+
+export const sb_basic_enum = <
+  U extends string,
+  T extends Readonly<[U, ...U[]]>,
+>(
+  variants: T,
+  params: ZodRawCreateParams = {},
+) =>
+  Enum_schema.transform((val, ctx) => {
+    if (!val.isBasic) {
+      ctx.addIssue({
+        code: "custom",
+        message: `Enum is not basic (no values)`,
+      });
+    }
+    return val.type;
+  }).pipe(z.enum(variants, params));
 
 function _test() {
   const _s1 = sb_enum({ A: sb_number, B: sb_number });
