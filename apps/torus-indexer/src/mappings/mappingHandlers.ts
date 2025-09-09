@@ -1,7 +1,7 @@
 import assert from "assert";
-import { Balance } from "@polkadot/types/interfaces";
+import type { Balance } from "@polkadot/types/interfaces";
 import { decodeAddress } from "@polkadot/util-crypto";
-import {
+import type {
   SubstrateBlock,
   SubstrateEvent,
   SubstrateExtrinsic,
@@ -45,7 +45,7 @@ export async function handleEvent(event: SubstrateEvent): Promise<void> {
     date: event.block.timestamp,
     fromId: fromAccount.id,
     toId: toAccount.id,
-    amount: (amount as Balance).toBigInt(),
+    amount: (amount as unknown as Balance).toBigInt(),
   });
 
   fromAccount.lastTransferBlock = blockNumber;

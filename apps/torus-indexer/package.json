@@ -1,36 +1,47 @@
 {
   "name": "torus-indexer",
   "version": "1.0.0",
-  "description": "This project can be used as a starting point for developing your SubQuery project",
+  "private": true,
+  "description": "Torus Network SubQuery indexer for blockchain data",
   "main": "dist/index.js",
+  "license": "MIT",
   "scripts": {
     "build": "subql codegen && subql build",
+    "clean": "rm -rf .turbo node_modules dist",
     "codegen": "subql codegen",
-    "start:docker": "docker compose pull && docker compose up --remove-orphans",
     "dev": "subql codegen && subql build && docker compose pull && docker compose up --remove-orphans",
-    "prepack": "rm -rf dist && npm run build",
+    "format": "prettier --check . --ignore-path ../../.gitignore --cache --cache-location .cache/.prettiercache",
+    "format-fix": "prettier --write . --ignore-path ../../.gitignore --cache --cache-location .cache/.prettiercache",
+    "lint": "eslint --cache --cache-location .cache/.eslintcache",
+    "lint-fix": "eslint --cache --cache-location .cache/.eslintcache --fix",
+    "prepack": "rm -rf dist && pnpm build",
+    "start": "docker compose pull && docker compose up --remove-orphans",
     "test": "subql build && subql-node test",
+    "typecheck": "tsc --noEmit",
+    "with-env": "dotenv -e ../../.env --",
     "build:develop": "NODE_ENV=develop subql codegen && NODE_ENV=develop subql build"
   },
-  "homepage": "https://github.com/subquery/subql-starter",
-  "repository": "github:subquery/subql-starter",
   "files": [
     "dist",
     "schema.graphql",
     "project.yaml"
   ],
   "author": "ren-labs",
-  "license": "MIT",
-  "devDependencies": {
+  "dependencies": {
     "@polkadot/api": "^16",
+    "@polkadot/util-crypto": "latest",
+    "@subql/common-substrate": "latest"
+  },
+  "devDependencies": {
     "@subql/cli": "latest",
     "@subql/testing": "latest",
     "@subql/types": "latest",
-    "typescript": "latest",
-    "@subql/common-substrate": "latest",
-    "dotenv": "latest"
-  },
-  "resolutions": {
-    "ipfs-unixfs": "6.0.6"
+    "@torus-ts/eslint-config": "workspace:*",
+    "@types/node": "catalog:",
+    "dotenv": "latest",
+    "dotenv-cli": "catalog:",
+    "eslint": "catalog:",
+    "prettier": "catalog:",
+    "typescript": "catalog:"
   }
 }

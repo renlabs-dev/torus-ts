@@ -43,6 +43,35 @@ export async function queryFreeBalance(
   return balance;
 }
 
+export async function queryBalance(api: Api, address: SS58Address) {
+  const [queryError, q] = await tryAsync(api.query.system.account(address));
+  if (queryError !== undefined) {
+    console.error("Error querying balance:", queryError);
+    throw queryError;
+  }
+
+  const [parseError, freeBalance] = trySync(() =>
+    sb_balance.parse(q.data.free),
+  );
+  if (parseError !== undefined) {
+    console.error("Error parsing free balance:", parseError);
+    throw parseError;
+  }
+
+  const [reservedError, reservedBalance] = trySync(() =>
+    sb_balance.parse(q.data.reserved),
+  );
+  if (reservedError !== undefined) {
+    console.error("Error parsing reserved balance:", reservedError);
+    throw reservedError;
+  }
+
+  return {
+    free: freeBalance,
+    staked: reservedBalance,
+  };
+}
+
 // ==== Transactions ====
 
 /**
