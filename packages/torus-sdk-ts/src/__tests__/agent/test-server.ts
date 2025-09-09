@@ -1,8 +1,8 @@
 import { z } from "zod";
 
-import type { SS58Address } from "../types/index.js";
+import type { SS58Address } from "../../types/index.js";
 
-import { Agent } from "../agent/index.js";
+import { Agent } from "../../agent/index.js";
 
 // Create a simple test server with a hello endpoint
 const agent = new Agent({

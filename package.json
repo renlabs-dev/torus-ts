@@ -8,7 +8,6 @@
   "devDependencies": {
     "@changesets/cli": "^2.29.5",
     "@torus-ts/prettier-config": "workspace:*",
-    "madge": "^8.0.0",
     "prettier": "catalog:",
     "turbo": "^2.3.3",
     "typescript": "catalog:"

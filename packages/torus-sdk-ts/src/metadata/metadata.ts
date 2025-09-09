@@ -88,7 +88,7 @@ export async function fetchCustomMetadata(
 
   if (!r.success) {
     return appendErrorInfo(
-      r.error.errors.map((e) => e.message).join("\n"),
+      r.error.issues.map((e) => e.message).join("\n"),
       `for ${kind} ${entryId}`,
     );
   }

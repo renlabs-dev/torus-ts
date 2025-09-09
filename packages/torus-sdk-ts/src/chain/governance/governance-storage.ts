@@ -8,8 +8,8 @@ import {
 import type { SS58Address } from "../../types/address.js";
 import { sb_address, sb_array, sb_id, sb_some } from "../../types/index.js";
 import { queryFreeBalance } from "../balances.js";
-import type { Api } from "../common/fees.js";
 import { handleMapValues } from "../common/storage-maps.js";
+import type { Api } from "../common/types.js";
 import type {
   AgentApplication,
   DaoTreasuryAddress,
