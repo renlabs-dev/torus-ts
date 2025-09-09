@@ -14,15 +14,15 @@ const config = {
       "starknet",
     ],
 
-    // Use Turbopack for faster builds
-    turbo: {
-      rules: {
-        "*.yaml": ["yaml-loader"],
-        "*.yml": ["yaml-loader"],
-      },
-    },
-
     // Build optimizations enabled
+  },
+
+  // Use Turbopack for faster builds
+  turbopack: {
+    rules: {
+      "*.yaml": ["yaml-loader"],
+      "*.yml": ["yaml-loader"],
+    },
   },
 
   transpilePackages: [
