@@ -3,11 +3,9 @@ import "@rainbow-me/rainbowkit/styles.css";
 import "@interchain-ui/react/styles";
 import "@solana/wallet-adapter-react-ui/styles.css";
 import { Layout } from "@torus-ts/ui/components/layout";
-import { AppContextProvider } from "~/context/app-context-provider";
-import { EnvScript } from "~/env";
-
 import { createSeoMetadata } from "@torus-ts/ui/components/seo";
-import { env } from "~/env";
+import { AppContextProvider } from "~/context/app-context-provider";
+import { env, EnvScript } from "~/env";
 import { Fira_Mono as FiraMono } from "next/font/google";
 import { WalletConflictGuard } from "./_components/wallet-conflict-guard";
 

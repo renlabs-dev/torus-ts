@@ -6,22 +6,41 @@ import {
   TabsList,
   TabsTrigger,
 } from "@torus-ts/ui/components/tabs";
-import DashboardTab from "../_components/dashboard-tab/dashboard";
+import { useTabWithQueryParam } from "hooks/use-tab-with-query-param";
 import AgentHealthTab from "../_components/agent-health-tab/agent-health-tab";
 import DaoApplicationsTab from "../_components/dao-applications-tab";
-import { useTabWithQueryParam } from "hooks/use-tab-with-query-param";
+import DashboardTab from "../_components/dashboard-tab/dashboard";
+
+const ALLOWED_TABS = ["dashboard", "agent-health", "dao-applications"] as const;
+type AllowedTab = (typeof ALLOWED_TABS)[number];
 
 export default function DaoDashboardPageClient() {
-  const { tab, handleTabChange } = useTabWithQueryParam("dashboard");
+  const { tab: rawTab, handleTabChange } = useTabWithQueryParam(
+    "dashboard",
+    "/dao-dashboard",
+  );
+
+  // Normalize and validate the tab
+  const tab: AllowedTab = ALLOWED_TABS.includes(rawTab as AllowedTab)
+    ? (rawTab as AllowedTab)
+    : "dashboard";
+
+  const handleValidatedTabChange = (value: string) => {
+    // Only call handleTabChange if the value is in the whitelist
+    if (ALLOWED_TABS.includes(value as AllowedTab)) {
+      handleTabChange(value);
+    }
+    // Ignore invalid values silently
+  };
 
   return (
-    <div className="w-full animate-fade">
+    <div className="animate-fade w-full">
       <Tabs
         value={tab}
-        onValueChange={handleTabChange}
-        className="min-w-full w-full"
+        onValueChange={handleValidatedTabChange}
+        className="w-full min-w-full"
       >
-        <TabsList className="grid w-full md:grid-cols-3 h-full">
+        <TabsList className="grid h-full w-full md:grid-cols-3">
           <TabsTrigger value="dashboard" className="min-w-full">
             Dashboard
           </TabsTrigger>

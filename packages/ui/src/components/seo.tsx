@@ -78,13 +78,25 @@ export function createSeoMetadata({
   baseUrl,
   ogImagePath = "/og.png",
 }: SeoMetadataConfig): Metadata {
-  if (!baseUrl.startsWith("https://")) {
-    return {};
-  }
+  // Check if baseUrl is an absolute URL (starts with http:// or https://)
+  const isAbsoluteUrl =
+    baseUrl.startsWith("http://") || baseUrl.startsWith("https://");
 
-  const ogImageUrl = `${baseUrl}${ogImagePath}`;
+  // Helper function to join URL parts without double slashes
+  const joinUrl = (base: string, path: string): string => {
+    const baseTrimmed = base.replace(/\/$/, "");
+    const pathTrimmed = path.replace(/^\//, "");
+    return `${baseTrimmed}/${pathTrimmed}`;
+  };
 
-  return {
+  // Use relative URLs if baseUrl is not absolute, otherwise construct full URLs
+  const canonicalUrl = isAbsoluteUrl ? joinUrl(baseUrl, canonical) : canonical;
+  const ogImageUrl = isAbsoluteUrl
+    ? joinUrl(baseUrl, ogImagePath)
+    : ogImagePath;
+
+  // Build metadata object
+  const metadata: Metadata = {
     title,
     description,
     keywords: [
@@ -100,14 +112,13 @@ export function createSeoMetadata({
         url: "/apple-touch-icon.png",
       },
     ],
-    metadataBase: new URL(baseUrl),
     openGraph: {
       title: ogTitle ?? title,
       description: ogDescription ?? description,
       type: "website",
       siteName: ogSiteName,
       locale: "en_US",
-      url: `${baseUrl}${canonical}`,
+      url: canonicalUrl,
       images: [
         {
           url: ogImageUrl,
@@ -132,7 +143,14 @@ export function createSeoMetadata({
       ],
     },
     alternates: {
-      canonical: `${baseUrl}${canonical}`,
+      canonical: canonicalUrl,
     },
   };
+
+  // Only set metadataBase if baseUrl is an absolute URL
+  if (isAbsoluteUrl) {
+    metadata.metadataBase = new URL(baseUrl);
+  }
+
+  return metadata;
 }

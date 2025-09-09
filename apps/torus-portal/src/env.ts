@@ -20,10 +20,14 @@ const envSchema = {
   PINATA_JWT: z.string(),
   BASE_URL: z
     .string()
+    .url()
+    .refine((u) => u.startsWith("https://"), {
+      message: "BASE_URL must be an HTTPS URL",
+    })
     .default(
       process.env.NODE_ENV === "production"
         ? "https://portal.torus.network"
-        : "",
+        : "https://localhost:3000",
     ),
 
   /**

@@ -1,19 +1,8 @@
-"use client";
-
-import { usePathname, useRouter } from "next/navigation";
-
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "@torus-ts/ui/components/tabs";
-
+import { createSeoMetadata } from "@torus-ts/ui/components/seo";
 import PortalFormContainer from "~/app/_components/portal-form-container";
 import PortalFormHeader from "~/app/_components/portal-form-header";
-
-import { createSeoMetadata } from "@torus-ts/ui/components/seo";
 import { env } from "~/env";
+import { CreatePermissionTabs } from "./_components/create-permission-tabs";
 
 export const metadata = () =>
   createSeoMetadata({
@@ -44,36 +33,13 @@ interface CreatePermissionLayoutProps {
 export default function CreatePermissionLayout({
   children,
 }: CreatePermissionLayoutProps) {
-  const pathname = usePathname();
-  const router = useRouter();
-
-  // Determine active tab based on pathname
-  const activeTab = pathname.includes("/emission") ? "emission" : "capability";
-
-  const handleTabChange = (value: string) => {
-    if (value === "capability") {
-      router.push("/permissions/create-permission/capability");
-    } else {
-      router.push("/permissions/create-permission/emission");
-    }
-  };
-
   return (
     <PortalFormContainer>
       <PortalFormHeader
         title="Delegate Permission"
         description="Select the type of permission you want to delegate."
       />
-      <Tabs value={activeTab} onValueChange={handleTabChange} className="mt-6">
-        <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="capability">Capability</TabsTrigger>
-          <TabsTrigger value="emission">Emission</TabsTrigger>
-        </TabsList>
-
-        <TabsContent value={activeTab} className="mt-6">
-          {children}
-        </TabsContent>
-      </Tabs>
+      <CreatePermissionTabs>{children}</CreatePermissionTabs>
     </PortalFormContainer>
   );
 }

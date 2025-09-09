@@ -16,10 +16,14 @@ const envSchema = {
   NODE_ENV: NodeEnvSchema,
   BASE_URL: z
     .string()
+    .url()
+    .refine((u) => u.startsWith("https://"), {
+      message: "BASE_URL must be an HTTPS URL",
+    })
     .default(
       process.env.NODE_ENV === "production"
         ? "https://bridge.torus.network"
-        : "",
+        : "https://localhost:3000",
     ),
   /*
    * Specify your client-side environment variables schema here.
