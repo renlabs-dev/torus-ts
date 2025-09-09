@@ -119,6 +119,24 @@ export const WALLET_SCOPE_SCHEMA = sb_struct({
 export type WalletStake = z.infer<typeof WALLET_STAKE_SCHEMA>;
 export type WalletScope = z.infer<typeof WALLET_SCOPE_SCHEMA>;
 
+// ---- Wallet Stake Operations ----
+
+export const WALLET_STAKE_OPERATION_SCHEMA = sb_enum({
+  Unstake: sb_struct({
+    staked: sb_address,
+    amount: sb_balance,
+  }),
+  Transfer: sb_struct({
+    from: sb_address,
+    to: sb_address,
+    amount: sb_balance,
+  }),
+});
+
+export type WalletStakeOperation = z.infer<
+  typeof WALLET_STAKE_OPERATION_SCHEMA
+>;
+
 export type NamespaceScope = z.infer<typeof NAMESPACE_SCOPE_SCHEMA>;
 
 // ---- Permission Scope ----

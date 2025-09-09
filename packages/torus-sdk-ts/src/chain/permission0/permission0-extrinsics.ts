@@ -11,6 +11,7 @@ import type {
   RevocationTerms,
   StreamAllocation,
   StreamId,
+  WalletStakeOperation,
 } from "./permission0-types.js";
 
 export interface DelegateNamespacePermission {
@@ -213,5 +214,25 @@ export function delegateWalletStakePermission({
     stakeDetails,
     duration,
     revocation,
+  );
+}
+
+export interface ExecuteWalletStakePermission {
+  api: ApiPromise;
+  permissionId: PermissionId;
+  operation: WalletStakeOperation;
+}
+
+/**
+ * Execute a wallet stake operation using a delegated permission
+ */
+export function executeWalletStakePermission({
+  api,
+  permissionId,
+  operation,
+}: ExecuteWalletStakePermission) {
+  return api.tx.permission0.executeWalletStakePermission(
+    permissionId,
+    operation,
   );
 }
