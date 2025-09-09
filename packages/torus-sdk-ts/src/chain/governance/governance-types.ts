@@ -25,10 +25,10 @@ export type GovernanceItemType = "PROPOSAL" | "AGENT_APPLICATION";
 
 /**
  * Schema for NamespacePricingConfig with comprehensive validation.
- * 
+ *
  * Validates the logistic function parameters used to calculate namespace
  * registration fees based on the number of existing namespaces for an agent.
- * 
+ *
  * Based on `pallet_torus0::namespace::NamespacePricingConfig`
  */
 export const NAMESPACE_PRICING_CONFIG_SCHEMA = sb_struct({
@@ -39,49 +39,51 @@ export const NAMESPACE_PRICING_CONFIG_SCHEMA = sb_struct({
   /** The logistic function's midpoint (number of entries) */
   countMidpoint: sb_number_int.refine(
     (val) => val >= 0,
-    "countMidpoint must be non-negative"
+    "countMidpoint must be non-negative",
   ),
   /** How steep the pricing increase is (percentage 0-100) */
   feeSteepness: sb_percent,
   /** The maximum multiplier for the base fee */
   maxFeeMultiplier: sb_number_int.refine(
     (val) => val >= 0,
-    "maxFeeMultiplier must be non-negative"
+    "maxFeeMultiplier must be non-negative",
   ),
 });
 
-export type NamespacePricingConfig = z.infer<typeof NAMESPACE_PRICING_CONFIG_SCHEMA>;
+export type NamespacePricingConfig = z.infer<
+  typeof NAMESPACE_PRICING_CONFIG_SCHEMA
+>;
 
 // ==== Global Parameters ====
 
 /**
  * Schema for GlobalParamsData with detailed validation.
- * 
+ *
  * Validates all global network parameters that can be modified through governance.
  * Includes business logic validation matching the Substrate pallet constraints.
- * 
+ *
  * Based on `pallet_governance::proposal::GlobalParamsData`
  */
 export const GLOBAL_PARAMS_DATA_SCHEMA = sb_struct({
   /** Minimum allowed length for agent names (must be > 1) */
   minNameLength: sb_number_int.refine(
     (val) => val > 1,
-    "minNameLength must be greater than 1"
+    "minNameLength must be greater than 1",
   ),
   /** Maximum allowed length for agent names */
   maxNameLength: sb_number_int.refine(
     (val) => val > 0 && val < 256, // Using reasonable constraint since we don't have access to MaxAgentNameLengthConstraint
-    "maxNameLength must be between 1 and 255"
+    "maxNameLength must be between 1 and 255",
   ),
   /** Minimum weight control fee percentage (0-100) */
   minWeightControlFee: sb_number_int.refine(
     (val) => val >= 0 && val <= 100,
-    "minWeightControlFee must be between 0 and 100"
+    "minWeightControlFee must be between 0 and 100",
   ),
   /** Minimum staking fee percentage (0-100) */
   minStakingFee: sb_number_int.refine(
     (val) => val >= 0 && val <= 100,
-    "minStakingFee must be between 0 and 100"
+    "minStakingFee must be between 0 and 100",
   ),
   /** Dividend participation weight percentage */
   dividendsParticipationWeight: sb_percent,
@@ -90,15 +92,12 @@ export const GLOBAL_PARAMS_DATA_SCHEMA = sb_struct({
   /** Cost to submit a governance proposal */
   proposalCost: sb_bigint.refine(
     (val) => val <= 50_000_000_000_000_000_000_000n,
-    "proposalCost must not exceed 50,000 TORS (50,000,000,000,000,000,000,000 wei)"
+    "proposalCost must not exceed 50,000 TORS (50,000,000,000,000,000,000,000 wei)",
   ),
-}).refine(
-  (data) => data.minNameLength <= data.maxNameLength,
-  {
-    message: "minNameLength must be less than or equal to maxNameLength",
-    path: ["minNameLength"],
-  }
-);
+}).refine((data) => data.minNameLength <= data.maxNameLength, {
+  message: "minNameLength must be less than or equal to maxNameLength",
+  path: ["minNameLength"],
+});
 
 export type GlobalParamsData = z.infer<typeof GLOBAL_PARAMS_DATA_SCHEMA>;
 
