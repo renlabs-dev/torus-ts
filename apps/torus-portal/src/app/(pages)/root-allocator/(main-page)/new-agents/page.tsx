@@ -25,7 +25,7 @@ export default async function Page(props: {
   searchParams: Promise<{ page?: string; search?: string }>;
 }) {
   const searchParams = await props.searchParams;
-  const { page, search } = parseSearchParams(searchParams);
+  const { search } = parseSearchParams(searchParams);
 
   return (
     <PageLayout search={search} currentView="new">
