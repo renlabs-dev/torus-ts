@@ -192,6 +192,9 @@ export function transformPermissionToFormData(
     Namespace: () => {
       // Namespace permissions don't have stream data
     },
+    Wallet: () => {
+      // Wallet permissions don't have stream data
+    },
   });
 
   return formData;
