@@ -67,7 +67,7 @@ lint-ws:
 check filter="*":
   pnpm exec turbo run typecheck lint --continue -F "{{filter}}"
 
-# Run tests
+# Run unit tests
 test filter="*":
   pnpm exec turbo run test --continue -F "{{filter}}"
 
@@ -90,14 +90,14 @@ madge-dependencies-graph:
   #!/usr/bin/env bash
   shopt -s globstar
   mkdir -p tmp
-  pnpm exec madge -i tmp/dependencies.svg packages/*/src/**/*.ts apps/*/src/**/*.ts
+  pnpm dlx madge -i tmp/dependencies.svg packages/*/src/**/*.{ts,tsx} apps/*/src/**/*.{ts,tsx}
 
 # Detect circular dependencies in the codebase
 # Exits with error code if circular dependencies are found
 madge-circular:
   #!/usr/bin/env bash
   shopt -s globstar
-  pnpm exec madge -c packages/*/src/*.ts apps/*/src/**/*.ts
+  pnpm dlx madge -c packages/*/src/*.{ts,tsx} apps/*/src/**/*.{ts,tsx}
 
 # == Publishing ==
 
