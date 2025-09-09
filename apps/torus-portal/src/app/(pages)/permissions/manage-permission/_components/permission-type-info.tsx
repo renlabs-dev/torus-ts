@@ -7,7 +7,7 @@ import {
 import { AlertCircle, Info } from "lucide-react";
 
 interface PermissionTypeInfoProps {
-  permissionType: "stream" | "capability" | "curator" | "unknown";
+  permissionType: "stream" | "capability" | "curator" | "wallet" | "unknown";
   canEdit?: boolean;
   isGrantor?: boolean;
   userRole?: string | null; // Primary role badge from getPrimaryRoleBadge
@@ -88,6 +88,23 @@ export function PermissionTypeInfo({
           </CardTitle>
           <CardDescription className="break-words">
             {roleInfo.description}
+          </CardDescription>
+        </CardHeader>
+      </Card>
+    );
+  }
+
+  if (permissionType === "wallet") {
+    return (
+      <Card className="border-primary bg-primary/5">
+        <CardHeader>
+          <CardTitle className="text-primary flex items-center gap-2">
+            <Info className="h-5 w-5" />
+            Wallet Stake Permission
+          </CardTitle>
+          <CardDescription className="break-words">
+            Execute wallet stake operations using this permission. You can
+            unstake tokens or transfer stake between accounts.
           </CardDescription>
         </CardHeader>
       </Card>

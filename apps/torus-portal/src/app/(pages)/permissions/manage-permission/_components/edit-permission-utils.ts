@@ -20,12 +20,13 @@ export type FieldType =
 
 export function getPermissionTypeFromContract(
   contract: PermissionContract | null,
-): "stream" | "capability" | "curator" | "unknown" {
+): "stream" | "capability" | "curator" | "wallet" | "unknown" {
   if (!contract) return "unknown";
 
   if ("Stream" in contract.scope) return "stream";
   if ("Namespace" in contract.scope) return "capability";
   if ("Curator" in contract.scope) return "curator";
+  if ("Wallet" in contract.scope) return "wallet";
 
   return "unknown";
 }

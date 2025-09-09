@@ -32,6 +32,7 @@ import { StreamsField } from "./edit-permission-fields/streams-field";
 import { WeightSetterField } from "./edit-permission-fields/weight-setter-field";
 import type { EditPermissionFormData } from "./edit-permission-schema";
 import { EDIT_PERMISSION_SCHEMA } from "./edit-permission-schema";
+import { ExecuteWalletForm } from "./execute-wallet-fields/execute-wallet-form";
 import {
   canEditPermissionFromContract,
   canUserEditField,
@@ -314,6 +315,20 @@ export function EditPermissionForm({
                       ? "Updating..."
                       : "Update Permission"}
                   </Button>
+                </>
+              )}
+
+              {permissionType === "wallet" && (
+                <>
+                  <PortalFormSeparator title="Execute Wallet Operation" />
+
+                  <ExecuteWalletForm
+                    permissionId={selectedPermissionId}
+                    onSuccess={() => {
+                      setSelectedPermissionId("");
+                      form.reset();
+                    }}
+                  />
                 </>
               )}
             </>

@@ -111,7 +111,7 @@ export const WALLET_STAKE_SCHEMA = sb_struct({
 
 export const WALLET_SCOPE_SCHEMA = sb_struct({
   recipient: sb_address,
-  type: sb_enum({
+  rType: sb_enum({
     Stake: WALLET_STAKE_SCHEMA,
   }),
 });
