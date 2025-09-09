@@ -83,7 +83,9 @@ export function GraphSheetDetailsPermission({
       (acc, streams) => {
         const values = Array.from(streams.values());
         const hasSpecificStreams = values.some((s) => s.streamId);
-        const effective = hasSpecificStreams ? values.filter((s) => s.streamId) : values;
+        const effective = hasSpecificStreams
+          ? values.filter((s) => s.streamId)
+          : values;
         return acc + effective.reduce((sum, s) => sum + s.weight, 0);
       },
       0,
@@ -336,19 +338,24 @@ export function GraphSheetDetailsPermission({
                                 {(() => {
                                   // Get stream allocation percentage from detailed permission (more efficient than searching allPermissions)
                                   const streamAllocation =
-                                    detailedPermission?.emission_stream_allocations?.percentage ?? 0;
-                                  
+                                    detailedPermission
+                                      ?.emission_stream_allocations
+                                      ?.percentage ?? 0;
+
                                   // Calculate this specific stream's normalized weight percentage
                                   // Formula: (individual_weight / total_weight) * stream_allocation_percentage
                                   // This ensures each stream gets its proportional share, not the sum of all streams
                                   const normalizedWeightPercentage =
                                     entry.totalWeight > 0
-                                      ? (s.weight / entry.totalWeight) * streamAllocation
+                                      ? (s.weight / entry.totalWeight) *
+                                        streamAllocation
                                       : 0;
-                                  
+
                                   return calculateStreamValue(
                                     normalizedWeightPercentage,
-                                    emissionsData[permissionData.delegatorAccountId],
+                                    emissionsData[
+                                      permissionData.delegatorAccountId
+                                    ],
                                     true,
                                     permissionData.delegatorAccountId,
                                   );
