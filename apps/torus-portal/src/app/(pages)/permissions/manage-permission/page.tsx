@@ -1,10 +1,10 @@
 import { createSeoMetadata } from "@torus-ts/ui/components/seo";
-import { env } from "~/env";
 import PortalFormContainer from "~/app/_components/portal-form-container";
+import { env } from "~/env";
 import { EditPermissionForm } from "./_components/edit-permission-form";
 
-export const metadata = () =>
-  createSeoMetadata({
+export function generateMetadata() {
+  return createSeoMetadata({
     title: "Edit Permission - Torus Portal",
     description:
       "Edit existing permissions on the Torus Network. Modify permission settings and access controls for network participants.",
@@ -19,6 +19,7 @@ export const metadata = () =>
     canonical: "/permissions/manage-permission",
     baseUrl: env("BASE_URL"),
   });
+}
 
 export default function EditPermissionFormPage() {
   return (

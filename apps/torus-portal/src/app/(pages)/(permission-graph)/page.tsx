@@ -17,8 +17,8 @@ import type {
 } from "./_components/permission-graph-types";
 import { AgentLRUCache } from "./_components/permission-graph-utils";
 
-export const metadata = () =>
-  createSeoMetadata({
+export function generateMetadata() {
+  return createSeoMetadata({
     title: "Permission Graph - Torus Portal",
     description:
       "Visualize and explore the Torus Network permission graph. Interactive network visualization of agents, permissions, and relationships.",
@@ -33,6 +33,7 @@ export const metadata = () =>
     canonical: "/",
     baseUrl: env("BASE_URL"),
   });
+}
 
 export default function PermissionGraphPage() {
   const router = useRouter();

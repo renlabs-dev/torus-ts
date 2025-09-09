@@ -2,7 +2,10 @@ import Image from "next/image";
 import * as React from "react";
 import { TorusAnimation } from "./_components/torus-animation";
 
-export const metadata = {} as const;
+// Metadata is provided by layout.tsx
+export const metadata = {
+  title: "Torus Network",
+} as const;
 
 export default function Page() {
   return (

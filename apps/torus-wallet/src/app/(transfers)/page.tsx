@@ -1,13 +1,13 @@
+import { createSeoMetadata } from "@torus-ts/ui/components/seo";
 import type { TabItem } from "~/app/_components/tab-layout";
 import { TabLayout } from "~/app/_components/tab-layout";
 import { Faucet } from "~/app/(transfers)/_components/faucet/faucet";
 import { Receive } from "~/app/(transfers)/_components/receive/receive";
 import { Send } from "~/app/(transfers)/_components/send/send";
-import { createSeoMetadata } from "@torus-ts/ui/components/seo";
 import { env } from "~/env";
 
-export const metadata = () =>
-  createSeoMetadata({
+export function generateMetadata() {
+  return createSeoMetadata({
     title: "Transfer Tokens - Torus Wallet",
     description: "Send and receive digital assets securely with Torus Wallet",
     ogSiteName: "Torus Wallet",
@@ -23,6 +23,7 @@ export const metadata = () =>
       "wallet transfers",
     ],
   });
+}
 
 export default function TransfersPage() {
   const tabs: TabItem[] = [

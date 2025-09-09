@@ -4,8 +4,8 @@ import { FilterContent } from "../../_components/filter-content";
 import { ShapeNetworkModal } from "../../_components/shape-network-modal";
 import { ListWhitelistApplications } from "./_components/list-whitelist-applications";
 
-export const metadata = () =>
-  createSeoMetadata({
+export function generateMetadata() {
+  return createSeoMetadata({
     title: "Whitelist Applications - Torus Governance",
     description:
       "Review and vote on agent whitelist applications. Manage network participation by evaluating agent applications for the Torus Network.",
@@ -20,6 +20,7 @@ export const metadata = () =>
     canonical: "/whitelist-applications",
     baseUrl: env("BASE_URL"),
   });
+}
 
 export default function HomePage() {
   return (

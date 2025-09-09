@@ -9,8 +9,8 @@ import { useToast } from "@torus-ts/ui/hooks/use-toast";
 import { env } from "~/env";
 import { useState } from "react";
 
-export const metadata = () =>
-  createSeoMetadata({
+export function generateMetadata() {
+  return createSeoMetadata({
     title: "Playground - Torus Portal",
     description:
       "Test and experiment with Torus Network transactions. Send remarks and explore blockchain functionality in a safe environment.",
@@ -25,6 +25,7 @@ export const metadata = () =>
     canonical: "/playground",
     baseUrl: env("BASE_URL"),
   });
+}
 
 export default function PlaygroundPage() {
   const { isAccountConnected } = useTorus();

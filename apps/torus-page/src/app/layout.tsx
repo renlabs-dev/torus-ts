@@ -9,8 +9,8 @@ import * as React from "react";
 import { Footer } from "./_components/footer";
 import { HoverHeader } from "./_components/hover-header";
 
-export const metadata = () =>
-  createSeoMetadata({
+export function generateMetadata() {
+  return createSeoMetadata({
     title: "Torus Network",
     description:
       "Decentralized infrastructure platform built on Substrate. Explore the future of blockchain technology and decentralized applications.",
@@ -25,6 +25,7 @@ export const metadata = () =>
     canonical: "/",
     baseUrl: env("BASE_URL"),
   });
+}
 
 export const firaMono = FiraMono({
   subsets: ["latin"],

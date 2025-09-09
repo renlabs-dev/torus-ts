@@ -1,13 +1,13 @@
 "use client";
 
-import { createSeoMetadata } from "@torus-ts/ui/components/seo";
 import { Container } from "@torus-ts/ui/components/container";
+import { createSeoMetadata } from "@torus-ts/ui/components/seo";
 import { env } from "~/env";
 import { SidebarInfo } from "../_components/sidebar/sidebar-info";
 import { SidebarNav } from "../_components/sidebar/sidebar-nav";
 
-export const metadata = () =>
-  createSeoMetadata({
+export function generateMetadata() {
+  return createSeoMetadata({
     title: "Torus Governance Dashboard",
     description:
       "Access governance features, view proposals, and participate in DAO decisions on the Torus Network.",
@@ -21,6 +21,7 @@ export const metadata = () =>
     canonical: "/",
     baseUrl: env("BASE_URL"),
   });
+}
 
 export default function PagesLayout({
   children,

@@ -7,8 +7,8 @@ import { AgentCard } from "../../_components/agent-card";
 import { AgentViewToggle } from "../../_components/agent-view-toggle";
 import { Filter } from "../../_components/filter-content";
 
-export const metadata = () =>
-  createSeoMetadata({
+export function generateMetadata() {
+  return createSeoMetadata({
     title: "Allocated Agents - Torus Portal",
     description:
       "View agents you have allocated weights to on the Torus Network. Manage your current agent allocations and distributions.",
@@ -23,6 +23,7 @@ export const metadata = () =>
     canonical: "/root-allocator/allocated-agents",
     baseUrl: env("BASE_URL"),
   });
+}
 
 export default function AllocatedAgentsPage() {
   const { delegatedAgents } = useDelegateAgentStore();

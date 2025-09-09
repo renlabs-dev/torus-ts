@@ -18,8 +18,8 @@ import { TransactionsSheet } from "./_components/transactions-sheet";
 import { WalletBalance } from "./_components/wallet-balance";
 import { WalletHeader } from "./_components/wallet-header";
 
-export const metadata = () =>
-  createSeoMetadata({
+export function generateMetadata() {
+  return createSeoMetadata({
     title: "Torus Wallet - Secure Crypto Wallet for Torus Network",
     description:
       "Manage your Torus Network tokens securely with our web-based wallet. Stake, transfer, and track your digital assets in the Torus ecosystem.",
@@ -35,6 +35,7 @@ export const metadata = () =>
       "wallet dashboard",
     ],
   });
+}
 
 interface ProvidersProps {
   children: React.ReactNode;

@@ -12,8 +12,8 @@ import PlausibleProvider from "next-plausible";
 import { Fira_Mono as FiraMono } from "next/font/google";
 import DiscordAuthProvider from "../context/auth-provider";
 
-export const metadata = () =>
-  createSeoMetadata({
+export function generateMetadata() {
+  return createSeoMetadata({
     title: "Torus DAO",
     description:
       "Decentralized governance platform for the Torus Network. Participate in DAO decisions, vote on proposals, and shape the future of decentralized infrastructure.",
@@ -28,6 +28,7 @@ export const metadata = () =>
     canonical: "/",
     baseUrl: env("BASE_URL"),
   });
+}
 
 export const firaMono = FiraMono({
   subsets: ["latin"],

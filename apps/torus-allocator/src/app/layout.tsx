@@ -6,8 +6,8 @@ import { env, EnvScript } from "~/env";
 import PlausibleProvider from "next-plausible";
 import { Fira_Mono as FiraMono } from "next/font/google";
 
-export const metadata = () =>
-  createSeoMetadata({
+export function generateMetadata() {
+  return createSeoMetadata({
     title: "Torus Allocator",
     description:
       "Torus Network agent allocation platform. Manage and distribute network resources through a comprehensive allocation interface.",
@@ -22,6 +22,7 @@ export const metadata = () =>
     canonical: "/",
     baseUrl: env("BASE_URL"),
   });
+}
 
 export const firaMono = FiraMono({
   subsets: ["latin"],

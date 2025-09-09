@@ -11,8 +11,8 @@ import PlausibleProvider from "next-plausible";
 import { Geist_Mono as GeistMono } from "next/font/google";
 import SidebarContainer from "../_components/sidebar/sidebar-container";
 
-export const metadata = () =>
-  createSeoMetadata({
+export function generateMetadata() {
+  return createSeoMetadata({
     title: "Torus Portal",
     description:
       "Manage network permissions, agent allocations, and explore the Torus Network ecosystem",
@@ -27,6 +27,7 @@ export const metadata = () =>
     canonical: "/",
     baseUrl: env("BASE_URL"),
   });
+}
 
 export const geistMono = GeistMono({
   subsets: ["latin"],

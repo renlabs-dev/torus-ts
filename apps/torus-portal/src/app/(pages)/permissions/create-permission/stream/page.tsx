@@ -4,8 +4,8 @@ import PortalFormHeader from "~/app/_components/portal-form-header";
 import { env } from "~/env";
 import { CreateStreamPermissionForm } from "./_components/create-stream-permission-form";
 
-export const metadata = () =>
-  createSeoMetadata({
+export function generateMetadata() {
+  return createSeoMetadata({
     title: "Create Stream Permission - Torus Portal",
     description:
       "Create and configure stream permissions on the Torus Network. Distribute streams to multiple recipients with customizable allocation rules.",
@@ -21,6 +21,7 @@ export const metadata = () =>
     canonical: "/permissions/create-permission/stream",
     baseUrl: env("BASE_URL"),
   });
+}
 
 export default function CreateStreamPermissionPage() {
   return (

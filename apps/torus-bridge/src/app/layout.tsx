@@ -9,8 +9,8 @@ import { env, EnvScript } from "~/env";
 import { Fira_Mono as FiraMono } from "next/font/google";
 import { WalletConflictGuard } from "./_components/wallet-conflict-guard";
 
-export const metadata = () =>
-  createSeoMetadata({
+export function generateMetadata() {
+  return createSeoMetadata({
     title: "Torus Base Bridge",
     description:
       "Cross-chain token bridge for the Torus ecosystem. Securely transfer tokens across multiple blockchain networks with ease and reliability.",
@@ -25,6 +25,7 @@ export const metadata = () =>
     canonical: "/",
     baseUrl: env("BASE_URL"),
   });
+}
 
 export const firaMono = FiraMono({
   subsets: ["latin"],
