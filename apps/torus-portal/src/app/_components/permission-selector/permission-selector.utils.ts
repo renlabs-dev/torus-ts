@@ -33,6 +33,9 @@ export function hasUserRole(
     Curator: (curator) => {
       return curator.recipient === userAddress;
     },
+    Wallet: (wallet) => {
+      return wallet.recipient === userAddress;
+    },
   });
 
   if (hasScopeRole) return true;
@@ -98,6 +101,12 @@ export function getUserRoles(
 
   if ("Curator" in contract.scope) {
     if (contract.scope.Curator.recipient === userAddress) {
+      roles.push("Recipient");
+    }
+  }
+
+  if ("Wallet" in contract.scope) {
+    if (contract.scope.Wallet.recipient === userAddress) {
       roles.push("Recipient");
     }
   }
@@ -175,6 +184,7 @@ export function extractAllAddressesFromPermissions(permissions: {
   streamPermissions: Map<string, PermissionContract>;
   namespacePermissions: Map<string, PermissionContract>;
   curatorPermissions: Map<string, PermissionContract>;
+  walletPermissions: Map<string, PermissionContract>;
 }): Set<string> {
   const allAddresses = new Set<string>();
 
@@ -182,6 +192,7 @@ export function extractAllAddressesFromPermissions(permissions: {
     ...permissions.streamPermissions,
     ...permissions.namespacePermissions,
     ...permissions.curatorPermissions,
+    ...permissions.walletPermissions,
   ].forEach(([_, contract]) => {
     allAddresses.add(contract.delegator);
 
@@ -202,6 +213,8 @@ export function extractAllAddressesFromPermissions(permissions: {
       allAddresses.add(contract.scope.Namespace.recipient);
     } else if ("Curator" in contract.scope) {
       allAddresses.add(contract.scope.Curator.recipient);
+    } else if ("Wallet" in contract.scope) {
+      allAddresses.add(contract.scope.Wallet.recipient);
     }
   });
 
@@ -216,12 +229,14 @@ export function sortPermissionsByRole(
     streamPermissions: Map<string, PermissionContract>;
     namespacePermissions: Map<string, PermissionContract>;
     curatorPermissions: Map<string, PermissionContract>;
+    walletPermissions: Map<string, PermissionContract>;
   },
   userAddress: SS58Address,
 ): {
   streamPermissions: Map<string, PermissionContract>;
   namespacePermissions: Map<string, PermissionContract>;
   curatorPermissions: Map<string, PermissionContract>;
+  walletPermissions: Map<string, PermissionContract>;
 } {
   // Helper function to sort a single permission Map
   const sortPermissionMap = (
@@ -260,5 +275,6 @@ export function sortPermissionsByRole(
     streamPermissions: sortPermissionMap(permissions.streamPermissions),
     namespacePermissions: sortPermissionMap(permissions.namespacePermissions),
     curatorPermissions: sortPermissionMap(permissions.curatorPermissions),
+    walletPermissions: sortPermissionMap(permissions.walletPermissions),
   };
 }

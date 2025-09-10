@@ -1,3 +1,6 @@
+import type { PermissionContract } from "@torus-network/sdk/chain";
+import type { SS58Address } from "@torus-network/sdk/types";
+import { smallAddress } from "@torus-network/torus-utils/torus";
 import {
   Card,
   CardDescription,
@@ -7,16 +10,20 @@ import {
 import { AlertCircle, Info } from "lucide-react";
 
 interface PermissionTypeInfoProps {
-  permissionType: "stream" | "capability" | "curator" | "unknown";
+  permissionType: "stream" | "capability" | "curator" | "wallet" | "unknown";
   canEdit?: boolean;
   isGrantor?: boolean;
   userRole?: string | null; // Primary role badge from getPrimaryRoleBadge
+  permissionContract?: PermissionContract | null;
+  selectedAccount?: string | null;
 }
 
 export function PermissionTypeInfo({
   permissionType,
   isGrantor = true,
   userRole = null,
+  permissionContract,
+  selectedAccount,
 }: PermissionTypeInfoProps) {
   if (permissionType === "capability") {
     return (
@@ -88,6 +95,48 @@ export function PermissionTypeInfo({
           </CardTitle>
           <CardDescription className="break-words">
             {roleInfo.description}
+          </CardDescription>
+        </CardHeader>
+      </Card>
+    );
+  }
+
+  if (permissionType === "wallet") {
+    // Extract wallet permission details
+    const walletScope =
+      permissionContract && "Wallet" in permissionContract.scope
+        ? permissionContract.scope.Wallet
+        : null;
+
+    const walletRecipient = walletScope?.recipient || "";
+
+    // Check user roles
+    const isDelegator = permissionContract?.delegator === selectedAccount;
+    const isRecipient = walletRecipient === selectedAccount;
+
+    let title = "Wallet Stake Permission";
+    let description = "";
+
+    if (isDelegator && !isRecipient) {
+      title = "Wallet Stake Permission - Delegator";
+      description = `As the delegator, you cannot execute wallet operations. Only the recipient (${walletRecipient}) can execute these operations. You can revoke this permission if the revocation terms allow it.`;
+    } else if (isRecipient) {
+      title = "Wallet Stake Permission - Recipient";
+      description = `You can execute wallet stake operations for account ${smallAddress(permissionContract?.delegator as SS58Address)}. Available operations depend on the permission settings below.`;
+    } else {
+      title = "Wallet Stake Permission - No Access";
+      description = `You cannot execute wallet operations. Only the recipient (${smallAddress(permissionContract?.delegator as SS58Address)}) can execute these operations.`;
+    }
+
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle className={`flex items-center gap-2`}>
+            <Info className="h-5 w-5" />
+            {title}
+          </CardTitle>
+          <CardDescription className="break-words">
+            {description}
           </CardDescription>
         </CardHeader>
       </Card>

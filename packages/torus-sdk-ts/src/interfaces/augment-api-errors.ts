@@ -873,6 +873,10 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       ParentNamespaceNotFound: AugmentedError<ApiType>;
       /**
+       * The stake is being delegated exclusively.
+       **/
+      StakeIsDelegated: AugmentedError<ApiType>;
+      /**
        * Failed to add stake to the account.
        **/
       StakeNotAdded: AugmentedError<ApiType>;
