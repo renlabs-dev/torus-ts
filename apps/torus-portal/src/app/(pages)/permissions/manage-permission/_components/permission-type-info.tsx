@@ -1,4 +1,6 @@
 import type { PermissionContract } from "@torus-network/sdk/chain";
+import type { SS58Address } from "@torus-network/sdk/types";
+import { smallAddress } from "@torus-network/torus-utils/torus";
 import {
   Card,
   CardDescription,
@@ -120,10 +122,10 @@ export function PermissionTypeInfo({
       description = `As the delegator, you cannot execute wallet operations. Only the recipient (${walletRecipient}) can execute these operations. You can revoke this permission if the revocation terms allow it.`;
     } else if (isRecipient) {
       title = "Wallet Stake Permission - Recipient";
-      description = `You can execute wallet stake operations for account ${permissionContract?.delegator}. Available operations depend on the permission settings below.`;
+      description = `You can execute wallet stake operations for account ${smallAddress(permissionContract?.delegator as SS58Address)}. Available operations depend on the permission settings below.`;
     } else {
       title = "Wallet Stake Permission - No Access";
-      description = `You cannot execute wallet operations. Only the recipient (${permissionContract?.delegator}) can execute these operations.`;
+      description = `You cannot execute wallet operations. Only the recipient (${smallAddress(permissionContract?.delegator as SS58Address)}) can execute these operations.`;
     }
 
     return (
