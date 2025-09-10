@@ -8,6 +8,9 @@
 # Local files
 *.local*
 
+# Git hooks
+/.pre-commit-config.yaml
+
 # Nix / direnv
 /.direnv/
 

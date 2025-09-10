@@ -67,7 +67,7 @@ lint-ws:
 check filter="*":
   pnpm exec turbo run typecheck lint --continue -F "{{filter}}"
 
-# Run tests
+# Run unit tests
 test filter="*":
   pnpm exec turbo run test --continue -F "{{filter}}"
 
@@ -81,6 +81,23 @@ check-test filter="*":
 
 create-package:
   pnpm turbo gen init
+
+# -- Source code dependencies --
+
+# Generate dependency graph visualization as SVG
+# Creates tmp/dependencies.svg showing module dependencies
+madge-dependencies-graph:
+  #!/usr/bin/env bash
+  shopt -s globstar
+  mkdir -p tmp
+  pnpm dlx madge -i tmp/dependencies.svg packages/*/src/**/*.{ts,tsx} apps/*/src/**/*.{ts,tsx}
+
+# Detect circular dependencies in the codebase
+# Exits with error code if circular dependencies are found
+madge-circular:
+  #!/usr/bin/env bash
+  shopt -s globstar
+  pnpm dlx madge -c packages/*/src/*.{ts,tsx} apps/*/src/**/*.{ts,tsx}
 
 # == Publishing ==
 

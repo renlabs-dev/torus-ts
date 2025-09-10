@@ -12,6 +12,7 @@ import type {
   CustomGraphNode,
   SignalsList,
 } from "../permission-graph-types";
+import { ViewSwarmButton } from "../view-swarm-button";
 import { AgentCard } from "./agent-card";
 import { GraphSheetDetails } from "./graph-sheet-details/graph-sheet-details";
 import { GraphSheetDetailsPermission } from "./graph-sheet-details/graph-sheet-details-permission";
@@ -27,6 +28,7 @@ interface GraphSheetProps {
   setCachedAgentData?: (nodeId: string, data: CachedAgentData) => void;
   isOpen: boolean;
   onOpenChange: (isOpen: boolean) => void;
+  allocatorAddress: string;
 }
 
 export function GraphSheet(props: GraphSheetProps) {
@@ -57,12 +59,24 @@ export function GraphSheet(props: GraphSheetProps) {
           {isSignalNode ? (
             <GraphSheetDetailsSignal selectedNode={props.selectedNode} />
           ) : isPermissionNode ? (
-            <GraphSheetDetailsPermission
-              selectedNode={props.selectedNode}
-              allPermissions={props.allPermissions}
-            />
+            <div className="flex w-full flex-col gap-4">
+              <ViewSwarmButton
+                selectedNode={props.selectedNode}
+                graphData={props.graphData}
+                allocatorAddress={props.allocatorAddress}
+              />
+              <GraphSheetDetailsPermission
+                selectedNode={props.selectedNode}
+                allPermissions={props.allPermissions}
+              />
+            </div>
           ) : (
             <div className="flex w-full flex-col gap-4">
+              <ViewSwarmButton
+                selectedNode={props.selectedNode}
+                graphData={props.graphData}
+                allocatorAddress={props.allocatorAddress}
+              />
               <AgentCard
                 nodeId={props.selectedNode.id}
                 fullAddress={props.selectedNode.fullAddress}

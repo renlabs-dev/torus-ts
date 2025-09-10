@@ -1,7 +1,7 @@
 import type { Percent } from "@polkadot/types/interfaces";
 import { tryAsync, trySync } from "@torus-network/torus-utils/try-catch";
 import { sb_bigint } from "../../types/index.js";
-import type { Api } from "../common/fees.js";
+import type { Api } from "../common/types.js";
 
 export async function queryRecyclingPercentage(api: Api): Promise<Percent> {
   const [queryError, recyclingPercentage] = await tryAsync(
