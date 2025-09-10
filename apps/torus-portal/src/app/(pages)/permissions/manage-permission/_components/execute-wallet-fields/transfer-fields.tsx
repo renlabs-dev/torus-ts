@@ -1,3 +1,5 @@
+import type { Api } from "@torus-network/sdk/chain";
+import type { SS58Address } from "@torus-network/sdk/types";
 import {
   FormControl,
   FormDescription,
@@ -6,19 +8,22 @@ import {
   FormLabel,
   FormMessage,
 } from "@torus-ts/ui/components/form";
-import { Input } from "@torus-ts/ui/components/input";
 import { FormAddressField } from "~/app/_components/address-field";
 import type { Control } from "react-hook-form";
+import { BalanceDisplay } from "./balance-display";
 import type { ExecuteWalletFormData } from "./execute-wallet-schema";
+import { TokenAmountInput } from "./token-amount-input";
 
 interface TransferFieldsProps {
   control: Control<ExecuteWalletFormData>;
   isAccountConnected: boolean;
+  api: Api | null;
 }
 
 export function TransferFields({
   control,
   isAccountConnected,
+  api,
 }: TransferFieldsProps) {
   // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
   const fromAccountValue = control._formValues.transferData?.from || "";
@@ -27,8 +32,9 @@ export function TransferFields({
     <>
       <div className="space-y-2">
         <FormLabel>From Account</FormLabel>
-        <div className="bg-muted/50 rounded-md border px-3 py-2 text-sm">
-          {fromAccountValue}
+        <div className="bg-muted/50 flex items-center justify-between rounded-md border px-3 py-2 text-sm">
+          <span>{fromAccountValue}</span>
+          <BalanceDisplay api={api} address={fromAccountValue as SS58Address} />
         </div>
         <FormDescription>
           The account to transfer stake from (determined by the permission).
@@ -57,16 +63,14 @@ export function TransferFields({
           <FormItem>
             <FormLabel>Amount</FormLabel>
             <FormControl>
-              <Input
-                type="text"
+              <TokenAmountInput
+                value={field.value}
+                onChange={field.onChange}
                 placeholder="Enter amount to transfer"
                 disabled={!isAccountConnected}
-                {...field}
               />
             </FormControl>
-            <FormDescription>
-              Amount of tokens to transfer (in smallest unit).
-            </FormDescription>
+            <FormDescription>Amount of tokens to transfer.</FormDescription>
             <FormMessage />
           </FormItem>
         )}

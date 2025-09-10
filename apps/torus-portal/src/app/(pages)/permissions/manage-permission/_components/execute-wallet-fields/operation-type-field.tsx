@@ -21,7 +21,10 @@ interface OperationTypeFieldProps {
   canTransferStake?: boolean;
 }
 
-export function OperationTypeField({ control, canTransferStake = true }: OperationTypeFieldProps) {
+export function OperationTypeField({
+  control,
+  canTransferStake = true,
+}: OperationTypeFieldProps) {
   return (
     <FormField
       control={control}
@@ -38,7 +41,8 @@ export function OperationTypeField({ control, canTransferStake = true }: Operati
             <SelectContent>
               <SelectItem value="Unstake">Unstake</SelectItem>
               <SelectItem value="Transfer" disabled={!canTransferStake}>
-                Transfer Stake {!canTransferStake ? "(Disabled by permission)" : ""}
+                Transfer Stake{" "}
+                {!canTransferStake ? "(Disabled by permission)" : ""}
               </SelectItem>
             </SelectContent>
           </Select>

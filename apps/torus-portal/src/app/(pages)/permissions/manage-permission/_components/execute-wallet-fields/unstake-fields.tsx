@@ -1,3 +1,5 @@
+import type { Api } from "@torus-network/sdk/chain";
+import type { SS58Address } from "@torus-network/sdk/types";
 import {
   FormControl,
   FormDescription,
@@ -6,18 +8,21 @@ import {
   FormLabel,
   FormMessage,
 } from "@torus-ts/ui/components/form";
-import { Input } from "@torus-ts/ui/components/input";
 import type { Control } from "react-hook-form";
+import { BalanceDisplay } from "./balance-display";
 import type { ExecuteWalletFormData } from "./execute-wallet-schema";
+import { TokenAmountInput } from "./token-amount-input";
 
 interface UnstakeFieldsProps {
   control: Control<ExecuteWalletFormData>;
   isAccountConnected: boolean;
+  api: Api | null;
 }
 
 export function UnstakeFields({
   control,
   isAccountConnected,
+  api,
 }: UnstakeFieldsProps) {
   // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
   const stakedAccountValue = control._formValues.unstakeData?.staked || "";
@@ -26,8 +31,12 @@ export function UnstakeFields({
     <>
       <div className="space-y-2">
         <FormLabel>Staked Account</FormLabel>
-        <div className="bg-muted/50 rounded-md border px-3 py-2 text-sm">
-          {stakedAccountValue}
+        <div className="bg-muted/50 flex items-center justify-between rounded-md border px-3 py-2 text-sm">
+          <span>{stakedAccountValue}</span>
+          <BalanceDisplay
+            api={api}
+            address={stakedAccountValue as SS58Address}
+          />
         </div>
         <FormDescription>
           The account from which to unstake tokens (determined by the
@@ -42,16 +51,14 @@ export function UnstakeFields({
           <FormItem>
             <FormLabel>Amount</FormLabel>
             <FormControl>
-              <Input
-                type="text"
+              <TokenAmountInput
+                value={field.value}
+                onChange={field.onChange}
                 placeholder="Enter amount to unstake"
                 disabled={!isAccountConnected}
-                {...field}
               />
             </FormControl>
-            <FormDescription>
-              Amount of tokens to unstake (in smallest unit).
-            </FormDescription>
+            <FormDescription>Amount of tokens to unstake.</FormDescription>
             <FormMessage />
           </FormItem>
         )}

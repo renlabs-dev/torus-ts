@@ -326,8 +326,8 @@ export function EditPermissionForm({
         </form>
       </Form>
       {permissionType === "wallet" && (
-        <ExecuteWalletForm 
-          permissionId={selectedPermissionId} 
+        <ExecuteWalletForm
+          permissionId={selectedPermissionId}
           permissionContract={selectedPermissionContract}
         />
       )}

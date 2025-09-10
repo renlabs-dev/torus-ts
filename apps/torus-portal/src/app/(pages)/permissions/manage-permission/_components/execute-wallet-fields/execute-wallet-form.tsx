@@ -44,6 +44,7 @@ export function ExecuteWalletForm({
       : null;
 
   const walletRecipient = walletScope?.recipient || "";
+  const walletDelegator = permissionContract?.delegator || "";
   const stakeSettings = walletScope?.r_type.Stake;
   const canTransferStake = stakeSettings?.canTransferStake || false;
 
@@ -63,11 +64,11 @@ export function ExecuteWalletForm({
     defaultValues: {
       operationType: "Unstake",
       unstakeData: {
-        staked: walletRecipient,
+        staked: walletDelegator,
         amount: "",
       },
       transferData: {
-        from: walletRecipient,
+        from: walletDelegator,
         to: "",
         amount: "",
       },
@@ -143,6 +144,7 @@ export function ExecuteWalletForm({
           <UnstakeFields
             control={form.control}
             isAccountConnected={isAccountConnected}
+            api={api}
           />
         )}
 
@@ -150,6 +152,7 @@ export function ExecuteWalletForm({
           <TransferFields
             control={form.control}
             isAccountConnected={isAccountConnected}
+            api={api}
           />
         )}
 

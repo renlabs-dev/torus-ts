@@ -1,8 +1,6 @@
 import { SS58_SCHEMA } from "@torus-network/sdk/types";
 import { z } from "zod";
 
-const OPERATION_TYPE_SCHEMA = z.enum(["Unstake", "Transfer"]);
-
 const UNSTAKE_DATA_SCHEMA = z.object({
   staked: SS58_SCHEMA,
   amount: z
