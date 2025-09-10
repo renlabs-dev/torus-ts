@@ -1,7 +1,7 @@
-import { createSeoMetadata } from "@torus-ts/ui/components/seo";
-import { env } from "~/env";
 import { Button } from "@torus-ts/ui/components/button";
 import { Container } from "@torus-ts/ui/components/container";
+import { createSeoMetadata } from "@torus-ts/ui/components/seo";
+import { env } from "~/env";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { ProposalExpandedView } from "./_components/proposal-expanded-view";
