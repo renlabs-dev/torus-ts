@@ -18,13 +18,15 @@ import { TokenAmountInput } from "./token-amount-input";
 interface UnstakeFieldsProps {
   control: Control<ExecuteWalletFormData>;
   isAccountConnected: boolean;
+  delegatorAddress: string;
 }
 
 export function UnstakeFields({
   control,
   isAccountConnected,
+  delegatorAddress,
 }: UnstakeFieldsProps) {
-  const { api, selectedAccount } = useTorus();
+  const { api } = useTorus();
 
   return (
     <>
@@ -33,10 +35,7 @@ export function UnstakeFields({
         name="unstakeData.staked"
         render={({ field }) => {
           // eslint-disable-next-line react-hooks/rules-of-hooks
-          const accountStakedBy = useKeyStakingTo(
-            api,
-            selectedAccount?.address,
-          );
+          const accountStakedBy = useKeyStakingTo(api, delegatorAddress);
 
           // Find the stake amount for the selected staked account
           const stakeToSelected = accountStakedBy.data?.find(

@@ -144,6 +144,7 @@ export function ExecuteWalletForm({
           <UnstakeFields
             control={form.control}
             isAccountConnected={isAccountConnected}
+            delegatorAddress={permissionContract?.delegator as string}
           />
         )}
 
@@ -152,6 +153,7 @@ export function ExecuteWalletForm({
             control={form.control}
             isAccountConnected={isAccountConnected}
             api={api}
+            delegatorAddress={permissionContract?.delegator as string}
           />
         )}
 

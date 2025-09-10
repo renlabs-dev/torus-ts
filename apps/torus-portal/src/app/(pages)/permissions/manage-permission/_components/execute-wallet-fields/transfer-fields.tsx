@@ -20,13 +20,15 @@ interface TransferFieldsProps {
   control: Control<ExecuteWalletFormData>;
   isAccountConnected: boolean;
   api: Api | null;
+  delegatorAddress: string;
 }
 
 export function TransferFields({
   control,
   isAccountConnected,
+  delegatorAddress,
 }: TransferFieldsProps) {
-  const { api, selectedAccount } = useTorus();
+  const { api } = useTorus();
 
   return (
     <>
@@ -35,10 +37,7 @@ export function TransferFields({
         name="transferData.from"
         render={({ field }) => {
           // eslint-disable-next-line react-hooks/rules-of-hooks
-          const accountStakedBy = useKeyStakingTo(
-            api,
-            selectedAccount?.address,
-          );
+          const accountStakedBy = useKeyStakingTo(api, delegatorAddress);
 
           // Find the stake amount for the selected from account
           const stakeToSelected = accountStakedBy.data?.find(
