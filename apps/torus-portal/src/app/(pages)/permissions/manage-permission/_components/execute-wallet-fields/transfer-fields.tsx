@@ -20,24 +20,20 @@ export function TransferFields({
   control,
   isAccountConnected,
 }: TransferFieldsProps) {
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
+  const fromAccountValue = control._formValues.transferData?.from || "";
+
   return (
     <>
-      <FormField
-        control={control}
-        name="transferData.from"
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel>From Account</FormLabel>
-            <FormControl>
-              <FormAddressField field={field} disabled={!isAccountConnected} />
-            </FormControl>
-            <FormDescription>
-              The account to transfer stake from.
-            </FormDescription>
-            <FormMessage />
-          </FormItem>
-        )}
-      />
+      <div className="space-y-2">
+        <FormLabel>From Account</FormLabel>
+        <div className="bg-muted/50 rounded-md border px-3 py-2 text-sm">
+          {fromAccountValue}
+        </div>
+        <FormDescription>
+          The account to transfer stake from (determined by the permission).
+        </FormDescription>
+      </div>
 
       <FormField
         control={control}

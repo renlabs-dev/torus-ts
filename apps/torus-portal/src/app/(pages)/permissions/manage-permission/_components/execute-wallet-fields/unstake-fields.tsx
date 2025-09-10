@@ -7,7 +7,6 @@ import {
   FormMessage,
 } from "@torus-ts/ui/components/form";
 import { Input } from "@torus-ts/ui/components/input";
-import { FormAddressField } from "~/app/_components/address-field";
 import type { Control } from "react-hook-form";
 import type { ExecuteWalletFormData } from "./execute-wallet-schema";
 
@@ -20,24 +19,21 @@ export function UnstakeFields({
   control,
   isAccountConnected,
 }: UnstakeFieldsProps) {
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
+  const stakedAccountValue = control._formValues.unstakeData?.staked || "";
+
   return (
     <>
-      <FormField
-        control={control}
-        name="unstakeData.staked"
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel>Staked Account</FormLabel>
-            <FormControl>
-              <FormAddressField field={field} disabled={!isAccountConnected} />
-            </FormControl>
-            <FormDescription>
-              The account from which to unstake tokens.
-            </FormDescription>
-            <FormMessage />
-          </FormItem>
-        )}
-      />
+      <div className="space-y-2">
+        <FormLabel>Staked Account</FormLabel>
+        <div className="bg-muted/50 rounded-md border px-3 py-2 text-sm">
+          {stakedAccountValue}
+        </div>
+        <FormDescription>
+          The account from which to unstake tokens (determined by the
+          permission).
+        </FormDescription>
+      </div>
 
       <FormField
         control={control}

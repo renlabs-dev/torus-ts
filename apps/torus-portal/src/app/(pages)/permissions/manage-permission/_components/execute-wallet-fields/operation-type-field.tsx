@@ -18,9 +18,10 @@ import type { ExecuteWalletFormData } from "./execute-wallet-schema";
 
 interface OperationTypeFieldProps {
   control: Control<ExecuteWalletFormData>;
+  canTransferStake?: boolean;
 }
 
-export function OperationTypeField({ control }: OperationTypeFieldProps) {
+export function OperationTypeField({ control, canTransferStake = true }: OperationTypeFieldProps) {
   return (
     <FormField
       control={control}
@@ -36,7 +37,9 @@ export function OperationTypeField({ control }: OperationTypeFieldProps) {
             </FormControl>
             <SelectContent>
               <SelectItem value="Unstake">Unstake</SelectItem>
-              <SelectItem value="Transfer">Transfer Stake</SelectItem>
+              <SelectItem value="Transfer" disabled={!canTransferStake}>
+                Transfer Stake {!canTransferStake ? "(Disabled by permission)" : ""}
+              </SelectItem>
             </SelectContent>
           </Select>
           <FormDescription>

@@ -240,6 +240,8 @@ export function EditPermissionForm({
                   permissionType={permissionType}
                   isGrantor={isGrantor}
                   userRole={userRole}
+                  permissionContract={selectedPermissionContract}
+                  selectedAccount={selectedAccount?.address}
                 />
 
                 {permissionType === "stream" && canEdit && (
@@ -324,7 +326,10 @@ export function EditPermissionForm({
         </form>
       </Form>
       {permissionType === "wallet" && (
-        <ExecuteWalletForm permissionId={selectedPermissionId} />
+        <ExecuteWalletForm 
+          permissionId={selectedPermissionId} 
+          permissionContract={selectedPermissionContract}
+        />
       )}
     </>
   );

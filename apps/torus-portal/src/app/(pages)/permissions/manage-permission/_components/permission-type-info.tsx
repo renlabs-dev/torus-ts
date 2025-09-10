@@ -1,3 +1,4 @@
+import type { PermissionContract } from "@torus-network/sdk/chain";
 import {
   Card,
   CardDescription,
@@ -11,12 +12,16 @@ interface PermissionTypeInfoProps {
   canEdit?: boolean;
   isGrantor?: boolean;
   userRole?: string | null; // Primary role badge from getPrimaryRoleBadge
+  permissionContract?: PermissionContract | null;
+  selectedAccount?: string | null;
 }
 
 export function PermissionTypeInfo({
   permissionType,
   isGrantor = true,
   userRole = null,
+  permissionContract,
+  selectedAccount,
 }: PermissionTypeInfoProps) {
   if (permissionType === "capability") {
     return (
@@ -95,16 +100,41 @@ export function PermissionTypeInfo({
   }
 
   if (permissionType === "wallet") {
+    // Extract wallet permission details
+    const walletScope =
+      permissionContract && "Wallet" in permissionContract.scope
+        ? permissionContract.scope.Wallet
+        : null;
+
+    const walletRecipient = walletScope?.recipient || "";
+
+    // Check user roles
+    const isDelegator = permissionContract?.delegator === selectedAccount;
+    const isRecipient = walletRecipient === selectedAccount;
+
+    let title = "Wallet Stake Permission";
+    let description = "";
+
+    if (isDelegator && !isRecipient) {
+      title = "Wallet Stake Permission - Delegator";
+      description = `As the delegator, you cannot execute wallet operations. Only the recipient (${walletRecipient}) can execute these operations. You can revoke this permission if the revocation terms allow it.`;
+    } else if (isRecipient) {
+      title = "Wallet Stake Permission - Recipient";
+      description = `You can execute wallet stake operations for account ${walletRecipient}. Available operations depend on the permission settings below.`;
+    } else {
+      title = "Wallet Stake Permission - No Access";
+      description = `You cannot execute wallet operations. Only the recipient (${walletRecipient}) can execute these operations.`;
+    }
+
     return (
-      <Card className="border-primary bg-primary/5">
+      <Card>
         <CardHeader>
-          <CardTitle className="text-primary flex items-center gap-2">
+          <CardTitle className={`flex items-center gap-2`}>
             <Info className="h-5 w-5" />
-            Wallet Stake Permission
+            {title}
           </CardTitle>
           <CardDescription className="break-words">
-            Execute wallet stake operations using this permission. You can
-            unstake tokens or transfer stake between accounts.
+            {description}
           </CardDescription>
         </CardHeader>
       </Card>

@@ -1,6 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
+import type { PermissionContract } from "@torus-network/sdk/chain";
 import { executeWalletStakePermission } from "@torus-network/sdk/chain";
 import type { SS58Address } from "@torus-network/sdk/types";
 import { useTorus } from "@torus-ts/torus-provider";
@@ -17,7 +18,13 @@ import { OperationTypeField } from "./operation-type-field";
 import { TransferFields } from "./transfer-fields";
 import { UnstakeFields } from "./unstake-fields";
 
-export function ExecuteWalletForm({ permissionId }: { permissionId: string }) {
+export function ExecuteWalletForm({
+  permissionId,
+  permissionContract,
+}: {
+  permissionId: string;
+  permissionContract: PermissionContract | null;
+}) {
   const { toast } = useToast();
   const { api, isAccountConnected, selectedAccount, torusApi, wsEndpoint } =
     useTorus();
@@ -30,6 +37,25 @@ export function ExecuteWalletForm({ permissionId }: { permissionId: string }) {
     transactionType: "Execute Wallet Stake Permission",
   });
 
+  // Get the recipient address and stake settings from the wallet permission
+  const walletScope =
+    permissionContract && "Wallet" in permissionContract.scope
+      ? permissionContract.scope.Wallet
+      : null;
+
+  const walletRecipient = walletScope?.recipient || "";
+  const stakeSettings = walletScope?.r_type.Stake;
+  const canTransferStake = stakeSettings?.canTransferStake || false;
+
+  // Check access permissions
+  const isDelegator =
+    permissionContract?.delegator === selectedAccount?.address;
+  const isRecipient = walletRecipient === selectedAccount?.address;
+
+  // Recipients can execute wallet operations
+  // Delegators cannot execute (they can only revoke if allowed)
+  const canExecuteWallet = isRecipient && !isDelegator;
+
   const form = useForm<ExecuteWalletFormData>({
     disabled: !isAccountConnected,
     resolver: zodResolver(EXECUTE_WALLET_SCHEMA),
@@ -37,11 +63,11 @@ export function ExecuteWalletForm({ permissionId }: { permissionId: string }) {
     defaultValues: {
       operationType: "Unstake",
       unstakeData: {
-        staked: "",
+        staked: walletRecipient,
         amount: "",
       },
       transferData: {
-        from: "",
+        from: walletRecipient,
         to: "",
         amount: "",
       },
@@ -95,6 +121,11 @@ export function ExecuteWalletForm({ permissionId }: { permissionId: string }) {
     return null;
   }
 
+  // Only show the form if the user can execute wallet operations
+  if (!canExecuteWallet) {
+    return null;
+  }
+
   return (
     <Form {...form}>
       <form
@@ -103,7 +134,10 @@ export function ExecuteWalletForm({ permissionId }: { permissionId: string }) {
         })}
         className={cn("mt-6 flex flex-col gap-6")}
       >
-        <OperationTypeField control={form.control} />
+        <OperationTypeField
+          control={form.control}
+          canTransferStake={canTransferStake}
+        />
 
         {operationType === "Unstake" && (
           <UnstakeFields
