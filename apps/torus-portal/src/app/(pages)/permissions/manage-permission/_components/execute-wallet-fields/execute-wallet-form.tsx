@@ -9,34 +9,18 @@ import { Button } from "@torus-ts/ui/components/button";
 import { Form } from "@torus-ts/ui/components/form";
 import { useToast } from "@torus-ts/ui/hooks/use-toast";
 import { cn } from "@torus-ts/ui/lib/utils";
-import { useCallback } from "react";
 import { useForm } from "react-hook-form";
 import type { z } from "zod";
-import { OperationTypeField } from "./operation-type-field";
-import { UnstakeFields } from "./unstake-fields";
-import { TransferFields } from "./transfer-fields";
 import type { ExecuteWalletFormData } from "./execute-wallet-schema";
 import { EXECUTE_WALLET_SCHEMA } from "./execute-wallet-schema";
+import { OperationTypeField } from "./operation-type-field";
+import { TransferFields } from "./transfer-fields";
+import { UnstakeFields } from "./unstake-fields";
 
-interface ExecuteWalletFormProps extends React.ComponentProps<"form"> {
-  permissionId: string;
-  onSuccess?: () => void;
-}
-
-export function ExecuteWalletForm({
-  className,
-  permissionId,
-  onSuccess,
-  ...props
-}: ExecuteWalletFormProps) {
+export function ExecuteWalletForm({ permissionId }: { permissionId: string }) {
   const { toast } = useToast();
-  const {
-    api,
-    isAccountConnected,
-    selectedAccount,
-    torusApi,
-    wsEndpoint,
-  } = useTorus();
+  const { api, isAccountConnected, selectedAccount, torusApi, wsEndpoint } =
+    useTorus();
 
   const { sendTx, isPending, isSigning } = useSendTransaction({
     api,
@@ -66,52 +50,46 @@ export function ExecuteWalletForm({
 
   const operationType = form.watch("operationType");
 
-  const handleSubmit = useCallback(
-    async (data: z.infer<typeof EXECUTE_WALLET_SCHEMA>) => {
-      if (!api || !sendTx) {
-        toast.error("API not ready");
-        return;
-      }
+  async function handleSubmit(data: z.infer<typeof EXECUTE_WALLET_SCHEMA>) {
+    if (!api || !sendTx) {
+      toast.error("API not ready");
+      return;
+    }
 
-      // Build the operation based on the operation type
-      const operation =
-        data.operationType === "Unstake"
-          ? {
-              Unstake: {
-                staked: data.unstakeData.staked as SS58Address,
-                amount: BigInt(data.unstakeData.amount),
-              },
-            }
-          : {
-              Transfer: {
-                from: data.transferData.from as SS58Address,
-                to: data.transferData.to as SS58Address,
-                amount: BigInt(data.transferData.amount),
-              },
-            };
+    const operation =
+      data.operationType === "Unstake"
+        ? {
+            Unstake: {
+              staked: data.unstakeData.staked as SS58Address,
+              amount: BigInt(data.unstakeData.amount),
+            },
+          }
+        : {
+            Transfer: {
+              from: data.transferData.from as SS58Address,
+              to: data.transferData.to as SS58Address,
+              amount: BigInt(data.transferData.amount),
+            },
+          };
 
-      const [sendErr, sendRes] = await sendTx(
-        executeWalletStakePermission({
-          api,
-          permissionId: permissionId as `0x${string}`,
-          operation,
-        }),
-      );
+    const [sendErr, sendRes] = await sendTx(
+      executeWalletStakePermission({
+        api,
+        permissionId: permissionId as `0x${string}`,
+        operation,
+      }),
+    );
 
-      if (sendErr !== undefined) {
-        return; // Error already handled by sendTx
-      }
+    if (sendErr !== undefined) {
+      return; // Error already handled by sendTx
+    }
 
-      const { tracker } = sendRes;
+    const { tracker } = sendRes;
 
-      tracker.on("finalized", () => {
-        toast.success("Wallet stake operation executed successfully!");
-        form.reset();
-        onSuccess?.();
-      });
-    },
-    [api, sendTx, permissionId, toast, form, onSuccess],
-  );
+    tracker.on("finalized", () => {
+      // form.reset();
+    });
+  }
 
   if (!permissionId) {
     return null;
@@ -120,29 +98,32 @@ export function ExecuteWalletForm({
   return (
     <Form {...form}>
       <form
-        {...props}
-        onSubmit={form.handleSubmit(handleSubmit)}
-        className={cn("flex flex-col gap-6", className)}
+        onSubmit={form.handleSubmit(handleSubmit, (errors) => {
+          console.log("Form validation errors:", errors);
+        })}
+        className={cn("mt-6 flex flex-col gap-6")}
       >
         <OperationTypeField control={form.control} />
 
         {operationType === "Unstake" && (
-          <UnstakeFields control={form.control} isAccountConnected={isAccountConnected} />
+          <UnstakeFields
+            control={form.control}
+            isAccountConnected={isAccountConnected}
+          />
         )}
 
         {operationType === "Transfer" && (
-          <TransferFields control={form.control} isAccountConnected={isAccountConnected} />
+          <TransferFields
+            control={form.control}
+            isAccountConnected={isAccountConnected}
+          />
         )}
 
         <Button
           type="submit"
           variant="outline"
           className="w-full"
-          disabled={
-            !isAccountConnected ||
-            isPending ||
-            isSigning
-          }
+          disabled={!isAccountConnected || isPending || isSigning}
         >
           {isPending || isSigning
             ? "Executing..."

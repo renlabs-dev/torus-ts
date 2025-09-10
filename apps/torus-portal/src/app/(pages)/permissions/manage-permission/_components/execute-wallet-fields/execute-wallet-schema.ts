@@ -40,10 +40,24 @@ const TRANSFER_DATA_SCHEMA = z.object({
     ),
 });
 
-export const EXECUTE_WALLET_SCHEMA = z.object({
-  operationType: OPERATION_TYPE_SCHEMA,
-  unstakeData: UNSTAKE_DATA_SCHEMA,
-  transferData: TRANSFER_DATA_SCHEMA,
-});
+export const EXECUTE_WALLET_SCHEMA = z.discriminatedUnion("operationType", [
+  z.object({
+    operationType: z.literal("Unstake"),
+    unstakeData: UNSTAKE_DATA_SCHEMA,
+    transferData: z.object({
+      from: z.string(),
+      to: z.string(), 
+      amount: z.string(),
+    }).optional(),
+  }),
+  z.object({
+    operationType: z.literal("Transfer"),
+    transferData: TRANSFER_DATA_SCHEMA,
+    unstakeData: z.object({
+      staked: z.string(),
+      amount: z.string(),
+    }).optional(),
+  }),
+]);
 
 export type ExecuteWalletFormData = z.infer<typeof EXECUTE_WALLET_SCHEMA>;

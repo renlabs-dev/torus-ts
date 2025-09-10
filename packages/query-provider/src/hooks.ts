@@ -595,7 +595,7 @@ export const useAllPermissions = (api: Api | Nullish) => {
       const result = await queryAllPermissions(api);
       const [error, data] = result;
       if (error) {
-        console.error("Error querying all permissions:", error);
+        console.log("Error querying all permissions:", error);
         return null;
       }
       return data;

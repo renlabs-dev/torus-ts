@@ -31,6 +31,7 @@ import {
   CircleArrowOutUpRight,
   Copy,
   VenetianMask,
+  Wallet,
   Zap,
 } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -73,8 +74,6 @@ export function PermissionSelector(props: PermissionSelectorProps) {
   const isMobile = useIsMobile();
   const { api, selectedAccount } = useTorus();
   const { data: permissions } = useAllPermissions(api);
-
-  console.log("Permissions data:", permissions);
 
   // Collect ALL unique addresses from ALL permissions (not filtered by user role)
   // This way we have agent names cached when user switches wallets
@@ -143,9 +142,19 @@ export function PermissionSelector(props: PermissionSelectorProps) {
           details: getContractDetails(contract, getFormattedAddress),
         })),
     },
+    {
+      type: "Wallet",
+      icon: Wallet,
+      heading: "Wallet Permissions",
+      permissions: [...sortedPermissions.walletPermissions]
+        .filter(([_, contract]) => hasUserRole(contract, userAddress))
+        .map(([id, contract]) => ({
+          id,
+          contract,
+          details: getContractDetails(contract, getFormattedAddress),
+        })),
+    },
   ];
-
-  console.log("Permission Groups:", permissionGroups);
 
   function getSelectedPermissionDisplay() {
     if (!props.selectedPermissionId) {
