@@ -52,7 +52,10 @@ export function TransferFields({
                 label="From Account"
                 disabled={!isAccountConnected}
               />
-              <div className="flex justify-end">
+              <div className="flex justify-between">
+                <FormDescription>
+                  The account to transfer stake from.
+                </FormDescription>
                 {field.value && (
                   <div className="text-muted-foreground text-xs">
                     {accountStakedBy.isLoading ? (
@@ -65,9 +68,6 @@ export function TransferFields({
                   </div>
                 )}
               </div>
-              <FormDescription>
-                The account to transfer stake from.
-              </FormDescription>
             </div>
           );
         }}

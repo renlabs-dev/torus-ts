@@ -50,7 +50,11 @@ export function UnstakeFields({
                 label="Staked Account"
                 disabled={!isAccountConnected}
               />
-              <div className="flex justify-end">
+
+              <div className="flex justify-between">
+                <FormDescription>
+                  The account from which to unstake tokens.
+                </FormDescription>
                 {field.value && (
                   <div className="text-muted-foreground text-xs">
                     {accountStakedBy.isLoading ? (
@@ -63,9 +67,6 @@ export function UnstakeFields({
                   </div>
                 )}
               </div>
-              <FormDescription>
-                The account from which to unstake tokens.
-              </FormDescription>
             </div>
           );
         }}
