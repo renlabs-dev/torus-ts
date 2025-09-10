@@ -19,7 +19,7 @@ export function generateMetadata() {
       "network stakes",
     ],
     ogSiteName: "Torus Portal",
-    canonical: "/root-allocator/agentstake",
+    canonical: "/root-allocator/allocated-weight",
     baseUrl: env("BASE_URL"),
   });
 }

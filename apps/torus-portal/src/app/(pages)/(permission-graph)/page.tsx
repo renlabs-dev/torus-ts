@@ -30,7 +30,7 @@ export function generateMetadata() {
       "network explorer",
     ],
     ogSiteName: "Torus Portal",
-    canonical: "/",
+    canonical: "/permission-graph",
     baseUrl: env("BASE_URL"),
   });
 }
