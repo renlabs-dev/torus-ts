@@ -147,27 +147,6 @@ export function WalletStakePermissionForm({
             <Label className="font-medium">Stake Permissions</Label>
             <FormField
               control={form.control}
-              name="canTransferStake"
-              render={({ field }) => (
-                <FormItem className="flex flex-row items-start space-x-3 space-y-0">
-                  <FormControl>
-                    <Checkbox
-                      checked={field.value}
-                      onCheckedChange={field.onChange}
-                      disabled={!isAccountConnected}
-                    />
-                  </FormControl>
-                  <div className="space-y-1 leading-none">
-                    <FormLabel>Allow Stake Transfer</FormLabel>
-                    <FormDescription>
-                      Allow the recipient to transfer stake to other accounts
-                    </FormDescription>
-                  </div>
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
               name="exclusiveStakeAccess"
               render={({ field }) => (
                 <FormItem className="flex flex-row items-start space-x-3 space-y-0">
@@ -179,10 +158,32 @@ export function WalletStakePermissionForm({
                     />
                   </FormControl>
                   <div className="space-y-1 leading-none">
-                    <FormLabel>Exclusive Stake Access</FormLabel>
+                    <FormLabel>Exclusive Delegation</FormLabel>
                     <FormDescription>
                       Grant exclusive access to stake operations (prevents
                       delegator from using stake)
+                    </FormDescription>
+                  </div>
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="canTransferStake"
+              render={({ field }) => (
+                <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                  <FormControl>
+                    <Checkbox
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
+                      disabled={!isAccountConnected}
+                    />
+                  </FormControl>
+                  <div className="space-y-1 leading-none">
+                    <FormLabel>Allow Stake Movement</FormLabel>
+                    <FormDescription>
+                      You (the delegator) will loose permission to unstake,
+                      exclusively granting it to the recipient
                     </FormDescription>
                   </div>
                 </FormItem>
