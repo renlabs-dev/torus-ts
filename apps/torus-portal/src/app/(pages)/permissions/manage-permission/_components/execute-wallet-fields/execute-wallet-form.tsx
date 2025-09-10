@@ -10,6 +10,7 @@ import { Button } from "@torus-ts/ui/components/button";
 import { Form } from "@torus-ts/ui/components/form";
 import { useToast } from "@torus-ts/ui/hooks/use-toast";
 import { cn } from "@torus-ts/ui/lib/utils";
+import { env } from "~/env";
 import { useForm } from "react-hook-form";
 import type { z } from "zod";
 import type { ExecuteWalletFormData } from "./execute-wallet-schema";
@@ -44,7 +45,6 @@ export function ExecuteWalletForm({
       : null;
 
   const walletRecipient = walletScope?.recipient || "";
-  const walletDelegator = permissionContract?.delegator || "";
   const stakeSettings = walletScope?.r_type.Stake;
   const canTransferStake = stakeSettings?.canTransferStake || false;
 
@@ -64,11 +64,11 @@ export function ExecuteWalletForm({
     defaultValues: {
       operationType: "Unstake",
       unstakeData: {
-        staked: walletDelegator,
+        staked: env("NEXT_PUBLIC_TORUS_ALLOCATOR_ADDRESS"),
         amount: "",
       },
       transferData: {
-        from: walletDelegator,
+        from: env("NEXT_PUBLIC_TORUS_ALLOCATOR_ADDRESS"),
         to: "",
         amount: "",
       },
@@ -144,7 +144,6 @@ export function ExecuteWalletForm({
           <UnstakeFields
             control={form.control}
             isAccountConnected={isAccountConnected}
-            api={api}
           />
         )}
 

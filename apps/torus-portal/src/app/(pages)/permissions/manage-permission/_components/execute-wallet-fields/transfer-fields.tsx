@@ -1,5 +1,4 @@
 import type { Api } from "@torus-network/sdk/chain";
-import type { SS58Address } from "@torus-network/sdk/types";
 import {
   FormControl,
   FormDescription,
@@ -10,7 +9,6 @@ import {
 } from "@torus-ts/ui/components/form";
 import { FormAddressField } from "~/app/_components/address-field";
 import type { Control } from "react-hook-form";
-import { BalanceDisplay } from "./balance-display";
 import type { ExecuteWalletFormData } from "./execute-wallet-schema";
 import { TokenAmountInput } from "./token-amount-input";
 
@@ -23,7 +21,6 @@ interface TransferFieldsProps {
 export function TransferFields({
   control,
   isAccountConnected,
-  api,
 }: TransferFieldsProps) {
   // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
   const fromAccountValue = control._formValues.transferData?.from || "";
@@ -34,7 +31,6 @@ export function TransferFields({
         <FormLabel>From Account</FormLabel>
         <div className="bg-muted/50 flex items-center justify-between rounded-md border px-3 py-2 text-sm">
           <span>{fromAccountValue}</span>
-          <BalanceDisplay api={api} address={fromAccountValue as SS58Address} />
         </div>
         <FormDescription>
           The account to transfer stake from (determined by the permission).
