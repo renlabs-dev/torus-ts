@@ -336,7 +336,7 @@ export function PermissionDetailsCard({
         },
         {
           label: "Stake Details",
-          value: match(wallet.rType)({
+          value: match(wallet.r_type)({
             Stake: (stake) =>
               `Transfer: ${stake.canTransferStake ? "Allowed" : "Denied"}, Exclusive: ${stake.exclusiveStakeAccess ? "Yes" : "No"}`,
           }),

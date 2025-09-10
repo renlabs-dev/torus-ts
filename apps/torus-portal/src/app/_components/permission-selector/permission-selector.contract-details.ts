@@ -75,7 +75,7 @@ export function getContractDetails(
       details: [
         `Delegator: ${formatAddress(contract.delegator)}`,
         `Recipient: ${formatAddress(wallet.recipient)}`,
-        `Stake Type: ${match(wallet.rType)({
+        `Stake Type: ${match(wallet.r_type)({
           Stake: (stake) =>
             `Transfer: ${stake.canTransferStake ? "Allowed" : "Denied"}, Exclusive: ${stake.exclusiveStakeAccess ? "Yes" : "No"}`,
         })}`,
