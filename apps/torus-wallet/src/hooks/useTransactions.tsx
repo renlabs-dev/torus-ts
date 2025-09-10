@@ -35,9 +35,7 @@ export function useTransactions({
   const [hasMore, setHasMore] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
-  // Reset state when resetKey changes (during next render)
   if (currentResetKey !== resetKey) {
-    // Synchronous state update during render is safe for this pattern
     setCurrentResetKey(resetKey);
     setPage(1);
     setTransactions([]);

@@ -38,7 +38,7 @@ export default function PermissionGraphPage() {
 
   const { selectedAccount, isInitialized } = useTorus();
 
-  // Handle initial selected node from query params - async approach to avoid setState in effect
+  // Handle initial selected node from query params
   useEffect(() => {
     const nodeId = searchParams.get("id");
 

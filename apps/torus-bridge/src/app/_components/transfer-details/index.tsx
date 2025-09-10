@@ -14,7 +14,6 @@ export function TransferDetails() {
   const transfers = useStore((s) => s.transfers);
   const transferLoading = useStore((s) => s.transferLoading);
 
-  // Use useEffect to properly handle state updates
   useEffect(() => {
     const shouldShowModal = !transferLoading && transfers.length > 0;
     const latestTransfer = shouldShowModal
@@ -22,7 +21,6 @@ export function TransferDetails() {
       : null;
 
     if (latestTransfer && latestTransfer !== selectedTransfer) {
-      // Use setTimeout to avoid synchronous setState in effect
       const timeoutId = setTimeout(() => {
         setSelectedTransfer(latestTransfer);
         setIsModalOpen(true);

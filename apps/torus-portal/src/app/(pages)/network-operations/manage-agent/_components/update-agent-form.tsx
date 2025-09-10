@@ -73,7 +73,6 @@ export function UpdateAgentForm({ agentKey }: UpdateAgentFormProps) {
     if (currentImagePreview && currentImagePreview !== currentImageBlobUrl) {
       URL.revokeObjectURL(currentImagePreview);
     }
-    // Use setTimeout to avoid setState in effect
     const timer = setTimeout(() => {
       setCurrentImagePreview(currentImageBlobUrl);
     }, 0);
@@ -136,7 +135,6 @@ export function UpdateAgentForm({ agentKey }: UpdateAgentFormProps) {
         },
       };
 
-      // Use setTimeout to avoid setState in effect
       setTimeout(() => {
         setOriginalFormData(originalData);
         form.reset(originalData);

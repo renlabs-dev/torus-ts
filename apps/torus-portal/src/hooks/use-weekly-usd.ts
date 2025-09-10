@@ -66,7 +66,7 @@ export function useWeeklyUsdCalculation(
   const isError =
     isTorusPriceError || isComputedWeightError || isTokensPerWeekError;
 
-  // Calculate tokens per week - remove manual memoization
+  // Calculate tokens per week
   const tokensPerWeek = (() => {
     // Early return conditions
     if (isLoading || isError || computedWeightedAgents === null)
@@ -83,14 +83,13 @@ export function useWeeklyUsdCalculation(
     );
   })();
 
-  // Calculate USD value of weekly tokens - remove manual memoization
+  // Calculate USD value of weekly tokens
   const usdValue = (() => {
     if (isLoading || isError || !torusPrice) return 0;
     return tokensPerWeek.toNumber() * torusPrice;
   })();
 
   // EXAMPLE: 5000000.00000 will be displayed: 5,000,000.00 TORUS
-  // Remove useMemo and let React Compiler handle optimization
   const displayTokensPerWeek = (() => {
     if (isLoading || isError) return "0.00 TORUS";
     return (
