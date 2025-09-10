@@ -1,6 +1,6 @@
-import type { SS58Address } from "@torus-network/sdk/types";
 import { formatToken } from "@torus-network/torus-utils/torus";
-import { useCachedStakeOut } from "@torus-ts/query-provider/hooks";
+import { useKeyStakingTo } from "@torus-ts/query-provider/hooks";
+import { useTorus } from "@torus-ts/torus-provider";
 import {
   FormControl,
   FormDescription,
@@ -11,7 +11,6 @@ import {
 } from "@torus-ts/ui/components/form";
 import { Skeleton } from "@torus-ts/ui/components/skeleton";
 import { FormAddressField } from "~/app/_components/address-field";
-import { env } from "~/env";
 import type { Control } from "react-hook-form";
 import type { ExecuteWalletFormData } from "./execute-wallet-schema";
 import { TokenAmountInput } from "./token-amount-input";
@@ -25,7 +24,7 @@ export function UnstakeFields({
   control,
   isAccountConnected,
 }: UnstakeFieldsProps) {
-  const stakeOut = useCachedStakeOut(env("NEXT_PUBLIC_TORUS_CACHE_URL"));
+  const { api, selectedAccount } = useTorus();
 
   return (
     <>
@@ -33,9 +32,16 @@ export function UnstakeFields({
         control={control}
         name="unstakeData.staked"
         render={({ field }) => {
-          const stakedBalance = field.value
-            ? stakeOut.data?.perAddr[field.value as SS58Address]
-            : undefined;
+          // eslint-disable-next-line react-hooks/rules-of-hooks
+          const accountStakedBy = useKeyStakingTo(
+            api,
+            selectedAccount?.address,
+          );
+
+          // Find the stake amount for the selected staked account
+          const stakeToSelected = accountStakedBy.data?.find(
+            (stake) => stake.address === field.value,
+          );
 
           return (
             <div className="space-y-2">
@@ -47,12 +53,12 @@ export function UnstakeFields({
               <div className="flex justify-end">
                 {field.value && (
                   <div className="text-muted-foreground text-xs">
-                    {stakeOut.isLoading ? (
+                    {accountStakedBy.isLoading ? (
                       <Skeleton className="h-4 w-24" />
-                    ) : stakedBalance ? (
-                      `Staked: ${formatToken(stakedBalance)}`
+                    ) : stakeToSelected ? (
+                      `Delegator stake: ${formatToken(stakeToSelected.stake)}`
                     ) : (
-                      "No stake found"
+                      "No delegation found"
                     )}
                   </div>
                 )}
