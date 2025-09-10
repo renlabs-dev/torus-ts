@@ -1,4 +1,7 @@
 import type { Api } from "@torus-network/sdk/chain";
+import type { SS58Address } from "@torus-network/sdk/types";
+import { formatToken } from "@torus-network/torus-utils/torus";
+import { useCachedStakeOut } from "@torus-ts/query-provider/hooks";
 import {
   FormControl,
   FormDescription,
@@ -7,7 +10,9 @@ import {
   FormLabel,
   FormMessage,
 } from "@torus-ts/ui/components/form";
+import { Skeleton } from "@torus-ts/ui/components/skeleton";
 import { FormAddressField } from "~/app/_components/address-field";
+import { env } from "~/env";
 import type { Control } from "react-hook-form";
 import type { ExecuteWalletFormData } from "./execute-wallet-schema";
 import { TokenAmountInput } from "./token-amount-input";
@@ -22,20 +27,45 @@ export function TransferFields({
   control,
   isAccountConnected,
 }: TransferFieldsProps) {
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
-  const fromAccountValue = control._formValues.transferData?.from || "";
+  const stakeOut = useCachedStakeOut(env("NEXT_PUBLIC_TORUS_CACHE_URL"));
 
   return (
     <>
-      <div className="space-y-2">
-        <FormLabel>From Account</FormLabel>
-        <div className="bg-muted/50 flex items-center justify-between rounded-md border px-3 py-2 text-sm">
-          <span>{fromAccountValue}</span>
-        </div>
-        <FormDescription>
-          The account to transfer stake from (determined by the permission).
-        </FormDescription>
-      </div>
+      <FormField
+        control={control}
+        name="transferData.from"
+        render={({ field }) => {
+          const stakedBalance = field.value
+            ? stakeOut.data?.perAddr[field.value as SS58Address]
+            : undefined;
+
+          return (
+            <div className="space-y-2">
+              <FormAddressField
+                field={field}
+                label="From Account"
+                disabled={!isAccountConnected}
+              />
+              <div className="flex justify-end">
+                {field.value && (
+                  <div className="text-muted-foreground text-xs">
+                    {stakeOut.isLoading ? (
+                      <Skeleton className="h-4 w-24" />
+                    ) : stakedBalance ? (
+                      `Staked: ${formatToken(stakedBalance)}`
+                    ) : (
+                      "No stake found"
+                    )}
+                  </div>
+                )}
+              </div>
+              <FormDescription>
+                The account to transfer stake from.
+              </FormDescription>
+            </div>
+          );
+        }}
+      />
 
       <FormField
         control={control}
