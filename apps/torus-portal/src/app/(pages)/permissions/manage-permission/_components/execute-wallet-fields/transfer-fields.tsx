@@ -1,4 +1,3 @@
-import type { Control } from "react-hook-form";
 import {
   FormControl,
   FormDescription,
@@ -9,6 +8,7 @@ import {
 } from "@torus-ts/ui/components/form";
 import { Input } from "@torus-ts/ui/components/input";
 import { FormAddressField } from "~/app/_components/address-field";
+import type { Control } from "react-hook-form";
 import type { ExecuteWalletFormData } from "./execute-wallet-schema";
 
 interface TransferFieldsProps {
@@ -16,7 +16,10 @@ interface TransferFieldsProps {
   isAccountConnected: boolean;
 }
 
-export function TransferFields({ control, isAccountConnected }: TransferFieldsProps) {
+export function TransferFields({
+  control,
+  isAccountConnected,
+}: TransferFieldsProps) {
   return (
     <>
       <FormField
@@ -26,10 +29,7 @@ export function TransferFields({ control, isAccountConnected }: TransferFieldsPr
           <FormItem>
             <FormLabel>From Account</FormLabel>
             <FormControl>
-              <FormAddressField
-                field={field}
-                disabled={!isAccountConnected}
-              />
+              <FormAddressField field={field} disabled={!isAccountConnected} />
             </FormControl>
             <FormDescription>
               The account to transfer stake from.
@@ -46,14 +46,9 @@ export function TransferFields({ control, isAccountConnected }: TransferFieldsPr
           <FormItem>
             <FormLabel>To Account</FormLabel>
             <FormControl>
-              <FormAddressField
-                field={field}
-                disabled={!isAccountConnected}
-              />
+              <FormAddressField field={field} disabled={!isAccountConnected} />
             </FormControl>
-            <FormDescription>
-              The account to transfer stake to.
-            </FormDescription>
+            <FormDescription>The account to transfer stake to.</FormDescription>
             <FormMessage />
           </FormItem>
         )}

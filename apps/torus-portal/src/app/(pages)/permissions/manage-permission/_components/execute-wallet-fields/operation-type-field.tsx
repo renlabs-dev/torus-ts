@@ -1,4 +1,3 @@
-import type { Control } from "react-hook-form";
 import {
   FormControl,
   FormDescription,
@@ -14,6 +13,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@torus-ts/ui/components/select";
+import type { Control } from "react-hook-form";
 import type { ExecuteWalletFormData } from "./execute-wallet-schema";
 
 interface OperationTypeFieldProps {

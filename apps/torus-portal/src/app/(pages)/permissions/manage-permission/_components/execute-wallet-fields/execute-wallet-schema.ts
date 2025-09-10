@@ -8,17 +8,14 @@ const UNSTAKE_DATA_SCHEMA = z.object({
   amount: z
     .string()
     .min(1, "Amount is required")
-    .refine(
-      (value) => {
-        try {
-          const amount = BigInt(value);
-          return amount > 0n;
-        } catch {
-          return false;
-        }
-      },
-      "Amount must be a valid positive number",
-    ),
+    .refine((value) => {
+      try {
+        const amount = BigInt(value);
+        return amount > 0n;
+      } catch {
+        return false;
+      }
+    }, "Amount must be a valid positive number"),
 });
 
 const TRANSFER_DATA_SCHEMA = z.object({
@@ -27,36 +24,37 @@ const TRANSFER_DATA_SCHEMA = z.object({
   amount: z
     .string()
     .min(1, "Amount is required")
-    .refine(
-      (value) => {
-        try {
-          const amount = BigInt(value);
-          return amount > 0n;
-        } catch {
-          return false;
-        }
-      },
-      "Amount must be a valid positive number",
-    ),
+    .refine((value) => {
+      try {
+        const amount = BigInt(value);
+        return amount > 0n;
+      } catch {
+        return false;
+      }
+    }, "Amount must be a valid positive number"),
 });
 
 export const EXECUTE_WALLET_SCHEMA = z.discriminatedUnion("operationType", [
   z.object({
     operationType: z.literal("Unstake"),
     unstakeData: UNSTAKE_DATA_SCHEMA,
-    transferData: z.object({
-      from: z.string(),
-      to: z.string(), 
-      amount: z.string(),
-    }).optional(),
+    transferData: z
+      .object({
+        from: z.string(),
+        to: z.string(),
+        amount: z.string(),
+      })
+      .optional(),
   }),
   z.object({
     operationType: z.literal("Transfer"),
     transferData: TRANSFER_DATA_SCHEMA,
-    unstakeData: z.object({
-      staked: z.string(),
-      amount: z.string(),
-    }).optional(),
+    unstakeData: z
+      .object({
+        staked: z.string(),
+        amount: z.string(),
+      })
+      .optional(),
   }),
 ]);
 

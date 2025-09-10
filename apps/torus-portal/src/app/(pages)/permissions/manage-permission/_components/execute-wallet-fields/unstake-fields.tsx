@@ -1,4 +1,3 @@
-import type { Control } from "react-hook-form";
 import {
   FormControl,
   FormDescription,
@@ -9,6 +8,7 @@ import {
 } from "@torus-ts/ui/components/form";
 import { Input } from "@torus-ts/ui/components/input";
 import { FormAddressField } from "~/app/_components/address-field";
+import type { Control } from "react-hook-form";
 import type { ExecuteWalletFormData } from "./execute-wallet-schema";
 
 interface UnstakeFieldsProps {
@@ -16,7 +16,10 @@ interface UnstakeFieldsProps {
   isAccountConnected: boolean;
 }
 
-export function UnstakeFields({ control, isAccountConnected }: UnstakeFieldsProps) {
+export function UnstakeFields({
+  control,
+  isAccountConnected,
+}: UnstakeFieldsProps) {
   return (
     <>
       <FormField
@@ -26,10 +29,7 @@ export function UnstakeFields({ control, isAccountConnected }: UnstakeFieldsProp
           <FormItem>
             <FormLabel>Staked Account</FormLabel>
             <FormControl>
-              <FormAddressField
-                field={field}
-                disabled={!isAccountConnected}
-              />
+              <FormAddressField field={field} disabled={!isAccountConnected} />
             </FormControl>
             <FormDescription>
               The account from which to unstake tokens.
