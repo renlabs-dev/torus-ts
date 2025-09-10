@@ -28,14 +28,16 @@ export function useTransactions({
 
   const resetKey = `${address || "no-address"}-${JSON.stringify(filters)}-${lastTransactionTimestamp}`;
 
-  const [page, setPage] = useState(() => 1);
-  const [transactions, setTransactions] = useState<Transaction[]>(() => []);
-  const [totalTransactions, setTotalTransactions] = useState(() => 0);
-  const [hasMore, setHasMore] = useState(() => false);
-  const [isLoading, setIsLoading] = useState(() => false);
   const [currentResetKey, setCurrentResetKey] = useState(resetKey);
+  const [page, setPage] = useState(1);
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [totalTransactions, setTotalTransactions] = useState(0);
+  const [hasMore, setHasMore] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
+  // Reset state when resetKey changes (during next render)
   if (currentResetKey !== resetKey) {
+    // Synchronous state update during render is safe for this pattern
     setCurrentResetKey(resetKey);
     setPage(1);
     setTransactions([]);

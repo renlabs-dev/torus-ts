@@ -1,5 +1,4 @@
 import type { NodeObject } from "r3f-forcegraph";
-import { useCallback } from "react";
 import type {
   CustomGraphLink,
   CustomGraphNode,
@@ -10,16 +9,12 @@ export function useGraphInteractions(
   onNodeClick: (node: CustomGraphNode) => void,
   _selectedNodeId?: string | null,
 ) {
-  const handleNodeClick = useCallback(
-    // eslint-disable-next-line react-hooks/preserve-manual-memoization
-    (node: NodeObject) => {
-      const originalNode = graphData.nodes.find((n) => n.id === node.id);
-      if (originalNode) {
-        onNodeClick(originalNode);
-      }
-    },
-    [graphData.nodes, onNodeClick],
-  );
+  const handleNodeClick = (node: NodeObject) => {
+    const originalNode = graphData.nodes.find((n) => n.id === node.id);
+    if (originalNode) {
+      onNodeClick(originalNode);
+    }
+  };
 
   return {
     handleNodeClick,

@@ -13,7 +13,7 @@ import { DialogTitle } from "@torus-ts/ui/components/dialog";
 import { useIsMobile } from "@torus-ts/ui/hooks/use-mobile";
 import { Check, Package, Radio, Search, Users, Zap } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
-import React, { useCallback, useMemo, useState } from "react";
+import React, { useCallback, useState } from "react";
 import { useGraphData } from "./force-graph/use-graph-data";
 
 export function PermissionGraphCommand() {
@@ -42,8 +42,7 @@ export function PermissionGraphCommand() {
       : node;
   }, []);
 
-  // eslint-disable-next-line react-hooks/preserve-manual-memoization
-  const searchData = useMemo(() => {
+  const searchData = (() => {
     if (!graphData)
       return {
         agents: [],
@@ -143,7 +142,7 @@ export function PermissionGraphCommand() {
     }));
 
     return { agents, streamPermissions, namespacePermissions, signals };
-  }, [graphData]);
+  })();
 
   React.useEffect(() => {
     const down = (e: KeyboardEvent) => {

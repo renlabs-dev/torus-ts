@@ -38,8 +38,7 @@ export function useAgentHealth({
     [cadreListData?.length],
   );
 
-  // eslint-disable-next-line react-hooks/preserve-manual-memoization
-  const filteredAgents = useMemo(() => {
+  const filteredAgents = (() => {
     if (!agentsWithPenalties) return [];
 
     const search = searchParam ? searchParam.toLocaleLowerCase() : null;
@@ -57,8 +56,7 @@ export function useAgentHealth({
         (agent): agent is AgentWithAggregatedPenalties[number] =>
           agent !== null,
       );
-    // eslint-disable-next-line react-hooks/preserve-manual-memoization
-  }, [agentsWithPenalties, searchParam, statusFilter, penaltyThreshold]);
+  })();
 
   return {
     agentsWithPenalties,

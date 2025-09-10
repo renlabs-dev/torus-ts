@@ -148,7 +148,6 @@ export function ViewComment({
 
   const [sortBy, setSortBy] = useState<SorterTypes>("oldest");
 
-  // Remove useMemo and let React Compiler handle optimization
   const sortedComments = (() => {
     if (!comments) return [];
     return [...comments].sort((a, b) => {
@@ -186,10 +185,6 @@ export function ViewComment({
   const deleteVoteMutation =
     api.commentInteraction.deleteReaction.useMutation();
 
-  const handleCastVote = createMutationHandler(castVoteMutation, toast);
-  const handleDeleteVote = createMutationHandler(deleteVoteMutation, toast);
-
-  // Convert useCallback to regular function - React Compiler will optimize
   const handleVote = (
     commentId: number,
     reactionType: CommentInteractionReactionType,
@@ -207,6 +202,9 @@ export function ViewComment({
 
     const currentVote = userVotes?.[commentId];
     const isRemovingVote = currentVote === reactionType;
+
+    const handleCastVote = createMutationHandler(castVoteMutation, toast);
+    const handleDeleteVote = createMutationHandler(deleteVoteMutation, toast);
 
     if (isRemovingVote) {
       void handleDeleteVote(

@@ -1,6 +1,5 @@
 import { env } from "~/env";
 import { api as trpcApi } from "~/trpc/react";
-// useMemo removed - using direct calculations now
 import { createSimplifiedGraphData } from "./force-graph-utils";
 
 export function useGraphData() {
@@ -24,7 +23,6 @@ export function useGraphData() {
   const { data: allAgentsData, isLoading: isLoadingAgents } =
     trpcApi.agent.allIncludingNonWhitelisted.useQuery(undefined, cacheOptions);
 
-  // Remove useMemo and let React Compiler optimize
   const allAgents = allAgentsData?.filter((agent) => agent.isWhitelisted) ?? [];
 
   const { data: allComputedWeights, isLoading: isLoadingWeights } =
@@ -33,7 +31,6 @@ export function useGraphData() {
   const { data: allSignals, isLoading: isLoadingSignals } =
     trpcApi.signal.all.useQuery(undefined, cacheOptions);
 
-  // Remove useMemo and let React Compiler optimize
   const graphData = (() => {
     if (
       isLoadingAgents ||
@@ -61,10 +58,8 @@ export function useGraphData() {
 
   return {
     isLoading,
-
     graphData,
     allocatorAddress,
-
     allSignals,
     allPermissions,
     allComputedWeights,

@@ -17,7 +17,6 @@ import {
 import { ShortenedCapabilityPath } from "~/utils/capability-path";
 import { ArrowDownLeft, ArrowUpRight } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useMemo } from "react";
 import type {
   allPermissions,
   CustomGraphData,
@@ -135,8 +134,7 @@ export function NodeDetailsCard({
   });
 
   // Group and sort permissions
-  // eslint-disable-next-line react-hooks/preserve-manual-memoization
-  const groupedPermissions = useMemo(() => {
+  const groupedPermissions = (() => {
     const delegated = processedPermissions.filter((p) => p.isOutgoing);
     const received = processedPermissions.filter((p) => !p.isOutgoing);
 
@@ -160,8 +158,7 @@ export function NodeDetailsCard({
       delegated: sortPermissions(delegated),
       received: sortPermissions(received),
     };
-    // eslint-disable-next-line react-hooks/preserve-manual-memoization
-  }, [processedPermissions]);
+  })();
 
   const renderPermissionGroup = (
     permissions: typeof processedPermissions,
@@ -450,7 +447,7 @@ export function NodeDetailsCard({
     </div>
   );
 
-  const PermissionsContent = () => (
+  const PermissionsContent = (() => (
     <ScrollArea className="h-[calc(100vh-26rem)]">
       {processedPermissions.length > 0 ? (
         <Accordion type="single" collapsible className="w-full">
@@ -476,7 +473,7 @@ export function NodeDetailsCard({
         </div>
       )}
     </ScrollArea>
-  );
+  ))();
 
   if (!graphData) return null;
 
@@ -489,8 +486,7 @@ export function NodeDetailsCard({
         </TabsList>
 
         <TabsContent value="permissions" className="mt-0 flex-1">
-          {/* eslint-disable-next-line react-hooks/static-components */}
-          <PermissionsContent />
+          {PermissionsContent}
         </TabsContent>
 
         <TabsContent value="signals" className="mt-0 flex-1">

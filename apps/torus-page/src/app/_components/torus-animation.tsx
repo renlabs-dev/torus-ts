@@ -69,36 +69,33 @@ const fragmentShader = `
 const Torus: FC = () => {
   const torusRef = useRef<Mesh>(null);
 
-  const uniforms = useMemo(
-    () => ({
+  const shaderMaterial = useMemo(() => {
+    const uniforms = {
       time: { value: 0 },
       intensity: { value: 0.8 },
       speed: { value: 0.1 },
       lineThickness: { value: 0.01 },
       pixelSize: { value: 8 },
-    }),
-    [],
-  );
+    };
 
-  const shaderMaterial = useMemo(
-    () =>
-      new THREE.ShaderMaterial({
-        uniforms,
-        vertexShader,
-        fragmentShader,
-        transparent: true,
-        depthWrite: false,
-        depthTest: true,
-        side: THREE.DoubleSide,
-        blending: THREE.AdditiveBlending,
-      }),
-    [uniforms],
-  );
+    return new THREE.ShaderMaterial({
+      uniforms,
+      vertexShader,
+      fragmentShader,
+      transparent: true,
+      depthWrite: false,
+      depthTest: true,
+      side: THREE.DoubleSide,
+      blending: THREE.AdditiveBlending,
+    });
+  }, []);
 
-  // eslint-disable-next-line react-hooks/immutability
   useFrame((_state, delta) => {
-    if (torusRef.current) {
-      uniforms.time.value += 0.1 * 60 * delta;
+    if (torusRef.current?.material && 'uniforms' in torusRef.current.material) {
+      const material = torusRef.current.material as THREE.ShaderMaterial;
+      if (material.uniforms.time) {
+        material.uniforms.time.value += 0.1 * 60 * delta;
+      }
     }
   });
 

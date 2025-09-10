@@ -15,7 +15,7 @@ import { VoteData } from "~/app/_components/vote-data";
 import { useGovernance } from "~/context/governance-provider";
 import type { VoteStatus } from "~/utils/types";
 import { LoaderCircle } from "lucide-react";
-import { useMemo } from "react";
+import { useState, useEffect } from "react";
 import { ProposalStatusLabel } from "../../../../_components/proposal/proposal-status-label";
 import { handleCustomProposal } from "../../../../../utils";
 
@@ -58,9 +58,24 @@ export function ProposalExpandedView(props: Readonly<CustomContent>) {
     selectedAccount,
     torusCacheUrl,
   } = useGovernance();
+  
+  const [isMobile, setIsMobile] = useState(() => {
+    if (typeof window !== "undefined") {
+      return window.innerWidth < 768;
+    }
+    return false;
+  });
 
-  // eslint-disable-next-line react-hooks/preserve-manual-memoization
-  const content = useMemo(() => {
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  const content = (() => {
     const proposal = proposalsWithMeta?.find(
       (proposal) => proposal.id === paramId,
     );
@@ -87,7 +102,7 @@ export function ProposalExpandedView(props: Readonly<CustomContent>) {
     };
 
     return proposalContent;
-  }, [proposalsWithMeta, paramId, selectedAccount]);
+  })();
 
   const votesFor =
     content && "Open" in content.status ? content.status.Open.votesFor : [];
@@ -165,7 +180,7 @@ export function ProposalExpandedView(props: Readonly<CustomContent>) {
           <DetailsCard {...detailsCardProps} />
 
           {/* Only show VoteData on mobile when proposal is open */}
-          {(isProposalOpen || window.innerWidth >= 768) && (
+          {(isProposalOpen || !isMobile) && (
             <VoteData proposalStatus={content.status} />
           )}
         </div>
