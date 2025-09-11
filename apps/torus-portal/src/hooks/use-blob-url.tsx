@@ -9,9 +9,8 @@ export const useBlobUrl = (blob: Blob | Nullish) => {
   useEffect(() => {
     if (!blob) return;
     const objectUrl = URL.createObjectURL(blob);
-    const timer = setTimeout(() => setUrl(objectUrl), 0);
+    queueMicrotask(() => setUrl(objectUrl));
     return () => {
-      clearTimeout(timer);
       URL.revokeObjectURL(objectUrl);
     };
   }, [blob]);

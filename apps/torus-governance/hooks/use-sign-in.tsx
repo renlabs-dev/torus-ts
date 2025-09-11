@@ -26,8 +26,8 @@ export const useSignIn = () => {
 
     const auth = localStorage.getItem("authorization");
     if (!auth) {
-      const timer = setTimeout(() => setIsUserAuthenticated(false), 0);
-      return () => clearTimeout(timer);
+      queueMicrotask(() => setIsUserAuthenticated(false));
+      return;
     }
 
     // Async function for session checking with proper error handling
@@ -66,7 +66,7 @@ export const useSignIn = () => {
     if (!selectedAccount || favoriteWalletAddress === selectedAccount.address)
       return;
 
-    setTimeout(() => setIsUserAuthenticated(null), 0);
+    queueMicrotask(() => setIsUserAuthenticated(null));
 
     // Handle localStorage with proper error handling
     const clearStorage = async () => {

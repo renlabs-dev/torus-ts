@@ -110,8 +110,7 @@ export function EvmWalletProvider({
 
   // Effect to run after client-side mounting
   useEffect(() => {
-    const timer = setTimeout(() => setHasMounted(true), 0);
-    return () => clearTimeout(timer);
+    queueMicrotask(() => setHasMounted(true));
   }, []);
 
   const { wagmiConfig } = useMemo(() => {
