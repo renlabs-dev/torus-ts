@@ -44,7 +44,8 @@
 .DS_Store
 
 **/.claude/settings.local.json
-*PLAN.md
+*PLANS.md
+*TASKS.md
 
 # Crush
 .crush

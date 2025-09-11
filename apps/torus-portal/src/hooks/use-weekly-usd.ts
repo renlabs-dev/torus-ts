@@ -2,7 +2,6 @@ import type { TorAmount } from "@torus-network/torus-utils/torus/token";
 import { makeTorAmount } from "@torus-network/torus-utils/torus/token";
 import { useGetTorusPrice } from "@torus-ts/query-provider/hooks";
 import { api as extAPI } from "~/trpc/react";
-// useMemo removed - using direct calculations now
 import {
   calculateAgentTokensPerWeek,
   useTokensPerWeek,
