@@ -23,7 +23,9 @@ export function TransactionsSheet() {
       const timer = setTimeout(() => setShouldRenderContent(true), 150);
       return () => clearTimeout(timer);
     } else {
-      const frameId = requestAnimationFrame(() => setShouldRenderContent(false));
+      const frameId = requestAnimationFrame(() =>
+        setShouldRenderContent(false),
+      );
       return () => cancelAnimationFrame(frameId);
     }
   }, [isOpen]);

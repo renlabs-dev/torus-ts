@@ -22,38 +22,39 @@ export function HoverHeader() {
 
   const [isExpanded, setIsExpanded] = useState(false);
 
-  const calculateDistance = useCallback((
-    x1: number,
-    y1: number,
-    x2: number,
-    y2: number,
-  ): number => {
-    return Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
-  }, []);
+  const calculateDistance = useCallback(
+    (x1: number, y1: number, x2: number, y2: number): number => {
+      return Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
+    },
+    [],
+  );
 
-  const handleMouseMove = useCallback((event: MouseEvent) => {
-    const logoRect = contentRef.current?.getBoundingClientRect();
-    if (!logoRect) {
-      setGlowSize(0.8);
-      return;
-    }
+  const handleMouseMove = useCallback(
+    (event: MouseEvent) => {
+      const logoRect = contentRef.current?.getBoundingClientRect();
+      if (!logoRect) {
+        setGlowSize(0.8);
+        return;
+      }
 
-    const logoCenterX = logoRect.left + logoRect.width / 2;
-    const logoCenterY = logoRect.top + logoRect.height / 2;
+      const logoCenterX = logoRect.left + logoRect.width / 2;
+      const logoCenterY = logoRect.top + logoRect.height / 2;
 
-    const distance = calculateDistance(
-      event.clientX,
-      event.clientY,
-      logoCenterX,
-      logoCenterY,
-    );
-    const maxDistance = Math.sqrt(
-      Math.pow(window.innerWidth, 2) + Math.pow(window.innerHeight, 2),
-    );
+      const distance = calculateDistance(
+        event.clientX,
+        event.clientY,
+        logoCenterX,
+        logoCenterY,
+      );
+      const maxDistance = Math.sqrt(
+        Math.pow(window.innerWidth, 2) + Math.pow(window.innerHeight, 2),
+      );
 
-    const scale = 0.15 + (maxDistance - distance) / maxDistance;
-    setGlowSize(scale / 1.2);
-  }, [calculateDistance]);
+      const scale = 0.15 + (maxDistance - distance) / maxDistance;
+      setGlowSize(scale / 1.2);
+    },
+    [calculateDistance],
+  );
 
   useEffect(() => {
     window.addEventListener("mousemove", handleMouseMove);
@@ -63,16 +64,19 @@ export function HoverHeader() {
     };
   }, [handleMouseMove]);
 
-  const glowVariants = useMemo(() => ({
-    pulse: (scale: number) => ({
-      scale: [scale, scale * 1.2, scale],
-      transition: {
-        duration: 2,
-        repeat: Infinity,
-        ease: "easeInOut",
-      },
+  const glowVariants = useMemo(
+    () => ({
+      pulse: (scale: number) => ({
+        scale: [scale, scale * 1.2, scale],
+        transition: {
+          duration: 2,
+          repeat: Infinity,
+          ease: "easeInOut",
+        },
+      }),
     }),
-  }), []);
+    [],
+  );
 
   const handleClickOutside = useCallback((event: MouseEvent) => {
     if (

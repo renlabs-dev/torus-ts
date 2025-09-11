@@ -91,7 +91,7 @@ const Torus: FC = () => {
   }, []);
 
   useFrame((_state, delta) => {
-    if (torusRef.current?.material && 'uniforms' in torusRef.current.material) {
+    if (torusRef.current?.material && "uniforms" in torusRef.current.material) {
       const material = torusRef.current.material as THREE.ShaderMaterial;
       if (material.uniforms.time) {
         material.uniforms.time.value += 0.1 * 60 * delta;

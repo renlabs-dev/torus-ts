@@ -15,7 +15,7 @@ import { VoteData } from "~/app/_components/vote-data";
 import { useGovernance } from "~/context/governance-provider";
 import type { VoteStatus } from "~/utils/types";
 import { LoaderCircle } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { ProposalStatusLabel } from "../../../../_components/proposal/proposal-status-label";
 import { handleCustomProposal } from "../../../../../utils";
 
@@ -58,7 +58,7 @@ export function ProposalExpandedView(props: Readonly<CustomContent>) {
     selectedAccount,
     torusCacheUrl,
   } = useGovernance();
-  
+
   const [isMobile, setIsMobile] = useState(() => {
     if (typeof window !== "undefined") {
       return window.innerWidth < 768;
@@ -71,8 +71,8 @@ export function ProposalExpandedView(props: Readonly<CustomContent>) {
       setIsMobile(window.innerWidth < 768);
     };
 
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
   }, []);
 
   const content = (() => {
