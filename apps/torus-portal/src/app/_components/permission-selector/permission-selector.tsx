@@ -31,6 +31,7 @@ import {
   CircleArrowOutUpRight,
   Copy,
   VenetianMask,
+  Wallet,
   Zap,
 } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -134,6 +135,18 @@ export function PermissionSelector(props: PermissionSelectorProps) {
       icon: VenetianMask,
       heading: "Curator Permissions",
       permissions: [...sortedPermissions.curatorPermissions]
+        .filter(([_, contract]) => hasUserRole(contract, userAddress))
+        .map(([id, contract]) => ({
+          id,
+          contract,
+          details: getContractDetails(contract, getFormattedAddress),
+        })),
+    },
+    {
+      type: "Wallet",
+      icon: Wallet,
+      heading: "Wallet Permissions",
+      permissions: [...sortedPermissions.walletPermissions]
         .filter(([_, contract]) => hasUserRole(contract, userAddress))
         .map(([id, contract]) => ({
           id,

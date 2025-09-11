@@ -36,7 +36,7 @@ async function runAuthenticatedServerClientTest() {
   console.log("📡 Starting authenticated test server...");
   const serverProcess = spawn(
     "node",
-    ["--import", "tsx/esm", "./src/__tests__/test-server-auth.ts"],
+    ["--import", "tsx/esm", "./src/__tests__/agent/test-server-auth.ts"],
     {
       cwd: process.cwd(),
       stdio: "inherit",

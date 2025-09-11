@@ -1,4 +1,3 @@
-import { smallAddress } from "@torus-network/torus-utils/torus";
 import { graphConstants } from "../force-graph/force-graph-constants";
 import type {
   CustomGraphLink,
@@ -39,15 +38,15 @@ export function getNodeColor(
 export function getNodeTooltipText(node: CustomGraphNode): string {
   switch (node.nodeType) {
     case "allocator":
-      return `Allocator: ${node.name || node.id}`;
+      return node.name || node.id;
     case "root_agent":
-      return `Root Agent: ${node.name || node.id}`;
+      return node.name || node.id;
     case "target_agent":
-      return `Target Agent: ${node.name || node.id}`;
+      return node.name || node.id;
     case "permission":
-      return `Permission: ${smallAddress(node.id)}`;
+      return "Permission Node";
     case "signal":
-      return `Signal: ${node.name || node.id}`;
+      return "Signal Node";
     default:
       return `Node: ${node.name || node.id}`;
   }

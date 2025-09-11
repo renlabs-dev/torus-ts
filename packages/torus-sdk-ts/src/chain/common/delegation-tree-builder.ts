@@ -13,7 +13,8 @@ import type {
   RevocationTerms,
 } from "../permission0/permission0-types.js";
 import { queryNamespaceEntriesOf } from "../torus0/torus0-storage.js";
-import type { Api, SbQueryError } from "./fees.js";
+import type { SbQueryError } from "./errors.js";
+import type { Api } from "./types.js";
 
 /**
  * Utility function to compute the intersection of two sets

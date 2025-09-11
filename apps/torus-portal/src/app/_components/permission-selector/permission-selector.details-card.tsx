@@ -44,6 +44,7 @@ export function PermissionDetailsCard({
       Stream: () => "Stream" as const,
       Namespace: () => "Capability" as const,
       Curator: () => "Curator" as const,
+      Wallet: () => "Wallet" as const,
     });
   };
 
@@ -318,6 +319,27 @@ export function PermissionDetailsCard({
         {
           label: "Max Instances",
           value: curator.maxInstances.toString(),
+        },
+      ],
+
+      Wallet: (wallet): DetailRow[] => [
+        {
+          label: "Recipient",
+          component: (
+            <AddressWithAgent
+              address={wallet.recipient}
+              showCopyButton={true}
+              addressLength={8}
+              className="text-sm"
+            />
+          ),
+        },
+        {
+          label: "Stake Details",
+          value: match(wallet.r_type)({
+            Stake: (stake) =>
+              `Transfer: ${stake.canTransferStake ? "Allowed" : "Denied"}, Exclusive: ${stake.exclusiveStakeAccess ? "Yes" : "No"}`,
+          }),
         },
       ],
     });

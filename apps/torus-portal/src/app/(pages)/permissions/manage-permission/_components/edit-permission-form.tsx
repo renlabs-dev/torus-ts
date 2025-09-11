@@ -41,6 +41,7 @@ import {
   prepareFormDataForSDK,
   transformPermissionToFormData,
 } from "./edit-permission-utils";
+import { ExecuteWalletForm } from "./execute-wallet-fields/execute-wallet-form";
 import { PermissionTypeInfo } from "./permission-type-info";
 import { RevokePermissionButton } from "./revoke-permission-button";
 
@@ -192,134 +193,144 @@ export function EditPermissionForm({
   }
 
   return (
-    <Form {...form}>
-      <form
-        {...props}
-        onSubmit={form.handleSubmit(handleSubmit)}
-        className={cn("flex flex-col gap-6", className)}
-      >
-        <PortalFormHeader
-          title="Manage Permissions"
-          description="Modify the selected permission. Available fields depend on the permission's type and revocation terms."
-        />
+    <>
+      <Form {...form}>
+        <form
+          {...props}
+          onSubmit={form.handleSubmit(handleSubmit)}
+          className={cn("flex flex-col gap-6", className)}
+        >
+          <PortalFormHeader
+            title="Manage Permissions"
+            description="Modify the selected permission. Available fields depend on the permission's type and revocation terms."
+          />
 
-        <WalletConnectionWarning
-          isAccountConnected={isAccountConnected}
-          isInitialized={isInitialized}
-        />
+          <WalletConnectionWarning
+            isAccountConnected={isAccountConnected}
+            isInitialized={isInitialized}
+          />
 
-        <div className="grid gap-6">
-          <div className="grid gap-4">
-            <PermissionSelector
-              control={form.control}
-              selectedPermissionId={selectedPermissionId}
-              onPermissionSelection={(permissionId, contract) => {
-                setSelectedPermissionId(permissionId);
-                form.setValue("permissionId", permissionId);
-                handlePermissionLoad(permissionId, contract);
-              }}
-            />
-
-            <RevokePermissionButton
-              permissionId={selectedPermissionId}
-              canRevoke={canRevoke}
-              onSuccess={() => {
-                setSelectedPermissionId("");
-                form.reset();
-              }}
-            />
-          </div>
-
-          {selectedPermissionId && (
-            <>
-              <PortalFormSeparator title="Permission Details" />
-
-              <PermissionTypeInfo
-                permissionType={permissionType}
-                isGrantor={isGrantor}
-                userRole={userRole}
+          <div className="grid gap-6">
+            <div className="grid gap-4">
+              <PermissionSelector
+                control={form.control}
+                selectedPermissionId={selectedPermissionId}
+                onPermissionSelection={(permissionId, contract) => {
+                  setSelectedPermissionId(permissionId);
+                  form.setValue("permissionId", permissionId);
+                  handlePermissionLoad(permissionId, contract);
+                }}
               />
 
-              {permissionType === "stream" && canEdit && (
-                <>
-                  <DistributionControlField
-                    control={form.control}
-                    disabled={
-                      !canUserEditField(
+              <RevokePermissionButton
+                permissionId={selectedPermissionId}
+                canRevoke={canRevoke}
+                onSuccess={() => {
+                  setSelectedPermissionId("");
+                  form.reset();
+                }}
+              />
+            </div>
+
+            {selectedPermissionId && (
+              <>
+                <PortalFormSeparator title="Permission Details" />
+
+                <PermissionTypeInfo
+                  permissionType={permissionType}
+                  isGrantor={isGrantor}
+                  userRole={userRole}
+                  permissionContract={selectedPermissionContract}
+                  selectedAccount={selectedAccount?.address}
+                />
+
+                {permissionType === "stream" && canEdit && (
+                  <>
+                    <DistributionControlField
+                      control={form.control}
+                      disabled={
+                        !canUserEditField(
+                          selectedPermissionContract,
+                          selectedAccount?.address,
+                          "distributionControl",
+                        )
+                      }
+                    />
+
+                    <RecipientsField
+                      control={form.control}
+                      canEditRecipients={canUserEditField(
                         selectedPermissionContract,
                         selectedAccount?.address,
-                        "distributionControl",
-                      )
-                    }
-                  />
+                        "recipients",
+                      )}
+                      isWeightsOnly={isWeightsOnlyUser}
+                    />
 
-                  <RecipientsField
-                    control={form.control}
-                    canEditRecipients={canUserEditField(
-                      selectedPermissionContract,
-                      selectedAccount?.address,
-                      "recipients",
-                    )}
-                    isWeightsOnly={isWeightsOnlyUser}
-                  />
+                    <StreamsField
+                      control={form.control}
+                      disabled={
+                        !canUserEditField(
+                          selectedPermissionContract,
+                          selectedAccount?.address,
+                          "streams",
+                        )
+                      }
+                    />
 
-                  <StreamsField
-                    control={form.control}
-                    disabled={
-                      !canUserEditField(
-                        selectedPermissionContract,
-                        selectedAccount?.address,
-                        "streams",
-                      )
-                    }
-                  />
+                    <RecipientManagerField
+                      control={form.control}
+                      isAccountConnected={isAccountConnected}
+                      disabled={
+                        !canUserEditField(
+                          selectedPermissionContract,
+                          selectedAccount?.address,
+                          "recipientManager",
+                        )
+                      }
+                    />
 
-                  <RecipientManagerField
-                    control={form.control}
-                    isAccountConnected={isAccountConnected}
-                    disabled={
-                      !canUserEditField(
-                        selectedPermissionContract,
-                        selectedAccount?.address,
-                        "recipientManager",
-                      )
-                    }
-                  />
+                    <WeightSetterField
+                      control={form.control}
+                      isAccountConnected={isAccountConnected}
+                      disabled={
+                        !canUserEditField(
+                          selectedPermissionContract,
+                          selectedAccount?.address,
+                          "weightSetter",
+                        )
+                      }
+                    />
 
-                  <WeightSetterField
-                    control={form.control}
-                    isAccountConnected={isAccountConnected}
-                    disabled={
-                      !canUserEditField(
-                        selectedPermissionContract,
-                        selectedAccount?.address,
-                        "weightSetter",
-                      )
-                    }
-                  />
-
-                  <Button
-                    type="submit"
-                    variant="outline"
-                    className="w-full"
-                    disabled={
-                      !isAccountConnected ||
-                      !selectedPermissionId ||
-                      !isDirty ||
-                      isPending ||
-                      isSigning
-                    }
-                  >
-                    {isPending || isSigning
-                      ? "Updating..."
-                      : "Update Permission"}
-                  </Button>
-                </>
-              )}
-            </>
-          )}
-        </div>
-      </form>
-    </Form>
+                    <Button
+                      type="submit"
+                      variant="outline"
+                      className="w-full"
+                      disabled={
+                        !isAccountConnected ||
+                        !selectedPermissionId ||
+                        !isDirty ||
+                        isPending ||
+                        isSigning
+                      }
+                    >
+                      {isPending || isSigning
+                        ? "Updating..."
+                        : "Update Permission"}
+                    </Button>
+                  </>
+                )}
+              </>
+            )}
+          </div>
+        </form>
+      </Form>
+      {permissionType === "wallet" && (
+        <ExecuteWalletForm
+          permissionId={selectedPermissionId}
+          permissionContract={selectedPermissionContract}
+        />
+      )}
+    </>
   );
 }

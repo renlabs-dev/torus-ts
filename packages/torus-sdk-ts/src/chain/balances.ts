@@ -3,7 +3,7 @@ import { tryAsync, trySync } from "@torus-network/torus-utils/try-catch";
 import type { SS58Address } from "../types/address.js";
 import type { Balance } from "../types/index.js";
 import { sb_balance } from "../types/index.js";
-import type { Api } from "./common/fees.js";
+import type { Api } from "./common/types.js";
 
 export async function queryTotalIssuance(api: Api): Promise<Balance> {
   const [queryError, q] = await tryAsync(api.query.balances.totalIssuance());
@@ -46,29 +46,27 @@ export async function queryFreeBalance(
 export async function queryBalance(api: Api, address: SS58Address) {
   const [queryError, q] = await tryAsync(api.query.system.account(address));
   if (queryError !== undefined) {
-    console.error("Error querying balance:", queryError);
+    console.error("Error querying free balance:", queryError);
     throw queryError;
   }
 
-  const [parseError, freeBalance] = trySync(() =>
-    sb_balance.parse(q.data.free),
-  );
-  if (parseError !== undefined) {
-    console.error("Error parsing free balance:", parseError);
-    throw parseError;
-  }
+  const [parseFreeError, free] = trySync(() => sb_balance.parse(q.data.free));
 
-  const [reservedError, reservedBalance] = trySync(() =>
+  const [parseReservedError, reserved] = trySync(() =>
     sb_balance.parse(q.data.reserved),
   );
-  if (reservedError !== undefined) {
-    console.error("Error parsing reserved balance:", reservedError);
-    throw reservedError;
-  }
 
+  if (parseFreeError !== undefined) {
+    console.error("Error parsing free balance:", parseFreeError);
+    throw parseFreeError;
+  }
+  if (parseReservedError !== undefined) {
+    console.error("Error parsing reserved balance:", parseReservedError);
+    throw parseReservedError;
+  }
   return {
-    free: freeBalance,
-    staked: reservedBalance,
+    free: free,
+    staked: reserved,
   };
 }
 

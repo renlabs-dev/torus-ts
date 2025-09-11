@@ -102,6 +102,41 @@ export const NAMESPACE_SCOPE_SCHEMA = sb_struct({
   children: sb_array(PERMISSION_ID_SCHEMA),
 });
 
+// ---- Wallet Types ----
+
+export const WALLET_STAKE_SCHEMA = sb_struct({
+  canTransferStake: sb_bool,
+  exclusiveStakeAccess: sb_bool,
+});
+
+export const WALLET_SCOPE_SCHEMA = sb_struct({
+  recipient: sb_address,
+  r_type: sb_enum({
+    Stake: WALLET_STAKE_SCHEMA,
+  }),
+});
+
+export type WalletStake = z.infer<typeof WALLET_STAKE_SCHEMA>;
+export type WalletScope = z.infer<typeof WALLET_SCOPE_SCHEMA>;
+
+// ---- Wallet Stake Operations ----
+
+export const WALLET_STAKE_OPERATION_SCHEMA = sb_enum({
+  Unstake: sb_struct({
+    staked: sb_address,
+    amount: sb_balance,
+  }),
+  Transfer: sb_struct({
+    from: sb_address,
+    to: sb_address,
+    amount: sb_balance,
+  }),
+});
+
+export type WalletStakeOperation = z.infer<
+  typeof WALLET_STAKE_OPERATION_SCHEMA
+>;
+
 export type NamespaceScope = z.infer<typeof NAMESPACE_SCOPE_SCHEMA>;
 
 // ---- Permission Scope ----
@@ -110,6 +145,7 @@ export const PERMISSION_SCOPE_SCHEMA = sb_enum({
   Stream: STREAM_SCOPE_SCHEMA, // Updated from Emission to Stream
   Curator: CURATOR_SCOPE_SCHEMA,
   Namespace: NAMESPACE_SCOPE_SCHEMA,
+  Wallet: WALLET_SCOPE_SCHEMA,
 });
 
 export type PermissionScope = z.infer<typeof PERMISSION_SCOPE_SCHEMA>;

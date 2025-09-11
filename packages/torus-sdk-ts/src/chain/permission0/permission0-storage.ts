@@ -18,8 +18,8 @@ import {
   sb_option,
   sb_some,
 } from "../../types/index.js";
-import type { Api } from "../common/fees.js";
-import { SbQueryError } from "../common/fees.js";
+import { SbQueryError } from "../common/errors.js";
+import type { Api } from "../common/types.js";
 import type {
   AccumulatedStreamEntry,
   CuratorPermissions,
@@ -201,6 +201,9 @@ export async function queryStreamPermissions(
       Namespace: () => {
         // Skip namespace permissions
       },
+      Wallet: () => {
+        // Skip wallet permissions
+      },
     });
   }
 
@@ -237,6 +240,9 @@ export async function queryNamespacePermissions(
       Curator: () => {
         // Skip curator permissions
       },
+      Wallet: () => {
+        // Skip wallet permissions
+      },
     });
   }
 
@@ -247,6 +253,7 @@ export interface AllPermissions {
   namespacePermissions: Map<PermissionId, PermissionContract>;
   streamPermissions: Map<PermissionId, PermissionContract>;
   curatorPermissions: Map<PermissionId, PermissionContract>;
+  walletPermissions: Map<PermissionId, PermissionContract>;
 }
 
 export async function queryAllPermissions(
@@ -263,6 +270,7 @@ export async function queryAllPermissions(
   const namespacePermissions = new Map<PermissionId, PermissionContract>();
   const streamPermissions = new Map<PermissionId, PermissionContract>();
   const curatorPermissions = new Map<PermissionId, PermissionContract>();
+  const walletPermissions = new Map<PermissionId, PermissionContract>();
 
   for (const [permissionId, permission] of allPermissions) {
     match(permission.scope)({
@@ -275,6 +283,9 @@ export async function queryAllPermissions(
       Curator: () => {
         curatorPermissions.set(permissionId, permission);
       },
+      Wallet: () => {
+        walletPermissions.set(permissionId, permission);
+      },
     });
   }
 
@@ -282,6 +293,7 @@ export async function queryAllPermissions(
     namespacePermissions,
     streamPermissions,
     curatorPermissions,
+    walletPermissions,
   });
 }
 
@@ -590,6 +602,7 @@ export const extractRecipientsFromPermission = (
     Stream: (streamScope) => Array.from(streamScope.recipients.keys()),
     Namespace: (namespaceScope) => [namespaceScope.recipient],
     Curator: () => [], // Curator permissions don't have explicit recipients
+    Wallet: (walletScope) => [walletScope.recipient],
   });
 };
 
@@ -621,6 +634,11 @@ export async function isPermissionEnabled(
     },
     Namespace() {
       // Namespace permissions don't have an accumulating field
+      // Consider them always "enabled" if they exist and aren't expired
+      return true;
+    },
+    Wallet() {
+      // Wallet permissions don't have an accumulating field
       // Consider them always "enabled" if they exist and aren't expired
       return true;
     },
@@ -674,6 +692,7 @@ export function buildAvailableStreamsFor(
         Stream: (streamScope) => streamScope.recipients.has(agentId),
         Namespace: (namespaceScope) => namespaceScope.recipient === agentId,
         Curator: () => false, // Curator permissions don't have recipients in this context
+        Wallet: (walletScope) => walletScope.recipient === agentId,
       });
 
       // Only consider permissions that are granted to the agent
@@ -799,6 +818,7 @@ export async function queryDelegationStreamsByAccount(
           },
           Namespace: (namespaceScope) => namespaceScope.recipient,
           Curator: () => null, // Curator permissions don't have recipients
+          Wallet: (walletScope) => walletScope.recipient,
         });
 
         if (firstRecipient === null) {

@@ -77,7 +77,7 @@ export async function doMetadataPin(
   if (!validatedMetadata.success) {
     return {
       cid: null,
-      error: validatedMetadata.error.errors.map((e) => e.message).join(", "),
+      error: validatedMetadata.error.issues.map((e) => e.message).join(", "),
     };
   }
 

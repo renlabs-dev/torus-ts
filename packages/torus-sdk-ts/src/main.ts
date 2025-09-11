@@ -4,7 +4,7 @@ import { ApiPromise, WsProvider } from "@polkadot/api";
 import { Keyring } from "@polkadot/keyring";
 import { BasicLogger } from "@torus-network/torus-utils/logger";
 import { match } from "rustie";
-import { queryBalance } from "./chain/balances.js";
+import { queryAllPermissions } from "./chain/index.js";
 import {
   parseSubmittableResult,
   sb_dispatch_error,
@@ -33,9 +33,7 @@ const api = await connectToChainRpc(NODE_URL);
 
 // ============================================================================
 
-console.log(
-  await queryBalance(api, "5CoS1LXeGQDiXxZ8TcdiMuzyFKu9Ku7XAihu9iS2tCACxf4n"),
-);
+console.log(await queryAllPermissions(api));
 
 // Disconnect
 await api.disconnect();
