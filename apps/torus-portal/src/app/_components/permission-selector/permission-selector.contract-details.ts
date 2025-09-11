@@ -7,7 +7,7 @@ import {
 import { match } from "rustie";
 
 export interface ContractDetails {
-  type: "Stream" | "Capability" | "Curator";
+  type: "Stream" | "Capability" | "Curator" | "Wallet";
   details: string[];
 }
 
@@ -68,6 +68,18 @@ export function getContractDetails(
     Curator: (curator): ContractDetails => ({
       type: "Curator",
       details: [`Recipient: ${formatAddress(curator.recipient)}`],
+    }),
+
+    Wallet: (wallet): ContractDetails => ({
+      type: "Wallet",
+      details: [
+        `Delegator: ${formatAddress(contract.delegator)}`,
+        `Recipient: ${formatAddress(wallet.recipient)}`,
+        `Stake Type: ${match(wallet.r_type)({
+          Stake: (stake) =>
+            `Transfer: ${stake.canTransferStake ? "Allowed" : "Denied"}, Exclusive: ${stake.exclusiveStakeAccess ? "Yes" : "No"}`,
+        })}`,
+      ],
     }),
   });
 }

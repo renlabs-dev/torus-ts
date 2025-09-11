@@ -313,6 +313,7 @@ function permissionContractToDatabase(
     Stream: () => true,
     Namespace: () => true,
     Curator: () => false,
+    Wallet: () => false,
   });
 
   if (!shouldProcess) {
@@ -390,6 +391,7 @@ function permissionContractToDatabase(
     Stream: () => [], // Stream scopes don't have children
     Namespace: (scope) => scope.children,
     Curator: (scope) => scope.children,
+    Wallet: () => [], // Wallet scopes don't have children
   });
 
   // Create hierarchy entries for each child permission

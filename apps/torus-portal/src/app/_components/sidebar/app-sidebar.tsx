@@ -23,6 +23,7 @@ import {
   Radio,
   RadioTower,
   Settings,
+  Wallet,
   Zap,
 } from "lucide-react";
 import Link from "next/link";
@@ -61,6 +62,11 @@ const data = {
           title: "Stream Permission",
           url: "/permissions/create-permission/stream",
           icon: Zap,
+        },
+        {
+          title: "Wallet Stake Permission",
+          url: "/permissions/create-permission/wallet",
+          icon: Wallet,
         },
         {
           title: "Manage Permissions",
