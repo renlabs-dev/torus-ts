@@ -3,8 +3,6 @@
 import { useTorus } from "@torus-ts/torus-provider";
 import { KeyboardShortcutBadge } from "@torus-ts/ui/components/keyboard-shortcut-badge";
 import { Loading } from "@torus-ts/ui/components/loading";
-import { createSeoMetadata } from "@torus-ts/ui/components/seo";
-import { env } from "~/env";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { ForceGraphCanvas2D } from "../_components/force-graph-2d/force-graph-2d";
@@ -18,25 +16,6 @@ import type {
 } from "../_components/permission-graph-types";
 import { AgentLRUCache } from "../_components/permission-graph-utils";
 import { SwarmSelectionCommand } from "../_components/swarm-selection-command";
-
-export function generateMetadata() {
-  return createSeoMetadata({
-    title: "2D Hypergraph - Torus Portal",
-    description:
-      "Explore the Torus Network permission graph in 2D hypergraph visualization. Interactive network exploration with advanced graph features.",
-    keywords: [
-      "2d hypergraph",
-      "network visualization",
-      "permission graph",
-      "interactive graph",
-      "hypergraph visualization",
-      "network exploration",
-    ],
-    ogSiteName: "Torus Portal",
-    canonical: "/2d-hypergraph",
-    baseUrl: env("BASE_URL"),
-  });
-}
 
 export default function PermissionGraph2DPage() {
   const router = useRouter();

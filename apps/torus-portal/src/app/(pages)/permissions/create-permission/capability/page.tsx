@@ -6,8 +6,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@torus-ts/ui/components/dialog";
-import { createSeoMetadata } from "@torus-ts/ui/components/seo";
-import { env } from "~/env";
 import { useRef, useState } from "react";
 import { CapabilityTutorialDialog } from "./_components/capability-tutorial-dialog";
 import { CreateCapabilityFlowProvider } from "./_components/create-capability-flow/create-capability-flow";
@@ -16,24 +14,6 @@ import type {
   PathWithPermission,
 } from "./_components/create-capability-flow/create-capability-flow-types";
 import { CreateCapabilityPermissionForm } from "./_components/create-capability-permission-form";
-
-export function generateMetadata() {
-  return createSeoMetadata({
-    title: "Create Capability Permission - Torus Portal",
-    description:
-      "Create capability-based permissions for agents on the Torus Network. Define specific access rights and operational permissions.",
-    keywords: [
-      "capability permission",
-      "agent capabilities",
-      "permission creation",
-      "access rights",
-      "operational permissions",
-    ],
-    ogSiteName: "Torus Portal",
-    canonical: "/permissions/create-permission/capability",
-    baseUrl: env("BASE_URL"),
-  });
-}
 
 export default function CapabilityV2Page() {
   const [selectedPaths, setSelectedPaths] = useState<string[]>([]);

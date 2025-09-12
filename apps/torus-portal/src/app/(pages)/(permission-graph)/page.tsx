@@ -3,8 +3,6 @@
 import { useTorus } from "@torus-ts/torus-provider";
 import { KeyboardShortcutBadge } from "@torus-ts/ui/components/keyboard-shortcut-badge";
 import { Loading } from "@torus-ts/ui/components/loading";
-import { createSeoMetadata } from "@torus-ts/ui/components/seo";
-import { env } from "~/env";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { ForceGraphCanvas } from "./_components/force-graph/force-graph-canvas";
@@ -16,24 +14,6 @@ import type {
   CustomGraphNode,
 } from "./_components/permission-graph-types";
 import { AgentLRUCache } from "./_components/permission-graph-utils";
-
-export function generateMetadata() {
-  return createSeoMetadata({
-    title: "Permission Graph - Torus Portal",
-    description:
-      "Visualize and explore the Torus Network permission graph. Interactive network visualization of agents, permissions, and relationships.",
-    keywords: [
-      "permission graph",
-      "network visualization",
-      "agent relationships",
-      "permission mapping",
-      "network explorer",
-    ],
-    ogSiteName: "Torus Portal",
-    canonical: "/permission-graph",
-    baseUrl: env("BASE_URL"),
-  });
-}
 
 export default function PermissionGraphPage() {
   const router = useRouter();
@@ -157,7 +137,7 @@ export default function PermissionGraphPage() {
         setCachedAgentData={setCachedAgentData}
         isOpen={isSheetOpen}
         onOpenChange={handleOnOpenChange}
-        allocatorAddress={env("NEXT_PUBLIC_TORUS_ALLOCATOR_ADDRESS")}
+        allocatorAddress={allocatorAddress}
       />
       <ForceGraphCanvas
         data={graphData}

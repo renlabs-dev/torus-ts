@@ -4,28 +4,8 @@ import { useTorus } from "@torus-ts/torus-provider";
 import { Button } from "@torus-ts/ui/components/button";
 import { Input } from "@torus-ts/ui/components/input";
 import { Label } from "@torus-ts/ui/components/label";
-import { createSeoMetadata } from "@torus-ts/ui/components/seo";
 import { useToast } from "@torus-ts/ui/hooks/use-toast";
-import { env } from "~/env";
 import { useState } from "react";
-
-export function generateMetadata() {
-  return createSeoMetadata({
-    title: "Playground - Torus Portal",
-    description:
-      "Test and experiment with Torus Network transactions. Send remarks and explore blockchain functionality in a safe environment.",
-    keywords: [
-      "blockchain playground",
-      "test transactions",
-      "remark transactions",
-      "network testing",
-      "blockchain experiments",
-    ],
-    ogSiteName: "Torus Portal",
-    canonical: "/playground",
-    baseUrl: env("BASE_URL"),
-  });
-}
 
 export default function PlaygroundPage() {
   const { isAccountConnected } = useTorus();
