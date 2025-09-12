@@ -7,8 +7,8 @@ const nextPageMetadataRequirementRule = {
       "error",
       {
         selector: [
-          // Skip page.tsx with "use client"
-          "Program:not(:has(Directive[expression.value='use client']))",
+          // Apply to layout.tsx or page.tsx without "use client"
+          "Program:not(:has(Directive[expression.value='use client'])):matches([filename=/layout\\.tsx$/], [filename=/page\\.tsx$/])",
           // Fail if neither a static export nor a generateMetadata function is present
           "Program:not(:has(ExportNamedDeclaration:has(VariableDeclaration:has(VariableDeclarator[id.name='metadata'])), ExportNamedDeclaration:has(FunctionDeclaration[id.name='generateMetadata'])))",
           // Fail if 'metadata' is exported but is assigned to an async function
