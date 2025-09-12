@@ -1,5 +1,3 @@
-"use client";
-
 import { Container } from "@torus-ts/ui/components/container";
 import { createSeoMetadata } from "@torus-ts/ui/components/seo";
 import { env } from "~/env";
