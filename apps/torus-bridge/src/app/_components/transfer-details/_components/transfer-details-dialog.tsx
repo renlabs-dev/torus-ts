@@ -68,58 +68,57 @@ export function TransfersDetailsDialog({
   const walletDetails =
     useWalletDetails()[account?.protocol ?? ProtocolType.Ethereum];
 
-  const getMessageUrls = useCallback(async () => {
-    setFromUrl("");
-    setToUrl("");
-    setOriginTxUrl("");
-
-    if (originTxHash) {
-      const [txUrlError, originTxUrl] = trySync(() =>
-        multiProvider.tryGetExplorerTxUrl(origin, { hash: originTxHash }),
-      );
-
-      if (txUrlError !== undefined) {
-        logger.error(
-          `Error getting transaction URL for hash ${originTxHash}:`,
-          txUrlError,
-        );
-      } else if (originTxUrl) {
-        setOriginTxUrl(fixDoubleSlash(originTxUrl));
-      }
-    }
-
-    const [fromUrlPromise, toUrlPromise] = [
-      multiProvider.tryGetExplorerAddressUrl(origin, sender),
-      multiProvider.tryGetExplorerAddressUrl(destination, recipient),
-    ];
-
-    const [fromUrlError, fromUrl] = await tryAsync(fromUrlPromise);
-    if (fromUrlError !== undefined) {
-      logger.error(
-        `Error getting explorer URL for sender ${sender}:`,
-        fromUrlError,
-      );
-    } else if (fromUrl) {
-      setFromUrl(fixDoubleSlash(fromUrl));
-    }
-
-    const [toUrlError, toUrl] = await tryAsync(toUrlPromise);
-    if (toUrlError !== undefined) {
-      logger.error(
-        `Error getting explorer URL for recipient ${recipient}:`,
-        toUrlError,
-      );
-    } else if (toUrl) {
-      setToUrl(fixDoubleSlash(toUrl));
-    }
-  }, [sender, recipient, originTxHash, multiProvider, origin, destination]);
-
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
+    const getMessageUrls = async () => {
+      setFromUrl("");
+      setToUrl("");
+      setOriginTxUrl("");
+
+      if (originTxHash) {
+        const [txUrlError, originTxUrl] = trySync(() =>
+          multiProvider.tryGetExplorerTxUrl(origin, { hash: originTxHash }),
+        );
+
+        if (txUrlError !== undefined) {
+          logger.error(
+            `Error getting transaction URL for hash ${originTxHash}:`,
+            txUrlError,
+          );
+        } else if (originTxUrl) {
+          setOriginTxUrl(fixDoubleSlash(originTxUrl));
+        }
+      }
+
+      const [fromUrlPromise, toUrlPromise] = [
+        multiProvider.tryGetExplorerAddressUrl(origin, sender),
+        multiProvider.tryGetExplorerAddressUrl(destination, recipient),
+      ];
+
+      const [fromUrlError, fromUrl] = await tryAsync(fromUrlPromise);
+      if (fromUrlError !== undefined) {
+        logger.error(
+          `Error getting explorer URL for sender ${sender}:`,
+          fromUrlError,
+        );
+      } else if (fromUrl) {
+        setFromUrl(fixDoubleSlash(fromUrl));
+      }
+
+      const [toUrlError, toUrl] = await tryAsync(toUrlPromise);
+      if (toUrlError !== undefined) {
+        logger.error(
+          `Error getting explorer URL for recipient ${recipient}:`,
+          toUrlError,
+        );
+      } else if (toUrl) {
+        setToUrl(fixDoubleSlash(toUrl));
+      }
+    };
+
     getMessageUrls().catch((err) => {
       logger.error("Error getting message URLs for details modal", err);
     });
-  }, [transfer, getMessageUrls]);
+  }, [sender, recipient, originTxHash, multiProvider, origin, destination]);
 
   const isAccountReady = !!account?.isReady;
   const connectorName = walletDetails.name ?? "wallet";

@@ -19,7 +19,7 @@ import { updateSearchParams } from "~/utils/query-params";
 import type { TransferFormValues } from "~/utils/types";
 import { Form, Formik } from "formik";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { AmountSection } from "../_sections/amount-section";
 import { ButtonSection } from "../_sections/button-section";
 import { RecipientSection } from "../_sections/recipient-section";
@@ -41,8 +41,7 @@ export function TransferTokenForm() {
   const multiProvider = useMultiProvider();
   const { accounts } = useAccounts(multiProvider, config.addressBlacklist);
 
-  // eslint-disable-next-line react-hooks/preserve-manual-memoization
-  const initialValues = useMemo<TransferFormValues>(() => {
+  const initialValues = (() => {
     if (fromParam && toParam) {
       return {
         origin: fromParam,
@@ -63,8 +62,7 @@ export function TransferTokenForm() {
       amount: "",
       recipient: "",
     };
-    // eslint-disable-next-line react-hooks/preserve-manual-memoization
-  }, [warpCore, fromParam, toParam]);
+  })();
 
   const validate = (values: TransferFormValues) =>
     validateForm(warpCore, values, accounts);

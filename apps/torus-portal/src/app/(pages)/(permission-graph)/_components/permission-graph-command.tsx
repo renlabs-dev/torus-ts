@@ -90,8 +90,7 @@ export function PermissionGraphCommand() {
     [agentNamesMap],
   );
 
-  // eslint-disable-next-line react-hooks/preserve-manual-memoization
-  const searchGroups = useMemo(() => {
+  const searchGroups = (() => {
     if (!graphData) return [];
 
     return [
@@ -176,7 +175,7 @@ export function PermissionGraphCommand() {
         ),
       },
     ];
-  }, [graphData, getFormattedAddress]);
+  })();
 
   if (!graphData) {
     return (

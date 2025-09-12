@@ -2,7 +2,7 @@
 
 import { useStore } from "~/utils/store";
 import type { TransferContext } from "~/utils/types";
-import { useEffect, useState } from "react";
+import { useLayoutEffect, useState } from "react";
 import { TransfersDetailsDialog } from "./_components/transfer-details-dialog";
 
 export function TransferDetails() {
@@ -14,13 +14,19 @@ export function TransferDetails() {
   const transfers = useStore((s) => s.transfers);
   const transferLoading = useStore((s) => s.transferLoading);
 
-  useEffect(() => {
-    if (!transferLoading && transfers.length > 0) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setSelectedTransfer(transfers[transfers.length - 1]);
-      setIsModalOpen(true);
+  useLayoutEffect(() => {
+    const shouldShowModal = !transferLoading && transfers.length > 0;
+    const latestTransfer = shouldShowModal
+      ? transfers[transfers.length - 1]
+      : null;
+
+    if (latestTransfer && latestTransfer !== selectedTransfer) {
+      queueMicrotask(() => {
+        setSelectedTransfer(latestTransfer);
+        setIsModalOpen(true);
+      });
     }
-  }, [transfers, transferLoading]);
+  }, [transfers, transferLoading, selectedTransfer]);
 
   if (!selectedTransfer) return null;
 

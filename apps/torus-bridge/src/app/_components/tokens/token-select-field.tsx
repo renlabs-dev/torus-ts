@@ -21,33 +21,32 @@ export function TokenSelectField({ name, disabled }: Readonly<Props>) {
   const { values } = useFormikContext<TransferFormValues>();
   const [field, , helpers] = useField<number | undefined>(name);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isAutomaticSelection, setIsAutomaticSelection] = useState(false);
-
   const warpCore = useWarpCore();
-
   const { origin, destination } = values;
+
+  const tokensWithRoute = warpCore.getTokensForRoute(origin, destination);
+
+  const isAutomaticSelection =
+    tokensWithRoute.length !== 1 ? tokensWithRoute.length === 0 : true;
+
   useEffect(() => {
-    const tokensWithRoute = warpCore.getTokensForRoute(origin, destination);
     let newFieldValue: number | undefined;
-    let newIsAutomatic: boolean;
+
     // No tokens available for this route
     if (tokensWithRoute.length === 0) {
       newFieldValue = undefined;
-      newIsAutomatic = true;
     }
     // Exactly one found
     else if (tokensWithRoute.length === 1) {
       newFieldValue = getIndexForToken(warpCore, tokensWithRoute[0]);
-      newIsAutomatic = true;
-      // Multiple possibilities
-    } else {
-      newFieldValue = undefined;
-      newIsAutomatic = false;
     }
+    // Multiple possibilities
+    else {
+      newFieldValue = undefined;
+    }
+
     void helpers.setValue(newFieldValue);
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setIsAutomaticSelection(newIsAutomatic);
-  }, [warpCore, origin, destination, helpers]);
+  }, [tokensWithRoute, warpCore, helpers]);
 
   const onSelectToken = (newToken: IToken) => {
     // Set the token address value in formik state

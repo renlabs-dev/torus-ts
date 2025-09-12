@@ -23,13 +23,7 @@ import {
   ThumbsUp,
   TriangleAlert,
 } from "lucide-react";
-import {
-  useCallback,
-  useEffect,
-  useLayoutEffect,
-  useMemo,
-  useState,
-} from "react";
+import { useCallback, useEffect, useLayoutEffect, useState } from "react";
 import { ReportComment } from "./report-comment";
 
 //  "LIKE" | "DISLIKE"
@@ -154,10 +148,9 @@ export function ViewComment({
 
   const [sortBy, setSortBy] = useState<SorterTypes>("oldest");
 
-  // eslint-disable-next-line react-hooks/preserve-manual-memoization
-  const sortedComments = useMemo(() => {
+  const sortedComments = (() => {
     if (!comments) return [];
-    return comments.sort((a, b) => {
+    return [...comments].sort((a, b) => {
       if (sortBy === "newest") {
         return (
           new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
@@ -170,7 +163,7 @@ export function ViewComment({
         return (Number(b.likes) || 0) - (Number(a.likes) || 0);
       }
     });
-  }, [comments, sortBy]);
+  })();
 
   const { data: userVotes, refetch: refetchUserVotes } =
     api.commentInteraction.byUserId.useQuery(
@@ -192,71 +185,59 @@ export function ViewComment({
   const deleteVoteMutation =
     api.commentInteraction.deleteReaction.useMutation();
 
-  const handleCastVote = createMutationHandler(castVoteMutation, toast);
-  const handleDeleteVote = createMutationHandler(deleteVoteMutation, toast);
+  const handleVote = (
+    commentId: number,
+    reactionType: CommentInteractionReactionType,
+  ) => {
+    if (!selectedAccount?.address) {
+      toast.error("Please connect your wallet to vote");
+      return;
+    }
 
-  const handleVote = useCallback(
-    // eslint-disable-next-line react-hooks/preserve-manual-memoization
-    (commentId: number, reactionType: CommentInteractionReactionType) => {
-      if (!selectedAccount?.address) {
-        toast.error("Please connect your wallet to vote");
-        return;
-      }
+    const commentExists = comments?.some((c) => c.id === commentId);
+    if (!commentExists) {
+      toast.error("Comment not found");
+      return;
+    }
 
-      const commentExists = comments?.some((c) => c.id === commentId);
-      if (!commentExists) {
-        toast.error("Comment not found");
-        return;
-      }
+    const currentVote = userVotes?.[commentId];
+    const isRemovingVote = currentVote === reactionType;
 
-      const currentVote = userVotes?.[commentId];
-      const isRemovingVote = currentVote === reactionType;
+    const handleCastVote = createMutationHandler(castVoteMutation, toast);
+    const handleDeleteVote = createMutationHandler(deleteVoteMutation, toast);
 
-      if (isRemovingVote) {
-        void handleDeleteVote(
-          { commentId },
-          {
-            error: "Error removing vote",
-            onSuccess: async () => {
-              const [error] = await tryAsync(
-                Promise.all([refetchUserVotes(), refetch()]),
-              );
-              if (error) {
-                throw new Error("Error refreshing data");
-              }
-            },
+    if (isRemovingVote) {
+      void handleDeleteVote(
+        { commentId },
+        {
+          error: "Error removing vote",
+          onSuccess: async () => {
+            const [error] = await tryAsync(
+              Promise.all([refetchUserVotes(), refetch()]),
+            );
+            if (error) {
+              throw new Error("Error refreshing data");
+            }
           },
-        );
-      } else {
-        void handleCastVote(
-          { commentId, reactionType },
-          {
-            error: "Error casting vote",
-            onSuccess: async () => {
-              const [error] = await tryAsync(
-                Promise.all([refetchUserVotes(), refetch()]),
-              );
-              if (error) {
-                throw new Error("Error refreshing data");
-              }
-            },
+        },
+      );
+    } else {
+      void handleCastVote(
+        { commentId, reactionType },
+        {
+          error: "Error casting vote",
+          onSuccess: async () => {
+            const [error] = await tryAsync(
+              Promise.all([refetchUserVotes(), refetch()]),
+            );
+            if (error) {
+              throw new Error("Error refreshing data");
+            }
           },
-        );
-      }
-    },
-    [
-      selectedAccount?.address,
-      comments,
-      userVotes,
-      // eslint-disable-next-line react-hooks/preserve-manual-memoization
-      handleCastVote,
-      // eslint-disable-next-line react-hooks/preserve-manual-memoization
-      handleDeleteVote,
-      refetchUserVotes,
-      refetch,
-      toast,
-    ],
-  );
+        },
+      );
+    }
+  };
 
   const handleCommentSorter = useCallback((sortBy: SorterTypes | "") => {
     setSortBy(sortBy || "oldest");
