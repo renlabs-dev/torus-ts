@@ -63,7 +63,9 @@
     "lint": "eslint --cache --cache-location .cache/.eslintcache",
     "test": "vitest run --project unit",
     "test:unit": "vitest run --project unit",
-    "test:chain": "vitest run --project chain",
+    "test:chain": "vitest run --project chain-query --project chain-tx",
+    "test:chain-query": "vitest run --project chain-query",
+    "test:chain-tx": "vitest run --project chain-tx",
     "test:verbose": "vitest run --reporter verbose",
     "typecheck": "tsc --noEmit"
   },

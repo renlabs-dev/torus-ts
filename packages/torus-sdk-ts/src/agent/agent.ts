@@ -432,6 +432,9 @@ export class AgentServer {
             Curator: () => {
               // Skip curator permissions
             },
+            Wallet: () => {
+              // Skip wallet permissions
+            },
           });
         });
 

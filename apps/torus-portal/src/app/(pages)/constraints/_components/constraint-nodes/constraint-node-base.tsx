@@ -97,7 +97,7 @@ export function ConstraintNodeBase({ id, data }: PermissionNodeBaseProps) {
 
       if (!validation.success && value.length > 0) {
         setPermissionIdError(
-          validation.error.errors[0]?.message ?? "Invalid permission ID",
+          validation.error.issues[0]?.message ?? "Invalid permission ID",
         );
       } else {
         setPermissionIdError("");
