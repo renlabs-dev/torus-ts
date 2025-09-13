@@ -22,6 +22,17 @@ const envSchema = {
   POSTGRES_URL: z.string().url(),
   PINATA_JWT: z.string(),
   PORT: z.string(),
+  BASE_URL: z
+    .string()
+    .url()
+    .refine((u) => u.startsWith("https://"), {
+      message: "BASE_URL must be an HTTPS URL",
+    })
+    .default(
+      process.env.NODE_ENV === "production"
+        ? "https://dao.torus.network"
+        : "https://localhost:3000",
+    ),
 
   // Discord Authentication
   DISCORD_CLIENT_ID: z.string().nonempty(),

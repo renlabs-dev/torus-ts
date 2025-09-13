@@ -3,6 +3,8 @@ import type { AgentView } from "../_components/agent-view-toggle";
 import { InfiniteAgentList } from "../_components/infinite-agent-list";
 import { PageLayout } from "../_components/page-layout";
 
+export const metadata = {} as const;
+
 export default async function Page(props: {
   searchParams: Promise<{
     search?: string;

@@ -1,42 +1,43 @@
-import { createSeoMetadata } from "@torus-ts/ui/components/seo";
+"use client";
+
 import {
   Tabs,
   TabsContent,
   TabsList,
   TabsTrigger,
 } from "@torus-ts/ui/components/tabs";
-import { env } from "~/env";
 import { useTabWithQueryParam } from "hooks/use-tab-with-query-param";
-import AgentHealthTab from "./_components/agent-health-tab/agent-health-tab";
-import DaoApplicationsTab from "./_components/dao-applications-tab";
-import DashboardTab from "./_components/dashboard-tab/dashboard";
+import AgentHealthTab from "../_components/agent-health-tab/agent-health-tab";
+import DaoApplicationsTab from "../_components/dao-applications-tab";
+import DashboardTab from "../_components/dashboard-tab/dashboard";
 
-export function generateMetadata() {
-  return createSeoMetadata({
-    title: "DAO Dashboard - Torus Governance",
-    description:
-      "Monitor DAO operations, agent health, and applications. Comprehensive dashboard for Torus Network governance management.",
-    keywords: [
-      "dao dashboard",
-      "agent health",
-      "dao applications",
-      "governance monitoring",
-      "network status",
-    ],
-    ogSiteName: "Torus Governance",
-    canonical: "/dao-dashboard",
-    baseUrl: env("BASE_URL"),
-  });
-}
+const ALLOWED_TABS = ["dashboard", "agent-health", "dao-applications"] as const;
+type AllowedTab = (typeof ALLOWED_TABS)[number];
 
-export default function DaoDashboardPage() {
-  const { tab, handleTabChange } = useTabWithQueryParam("dashboard");
+export default function DaoDashboardPageClient() {
+  const { tab: rawTab, handleTabChange } = useTabWithQueryParam(
+    "dashboard",
+    "/dao-dashboard",
+  );
+
+  // Normalize and validate the tab
+  const tab: AllowedTab = ALLOWED_TABS.includes(rawTab as AllowedTab)
+    ? (rawTab as AllowedTab)
+    : "dashboard";
+
+  const handleValidatedTabChange = (value: string) => {
+    // Only call handleTabChange if the value is in the whitelist
+    if (ALLOWED_TABS.includes(value as AllowedTab)) {
+      handleTabChange(value);
+    }
+    // Ignore invalid values silently
+  };
 
   return (
     <div className="animate-fade w-full">
       <Tabs
         value={tab}
-        onValueChange={handleTabChange}
+        onValueChange={handleValidatedTabChange}
         className="w-full min-w-full"
       >
         <TabsList className="grid h-full w-full md:grid-cols-3">

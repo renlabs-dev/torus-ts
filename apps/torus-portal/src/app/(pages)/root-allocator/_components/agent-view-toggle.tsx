@@ -9,7 +9,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 export type AgentView = "all" | "root" | "new" | "oldest";
 
 interface AgentViewToggleProps {
-  currentView: AgentView;
+  currentView?: AgentView;
 }
 
 export function AgentViewToggle({ currentView }: AgentViewToggleProps) {
@@ -29,7 +29,7 @@ export function AgentViewToggle({ currentView }: AgentViewToggleProps) {
     <ToggleGroup
       type="single"
       variant="outline"
-      value={currentView}
+      value={currentView ?? "all"}
       onValueChange={handleViewChange as (value: string) => void}
       className="grid w-full grid-cols-4 md:w-full md:max-w-72"
     >

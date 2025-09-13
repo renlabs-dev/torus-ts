@@ -3,7 +3,10 @@
 import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect } from "react";
 
-export function useTabWithQueryParam(defaultTab: string = "dashboard") {
+export function useTabWithQueryParam(
+  defaultTab: string = "dashboard",
+  basePath: string = "/dao-dashboard",
+) {
   const searchParams = useSearchParams();
   const router = useRouter();
 
@@ -27,9 +30,9 @@ export function useTabWithQueryParam(defaultTab: string = "dashboard") {
       const newQuery = params.toString();
       const queryString = newQuery ? `?${newQuery}` : "";
 
-      router.push(`/dao-dashboard${queryString}`);
+      router.push(`${basePath}${queryString}`);
     },
-    [searchParams, router, defaultTab, tab],
+    [searchParams, router, defaultTab, tab, basePath],
   );
 
   useEffect(() => {

@@ -2,6 +2,10 @@ import Image from "next/image";
 import * as React from "react";
 import { TorusAnimation } from "./_components/torus-animation";
 
+export async function generateMetadata() {
+  return import("./layout").then((mod) => mod.generateMetadata());
+}
+
 export default function Page() {
   return (
     <main className="-z-40">

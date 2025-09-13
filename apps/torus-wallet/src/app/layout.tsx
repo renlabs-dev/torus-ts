@@ -5,12 +5,12 @@ import { TorusProvider } from "@torus-ts/torus-provider";
 import { Container } from "@torus-ts/ui/components/container";
 import { Footer } from "@torus-ts/ui/components/footer";
 import { Layout } from "@torus-ts/ui/components/layout";
+import { createSeoMetadata } from "@torus-ts/ui/components/seo";
 import { Toaster } from "@torus-ts/ui/components/toaster";
 import { UsdPriceProvider } from "~/context/usd-price-provider";
 import { WalletProvider } from "~/context/wallet-provider";
 import { env, EnvScript } from "~/env";
 import { firaMono } from "~/utils/fonts";
-import { generateMetadata } from "~/utils/seo";
 import PlausibleProvider from "next-plausible";
 import { APRBar } from "./_components/apr-bar/apr-bar";
 import { SidebarLinks } from "./_components/sidebar-links";
@@ -18,7 +18,24 @@ import { TransactionsSheet } from "./_components/transactions-sheet";
 import { WalletBalance } from "./_components/wallet-balance";
 import { WalletHeader } from "./_components/wallet-header";
 
-export const metadata = generateMetadata();
+export function generateMetadata() {
+  return createSeoMetadata({
+    title: "Torus Wallet - Secure Crypto Wallet for Torus Network",
+    description:
+      "Manage your Torus Network tokens securely with our web-based wallet. Stake, transfer, and track your digital assets in the Torus ecosystem.",
+    ogSiteName: "Torus Wallet",
+    canonical: "/",
+    baseUrl: env("BASE_URL"),
+    keywords: [
+      "torus wallet",
+      "crypto wallet",
+      "web3 wallet",
+      "secure wallet",
+      "token management",
+      "wallet dashboard",
+    ],
+  });
+}
 
 interface ProvidersProps {
   children: React.ReactNode;

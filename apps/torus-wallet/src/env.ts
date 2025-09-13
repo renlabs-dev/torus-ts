@@ -13,6 +13,17 @@ if (process?.env) {
 // warning: DO NOT expose any sensitive data on the schema default values!
 const envSchema = {
   NODE_ENV: NodeEnvSchema.default("development"),
+  BASE_URL: z
+    .string()
+    .url()
+    .refine((u) => u.startsWith("https://"), {
+      message: "BASE_URL must be an HTTPS URL",
+    })
+    .default(
+      process.env.NODE_ENV === "production"
+        ? "https://wallet.torus.network"
+        : "https://localhost:3000",
+    ),
   /*
    * Specify your client-side environment variables schema here.
    * For them to be exposed to the client, prefix them with `NEXT_PUBLIC_`.
