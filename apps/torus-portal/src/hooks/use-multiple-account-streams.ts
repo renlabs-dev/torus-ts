@@ -109,7 +109,7 @@ export function useMultipleAccountStreams(
     api.permission.streamsByMultipleAccountsPerBlock.useQuery(
       {
         accountIds: props.accountIds,
-        lastN: props.lastN ?? 7,
+        lastN: props.lastN ?? 10,
       },
       {
         enabled: props.accountIds.length > 0,
