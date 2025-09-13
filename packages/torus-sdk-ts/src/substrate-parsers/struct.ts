@@ -76,7 +76,10 @@ export const Struct_schema = z.custom<Struct>(
 export const sb_struct = <T extends ZodRawShape>(
   shape: T,
   params?: ZodRawCreateParams,
-) => Struct_schema.pipe(z_typed_map(shape, params));
+) =>
+  Struct_schema.transform((v) => v as Map<unknown, unknown>).pipe(
+    z_typed_map(shape, params),
+  );
 
 /**
  * Parser for hybrid Substrate `Struct` types that have both `Map`-like and object-like

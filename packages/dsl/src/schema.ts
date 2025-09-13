@@ -14,7 +14,7 @@ import type {
  * are derived from the TypeScript types
  */
 interface SchemaMap {
-  CompOp: z.ZodEnum<[string, ...string[]]>;
+  CompOp: z.ZodType<CompOp>;
   UInt: z.ZodType<UInt>;
   AccountId: z.ZodString;
   PermId: z.ZodString;
@@ -32,13 +32,7 @@ interface SchemaMap {
 export const createSchemaMap = (): SchemaMap => {
   // Create CompOp schema safely by explicitly listing all enum values
   // This avoids issues with Object.values(CompOp)
-  const CompOpSchema = z.enum([
-    CompOp.Gt,
-    CompOp.Lt,
-    CompOp.Gte,
-    CompOp.Lte,
-    CompOp.Eq,
-  ]);
+  const CompOpSchema = z.enum(CompOp);
 
   // UInt schema with conversion from string/number to BigInt
   // Use transform to ensure we always get a bigint

@@ -38,7 +38,6 @@ export const sb_namespace_path = sb_string.transform((path, ctx) => {
   if (err !== undefined) {
     ctx.addIssue({
       code: "custom",
-      path: ctx.path,
       message: err,
     });
     return z.NEVER;

@@ -127,6 +127,13 @@ export function isSS58(value: string | null | undefined): value is SS58Address {
  * });
  * ```
  */
-export const SS58_SCHEMA = z
-  .string()
-  .refine<SS58Address>(isSS58, "Invalid SS58 address");
+export const SS58_SCHEMA = z.string().transform((val, ctx) => {
+  if (!isSS58(val)) {
+    ctx.addIssue({
+      code: "custom",
+      message: `Invalid SS58 address: ${val}`,
+    });
+    return z.NEVER;
+  }
+  return val;
+});

@@ -189,7 +189,7 @@ export type EnforcementReferendum = z.infer<
 
 // ---- Main Permission Contract ----
 
-const PERMISSION_CONTRACT_SHAPE = {
+export const PERMISSION_CONTRACT_SCHEMA = sb_struct({
   delegator: sb_address,
   scope: PERMISSION_SCOPE_SCHEMA,
   duration: PERMISSION_DURATION_SCHEMA,
@@ -198,13 +198,18 @@ const PERMISSION_CONTRACT_SHAPE = {
   lastExecution: sb_option(sb_blocks),
   executionCount: sb_bigint, // u32 as bigint
   createdAt: sb_blocks,
-};
+});
 
-export const PERMISSION_CONTRACT_SCHEMA = sb_struct(PERMISSION_CONTRACT_SHAPE);
-
+// TODO: this seems weird, review
 export const STREAM_CONTRACT_SCHEMA = sb_struct({
-  ...PERMISSION_CONTRACT_SHAPE,
-  scope: STREAM_SCOPE_SCHEMA,
+  delegator: sb_address,
+  streamScope: STREAM_SCOPE_SCHEMA, // -> Specific
+  duration: PERMISSION_DURATION_SCHEMA,
+  revocation: REVOCATION_TERMS_SCHEMA,
+  enforcement: ENFORCEMENT_AUTHORITY_SCHEMA,
+  lastExecution: sb_option(sb_blocks),
+  executionCount: sb_bigint, // u32 as bigint
+  createdAt: sb_blocks,
 });
 
 export type PermissionContract = z.infer<typeof PERMISSION_CONTRACT_SCHEMA>;
