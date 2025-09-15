@@ -6,15 +6,16 @@ import Link from "next/link";
 
 export function generateMetadata() {
   return createSeoMetadata({
-    title: "Torus Allocator - Moved to Portal",
+    title: "Torus Allocator",
     description:
-      "The Torus Allocator has moved to the Torus Portal. Access agent allocation and weight management through the integrated portal interface.",
+      "Allocate network resources and manage agent weights on the Torus Network. Access the integrated allocation interface through the Torus Portal.",
     keywords: [
       "torus allocator",
       "agent allocation",
       "weight management",
-      "portal integration",
-      "network allocation",
+      "network resources",
+      "resource allocation",
+      "agent weights",
     ],
     ogSiteName: "Torus Allocator",
     canonical: "/",
