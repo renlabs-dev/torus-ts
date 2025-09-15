@@ -6,7 +6,9 @@ import { Card } from "@torus-ts/ui/components/card";
 import { Container } from "@torus-ts/ui/components/container";
 import { Label } from "@torus-ts/ui/components/label";
 import { MarkdownView } from "@torus-ts/ui/components/markdown-view";
+import { createSeoMetadata } from "@torus-ts/ui/components/seo";
 import { Skeleton } from "@torus-ts/ui/components/skeleton";
+import { env } from "~/env";
 import { calculatePostPenaltyEmission } from "~/hooks/use-post-penalty-emission";
 import { api } from "~/trpc/server";
 import { ArrowLeft } from "lucide-react";
@@ -16,6 +18,38 @@ import { Suspense } from "react";
 import { PenaltyList } from "../../../_components/penalties-list";
 import { AgentInfoCard } from "./components/agent-info-card";
 import { ExpandedViewSocials } from "./components/expanded-view-socials";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}) {
+  const { slug } = await params;
+  const [mdlError, mdl] = await tryAsync(
+    api.agent.byKeyLastBlock({ key: slug }),
+  );
+
+  if (mdlError !== undefined) {
+    return {};
+  }
+
+  const agentName = mdl?.name;
+
+  return createSeoMetadata({
+    title: `${agentName} - Agent Details | Torus Portal`,
+    description: `View detailed information about ${agentName} on the Torus Network. Explore agent metadata, allocations, and performance metrics.`,
+    keywords: [
+      "agent details",
+      "agent profile",
+      "network participant",
+      "agent information",
+      "allocation details",
+    ],
+    ogSiteName: "Torus Portal",
+    canonical: `/root-allocator/agent/${slug}`,
+    baseUrl: env("BASE_URL"),
+  });
+}
 
 interface AgentPageProps {
   params: Promise<{ slug: string }>;

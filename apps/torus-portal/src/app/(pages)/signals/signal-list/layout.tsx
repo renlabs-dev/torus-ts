@@ -1,0 +1,24 @@
+import { createSeoMetadata } from "@torus-ts/ui/components/seo";
+import { env } from "~/env";
+
+export function generateMetadata() {
+  return createSeoMetadata({
+    title: "Signal List - Torus Portal",
+    description:
+      "View and manage demand signals on the Torus Network. Browse active, fulfilled, and deleted network signals.",
+    keywords: [
+      "signal list",
+      "demand signals",
+      "network signals",
+      "signal management",
+      "signal status",
+    ],
+    ogSiteName: "Torus Portal",
+    canonical: "/signals/signal-list",
+    baseUrl: env("BASE_URL"),
+  });
+}
+
+export default function Layout({ children }: { children: React.ReactNode }) {
+  return children;
+}

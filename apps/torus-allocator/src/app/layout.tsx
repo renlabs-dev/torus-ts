@@ -1,19 +1,28 @@
 import "@torus-ts/ui/globals.css";
 import { GoogleAnalytics } from "@next/third-parties/google";
 import { Layout } from "@torus-ts/ui/components/layout";
-import { EnvScript } from "~/env";
-import type { Metadata } from "next";
+import { createSeoMetadata } from "@torus-ts/ui/components/seo";
+import { env, EnvScript } from "~/env";
 import PlausibleProvider from "next-plausible";
 import { Fira_Mono as FiraMono } from "next/font/google";
 
-const APP_NAME = "Allocator";
-
-export const metadata: Metadata = {
-  robots: "all",
-  title: APP_NAME,
-  icons: [{ rel: "icon", url: "favicon.ico" }],
-  description: "The thermodynamic god's favorite Allocator.",
-};
+export function generateMetadata() {
+  return createSeoMetadata({
+    title: "Torus Allocator",
+    description:
+      "Torus Network agent allocation platform. Manage and distribute network resources through a comprehensive allocation interface.",
+    keywords: [
+      "agent allocation",
+      "network resources",
+      "weight management",
+      "torus network",
+      "resource distribution",
+    ],
+    ogSiteName: "Torus Allocator",
+    canonical: "/",
+    baseUrl: env("BASE_URL"),
+  });
+}
 
 export const firaMono = FiraMono({
   subsets: ["latin"],
