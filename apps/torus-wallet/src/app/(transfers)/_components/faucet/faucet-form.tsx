@@ -1,7 +1,7 @@
-// TODO: add "Self" button on faucet form's address field
 
 import { Button } from "@torus-ts/ui/components/button";
 import { Card } from "@torus-ts/ui/components/card";
+import { isSS58 } from "@torus-network/sdk/types";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -59,11 +59,27 @@ export function FaucetForm({
               <FormItem className="flex flex-col">
                 <FormLabel>Receiver address</FormLabel>
                 <FormControl>
-                  <Input
-                    {...field}
-                    placeholder={`eg. 5CoS1L...2tCACxf4n`}
-                    disabled={!selectedAccount?.address || isLoading}
-                  />
+                  <div className="flex gap-2">
+                    <Input
+                      {...field}
+                      placeholder={`eg. 5CoS1L...2tCACxf4n`}
+                      disabled={!selectedAccount?.address || isLoading}
+                      className="flex-1"
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      disabled={!selectedAccount?.address || isLoading}
+                      onClick={() => {
+                        if (selectedAccount?.address && isSS58(selectedAccount.address)) {
+                          form.setValue("recipient", selectedAccount.address);
+                        }
+                      }}
+                    >
+                      Self
+                    </Button>
+                  </div>
                 </FormControl>
                 <FormMessage />
               </FormItem>

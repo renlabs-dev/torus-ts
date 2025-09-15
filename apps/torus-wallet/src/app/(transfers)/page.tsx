@@ -1,4 +1,3 @@
-import type { TabItem } from "~/app/_components/tab-layout";
 import { TabLayout } from "~/app/_components/tab-layout";
 import { Faucet } from "~/app/(transfers)/_components/faucet/faucet";
 import { Receive } from "~/app/(transfers)/_components/receive/receive";
@@ -26,15 +25,18 @@ export const metadata = generateMetadata({
 });
 
 export default function TransfersPage() {
-  const tabs: TabItem[] = [
-    { text: "Send", value: "send", component: <Send /> },
-    { text: "Receive", value: "receive", component: <Receive /> },
-  ];
-
-  // TODO: Improve this check: check `NEXT_PUBLIC_TORUS_CHAIN_ENV` instead
-  if (env("NEXT_PUBLIC_TORUS_RPC_URL").includes("testnet")) {
-    tabs.push({ text: "Faucet", value: "faucet", component: <Faucet /> });
-  }
-
-  return <TabLayout tabs={tabs} defaultTab="send" />;
+  return (
+    <TabLayout
+      tabs={[
+        { text: "Send", component: <Send /> },
+        { text: "Receive", component: <Receive /> },
+        {
+          text: "Faucet",
+          component: <Faucet />,
+          hidden: env("NEXT_PUBLIC_TORUS_CHAIN_ENV") !== "testnet",
+        },
+      ]}
+      defaultTab="send"
+    />
+  );
 }

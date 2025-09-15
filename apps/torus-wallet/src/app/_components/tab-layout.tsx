@@ -12,8 +12,8 @@ import { WalletSkeletonLoader } from "./wallet-skeleton-loader";
 
 export interface TabItem {
   text: string;
-  value: string;
   component: ReactNode;
+  hidden?: boolean;
 }
 
 interface TabLayoutProps {
@@ -24,12 +24,29 @@ interface TabLayoutProps {
 export function TabLayout({ tabs, defaultTab }: TabLayoutProps) {
   const [activeTab, setActiveTab] = useState(defaultTab);
 
+  const tabElements = tabs.map((tab) => {
+    const value = tab.text.toLowerCase();
+
+    return {
+      trigger: (
+        <TabsTrigger key={value} value={value}>
+          {tab.text}
+        </TabsTrigger>
+      ),
+      content: (
+        <TabsContent key={value} value={value}>
+          {tab.component}
+        </TabsContent>
+      ),
+    };
+  });
+
   return (
     <Suspense fallback={<WalletSkeletonLoader />}>
       <div className="container mx-auto">
         <Tabs
           value={activeTab}
-          onValueChange={(value) => setActiveTab(value)}
+          onValueChange={setActiveTab}
           className="animate-fade flex w-full flex-col gap-4"
         >
           <TabsList
@@ -38,17 +55,9 @@ export function TabLayout({ tabs, defaultTab }: TabLayoutProps) {
               gridTemplateColumns: `repeat(${tabs.length}, 1fr)`,
             }}
           >
-            {tabs.map((tab) => (
-              <TabsTrigger key={tab.value} value={tab.value}>
-                {tab.text}
-              </TabsTrigger>
-            ))}
+            {tabElements.map((el) => el.trigger)}
           </TabsList>
-          {tabs.map((tab) => (
-            <TabsContent key={tab.value} value={tab.value}>
-              {tab.component}
-            </TabsContent>
-          ))}
+          {tabElements.map((el) => el.content)}
         </Tabs>
       </div>
     </Suspense>

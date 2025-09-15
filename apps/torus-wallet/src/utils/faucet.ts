@@ -3,7 +3,11 @@ import type { VoidFn } from "@polkadot/api/types";
 import type { DispatchError } from "@polkadot/types/interfaces";
 import { u8aToHex } from "@polkadot/util";
 import { decodeAddress } from "@polkadot/util-crypto";
+import type { Api } from "@torus-network/sdk/chain";
 import { queryLastBlock } from "@torus-network/sdk/chain";
+import { smallAddress } from "@torus-network/torus-utils/torus/address";
+import { tryAsync } from "@torus-network/torus-utils/try-catch";
+import { faucetWorkerCode } from "./faucet-worker-code";
 
 interface WorkResult {
   hash: Uint8Array;
@@ -19,6 +23,7 @@ class MultiWorkerManager {
   private onFound: (result: WorkResult) => Promise<void> | void;
   private onError?: (err: ErrorEvent) => Promise<void> | void;
   private found = false;
+  private workerBlobUrl: string;
 
   constructor(
     workerCount: number,
@@ -32,14 +37,18 @@ class MultiWorkerManager {
     this.currentBlockData = initialBlockData;
     this.onFound = onFound;
     this.onError = onError;
+
+    // Create blob URL for worker code
+    const blob = new Blob([faucetWorkerCode], {
+      type: "application/javascript",
+    });
+    this.workerBlobUrl = URL.createObjectURL(blob);
   }
 
   start() {
     this.found = false;
     for (let i = 0; i < this.workerCount; i++) {
-      // TODO: check if we can inject the faucet worker code from the bundler
-      // instead of using a static file
-      const worker = new window.Worker("/faucetWorker.js");
+      const worker = new window.Worker(this.workerBlobUrl);
 
       worker.onmessage = async (e) => {
         if (this.found) return; // already found, ignore
@@ -96,57 +105,104 @@ class MultiWorkerManager {
       worker.terminate();
     }
     this.workers = [];
+
+    // Clean up blob URL
+    if (this.workerBlobUrl) {
+      URL.revokeObjectURL(this.workerBlobUrl);
+    }
   }
 }
 
-export function doWork(api: ApiPromise, address: string): Promise<WorkResult> {
+export function doWork(
+  api: Api & ApiPromise,
+  address: string,
+  onCleanup?: (cleanup: () => void) => void,
+): Promise<WorkResult> {
   return new Promise((resolve, _reject) => {
     let unsubscribe: VoidFn | undefined;
+    let manager: MultiWorkerManager | undefined;
+
+    const cleanup = () => {
+      if (unsubscribe) {
+        unsubscribe();
+        unsubscribe = undefined;
+      }
+      if (manager) {
+        manager.terminateAll();
+        manager = undefined;
+      }
+    };
 
     void (async () => {
-      try {
-        const currentBlockData = await queryLastBlock(api);
-        const decodedAddress = decodeAddress(address);
-
-        const onFound = (workResult: WorkResult) => {
-          if (unsubscribe) {
-            unsubscribe();
-          }
-          resolve(workResult);
-        };
-
-        const workerCount = navigator.hardwareConcurrency || 4;
-
-        console.log(`Executing with ${workerCount} workers.`);
-
-        const manager = new MultiWorkerManager(
-          workerCount,
-          decodedAddress,
-          currentBlockData,
-          onFound,
-        );
-
-        manager.start();
-
-        unsubscribe = await api.rpc.chain.subscribeNewHeads((head) => {
-          manager.updateBlock({
-            blockHash: head.hash,
-            blockNumber: head.number.toNumber(),
-          });
-        });
-      } finally {
-        if (unsubscribe) {
-          unsubscribe();
-        }
+      const [blockError, currentBlockData] = await tryAsync(
+        queryLastBlock(api),
+      );
+      if (blockError !== undefined) {
+        cleanup();
+        throw new Error(`Failed to query last block: ${blockError.message}`);
       }
+
+      const [decodeError, decodedAddress] = await tryAsync(
+        Promise.resolve(decodeAddress(address)),
+      );
+
+      if (decodeError !== undefined) {
+        cleanup();
+        throw new Error(
+          `Failed to decode address: ${decodeError instanceof Error ? decodeError.message : "Invalid address"}`,
+        );
+      }
+
+      const onFound = (workResult: WorkResult) => {
+        cleanup();
+        resolve(workResult);
+      };
+
+      const workerCount = navigator.hardwareConcurrency || 4;
+      console.log(`Executing with ${workerCount} workers.`);
+
+      manager = new MultiWorkerManager(
+        workerCount,
+        decodedAddress,
+        currentBlockData,
+        onFound,
+      );
+
+      // Provide cleanup function to parent component
+      if (onCleanup) {
+        onCleanup(cleanup);
+      }
+
+      manager.start();
+
+      const [subscriptionError, subscription] = await tryAsync(
+        api.rpc.chain.subscribeNewHeads((head) => {
+          if (manager) {
+            manager.updateBlock({
+              blockHash: head.hash,
+              blockNumber: head.number.toNumber(),
+            });
+          }
+        }),
+      );
+
+      if (subscriptionError !== undefined) {
+        cleanup();
+        throw new Error(
+          `Failed to subscribe to new blocks: ${subscriptionError.message}`,
+        );
+      }
+
+      unsubscribe = subscription;
     })();
   });
 }
 
 export function callFaucetExtrinsic(
-  api: ApiPromise,
+  api: Api & ApiPromise,
   workResult: WorkResult,
   address: string,
+  onProgress?: (message: string) => void,
 ): Promise<void> {
   return new Promise((resolve, reject) => {
     void (async () => {
@@ -159,44 +215,58 @@ export function callFaucetExtrinsic(
         address,
       );
 
-      const unsubscribe = await call.send((result) => {
-        if (result.status.isInBlock) {
-          console.log(
-            "Included at block hash",
-            result.status.asInBlock.toHex(),
-          );
-        } else if (result.status.isFinalized) {
-          console.log(
-            "Finalized block hash",
-            result.status.asFinalized.toHex(),
-          );
+      const [sendError, unsubscribe] = await tryAsync(
+        call.send((result) => {
+          if (result.status.isInBlock) {
+            const blockHash = result.status.asInBlock.toHex();
+            console.log("Included in block hash", blockHash);
 
-          result.events.forEach(({ event: { method, section, data } }) => {
-            if (section === "system" && method === "ExtrinsicFailed") {
-              const [dispatchError] = data as unknown as [DispatchError];
-
-              if (dispatchError.isModule) {
-                const decoded = api.registry.findMetaError(
-                  dispatchError.asModule,
-                );
-                const { section, name, docs } = decoded;
-                console.error(
-                  `❌ Error: ${section}.${name} - ${docs.join(" ")}`,
-                );
-              } else {
-                console.error("❌ Error:", dispatchError.toString());
-              }
-
-              reject(new Error("Transaction Failed."));
-            } else if (section === "system" && method === "ExtrinsicSuccess") {
-              resolve();
-              console.log("✅ Transaction succeeded");
+            // Update progress message for user
+            if (onProgress) {
+              onProgress(`Included in block ${smallAddress(blockHash)}`);
             }
-          });
+          } else if (result.status.isFinalized) {
+            console.log(
+              "Finalized block hash",
+              result.status.asFinalized.toHex(),
+            );
 
-          unsubscribe();
-        }
-      });
+            result.events.forEach(({ event: { method, section, data } }) => {
+              if (section === "system" && method === "ExtrinsicFailed") {
+                const [dispatchError] = data as unknown as [DispatchError];
+
+                if (dispatchError.isModule) {
+                  const decoded = api.registry.findMetaError(
+                    dispatchError.asModule,
+                  );
+                  const { section, name, docs } = decoded;
+                  console.error(
+                    `❌ Error: ${section}.${name} - ${docs.join(" ")}`,
+                  );
+                } else {
+                  console.error("❌ Error:", dispatchError.toString());
+                }
+
+                reject(new Error("Transaction failed."));
+              } else if (
+                section === "system" &&
+                method === "ExtrinsicSuccess"
+              ) {
+                resolve();
+                console.log("✅ Transaction successful");
+              }
+            });
+
+            if (unsubscribe) {
+              unsubscribe();
+            }
+          }
+        }),
+      );
+
+      if (sendError !== undefined) {
+        reject(new Error(`Failed to send transaction: ${sendError.message}`));
+      }
     })();
   });
 }
