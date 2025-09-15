@@ -1,6 +1,8 @@
 import { StatueAnimation } from "./_components/statue-animation";
 
-export const metadata = {} as const;
+export function generateMetadata() {
+  return import("./layout").then((module) => module.generateMetadata());
+}
 
 export default function HomePage() {
   return (
