@@ -26,13 +26,12 @@ export const useSignIn = () => {
 
     const auth = localStorage.getItem("authorization");
     if (!auth) {
-      queueMicrotask(() => setIsUserAuthenticated(false));
+      setTimeout(() => setIsUserAuthenticated(false), 0);
       return;
     }
 
     // Async function for session checking with proper error handling
-    async function checkUserSession() {
-      if (!auth) return;
+    const checkUserSession = async () => {
       const [error, data] = await tryAsync(checkSession.mutateAsync({ auth }));
 
       if (error !== undefined) {
@@ -56,17 +55,17 @@ export const useSignIn = () => {
           console.error("Error removing from localStorage:", storageError);
         }
       }
-    }
+    };
 
     void checkUserSession();
-  }, [viewMode, checkSession, setIsUserAuthenticated]);
+  }, [viewMode, checkSession]);
 
   useEffect(() => {
     const favoriteWalletAddress = localStorage.getItem("favoriteWalletAddress");
     if (!selectedAccount || favoriteWalletAddress === selectedAccount.address)
       return;
 
-    queueMicrotask(() => setIsUserAuthenticated(null));
+    setTimeout(() => setIsUserAuthenticated(null), 0);
 
     // Handle localStorage with proper error handling
     const clearStorage = async () => {

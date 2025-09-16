@@ -22,7 +22,7 @@ export function SolanaWalletProvider({
 
   // Effect to run after client-side mounting
   useEffect(() => {
-    queueMicrotask(() => setHasMounted(true));
+    setTimeout(() => setHasMounted(true), 0);
   }, []);
 
   // TODO support multiple networks
