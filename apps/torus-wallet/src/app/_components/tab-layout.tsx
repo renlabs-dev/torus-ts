@@ -25,7 +25,7 @@ export function TabLayout({ tabs, defaultTab }: TabLayoutProps) {
   const [activeTab, setActiveTab] = useState(defaultTab);
 
   const tabElements = tabs.map((tab) => {
-    const value = tab.text.toLowerCase();
+    const value = tab.text.toLowerCase().replace(" ", "-");
 
     return {
       trigger: (

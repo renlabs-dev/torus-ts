@@ -26,10 +26,10 @@ export const metadata = generateMetadata({
 });
 
 const tabs: TabItem[] = [
-  { text: "Stake", value: "stake", component: <Stake /> },
-  { text: "Unstake", value: "unstake", component: <Unstake /> },
-  { text: "Move", value: "move", component: <TransferStake /> },
-  { text: "APY Forecast", value: "apy", component: <StakingCalculator /> },
+  { text: "Stake", component: <Stake /> },
+  { text: "Unstake", component: <Unstake /> },
+  { text: "Move", component: <TransferStake /> },
+  { text: "APY Forecast", component: <StakingCalculator /> },
 ];
 
 export default function StakingPage() {
