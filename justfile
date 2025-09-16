@@ -199,20 +199,21 @@ clean-workspaces:
 clean-all:
   find . -type d \( \
       -name 'node_modules' -o \
+      -name '.cache' -o \
       -name '.next' -o \
       -name '.turbo' -o \
-      -name 'dist' -o \
-      -name '.cache' \
+      -name 'dist' \
     \) -prune -exec rm -rf '{}' +
 
 clean-output:
   find . -type d \( \
       -name '.cache' -o \
       -name '.next' -o \
-      -name 'dist' -o \
-      -name '.turbo' \
-    \) -prune -exec rm -rf '{}' +
-
+      -name '.turbo' -o \
+      -name 'dist' \
+    \) \
+    ! -path "*/node_modules/*" \
+    -prune -exec rm -rf '{}' +
 
 # == Github Actions ==
 
@@ -224,7 +225,7 @@ run-workflows:
 
 
 
-# -- @EdSDR Things --
+# == @EdSDR Things ==
 
 i:
   pnpm install
