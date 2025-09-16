@@ -1,6 +1,29 @@
+import { createSeoMetadata } from "@torus-ts/ui/components/seo";
+
+import { env } from "~/env";
+
 import { FilterContent } from "../../_components/filter-content";
 import { ShapeNetworkModal } from "../../_components/shape-network-modal";
-import { ListWhitelistApplications } from "./_components/list-whitelist-applications";
+import {
+  ListWhitelistApplications,
+} from "./_components/list-whitelist-applications";
+
+export function generateMetadata() {
+  return createSeoMetadata({
+    title: "Whitelist Applications - Torus Governance",
+    description: "Review and vote on agent whitelist applications.",
+    keywords: [
+      "whitelist applications",
+      "agent applications",
+      "network participation",
+      "agent approval",
+      "governance review",
+    ],
+    ogSiteName: "Torus Governance",
+    canonical: "/whitelist-applications",
+    baseUrl: env("BASE_URL"),
+  });
+}
 
 export default function HomePage() {
   return (

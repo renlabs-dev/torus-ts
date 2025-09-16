@@ -1,20 +1,35 @@
 import "@torus-ts/ui/globals.css";
+
+import * as React from "react";
+
 import { GoogleAnalytics } from "@next/third-parties/google";
-import { Layout } from "@torus-ts/ui/components/layout";
-import { EnvScript } from "~/env";
-import type { Metadata } from "next";
 import PlausibleProvider from "next-plausible";
 import { Fira_Mono as FiraMono } from "next/font/google";
-import * as React from "react";
+
+import { Layout } from "@torus-ts/ui/components/layout";
+import { createSeoMetadata } from "@torus-ts/ui/components/seo";
+
+import { env, EnvScript } from "~/env";
+
 import { Footer } from "./_components/footer";
 import { HoverHeader } from "./_components/hover-header";
 
-export const metadata: Metadata = {
-  robots: "all",
-  title: "Torus",
-  icons: [{ rel: "icon", url: "favicon.ico" }],
-  description: "The thermodynamic god's favorite child.",
-};
+export function generateMetadata() {
+  return createSeoMetadata({
+    title: "Torus Network",
+    description: "The thermodynamic god's favorite child.",
+    keywords: [
+      "torus network",
+      "decentralized infrastructure",
+      "substrate blockchain",
+      "web3 platform",
+      "blockchain technology",
+    ],
+    ogSiteName: "Torus Network",
+    canonical: "/",
+    baseUrl: env("BASE_URL"),
+  });
+}
 
 export const firaMono = FiraMono({
   subsets: ["latin"],

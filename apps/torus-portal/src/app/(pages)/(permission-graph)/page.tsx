@@ -3,7 +3,6 @@
 import { useTorus } from "@torus-ts/torus-provider";
 import { KeyboardShortcutBadge } from "@torus-ts/ui/components/keyboard-shortcut-badge";
 import { Loading } from "@torus-ts/ui/components/loading";
-import { env } from "~/env";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { ForceGraphCanvas } from "./_components/force-graph/force-graph-canvas";
@@ -114,6 +113,7 @@ export default function PermissionGraphPage() {
   if (isLoading || !graphData || !isInitialized)
     return (
       <div className="fixed inset-0 flex animate-pulse flex-col items-center justify-center gap-2 text-sm">
+        <h1 className="sr-only">Permission Graph - Torus Portal</h1>
         <span className="flex items-center gap-2">
           <Loading /> Loading...
         </span>
@@ -126,6 +126,7 @@ export default function PermissionGraphPage() {
 
   return (
     <main>
+      <h1 className="sr-only">Permission Graph - Torus Portal</h1>
       <GraphSheet
         selectedNode={selectedNode}
         graphData={graphData}
@@ -136,7 +137,7 @@ export default function PermissionGraphPage() {
         setCachedAgentData={setCachedAgentData}
         isOpen={isSheetOpen}
         onOpenChange={handleOnOpenChange}
-        allocatorAddress={env("NEXT_PUBLIC_TORUS_ALLOCATOR_ADDRESS")}
+        allocatorAddress={allocatorAddress}
       />
       <ForceGraphCanvas
         data={graphData}

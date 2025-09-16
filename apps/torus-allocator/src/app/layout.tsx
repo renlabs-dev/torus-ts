@@ -1,19 +1,12 @@
 import "@torus-ts/ui/globals.css";
+
 import { GoogleAnalytics } from "@next/third-parties/google";
-import { Layout } from "@torus-ts/ui/components/layout";
-import { EnvScript } from "~/env";
-import type { Metadata } from "next";
 import PlausibleProvider from "next-plausible";
 import { Fira_Mono as FiraMono } from "next/font/google";
 
-const APP_NAME = "Allocator";
+import { Layout } from "@torus-ts/ui/components/layout";
 
-export const metadata: Metadata = {
-  robots: "all",
-  title: APP_NAME,
-  icons: [{ rel: "icon", url: "favicon.ico" }],
-  description: "The thermodynamic god's favorite Allocator.",
-};
+import { EnvScript } from "~/env";
 
 export const firaMono = FiraMono({
   subsets: ["latin"],

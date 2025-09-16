@@ -2,21 +2,34 @@ import "@torus-ts/ui/globals.css";
 import "@rainbow-me/rainbowkit/styles.css";
 import "@interchain-ui/react/styles";
 import "@solana/wallet-adapter-react-ui/styles.css";
-import { Layout } from "@torus-ts/ui/components/layout";
-import { AppContextProvider } from "~/context/app-context-provider";
-import { EnvScript } from "~/env";
-import type { Metadata } from "next";
+
 import { Fira_Mono as FiraMono } from "next/font/google";
+
+import { Layout } from "@torus-ts/ui/components/layout";
+import { createSeoMetadata } from "@torus-ts/ui/components/seo";
+
+import { AppContextProvider } from "~/context/app-context-provider";
+import { env, EnvScript } from "~/env";
 
 // import { WalletConflictGuard } from "./_components/wallet-conflict-guard";
 
-export const metadata: Metadata = {
-  robots: "all",
-  title: "Torus Base Bridge",
-  icons: [{ rel: "icon", url: "favicon.ico" }],
-  description:
-    "Simple, secure, and easy-to-use wallet for the Torus ecosystem.",
-};
+export function generateMetadata() {
+  return createSeoMetadata({
+    title: "Torus Bridge",
+    description:
+      "Cross-chain token bridge for the Torus ecosystem. Securely transfer tokens across multiple blockchain networks with ease and reliability.",
+    keywords: [
+      "cross-chain bridge",
+      "token transfer",
+      "multi-chain wallet",
+      "blockchain interoperability",
+      "crypto bridge",
+    ],
+    ogSiteName: "Torus Bridge",
+    canonical: "/",
+    baseUrl: env("BASE_URL"),
+  });
+}
 
 export const firaMono = FiraMono({
   subsets: ["latin"],

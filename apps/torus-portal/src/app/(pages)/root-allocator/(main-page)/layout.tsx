@@ -1,7 +1,30 @@
 import { Suspense } from "react";
+
+import { createSeoMetadata } from "@torus-ts/ui/components/seo";
+
+import { env } from "~/env";
+
 import { AgentBanner } from "../_components/agent-banner";
 import { AllocationSheet } from "../_components/allocation-sheet";
 import { TutorialDialog } from "../_components/tutorial-dialog";
+
+export function generateMetadata() {
+  return createSeoMetadata({
+    title: "Root Allocator - Torus Portal",
+    description:
+      "Support agents you believe in, contributing to network security, and participating in the decentralized allocation of network resources.",
+    keywords: [
+      "allocation dashboard",
+      "agent weights",
+      "resource allocation",
+      "network management",
+      "allocator interface",
+    ],
+    ogSiteName: "Torus Portal",
+    canonical: "/root-allocator",
+    baseUrl: env("BASE_URL"),
+  });
+}
 
 export default function RootLayout({
   children,

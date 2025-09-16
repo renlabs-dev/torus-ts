@@ -1,21 +1,62 @@
+import { Suspense } from "react";
+
+import { ArrowLeft } from "lucide-react";
+import Link from "next/link";
+import { notFound } from "next/navigation";
+
 import { fetchAgentMetadata } from "@torus-network/sdk/metadata";
 import { tryAsync } from "@torus-network/torus-utils/try-catch";
+
 import { AgentIcon } from "@torus-ts/ui/components/agent-card/agent-icon";
 import { Button } from "@torus-ts/ui/components/button";
 import { Card } from "@torus-ts/ui/components/card";
 import { Container } from "@torus-ts/ui/components/container";
 import { Label } from "@torus-ts/ui/components/label";
 import { MarkdownView } from "@torus-ts/ui/components/markdown-view";
+import { createSeoMetadata } from "@torus-ts/ui/components/seo";
 import { Skeleton } from "@torus-ts/ui/components/skeleton";
-import { calculatePostPenaltyEmission } from "~/hooks/use-post-penalty-emission";
+
+import { env } from "~/env";
+import {
+  calculatePostPenaltyEmission,
+} from "~/hooks/use-post-penalty-emission";
 import { api } from "~/trpc/server";
-import { ArrowLeft } from "lucide-react";
-import Link from "next/link";
-import { notFound } from "next/navigation";
-import { Suspense } from "react";
+
 import { PenaltyList } from "../../../_components/penalties-list";
 import { AgentInfoCard } from "./components/agent-info-card";
 import { ExpandedViewSocials } from "./components/expanded-view-socials";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}) {
+  const { slug } = await params;
+  const [mdlError, mdl] = await tryAsync(
+    api.agent.byKeyLastBlock({ key: slug }),
+  );
+
+  if (mdlError !== undefined) {
+    return {};
+  }
+
+  const agentName = mdl?.name;
+
+  return createSeoMetadata({
+    title: `${agentName} - Agent Details | Torus Portal`,
+    description: `View ${agentName} detailed information.`,
+    keywords: [
+      "agent details",
+      "agent profile",
+      "network participant",
+      "agent information",
+      "allocation details",
+    ],
+    ogSiteName: "Torus Portal",
+    canonical: `/root-allocator/agent/${slug}`,
+    baseUrl: env("BASE_URL"),
+  });
+}
 
 interface AgentPageProps {
   params: Promise<{ slug: string }>;

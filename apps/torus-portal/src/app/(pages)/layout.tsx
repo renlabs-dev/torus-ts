@@ -1,24 +1,37 @@
 import "@torus-ts/ui/globals.css";
+
 import { GoogleAnalytics } from "@next/third-parties/google";
+import PlausibleProvider from "next-plausible";
+import { Geist_Mono as GeistMono } from "next/font/google";
+
 import { ReactQueryProvider } from "@torus-ts/query-provider";
 import { TorusProvider } from "@torus-ts/torus-provider";
 import { Layout } from "@torus-ts/ui/components/layout";
+import { createSeoMetadata } from "@torus-ts/ui/components/seo";
 import { Toaster } from "@torus-ts/ui/components/toaster";
+
 import { env, EnvScript } from "~/env";
 import { TRPCReactProvider } from "~/trpc/react";
-import type { Metadata } from "next";
-import PlausibleProvider from "next-plausible";
-import { Geist_Mono as GeistMono } from "next/font/google";
+
 import SidebarContainer from "../_components/sidebar/sidebar-container";
 
-const APP_NAME = "Torus Portal";
-
-export const metadata: Metadata = {
-  robots: "all",
-  title: APP_NAME,
-  icons: [{ rel: "icon", url: "favicon.ico" }],
-  description: "The thermodynamic god's favorite Portal.",
-};
+export function generateMetadata() {
+  return createSeoMetadata({
+    title: "Torus Portal",
+    description:
+      "Manage network permissions, agent allocations, and explore the hypergraph.",
+    keywords: [
+      "torus portal",
+      "permission management",
+      "agent allocation",
+      "network governance",
+      "web3 platform",
+    ],
+    ogSiteName: "Torus Portal",
+    canonical: "/",
+    baseUrl: env("BASE_URL"),
+  });
+}
 
 export const geistMono = GeistMono({
   subsets: ["latin"],

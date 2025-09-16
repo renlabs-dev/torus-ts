@@ -1,11 +1,13 @@
-"use client";
-
 import { GuideDialog } from "./_components/guide-dialog";
 import { SelectActionDialog } from "./_components/select-action-dialog";
 import { SidebarLinks } from "./_components/shared/sidebar-links";
 import WalletActions from "./_components/shared/wallet-actions";
 import { WalletBalance } from "./_components/shared/wallet-balance";
 import { TransferDetails } from "./_components/transfer-details";
+
+export async function generateMetadata() {
+  return import("./layout").then((mod) => mod.generateMetadata());
+}
 
 export default function HomePage() {
   return (
