@@ -5,6 +5,11 @@
 /** @type {import("next").NextConfig} */
 const config = {
   reactStrictMode: true,
+
+  experimental: {
+    reactCompiler: true,
+  },
+
   /** Enables hot reloading for local packages without a build step */
   transpilePackages: [
     "@torus-ts/api",
