@@ -57,6 +57,7 @@ export function FaucetForm({
     }
 
     form.setValue("recipient", selectedAccount.address as SS58Address);
+    toast.success("Self address selected");
   };
 
   const handleSubmit = async (amount: number) => await onSubmit(amount);
@@ -85,6 +86,7 @@ export function FaucetForm({
                       className="flex-1"
                     />
                     <Button
+                      className="h-9"
                       type="button"
                       variant="outline"
                       size="sm"
