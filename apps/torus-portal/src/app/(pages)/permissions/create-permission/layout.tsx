@@ -1,14 +1,16 @@
 import { createSeoMetadata } from "@torus-ts/ui/components/seo";
+
 import PortalFormContainer from "~/app/_components/portal-form-container";
 import PortalFormHeader from "~/app/_components/portal-form-header";
 import { env } from "~/env";
+
 import { CreatePermissionTabs } from "./_components/create-permission-tabs";
 
 export function generateMetadata() {
   return createSeoMetadata({
     title: "Create Permission - Torus Portal",
     description:
-      "Create and delegate permissions on the Torus Network. Choose between capability and emission permissions for network participants.",
+      "Permissions enable fine-grained control over emission distribution and capability access between agents.",
     keywords: [
       "create permission",
       "delegate permission",

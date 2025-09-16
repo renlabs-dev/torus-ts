@@ -1,21 +1,25 @@
 import "@torus-ts/ui/globals.css";
+
 import { GoogleAnalytics } from "@next/third-parties/google";
+import PlausibleProvider from "next-plausible";
+import { Geist_Mono as GeistMono } from "next/font/google";
+
 import { ReactQueryProvider } from "@torus-ts/query-provider";
 import { TorusProvider } from "@torus-ts/torus-provider";
 import { Layout } from "@torus-ts/ui/components/layout";
 import { createSeoMetadata } from "@torus-ts/ui/components/seo";
 import { Toaster } from "@torus-ts/ui/components/toaster";
+
 import { env, EnvScript } from "~/env";
 import { TRPCReactProvider } from "~/trpc/react";
-import PlausibleProvider from "next-plausible";
-import { Geist_Mono as GeistMono } from "next/font/google";
+
 import SidebarContainer from "../_components/sidebar/sidebar-container";
 
 export function generateMetadata() {
   return createSeoMetadata({
     title: "Torus Portal",
     description:
-      "Manage network permissions, agent allocations, and explore the Torus Network ecosystem",
+      "Manage network permissions, agent allocations, and explore the hypergraph.",
     keywords: [
       "torus portal",
       "permission management",

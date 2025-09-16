@@ -1,14 +1,16 @@
 import { Container } from "@torus-ts/ui/components/container";
 import { createSeoMetadata } from "@torus-ts/ui/components/seo";
+
 import { env } from "~/env";
+
 import { SidebarInfo } from "../_components/sidebar/sidebar-info";
 import { SidebarNav } from "../_components/sidebar/sidebar-nav";
 
 export function generateMetadata() {
   return createSeoMetadata({
-    title: "Torus Governance Dashboard",
+    title: "Torus Governance",
     description:
-      "Access governance features, view proposals, and participate in DAO decisions on the Torus Network.",
+      "Access governance features, view proposals, and view DAO activity.",
     keywords: [
       "governance dashboard",
       "dao management",

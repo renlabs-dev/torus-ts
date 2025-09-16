@@ -1,15 +1,18 @@
-import { createSeoMetadata } from "@torus-ts/ui/components/seo";
-import { env } from "~/env";
 import { Suspense } from "react";
+
+import { createSeoMetadata } from "@torus-ts/ui/components/seo";
+
+import { env } from "~/env";
+
 import { AgentBanner } from "../_components/agent-banner";
 import { AllocationSheet } from "../_components/allocation-sheet";
 import { TutorialDialog } from "../_components/tutorial-dialog";
 
 export function generateMetadata() {
   return createSeoMetadata({
-    title: "Agent Allocation Dashboard - Torus Portal",
+    title: "Root Allocator - Torus Portal",
     description:
-      "Manage and allocate weights to agents on the Torus Network. Dashboard for root allocators to distribute network resources.",
+      "Support agents you believe in, contributing to network security, and participating in the decentralized allocation of network resources.",
     keywords: [
       "allocation dashboard",
       "agent weights",

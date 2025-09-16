@@ -1,13 +1,14 @@
 import { createSeoMetadata } from "@torus-ts/ui/components/seo";
+
 import PortalFormContainer from "~/app/_components/portal-form-container";
 import { env } from "~/env";
+
 import { DeleteCapabilityForm } from "./_components/delete-capability-form";
 
 export function generateMetadata() {
   return createSeoMetadata({
     title: "Delete Capability - Torus Portal",
-    description:
-      "Remove capabilities from agents on the Torus Network. Manage and revoke permissions for network participants.",
+    description: "Remove capabilities from agents.",
     keywords: [
       "delete capability",
       "revoke permissions",

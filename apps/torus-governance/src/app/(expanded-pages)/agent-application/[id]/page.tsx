@@ -1,10 +1,15 @@
+import { ArrowLeft } from "lucide-react";
+import Link from "next/link";
+
 import { Button } from "@torus-ts/ui/components/button";
 import { Container } from "@torus-ts/ui/components/container";
 import { createSeoMetadata } from "@torus-ts/ui/components/seo";
+
 import { env } from "~/env";
-import { ArrowLeft } from "lucide-react";
-import Link from "next/link";
-import { AgentApplicationExpandedView } from "./_components/agent-application-expanded-view";
+
+import {
+  AgentApplicationExpandedView,
+} from "./_components/agent-application-expanded-view";
 
 export async function generateMetadata({
   params,
@@ -15,7 +20,7 @@ export async function generateMetadata({
 
   return createSeoMetadata({
     title: `Agent Application #${id} - Torus Governance`,
-    description: `Review agent application #${id} details, voting status, and community feedback on the Torus Network governance platform.`,
+    description: `Review agent application #${id} details, voting status, and community feedback.`,
     keywords: [
       "agent application",
       "application details",

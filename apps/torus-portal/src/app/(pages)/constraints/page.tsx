@@ -1,4 +1,5 @@
 import { createSeoMetadata } from "@torus-ts/ui/components/seo";
+
 import { env } from "~/env";
 
 // import ConstraintFlowWrapper from "./_components/constraint-flow";
@@ -6,8 +7,7 @@ import { env } from "~/env";
 export function generateMetadata() {
   return createSeoMetadata({
     title: "Create Constraint - Torus Portal",
-    description:
-      "Create custom constraints for the Torus Network. Define rules and conditions for network operations and governance.",
+    description: "Soon TM",
     keywords: [
       "create constraint",
       "network rules",

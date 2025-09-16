@@ -1,14 +1,17 @@
 import { createSeoMetadata } from "@torus-ts/ui/components/seo";
+
 import { env } from "~/env";
+
 import { FilterContent } from "../../_components/filter-content";
 import { ShapeNetworkModal } from "../../_components/shape-network-modal";
-import { ListWhitelistApplications } from "./_components/list-whitelist-applications";
+import {
+  ListWhitelistApplications,
+} from "./_components/list-whitelist-applications";
 
 export function generateMetadata() {
   return createSeoMetadata({
     title: "Whitelist Applications - Torus Governance",
-    description:
-      "Review and vote on agent whitelist applications. Manage network participation by evaluating agent applications for the Torus Network.",
+    description: "Review and vote on agent whitelist applications.",
     keywords: [
       "whitelist applications",
       "agent applications",

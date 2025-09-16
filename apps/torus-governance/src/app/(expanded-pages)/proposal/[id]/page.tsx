@@ -1,9 +1,12 @@
+import { ArrowLeft } from "lucide-react";
+import Link from "next/link";
+
 import { Button } from "@torus-ts/ui/components/button";
 import { Container } from "@torus-ts/ui/components/container";
 import { createSeoMetadata } from "@torus-ts/ui/components/seo";
+
 import { env } from "~/env";
-import { ArrowLeft } from "lucide-react";
-import Link from "next/link";
+
 import { ProposalExpandedView } from "./_components/proposal-expanded-view";
 
 export async function generateMetadata({
@@ -15,7 +18,7 @@ export async function generateMetadata({
 
   return createSeoMetadata({
     title: `Proposal #${id} - Torus Governance`,
-    description: `View proposal #${id} details, voting results, and community discussion on the Torus Network governance platform.`,
+    description: `View proposal #${id} details, voting results, and community discussion.`,
     keywords: [
       "network proposal",
       "proposal details",

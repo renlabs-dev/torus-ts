@@ -1,6 +1,8 @@
 import { ScrollArea } from "@torus-ts/ui/components/scroll-area";
 import { createSeoMetadata } from "@torus-ts/ui/components/seo";
+
 import { env } from "~/env";
+
 import { FilterContent } from "../../_components/filter-content";
 import { ShapeNetworkModal } from "../../_components/shape-network-modal";
 import { ListProposals } from "./_components/list-proposals";
@@ -8,8 +10,7 @@ import { ListProposals } from "./_components/list-proposals";
 export function generateMetadata() {
   return createSeoMetadata({
     title: "Proposals - Torus Governance",
-    description:
-      "Browse and vote on network proposals. Participate in Torus Network governance by reviewing and voting on community proposals.",
+    description: "Browse and vote on network proposals.",
     keywords: [
       "network proposals",
       "governance voting",

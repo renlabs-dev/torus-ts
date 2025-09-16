@@ -2,17 +2,20 @@ import "@torus-ts/ui/globals.css";
 import "@rainbow-me/rainbowkit/styles.css";
 import "@interchain-ui/react/styles";
 import "@solana/wallet-adapter-react-ui/styles.css";
+
+import { Fira_Mono as FiraMono } from "next/font/google";
+
 import { Layout } from "@torus-ts/ui/components/layout";
 import { createSeoMetadata } from "@torus-ts/ui/components/seo";
+
 import { AppContextProvider } from "~/context/app-context-provider";
 import { env, EnvScript } from "~/env";
-import { Fira_Mono as FiraMono } from "next/font/google";
 
 // import { WalletConflictGuard } from "./_components/wallet-conflict-guard";
 
 export function generateMetadata() {
   return createSeoMetadata({
-    title: "Torus Base Bridge",
+    title: "Torus Bridge",
     description:
       "Cross-chain token bridge for the Torus ecosystem. Securely transfer tokens across multiple blockchain networks with ease and reliability.",
     keywords: [
@@ -22,7 +25,7 @@ export function generateMetadata() {
       "blockchain interoperability",
       "crypto bridge",
     ],
-    ogSiteName: "Torus Base Bridge",
+    ogSiteName: "Torus Bridge",
     canonical: "/",
     baseUrl: env("BASE_URL"),
   });

@@ -1,14 +1,18 @@
 import { createSeoMetadata } from "@torus-ts/ui/components/seo";
+
 import PortalFormContainer from "~/app/_components/portal-form-container";
 import PortalFormHeader from "~/app/_components/portal-form-header";
 import { env } from "~/env";
-import { CreateStreamPermissionForm } from "./_components/create-stream-permission-form";
+
+import {
+  CreateStreamPermissionForm,
+} from "./_components/create-stream-permission-form";
 
 export function generateMetadata() {
   return createSeoMetadata({
     title: "Create Stream Permission - Torus Portal",
     description:
-      "Create and configure stream permissions on the Torus Network. Distribute streams to multiple recipients with customizable allocation rules.",
+      "Enable economic coordination by delegating portions of your token emission streams to other agents.",
     keywords: [
       "stream permission",
       "create permission",

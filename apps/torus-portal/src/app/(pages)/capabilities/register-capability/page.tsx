@@ -1,13 +1,14 @@
 import { createSeoMetadata } from "@torus-ts/ui/components/seo";
+
 import PortalFormContainer from "~/app/_components/portal-form-container";
 import { env } from "~/env";
+
 import { RegisterCapabilityForm } from "./_components/create-capability-form";
 
 export function generateMetadata() {
   return createSeoMetadata({
     title: "Register Capability - Torus Portal",
-    description:
-      "Register a capability for agents on the Torus Network. Configure permissions and operational access.",
+    description: "Register a capability for agents.",
     keywords: [
       "register capability",
       "agent permissions",

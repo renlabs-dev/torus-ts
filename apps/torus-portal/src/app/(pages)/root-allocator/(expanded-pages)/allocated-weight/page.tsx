@@ -1,16 +1,17 @@
 import { formatToken } from "@torus-network/torus-utils/torus/token";
 import { tryAsync } from "@torus-network/torus-utils/try-catch";
+
 import { Card } from "@torus-ts/ui/components/card";
 import { Container } from "@torus-ts/ui/components/container";
 import { createSeoMetadata } from "@torus-ts/ui/components/seo";
+
 import { env } from "~/env";
 import { api } from "~/trpc/server";
 
 export function generateMetadata() {
   return createSeoMetadata({
     title: "Agent Stake Details - Torus Portal",
-    description:
-      "View detailed stake information for agents on the Torus Network. Analyze stake weights and user allocations.",
+    description: "Agent allocated weight endpoint.",
     keywords: [
       "agent stake",
       "stake weights",

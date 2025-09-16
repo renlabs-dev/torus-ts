@@ -1,13 +1,14 @@
 import { createSeoMetadata } from "@torus-ts/ui/components/seo";
+
 import PortalFormContainer from "~/app/_components/portal-form-container";
 import { env } from "~/env";
+
 import { ManageAgentForm } from "./_components/manage-agent-form";
 
 export function generateMetadata() {
   return createSeoMetadata({
     title: "Manage Agent - Torus Portal",
-    description:
-      "Manage network agents on the Torus Network. Update agent information, deregister agents, and perform network operations.",
+    description: "Update agent information and deregister agents.",
     keywords: [
       "manage agent",
       "agent operations",
