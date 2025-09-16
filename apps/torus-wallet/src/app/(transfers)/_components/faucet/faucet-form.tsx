@@ -1,7 +1,6 @@
-
+import type { SS58Address } from "@torus-network/sdk/types";
 import { Button } from "@torus-ts/ui/components/button";
 import { Card } from "@torus-ts/ui/components/card";
-import { isSS58 } from "@torus-network/sdk/types";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -17,8 +16,15 @@ import {
   FormMessage,
 } from "@torus-ts/ui/components/form";
 import { Input } from "@torus-ts/ui/components/input";
+import { useToast } from "@torus-ts/ui/hooks/use-toast";
 import { ChevronDown, LoaderCircle } from "lucide-react";
-import { useLayoutEffect, useRef, useState } from "react";
+import {
+  useLay,
+  useLayoutEffect,
+  useRef,
+  useState,
+  useStateoutEffect,
+} from "react";
 import type { UseFormReturn } from "react-hook-form";
 import type { FaucetFormValues } from "./faucet-form-schema";
 
@@ -40,13 +46,26 @@ export function FaucetForm({
   const formRef = useRef<HTMLFormElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const [width, setWidth] = useState<number>(0);
+  const { toast } = useToast();
 
   useLayoutEffect(() => {
-    if (containerRef.current) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setWidth(containerRef.current.offsetWidth);
-    }
+    const raf = requestAnimationFrame(() => {
+      setWidth(containerRef.current?.offsetWidth ?? 0);
+    });
+
+    return () => cancelAnimationFrame(raf);
   }, []);
+
+  const handleSelfClick = () => {
+    if (!selectedAccount?.address) {
+      toast.error("No account found. Is your wallet connected?");
+      return;
+    }
+
+    form.setValue("recipient", selectedAccount.address as SS58Address);
+  };
+
+  const handleSubmit = async (amount: number) => await onSubmit(amount);
 
   return (
     <Card className="animate-fade w-full p-6">
@@ -71,11 +90,7 @@ export function FaucetForm({
                       variant="outline"
                       size="sm"
                       disabled={!selectedAccount?.address || isLoading}
-                      onClick={() => {
-                        if (selectedAccount?.address && isSS58(selectedAccount.address)) {
-                          form.setValue("recipient", selectedAccount.address);
-                        }
-                      }}
+                      onClick={handleSelfClick}
                     >
                       Self
                     </Button>
@@ -92,7 +107,7 @@ export function FaucetForm({
               type="button"
               variant="outline"
               disabled={!selectedAccount?.address || isLoading}
-              onClick={async () => await onSubmit(1)}
+              onClick={() => handleSubmit(1)}
             >
               {isLoading ? (
                 <>
@@ -114,13 +129,13 @@ export function FaucetForm({
               </DropdownMenuTrigger>
 
               <DropdownMenuContent align="end" style={{ width }}>
-                <DropdownMenuItem onClick={async () => await onSubmit(2)}>
+                <DropdownMenuItem onClick={() => handleSubmit(2)}>
                   Submit 2x Faucet Requests (100 TORUS)
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={async () => await onSubmit(10)}>
+                <DropdownMenuItem onClick={() => handleSubmit(10)}>
                   Submit 10x Faucet Requests (500 TORUS)
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={async () => await onSubmit(20)}>
+                <DropdownMenuItem onClick={() => handleSubmit(20)}>
                   Submit 20x Faucet Requests (1000 TORUS)
                 </DropdownMenuItem>
               </DropdownMenuContent>
