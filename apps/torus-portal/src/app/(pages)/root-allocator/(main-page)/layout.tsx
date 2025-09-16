@@ -1,9 +1,6 @@
-import { Suspense } from "react";
-
 import { createSeoMetadata } from "@torus-ts/ui/components/seo";
-
 import { env } from "~/env";
-
+import { Suspense } from "react";
 import { AgentBanner } from "../_components/agent-banner";
 import { AllocationSheet } from "../_components/allocation-sheet";
 import { TutorialDialog } from "../_components/tutorial-dialog";

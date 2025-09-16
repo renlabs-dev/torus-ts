@@ -1,15 +1,9 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
-import type { z } from "zod";
-
 import { delegateWalletStakePermission } from "@torus-network/sdk/chain";
-
 import { useTorus } from "@torus-ts/torus-provider";
-import {
-  useSendTransaction,
-} from "@torus-ts/torus-provider/use-send-transaction";
+import { useSendTransaction } from "@torus-ts/torus-provider/use-send-transaction";
 import { Button } from "@torus-ts/ui/components/button";
 import { Checkbox } from "@torus-ts/ui/components/checkbox";
 import {
@@ -27,18 +21,14 @@ import {
   RadioGroup,
   RadioGroupItem,
 } from "@torus-ts/ui/components/radio-group";
-import {
-  WalletConnectionWarning,
-} from "@torus-ts/ui/components/wallet-connection-warning";
+import { WalletConnectionWarning } from "@torus-ts/ui/components/wallet-connection-warning";
 import { useToast } from "@torus-ts/ui/hooks/use-toast";
 import { cn } from "@torus-ts/ui/lib/utils";
-
 import { FormAddressField } from "~/app/_components/address-field";
 import PortalFormHeader from "~/app/_components/portal-form-header";
-
-import {
-  WALLET_STAKE_PERMISSION_SCHEMA,
-} from "./wallet-stake-permission-schema";
+import { useForm } from "react-hook-form";
+import type { z } from "zod";
+import { WALLET_STAKE_PERMISSION_SCHEMA } from "./wallet-stake-permission-schema";
 
 export function WalletStakePermissionForm({
   className,

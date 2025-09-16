@@ -1,12 +1,9 @@
 import "@torus-ts/ui/globals.css";
-
 import { GoogleAnalytics } from "@next/third-parties/google";
+import { Layout } from "@torus-ts/ui/components/layout";
+import { EnvScript } from "~/env";
 import PlausibleProvider from "next-plausible";
 import { Fira_Mono as FiraMono } from "next/font/google";
-
-import { Layout } from "@torus-ts/ui/components/layout";
-
-import { EnvScript } from "~/env";
 
 export const firaMono = FiraMono({
   subsets: ["latin"],

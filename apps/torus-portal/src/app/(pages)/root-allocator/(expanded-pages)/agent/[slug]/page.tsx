@@ -1,12 +1,5 @@
-import { Suspense } from "react";
-
-import { ArrowLeft } from "lucide-react";
-import Link from "next/link";
-import { notFound } from "next/navigation";
-
 import { fetchAgentMetadata } from "@torus-network/sdk/metadata";
 import { tryAsync } from "@torus-network/torus-utils/try-catch";
-
 import { AgentIcon } from "@torus-ts/ui/components/agent-card/agent-icon";
 import { Button } from "@torus-ts/ui/components/button";
 import { Card } from "@torus-ts/ui/components/card";
@@ -15,13 +8,13 @@ import { Label } from "@torus-ts/ui/components/label";
 import { MarkdownView } from "@torus-ts/ui/components/markdown-view";
 import { createSeoMetadata } from "@torus-ts/ui/components/seo";
 import { Skeleton } from "@torus-ts/ui/components/skeleton";
-
 import { env } from "~/env";
-import {
-  calculatePostPenaltyEmission,
-} from "~/hooks/use-post-penalty-emission";
+import { calculatePostPenaltyEmission } from "~/hooks/use-post-penalty-emission";
 import { api } from "~/trpc/server";
-
+import { ArrowLeft } from "lucide-react";
+import Link from "next/link";
+import { notFound } from "next/navigation";
+import { Suspense } from "react";
 import { PenaltyList } from "../../../_components/penalties-list";
 import { AgentInfoCard } from "./components/agent-info-card";
 import { ExpandedViewSocials } from "./components/expanded-view-socials";

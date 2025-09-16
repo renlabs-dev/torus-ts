@@ -1,8 +1,6 @@
 import { createSeoMetadata } from "@torus-ts/ui/components/seo";
-
 import { env } from "~/env";
 import { parseSearchParams } from "~/utils/parse-search-params";
-
 import { InfiniteAgentList } from "../../_components/infinite-agent-list";
 import { PageLayout } from "../../_components/page-layout";
 

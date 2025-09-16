@@ -1,16 +1,11 @@
 import "@torus-ts/ui/globals.css";
-
-import * as React from "react";
-
 import { GoogleAnalytics } from "@next/third-parties/google";
-import PlausibleProvider from "next-plausible";
-import { Fira_Mono as FiraMono } from "next/font/google";
-
 import { Layout } from "@torus-ts/ui/components/layout";
 import { createSeoMetadata } from "@torus-ts/ui/components/seo";
-
 import { env, EnvScript } from "~/env";
-
+import PlausibleProvider from "next-plausible";
+import { Fira_Mono as FiraMono } from "next/font/google";
+import * as React from "react";
 import { Footer } from "./_components/footer";
 import { HoverHeader } from "./_components/hover-header";
 

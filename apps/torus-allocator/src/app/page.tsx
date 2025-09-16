@@ -1,9 +1,7 @@
-import Link from "next/link";
-
 import { Button } from "@torus-ts/ui/components/button";
 import { getLinks } from "@torus-ts/ui/lib/data";
-
 import { env } from "~/env";
+import Link from "next/link";
 
 export default function Page() {
   const links = getLinks(env("NEXT_PUBLIC_TORUS_CHAIN_ENV"));

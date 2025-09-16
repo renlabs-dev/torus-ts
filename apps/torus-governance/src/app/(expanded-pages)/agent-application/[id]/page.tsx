@@ -1,15 +1,10 @@
-import { ArrowLeft } from "lucide-react";
-import Link from "next/link";
-
 import { Button } from "@torus-ts/ui/components/button";
 import { Container } from "@torus-ts/ui/components/container";
 import { createSeoMetadata } from "@torus-ts/ui/components/seo";
-
 import { env } from "~/env";
-
-import {
-  AgentApplicationExpandedView,
-} from "./_components/agent-application-expanded-view";
+import { ArrowLeft } from "lucide-react";
+import Link from "next/link";
+import { AgentApplicationExpandedView } from "./_components/agent-application-expanded-view";
 
 export async function generateMetadata({
   params,

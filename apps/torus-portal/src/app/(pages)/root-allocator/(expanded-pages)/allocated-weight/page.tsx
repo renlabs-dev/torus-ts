@@ -1,10 +1,8 @@
 import { formatToken } from "@torus-network/torus-utils/torus/token";
 import { tryAsync } from "@torus-network/torus-utils/try-catch";
-
 import { Card } from "@torus-ts/ui/components/card";
 import { Container } from "@torus-ts/ui/components/container";
 import { createSeoMetadata } from "@torus-ts/ui/components/seo";
-
 import { env } from "~/env";
 import { api } from "~/trpc/server";
 

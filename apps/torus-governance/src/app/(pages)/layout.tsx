@@ -1,8 +1,6 @@
 import { Container } from "@torus-ts/ui/components/container";
 import { createSeoMetadata } from "@torus-ts/ui/components/seo";
-
 import { env } from "~/env";
-
 import { SidebarInfo } from "../_components/sidebar/sidebar-info";
 import { SidebarNav } from "../_components/sidebar/sidebar-nav";
 

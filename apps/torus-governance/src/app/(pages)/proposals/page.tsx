@@ -1,8 +1,6 @@
 import { ScrollArea } from "@torus-ts/ui/components/scroll-area";
 import { createSeoMetadata } from "@torus-ts/ui/components/seo";
-
 import { env } from "~/env";
-
 import { FilterContent } from "../../_components/filter-content";
 import { ShapeNetworkModal } from "../../_components/shape-network-modal";
 import { ListProposals } from "./_components/list-proposals";

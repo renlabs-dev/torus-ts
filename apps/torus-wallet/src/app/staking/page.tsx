@@ -1,13 +1,9 @@
 import { createSeoMetadata } from "@torus-ts/ui/components/seo";
-
 import type { TabItem } from "~/app/_components/tab-layout";
 import { TabLayout } from "~/app/_components/tab-layout";
 import { env } from "~/env";
-
 import { Stake } from "./_components/stake/stake";
-import {
-  StakingCalculator,
-} from "./_components/staking-calculator/staking-calculator";
+import { StakingCalculator } from "./_components/staking-calculator/staking-calculator";
 import { TransferStake } from "./_components/transfer-stake/transfer-stake";
 import { Unstake } from "./_components/unstake/unstake";
 

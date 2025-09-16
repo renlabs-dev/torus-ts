@@ -1,12 +1,8 @@
 import { createSeoMetadata } from "@torus-ts/ui/components/seo";
-
 import PortalFormContainer from "~/app/_components/portal-form-container";
 import PortalFormHeader from "~/app/_components/portal-form-header";
 import { env } from "~/env";
-
-import {
-  CreateStreamPermissionForm,
-} from "./_components/create-stream-permission-form";
+import { CreateStreamPermissionForm } from "./_components/create-stream-permission-form";
 
 export function generateMetadata() {
   return createSeoMetadata({

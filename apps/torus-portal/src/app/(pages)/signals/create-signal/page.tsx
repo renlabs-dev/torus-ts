@@ -1,8 +1,6 @@
 import { createSeoMetadata } from "@torus-ts/ui/components/seo";
-
 import PortalFormContainer from "~/app/_components/portal-form-container";
 import { env } from "~/env";
-
 import { CreateSignalForm } from "./_components/create-signal-form";
 
 export function generateMetadata() {
