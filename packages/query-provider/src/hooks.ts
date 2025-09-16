@@ -23,6 +23,7 @@ import {
   queryAgentBurn,
   queryAgents,
   queryAllPermissions,
+  queryBalance,
   queryBlockEmission,
   queryDaoTreasuryAddress,
   queryExtFee,
@@ -136,6 +137,16 @@ export function useFreeBalance(
     queryKey: ["free_balance", address],
     enabled: api != null && address != null,
     queryFn: () => queryFreeBalance(api!, address!),
+    staleTime: CONSTANTS.TIME.LAST_BLOCK_STALE_TIME,
+    refetchOnWindowFocus: false,
+  });
+}
+
+export function useBalance(api: Api | Nullish, address: SS58Address | Nullish) {
+  return useQuery({
+    queryKey: ["balance", address],
+    enabled: api != null && address != null,
+    queryFn: () => queryBalance(api!, address!),
     staleTime: CONSTANTS.TIME.LAST_BLOCK_STALE_TIME,
     refetchOnWindowFocus: false,
   });
@@ -595,7 +606,7 @@ export const useAllPermissions = (api: Api | Nullish) => {
       const result = await queryAllPermissions(api);
       const [error, data] = result;
       if (error) {
-        console.error("Error querying all permissions:", error);
+        console.log("Error querying all permissions:", error);
         return null;
       }
       return data;

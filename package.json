@@ -23,7 +23,10 @@
       "react-dom": "^19.0.0",
       "bs58": "^6.0.0",
       "ethers": "^5.8.0",
-      "@walletconnect/types": "^2.19.1"
+      "@walletconnect/types": "^2.19.1",
+      "@starknet-react/core": "^3.7.2",
+      "@starknet-react/chains": "^4.0.4",
+      "starknet": "^6.24.1"
     },
     "peerDependencyRules": {
       "ignoreMissing": [

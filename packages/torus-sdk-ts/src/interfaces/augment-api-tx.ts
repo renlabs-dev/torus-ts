@@ -9,7 +9,7 @@ import type { ApiTypes, AugmentedSubmittable, SubmittableExtrinsic, SubmittableE
 import type { BTreeMap, BTreeSet, Bytes, Compact, Option, U256, U8aFixed, Vec, bool, u128, u16, u32, u64, u8 } from '@polkadot/types-codec';
 import type { AnyNumber, IMethod, ITuple } from '@polkadot/types-codec/types';
 import type { AccountId32, Call, H160, H256, MultiAddress, Percent } from '@polkadot/types/interfaces/runtime';
-import type { EthereumTransactionTransactionV2, PalletBalancesAdjustmentDirection, PalletGovernanceProposalGlobalParamsData, PalletMultisigTimepoint, PalletPermission0PermissionEnforcementAuthority, PalletPermission0PermissionPermissionDuration, PalletPermission0PermissionRevocationTerms, PalletPermission0PermissionStreamDistributionControl, PalletPermission0PermissionStreamStreamAllocation, SpConsensusGrandpaEquivocationProof, SpCoreVoid, SpWeightsWeightV2Weight, TorusRuntimeRuntimeTask } from '@polkadot/types/lookup';
+import type { EthereumTransactionTransactionV2, PalletBalancesAdjustmentDirection, PalletGovernanceProposalGlobalParamsData, PalletMultisigTimepoint, PalletPermission0ExtWalletImplWalletStakeOperation, PalletPermission0PermissionEnforcementAuthority, PalletPermission0PermissionPermissionDuration, PalletPermission0PermissionRevocationTerms, PalletPermission0PermissionStreamDistributionControl, PalletPermission0PermissionStreamStreamAllocation, PalletPermission0PermissionWalletWalletStake, SpConsensusGrandpaEquivocationProof, SpCoreVoid, SpWeightsWeightV2Weight, TorusRuntimeRuntimeTask } from '@polkadot/types/lookup';
 
 export type __AugmentedSubmittable = AugmentedSubmittable<() => unknown>;
 export type __SubmittableExtrinsic<ApiType extends ApiTypes> = SubmittableExtrinsic<ApiType>;
@@ -440,6 +440,10 @@ declare module '@polkadot/api-base/types/submittable' {
        **/
       delegateStreamPermission: AugmentedSubmittable<(recipients: BTreeMap<AccountId32, u16>, allocation: PalletPermission0PermissionStreamStreamAllocation | { Streams: any } | { FixedAmount: any } | string | Uint8Array, distribution: PalletPermission0PermissionStreamDistributionControl | { Manual: any } | { Automatic: any } | { AtBlock: any } | { Interval: any } | string | Uint8Array, duration: PalletPermission0PermissionPermissionDuration | { UntilBlock: any } | { Indefinite: any } | string | Uint8Array, revocation: PalletPermission0PermissionRevocationTerms | { Irrevocable: any } | { RevocableByDelegator: any } | { RevocableByArbiters: any } | { RevocableAfter: any } | string | Uint8Array, enforcement: PalletPermission0PermissionEnforcementAuthority | { None: any } | { ControlledBy: any } | string | Uint8Array, recipientManager: Option<AccountId32> | null | Uint8Array | AccountId32 | string, weightSetter: Option<AccountId32> | null | Uint8Array | AccountId32 | string) => SubmittableExtrinsic<ApiType>, [BTreeMap<AccountId32, u16>, PalletPermission0PermissionStreamStreamAllocation, PalletPermission0PermissionStreamDistributionControl, PalletPermission0PermissionPermissionDuration, PalletPermission0PermissionRevocationTerms, PalletPermission0PermissionEnforcementAuthority, Option<AccountId32>, Option<AccountId32>]>;
       /**
+       * Delegate a permission over namespaces
+       **/
+      delegateWalletStakePermission: AugmentedSubmittable<(recipient: AccountId32 | string | Uint8Array, stakeDetails: PalletPermission0PermissionWalletWalletStake | { canTransferStake?: any; exclusiveStakeAccess?: any } | string | Uint8Array, duration: PalletPermission0PermissionPermissionDuration | { UntilBlock: any } | { Indefinite: any } | string | Uint8Array, revocation: PalletPermission0PermissionRevocationTerms | { Irrevocable: any } | { RevocableByDelegator: any } | { RevocableByArbiters: any } | { RevocableAfter: any } | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [AccountId32, PalletPermission0PermissionWalletWalletStake, PalletPermission0PermissionPermissionDuration, PalletPermission0PermissionRevocationTerms]>;
+      /**
        * Execute a permission through enforcement authority
        * The caller must be authorized as a controller or be the root key
        **/
@@ -448,6 +452,7 @@ declare module '@polkadot/api-base/types/submittable' {
        * Execute a manual distribution based on permission
        **/
       executePermission: AugmentedSubmittable<(permissionId: H256 | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [H256]>;
+      executeWalletStakePermission: AugmentedSubmittable<(permissionId: H256 | string | Uint8Array, op: PalletPermission0ExtWalletImplWalletStakeOperation | { Unstake: any } | { Transfer: any } | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [H256, PalletPermission0ExtWalletImplWalletStakeOperation]>;
       /**
        * Revoke a permission. The caller must meet revocation constraints or be a root key.
        **/
