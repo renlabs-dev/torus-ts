@@ -1,7 +1,3 @@
-/**
- * Faucet worker code as a string that can be converted to a Blob URL
- * This replaces the need for a static faucetWorker.js file
- */
 export const faucetWorkerCode = `
 importScripts("https://cdn.jsdelivr.net/npm/js-sha3@0.8.0/build/sha3.min.js");
 
