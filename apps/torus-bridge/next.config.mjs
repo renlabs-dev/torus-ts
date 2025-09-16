@@ -9,7 +9,6 @@ const config = {
   reactStrictMode: true,
 
   experimental: {
-    // Enable React Compiler
     reactCompiler: true,
     // Optimize imports for heavy packages
     optimizePackageImports: [
