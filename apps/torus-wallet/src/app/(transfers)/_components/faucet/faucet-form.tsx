@@ -18,13 +18,7 @@ import {
 import { Input } from "@torus-ts/ui/components/input";
 import { useToast } from "@torus-ts/ui/hooks/use-toast";
 import { ChevronDown, LoaderCircle } from "lucide-react";
-import {
-  useLay,
-  useLayoutEffect,
-  useRef,
-  useState,
-  useStateoutEffect,
-} from "react";
+import { useLayoutEffect, useRef, useState } from "react";
 import type { UseFormReturn } from "react-hook-form";
 import type { FaucetFormValues } from "./faucet-form-schema";
 
