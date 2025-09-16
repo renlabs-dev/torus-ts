@@ -18,7 +18,7 @@ import {
 import { Input } from "@torus-ts/ui/components/input";
 import { useToast } from "@torus-ts/ui/hooks/use-toast";
 import { ChevronDown, LoaderCircle } from "lucide-react";
-import { useLayoutEffect, useRef, useState } from "react";
+import { useLayoutEffect, useMemo, useRef, useState } from "react";
 import type { UseFormReturn } from "react-hook-form";
 import type { FaucetFormValues } from "./faucet-form-schema";
 
@@ -61,6 +61,11 @@ export function FaucetForm({
 
   const handleSubmit = async (amount: number) => await onSubmit(amount);
 
+  const disabled = useMemo(
+    () => !selectedAccount?.address || isLoading,
+    [selectedAccount?.address, isLoading],
+  );
+
   return (
     <Card className="animate-fade w-full p-6">
       <Form {...form}>
@@ -76,14 +81,14 @@ export function FaucetForm({
                     <Input
                       {...field}
                       placeholder={`eg. 5CoS1L...2tCACxf4n`}
-                      disabled={!selectedAccount?.address || isLoading}
+                      disabled={disabled}
                       className="flex-1"
                     />
                     <Button
                       type="button"
                       variant="outline"
                       size="sm"
-                      disabled={!selectedAccount?.address || isLoading}
+                      disabled={disabled}
                       onClick={handleSelfClick}
                     >
                       Self
@@ -100,7 +105,7 @@ export function FaucetForm({
               className="flex-grow"
               type="button"
               variant="outline"
-              disabled={!selectedAccount?.address || isLoading}
+              disabled={disabled}
               onClick={() => handleSubmit(1)}
             >
               {isLoading ? (
@@ -113,11 +118,7 @@ export function FaucetForm({
             </Button>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button
-                  type="button"
-                  variant="outline"
-                  disabled={!selectedAccount?.address || isLoading}
-                >
+                <Button type="button" variant="outline" disabled={disabled}>
                   <ChevronDown />
                 </Button>
               </DropdownMenuTrigger>
