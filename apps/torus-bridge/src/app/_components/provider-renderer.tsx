@@ -7,6 +7,7 @@ type ProviderItem<P = unknown> =
       props: Omit<P, "children">;
     };
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 type ProviderArray = ProviderItem<any>[];
 
 function isProviderWithProps<P>(provider: ProviderItem<P>): provider is {
@@ -40,6 +41,7 @@ export function ProviderRenderer({
   }, children);
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function createProviderWithProps<T extends ComponentType<any>>(
   component: T,
   props: Omit<React.ComponentProps<T>, "children">,
