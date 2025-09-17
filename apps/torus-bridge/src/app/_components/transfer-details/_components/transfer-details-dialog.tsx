@@ -147,7 +147,7 @@ export function TransfersDetailsDialog({
   );
 
   return (
-    <AlertDialog open={isOpen}>
+    <AlertDialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <AlertDialogContent className="max-w-md">
         <AlertDialogHeader>
           <div className="flex items-start justify-between">

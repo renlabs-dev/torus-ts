@@ -2,7 +2,7 @@
 
 import { useStore } from "~/utils/store";
 import type { TransferContext } from "~/utils/types";
-import { useLayoutEffect, useState } from "react";
+import { useLayoutEffect, useRef, useState } from "react";
 import { TransfersDetailsDialog } from "./_components/transfer-details-dialog";
 
 export function TransferDetails() {
@@ -11,22 +11,32 @@ export function TransferDetails() {
     TransferContext | undefined | null
   >(null);
 
+  const prevTransfersLength = useRef(0);
+  const hasInitialized = useRef(false);
+
   const transfers = useStore((s) => s.transfers);
   const transferLoading = useStore((s) => s.transferLoading);
 
   useLayoutEffect(() => {
-    const shouldShowModal = !transferLoading && transfers.length > 0;
-    const latestTransfer = shouldShowModal
-      ? transfers[transfers.length - 1]
-      : null;
+    if (!hasInitialized.current) {
+      prevTransfersLength.current = transfers.length;
+      hasInitialized.current = true;
+      return;
+    }
 
-    if (latestTransfer && latestTransfer !== selectedTransfer) {
+    const hasNewTransfer = transfers.length > prevTransfersLength.current;
+
+    if (hasNewTransfer && !transferLoading && transfers.length > 0) {
+      const latestTransfer = transfers[transfers.length - 1];
+
       queueMicrotask(() => {
         setSelectedTransfer(latestTransfer);
         setIsModalOpen(true);
       });
     }
-  }, [transfers, transferLoading, selectedTransfer]);
+
+    prevTransfersLength.current = transfers.length;
+  }, [transfers, transferLoading]);
 
   if (!selectedTransfer) return null;
 
