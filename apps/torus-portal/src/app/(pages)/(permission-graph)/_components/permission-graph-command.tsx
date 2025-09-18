@@ -90,7 +90,7 @@ export function PermissionGraphCommand() {
     [agentNamesMap],
   );
 
-  const searchGroups = (() => {
+  const searchGroups = useMemo(() => {
     if (!graphData) return [];
 
     return [
@@ -175,7 +175,7 @@ export function PermissionGraphCommand() {
         ),
       },
     ];
-  })();
+  }, [graphData, getFormattedAddress]);
 
   if (!graphData) {
     return (

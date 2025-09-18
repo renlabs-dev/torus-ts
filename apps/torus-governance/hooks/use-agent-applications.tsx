@@ -5,6 +5,7 @@ import type { SS58Address } from "@torus-network/sdk/types";
 import { useGovernance } from "~/context/governance-provider";
 import { handleCustomAgentApplications } from "~/utils";
 import { match } from "rustie";
+import { useMemo } from "react";
 
 // Common function to map status values
 const mapStatusToView = (status: AgentApplication["status"]): string => {
@@ -50,7 +51,7 @@ export const useAgentApplications = (
     !isInitialized ||
     agents.isPending;
 
-  const filteredApplications = (() => {
+  const filteredApplications = useMemo(() => {
     if (!agentApplicationsWithMeta) return [];
 
     const { filterByStatus, limit, search, statusFilter } = options;
@@ -124,7 +125,7 @@ export const useAgentApplications = (
         ) => value is ApplicationResult,
       )
       .slice(0, limit ?? undefined);
-  })();
+  }, [agentApplicationsWithMeta, agents.data, options]);
 
   return {
     applications: filteredApplications,

@@ -2,6 +2,7 @@ import type { TorAmount } from "@torus-network/torus-utils/torus/token";
 import { makeTorAmount } from "@torus-network/torus-utils/torus/token";
 import { useGetTorusPrice } from "@torus-ts/query-provider/hooks";
 import { api as extAPI } from "~/trpc/react";
+import { useMemo } from "react";
 import {
   calculateAgentTokensPerWeek,
   useTokensPerWeek,
@@ -66,7 +67,7 @@ export function useWeeklyUsdCalculation(
     isTorusPriceError || isComputedWeightError || isTokensPerWeekError;
 
   // Calculate tokens per week
-  const tokensPerWeek = (() => {
+  const tokensPerWeek = useMemo(() => {
     // Early return conditions
     if (isLoading || isError || computedWeightedAgents === null)
       return makeTorAmount(0);
@@ -80,16 +81,16 @@ export function useWeeklyUsdCalculation(
       agentWeightValue,
       weightPenaltyValue,
     );
-  })();
+  }, [isLoading, isError, computedWeightedAgents, props.weightFactor, effectiveEmissionAmount, incentivesRatioValue]);
 
   // Calculate USD value of weekly tokens
-  const usdValue = (() => {
+  const usdValue = useMemo(() => {
     if (isLoading || isError || !torusPrice) return 0;
     return tokensPerWeek.toNumber() * torusPrice;
-  })();
+  }, [isLoading, isError, tokensPerWeek, torusPrice]);
 
   // EXAMPLE: 5000000.00000 will be displayed: 5,000,000.00 TORUS
-  const displayTokensPerWeek = (() => {
+  const displayTokensPerWeek = useMemo(() => {
     if (isLoading || isError) return "0.00 TORUS";
     return (
       tokensPerWeek.toNumber().toLocaleString("en-US", {
@@ -97,10 +98,10 @@ export function useWeeklyUsdCalculation(
         maximumFractionDigits: 2,
       }) + " TORUS"
     );
-  })();
+  }, [isLoading, isError, tokensPerWeek]);
 
   // EXAMPLE: 50000.0000 will be displayed: $50,000.00
-  const displayUsdValue = (() => {
+  const displayUsdValue = useMemo(() => {
     if (isLoading || isError) return "$0.00";
     return usdValue.toLocaleString("en-US", {
       style: "currency",
@@ -108,7 +109,7 @@ export function useWeeklyUsdCalculation(
       minimumFractionDigits: 2,
       maximumFractionDigits: 2,
     });
-  })();
+  }, [isLoading, isError, usdValue]);
 
   return {
     tokensPerWeek,

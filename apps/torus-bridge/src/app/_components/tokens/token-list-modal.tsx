@@ -4,7 +4,7 @@ import { TextInput } from "~/app/_components/text-field";
 import { TokenIcon } from "~/app/_components/token-icon";
 import { useMultiProvider } from "~/hooks/use-multi-provider";
 import { InfoIcon } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { config } from "../../../consts/config";
 import { useWarpCore } from "../../../hooks/token";
 import { getChainDisplayName } from "../../../utils/chain";
@@ -97,7 +97,7 @@ function TokenList({
   const multiProvider = useMultiProvider();
   const warpCore = useWarpCore();
 
-  const tokens = (() => {
+  const tokens = useMemo(() => {
     const q = searchQuery.trim().toLowerCase();
     const multiChainTokens = warpCore.tokens.filter((t) =>
       t.isMultiChainToken(),
@@ -126,7 +126,7 @@ function TokenList({
         // Hide/show disabled tokens
         .filter((t) => (config.showDisabledTokens ? true : !t.disabled))
     );
-  })();
+  }, [warpCore, searchQuery, origin, destination]);
 
   return (
     <div className="flex flex-col items-stretch">

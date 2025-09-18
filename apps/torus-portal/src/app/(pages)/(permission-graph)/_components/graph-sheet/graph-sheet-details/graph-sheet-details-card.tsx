@@ -17,6 +17,7 @@ import {
 import { ShortenedCapabilityPath } from "~/utils/capability-path";
 import { ArrowDownLeft, ArrowUpRight } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
+import { useMemo } from "react";
 import type {
   allPermissions,
   CustomGraphData,
@@ -141,7 +142,7 @@ export function NodeDetailsCard({
   });
 
   // Group and sort permissions
-  const groupedPermissions = (() => {
+  const groupedPermissions = useMemo(() => {
     const delegated = processedPermissions.filter((p) => p.isOutgoing);
     const received = processedPermissions.filter((p) => !p.isOutgoing);
 
@@ -165,7 +166,7 @@ export function NodeDetailsCard({
       delegated: sortPermissions(delegated),
       received: sortPermissions(received),
     };
-  })();
+  }, [processedPermissions]);
 
   const renderPermissionGroup = (
     permissions: typeof processedPermissions,

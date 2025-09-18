@@ -38,7 +38,7 @@ export function useAgentHealth({
     [cadreListData?.length],
   );
 
-  const filteredAgents = (() => {
+  const filteredAgents = useMemo(() => {
     if (!agentsWithPenalties) return [];
 
     const search = searchParam ? searchParam.toLocaleLowerCase() : null;
@@ -56,7 +56,7 @@ export function useAgentHealth({
         (agent): agent is AgentWithAggregatedPenalties[number] =>
           agent !== null,
       );
-  })();
+  }, [agentsWithPenalties, searchParam, statusFilter, penaltyThreshold]);
 
   return {
     agentsWithPenalties,

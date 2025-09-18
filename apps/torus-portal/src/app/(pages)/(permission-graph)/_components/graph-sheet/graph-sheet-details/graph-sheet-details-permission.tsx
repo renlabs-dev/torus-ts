@@ -25,6 +25,7 @@ import {
   User,
   UserCheck,
 } from "lucide-react";
+import { useMemo } from "react";
 import type {
   allPermissions,
   CustomGraphNode,
@@ -43,7 +44,7 @@ export function GraphSheetDetailsPermission({
   const permissionData = selectedNode.permissionData;
 
   // Group distribution targets by target account to avoid duplicates and show streams per target
-  const distributionTargets = (() => {
+  const distributionTargets = useMemo(() => {
     if (
       !allPermissions ||
       !permissionData ||
@@ -87,10 +88,10 @@ export function GraphSheetDetailsPermission({
         streams: Array.from(streams.values()),
       };
     });
-  })();
+  }, [allPermissions, permissionData]);
 
   // Get emission data for all target accounts and the delegator
-  const allAccountIds = (() => {
+  const allAccountIds = useMemo(() => {
     const accounts = new Set<string>();
 
     // Add delegator account
@@ -104,7 +105,7 @@ export function GraphSheetDetailsPermission({
     });
 
     return Array.from(accounts);
-  })();
+  }, [permissionData, distributionTargets]);
 
   const emissionsData = useMultipleAccountEmissions({
     accountIds: allAccountIds,

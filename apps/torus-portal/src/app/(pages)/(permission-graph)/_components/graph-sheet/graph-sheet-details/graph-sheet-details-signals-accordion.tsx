@@ -9,6 +9,7 @@ import { Badge } from "@torus-ts/ui/components/badge";
 import { MarkdownView } from "@torus-ts/ui/components/markdown-view";
 import { api } from "~/trpc/react";
 import { Calendar, ExternalLink, Percent, Users } from "lucide-react";
+import { useMemo } from "react";
 import type { CustomGraphNode } from "../../permission-graph-types";
 
 interface SignalsAccordionProps {
@@ -20,11 +21,11 @@ export function GraphSheetDetailsSignalsAccordion({
 }: SignalsAccordionProps) {
   const { data: allSignals, isLoading } = api.signal.all.useQuery();
 
-  const nodeSignals = (() => {
+  const nodeSignals = useMemo(() => {
     if (!allSignals || !selectedNode?.id) return [];
 
     return allSignals.filter((signal) => signal.agentKey === selectedNode.id);
-  })();
+  }, [allSignals, selectedNode?.id]);
 
   if (isLoading) {
     return (

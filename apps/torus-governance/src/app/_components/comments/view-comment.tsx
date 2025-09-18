@@ -23,7 +23,7 @@ import {
   ThumbsUp,
   TriangleAlert,
 } from "lucide-react";
-import { useCallback, useEffect, useLayoutEffect, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useState } from "react";
 import { ReportComment } from "./report-comment";
 
 //  "LIKE" | "DISLIKE"
@@ -148,7 +148,7 @@ export function ViewComment({
 
   const [sortBy, setSortBy] = useState<SorterTypes>("oldest");
 
-  const sortedComments = (() => {
+  const sortedComments = useMemo(() => {
     if (!comments) return [];
     return [...comments].sort((a, b) => {
       if (sortBy === "newest") {
@@ -163,7 +163,7 @@ export function ViewComment({
         return (Number(b.likes) || 0) - (Number(a.likes) || 0);
       }
     });
-  })();
+  }, [comments, sortBy]);
 
   const { data: userVotes, refetch: refetchUserVotes } =
     api.commentInteraction.byUserId.useQuery(
@@ -185,59 +185,68 @@ export function ViewComment({
   const deleteVoteMutation =
     api.commentInteraction.deleteReaction.useMutation();
 
-  const handleVote = (
-    commentId: number,
-    reactionType: CommentInteractionReactionType,
-  ) => {
-    if (!selectedAccount?.address) {
-      toast.error("Please connect your wallet to vote");
-      return;
-    }
+  const handleCastVote = createMutationHandler(castVoteMutation, toast);
+  const handleDeleteVote = createMutationHandler(deleteVoteMutation, toast);
 
-    const commentExists = comments?.some((c) => c.id === commentId);
-    if (!commentExists) {
-      toast.error("Comment not found");
-      return;
-    }
+  const handleVote = useCallback(
+    (commentId: number, reactionType: CommentInteractionReactionType) => {
+      if (!selectedAccount?.address) {
+        toast.error("Please connect your wallet to vote");
+        return;
+      }
 
-    const currentVote = userVotes?.[commentId];
-    const isRemovingVote = currentVote === reactionType;
+      const commentExists = comments?.some((c) => c.id === commentId);
+      if (!commentExists) {
+        toast.error("Comment not found");
+        return;
+      }
 
-    const handleCastVote = createMutationHandler(castVoteMutation, toast);
-    const handleDeleteVote = createMutationHandler(deleteVoteMutation, toast);
+      const currentVote = userVotes?.[commentId];
+      const isRemovingVote = currentVote === reactionType;
 
-    if (isRemovingVote) {
-      void handleDeleteVote(
-        { commentId },
-        {
-          error: "Error removing vote",
-          onSuccess: async () => {
-            const [error] = await tryAsync(
-              Promise.all([refetchUserVotes(), refetch()]),
-            );
-            if (error) {
-              throw new Error("Error refreshing data");
-            }
+      if (isRemovingVote) {
+        void handleDeleteVote(
+          { commentId },
+          {
+            error: "Error removing vote",
+            onSuccess: async () => {
+              const [error] = await tryAsync(
+                Promise.all([refetchUserVotes(), refetch()]),
+              );
+              if (error) {
+                throw new Error("Error refreshing data");
+              }
+            },
           },
-        },
-      );
-    } else {
-      void handleCastVote(
-        { commentId, reactionType },
-        {
-          error: "Error casting vote",
-          onSuccess: async () => {
-            const [error] = await tryAsync(
-              Promise.all([refetchUserVotes(), refetch()]),
-            );
-            if (error) {
-              throw new Error("Error refreshing data");
-            }
+        );
+      } else {
+        void handleCastVote(
+          { commentId, reactionType },
+          {
+            error: "Error casting vote",
+            onSuccess: async () => {
+              const [error] = await tryAsync(
+                Promise.all([refetchUserVotes(), refetch()]),
+              );
+              if (error) {
+                throw new Error("Error refreshing data");
+              }
+            },
           },
-        },
-      );
-    }
-  };
+        );
+      }
+    },
+    [
+      selectedAccount?.address,
+      comments,
+      userVotes,
+      handleCastVote,
+      handleDeleteVote,
+      refetchUserVotes,
+      refetch,
+      toast,
+    ],
+  );
 
   const handleCommentSorter = useCallback((sortBy: SorterTypes | "") => {
     setSortBy(sortBy || "oldest");

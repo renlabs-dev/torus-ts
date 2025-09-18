@@ -9,7 +9,7 @@ import {
   SelectValue,
 } from "@torus-ts/ui/components/select";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 interface FilterOption {
   label: string;
@@ -59,7 +59,7 @@ export function FilterContent({
   const [search, setSearch] = useState(searchParams.get("search") ?? "");
 
   // Determine which filter options to use based on the current page
-  const { filterOptions, searchPlaceholder } = (() => {
+  const { filterOptions, searchPlaceholder } = useMemo(() => {
     if (pathname.includes("/proposals")) {
       return {
         filterOptions: statusOptions ?? defaultProposalStatusOptions,
@@ -77,7 +77,7 @@ export function FilterContent({
         searchPlaceholder: placeholder ?? "Search applications...",
       };
     }
-  })();
+  }, [pathname, statusOptions, placeholder]);
 
   const [selectedStatus, setSelectedStatus] = useState(
     searchParams.get(statusParamName) ?? defaultStatus,
