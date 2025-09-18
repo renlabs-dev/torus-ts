@@ -81,7 +81,14 @@ export function useWeeklyUsdCalculation(
       agentWeightValue,
       weightPenaltyValue,
     );
-  }, [isLoading, isError, computedWeightedAgents, props.weightFactor, effectiveEmissionAmount, incentivesRatioValue]);
+  }, [
+    isLoading,
+    isError,
+    computedWeightedAgents,
+    props.weightFactor,
+    effectiveEmissionAmount,
+    incentivesRatioValue,
+  ]);
 
   // Calculate USD value of weekly tokens
   const usdValue = useMemo(() => {
