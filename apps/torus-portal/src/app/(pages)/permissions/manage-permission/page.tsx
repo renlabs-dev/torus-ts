@@ -5,9 +5,8 @@ import { EditPermissionForm } from "./_components/edit-permission-form";
 
 export function generateMetadata() {
   return createSeoMetadata({
-    title: "Edit Permission - Torus Portal",
-    description:
-      "Edit existing permissions on the Torus Network. Modify permission settings and access controls for network participants.",
+    title: "Manage Permission - Torus Portal",
+    description: "Edit existing permissions settings.",
     keywords: [
       "edit permission",
       "modify permission",

@@ -6,8 +6,7 @@ import { RegisterAgentForm } from "./_components/register-agent-form";
 export function generateMetadata() {
   return createSeoMetadata({
     title: "Register Agent - Torus Portal",
-    description:
-      "Register a new agent on the Torus Network. Join the decentralized network as a validator or service provider.",
+    description: "Register a new agents.",
     keywords: [
       "register agent",
       "agent registration",

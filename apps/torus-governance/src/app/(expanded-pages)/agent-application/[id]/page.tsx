@@ -15,7 +15,7 @@ export async function generateMetadata({
 
   return createSeoMetadata({
     title: `Agent Application #${id} - Torus Governance`,
-    description: `Review agent application #${id} details, voting status, and community feedback on the Torus Network governance platform.`,
+    description: `Review agent application #${id} details, voting status, and community feedback.`,
     keywords: [
       "agent application",
       "application details",

@@ -37,7 +37,7 @@ export async function generateMetadata({
 
   return createSeoMetadata({
     title: `${agentName} - Agent Details | Torus Portal`,
-    description: `View detailed information about ${agentName} on the Torus Network. Explore agent metadata, allocations, and performance metrics.`,
+    description: `View ${agentName} detailed information.`,
     keywords: [
       "agent details",
       "agent profile",

@@ -4,8 +4,7 @@ import { env } from "~/env";
 export function generateMetadata() {
   return createSeoMetadata({
     title: "Allocated Agents - Torus Portal",
-    description:
-      "View agents you have allocated weights to on the Torus Network. Manage your current agent allocations and distributions.",
+    description: "View agents you have allocated weights.",
     keywords: [
       "allocated agents",
       "agent allocations",

@@ -8,7 +8,7 @@ export function generateMetadata() {
   return createSeoMetadata({
     title: "Create Permission - Torus Portal",
     description:
-      "Create and delegate permissions on the Torus Network. Choose between capability and emission permissions for network participants.",
+      "Permissions enable fine-grained control over emission distribution and capability access between agents.",
     keywords: [
       "create permission",
       "delegate permission",

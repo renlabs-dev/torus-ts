@@ -5,7 +5,7 @@ export function generateMetadata() {
   return createSeoMetadata({
     title: "DAO Dashboard - Torus Governance",
     description:
-      "Monitor DAO operations, agent health, and applications. Comprehensive dashboard for Torus Network governance management.",
+      "Monitor DAO operations, agent health, and root agent applications.",
     keywords: [
       "dao dashboard",
       "agent health",

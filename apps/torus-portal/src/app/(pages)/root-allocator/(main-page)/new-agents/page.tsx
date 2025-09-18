@@ -7,8 +7,7 @@ import { PageLayout } from "../../_components/page-layout";
 export function generateMetadata() {
   return createSeoMetadata({
     title: "New Agents - Torus Portal",
-    description:
-      "Discover newly registered agents on the Torus Network. Explore and allocate to the latest network participants.",
+    description: "Discover newly registered agents`",
     keywords: [
       "new agents",
       "recent agents",

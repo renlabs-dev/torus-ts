@@ -15,7 +15,7 @@ export function generateMetadata() {
   return createSeoMetadata({
     title: "Torus Portal",
     description:
-      "Manage network permissions, agent allocations, and explore the Torus Network ecosystem",
+      "Manage network permissions, agent allocations, and explore the hypergraph.",
     keywords: [
       "torus portal",
       "permission management",

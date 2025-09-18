@@ -5,7 +5,7 @@ export function generateMetadata() {
   return createSeoMetadata({
     title: "Signal List - Torus Portal",
     description:
-      "View and manage demand signals on the Torus Network. Browse active, fulfilled, and deleted network signals.",
+      "View active Signals, their status, and their associated agents.",
     keywords: [
       "signal list",
       "demand signals",

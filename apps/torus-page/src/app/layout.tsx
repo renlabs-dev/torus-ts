@@ -12,8 +12,7 @@ import { HoverHeader } from "./_components/hover-header";
 export function generateMetadata() {
   return createSeoMetadata({
     title: "Torus Network",
-    description:
-      "Decentralized infrastructure platform built on Substrate. Explore the future of blockchain technology and decentralized applications.",
+    description: "The thermodynamic god's favorite child.",
     keywords: [
       "torus network",
       "decentralized infrastructure",

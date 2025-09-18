@@ -10,7 +10,7 @@ import { Unstake } from "./_components/unstake/unstake";
 export function generateMetadata() {
   return createSeoMetadata({
     title: "Staking - Torus Wallet",
-    description: "Stake your tokens and earn rewards in the Torus ecosystem",
+    description: "Stake your tokens and earn rewards.",
     keywords: [
       "torus staking",
       "stake tokens",

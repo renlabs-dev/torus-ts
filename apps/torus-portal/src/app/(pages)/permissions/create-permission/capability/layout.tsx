@@ -5,7 +5,7 @@ export function generateMetadata() {
   return createSeoMetadata({
     title: "Create Capability Permission - Torus Portal",
     description:
-      "Create capability-based permissions for agents on the Torus Network. Define specific access rights and operational permissions.",
+      "Allow you to recursively delegate access, either from your own agent or from an agent that has granted you access, so you can hold and redelegate their permissions, endpoints, and services to other agents..",
     keywords: [
       "capability permission",
       "agent capabilities",

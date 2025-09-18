@@ -160,8 +160,8 @@ export function WalletStakePermissionForm({
                   <div className="space-y-1 leading-none">
                     <FormLabel>Exclusive Delegation</FormLabel>
                     <FormDescription>
-                      Grant exclusive access to stake operations (prevents
-                      delegator from using stake)
+                      You (the delegator) will loose permission to unstake,
+                      exclusively granting it to the recipient
                     </FormDescription>
                   </div>
                 </FormItem>
@@ -182,8 +182,8 @@ export function WalletStakePermissionForm({
                   <div className="space-y-1 leading-none">
                     <FormLabel>Allow Stake Movement</FormLabel>
                     <FormDescription>
-                      You (the delegator) will loose permission to unstake,
-                      exclusively granting it to the recipient
+                      Allow the recipient to move stake delegation between
+                      agents
                     </FormDescription>
                   </div>
                 </FormItem>

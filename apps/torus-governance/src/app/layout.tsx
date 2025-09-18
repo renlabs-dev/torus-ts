@@ -16,7 +16,7 @@ export function generateMetadata() {
   return createSeoMetadata({
     title: "Torus DAO",
     description:
-      "Decentralized governance platform for the Torus Network. Participate in DAO decisions, vote on proposals, and shape the future of decentralized infrastructure.",
+      "Decentralized governance platform for the Torus Network. Participate in DAO decisions, vote on proposals, and shape the network.",
     keywords: [
       "torus dao",
       "decentralized governance",

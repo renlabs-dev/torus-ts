@@ -12,7 +12,7 @@ import { Fira_Mono as FiraMono } from "next/font/google";
 
 export function generateMetadata() {
   return createSeoMetadata({
-    title: "Torus Base Bridge",
+    title: "Torus Bridge",
     description:
       "Cross-chain token bridge for the Torus ecosystem. Securely transfer tokens across multiple blockchain networks with ease and reliability.",
     keywords: [
@@ -22,7 +22,7 @@ export function generateMetadata() {
       "blockchain interoperability",
       "crypto bridge",
     ],
-    ogSiteName: "Torus Base Bridge",
+    ogSiteName: "Torus Bridge",
     canonical: "/",
     baseUrl: env("BASE_URL"),
   });

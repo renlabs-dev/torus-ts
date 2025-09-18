@@ -8,8 +8,7 @@ import { ListProposals } from "./_components/list-proposals";
 export function generateMetadata() {
   return createSeoMetadata({
     title: "Proposals - Torus Governance",
-    description:
-      "Browse and vote on network proposals. Participate in Torus Network governance by reviewing and voting on community proposals.",
+    description: "Browse and vote on network proposals.",
     keywords: [
       "network proposals",
       "governance voting",

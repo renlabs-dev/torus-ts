@@ -7,8 +7,7 @@ import { ListWhitelistApplications } from "./_components/list-whitelist-applicat
 export function generateMetadata() {
   return createSeoMetadata({
     title: "Whitelist Applications - Torus Governance",
-    description:
-      "Review and vote on agent whitelist applications. Manage network participation by evaluating agent applications for the Torus Network.",
+    description: "Review and vote on agent whitelist applications.",
     keywords: [
       "whitelist applications",
       "agent applications",

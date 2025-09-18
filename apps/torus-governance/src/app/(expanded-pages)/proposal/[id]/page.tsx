@@ -15,7 +15,7 @@ export async function generateMetadata({
 
   return createSeoMetadata({
     title: `Proposal #${id} - Torus Governance`,
-    description: `View proposal #${id} details, voting results, and community discussion on the Torus Network governance platform.`,
+    description: `View proposal #${id} details, voting results, and community discussion.`,
     keywords: [
       "network proposal",
       "proposal details",

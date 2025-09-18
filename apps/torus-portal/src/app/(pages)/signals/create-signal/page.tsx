@@ -7,7 +7,7 @@ export function generateMetadata() {
   return createSeoMetadata({
     title: "Create Signal - Torus Portal",
     description:
-      "Create demand signals on the Torus Network. Signal network needs and requirements to guide resource allocation.",
+      "Allows you to delegate part of your emissions to agents who can provide specialized capabilities, potentially increasing your overall rewards while reducing your workload.",
     keywords: [
       "create signal",
       "demand signal",

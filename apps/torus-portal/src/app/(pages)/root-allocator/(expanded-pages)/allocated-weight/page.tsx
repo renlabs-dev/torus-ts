@@ -9,8 +9,7 @@ import { api } from "~/trpc/server";
 export function generateMetadata() {
   return createSeoMetadata({
     title: "Agent Stake Details - Torus Portal",
-    description:
-      "View detailed stake information for agents on the Torus Network. Analyze stake weights and user allocations.",
+    description: "Agent allocated weight endpoint.",
     keywords: [
       "agent stake",
       "stake weights",
