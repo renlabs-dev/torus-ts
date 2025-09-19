@@ -21,7 +21,7 @@ export function SelectActionDialog() {
       >
         <AlertDialogTrigger>
           <Logs className="h-4 w-4" />
-          Easy transaction selection menu
+          Bridge options menu
         </AlertDialogTrigger>
       </Button>
       <AlertDialogContent>
@@ -36,6 +36,7 @@ export function SelectActionDialog() {
             description={card.description}
             iconFrom={card.iconFrom}
             iconTo={card.iconTo}
+            priority={card.priority}
           />
         ))}
       </AlertDialogContent>
@@ -49,18 +50,27 @@ interface SelectCardProps {
   description: string;
   iconFrom: string;
   iconTo: string;
+  priority?: boolean;
 }
 
 function SelectCard(props: Readonly<SelectCardProps>) {
   return (
     <AlertDialogAction
       asChild
-      className="border-border bg-accent/20 hover:bg-accent/70 border px-5 py-10"
+      className={`border px-5 py-10 ${
+        props.priority
+          ? "border-blue-500 bg-blue-500/20 hover:bg-blue-500/30"
+          : "border-border bg-accent/20 hover:bg-accent/70"
+      }`}
     >
       <Link href={props.href} className="flex w-full">
         <div className="flex h-fit w-full justify-between gap-2">
           <div className="flex flex-col gap-1">
-            <span className="text-base font-bold text-white">{props.text}</span>
+            <span className={`text-base font-bold ${
+              props.priority ? "text-blue-100" : "text-white"
+            }`}>
+              {props.text}
+            </span>
             <span className="text-muted-foreground text-sm">
               {props.description}
             </span>
@@ -77,6 +87,14 @@ function SelectCard(props: Readonly<SelectCardProps>) {
 }
 
 const SelectCardList = [
+  {
+    href: "/simple",
+    text: "🚀 Simple Bridge (Recommended)",
+    description: "Direct transfers: Base ⟷ Native Torus in one flow",
+    iconFrom: "torus-base-balance-icon.svg",
+    iconTo: "torus-balance-icon.svg",
+    priority: true,
+  },
   {
     href: "/?tab=torus&mode=bridge",
     text: "Torus to Torus EVM",
