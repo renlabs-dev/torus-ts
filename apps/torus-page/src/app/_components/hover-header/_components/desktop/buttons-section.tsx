@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/no-non-null-assertion */
-
 import { Button } from "@torus-ts/ui/components/button";
 import { Card } from "@torus-ts/ui/components/card";
 import { ScrollArea } from "@torus-ts/ui/components/scroll-area";
@@ -92,18 +90,22 @@ export function ButtonsSection({
         className="absolute mt-20 flex w-full max-w-[43rem] justify-around gap-36"
         style={{ zIndex: isExpanded ? 1 : "auto" }}
       >
-        <CustomButton
-          href={desktopButtons.starter[2]!.href}
-          isHidden={!showStarter}
-        >
-          {desktopButtons.starter[2]!.text}
-        </CustomButton>
-        <CustomButton
-          href={desktopButtons.network[2]!.href}
-          isHidden={!showNetwork}
-        >
-          {desktopButtons.network[2]!.text}
-        </CustomButton>
+        {desktopButtons.starter[2] && (
+          <CustomButton
+            href={desktopButtons.starter[2].href}
+            isHidden={!showStarter}
+          >
+            {desktopButtons.starter[2].text}
+          </CustomButton>
+        )}
+        {desktopButtons.network[2] && (
+          <CustomButton
+            href={desktopButtons.network[2].href}
+            isHidden={!showNetwork}
+          >
+            {desktopButtons.network[2].text}
+          </CustomButton>
+        )}
       </motion.div>
 
       {/* Fourth Row with Card */}

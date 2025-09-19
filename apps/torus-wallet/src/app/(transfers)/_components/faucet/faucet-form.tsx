@@ -43,8 +43,10 @@ export function FaucetForm({
 
   useLayoutEffect(() => {
     if (containerRef.current) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setWidth(containerRef.current.offsetWidth);
+      const timer = setTimeout(() => {
+        setWidth(containerRef.current?.offsetWidth ?? 0);
+      }, 0);
+      return () => clearTimeout(timer);
     }
   }, []);
 

@@ -42,12 +42,10 @@ export function ConnectAwareSubmitButton<FormValues = unknown>({
   const type = isAccountReady ? "submit" : "button";
   const onClick = isAccountReady ? undefined : connectFn;
 
-  // Automatically clear error state after a timeout
   const clearErrors = useCallback(() => {
     setErrors({});
     void setTouched({});
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [setErrors, setTouched, errors, touched]);
+  }, [setErrors, setTouched]);
 
   useTimeout(clearErrors, 3500);
 

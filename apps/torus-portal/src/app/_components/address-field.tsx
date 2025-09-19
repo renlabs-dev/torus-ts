@@ -55,7 +55,6 @@ function AddressField({
     [isMobile],
   );
 
-  // eslint-disable-next-line react-hooks/preserve-manual-memoization
   const searchData = useMemo(() => {
     if (!agents) return { whitelistedAgents: [], nonWhitelistedAgents: [] };
 
@@ -80,7 +79,6 @@ function AddressField({
     };
   }, [agents, searchValue]);
 
-  // eslint-disable-next-line react-hooks/preserve-manual-memoization
   const selectedAgent = React.useMemo(() => {
     if (!value || !agents) return null;
     return agents.find((agent) => agent.key === value);
