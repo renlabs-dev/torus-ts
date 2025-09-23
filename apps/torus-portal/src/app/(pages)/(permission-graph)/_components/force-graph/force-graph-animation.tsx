@@ -301,9 +301,15 @@ const ForceGraph = memo(
 
             return linkColor;
           }}
-          linkWidth={(link: LinkObject) =>
-            Number(link.linkWidth) || graphConstants.linkConfig.linkWidth
-          }
+          linkWidth={(link: LinkObject) => {
+            // Make allocation links (allocator to root nodes) thicker
+            if (link.linkType === "allocation") {
+              return graphConstants.linkConfig.linkWidth * 2.3;
+            }
+            return (
+              Number(link.linkWidth) || graphConstants.linkConfig.linkWidth
+            );
+          }}
           onNodeClick={handleNodeClick}
           onNodeHover={handleNodeHover}
         />
