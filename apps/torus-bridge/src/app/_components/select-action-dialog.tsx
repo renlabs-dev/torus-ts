@@ -66,9 +66,11 @@ function SelectCard(props: Readonly<SelectCardProps>) {
       <Link href={props.href} className="flex w-full">
         <div className="flex h-fit w-full justify-between gap-2">
           <div className="flex flex-col gap-1">
-            <span className={`text-base font-bold ${
-              props.priority ? "text-blue-100" : "text-white"
-            }`}>
+            <span
+              className={`text-base font-bold ${
+                props.priority ? "text-blue-100" : "text-white"
+              }`}
+            >
               {props.text}
             </span>
             <span className="text-muted-foreground text-sm">
@@ -91,36 +93,36 @@ const SelectCardList = [
     href: "/simple",
     text: "🚀 Simple Bridge (Recommended)",
     description: "Direct transfers: Base ⟷ Native Torus in one flow",
-    iconFrom: "torus-base-balance-icon.svg",
-    iconTo: "torus-balance-icon.svg",
+    iconFrom: "/assets/icons/bridge/torus-base.svg",
+    iconTo: "/assets/icons/balance/torus.svg",
     priority: true,
   },
   {
     href: "/?tab=torus&mode=bridge",
     text: "Torus to Torus EVM",
     description: "Transfer your balance from Torus to Torus EVM",
-    iconFrom: "torus-balance-icon.svg",
-    iconTo: "torus-evm-balance-icon.svg",
+    iconFrom: "/assets/icons/balance/torus.svg",
+    iconTo: "/assets/icons/bridge/torus-evm.svg",
   },
   {
     href: "/?tab=torus&mode=withdraw",
     text: "Torus EVM to Torus",
     description: "Transfer your balance from Torus EVM to Torus",
-    iconFrom: "torus-evm-balance-icon.svg",
-    iconTo: "torus-balance-icon.svg",
+    iconFrom: "/assets/icons/bridge/torus-evm.svg",
+    iconTo: "/assets/icons/balance/torus.svg",
   },
   {
     href: "/?tab=base&from=torus&to=base",
     text: "Torus EVM to Base",
     description: "Transfer your balance from Torus EVM to Base",
-    iconFrom: "torus-evm-balance-icon.svg",
-    iconTo: "torus-base-balance-icon.svg",
+    iconFrom: "/assets/icons/bridge/torus-evm.svg",
+    iconTo: "/assets/icons/bridge/torus-base.svg",
   },
   {
     href: "/?tab=base&from=base&to=torus",
     text: "Base to Torus EVM",
     description: "Transfer your balance from Base to Torus EVM",
-    iconFrom: "torus-base-balance-icon.svg",
-    iconTo: "torus-evm-balance-icon.svg",
+    iconFrom: "/assets/icons/bridge/torus-base.svg",
+    iconTo: "/assets/icons/bridge/torus-evm.svg",
   },
 ];

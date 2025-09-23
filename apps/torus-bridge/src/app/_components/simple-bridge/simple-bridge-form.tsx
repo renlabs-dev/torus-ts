@@ -117,8 +117,8 @@ export function SimpleBridgeForm() {
     return {
       name: showBase ? "Base" : "Torus Native",
       icon: showBase
-        ? "/torus-base-balance-simple-icon.svg"
-        : "/torus-native-balance-simple-icon.svg",
+        ? "/assets/icons/bridge/torus-base-simple.svg"
+        : "/assets/icons/bridge/torus-native-simple.svg",
       balance: showBase
         ? baseBalance
           ? `${(Number(baseBalance.value) / 1e18).toFixed(4)} TORUS`
