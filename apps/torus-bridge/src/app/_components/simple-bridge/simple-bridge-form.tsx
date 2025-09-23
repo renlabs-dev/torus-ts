@@ -4,19 +4,15 @@ import type { SS58Address } from "@torus-network/sdk/types";
 import { useFreeBalance } from "@torus-ts/query-provider/hooks";
 import { useTorus } from "@torus-ts/torus-provider";
 import { Button } from "@torus-ts/ui/components/button";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@torus-ts/ui/components/card";
+import { Card, CardContent } from "@torus-ts/ui/components/card";
 import { Input } from "@torus-ts/ui/components/input";
 import { Label } from "@torus-ts/ui/components/label";
-import { ArrowDown, ArrowLeftRight } from "lucide-react";
+import { ArrowLeftRight } from "lucide-react";
 import Image from "next/image";
 import { useCallback, useMemo, useState } from "react";
 import { useBalance } from "wagmi";
 import { DualWalletConnector } from "./dual-wallet-connector";
+import { FractionButtons } from "./fraction-buttons";
 import { useDualWallet } from "./hooks/use-dual-wallet";
 import { useOrchestratedTransfer } from "./hooks/use-orchestrated-transfer";
 import { ProgressStepper } from "./progress-stepper";
@@ -106,11 +102,23 @@ export function SimpleBridgeForm() {
     const isBaseToNative = direction === "base-to-native";
     const showBase = isBaseToNative === isFrom;
 
+    const getAddress = () => {
+      if (showBase) {
+        return connectionState.evmWallet.address
+          ? `${connectionState.evmWallet.address.slice(0, 6)}...${connectionState.evmWallet.address.slice(-4)}`
+          : "No address";
+      } else {
+        return connectionState.torusWallet.address
+          ? `${connectionState.torusWallet.address.slice(0, 6)}...${connectionState.torusWallet.address.slice(-4)}`
+          : "No address";
+      }
+    };
+
     return {
       name: showBase ? "Base" : "Torus Native",
       icon: showBase
-        ? "/torus-base-balance-icon.svg"
-        : "/torus-balance-icon.svg",
+        ? "/torus-base-balance-simple-icon.svg"
+        : "/torus-native-balance-simple-icon.svg",
       balance: showBase
         ? baseBalance
           ? `${(Number(baseBalance.value) / 1e18).toFixed(4)} TORUS`
@@ -118,6 +126,7 @@ export function SimpleBridgeForm() {
         : nativeBalance.data
           ? `${(Number(nativeBalance.data) / 1e18).toFixed(4)} TORUS`
           : "0 TORUS",
+      address: getAddress(),
     };
   };
 
@@ -156,7 +165,7 @@ export function SimpleBridgeForm() {
   }
 
   return (
-    <div className="mx-auto w-full max-w-2xl space-y-6">
+    <div className="mx-auto w-full space-y-6">
       {/* Wallet Connection - Only show when wallets are not ready */}
       {!walletsReady && <DualWalletConnector direction={direction} />}
 
@@ -182,6 +191,9 @@ export function SimpleBridgeForm() {
                         <p className="font-medium">{fromChain.name}</p>
                         <p className="text-muted-foreground text-sm">
                           {fromChain.balance}
+                        </p>
+                        <p className="text-muted-foreground text-xs">
+                          {fromChain.address}
                         </p>
                       </div>
                     </div>
@@ -217,6 +229,9 @@ export function SimpleBridgeForm() {
                         <p className="text-muted-foreground text-sm">
                           {toChain.balance}
                         </p>
+                        <p className="text-muted-foreground text-xs">
+                          {toChain.address}
+                        </p>
                       </div>
                     </div>
                   </div>
@@ -241,49 +256,13 @@ export function SimpleBridgeForm() {
                   disabled={!walletsReady || isTransferInProgress}
                   className="w-full"
                 />
-                {/* Amount Buttons */}
-                <div className="grid grid-cols-4 gap-2">
-                  <Button
-                    type="button"
-                    onClick={() => handleFractionClick(0.25)}
-                    variant="outline"
-                    disabled={!walletsReady || isTransferInProgress}
-                    size="sm"
-                    className="text-xs"
-                  >
-                    1/4
-                  </Button>
-                  <Button
-                    type="button"
-                    onClick={() => handleFractionClick(0.33)}
-                    variant="outline"
-                    disabled={!walletsReady || isTransferInProgress}
-                    size="sm"
-                    className="text-xs"
-                  >
-                    1/3
-                  </Button>
-                  <Button
-                    type="button"
-                    onClick={() => handleFractionClick(0.5)}
-                    variant="outline"
-                    disabled={!walletsReady || isTransferInProgress}
-                    size="sm"
-                    className="text-xs"
-                  >
-                    1/2
-                  </Button>
-                  <Button
-                    type="button"
-                    onClick={handleMaxClick}
-                    variant="outline"
-                    disabled={!walletsReady || isTransferInProgress}
-                    size="sm"
-                    className="text-xs"
-                  >
-                    All
-                  </Button>
-                </div>
+
+                <FractionButtons
+                  handleFractionClick={handleFractionClick}
+                  walletsReady={walletsReady}
+                  isTransferInProgress={isTransferInProgress}
+                  handleMaxClick={handleMaxClick}
+                />
               </div>
             </div>
 
@@ -302,20 +281,6 @@ export function SimpleBridgeForm() {
                 <div className="flex justify-between">
                   <span>Signatures Required:</span>
                   <span>2 transactions</span>
-                </div>
-              </div>
-
-              {/* Important Warning */}
-              <div className="border-yellow-600 bg-yellow-50 border-l-4 p-3">
-                <div className="flex items-start">
-                  <div className="ml-1">
-                    <p className="text-yellow-800 text-xs font-medium">
-                      ⚠️ Important: Stay on this page during the transfer process
-                    </p>
-                    <p className="text-yellow-700 mt-1 text-xs">
-                      Do not close or navigate away from this tab. The process requires your attention for both transaction signatures.
-                    </p>
-                  </div>
                 </div>
               </div>
             </div>
