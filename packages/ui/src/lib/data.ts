@@ -54,7 +54,7 @@ export const getLinks = (chainEnv: ChainEnv) => {
 
     explorer: createUrl("explorer"),
     governance: createUrl("dao"),
-    allocator: createUrl("allocator"),
+    allocator: `${createUrl("portal")}/root-allocator`,
     landing_page: createUrl("torus"),
     wallet: createUrl("wallet"),
     bridge: createUrl("bridge"),
