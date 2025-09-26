@@ -35,7 +35,8 @@ const cinzel = Cinzel({
   variable: "--font-cinzel",
   subsets: ["latin"],
   display: "swap",
-  weight: ["700", "900"],
+  // Include regular weight for paragraphs/headings using default weight
+  weight: ["400", "700", "900"],
 });
 
 export default function RootLayout({

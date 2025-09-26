@@ -33,10 +33,8 @@ export default function StormHero() {
         <h1 className="font-cinzel font-black leading-none text-white/95 whitespace-nowrap text-[clamp(2.5rem,10vw,9rem)] tracking-[0.06em] drop-shadow-[0_8px_36px_rgba(56,189,248,0.38)]">
           Prophet Finder
         </h1>
-        <p className="mt-3 md:mt-4 max-w-3xl text-white/80 font-cinzel italic tracking-[0.08em] text-sm sm:text-base md:text-lg">
-          THE MODERN INFORMATION LANDSCAPE IS A STORM. BECOME THE STORM RIDER.
-          <br />
-          BEHIND EVERY EVENT IS A PROPHET — THE SWARM FINDS THEM
+        <p className="mt-3 md:mt-4 max-w-4xl sm:max-w-5xl text-white/80 font-cinzel italic font-semibold tracking-[0.08em] text-sm sm:text-base md:text-lg line-clamp-2">
+          THE MODERN INFORMATION LANDSCAPE IS A STORM. BECOME THE STORM RIDER. BEHIND EVERY EVENT IS A PROPHET — THE SWARM FINDS THEM
         </p>
       </div>
 

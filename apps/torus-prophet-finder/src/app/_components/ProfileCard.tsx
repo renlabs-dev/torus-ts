@@ -103,7 +103,7 @@ export function ProfileCard({ name, handle, twitterUrl, imageSrc, followers, twe
           <div className="flex items-end justify-between gap-4">
             <div className="space-y-1">
               <p className="font-mono text-white/70 text-xs sm:text-sm">{handle}</p>
-              <h3 className="font-cinzel text-white/95 text-lg sm:text-xl md:text-2xl tracking-wide uppercase">
+              <h3 className="font-cinzel font-bold text-white/95 text-lg sm:text-xl md:text-2xl tracking-wide uppercase">
                 {name}
               </h3>
               <div className="flex items-center gap-3 text-[11px] sm:text-xs text-white/70 font-mono">

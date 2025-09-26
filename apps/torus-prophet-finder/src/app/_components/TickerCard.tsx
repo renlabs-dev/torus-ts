@@ -32,7 +32,7 @@ export function TickerCard({ symbol }: TickerCardProps) {
           <div className="absolute inset-x-0 bottom-0 p-5 z-10">
             <div className="space-y-1">
               <p className="font-mono text-white/70 text-xs sm:text-sm">{display}</p>
-              <h3 className="font-cinzel text-white text-lg sm:text-xl md:text-2xl tracking-wide uppercase">
+              <h3 className="font-cinzel font-bold text-white text-lg sm:text-xl md:text-2xl tracking-wide uppercase">
                 {symbol}
               </h3>
             </div>

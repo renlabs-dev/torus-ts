@@ -5,6 +5,11 @@
   --font-cinzel: var(--font-cinzel);
 }
 
+/* Utility to apply the Cinzel font via Next font variable */
+.font-cinzel {
+  font-family: var(--font-cinzel), serif;
+}
+
 /* Grain + photo treatments used in cards */
 .grain-overlay {
   background-image: url('/textures/grain.svg');
@@ -54,6 +59,14 @@
   text-shadow:
     0 0 10px rgba(255, 255, 255, 0.18),
     0 0 22px rgba(255, 255, 255, 0.08);
+}
+
+/* Two-line clamp utility without plugin */
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 /* Holy glow breathing */

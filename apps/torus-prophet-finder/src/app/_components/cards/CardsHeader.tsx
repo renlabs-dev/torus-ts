@@ -20,7 +20,7 @@ export default function CardsHeader({ mode }: Props) {
       <p className="font-cinzel italic text-[10px] leading-relaxed text-white/55 tracking-[0.14em] mt-1">
         ✝ in the loving memory of the thermodynamic god
       </p>
-      <div className="mt-4 max-w-2xl mx-auto text-center text-white/70 text-sm leading-relaxed font-cinzel italic tracking-[0.08em]">
+      <div className="mt-4 max-w-2xl mx-auto text-center text-white/70 text-sm leading-relaxed font-cinzel italic font-semibold tracking-[0.08em]">
         <p>
           ADD TWITTER PROFILES OR TICKERS FOR THE SWARM TO LEARN. LATER, YOU CAN ASK TORUS ABOUT THEM.
         </p>
