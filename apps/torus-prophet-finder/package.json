@@ -16,6 +16,8 @@
     "with-env": "dotenv -e ../../.env --"
   },
   "dependencies": {
+    "@react-three/drei": "^10.7.6",
+    "@react-three/fiber": "^9.3.0",
     "@tanstack/react-query": "catalog:",
     "@torus-ts/api": "workspace:*",
     "@torus-ts/env-validation": "workspace:*",
@@ -29,6 +31,7 @@
     "next": "catalog:",
     "react": "catalog:react19",
     "react-dom": "catalog:react19",
+    "three": "^0.180.0",
     "zod": "catalog:"
   },
   "devDependencies": {

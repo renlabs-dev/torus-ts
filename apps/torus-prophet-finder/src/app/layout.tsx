@@ -1,4 +1,5 @@
 import "@torus-ts/ui/globals.css";
+import "./globals.css";
 import { GoogleAnalytics } from "@next/third-parties/google";
 import { ReactQueryProvider } from "@torus-ts/query-provider";
 import { TorusProvider } from "@torus-ts/torus-provider";
@@ -6,7 +7,7 @@ import { Layout } from "@torus-ts/ui/components/layout";
 import { Toaster } from "@torus-ts/ui/components/toaster";
 import { env, EnvScript } from "~/env";
 import type { Metadata } from "next";
-import { Fira_Mono as FiraMono } from "next/font/google";
+import { Geist, Geist_Mono, Cinzel } from "next/font/google";
 import { ProphetFinderHeader } from "./_components/prophet-finder-header";
 
 const APP_NAME = "Prophet Finder";
@@ -18,10 +19,23 @@ export const metadata: Metadata = {
   description: "The thermodynamic god's favorite Prophet Finder.",
 };
 
-export const firaMono = FiraMono({
+const geistSans = Geist({
+  variable: "--font-sans",
   subsets: ["latin"],
   display: "swap",
-  weight: "400",
+});
+
+const geistMono = Geist_Mono({
+  variable: "--font-mono",
+  subsets: ["latin"],
+  display: "swap",
+});
+
+const cinzel = Cinzel({
+  variable: "--font-cinzel",
+  subsets: ["latin"],
+  display: "swap",
+  weight: ["700", "900"],
 });
 
 export default function RootLayout({
@@ -30,7 +44,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <Layout font={firaMono} headScripts={[EnvScript]}>
+    <Layout
+      font={geistSans}
+      className={`${geistMono.variable} ${cinzel.variable}`}
+      headScripts={[EnvScript]}
+    >
       <ReactQueryProvider>
         <TorusProvider
           wsEndpoint={env("NEXT_PUBLIC_TORUS_RPC_URL")}

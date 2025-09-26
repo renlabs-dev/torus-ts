@@ -1,1 +1,1 @@
-export * from "@torus-ts/ui/tailwind.config";
+export { default } from "@torus-ts/ui/tailwind.config";
