@@ -37,6 +37,7 @@ export default function CardsSection() {
   const [mode, setMode] = React.useState<EntityMode>("prophets");
   const [isOverlayVisible, setOverlayVisible] = React.useState(false);
   const [isOverlayOpaque, setOverlayOpaque] = React.useState(false);
+  const [uiError, setUiError] = React.useState<string | null>(null);
   const timeouts = React.useRef<number[]>([]);
 
   const filteredProphets = React.useMemo(() => {
@@ -53,16 +54,26 @@ export default function CardsSection() {
 
   const handleAddProphet = React.useCallback(
     (raw: string) => {
-      if (!hasStake) return STAKE_REQUIRED_MSG;
-      return addProphet(raw).error ?? null;
+      if (!hasStake) {
+        setUiError(STAKE_REQUIRED_MSG);
+        return STAKE_REQUIRED_MSG;
+      }
+      const err = addProphet(raw).error ?? null;
+      setUiError(err);
+      return err;
     },
     [addProphet, hasStake],
   );
 
   const handleAddTicker = React.useCallback(
     (raw: string) => {
-      if (!hasStake) return STAKE_REQUIRED_MSG;
-      return addTicker(raw).error ?? null;
+      if (!hasStake) {
+        setUiError(STAKE_REQUIRED_MSG);
+        return STAKE_REQUIRED_MSG;
+      }
+      const err = addTicker(raw).error ?? null;
+      setUiError(err);
+      return err;
     },
     [addTicker, hasStake],
   );
@@ -108,12 +119,12 @@ export default function CardsSection() {
         </div>
 
         <div className="relative mb-6 mt-5 flex flex-wrap items-center gap-3 sm:mb-8 md:mb-10">
-          {showStakeWarning && (
+          {(uiError != null || showStakeWarning) && (
             <div
               aria-live="polite"
               className="pointer-events-none absolute -top-5 right-0 text-[11px] font-medium text-red-300/90"
             >
-              {STAKE_REQUIRED_MSG}
+              {uiError ?? STAKE_REQUIRED_MSG}
             </div>
           )}
           {mode === "prophets" ? (
@@ -127,7 +138,7 @@ export default function CardsSection() {
               />
               <AddProphetForm
                 onAdd={handleAddProphet}
-                suppressErrorMessage={(msg) => msg === STAKE_REQUIRED_MSG}
+                suppressErrorMessage={() => true}
               />
             </>
           ) : (
@@ -141,7 +152,7 @@ export default function CardsSection() {
               />
               <AddTickerForm
                 onAdd={handleAddTicker}
-                suppressErrorMessage={(msg) => msg === STAKE_REQUIRED_MSG}
+                suppressErrorMessage={() => true}
               />
             </>
           )}

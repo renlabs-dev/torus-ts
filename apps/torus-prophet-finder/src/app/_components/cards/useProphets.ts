@@ -3,6 +3,7 @@
 import { SAMPLE_PROPHETS } from "~/app/_components/cards/SampleProphets";
 import { normalizeHandle } from "~/lib/handles/normalize-handle";
 import { titleFromHandle } from "~/lib/handles/title-from-handle";
+import { validateHandleInput } from "~/lib/handles/validate-handle";
 import type { Prophet } from "~/types/prophet";
 import * as React from "react";
 
@@ -11,7 +12,9 @@ export function useProphets() {
 
   const addProphet = React.useCallback(
     (rawHandle: string): { error?: string } => {
-      const core = normalizeHandle(rawHandle);
+      const v = validateHandleInput(rawHandle);
+      if (v.error) return { error: v.error };
+      const core = v.core ?? normalizeHandle(rawHandle);
       if (!core) return { error: "Please enter a valid @username" };
       const handle = `@${core}`;
       if (

@@ -2,6 +2,7 @@
 
 import { SAMPLE_TICKERS } from "~/app/_components/cards/SampleTickers";
 import { normalizeSymbol } from "~/lib/tickers/normalize-symbol";
+import { validateTickerInput } from "~/lib/tickers/validate-symbol";
 import type { Ticker } from "~/types/ticker";
 import * as React from "react";
 
@@ -10,7 +11,9 @@ export function useTickers() {
 
   const addTicker = React.useCallback(
     (raw: string): { error?: string } => {
-      const symbol = normalizeSymbol(raw);
+      const v = validateTickerInput(raw);
+      if (v.error) return { error: v.error };
+      const symbol = v.symbol ?? normalizeSymbol(raw);
       if (!symbol) return { error: "Please enter a valid ticker (e.g., $BTC)" };
       if (tickers.some((t) => t.symbol.toUpperCase() === symbol)) {
         return { error: "This ticker already exists" };
