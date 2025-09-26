@@ -4,9 +4,10 @@ import * as React from "react";
 
 interface Props {
   onAdd: (rawHandle: string) => string | null; // returns error or null
+  suppressErrorMessage?: (msg: string) => boolean;
 }
 
-export default function AddProphetForm({ onAdd }: Props) {
+export default function AddProphetForm({ onAdd, suppressErrorMessage }: Props) {
   const [adding, setAdding] = React.useState(false);
   const [newHandle, setNewHandle] = React.useState("");
   const [error, setError] = React.useState<string | null>(null);
@@ -76,7 +77,9 @@ export default function AddProphetForm({ onAdd }: Props) {
               Cancel
             </button>
           </div>
-          {error && <p className="w-full text-xs text-red-300/90">{error}</p>}
+          {error && !suppressErrorMessage?.(error) && (
+            <p className="w-full text-xs text-red-300/90">{error}</p>
+          )}
         </form>
       )}
     </div>

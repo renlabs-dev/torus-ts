@@ -1,5 +1,8 @@
 "use client";
 
+import type { SS58Address } from "@torus-network/sdk/types";
+import { useBalance } from "@torus-ts/query-provider/hooks";
+import { useTorus } from "@torus-ts/torus-provider";
 import AddProphetForm from "~/app/_components/cards/AddProphetForm";
 import AddTickerForm from "~/app/_components/cards/AddTickerForm";
 import CardsGrid from "~/app/_components/cards/CardsGrid";
@@ -16,8 +19,20 @@ import StarfieldBackground from "~/app/_components/effects/StarfieldBackground";
 import * as React from "react";
 
 export default function CardsSection() {
+  const STAKE_REQUIRED_MSG = "You must have staked balance present.";
   const { prophets, addProphet } = useProphets();
   const { tickers, addTicker } = useTickers();
+  const { api, selectedAccount } = useTorus();
+  const accountBalance = useBalance(
+    api,
+    selectedAccount?.address as SS58Address,
+  );
+  const hasStake = React.useMemo(() => {
+    const staked = accountBalance.data?.staked ?? 0n;
+    return staked > 0n;
+  }, [accountBalance.data?.staked]);
+  const showStakeWarning =
+    selectedAccount != null && accountBalance.isFetching === false && !hasStake;
   const [query, setQuery] = React.useState("");
   const [mode, setMode] = React.useState<EntityMode>("prophets");
   const [isOverlayVisible, setOverlayVisible] = React.useState(false);
@@ -37,13 +52,19 @@ export default function CardsSection() {
   }, [query, tickers]);
 
   const handleAddProphet = React.useCallback(
-    (raw: string) => addProphet(raw).error ?? null,
-    [addProphet],
+    (raw: string) => {
+      if (!hasStake) return STAKE_REQUIRED_MSG;
+      return addProphet(raw).error ?? null;
+    },
+    [addProphet, hasStake],
   );
 
   const handleAddTicker = React.useCallback(
-    (raw: string) => addTicker(raw).error ?? null,
-    [addTicker],
+    (raw: string) => {
+      if (!hasStake) return STAKE_REQUIRED_MSG;
+      return addTicker(raw).error ?? null;
+    },
+    [addTicker, hasStake],
   );
 
   const handleModeChange = React.useCallback(
@@ -86,7 +107,15 @@ export default function CardsSection() {
           <EntityModeToggle mode={mode} onChange={handleModeChange} />
         </div>
 
-        <div className="mb-6 mt-5 flex flex-wrap items-center gap-3 sm:mb-8 md:mb-10">
+        <div className="relative mb-6 mt-5 flex flex-wrap items-center gap-3 sm:mb-8 md:mb-10">
+          {showStakeWarning && (
+            <div
+              aria-live="polite"
+              className="pointer-events-none absolute -top-5 right-0 text-[11px] font-medium text-red-300/90"
+            >
+              {STAKE_REQUIRED_MSG}
+            </div>
+          )}
           {mode === "prophets" ? (
             <>
               <SearchInput
@@ -96,7 +125,10 @@ export default function CardsSection() {
                 label="Search prophets by name"
                 placeholder="Search prophets by name…"
               />
-              <AddProphetForm onAdd={handleAddProphet} />
+              <AddProphetForm
+                onAdd={handleAddProphet}
+                suppressErrorMessage={(msg) => msg === STAKE_REQUIRED_MSG}
+              />
             </>
           ) : (
             <>
@@ -107,7 +139,10 @@ export default function CardsSection() {
                 label="Search tickers by symbol"
                 placeholder="Search tickers (e.g., BTC, ETH)…"
               />
-              <AddTickerForm onAdd={handleAddTicker} />
+              <AddTickerForm
+                onAdd={handleAddTicker}
+                suppressErrorMessage={(msg) => msg === STAKE_REQUIRED_MSG}
+              />
             </>
           )}
         </div>
