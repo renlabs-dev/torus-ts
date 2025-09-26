@@ -17,14 +17,15 @@ import { DualWalletConnector } from "./dual-wallet-connector";
 import { FractionButtons } from "./fraction-buttons";
 import { useDualWallet } from "./hooks/use-dual-wallet";
 import { useOrchestratedTransfer } from "./hooks/use-orchestrated-transfer";
-import { ProgressStepper } from "./progress-stepper";
 import type { SimpleBridgeDirection } from "./simple-bridge-types";
 import { SimpleBridgeStep } from "./simple-bridge-types";
+import { TransactionLifecycleDialog } from "./transaction-lifecycle-dialog";
 
 export function SimpleBridgeForm() {
   const [direction, setDirection] =
     useState<SimpleBridgeDirection>("base-to-native");
   const [amount, setAmount] = useState<string>("");
+  const [showTransactionDialog, setShowTransactionDialog] = useState(false);
 
   const { areWalletsReady, connectionState, chainIds } = useDualWallet();
   const {
@@ -32,6 +33,7 @@ export function SimpleBridgeForm() {
     transactions,
     executeTransfer,
     resetTransfer,
+    retryFromFailedStep,
     isTransferInProgress,
   } = useOrchestratedTransfer();
 
@@ -90,49 +92,61 @@ export function SimpleBridgeForm() {
   const handleSubmit = useCallback(async () => {
     if (!amount || !walletsReady) return;
 
-    await executeTransfer(direction, amount);
-  }, [amount, walletsReady, executeTransfer, direction]);
-
-  const handleRetry = useCallback(() => {
-    if (amount) {
-      void executeTransfer(direction, amount);
+    setShowTransactionDialog(true);
+    try {
+      await executeTransfer(direction, amount);
+    } catch (error) {
+      console.error("Transfer failed:", error);
+      // Dialog stays open to show ERROR state from hook
     }
-  }, [amount, direction, executeTransfer]);
+  }, [amount, walletsReady, executeTransfer, direction]);
 
   const handleReset = useCallback(() => {
     resetTransfer();
     setAmount("");
+    setShowTransactionDialog(false);
   }, [resetTransfer]);
+
+  const handleCloseDialog = useCallback(() => {
+    if (
+      bridgeState.step === SimpleBridgeStep.COMPLETE ||
+      bridgeState.step === SimpleBridgeStep.ERROR
+    ) {
+      setShowTransactionDialog(false);
+    }
+  }, [bridgeState.step]);
 
   const getChainInfo = (isFrom: boolean) => {
     const isBaseToNative = direction === "base-to-native";
     const showBase = isBaseToNative === isFrom;
 
-    const getAddress = () => {
-      if (showBase) {
-        return connectionState.evmWallet.address
-          ? `${connectionState.evmWallet.address.slice(0, 6)}...${connectionState.evmWallet.address.slice(-4)}`
-          : "No address";
-      } else {
-        return connectionState.torusWallet.address
-          ? `${connectionState.torusWallet.address.slice(0, 6)}...${connectionState.torusWallet.address.slice(-4)}`
-          : "No address";
-      }
+    const formatAddress = (address?: string) => {
+      if (!address) return "No address";
+      return `${address.slice(0, 6)}...${address.slice(-4)}`;
     };
 
+    const formatBalance = (balance?: bigint) => {
+      if (!balance) return "0 TORUS";
+      return `${formatToken(balance)} TORUS`;
+    };
+
+    const baseWalletAddress = connectionState.evmWallet.address;
+    const torusWalletAddress = connectionState.torusWallet.address;
+
+    if (showBase) {
+      return {
+        name: "Base",
+        icon: "/assets/icons/bridge/torus-base-simple.svg",
+        balance: formatBalance(baseBalance),
+        address: formatAddress(baseWalletAddress),
+      };
+    }
+
     return {
-      name: showBase ? "Base" : "Torus Native",
-      icon: showBase
-        ? "/assets/icons/bridge/torus-base-simple.svg"
-        : "/assets/icons/bridge/torus-native-simple.svg",
-      balance: showBase
-        ? baseBalance
-          ? `${formatToken(baseBalance)} TORUS`
-          : "0 TORUS"
-        : nativeBalance.data
-          ? `${formatToken(nativeBalance.data)} TORUS`
-          : "0 TORUS",
-      address: getAddress(),
+      name: "Torus Native",
+      icon: "/assets/icons/bridge/torus-native-simple.svg",
+      balance: formatBalance(nativeBalance.data),
+      address: formatAddress(torusWalletAddress),
     };
   };
 
@@ -143,31 +157,18 @@ export function SimpleBridgeForm() {
     return walletsReady && amount && parseFloat(amount) > 0;
   }, [walletsReady, amount]);
 
-  if (bridgeState.step !== SimpleBridgeStep.IDLE) {
-    return (
-      <div className="mx-auto w-full max-w-2xl space-y-6">
-        <ProgressStepper
-          direction={direction}
-          currentStep={bridgeState.step}
-          transactions={transactions}
-          onRetry={
-            bridgeState.step === SimpleBridgeStep.ERROR
-              ? handleRetry
-              : undefined
-          }
-        />
+  const getButtonText = () => {
+    if (isTransferInProgress) return "Processing...";
+    if (!walletsReady) return "Connect Wallets";
+    if (!amount) return "Enter Amount";
+    return `Transfer ${amount} TORUS`;
+  };
 
-        {(bridgeState.step === SimpleBridgeStep.COMPLETE ||
-          bridgeState.step === SimpleBridgeStep.ERROR) && (
-          <div className="flex justify-center">
-            <Button onClick={handleReset} variant="outline">
-              Start New Transfer
-            </Button>
-          </div>
-        )}
-      </div>
-    );
-  }
+  const getAmountPlaceholder = () => {
+    return direction === "base-to-native"
+      ? "Enter Base TORUS amount"
+      : "Enter Native TORUS amount";
+  };
 
   return (
     <div className="mx-auto w-full space-y-6">
@@ -246,12 +247,8 @@ export function SimpleBridgeForm() {
                   type="number"
                   value={amount}
                   onChange={(e) => setAmount(e.target.value)}
-                  placeholder={
-                    direction === "base-to-native"
-                      ? "Enter Base TORUS amount"
-                      : "Enter Native TORUS amount"
-                  }
-                  disabled={!walletsReady || isTransferInProgress}
+                  placeholder={getAmountPlaceholder()}
+                  disabled={isTransferInProgress}
                   className="w-full"
                 />
 
@@ -264,47 +261,28 @@ export function SimpleBridgeForm() {
               </div>
             </div>
 
-            <div className="bg-muted/50 space-y-3 rounded-lg p-4">
-              <h3 className="text-sm font-medium">Transaction Details</h3>
-              <div className="text-muted-foreground space-y-1 text-sm">
-                <div className="flex justify-between">
-                  <span>Transfer Type:</span>
-                  <span>2-Step Bridge</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Estimated Time:</span>
-                  <span>3-5 minutes</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Signatures Required:</span>
-                  <span>2 transactions</span>
-                </div>
-              </div>
-            </div>
-
             <Button
               onClick={handleSubmit}
               disabled={!isFormValid || isTransferInProgress}
               className="w-full"
               size="lg"
             >
-              {isTransferInProgress
-                ? "Processing..."
-                : !walletsReady
-                  ? "Connect Wallets"
-                  : !amount
-                    ? "Enter Amount"
-                    : `Transfer ${amount} TORUS`}
+              {getButtonText()}
             </Button>
-
-            {!walletsReady && (
-              <div className="text-muted-foreground text-center text-sm">
-                Connect both wallets above to continue
-              </div>
-            )}
           </CardContent>
         </Card>
       )}
+
+      {/* Transaction Lifecycle Dialog */}
+      <TransactionLifecycleDialog
+        isOpen={showTransactionDialog}
+        onClose={handleCloseDialog}
+        direction={direction}
+        currentStep={bridgeState.step}
+        transactions={transactions}
+        amount={amount}
+        onRetry={retryFromFailedStep}
+      />
     </div>
   );
 }
