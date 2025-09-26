@@ -93,7 +93,7 @@ function TwinkleStars({ count, size, seed, minDelay = 0, maxDelay = 2 }: { count
 
 export default function StarfieldBackground() {
   return (
-    <div className="pointer-events-none absolute inset-0 z-10 opacity-25">
+    <div className="pointer-events-none absolute inset-0 z-10 opacity-[0.30]">
       <ScrollingStars count={75} size={2} durationSec={10} seed={1} />
       <ScrollingStars count={50} size={4} durationSec={15} seed={2} />
       <TwinkleStars count={11} size={10} seed={3} />
