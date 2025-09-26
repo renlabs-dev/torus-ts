@@ -15,10 +15,11 @@ export enum SimpleBridgeStep {
   STEP_1_CONFIRMING = "step_1_confirming",
   STEP_1_COMPLETE = "step_1_complete",
   STEP_2_PREPARING = "step_2_preparing",
+  STEP_2_SWITCHING = "step_2_switching",
   STEP_2_SIGNING = "step_2_signing",
   STEP_2_CONFIRMING = "step_2_confirming",
   COMPLETE = "complete",
-  ERROR = "error"
+  ERROR = "error",
 }
 
 export interface SimpleBridgeState {
@@ -59,7 +60,7 @@ export interface TransactionStepInfo {
 export interface SimpleBridgeTransaction {
   step: 1 | 2;
   txHash?: string;
-  status: TransactionResult["status"];
+  status: "STARTING" | "SIGNING" | "CONFIRMING" | "SUCCESS" | "ERROR" | null;
   message?: string;
   chainName: string;
   explorerUrl?: string;
