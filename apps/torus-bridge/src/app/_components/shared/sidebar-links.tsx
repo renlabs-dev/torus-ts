@@ -11,22 +11,81 @@ import {
   SelectValue,
 } from "@torus-ts/ui/components/select";
 import { getLinks } from "@torus-ts/ui/lib/data";
+import { cn } from "@torus-ts/ui/lib/utils";
 import { env } from "~/env";
 import { Check } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Suspense } from "react";
+import { Suspense, useCallback, useMemo } from "react";
 
-const links = getLinks(env("NEXT_PUBLIC_TORUS_CHAIN_ENV"));
+interface SidebarOptionProps {
+  option: {
+    title: string;
+    href: string;
+    isActive: boolean;
+  };
+}
 
-const navSidebarOptions = [
-  { title: "Wallet", href: links.wallet },
-  { title: "Simple Bridge", href: "/simple" },
-  { title: "Full Bridge", href: "/" },
-] as const;
+function SidebarOption({ option }: SidebarOptionProps) {
+  const className = cn(
+    "w-full justify-between gap-2 border-none px-3 py-2 text-sm font-medium",
+    option.isActive
+      ? "bg-accent text-accent-foreground"
+      : "text-muted-foreground hover:text-foreground",
+  );
+
+  const checkClassName = cn(
+    "transition-opacity duration-200",
+    option.isActive ? "opacity-100" : "opacity-0",
+  );
+
+  return (
+    <Link
+      href={option.href}
+      prefetch={option.href.startsWith("/")}
+      target={option.href.startsWith("http") ? "_blank" : undefined}
+      rel={option.href.startsWith("http") ? "noopener noreferrer" : undefined}
+    >
+      <Button
+        variant="ghost"
+        className={className}
+        aria-current={option.isActive ? "page" : undefined}
+      >
+        {option.title}
+        <Check size={14} className={checkClassName} />
+      </Button>
+    </Link>
+  );
+}
 
 const Sidebar = () => {
   const pathname = usePathname();
+
+  const baseOptions = useMemo(
+    () => [
+      {
+        title: "Wallet",
+        href: getLinks(env("NEXT_PUBLIC_TORUS_CHAIN_ENV")).wallet,
+      },
+      { title: "Simple Bridge", href: "/simple" },
+      { title: "Full Bridge", href: "/" },
+    ],
+    [],
+  );
+
+  const getActiveOptions = useCallback(
+    (pathname: string) =>
+      baseOptions.map((option) => ({
+        ...option,
+        isActive: option.href === pathname,
+      })),
+    [baseOptions],
+  );
+
+  const activeOptions = useMemo(
+    () => getActiveOptions(pathname),
+    [pathname, getActiveOptions],
+  );
 
   return (
     <>
@@ -36,9 +95,9 @@ const Sidebar = () => {
         </SelectTrigger>
         <SelectContent>
           <SelectGroup>
-            {navSidebarOptions.map((view) => (
-              <SelectItem value={view.href} key={view.href}>
-                {view.title}
+            {activeOptions.map((option) => (
+              <SelectItem value={option.href} key={option.href}>
+                {option.title}
               </SelectItem>
             ))}
           </SelectGroup>
@@ -47,40 +106,17 @@ const Sidebar = () => {
 
       <div className="hidden max-h-fit w-full min-w-fit flex-col gap-6 lg:flex">
         <Card className="flex flex-col gap-0 p-4">
-          {navSidebarOptions.map((view) => {
-            const isActive =
-              view.href === pathname ||
-              (view.title === "Wallet" && view.href.includes(pathname));
-
-            return (
-              <Link href={view.href} key={view.href} prefetch>
-                <Button
-                  variant="ghost"
-                  className={`w-full justify-between gap-2 border-none px-3 py-2 text-sm font-medium ${
-                    isActive
-                      ? "bg-accent text-accent-foreground"
-                      : "text-muted-foreground hover:text-foreground"
-                  }`}
-                >
-                  {view.title}
-                  <Check
-                    size={14}
-                    className={`${isActive ? "opacity-100" : "opacity-0"} transition-opacity duration-200`}
-                  />
-                </Button>
-              </Link>
-            );
-          })}
+          {activeOptions.map((option) => (
+            <SidebarOption key={option.href} option={option} />
+          ))}
         </Card>
       </div>
     </>
   );
 };
 
-export const SidebarLinks = () => {
-  return (
-    <Suspense>
-      <Sidebar />
-    </Suspense>
-  );
-};
+export const SidebarLinks = () => (
+  <Suspense fallback={null}>
+    <Sidebar />
+  </Suspense>
+);
