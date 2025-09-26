@@ -32,7 +32,7 @@ export function ProphetFinderHeader({
 
   return (
     <Header
-      className="!border-none !bg-transparent"
+      className="!py-0.5 !bg-black/70 !border-[#1e2129] backdrop-blur-sm"
       appName="Torus Prophet Finder"
       wallet={
         <WalletDropdown
