@@ -2,10 +2,10 @@
 
 type EntityMode = "prophets" | "tickers";
 
-type Props = {
+interface Props {
   mode: EntityMode;
   onChange: (m: EntityMode) => void;
-};
+}
 
 export default function EntityModeToggle({ mode, onChange }: Props) {
   const btn = (value: EntityMode, label: string) => {
@@ -17,10 +17,10 @@ export default function EntityModeToggle({ mode, onChange }: Props) {
         aria-pressed={active}
         onClick={() => onChange(value)}
         className={[
-          "relative px-8 py-2.5 text-sm rounded-none transition-colors border",
+          "relative rounded-none border px-8 py-2.5 text-sm transition-colors",
           active
-            ? "bg-[#090e15] text-white border-white/15 hover:border-white/25 hover:bg-[#0b111b] shadow-[inset_0_1px_0_rgba(255,255,255,0.08),_0_0_18px_rgba(255,255,255,0.06)]"
-            : "bg-transparent text-white/75 border-white/12 hover:text-white hover:bg-white/5"
+            ? "border-white/15 bg-[#090e15] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.08),_0_0_18px_rgba(255,255,255,0.06)] hover:border-white/25 hover:bg-[#0b111b]"
+            : "border-white/12 bg-transparent text-white/75 hover:bg-white/5 hover:text-white",
         ].join(" ")}
       >
         {label}
@@ -29,7 +29,7 @@ export default function EntityModeToggle({ mode, onChange }: Props) {
   };
 
   return (
-    <div className="inline-flex rounded-none overflow-hidden border border-white/10">
+    <div className="inline-flex overflow-hidden rounded-none border border-white/10">
       {btn("prophets", "Prophets")}
       {btn("tickers", "Tickers")}
     </div>

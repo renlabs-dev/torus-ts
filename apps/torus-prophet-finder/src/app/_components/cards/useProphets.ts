@@ -1,10 +1,10 @@
 "use client";
 
-import * as React from "react";
 import { SAMPLE_PROPHETS } from "~/app/_components/cards/SampleProphets";
 import { normalizeHandle } from "~/lib/handles/normalize-handle";
 import { titleFromHandle } from "~/lib/handles/title-from-handle";
-import { Prophet } from "~/types/prophet";
+import type { Prophet } from "~/types/prophet";
+import * as React from "react";
 
 export function useProphets() {
   const [prophets, setProphets] = React.useState<Prophet[]>(SAMPLE_PROPHETS);
@@ -14,7 +14,9 @@ export function useProphets() {
       const core = normalizeHandle(rawHandle);
       if (!core) return { error: "Please enter a valid @username" };
       const handle = `@${core}`;
-      if (prophets.some((p) => p.handle.toLowerCase() === handle.toLowerCase())) {
+      if (
+        prophets.some((p) => p.handle.toLowerCase() === handle.toLowerCase())
+      ) {
         return { error: "This prophet already exists" };
       }
       const p: Prophet = {
@@ -31,7 +33,7 @@ export function useProphets() {
       setProphets((prev) => [p, ...prev]);
       return {};
     },
-    [prophets]
+    [prophets],
   );
 
   return { prophets, addProphet };

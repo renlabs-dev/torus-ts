@@ -7,7 +7,7 @@ import { Layout } from "@torus-ts/ui/components/layout";
 import { Toaster } from "@torus-ts/ui/components/toaster";
 import { env, EnvScript } from "~/env";
 import type { Metadata } from "next";
-import { Geist, Geist_Mono, Cinzel } from "next/font/google";
+import { Cinzel, Geist, Geist_Mono } from "next/font/google";
 import { ProphetFinderHeader } from "./_components/prophet-finder-header";
 
 const APP_NAME = "Prophet Finder";

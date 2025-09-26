@@ -1,6 +1,6 @@
 export default function StatsRow() {
   return (
-    <div className="pb-16 md:pb-20 text-center text-sm sm:text-base md:text-lg font-mono text-white/75">
+    <div className="pb-16 text-center font-mono text-sm text-white/75 sm:text-base md:pb-20 md:text-lg">
       <div>
         <span>
           <span className="font-bold">247,268</span> TWEETS COLLECTED

@@ -2,14 +2,19 @@
 
 import * as React from "react";
 
-type Props = {
+interface Props {
   locked: boolean; // when true, keep previous height to avoid scroll jumps
   minEmptyPx?: number; // fallback min height when nothing measured yet
   className?: string;
   children: React.ReactNode;
-};
+}
 
-export default function StableHeight({ locked, minEmptyPx = 640, className, children }: Props) {
+export default function StableHeight({
+  locked,
+  minEmptyPx = 640,
+  className,
+  children,
+}: Props) {
   const wrapperRef = React.useRef<HTMLDivElement | null>(null);
   const [lastHeight, setLastHeight] = React.useState<number>(0);
 
@@ -29,7 +34,11 @@ export default function StableHeight({ locked, minEmptyPx = 640, className, chil
   const minHeight = locked ? Math.max(lastHeight, minEmptyPx) : undefined;
 
   return (
-    <div ref={wrapperRef} className={className} style={minHeight ? { minHeight } : undefined}>
+    <div
+      ref={wrapperRef}
+      className={className}
+      style={minHeight ? { minHeight } : undefined}
+    >
       {children}
     </div>
   );

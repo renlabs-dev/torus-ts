@@ -2,14 +2,17 @@
 
 import * as React from "react";
 
-type Pt = { x: number; y: number };
+interface Pt {
+  x: number;
+  y: number;
+}
 
-type FractureArtProps = {
+interface FractureArtProps {
   seed: string;
   color?: string;
   strokeWidth?: number;
   className?: string;
-};
+}
 
 type Rng = () => number;
 
@@ -25,7 +28,7 @@ function hashStringToInt(str: string): number {
 function mulberry32(seed: number): Rng {
   let t = seed >>> 0;
   return function () {
-    t += 0x6D2B79F5;
+    t += 0x6d2b79f5;
     let r = Math.imul(t ^ (t >>> 15), 1 | t);
     r ^= r + Math.imul(r ^ (r >>> 7), 61 | r);
     return ((r ^ (r >>> 14)) >>> 0) / 4294967296;
@@ -72,10 +75,10 @@ function fractureLines(
   w: number,
   h: number,
   rng: Rng,
-  maxDepth: number
-): Array<[Pt, Pt]> {
-  const segments: Array<[Pt, Pt]> = [];
-  const stack: Array<{ a: Pt; b: Pt; c: Pt; depth: number }> = [];
+  maxDepth: number,
+): [Pt, Pt][] {
+  const segments: [Pt, Pt][] = [];
+  const stack: { a: Pt; b: Pt; c: Pt; depth: number }[] = [];
   const [a0, b0, c0] = genBaseTriangle(w, h);
   stack.push({ a: a0, b: b0, c: c0, depth: 0 });
 
@@ -83,7 +86,9 @@ function fractureLines(
   const lerpMax = 0.65;
 
   while (stack.length > 0) {
-    const { a, b, c, depth } = stack.pop()!;
+    const popped = stack.pop();
+    if (!popped) break;
+    const { a, b, c, depth } = popped;
     if (depth >= maxDepth) continue;
 
     const { A, B, C } = longestEdge(a, b, c);
@@ -115,11 +120,12 @@ export function FractureArt({
   const viewW = 1000;
   const viewH = 1000; // square; scales to card via preserveAspectRatio="none"
 
-  const segments = React.useMemo(() => {
+  const [segments, setSegments] = React.useState<[Pt, Pt][]>([]);
+  React.useEffect(() => {
     const rng = mulberry32(hashStringToInt(`fracture:${seed}`));
     const depth = 9 + Math.floor(rng() * 3); // 9–11
-    return fractureLines(viewW, viewH, rng, depth);
-  }, [seed]);
+    setSegments(fractureLines(viewW, viewH, rng, depth));
+  }, [seed, viewW, viewH]);
 
   return (
     <svg
@@ -141,4 +147,3 @@ export function FractureArt({
 }
 
 export default FractureArt;
-

@@ -12,46 +12,66 @@
 
 /* Grain + photo treatments used in cards */
 .grain-overlay {
-  background-image: url('/textures/grain.svg');
+  background-image: url("/textures/grain.svg");
   background-size: 160px 160px;
   mix-blend-mode: overlay;
-  opacity: .06;
+  opacity: 0.06;
 }
 
 .vintage-photo {
-  filter:
-    grayscale(0.86)
-    sepia(0.28)
-    contrast(1.18)
-    brightness(0.78)
-    saturate(0.9)
-    hue-rotate(-8deg);
+  filter: grayscale(0.86) sepia(0.28) contrast(1.18) brightness(0.78)
+    saturate(0.9) hue-rotate(-8deg);
 }
 
 .paper-tint-overlay {
-  background:
-    radial-gradient(120% 160% at 50% 40%, rgba(228, 216, 190, 0.085) 0%, rgba(96, 84, 66, 0.06) 45%, rgba(0,0,0,0) 75%);
+  background: radial-gradient(
+    120% 160% at 50% 40%,
+    rgba(228, 216, 190, 0.085) 0%,
+    rgba(96, 84, 66, 0.06) 45%,
+    rgba(0, 0, 0, 0) 75%
+  );
   mix-blend-mode: multiply;
   opacity: 0.9;
 }
 
 .scratches-overlay {
   background-image:
-    repeating-linear-gradient(90deg, rgba(255,255,255,0.028) 0px, rgba(255,255,255,0.028) 1px, rgba(0,0,0,0) 1px, rgba(0,0,0,0) 4px),
-    repeating-linear-gradient(0deg, rgba(255,255,255,0.02) 0px, rgba(255,255,255,0.02) 1px, rgba(0,0,0,0) 1px, rgba(0,0,0,0) 5px);
+    repeating-linear-gradient(
+      90deg,
+      rgba(255, 255, 255, 0.028) 0px,
+      rgba(255, 255, 255, 0.028) 1px,
+      rgba(0, 0, 0, 0) 1px,
+      rgba(0, 0, 0, 0) 4px
+    ),
+    repeating-linear-gradient(
+      0deg,
+      rgba(255, 255, 255, 0.02) 0px,
+      rgba(255, 255, 255, 0.02) 1px,
+      rgba(0, 0, 0, 0) 1px,
+      rgba(0, 0, 0, 0) 5px
+    );
   mix-blend-mode: overlay;
   opacity: 0.25;
 }
 
 /* Starfield animations */
 @keyframes sf-scroll {
-  from { transform: translateY(0); }
-  to { transform: translateY(-100%); }
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(-100%);
+  }
 }
 
 @keyframes sf-twinkle {
-  0%, 100% { opacity: 0; }
-  50% { opacity: 1; }
+  0%,
+  100% {
+    opacity: 0;
+  }
+  50% {
+    opacity: 1;
+  }
 }
 
 /* Subtle, tasteful text glow for headings */
@@ -71,8 +91,13 @@
 
 /* Holy glow breathing */
 @keyframes holy-breathe {
-  0%, 100% { opacity: 0.55; }
-  50% { opacity: 1; }
+  0%,
+  100% {
+    opacity: 0.55;
+  }
+  50% {
+    opacity: 1;
+  }
 }
 
 .aura-breathe {
@@ -81,8 +106,15 @@
 }
 
 /* Optional, extremely slow rotation for ray layer */
-@keyframes rays-slow-spin { to { transform: rotate(360deg); } }
-.rays-slow-spin { animation: rays-slow-spin 120s linear infinite; transform-origin: 50% 50%; }
+@keyframes rays-slow-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+.rays-slow-spin {
+  animation: rays-slow-spin 120s linear infinite;
+  transform-origin: 50% 50%;
+}
 
 @media (prefers-reduced-motion: reduce) {
   .aura-breathe,

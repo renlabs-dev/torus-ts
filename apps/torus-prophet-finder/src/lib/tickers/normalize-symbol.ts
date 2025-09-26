@@ -7,4 +7,3 @@ export function normalizeSymbol(input: string): string {
   // upper-case final symbol
   return s.toUpperCase();
 }
-

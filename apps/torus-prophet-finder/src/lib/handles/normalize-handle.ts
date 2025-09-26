@@ -5,4 +5,3 @@ export function normalizeHandle(input: string): string {
   h = h.replace(/[^a-zA-Z0-9_]/g, "");
   return h;
 }
-

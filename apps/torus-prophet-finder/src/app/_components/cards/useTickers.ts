@@ -1,9 +1,9 @@
 "use client";
 
-import * as React from "react";
 import { SAMPLE_TICKERS } from "~/app/_components/cards/SampleTickers";
 import { normalizeSymbol } from "~/lib/tickers/normalize-symbol";
 import type { Ticker } from "~/types/ticker";
+import * as React from "react";
 
 export function useTickers() {
   const [tickers, setTickers] = React.useState<Ticker[]>(SAMPLE_TICKERS);
@@ -19,7 +19,7 @@ export function useTickers() {
       setTickers((prev) => [t, ...prev]);
       return {};
     },
-    [tickers]
+    [tickers],
   );
 
   return { tickers, addTicker };

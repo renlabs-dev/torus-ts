@@ -1,18 +1,19 @@
 "use client";
 
-import * as React from "react";
-import { useProphets } from "~/app/_components/cards/useProphets";
-import { useTickers } from "~/app/_components/cards/useTickers";
-import CardsHeader from "~/app/_components/cards/CardsHeader";
-import SearchInput from "~/app/_components/cards/SearchInput";
 import AddProphetForm from "~/app/_components/cards/AddProphetForm";
 import AddTickerForm from "~/app/_components/cards/AddTickerForm";
 import CardsGrid from "~/app/_components/cards/CardsGrid";
-import TickersGrid from "~/app/_components/cards/TickersGrid";
-import EntityModeToggle, { type EntityMode } from "~/app/_components/cards/EntityModeToggle";
-import StarfieldBackground from "~/app/_components/effects/StarfieldBackground";
-import StableHeight from "~/app/_components/cards/StableHeight";
+import CardsHeader from "~/app/_components/cards/CardsHeader";
 import EmptyState from "~/app/_components/cards/EmptyState";
+import EntityModeToggle from "~/app/_components/cards/EntityModeToggle";
+import type { EntityMode } from "~/app/_components/cards/EntityModeToggle";
+import SearchInput from "~/app/_components/cards/SearchInput";
+import StableHeight from "~/app/_components/cards/StableHeight";
+import TickersGrid from "~/app/_components/cards/TickersGrid";
+import { useProphets } from "~/app/_components/cards/useProphets";
+import { useTickers } from "~/app/_components/cards/useTickers";
+import StarfieldBackground from "~/app/_components/effects/StarfieldBackground";
+import * as React from "react";
 
 export default function CardsSection() {
   const { prophets, addProphet } = useProphets();
@@ -37,12 +38,12 @@ export default function CardsSection() {
 
   const handleAddProphet = React.useCallback(
     (raw: string) => addProphet(raw).error ?? null,
-    [addProphet]
+    [addProphet],
   );
 
   const handleAddTicker = React.useCallback(
     (raw: string) => addTicker(raw).error ?? null,
-    [addTicker]
+    [addTicker],
   );
 
   const handleModeChange = React.useCallback(
@@ -61,7 +62,7 @@ export default function CardsSection() {
       }, 220);
       timeouts.current.push(t1);
     },
-    [mode, isOverlayVisible]
+    [mode, isOverlayVisible],
   );
 
   React.useEffect(() => {
@@ -77,15 +78,15 @@ export default function CardsSection() {
       className="relative w-full overflow-hidden py-12 sm:py-16 md:py-20"
     >
       <StarfieldBackground />
-      <div className="pointer-events-none absolute inset-0 bg-black/60 z-0" />
-      <div className="relative z-20 w-full mx-auto max-w-6xl px-6 sm:px-8 md:px-10">
+      <div className="pointer-events-none absolute inset-0 z-0 bg-black/60" />
+      <div className="relative z-20 mx-auto w-full max-w-6xl px-6 sm:px-8 md:px-10">
         <CardsHeader mode={mode} />
 
-        <div className="flex items-center justify-center gap-4 flex-wrap">
+        <div className="flex flex-wrap items-center justify-center gap-4">
           <EntityModeToggle mode={mode} onChange={handleModeChange} />
         </div>
 
-        <div className="mt-5 mb-6 sm:mb-8 md:mb-10 flex items-center gap-3 flex-wrap">
+        <div className="mb-6 mt-5 flex flex-wrap items-center gap-3 sm:mb-8 md:mb-10">
           {mode === "prophets" ? (
             <>
               <SearchInput
@@ -121,7 +122,10 @@ export default function CardsSection() {
               {filteredProphets.length > 0 ? (
                 <CardsGrid prophets={filteredProphets} />
               ) : (
-                <EmptyState title="No prophets match your search" hint="Try a different name or clear the search." />
+                <EmptyState
+                  title="No prophets match your search"
+                  hint="Try a different name or clear the search."
+                />
               )}
             </StableHeight>
           ) : (
@@ -133,11 +137,13 @@ export default function CardsSection() {
               {filteredTickers.length > 0 ? (
                 <TickersGrid tickers={filteredTickers} />
               ) : (
-                <EmptyState title="No tickers match your search" hint="Try BTC, ETH, SOL… or clear the search." />
+                <EmptyState
+                  title="No tickers match your search"
+                  hint="Try BTC, ETH, SOL… or clear the search."
+                />
               )}
             </StableHeight>
           )}
-
         </div>
       </div>
       {isOverlayVisible && (

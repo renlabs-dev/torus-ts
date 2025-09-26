@@ -2,7 +2,10 @@
 
 import * as React from "react";
 
-type Star = { top: number; left: number };
+interface Star {
+  top: number;
+  left: number;
+}
 
 function pct(n: number): string {
   return `${n.toFixed(4)}%`;
@@ -49,14 +52,27 @@ function StarsPanel({ stars, size }: { stars: Star[]; size: number }) {
   );
 }
 
-function ScrollingStars({ count, size, durationSec, seed }: { count: number; size: number; durationSec: number; seed: number }) {
+function ScrollingStars({
+  count,
+  size,
+  durationSec,
+  seed,
+}: {
+  count: number;
+  size: number;
+  durationSec: number;
+  seed: number;
+}) {
   const stars = useStars(count, seed);
-  const style = { ['--sf-dur' as const]: `${durationSec}s` };
+  const style = { ["--sf-dur" as const]: `${durationSec}s` };
   return (
     <div className="absolute inset-0 overflow-hidden">
       <div
         className="relative h-[200%] w-full will-change-transform"
-        style={{ ...style, animation: "sf-scroll var(--sf-dur) linear infinite" }}
+        style={{
+          ...style,
+          animation: "sf-scroll var(--sf-dur) linear infinite",
+        }}
       >
         <StarsPanel stars={stars} size={size} />
         <StarsPanel stars={stars} size={size} />
@@ -65,18 +81,30 @@ function ScrollingStars({ count, size, durationSec, seed }: { count: number; siz
   );
 }
 
-function TwinkleStars({ count, size, seed, minDelay = 0, maxDelay = 2 }: { count: number; size: number; seed: number; minDelay?: number; maxDelay?: number }) {
+function TwinkleStars({
+  count,
+  size,
+  seed,
+  minDelay = 0,
+  maxDelay = 2,
+}: {
+  count: number;
+  size: number;
+  seed: number;
+  minDelay?: number;
+  maxDelay?: number;
+}) {
   const stars = useStars(count, seed);
   return (
     <div className="absolute inset-0">
       {stars.map((s, i) => {
         // Deterministic, SSR-safe delay from index (golden ratio spacing)
         const span = Math.max(0, maxDelay - minDelay);
-        const delay = minDelay + (((i * 0.61803398875) % 1) * span);
+        const delay = minDelay + ((i * 0.61803398875) % 1) * span;
         return (
           <div
             key={i}
-            className="absolute rounded-full bg-white opacity-0 animate-[sf-twinkle_2s_ease-in-out_infinite]"
+            className="absolute animate-[sf-twinkle_2s_ease-in-out_infinite] rounded-full bg-white opacity-0"
             style={{
               top: pct(s.top),
               left: pct(s.left),

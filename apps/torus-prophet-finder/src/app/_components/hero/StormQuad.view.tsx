@@ -1,12 +1,15 @@
 "use client";
 
-import * as React from "react";
-import * as THREE from "three";
 import { useFrame, useLoader, useThree } from "@react-three/fiber";
+import {
+  fragmentShader,
+  vertexShader,
+} from "~/app/_components/hero/StormShaders";
+import * as React from "react";
 import { useMemo, useRef } from "react";
-import { fragmentShader, vertexShader } from "~/app/_components/hero/StormShaders";
+import * as THREE from "three";
 
-type Uniforms = {
+interface Uniforms {
   u_time: { value: number };
   u_resolution: { value: THREE.Vector2 };
   u_noise: { value: THREE.Texture };
@@ -14,7 +17,7 @@ type Uniforms = {
   u_mouse: { value: THREE.Vector2 };
   u_scroll: { value: number };
   u_offset: { value: THREE.Vector2 };
-};
+}
 
 export default function StormQuad() {
   const meshRef = useRef<THREE.Mesh>(null);
@@ -31,10 +34,10 @@ export default function StormQuad() {
         crossOrigin?: string;
       };
       tl.crossOrigin = "anonymous";
-    }
+    },
   ) as [THREE.Texture, THREE.Texture];
 
-  useMemo(() => {
+  React.useEffect(() => {
     [noiseTex, bgTex].forEach((t) => {
       t.wrapS = THREE.RepeatWrapping;
       t.wrapT = THREE.RepeatWrapping;
@@ -53,18 +56,24 @@ export default function StormQuad() {
       u_scroll: { value: 0 },
       u_offset: { value: new THREE.Vector2() },
     }),
-    [noiseTex, bgTex]
+    [noiseTex, bgTex],
   );
+
+  const uniformsRef = React.useRef<Uniforms>(uniforms);
+  React.useEffect(() => {
+    uniformsRef.current = uniforms;
+  }, [uniforms]);
 
   React.useEffect(() => {
     function updateResAndOffset() {
+      const u = uniformsRef.current;
       const dpr = gl.getPixelRatio();
-      uniforms.u_resolution.value.set(
+      u.u_resolution.value.set(
         window.innerWidth * dpr,
-        window.innerHeight * dpr
+        window.innerHeight * dpr,
       );
       const rect = gl.domElement.getBoundingClientRect();
-      uniforms.u_offset.value.set(rect.left * dpr, rect.top * dpr);
+      u.u_offset.value.set(rect.left * dpr, rect.top * dpr);
     }
     updateResAndOffset();
     window.addEventListener("resize", updateResAndOffset);
@@ -73,23 +82,23 @@ export default function StormQuad() {
       window.removeEventListener("resize", updateResAndOffset);
       window.removeEventListener("scroll", updateResAndOffset);
     };
-  }, [gl, uniforms]);
+  }, [gl]);
 
   React.useEffect(() => {
     function onPointerMove(e: PointerEvent) {
+      const u = uniformsRef.current;
       const ratio = size.height / size.width;
-      uniforms.u_mouse.value.x =
-        (e.clientX - size.width / 2) / size.width / ratio;
-      uniforms.u_mouse.value.y =
-        (e.clientY - size.height / 2) / size.height * -1;
+      u.u_mouse.value.x = (e.clientX - size.width / 2) / size.width / ratio;
+      u.u_mouse.value.y = ((e.clientY - size.height / 2) / size.height) * -1;
     }
     window.addEventListener("pointermove", onPointerMove, { passive: true });
     return () => window.removeEventListener("pointermove", onPointerMove);
-  }, [size.width, size.height, uniforms]);
+  }, [size.width, size.height]);
 
   useFrame(() => {
-    uniforms.u_time.value = -1000 + performance.now() * 0.0005;
-    uniforms.u_scroll.value = window.scrollY || 0;
+    const u = uniformsRef.current;
+    u.u_time.value = -1000 + performance.now() * 0.0005;
+    u.u_scroll.value = window.scrollY || 0;
   });
 
   return (
