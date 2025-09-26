@@ -9,14 +9,16 @@ import * as React from "react";
 import { useMemo, useRef } from "react";
 import * as THREE from "three";
 
+type UniformValue = number | THREE.Vector2 | THREE.Texture;
 interface Uniforms {
-  u_time: { value: number };
-  u_resolution: { value: THREE.Vector2 };
-  u_noise: { value: THREE.Texture };
-  u_bg: { value: THREE.Texture };
-  u_mouse: { value: THREE.Vector2 };
-  u_scroll: { value: number };
-  u_offset: { value: THREE.Vector2 };
+  u_time: THREE.IUniform<number>;
+  u_resolution: THREE.IUniform<THREE.Vector2>;
+  u_noise: THREE.IUniform<THREE.Texture>;
+  u_bg: THREE.IUniform<THREE.Texture>;
+  u_mouse: THREE.IUniform<THREE.Vector2>;
+  u_scroll: THREE.IUniform<number>;
+  u_offset: THREE.IUniform<THREE.Vector2>;
+  [uniform: string]: THREE.IUniform<UniformValue>;
 }
 
 export default function StormQuad() {
