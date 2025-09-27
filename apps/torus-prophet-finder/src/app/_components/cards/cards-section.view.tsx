@@ -16,6 +16,7 @@ import TickersGrid from "~/app/_components/cards/tickers-grid";
 import { useProphets } from "~/app/_components/cards/use-prophets";
 import { useTickers } from "~/app/_components/cards/use-tickers";
 import StarfieldBackground from "~/app/_components/effects/starfield-background";
+import CardsRaysBackground from "~/app/_components/cards/cards-rays-background";
 import * as React from "react";
 
 export default function CardsSection() {
@@ -110,6 +111,7 @@ export default function CardsSection() {
       className="relative w-full overflow-hidden py-12 sm:py-16 md:py-20"
     >
       <StarfieldBackground />
+      <CardsRaysBackground />
       <div className="pointer-events-none absolute inset-0 z-0 bg-black/60" />
       <div className="relative z-20 mx-auto w-full max-w-6xl px-6 sm:px-8 md:px-10">
         <CardsHeader mode={mode} />
