@@ -33,12 +33,22 @@ function initRenderer(canvas: HTMLCanvasElement) {
   return renderer;
 }
 
-function addContent(scene: THREE.Scene) {
+function addContent(
+  scene: THREE.Scene,
+  camera: THREE.PerspectiveCamera,
+  canvas: HTMLCanvasElement,
+) {
   // Group the system so we can offset it towards the header while
   // the canvas spans the entire cards section.
   const system = new THREE.Group();
-  // Position upward so it sits visually behind the title block
-  system.position.y = 10; // tuned for FOV=60, cam.z=20
+  // Align the hole to a screen-pixel offset below the section top
+  const ch = canvas.clientHeight || window.innerHeight;
+  const fovRad = THREE.MathUtils.degToRad(camera.fov);
+  const hWorld = 2 * camera.position.z * Math.tan(fovRad / 2);
+  const pxToWorld = hWorld / ch;
+  const offsetPxFromTop = Math.min(96, Math.max(48, ch * 0.12)); // ~12% down
+  const worldY = (ch / 2 - offsetPxFromTop) * pxToWorld;
+  system.position.set(0, worldY, 0);
 
   const light = new LightSource();
   // Center the source inside the hole and set depth behind the mask
@@ -76,7 +86,7 @@ function createScene(canvas: HTMLCanvasElement) {
   const scene = new THREE.Scene();
   const camera = initCamera(canvas.clientWidth, canvas.clientHeight);
   const renderer = initRenderer(canvas);
-  const { light } = addContent(scene);
+  const { light, system } = addContent(scene, camera, canvas);
 
   // Postprocessing: Render + God Rays
   const composer = new EffectComposer(renderer);
@@ -103,6 +113,13 @@ function createScene(canvas: HTMLCanvasElement) {
     camera.updateProjectionMatrix();
     renderer.setSize(clientWidth, clientHeight, false);
     composer.setSize(clientWidth, clientHeight);
+    // Re-align hole to keep placement relative to section top
+    const fovRad = THREE.MathUtils.degToRad(camera.fov);
+    const hWorld = 2 * camera.position.z * Math.tan(fovRad / 2);
+    const pxToWorld = hWorld / clientHeight;
+    const offsetPxFromTop = Math.min(96, Math.max(48, clientHeight * 0.12));
+    const worldY = (clientHeight / 2 - offsetPxFromTop) * pxToWorld;
+    system.position.set(0, worldY, 0);
   };
   window.addEventListener("resize", handleResize);
 

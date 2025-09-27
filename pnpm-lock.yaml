@@ -730,6 +730,9 @@ importers:
 
   apps/torus-prophet-finder:
     dependencies:
+      '@hookform/resolvers':
+        specifier: ^3.9.1
+        version: 3.10.0(react-hook-form@7.62.0(react@19.1.1))
       '@next/third-parties':
         specifier: 'catalog:'
         version: 15.5.3(next@15.5.3(@babel/core@7.28.4)(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(react@19.1.1)
@@ -775,6 +778,9 @@ importers:
       react-dom:
         specifier: ^19.0.0
         version: 19.1.1(react@19.1.1)
+      react-hook-form:
+        specifier: ^7.53.2
+        version: 7.62.0(react@19.1.1)
       three:
         specifier: ^0.180.0
         version: 0.180.0
@@ -26384,7 +26390,7 @@ snapshots:
 
   extension-port-stream@3.0.0:
     dependencies:
-      readable-stream: 3.6.2
+      readable-stream: 4.7.0
       webextension-polyfill: 0.10.0
 
   external-editor@3.1.0:
