@@ -53,10 +53,10 @@ float snoise(vec3 v){
 
 export class LightSource extends Mesh {
   constructor() {
-    const geometry = new CircleGeometry(50, 64);
-    const material = new MeshBasicMaterial({ color: 0xbb0000 });
-    material.transparent = true;
-    material.depthWrite = false;
+    // Reduce radius by another ~50% for subtler rays
+    const geometry = new CircleGeometry(3.5, 64);
+    // Set emitter color to white so God Rays render white
+    const material = new MeshBasicMaterial({ color: 0xffffff });
 
     interface MinimalShader {
       uniforms: Record<string, { value: unknown }>;
@@ -90,4 +90,3 @@ export class LightSource extends Mesh {
     (this.userData as { time: { value: number } }).time = { value: 0 };
   }
 }
-

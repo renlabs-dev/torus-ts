@@ -13,7 +13,8 @@ import {
 
 function initCamera(w: number, h: number) {
   const cam = new THREE.PerspectiveCamera(60, w / h, 1, 1000);
-  cam.position.set(5, 0, 20);
+  // Center camera on the scene so the object aligns with page center
+  cam.position.set(0, 0, 20);
   return cam;
 }
 
@@ -25,6 +26,7 @@ function initRenderer(canvas: HTMLCanvasElement) {
     stencil: false,
     depth: false,
   });
+  // Opaque black clear to match original look and provide a clean base for rays
   renderer.setClearColor(0x000000, 1);
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
   renderer.setSize(canvas.clientWidth, canvas.clientHeight, false);
@@ -32,12 +34,22 @@ function initRenderer(canvas: HTMLCanvasElement) {
 }
 
 function addContent(scene: THREE.Scene) {
+  // Group the system so we can offset it towards the header while
+  // the canvas spans the entire cards section.
+  const system = new THREE.Group();
+  // Position upward so it sits visually behind the title block
+  system.position.y = 10; // tuned for FOV=60, cam.z=20
+
   const light = new LightSource();
-  light.position.set(2, 0, -10);
-  scene.add(light);
+  // Center the source inside the hole and set depth behind the mask
+  light.position.set(0, 0, -20);
+  system.add(light);
+
   const figure = new Figure();
-  scene.add(figure);
-  return { light, figure };
+  system.add(figure);
+
+  scene.add(system);
+  return { light, figure, system };
 }
 
 function startAnimation(
@@ -52,8 +64,7 @@ function startAnimation(
   const tick = () => {
     const t = clock.getElapsedTime();
     light.userData.time.value = t;
-    light.position.x = Math.cos(t) * 4;
-    light.position.y = Math.sin(t * 0.6) * 4;
+    // Keep the source fixed at the center of the hole for stable rays
     composer.render();
     raf = window.requestAnimationFrame(tick);
   };
@@ -70,6 +81,7 @@ function createScene(canvas: HTMLCanvasElement) {
   // Postprocessing: Render + God Rays
   const composer = new EffectComposer(renderer);
   composer.addPass(new RenderPass(scene, camera));
+  // Restore baseline parameters that produced the correct look
   const gre = new GodRaysEffect(camera, light as any, {
     height: 480,
     kernelSize: 2,
@@ -120,11 +132,10 @@ export default function CardsRaysBackground() {
     return () => controller.dispose();
   }, []);
 
-  // Absolute, behind starfield (z-[5]), keep black backdrop
+  // Absolute across full section, above starfield, below content
   return (
-    <div className="pointer-events-none absolute inset-0 z-[5]">
+    <div className="pointer-events-none absolute inset-0 z-[12]">
       <canvas className="h-full w-full" ref={ref} />
     </div>
   );
 }
-
