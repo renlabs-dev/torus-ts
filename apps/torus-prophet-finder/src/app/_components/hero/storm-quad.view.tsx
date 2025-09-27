@@ -4,7 +4,7 @@ import { useFrame, useLoader, useThree } from "@react-three/fiber";
 import {
   fragmentShader,
   vertexShader,
-} from "~/app/_components/hero/StormShaders";
+} from "~/app/_components/hero/storm-shaders";
 import * as React from "react";
 import { useMemo, useRef } from "react";
 import * as THREE from "three";

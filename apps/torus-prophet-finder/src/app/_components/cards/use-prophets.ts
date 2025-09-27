@@ -1,6 +1,6 @@
 "use client";
 
-import { SAMPLE_PROPHETS } from "~/app/_components/cards/SampleProphets";
+import { SAMPLE_PROPHETS } from "~/app/_components/cards/sample-prophets";
 import { normalizeHandle } from "~/lib/handles/normalize-handle";
 import { titleFromHandle } from "~/lib/handles/title-from-handle";
 import { validateHandleInput } from "~/lib/handles/validate-handle";

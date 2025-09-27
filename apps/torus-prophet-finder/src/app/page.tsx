@@ -1,5 +1,5 @@
-import CardsSection from "~/app/_components/cards/CardsSection.view";
-import StormHero from "~/app/_components/hero/StormHero.view";
+import CardsSection from "~/app/_components/cards/cards-section.view";
+import StormHero from "~/app/_components/hero/storm-hero.view";
 
 export default function Page() {
   return (

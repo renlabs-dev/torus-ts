@@ -1,6 +1,6 @@
 "use client";
 
-import { SAMPLE_TICKERS } from "~/app/_components/cards/SampleTickers";
+import { SAMPLE_TICKERS } from "~/app/_components/cards/sample-tickers";
 import { normalizeSymbol } from "~/lib/tickers/normalize-symbol";
 import { validateTickerInput } from "~/lib/tickers/validate-symbol";
 import type { Ticker } from "~/types/ticker";

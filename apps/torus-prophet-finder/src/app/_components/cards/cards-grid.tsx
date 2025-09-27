@@ -1,4 +1,4 @@
-import { ProfileCard } from "~/app/_components/ProfileCard";
+import { ProfileCard } from "~/app/_components/profile-card";
 import type { Prophet } from "~/types/prophet";
 
 interface Props {

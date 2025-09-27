@@ -1,4 +1,4 @@
-import type { EntityMode } from "~/app/_components/cards/EntityModeToggle";
+import type { EntityMode } from "~/app/_components/cards/entity-mode-toggle";
 
 interface Props {
   mode: EntityMode;

@@ -1,9 +1,9 @@
 "use client";
 
 import { Canvas } from "@react-three/fiber";
-import ScrollIndicator from "~/app/_components/hero/ScrollIndicator";
-import StatsRow from "~/app/_components/hero/StatsRow";
-import StormQuad from "~/app/_components/hero/StormQuad.view";
+import ScrollIndicator from "~/app/_components/hero/scroll-indicator";
+import StatsRow from "~/app/_components/hero/stats-row";
+import StormQuad from "~/app/_components/hero/storm-quad.view";
 import * as React from "react";
 import { Suspense } from "react";
 

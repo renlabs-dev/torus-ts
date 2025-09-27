@@ -1,4 +1,4 @@
-import { TickerCard } from "~/app/_components/TickerCard";
+import { TickerCard } from "~/app/_components/ticker-card";
 import type { Ticker } from "~/types/ticker";
 
 interface Props {

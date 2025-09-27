@@ -3,19 +3,19 @@
 import type { SS58Address } from "@torus-network/sdk/types";
 import { useBalance } from "@torus-ts/query-provider/hooks";
 import { useTorus } from "@torus-ts/torus-provider";
-import AddProphetForm from "~/app/_components/cards/AddProphetForm";
-import AddTickerForm from "~/app/_components/cards/AddTickerForm";
-import CardsGrid from "~/app/_components/cards/CardsGrid";
-import CardsHeader from "~/app/_components/cards/CardsHeader";
-import EmptyState from "~/app/_components/cards/EmptyState";
-import EntityModeToggle from "~/app/_components/cards/EntityModeToggle";
-import type { EntityMode } from "~/app/_components/cards/EntityModeToggle";
-import SearchInput from "~/app/_components/cards/SearchInput";
-import StableHeight from "~/app/_components/cards/StableHeight";
-import TickersGrid from "~/app/_components/cards/TickersGrid";
-import { useProphets } from "~/app/_components/cards/useProphets";
-import { useTickers } from "~/app/_components/cards/useTickers";
-import StarfieldBackground from "~/app/_components/effects/StarfieldBackground";
+import AddProphetForm from "~/app/_components/cards/add-prophet-form";
+import AddTickerForm from "~/app/_components/cards/add-ticker-form";
+import CardsGrid from "~/app/_components/cards/cards-grid";
+import CardsHeader from "~/app/_components/cards/cards-header";
+import EmptyState from "~/app/_components/cards/empty-state";
+import EntityModeToggle from "~/app/_components/cards/entity-mode-toggle";
+import type { EntityMode } from "~/app/_components/cards/entity-mode-toggle";
+import SearchInput from "~/app/_components/cards/search-input";
+import StableHeight from "~/app/_components/cards/stable-height";
+import TickersGrid from "~/app/_components/cards/tickers-grid";
+import { useProphets } from "~/app/_components/cards/use-prophets";
+import { useTickers } from "~/app/_components/cards/use-tickers";
+import StarfieldBackground from "~/app/_components/effects/starfield-background";
 import * as React from "react";
 
 export default function CardsSection() {

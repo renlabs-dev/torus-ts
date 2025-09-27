@@ -1,4 +1,4 @@
-import FractureArt from "~/app/_components/tickers/FractureArt";
+import FractureArt from "~/app/_components/tickers/fracture-art";
 import * as React from "react";
 
 interface TickerCardProps {
