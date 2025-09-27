@@ -41,8 +41,9 @@ export const HandleInputSchema = z.union([
 function firstIssueMessage(err: z.ZodError): string {
   const issue = err.issues[0];
   if (issue?.code === "invalid_union") {
-    const ue = (issue as unknown as { unionErrors?: z.ZodError[] }).unionErrors;
-    const msg = ue?.[0].issues[0]?.message;
+    const ue =
+      (issue as unknown as { unionErrors?: z.ZodError[] }).unionErrors ?? [];
+    const msg = ue[0]?.issues[0]?.message;
     if (msg) return msg;
   }
   return issue?.message ?? "Invalid handle";
