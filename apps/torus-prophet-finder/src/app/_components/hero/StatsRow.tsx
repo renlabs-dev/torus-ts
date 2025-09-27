@@ -11,10 +11,6 @@ export default function StatsRow() {
         </span>
         <span className="mx-2 text-white/40">•</span>
         <span>
-          <span className="font-bold">2,132</span> AVG PER USER
-        </span>
-        <span className="mx-2 text-white/40">•</span>
-        <span>
           <span className="font-bold">36</span> COMPLETE PROFILES
         </span>
       </div>
