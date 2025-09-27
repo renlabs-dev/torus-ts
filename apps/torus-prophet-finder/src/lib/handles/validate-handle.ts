@@ -28,7 +28,7 @@ const PROFILE_URL_SCHEMA = z
     message:
       "Enter a direct X/Twitter profile URL (e.g., https://x.com/username)",
   })
-  .transform((v) => v.match(PROFILE_URL_RE)![1])
+  .transform((v) => v.replace(PROFILE_URL_RE, "$1"))
   .pipe(HANDLE_CORE_SCHEMA);
 
 // Accept core, @handle, or profile URL; always output core username
@@ -42,7 +42,7 @@ function firstIssueMessage(err: z.ZodError): string {
   const issue = err.issues[0];
   if (issue?.code === "invalid_union") {
     const ue = (issue as unknown as { unionErrors?: z.ZodError[] }).unionErrors;
-    const msg = ue?.[0]?.issues?.[0]?.message;
+    const msg = ue?.[0].issues[0]?.message;
     if (msg) return msg;
   }
   return issue?.message ?? "Invalid handle";
@@ -53,7 +53,8 @@ export function validateHandleInput(input: string): {
   error?: string;
 } {
   const parsed = HandleInputSchema.safeParse(input);
-  if (!parsed.success) return { core: null, error: firstIssueMessage(parsed.error) };
+  if (!parsed.success)
+    return { core: null, error: firstIssueMessage(parsed.error) };
   return { core: parsed.data };
 }
 

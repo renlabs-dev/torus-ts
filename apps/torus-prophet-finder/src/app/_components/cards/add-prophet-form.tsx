@@ -1,10 +1,10 @@
 "use client";
 
+import { zodResolver } from "@hookform/resolvers/zod";
+import { HandleInputSchema } from "~/lib/handles/validate-handle";
 import * as React from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { HandleInputSchema } from "~/lib/handles/validate-handle";
 
 interface Props {
   onAdd: (rawHandle: string) => string | null; // returns error or null
@@ -89,7 +89,9 @@ export default function AddProphetForm({ onAdd, suppressErrorMessage }: Props) {
               {...register("handle")}
             />
             {errors.handle?.message && (
-              <p className="mt-1 text-xs text-red-300/90">{errors.handle.message}</p>
+              <p className="mt-1 text-xs text-red-300/90">
+                {errors.handle.message}
+              </p>
             )}
           </div>
           <div className="flex items-center gap-2">

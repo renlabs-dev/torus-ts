@@ -1,11 +1,11 @@
 "use client";
 
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Button } from "@torus-ts/ui/components/button";
+import { TickerSymbolSchema } from "~/lib/tickers/validate-symbol";
 import * as React from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { TickerSymbolSchema } from "~/lib/tickers/validate-symbol";
-import { Button } from "@torus-ts/ui/components/button";
 
 interface Props {
   onAdd: (raw: string) => string | null; // returns error or null
@@ -14,7 +14,6 @@ interface Props {
 
 const FormSchema = z.object({
   symbol: TickerSymbolSchema,
-  
 });
 type FormValues = z.infer<typeof FormSchema>;
 
@@ -89,7 +88,9 @@ export default function AddTickerForm({ onAdd, suppressErrorMessage }: Props) {
               {...register("symbol")}
             />
             {errors.symbol?.message && (
-              <p className="mt-1 text-xs text-red-300/90">{errors.symbol.message}</p>
+              <p className="mt-1 text-xs text-red-300/90">
+                {errors.symbol.message}
+              </p>
             )}
           </div>
           <div className="flex items-center gap-2">
