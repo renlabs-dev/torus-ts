@@ -31,6 +31,8 @@
     "next": "catalog:",
     "react": "catalog:react19",
     "react-dom": "catalog:react19",
+    "react-hook-form": "^7.53.2",
+    "@hookform/resolvers": "^3.9.1",
     "three": "^0.180.0",
     "zod": "catalog:"
   },

@@ -1,33 +1,21 @@
-import { normalizeSymbol } from "./normalize-symbol";
+import { z } from "zod";
+
+// Strict, irreducible ticker symbol (no $, no spaces, uppercase only)
+export const TickerSymbolSchema = z.string().regex(/^[A-Z][A-Z0-9]{1,9}$/, {
+  message:
+    "Ticker must be 2–10 chars, uppercase, start with a letter; no spaces or $",
+});
 
 export function validateTickerInput(input: string): {
   symbol: string | null;
   error?: string;
 } {
-  const original = input.trim();
-  const symbol = normalizeSymbol(original);
-
-  if (symbol.length === 0) {
-    return { symbol: null, error: "Please enter a valid ticker (e.g., $BTC)" };
-  }
-  // Must be 1–10 chars and uppercase letters/digits only; start with a letter
-  if (symbol.length > 10) {
-    return { symbol: null, error: "Ticker must be 1–10 characters" };
-  }
-  if (!/^[A-Z][A-Z0-9]*$/.test(symbol)) {
+  const parsed = TickerSymbolSchema.safeParse(input);
+  if (!parsed.success) {
     return {
       symbol: null,
-      error: "Ticker must start with a letter and use A–Z/0–9",
+      error: parsed.error.issues[0]?.message ?? "Invalid ticker",
     };
   }
-  // Avoid purely numeric symbols
-  if (/^[0-9]+$/.test(symbol)) {
-    return { symbol: null, error: "Ticker cannot be only numbers" };
-  }
-  // Optional: avoid extremely short symbols (heuristic)
-  if (symbol.length < 2) {
-    return { symbol: null, error: "Ticker must be at least 2 characters" };
-  }
-
-  return { symbol };
+  return { symbol: parsed.data };
 }
