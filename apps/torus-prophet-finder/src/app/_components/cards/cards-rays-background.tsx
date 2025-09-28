@@ -2,8 +2,8 @@
 
 import * as React from "react";
 import * as THREE from "three";
-import { Figure } from "~/app/_components/cards/effects/figure";
 import { LightSource } from "~/app/_components/cards/effects/light-source";
+import { Figure } from "~/app/_components/cards/effects/figure";
 import {
   EffectComposer,
   EffectPass,
@@ -51,11 +51,20 @@ function addContent(
   system.position.set(0, worldY, 0);
 
   const light = new LightSource();
-  // Center the source inside the hole and set depth behind the mask
+  // Place the emitter slightly behind origin for postprocessing
   light.position.set(0, 0, -20);
   system.add(light);
 
+  // Add the figure as an invisible occluder to localize rays
   const figure = new Figure();
+  const mat = (figure as any).material as THREE.MeshBasicMaterial | undefined;
+  if (mat) {
+    mat.color.set(0x000000); // match clear color
+    mat.transparent = true;
+    mat.opacity = 0; // invisible in color buffer
+    mat.depthWrite = true; // still occludes
+    mat.colorWrite = false; // don't touch color buffer
+  }
   system.add(figure);
 
   scene.add(system);
