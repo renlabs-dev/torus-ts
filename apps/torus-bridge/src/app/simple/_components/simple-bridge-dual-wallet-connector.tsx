@@ -11,7 +11,7 @@ import {
 import { AlertTriangle, CheckCircle, Wallet } from "lucide-react";
 import { useCallback } from "react";
 import { useSwitchChain } from "wagmi";
-import { useDualWallet } from "./hooks/use-dual-wallet";
+import { useDualWallet } from "../hooks/use-simple-bridge-dual-wallet";
 import type { SimpleBridgeDirection } from "./simple-bridge-types";
 
 interface DualWalletConnectorProps {
@@ -110,7 +110,9 @@ export function DualWalletConnector({ direction }: DualWalletConnectorProps) {
       <CardContent className="space-y-4">
         <div className="flex items-center justify-between rounded-lg border p-4">
           <div className="flex items-center gap-3">
-            <div className={`h-3 w-3 rounded-full ${getStatusIndicatorColor()}`} />
+            <div
+              className={`h-3 w-3 rounded-full ${getStatusIndicatorColor()}`}
+            />
             <div>
               <p className="font-medium">Torus Native Wallet</p>
               <p className="text-muted-foreground text-sm">

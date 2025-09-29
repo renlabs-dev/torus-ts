@@ -9,7 +9,7 @@ import { useAccount, useConnect, useDisconnect } from "wagmi";
 import type {
   SimpleBridgeDirection,
   WalletConnectionState,
-} from "../simple-bridge-types";
+} from "../_components/simple-bridge-types";
 
 export function useDualWallet() {
   const {

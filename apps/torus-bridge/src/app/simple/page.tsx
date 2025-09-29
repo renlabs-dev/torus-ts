@@ -1,6 +1,6 @@
 import { SidebarLinks } from "../_components/shared/sidebar-links";
 import { WalletBalance } from "../_components/shared/wallet-balance";
-import { SimpleBridge } from "../_components/simple-bridge";
+import { SimpleBridge } from "./_components/simple-bridge";
 
 export function generateMetadata() {
   return {

@@ -30,8 +30,8 @@ import type {
   SimpleBridgeDirection,
   SimpleBridgeState,
   SimpleBridgeTransaction,
-} from "../simple-bridge-types";
-import { SimpleBridgeStep } from "../simple-bridge-types";
+} from "../_components/simple-bridge-types";
+import { SimpleBridgeStep } from "../_components/simple-bridge-types";
 
 // Add import for Base chain
 const BASE_CHAIN_ID = 8453;

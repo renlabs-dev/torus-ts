@@ -13,13 +13,13 @@ import Image from "next/image";
 import { useCallback, useMemo, useState } from "react";
 import { erc20Abi } from "viem";
 import { useReadContract } from "wagmi";
-import { DualWalletConnector } from "./dual-wallet-connector";
-import { FractionButtons } from "./fraction-buttons";
-import { useDualWallet } from "./hooks/use-dual-wallet";
-import { useOrchestratedTransfer } from "./hooks/use-orchestrated-transfer";
+import { useDualWallet } from "../hooks/use-simple-bridge-dual-wallet";
+import { useOrchestratedTransfer } from "../hooks/use-simple-bridge-orchestrated-transfer";
+import { DualWalletConnector } from "./simple-bridge-dual-wallet-connector";
+import { FractionButtons } from "./simple-bridge-fraction-buttons";
 import type { SimpleBridgeDirection } from "./simple-bridge-types";
 import { SimpleBridgeStep } from "./simple-bridge-types";
-import { TransactionLifecycleDialog } from "./transaction-lifecycle-dialog";
+import { TransactionLifecycleDialog } from "./simple-bridge-transaction-lifecycle-dialog";
 
 export function SimpleBridgeForm() {
   const [direction, setDirection] =
