@@ -209,8 +209,8 @@ export function TransactionLifecycleDialog({
   function getErrorStepStatus(stepId: string): StepStatus | null {
     const isStep1 = stepId.startsWith("step1");
     const isStep2 = stepId.startsWith("step2");
-    const transaction = transactions.find((tx) =>
-      tx.step === (isStep1 ? 1 : 2)
+    const transaction = transactions.find(
+      (tx) => tx.step === (isStep1 ? 1 : 2),
     );
 
     if (!transaction || transaction.status !== "ERROR") {
