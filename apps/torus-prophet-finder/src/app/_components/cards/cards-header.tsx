@@ -22,13 +22,7 @@ export default function CardsHeader({ mode }: Props) {
           </h2>
         </div>
         <p className="font-cinzel mt-1 text-[10px] italic leading-relaxed tracking-[0.14em] text-white/55">
-          <img
-            src="/logo.svg"
-            alt=""
-            aria-hidden
-            className="mr-1 inline-block h-[10px] w-auto align-middle opacity-50"
-          />
-          in the honor of the thermodynamic god
+          in honor of the thermodynamic god
         </p>
         <div className="font-cinzel mx-auto mt-4 max-w-2xl text-center text-sm font-semibold italic leading-relaxed tracking-[0.08em] text-white/70">
           <p>
