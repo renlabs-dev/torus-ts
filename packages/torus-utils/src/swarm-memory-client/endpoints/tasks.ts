@@ -1,6 +1,6 @@
 import type { BaseSwarmMemoryApiClient } from "../client.js";
-import { ListTasksResponseSchema  } from "../schemas/task.js";
-import type {Task} from "../schemas/task.js";
+import { ListTasksResponseSchema } from "../schemas/task.js";
+import type { Task } from "../schemas/task.js";
 import { SWARM_ENDPOINTS } from "../utils/constants.js";
 
 /**

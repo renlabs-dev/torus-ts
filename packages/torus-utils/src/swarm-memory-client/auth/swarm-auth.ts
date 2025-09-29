@@ -5,8 +5,8 @@ import { cryptoWaitReady } from "@polkadot/util-crypto";
 import type { AuthStrategy } from "../../base-api-client/auth/strategies.js";
 import { SWARM_API_BASE_URL, SWARM_ENDPOINTS } from "../utils/constants.js";
 import { SwarmAuthenticationError } from "../utils/errors.js";
-import { InjectorSigner, KeypairSigner  } from "./signers.js";
-import type {Signer} from "./signers.js";
+import { InjectorSigner, KeypairSigner } from "./signers.js";
+import type { Signer } from "./signers.js";
 
 /**
  * Session token with expiration
@@ -77,7 +77,7 @@ export class SwarmAuth implements AuthStrategy {
    * @example
    * ```ts
    * const auth = await SwarmAuth.fromMnemonic('your twelve word mnemonic');
-   * const client = new SwarmMemoryAPIClient({ auth });
+   * const client = new SwarmMemoryClient({ auth });
    * ```
    */
   static async fromMnemonic(
@@ -109,7 +109,7 @@ export class SwarmAuth implements AuthStrategy {
    * ```ts
    * const injector = await web3FromAddress(selectedAddress);
    * const auth = SwarmAuth.fromInjector(injector.signer, selectedAddress);
-   * const client = new SwarmMemoryAPIClient({ auth });
+   * const client = new SwarmMemoryClient({ auth });
    * ```
    */
   static fromInjector(

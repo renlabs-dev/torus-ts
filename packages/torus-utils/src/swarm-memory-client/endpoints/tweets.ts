@@ -30,8 +30,7 @@ import { SWARM_ENDPOINTS } from "../utils/constants.js";
  *
  * // List tweets
  * const tweets = await client.tweets.list({
- *   limit: 10,
- *   author_username: 'elonmusk'
+ *   limit: 10
  * });
  *
  * // Insert tweet
@@ -215,25 +214,6 @@ export class TweetsEndpoint {
     };
 
     return this.list(searchParams);
-  }
-
-  /**
-   * Get tweets by specific author
-   *
-   * @param username - Twitter username (without @)
-   * @param params - Additional filtering parameters
-   * @returns Array of tweets from the specified author
-   */
-  async getByAuthor(
-    username: string,
-    params?: Omit<ListTweetsParams, "author_username">,
-  ): Promise<SwarmTweet[]> {
-    const authorParams = {
-      ...params,
-      author_username: username,
-    };
-
-    return this.list(authorParams);
   }
 
   /**

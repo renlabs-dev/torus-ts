@@ -25,10 +25,10 @@ import { TweetsEndpoint } from "./endpoints/tweets.js";
  *
  * @example
  * ```ts
- * import { SwarmMemory } from '@torus-network/torus-utils/swarm-memory-client';
+ * import { SwarmMemoryClient } from '@torus-network/torus-utils/swarm-memory-client';
  *
  * // Create from mnemonic
- * const client = await SwarmMemory.fromMnemonic({
+ * const client = await SwarmMemoryClient.fromMnemonic({
  *   mnemonic: 'your twelve word mnemonic phrase here',
  *   baseUrl: 'https://memory.sension.torus.directory', // optional
  *   timeout: 30000 // optional
@@ -36,7 +36,7 @@ import { TweetsEndpoint } from "./endpoints/tweets.js";
  *
  * // Create from browser injector
  * const injector = await web3FromAddress(address);
- * const client = SwarmMemory.fromInjector({
+ * const client = SwarmMemoryClient.fromInjector({
  *   injectedSigner: injector.signer,
  *   address
  * });
@@ -75,13 +75,13 @@ export class SwarmMemoryClient extends BaseSwarmMemoryApiClient {
   }
 
   /**
-   * Create SwarmMemory client from a mnemonic phrase.
+   * Create SwarmMemoryClient from a mnemonic phrase.
    *
    * @param config - Configuration with mnemonic and optional settings
    *
    * @example
    * ```ts
-   * const client = await SwarmMemory.fromMnemonic({
+   * const client = await SwarmMemoryClient.fromMnemonic({
    *   mnemonic: 'your twelve word mnemonic phrase',
    *   baseUrl: 'https://memory.sension.torus.directory'
    * });
@@ -101,14 +101,14 @@ export class SwarmMemoryClient extends BaseSwarmMemoryApiClient {
   }
 
   /**
-   * Create SwarmMemory client from a browser wallet injector.
+   * Create SwarmMemoryClient from a browser wallet injector.
    *
    * @param config - Configuration with injector, address and optional settings
    *
    * @example
    * ```ts
    * const injector = await web3FromAddress(selectedAddress);
-   * const client = SwarmMemory.fromInjector({
+   * const client = SwarmMemoryClient.fromInjector({
    *   injectedSigner: injector.signer,
    *   address: selectedAddress,
    *   baseUrl: 'https://memory.sension.torus.directory'

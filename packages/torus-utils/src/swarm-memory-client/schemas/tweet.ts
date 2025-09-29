@@ -70,7 +70,6 @@ export const SwarmTweetSchema = z.object({
 export const ListTweetsParamsSchema = PaginationParamsSchema.extend({
   // Tweet-specific filters (optional)
   tweet_type: z.string().optional(),
-  author_username: z.string().optional(),
   author_user_id: z.string().optional(),
   conversation_id: z.string().optional(),
   hashtag: z.string().optional(),

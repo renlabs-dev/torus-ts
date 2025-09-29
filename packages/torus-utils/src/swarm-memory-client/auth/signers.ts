@@ -1,8 +1,8 @@
 import type { Signer as InjectedSigner } from "@polkadot/api/types";
 import type { KeyringPair } from "@polkadot/keyring/types";
 import { hexToU8a, u8aToHex } from "@polkadot/util";
-import { SwarmAuthenticationError } from "../utils/errors.js";
 import { assert } from "tsafe";
+import { SwarmAuthenticationError } from "../utils/errors.js";
 
 /**
  * Unified signing interface for SwarmAuth authentication.
@@ -84,7 +84,10 @@ export class InjectorSigner implements Signer {
       // Convert message to hex format required by signRaw
       const messageHex = u8aToHex(message);
 
-      assert(this.injectedSigner.signRaw, "Injected signer does not support signRaw method");
+      assert(
+        this.injectedSigner.signRaw,
+        "Injected signer does not support signRaw method",
+      );
       const result = await this.injectedSigner.signRaw({
         address: this.address,
         data: messageHex,

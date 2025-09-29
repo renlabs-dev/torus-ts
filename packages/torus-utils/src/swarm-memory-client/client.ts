@@ -33,7 +33,7 @@ export interface SwarmMemoryClientConfig {
  * @example
  * ```ts
  * // Create from mnemonic
- * const client = await SwarmMemoryAPIClient.fromMnemonic({
+ * const client = await SwarmMemory.fromMnemonic({
  *   mnemonic: 'your twelve word mnemonic phrase here',
  *   baseUrl: 'https://memory.sension.torus.directory',
  *   timeout: 30000
@@ -41,14 +41,14 @@ export interface SwarmMemoryClientConfig {
  *
  * // Create from browser injector
  * const injector = await web3FromAddress(address);
- * const client = SwarmMemoryAPIClient.fromInjector({
+ * const client = SwarmMemory.fromInjector({
  *   injectedSigner: injector.signer,
  *   address
  * });
  *
- * // Or with pre-initialized auth
+ * // Or with pre-initialized auth (advanced)
  * const auth = await SwarmAuth.fromMnemonic('your mnemonic');
- * const client = new SwarmMemoryAPIClient({ auth });
+ * const client = new BaseSwarmMemoryApiClient({ auth });
  * ```
  */
 export class BaseSwarmMemoryApiClient extends BaseAPIClient {
@@ -71,13 +71,13 @@ export class BaseSwarmMemoryApiClient extends BaseAPIClient {
   }
 
   /**
-   * Create SwarmMemoryAPIClient from a mnemonic phrase.
+   * Create Swarm Memory base client from a mnemonic phrase.
    *
    * @param config - Configuration with mnemonic and optional settings
    *
    * @example
    * ```ts
-   * const client = await SwarmMemoryAPIClient.fromMnemonic({
+   * const client = await BaseSwarmMemoryApiClient.fromMnemonic({
    *   mnemonic: 'your twelve word mnemonic phrase',
    *   baseUrl: 'https://memory.sension.torus.directory'
    * });
@@ -97,14 +97,14 @@ export class BaseSwarmMemoryApiClient extends BaseAPIClient {
   }
 
   /**
-   * Create SwarmMemoryAPIClient from a browser wallet injector.
+   * Create Swarm Memory base client from a browser wallet injector.
    *
    * @param config - Configuration with injector, address and optional settings
    *
    * @example
    * ```ts
    * const injector = await web3FromAddress(selectedAddress);
-   * const client = SwarmMemoryAPIClient.fromInjector({
+   * const client = BaseSwarmMemoryApiClient.fromInjector({
    *   injectedSigner: injector.signer,
    *   address: selectedAddress,
    *   baseUrl: 'https://memory.sension.torus.directory'

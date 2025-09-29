@@ -1,5 +1,10 @@
 import ky from "ky";
-import type {BeforeRequestHook, KyInstance, Options as KyOptions, NormalizedOptions} from "ky";
+import type {
+  BeforeRequestHook,
+  KyInstance,
+  Options as KyOptions,
+  NormalizedOptions,
+} from "ky";
 import type { z } from "zod";
 import type { AuthStrategy } from "./auth/index.js";
 import { handleRequestError, ValidationError } from "./errors.js";

@@ -151,32 +151,6 @@ describe("TweetsEndpoint - Real API", () => {
     }, 15000);
   });
 
-  describe("author filtering", () => {
-    it("should get tweets by specific author if they exist", async () => {
-      // First get some tweets to find an actual author
-      const allTweets = await tweetsEndpoint.list({ limit: 10 });
-
-      if (allTweets.length === 0) {
-        console.log("No tweets in database, skipping author filter test");
-        return;
-      }
-
-      assert(allTweets[0], "First tweet is undefined");
-      const author = allTweets[0].author_twitter_username;
-      const authorTweets = await tweetsEndpoint.getByAuthor(author, {
-        limit: 5,
-      });
-
-      expect(Array.isArray(authorTweets)).toBe(true);
-      console.log(`Found ${authorTweets.length} tweets by @${author}`);
-
-      // All tweets should be from the specified author
-      authorTweets.forEach((tweet) => {
-        expect(tweet.author_twitter_username).toBe(author);
-      });
-    }, 15000);
-  });
-
   describe("recent tweets", () => {
     it("should get recent tweets (last 24 hours)", async () => {
       const tweets = await tweetsEndpoint.getRecent({ limit: 10 });
@@ -198,7 +172,6 @@ describe("TweetsEndpoint - Real API", () => {
       expect(client.tweets).toBeInstanceOf(TweetsEndpoint);
       expect(typeof client.tweets.list).toBe("function");
       expect(typeof client.tweets.search).toBe("function");
-      expect(typeof client.tweets.getByAuthor).toBe("function");
       expect(typeof client.tweets.getRecent).toBe("function");
     });
 
@@ -225,15 +198,6 @@ describe("TweetsEndpoint - Real API", () => {
       // Empty search query
       const tweets = await tweetsEndpoint.search("");
       expect(Array.isArray(tweets)).toBe(true);
-    }, 10000);
-
-    it("should handle non-existent author gracefully", async () => {
-      const tweets = await tweetsEndpoint.getByAuthor("nonexistentuser12345", {
-        limit: 5,
-      });
-      expect(Array.isArray(tweets)).toBe(true);
-      expect(tweets.length).toBe(0);
-      console.log("Non-existent author query returned empty array");
     }, 10000);
 
     it("should handle large date ranges", async () => {
