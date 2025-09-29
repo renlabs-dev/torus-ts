@@ -2,6 +2,7 @@
 
 import { Canvas } from "@react-three/fiber";
 import ScrollIndicator from "~/app/_components/hero/scroll-indicator";
+import SoundToggle from "~/app/_components/hero/sound-toggle";
 import StatsRow from "~/app/_components/hero/stats-row";
 import StormQuad from "~/app/_components/hero/storm-quad.view";
 import * as React from "react";
@@ -40,7 +41,7 @@ export default function StormHero() {
         <p className="font-cinzel mt-3 line-clamp-2 max-w-4xl text-sm font-semibold italic tracking-[0.08em] text-white/80 sm:max-w-5xl sm:text-base md:mt-4 md:text-lg">
           THE MODERN INFORMATION LANDSCAPE IS A STORM. BECOME THE STORM RIDER.
           <br />
-          BEHIND EVERY EVENT IS A PROPHET — THE SWARM FINDS THEM
+          BEHIND EVERY EVENT IS A PROPHET — THE SWARM FINDS THEM.
         </p>
       </div>
 
@@ -51,6 +52,9 @@ export default function StormHero() {
           <ScrollIndicator onClick={handleScrollDown} />
         </div>
       </div>
+
+      {/* Sound toggle: align with scroll button height on all screens */}
+      <SoundToggle className="absolute right-6 bottom-6 sm:right-20 sm:bottom-6 md:right-24 md:bottom-6 z-40" />
 
       <div className="pointer-events-none absolute bottom-0 left-0 right-0 z-10 h-24 bg-gradient-to-b from-transparent to-[#050816]" />
       <div className="pointer-events-none absolute left-0 right-0 top-0 z-10 h-16 bg-gradient-to-t from-transparent to-[#050816]" />
