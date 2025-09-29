@@ -164,7 +164,7 @@ export default function CardsRaysBackground() {
     <div
       ref={containerRef}
       className="pointer-events-none absolute inset-x-0 top-0 z-[12] w-full"
-      style={{ height: `${19500}px` }}
+      style={{ height: `${1900}px` }}
     >
       <canvas className="h-full w-full" ref={ref} />
     </div>
