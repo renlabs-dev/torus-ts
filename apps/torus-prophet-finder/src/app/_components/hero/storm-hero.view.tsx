@@ -39,6 +39,7 @@ export default function StormHero() {
         </h1>
         <p className="font-cinzel mt-3 line-clamp-2 max-w-4xl text-sm font-semibold italic tracking-[0.08em] text-white/80 sm:max-w-5xl sm:text-base md:mt-4 md:text-lg">
           THE MODERN INFORMATION LANDSCAPE IS A STORM. BECOME THE STORM RIDER.
+          <br />
           BEHIND EVERY EVENT IS A PROPHET — THE SWARM FINDS THEM
         </p>
       </div>
