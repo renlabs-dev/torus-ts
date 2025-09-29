@@ -7,6 +7,7 @@ import AddProphetForm from "~/app/_components/cards/add-prophet-form";
 import AddTickerForm from "~/app/_components/cards/add-ticker-form";
 import CardsGrid from "~/app/_components/cards/cards-grid";
 import CardsHeader from "~/app/_components/cards/cards-header";
+import CardsRaysBackground from "~/app/_components/cards/cards-rays-background";
 import EmptyState from "~/app/_components/cards/empty-state";
 import EntityModeToggle from "~/app/_components/cards/entity-mode-toggle";
 import type { EntityMode } from "~/app/_components/cards/entity-mode-toggle";
@@ -110,6 +111,10 @@ export default function CardsSection() {
       className="relative w-full overflow-hidden py-12 sm:py-16 md:py-20"
     >
       <StarfieldBackground />
+      {/* Rays span entire section but are positioned behind the header */}
+      <CardsRaysBackground />
+      {/* Exact mirror of hero bottom shadow at the top */}
+      <div className="pointer-events-none absolute inset-x-0 top-0 z-[16] h-24 bg-gradient-to-b from-black/60 via-black/20 to-transparent" />
       <div className="pointer-events-none absolute inset-0 z-0 bg-black/60" />
       <div className="relative z-20 mx-auto w-full max-w-6xl px-6 sm:px-8 md:px-10">
         <CardsHeader mode={mode} />
