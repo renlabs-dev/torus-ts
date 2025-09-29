@@ -113,8 +113,8 @@ export default function CardsSection() {
       <StarfieldBackground />
       {/* Rays span entire section but are positioned behind the header */}
       <CardsRaysBackground />
-      {/* Softer, longer top shadow blending into the hero */}
-      <div className="pointer-events-none absolute inset-x-0 top-0 z-[16] h-36 bg-gradient-to-b from-[#050816]/95 via-[#050816]/60 to-transparent" />
+      {/* Exact mirror of hero bottom shadow at the top */}
+      <div className="pointer-events-none absolute inset-x-0 top-0 z-[16] h-24 bg-gradient-to-b from-black/60 via-black/20 to-transparent" />
       <div className="pointer-events-none absolute inset-0 z-0 bg-black/60" />
       <div className="relative z-20 mx-auto w-full max-w-6xl px-6 sm:px-8 md:px-10">
         <CardsHeader mode={mode} />
