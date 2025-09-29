@@ -1,4 +1,5 @@
-import { CircleGeometry, Mesh, MeshBasicMaterial, Vector2 } from "three";
+import type { IUniform } from "three";
+import { CircleGeometry, Mesh, MeshBasicMaterial } from "three";
 
 // Inline simplex noise GLSL (matching provided noise.glsl)
 const NOISE_GLSL = `
@@ -51,21 +52,26 @@ float snoise(vec3 v){
                                 dot(p2,x2), dot(p3,x3) ) ); 
 }`;
 
-export class LightSource extends Mesh {
+type TimeUniform = IUniform<number>;
+
+export class LightSource extends Mesh<CircleGeometry, MeshBasicMaterial> {
+  declare userData: { time: TimeUniform };
   constructor() {
     // Reduce radius by another ~50% for subtler rays
     const geometry = new CircleGeometry(3.5, 64);
     // Set emitter color to white so God Rays render white
     const material = new MeshBasicMaterial({ color: 0xffffff });
 
-    interface MinimalShader {
-      uniforms: Record<string, { value: unknown }>;
+    interface ShaderLike {
+      uniforms: Record<string, IUniform<unknown>>;
+      defines?: Record<string, unknown>;
       fragmentShader: string;
     }
-    (material as unknown as { onBeforeCompile: (shader: MinimalShader) => void })
-      .onBeforeCompile = (shader: MinimalShader) => {
-      // link to instance time uniform
-      shader.uniforms.time = (this.userData as { time: { value: number } }).time as any;
+    material.onBeforeCompile = (shader: ShaderLike) => {
+      // Link to instance time uniform
+      shader.uniforms.time = this.userData.time as IUniform<unknown>;
+      // Ensure UVs are available for fragment shader
+      shader.defines = { ...(shader.defines ?? {}), USE_UV: "" };
       shader.fragmentShader = `uniform float time;\n${shader.fragmentShader}`
         .replace("void main() {", `${NOISE_GLSL}\nvoid main() {`)
         .replace(
@@ -83,10 +89,7 @@ export class LightSource extends Mesh {
         );
     };
 
-    // UVs required for shader logic
-    (material as any).defines = { USE_UV: "" };
-
     super(geometry, material);
-    (this.userData as { time: { value: number } }).time = { value: 0 };
+    this.userData = { time: { value: 0 } };
   }
 }

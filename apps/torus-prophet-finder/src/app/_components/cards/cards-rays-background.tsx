@@ -1,15 +1,15 @@
 "use client";
 
-import * as React from "react";
-import * as THREE from "three";
-import { LightSource } from "~/app/_components/cards/effects/light-source";
 import { Figure } from "~/app/_components/cards/effects/figure";
+import { LightSource } from "~/app/_components/cards/effects/light-source";
 import {
   EffectComposer,
   EffectPass,
   GodRaysEffect,
   RenderPass,
 } from "postprocessing";
+import * as React from "react";
+import * as THREE from "three";
 
 function initCamera(w: number, h: number) {
   const cam = new THREE.PerspectiveCamera(60, w / h, 1, 1000);
@@ -57,8 +57,8 @@ function addContent(
 
   // Add the figure as an invisible occluder to localize rays
   const figure = new Figure();
-  const mat = (figure as any).material as THREE.MeshBasicMaterial | undefined;
-  if (mat) {
+  if (!Array.isArray(figure.material)) {
+    const mat = figure.material;
     mat.color.set(0x000000); // match clear color
     mat.transparent = true;
     mat.opacity = 0; // invisible in color buffer
@@ -101,7 +101,7 @@ function createScene(canvas: HTMLCanvasElement) {
   const composer = new EffectComposer(renderer);
   composer.addPass(new RenderPass(scene, camera));
   // Restore baseline parameters that produced the correct look
-  const gre = new GodRaysEffect(camera, light as any, {
+  const gre = new GodRaysEffect(camera, light, {
     height: 480,
     kernelSize: 2,
     density: 0.92,
@@ -137,10 +137,16 @@ function createScene(canvas: HTMLCanvasElement) {
       stop();
       window.removeEventListener("resize", handleResize);
       scene.traverse((obj) => {
-        const m = (obj as any).material as THREE.Material | undefined;
-        const g = (obj as any).geometry as THREE.BufferGeometry | undefined;
-        if (m) m.dispose?.();
-        if (g) g.dispose?.();
+        if (obj instanceof THREE.Mesh) {
+          const mesh = obj as THREE.Mesh;
+          const mat = mesh.material;
+          if (Array.isArray(mat)) {
+            for (const mm of mat) mm.dispose();
+          } else {
+            mat.dispose();
+          }
+          mesh.geometry.dispose();
+        }
       });
       composer.dispose();
       renderer.dispose();
@@ -170,5 +176,3 @@ export default function CardsRaysBackground() {
     </div>
   );
 }
-
-

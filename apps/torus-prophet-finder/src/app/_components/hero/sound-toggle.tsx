@@ -16,7 +16,9 @@ export default function SoundToggle({ className }: Props) {
     if (!el) return;
     if (!playing) {
       // Start playback on user gesture
-      el.play().then(() => setPlaying(true)).catch(() => {});
+      el.play()
+        .then(() => setPlaying(true))
+        .catch(() => undefined);
     } else {
       el.pause();
       setPlaying(false);
@@ -25,10 +27,7 @@ export default function SoundToggle({ className }: Props) {
 
   return (
     <div
-      className={[
-        "pointer-events-auto flex flex-col items-center",
-        className,
-      ]
+      className={["pointer-events-auto flex flex-col items-center", className]
         .filter(Boolean)
         .join(" ")}
     >

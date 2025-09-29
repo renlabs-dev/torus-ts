@@ -7,6 +7,7 @@ import AddProphetForm from "~/app/_components/cards/add-prophet-form";
 import AddTickerForm from "~/app/_components/cards/add-ticker-form";
 import CardsGrid from "~/app/_components/cards/cards-grid";
 import CardsHeader from "~/app/_components/cards/cards-header";
+import CardsRaysBackground from "~/app/_components/cards/cards-rays-background";
 import EmptyState from "~/app/_components/cards/empty-state";
 import EntityModeToggle from "~/app/_components/cards/entity-mode-toggle";
 import type { EntityMode } from "~/app/_components/cards/entity-mode-toggle";
@@ -16,7 +17,6 @@ import TickersGrid from "~/app/_components/cards/tickers-grid";
 import { useProphets } from "~/app/_components/cards/use-prophets";
 import { useTickers } from "~/app/_components/cards/use-tickers";
 import StarfieldBackground from "~/app/_components/effects/starfield-background";
-import CardsRaysBackground from "~/app/_components/cards/cards-rays-background";
 import * as React from "react";
 
 export default function CardsSection() {

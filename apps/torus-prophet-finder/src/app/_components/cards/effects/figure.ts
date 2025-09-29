@@ -7,7 +7,7 @@ import {
   Vector2,
 } from "three";
 
-export class Figure extends Mesh {
+export class Figure extends Mesh<ShapeGeometry, MeshBasicMaterial> {
   constructor() {
     const basePts: Vector2[] = [];
     const cnt = new Vector2();
@@ -48,4 +48,3 @@ export class Figure extends Mesh {
     super(geometry, material);
   }
 }
-
