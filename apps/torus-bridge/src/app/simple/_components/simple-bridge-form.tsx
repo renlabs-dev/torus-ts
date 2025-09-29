@@ -17,9 +17,9 @@ import { useDualWallet } from "../hooks/use-simple-bridge-dual-wallet";
 import { useOrchestratedTransfer } from "../hooks/use-simple-bridge-orchestrated-transfer";
 import { DualWalletConnector } from "./simple-bridge-dual-wallet-connector";
 import { FractionButtons } from "./simple-bridge-fraction-buttons";
+import { TransactionLifecycleDialog } from "./simple-bridge-transaction-lifecycle-dialog";
 import type { SimpleBridgeDirection } from "./simple-bridge-types";
 import { SimpleBridgeStep } from "./simple-bridge-types";
-import { TransactionLifecycleDialog } from "./simple-bridge-transaction-lifecycle-dialog";
 
 export function SimpleBridgeForm() {
   const [direction, setDirection] =
