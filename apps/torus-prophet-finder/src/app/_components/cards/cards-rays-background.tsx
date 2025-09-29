@@ -104,12 +104,12 @@ function createScene(canvas: HTMLCanvasElement) {
   const gre = new GodRaysEffect(camera, light as any, {
     height: 480,
     kernelSize: 2,
-    density: 1,
-    decay: 0.9,
-    weight: 0.5,
+    density: 0.92,
+    decay: 0.88,
+    weight: 0.45,
     exposure: 0.3,
     samples: 20,
-    clampMax: 0.95,
+    clampMax: 0.87,
   });
   composer.addPass(new EffectPass(camera, gre));
 
