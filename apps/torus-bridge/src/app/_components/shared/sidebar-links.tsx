@@ -15,7 +15,7 @@ import { cn } from "@torus-ts/ui/lib/utils";
 import { env } from "~/env";
 import { Check } from "lucide-react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { Suspense, useCallback, useMemo } from "react";
 
 interface SidebarOptionProps {
@@ -60,6 +60,7 @@ function SidebarOption({ option }: SidebarOptionProps) {
 
 const Sidebar = () => {
   const pathname = usePathname();
+  const router = useRouter();
 
   const baseOptions = useMemo(
     () => [
@@ -87,9 +88,21 @@ const Sidebar = () => {
     [pathname, getActiveOptions],
   );
 
+  const handleSelectChange = useCallback(
+    (value: string) => {
+      if (value.startsWith("http")) {
+        window.open(value, "_blank", "noopener,noreferrer");
+        return;
+      }
+
+      router.push(value);
+    },
+    [router],
+  );
+
   return (
     <>
-      <Select value={pathname}>
+      <Select value={pathname} onValueChange={handleSelectChange}>
         <SelectTrigger className="w-full lg:hidden">
           <SelectValue placeholder="Select a view" />
         </SelectTrigger>
