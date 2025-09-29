@@ -33,8 +33,45 @@ import type {
 } from "../_components/simple-bridge-types";
 import { SimpleBridgeStep } from "../_components/simple-bridge-types";
 
-// Add import for Base chain
 const BASE_CHAIN_ID = 8453;
+
+const GAS_CONFIG = {
+  BASE_GAS: 21000n,
+  CONTRACT_CALL_GAS: 100000n,
+  get ESTIMATED_TOTAL() {
+    return this.BASE_GAS + this.CONTRACT_CALL_GAS;
+  },
+} as const;
+
+const POLLING_CONFIG = {
+  INTERVAL_MS: 5000,
+  MAX_POLLS: 180,
+  SWITCH_RETRY_DELAY_MS: 1000,
+  MAX_SWITCH_ATTEMPTS: 2,
+} as const;
+
+const CONFIRMATION_CONFIG = {
+  REQUIRED_CONFIRMATIONS: 2,
+} as const;
+
+function isUserRejectionError(error: Error): boolean {
+  const errorMessage = error.message.toLowerCase();
+  const errorName = error.name;
+
+  return (
+    errorMessage.includes("rejected") ||
+    errorMessage.includes("denied") ||
+    errorMessage.includes("cancelled") ||
+    errorMessage.includes("user denied") ||
+    errorMessage.includes("user rejected") ||
+    errorMessage.includes("user denied transaction signature") ||
+    errorMessage.includes("declined") ||
+    (errorMessage.includes("signature") && errorMessage.includes("denied")) ||
+    errorName === "UserRejectedRequestError" ||
+    (errorName === "TransactionExecutionError" &&
+      errorMessage.includes("user rejected"))
+  );
+}
 
 export function useOrchestratedTransfer() {
   const [bridgeState, setBridgeState] = useState<SimpleBridgeState>({
@@ -121,15 +158,17 @@ export function useOrchestratedTransfer() {
 
   const getExplorerUrl = useCallback(
     (txHash: string, chainName: string): string => {
-      switch (chainName.toLowerCase()) {
-        case "base":
-          return `https://basescan.org/tx/${txHash}`;
-        case "torus evm":
-        case "torus":
-          return `https://blockscout.torus.network/tx/${txHash}`;
-        default:
-          return "";
+      const lowerChainName = chainName.toLowerCase();
+
+      if (lowerChainName === "base") {
+        return `https://basescan.org/tx/${txHash}`;
       }
+
+      if (lowerChainName === "torus evm" || lowerChainName === "torus") {
+        return `https://blockscout.torus.network/tx/${txHash}`;
+      }
+
+      return "";
     },
     [],
   );
@@ -167,24 +206,26 @@ export function useOrchestratedTransfer() {
         throw new Error("No connection found from Base to Torus EVM");
       }
 
-      // Switch to Base chain if not already
       let baseSwitchAttempts = 0;
-      const maxBaseSwitchAttempts = 2;
       while (
-        baseSwitchAttempts < maxBaseSwitchAttempts &&
+        baseSwitchAttempts < POLLING_CONFIG.MAX_SWITCH_ATTEMPTS &&
         chain.id !== BASE_CHAIN_ID
       ) {
         try {
           switchChain({ chainId: BASE_CHAIN_ID });
-          await new Promise<void>((resolve) => setTimeout(resolve, 1000));
+          await new Promise<void>((resolve) =>
+            setTimeout(resolve, POLLING_CONFIG.SWITCH_RETRY_DELAY_MS),
+          );
           if (chain.id === BASE_CHAIN_ID) break;
           throw new Error("Base switch verification failed");
         } catch {
           baseSwitchAttempts++;
-          if (baseSwitchAttempts >= maxBaseSwitchAttempts) {
+          if (baseSwitchAttempts >= POLLING_CONFIG.MAX_SWITCH_ATTEMPTS) {
             // Error handling as before
           }
-          await new Promise((resolve) => setTimeout(resolve, 1000));
+          await new Promise((resolve) =>
+            setTimeout(resolve, POLLING_CONFIG.SWITCH_RETRY_DELAY_MS),
+          );
         }
       }
 
@@ -208,30 +249,8 @@ export function useOrchestratedTransfer() {
         }),
       );
 
-      console.log("Hyperlane result after tryAsync:", [
-        hyperlaneError,
-        hyperlaneResult,
-      ]); // Debug
-
-      // Fix: Only fail on actual error; success if no error (even if result is undefined)
       if (hyperlaneError) {
-        const error = hyperlaneError;
-        console.log("Hyperlane failure detected:", error); // Debug
-
-        const isUserRejection =
-          error.message.includes("rejected") ||
-          error.message.includes("denied") ||
-          error.message.includes("cancelled") ||
-          error.message.includes("User denied") ||
-          error.message.includes("User rejected") ||
-          error.message.includes("User denied transaction signature") ||
-          (error.message.includes("signature") &&
-            error.message.includes("denied")) ||
-          error.name === "UserRejectedRequestError" ||
-          (error.name === "TransactionExecutionError" &&
-            error.message.includes("User rejected"));
-
-        const errorMessage = isUserRejection
+        const errorMessage = isUserRejectionError(hyperlaneError)
           ? "Transaction rejected by user"
           : "Failed to execute Base → Torus EVM transfer";
 
@@ -249,19 +268,12 @@ export function useOrchestratedTransfer() {
           errorMessage,
         });
 
-        if (isUserRejection) {
-          return; // Pause without throwing
-        } else {
-          throw error;
+        if (isUserRejectionError(hyperlaneError)) {
+          return;
         }
-      }
 
-      // Success: Proceed even if result is undefined (Hyperlane doesn't return hash here)
-      console.log(
-        "Base→Native: Hyperlane transfer successful (no error, result:",
-        hyperlaneResult,
-        ")",
-      );
+        throw hyperlaneError;
+      }
 
       // After no error in signing for Step 1
       updateBridgeState({ step: SimpleBridgeStep.STEP_1_CONFIRMING });
@@ -274,21 +286,10 @@ export function useOrchestratedTransfer() {
         explorerUrl: undefined,
       });
 
-      // Baseline
-      await refetchTorusEvmBalance(); // Ensure fresh
+      await refetchTorusEvmBalance();
       const baselineBalance = torusEvmBalance?.value || 0n;
       const expectedIncrease = toNano(parseFloat(amount));
 
-      console.log(
-        "Baseline Torus EVM balance:",
-        Number(baselineBalance) / 1e18,
-        "expected +",
-        Number(expectedIncrease) / 1e18,
-      );
-
-      // Poll
-      const pollInterval = 5000; // 5s for faster feedback
-      const maxPolls = 180; // 15 min total
       let pollCount = 0;
       const pollPromise = new Promise<void>((resolve, reject) => {
         const interval = setInterval(() => {
@@ -296,30 +297,24 @@ export function useOrchestratedTransfer() {
             pollCount++;
             const refetchResult = await refetchTorusEvmBalance();
             if (refetchResult.status === "error") {
-              console.warn("Refetch failed, skipping poll");
-              return; // or continue to next poll
+              return;
             }
             const currentBalance = refetchResult.data?.value || 0n;
-            console.log(
-              `Poll ${pollCount}: Current balance ${(Number(currentBalance) / 1e18).toFixed(2)}, baseline ${(Number(baselineBalance) / 1e18).toFixed(2)}`,
-            );
 
             if (currentBalance >= baselineBalance + expectedIncrease) {
               clearInterval(interval);
-              resolve(); // Confirmed
-            } else if (pollCount >= maxPolls) {
+              resolve();
+            } else if (pollCount >= POLLING_CONFIG.MAX_POLLS) {
               clearInterval(interval);
               reject(new Error("Confirmation timeout - no balance increase"));
             }
           })();
-        }, pollInterval);
+        }, POLLING_CONFIG.INTERVAL_MS);
       });
 
       try {
         await pollPromise;
-        console.log("Step 1 confirmed by balance increase");
       } catch (pollError) {
-        console.log("Step 1 confirmation failed:", pollError);
         const errorMessage =
           "Base transfer did not confirm (check balance and retry)";
         addTransaction({
@@ -380,31 +375,15 @@ export function useOrchestratedTransfer() {
         message: "Preparing Torus EVM → Native withdrawal",
       });
 
-      // Switch to Torus EVM if not already
       if (chain.id !== torusEvmChainId) {
         try {
           switchChain({ chainId: torusEvmChainId });
         } catch (switchError: unknown) {
-          const isError = switchError instanceof Error;
-          const errorMessage = isError
-            ? switchError.message
-            : String(switchError);
-          const errorName = isError ? switchError.name : "";
+          if (!(switchError instanceof Error)) {
+            throw switchError;
+          }
 
-          const isUserRejection =
-            errorMessage.includes("declined") ||
-            errorMessage.includes("rejected") ||
-            errorMessage.includes("user rejected") ||
-            errorMessage.includes("User denied") ||
-            errorMessage.includes("User rejected") ||
-            errorMessage.includes("User denied transaction signature") ||
-            (errorMessage.includes("signature") &&
-              errorMessage.includes("denied")) ||
-            errorName === "UserRejectedRequestError" ||
-            (errorName === "TransactionExecutionError" &&
-              errorMessage.includes("User rejected"));
-
-          const finalErrorMessage = isUserRejection
+          const errorMessage = isUserRejectionError(switchError)
             ? "Chain switch rejected by user"
             : "Failed to switch to Torus EVM chain";
 
@@ -412,26 +391,25 @@ export function useOrchestratedTransfer() {
             step: 2,
             status: "ERROR",
             chainName: "Torus EVM",
-            message: finalErrorMessage,
+            message: errorMessage,
             txHash: undefined,
             explorerUrl: undefined,
           });
           updateBridgeState({
             step: SimpleBridgeStep.ERROR,
-            errorMessage: finalErrorMessage,
+            errorMessage,
           });
-          if (isUserRejection) {
+
+          if (isUserRejectionError(switchError)) {
             return;
-          } else {
-            throw switchError;
           }
+
+          throw switchError;
         }
       }
 
-      // Check gas balance on Torus EVM
       await refetchNativeEthBalance();
-      const estimatedGas = 21000n + 100000n; // Base + rough contract call
-      if ((nativeEthBalance?.value ?? 0n) < estimatedGas) {
+      if ((nativeEthBalance?.value ?? 0n) < GAS_CONFIG.ESTIMATED_TOTAL) {
         const errorMessage =
           "Insufficient ETH for gas on Torus EVM. Please add funds.";
         addTransaction({
@@ -464,21 +442,7 @@ export function useOrchestratedTransfer() {
       );
 
       if (withdrawError !== undefined) {
-        console.log("Withdrawal catch triggered:", withdrawError); // Debug
-        const isUserRejection =
-          withdrawError.message.includes("rejected") ||
-          withdrawError.message.includes("denied") ||
-          withdrawError.message.includes("cancelled") ||
-          withdrawError.message.includes("User denied") ||
-          withdrawError.message.includes("User rejected") ||
-          withdrawError.message.includes("User denied transaction signature") ||
-          (withdrawError.message.includes("signature") &&
-            withdrawError.message.includes("denied")) ||
-          withdrawError.name === "UserRejectedRequestError" ||
-          (withdrawError.name === "TransactionExecutionError" &&
-            withdrawError.message.includes("User rejected"));
-
-        const errorMessage = isUserRejection
+        const errorMessage = isUserRejectionError(withdrawError)
           ? "Withdrawal transaction rejected by user"
           : "Failed to withdraw from Torus EVM";
 
@@ -496,11 +460,11 @@ export function useOrchestratedTransfer() {
           errorMessage,
         });
 
-        if (isUserRejection) {
+        if (isUserRejectionError(withdrawError)) {
           return;
-        } else {
-          throw withdrawError;
         }
+
+        throw withdrawError;
       }
 
       updateBridgeState({ step: SimpleBridgeStep.STEP_2_CONFIRMING });
@@ -509,7 +473,7 @@ export function useOrchestratedTransfer() {
       const [receiptError] = await tryAsync(
         waitForTransactionReceipt(wagmiConfig, {
           hash: txHash,
-          confirmations: 2,
+          confirmations: CONFIRMATION_CONFIG.REQUIRED_CONFIRMATIONS,
         }),
       );
 
@@ -580,22 +544,7 @@ export function useOrchestratedTransfer() {
       );
 
       if (sendErr !== undefined) {
-        console.log("sendTx error:", sendErr); // Debug
-        const isUserRejection =
-          sendErr.message.includes("rejected") ||
-          sendErr.message.includes("Cancelled") ||
-          sendErr.message.includes("denied") ||
-          sendErr.message.includes("cancelled") ||
-          sendErr.message.includes("User denied") ||
-          sendErr.message.includes("User rejected") ||
-          sendErr.message.includes("User denied transaction signature") ||
-          (sendErr.message.includes("signature") &&
-            sendErr.message.includes("denied")) ||
-          sendErr.name === "UserRejectedRequestError" ||
-          (sendErr.name === "TransactionExecutionError" &&
-            sendErr.message.includes("User rejected"));
-
-        const errorMessage = isUserRejection
+        const errorMessage = isUserRejectionError(sendErr)
           ? "Transaction rejected by user"
           : "Failed to bridge from Native to Torus EVM";
 
@@ -613,11 +562,11 @@ export function useOrchestratedTransfer() {
           errorMessage,
         });
 
-        if (isUserRejection) {
+        if (isUserRejectionError(sendErr)) {
           return;
-        } else {
-          throw sendErr;
         }
+
+        throw sendErr;
       }
 
       const { tracker } = sendRes;
@@ -667,10 +616,8 @@ export function useOrchestratedTransfer() {
         switchChain({ chainId: torusEvmChainId });
       }
 
-      // Gas check same as above
       await refetchNativeEthBalance();
-      const estimatedGas = 21000n + 100000n; // Base + rough contract call
-      if ((nativeEthBalance?.value ?? 0n) < estimatedGas) {
+      if ((nativeEthBalance?.value ?? 0n) < GAS_CONFIG.ESTIMATED_TOTAL) {
         const errorMessage =
           "Insufficient ETH for gas on Torus EVM. Please add funds.";
         addTransaction({
@@ -707,29 +654,8 @@ export function useOrchestratedTransfer() {
         }),
       );
 
-      console.log("Step 2 Hyperlane result after tryAsync:", [
-        hyperlaneError2,
-        hyperlaneResult2,
-      ]); // Debug
-
       if (hyperlaneError2) {
-        const error = hyperlaneError2;
-        console.log("Step 2 Hyperlane failure detected:", error); // Debug
-
-        const isUserRejection =
-          error.message.includes("rejected") ||
-          error.message.includes("denied") ||
-          error.message.includes("cancelled") ||
-          error.message.includes("User denied") ||
-          error.message.includes("User rejected") ||
-          error.message.includes("User denied transaction signature") ||
-          (error.message.includes("signature") &&
-            error.message.includes("denied")) ||
-          error.name === "UserRejectedRequestError" ||
-          (error.name === "TransactionExecutionError" &&
-            error.message.includes("User rejected"));
-
-        const errorMessage = isUserRejection
+        const errorMessage = isUserRejectionError(hyperlaneError2)
           ? "Transaction rejected by user"
           : "Failed to execute Torus EVM → Base transfer";
 
@@ -747,19 +673,12 @@ export function useOrchestratedTransfer() {
           errorMessage,
         });
 
-        if (isUserRejection) {
+        if (isUserRejectionError(hyperlaneError2)) {
           return;
-        } else {
-          throw error;
         }
-      }
 
-      // Success
-      console.log(
-        "Native→Base: Step 2 Hyperlane successful (no error, result:",
-        hyperlaneResult2,
-        ")",
-      );
+        throw hyperlaneError2;
+      }
 
       // For NativeToBase Step 2 Hyperlane: Similar fixed wait (3 min for Base confirm)
       // After no error in Step 2 signing
@@ -773,21 +692,10 @@ export function useOrchestratedTransfer() {
         explorerUrl: undefined,
       });
 
-      // Baseline for Base
       await refetchBaseBalance();
       const baseBaselineBalance = baseBalance?.value || 0n;
       const baseExpectedIncrease = toNano(parseFloat(amount));
 
-      console.log(
-        "Baseline Base balance:",
-        Number(baseBaselineBalance) / 1e18,
-        "expected +",
-        Number(baseExpectedIncrease) / 1e18,
-      );
-
-      // Poll for Base
-      const basePollInterval = 5000; // 5s
-      const baseMaxPolls = 180; // 15 min
       let basePollCount = 0;
       const basePollPromise = new Promise<void>((resolve, reject) => {
         const interval = setInterval(() => {
@@ -795,13 +703,9 @@ export function useOrchestratedTransfer() {
             basePollCount++;
             const baseRefetchResult = await refetchBaseBalance();
             if (baseRefetchResult.status === "error") {
-              console.warn("Base refetch failed");
               return;
             }
             const currentBaseBalance = baseRefetchResult.data?.value || 0n;
-            console.log(
-              `Base Poll ${basePollCount}: Current ${(Number(currentBaseBalance) / 1e18).toFixed(2)}, baseline ${(Number(baseBaselineBalance) / 1e18).toFixed(2)}`,
-            );
 
             if (
               currentBaseBalance >=
@@ -809,19 +713,17 @@ export function useOrchestratedTransfer() {
             ) {
               clearInterval(interval);
               resolve();
-            } else if (basePollCount >= baseMaxPolls) {
+            } else if (basePollCount >= POLLING_CONFIG.MAX_POLLS) {
               clearInterval(interval);
               reject(new Error("Confirmation timeout - no balance increase"));
             }
           })();
-        }, basePollInterval);
+        }, POLLING_CONFIG.INTERVAL_MS);
       });
 
       try {
         await basePollPromise;
-        console.log("Step 2 confirmed by balance increase");
       } catch (basePollError) {
-        console.log("Step 2 confirmation failed:", basePollError);
         const baseErrorMessage =
           "Torus EVM transfer did not confirm (check balance and retry)";
         addTransaction({
@@ -910,10 +812,8 @@ export function useOrchestratedTransfer() {
         switchChain({ chainId: torusEvmChainId });
       }
 
-      // Check gas balance on Torus EVM for retry
       await refetchNativeEthBalance();
-      const estimatedGas = 21000n + 100000n; // Base + rough contract call
-      if ((nativeEthBalance?.value ?? 0n) < estimatedGas) {
+      if ((nativeEthBalance?.value ?? 0n) < GAS_CONFIG.ESTIMATED_TOTAL) {
         const errorMessage =
           "Insufficient ETH for gas on Torus EVM. Please add funds.";
         addTransaction({
@@ -949,21 +849,7 @@ export function useOrchestratedTransfer() {
       );
 
       if (withdrawError !== undefined) {
-        console.log("Withdrawal catch triggered:", withdrawError); // Debug
-        const isUserRejection =
-          withdrawError.message.includes("rejected") ||
-          withdrawError.message.includes("denied") ||
-          withdrawError.message.includes("cancelled") ||
-          withdrawError.message.includes("User denied") ||
-          withdrawError.message.includes("User rejected") ||
-          withdrawError.message.includes("User denied transaction signature") ||
-          (withdrawError.message.includes("signature") &&
-            withdrawError.message.includes("denied")) ||
-          withdrawError.name === "UserRejectedRequestError" ||
-          (withdrawError.name === "TransactionExecutionError" &&
-            withdrawError.message.includes("User rejected"));
-
-        const errorMessage = isUserRejection
+        const errorMessage = isUserRejectionError(withdrawError)
           ? "Withdrawal transaction rejected by user"
           : "Failed to withdraw from Torus EVM";
 
@@ -981,11 +867,11 @@ export function useOrchestratedTransfer() {
           errorMessage,
         });
 
-        if (isUserRejection) {
+        if (isUserRejectionError(withdrawError)) {
           return;
-        } else {
-          throw withdrawError;
         }
+
+        throw withdrawError;
       }
 
       updateBridgeState({ step: SimpleBridgeStep.STEP_2_CONFIRMING });
@@ -994,7 +880,7 @@ export function useOrchestratedTransfer() {
       const [receiptError] = await tryAsync(
         waitForTransactionReceipt(wagmiConfig, {
           hash: txHash,
-          confirmations: 2,
+          confirmations: CONFIRMATION_CONFIG.REQUIRED_CONFIRMATIONS,
         }),
       );
 
@@ -1071,23 +957,7 @@ export function useOrchestratedTransfer() {
       );
 
       if (hyperlaneError !== undefined) {
-        console.log("Step 2 hyperlane error:", hyperlaneError); // Debug
-        const isUserRejection =
-          hyperlaneError.message.includes("rejected") ||
-          hyperlaneError.message.includes("denied") ||
-          hyperlaneError.message.includes("cancelled") ||
-          hyperlaneError.message.includes("User denied") ||
-          hyperlaneError.message.includes("User rejected") ||
-          hyperlaneError.message.includes(
-            "User denied transaction signature",
-          ) ||
-          (hyperlaneError.message.includes("signature") &&
-            hyperlaneError.message.includes("denied")) ||
-          hyperlaneError.name === "UserRejectedRequestError" ||
-          (hyperlaneError.name === "TransactionExecutionError" &&
-            hyperlaneError.message.includes("User rejected"));
-
-        const errorMessage = isUserRejection
+        const errorMessage = isUserRejectionError(hyperlaneError)
           ? "Transaction rejected by user"
           : "Failed to execute Torus EVM → Base transfer";
 
@@ -1105,11 +975,11 @@ export function useOrchestratedTransfer() {
           errorMessage,
         });
 
-        if (isUserRejection) {
+        if (isUserRejectionError(hyperlaneError)) {
           return;
-        } else {
-          throw hyperlaneError;
         }
+
+        throw hyperlaneError;
       }
 
       updateBridgeState({ step: SimpleBridgeStep.COMPLETE });
@@ -1152,41 +1022,35 @@ export function useOrchestratedTransfer() {
         ),
       );
 
-      // Run switch logic (same as main flows)
       let switchAttempts = 0;
-      const maxSwitchAttempts = 2;
       let switchSucceeded = false;
-      while (switchAttempts < maxSwitchAttempts && !switchSucceeded) {
+      while (
+        switchAttempts < POLLING_CONFIG.MAX_SWITCH_ATTEMPTS &&
+        !switchSucceeded
+      ) {
         try {
           if (chain?.id !== torusEvmChainId) {
             switchChain({ chainId: torusEvmChainId });
-            await new Promise((resolve) => setTimeout(resolve, 1000)); // Sync wait
+            await new Promise((resolve) =>
+              setTimeout(resolve, POLLING_CONFIG.SWITCH_RETRY_DELAY_MS),
+            );
           }
           if (chain?.id === torusEvmChainId) {
             switchSucceeded = true;
-            console.log("Switch retry succeeded");
           } else {
             throw new Error("Switch verification failed");
           }
         } catch (switchError: unknown) {
           switchAttempts++;
-          if (switchAttempts >= maxSwitchAttempts) {
-            const isError = switchError instanceof Error;
-            const errorMessage = isError
-              ? switchError.message
-              : String(switchError);
-            const errorName = isError ? switchError.name : "";
+          if (switchAttempts >= POLLING_CONFIG.MAX_SWITCH_ATTEMPTS) {
+            if (!(switchError instanceof Error)) {
+              throw switchError;
+            }
 
-            const isUserRejection =
-              errorMessage.includes("declined") ||
-              errorMessage.includes("rejected") ||
-              errorMessage.includes("user rejected") ||
-              errorName === "UserRejectedRequestError" ||
-              (errorName === "TransactionExecutionError" &&
-                errorMessage.includes("User rejected"));
-            const finalErrorMessage = isUserRejection
+            const finalErrorMessage = isUserRejectionError(switchError)
               ? "Switch retry rejected – please accept in wallet"
               : "Switch retry failed – network issue";
+
             addTransaction({
               step: 2,
               status: "ERROR" as const,
@@ -1200,9 +1064,11 @@ export function useOrchestratedTransfer() {
               step: SimpleBridgeStep.ERROR,
               errorMessage: finalErrorMessage,
             });
-            return; // Stop retry, let user manual
+            return;
           }
-          await new Promise((resolve) => setTimeout(resolve, 1000)); // Delay
+          await new Promise((resolve) =>
+            setTimeout(resolve, POLLING_CONFIG.SWITCH_RETRY_DELAY_MS),
+          );
         }
       }
 
@@ -1231,11 +1097,9 @@ export function useOrchestratedTransfer() {
         metadata: undefined,
       });
 
-      // Gas check
       await refetchNativeEthBalance();
       const currentNativeBalance = nativeEthBalance?.value ?? 0n;
-      const estimatedGas = 21000n + 100000n;
-      if (currentNativeBalance < estimatedGas) {
+      if (currentNativeBalance < GAS_CONFIG.ESTIMATED_TOTAL) {
         const errorMessage =
           "Insufficient ETH for gas on Torus EVM after switch. Please add funds.";
         addTransaction({
@@ -1272,22 +1136,7 @@ export function useOrchestratedTransfer() {
             ),
           );
           if (withdrawError !== undefined) {
-            // Existing withdrawal error handling
-            const isUserRejection =
-              withdrawError.message.includes("rejected") ||
-              withdrawError.message.includes("denied") ||
-              withdrawError.message.includes("cancelled") ||
-              withdrawError.message.includes("User denied") ||
-              withdrawError.message.includes("User rejected") ||
-              withdrawError.message.includes(
-                "User denied transaction signature",
-              ) ||
-              (withdrawError.message.includes("signature") &&
-                withdrawError.message.includes("denied")) ||
-              withdrawError.name === "UserRejectedRequestError" ||
-              (withdrawError.name === "TransactionExecutionError" &&
-                withdrawError.message.includes("User rejected"));
-            const errorMessage = isUserRejection
+            const errorMessage = isUserRejectionError(withdrawError)
               ? "Withdrawal transaction rejected by user"
               : "Failed to withdraw from Torus EVM";
             addTransaction({
@@ -1304,7 +1153,6 @@ export function useOrchestratedTransfer() {
             });
             return;
           }
-          // Existing confirming logic...
           updateBridgeState({ step: SimpleBridgeStep.STEP_2_CONFIRMING });
 
           // Wait for transaction receipt
@@ -1343,22 +1191,7 @@ export function useOrchestratedTransfer() {
             }),
           );
           if (hyperlaneError !== undefined) {
-            // Existing hyperlane error handling
-            const isUserRejection =
-              hyperlaneError.message.includes("rejected") ||
-              hyperlaneError.message.includes("denied") ||
-              hyperlaneError.message.includes("cancelled") ||
-              hyperlaneError.message.includes("User denied") ||
-              hyperlaneError.message.includes("User rejected") ||
-              hyperlaneError.message.includes(
-                "User denied transaction signature",
-              ) ||
-              (hyperlaneError.message.includes("signature") &&
-                hyperlaneError.message.includes("denied")) ||
-              hyperlaneError.name === "UserRejectedRequestError" ||
-              (hyperlaneError.name === "TransactionExecutionError" &&
-                hyperlaneError.message.includes("User rejected"));
-            const errorMessage = isUserRejection
+            const errorMessage = isUserRejectionError(hyperlaneError)
               ? "Transaction rejected by user"
               : "Failed to execute Torus EVM → Base transfer";
             addTransaction({
@@ -1375,7 +1208,6 @@ export function useOrchestratedTransfer() {
             });
             return;
           }
-          // Existing confirming and polling...
           updateBridgeState({ step: SimpleBridgeStep.STEP_2_CONFIRMING });
           addTransaction({
             step: 2,
@@ -1386,21 +1218,10 @@ export function useOrchestratedTransfer() {
             explorerUrl: undefined,
           });
 
-          // Baseline for Base
           await refetchBaseBalance();
           const baseBaselineBalance = baseBalance?.value || 0n;
           const baseExpectedIncrease = toNano(parseFloat(amount));
 
-          console.log(
-            "Baseline Base balance:",
-            Number(baseBaselineBalance) / 1e18,
-            "expected +",
-            Number(baseExpectedIncrease) / 1e18,
-          );
-
-          // Poll for Base
-          const basePollInterval = 5000; // 5s
-          const baseMaxPolls = 180; // 15 min
           let basePollCount = 0;
           const basePollPromise = new Promise<void>((resolve, reject) => {
             const interval = setInterval(() => {
@@ -1408,13 +1229,9 @@ export function useOrchestratedTransfer() {
                 basePollCount++;
                 const baseRefetchResult = await refetchBaseBalance();
                 if (baseRefetchResult.status === "error") {
-                  console.warn("Base refetch failed");
                   return;
                 }
                 const currentBaseBalance = baseRefetchResult.data?.value || 0n;
-                console.log(
-                  `Base Poll ${basePollCount}: Current ${(Number(currentBaseBalance) / 1e18).toFixed(2)}, baseline ${(Number(baseBaselineBalance) / 1e18).toFixed(2)}`,
-                );
 
                 if (
                   currentBaseBalance >=
@@ -1422,21 +1239,19 @@ export function useOrchestratedTransfer() {
                 ) {
                   clearInterval(interval);
                   resolve();
-                } else if (basePollCount >= baseMaxPolls) {
+                } else if (basePollCount >= POLLING_CONFIG.MAX_POLLS) {
                   clearInterval(interval);
                   reject(
                     new Error("Confirmation timeout - no balance increase"),
                   );
                 }
               })();
-            }, basePollInterval);
+            }, POLLING_CONFIG.INTERVAL_MS);
           });
 
           try {
             await basePollPromise;
-            console.log("Step 2 confirmed by balance increase");
           } catch (basePollError) {
-            console.log("Step 2 confirmation failed:", basePollError);
             const baseErrorMessage =
               "Torus EVM transfer did not confirm (check balance and retry)";
             addTransaction({
