@@ -14,9 +14,9 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@torus-ts/ui/components/dialog";
+import { env } from "~/env";
 import {
   AlertCircle,
-  ArrowRight,
   CheckCircle,
   Clock,
   ExternalLink,
@@ -63,11 +63,10 @@ export function TransactionLifecycleDialog({
   onRetry,
 }: TransactionLifecycleDialogProps) {
   const isBaseToNative = direction === "base-to-native";
+  const step1Transaction = transactions.find((tx) => tx.step === 1);
+  const step2Transaction = transactions.find((tx) => tx.step === 2);
 
   const getLifecycleSteps = (): LifecycleStep[] => {
-    const step1Transaction = transactions.find((tx) => tx.step === 1);
-    const step2Transaction = transactions.find((tx) => tx.step === 2);
-
     const steps: LifecycleStep[] = [];
 
     if (isBaseToNative) {
@@ -404,7 +403,7 @@ export function TransactionLifecycleDialog({
 
   // Debug logging: Move to useEffect to avoid re-render spam, dev-only
   useEffect(() => {
-    if (process.env.NODE_ENV === "development") {
+    if (env("NODE_ENV") === "development") {
       console.log("Dialog State Debug:", {
         currentStep,
         hasError,
@@ -593,7 +592,8 @@ export function TransactionLifecycleDialog({
                           <div>Overview: Full flow completed successfully.</div>
                           <div>
                             Step 1 ({isBaseToNative ? "Base" : "Native"} Tx):{" "}
-                            {step1Transaction?.txHash ? (
+                            {step1Transaction?.status === "SUCCESS" &&
+                            step1Transaction.txHash !== undefined ? (
                               <span className="font-mono text-xs">
                                 {step1Transaction.txHash.slice(0, 10)}...
                               </span>
@@ -603,7 +603,8 @@ export function TransactionLifecycleDialog({
                           </div>
                           <div>
                             Step 2 ({isBaseToNative ? "Torus EVM" : "Base"} Tx):{" "}
-                            {step2Transaction?.txHash ? (
+                            {step2Transaction?.status === "SUCCESS" &&
+                            step2Transaction.txHash !== undefined ? (
                               <span className="font-mono text-xs">
                                 {step2Transaction.txHash.slice(0, 10)}...
                               </span>

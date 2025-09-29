@@ -1,21 +1,24 @@
 "use client";
 
+import { smallAddress } from "@torus-network/torus-utils/torus/address";
 import { Button } from "@torus-ts/ui/components/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@torus-ts/ui/components/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@torus-ts/ui/components/card";
+import { AlertTriangle, CheckCircle, Wallet } from "lucide-react";
+import { useCallback } from "react";
+import { useSwitchChain } from "wagmi";
 import { useDualWallet } from "./hooks/use-dual-wallet";
 import type { SimpleBridgeDirection } from "./simple-bridge-types";
-import { smallAddress } from "@torus-network/torus-utils/torus/address";
-import { CheckCircle, Wallet, AlertTriangle } from "lucide-react";
-import { useSwitchChain } from "wagmi";
-import { useCallback } from "react";
 
 interface DualWalletConnectorProps {
   direction: SimpleBridgeDirection;
 }
 
-export function DualWalletConnector({
-  direction,
-}: DualWalletConnectorProps) {
+export function DualWalletConnector({ direction }: DualWalletConnectorProps) {
   const {
     connectionState,
     connectEvmWallet,
@@ -32,17 +35,6 @@ export function DualWalletConnector({
   const walletsReady = areWalletsReady(direction);
   const requiredChainId = getRequiredChainId(direction);
   const isOnCorrectChain = isOnOptimalChain(direction);
-
-  // Guard against invalid states
-  if (!connectionState || !requiredChainId) {
-    return (
-      <Card className="w-full">
-        <CardContent className="p-4">
-          <p className="text-muted-foreground">Loading wallet connections...</p>
-        </CardContent>
-      </Card>
-    );
-  }
 
   const handleSwitchChain = useCallback(() => {
     if (requiredChainId) {
@@ -76,7 +68,7 @@ export function DualWalletConnector({
           <Wallet className="h-5 w-5" />
           Connect Wallets
         </CardTitle>
-        <p className="text-sm text-muted-foreground">
+        <p className="text-muted-foreground text-sm">
           {getDirectionDescription()}
         </p>
       </CardHeader>
@@ -84,18 +76,19 @@ export function DualWalletConnector({
         {/* Torus Native Wallet */}
         <div className="flex items-center justify-between rounded-lg border p-4">
           <div className="flex items-center gap-3">
-            <div className={`h-3 w-3 rounded-full ${
-              connectionState.torusWallet.isConnected
-                ? "bg-green-500"
-                : "bg-gray-300"
-            }`} />
+            <div
+              className={`h-3 w-3 rounded-full ${
+                connectionState.torusWallet.isConnected
+                  ? "bg-green-500"
+                  : "bg-gray-300"
+              }`}
+            />
             <div>
               <p className="font-medium">Torus Native Wallet</p>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-muted-foreground text-sm">
                 {connectionState.torusWallet.isConnected
                   ? `Connected: ${smallAddress(connectionState.torusWallet.address || "")}`
-                  : "Not connected"
-                }
+                  : "Not connected"}
               </p>
             </div>
           </div>
@@ -108,7 +101,9 @@ export function DualWalletConnector({
                 size="sm"
                 disabled={connectionState.torusWallet.isConnecting}
               >
-                {connectionState.torusWallet.isConnecting ? "Connecting..." : "Connect"}
+                {connectionState.torusWallet.isConnecting
+                  ? "Connecting..."
+                  : "Connect"}
               </Button>
             )}
           </div>
@@ -117,22 +112,23 @@ export function DualWalletConnector({
         {/* EVM Wallet (Base/Torus EVM) */}
         <div className="flex items-center justify-between rounded-lg border p-4">
           <div className="flex items-center gap-3">
-            <div className={`h-3 w-3 rounded-full ${
-              connectionState.evmWallet.isConnected && isOnCorrectChain
-                ? "bg-green-500"
-                : connectionState.evmWallet.isConnected
-                ? "bg-yellow-500"
-                : "bg-gray-300"
-            }`} />
+            <div
+              className={`h-3 w-3 rounded-full ${
+                connectionState.evmWallet.isConnected && isOnCorrectChain
+                  ? "bg-green-500"
+                  : connectionState.evmWallet.isConnected
+                    ? "bg-yellow-500"
+                    : "bg-gray-300"
+              }`}
+            />
             <div>
               <p className="font-medium">
                 {getChainName(requiredChainId)} Wallet
               </p>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-muted-foreground text-sm">
                 {connectionState.evmWallet.isConnected
                   ? `Connected: ${smallAddress(connectionState.evmWallet.address || "")}`
-                  : "Not connected"
-                }
+                  : "Not connected"}
               </p>
               {connectionState.evmWallet.isConnected && !isOnCorrectChain && (
                 <p className="text-sm text-yellow-600">
@@ -156,14 +152,16 @@ export function DualWalletConnector({
                 size="sm"
                 disabled={connectionState.evmWallet.isConnecting}
               >
-                {connectionState.evmWallet.isConnecting ? "Connecting..." : "Connect"}
+                {connectionState.evmWallet.isConnecting
+                  ? "Connecting..."
+                  : "Connect"}
               </Button>
             )}
           </div>
         </div>
 
         {/* Connection Status Summary */}
-        <div className="mt-6 rounded-lg bg-muted/50 p-4">
+        <div className="bg-muted/50 mt-6 rounded-lg p-4">
           <div className="flex items-center gap-2">
             {walletsReady ? (
               <>
@@ -179,9 +177,8 @@ export function DualWalletConnector({
                   {connectionStatus === "connecting"
                     ? "Connecting wallets..."
                     : connectionStatus === "partially_connected"
-                    ? "Connect remaining wallet to continue"
-                    : "Connect both wallets to continue"
-                  }
+                      ? "Connect remaining wallet to continue"
+                      : "Connect both wallets to continue"}
                 </span>
               </>
             )}

@@ -22,6 +22,7 @@ import {
   useAccount,
   useBalance,
   useClient,
+  useConfig,
   useSwitchChain,
   useWalletClient,
 } from "wagmi";
@@ -59,6 +60,7 @@ export function useOrchestratedTransfer() {
   });
 
   // EVM wallet hooks
+  const wagmiConfig = useConfig();
   const { data: walletClient } = useWalletClient();
   const { address: evmAddress, chain } = useAccount();
   const { switchChain } = useSwitchChain();
@@ -71,13 +73,13 @@ export function useOrchestratedTransfer() {
 
   // Hyperlane/Warp core for token transfers
   const warpCore = useWarpCore();
-  const multiProvider = useMultiProvider();
+  const _multiProvider = useMultiProvider();
 
   // Token transfer hook for Hyperlane transfers
   const { triggerTransactions: triggerHyperlaneTransfer } = useTokenTransfer();
 
   // EVM balance and client for Torus EVM
-  const torusEvmClient = useClient({ chainId: torusEvmChainId });
+  const _torusEvmClient = useClient({ chainId: torusEvmChainId });
   const { data: torusEvmBalance, refetch: refetchTorusEvmBalance } = useBalance(
     {
       address: evmAddress,
@@ -170,14 +172,14 @@ export function useOrchestratedTransfer() {
       const maxBaseSwitchAttempts = 2;
       while (
         baseSwitchAttempts < maxBaseSwitchAttempts &&
-        chain?.id !== BASE_CHAIN_ID
+        chain.id !== BASE_CHAIN_ID
       ) {
         try {
-          await switchChain({ chainId: BASE_CHAIN_ID });
-          await new Promise((resolve) => setTimeout(resolve, 1000));
-          if (chain?.id === BASE_CHAIN_ID) break;
+          switchChain({ chainId: BASE_CHAIN_ID });
+          await new Promise<void>((resolve) => setTimeout(resolve, 1000));
+          if (chain.id === BASE_CHAIN_ID) break;
           throw new Error("Base switch verification failed");
-        } catch (baseSwitchError) {
+        } catch {
           baseSwitchAttempts++;
           if (baseSwitchAttempts >= maxBaseSwitchAttempts) {
             // Error handling as before
@@ -289,25 +291,27 @@ export function useOrchestratedTransfer() {
       const maxPolls = 180; // 15 min total
       let pollCount = 0;
       const pollPromise = new Promise<void>((resolve, reject) => {
-        const interval = setInterval(async () => {
-          pollCount++;
-          const refetchResult = await refetchTorusEvmBalance();
-          if (refetchResult.status === "error") {
-            console.warn("Refetch failed, skipping poll");
-            return; // or continue to next poll
-          }
-          const currentBalance = refetchResult.data?.value || 0n;
-          console.log(
-            `Poll ${pollCount}: Current balance ${(Number(currentBalance) / 1e18).toFixed(2)}, baseline ${(Number(baselineBalance) / 1e18).toFixed(2)}`,
-          );
+        const interval = setInterval(() => {
+          void (async () => {
+            pollCount++;
+            const refetchResult = await refetchTorusEvmBalance();
+            if (refetchResult.status === "error") {
+              console.warn("Refetch failed, skipping poll");
+              return; // or continue to next poll
+            }
+            const currentBalance = refetchResult.data?.value || 0n;
+            console.log(
+              `Poll ${pollCount}: Current balance ${(Number(currentBalance) / 1e18).toFixed(2)}, baseline ${(Number(baselineBalance) / 1e18).toFixed(2)}`,
+            );
 
-          if (currentBalance >= baselineBalance + expectedIncrease) {
-            clearInterval(interval);
-            resolve(); // Confirmed
-          } else if (pollCount >= maxPolls) {
-            clearInterval(interval);
-            reject(new Error("Confirmation timeout - no balance increase"));
-          }
+            if (currentBalance >= baselineBalance + expectedIncrease) {
+              clearInterval(interval);
+              resolve(); // Confirmed
+            } else if (pollCount >= maxPolls) {
+              clearInterval(interval);
+              reject(new Error("Confirmation timeout - no balance increase"));
+            }
+          })();
         }, pollInterval);
       });
 
@@ -335,34 +339,33 @@ export function useOrchestratedTransfer() {
 
       // Proceed
       updateBridgeState({ step: SimpleBridgeStep.STEP_1_COMPLETE });
+      const step1TxHash =
+        typeof hyperlaneResult === "object" && "hash" in hyperlaneResult
+          ? (hyperlaneResult as { hash: string }).hash
+          : undefined;
+
       addTransaction({
         step: 1,
         status: "SUCCESS" as const,
         chainName: "Base",
         message: "Transfer complete",
-        txHash:
-          typeof hyperlaneResult === "object" &&
-          hyperlaneResult !== null &&
-          "hash" in hyperlaneResult
-            ? (hyperlaneResult as { hash: string }).hash
-            : undefined,
-        explorerUrl:
-          typeof hyperlaneResult === "object" &&
-          hyperlaneResult !== null &&
-          "hash" in hyperlaneResult
-            ? getExplorerUrl((hyperlaneResult as { hash: string }).hash, "Base")
-            : undefined,
+        txHash: step1TxHash,
+        explorerUrl: step1TxHash
+          ? getExplorerUrl(step1TxHash, "Base")
+          : undefined,
       });
 
       // Auto-return to Base chain at end
       try {
-        if (chain?.id !== BASE_CHAIN_ID) {
-          await switchChain({ chainId: BASE_CHAIN_ID });
+        if (chain.id !== BASE_CHAIN_ID) {
+          switchChain({ chainId: BASE_CHAIN_ID });
         }
-      } catch (returnError) {
+      } catch (returnError: unknown) {
         console.warn(
           "Auto-return to Base failed:",
-          returnError.message || returnError,
+          returnError instanceof Error
+            ? returnError.message
+            : String(returnError),
         );
       }
 
@@ -378,24 +381,30 @@ export function useOrchestratedTransfer() {
       });
 
       // Switch to Torus EVM if not already
-      if (chain?.id !== torusEvmChainId) {
+      if (chain.id !== torusEvmChainId) {
         try {
-          await switchChain({ chainId: torusEvmChainId });
-        } catch (switchError) {
-          const isUserRejection =
-            switchError.message?.includes("declined") ||
-            switchError.message?.includes("rejected") ||
-            switchError.message?.includes("user rejected") ||
-            switchError.message.includes("User denied") ||
-            switchError.message.includes("User rejected") ||
-            switchError.message.includes("User denied transaction signature") ||
-            (switchError.message.includes("signature") &&
-              switchError.message.includes("denied")) ||
-            switchError.name === "UserRejectedRequestError" ||
-            (switchError.name === "TransactionExecutionError" &&
-              switchError.message.includes("User rejected"));
+          switchChain({ chainId: torusEvmChainId });
+        } catch (switchError: unknown) {
+          const isError = switchError instanceof Error;
+          const errorMessage = isError
+            ? switchError.message
+            : String(switchError);
+          const errorName = isError ? switchError.name : "";
 
-          const errorMessage = isUserRejection
+          const isUserRejection =
+            errorMessage.includes("declined") ||
+            errorMessage.includes("rejected") ||
+            errorMessage.includes("user rejected") ||
+            errorMessage.includes("User denied") ||
+            errorMessage.includes("User rejected") ||
+            errorMessage.includes("User denied transaction signature") ||
+            (errorMessage.includes("signature") &&
+              errorMessage.includes("denied")) ||
+            errorName === "UserRejectedRequestError" ||
+            (errorName === "TransactionExecutionError" &&
+              errorMessage.includes("User rejected"));
+
+          const finalErrorMessage = isUserRejection
             ? "Chain switch rejected by user"
             : "Failed to switch to Torus EVM chain";
 
@@ -403,13 +412,13 @@ export function useOrchestratedTransfer() {
             step: 2,
             status: "ERROR",
             chainName: "Torus EVM",
-            message: errorMessage,
+            message: finalErrorMessage,
             txHash: undefined,
             explorerUrl: undefined,
           });
           updateBridgeState({
             step: SimpleBridgeStep.ERROR,
-            errorMessage,
+            errorMessage: finalErrorMessage,
           });
           if (isUserRejection) {
             return;
@@ -422,7 +431,7 @@ export function useOrchestratedTransfer() {
       // Check gas balance on Torus EVM
       await refetchNativeEthBalance();
       const estimatedGas = 21000n + 100000n; // Base + rough contract call
-      if (nativeEthBalance?.value < estimatedGas) {
+      if ((nativeEthBalance?.value ?? 0n) < estimatedGas) {
         const errorMessage =
           "Insufficient ETH for gas on Torus EVM. Please add funds.";
         addTransaction({
@@ -496,28 +505,26 @@ export function useOrchestratedTransfer() {
 
       updateBridgeState({ step: SimpleBridgeStep.STEP_2_CONFIRMING });
 
-      // Wait for transaction receipt if we have wagmi config
-      if (torusEvmClient && txHash) {
-        const [receiptError] = await tryAsync(
-          waitForTransactionReceipt(torusEvmClient as any, {
-            hash: txHash,
-            confirmations: 2,
-          }),
-        );
+      // Wait for transaction receipt
+      const [receiptError] = await tryAsync(
+        waitForTransactionReceipt(wagmiConfig, {
+          hash: txHash,
+          confirmations: 2,
+        }),
+      );
 
-        if (receiptError !== undefined) {
-          console.warn("Failed to get transaction receipt:", receiptError);
-        }
-
-        addTransaction({
-          step: 2,
-          status: "SUCCESS",
-          chainName: "Torus EVM",
-          message: "Withdrawal complete",
-          txHash,
-          explorerUrl: getExplorerUrl(txHash, "Torus EVM"),
-        });
+      if (receiptError !== undefined) {
+        console.warn("Failed to get transaction receipt:", receiptError);
       }
+
+      addTransaction({
+        step: 2,
+        status: "SUCCESS",
+        chainName: "Torus EVM",
+        message: "Withdrawal complete",
+        txHash,
+        explorerUrl: getExplorerUrl(txHash, "Torus EVM"),
+      });
 
       updateBridgeState({ step: SimpleBridgeStep.COMPLETE });
       toast({
@@ -533,13 +540,14 @@ export function useOrchestratedTransfer() {
       warpCore,
       triggerHyperlaneTransfer,
       refetchTorusEvmBalance,
-      torusEvmClient,
+      wagmiConfig,
       updateBridgeState,
       addTransaction,
       getExplorerUrl,
       toast,
       torusEvmBalance,
       switchChain,
+      torusEvmChainId,
       nativeEthBalance,
       refetchNativeEthBalance,
     ],
@@ -629,7 +637,7 @@ export function useOrchestratedTransfer() {
           resolve();
         });
 
-        tracker.on("error", (error) => {
+        tracker.on("error", (error: unknown) => {
           updateBridgeState({
             step: SimpleBridgeStep.ERROR,
             errorMessage: "Native bridge transaction failed",
@@ -640,7 +648,7 @@ export function useOrchestratedTransfer() {
             chainName: "Torus Native",
             message: "Transaction failed",
           });
-          reject(error);
+          reject(error instanceof Error ? error : new Error(String(error)));
         });
       });
 
@@ -656,13 +664,13 @@ export function useOrchestratedTransfer() {
 
       // Switch to Torus EVM for Hyperlane from Torus
       if (chain?.id !== torusEvmChainId) {
-        await switchChain({ chainId: torusEvmChainId });
+        switchChain({ chainId: torusEvmChainId });
       }
 
       // Gas check same as above
       await refetchNativeEthBalance();
       const estimatedGas = 21000n + 100000n; // Base + rough contract call
-      if (nativeEthBalance?.value < estimatedGas) {
+      if ((nativeEthBalance?.value ?? 0n) < estimatedGas) {
         const errorMessage =
           "Insufficient ETH for gas on Torus EVM. Please add funds.";
         addTransaction({
@@ -782,28 +790,30 @@ export function useOrchestratedTransfer() {
       const baseMaxPolls = 180; // 15 min
       let basePollCount = 0;
       const basePollPromise = new Promise<void>((resolve, reject) => {
-        const interval = setInterval(async () => {
-          basePollCount++;
-          const baseRefetchResult = await refetchBaseBalance();
-          if (baseRefetchResult.status === "error") {
-            console.warn("Base refetch failed");
-            return;
-          }
-          const currentBaseBalance = baseRefetchResult.data?.value || 0n;
-          console.log(
-            `Base Poll ${basePollCount}: Current ${(Number(currentBaseBalance) / 1e18).toFixed(2)}, baseline ${(Number(baseBaselineBalance) / 1e18).toFixed(2)}`,
-          );
+        const interval = setInterval(() => {
+          void (async () => {
+            basePollCount++;
+            const baseRefetchResult = await refetchBaseBalance();
+            if (baseRefetchResult.status === "error") {
+              console.warn("Base refetch failed");
+              return;
+            }
+            const currentBaseBalance = baseRefetchResult.data?.value || 0n;
+            console.log(
+              `Base Poll ${basePollCount}: Current ${(Number(currentBaseBalance) / 1e18).toFixed(2)}, baseline ${(Number(baseBaselineBalance) / 1e18).toFixed(2)}`,
+            );
 
-          if (
-            currentBaseBalance >=
-            baseBaselineBalance + baseExpectedIncrease
-          ) {
-            clearInterval(interval);
-            resolve();
-          } else if (basePollCount >= baseMaxPolls) {
-            clearInterval(interval);
-            reject(new Error("Confirmation timeout - no balance increase"));
-          }
+            if (
+              currentBaseBalance >=
+              baseBaselineBalance + baseExpectedIncrease
+            ) {
+              clearInterval(interval);
+              resolve();
+            } else if (basePollCount >= baseMaxPolls) {
+              clearInterval(interval);
+              reject(new Error("Confirmation timeout - no balance increase"));
+            }
+          })();
         }, basePollInterval);
       });
 
@@ -831,26 +841,18 @@ export function useOrchestratedTransfer() {
 
       // Proceed to COMPLETE
       updateBridgeState({ step: SimpleBridgeStep.COMPLETE });
+      const txHash2 =
+        typeof hyperlaneResult2 === "object" && "hash" in hyperlaneResult2
+          ? (hyperlaneResult2 as { hash: string }).hash
+          : undefined;
+
       addTransaction({
         step: 2,
         status: "SUCCESS" as const,
         chainName: "Torus EVM",
         message: "Transfer complete",
-        txHash:
-          typeof hyperlaneResult2 === "object" &&
-          hyperlaneResult2 !== null &&
-          "hash" in hyperlaneResult2
-            ? (hyperlaneResult2 as { hash: string }).hash
-            : undefined,
-        explorerUrl:
-          typeof hyperlaneResult2 === "object" &&
-          hyperlaneResult2 !== null &&
-          "hash" in hyperlaneResult2
-            ? getExplorerUrl(
-                (hyperlaneResult2 as { hash: string }).hash,
-                "Torus EVM",
-              )
-            : undefined,
+        txHash: txHash2,
+        explorerUrl: txHash2 ? getExplorerUrl(txHash2, "Torus EVM") : undefined,
       });
 
       toast({
@@ -872,6 +874,9 @@ export function useOrchestratedTransfer() {
       switchChain,
       nativeEthBalance,
       refetchNativeEthBalance,
+      chain?.id,
+      getExplorerUrl,
+      torusEvmChainId,
     ],
   );
 
@@ -901,14 +906,14 @@ export function useOrchestratedTransfer() {
       );
 
       // Switch to Torus EVM for retry
-      if (chain?.id !== torusEvmChainId) {
-        await switchChain({ chainId: torusEvmChainId });
+      if (chain.id !== torusEvmChainId) {
+        switchChain({ chainId: torusEvmChainId });
       }
 
       // Check gas balance on Torus EVM for retry
       await refetchNativeEthBalance();
       const estimatedGas = 21000n + 100000n; // Base + rough contract call
-      if (nativeEthBalance?.value < estimatedGas) {
+      if ((nativeEthBalance?.value ?? 0n) < estimatedGas) {
         const errorMessage =
           "Insufficient ETH for gas on Torus EVM. Please add funds.";
         addTransaction({
@@ -985,28 +990,26 @@ export function useOrchestratedTransfer() {
 
       updateBridgeState({ step: SimpleBridgeStep.STEP_2_CONFIRMING });
 
-      // Wait for transaction receipt if we have wagmi config
-      if (torusEvmClient && txHash) {
-        const [receiptError] = await tryAsync(
-          waitForTransactionReceipt(torusEvmClient as any, {
-            hash: txHash,
-            confirmations: 2,
-          }),
-        );
+      // Wait for transaction receipt
+      const [receiptError] = await tryAsync(
+        waitForTransactionReceipt(wagmiConfig, {
+          hash: txHash,
+          confirmations: 2,
+        }),
+      );
 
-        if (receiptError !== undefined) {
-          console.warn("Failed to get transaction receipt:", receiptError);
-        }
-
-        addTransaction({
-          step: 2,
-          status: "SUCCESS",
-          chainName: "Torus EVM",
-          message: "Withdrawal complete",
-          txHash,
-          explorerUrl: getExplorerUrl(txHash, "Torus EVM"),
-        });
+      if (receiptError !== undefined) {
+        console.warn("Failed to get transaction receipt:", receiptError);
       }
+
+      addTransaction({
+        step: 2,
+        status: "SUCCESS",
+        chainName: "Torus EVM",
+        message: "Withdrawal complete",
+        txHash,
+        explorerUrl: getExplorerUrl(txHash, "Torus EVM"),
+      });
 
       updateBridgeState({ step: SimpleBridgeStep.COMPLETE });
       toast({
@@ -1020,11 +1023,12 @@ export function useOrchestratedTransfer() {
       walletClient,
       chain,
       refetchTorusEvmBalance,
-      torusEvmClient,
+      wagmiConfig,
       updateBridgeState,
       addTransaction,
       getExplorerUrl,
       toast,
+      torusEvmChainId,
       switchChain,
       nativeEthBalance,
       refetchNativeEthBalance,
@@ -1127,13 +1131,12 @@ export function useOrchestratedTransfer() {
       updateBridgeState,
       addTransaction,
       toast,
-      switchChain,
     ],
   );
 
   const retrySwitchOnly = useCallback(
-    async (direction: SimpleBridgeDirection, amount: string) => {
-      if (!direction || !amount) return;
+    async (direction: SimpleBridgeDirection | null, amount: string) => {
+      if (direction === null || !amount) return;
       console.log(`Retrying switch only for ${direction}`);
       updateBridgeState({ step: SimpleBridgeStep.STEP_2_SWITCHING });
       setTransactions((prev) =>
@@ -1156,7 +1159,7 @@ export function useOrchestratedTransfer() {
       while (switchAttempts < maxSwitchAttempts && !switchSucceeded) {
         try {
           if (chain?.id !== torusEvmChainId) {
-            await switchChain({ chainId: torusEvmChainId });
+            switchChain({ chainId: torusEvmChainId });
             await new Promise((resolve) => setTimeout(resolve, 1000)); // Sync wait
           }
           if (chain?.id === torusEvmChainId) {
@@ -1165,31 +1168,37 @@ export function useOrchestratedTransfer() {
           } else {
             throw new Error("Switch verification failed");
           }
-        } catch (switchError) {
+        } catch (switchError: unknown) {
           switchAttempts++;
           if (switchAttempts >= maxSwitchAttempts) {
+            const isError = switchError instanceof Error;
+            const errorMessage = isError
+              ? switchError.message
+              : String(switchError);
+            const errorName = isError ? switchError.name : "";
+
             const isUserRejection =
-              switchError.message?.includes("declined") ||
-              switchError.message?.includes("rejected") ||
-              switchError.message?.includes("user rejected") ||
-              switchError.name === "UserRejectedRequestError" ||
-              (switchError.name === "TransactionExecutionError" &&
-                switchError.message?.includes("User rejected"));
-            const errorMessage = isUserRejection
+              errorMessage.includes("declined") ||
+              errorMessage.includes("rejected") ||
+              errorMessage.includes("user rejected") ||
+              errorName === "UserRejectedRequestError" ||
+              (errorName === "TransactionExecutionError" &&
+                errorMessage.includes("User rejected"));
+            const finalErrorMessage = isUserRejection
               ? "Switch retry rejected – please accept in wallet"
               : "Switch retry failed – network issue";
             addTransaction({
               step: 2,
               status: "ERROR" as const,
               chainName: "Torus EVM",
-              message: errorMessage,
+              message: finalErrorMessage,
               txHash: undefined,
               explorerUrl: undefined,
               metadata: { type: "switch" },
             });
             updateBridgeState({
               step: SimpleBridgeStep.ERROR,
-              errorMessage,
+              errorMessage: finalErrorMessage,
             });
             return; // Stop retry, let user manual
           }
@@ -1224,7 +1233,7 @@ export function useOrchestratedTransfer() {
 
       // Gas check
       await refetchNativeEthBalance();
-      const currentNativeBalance = nativeEthBalance?.value || 0n;
+      const currentNativeBalance = nativeEthBalance?.value ?? 0n;
       const estimatedGas = 21000n + 100000n;
       if (currentNativeBalance < estimatedGas) {
         const errorMessage =
@@ -1248,13 +1257,18 @@ export function useOrchestratedTransfer() {
         if (direction === "base-to-native") {
           // Withdrawal
           updateBridgeState({ step: SimpleBridgeStep.STEP_2_SIGNING });
+          if (!walletClient || !chain || !selectedAccount) {
+            throw new Error("Missing required wallet data");
+          }
           const [withdrawError, txHash] = await tryAsync(
             withdrawFromTorusEvm(
               walletClient,
               chain,
               selectedAccount.address as SS58Address,
               toNano(parseFloat(amount)),
-              async () => await refetchTorusEvmBalance(),
+              async () => {
+                await refetchTorusEvmBalance();
+              },
             ),
           );
           if (withdrawError !== undefined) {
@@ -1293,32 +1307,33 @@ export function useOrchestratedTransfer() {
           // Existing confirming logic...
           updateBridgeState({ step: SimpleBridgeStep.STEP_2_CONFIRMING });
 
-          // Wait for transaction receipt if we have wagmi config
-          if (torusEvmClient && txHash) {
-            const [receiptError] = await tryAsync(
-              waitForTransactionReceipt(torusEvmClient as any, {
-                hash: txHash,
-                confirmations: 2,
-              }),
-            );
+          // Wait for transaction receipt
+          const [receiptError] = await tryAsync(
+            waitForTransactionReceipt(wagmiConfig, {
+              hash: txHash,
+              confirmations: 2,
+            }),
+          );
 
-            if (receiptError !== undefined) {
-              console.warn("Failed to get transaction receipt:", receiptError);
-            }
-
-            addTransaction({
-              step: 2,
-              status: "SUCCESS",
-              chainName: "Torus EVM",
-              message: "Withdrawal complete",
-              txHash,
-              explorerUrl: getExplorerUrl(txHash, "Torus EVM"),
-            });
+          if (receiptError !== undefined) {
+            console.warn("Failed to get transaction receipt:", receiptError);
           }
-        } else if (direction === "native-to-base") {
+
+          addTransaction({
+            step: 2,
+            status: "SUCCESS",
+            chainName: "Torus EVM",
+            message: "Withdrawal complete",
+            txHash,
+            explorerUrl: getExplorerUrl(txHash, "Torus EVM"),
+          });
+        } else {
           // Hyperlane from Torus EVM
           updateBridgeState({ step: SimpleBridgeStep.STEP_2_SIGNING });
-          const [hyperlaneError, hyperlaneResult] = await tryAsync(
+          if (!evmAddress) {
+            throw new Error("EVM address not available");
+          }
+          const [hyperlaneError, _hyperlaneResult] = await tryAsync(
             triggerHyperlaneTransfer({
               origin: "torus",
               destination: "base",
@@ -1388,28 +1403,32 @@ export function useOrchestratedTransfer() {
           const baseMaxPolls = 180; // 15 min
           let basePollCount = 0;
           const basePollPromise = new Promise<void>((resolve, reject) => {
-            const interval = setInterval(async () => {
-              basePollCount++;
-              const baseRefetchResult = await refetchBaseBalance();
-              if (baseRefetchResult.status === "error") {
-                console.warn("Base refetch failed");
-                return;
-              }
-              const currentBaseBalance = baseRefetchResult.data?.value || 0n;
-              console.log(
-                `Base Poll ${basePollCount}: Current ${(Number(currentBaseBalance) / 1e18).toFixed(2)}, baseline ${(Number(baseBaselineBalance) / 1e18).toFixed(2)}`,
-              );
+            const interval = setInterval(() => {
+              void (async () => {
+                basePollCount++;
+                const baseRefetchResult = await refetchBaseBalance();
+                if (baseRefetchResult.status === "error") {
+                  console.warn("Base refetch failed");
+                  return;
+                }
+                const currentBaseBalance = baseRefetchResult.data?.value || 0n;
+                console.log(
+                  `Base Poll ${basePollCount}: Current ${(Number(currentBaseBalance) / 1e18).toFixed(2)}, baseline ${(Number(baseBaselineBalance) / 1e18).toFixed(2)}`,
+                );
 
-              if (
-                currentBaseBalance >=
-                baseBaselineBalance + baseExpectedIncrease
-              ) {
-                clearInterval(interval);
-                resolve();
-              } else if (basePollCount >= baseMaxPolls) {
-                clearInterval(interval);
-                reject(new Error("Confirmation timeout - no balance increase"));
-              }
+                if (
+                  currentBaseBalance >=
+                  baseBaselineBalance + baseExpectedIncrease
+                ) {
+                  clearInterval(interval);
+                  resolve();
+                } else if (basePollCount >= baseMaxPolls) {
+                  clearInterval(interval);
+                  reject(
+                    new Error("Confirmation timeout - no balance increase"),
+                  );
+                }
+              })();
             }, basePollInterval);
           });
 
@@ -1448,7 +1467,6 @@ export function useOrchestratedTransfer() {
     },
     [
       updateBridgeState,
-      setTransactions,
       switchChain,
       torusEvmChainId,
       chain,
@@ -1456,14 +1474,14 @@ export function useOrchestratedTransfer() {
       nativeEthBalance,
       walletClient,
       selectedAccount,
-      tryAsync,
-      withdrawFromTorusEvm,
       refetchTorusEvmBalance,
       triggerHyperlaneTransfer,
       evmAddress,
       baseBalance,
       refetchBaseBalance,
       getExplorerUrl,
+      addTransaction,
+      wagmiConfig,
     ],
   );
 
@@ -1514,7 +1532,7 @@ export function useOrchestratedTransfer() {
         } else {
           await executeNativeToBase(amount);
         }
-      } else if (failedTransaction.step === 2) {
+      } else {
         // Retry step 2 - we need to implement partial retry logic
         if (failedTransaction.metadata?.type === "switch") {
           await retrySwitchOnly(direction, amount);

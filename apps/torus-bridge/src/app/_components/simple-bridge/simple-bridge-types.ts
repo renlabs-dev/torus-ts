@@ -1,5 +1,4 @@
 import type { SS58Address } from "@torus-network/sdk/types";
-import type { TransactionResult } from "@torus-ts/torus-provider/types";
 
 export type SimpleBridgeDirection = "base-to-native" | "native-to-base";
 
@@ -64,4 +63,5 @@ export interface SimpleBridgeTransaction {
   message?: string;
   chainName: string;
   explorerUrl?: string;
+  metadata?: { type: "switch" };
 }

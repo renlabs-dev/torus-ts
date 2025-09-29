@@ -1,23 +1,30 @@
 "use client";
 
-import { useTorus } from "@torus-ts/torus-provider";
-import { useAccount, useConnect, useDisconnect } from "wagmi";
-import { useCallback, useMemo } from "react";
 import type { SS58Address } from "@torus-network/sdk/types";
-import type { WalletConnectionState, SimpleBridgeDirection } from "../simple-bridge-types";
+import { useTorus } from "@torus-ts/torus-provider";
 import { getChainValuesOnEnv } from "~/config";
 import { env } from "~/env";
+import { useCallback, useMemo } from "react";
+import { useAccount, useConnect, useDisconnect } from "wagmi";
+import type {
+  SimpleBridgeDirection,
+  WalletConnectionState,
+} from "../simple-bridge-types";
 
 export function useDualWallet() {
   // Torus Native wallet connection
   const {
     selectedAccount: torusAccount,
     isAccountConnected: isTorusConnected,
-    isInitialized: isTorusInitialized,
+    isInitialized: _isTorusInitialized,
   } = useTorus();
 
   // EVM wallet connection (for Base and Torus EVM)
-  const { address: evmAddress, isConnected: isEvmConnected, chainId } = useAccount();
+  const {
+    address: evmAddress,
+    isConnected: isEvmConnected,
+    chainId,
+  } = useAccount();
   const { connect, connectors, isPending: isEvmConnecting } = useConnect();
   const { disconnect } = useDisconnect();
 
@@ -56,7 +63,10 @@ export function useDualWallet() {
   ]);
 
   const connectEvmWallet = useCallback(() => {
-    console.log("connectEvmWallet called", { isEvmConnected, connectorsCount: connectors.length });
+    console.log("connectEvmWallet called", {
+      isEvmConnected,
+      connectorsCount: connectors.length,
+    });
 
     // Simple approach: just find and connect to MetaMask/injected wallet
     const injectedConnector = connectors.find((c) => c.id === "injected");
@@ -80,14 +90,14 @@ export function useDualWallet() {
   }, [disconnect]);
 
   const isRequiredChainConnected = useCallback(
-    (direction: SimpleBridgeDirection) => {
+    (_direction: SimpleBridgeDirection) => {
       if (!isEvmConnected || !chainId) return false;
 
       // For Simple Bridge, accept if connected to either Base or Torus EVM
       // We'll switch networks during the transaction process as needed
       return chainId === baseChainId || chainId === torusEvmChainId;
     },
-    [isEvmConnected, chainId, baseChainId, torusEvmChainId]
+    [isEvmConnected, chainId, baseChainId, torusEvmChainId],
   );
 
   const isOnOptimalChain = useCallback(
@@ -103,7 +113,7 @@ export function useDualWallet() {
           return false;
       }
     },
-    [isEvmConnected, chainId, baseChainId, torusEvmChainId]
+    [isEvmConnected, chainId, baseChainId, torusEvmChainId],
   );
 
   const getRequiredChainId = useCallback(
@@ -117,17 +127,18 @@ export function useDualWallet() {
           return baseChainId;
       }
     },
-    [baseChainId, torusEvmChainId]
+    [baseChainId, torusEvmChainId],
   );
 
   const areWalletsReady = useCallback(
     (direction: SimpleBridgeDirection) => {
       const torusReady = connectionState.torusWallet.isConnected;
-      const evmReady = connectionState.evmWallet.isConnected &&
-                      isRequiredChainConnected(direction);
+      const evmReady =
+        connectionState.evmWallet.isConnected &&
+        isRequiredChainConnected(direction);
       return torusReady && evmReady;
     },
-    [connectionState, isRequiredChainConnected]
+    [connectionState, isRequiredChainConnected],
   );
 
   const getConnectionStatus = useCallback(() => {

@@ -101,7 +101,7 @@ export function SimpleBridgeForm() {
     }
   }, [amount, walletsReady, executeTransfer, direction]);
 
-  const handleReset = useCallback(() => {
+  const _handleReset = useCallback(() => {
     resetTransfer();
     setAmount("");
     setShowTransactionDialog(false);
