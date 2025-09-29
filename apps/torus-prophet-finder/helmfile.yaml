@@ -8,7 +8,7 @@ environments:
       - wssApiEndpoint: wss://api.testnet.torus.network
       - cacheUrl: https://cache.testnet.torus.network
       - releaseName: dev-prophet-finder
-      - ingressHost: prophet-finder.testnet.torus.network
+      - ingressHost: prophetfinder.testnet.torus.network
       - chainEnv: testnet
   prod:
     values:
@@ -19,7 +19,7 @@ environments:
       - wssApiEndpoint: wss://api.torus.network
       - cacheUrl: https://cache.torus.network
       - releaseName: prophet-finder
-      - ingressHost: prophet-finder.torus.network
+      - ingressHost: prophetfinder.torus.network
       - chainEnv: mainnet
 ---
 helmDefaults:
