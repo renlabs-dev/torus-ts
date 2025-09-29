@@ -30,36 +30,71 @@ export function DualWalletConnector({ direction }: DualWalletConnectorProps) {
   } = useDualWallet();
 
   const { switchChain } = useSwitchChain();
-  // Safe checks to prevent crashes
+
   const connectionStatus = getConnectionStatus();
   const walletsReady = areWalletsReady(direction);
   const requiredChainId = getRequiredChainId(direction);
   const isOnCorrectChain = isOnOptimalChain(direction);
 
   const handleSwitchChain = useCallback(() => {
-    if (requiredChainId) {
-      switchChain({ chainId: requiredChainId });
+    if (!requiredChainId) {
+      return;
     }
+
+    switchChain({ chainId: requiredChainId });
   }, [switchChain, requiredChainId]);
 
   const getChainName = (chainId: number) => {
-    if (chainId === chainIds.base) return "Base";
-    if (chainId === chainIds.torusEvm) return "Torus EVM";
+    if (chainId === chainIds.base) {
+      return "Base";
+    }
+
+    if (chainId === chainIds.torusEvm) {
+      return "Torus EVM";
+    }
+
     return "Unknown";
   };
 
   const getDirectionDescription = () => {
-    switch (direction) {
-      case "base-to-native":
-        return "Transfer Base TORUS → Native TORUS";
-      case "native-to-base":
-        return "Transfer Native TORUS → Base TORUS";
-      default:
-        return "Simple Bridge Transfer";
+    if (direction === "base-to-native") {
+      return "Transfer Base TORUS → Native TORUS";
     }
+
+    return "Transfer Native TORUS → Base TORUS";
   };
 
-  // Note: walletsReady state is handled by the parent component
+  const getStatusIndicatorColor = () => {
+    if (connectionState.torusWallet.isConnected) {
+      return "bg-green-500";
+    }
+
+    return "bg-gray-300";
+  };
+
+  const getEvmStatusIndicatorColor = () => {
+    if (connectionState.evmWallet.isConnected && isOnCorrectChain) {
+      return "bg-green-500";
+    }
+
+    if (connectionState.evmWallet.isConnected) {
+      return "bg-yellow-500";
+    }
+
+    return "bg-gray-300";
+  };
+
+  const getConnectionStatusMessage = () => {
+    if (connectionStatus === "connecting") {
+      return "Connecting wallets...";
+    }
+
+    if (connectionStatus === "partially_connected") {
+      return "Connect remaining wallet to continue";
+    }
+
+    return "Connect both wallets to continue";
+  };
 
   return (
     <Card className="w-full">
@@ -73,16 +108,9 @@ export function DualWalletConnector({ direction }: DualWalletConnectorProps) {
         </p>
       </CardHeader>
       <CardContent className="space-y-4">
-        {/* Torus Native Wallet */}
         <div className="flex items-center justify-between rounded-lg border p-4">
           <div className="flex items-center gap-3">
-            <div
-              className={`h-3 w-3 rounded-full ${
-                connectionState.torusWallet.isConnected
-                  ? "bg-green-500"
-                  : "bg-gray-300"
-              }`}
-            />
+            <div className={`h-3 w-3 rounded-full ${getStatusIndicatorColor()}`} />
             <div>
               <p className="font-medium">Torus Native Wallet</p>
               <p className="text-muted-foreground text-sm">
@@ -109,17 +137,10 @@ export function DualWalletConnector({ direction }: DualWalletConnectorProps) {
           </div>
         </div>
 
-        {/* EVM Wallet (Base/Torus EVM) */}
         <div className="flex items-center justify-between rounded-lg border p-4">
           <div className="flex items-center gap-3">
             <div
-              className={`h-3 w-3 rounded-full ${
-                connectionState.evmWallet.isConnected && isOnCorrectChain
-                  ? "bg-green-500"
-                  : connectionState.evmWallet.isConnected
-                    ? "bg-yellow-500"
-                    : "bg-gray-300"
-              }`}
+              className={`h-3 w-3 rounded-full ${getEvmStatusIndicatorColor()}`}
             />
             <div>
               <p className="font-medium">
@@ -160,7 +181,6 @@ export function DualWalletConnector({ direction }: DualWalletConnectorProps) {
           </div>
         </div>
 
-        {/* Connection Status Summary */}
         <div className="bg-muted/50 mt-6 rounded-lg p-4">
           <div className="flex items-center gap-2">
             {walletsReady ? (
@@ -174,11 +194,7 @@ export function DualWalletConnector({ direction }: DualWalletConnectorProps) {
               <>
                 <div className="h-5 w-5 animate-pulse rounded-full bg-gray-400" />
                 <span className="text-muted-foreground">
-                  {connectionStatus === "connecting"
-                    ? "Connecting wallets..."
-                    : connectionStatus === "partially_connected"
-                      ? "Connect remaining wallet to continue"
-                      : "Connect both wallets to continue"}
+                  {getConnectionStatusMessage()}
                 </span>
               </>
             )}
