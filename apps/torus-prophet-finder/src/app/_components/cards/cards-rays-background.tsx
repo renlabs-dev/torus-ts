@@ -158,10 +158,17 @@ export default function CardsRaysBackground() {
     return () => controller.dispose();
   }, []);
 
+  const containerRef = React.useRef<HTMLDivElement | null>(null);
   // Absolute across full section, above starfield, below content
   return (
-    <div className="pointer-events-none absolute inset-0 z-[12]">
+    <div
+      ref={containerRef}
+      className="pointer-events-none absolute inset-x-0 top-0 z-[12] w-full"
+      style={{ height: `${19500}px` }}
+    >
       <canvas className="h-full w-full" ref={ref} />
     </div>
   );
 }
+
+
