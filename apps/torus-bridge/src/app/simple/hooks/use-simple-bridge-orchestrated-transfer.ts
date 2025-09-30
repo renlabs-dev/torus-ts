@@ -21,12 +21,10 @@ import {
 import type { SimpleBridgeDirection } from "../_components/simple-bridge-types";
 import { SimpleBridgeStep } from "../_components/simple-bridge-types";
 import {
-  BASE_CHAIN_ID,
-} from "./simple-bridge-helpers";
-import {
   executeBaseToNativeStep1,
   executeBaseToNativeStep2,
 } from "./simple-bridge-base-to-native-flow";
+import { BASE_CHAIN_ID } from "./simple-bridge-helpers";
 import {
   executeNativeToBaseStep1,
   executeNativeToBaseStep2,
@@ -56,16 +54,33 @@ export function useOrchestratedTransfer() {
     transactionType: "Simple Bridge Transfer",
   });
 
-  const sendTx = useCallback(async (tx: Parameters<NonNullable<typeof _sendTx>>[0]) => {
-    if (!_sendTx) {
-      throw new Error("sendTx is not available");
-    }
-    const [error, result] = await _sendTx(tx);
-    if (error !== undefined) {
-      return [error, undefined] as [Error, undefined];
-    }
-    return [undefined, result as {tracker: {on: (event: string, callback: (data?: unknown) => void) => unknown}}] as [undefined, {tracker: {on: (event: string, callback: (data?: unknown) => void) => unknown}}];
-  }, [_sendTx]);
+  const sendTx = useCallback(
+    async (tx: Parameters<NonNullable<typeof _sendTx>>[0]) => {
+      if (!_sendTx) {
+        throw new Error("sendTx is not available");
+      }
+      const [error, result] = await _sendTx(tx);
+      if (error !== undefined) {
+        return [error, undefined] as [Error, undefined];
+      }
+      return [
+        undefined,
+        result as {
+          tracker: {
+            on: (event: string, callback: (data?: unknown) => void) => unknown;
+          };
+        },
+      ] as [
+        undefined,
+        {
+          tracker: {
+            on: (event: string, callback: (data?: unknown) => void) => unknown;
+          };
+        },
+      ];
+    },
+    [_sendTx],
+  );
 
   const wagmiConfig = useConfig();
   const { data: walletClient } = useWalletClient();
@@ -83,12 +98,11 @@ export function useOrchestratedTransfer() {
   const { triggerTransactions: triggerHyperlaneTransfer } = useTokenTransfer();
 
   const _torusEvmClient = useClient({ chainId: torusEvmChainId });
-  const { data: torusEvmBalance, refetch: _refetchTorusEvmBalance } = useBalance(
-    {
+  const { data: torusEvmBalance, refetch: _refetchTorusEvmBalance } =
+    useBalance({
       address: evmAddress,
       chainId: torusEvmChainId,
-    },
-  );
+    });
 
   const { data: baseBalance, refetch: _refetchBaseBalance } = useBalance({
     address: evmAddress,
@@ -102,14 +116,20 @@ export function useOrchestratedTransfer() {
       token: "0x0000000000000000000000000000000000000000",
     });
 
-  const refetchTorusEvmBalance = useCallback(async (): Promise<{status: string; data?: {value: bigint}}> => {
+  const refetchTorusEvmBalance = useCallback(async (): Promise<{
+    status: string;
+    data?: { value: bigint };
+  }> => {
     const result = await _refetchTorusEvmBalance();
-    return result as {status: string; data?: {value: bigint}};
+    return result as { status: string; data?: { value: bigint } };
   }, [_refetchTorusEvmBalance]);
 
-  const refetchBaseBalance = useCallback(async (): Promise<{status: string; data?: {value: bigint}}> => {
+  const refetchBaseBalance = useCallback(async (): Promise<{
+    status: string;
+    data?: { value: bigint };
+  }> => {
     const result = await _refetchBaseBalance();
-    return result as {status: string; data?: {value: bigint}};
+    return result as { status: string; data?: { value: bigint } };
   }, [_refetchBaseBalance]);
 
   const refetchNativeEthBalance = useCallback(async (): Promise<void> => {
@@ -366,7 +386,12 @@ export function useOrchestratedTransfer() {
         await executeNativeToBase(amount);
       }
     },
-    [executeBaseToNative, executeNativeToBase, updateBridgeState, setTransactions],
+    [
+      executeBaseToNative,
+      executeNativeToBase,
+      updateBridgeState,
+      setTransactions,
+    ],
   );
 
   const retryFromFailedStep = useCallback(async () => {

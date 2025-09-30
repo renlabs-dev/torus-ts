@@ -1,12 +1,16 @@
+import type { ApiPromise } from "@polkadot/api";
 import { transferAllowDeath } from "@torus-network/sdk/chain";
 import { convertH160ToSS58 } from "@torus-network/sdk/evm";
 import type { SS58Address } from "@torus-network/sdk/types";
-import type { ApiPromise } from "@polkadot/api";
 import { toNano } from "@torus-network/torus-utils/torus/token";
 import { tryAsync } from "@torus-network/torus-utils/try-catch";
 import type { SimpleBridgeTransaction } from "../_components/simple-bridge-types";
 import { SimpleBridgeStep } from "../_components/simple-bridge-types";
-import { GAS_CONFIG, isUserRejectionError, POLLING_CONFIG } from "./simple-bridge-helpers";
+import {
+  GAS_CONFIG,
+  isUserRejectionError,
+  POLLING_CONFIG,
+} from "./simple-bridge-helpers";
 
 interface NativeToBaseStep1Params {
   amount: string;
@@ -16,14 +20,26 @@ interface NativeToBaseStep1Params {
   sendTx: (
     tx: ReturnType<typeof transferAllowDeath>,
   ) => Promise<
-    | [undefined, { tracker: {on: (event: string, callback: (data?: unknown) => void) => unknown} }]
+    | [
+        undefined,
+        {
+          tracker: {
+            on: (event: string, callback: (data?: unknown) => void) => unknown;
+          };
+        },
+      ]
     | [Error, undefined]
   >;
-  updateBridgeState: (updates: { step: SimpleBridgeStep; errorMessage?: string }) => void;
+  updateBridgeState: (updates: {
+    step: SimpleBridgeStep;
+    errorMessage?: string;
+  }) => void;
   addTransaction: (tx: SimpleBridgeTransaction) => void;
 }
 
-export async function executeNativeToBaseStep1(params: NativeToBaseStep1Params) {
+export async function executeNativeToBaseStep1(
+  params: NativeToBaseStep1Params,
+) {
   const {
     amount,
     evmAddress,
@@ -126,12 +142,17 @@ interface NativeToBaseStep2Params {
   refetchBaseBalance: () => Promise<unknown>;
   nativeEthBalance?: { value: bigint };
   baseBalance?: { value: bigint };
-  updateBridgeState: (updates: { step: SimpleBridgeStep; errorMessage?: string }) => void;
+  updateBridgeState: (updates: {
+    step: SimpleBridgeStep;
+    errorMessage?: string;
+  }) => void;
   addTransaction: (tx: SimpleBridgeTransaction) => void;
   getExplorerUrl: (txHash: string, chainName: string) => string;
 }
 
-export async function executeNativeToBaseStep2(params: NativeToBaseStep2Params) {
+export async function executeNativeToBaseStep2(
+  params: NativeToBaseStep2Params,
+) {
   const {
     amount,
     evmAddress,
@@ -242,16 +263,16 @@ export async function executeNativeToBaseStep2(params: NativeToBaseStep2Params) 
     const interval = setInterval(() => {
       void (async () => {
         basePollCount++;
-        const baseRefetchResult = await refetchBaseBalance() as {status: string; data?: {value: bigint}};
+        const baseRefetchResult = (await refetchBaseBalance()) as {
+          status: string;
+          data?: { value: bigint };
+        };
         if (baseRefetchResult.status === "error") {
           return;
         }
         const currentBaseBalance = baseRefetchResult.data?.value || 0n;
 
-        if (
-          currentBaseBalance >=
-          baseBaselineBalance + baseExpectedIncrease
-        ) {
+        if (currentBaseBalance >= baseBaselineBalance + baseExpectedIncrease) {
           clearInterval(interval);
           resolve();
         } else if (basePollCount >= POLLING_CONFIG.MAX_POLLS) {
@@ -284,7 +305,9 @@ export async function executeNativeToBaseStep2(params: NativeToBaseStep2Params) 
 
   updateBridgeState({ step: SimpleBridgeStep.COMPLETE });
   const txHash2 =
-    hyperlaneResult2 && typeof hyperlaneResult2 === "object" && "hash" in hyperlaneResult2
+    hyperlaneResult2 &&
+    typeof hyperlaneResult2 === "object" &&
+    "hash" in hyperlaneResult2
       ? (hyperlaneResult2 as { hash: string }).hash
       : undefined;
 

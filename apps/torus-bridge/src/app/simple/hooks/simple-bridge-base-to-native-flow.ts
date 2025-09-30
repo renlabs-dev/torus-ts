@@ -1,4 +1,7 @@
-import { withdrawFromTorusEvm, waitForTransactionReceipt } from "@torus-network/sdk/evm";
+import {
+  waitForTransactionReceipt,
+  withdrawFromTorusEvm,
+} from "@torus-network/sdk/evm";
 import type { SS58Address } from "@torus-network/sdk/types";
 import { toNano } from "@torus-network/torus-utils/torus/token";
 import { tryAsync } from "@torus-network/torus-utils/try-catch";
@@ -35,12 +38,17 @@ interface BaseToNativeStep1Params {
   };
   refetchTorusEvmBalance: () => Promise<unknown>;
   torusEvmBalance?: { value: bigint };
-  updateBridgeState: (updates: { step: SimpleBridgeStep; errorMessage?: string }) => void;
+  updateBridgeState: (updates: {
+    step: SimpleBridgeStep;
+    errorMessage?: string;
+  }) => void;
   addTransaction: (tx: SimpleBridgeTransaction) => void;
   getExplorerUrl: (txHash: string, chainName: string) => string;
 }
 
-export async function executeBaseToNativeStep1(params: BaseToNativeStep1Params) {
+export async function executeBaseToNativeStep1(
+  params: BaseToNativeStep1Params,
+) {
   const {
     amount,
     evmAddress,
@@ -162,7 +170,10 @@ export async function executeBaseToNativeStep1(params: BaseToNativeStep1Params) 
     const interval = setInterval(() => {
       void (async () => {
         pollCount++;
-        const refetchResult = await refetchTorusEvmBalance() as {status: string; data?: {value: bigint}};
+        const refetchResult = (await refetchTorusEvmBalance()) as {
+          status: string;
+          data?: { value: bigint };
+        };
         if (refetchResult.status === "error") {
           return;
         }
@@ -201,7 +212,9 @@ export async function executeBaseToNativeStep1(params: BaseToNativeStep1Params) 
 
   updateBridgeState({ step: SimpleBridgeStep.STEP_1_COMPLETE });
   const step1TxHash =
-    hyperlaneResult && typeof hyperlaneResult === "object" && "hash" in hyperlaneResult
+    hyperlaneResult &&
+    typeof hyperlaneResult === "object" &&
+    "hash" in hyperlaneResult
       ? (hyperlaneResult as { hash: string }).hash
       : undefined;
 
@@ -211,9 +224,7 @@ export async function executeBaseToNativeStep1(params: BaseToNativeStep1Params) 
     chainName: "Base",
     message: "Transfer complete",
     txHash: step1TxHash,
-    explorerUrl: step1TxHash
-      ? getExplorerUrl(step1TxHash, "Base")
-      : undefined,
+    explorerUrl: step1TxHash ? getExplorerUrl(step1TxHash, "Base") : undefined,
   });
 
   try {
@@ -223,9 +234,7 @@ export async function executeBaseToNativeStep1(params: BaseToNativeStep1Params) 
   } catch (returnError: unknown) {
     console.warn(
       "Auto-return to Base failed:",
-      returnError instanceof Error
-        ? returnError.message
-        : String(returnError),
+      returnError instanceof Error ? returnError.message : String(returnError),
     );
   }
 }
@@ -241,12 +250,17 @@ interface BaseToNativeStep2Params {
   refetchTorusEvmBalance: () => Promise<unknown>;
   nativeEthBalance?: { value: bigint };
   wagmiConfig: Config;
-  updateBridgeState: (updates: { step: SimpleBridgeStep; errorMessage?: string }) => void;
+  updateBridgeState: (updates: {
+    step: SimpleBridgeStep;
+    errorMessage?: string;
+  }) => void;
   addTransaction: (tx: SimpleBridgeTransaction) => void;
   getExplorerUrl: (txHash: string, chainName: string) => string;
 }
 
-export async function executeBaseToNativeStep2(params: BaseToNativeStep2Params) {
+export async function executeBaseToNativeStep2(
+  params: BaseToNativeStep2Params,
+) {
   const {
     amount,
     selectedAccount,
