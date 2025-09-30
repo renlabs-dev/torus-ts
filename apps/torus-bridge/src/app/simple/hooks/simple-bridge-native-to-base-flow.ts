@@ -17,9 +17,7 @@ interface NativeToBaseStep1Params {
   evmAddress: string;
   selectedAccount: { address: SS58Address };
   api: ApiPromise;
-  sendTx: (
-    tx: ReturnType<typeof transferAllowDeath>,
-  ) => Promise<
+  sendTx: (tx: ReturnType<typeof transferAllowDeath>) => Promise<
     | [
         undefined,
         {
