@@ -15,7 +15,6 @@ export default function StatsRow() {
         </span>
       </div>
       <div className="mt-2">
-        <span className="text-white/40">•</span>
         <span className="ml-2">
           Powered by <span className="font-bold">Torus</span>
         </span>

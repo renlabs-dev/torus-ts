@@ -31,12 +31,6 @@ export default function SoundToggle({ className }: Props) {
         .filter(Boolean)
         .join(" ")}
     >
-      <span
-        aria-hidden
-        className="mb-2 text-[11px] font-medium tracking-wide text-white/60"
-      >
-        enjoy with sound
-      </span>
       <audio
         ref={audioRef}
         src="/audio/background-audio.m4a"
@@ -53,7 +47,7 @@ export default function SoundToggle({ className }: Props) {
         type="button"
         aria-label={playing ? "Mute background audio" : "Play background audio"}
         onClick={onToggle}
-        className="group relative inline-flex h-16 w-16 items-center justify-center rounded-full border border-white/15 bg-white/5 text-white/80 backdrop-blur-sm transition-colors hover:text-white"
+        className="group relative inline-flex h-12 w-12 items-center justify-center rounded-full border border-white/15 bg-white/5 text-white/80 backdrop-blur-sm transition-colors hover:text-white"
         variant="outline"
       >
         {!playing && (

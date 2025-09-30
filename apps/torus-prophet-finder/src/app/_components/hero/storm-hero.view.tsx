@@ -54,7 +54,7 @@ export default function StormHero() {
       </div>
 
       {/* Sound toggle: align with scroll button height on all screens */}
-      <SoundToggle className="absolute bottom-6 right-6 z-40 sm:bottom-6 sm:right-20 md:bottom-6 md:right-24" />
+      <SoundToggle className="absolute bottom-6 right-6 z-40 sm:bottom-6 sm:right-6" />
 
       <div className="pointer-events-none absolute bottom-0 left-0 right-0 z-10 h-24 bg-gradient-to-b from-transparent to-[#050816]" />
       <div className="pointer-events-none absolute left-0 right-0 top-0 z-10 h-16 bg-gradient-to-t from-transparent to-[#050816]" />
