@@ -19,6 +19,24 @@ export const CONFIRMATION_CONFIG = {
   REQUIRED_CONFIRMATIONS: 2,
 } as const;
 
+export const TIMEOUT_CONFIG = {
+  DEFAULT_OPERATION_MS: 300000, // 5 minutes
+  POLLING_OPERATION_MS: 900000, // 15 minutes for polling operations
+} as const;
+
+export function withTimeout<T>(
+  promise: Promise<T>,
+  timeoutMs: number,
+  errorMessage = "Operation timeout",
+): Promise<T> {
+  return Promise.race([
+    promise,
+    new Promise<T>((_, reject) =>
+      setTimeout(() => reject(new Error(errorMessage)), timeoutMs),
+    ),
+  ]);
+}
+
 export function isUserRejectionError(error: Error): boolean {
   const errorMessage = error.message.toLowerCase();
   const errorName = error.name;

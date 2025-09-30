@@ -154,13 +154,47 @@ export function SimpleBridgeForm() {
   const toChain = getChainInfo(false);
 
   const isFormValid = useMemo(() => {
-    return walletsReady && amount && parseFloat(amount) > 0;
-  }, [walletsReady, amount]);
+    if (!walletsReady) return false;
+    if (!amount) return false;
+    if (parseFloat(amount) <= 0) return false;
+
+    const amountBigInt = BigInt(Math.floor(parseFloat(amount) * 1e18));
+
+    // Validate sufficient balance for Base to Native
+    if (direction === "base-to-native") {
+      if (!baseBalance) return false;
+      const requiredBalance = amountBigInt + BigInt(1e16); // 0.01 tokens for gas
+      return baseBalance >= requiredBalance;
+    }
+
+    // Validate sufficient balance for Native to Base
+    if (!nativeBalance.data) return false;
+    const requiredBalance = amountBigInt + BigInt(1e18); // 1 token for gas
+    return nativeBalance.data >= requiredBalance;
+  }, [walletsReady, amount, direction, baseBalance, nativeBalance.data]);
 
   const getButtonText = () => {
     if (isTransferInProgress) return "Processing...";
     if (!walletsReady) return "Connect Wallets";
     if (!amount) return "Enter Amount";
+    if (parseFloat(amount) <= 0) return "Invalid Amount";
+
+    const amountBigInt = BigInt(Math.floor(parseFloat(amount) * 1e18));
+
+    // Check for insufficient balance - Base to Native
+    if (direction === "base-to-native") {
+      if (!baseBalance) return "Loading Balance...";
+      const requiredBalance = amountBigInt + BigInt(1e16);
+      if (baseBalance < requiredBalance) return "Insufficient Balance";
+    }
+
+    // Check for insufficient balance - Native to Base
+    if (direction === "native-to-base") {
+      if (!nativeBalance.data) return "Loading Balance...";
+      const requiredBalance = amountBigInt + BigInt(1e18);
+      if (nativeBalance.data < requiredBalance) return "Insufficient Balance";
+    }
+
     return `Transfer ${amount} TORUS`;
   };
 

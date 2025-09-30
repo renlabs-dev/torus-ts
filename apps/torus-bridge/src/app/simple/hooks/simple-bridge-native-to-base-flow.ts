@@ -10,6 +10,8 @@ import {
   GAS_CONFIG,
   isUserRejectionError,
   POLLING_CONFIG,
+  TIMEOUT_CONFIG,
+  withTimeout,
 } from "./simple-bridge-helpers";
 
 interface NativeToBaseStep1Params {
@@ -282,10 +284,17 @@ export async function executeNativeToBaseStep2(
   });
 
   try {
-    await basePollPromise;
+    await withTimeout(
+      basePollPromise,
+      TIMEOUT_CONFIG.POLLING_OPERATION_MS,
+      "Torus EVM transfer confirmation timeout",
+    );
   } catch (basePollError) {
     const baseErrorMessage =
-      "Torus EVM transfer did not confirm (check balance and retry)";
+      basePollError instanceof Error &&
+      basePollError.message.includes("timeout")
+        ? "Torus EVM transfer confirmation timeout - check balance and retry"
+        : "Torus EVM transfer did not confirm (check balance and retry)";
     addTransaction({
       step: 2,
       status: "ERROR" as const,

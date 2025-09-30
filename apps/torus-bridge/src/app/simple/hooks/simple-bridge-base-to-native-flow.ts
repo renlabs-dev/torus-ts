@@ -15,6 +15,8 @@ import {
   GAS_CONFIG,
   isUserRejectionError,
   POLLING_CONFIG,
+  TIMEOUT_CONFIG,
+  withTimeout,
 } from "./simple-bridge-helpers";
 
 interface BaseToNativeStep1Params {
@@ -191,10 +193,16 @@ export async function executeBaseToNativeStep1(
   });
 
   try {
-    await pollPromise;
+    await withTimeout(
+      pollPromise,
+      TIMEOUT_CONFIG.POLLING_OPERATION_MS,
+      "Base transfer confirmation timeout",
+    );
   } catch (pollError) {
     const errorMessage =
-      "Base transfer did not confirm (check balance and retry)";
+      pollError instanceof Error && pollError.message.includes("timeout")
+        ? "Base transfer confirmation timeout - check balance and retry"
+        : "Base transfer did not confirm (check balance and retry)";
     addTransaction({
       step: 1,
       status: "ERROR" as const,
