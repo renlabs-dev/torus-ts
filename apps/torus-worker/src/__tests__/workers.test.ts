@@ -1,6 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
-/* eslint-disable @typescript-eslint/require-await */
 
 import type { LastBlock } from "@torus-network/sdk/chain";
 import { tryAsync } from "@torus-network/torus-utils/try-catch";

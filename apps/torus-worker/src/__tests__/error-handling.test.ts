@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/require-await */
 import { tryAsync } from "@torus-network/torus-utils/try-catch";
 import { describe, expect, it, vi } from "vitest";
 
