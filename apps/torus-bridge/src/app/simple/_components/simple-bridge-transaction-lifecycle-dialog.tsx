@@ -434,9 +434,9 @@ export function TransactionLifecycleDialog({
   const hasError = currentStep === SimpleBridgeStep.ERROR;
 
   useEffect(() => {
-    if (env("NODE_ENV") !== "development") {
-      return;
-    }
+    // if (env("NODE_ENV") !== "development") {
+    //   return;
+    // }
 
     console.log("Dialog State Debug:", {
       currentStep,
