@@ -6,7 +6,7 @@ import { useFreeBalance } from "@torus-ts/query-provider/hooks";
 import { useTorus } from "@torus-ts/torus-provider";
 import { Card } from "@torus-ts/ui/components/card";
 import { Skeleton } from "@torus-ts/ui/components/skeleton";
-import { getChainValuesOnEnv } from "~/config";
+import { contractAddresses, getChainValuesOnEnv } from "~/config";
 import { env } from "~/env";
 import Image from "next/image";
 import React, { useCallback } from "react";
@@ -44,9 +44,12 @@ export function WalletBalance() {
     chainId: torusEvmChain?.id,
   });
 
+  const baseTorusAddress =
+    contractAddresses.base[env("NEXT_PUBLIC_TORUS_CHAIN_ENV")].torusErc20;
+
   const { data: baseBalance } = wagmi.useReadContract({
     chainId: baseChain?.id,
-    address: "0x78EC15C5FD8EfC5e924e9EEBb9e549e29C785867",
+    address: baseTorusAddress,
     abi: erc20Abi,
     functionName: "balanceOf",
     args: evmAddress ? [evmAddress] : undefined,

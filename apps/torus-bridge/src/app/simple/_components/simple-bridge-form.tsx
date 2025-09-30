@@ -13,6 +13,8 @@ import Image from "next/image";
 import { useCallback, useMemo, useState } from "react";
 import { erc20Abi } from "viem";
 import { useReadContract } from "wagmi";
+import { contractAddresses } from "~/config";
+import { env } from "~/env";
 import { useDualWallet } from "../hooks/use-simple-bridge-dual-wallet";
 import { useOrchestratedTransfer } from "../hooks/use-simple-bridge-orchestrated-transfer";
 import { DualWalletConnector } from "./simple-bridge-dual-wallet-connector";
@@ -32,7 +34,7 @@ export function SimpleBridgeForm() {
     bridgeState,
     transactions,
     executeTransfer,
-    resetTransfer,
+    resetTransfer: _resetTransfer,
     retryFromFailedStep,
     isTransferInProgress,
   } = useOrchestratedTransfer();
@@ -43,9 +45,12 @@ export function SimpleBridgeForm() {
     selectedAccount?.address as SS58Address,
   );
 
+  const baseTorusAddress =
+    contractAddresses.base[env("NEXT_PUBLIC_TORUS_CHAIN_ENV")].torusErc20;
+
   const { data: baseBalance } = useReadContract({
     chainId: chainIds.base,
-    address: "0x78EC15C5FD8EfC5e924e9EEBb9e549e29C785867",
+    address: baseTorusAddress,
     abi: erc20Abi,
     functionName: "balanceOf",
     args: connectionState.evmWallet.address
@@ -100,12 +105,6 @@ export function SimpleBridgeForm() {
       // Dialog stays open to show ERROR state from hook
     }
   }, [amount, walletsReady, executeTransfer, direction]);
-
-  const _handleReset = useCallback(() => {
-    resetTransfer();
-    setAmount("");
-    setShowTransactionDialog(false);
-  }, [resetTransfer]);
 
   const handleCloseDialog = useCallback(() => {
     if (

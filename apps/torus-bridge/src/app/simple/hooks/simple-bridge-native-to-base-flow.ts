@@ -97,8 +97,13 @@ export async function executeNativeToBaseStep1(
 
   updateBridgeState({ step: SimpleBridgeStep.STEP_1_CONFIRMING });
 
-  await new Promise<void>((resolve, reject) => {
-    tracker.on("finalized", () => {
+  const trackerPromise = new Promise<void>((resolve, reject) => {
+    let settled = false;
+
+    const handleFinalized = () => {
+      if (settled) return;
+      settled = true;
+
       updateBridgeState({ step: SimpleBridgeStep.STEP_1_COMPLETE });
       addTransaction({
         step: 1,
@@ -107,9 +112,12 @@ export async function executeNativeToBaseStep1(
         message: "Bridge complete",
       });
       resolve();
-    });
+    };
 
-    tracker.on("error", (error: unknown) => {
+    const handleError = (error: unknown) => {
+      if (settled) return;
+      settled = true;
+
       updateBridgeState({
         step: SimpleBridgeStep.ERROR,
         errorMessage: "Native bridge transaction failed",
@@ -121,8 +129,36 @@ export async function executeNativeToBaseStep1(
         message: "Transaction failed",
       });
       reject(error instanceof Error ? error : new Error(String(error)));
-    });
+    };
+
+    tracker.on("finalized", handleFinalized);
+    tracker.on("error", handleError);
   });
+
+  try {
+    await withTimeout(
+      trackerPromise,
+      TIMEOUT_CONFIG.DEFAULT_OPERATION_MS,
+      "Native bridge transaction timeout",
+    );
+  } catch (timeoutError) {
+    const errorMessage =
+      timeoutError instanceof Error && timeoutError.message.includes("timeout")
+        ? "Native bridge transaction timeout - please retry"
+        : "Native bridge transaction failed";
+
+    updateBridgeState({
+      step: SimpleBridgeStep.ERROR,
+      errorMessage,
+    });
+    addTransaction({
+      step: 1,
+      status: "ERROR",
+      chainName: "Torus Native",
+      message: errorMessage,
+    });
+    throw timeoutError;
+  }
 }
 
 interface NativeToBaseStep2Params {
@@ -130,7 +166,7 @@ interface NativeToBaseStep2Params {
   evmAddress: string;
   torusEvmChainId: number;
   chainId?: number;
-  switchChain: (params: { chainId: number }) => void;
+  switchChain: (params: { chainId: number }) => Promise<{ id: number }>;
   triggerHyperlaneTransfer: (params: {
     origin: string;
     destination: string;
@@ -178,9 +214,10 @@ export async function executeNativeToBaseStep2(
   });
 
   if (chainId !== torusEvmChainId) {
-    switchChain({ chainId: torusEvmChainId });
+    await switchChain({ chainId: torusEvmChainId });
   }
 
+  // Wait for chain to fully switch before fetching balance
   await refetchNativeEthBalance();
   if ((nativeEthBalance?.value ?? 0n) < GAS_CONFIG.ESTIMATED_TOTAL) {
     const errorMessage =

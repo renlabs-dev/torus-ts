@@ -23,7 +23,7 @@ interface BaseToNativeStep1Params {
   amount: string;
   evmAddress: string;
   chain: Chain;
-  switchChain: (params: { chainId: number }) => void;
+  switchChain: (params: { chainId: number }) => Promise<{ id: number }>;
   triggerHyperlaneTransfer: (params: {
     origin: string;
     destination: string;
@@ -86,17 +86,18 @@ export async function executeBaseToNativeStep1(
     throw new Error("No connection found from Base to Torus EVM");
   }
 
+  let currentChainId = chain.id;
   let baseSwitchAttempts = 0;
+
   while (
     baseSwitchAttempts < POLLING_CONFIG.MAX_SWITCH_ATTEMPTS &&
-    chain.id !== BASE_CHAIN_ID
+    currentChainId !== BASE_CHAIN_ID
   ) {
     try {
-      switchChain({ chainId: BASE_CHAIN_ID });
-      await new Promise<void>((resolve) =>
-        setTimeout(resolve, POLLING_CONFIG.SWITCH_RETRY_DELAY_MS),
-      );
-      if (chain.id === BASE_CHAIN_ID) break;
+      const result = await switchChain({ chainId: BASE_CHAIN_ID });
+      currentChainId = result.id;
+
+      if (currentChainId === BASE_CHAIN_ID) break;
       throw new Error("Base switch verification failed");
     } catch {
       baseSwitchAttempts++;
@@ -235,10 +236,9 @@ export async function executeBaseToNativeStep1(
     explorerUrl: step1TxHash ? getExplorerUrl(step1TxHash, "Base") : undefined,
   });
 
+  // Always attempt to return to Base chain for cleanup
   try {
-    if (chain.id !== BASE_CHAIN_ID) {
-      switchChain({ chainId: BASE_CHAIN_ID });
-    }
+    await switchChain({ chainId: BASE_CHAIN_ID });
   } catch (returnError: unknown) {
     console.warn(
       "Auto-return to Base failed:",
@@ -253,7 +253,7 @@ interface BaseToNativeStep2Params {
   walletClient: WalletClient;
   chain: Chain;
   torusEvmChainId: number;
-  switchChain: (params: { chainId: number }) => void;
+  switchChain: (params: { chainId: number }) => Promise<{ id: number }>;
   refetchNativeEthBalance: () => Promise<unknown>;
   refetchTorusEvmBalance: () => Promise<unknown>;
   nativeEthBalance?: { value: bigint };
@@ -297,7 +297,7 @@ export async function executeBaseToNativeStep2(
 
   if (chain.id !== torusEvmChainId) {
     try {
-      switchChain({ chainId: torusEvmChainId });
+      await switchChain({ chainId: torusEvmChainId });
     } catch (switchError: unknown) {
       if (!(switchError instanceof Error)) {
         throw switchError;
@@ -328,6 +328,7 @@ export async function executeBaseToNativeStep2(
     }
   }
 
+  // Wait for chain to fully switch before fetching balance
   await refetchNativeEthBalance();
   if ((nativeEthBalance?.value ?? 0n) < GAS_CONFIG.ESTIMATED_TOTAL) {
     const errorMessage =
