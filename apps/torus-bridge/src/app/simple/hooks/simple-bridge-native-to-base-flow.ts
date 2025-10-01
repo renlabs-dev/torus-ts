@@ -12,6 +12,8 @@ import {
   POLLING_CONFIG,
   TIMEOUT_CONFIG,
   withTimeout,
+  formatErrorForUser,
+  UserRejectedError,
 } from "./simple-bridge-helpers";
 
 interface NativeToBaseStep1Params {
@@ -72,11 +74,14 @@ export async function executeNativeToBaseStep1(
       ? "Transaction rejected by user"
       : "Failed to bridge from Native to Torus EVM";
 
+    const errorDetails = formatErrorForUser(sendErr);
+
     addTransaction({
       step: 1,
       status: "ERROR",
       chainName: "Torus Native",
       message: errorMessage,
+      errorDetails,
       txHash: undefined,
       explorerUrl: undefined,
     });
@@ -87,7 +92,7 @@ export async function executeNativeToBaseStep1(
     });
 
     if (isUserRejectionError(sendErr)) {
-      return;
+      throw new UserRejectedError(errorMessage);
     }
 
     throw sendErr;
@@ -214,7 +219,47 @@ export async function executeNativeToBaseStep2(
   });
 
   if (chainId !== torusEvmChainId) {
-    await switchChain({ chainId: torusEvmChainId });
+    updateBridgeState({ step: SimpleBridgeStep.STEP_2_SWITCHING });
+    addTransaction({
+      step: 2,
+      status: "STARTING",
+      chainName: "Torus EVM",
+      message: "Switching to Torus EVM chain...",
+      metadata: { type: "switch" },
+    });
+
+    try {
+      await switchChain({ chainId: torusEvmChainId });
+    } catch (switchError: unknown) {
+      const error = switchError as Error;
+      const isUserRejected = isUserRejectionError(error);
+      const errorMessage = isUserRejected
+        ? "Chain switch rejected by user"
+        : "Failed to switch to Torus EVM chain";
+
+      const errorDetails = formatErrorForUser(error);
+
+      addTransaction({
+        step: 2,
+        status: "ERROR",
+        chainName: "Torus EVM",
+        message: errorMessage,
+        errorDetails,
+        txHash: undefined,
+        explorerUrl: undefined,
+        metadata: { type: "switch" },
+      });
+      updateBridgeState({
+        step: SimpleBridgeStep.ERROR,
+        errorMessage,
+      });
+
+      if (isUserRejected) {
+        throw new UserRejectedError(errorMessage);
+      }
+
+      throw error;
+    }
   }
 
   // Wait for chain to fully switch before fetching balance
@@ -260,11 +305,14 @@ export async function executeNativeToBaseStep2(
       ? "Transaction rejected by user"
       : "Failed to execute Torus EVM → Base transfer";
 
+    const errorDetails = formatErrorForUser(hyperlaneError2);
+
     addTransaction({
       step: 2,
       status: "ERROR",
       chainName: "Torus EVM",
       message: errorMessage,
+      errorDetails,
       txHash: undefined,
       explorerUrl: undefined,
     });
@@ -275,7 +323,7 @@ export async function executeNativeToBaseStep2(
     });
 
     if (isUserRejectionError(hyperlaneError2)) {
-      return;
+      throw new UserRejectedError(errorMessage);
     }
 
     throw hyperlaneError2;

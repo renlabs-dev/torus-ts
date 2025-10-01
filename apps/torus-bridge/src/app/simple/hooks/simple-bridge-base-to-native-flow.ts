@@ -17,6 +17,8 @@ import {
   POLLING_CONFIG,
   TIMEOUT_CONFIG,
   withTimeout,
+  formatErrorForUser,
+  UserRejectedError,
 } from "./simple-bridge-helpers";
 
 interface BaseToNativeStep1Params {
@@ -118,26 +120,36 @@ export async function executeBaseToNativeStep1(
     message: "Signing transaction...",
   });
 
-  const [hyperlaneError, hyperlaneResult] = await tryAsync(
-    triggerHyperlaneTransfer({
+  let step1TxHash: string | undefined;
+  try {
+    const hyperlaneResult = await triggerHyperlaneTransfer({
       origin: "base",
       destination: "torus",
       tokenIndex: 0,
       amount,
       recipient: evmAddress,
-    }),
-  );
-
-  if (hyperlaneError) {
-    const errorMessage = isUserRejectionError(hyperlaneError)
+    });
+    step1TxHash =
+      hyperlaneResult &&
+      typeof hyperlaneResult === "object" &&
+      "hash" in hyperlaneResult
+        ? (hyperlaneResult as { hash: string }).hash
+        : undefined;
+  } catch (hyperlaneError) {
+    const error = hyperlaneError as Error;
+    const isUserRejected = isUserRejectionError(error);
+    const errorMessage = isUserRejected
       ? "Transaction rejected by user"
       : "Failed to execute Base → Torus EVM transfer";
+
+    const errorDetails = formatErrorForUser(error);
 
     addTransaction({
       step: 1,
       status: "ERROR",
       chainName: "Base",
       message: errorMessage,
+      errorDetails,
       txHash: undefined,
       explorerUrl: undefined,
     });
@@ -147,21 +159,22 @@ export async function executeBaseToNativeStep1(
       errorMessage,
     });
 
-    if (isUserRejectionError(hyperlaneError)) {
-      return;
+    if (isUserRejected) {
+      throw new UserRejectedError(errorMessage);
     }
 
     throw hyperlaneError;
   }
 
+  // Success: Proceed to confirmation
   updateBridgeState({ step: SimpleBridgeStep.STEP_1_CONFIRMING });
   addTransaction({
     step: 1,
     status: "CONFIRMING" as const,
     chainName: "Base",
     message: "Waiting for confirmation...",
-    txHash: undefined,
-    explorerUrl: undefined,
+    txHash: step1TxHash,
+    explorerUrl: step1TxHash ? getExplorerUrl(step1TxHash, "Base") : undefined,
   });
 
   await refetchTorusEvmBalance();
@@ -220,13 +233,6 @@ export async function executeBaseToNativeStep1(
   }
 
   updateBridgeState({ step: SimpleBridgeStep.STEP_1_COMPLETE });
-  const step1TxHash =
-    hyperlaneResult &&
-    typeof hyperlaneResult === "object" &&
-    "hash" in hyperlaneResult
-      ? (hyperlaneResult as { hash: string }).hash
-      : undefined;
-
   addTransaction({
     step: 1,
     status: "SUCCESS" as const,
@@ -296,35 +302,46 @@ export async function executeBaseToNativeStep2(
   });
 
   if (chain.id !== torusEvmChainId) {
+    updateBridgeState({ step: SimpleBridgeStep.STEP_2_SWITCHING });
+    addTransaction({
+      step: 2,
+      status: "STARTING",
+      chainName: "Torus EVM",
+      message: "Switching to Torus EVM chain...",
+      metadata: { type: "switch" },
+    });
+
     try {
       await switchChain({ chainId: torusEvmChainId });
     } catch (switchError: unknown) {
-      if (!(switchError instanceof Error)) {
-        throw switchError;
-      }
-
-      const errorMessage = isUserRejectionError(switchError)
+      const error = switchError as Error;
+      const isUserRejected = isUserRejectionError(error);
+      const errorMessage = isUserRejected
         ? "Chain switch rejected by user"
         : "Failed to switch to Torus EVM chain";
+
+      const errorDetails = formatErrorForUser(error);
 
       addTransaction({
         step: 2,
         status: "ERROR",
         chainName: "Torus EVM",
         message: errorMessage,
+        errorDetails,
         txHash: undefined,
         explorerUrl: undefined,
+        metadata: { type: "switch" },
       });
       updateBridgeState({
         step: SimpleBridgeStep.ERROR,
         errorMessage,
       });
 
-      if (isUserRejectionError(switchError)) {
-        return;
+      if (isUserRejected) {
+        throw new UserRejectedError(errorMessage);
       }
 
-      throw switchError;
+      throw error;
     }
   }
 
@@ -350,8 +367,9 @@ export async function executeBaseToNativeStep2(
 
   updateBridgeState({ step: SimpleBridgeStep.STEP_2_SIGNING });
 
-  const [withdrawError, txHash] = await tryAsync(
-    withdrawFromTorusEvm(
+  let txHash: string | undefined;
+  try {
+    txHash = await withdrawFromTorusEvm(
       walletClient,
       chain,
       selectedAccount.address,
@@ -359,19 +377,22 @@ export async function executeBaseToNativeStep2(
       async () => {
         await refetchTorusEvmBalance();
       },
-    ),
-  );
-
-  if (withdrawError !== undefined) {
-    const errorMessage = isUserRejectionError(withdrawError)
+    );
+  } catch (withdrawError) {
+    const error = withdrawError as Error;
+    const isUserRejected = isUserRejectionError(error);
+    const errorMessage = isUserRejected
       ? "Withdrawal transaction rejected by user"
       : "Failed to withdraw from Torus EVM";
+
+    const errorDetails = formatErrorForUser(error);
 
     addTransaction({
       step: 2,
       status: "ERROR",
       chainName: "Torus EVM",
       message: errorMessage,
+      errorDetails,
       txHash: undefined,
       explorerUrl: undefined,
     });
@@ -381,18 +402,28 @@ export async function executeBaseToNativeStep2(
       errorMessage,
     });
 
-    if (isUserRejectionError(withdrawError)) {
-      return;
+    if (isUserRejected) {
+      throw new UserRejectedError(errorMessage);
     }
 
-    throw withdrawError;
+    throw withdrawError; // Halt the flow for other errors
   }
 
+  // Only proceed to confirmation if signing succeeded
   updateBridgeState({ step: SimpleBridgeStep.STEP_2_CONFIRMING });
+
+  addTransaction({
+    step: 2,
+    status: "CONFIRMING" as const,
+    chainName: "Torus EVM",
+    message: "Waiting for confirmation...",
+    txHash,
+    explorerUrl: txHash ? getExplorerUrl(txHash, "Torus EVM") : undefined,
+  });
 
   const [receiptError] = await tryAsync(
     waitForTransactionReceipt(wagmiConfig, {
-      hash: txHash,
+      hash: txHash as `0x${string}`,
       confirmations: CONFIRMATION_CONFIG.REQUIRED_CONFIRMATIONS,
     }),
   );

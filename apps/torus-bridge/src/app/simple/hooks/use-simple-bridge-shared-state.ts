@@ -47,6 +47,15 @@ export function useSimpleBridgeSharedState() {
     setTransactions([]);
   }, []);
 
+  const clearErrorDetails = useCallback(() => {
+    setTransactions((prev) =>
+      prev.map((tx) => ({
+        ...tx,
+        errorDetails: undefined,
+      })),
+    );
+  }, []);
+
   return {
     bridgeState,
     transactions,
@@ -54,6 +63,7 @@ export function useSimpleBridgeSharedState() {
     addTransaction,
     setTransactions,
     resetTransfer,
+    clearErrorDetails,
     getExplorerUrl,
   };
 }

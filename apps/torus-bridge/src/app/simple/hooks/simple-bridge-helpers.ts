@@ -19,6 +19,17 @@ export const CONFIRMATION_CONFIG = {
   REQUIRED_CONFIRMATIONS: 2,
 } as const;
 
+/**
+ * Custom error for user-rejected transactions
+ * Used to distinguish between user cancellations and actual errors
+ */
+export class UserRejectedError extends Error {
+  constructor(message = "Transaction rejected by user") {
+    super(message);
+    this.name = "UserRejectedError";
+  }
+}
+
 export const TIMEOUT_CONFIG = {
   DEFAULT_OPERATION_MS: 300000, // 5 minutes
   POLLING_OPERATION_MS: 900000, // 15 minutes for polling operations
@@ -68,4 +79,95 @@ export function getExplorerUrl(txHash: string, chainName: string): string {
   }
 
   return "";
+}
+
+/**
+ * Formats error messages from wallet/transaction errors into user-friendly text.
+ * Extracts key details like hardware wallet issues, insufficient funds, etc.
+ */
+export function formatErrorForUser(error: Error): string {
+  const errorMessage = error.message;
+  const lowerMessage = errorMessage.toLowerCase();
+
+  // Hardware wallet locked
+  if (
+    (lowerMessage.includes("ledger") || lowerMessage.includes("trezor") || lowerMessage.includes("device")) &&
+    (lowerMessage.includes("locked") || lowerMessage.includes("unlock"))
+  ) {
+    return "Your hardware wallet is locked. Please unlock it and try again.";
+  }
+
+  // Device disconnected
+  if (
+    lowerMessage.includes("device") &&
+    (lowerMessage.includes("disconnected") ||
+      lowerMessage.includes("not found"))
+  ) {
+    return "Hardware wallet disconnected. Please reconnect your device and try again.";
+  }
+
+  // Insufficient funds
+  if (
+    lowerMessage.includes("insufficient") &&
+    (lowerMessage.includes("funds") || lowerMessage.includes("balance"))
+  ) {
+    return "Insufficient funds. Please check your balance and try with a smaller amount.";
+  }
+
+  // Gas/fee issues
+  if (
+    lowerMessage.includes("gas") ||
+    lowerMessage.includes("fee") ||
+    lowerMessage.includes("out of gas")
+  ) {
+    return "Gas fee issue. Please ensure you have enough ETH for gas fees.";
+  }
+
+  // Network issues
+  if (
+    lowerMessage.includes("network") ||
+    lowerMessage.includes("connection") ||
+    lowerMessage.includes("timeout")
+  ) {
+    return "Network connection issue. Please check your internet connection and try again.";
+  }
+
+  // User rejection (should be handled separately, but just in case)
+  if (isUserRejectionError(error)) {
+    return "Transaction was rejected. Please try again when ready.";
+  }
+
+  // Generic transaction execution error - try to extract useful info
+  if (lowerMessage.includes("transactionexecutionerror")) {
+    // Look for "Details:" section
+    const detailsRegex = /Details:\s*([^\n]+)/i;
+    const detailsMatch = detailsRegex.exec(errorMessage);
+    if (detailsMatch?.[1]) {
+      return `Transaction failed: ${detailsMatch[1].trim()}`;
+    }
+  }
+
+  // Internal RPC error - extract details if available
+  if (lowerMessage.includes("internalrpcerror")) {
+    const detailsRegex = /Details:\s*([^\n]+)/i;
+    const detailsMatch = detailsRegex.exec(errorMessage);
+    if (detailsMatch?.[1]) {
+      return detailsMatch[1].trim();
+    }
+  }
+
+  // Fallback: return first meaningful line if error is too long
+  if (errorMessage.length > 200) {
+    const lines = errorMessage.split("\n");
+    const firstMeaningfulLine = lines.find(
+      (line) => line.trim() && !line.includes("at ") && !line.includes("("),
+    );
+    if (firstMeaningfulLine) {
+      return firstMeaningfulLine.trim();
+    }
+    return "Transaction failed. Please try again or contact support.";
+  }
+
+  // Return the error message as-is if it's short enough
+  return errorMessage;
 }

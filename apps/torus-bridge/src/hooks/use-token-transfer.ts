@@ -45,7 +45,7 @@ export function useTokenTransfer(onDone?: () => void) {
 
   // TODO implement cancel callback for when modal is closed?
   const triggerTransactions = useCallback(
-    (values: TransferFormValues) =>
+    (values: TransferFormValues, throwOnError = false) =>
       executeTransfer({
         warpCore,
         values,
@@ -59,6 +59,7 @@ export function useTokenTransfer(onDone?: () => void) {
         onDone,
         toast,
         txSuccessToast,
+        throwOnError,
       }),
     [
       warpCore,
@@ -66,9 +67,9 @@ export function useTokenTransfer(onDone?: () => void) {
       activeAccounts,
       activeChains,
       transactionFns,
-      setIsLoading,
       addTransfer,
       updateTransferStatus,
+      setIsLoading,
       onDone,
       toast,
       txSuccessToast,
@@ -94,6 +95,7 @@ async function executeTransfer({
   onDone,
   toast,
   txSuccessToast,
+  throwOnError = false,
 }: {
   warpCore: WarpCore;
   values: TransferFormValues;
@@ -107,6 +109,7 @@ async function executeTransfer({
   onDone?: () => void;
   toast: ReturnType<typeof useToast>["toast"];
   txSuccessToast: ReturnType<typeof useTxSuccessToast>;
+  throwOnError?: boolean;
 }) {
   logger.debug("Preparing transfer transaction(s)");
   setIsLoading(true);
@@ -125,9 +128,11 @@ async function executeTransfer({
       setIsLoading: (b: boolean) => void;
       updateTransferStatus: AppState["updateTransferStatus"];
       onDone?: () => void;
+      throwOnError: boolean;
     },
   ) => {
-    const { toast, setIsLoading, updateTransferStatus, onDone } = opts;
+    const { toast, setIsLoading, updateTransferStatus, onDone, throwOnError } =
+      opts;
     logger.error(`Error at stage ${stage}`, error);
     updateTransferStatus(transferIndex, TransferStatus.Failed);
     toast({
@@ -136,6 +141,14 @@ async function executeTransfer({
     });
     setIsLoading(false);
     onDone?.();
+
+    // Re-throw for signing stage to allow propagation to simple-bridge for custom handling
+    if (
+      stage === TransferStatus.SigningTransfer ||
+      stage === TransferStatus.SigningApprove
+    ) {
+      throw error;
+    }
   };
 
   // Step 1: Get token by index
@@ -151,6 +164,7 @@ async function executeTransfer({
       setIsLoading,
       updateTransferStatus,
       onDone,
+      throwOnError,
     });
     return;
   }
@@ -171,6 +185,7 @@ async function executeTransfer({
       setIsLoading,
       updateTransferStatus,
       onDone,
+      throwOnError,
     });
     return;
   }
@@ -190,6 +205,7 @@ async function executeTransfer({
       setIsLoading,
       updateTransferStatus,
       onDone,
+      throwOnError,
     });
     return;
   }
@@ -207,6 +223,7 @@ async function executeTransfer({
       setIsLoading,
       updateTransferStatus,
       onDone,
+      throwOnError,
     });
     return;
   }
@@ -227,6 +244,7 @@ async function executeTransfer({
       setIsLoading,
       updateTransferStatus,
       onDone,
+      throwOnError,
     });
     return;
   }
@@ -250,6 +268,7 @@ async function executeTransfer({
       setIsLoading,
       updateTransferStatus,
       onDone,
+      throwOnError,
     });
     return;
   }
@@ -265,6 +284,7 @@ async function executeTransfer({
       setIsLoading,
       updateTransferStatus,
       onDone,
+      throwOnError,
     });
     return;
   }
@@ -305,6 +325,7 @@ async function executeTransfer({
       setIsLoading,
       updateTransferStatus,
       onDone,
+      throwOnError,
     });
     return;
   }
@@ -363,6 +384,15 @@ async function executeTransfer({
 
       setIsLoading(false);
       if (onDone) onDone();
+
+      // Re-throw for signing stages to propagate to simple-bridge for custom handling
+      if (
+        transferStatus === TransferStatus.SigningTransfer ||
+        transferStatus === TransferStatus.SigningApprove
+      ) {
+        throw sendError;
+      }
+
       return;
     }
 
@@ -387,6 +417,7 @@ async function executeTransfer({
         setIsLoading,
         updateTransferStatus,
         onDone,
+        throwOnError,
       });
       return;
     }

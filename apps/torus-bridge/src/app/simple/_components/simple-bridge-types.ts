@@ -64,4 +64,5 @@ export interface SimpleBridgeTransaction {
   chainName: string;
   explorerUrl?: string;
   metadata?: { type: "switch" };
+  errorDetails?: string; // User-friendly formatted error message
 }

@@ -24,6 +24,7 @@ import {
   executeBaseToNativeStep1,
   executeBaseToNativeStep2,
 } from "./simple-bridge-base-to-native-flow";
+import { UserRejectedError } from "./simple-bridge-helpers";
 import { BASE_CHAIN_ID } from "./simple-bridge-helpers";
 import {
   executeNativeToBaseStep1,
@@ -39,6 +40,7 @@ export function useOrchestratedTransfer() {
     addTransaction,
     setTransactions,
     resetTransfer,
+    clearErrorDetails,
     getExplorerUrl,
   } = useSimpleBridgeSharedState();
 
@@ -142,35 +144,51 @@ export function useOrchestratedTransfer() {
         throw new Error("Wallets not properly connected");
       }
 
-      await executeBaseToNativeStep1({
-        amount,
-        evmAddress,
-        chain,
-        switchChain: switchChainAsync,
-        triggerHyperlaneTransfer,
-        warpCore,
-        refetchTorusEvmBalance,
-        torusEvmBalance,
-        updateBridgeState,
-        addTransaction,
-        getExplorerUrl,
-      });
+      try {
+        await executeBaseToNativeStep1({
+          amount,
+          evmAddress,
+          chain,
+          switchChain: switchChainAsync,
+          triggerHyperlaneTransfer,
+          warpCore,
+          refetchTorusEvmBalance,
+          torusEvmBalance,
+          updateBridgeState,
+          addTransaction,
+          getExplorerUrl,
+        });
+      } catch (error) {
+        // Stop execution if user rejected the transaction
+        if (error instanceof UserRejectedError) {
+          return;
+        }
+        throw error;
+      }
 
-      await executeBaseToNativeStep2({
-        amount,
-        selectedAccount: { address: selectedAccount.address as SS58Address },
-        walletClient,
-        chain,
-        torusEvmChainId,
-        switchChain: switchChainAsync,
-        refetchNativeEthBalance,
-        refetchTorusEvmBalance,
-        nativeEthBalance,
-        wagmiConfig,
-        updateBridgeState,
-        addTransaction,
-        getExplorerUrl,
-      });
+      try {
+        await executeBaseToNativeStep2({
+          amount,
+          selectedAccount: { address: selectedAccount.address as SS58Address },
+          walletClient,
+          chain,
+          torusEvmChainId,
+          switchChain: switchChainAsync,
+          refetchNativeEthBalance,
+          refetchTorusEvmBalance,
+          nativeEthBalance,
+          wagmiConfig,
+          updateBridgeState,
+          addTransaction,
+          getExplorerUrl,
+        });
+      } catch (error) {
+        // Stop execution if user rejected the transaction
+        if (error instanceof UserRejectedError) {
+          return;
+        }
+        throw error;
+      }
 
       toast({
         title: "Transfer Complete!",
@@ -204,31 +222,47 @@ export function useOrchestratedTransfer() {
         throw new Error("Wallets not properly connected");
       }
 
-      await executeNativeToBaseStep1({
-        amount,
-        evmAddress,
-        selectedAccount: { address: selectedAccount.address as SS58Address },
-        api,
-        sendTx,
-        updateBridgeState,
-        addTransaction,
-      });
+      try {
+        await executeNativeToBaseStep1({
+          amount,
+          evmAddress,
+          selectedAccount: { address: selectedAccount.address as SS58Address },
+          api,
+          sendTx,
+          updateBridgeState,
+          addTransaction,
+        });
+      } catch (error) {
+        // Stop execution if user rejected the transaction
+        if (error instanceof UserRejectedError) {
+          return;
+        }
+        throw error;
+      }
 
-      await executeNativeToBaseStep2({
-        amount,
-        evmAddress,
-        torusEvmChainId,
-        chainId: chain?.id,
-        switchChain: switchChainAsync,
-        triggerHyperlaneTransfer,
-        refetchNativeEthBalance,
-        refetchBaseBalance,
-        nativeEthBalance,
-        baseBalance,
-        updateBridgeState,
-        addTransaction,
-        getExplorerUrl,
-      });
+      try {
+        await executeNativeToBaseStep2({
+          amount,
+          evmAddress,
+          torusEvmChainId,
+          chainId: chain?.id,
+          switchChain: switchChainAsync,
+          triggerHyperlaneTransfer,
+          refetchNativeEthBalance,
+          refetchBaseBalance,
+          nativeEthBalance,
+          baseBalance,
+          updateBridgeState,
+          addTransaction,
+          getExplorerUrl,
+        });
+      } catch (error) {
+        // Stop execution if user rejected the transaction
+        if (error instanceof UserRejectedError) {
+          return;
+        }
+        throw error;
+      }
 
       toast({
         title: "Transfer Complete!",
@@ -403,6 +437,10 @@ export function useOrchestratedTransfer() {
     const { direction, amount } = bridgeState;
 
     try {
+      // Clear error message and error details on retry start
+      updateBridgeState({ errorMessage: undefined });
+      clearErrorDetails();
+
       if (failedTransaction.step === 1) {
         if (direction === "base-to-native") {
           await executeBaseToNative(amount);
@@ -431,6 +469,7 @@ export function useOrchestratedTransfer() {
     retryBaseToNativeStep2,
     retryNativeToBaseStep2,
     updateBridgeState,
+    clearErrorDetails,
   ]);
 
   return {

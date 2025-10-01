@@ -14,14 +14,12 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@torus-ts/ui/components/dialog";
-import { env } from "~/env";
 import {
   AlertCircle,
   CheckCircle,
   Clock,
   ExternalLink,
   Loader2,
-  Network,
   Wallet,
 } from "lucide-react";
 import { useEffect } from "react";
@@ -51,6 +49,7 @@ interface LifecycleStep {
   txHash?: string;
   explorerUrl?: string;
   isSignatureRequired?: boolean;
+  errorDetails?: string;
 }
 
 type StepStatus = "pending" | "active" | "completed" | "error" | "waiting";
@@ -70,19 +69,13 @@ export function TransactionLifecycleDialog({
 
   const createBaseToNativeSteps = (): LifecycleStep[] => [
     {
-      id: "step1-prepare",
-      title: "Preparing Base Transfer",
-      description: "Setting up Hyperlane transfer from Base to Torus EVM",
-      icon: <Network className="h-4 w-4" />,
-      status: getStepStatus("step1-prepare"),
-    },
-    {
       id: "step1-sign",
       title: "Sign Base Transaction",
       description: "Please sign the transaction in your Base wallet",
       icon: <Wallet className="h-4 w-4" />,
       status: getStepStatus("step1-sign"),
       isSignatureRequired: true,
+      errorDetails: step1Transaction?.errorDetails,
     },
     {
       id: "step1-confirm",
@@ -95,26 +88,13 @@ export function TransactionLifecycleDialog({
       explorerUrl: step1Transaction?.explorerUrl,
     },
     {
-      id: "step2-prepare",
-      title: "Preparing Withdrawal",
-      description: "Setting up withdrawal from Torus EVM to Native Torus",
-      icon: <Network className="h-4 w-4" />,
-      status: getStepStatus("step2-prepare"),
-    },
-    {
-      id: "step2-switch",
-      title: "Switch to Torus EVM",
-      description: "Connecting to the Torus EVM network for the next step",
-      icon: <Network className="h-4 w-4" />,
-      status: getStepStatus("step2-switch"),
-    },
-    {
       id: "step2-sign",
       title: "Sign Withdrawal Transaction",
       description: "Please sign the withdrawal in your EVM wallet (Torus EVM)",
       icon: <Wallet className="h-4 w-4" />,
       status: getStepStatus("step2-sign"),
       isSignatureRequired: true,
+      errorDetails: step2Transaction?.errorDetails,
     },
     {
       id: "step2-confirm",
@@ -130,19 +110,13 @@ export function TransactionLifecycleDialog({
 
   const createNativeToBaseSteps = (): LifecycleStep[] => [
     {
-      id: "step1-prepare",
-      title: "Preparing Native Transfer",
-      description: "Setting up bridge from Native Torus to Torus EVM",
-      icon: <Network className="h-4 w-4" />,
-      status: getStepStatus("step1-prepare"),
-    },
-    {
       id: "step1-sign",
       title: "Sign Native Transaction",
       description: "Please sign the transaction in your Torus wallet",
       icon: <Wallet className="h-4 w-4" />,
       status: getStepStatus("step1-sign"),
       isSignatureRequired: true,
+      errorDetails: step1Transaction?.errorDetails,
     },
     {
       id: "step1-confirm",
@@ -155,26 +129,13 @@ export function TransactionLifecycleDialog({
       explorerUrl: step1Transaction?.explorerUrl,
     },
     {
-      id: "step2-prepare",
-      title: "Preparing Base Transfer",
-      description: "Setting up Hyperlane transfer from Torus EVM to Base",
-      icon: <Network className="h-4 w-4" />,
-      status: getStepStatus("step2-prepare"),
-    },
-    {
-      id: "step2-switch",
-      title: "Switch to Torus EVM",
-      description: "Connecting to the Torus EVM network for the next step",
-      icon: <Network className="h-4 w-4" />,
-      status: getStepStatus("step2-switch"),
-    },
-    {
       id: "step2-sign",
       title: "Sign Base Transaction",
       description: "Please sign the transaction in your Base wallet",
       icon: <Wallet className="h-4 w-4" />,
       status: getStepStatus("step2-sign"),
       isSignatureRequired: true,
+      errorDetails: step2Transaction?.errorDetails,
     },
     {
       id: "step2-confirm",
@@ -209,28 +170,33 @@ export function TransactionLifecycleDialog({
   function getErrorStepStatus(stepId: string): StepStatus | null {
     const isStep1 = stepId.startsWith("step1");
     const isStep2 = stepId.startsWith("step2");
-    const transaction = transactions.find(
-      (tx) => tx.step === (isStep1 ? 1 : 2),
-    );
+    const step2Transaction = transactions.find((tx) => tx.step === 2);
+    const step1Transaction = transactions.find((tx) => tx.step === 1);
 
-    if (!transaction || transaction.status !== "ERROR") {
-      return null;
+    // Check if step 2 has an error
+    if (step2Transaction?.status === "ERROR") {
+      // All step 1 items should be green when step 2 fails
+      if (isStep1) {
+        return "completed";
+      }
+
+      // Step 2 handling
+      if (isStep2) {
+        if (stepId === "step2-sign") return "error";
+        if (stepId === "step2-confirm") return "pending";
+      }
     }
 
-    if (transaction.step === 1 && isStep1) {
+    // Check if step 1 has an error
+    if (step1Transaction?.status === "ERROR" && isStep1) {
       if (stepId === "step1-sign") return "error";
-      if (stepId === "step1-prepare") return "completed";
       if (stepId === "step1-confirm") return "pending";
     }
 
-    if (transaction.step === 2 && isStep2) {
-      if (stepId === "step2-sign") return "error";
-      if (stepId === "step2-prepare") return "completed";
-      if (stepId === "step2-confirm") return "pending";
+    // Step 1 error means step 2 is all pending
+    if (step1Transaction?.status === "ERROR" && isStep2) {
+      return "pending";
     }
-
-    if (transaction.step === 1 && isStep2) return "pending";
-    if (transaction.step === 2 && isStep1) return "completed";
 
     return null;
   }
@@ -238,20 +204,16 @@ export function TransactionLifecycleDialog({
   function getStep1Status(stepId: string): StepStatus {
     if (currentStep === SimpleBridgeStep.IDLE) return "pending";
 
-    if (currentStep === SimpleBridgeStep.STEP_1_PREPARING) {
-      return stepId === "step1-prepare" ? "active" : "pending";
-    }
-
-    if (currentStep === SimpleBridgeStep.STEP_1_SIGNING) {
-      if (stepId === "step1-prepare") return "completed";
+    if (
+      currentStep === SimpleBridgeStep.STEP_1_PREPARING ||
+      currentStep === SimpleBridgeStep.STEP_1_SIGNING
+    ) {
       if (stepId === "step1-sign") return "active";
       return "pending";
     }
 
     if (currentStep === SimpleBridgeStep.STEP_1_CONFIRMING) {
-      if (stepId === "step1-prepare" || stepId === "step1-sign") {
-        return "completed";
-      }
+      if (stepId === "step1-sign") return "completed";
       if (stepId === "step1-confirm") return "active";
       return "pending";
     }
@@ -259,6 +221,7 @@ export function TransactionLifecycleDialog({
     if (
       currentStep === SimpleBridgeStep.STEP_1_COMPLETE ||
       currentStep === SimpleBridgeStep.STEP_2_PREPARING ||
+      currentStep === SimpleBridgeStep.STEP_2_SWITCHING ||
       currentStep === SimpleBridgeStep.STEP_2_SIGNING ||
       currentStep === SimpleBridgeStep.STEP_2_CONFIRMING ||
       currentStep === SimpleBridgeStep.COMPLETE
@@ -280,23 +243,20 @@ export function TransactionLifecycleDialog({
     }
 
     if (currentStep === SimpleBridgeStep.STEP_1_COMPLETE) {
-      return stepId === "step2-prepare" ? "waiting" : "pending";
+      return "pending";
     }
 
-    if (currentStep === SimpleBridgeStep.STEP_2_PREPARING) {
-      return stepId === "step2-prepare" ? "active" : "pending";
-    }
-
-    if (currentStep === SimpleBridgeStep.STEP_2_SIGNING) {
-      if (stepId === "step2-prepare") return "completed";
+    if (
+      currentStep === SimpleBridgeStep.STEP_2_PREPARING ||
+      currentStep === SimpleBridgeStep.STEP_2_SWITCHING ||
+      currentStep === SimpleBridgeStep.STEP_2_SIGNING
+    ) {
       if (stepId === "step2-sign") return "active";
       return "pending";
     }
 
     if (currentStep === SimpleBridgeStep.STEP_2_CONFIRMING) {
-      if (stepId === "step2-prepare" || stepId === "step2-sign") {
-        return "completed";
-      }
+      if (stepId === "step2-sign") return "completed";
       if (stepId === "step2-confirm") return "active";
       return "pending";
     }
@@ -308,48 +268,21 @@ export function TransactionLifecycleDialog({
     return "pending";
   }
 
-  function getSwitchStepStatus(): StepStatus {
-    if (currentStep === SimpleBridgeStep.STEP_2_SWITCHING) {
-      return "active";
-    }
-
-    if (
-      currentStep === SimpleBridgeStep.STEP_2_PREPARING ||
-      currentStep === SimpleBridgeStep.STEP_2_SIGNING ||
-      currentStep === SimpleBridgeStep.STEP_2_CONFIRMING ||
-      currentStep === SimpleBridgeStep.COMPLETE
-    ) {
-      return "completed";
-    }
-
-    const tx = transactions.find((t) => t.step === 2);
-    if (
-      currentStep === SimpleBridgeStep.ERROR &&
-      tx?.status === "ERROR" &&
-      tx.metadata?.type === "switch"
-    ) {
-      return "error";
-    }
-
-    return "pending";
-  }
-
   function getStepStatus(stepId: string): StepStatus {
+    // Declare once at top
+    const isStep1 = stepId.startsWith("step1");
+    const isStep2 = stepId.startsWith("step2");
+
     if (currentStep === SimpleBridgeStep.ERROR) {
       const errorStatus = getErrorStepStatus(stepId);
       if (errorStatus) return errorStatus;
     }
 
-    if (stepId === "step2-switch") {
-      return getSwitchStepStatus();
-    }
-
-    const isStep1 = stepId.startsWith("step1");
+    // Use the declared isStep1/isStep2
     if (isStep1) {
       return getStep1Status(stepId);
     }
 
-    const isStep2 = stepId.startsWith("step2");
     if (isStep2) {
       return getStep2Status(stepId);
     }
@@ -386,11 +319,10 @@ export function TransactionLifecycleDialog({
   };
 
   const getCurrentMessage = () => {
-    if (currentStep === SimpleBridgeStep.STEP_1_PREPARING) {
-      return "Setting up your first transaction...";
-    }
-
-    if (currentStep === SimpleBridgeStep.STEP_1_SIGNING) {
+    if (
+      currentStep === SimpleBridgeStep.STEP_1_PREPARING ||
+      currentStep === SimpleBridgeStep.STEP_1_SIGNING
+    ) {
       return "🔐 Please check your wallet and sign the transaction";
     }
 
@@ -402,11 +334,11 @@ export function TransactionLifecycleDialog({
       return "First step complete! Preparing second transaction...";
     }
 
-    if (currentStep === SimpleBridgeStep.STEP_2_PREPARING) {
-      return "Setting up your second transaction...";
-    }
-
-    if (currentStep === SimpleBridgeStep.STEP_2_SIGNING) {
+    if (
+      currentStep === SimpleBridgeStep.STEP_2_PREPARING ||
+      currentStep === SimpleBridgeStep.STEP_2_SWITCHING ||
+      currentStep === SimpleBridgeStep.STEP_2_SIGNING
+    ) {
       return "🔐 Please check your wallet and sign the second transaction";
     }
 
@@ -422,16 +354,14 @@ export function TransactionLifecycleDialog({
       return "❌ Transaction failed. Please try again.";
     }
 
-    if (currentStep === SimpleBridgeStep.STEP_2_SWITCHING) {
-      return "Switching to Torus EVM – check your wallet for the network switch prompt";
-    }
-
     return "Initializing transfer...";
   };
 
   const lifecycleSteps = getLifecycleSteps();
   const isCompleted = currentStep === SimpleBridgeStep.COMPLETE;
-  const hasError = currentStep === SimpleBridgeStep.ERROR;
+  const hasError =
+    currentStep === SimpleBridgeStep.ERROR ||
+    transactions.some((tx) => tx.status === "ERROR");
 
   useEffect(() => {
     // if (env("NODE_ENV") !== "development") {
@@ -455,7 +385,8 @@ export function TransactionLifecycleDialog({
   }, [currentStep, hasError, transactions, direction, lifecycleSteps]);
 
   const handleOpenChange = (open: boolean) => {
-    if (!open && currentStep === SimpleBridgeStep.ERROR) {
+    // Always allow explicit close via X button or when complete
+    if (!open) {
       onClose();
     }
   };
@@ -463,6 +394,7 @@ export function TransactionLifecycleDialog({
   const getStepConnectorColor = (status: StepStatus) => {
     if (status === "completed") return "bg-green-500";
     if (status === "active") return "bg-blue-500";
+    if (status === "error") return "bg-red-500";
     return "bg-gray-300";
   };
 
@@ -472,8 +404,22 @@ export function TransactionLifecycleDialog({
 
   return (
     <Dialog open={isOpen} onOpenChange={handleOpenChange}>
-      <DialogContent className="max-h-[80vh] max-w-2xl overflow-y-auto">
-        <DialogHeader>
+      <DialogContent
+        className="flex max-h-[85vh] max-w-2xl flex-col p-0"
+        onEscapeKeyDown={(e) => {
+          // Prevent closing on Escape when there's an error
+          if (hasError) {
+            e.preventDefault();
+          }
+        }}
+        onPointerDownOutside={(e) => {
+          // Prevent closing on outside click when there's an error
+          if (hasError) {
+            e.preventDefault();
+          }
+        }}
+      >
+        <DialogHeader className="px-6 pt-6">
           <DialogTitle className="flex items-center gap-2">
             Transfer Progress
             <span className="text-muted-foreground text-sm font-normal">
@@ -486,7 +432,7 @@ export function TransactionLifecycleDialog({
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-6">
+        <div className="flex-1 space-y-6 overflow-y-auto px-6 pb-6">
           <div className="bg-muted/50 rounded-lg p-4 text-center">
             <p className="text-sm font-medium">{getCurrentMessage()}</p>
             {shouldShowSignatureWarning && (
@@ -498,20 +444,26 @@ export function TransactionLifecycleDialog({
 
           <div className="space-y-4">
             {lifecycleSteps.map((step, index) => (
-              <div key={step.id} className="flex items-start gap-4">
+              <div key={step.id} className="flex gap-4">
                 <div className="flex flex-col items-center">
-                  {getStatusIcon(step.status)}
+                  <div className="flex-shrink-0">
+                    {getStatusIcon(step.status)}
+                  </div>
                   {index < lifecycleSteps.length - 1 && (
                     <div
-                      className={`mt-2 h-8 w-px ${getStepConnectorColor(step.status)}`}
+                      className={`mt-2 w-px flex-1 ${getStepConnectorColor(step.status)}`}
                     />
                   )}
                 </div>
 
-                <div className="min-w-0 flex-1">
+                <div className="min-w-0 flex-1 pb-4">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                      {step.icon}
+                      {step.icon && (
+                        <span className={`mr-2 ${getStatusColor(step.status)}`}>
+                          {step.icon}
+                        </span>
+                      )}
                       <h3
                         className={`font-medium ${getStatusColor(step.status)}`}
                       >
@@ -533,8 +485,15 @@ export function TransactionLifecycleDialog({
                   <p className="text-muted-foreground mt-1 text-sm">
                     {step.description}
                   </p>
+                  {step.status === "error" && step.errorDetails && (
+                    <div className="mt-2 rounded-md bg-transparent p-3 border border-red-500">
+                      <p className="text-sm font-medium text-red-600">
+                        {step.errorDetails}
+                      </p>
+                    </div>
+                  )}
 
-                  {(step.status === "active" || step.status === "completed") &&
+                  {step.status === "completed" &&
                     step.txHash &&
                     step.explorerUrl && (
                       <Accordion type="single" collapsible className="mt-2">
@@ -552,14 +511,16 @@ export function TransactionLifecycleDialog({
                               <strong>
                                 {step.title.includes("Base")
                                   ? "Base"
-                                  : "Torus EVM"}
+                                  : step.title.includes("Native")
+                                    ? "Torus Native"
+                                    : "Torus EVM"}
                               </strong>
                             </div>
                             <div>
                               Transaction ID:{" "}
                               <span className="font-mono text-xs">
                                 {step.txHash.slice(0, 10)}...
-                                {step.txHash.slice(-4)}
+                                {step.txHash.slice(-8)}
                               </span>
                             </div>
                             <div>
@@ -596,12 +557,6 @@ export function TransactionLifecycleDialog({
                         <ExternalLink className="mr-1 h-3 w-3" />
                         View Transaction
                       </Button>
-                    </div>
-                  )}
-
-                  {step.id === "step2-switch" && step.status === "error" && (
-                    <div className="text-xs text-red-600">
-                      Switch failed – retry to connect to Torus EVM
                     </div>
                   )}
 
@@ -660,20 +615,20 @@ export function TransactionLifecycleDialog({
               </div>
             ))}
           </div>
+        </div>
 
-          <div className="flex justify-end gap-3 border-t pt-4">
-            {hasError && onRetry && (
-              <Button onClick={onRetry} variant="outline">
-                Retry Transfer
-              </Button>
-            )}
+        <div className="flex shrink-0 justify-end gap-3 border-t bg-background px-6 py-4">
+          {hasError && onRetry && (
+            <Button onClick={onRetry} variant="outline">
+              Retry Transfer
+            </Button>
+          )}
 
-            {isCompleted && (
-              <Button onClick={onClose} variant="outline">
-                Close
-              </Button>
-            )}
-          </div>
+          {isCompleted && (
+            <Button onClick={onClose} variant="outline">
+              Close
+            </Button>
+          )}
         </div>
       </DialogContent>
     </Dialog>
