@@ -22,14 +22,15 @@ export default function CardsHeader({ mode }: Props) {
           </h2>
         </div>
         <p className="font-cinzel mt-1 text-[10px] italic leading-relaxed tracking-[0.14em] text-white/55">
-          ✝ in the loving memory of the thermodynamic god
+          in honor of the thermodynamic god
         </p>
         <div className="font-cinzel mx-auto mt-4 max-w-2xl text-center text-sm font-semibold italic leading-relaxed tracking-[0.08em] text-white/70">
           <p>
-            ADD TWITTER PROFILES OR TICKERS FOR THE SWARM TO LEARN. LATER, YOU
-            CAN ASK TORUS ABOUT THEM.
+            ADD TWITTER PROFILES OR TICKERS FOR THE SWARM TO LEARN.
+            <br />
+            LATER, YOU CAN ASK TORUS ABOUT THEM.
           </p>
-          <p className="mt-2 text-white/60">
+          <p className="mt-2 text-white/30">
             NOTE: YOU NEED TORUS STAKE (Mainnet) IN YOUR WALLET TO INTERACT
           </p>
         </div>

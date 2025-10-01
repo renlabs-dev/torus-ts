@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/require-await */
 /**
  * Error Playground for torus-worker
  *

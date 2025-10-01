@@ -115,10 +115,22 @@
     "./torus/legacy": {
       "types": "./dist/torus/legacy.d.ts",
       "default": "./dist/torus/legacy.js"
+    },
+    "./base-api-client": {
+      "types": "./dist/base-api-client/index.d.ts",
+      "default": "./dist/base-api-client/index.js"
+    },
+    "./swarm-memory-client": {
+      "types": "./dist/swarm-memory-client/index.d.ts",
+      "default": "./dist/swarm-memory-client/index.js"
     }
   },
   "dependencies": {
+    "@polkadot/keyring": "catalog:",
+    "@polkadot/util": "catalog:",
+    "@polkadot/util-crypto": "catalog:",
     "bignumber.js": "^9.1.2",
+    "ky": "catalog:",
     "luxon": "catalog:",
     "multiformats": "catalog:",
     "rustie": "catalog:",
