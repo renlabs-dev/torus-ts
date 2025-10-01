@@ -26,6 +26,12 @@ export function useProphets() {
             ? displayName
             : titleFromHandle(username);
           const img = upgradeTwitterAvatarUrl(p.profile_image_url?.trim() ?? "");
+          const totalTweets = p.profile_tweet_count ?? 0;
+          const scrapedTweets = p.scraped_tweet_count ?? 0;
+          const progressPct =
+            totalTweets > 0
+              ? Math.round(((scrapedTweets / totalTweets) * 100) * 100) / 100
+              : 0;
           return {
             name: title,
             handle: `@${username}`,
@@ -35,9 +41,9 @@ export function useProphets() {
                 ? img
                 : "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcReQyGbfF6C-eWeXnIy33IEo2nDtJj5Od5Ygw&s",
             followers: p.follower_count ?? 0,
-            tweetsCurrent: p.profile_tweet_count ?? 0,
-            tweetsTotal: p.profile_tweet_count ?? 0,
-            collectionProgress: 65, // sample until oliver adds his stuff
+            tweetsCurrent: scrapedTweets,
+            tweetsTotal: totalTweets,
+            collectionProgress: progressPct,
           } satisfies Prophet;
         });
         setProphets((prev) => {

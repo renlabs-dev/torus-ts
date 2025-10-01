@@ -28,7 +28,7 @@ export function ProfileCard({
 }: ProfileCardProps) {
   const clampedProgress = Math.max(
     0,
-    Math.min(100, Math.round(collectionProgress)),
+    Math.min(100, Math.round(collectionProgress * 100) / 100),
   );
   const shadedWidthPercent = 100 - clampedProgress; // inverse shading: more scraped => less shadow
   const feather = Math.min(
@@ -109,7 +109,7 @@ export function ProfileCard({
           {/* top-left small progress label */}
           <div className="absolute left-0 top-0 z-30 p-3">
             <span className="rounded-sm bg-black/40 px-2 py-1 font-mono text-[10px] text-white/80 sm:text-xs">
-              Collection Progress {clampedProgress}%
+              Collection Progress {clampedProgress.toFixed(2)}%
             </span>
           </div>
 
