@@ -37,7 +37,7 @@ export function useProphets() {
             followers: p.follower_count ?? 0,
             tweetsCurrent: p.profile_tweet_count ?? 0,
             tweetsTotal: p.profile_tweet_count ?? 0,
-            collectionProgress: 100,
+            collectionProgress: 65, // sample until oliver adds his stuff
           } satisfies Prophet;
         });
         setProphets((prev) => {
