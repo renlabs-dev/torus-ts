@@ -72,7 +72,6 @@ export function ButtonSection({
         className="w-full"
         type="button"
         color="accent"
-        disabled
         onClick={triggerTransactionsHandler}
       >
         {`Send to ${chainDisplayName}`}
