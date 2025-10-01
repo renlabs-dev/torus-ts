@@ -23,7 +23,7 @@ export const SWARM_ENDPOINTS = {
 
   // Tasks
   TASKS_LIST: "api/tasks/list",
-  TASKS_CREATE: "api/tasks/create",
+  TASKS_CREATE: "api/tasks/insert",
 
   // Verification Claims
   VERIFICATION_CLAIMS_LIST: "api/verification-claims/list",

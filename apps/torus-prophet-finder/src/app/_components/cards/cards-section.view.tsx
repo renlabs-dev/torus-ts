@@ -17,6 +17,7 @@ import TickersGrid from "~/app/_components/cards/tickers-grid";
 import { useProphets } from "~/app/_components/cards/use-prophets";
 import { useTickers } from "~/app/_components/cards/use-tickers";
 import StarfieldBackground from "~/app/_components/effects/starfield-background";
+import { useSubmitProphetTask } from "~/hooks/use-submit-prophet-task";
 import * as React from "react";
 
 export default function CardsSection() {
@@ -24,6 +25,7 @@ export default function CardsSection() {
   const { prophets, addProphet } = useProphets();
   const { tickers, addTicker } = useTickers();
   const { api, selectedAccount } = useTorus();
+  const { submit: submitProphetTask } = useSubmitProphetTask();
   const accountBalance = useBalance(
     api,
     selectedAccount?.address as SS58Address,
@@ -59,11 +61,18 @@ export default function CardsSection() {
         setUiError(STAKE_REQUIRED_MSG);
         return STAKE_REQUIRED_MSG;
       }
-      const err = addProphet(raw).error ?? null;
+      const result = addProphet(raw);
+      const err = result.error ?? null;
       setUiError(err);
+
+      if (!err) {
+        const normalizedUsername = raw.replace(/^@/, "").trim();
+        void submitProphetTask(normalizedUsername);
+      }
+
       return err;
     },
-    [addProphet, hasStake],
+    [addProphet, hasStake, submitProphetTask],
   );
 
   const handleAddTicker = React.useCallback(

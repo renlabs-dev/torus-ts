@@ -1,6 +1,11 @@
 import type { BaseSwarmMemoryApiClient } from "../client.js";
-import { ListTasksResponseSchema } from "../schemas/task.js";
-import type { Task } from "../schemas/task.js";
+import { z } from "zod";
+import {
+  ListTasksResponseSchema,
+  TaskSchema,
+  TaskTypeSchema,
+} from "../schemas/task.js";
+import type { Task, TaskType } from "../schemas/task.js";
 import { SWARM_ENDPOINTS } from "../utils/constants.js";
 
 /**
@@ -76,6 +81,41 @@ export class TasksEndpoint {
     const tasks = await this.list();
     return tasks.filter(
       (task) => task.task_type === "ScrapeAllTweetsOfCashtag",
+    );
+  }
+
+  /**
+   * Create a new task in SwarmMemory
+   *
+   * @param params - Task creation parameters
+   * @returns The created Task object
+   *
+   * @example
+   * ```ts
+   * const task = await client.tasks.createTask({
+   *   task_type: 'ScrapeAllTweetsOfUser',
+   *   value: 'elonmusk',
+   *   priority: 5
+   * });
+   * ```
+   */
+  async createTask(params: {
+    task_type: TaskType;
+    value: string;
+    priority?: number;
+  }): Promise<Task> {
+    const CreateTaskParamsSchema = z.object({
+      task_type: TaskTypeSchema,
+      value: z.string().min(1),
+      priority: z.number().int().min(0).max(10).default(5),
+    });
+
+    const validatedParams = CreateTaskParamsSchema.parse(params);
+
+    return this.client.post(
+      SWARM_ENDPOINTS.TASKS_CREATE,
+      validatedParams,
+      TaskSchema,
     );
   }
 }

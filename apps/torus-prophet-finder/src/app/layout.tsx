@@ -5,6 +5,7 @@ import { ReactQueryProvider } from "@torus-ts/query-provider";
 import { TorusProvider } from "@torus-ts/torus-provider";
 import { Layout } from "@torus-ts/ui/components/layout";
 import { Toaster } from "@torus-ts/ui/components/toaster";
+import { SwarmMemoryProvider } from "~/contexts/swarm-memory-provider";
 import { env, EnvScript } from "~/env";
 import type { Metadata } from "next";
 import { Cinzel, Geist, Geist_Mono } from "next/font/google";
@@ -55,11 +56,13 @@ export default function RootLayout({
           wsEndpoint={env("NEXT_PUBLIC_TORUS_RPC_URL")}
           torusCacheUrl={env("NEXT_PUBLIC_TORUS_CACHE_URL")}
         >
-          <ProphetFinderHeader
-            torusCacheUrl={env("NEXT_PUBLIC_TORUS_CACHE_URL")}
-          />
-          {children}
-          <Toaster />
+          <SwarmMemoryProvider>
+            <ProphetFinderHeader
+              torusCacheUrl={env("NEXT_PUBLIC_TORUS_CACHE_URL")}
+            />
+            {children}
+            <Toaster />
+          </SwarmMemoryProvider>
         </TorusProvider>
         <GoogleAnalytics gaId="G-7YCMH64Q4J" />
       </ReactQueryProvider>
