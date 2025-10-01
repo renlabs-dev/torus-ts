@@ -28,12 +28,12 @@ export function useTransactions({
 
   const resetKey = `${address || "no-address"}-${JSON.stringify(filters)}-${lastTransactionTimestamp}`;
 
-  const [page, setPage] = useState(() => 1);
-  const [transactions, setTransactions] = useState<Transaction[]>(() => []);
-  const [totalTransactions, setTotalTransactions] = useState(() => 0);
-  const [hasMore, setHasMore] = useState(() => false);
-  const [isLoading, setIsLoading] = useState(() => false);
   const [currentResetKey, setCurrentResetKey] = useState(resetKey);
+  const [page, setPage] = useState(1);
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [totalTransactions, setTotalTransactions] = useState(0);
+  const [hasMore, setHasMore] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   if (currentResetKey !== resetKey) {
     setCurrentResetKey(resetKey);

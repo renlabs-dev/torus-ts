@@ -1,18 +1,17 @@
-/* eslint-disable react-hooks/static-components */
 import { memo } from "react";
 import { useGraphData } from "./force-graph/use-graph-data";
 
+const Bar = () => <div className="h-4 w-px bg-gray-800" />;
+
+const Stat = ({ label, value }: { label: string; value: number }) => (
+  <div className="flex items-center gap-2">
+    <span className="text-xs font-medium text-gray-500">{label}</span>
+    <span className="text-sm font-semibold text-white">{value}</span>
+  </div>
+);
+
 export const PermissionGraphOverview = memo(function PermissionGraphOverview() {
   const { graphData } = useGraphData();
-
-  const Bar = () => <div className="h-4 w-px bg-gray-800" />;
-
-  const Stat = ({ label, value }: { label: string; value: number }) => (
-    <div className="flex items-center gap-2">
-      <span className="text-xs font-medium text-gray-500">{label}</span>
-      <span className="text-sm font-semibold text-white">{value}</span>
-    </div>
-  );
 
   const agentCount = graphData
     ? graphData.nodes.filter(

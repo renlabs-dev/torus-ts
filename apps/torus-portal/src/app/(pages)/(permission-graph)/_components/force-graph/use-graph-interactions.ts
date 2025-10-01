@@ -11,14 +11,13 @@ export function useGraphInteractions(
   _selectedNodeId?: string | null,
 ) {
   const handleNodeClick = useCallback(
-    // eslint-disable-next-line react-hooks/preserve-manual-memoization
     (node: NodeObject) => {
       const originalNode = graphData.nodes.find((n) => n.id === node.id);
       if (originalNode) {
         onNodeClick(originalNode);
       }
     },
-    [graphData.nodes, onNodeClick],
+    [graphData, onNodeClick],
   );
 
   return {
