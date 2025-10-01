@@ -11,6 +11,12 @@ import * as React from "react";
 export function useProphets() {
   const [prophets, setProphets] = React.useState<Prophet[]>([]);
 
+  const sortByProgressDesc = React.useCallback((list: Prophet[]) => {
+    return [...list].sort(
+      (a, b) => (b.collectionProgress ?? 0) - (a.collectionProgress ?? 0),
+    );
+  }, []);
+
   React.useEffect(() => {
     let cancelled = false;
     const controller = new AbortController();
@@ -51,7 +57,10 @@ export function useProphets() {
           const preserved = prev.filter(
             (x) => !fetchedHandles.has(x.handle.toLowerCase()),
           );
-          return [...preserved, ...mapped];
+          return sortByProgressDesc([...
+            preserved,
+            ...mapped,
+          ]);
         });
       } catch {
         // ignore; UI will remain empty, add form still works
@@ -88,10 +97,10 @@ export function useProphets() {
         tweetsTotal: 0,
         collectionProgress: 0,
       };
-      setProphets((prev) => [p, ...prev]);
+      setProphets((prev) => sortByProgressDesc([...prev, p]));
       return {};
     },
-    [prophets],
+    [prophets, sortByProgressDesc],
   );
 
   return { prophets, addProphet };
