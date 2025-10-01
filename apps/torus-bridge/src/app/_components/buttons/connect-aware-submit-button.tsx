@@ -52,7 +52,13 @@ export function ConnectAwareSubmitButton<FormValues = unknown>({
   useTimeout(clearErrors, 3500);
 
   return (
-    <Button type={type} variant={variant} onClick={onClick} className="w-full">
+    <Button
+      type={type}
+      variant={variant}
+      onClick={onClick}
+      className="w-full"
+      disabled
+    >
       {content}
     </Button>
   );
