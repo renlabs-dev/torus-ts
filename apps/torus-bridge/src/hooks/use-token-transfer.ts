@@ -45,7 +45,7 @@ export function useTokenTransfer(onDone?: () => void) {
 
   // TODO implement cancel callback for when modal is closed?
   const triggerTransactions = useCallback(
-    (values: TransferFormValues, throwOnError = false) =>
+    (values: TransferFormValues) =>
       executeTransfer({
         warpCore,
         values,
@@ -59,7 +59,6 @@ export function useTokenTransfer(onDone?: () => void) {
         onDone,
         toast,
         txSuccessToast,
-        throwOnError,
       }),
     [
       warpCore,
@@ -95,7 +94,6 @@ async function executeTransfer({
   onDone,
   toast,
   txSuccessToast,
-  throwOnError = false,
 }: {
   warpCore: WarpCore;
   values: TransferFormValues;
@@ -109,7 +107,6 @@ async function executeTransfer({
   onDone?: () => void;
   toast: ReturnType<typeof useToast>["toast"];
   txSuccessToast: ReturnType<typeof useTxSuccessToast>;
-  throwOnError?: boolean;
 }) {
   logger.debug("Preparing transfer transaction(s)");
   setIsLoading(true);
@@ -128,11 +125,9 @@ async function executeTransfer({
       setIsLoading: (b: boolean) => void;
       updateTransferStatus: AppState["updateTransferStatus"];
       onDone?: () => void;
-      throwOnError: boolean;
     },
   ) => {
-    const { toast, setIsLoading, updateTransferStatus, onDone, throwOnError } =
-      opts;
+    const { toast, setIsLoading, updateTransferStatus, onDone } = opts;
     logger.error(`Error at stage ${stage}`, error);
     updateTransferStatus(transferIndex, TransferStatus.Failed);
     toast({
@@ -164,7 +159,6 @@ async function executeTransfer({
       setIsLoading,
       updateTransferStatus,
       onDone,
-      throwOnError,
     });
     return;
   }
@@ -185,7 +179,6 @@ async function executeTransfer({
       setIsLoading,
       updateTransferStatus,
       onDone,
-      throwOnError,
     });
     return;
   }
@@ -205,7 +198,6 @@ async function executeTransfer({
       setIsLoading,
       updateTransferStatus,
       onDone,
-      throwOnError,
     });
     return;
   }
@@ -223,7 +215,6 @@ async function executeTransfer({
       setIsLoading,
       updateTransferStatus,
       onDone,
-      throwOnError,
     });
     return;
   }
@@ -244,7 +235,6 @@ async function executeTransfer({
       setIsLoading,
       updateTransferStatus,
       onDone,
-      throwOnError,
     });
     return;
   }
@@ -268,7 +258,6 @@ async function executeTransfer({
       setIsLoading,
       updateTransferStatus,
       onDone,
-      throwOnError,
     });
     return;
   }
@@ -284,7 +273,6 @@ async function executeTransfer({
       setIsLoading,
       updateTransferStatus,
       onDone,
-      throwOnError,
     });
     return;
   }
@@ -325,7 +313,6 @@ async function executeTransfer({
       setIsLoading,
       updateTransferStatus,
       onDone,
-      throwOnError,
     });
     return;
   }
@@ -417,7 +404,6 @@ async function executeTransfer({
         setIsLoading,
         updateTransferStatus,
         onDone,
-        throwOnError,
       });
       return;
     }
