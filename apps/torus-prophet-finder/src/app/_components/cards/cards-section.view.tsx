@@ -199,7 +199,7 @@ export default function CardsSection() {
             onChange={setQuery}
             id="prophet-search"
             label="Type a prophet handle to search"
-            placeholder="Type a prophet handle (e.g., @satoshi) to search"
+            placeholder="Type a prophet handle (e.g., @satoshi) to add…"
           />
           <AddProphetForm
             onAdd={handleAddProphet}
