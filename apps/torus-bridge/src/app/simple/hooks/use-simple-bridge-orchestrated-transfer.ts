@@ -110,7 +110,7 @@ export function useOrchestratedTransfer() {
     chainId: BASE_CHAIN_ID,
   });
 
-  const { data: nativeEthBalance, refetch: _refetchNativeEthBalance } =
+  const { data: _nativeEthBalance, refetch: _refetchNativeEthBalance } =
     useBalance({
       address: evmAddress,
       chainId: torusEvmChainId,
@@ -132,10 +132,6 @@ export function useOrchestratedTransfer() {
     const result = await _refetchBaseBalance();
     return result as { status: string; data?: { value: bigint } };
   }, [_refetchBaseBalance]);
-
-  const refetchNativeEthBalance = useCallback(async (): Promise<void> => {
-    await _refetchNativeEthBalance();
-  }, [_refetchNativeEthBalance]);
 
   const executeBaseToNative = useCallback(
     async (amount: string) => {
@@ -330,8 +326,6 @@ export function useOrchestratedTransfer() {
       toast,
       torusEvmChainId,
       switchChainAsync,
-      nativeEthBalance,
-      refetchNativeEthBalance,
       setTransactions,
     ],
   );
@@ -382,9 +376,7 @@ export function useOrchestratedTransfer() {
       torusEvmChainId,
       chain?.id,
       switchChainAsync,
-      refetchNativeEthBalance,
       refetchBaseBalance,
-      nativeEthBalance,
       baseBalance,
       getExplorerUrl,
       setTransactions,
