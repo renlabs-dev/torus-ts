@@ -36,11 +36,11 @@
     filter: var(--photo-vintage-filter) url(#accel-warp-static);
   }
 
-/* Stronger warp on hover to showcase direction */
-.accel-warp-boost:hover,
-.group:hover .accel-warp {
-  filter: var(--photo-vintage-filter) url(#accel-warp-boost);
-}
+  /* Stronger warp on hover to showcase direction */
+  .accel-warp-boost:hover,
+  .group:hover .accel-warp {
+    filter: var(--photo-vintage-filter) url(#accel-warp-boost);
+  }
 }
 
 .paper-tint-overlay {
@@ -90,10 +90,10 @@
 @keyframes cyber-pulse {
   0%,
   100% {
-    opacity: 0.10;
+    opacity: 0.1;
   }
   50% {
-    opacity: 0.20;
+    opacity: 0.2;
   }
 }
 
@@ -138,7 +138,7 @@
       rgba(0, 0, 0, 0) 24px
     );
   mix-blend-mode: overlay;
-  opacity: 0.10;
+  opacity: 0.1;
   animation: grid-pulse 8s ease-in-out infinite;
   will-change: opacity;
 }
