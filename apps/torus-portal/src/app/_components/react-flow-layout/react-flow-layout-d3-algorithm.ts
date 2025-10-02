@@ -39,7 +39,6 @@ const rootNode = {
   data: {},
 };
 
-// eslint-disable-next-line @typescript-eslint/require-await
 const d3HierarchyLayout: LayoutAlgorithm = async (nodes, edges, options) => {
   const isHorizontal = options.direction === "RL" || options.direction === "LR";
 

@@ -43,6 +43,43 @@ export const timeFields = () => ({
   deletedAt: timestampz("deleted_at").default(sql`null`),
 });
 
+// ==== Worker State ====
+
+export const workerNameEnum = pgEnum("worker_name", [
+  "agent-fetcher",
+  "dao-notifier",
+  "process-dao",
+  "weight-aggregator",
+  "transfer-watcher",
+]);
+
+export const workerNameValues = extract_pgenum_values(workerNameEnum);
+
+assert<
+  Equals<
+    keyof typeof workerNameValues,
+    | "agent-fetcher"
+    | "dao-notifier"
+    | "process-dao"
+    | "weight-aggregator"
+    | "transfer-watcher"
+  >
+>();
+
+/**
+ * Stores the last processed block for each worker to enable recovery
+ */
+export const workerStateSchema = createTable(
+  "worker_state",
+  {
+    id: serial("id").primaryKey(),
+    workerName: workerNameEnum("worker_name").notNull().unique(),
+    lastProcessedBlock: bigint("last_processed_block").notNull(),
+    ...timeFields(),
+  },
+  (t) => [index("worker_name_index").on(t.workerName)],
+);
+
 // ==== Agents ====
 
 /**
