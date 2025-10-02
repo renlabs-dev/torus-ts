@@ -205,8 +205,6 @@ export class SwarmAuth implements AuthStrategy {
   private async createChallenge(): Promise<ChallengeResponse> {
     const walletAddress = await this.signer.getAddress();
 
-    console.log("[SwarmAuth] Creating challenge for address:", walletAddress);
-
     const response = await fetch(
       `${this.apiBaseUrl}/${SWARM_ENDPOINTS.AUTH_CHALLENGE}`,
       {
@@ -227,7 +225,6 @@ export class SwarmAuth implements AuthStrategy {
     }
 
     const challengeData = (await response.json()) as ChallengeResponse;
-    console.log("[SwarmAuth] Received challenge:", challengeData);
     return challengeData;
   }
 
@@ -245,13 +242,6 @@ export class SwarmAuth implements AuthStrategy {
       // Sign the message (not the token) with the signer
       const signature = await this.signer.sign(messageBytes);
       const signatureHex = u8aToHex(signature); // Keep the '0x' prefix
-
-      console.log("[SwarmAuth] Signing challenge:", {
-        message,
-        messageHex: u8aToHex(messageBytes),
-        signatureHex,
-        address: await this.signer.getAddress(),
-      });
 
       return {
         challenge_token: challengeToken,
@@ -272,8 +262,6 @@ export class SwarmAuth implements AuthStrategy {
     challenge_token: string;
     signature: string;
   }): Promise<string> {
-    console.log("[SwarmAuth] Verifying signature:", signedChallenge);
-
     const response = await fetch(
       `${this.apiBaseUrl}/${SWARM_ENDPOINTS.AUTH_VERIFY}`,
       {
@@ -304,7 +292,6 @@ export class SwarmAuth implements AuthStrategy {
     }
 
     const data = (await response.json()) as VerifyResponse;
-    console.log("[SwarmAuth] Authentication successful");
     return data.session_token;
   }
 }
