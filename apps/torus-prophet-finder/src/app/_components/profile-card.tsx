@@ -44,9 +44,9 @@ export function ProfileCard({
         className="pointer-events-none absolute -inset-5 z-0 opacity-[0.66] transition-opacity duration-300 ease-out group-focus-within:opacity-80 group-hover:opacity-80"
       >
         {/* soft halo (breathing) */}
-        <div className="aura-breathe absolute inset-0 bg-[radial-gradient(60%_55%_at_50%_45%,rgba(255,255,255,0.16)_0%,rgba(255,255,255,0.08)_40%,transparent_75%)] mix-blend-screen blur-2xl" />
+        <div className="aura-breathe absolute inset-0 bg-[radial-gradient(60%_55%_at_50%_45%,rgba(255,255,255,0.16)_0%,rgba(255,255,255,0.08)_40%,transparent_75%)] mix-blend-screen blur-[48px]" />
         {/* gentle rays (breathing in sync) */}
-        <div className="aura-breathe absolute inset-0 bg-[repeating-conic-gradient(from_0deg,rgba(255,255,255,0.10)_0deg_2deg,rgba(255,255,255,0)_2deg_14deg)] opacity-70 mix-blend-screen blur-[8px]" />
+        <div className="aura-breathe absolute inset-0 bg-[repeating-conic-gradient(from_0deg,rgba(255,255,255,0.10)_0deg_2deg,rgba(255,255,255,0)_2deg_14deg)] opacity-70 mix-blend-screen blur-[12px]" />
       </div>
 
       <Link

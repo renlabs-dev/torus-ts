@@ -14,8 +14,8 @@ export function TickerCard({ symbol }: TickerCardProps) {
         aria-hidden
         className="pointer-events-none absolute -inset-5 z-0 opacity-[0.66] transition-opacity duration-300 ease-out group-focus-within:opacity-80 group-hover:opacity-80"
       >
-        <div className="aura-breathe absolute inset-0 bg-[radial-gradient(60%_55%_at_50%_45%,rgba(255,255,255,0.16)_0%,rgba(255,255,255,0.08)_40%,transparent_75%)] mix-blend-screen blur-2xl" />
-        <div className="aura-breathe absolute inset-0 bg-[repeating-conic-gradient(from_0deg,rgba(255,255,255,0.10)_0deg_2deg,rgba(255,255,255,0)_2deg_14deg)] opacity-70 mix-blend-screen blur-[8px]" />
+        <div className="aura-breathe absolute inset-0 bg-[radial-gradient(60%_55%_at_50%_45%,rgba(255,255,255,0.16)_0%,rgba(255,255,255,0.08)_40%,transparent_75%)] mix-blend-screen blur-[48px]" />
+        <div className="aura-breathe absolute inset-0 bg-[repeating-conic-gradient(from_0deg,rgba(255,255,255,0.10)_0deg_2deg,rgba(255,255,255,0)_2deg_14deg)] opacity-70 mix-blend-screen blur-[12px]" />
       </div>
 
       <div className="relative z-[1] block overflow-hidden rounded-none border border-white/10 bg-black shadow-[0_0_36px_rgba(255,255,255,0.075)] outline outline-1 -outline-offset-2 outline-white/10 transition-shadow transition-transform duration-300 ease-out hover:scale-[1.01] hover:border-white/20 hover:shadow-[0_0_72px_rgba(255,255,255,0.12)] hover:outline-white/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-400/30">
