@@ -349,14 +349,19 @@ export async function executeNativeToBaseStep2(
         errorMessage,
       });
 
-      if (lastSwitchError !== undefined && isUserRejectionError(lastSwitchError)) {
+      if (
+        lastSwitchError !== undefined &&
+        isUserRejectionError(lastSwitchError)
+      ) {
         throw new UserRejectedError(errorMessage);
       }
 
       throw new Error(errorMessage);
     }
 
-    console.log("Confirmed on Torus EVM chain, proceeding to Hyperlane transfer");
+    console.log(
+      "Confirmed on Torus EVM chain, proceeding to Hyperlane transfer",
+    );
     addTransaction({
       step: 2,
       status: "SUCCESS",
@@ -417,14 +422,6 @@ export async function executeNativeToBaseStep2(
   }
 
   updateBridgeState({ step: SimpleBridgeStep.STEP_2_CONFIRMING });
-  addTransaction({
-    step: 2,
-    status: "CONFIRMING" as const,
-    chainName: "Torus EVM",
-    message: "Waiting for confirmation...",
-    txHash: undefined,
-    explorerUrl: undefined,
-  });
 
   await refetchBaseBalance();
   const baseBaselineBalance = baseBalance?.value || 0n;

@@ -159,7 +159,7 @@ export function TransactionLifecycleDialog({
         id: "success",
         title: "🎉 Transfer Successful",
         description: `Congratulations! Your ${amount} TORUS tokens have been successfully bridged from ${isBaseToNative ? "Base to Native" : "Native to Base"}. Check your wallet balances.`,
-        icon: <CheckCircle className="h-4 w-4 text-green-500" />,
+        icon: null,
         status: "completed",
       });
     }
@@ -172,6 +172,13 @@ export function TransactionLifecycleDialog({
     const isStep2 = stepId.startsWith("step2");
     const step2Transaction = transactions.find((tx) => tx.step === 2);
     const step1Transaction = transactions.find((tx) => tx.step === 1);
+
+    // Debug: check if transactions exist
+    if (currentStep === SimpleBridgeStep.COMPLETE) {
+      console.log("DEBUG - Step1 Transaction:", step1Transaction);
+      console.log("DEBUG - Step2 Transaction:", step2Transaction);
+      console.log("DEBUG - All transactions:", transactions);
+    }
 
     // Check if step 2 has an error
     if (step2Transaction?.status === "ERROR") {

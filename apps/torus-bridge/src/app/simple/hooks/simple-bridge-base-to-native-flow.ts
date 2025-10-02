@@ -203,14 +203,6 @@ export async function executeBaseToNativeStep1(
 
   // Success: Proceed to confirmation
   updateBridgeState({ step: SimpleBridgeStep.STEP_1_CONFIRMING });
-  addTransaction({
-    step: 1,
-    status: "CONFIRMING" as const,
-    chainName: "Base",
-    message: "Waiting for confirmation...",
-    txHash: step1TxHash,
-    explorerUrl: step1TxHash ? getExplorerUrl(step1TxHash, "Base") : undefined,
-  });
 
   await refetchTorusEvmBalance();
   const baselineBalance = torusEvmBalance?.value || 0n;
@@ -507,15 +499,6 @@ export async function executeBaseToNativeStep2(
 
   // Only proceed to confirmation if signing succeeded
   updateBridgeState({ step: SimpleBridgeStep.STEP_2_CONFIRMING });
-
-  addTransaction({
-    step: 2,
-    status: "CONFIRMING" as const,
-    chainName: "Torus EVM",
-    message: "Waiting for confirmation...",
-    txHash,
-    explorerUrl: txHash ? getExplorerUrl(txHash, "Torus EVM") : undefined,
-  });
 
   // Wait for transaction receipt first
   const [receiptError] = await tryAsync(
