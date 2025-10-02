@@ -91,7 +91,9 @@ export function formatErrorForUser(error: Error): string {
 
   // Hardware wallet locked
   if (
-    (lowerMessage.includes("ledger") || lowerMessage.includes("trezor") || lowerMessage.includes("device")) &&
+    (lowerMessage.includes("ledger") ||
+      lowerMessage.includes("trezor") ||
+      lowerMessage.includes("device")) &&
     (lowerMessage.includes("locked") || lowerMessage.includes("unlock"))
   ) {
     return "Your hardware wallet is locked. Please unlock it and try again.";
@@ -110,8 +112,8 @@ export function formatErrorForUser(error: Error): string {
   if (
     lowerMessage.includes("insufficient") &&
     (lowerMessage.includes("funds") ||
-     lowerMessage.includes("balance") ||
-     lowerMessage.includes("eth"))
+      lowerMessage.includes("balance") ||
+      lowerMessage.includes("eth"))
   ) {
     if (lowerMessage.includes("gas") || lowerMessage.includes("eth")) {
       return "Insufficient ETH for gas fees on Torus EVM. Please add funds to your wallet and try again.";

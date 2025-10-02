@@ -24,8 +24,7 @@ import {
   executeBaseToNativeStep1,
   executeBaseToNativeStep2,
 } from "./simple-bridge-base-to-native-flow";
-import { UserRejectedError } from "./simple-bridge-helpers";
-import { BASE_CHAIN_ID } from "./simple-bridge-helpers";
+import { BASE_CHAIN_ID, UserRejectedError } from "./simple-bridge-helpers";
 import {
   executeNativeToBaseStep1,
   executeNativeToBaseStep2,

@@ -7,12 +7,12 @@ import { tryAsync } from "@torus-network/torus-utils/try-catch";
 import type { SimpleBridgeTransaction } from "../_components/simple-bridge-types";
 import { SimpleBridgeStep } from "../_components/simple-bridge-types";
 import {
+  formatErrorForUser,
   isUserRejectionError,
   POLLING_CONFIG,
   TIMEOUT_CONFIG,
-  withTimeout,
-  formatErrorForUser,
   UserRejectedError,
+  withTimeout,
 } from "./simple-bridge-helpers";
 
 interface NativeToBaseStep1Params {
@@ -261,7 +261,12 @@ export async function executeNativeToBaseStep2(
   }
 
   // Verify we're on the correct chain
-  console.log("Current chain after switch:", chainId, "Expected:", torusEvmChainId);
+  console.log(
+    "Current chain after switch:",
+    chainId,
+    "Expected:",
+    torusEvmChainId,
+  );
 
   // Note: We don't check ETH balance here - let the wallet handle gas validation
   // The wallet will show a proper error if there's insufficient gas

@@ -12,12 +12,12 @@ import { SimpleBridgeStep } from "../_components/simple-bridge-types";
 import {
   BASE_CHAIN_ID,
   CONFIRMATION_CONFIG,
+  formatErrorForUser,
   isUserRejectionError,
   POLLING_CONFIG,
   TIMEOUT_CONFIG,
-  withTimeout,
-  formatErrorForUser,
   UserRejectedError,
+  withTimeout,
 } from "./simple-bridge-helpers";
 
 interface BaseToNativeStep1Params {
@@ -90,14 +90,22 @@ export async function executeBaseToNativeStep1(
   let currentChainId = chain.id;
   let baseSwitchAttempts = 0;
 
-  console.log("Step 1 - Current chain:", currentChainId, "Target: Base (", BASE_CHAIN_ID, ")");
+  console.log(
+    "Step 1 - Current chain:",
+    currentChainId,
+    "Target: Base (",
+    BASE_CHAIN_ID,
+    ")",
+  );
 
   while (
     baseSwitchAttempts < POLLING_CONFIG.MAX_SWITCH_ATTEMPTS &&
     currentChainId !== BASE_CHAIN_ID
   ) {
     try {
-      console.log(`Attempting to switch to Base chain (attempt ${baseSwitchAttempts + 1})`);
+      console.log(
+        `Attempting to switch to Base chain (attempt ${baseSwitchAttempts + 1})`,
+      );
       const result = await switchChain({ chainId: BASE_CHAIN_ID });
       currentChainId = result.id;
 
@@ -340,7 +348,12 @@ export async function executeBaseToNativeStep2(
 
       // Verify the switch was successful
       if (chain.id !== torusEvmChainId) {
-        console.warn("Chain ID mismatch after switch. Expected:", torusEvmChainId, "Got:", chain.id);
+        console.warn(
+          "Chain ID mismatch after switch. Expected:",
+          torusEvmChainId,
+          "Got:",
+          chain.id,
+        );
       }
     } catch (switchError: unknown) {
       const error = switchError as Error;
@@ -375,11 +388,17 @@ export async function executeBaseToNativeStep2(
   }
 
   // Verify we're on the correct chain
-  console.log("Current chain after switch:", chain.id, "Expected:", torusEvmChainId);
+  console.log(
+    "Current chain after switch:",
+    chain.id,
+    "Expected:",
+    torusEvmChainId,
+  );
 
   if (chain.id !== torusEvmChainId) {
     const errorMessage = "Failed to switch to Torus EVM chain";
-    const errorDetails = "Unable to switch to Torus EVM network. Please switch manually and try again.";
+    const errorDetails =
+      "Unable to switch to Torus EVM network. Please switch manually and try again.";
 
     addTransaction({
       step: 2,

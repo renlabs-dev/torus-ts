@@ -486,7 +486,7 @@ export function TransactionLifecycleDialog({
                     {step.description}
                   </p>
                   {step.status === "error" && step.errorDetails && (
-                    <div className="mt-2 rounded-md bg-transparent p-3 border border-red-500">
+                    <div className="mt-2 rounded-md border border-red-500 bg-transparent p-3">
                       <p className="text-sm font-medium text-red-600">
                         {step.errorDetails}
                       </p>
@@ -559,14 +559,13 @@ export function TransactionLifecycleDialog({
                       </Button>
                     </div>
                   )}
-
                 </div>
               </div>
             ))}
           </div>
         </div>
 
-        <div className="flex shrink-0 justify-end gap-3 border-t bg-background px-6 py-4">
+        <div className="bg-background flex shrink-0 justify-end gap-3 border-t px-6 py-4">
           {hasError && onRetry && (
             <Button onClick={onRetry} variant="outline">
               Retry Transfer
