@@ -11,6 +11,11 @@ interface ProfileCardProps {
   tweetsCurrent: number;
   tweetsTotal: number;
   collectionProgress: number; // 0-100
+  /**
+   * Mark this card's image as high priority for Next.js preloading.
+   * Use only for above‑the‑fold items to avoid bandwidth waste.
+   */
+  priority?: boolean;
 }
 
 const numberFormatter = new Intl.NumberFormat("en-US");
@@ -25,6 +30,7 @@ export function ProfileCard({
   tweetsCurrent,
   tweetsTotal,
   collectionProgress,
+  priority = false,
 }: ProfileCardProps) {
   const clampedProgress = Math.max(
     0,
@@ -67,7 +73,7 @@ export function ProfileCard({
             fill
             sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
             className="vintage-photo accel-warp object-cover transition-all duration-300"
-            priority={false}
+            priority={priority}
           />
 
           {/* base dimming to avoid overly bright cards (always present) */}
