@@ -4,8 +4,8 @@ import { fetchProphetFinderProfiles } from "~/lib/api/fetch-prophet-finder-profi
 import { normalizeHandle } from "~/lib/handles/normalize-handle";
 import { titleFromHandle } from "~/lib/handles/title-from-handle";
 import { validateHandleInput } from "~/lib/handles/validate-handle";
-import type { Prophet } from "~/types/prophet";
 import { upgradeTwitterAvatarUrl } from "~/lib/images/upgrade-twitter-avatar";
+import type { Prophet } from "~/types/prophet";
 import * as React from "react";
 
 export function useProphets() {
@@ -13,7 +13,7 @@ export function useProphets() {
 
   const sortByProgressDesc = React.useCallback((list: Prophet[]) => {
     return [...list].sort(
-      (a, b) => (b.collectionProgress ?? 0) - (a.collectionProgress ?? 0),
+      (a, b) => b.collectionProgress - a.collectionProgress,
     );
   }, []);
 
@@ -27,16 +27,17 @@ export function useProphets() {
         if (cancelled) return;
         const mapped: Prophet[] = profiles.map((p) => {
           const username = p.username;
-          const displayName = p.display_name?.trim();
-          const title = displayName && displayName.length > 0
-            ? displayName
-            : titleFromHandle(username);
-          const img = upgradeTwitterAvatarUrl(p.profile_image_url?.trim() ?? "");
-          const totalTweets = p.profile_tweet_count ?? 0;
-          const scrapedTweets = p.scraped_tweet_count ?? 0;
+          const displayName = p.display_name.trim();
+          const title =
+            displayName && displayName.length > 0
+              ? displayName
+              : titleFromHandle(username);
+          const img = upgradeTwitterAvatarUrl(p.profile_image_url.trim());
+          const totalTweets = p.profile_tweet_count;
+          const scrapedTweets = p.scraped_tweet_count;
           const progressPct =
             totalTweets > 0
-              ? Math.round(((scrapedTweets / totalTweets) * 100) * 100) / 100
+              ? Math.round((scrapedTweets / totalTweets) * 100 * 100) / 100
               : 0;
           return {
             name: title,
@@ -46,21 +47,20 @@ export function useProphets() {
               img && img.length > 0
                 ? img
                 : "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcReQyGbfF6C-eWeXnIy33IEo2nDtJj5Od5Ygw&s",
-            followers: p.follower_count ?? 0,
+            followers: p.follower_count,
             tweetsCurrent: scrapedTweets,
             tweetsTotal: totalTweets,
             collectionProgress: progressPct,
           } satisfies Prophet;
         });
         setProphets((prev) => {
-          const fetchedHandles = new Set(mapped.map((m) => m.handle.toLowerCase()));
+          const fetchedHandles = new Set(
+            mapped.map((m) => m.handle.toLowerCase()),
+          );
           const preserved = prev.filter(
             (x) => !fetchedHandles.has(x.handle.toLowerCase()),
           );
-          return sortByProgressDesc([...
-            preserved,
-            ...mapped,
-          ]);
+          return sortByProgressDesc([...preserved, ...mapped]);
         });
       } catch {
         // ignore; UI will remain empty, add form still works
@@ -72,6 +72,7 @@ export function useProphets() {
       cancelled = true;
       controller.abort();
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const addProphet = React.useCallback(

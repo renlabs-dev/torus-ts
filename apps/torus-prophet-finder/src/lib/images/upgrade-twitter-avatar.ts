@@ -10,7 +10,7 @@ export function upgradeTwitterAvatarUrl(src: string): string {
   try {
     const u = new URL(src);
     if (u.hostname !== "pbs.twimg.com") return src;
-    const m = u.pathname.match(/^(.*)_(normal|bigger|mini)(\.[a-zA-Z0-9]+)$/);
+    const m = /^(.*)_(normal|bigger|mini)(\.[a-zA-Z0-9]+)$/.exec(u.pathname);
     if (m) {
       const [, base, , ext] = m;
       const newPath = `${base}_400x400${ext}`;
