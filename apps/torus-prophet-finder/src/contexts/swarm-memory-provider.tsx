@@ -32,7 +32,11 @@ export function SwarmMemoryProvider({
     let cancelled = false;
 
     async function initClient() {
-      if (!selectedAccount || !torusApi.web3FromAddress || !isAccountConnected) {
+      if (
+        !selectedAccount ||
+        !torusApi.web3FromAddress ||
+        !isAccountConnected
+      ) {
         setClient(null);
         return;
       }
@@ -41,7 +45,9 @@ export function SwarmMemoryProvider({
       setInitError(null);
 
       try {
-        const injector = await torusApi.web3FromAddress(selectedAccount.address);
+        const injector = await torusApi.web3FromAddress(
+          selectedAccount.address,
+        );
 
         if (cancelled) return;
 
@@ -60,7 +66,9 @@ export function SwarmMemoryProvider({
       } catch (error) {
         if (!cancelled) {
           const message =
-            error instanceof Error ? error.message : "Failed to initialize SwarmMemory client";
+            error instanceof Error
+              ? error.message
+              : "Failed to initialize SwarmMemory client";
           setInitError(message);
           console.error("SwarmMemory client initialization error:", error);
         }
