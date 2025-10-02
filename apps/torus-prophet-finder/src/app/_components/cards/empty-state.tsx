@@ -11,7 +11,11 @@ export default function EmptyState({
         <p className="font-cinzel text-lg tracking-wide text-white/90">
           {title}
         </p>
-        {hint ? <p className="mt-2 text-sm text-white/60">{hint}</p> : null}
+        {hint ? (
+          <p className="text text-shadow-lg mt-2 text-sm font-bold text-white/60">
+            {hint}
+          </p>
+        ) : null}
       </div>
     </div>
   );

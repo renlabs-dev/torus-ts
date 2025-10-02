@@ -150,8 +150,8 @@ export default function CardsSection() {
             value={query}
             onChange={setQuery}
             id="prophet-search"
-            label="Type a prophet handle to add"
-            placeholder="Type a prophet handle (e.g., @satoshi) to add"
+            label="Type a prophet handle to search"
+            placeholder="Type a prophet handle (e.g., @satoshi) to search"
           />
           <AddProphetForm
             onAdd={handleAddProphet}
@@ -200,8 +200,8 @@ export default function CardsSection() {
               <CardsGrid prophets={filteredProphets} />
             ) : (
               <EmptyState
-                title="No prophets match your search"
-                hint="Try a different name or clear the search."
+                title="No prophets match your search."
+                hint="Try a different name or add a new prophet."
               />
             )}
           </StableHeight>
