@@ -9,6 +9,7 @@ interface Props {
 
 export default function SoundToggle({ className }: Props) {
   const [playing, setPlaying] = React.useState(false);
+  const [volume, setVolume] = React.useState(0.33); // Default 33%
   const audioRef = React.useRef<HTMLAudioElement | null>(null);
 
   const onToggle = React.useCallback(() => {
@@ -25,9 +26,23 @@ export default function SoundToggle({ className }: Props) {
     }
   }, [playing]);
 
+  const onVolumeChange = React.useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const newVolume = parseFloat(e.target.value);
+      setVolume(newVolume);
+      if (audioRef.current) {
+        audioRef.current.volume = newVolume;
+      }
+    },
+    [],
+  );
+
   return (
     <div
-      className={["pointer-events-auto flex flex-col items-center", className]
+      className={[
+        "pointer-events-auto flex flex-row-reverse items-center",
+        className,
+      ]
         .filter(Boolean)
         .join(" ")}
     >
@@ -37,10 +52,9 @@ export default function SoundToggle({ className }: Props) {
         loop
         preload="auto"
         playsInline
-        // keep subtle by default
         onCanPlay={(e) => {
           const t = e.currentTarget;
-          if (t.volume > 0.3) t.volume = 0.3;
+          t.volume = volume;
         }}
       />
       <Button
@@ -57,6 +71,23 @@ export default function SoundToggle({ className }: Props) {
           {playing ? <VolumeIcon size={32} /> : <MuteIcon size={32} />}
         </span>
       </Button>
+      {playing && (
+        <div className="mr-3 flex items-center gap-2">
+          <input
+            type="range"
+            min="0"
+            max="1"
+            step="0.01"
+            value={volume}
+            onChange={onVolumeChange}
+            aria-label="Volume"
+            className="h-1 w-24 cursor-pointer appearance-none rounded-full bg-white/15 accent-white/80 [&::-moz-range-thumb]:h-3 [&::-moz-range-thumb]:w-3 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:border-0 [&::-moz-range-thumb]:bg-white [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white"
+          />
+          <span className="text-xs tabular-nums text-white/60">
+            {Math.round(volume * 100)}%
+          </span>
+        </div>
+      )}
     </div>
   );
 }
