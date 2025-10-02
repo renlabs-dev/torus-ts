@@ -12,7 +12,6 @@ import { SimpleBridgeStep } from "../_components/simple-bridge-types";
 import {
   BASE_CHAIN_ID,
   CONFIRMATION_CONFIG,
-  GAS_CONFIG,
   isUserRejectionError,
   POLLING_CONFIG,
   TIMEOUT_CONFIG,
@@ -91,26 +90,54 @@ export async function executeBaseToNativeStep1(
   let currentChainId = chain.id;
   let baseSwitchAttempts = 0;
 
+  console.log("Step 1 - Current chain:", currentChainId, "Target: Base (", BASE_CHAIN_ID, ")");
+
   while (
     baseSwitchAttempts < POLLING_CONFIG.MAX_SWITCH_ATTEMPTS &&
     currentChainId !== BASE_CHAIN_ID
   ) {
     try {
+      console.log(`Attempting to switch to Base chain (attempt ${baseSwitchAttempts + 1})`);
       const result = await switchChain({ chainId: BASE_CHAIN_ID });
       currentChainId = result.id;
 
-      if (currentChainId === BASE_CHAIN_ID) break;
+      if (currentChainId === BASE_CHAIN_ID) {
+        console.log("Successfully switched to Base chain");
+        break;
+      }
       throw new Error("Base switch verification failed");
-    } catch {
+    } catch (switchErr) {
       baseSwitchAttempts++;
       if (baseSwitchAttempts >= POLLING_CONFIG.MAX_SWITCH_ATTEMPTS) {
-        throw new Error("Failed to switch to Base chain");
+        const error = switchErr as Error;
+        const errorMessage = "Failed to switch to Base chain";
+        const errorDetails = formatErrorForUser(error);
+
+        addTransaction({
+          step: 1,
+          status: "ERROR",
+          chainName: "Base",
+          message: errorMessage,
+          errorDetails,
+        });
+        updateBridgeState({
+          step: SimpleBridgeStep.ERROR,
+          errorMessage,
+        });
+
+        if (isUserRejectionError(error)) {
+          throw new UserRejectedError(errorMessage);
+        }
+
+        throw new Error(errorMessage);
       }
       await new Promise((resolve) =>
         setTimeout(resolve, POLLING_CONFIG.SWITCH_RETRY_DELAY_MS),
       );
     }
   }
+
+  console.log("Confirmed on Base chain, proceeding to sign transaction");
 
   updateBridgeState({ step: SimpleBridgeStep.STEP_1_SIGNING });
   addTransaction({
@@ -260,9 +287,7 @@ interface BaseToNativeStep2Params {
   chain: Chain;
   torusEvmChainId: number;
   switchChain: (params: { chainId: number }) => Promise<{ id: number }>;
-  refetchNativeEthBalance: () => Promise<unknown>;
   refetchTorusEvmBalance: () => Promise<unknown>;
-  nativeEthBalance?: { value: bigint };
   wagmiConfig: Config;
   updateBridgeState: (updates: {
     step: SimpleBridgeStep;
@@ -282,9 +307,7 @@ export async function executeBaseToNativeStep2(
     chain,
     torusEvmChainId,
     switchChain,
-    refetchNativeEthBalance,
     refetchTorusEvmBalance,
-    nativeEthBalance,
     wagmiConfig,
     updateBridgeState,
     addTransaction,
@@ -312,7 +335,13 @@ export async function executeBaseToNativeStep2(
     });
 
     try {
-      await switchChain({ chainId: torusEvmChainId });
+      const result = await switchChain({ chainId: torusEvmChainId });
+      console.log("Switch chain result:", result);
+
+      // Verify the switch was successful
+      if (chain.id !== torusEvmChainId) {
+        console.warn("Chain ID mismatch after switch. Expected:", torusEvmChainId, "Got:", chain.id);
+      }
     } catch (switchError: unknown) {
       const error = switchError as Error;
       const isUserRejected = isUserRejectionError(error);
@@ -345,18 +374,20 @@ export async function executeBaseToNativeStep2(
     }
   }
 
-  // Wait for chain to fully switch before fetching balance
-  await refetchNativeEthBalance();
-  if ((nativeEthBalance?.value ?? 0n) < GAS_CONFIG.ESTIMATED_TOTAL) {
-    const errorMessage =
-      "Insufficient ETH for gas on Torus EVM. Please add funds.";
+  // Verify we're on the correct chain
+  console.log("Current chain after switch:", chain.id, "Expected:", torusEvmChainId);
+
+  if (chain.id !== torusEvmChainId) {
+    const errorMessage = "Failed to switch to Torus EVM chain";
+    const errorDetails = "Unable to switch to Torus EVM network. Please switch manually and try again.";
+
     addTransaction({
       step: 2,
       status: "ERROR",
       chainName: "Torus EVM",
       message: errorMessage,
-      txHash: undefined,
-      explorerUrl: undefined,
+      errorDetails,
+      metadata: { type: "switch" },
     });
     updateBridgeState({
       step: SimpleBridgeStep.ERROR,

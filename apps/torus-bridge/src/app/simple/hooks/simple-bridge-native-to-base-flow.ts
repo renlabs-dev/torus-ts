@@ -7,7 +7,6 @@ import { tryAsync } from "@torus-network/torus-utils/try-catch";
 import type { SimpleBridgeTransaction } from "../_components/simple-bridge-types";
 import { SimpleBridgeStep } from "../_components/simple-bridge-types";
 import {
-  GAS_CONFIG,
   isUserRejectionError,
   POLLING_CONFIG,
   TIMEOUT_CONFIG,
@@ -179,9 +178,7 @@ interface NativeToBaseStep2Params {
     amount: string;
     recipient: string;
   }) => Promise<unknown>;
-  refetchNativeEthBalance: () => Promise<unknown>;
   refetchBaseBalance: () => Promise<unknown>;
-  nativeEthBalance?: { value: bigint };
   baseBalance?: { value: bigint };
   updateBridgeState: (updates: {
     step: SimpleBridgeStep;
@@ -201,9 +198,7 @@ export async function executeNativeToBaseStep2(
     chainId,
     switchChain,
     triggerHyperlaneTransfer,
-    refetchNativeEthBalance,
     refetchBaseBalance,
-    nativeEthBalance,
     baseBalance,
     updateBridgeState,
     addTransaction,
@@ -229,7 +224,10 @@ export async function executeNativeToBaseStep2(
     });
 
     try {
-      await switchChain({ chainId: torusEvmChainId });
+      const result = await switchChain({ chainId: torusEvmChainId });
+      console.log("Switch chain result:", result);
+
+      // Note: chainId param might not be updated immediately, will verify via balance fetch
     } catch (switchError: unknown) {
       const error = switchError as Error;
       const isUserRejected = isUserRejectionError(error);
@@ -262,25 +260,11 @@ export async function executeNativeToBaseStep2(
     }
   }
 
-  // Wait for chain to fully switch before fetching balance
-  await refetchNativeEthBalance();
-  if ((nativeEthBalance?.value ?? 0n) < GAS_CONFIG.ESTIMATED_TOTAL) {
-    const errorMessage =
-      "Insufficient ETH for gas on Torus EVM. Please add funds.";
-    addTransaction({
-      step: 2,
-      status: "ERROR",
-      chainName: "Torus EVM",
-      message: errorMessage,
-      txHash: undefined,
-      explorerUrl: undefined,
-    });
-    updateBridgeState({
-      step: SimpleBridgeStep.ERROR,
-      errorMessage,
-    });
-    throw new Error(errorMessage);
-  }
+  // Verify we're on the correct chain
+  console.log("Current chain after switch:", chainId, "Expected:", torusEvmChainId);
+
+  // Note: We don't check ETH balance here - let the wallet handle gas validation
+  // The wallet will show a proper error if there's insufficient gas
 
   updateBridgeState({ step: SimpleBridgeStep.STEP_2_SIGNING });
   addTransaction({

@@ -106,11 +106,16 @@ export function formatErrorForUser(error: Error): string {
     return "Hardware wallet disconnected. Please reconnect your device and try again.";
   }
 
-  // Insufficient funds
+  // Insufficient funds or ETH for gas
   if (
     lowerMessage.includes("insufficient") &&
-    (lowerMessage.includes("funds") || lowerMessage.includes("balance"))
+    (lowerMessage.includes("funds") ||
+     lowerMessage.includes("balance") ||
+     lowerMessage.includes("eth"))
   ) {
+    if (lowerMessage.includes("gas") || lowerMessage.includes("eth")) {
+      return "Insufficient ETH for gas fees on Torus EVM. Please add funds to your wallet and try again.";
+    }
     return "Insufficient funds. Please check your balance and try with a smaller amount.";
   }
 
@@ -120,7 +125,7 @@ export function formatErrorForUser(error: Error): string {
     lowerMessage.includes("fee") ||
     lowerMessage.includes("out of gas")
   ) {
-    return "Gas fee issue. Please ensure you have enough ETH for gas fees.";
+    return "Insufficient ETH for gas fees. Please add ETH to your Torus EVM wallet and try again.";
   }
 
   // Network issues

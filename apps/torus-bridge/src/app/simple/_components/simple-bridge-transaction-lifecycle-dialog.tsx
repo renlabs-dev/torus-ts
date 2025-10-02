@@ -157,7 +157,7 @@ export function TransactionLifecycleDialog({
     if (currentStep === SimpleBridgeStep.COMPLETE) {
       steps.push({
         id: "success",
-        title: "Transfer Successful",
+        title: "🎉 Transfer Successful",
         description: `Congratulations! Your ${amount} TORUS tokens have been successfully bridged from ${isBaseToNative ? "Base to Native" : "Native to Base"}. Check your wallet balances.`,
         icon: <CheckCircle className="h-4 w-4 text-green-500" />,
         status: "completed",
@@ -560,57 +560,6 @@ export function TransactionLifecycleDialog({
                     </div>
                   )}
 
-                  {step.id === "success" && (
-                    <Accordion type="single" collapsible className="mt-2">
-                      <AccordionItem value="success-details">
-                        <AccordionTrigger className="text-sm">
-                          <CheckCircle className="mr-1 h-3 w-3 text-green-500" />
-                          View Transfer Summary
-                        </AccordionTrigger>
-                        <AccordionContent className="space-y-2 text-sm">
-                          <div>Overview: Full flow completed successfully.</div>
-                          <div>
-                            Step 1 ({isBaseToNative ? "Base" : "Native"} Tx):{" "}
-                            {step1Transaction?.status === "SUCCESS" &&
-                            step1Transaction.txHash !== undefined ? (
-                              <span className="font-mono text-xs">
-                                {step1Transaction.txHash.slice(0, 10)}...
-                              </span>
-                            ) : (
-                              "Processed – search explorer"
-                            )}
-                          </div>
-                          <div>
-                            Step 2 ({isBaseToNative ? "Torus EVM" : "Base"} Tx):{" "}
-                            {step2Transaction?.status === "SUCCESS" &&
-                            step2Transaction.txHash !== undefined ? (
-                              <span className="font-mono text-xs">
-                                {step2Transaction.txHash.slice(0, 10)}...
-                              </span>
-                            ) : (
-                              "Processed"
-                            )}
-                          </div>
-                          <div>
-                            Total Fees:{" "}
-                            <em>Estimated ~0.002 ETH (Step 1 + Step 2)</em>
-                          </div>
-                          <div>Time: Approximately 3-5 minutes.</div>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => {
-                              /* links to both explorers */
-                            }}
-                            className="mt-2 w-full justify-start"
-                          >
-                            <ExternalLink className="mr-1 h-3 w-3" />
-                            View All Transactions
-                          </Button>
-                        </AccordionContent>
-                      </AccordionItem>
-                    </Accordion>
-                  )}
                 </div>
               </div>
             ))}
