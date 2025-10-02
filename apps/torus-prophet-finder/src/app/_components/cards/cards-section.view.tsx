@@ -153,6 +153,7 @@ export default function CardsSection() {
               <AddProphetForm
                 onAdd={handleAddProphet}
                 suppressErrorMessage={() => true}
+                searchValue={query}
               />
             </>
           ) : (
