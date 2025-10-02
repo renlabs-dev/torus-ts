@@ -1,6 +1,7 @@
 "use client";
 
 import type { SS58Address } from "@torus-network/sdk/types";
+import { useFreeBalance } from "@torus-ts/query-provider/hooks";
 import { useTorus } from "@torus-ts/torus-provider";
 import { useSendTransaction } from "@torus-ts/torus-provider/use-send-transaction";
 import { useToast } from "@torus-ts/ui/hooks/use-toast";
@@ -9,7 +10,7 @@ import { env } from "~/env";
 import { useWarpCore } from "~/hooks/token";
 import { useMultiProvider } from "~/hooks/use-multi-provider";
 import { useTokenTransfer } from "~/hooks/use-token-transfer";
-import { useCallback } from "react";
+import { useCallback, useMemo } from "react";
 import {
   useAccount,
   useBalance,
@@ -133,6 +134,30 @@ export function useOrchestratedTransfer() {
     return result as { status: string; data?: { value: bigint } };
   }, [_refetchBaseBalance]);
 
+  const nativeBalanceQuery = useFreeBalance(
+    api,
+    selectedAccount?.address as SS58Address,
+  );
+
+  const refetchNativeBalance = useCallback(async (): Promise<{
+    status: string;
+    data?: { value: bigint };
+  }> => {
+    const result = await nativeBalanceQuery.refetch();
+    return {
+      status: result.status,
+      data: result.data ? { value: result.data } : undefined,
+    };
+  }, [nativeBalanceQuery]);
+
+  const nativeBalance = useMemo(
+    () =>
+      nativeBalanceQuery.data
+        ? { value: nativeBalanceQuery.data }
+        : undefined,
+    [nativeBalanceQuery.data],
+  );
+
   const executeBaseToNative = useCallback(
     async (amount: string) => {
       if (!selectedAccount || !evmAddress || !walletClient || !chain) {
@@ -170,6 +195,8 @@ export function useOrchestratedTransfer() {
           torusEvmChainId,
           switchChain: switchChainAsync,
           refetchTorusEvmBalance,
+          refetchNativeBalance,
+          nativeBalance,
           wagmiConfig,
           updateBridgeState,
           addTransaction,
@@ -196,6 +223,8 @@ export function useOrchestratedTransfer() {
       warpCore,
       triggerHyperlaneTransfer,
       refetchTorusEvmBalance,
+      refetchNativeBalance,
+      nativeBalance,
       wagmiConfig,
       updateBridgeState,
       addTransaction,
@@ -209,7 +238,7 @@ export function useOrchestratedTransfer() {
 
   const executeNativeToBase = useCallback(
     async (amount: string) => {
-      if (!selectedAccount || !evmAddress || !api) {
+      if (!selectedAccount || !evmAddress || !api || !walletClient) {
         throw new Error("Wallets not properly connected");
       }
 
@@ -237,6 +266,7 @@ export function useOrchestratedTransfer() {
           evmAddress,
           torusEvmChainId,
           chainId: chain?.id,
+          walletClient,
           switchChain: switchChainAsync,
           triggerHyperlaneTransfer,
           refetchBaseBalance,
@@ -262,6 +292,7 @@ export function useOrchestratedTransfer() {
       selectedAccount,
       evmAddress,
       api,
+      walletClient,
       sendTx,
       triggerHyperlaneTransfer,
       updateBridgeState,
@@ -302,6 +333,8 @@ export function useOrchestratedTransfer() {
         torusEvmChainId,
         switchChain: switchChainAsync,
         refetchTorusEvmBalance,
+        refetchNativeBalance,
+        nativeBalance,
         wagmiConfig,
         updateBridgeState,
         addTransaction,
@@ -319,6 +352,8 @@ export function useOrchestratedTransfer() {
       walletClient,
       chain,
       refetchTorusEvmBalance,
+      refetchNativeBalance,
+      nativeBalance,
       wagmiConfig,
       updateBridgeState,
       addTransaction,
@@ -332,7 +367,7 @@ export function useOrchestratedTransfer() {
 
   const retryNativeToBaseStep2 = useCallback(
     async (amount: string) => {
-      if (!evmAddress) {
+      if (!evmAddress || !walletClient) {
         throw new Error("EVM wallet not properly connected");
       }
 
@@ -353,6 +388,7 @@ export function useOrchestratedTransfer() {
         evmAddress,
         torusEvmChainId,
         chainId: chain?.id,
+        walletClient,
         switchChain: switchChainAsync,
         triggerHyperlaneTransfer,
         refetchBaseBalance,
@@ -369,6 +405,7 @@ export function useOrchestratedTransfer() {
     },
     [
       evmAddress,
+      walletClient,
       triggerHyperlaneTransfer,
       updateBridgeState,
       addTransaction,

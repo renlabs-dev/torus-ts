@@ -323,7 +323,7 @@ export function TransactionLifecycleDialog({
       currentStep === SimpleBridgeStep.STEP_1_PREPARING ||
       currentStep === SimpleBridgeStep.STEP_1_SIGNING
     ) {
-      return "🔐 Please check your wallet and sign the transaction";
+      return "Please check your wallet and sign the transaction";
     }
 
     if (currentStep === SimpleBridgeStep.STEP_1_CONFIRMING) {
@@ -339,7 +339,7 @@ export function TransactionLifecycleDialog({
       currentStep === SimpleBridgeStep.STEP_2_SWITCHING ||
       currentStep === SimpleBridgeStep.STEP_2_SIGNING
     ) {
-      return "🔐 Please check your wallet and sign the second transaction";
+      return "Please check your wallet and sign the second transaction";
     }
 
     if (currentStep === SimpleBridgeStep.STEP_2_CONFIRMING) {
@@ -545,39 +545,27 @@ export function TransactionLifecycleDialog({
                         </AccordionItem>
                       </Accordion>
                     )}
-
-                  {step.txHash && step.explorerUrl && (
-                    <div className="mt-2 flex items-center gap-2">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="h-auto p-1 text-xs"
-                        onClick={() => window.open(step.explorerUrl, "_blank")}
-                      >
-                        <ExternalLink className="mr-1 h-3 w-3" />
-                        View Transaction
-                      </Button>
-                    </div>
-                  )}
                 </div>
               </div>
             ))}
           </div>
         </div>
 
-        <div className="bg-background flex shrink-0 justify-end gap-3 border-t px-6 py-4">
-          {hasError && onRetry && (
-            <Button onClick={onRetry} variant="outline">
-              Retry Transfer
-            </Button>
-          )}
+        {(hasError || isCompleted) && (
+          <div className="bg-background flex shrink-0 justify-end gap-3 border-t px-6 py-4">
+            {hasError && onRetry && (
+              <Button onClick={onRetry} variant="outline">
+                Retry Transfer
+              </Button>
+            )}
 
-          {isCompleted && (
-            <Button onClick={onClose} variant="outline">
-              Close
-            </Button>
-          )}
-        </div>
+            {isCompleted && (
+              <Button onClick={onClose} variant="outline">
+                Close
+              </Button>
+            )}
+          </div>
+        )}
       </DialogContent>
     </Dialog>
   );

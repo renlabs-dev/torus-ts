@@ -296,6 +296,8 @@ interface BaseToNativeStep2Params {
   torusEvmChainId: number;
   switchChain: (params: { chainId: number }) => Promise<{ id: number }>;
   refetchTorusEvmBalance: () => Promise<unknown>;
+  refetchNativeBalance: () => Promise<unknown>;
+  nativeBalance?: { value: bigint };
   wagmiConfig: Config;
   updateBridgeState: (updates: {
     step: SimpleBridgeStep;
@@ -316,6 +318,8 @@ export async function executeBaseToNativeStep2(
     torusEvmChainId,
     switchChain,
     refetchTorusEvmBalance,
+    refetchNativeBalance,
+    nativeBalance,
     wagmiConfig,
     updateBridgeState,
     addTransaction,
@@ -332,7 +336,17 @@ export async function executeBaseToNativeStep2(
     message: "Preparing Torus EVM → Native withdrawal",
   });
 
-  if (chain.id !== torusEvmChainId) {
+  // Check actual wallet chain ID, not the reactive chain object
+  const actualChainId = await walletClient.getChainId();
+  console.log(
+    "Step 2 - Actual wallet chain:",
+    actualChainId,
+    "Target: Torus EVM (",
+    torusEvmChainId,
+    ")",
+  );
+
+  if (actualChainId !== torusEvmChainId) {
     updateBridgeState({ step: SimpleBridgeStep.STEP_2_SWITCHING });
     addTransaction({
       step: 2,
@@ -342,77 +356,109 @@ export async function executeBaseToNativeStep2(
       metadata: { type: "switch" },
     });
 
-    try {
-      const result = await switchChain({ chainId: torusEvmChainId });
-      console.log("Switch chain result:", result);
+    let torusEvmSwitchAttempts = 0;
+    let lastSwitchError: Error | undefined;
 
-      // Verify the switch was successful
-      if (chain.id !== torusEvmChainId) {
+    console.log(
+      "Step 2 - Current chain:",
+      actualChainId,
+      "Target: Torus EVM (",
+      torusEvmChainId,
+      ")",
+    );
+
+    while (torusEvmSwitchAttempts < POLLING_CONFIG.MAX_SWITCH_ATTEMPTS) {
+      try {
+        console.log(
+          `Attempting to switch to Torus EVM chain (attempt ${torusEvmSwitchAttempts + 1})`,
+        );
+        await switchChain({ chainId: torusEvmChainId });
+
+        // Wait for switch to take effect
+        await new Promise((resolve) =>
+          setTimeout(resolve, POLLING_CONFIG.SWITCH_RETRY_DELAY_MS),
+        );
+
+        // Verify the switch worked by checking wallet's actual chain
+        const verifiedChainId = await walletClient.getChainId();
+
+        if (verifiedChainId === torusEvmChainId) {
+          console.log("Successfully switched and verified Torus EVM chain");
+          break;
+        }
+
         console.warn(
-          "Chain ID mismatch after switch. Expected:",
+          "Chain switch reported success but verification failed. Expected:",
           torusEvmChainId,
           "Got:",
-          chain.id,
+          verifiedChainId,
+        );
+
+        // If switchChain reported success but verification failed, treat as failure
+        throw new Error(
+          `Chain switch verification failed. Expected ${torusEvmChainId}, got ${verifiedChainId}`,
+        );
+      } catch (switchError: unknown) {
+        lastSwitchError = switchError as Error;
+        torusEvmSwitchAttempts++;
+
+        console.log(
+          `Switch attempt ${torusEvmSwitchAttempts} failed:`,
+          lastSwitchError.message,
+        );
+
+        if (torusEvmSwitchAttempts >= POLLING_CONFIG.MAX_SWITCH_ATTEMPTS) {
+          const error = switchError as Error;
+          const isUserRejected = isUserRejectionError(error);
+          const errorMessage = isUserRejected
+            ? "Network switch was not accepted"
+            : "Unable to switch to Torus EVM network";
+
+          const errorDetails = isUserRejected
+            ? "Please accept the network switch in your wallet to continue the transfer, or switch manually to Torus EVM and click Retry."
+            : "Failed to switch to Torus EVM network after 3 attempts. Please switch manually to Torus EVM in your wallet and click Retry to continue.";
+
+          addTransaction({
+            step: 2,
+            status: "ERROR",
+            chainName: "Torus EVM",
+            message: errorMessage,
+            errorDetails,
+            txHash: undefined,
+            explorerUrl: undefined,
+            metadata: { type: "switch" },
+          });
+          updateBridgeState({
+            step: SimpleBridgeStep.ERROR,
+            errorMessage,
+          });
+
+          if (isUserRejected) {
+            throw new UserRejectedError(errorMessage);
+          }
+
+          throw error;
+        }
+
+        console.log(
+          `Waiting ${POLLING_CONFIG.SWITCH_RETRY_DELAY_MS / 1000}s before retry attempt ${torusEvmSwitchAttempts + 1}...`,
+        );
+
+        // Wait before retry
+        await new Promise((resolve) =>
+          setTimeout(resolve, POLLING_CONFIG.SWITCH_RETRY_DELAY_MS),
         );
       }
-    } catch (switchError: unknown) {
-      const error = switchError as Error;
-      const isUserRejected = isUserRejectionError(error);
-      const errorMessage = isUserRejected
-        ? "Chain switch rejected by user"
-        : "Failed to switch to Torus EVM chain";
-
-      const errorDetails = formatErrorForUser(error);
-
-      addTransaction({
-        step: 2,
-        status: "ERROR",
-        chainName: "Torus EVM",
-        message: errorMessage,
-        errorDetails,
-        txHash: undefined,
-        explorerUrl: undefined,
-        metadata: { type: "switch" },
-      });
-      updateBridgeState({
-        step: SimpleBridgeStep.ERROR,
-        errorMessage,
-      });
-
-      if (isUserRejected) {
-        throw new UserRejectedError(errorMessage);
-      }
-
-      throw error;
     }
-  }
 
-  // Verify we're on the correct chain
-  console.log(
-    "Current chain after switch:",
-    chain.id,
-    "Expected:",
-    torusEvmChainId,
-  );
-
-  if (chain.id !== torusEvmChainId) {
-    const errorMessage = "Failed to switch to Torus EVM chain";
-    const errorDetails =
-      "Unable to switch to Torus EVM network. Please switch manually and try again.";
-
+    console.log("Confirmed on Torus EVM chain, proceeding to withdrawal");
     addTransaction({
       step: 2,
-      status: "ERROR",
+      status: "SUCCESS",
       chainName: "Torus EVM",
-      message: errorMessage,
-      errorDetails,
+      message: "Successfully switched to Torus EVM",
       metadata: { type: "switch" },
     });
-    updateBridgeState({
-      step: SimpleBridgeStep.ERROR,
-      errorMessage,
-    });
-    throw new Error(errorMessage);
   }
 
   updateBridgeState({ step: SimpleBridgeStep.STEP_2_SIGNING });
@@ -421,7 +467,7 @@ export async function executeBaseToNativeStep2(
   try {
     txHash = await withdrawFromTorusEvm(
       walletClient,
-      chain,
+      { ...chain, id: torusEvmChainId }, // Force correct chain ID
       selectedAccount.address,
       amountRems,
       async () => {
@@ -471,6 +517,7 @@ export async function executeBaseToNativeStep2(
     explorerUrl: txHash ? getExplorerUrl(txHash, "Torus EVM") : undefined,
   });
 
+  // Wait for transaction receipt first
   const [receiptError] = await tryAsync(
     waitForTransactionReceipt(wagmiConfig, {
       hash: txHash as `0x${string}`,
@@ -480,6 +527,77 @@ export async function executeBaseToNativeStep2(
 
   if (receiptError !== undefined) {
     console.warn("Failed to get transaction receipt:", receiptError);
+  }
+
+  // Now poll Native balance to confirm withdrawal succeeded
+  await refetchNativeBalance();
+  const baselineNativeBalance = nativeBalance?.value || 0n;
+  const expectedNativeIncrease = toNano(parseFloat(amount));
+
+  console.log(
+    `Polling Native balance - Baseline: ${Number(baselineNativeBalance) / 1e18} TORUS, Expected increase: ${parseFloat(amount)} TORUS`,
+  );
+
+  let nativePollCount = 0;
+  const nativePollPromise = new Promise<void>((resolve, reject) => {
+    const interval = setInterval(() => {
+      void (async () => {
+        nativePollCount++;
+        const refetchResult = (await refetchNativeBalance()) as {
+          status: string;
+          data?: { value: bigint };
+        };
+        if (refetchResult.status === "error") {
+          console.warn("Failed to refetch Native balance, retrying...");
+          return;
+        }
+        const currentNativeBalance = refetchResult.data?.value || 0n;
+
+        console.log(
+          `Native balance poll ${nativePollCount}: Current ${Number(currentNativeBalance) / 1e18} TORUS, Baseline ${Number(baselineNativeBalance) / 1e18} TORUS`,
+        );
+
+        if (
+          currentNativeBalance >=
+          baselineNativeBalance + expectedNativeIncrease
+        ) {
+          console.log("Native balance increased - withdrawal confirmed!");
+          clearInterval(interval);
+          resolve();
+        } else if (nativePollCount >= POLLING_CONFIG.MAX_POLLS) {
+          clearInterval(interval);
+          reject(
+            new Error("Withdrawal confirmation timeout - no balance increase"),
+          );
+        }
+      })();
+    }, POLLING_CONFIG.INTERVAL_MS);
+  });
+
+  try {
+    await withTimeout(
+      nativePollPromise,
+      TIMEOUT_CONFIG.POLLING_OPERATION_MS,
+      "Native balance polling timeout",
+    );
+  } catch (pollError) {
+    const errorMessage =
+      pollError instanceof Error && pollError.message.includes("timeout")
+        ? "Withdrawal confirmation timeout - check Native balance and retry"
+        : "Withdrawal did not confirm (check Native balance and retry)";
+    addTransaction({
+      step: 2,
+      status: "ERROR" as const,
+      chainName: "Torus Native",
+      message: errorMessage,
+      txHash,
+      explorerUrl: txHash ? getExplorerUrl(txHash, "Torus EVM") : undefined,
+    });
+    updateBridgeState({
+      step: SimpleBridgeStep.ERROR,
+      errorMessage,
+    });
+    throw pollError;
   }
 
   addTransaction({

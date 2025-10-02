@@ -11,8 +11,8 @@ export const GAS_CONFIG = {
 export const POLLING_CONFIG = {
   INTERVAL_MS: 5000,
   MAX_POLLS: 180,
-  SWITCH_RETRY_DELAY_MS: 1000,
-  MAX_SWITCH_ATTEMPTS: 2,
+  SWITCH_RETRY_DELAY_MS: 5000, // 5 seconds between switch attempts
+  MAX_SWITCH_ATTEMPTS: 3, // Try up to 3 times before failing
 } as const;
 
 export const CONFIRMATION_CONFIG = {

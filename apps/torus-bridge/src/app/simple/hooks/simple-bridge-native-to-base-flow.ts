@@ -170,6 +170,7 @@ interface NativeToBaseStep2Params {
   evmAddress: string;
   torusEvmChainId: number;
   chainId?: number;
+  walletClient: { getChainId: () => Promise<number> };
   switchChain: (params: { chainId: number }) => Promise<{ id: number }>;
   triggerHyperlaneTransfer: (params: {
     origin: string;
@@ -195,7 +196,8 @@ export async function executeNativeToBaseStep2(
     amount,
     evmAddress,
     torusEvmChainId,
-    chainId,
+    chainId: _chainId,
+    walletClient,
     switchChain,
     triggerHyperlaneTransfer,
     refetchBaseBalance,
@@ -213,7 +215,17 @@ export async function executeNativeToBaseStep2(
     message: "Preparing Torus EVM → Base transfer",
   });
 
-  if (chainId !== torusEvmChainId) {
+  // Check actual wallet chain ID, not the reactive chainId parameter
+  const actualChainId = await walletClient.getChainId();
+  console.log(
+    "Step 2 - Actual wallet chain:",
+    actualChainId,
+    "Target: Torus EVM (",
+    torusEvmChainId,
+    ")",
+  );
+
+  if (actualChainId !== torusEvmChainId) {
     updateBridgeState({ step: SimpleBridgeStep.STEP_2_SWITCHING });
     addTransaction({
       step: 2,
@@ -223,19 +235,106 @@ export async function executeNativeToBaseStep2(
       metadata: { type: "switch" },
     });
 
-    try {
-      const result = await switchChain({ chainId: torusEvmChainId });
-      console.log("Switch chain result:", result);
+    let currentChainId = actualChainId;
+    let torusEvmSwitchAttempts = 0;
+    let lastSwitchError: Error | undefined;
 
-      // Note: chainId param might not be updated immediately, will verify via balance fetch
-    } catch (switchError: unknown) {
-      const error = switchError as Error;
-      const isUserRejected = isUserRejectionError(error);
-      const errorMessage = isUserRejected
-        ? "Chain switch rejected by user"
-        : "Failed to switch to Torus EVM chain";
+    while (
+      torusEvmSwitchAttempts < POLLING_CONFIG.MAX_SWITCH_ATTEMPTS &&
+      currentChainId !== torusEvmChainId
+    ) {
+      try {
+        console.log(
+          `Attempting to switch to Torus EVM chain (attempt ${torusEvmSwitchAttempts + 1})`,
+        );
+        const result = await switchChain({ chainId: torusEvmChainId });
+        currentChainId = result.id;
 
-      const errorDetails = formatErrorForUser(error);
+        if (currentChainId === torusEvmChainId) {
+          console.log("Successfully switched to Torus EVM chain");
+          break;
+        }
+
+        // Wait and verify chain switch
+        await new Promise((resolve) =>
+          setTimeout(resolve, POLLING_CONFIG.SWITCH_RETRY_DELAY_MS),
+        );
+
+        // Re-check wallet's actual chain ID after delay
+        const recheckChainId = await walletClient.getChainId();
+        if (recheckChainId === torusEvmChainId) {
+          console.log("Chain switch verified after delay");
+          currentChainId = recheckChainId;
+          break;
+        }
+
+        console.warn(
+          "Chain ID mismatch after switch. Expected:",
+          torusEvmChainId,
+          "Got:",
+          recheckChainId,
+        );
+      } catch (switchError: unknown) {
+        lastSwitchError = switchError as Error;
+        torusEvmSwitchAttempts++;
+
+        console.log(
+          `Switch attempt ${torusEvmSwitchAttempts} failed:`,
+          lastSwitchError.message,
+        );
+
+        if (torusEvmSwitchAttempts >= POLLING_CONFIG.MAX_SWITCH_ATTEMPTS) {
+          const error = switchError as Error;
+          const isUserRejected = isUserRejectionError(error);
+          const errorMessage = isUserRejected
+            ? "Network switch was not accepted"
+            : "Unable to switch to Torus EVM network";
+
+          const errorDetails = isUserRejected
+            ? "Please accept the network switch in your wallet to continue the transfer, or switch manually to Torus EVM and click Retry."
+            : "Failed to switch to Torus EVM network after 3 attempts. Please switch manually to Torus EVM in your wallet and click Retry to continue.";
+
+          addTransaction({
+            step: 2,
+            status: "ERROR",
+            chainName: "Torus EVM",
+            message: errorMessage,
+            errorDetails,
+            txHash: undefined,
+            explorerUrl: undefined,
+            metadata: { type: "switch" },
+          });
+          updateBridgeState({
+            step: SimpleBridgeStep.ERROR,
+            errorMessage,
+          });
+
+          if (isUserRejected) {
+            throw new UserRejectedError(errorMessage);
+          }
+
+          throw error;
+        }
+
+        console.log(
+          `Waiting ${POLLING_CONFIG.SWITCH_RETRY_DELAY_MS / 1000}s before retry attempt ${torusEvmSwitchAttempts + 1}...`,
+        );
+
+        // Wait before retry
+        await new Promise((resolve) =>
+          setTimeout(resolve, POLLING_CONFIG.SWITCH_RETRY_DELAY_MS),
+        );
+      }
+    }
+
+    // Final verification with wallet's actual chain
+    const finalChainId = await walletClient.getChainId();
+    if (finalChainId !== torusEvmChainId) {
+      const errorMessage = "Failed to verify Torus EVM chain switch";
+      const errorDetails =
+        lastSwitchError !== undefined
+          ? formatErrorForUser(lastSwitchError)
+          : "Unable to switch to Torus EVM network. Please switch manually and try again.";
 
       addTransaction({
         step: 2,
@@ -243,8 +342,6 @@ export async function executeNativeToBaseStep2(
         chainName: "Torus EVM",
         message: errorMessage,
         errorDetails,
-        txHash: undefined,
-        explorerUrl: undefined,
         metadata: { type: "switch" },
       });
       updateBridgeState({
@@ -252,21 +349,22 @@ export async function executeNativeToBaseStep2(
         errorMessage,
       });
 
-      if (isUserRejected) {
+      if (lastSwitchError !== undefined && isUserRejectionError(lastSwitchError)) {
         throw new UserRejectedError(errorMessage);
       }
 
-      throw error;
+      throw new Error(errorMessage);
     }
-  }
 
-  // Verify we're on the correct chain
-  console.log(
-    "Current chain after switch:",
-    chainId,
-    "Expected:",
-    torusEvmChainId,
-  );
+    console.log("Confirmed on Torus EVM chain, proceeding to Hyperlane transfer");
+    addTransaction({
+      step: 2,
+      status: "SUCCESS",
+      chainName: "Torus EVM",
+      message: "Successfully switched to Torus EVM",
+      metadata: { type: "switch" },
+    });
+  }
 
   // Note: We don't check ETH balance here - let the wallet handle gas validation
   // The wallet will show a proper error if there's insufficient gas
