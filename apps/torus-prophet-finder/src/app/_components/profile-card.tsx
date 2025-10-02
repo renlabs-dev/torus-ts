@@ -66,7 +66,7 @@ export function ProfileCard({
             alt={`${name} cover`}
             fill
             sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
-            className="vintage-photo object-cover transition-all duration-300"
+            className="vintage-photo accel-warp object-cover transition-all duration-300"
             priority={false}
           />
 
@@ -93,6 +93,13 @@ export function ProfileCard({
           <div className="paper-tint-overlay pointer-events-none absolute inset-0" />
           {/* hairline scratches */}
           <div className="scratches-overlay pointer-events-none absolute inset-0" />
+
+          {/* mythic cyber overlay: scanlines + triangulated grid (monochrome) */}
+          <div className="scanlines-overlay-cyber pointer-events-none absolute inset-0" />
+          <div className="tri-grid-overlay-cyber pointer-events-none absolute inset-0" />
+
+          {/* subtle holographic sheen sweep (keeps grayscale) */}
+          <div className="holo-sheen-overlay pointer-events-none absolute inset-0" />
 
           {/* subtle specular highlight on hover to make card stand out */}
           <div
