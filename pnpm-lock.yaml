@@ -748,6 +748,9 @@ importers:
       '@react-three/fiber':
         specifier: ^9.3.0
         version: 9.3.0(@types/react@19.0.14)(immer@10.1.3)(react-dom@19.1.1(react@19.1.1))(react-native@0.81.1(@babel/core@7.28.4)(@types/react@19.0.14)(bufferutil@4.0.9)(react@19.1.1)(utf-8-validate@5.0.10))(react@19.1.1)(three@0.180.0)
+      '@react-three/postprocessing':
+        specifier: ^3.0.4
+        version: 3.0.4(@react-three/fiber@9.3.0(@types/react@19.0.14)(immer@10.1.3)(react-dom@19.1.1(react@19.1.1))(react-native@0.81.1(@babel/core@7.28.4)(@types/react@19.0.14)(bufferutil@4.0.9)(react@19.1.1)(utf-8-validate@5.0.10))(react@19.1.1)(three@0.180.0))(@types/three@0.175.0)(react@19.1.1)(three@0.180.0)
       '@tanstack/react-query':
         specifier: 'catalog:'
         version: 5.87.4(react@19.1.1)
@@ -9453,7 +9456,6 @@ packages:
 
   get-starknet-core@4.0.0:
     resolution: {integrity: sha512-6pLmidQZkC3wZsrHY99grQHoGpuuXqkbSP65F8ov1/JsEI8DDLkhsAuLCKFzNOK56cJp+f1bWWfTJ57e9r5eqQ==}
-    deprecated: Package no longer supported. Please use @starknet-io/get-starknet-core
 
   get-stream@5.2.0:
     resolution: {integrity: sha512-nBF+F1rAZVCu/p7rjzgA+Yb4lfYXrpl7a6VmJrU8wF9I1CKvP/QwPNZHnOlwbTkY6dvtFIzFMSyQXbLoTQPRpA==}
@@ -19678,6 +19680,17 @@ snapshots:
     transitivePeerDependencies:
       - '@types/three'
 
+  '@react-three/postprocessing@3.0.4(@react-three/fiber@9.3.0(@types/react@19.0.14)(immer@10.1.3)(react-dom@19.1.1(react@19.1.1))(react-native@0.81.1(@babel/core@7.28.4)(@types/react@19.0.14)(bufferutil@4.0.9)(react@19.1.1)(utf-8-validate@5.0.10))(react@19.1.1)(three@0.180.0))(@types/three@0.175.0)(react@19.1.1)(three@0.180.0)':
+    dependencies:
+      '@react-three/fiber': 9.3.0(@types/react@19.0.14)(immer@10.1.3)(react-dom@19.1.1(react@19.1.1))(react-native@0.81.1(@babel/core@7.28.4)(@types/react@19.0.14)(bufferutil@4.0.9)(react@19.1.1)(utf-8-validate@5.0.10))(react@19.1.1)(three@0.180.0)
+      maath: 0.6.0(@types/three@0.175.0)(three@0.180.0)
+      n8ao: 1.10.1(postprocessing@6.37.7(three@0.180.0))(three@0.180.0)
+      postprocessing: 6.37.7(three@0.180.0)
+      react: 19.1.1
+      three: 0.180.0
+    transitivePeerDependencies:
+      - '@types/three'
+
   '@react-types/breadcrumbs@3.7.16(react@19.1.1)':
     dependencies:
       '@react-types/link': 3.6.4(react@19.1.1)
@@ -27969,6 +27982,11 @@ snapshots:
       '@types/three': 0.175.0
       three: 0.175.0
 
+  maath@0.6.0(@types/three@0.175.0)(three@0.180.0):
+    dependencies:
+      '@types/three': 0.175.0
+      three: 0.180.0
+
   magic-string@0.30.19:
     dependencies:
       '@jridgewell/sourcemap-codec': 1.5.5
@@ -28721,6 +28739,11 @@ snapshots:
       postprocessing: 6.37.7(three@0.175.0)
       three: 0.175.0
 
+  n8ao@1.10.1(postprocessing@6.37.7(three@0.180.0))(three@0.180.0):
+    dependencies:
+      postprocessing: 6.37.7(three@0.180.0)
+      three: 0.180.0
+
   nan@2.23.0: {}
 
   nano-json-stream-parser@0.1.2: {}
@@ -29367,6 +29390,10 @@ snapshots:
   postprocessing@6.37.7(three@0.175.0):
     dependencies:
       three: 0.175.0
+
+  postprocessing@6.37.7(three@0.180.0):
+    dependencies:
+      three: 0.180.0
 
   potpack@1.0.2: {}
 
