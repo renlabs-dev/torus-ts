@@ -8,6 +8,7 @@ import AddProphetForm from "~/app/_components/cards/add-prophet-form";
 import CardsGrid from "~/app/_components/cards/cards-grid";
 import CardsHeader from "~/app/_components/cards/cards-header";
 import CardsRaysBackground from "~/app/_components/cards/cards-rays-background";
+import CardsBorderGlow from "~/app/_components/cards/cards-border-glow";
 import TextureFilters from "~/app/_components/cards/effects/texture-filters";
 import EmptyState from "~/app/_components/cards/empty-state";
 // import EntityModeToggle from "~/app/_components/cards/entity-mode-toggle";
@@ -123,8 +124,9 @@ export default function CardsSection() {
     >
       <TextureFilters />
       <StarfieldBackground />
-      {/* Rays span entire section but are positioned behind the header */}
+      {/* Central godrays background and extremely subtle border glow */}
       <CardsRaysBackground />
+      <CardsBorderGlow />
       {/* Exact mirror of hero bottom shadow at the top */}
       <div className="pointer-events-none absolute inset-x-0 top-0 z-[16] h-24 bg-gradient-to-b from-black/60 via-black/20 to-transparent" />
       <div className="pointer-events-none absolute inset-0 z-0 bg-black/60" />
