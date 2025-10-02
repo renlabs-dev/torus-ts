@@ -3,6 +3,7 @@
 import type { SS58Address } from "@torus-network/sdk/types";
 import { useBalance } from "@torus-ts/query-provider/hooks";
 import { useTorus } from "@torus-ts/torus-provider";
+import { useToast } from "@torus-ts/ui/hooks/use-toast";
 import AddProphetForm from "~/app/_components/cards/add-prophet-form";
 import CardsBorderGlow from "~/app/_components/cards/cards-border-glow";
 // import AddTickerForm from "~/app/_components/cards/add-ticker-form";
@@ -24,10 +25,11 @@ import * as React from "react";
 
 export default function CardsSection() {
   const STAKE_REQUIRED_MSG = "You must have staked balance present.";
-  const { prophets, addProphet } = useProphets();
+  const { prophets, addProphet, validateProphet } = useProphets();
   // const { tickers, addTicker } = useTickers();
   const { api, selectedAccount } = useTorus();
   const { submit: submitProphetTask } = useSubmitProphetTask();
+  const { toast } = useToast();
   const accountBalance = useBalance(
     api,
     selectedAccount?.address as SS58Address,
@@ -59,23 +61,69 @@ export default function CardsSection() {
   // }, [query, tickers]);
 
   const handleAddProphet = React.useCallback(
-    (raw: string) => {
+    async (raw: string) => {
       if (!hasStake) {
         setUiError(STAKE_REQUIRED_MSG);
+        toast.error(STAKE_REQUIRED_MSG);
         return STAKE_REQUIRED_MSG;
       }
-      const result = addProphet(raw);
-      const err = result.error ?? null;
-      setUiError(err);
 
-      if (!err) {
-        const normalizedUsername = raw.replace(/^@/, "").trim();
-        void submitProphetTask(normalizedUsername);
+      // Validate the handle first
+      const validation = validateProphet(raw);
+      if (validation.error) {
+        setUiError(validation.error);
+        toast.error(validation.error);
+        return validation.error;
       }
 
-      return err;
+      const normalizedUsername =
+        validation.core || raw.replace(/^@/, "").trim();
+
+      // Show loading toast
+      const toastId = toast.loading(`Adding @${normalizedUsername}...`);
+
+      // Submit the task first
+      try {
+        await submitProphetTask(normalizedUsername);
+
+        // Dismiss loading toast
+        toast.dismiss(toastId);
+
+        // Only add the placeholder card after successful submission
+        const result = addProphet(raw);
+        const err = result.error ?? null;
+
+        if (err) {
+          setUiError(err);
+          toast.error(err);
+          return err;
+        }
+
+        setUiError(null);
+        toast.success(
+          `@${normalizedUsername} added successfully! The swarm is now learning.`,
+        );
+        return null;
+      } catch (error) {
+        toast.dismiss(toastId);
+        const errorMsg =
+          error instanceof Error ? error.message : "Failed to submit task";
+
+        // Check for permission error
+        if (errorMsg.includes("doesn't have any of the expected permissions")) {
+          const permissionError =
+            "Your wallet doesn't have permission to add prophets. Please contact support.";
+          setUiError(permissionError);
+          toast.error(permissionError);
+          return permissionError;
+        }
+
+        setUiError(errorMsg);
+        toast.error(`Failed to add prophet: ${errorMsg}`);
+        return errorMsg;
+      }
     },
-    [addProphet, hasStake, submitProphetTask],
+    [addProphet, validateProphet, hasStake, submitProphetTask, toast],
   );
 
   // const handleAddTicker = React.useCallback(

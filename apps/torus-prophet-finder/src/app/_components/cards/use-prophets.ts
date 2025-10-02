@@ -75,8 +75,8 @@ export function useProphets() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const addProphet = React.useCallback(
-    (rawHandle: string): { error?: string } => {
+  const validateProphet = React.useCallback(
+    (rawHandle: string): { error?: string; core?: string } => {
       const v = validateHandleInput(rawHandle);
       if (v.error) return { error: v.error };
       const core = v.core ?? normalizeHandle(rawHandle);
@@ -87,6 +87,18 @@ export function useProphets() {
       ) {
         return { error: "This prophet already exists" };
       }
+      return { core };
+    },
+    [prophets],
+  );
+
+  const addProphet = React.useCallback(
+    (rawHandle: string): { error?: string } => {
+      const validation = validateProphet(rawHandle);
+      if (validation.error) return { error: validation.error };
+      const core = validation.core;
+      if (!core) return { error: "Please enter a valid @username" };
+      const handle = `@${core}`;
       const p: Prophet = {
         name: titleFromHandle(core),
         handle,
@@ -101,8 +113,8 @@ export function useProphets() {
       setProphets((prev) => sortByProgressDesc([...prev, p]));
       return {};
     },
-    [prophets, sortByProgressDesc],
+    [validateProphet, sortByProgressDesc],
   );
 
-  return { prophets, addProphet };
+  return { prophets, addProphet, validateProphet };
 }

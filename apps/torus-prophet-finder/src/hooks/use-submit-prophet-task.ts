@@ -23,16 +23,17 @@ export function useSubmitProphetTask(): SubmitProphetTaskResult {
   const submit = React.useCallback(
     async (username: string) => {
       if (!client) {
-        setError(
+        const errorMsg =
           initError ||
-            "SwarmMemory client not initialized. Please connect your wallet.",
-        );
-        return;
+          "SwarmMemory client not initialized. Please connect your wallet.";
+        setError(errorMsg);
+        throw new Error(errorMsg);
       }
 
       if (isInitializing) {
-        setError("Initializing SwarmMemory client...");
-        return;
+        const errorMsg = "Initializing SwarmMemory client...";
+        setError(errorMsg);
+        throw new Error(errorMsg);
       }
 
       setLoading(true);
@@ -51,6 +52,7 @@ export function useSubmitProphetTask(): SubmitProphetTaskResult {
           err instanceof Error ? err.message : "Failed to submit scrape task";
         setError(message);
         console.error("Error submitting prophet task:", err);
+        throw err; // Re-throw the error so the caller can handle it
       } finally {
         setLoading(false);
       }

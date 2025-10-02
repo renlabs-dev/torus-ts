@@ -4,7 +4,7 @@ import { HandleInputSchema } from "~/lib/handles/validate-handle";
 import * as React from "react";
 
 interface Props {
-  onAdd: (rawHandle: string) => string | null; // returns error or null
+  onAdd: (rawHandle: string) => string | null | Promise<string | null>; // returns error or null (sync or async)
   suppressErrorMessage?: (msg: string) => boolean;
   searchValue: string; // Use the search field value
   disabled?: boolean;
@@ -28,12 +28,12 @@ export default function AddProphetForm({
       const parsed = HandleInputSchema.safeParse(searchValue.trim());
       if (!parsed.success) {
         // Let the parent handle the error display
-        onAdd(searchValue.trim());
+        await onAdd(searchValue.trim());
         return;
       }
 
       // Call onAdd with the normalized handle
-      onAdd(parsed.data);
+      await onAdd(parsed.data);
     } finally {
       setIsSubmitting(false);
     }
