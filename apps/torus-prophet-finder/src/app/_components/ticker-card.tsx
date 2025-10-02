@@ -30,6 +30,12 @@ export function TickerCard({ symbol }: TickerCardProps) {
             className="absolute inset-0"
           />
 
+          {/* mythic cyber overlay: scanlines + triangulated grid (monochrome) */}
+          <div className="scanlines-overlay-cyber pointer-events-none absolute inset-0" />
+          <div className="tri-grid-overlay-cyber pointer-events-none absolute inset-0" />
+          {/* subtle holographic sheen sweep (keeps grayscale) */}
+          <div className="holo-sheen-overlay pointer-events-none absolute inset-0" />
+
           {/* bottom gradient for symbol legibility */}
           <div className="pointer-events-none absolute inset-x-0 bottom-0 h-28 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
 

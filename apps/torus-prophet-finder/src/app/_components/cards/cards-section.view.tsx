@@ -8,6 +8,7 @@ import AddProphetForm from "~/app/_components/cards/add-prophet-form";
 import CardsGrid from "~/app/_components/cards/cards-grid";
 import CardsHeader from "~/app/_components/cards/cards-header";
 import CardsRaysBackground from "~/app/_components/cards/cards-rays-background";
+import TextureFilters from "~/app/_components/cards/effects/texture-filters";
 import EmptyState from "~/app/_components/cards/empty-state";
 // import EntityModeToggle from "~/app/_components/cards/entity-mode-toggle";
 import type { EntityMode } from "~/app/_components/cards/entity-mode-toggle";
@@ -120,6 +121,7 @@ export default function CardsSection() {
       id="content"
       className="relative w-full overflow-hidden py-12 sm:py-16 md:py-20"
     >
+      <TextureFilters />
       <StarfieldBackground />
       {/* Rays span entire section but are positioned behind the header */}
       <CardsRaysBackground />
@@ -146,8 +148,8 @@ export default function CardsSection() {
             value={query}
             onChange={setQuery}
             id="prophet-search"
-            label="Search prophets by name"
-            placeholder="Search prophets by name…"
+            label="Type a prophet handle to add"
+            placeholder="Type a prophet handle (e.g., @satoshi) to add"
           />
           <AddProphetForm
             onAdd={handleAddProphet}
