@@ -55,6 +55,88 @@
   opacity: 0.25;
 }
 
+/* Cyber-mythic overlays (monochrome, non-intrusive) */
+@keyframes holo-sheen-pan {
+  0% {
+    background-position: -40% 0;
+  }
+  50% {
+    background-position: 140% 0;
+  }
+  100% {
+    background-position: 240% 0;
+  }
+}
+
+@keyframes cyber-pulse {
+  0%,
+  100% {
+    opacity: 0.14;
+  }
+  50% {
+    opacity: 0.28;
+  }
+}
+
+@keyframes grid-pulse {
+  0%,
+  100% {
+    opacity: 0.10;
+  }
+  50% {
+    opacity: 0.18;
+  }
+}
+
+.scanlines-overlay-cyber {
+  background-image: repeating-linear-gradient(
+    to bottom,
+    rgba(255, 255, 255, 0.03) 0px,
+    rgba(255, 255, 255, 0.03) 1px,
+    rgba(0, 0, 0, 0) 1px,
+    rgba(0, 0, 0, 0) 3px
+  );
+  mix-blend-mode: soft-light;
+  opacity: 0.18;
+  animation: cyber-pulse 3.6s ease-in-out infinite;
+  will-change: opacity;
+}
+
+.tri-grid-overlay-cyber {
+  background-image:
+    repeating-linear-gradient(
+      60deg,
+      rgba(255, 255, 255, 0.025) 0px,
+      rgba(255, 255, 255, 0.025) 1px,
+      rgba(0, 0, 0, 0) 1px,
+      rgba(0, 0, 0, 0) 20px
+    ),
+    repeating-linear-gradient(
+      120deg,
+      rgba(255, 255, 255, 0.025) 0px,
+      rgba(255, 255, 255, 0.025) 1px,
+      rgba(0, 0, 0, 0) 1px,
+      rgba(0, 0, 0, 0) 20px
+    );
+  mix-blend-mode: overlay;
+  opacity: 0.12;
+  animation: grid-pulse 4.2s ease-in-out infinite;
+  will-change: opacity;
+}
+
+.holo-sheen-overlay {
+  background-image: linear-gradient(
+    120deg,
+    rgba(255, 255, 255, 0) 40%,
+    rgba(255, 255, 255, 0.08) 50%,
+    rgba(255, 255, 255, 0) 60%
+  );
+  background-size: 200% 100%;
+  mix-blend-mode: screen;
+  opacity: 0.6;
+  animation: holo-sheen-pan 4.5s ease-in-out infinite;
+}
+
 /* Starfield animations */
 @keyframes sf-scroll {
   from {
@@ -120,6 +202,14 @@
 @media (prefers-reduced-motion: reduce) {
   .aura-breathe,
   .rays-slow-spin {
+    animation: none !important;
+  }
+  .holo-sheen-overlay {
+    animation: none !important;
+    opacity: 0.22;
+  }
+  .scanlines-overlay-cyber,
+  .tri-grid-overlay-cyber {
     animation: none !important;
   }
 }
