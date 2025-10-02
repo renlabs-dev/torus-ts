@@ -4,18 +4,18 @@ import type { SS58Address } from "@torus-network/sdk/types";
 import { useBalance } from "@torus-ts/query-provider/hooks";
 import { useTorus } from "@torus-ts/torus-provider";
 import AddProphetForm from "~/app/_components/cards/add-prophet-form";
-import AddTickerForm from "~/app/_components/cards/add-ticker-form";
+// import AddTickerForm from "~/app/_components/cards/add-ticker-form";
 import CardsGrid from "~/app/_components/cards/cards-grid";
 import CardsHeader from "~/app/_components/cards/cards-header";
 import CardsRaysBackground from "~/app/_components/cards/cards-rays-background";
 import EmptyState from "~/app/_components/cards/empty-state";
-import EntityModeToggle from "~/app/_components/cards/entity-mode-toggle";
+// import EntityModeToggle from "~/app/_components/cards/entity-mode-toggle";
 import type { EntityMode } from "~/app/_components/cards/entity-mode-toggle";
 import SearchInput from "~/app/_components/cards/search-input";
 import StableHeight from "~/app/_components/cards/stable-height";
-import TickersGrid from "~/app/_components/cards/tickers-grid";
+// import TickersGrid from "~/app/_components/cards/tickers-grid";
 import { useProphets } from "~/app/_components/cards/use-prophets";
-import { useTickers } from "~/app/_components/cards/use-tickers";
+// import { useTickers } from "~/app/_components/cards/use-tickers";
 import StarfieldBackground from "~/app/_components/effects/starfield-background";
 import { useSubmitProphetTask } from "~/hooks/use-submit-prophet-task";
 import * as React from "react";
@@ -23,7 +23,7 @@ import * as React from "react";
 export default function CardsSection() {
   const STAKE_REQUIRED_MSG = "You must have staked balance present.";
   const { prophets, addProphet } = useProphets();
-  const { tickers, addTicker } = useTickers();
+  // const { tickers, addTicker } = useTickers();
   const { api, selectedAccount } = useTorus();
   const { submit: submitProphetTask } = useSubmitProphetTask();
   const accountBalance = useBalance(
@@ -37,11 +37,12 @@ export default function CardsSection() {
   const showStakeWarning =
     selectedAccount != null && accountBalance.isFetching === false && !hasStake;
   const [query, setQuery] = React.useState("");
-  const [mode, setMode] = React.useState<EntityMode>("prophets");
-  const [isOverlayVisible, setOverlayVisible] = React.useState(false);
-  const [isOverlayOpaque, setOverlayOpaque] = React.useState(false);
+  const mode: EntityMode = "prophets"; // Fixed to prophets only
+  // const [mode, setMode] = React.useState<EntityMode>("prophets");
+  // const [isOverlayVisible, setOverlayVisible] = React.useState(false);
+  // const [isOverlayOpaque, setOverlayOpaque] = React.useState(false);
   const [uiError, setUiError] = React.useState<string | null>(null);
-  const timeouts = React.useRef<number[]>([]);
+  // const timeouts = React.useRef<number[]>([]);
 
   const filteredProphets = React.useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -49,11 +50,11 @@ export default function CardsSection() {
     return prophets.filter((p) => p.name.toLowerCase().includes(q));
   }, [query, prophets]);
 
-  const filteredTickers = React.useMemo(() => {
-    const q = query.trim().replace(/^\$+/, "").toUpperCase();
-    if (!q) return tickers;
-    return tickers.filter((t) => t.symbol.toUpperCase().includes(q));
-  }, [query, tickers]);
+  // const filteredTickers = React.useMemo(() => {
+  //   const q = query.trim().replace(/^\$+/, "").toUpperCase();
+  //   if (!q) return tickers;
+  //   return tickers.filter((t) => t.symbol.toUpperCase().includes(q));
+  // }, [query, tickers]);
 
   const handleAddProphet = React.useCallback(
     (raw: string) => {
@@ -75,44 +76,44 @@ export default function CardsSection() {
     [addProphet, hasStake, submitProphetTask],
   );
 
-  const handleAddTicker = React.useCallback(
-    (raw: string) => {
-      if (!hasStake) {
-        setUiError(STAKE_REQUIRED_MSG);
-        return STAKE_REQUIRED_MSG;
-      }
-      const err = addTicker(raw).error ?? null;
-      setUiError(err);
-      return err;
-    },
-    [addTicker, hasStake],
-  );
+  // const handleAddTicker = React.useCallback(
+  //   (raw: string) => {
+  //     if (!hasStake) {
+  //       setUiError(STAKE_REQUIRED_MSG);
+  //       return STAKE_REQUIRED_MSG;
+  //     }
+  //     const err = addTicker(raw).error ?? null;
+  //     setUiError(err);
+  //     return err;
+  //   },
+  //   [addTicker, hasStake],
+  // );
 
-  const handleModeChange = React.useCallback(
-    (next: EntityMode) => {
-      if (next === mode) return;
-      if (isOverlayVisible) return; // prevent re-entrancy during transition
-      // Begin fade-through-black transition
-      setOverlayVisible(true);
-      // ensure transition kicks in
-      requestAnimationFrame(() => setOverlayOpaque(true));
-      const t1 = window.setTimeout(() => {
-        setMode(next); // switch content while covered
-        setOverlayOpaque(false);
-        const t2 = window.setTimeout(() => setOverlayVisible(false), 220);
-        timeouts.current.push(t2);
-      }, 220);
-      timeouts.current.push(t1);
-    },
-    [mode, isOverlayVisible],
-  );
+  // const handleModeChange = React.useCallback(
+  //   (next: EntityMode) => {
+  //     if (next === mode) return;
+  //     if (isOverlayVisible) return; // prevent re-entrancy during transition
+  //     // Begin fade-through-black transition
+  //     setOverlayVisible(true);
+  //     // ensure transition kicks in
+  //     requestAnimationFrame(() => setOverlayOpaque(true));
+  //     const t1 = window.setTimeout(() => {
+  //       setMode(next); // switch content while covered
+  //       setOverlayOpaque(false);
+  //       const t2 = window.setTimeout(() => setOverlayVisible(false), 220);
+  //       timeouts.current.push(t2);
+  //     }, 220);
+  //     timeouts.current.push(t1);
+  //   },
+  //   [mode, isOverlayVisible],
+  // );
 
-  React.useEffect(() => {
-    return () => {
-      timeouts.current.forEach((id) => window.clearTimeout(id));
-      timeouts.current = [];
-    };
-  }, []);
+  // React.useEffect(() => {
+  //   return () => {
+  //     timeouts.current.forEach((id) => window.clearTimeout(id));
+  //     timeouts.current = [];
+  //   };
+  // }, []);
 
   return (
     <section
@@ -128,9 +129,9 @@ export default function CardsSection() {
       <div className="relative z-20 mx-auto w-full max-w-6xl px-6 sm:px-8 md:px-10">
         <CardsHeader mode={mode} />
 
-        <div className="flex flex-wrap items-center justify-center gap-4">
+        {/* <div className="flex flex-wrap items-center justify-center gap-4">
           <EntityModeToggle mode={mode} onChange={handleModeChange} />
-        </div>
+        </div> */}
 
         <div className="relative mb-6 mt-5 flex flex-wrap items-center gap-3 sm:mb-8 md:mb-10">
           {(uiError != null || showStakeWarning) && (
@@ -141,7 +142,19 @@ export default function CardsSection() {
               {uiError ?? STAKE_REQUIRED_MSG}
             </div>
           )}
-          {mode === "prophets" ? (
+          <SearchInput
+            value={query}
+            onChange={setQuery}
+            id="prophet-search"
+            label="Search prophets by name"
+            placeholder="Search prophets by name…"
+          />
+          <AddProphetForm
+            onAdd={handleAddProphet}
+            suppressErrorMessage={() => true}
+            searchValue={query}
+          />
+          {/* {mode === "prophets" ? (
             <>
               <SearchInput
                 value={query}
@@ -170,11 +183,25 @@ export default function CardsSection() {
                 suppressErrorMessage={() => true}
               />
             </>
-          )}
+          )} */}
         </div>
 
         <div className="relative">
-          {mode === "prophets" ? (
+          <StableHeight
+            locked={filteredProphets.length === 0}
+            minEmptyPx={640}
+            className="min-h-[40vh]"
+          >
+            {filteredProphets.length > 0 ? (
+              <CardsGrid prophets={filteredProphets} />
+            ) : (
+              <EmptyState
+                title="No prophets match your search"
+                hint="Try a different name or clear the search."
+              />
+            )}
+          </StableHeight>
+          {/* {mode === "prophets" ? (
             <StableHeight
               locked={filteredProphets.length === 0}
               minEmptyPx={640}
@@ -204,17 +231,17 @@ export default function CardsSection() {
                 />
               )}
             </StableHeight>
-          )}
+          )} */}
         </div>
       </div>
-      {isOverlayVisible && (
+      {/* {isOverlayVisible && (
         <div
           aria-hidden
           className={`pointer-events-none absolute inset-0 z-50 bg-black transition-opacity duration-200 ease-out ${
             isOverlayOpaque ? "opacity-100" : "opacity-0"
           }`}
         />
-      )}
+      )} */}
     </section>
   );
 }
