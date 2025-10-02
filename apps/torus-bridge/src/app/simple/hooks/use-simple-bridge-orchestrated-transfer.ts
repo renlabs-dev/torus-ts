@@ -152,9 +152,7 @@ export function useOrchestratedTransfer() {
 
   const nativeBalance = useMemo(
     () =>
-      nativeBalanceQuery.data
-        ? { value: nativeBalanceQuery.data }
-        : undefined,
+      nativeBalanceQuery.data ? { value: nativeBalanceQuery.data } : undefined,
     [nativeBalanceQuery.data],
   );
 
