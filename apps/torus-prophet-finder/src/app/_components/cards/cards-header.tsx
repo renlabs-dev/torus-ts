@@ -31,7 +31,7 @@ export default function CardsHeader({ mode }: Props) {
             LATER, YOU CAN ASK TORUS ABOUT THEM.
           </p>
           <p className="mt-2 text-white/30">
-            NOTE: YOU NEED TORUS STAKE (Mainnet) IN YOUR WALLET TO INTERACT
+            NOTE: YOU NEED TORUS STAKED (Mainnet) IN YOUR WALLET TO INTERACT
           </p>
         </div>
       </div>
