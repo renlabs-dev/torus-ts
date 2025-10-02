@@ -9,6 +9,7 @@ environments:
       - cacheUrl: https://cache.testnet.torus.network
       - releaseName: dev-prophet-finder
       - ingressHost: staging.prophetfinder.com
+      - chainEnv: testnet
   prod:
     values:
       - ../../helm/values.yaml
@@ -19,6 +20,7 @@ environments:
       - cacheUrl: https://cache.torus.network
       - releaseName: prophet-finder
       - ingressHost: prophetfinder.com
+      - chainEnv: mainnet
 ---
 helmDefaults:
   wait: true
