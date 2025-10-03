@@ -382,22 +382,22 @@ export async function executeNativeToBaseStep2(
     message: "Signing transaction...",
   });
 
-  const [hyperlaneError2, hyperlaneResult2] = await tryAsync(
-    triggerHyperlaneTransfer({
+  let txHash2: string | undefined;
+  try {
+    txHash2 = (await triggerHyperlaneTransfer({
       origin: "torus",
       destination: "base",
       tokenIndex: 1,
       amount,
       recipient: evmAddress,
-    }),
-  );
-
-  if (hyperlaneError2) {
-    const errorMessage = isUserRejectionError(hyperlaneError2)
+    })) as string | undefined;
+  } catch (hyperlaneError2) {
+    const error = hyperlaneError2 as Error;
+    const errorMessage = isUserRejectionError(error)
       ? "Transaction rejected by user"
       : "Failed to execute Torus EVM → Base transfer";
 
-    const errorDetails = formatErrorForUser(hyperlaneError2);
+    const errorDetails = formatErrorForUser(error);
 
     addTransaction({
       step: 2,
@@ -414,7 +414,7 @@ export async function executeNativeToBaseStep2(
       errorMessage,
     });
 
-    if (isUserRejectionError(hyperlaneError2)) {
+    if (isUserRejectionError(error)) {
       throw new UserRejectedError(errorMessage);
     }
 
@@ -480,12 +480,6 @@ export async function executeNativeToBaseStep2(
   }
 
   updateBridgeState({ step: SimpleBridgeStep.COMPLETE });
-  const txHash2 =
-    hyperlaneResult2 &&
-    typeof hyperlaneResult2 === "object" &&
-    "hash" in hyperlaneResult2
-      ? (hyperlaneResult2 as { hash: string }).hash
-      : undefined;
 
   addTransaction({
     step: 2,

@@ -45,8 +45,8 @@ export function useTokenTransfer(onDone?: () => void) {
 
   // TODO implement cancel callback for when modal is closed?
   const triggerTransactions = useCallback(
-    (values: TransferFormValues) =>
-      executeTransfer({
+    async (values: TransferFormValues) => {
+      const result = await executeTransfer({
         warpCore,
         values,
         transferIndex,
@@ -59,7 +59,9 @@ export function useTokenTransfer(onDone?: () => void) {
         onDone,
         toast,
         txSuccessToast,
-      }),
+      });
+      return result;
+    },
     [
       warpCore,
       transferIndex,
@@ -160,7 +162,7 @@ async function executeTransfer({
       updateTransferStatus,
       onDone,
     });
-    return;
+    return undefined;
   }
 
   // Step 2: Get connection for chain
@@ -180,7 +182,7 @@ async function executeTransfer({
       updateTransferStatus,
       onDone,
     });
-    return;
+    return undefined;
   }
 
   const originProtocol = originToken.protocol;
@@ -199,7 +201,7 @@ async function executeTransfer({
       updateTransferStatus,
       onDone,
     });
-    return;
+    return undefined;
   }
 
   // Step 4: Create token amount
@@ -216,7 +218,7 @@ async function executeTransfer({
       updateTransferStatus,
       onDone,
     });
-    return;
+    return undefined;
   }
 
   const sendTransaction = transactionFns[originProtocol].sendTransaction;
@@ -236,7 +238,7 @@ async function executeTransfer({
       updateTransferStatus,
       onDone,
     });
-    return;
+    return undefined;
   }
 
   // Step 6: Check collateral
@@ -259,7 +261,7 @@ async function executeTransfer({
       updateTransferStatus,
       onDone,
     });
-    return;
+    return undefined;
   }
 
   if (!isCollateralSufficient) {
@@ -274,7 +276,7 @@ async function executeTransfer({
       updateTransferStatus,
       onDone,
     });
-    return;
+    return undefined;
   }
 
   // Add transfer to state
@@ -314,7 +316,7 @@ async function executeTransfer({
       updateTransferStatus,
       onDone,
     });
-    return;
+    return undefined;
   }
 
   const hashes: string[] = [];
@@ -437,6 +439,9 @@ async function executeTransfer({
 
   setIsLoading(false);
   if (onDone) onDone();
+
+  // Return the last transaction hash
+  return hashes.at(-1);
 }
 
 const errorMessages: Partial<Record<TransferStatus, string>> = {

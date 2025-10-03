@@ -157,19 +157,13 @@ export async function executeBaseToNativeStep1(
 
   let step1TxHash: string | undefined;
   try {
-    const hyperlaneResult = await triggerHyperlaneTransfer({
+    step1TxHash = (await triggerHyperlaneTransfer({
       origin: "base",
       destination: "torus",
       tokenIndex: 0,
       amount,
       recipient: evmAddress,
-    });
-    step1TxHash =
-      hyperlaneResult &&
-      typeof hyperlaneResult === "object" &&
-      "hash" in hyperlaneResult
-        ? (hyperlaneResult as { hash: string }).hash
-        : undefined;
+    })) as string | undefined;
   } catch (hyperlaneError) {
     const error = hyperlaneError as Error;
     const isUserRejected = isUserRejectionError(error);

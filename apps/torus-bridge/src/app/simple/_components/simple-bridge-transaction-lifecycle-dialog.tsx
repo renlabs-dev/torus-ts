@@ -83,7 +83,7 @@ export function TransactionLifecycleDialog({
       description: "Waiting for Base network confirmation",
       icon: <Clock className="h-4 w-4" />,
       status: getStepStatus("step1-confirm"),
-      estimatedTime: "~2-3 minutes",
+      estimatedTime: "~1-2 minutes",
       txHash: step1Transaction?.txHash,
       explorerUrl: step1Transaction?.explorerUrl,
     },
@@ -143,7 +143,7 @@ export function TransactionLifecycleDialog({
       description: "Waiting for Base network confirmation",
       icon: <Clock className="h-4 w-4" />,
       status: getStepStatus("step2-confirm"),
-      estimatedTime: "~2-3 minutes",
+      estimatedTime: "~1-2 minutes",
       txHash: step2Transaction?.txHash,
       explorerUrl: step2Transaction?.explorerUrl,
     },
@@ -172,13 +172,6 @@ export function TransactionLifecycleDialog({
     const isStep2 = stepId.startsWith("step2");
     const step2Transaction = transactions.find((tx) => tx.step === 2);
     const step1Transaction = transactions.find((tx) => tx.step === 1);
-
-    // Debug: check if transactions exist
-    if (currentStep === SimpleBridgeStep.COMPLETE) {
-      console.log("DEBUG - Step1 Transaction:", step1Transaction);
-      console.log("DEBUG - Step2 Transaction:", step2Transaction);
-      console.log("DEBUG - All transactions:", transactions);
-    }
 
     // Check if step 2 has an error
     if (step2Transaction?.status === "ERROR") {
