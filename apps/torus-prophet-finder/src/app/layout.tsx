@@ -18,7 +18,8 @@ export const metadata: Metadata = {
   robots: "all",
   title: APP_NAME,
   icons: [{ rel: "icon", url: "favicon.ico" }],
-  description: "The thermodynamic god's favorite Prophxet Finder.",
+  description:
+    "The Modern Information Landscape is a Storm. Become The Storm Rider.",
 };
 
 const geistSans = Geist({

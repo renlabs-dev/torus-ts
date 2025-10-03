@@ -2,6 +2,7 @@
 
 import { fetchProphetFinderStats } from "~/lib/api/fetch-prophet-finder-stats";
 import type { ProphetFinderStats } from "~/lib/api/fetch-prophet-finder-stats";
+import Link from "next/link";
 import * as React from "react";
 
 export default function StatsRow() {
@@ -58,7 +59,13 @@ export default function StatsRow() {
       </div>
       <div className="mt-2">
         <span className="ml-2">
-          Powered by <span className="font-bold">Torus</span>
+          Powered by{" "}
+          <Link
+            className="cursor-pointer font-bold"
+            href="https://torus.network/"
+          >
+            Torus
+          </Link>
         </span>
       </div>
     </div>
