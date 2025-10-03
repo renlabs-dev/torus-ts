@@ -3,7 +3,6 @@ import { transferAllowDeath } from "@torus-network/sdk/chain";
 import { convertH160ToSS58 } from "@torus-network/sdk/evm";
 import type { SS58Address } from "@torus-network/sdk/types";
 import { toNano } from "@torus-network/torus-utils/torus/token";
-import { tryAsync } from "@torus-network/torus-utils/try-catch";
 import type { SimpleBridgeTransaction } from "../_components/simple-bridge-types";
 import { SimpleBridgeStep } from "../_components/simple-bridge-types";
 import {
