@@ -524,8 +524,8 @@ function ChainField({ label, chainName }: ChainFieldProps) {
           <Image
             src={
               isTorusEVM
-                ? "/torus-evm-balance-icon.svg"
-                : "/torus-balance-icon.svg"
+                ? "/assets/icons/bridge/torus-evm.svg"
+                : "/assets/icons/balance/torus.svg"
             }
             alt={label}
             width={28}
