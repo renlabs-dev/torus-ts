@@ -26,7 +26,7 @@ export default function CardsHeader({ mode }: Props) {
         </p>
         <div className="font-cinzel mx-auto mt-4 max-w-2xl text-center text-sm font-semibold italic leading-relaxed tracking-[0.08em] text-white/70">
           <p>
-            ADD TWITTER PROFILES OR TICKERS FOR THE SWARM TO LEARN.
+            ADD TWITTER PROFILES FOR THE SWARM TO LEARN AND ANALYZE.
             <br />
             LATER, YOU CAN ASK TORUS ABOUT THEM.
           </p>
