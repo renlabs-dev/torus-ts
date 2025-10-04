@@ -30,6 +30,8 @@ interface NativeToBaseStep1Params {
       ]
     | [Error, undefined]
   >;
+  refetchTorusEvmBalance: () => Promise<unknown>;
+  torusEvmBalance?: { value: bigint };
   updateBridgeState: (updates: {
     step: SimpleBridgeStep;
     errorMessage?: string;
@@ -46,6 +48,8 @@ export async function executeNativeToBaseStep1(
     selectedAccount: _selectedAccount,
     api,
     sendTx,
+    refetchTorusEvmBalance,
+    torusEvmBalance,
     updateBridgeState,
     addTransaction,
   } = params;
@@ -103,18 +107,94 @@ export async function executeNativeToBaseStep1(
   const trackerPromise = new Promise<void>((resolve, reject) => {
     let settled = false;
 
-    const handleFinalized = () => {
+    const handleFinalized = async () => {
       if (settled) return;
       settled = true;
 
-      updateBridgeState({ step: SimpleBridgeStep.STEP_1_COMPLETE });
-      addTransaction({
-        step: 1,
-        status: "SUCCESS",
-        chainName: "Torus Native",
-        message: "Bridge complete",
+      console.log("DEBUG - Substrate transaction finalized! Starting Torus EVM balance polling");
+
+      // After Substrate finalization, poll Torus EVM balance to confirm tokens arrived
+      console.log("DEBUG - Starting Torus EVM balance polling after Substrate finalization");
+
+      // Get fresh baseline balance
+      const baselineResult = (await refetchTorusEvmBalance()) as {
+        status: string;
+        data?: { value: bigint };
+      };
+      const baselineBalance = baselineResult.data?.value || 0n;
+      const expectedIncrease = toNano(parseFloat(amount));
+
+      console.log("DEBUG - Baseline balance:", Number(baselineBalance) / 1e18, "TORUS");
+      console.log("DEBUG - Expected increase:", parseFloat(amount), "TORUS");
+      console.log("DEBUG - Expected final balance:", Number(baselineBalance + expectedIncrease) / 1e18, "TORUS");
+
+      let pollCount = 0;
+      const pollPromise = new Promise<void>((resolve, reject) => {
+        const interval = setInterval(() => {
+          void (async () => {
+            pollCount++;
+            console.log(`DEBUG - Poll ${pollCount}: Checking Torus EVM balance`);
+
+            const refetchResult = (await refetchTorusEvmBalance()) as {
+              status: string;
+              data?: { value: bigint };
+            };
+
+            if (refetchResult.status === "error") {
+              console.log("DEBUG - Refetch error, skipping this poll");
+              return;
+            }
+
+            const currentBalance = refetchResult.data?.value || 0n;
+            console.log("DEBUG - Current balance:", Number(currentBalance) / 1e18, "TORUS");
+            console.log("DEBUG - Target balance:", Number(baselineBalance + expectedIncrease) / 1e18, "TORUS");
+
+            if (currentBalance >= baselineBalance + expectedIncrease) {
+              console.log("DEBUG - Balance target reached! Resolving polling");
+              clearInterval(interval);
+              resolve();
+            } else if (pollCount >= POLLING_CONFIG.MAX_POLLS) {
+              console.log("DEBUG - Polling timeout reached, rejecting");
+              clearInterval(interval);
+              reject(new Error("Torus EVM balance confirmation timeout - no balance increase"));
+            }
+          })();
+        }, POLLING_CONFIG.INTERVAL_MS);
       });
-      resolve();
+
+      try {
+        await withTimeout(
+          pollPromise,
+          TIMEOUT_CONFIG.POLLING_OPERATION_MS,
+          "Torus EVM balance confirmation timeout",
+        );
+
+        updateBridgeState({ step: SimpleBridgeStep.STEP_1_COMPLETE });
+        addTransaction({
+          step: 1,
+          status: "SUCCESS",
+          chainName: "Torus Native",
+          message: "Bridge complete - tokens arrived in Torus EVM",
+        });
+        resolve();
+      } catch (pollError) {
+        const errorMessage =
+          pollError instanceof Error && pollError.message.includes("timeout")
+            ? "Bridge confirmation timeout - tokens may not have arrived in Torus EVM"
+            : "Bridge did not complete successfully";
+
+        updateBridgeState({
+          step: SimpleBridgeStep.ERROR,
+          errorMessage,
+        });
+        addTransaction({
+          step: 1,
+          status: "ERROR",
+          chainName: "Torus Native",
+          message: errorMessage,
+        });
+        reject(pollError);
+      }
     };
 
     const handleError = (error: unknown) => {
@@ -455,14 +535,14 @@ export async function executeNativeToBaseStep2(
     await withTimeout(
       basePollPromise,
       TIMEOUT_CONFIG.POLLING_OPERATION_MS,
-      "Torus EVM transfer confirmation timeout",
+      "Base transfer confirmation timeout",
     );
   } catch (basePollError) {
     const baseErrorMessage =
       basePollError instanceof Error &&
       basePollError.message.includes("timeout")
-        ? "Torus EVM transfer confirmation timeout - check balance and retry"
-        : "Torus EVM transfer did not confirm (check balance and retry)";
+        ? "Base transfer confirmation timeout - check balance and retry"
+        : "Base transfer did not confirm (check balance and retry)";
     addTransaction({
       step: 2,
       status: "ERROR" as const,
@@ -483,9 +563,9 @@ export async function executeNativeToBaseStep2(
   addTransaction({
     step: 2,
     status: "SUCCESS" as const,
-    chainName: "Torus EVM",
+    chainName: "Base",
     message: "Transfer complete",
     txHash: txHash2,
-    explorerUrl: txHash2 ? getExplorerUrl(txHash2, "Torus EVM") : undefined,
+    explorerUrl: txHash2 ? getExplorerUrl(txHash2, "Base") : undefined,
   });
 }

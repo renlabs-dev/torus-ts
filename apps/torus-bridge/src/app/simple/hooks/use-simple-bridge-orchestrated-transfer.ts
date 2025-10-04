@@ -247,6 +247,8 @@ export function useOrchestratedTransfer() {
           selectedAccount: { address: selectedAccount.address as SS58Address },
           api,
           sendTx,
+          refetchTorusEvmBalance,
+          torusEvmBalance,
           updateBridgeState,
           addTransaction,
         });
@@ -293,6 +295,8 @@ export function useOrchestratedTransfer() {
       walletClient,
       sendTx,
       triggerHyperlaneTransfer,
+      refetchTorusEvmBalance,
+      torusEvmBalance,
       updateBridgeState,
       addTransaction,
       toast,
