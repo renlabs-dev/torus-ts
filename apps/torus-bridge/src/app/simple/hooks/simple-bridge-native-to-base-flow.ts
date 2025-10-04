@@ -49,7 +49,6 @@ export async function executeNativeToBaseStep1(
     api,
     sendTx,
     refetchTorusEvmBalance,
-    torusEvmBalance,
     updateBridgeState,
     addTransaction,
   } = params;
@@ -219,7 +218,7 @@ export async function executeNativeToBaseStep1(
           chainName: "Torus Native",
           message: errorMessage,
         });
-        reject(pollError);
+        reject(pollError instanceof Error ? pollError : new Error(String(pollError)));
       }
     };
 
@@ -240,8 +239,12 @@ export async function executeNativeToBaseStep1(
       reject(error instanceof Error ? error : new Error(String(error)));
     };
 
-    tracker.on("finalized", handleFinalized);
-    tracker.on("error", handleError);
+    tracker.on("finalized", () => {
+      void handleFinalized();
+    });
+    tracker.on("error", (error: unknown) => {
+      void handleError(error);
+    });
   });
 
   try {

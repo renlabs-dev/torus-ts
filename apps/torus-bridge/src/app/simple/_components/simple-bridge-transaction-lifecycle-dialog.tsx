@@ -64,32 +64,37 @@ export function TransactionLifecycleDialog({
   amount,
   onRetry,
 }: TransactionLifecycleDialogProps) {
-  const [showSignatureWarning, setShowSignatureWarning] = useState(false);
-
   const isBaseToNative = direction === "base-to-native";
   const step1Transaction = transactions.find((tx) => tx.step === 1);
   const step2Transaction = transactions.find((tx) => tx.step === 2);
 
-  // Show signature warning after 30 seconds when signing
+  const [showSignatureWarning, setShowSignatureWarning] = useState(false);
+
+  const isCurrentlySigning =
+    currentStep === SimpleBridgeStep.STEP_1_SIGNING ||
+    currentStep === SimpleBridgeStep.STEP_2_SIGNING;
+
+  // Manage signature warning timer
   useEffect(() => {
-    let timer: NodeJS.Timeout;
+    let timer: NodeJS.Timeout | undefined;
 
-    const isCurrentlySigning =
-      currentStep === SimpleBridgeStep.STEP_1_SIGNING ||
-      currentStep === SimpleBridgeStep.STEP_2_SIGNING;
-
-    if (isCurrentlySigning && !showSignatureWarning) {
+    if (isCurrentlySigning) {
+      // Start timer to show warning after 30 seconds
       timer = setTimeout(() => {
         setShowSignatureWarning(true);
-      }, 30000); // 30 seconds
-    } else if (!isCurrentlySigning) {
+      }, 30000);
+    } else {
+      // Reset warning immediately when not signing
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setShowSignatureWarning(false);
     }
 
     return () => {
-      if (timer) clearTimeout(timer);
+      if (timer !== undefined) {
+        clearTimeout(timer);
+      }
     };
-  }, [currentStep, showSignatureWarning]);
+  }, [isCurrentlySigning]);
 
   const createBaseToNativeSteps = (): LifecycleStep[] => [
     {
