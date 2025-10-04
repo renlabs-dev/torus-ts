@@ -77,12 +77,16 @@ export function useDualWallet() {
   }, [disconnect]);
 
   const isRequiredChainConnected = useCallback(
-    (_direction: SimpleBridgeDirection) => {
+    (direction: SimpleBridgeDirection) => {
       if (!isEvmConnected || !chainId) {
         return false;
       }
 
-      return chainId === baseChainId || chainId === torusEvmChainId;
+      // Check the correct chain based on direction
+      if (direction === "base-to-native") {
+        return chainId === baseChainId;
+      }
+      return chainId === torusEvmChainId;
     },
     [isEvmConnected, chainId, baseChainId, torusEvmChainId],
   );

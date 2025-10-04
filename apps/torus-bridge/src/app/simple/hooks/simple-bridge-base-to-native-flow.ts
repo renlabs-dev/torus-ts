@@ -204,7 +204,7 @@ export async function executeBaseToNativeStep1(
 
   let pollCount = 0;
   const pollPromise = new Promise<void>((resolve, reject) => {
-    const interval = setInterval(() => {
+    const intervalId = setInterval(() => {
       void (async () => {
         pollCount++;
         const refetchResult = (await refetchTorusEvmBalance()) as {
@@ -217,10 +217,10 @@ export async function executeBaseToNativeStep1(
         const currentBalance = refetchResult.data?.value || 0n;
 
         if (currentBalance >= baselineBalance + expectedIncrease) {
-          clearInterval(interval);
+          clearInterval(intervalId);
           resolve();
         } else if (pollCount >= POLLING_CONFIG.MAX_POLLS) {
-          clearInterval(interval);
+          clearInterval(intervalId);
           reject(new Error("Confirmation timeout - no balance increase"));
         }
       })();
@@ -300,7 +300,7 @@ export async function executeBaseToNativeStep2(
     amount,
     selectedAccount,
     walletClient,
-    chain,
+    chain: _chain,
     torusEvmChainId,
     switchChain,
     refetchTorusEvmBalance,
@@ -449,11 +449,17 @@ export async function executeBaseToNativeStep2(
 
   updateBridgeState({ step: SimpleBridgeStep.STEP_2_SIGNING });
 
+  // Get the correct chain from wagmi config after switch
+  const torusEvmChain = wagmiConfig.chains.find((c) => c.id === torusEvmChainId);
+  if (!torusEvmChain) {
+    throw new Error(`Torus EVM chain ${torusEvmChainId} not found in config`);
+  }
+
   let txHash: string | undefined;
   try {
     txHash = await withdrawFromTorusEvm(
       walletClient,
-      { ...chain, id: torusEvmChainId }, // Force correct chain ID
+      torusEvmChain, // Use the actual Torus EVM chain object
       selectedAccount.address,
       amountRems,
       async () => {

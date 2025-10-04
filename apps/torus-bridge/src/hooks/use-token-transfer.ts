@@ -25,7 +25,10 @@ const CHAIN_MISMATCH_ERROR = "ChainMismatchError";
 const TRANSFER_TIMEOUT_ERROR1 = "block height exceeded";
 const TRANSFER_TIMEOUT_ERROR2 = "timeout";
 
-export function useTokenTransfer(onDone?: () => void) {
+export function useTokenTransfer(
+  onDone?: () => void,
+  throwOnError = false,
+) {
   const transfers = useStore((s) => s.transfers);
   const addTransfer = useStore((s) => s.addTransfer);
   const updateTransferStatus = useStore((s) => s.updateTransferStatus);
@@ -59,6 +62,7 @@ export function useTokenTransfer(onDone?: () => void) {
         onDone,
         toast,
         txSuccessToast,
+        throwOnError,
       });
       return result;
     },
@@ -74,6 +78,7 @@ export function useTokenTransfer(onDone?: () => void) {
       onDone,
       toast,
       txSuccessToast,
+      throwOnError,
     ],
   );
 
@@ -96,6 +101,7 @@ async function executeTransfer({
   onDone,
   toast,
   txSuccessToast,
+  throwOnError = false,
 }: {
   warpCore: WarpCore;
   values: TransferFormValues;
@@ -109,6 +115,7 @@ async function executeTransfer({
   onDone?: () => void;
   toast: ReturnType<typeof useToast>["toast"];
   txSuccessToast: ReturnType<typeof useTxSuccessToast>;
+  throwOnError?: boolean;
 }) {
   logger.debug("Preparing transfer transaction(s)");
   setIsLoading(true);
@@ -140,9 +147,11 @@ async function executeTransfer({
     onDone?.();
 
     // Re-throw for signing stage to allow propagation to simple-bridge for custom handling
+    // Only throw if throwOnError is true to maintain backward compatibility
     if (
-      stage === TransferStatus.SigningTransfer ||
-      stage === TransferStatus.SigningApprove
+      throwOnError &&
+      (stage === TransferStatus.SigningTransfer ||
+        stage === TransferStatus.SigningApprove)
     ) {
       throw error;
     }
@@ -375,9 +384,11 @@ async function executeTransfer({
       if (onDone) onDone();
 
       // Re-throw for signing stages to propagate to simple-bridge for custom handling
+      // Only throw if throwOnError is true to maintain backward compatibility
       if (
-        transferStatus === TransferStatus.SigningTransfer ||
-        transferStatus === TransferStatus.SigningApprove
+        throwOnError &&
+        (transferStatus === TransferStatus.SigningTransfer ||
+          transferStatus === TransferStatus.SigningApprove)
       ) {
         throw sendError;
       }

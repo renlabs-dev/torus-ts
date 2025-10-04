@@ -97,7 +97,10 @@ export function useOrchestratedTransfer() {
   const warpCore = useWarpCore();
   const _multiProvider = useMultiProvider();
 
-  const { triggerTransactions: triggerHyperlaneTransfer } = useTokenTransfer();
+  const { triggerTransactions: triggerHyperlaneTransfer } = useTokenTransfer(
+    undefined,
+    true, // throwOnError=true to allow error propagation for custom handling
+  );
 
   const _torusEvmClient = useClient({ chainId: torusEvmChainId });
   const { data: torusEvmBalance, refetch: _refetchTorusEvmBalance } =
@@ -115,7 +118,7 @@ export function useOrchestratedTransfer() {
     useBalance({
       address: evmAddress,
       chainId: torusEvmChainId,
-      token: "0x0000000000000000000000000000000000000000",
+      // Omit token parameter to query native ETH balance
     });
 
   const refetchTorusEvmBalance = useCallback(async (): Promise<{

@@ -141,7 +141,7 @@ export async function executeNativeToBaseStep1(
 
       let pollCount = 0;
       const pollPromise = new Promise<void>((resolve, reject) => {
-        const interval = setInterval(() => {
+        const intervalId = setInterval(() => {
           void (async () => {
             pollCount++;
             console.log(
@@ -172,11 +172,11 @@ export async function executeNativeToBaseStep1(
 
             if (currentBalance >= baselineBalance + expectedIncrease) {
               console.log("DEBUG - Balance target reached! Resolving polling");
-              clearInterval(interval);
+              clearInterval(intervalId);
               resolve();
             } else if (pollCount >= POLLING_CONFIG.MAX_POLLS) {
               console.log("DEBUG - Polling timeout reached, rejecting");
-              clearInterval(interval);
+              clearInterval(intervalId);
               reject(
                 new Error(
                   "Torus EVM balance confirmation timeout - no balance increase",
@@ -218,7 +218,9 @@ export async function executeNativeToBaseStep1(
           chainName: "Torus Native",
           message: errorMessage,
         });
-        reject(pollError instanceof Error ? pollError : new Error(String(pollError)));
+        reject(
+          pollError instanceof Error ? pollError : new Error(String(pollError)),
+        );
       }
     };
 
@@ -254,6 +256,9 @@ export async function executeNativeToBaseStep1(
       "Native bridge transaction timeout",
     );
   } catch (timeoutError) {
+    // Note: Tracker listeners will be prevented from executing by the 'settled' flag
+    // which ensures handlers don't run after timeout
+
     const errorMessage =
       timeoutError instanceof Error && timeoutError.message.includes("timeout")
         ? "Native bridge transaction timeout - please retry"
@@ -537,7 +542,7 @@ export async function executeNativeToBaseStep2(
 
   let basePollCount = 0;
   const basePollPromise = new Promise<void>((resolve, reject) => {
-    const interval = setInterval(() => {
+    const baseIntervalId = setInterval(() => {
       void (async () => {
         basePollCount++;
         const baseRefetchResult = (await refetchBaseBalance()) as {
@@ -550,10 +555,10 @@ export async function executeNativeToBaseStep2(
         const currentBaseBalance = baseRefetchResult.data?.value || 0n;
 
         if (currentBaseBalance >= baseBaselineBalance + baseExpectedIncrease) {
-          clearInterval(interval);
+          clearInterval(baseIntervalId);
           resolve();
         } else if (basePollCount >= POLLING_CONFIG.MAX_POLLS) {
-          clearInterval(interval);
+          clearInterval(baseIntervalId);
           reject(new Error("Confirmation timeout - no balance increase"));
         }
       })();

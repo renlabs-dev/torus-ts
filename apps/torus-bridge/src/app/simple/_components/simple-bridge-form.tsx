@@ -73,14 +73,20 @@ export function SimpleBridgeForm() {
     (fraction: number) => {
       if (direction === "base-to-native" && baseBalance) {
         const maxAmount = baseBalance - BigInt(1e16); // Reserve 0.01 tokens for gas
-        const fractionAmount = BigInt(Math.floor(Number(maxAmount) * fraction));
+        // Use pure BigInt arithmetic to avoid precision loss
+        const fractionNumerator = BigInt(Math.floor(fraction * 1_000_000));
+        const fractionAmount =
+          (maxAmount * fractionNumerator) / BigInt(1_000_000);
         const fractionAmountString = (Number(fractionAmount) / 1e18).toFixed(
           18,
         );
         setAmount(fractionAmountString.replace(/\.?0+$/, ""));
       } else if (direction === "native-to-base" && nativeBalance.data) {
         const maxAmount = nativeBalance.data - BigInt(1e18); // Reserve 1 token for gas
-        const fractionAmount = BigInt(Math.floor(Number(maxAmount) * fraction));
+        // Use pure BigInt arithmetic to avoid precision loss
+        const fractionNumerator = BigInt(Math.floor(fraction * 1_000_000));
+        const fractionAmount =
+          (maxAmount * fractionNumerator) / BigInt(1_000_000);
         const fractionAmountString = (Number(fractionAmount) / 1e18).toFixed(
           18,
         );
