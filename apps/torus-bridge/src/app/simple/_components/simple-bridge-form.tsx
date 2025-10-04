@@ -112,6 +112,10 @@ export function SimpleBridgeForm() {
       bridgeState.step === SimpleBridgeStep.ERROR
     ) {
       setShowTransactionDialog(false);
+      // Clear the form when transaction is complete or has error
+      if (bridgeState.step === SimpleBridgeStep.COMPLETE) {
+        setAmount("");
+      }
     }
   }, [bridgeState.step]);
 

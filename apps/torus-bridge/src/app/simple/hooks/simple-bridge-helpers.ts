@@ -78,6 +78,11 @@ export function getExplorerUrl(txHash: string, chainName: string): string {
     return `https://blockscout.torus.network/tx/${txHash}`;
   }
 
+  if (lowerChainName === "torus native") {
+    // Torus Native (Substrate) doesn't have a public block explorer yet
+    return "";
+  }
+
   return "";
 }
 

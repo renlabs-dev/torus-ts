@@ -16,13 +16,14 @@ import {
 } from "@torus-ts/ui/components/dialog";
 import {
   AlertCircle,
+  AlertTriangle,
   CheckCircle,
   Clock,
   ExternalLink,
   Loader2,
   Wallet,
 } from "lucide-react";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import type {
   SimpleBridgeDirection,
   SimpleBridgeTransaction,
@@ -63,9 +64,32 @@ export function TransactionLifecycleDialog({
   amount,
   onRetry,
 }: TransactionLifecycleDialogProps) {
+  const [showSignatureWarning, setShowSignatureWarning] = useState(false);
+
   const isBaseToNative = direction === "base-to-native";
   const step1Transaction = transactions.find((tx) => tx.step === 1);
   const step2Transaction = transactions.find((tx) => tx.step === 2);
+
+  // Show signature warning after 30 seconds when signing
+  useEffect(() => {
+    let timer: NodeJS.Timeout;
+
+    const isCurrentlySigning =
+      currentStep === SimpleBridgeStep.STEP_1_SIGNING ||
+      currentStep === SimpleBridgeStep.STEP_2_SIGNING;
+
+    if (isCurrentlySigning && !showSignatureWarning) {
+      timer = setTimeout(() => {
+        setShowSignatureWarning(true);
+      }, 30000); // 30 seconds
+    } else if (!isCurrentlySigning) {
+      setShowSignatureWarning(false);
+    }
+
+    return () => {
+      if (timer) clearTimeout(timer);
+    };
+  }, [currentStep, showSignatureWarning]);
 
   const createBaseToNativeSteps = (): LifecycleStep[] => [
     {
@@ -398,10 +422,6 @@ export function TransactionLifecycleDialog({
     return "bg-gray-300";
   };
 
-  const shouldShowSignatureWarning =
-    currentStep === SimpleBridgeStep.STEP_1_SIGNING ||
-    currentStep === SimpleBridgeStep.STEP_2_SIGNING;
-
   return (
     <Dialog open={isOpen} onOpenChange={handleOpenChange}>
       <DialogContent
@@ -435,11 +455,6 @@ export function TransactionLifecycleDialog({
         <div className="flex-1 space-y-6 overflow-y-auto px-6 pb-6">
           <div className="bg-muted/50 rounded-lg p-4 text-center">
             <p className="text-sm font-medium">{getCurrentMessage()}</p>
-            {shouldShowSignatureWarning && (
-              <p className="text-muted-foreground mt-2 text-xs">
-                Please stay on this page until the transfer is complete
-              </p>
-            )}
           </div>
 
           <div className="space-y-4">
@@ -470,7 +485,7 @@ export function TransactionLifecycleDialog({
                         {step.title}
                       </h3>
                       {step.isSignatureRequired && step.status === "active" && (
-                        <span className="rounded-full bg-blue-100 px-2 py-1 text-xs text-blue-700">
+                        <span className="rounded-full border border-blue-200 bg-transparent px-2 py-1 text-xs text-blue-600">
                           Signature Required
                         </span>
                       )}
@@ -485,6 +500,22 @@ export function TransactionLifecycleDialog({
                   <p className="text-muted-foreground mt-1 text-sm">
                     {step.description}
                   </p>
+
+                  {/* Signature Warning Message */}
+                  {showSignatureWarning &&
+                    step.isSignatureRequired &&
+                    step.status === "active" && (
+                      <div className="mt-2 flex items-start gap-2 rounded-md border border-amber-200 bg-transparent p-3">
+                        <AlertTriangle className="mt-0.5 h-4 w-4 flex-shrink-0 text-amber-600" />
+                        <div className="flex-1">
+                          <p className="text-sm text-amber-700">
+                            Please check your wallet and approve the transaction
+                            signature
+                          </p>
+                        </div>
+                      </div>
+                    )}
+
                   {step.status === "error" && step.errorDetails && (
                     <div className="mt-2 rounded-md border border-red-500 bg-transparent p-3">
                       <p className="text-sm font-medium text-red-600">

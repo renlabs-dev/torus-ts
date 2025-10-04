@@ -568,7 +568,7 @@ export async function executeBaseToNativeStep2(
       chainName: "Torus Native",
       message: errorMessage,
       txHash,
-      explorerUrl: txHash ? getExplorerUrl(txHash, "Torus EVM") : undefined,
+      explorerUrl: txHash ? getExplorerUrl(txHash, "Torus Native") : undefined,
     });
     updateBridgeState({
       step: SimpleBridgeStep.ERROR,
@@ -580,10 +580,10 @@ export async function executeBaseToNativeStep2(
   addTransaction({
     step: 2,
     status: "SUCCESS",
-    chainName: "Torus EVM",
+    chainName: "Torus Native",
     message: "Withdrawal complete",
     txHash,
-    explorerUrl: getExplorerUrl(txHash, "Torus EVM"),
+    explorerUrl: getExplorerUrl(txHash, "Torus Native"),
   });
 
   updateBridgeState({ step: SimpleBridgeStep.COMPLETE });
