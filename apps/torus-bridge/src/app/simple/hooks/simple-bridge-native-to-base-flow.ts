@@ -111,10 +111,14 @@ export async function executeNativeToBaseStep1(
       if (settled) return;
       settled = true;
 
-      console.log("DEBUG - Substrate transaction finalized! Starting Torus EVM balance polling");
+      console.log(
+        "DEBUG - Substrate transaction finalized! Starting Torus EVM balance polling",
+      );
 
       // After Substrate finalization, poll Torus EVM balance to confirm tokens arrived
-      console.log("DEBUG - Starting Torus EVM balance polling after Substrate finalization");
+      console.log(
+        "DEBUG - Starting Torus EVM balance polling after Substrate finalization",
+      );
 
       // Get fresh baseline balance
       const baselineResult = (await refetchTorusEvmBalance()) as {
@@ -124,16 +128,26 @@ export async function executeNativeToBaseStep1(
       const baselineBalance = baselineResult.data?.value || 0n;
       const expectedIncrease = toNano(parseFloat(amount));
 
-      console.log("DEBUG - Baseline balance:", Number(baselineBalance) / 1e18, "TORUS");
+      console.log(
+        "DEBUG - Baseline balance:",
+        Number(baselineBalance) / 1e18,
+        "TORUS",
+      );
       console.log("DEBUG - Expected increase:", parseFloat(amount), "TORUS");
-      console.log("DEBUG - Expected final balance:", Number(baselineBalance + expectedIncrease) / 1e18, "TORUS");
+      console.log(
+        "DEBUG - Expected final balance:",
+        Number(baselineBalance + expectedIncrease) / 1e18,
+        "TORUS",
+      );
 
       let pollCount = 0;
       const pollPromise = new Promise<void>((resolve, reject) => {
         const interval = setInterval(() => {
           void (async () => {
             pollCount++;
-            console.log(`DEBUG - Poll ${pollCount}: Checking Torus EVM balance`);
+            console.log(
+              `DEBUG - Poll ${pollCount}: Checking Torus EVM balance`,
+            );
 
             const refetchResult = (await refetchTorusEvmBalance()) as {
               status: string;
@@ -146,8 +160,16 @@ export async function executeNativeToBaseStep1(
             }
 
             const currentBalance = refetchResult.data?.value || 0n;
-            console.log("DEBUG - Current balance:", Number(currentBalance) / 1e18, "TORUS");
-            console.log("DEBUG - Target balance:", Number(baselineBalance + expectedIncrease) / 1e18, "TORUS");
+            console.log(
+              "DEBUG - Current balance:",
+              Number(currentBalance) / 1e18,
+              "TORUS",
+            );
+            console.log(
+              "DEBUG - Target balance:",
+              Number(baselineBalance + expectedIncrease) / 1e18,
+              "TORUS",
+            );
 
             if (currentBalance >= baselineBalance + expectedIncrease) {
               console.log("DEBUG - Balance target reached! Resolving polling");
@@ -156,7 +178,11 @@ export async function executeNativeToBaseStep1(
             } else if (pollCount >= POLLING_CONFIG.MAX_POLLS) {
               console.log("DEBUG - Polling timeout reached, rejecting");
               clearInterval(interval);
-              reject(new Error("Torus EVM balance confirmation timeout - no balance increase"));
+              reject(
+                new Error(
+                  "Torus EVM balance confirmation timeout - no balance increase",
+                ),
+              );
             }
           })();
         }, POLLING_CONFIG.INTERVAL_MS);
