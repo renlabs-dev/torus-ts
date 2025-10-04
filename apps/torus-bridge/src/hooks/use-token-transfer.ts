@@ -25,10 +25,7 @@ const CHAIN_MISMATCH_ERROR = "ChainMismatchError";
 const TRANSFER_TIMEOUT_ERROR1 = "block height exceeded";
 const TRANSFER_TIMEOUT_ERROR2 = "timeout";
 
-export function useTokenTransfer(
-  onDone?: () => void,
-  throwOnError = false,
-) {
+export function useTokenTransfer(onDone?: () => void, throwOnError = false) {
   const transfers = useStore((s) => s.transfers);
   const addTransfer = useStore((s) => s.addTransfer);
   const updateTransferStatus = useStore((s) => s.updateTransferStatus);

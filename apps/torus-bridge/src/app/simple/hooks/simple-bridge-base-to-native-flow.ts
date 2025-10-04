@@ -450,7 +450,9 @@ export async function executeBaseToNativeStep2(
   updateBridgeState({ step: SimpleBridgeStep.STEP_2_SIGNING });
 
   // Get the correct chain from wagmi config after switch
-  const torusEvmChain = wagmiConfig.chains.find((c) => c.id === torusEvmChainId);
+  const torusEvmChain = wagmiConfig.chains.find(
+    (c) => c.id === torusEvmChainId,
+  );
   if (!torusEvmChain) {
     throw new Error(`Torus EVM chain ${torusEvmChainId} not found in config`);
   }
