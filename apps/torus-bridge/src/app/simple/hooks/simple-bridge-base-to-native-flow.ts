@@ -235,10 +235,7 @@ export async function executeBaseToNativeStep1(
     const intervalId = setInterval(() => {
       void (async () => {
         pollCount++;
-        const refetchResult = (await refetchTorusEvmBalance()) as {
-          status: string;
-          data?: { value: bigint };
-        };
+        const refetchResult = await refetchTorusEvmBalance();
         if (refetchResult.status === "error") {
           return;
         }

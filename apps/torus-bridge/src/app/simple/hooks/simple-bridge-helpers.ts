@@ -1,5 +1,16 @@
+/**
+ * Base network chain ID (mainnet).
+ * @constant {number}
+ */
 export const BASE_CHAIN_ID = 8453;
 
+/**
+ * Gas estimation configuration for bridge operations.
+ * @constant {object}
+ * @property {bigint} BASE_GAS - Base gas cost for simple transfers (21,000 gas)
+ * @property {bigint} CONTRACT_CALL_GAS - Additional gas for contract interactions (100,000 gas)
+ * @property {bigint} ESTIMATED_TOTAL - Computed total gas estimate (BASE_GAS + CONTRACT_CALL_GAS)
+ */
 export const GAS_CONFIG = {
   BASE_GAS: 21000n,
   CONTRACT_CALL_GAS: 100000n,
@@ -8,6 +19,14 @@ export const GAS_CONFIG = {
   },
 } as const;
 
+/**
+ * Polling configuration for transaction monitoring and chain switching.
+ * @constant {object}
+ * @property {number} INTERVAL_MS - Polling interval (5 seconds)
+ * @property {number} MAX_POLLS - Maximum polling attempts (180 × 5s = 15 minutes total)
+ * @property {number} SWITCH_RETRY_DELAY_MS - Delay between chain switch attempts (5 seconds)
+ * @property {number} MAX_SWITCH_ATTEMPTS - Maximum chain switch retry attempts (3)
+ */
 export const POLLING_CONFIG = {
   INTERVAL_MS: 5000,
   MAX_POLLS: 180,
@@ -15,13 +34,21 @@ export const POLLING_CONFIG = {
   MAX_SWITCH_ATTEMPTS: 3, // Try up to 3 times before failing
 } as const;
 
+/**
+ * Blockchain confirmation requirements for bridge operations.
+ * @constant {object}
+ * @property {number} REQUIRED_CONFIRMATIONS - Minimum block confirmations required (2)
+ */
 export const CONFIRMATION_CONFIG = {
   REQUIRED_CONFIRMATIONS: 2,
 } as const;
 
 /**
- * Custom error for user-rejected transactions
- * Used to distinguish between user cancellations and actual errors
+ * Custom error class for user-rejected transactions.
+ *
+ * Used to distinguish between user cancellations and actual transaction errors.
+ * @class UserRejectedError
+ * @extends Error
  */
 export class UserRejectedError extends Error {
   constructor(message = "Transaction rejected by user") {
@@ -30,11 +57,28 @@ export class UserRejectedError extends Error {
   }
 }
 
+/**
+ * Timeout configuration for bridge operations.
+ * @constant {object}
+ * @property {number} DEFAULT_OPERATION_MS - Default timeout for general operations (5 minutes)
+ * @property {number} POLLING_OPERATION_MS - Extended timeout for polling operations (15 minutes)
+ */
 export const TIMEOUT_CONFIG = {
   DEFAULT_OPERATION_MS: 300000, // 5 minutes
   POLLING_OPERATION_MS: 900000, // 15 minutes for polling operations
 } as const;
 
+/**
+ * Races a Promise<T> against a timeout, rejecting with an Error if the timeout elapses first.
+ *
+ * Note: The underlying promise is not cancelled when timeout occurs - it continues running.
+ *
+ * @param promise - The Promise<T> to race against the timeout
+ * @param timeoutMs - Timeout duration in milliseconds
+ * @param errorMessage - Optional error message for timeout rejection (defaults to "Operation timeout")
+ * @returns Promise<T> that resolves/rejects with the original promise result or rejects with Error on timeout
+ * @throws Error when timeout elapses before the promise resolves
+ */
 export function withTimeout<T>(
   promise: Promise<T>,
   timeoutMs: number,
@@ -48,6 +92,11 @@ export function withTimeout<T>(
   ]);
 }
 
+/**
+ * Detects user-rejection style errors from Error objects.
+ * @param error - Error object to check for user rejection patterns
+ * @returns True if the error indicates user rejection (cancelled/denied transaction), false otherwise
+ */
 export function isUserRejectionError(error: Error): boolean {
   const errorMessage = error.message.toLowerCase();
   const errorName = error.name;

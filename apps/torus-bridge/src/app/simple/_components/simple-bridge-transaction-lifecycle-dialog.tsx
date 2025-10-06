@@ -14,6 +14,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@torus-ts/ui/components/dialog";
+import { env } from "~/env";
+import { logger } from "~/utils/logger";
 import {
   AlertCircle,
   AlertTriangle,
@@ -393,11 +395,11 @@ export function TransactionLifecycleDialog({
     transactions.some((tx) => tx.status === "ERROR");
 
   useEffect(() => {
-    // if (env("NODE_ENV") !== "development") {
-    //   return;
-    // }
+    if (env("NODE_ENV") !== "development") {
+      return;
+    }
 
-    console.log("Dialog State Debug:", {
+    logger.debug("Dialog State Debug:", {
       currentStep,
       hasError,
       transactions: transactions.map((t) => ({
