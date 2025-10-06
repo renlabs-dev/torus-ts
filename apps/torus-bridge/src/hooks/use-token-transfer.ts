@@ -45,7 +45,7 @@ export function useTokenTransfer(onDone?: () => void, throwOnError = false) {
 
   // TODO implement cancel callback for when modal is closed?
   const triggerTransactions = useCallback(
-    async (values: TransferFormValues) => {
+    async (values: TransferFormValues): Promise<string | undefined> => {
       const result = await executeTransfer({
         warpCore,
         values,

@@ -99,9 +99,34 @@ export function useOrchestratedTransfer() {
   const warpCore = useWarpCore();
   const _multiProvider = useMultiProvider();
 
-  const { triggerTransactions: triggerHyperlaneTransfer } = useTokenTransfer(
+  const { triggerTransactions: _triggerTransactions } = useTokenTransfer(
     undefined,
     true, // throwOnError=true to allow error propagation for custom handling
+  );
+
+  const triggerHyperlaneTransfer = useCallback(
+    async (params: {
+      origin: string;
+      destination: string;
+      tokenIndex: number;
+      amount: string;
+      recipient: string;
+    }): Promise<string> => {
+      const hash = await _triggerTransactions({
+        origin: params.origin,
+        destination: params.destination,
+        tokenIndex: params.tokenIndex,
+        amount: params.amount,
+        recipient: params.recipient,
+      });
+
+      if (!hash) {
+        throw new Error("Transaction hash not found after transfer");
+      }
+
+      return hash;
+    },
+    [_triggerTransactions],
   );
 
   const _torusEvmClient = useClient({ chainId: torusEvmChainId });

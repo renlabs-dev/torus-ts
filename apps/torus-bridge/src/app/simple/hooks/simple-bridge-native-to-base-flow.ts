@@ -93,7 +93,7 @@ export async function executeNativeToBaseStep1(
     addTransaction,
   } = params;
 
-  const amountRems = toNano(parseFloat(amount));
+  const amountRems = toNano(amount.trim());
   const evmSS58Addr = convertH160ToSS58(evmAddress);
 
   updateBridgeState({ step: SimpleBridgeStep.STEP_1_PREPARING });
@@ -344,14 +344,14 @@ interface NativeToBaseStep2Params {
   walletClient: { getChainId: () => Promise<number> };
   /** Function to switch wallet to target chain */
   switchChain: (params: { chainId: number }) => Promise<{ id: number }>;
-  /** Function to trigger Hyperlane cross-chain transfer */
+  /** Function to trigger Hyperlane cross-chain transfer and return transaction hash */
   triggerHyperlaneTransfer: (params: {
     origin: string;
     destination: string;
     tokenIndex: number;
     amount: string;
     recipient: string;
-  }) => Promise<unknown>;
+  }) => Promise<string>;
   /** Function to refetch Base balance */
   refetchBaseBalance: () => Promise<unknown>;
   /** Optional current Base balance */
@@ -608,13 +608,13 @@ export async function executeNativeToBaseStep2(
 
   let txHash2: string | undefined;
   try {
-    txHash2 = (await triggerHyperlaneTransfer({
+    txHash2 = await triggerHyperlaneTransfer({
       origin: "torus",
       destination: "base",
       tokenIndex: 1,
       amount,
       recipient: evmAddress,
-    })) as string | undefined;
+    });
   } catch (hyperlaneError2) {
     const error = hyperlaneError2 as Error;
     const errorMessage = isUserRejectionError(error)
