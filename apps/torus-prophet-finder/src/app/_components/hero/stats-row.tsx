@@ -1,6 +1,4 @@
 "use client";
-
-import { fetchProphetFinderProfiles } from "~/lib/api/fetch-prophet-finder-profiles";
 import { fetchProphetFinderStats } from "~/lib/api/fetch-prophet-finder-stats";
 import type { ProphetFinderStats } from "~/lib/api/fetch-prophet-finder-stats";
 import Link from "next/link";
@@ -8,9 +6,7 @@ import * as React from "react";
 
 export default function StatsRow() {
   const [stats, setStats] = React.useState<ProphetFinderStats | null>(null);
-  const [profilesCount, setProfilesCount] = React.useState<number | null>(null);
   const [isLoadingStats, setIsLoadingStats] = React.useState(true);
-  const [isLoadingProfiles, setIsLoadingProfiles] = React.useState(true);
   const [error, setError] = React.useState<string | null>(null);
 
   React.useEffect(() => {
@@ -28,22 +24,10 @@ export default function StatsRow() {
         setIsLoadingStats(false);
       });
 
-    // Fetch profiles to compute "added prophets" count
-    fetchProphetFinderProfiles(controller.signal)
-      .then((profiles) => {
-        setProfilesCount(Array.isArray(profiles) ? profiles.length : 0);
-        setIsLoadingProfiles(false);
-      })
-      .catch((err: unknown) => {
-        if (err instanceof Error && err.name === "AbortError") return;
-        setError("Failed to load profiles");
-        setIsLoadingProfiles(false);
-      });
-
     return () => controller.abort();
   }, []);
 
-  const isLoading = isLoadingStats || isLoadingProfiles;
+  const isLoading = isLoadingStats;
   const hasError = !!error;
 
   const formatNumber = (num: number | undefined | null) => {
@@ -58,7 +42,7 @@ export default function StatsRow() {
           <span className="animate-pulse text-white/50">Loading stats...</span>
         ) : hasError ? (
           <span className="text-red-300/70">{error}</span>
-        ) : stats && profilesCount !== null ? (
+        ) : stats ? (
           <>
             <span>
               <span className="font-bold">
@@ -75,8 +59,17 @@ export default function StatsRow() {
             </span>
             <span className="mx-2 text-white/40">•</span>
             <span>
-              <span className="font-bold">{formatNumber(profilesCount)}</span>{" "}
+              <span className="font-bold">
+                {formatNumber(stats.profiles_inserted)}
+              </span>{" "}
               ADDED PROPHETS
+            </span>
+            <span className="mx-2 text-white/40">•</span>
+            <span>
+              <span className="font-bold">
+                {formatNumber(stats.predictions_collected)}
+              </span>{" "}
+              PREDICTIONS COLLECTED
             </span>
           </>
         ) : null}
