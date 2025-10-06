@@ -4,6 +4,8 @@ import { PROPHET_FINDER_STATS_URL } from "~/lib/api/endpoints";
 export interface ProphetFinderStats {
   total_tweets?: number;
   total_users?: number;
+  predictions_collected?: number;
+  profiles_inserted?: number;
 }
 
 export async function fetchProphetFinderStats(
