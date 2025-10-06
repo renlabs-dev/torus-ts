@@ -1,4 +1,5 @@
 "use client";
+
 import { fetchProphetFinderStats } from "~/lib/api/fetch-prophet-finder-stats";
 import type { ProphetFinderStats } from "~/lib/api/fetch-prophet-finder-stats";
 import Link from "next/link";
