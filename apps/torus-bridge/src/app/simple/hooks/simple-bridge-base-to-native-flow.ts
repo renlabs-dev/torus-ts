@@ -20,11 +20,23 @@ import {
   withTimeout,
 } from "./simple-bridge-helpers";
 
+/**
+ * Parameters for executing Step 1 of the Base-to-Native bridge flow.
+ *
+ * This interface defines all the required parameters for the Base to Torus EVM
+ * transfer process, including wallet switching, cross-chain transfer initiation,
+ * and balance monitoring for the first phase of bridging.
+ */
 interface BaseToNativeStep1Params {
+  /** Amount of TORUS tokens to transfer in string format */
   amount: string;
+  /** Target EVM address in hex format (0x...) for transfer recipient */
   evmAddress: string;
+  /** Current blockchain configuration */
   chain: Chain;
+  /** Function to switch wallet to target chain, returns the new chain ID */
   switchChain: (params: { chainId: number }) => Promise<{ id: number }>;
+  /** Function to initiate Hyperlane cross-chain transfer with origin/destination routing */
   triggerHyperlaneTransfer: (params: {
     origin: string;
     destination: string;
@@ -32,6 +44,7 @@ interface BaseToNativeStep1Params {
     amount: string;
     recipient: string;
   }) => Promise<unknown>;
+  /** Warp Core configuration for token connections and routing */
   warpCore: {
     tokens: {
       chainName: string;
@@ -39,16 +52,21 @@ interface BaseToNativeStep1Params {
       getConnectionForChain: (chain: string) => unknown;
     }[];
   };
+  /** Function to refetch Torus EVM balance from the network */
   refetchTorusEvmBalance: () => Promise<{
     status: string;
     data?: { value: bigint };
   }>;
+  /** Optional current Torus EVM balance with value as bigint, undefined if not loaded */
   torusEvmBalance?: { value: bigint };
+  /** Function to update the bridge UI state */
   updateBridgeState: (updates: {
     step: SimpleBridgeStep;
     errorMessage?: string;
   }) => void;
+  /** Function to add transaction entries to the UI */
   addTransaction: (tx: SimpleBridgeTransaction) => void;
+  /** Function to generate blockchain explorer URLs for transaction hashes */
   getExplorerUrl: (txHash: string, chainName: string) => string;
 }
 
@@ -231,9 +249,16 @@ export async function executeBaseToNativeStep1(
   const expectedIncrease = toNano(amount.trim());
 
   let pollCount = 0;
+  let intervalId: ReturnType<typeof setInterval> | undefined;
+  let isPollingActive = true;
   const pollPromise = new Promise<void>((resolve, reject) => {
-    const intervalId = setInterval(() => {
+    intervalId = setInterval(() => {
       void (async () => {
+        // Stop operating if polling has been cancelled
+        if (!isPollingActive) {
+          return;
+        }
+
         pollCount++;
         const refetchResult = await refetchTorusEvmBalance();
         if (refetchResult.status === "error") {
@@ -242,9 +267,11 @@ export async function executeBaseToNativeStep1(
         const currentBalance = refetchResult.data?.value || 0n;
 
         if (currentBalance >= baselineBalance + expectedIncrease) {
+          isPollingActive = false;
           clearInterval(intervalId);
           resolve();
         } else if (pollCount >= POLLING_CONFIG.MAX_POLLS) {
+          isPollingActive = false;
           clearInterval(intervalId);
           reject(new Error("Confirmation timeout - no balance increase"));
         }
@@ -259,6 +286,12 @@ export async function executeBaseToNativeStep1(
       "Base transfer confirmation timeout",
     );
   } catch (pollError) {
+    // Clear the polling interval to prevent it from continuing to run
+    isPollingActive = false;
+    if (intervalId !== undefined) {
+      clearInterval(intervalId);
+    }
+
     const errorMessage =
       pollError instanceof Error && pollError.message.includes("timeout")
         ? "Base transfer confirmation timeout - check balance and retry"
@@ -587,8 +620,9 @@ export async function executeBaseToNativeStep2(
   );
 
   let nativePollCount = 0;
+  let nativeInterval: NodeJS.Timeout | number | undefined;
   const nativePollPromise = new Promise<void>((resolve, reject) => {
-    const interval = setInterval(() => {
+    nativeInterval = setInterval(() => {
       void (async () => {
         nativePollCount++;
         const refetchResult = await refetchNativeBalance();
@@ -607,10 +641,10 @@ export async function executeBaseToNativeStep2(
           baselineNativeBalance + expectedNativeIncrease
         ) {
           console.log("Native balance increased - withdrawal confirmed!");
-          clearInterval(interval);
+          clearInterval(nativeInterval);
           resolve();
         } else if (nativePollCount >= POLLING_CONFIG.MAX_POLLS) {
-          clearInterval(interval);
+          clearInterval(nativeInterval);
           reject(
             new Error("Withdrawal confirmation timeout - no balance increase"),
           );
@@ -626,6 +660,11 @@ export async function executeBaseToNativeStep2(
       "Native balance polling timeout",
     );
   } catch (pollError) {
+    // Clear the polling interval to prevent it from continuing to run
+    if (nativeInterval !== undefined) {
+      clearInterval(nativeInterval);
+    }
+
     const errorMessage =
       pollError instanceof Error && pollError.message.includes("timeout")
         ? "Withdrawal confirmation timeout - check Native balance and retry"

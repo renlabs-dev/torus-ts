@@ -211,10 +211,19 @@ export function TransactionLifecycleDialog({
         return "completed";
       }
 
-      // Step 2 handling
+      // Step 2 handling - check errorPhase to determine which substep failed
       if (isStep2) {
-        if (stepId === "step2-sign") return "error";
-        if (stepId === "step2-confirm") return "pending";
+        const errorPhase = step2Transaction.errorPhase;
+        if (errorPhase === "sign" && stepId === "step2-sign") return "error";
+        if (errorPhase === "confirm" && stepId === "step2-confirm")
+          return "error";
+        // Fallback to existing behavior if errorPhase not set
+        if (!errorPhase) {
+          if (stepId === "step2-sign") return "error";
+          if (stepId === "step2-confirm") return "pending";
+        }
+        // If errorPhase is set but doesn't match current stepId, mark as pending
+        return "pending";
       }
     }
 

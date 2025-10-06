@@ -631,6 +631,7 @@ export async function executeNativeToBaseStep2(
       errorDetails,
       txHash: undefined,
       explorerUrl: undefined,
+      errorPhase: "sign",
     });
 
     updateBridgeState({
@@ -695,6 +696,7 @@ export async function executeNativeToBaseStep2(
       message: baseErrorMessage,
       txHash: undefined,
       explorerUrl: undefined,
+      errorPhase: "confirm",
     });
     updateBridgeState({
       step: SimpleBridgeStep.ERROR,

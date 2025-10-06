@@ -65,4 +65,5 @@ export interface SimpleBridgeTransaction {
   explorerUrl?: string;
   metadata?: { type: "switch" };
   errorDetails?: string; // User-friendly formatted error message
+  errorPhase?: "sign" | "confirm"; // Phase where error occurred for step errors
 }
