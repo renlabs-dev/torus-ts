@@ -203,7 +203,7 @@ export async function executeBaseToNativeStep1(
 
   await refetchTorusEvmBalance();
   const baselineBalance = torusEvmBalance?.value || 0n;
-  const expectedIncrease = toNano(parseFloat(amount));
+  const expectedIncrease = toNano(amount.trim());
 
   let pollCount = 0;
   const pollPromise = new Promise<void>((resolve, reject) => {
@@ -353,7 +353,7 @@ export async function executeBaseToNativeStep2(
     getExplorerUrl,
   } = params;
 
-  const amountRems = toNano(parseFloat(amount));
+  const amountRems = toNano(amount.trim());
 
   updateBridgeState({ step: SimpleBridgeStep.STEP_2_PREPARING });
   addTransaction({
@@ -558,7 +558,7 @@ export async function executeBaseToNativeStep2(
   // Now poll Native balance to confirm withdrawal succeeded
   await refetchNativeBalance();
   const baselineNativeBalance = nativeBalance?.value || 0n;
-  const expectedNativeIncrease = toNano(parseFloat(amount));
+  const expectedNativeIncrease = toNano(amount.trim());
 
   console.log(
     `Polling Native balance - Baseline: ${Number(baselineNativeBalance) / 1e18} TORUS, Expected increase: ${parseFloat(amount)} TORUS`,

@@ -14,11 +14,22 @@ import {
   withTimeout,
 } from "./simple-bridge-helpers";
 
+/**
+ * Parameters for executing Step 1 of the Native-to-Base bridge flow.
+ *
+ * This interface defines all the required parameters for the Native TORUS to Torus EVM
+ * transfer process, including wallet connections, balance management, and UI state updates.
+ */
 interface NativeToBaseStep1Params {
+  /** Amount of TORUS tokens to transfer from Native to Torus EVM as string */
   amount: string;
+  /** Target EVM address in hex format (0x...) for the transfer destination */
   evmAddress: string;
+  /** Currently selected Substrate account with SS58 address for signing */
   selectedAccount: { address: SS58Address };
+  /** Polkadot.js API instance for Substrate blockchain interactions */
   api: ApiPromise;
+  /** Function to send Substrate transactions with event tracking capabilities */
   sendTx: (tx: ReturnType<typeof transferAllowDeath>) => Promise<
     | [
         undefined,
@@ -31,15 +42,19 @@ interface NativeToBaseStep1Params {
       ]
     | [Error, undefined]
   >;
+  /** Function to refetch Torus EVM balance from the network, returns status and optional balance data */
   refetchTorusEvmBalance: () => Promise<{
     status: string;
     data?: { value: bigint };
   }>;
+  /** Optional current Torus EVM balance with value as bigint, undefined if not loaded */
   torusEvmBalance?: { value: bigint };
+  /** Function to update the bridge UI state with step progress and error messages */
   updateBridgeState: (updates: {
     step: SimpleBridgeStep;
     errorMessage?: string;
   }) => void;
+  /** Function to add transaction entries to the UI for tracking progress */
   addTransaction: (tx: SimpleBridgeTransaction) => void;
 }
 
