@@ -165,12 +165,9 @@ export async function executeNativeToBaseStep1(
       );
 
       // Get fresh baseline balance
-      const baselineResult = (await refetchTorusEvmBalance()) as {
-        status: string;
-        data?: { value: bigint };
-      };
+      const baselineResult = await refetchTorusEvmBalance();
       const baselineBalance = baselineResult.data?.value || 0n;
-      const expectedIncrease = toNano(parseFloat(amount));
+      const expectedIncrease = toNano(amount.trim());
 
       console.log(
         "DEBUG - Baseline balance:",
@@ -328,13 +325,26 @@ export async function executeNativeToBaseStep1(
   }
 }
 
+/**
+ * Parameters for executing Step 2 of the Native-to-Base bridge flow.
+ *
+ * This interface defines all the required parameters for the Torus EVM to Base
+ * transfer process, including chain switching, balance management, and UI state updates.
+ */
 interface NativeToBaseStep2Params {
+  /** Amount of TORUS tokens to transfer as string */
   amount: string;
+  /** Target EVM address in hex format (0x...) */
   evmAddress: string;
+  /** Target Torus EVM chain ID for switching */
   torusEvmChainId: number;
+  /** Optional current chain ID from reactive state */
   chainId?: number;
+  /** Wallet client for querying current chain */
   walletClient: { getChainId: () => Promise<number> };
+  /** Function to switch wallet to target chain */
   switchChain: (params: { chainId: number }) => Promise<{ id: number }>;
+  /** Function to trigger Hyperlane cross-chain transfer */
   triggerHyperlaneTransfer: (params: {
     origin: string;
     destination: string;
@@ -342,13 +352,18 @@ interface NativeToBaseStep2Params {
     amount: string;
     recipient: string;
   }) => Promise<unknown>;
+  /** Function to refetch Base balance */
   refetchBaseBalance: () => Promise<unknown>;
+  /** Optional current Base balance */
   baseBalance?: { value: bigint };
+  /** Function to update bridge UI state */
   updateBridgeState: (updates: {
     step: SimpleBridgeStep;
     errorMessage?: string;
   }) => void;
+  /** Function to add transaction entries to UI */
   addTransaction: (tx: SimpleBridgeTransaction) => void;
+  /** Function to generate blockchain explorer URLs */
   getExplorerUrl: (txHash: string, chainName: string) => string;
 }
 
