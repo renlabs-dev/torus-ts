@@ -39,7 +39,10 @@ interface BaseToNativeStep1Params {
       getConnectionForChain: (chain: string) => unknown;
     }[];
   };
-  refetchTorusEvmBalance: () => Promise<{ status: string; data?: { value: bigint } }>;
+  refetchTorusEvmBalance: () => Promise<{
+    status: string;
+    data?: { value: bigint };
+  }>;
   torusEvmBalance?: { value: bigint };
   updateBridgeState: (updates: {
     step: SimpleBridgeStep;
@@ -294,9 +297,15 @@ interface BaseToNativeStep2Params {
   /** Function to switch to a different EVM chain, returns the new chain ID */
   switchChain: (params: { chainId: number }) => Promise<{ id: number }>;
   /** Function to refetch Torus EVM balance from the network */
-  refetchTorusEvmBalance: () => Promise<{ status: string; data?: { value: bigint } }>;
+  refetchTorusEvmBalance: () => Promise<{
+    status: string;
+    data?: { value: bigint };
+  }>;
   /** Function to refetch Native balance from the network */
-  refetchNativeBalance: () => Promise<{ status: string; data?: { value: bigint } }>;
+  refetchNativeBalance: () => Promise<{
+    status: string;
+    data?: { value: bigint };
+  }>;
   /** Optional current Native balance with value as bigint, undefined if not loaded */
   nativeBalance?: { value: bigint };
   /** WAGMI configuration for wallet operations */
