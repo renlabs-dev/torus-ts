@@ -31,7 +31,7 @@ interface NativeToBaseStep1Params {
       ]
     | [Error, undefined]
   >;
-  refetchTorusEvmBalance: () => Promise<unknown>;
+  refetchTorusEvmBalance: () => Promise<{ status: string; data?: { value: bigint } }>;
   torusEvmBalance?: { value: bigint };
   updateBridgeState: (updates: {
     step: SimpleBridgeStep;

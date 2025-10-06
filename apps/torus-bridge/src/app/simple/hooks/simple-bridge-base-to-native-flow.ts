@@ -39,7 +39,7 @@ interface BaseToNativeStep1Params {
       getConnectionForChain: (chain: string) => unknown;
     }[];
   };
-  refetchTorusEvmBalance: () => Promise<unknown>;
+  refetchTorusEvmBalance: () => Promise<{ status: string; data?: { value: bigint } }>;
   torusEvmBalance?: { value: bigint };
   updateBridgeState: (updates: {
     step: SimpleBridgeStep;
@@ -274,25 +274,57 @@ export async function executeBaseToNativeStep1(
   }
 }
 
+/**
+ * Parameters for executing Step 2 of the Base-to-Native bridge flow.
+ *
+ * This interface defines all the required parameters for the Torus EVM to Native
+ * withdrawal process, including wallet connections, balance management, and UI state updates.
+ */
 interface BaseToNativeStep2Params {
+  /** Amount of TORUS tokens to withdraw in string format */
   amount: string;
+  /** Currently selected Substrate account with SS58 address */
   selectedAccount: { address: SS58Address };
+  /** Wallet client for EVM operations and chain management */
   walletClient: WalletClient;
+  /** Current blockchain configuration */
   chain: Chain;
+  /** Chain ID for the Torus EVM network */
   torusEvmChainId: number;
+  /** Function to switch to a different EVM chain, returns the new chain ID */
   switchChain: (params: { chainId: number }) => Promise<{ id: number }>;
-  refetchTorusEvmBalance: () => Promise<unknown>;
-  refetchNativeBalance: () => Promise<unknown>;
+  /** Function to refetch Torus EVM balance from the network */
+  refetchTorusEvmBalance: () => Promise<{ status: string; data?: { value: bigint } }>;
+  /** Function to refetch Native balance from the network */
+  refetchNativeBalance: () => Promise<{ status: string; data?: { value: bigint } }>;
+  /** Optional current Native balance with value as bigint, undefined if not loaded */
   nativeBalance?: { value: bigint };
+  /** WAGMI configuration for wallet operations */
   wagmiConfig: Config;
+  /** Function to update the bridge UI state */
   updateBridgeState: (updates: {
     step: SimpleBridgeStep;
     errorMessage?: string;
   }) => void;
+  /** Function to add transaction entries to the UI */
   addTransaction: (tx: SimpleBridgeTransaction) => void;
+  /** Function to generate blockchain explorer URLs for transaction hashes */
   getExplorerUrl: (txHash: string, chainName: string) => string;
 }
 
+/**
+ * Executes Step 2 of the Base-to-Native bridge flow.
+ *
+ * Orchestrates the Torus EVM → Native withdrawal:
+ * 1. Optionally switches to Torus EVM chain with verification
+ * 2. Initiates withdrawal transaction to Native
+ * 3. Waits for transaction receipt
+ * 4. Polls Native balance for confirmation
+ *
+ * @param params - Step 2 execution parameters
+ * @throws {UserRejectedError} If user rejects chain switch or transaction
+ * @throws {Error} On switch failure, withdrawal failure, or confirmation timeout
+ */
 export async function executeBaseToNativeStep2(
   params: BaseToNativeStep2Params,
 ) {
@@ -528,10 +560,7 @@ export async function executeBaseToNativeStep2(
     const interval = setInterval(() => {
       void (async () => {
         nativePollCount++;
-        const refetchResult = (await refetchNativeBalance()) as {
-          status: string;
-          data?: { value: bigint };
-        };
+        const refetchResult = await refetchNativeBalance();
         if (refetchResult.status === "error") {
           console.warn("Failed to refetch Native balance, retrying...");
           return;
