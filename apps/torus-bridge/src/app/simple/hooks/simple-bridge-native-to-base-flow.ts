@@ -43,6 +43,27 @@ interface NativeToBaseStep1Params {
   addTransaction: (tx: SimpleBridgeTransaction) => void;
 }
 
+/**
+ * Executes Step 1 of the Native-to-Base bridge flow.
+ *
+ * Orchestrates Native TORUS → Torus EVM transfer including Substrate transaction,
+ * finalization tracking, and Torus EVM balance polling for confirmation.
+ *
+ * @param params - Step 1 execution parameters
+ * @param params.amount - Amount of TORUS tokens to transfer as string
+ * @param params.evmAddress - Target EVM address in hex format (0x...)
+ * @param params.selectedAccount - Currently selected Substrate account with SS58 address
+ * @param params.api - Polkadot.js API instance for Substrate interactions
+ * @param params.sendTx - Function to send Substrate transactions with tracker
+ * @param params.refetchTorusEvmBalance - Function to refetch Torus EVM balance from network
+ * @param params.updateBridgeState - Function to update UI bridge state
+ * @param params.addTransaction - Function to add transaction entries to UI
+ * @returns Promise<void>
+ * @throws {UserRejectedError} If user rejects the Substrate transaction
+ * @throws {Error} On transaction failure, network errors, or confirmation timeout
+ *
+ * @sideEffects Updates bridge UI state, adds transactions to UI, makes network calls
+ */
 export async function executeNativeToBaseStep1(
   params: NativeToBaseStep1Params,
 ) {
@@ -316,6 +337,17 @@ interface NativeToBaseStep2Params {
   getExplorerUrl: (txHash: string, chainName: string) => string;
 }
 
+/**
+ * Executes Step 2 of the Native-to-Base bridge flow.
+ *
+ * Orchestrates Torus EVM → Base transfer including chain switch, Hyperlane transfer,
+ * and Base balance polling for confirmation.
+ *
+ * @param params - Step 2 execution parameters of type NativeToBaseStep2Params
+ * @returns Promise<void>
+ * @throws {UserRejectedError} If user rejects chain switch or transaction
+ * @throws {Error} On switch failure, transfer failure, or confirmation timeout
+ */
 export async function executeNativeToBaseStep2(
   params: NativeToBaseStep2Params,
 ) {
