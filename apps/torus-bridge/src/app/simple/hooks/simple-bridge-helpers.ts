@@ -67,6 +67,13 @@ export function isUserRejectionError(error: Error): boolean {
   );
 }
 
+/**
+ * Generates a block explorer URL for a transaction hash on a given chain.
+ *
+ * @param txHash - Transaction hash to look up
+ * @param chainName - Chain name (case-insensitive): "base", "torus evm", "torus", or "torus native"
+ * @returns Explorer URL for the transaction, or empty string if chain is unsupported or has no public explorer
+ */
 export function getExplorerUrl(txHash: string, chainName: string): string {
   const lowerChainName = chainName.toLowerCase();
 

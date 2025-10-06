@@ -52,6 +52,31 @@ interface BaseToNativeStep1Params {
   getExplorerUrl: (txHash: string, chainName: string) => string;
 }
 
+/**
+ * Executes Step 1 of the Base-to-Native bridge flow.
+ *
+ * Orchestrates the Base → Torus EVM transfer:
+ * 1. Switches to Base chain with retries
+ * 2. Initiates Hyperlane cross-chain transfer
+ * 3. Polls Torus EVM balance for confirmation
+ * 4. Returns to Base chain for cleanup
+ *
+ * @param params - Step 1 execution parameters
+ * @param params.amount - Amount of TORUS tokens to transfer as string
+ * @param params.evmAddress - Target EVM address in hex format (0x...) for transfer recipient
+ * @param params.chain - Current blockchain configuration
+ * @param params.switchChain - Function to switch wallet to target chain
+ * @param params.triggerHyperlaneTransfer - Function to initiate Hyperlane cross-chain transfer
+ * @param params.warpCore - Warp Core configuration for token connections
+ * @param params.refetchTorusEvmBalance - Function to refetch Torus EVM balance from network
+ * @param params.torusEvmBalance - Optional current Torus EVM balance with value as bigint
+ * @param params.updateBridgeState - Function to update bridge UI state
+ * @param params.addTransaction - Function to add transaction entries to UI
+ * @param params.getExplorerUrl - Function to generate blockchain explorer URLs
+ * @returns Promise<void>
+ * @throws {UserRejectedError} If user rejects chain switch or transaction
+ * @throws {Error} On switch failure, transfer failure, confirmation timeout, or configuration errors
+ */
 export async function executeBaseToNativeStep1(
   params: BaseToNativeStep1Params,
 ) {
