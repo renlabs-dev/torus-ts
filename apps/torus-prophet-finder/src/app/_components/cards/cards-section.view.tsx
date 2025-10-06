@@ -51,7 +51,30 @@ export default function CardsSection() {
   const filteredProphets = React.useMemo(() => {
     const q = query.trim().toLowerCase();
     if (!q) return prophets;
-    return prophets.filter((p) => p.name.toLowerCase().includes(q));
+
+    // Support searching by both display name and handle.
+    // Normalize the query for different comparisons:
+    // - qNoAt: without leading '@'
+    // - qForName: treat '_' as spaces (display names render '_' as ' ')
+    // - qCollapsed: remove '_' and spaces for lenient matching (e.g., '@a_bc' ~ 'A BC')
+    const qNoAt = q.replace(/^@+/, "");
+    const qForName = qNoAt.replace(/_/g, " ");
+    const qCollapsed = qNoAt.replace(/[_\s]+/g, "");
+
+    return prophets.filter((p) => {
+      const name = p.name.toLowerCase();
+      const handle = p.handle.toLowerCase(); // includes leading '@'
+      const username = handle.startsWith("@") ? handle.slice(1) : handle;
+      const usernameCollapsed = username.replace(/_/g, "");
+      const nameCollapsed = name.replace(/\s+/g, "");
+      return (
+        handle.includes(q) || // raw query (e.g., '@satoshi')
+        username.includes(qNoAt) || // username without '@'
+        name.includes(qForName) || // display name with '_' treated as space
+        usernameCollapsed.includes(qCollapsed) || // lenient: ignore '_' in username
+        nameCollapsed.includes(qCollapsed) // lenient: ignore spaces in name
+      );
+    });
   }, [query, prophets]);
 
   // const filteredTickers = React.useMemo(() => {

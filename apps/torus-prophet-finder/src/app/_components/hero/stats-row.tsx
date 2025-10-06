@@ -1,5 +1,6 @@
 "use client";
 
+import { fetchProphetFinderProfiles } from "~/lib/api/fetch-prophet-finder-profiles";
 import { fetchProphetFinderStats } from "~/lib/api/fetch-prophet-finder-stats";
 import type { ProphetFinderStats } from "~/lib/api/fetch-prophet-finder-stats";
 import Link from "next/link";
@@ -7,28 +8,46 @@ import * as React from "react";
 
 export default function StatsRow() {
   const [stats, setStats] = React.useState<ProphetFinderStats | null>(null);
-  const [isLoading, setIsLoading] = React.useState(true);
+  const [profilesCount, setProfilesCount] = React.useState<number | null>(null);
+  const [isLoadingStats, setIsLoadingStats] = React.useState(true);
+  const [isLoadingProfiles, setIsLoadingProfiles] = React.useState(true);
   const [error, setError] = React.useState<string | null>(null);
 
   React.useEffect(() => {
     const controller = new AbortController();
 
+    // Fetch stats
     fetchProphetFinderStats(controller.signal)
       .then((data) => {
         setStats(data);
-        setIsLoading(false);
+        setIsLoadingStats(false);
       })
       .catch((err: unknown) => {
         if (err instanceof Error && err.name === "AbortError") return;
         setError("Failed to load stats");
-        setIsLoading(false);
+        setIsLoadingStats(false);
+      });
+
+    // Fetch profiles to compute "added prophets" count
+    fetchProphetFinderProfiles(controller.signal)
+      .then((profiles) => {
+        setProfilesCount(Array.isArray(profiles) ? profiles.length : 0);
+        setIsLoadingProfiles(false);
+      })
+      .catch((err: unknown) => {
+        if (err instanceof Error && err.name === "AbortError") return;
+        setError("Failed to load profiles");
+        setIsLoadingProfiles(false);
       });
 
     return () => controller.abort();
   }, []);
 
-  const formatNumber = (num: number | undefined) => {
-    if (num === undefined) return "0";
+  const isLoading = isLoadingStats || isLoadingProfiles;
+  const hasError = !!error;
+
+  const formatNumber = (num: number | undefined | null) => {
+    if (num === undefined || num === null) return "0";
     return num.toLocaleString("en-US");
   };
 
@@ -37,9 +56,9 @@ export default function StatsRow() {
       <div>
         {isLoading ? (
           <span className="animate-pulse text-white/50">Loading stats...</span>
-        ) : error ? (
+        ) : hasError ? (
           <span className="text-red-300/70">{error}</span>
-        ) : stats ? (
+        ) : stats && profilesCount !== null ? (
           <>
             <span>
               <span className="font-bold">
@@ -53,6 +72,11 @@ export default function StatsRow() {
                 {formatNumber(stats.total_users)}
               </span>{" "}
               TRACKED USERS
+            </span>
+            <span className="mx-2 text-white/40">•</span>
+            <span>
+              <span className="font-bold">{formatNumber(profilesCount)}</span>{" "}
+              ADDED PROPHETS
             </span>
           </>
         ) : null}
