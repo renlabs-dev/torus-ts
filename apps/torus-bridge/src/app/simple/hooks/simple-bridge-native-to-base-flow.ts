@@ -25,6 +25,7 @@ interface NativeToBaseStep1Params {
         {
           tracker: {
             on: (event: string, callback: (data?: unknown) => void) => unknown;
+            off: (event: string, callback: (data?: unknown) => void) => unknown;
           };
         },
       ]
@@ -103,12 +104,17 @@ export async function executeNativeToBaseStep1(
 
   updateBridgeState({ step: SimpleBridgeStep.STEP_1_CONFIRMING });
 
-  const trackerPromise = new Promise<void>((resolve, reject) => {
-    let settled = false;
+  // Shared settled flag accessible from both promise closure and timeout handler
+  const settledRef = { current: false };
 
+  const trackerPromise = new Promise<void>((resolve, reject) => {
     const handleFinalized = async () => {
-      if (settled) return;
-      settled = true;
+      if (settledRef.current) return;
+      settledRef.current = true;
+
+      // Remove listeners to prevent further events
+      tracker.off("finalized", onFinalized);
+      tracker.off("error", onError);
 
       console.log(
         "DEBUG - Substrate transaction finalized! Starting Torus EVM balance polling",
@@ -140,7 +146,7 @@ export async function executeNativeToBaseStep1(
       );
 
       let pollCount = 0;
-      const pollPromise = new Promise<void>((resolve, reject) => {
+      const pollPromise = new Promise<void>((resolvePoll, rejectPoll) => {
         const intervalId = setInterval(() => {
           void (async () => {
             pollCount++;
@@ -173,11 +179,11 @@ export async function executeNativeToBaseStep1(
             if (currentBalance >= baselineBalance + expectedIncrease) {
               console.log("DEBUG - Balance target reached! Resolving polling");
               clearInterval(intervalId);
-              resolve();
+              resolvePoll();
             } else if (pollCount >= POLLING_CONFIG.MAX_POLLS) {
               console.log("DEBUG - Polling timeout reached, rejecting");
               clearInterval(intervalId);
-              reject(
+              rejectPoll(
                 new Error(
                   "Torus EVM balance confirmation timeout - no balance increase",
                 ),
@@ -225,8 +231,12 @@ export async function executeNativeToBaseStep1(
     };
 
     const handleError = (error: unknown) => {
-      if (settled) return;
-      settled = true;
+      if (settledRef.current) return;
+      settledRef.current = true;
+
+      // Remove listeners to prevent further events
+      tracker.off("finalized", onFinalized);
+      tracker.off("error", onError);
 
       updateBridgeState({
         step: SimpleBridgeStep.ERROR,
@@ -241,12 +251,12 @@ export async function executeNativeToBaseStep1(
       reject(error instanceof Error ? error : new Error(String(error)));
     };
 
-    tracker.on("finalized", () => {
-      void handleFinalized();
-    });
-    tracker.on("error", (error: unknown) => {
-      void handleError(error);
-    });
+    // Create named handler functions for proper cleanup
+    const onFinalized = () => void handleFinalized();
+    const onError = (error: unknown) => void handleError(error);
+
+    tracker.on("finalized", onFinalized);
+    tracker.on("error", onError);
   });
 
   try {
@@ -256,8 +266,9 @@ export async function executeNativeToBaseStep1(
       "Native bridge transaction timeout",
     );
   } catch (timeoutError) {
-    // Note: Tracker listeners will be prevented from executing by the 'settled' flag
-    // which ensures handlers don't run after timeout
+    // Mark as settled to prevent handler execution after timeout
+    // The handlers will check settledRef.current and exit early
+    settledRef.current = true;
 
     const errorMessage =
       timeoutError instanceof Error && timeoutError.message.includes("timeout")

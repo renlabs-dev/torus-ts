@@ -70,6 +70,7 @@ export function useOrchestratedTransfer() {
         result as {
           tracker: {
             on: (event: string, callback: (data?: unknown) => void) => unknown;
+            off: (event: string, callback: (data?: unknown) => void) => unknown;
           };
         },
       ] as [
@@ -77,6 +78,7 @@ export function useOrchestratedTransfer() {
         {
           tracker: {
             on: (event: string, callback: (data?: unknown) => void) => unknown;
+            off: (event: string, callback: (data?: unknown) => void) => unknown;
           };
         },
       ];
