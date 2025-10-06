@@ -463,6 +463,41 @@ export async function executeNativeToBaseStep2(
           "Got:",
           recheckChainId,
         );
+
+        // Increment attempts for unsuccessful switch (even when no exception thrown)
+        torusEvmSwitchAttempts++;
+
+        if (torusEvmSwitchAttempts >= POLLING_CONFIG.MAX_SWITCH_ATTEMPTS) {
+          const errorMessage = "Unable to switch to Torus EVM network";
+          const errorDetails =
+            "Failed to switch to Torus EVM network after 3 attempts. Please switch manually to Torus EVM in your wallet and click Retry to continue.";
+
+          addTransaction({
+            step: 2,
+            status: "ERROR",
+            chainName: "Torus EVM",
+            message: errorMessage,
+            errorDetails,
+            txHash: undefined,
+            explorerUrl: undefined,
+            metadata: { type: "switch" },
+          });
+          updateBridgeState({
+            step: SimpleBridgeStep.ERROR,
+            errorMessage,
+          });
+
+          throw new Error(errorMessage);
+        }
+
+        console.log(
+          `Waiting ${POLLING_CONFIG.SWITCH_RETRY_DELAY_MS / 1000}s before retry attempt ${torusEvmSwitchAttempts + 1}...`,
+        );
+
+        // Wait before retry
+        await new Promise((resolve) =>
+          setTimeout(resolve, POLLING_CONFIG.SWITCH_RETRY_DELAY_MS),
+        );
       } catch (switchError: unknown) {
         lastSwitchError = switchError as Error;
         torusEvmSwitchAttempts++;
