@@ -18,8 +18,6 @@ interface DualWalletConnectorProps {
 export function DualWalletConnector({ direction }: DualWalletConnectorProps) {
   const {
     connectionState,
-    isOnOptimalChain,
-    getRequiredChainId,
     areWalletsReady,
     getConnectionStatus,
     chainIds,
@@ -27,8 +25,6 @@ export function DualWalletConnector({ direction }: DualWalletConnectorProps) {
 
   const connectionStatus = getConnectionStatus();
   const walletsReady = areWalletsReady(direction);
-  const requiredChainId = getRequiredChainId(direction);
-  const isOnCorrectChain = isOnOptimalChain(direction);
 
   const getChainName = (chainId: number) => {
     if (chainId === chainIds.base) {
@@ -59,7 +55,7 @@ export function DualWalletConnector({ direction }: DualWalletConnectorProps) {
   };
 
   const getEvmStatusIndicatorColor = () => {
-    if (connectionState.evmWallet.isConnected && isOnCorrectChain) {
+    if (connectionState.evmWallet.isConnected) {
       return "bg-green-500";
     }
 
@@ -118,7 +114,10 @@ export function DualWalletConnector({ direction }: DualWalletConnectorProps) {
             />
             <div>
               <p className="font-medium">
-                {getChainName(requiredChainId)} Wallet
+                {connectionState.evmWallet.isConnected && connectionState.evmWallet.chainId
+                  ? getChainName(connectionState.evmWallet.chainId)
+                  : "EVM"}{" "}
+                Wallet
               </p>
               <p className="text-muted-foreground text-sm">
                 {connectionState.evmWallet.isConnected
@@ -128,7 +127,7 @@ export function DualWalletConnector({ direction }: DualWalletConnectorProps) {
             </div>
           </div>
           <div className="flex items-center gap-2">
-            {connectionState.evmWallet.isConnected && isOnCorrectChain && (
+            {connectionState.evmWallet.isConnected && (
               <CheckCircle className="h-5 w-5 text-green-500" />
             )}
           </div>

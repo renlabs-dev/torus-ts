@@ -101,15 +101,13 @@ export function useDualWallet() {
   );
 
   const areWalletsReady = useCallback(
-    (direction: SimpleBridgeDirection) => {
+    (_direction: SimpleBridgeDirection) => {
       const torusReady = connectionState.torusWallet.isConnected;
-      const evmReady =
-        connectionState.evmWallet.isConnected &&
-        isRequiredChainConnected(direction);
+      const evmReady = connectionState.evmWallet.isConnected;
 
       return torusReady && evmReady;
     },
-    [connectionState, isRequiredChainConnected],
+    [connectionState],
   );
 
   const getConnectionStatus = useCallback(() => {
