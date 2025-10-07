@@ -5,7 +5,7 @@ import { useTorus } from "@torus-ts/torus-provider";
 import { getChainValuesOnEnv } from "~/config";
 import { env } from "~/env";
 import { useCallback, useMemo } from "react";
-import { useAccount, useConnect, useDisconnect } from "wagmi";
+import { useAccount } from "wagmi";
 import type {
   SimpleBridgeDirection,
   WalletConnectionState,
@@ -22,9 +22,10 @@ export function useDualWallet() {
     address: evmAddress,
     isConnected: isEvmConnected,
     chainId,
+    status,
   } = useAccount();
-  const { connect, connectors, isPending: isEvmConnecting } = useConnect();
-  const { disconnect } = useDisconnect();
+
+  const isEvmConnecting = status === "connecting" || status === "reconnecting";
 
   const getChainValues = getChainValuesOnEnv(
     env("NEXT_PUBLIC_TORUS_CHAIN_ENV"),
@@ -57,24 +58,6 @@ export function useDualWallet() {
     chainId,
     isEvmConnecting,
   ]);
-
-  const connectEvmWallet = useCallback(() => {
-    if (isEvmConnected) {
-      return;
-    }
-
-    const injectedConnector = connectors.find((c) => c.id === "injected");
-    if (!injectedConnector) {
-      console.warn("No injected connector found");
-      return;
-    }
-
-    connect({ connector: injectedConnector });
-  }, [connect, connectors, isEvmConnected]);
-
-  const disconnectEvmWallet = useCallback(() => {
-    disconnect();
-  }, [disconnect]);
 
   const isRequiredChainConnected = useCallback(
     (direction: SimpleBridgeDirection) => {
@@ -149,8 +132,6 @@ export function useDualWallet() {
 
   return {
     connectionState,
-    connectEvmWallet,
-    disconnectEvmWallet,
     isRequiredChainConnected,
     isOnOptimalChain,
     getRequiredChainId,

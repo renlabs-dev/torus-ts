@@ -112,7 +112,7 @@ export function TransactionLifecycleDialog({
     transactions.some((tx) => tx.status === "ERROR");
 
   useEffect(() => {
-    if (env("NODE_ENV") !== "development") {
+    if (env("NEXT_PUBLIC_TORUS_CHAIN_ENV") === "mainnet") {
       return;
     }
 
@@ -168,7 +168,9 @@ export function TransactionLifecycleDialog({
 
         <div className="flex-1 space-y-6 overflow-y-auto px-6 pb-6">
           <div className="bg-muted/50 rounded-lg p-4 text-center">
-            <p className="text-sm font-medium">{getCurrentMessage(currentStep)}</p>
+            <p className="text-sm font-medium">
+              {getCurrentMessage(currentStep)}
+            </p>
           </div>
 
           <div className="space-y-4">
