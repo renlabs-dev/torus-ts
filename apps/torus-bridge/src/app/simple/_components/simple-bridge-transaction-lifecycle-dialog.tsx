@@ -229,8 +229,17 @@ export function TransactionLifecycleDialog({
 
     // Check if step 1 has an error
     if (step1Transaction?.status === "ERROR" && isStep1) {
-      if (stepId === "step1-sign") return "error";
-      if (stepId === "step1-confirm") return "pending";
+      const errorPhase = step1Transaction.errorPhase;
+      if (errorPhase === "sign" && stepId === "step1-sign") return "error";
+      if (errorPhase === "confirm" && stepId === "step1-confirm")
+        return "error";
+      // Fallback to existing behavior if errorPhase not set
+      if (!errorPhase) {
+        if (stepId === "step1-sign") return "error";
+        if (stepId === "step1-confirm") return "pending";
+      }
+      // If errorPhase is set but doesn't match current stepId, mark as pending
+      return "pending";
     }
 
     // Step 1 error means step 2 is all pending

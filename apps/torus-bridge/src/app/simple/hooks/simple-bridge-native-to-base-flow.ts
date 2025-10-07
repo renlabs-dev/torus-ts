@@ -653,9 +653,16 @@ export async function executeNativeToBaseStep2(
   const baseExpectedIncrease = toNano(parseFloat(amount));
 
   let basePollCount = 0;
+  let baseIntervalId: ReturnType<typeof setInterval> | undefined;
+  let isBasePollingActive = true;
   const basePollPromise = new Promise<void>((resolve, reject) => {
-    const baseIntervalId = setInterval(() => {
+    baseIntervalId = setInterval(() => {
       void (async () => {
+        // Stop operating if polling has been cancelled
+        if (!isBasePollingActive) {
+          return;
+        }
+
         basePollCount++;
         const baseRefetchResult = (await refetchBaseBalance()) as {
           status: string;
@@ -667,9 +674,11 @@ export async function executeNativeToBaseStep2(
         const currentBaseBalance = baseRefetchResult.data?.value || 0n;
 
         if (currentBaseBalance >= baseBaselineBalance + baseExpectedIncrease) {
+          isBasePollingActive = false;
           clearInterval(baseIntervalId);
           resolve();
         } else if (basePollCount >= POLLING_CONFIG.MAX_POLLS) {
+          isBasePollingActive = false;
           clearInterval(baseIntervalId);
           reject(new Error("Confirmation timeout - no balance increase"));
         }
@@ -684,6 +693,12 @@ export async function executeNativeToBaseStep2(
       "Base transfer confirmation timeout",
     );
   } catch (basePollError) {
+    // Clear the polling interval to prevent it from continuing to run
+    isBasePollingActive = false;
+    if (baseIntervalId !== undefined) {
+      clearInterval(baseIntervalId);
+    }
+
     const baseErrorMessage =
       basePollError instanceof Error &&
       basePollError.message.includes("timeout")
