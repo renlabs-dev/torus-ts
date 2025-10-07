@@ -1,5 +1,9 @@
 import { tryAsync } from "@torus-network/torus-utils/try-catch";
-import { POLLING_CONFIG, TIMEOUT_CONFIG, withTimeout } from "./simple-bridge-helpers";
+import {
+  POLLING_CONFIG,
+  TIMEOUT_CONFIG,
+  withTimeout,
+} from "./simple-bridge-helpers";
 
 /**
  * Result of a balance polling operation.
@@ -55,9 +59,7 @@ export async function pollBalanceUntilTarget<T>(
   );
 
   const targetBalance = baselineBalance + expectedIncrease;
-  console.log(
-    `Target balance: ${Number(targetBalance) / 1e18} TORUS`,
-  );
+  console.log(`Target balance: ${Number(targetBalance) / 1e18} TORUS`);
 
   let pollCount = 0;
   const abortController = new AbortController();
@@ -90,9 +92,7 @@ export async function pollBalanceUntilTarget<T>(
           ? extractValue(refetchResult.data)
           : 0n;
 
-        console.log(
-          `Current balance: ${Number(currentBalance) / 1e18} TORUS`,
-        );
+        console.log(`Current balance: ${Number(currentBalance) / 1e18} TORUS`);
 
         if (currentBalance >= targetBalance) {
           console.log(`Balance target reached! Resolving polling`);

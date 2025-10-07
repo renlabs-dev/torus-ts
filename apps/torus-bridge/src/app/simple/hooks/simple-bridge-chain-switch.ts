@@ -135,7 +135,8 @@ export async function switchChainWithRetry(
   return {
     success: false,
     errorMessage,
-    errorDetails: lastError !== undefined ? formatErrorForUser(lastError) : errorDetails,
+    errorDetails:
+      lastError !== undefined ? formatErrorForUser(lastError) : errorDetails,
     isUserRejected,
   };
 }

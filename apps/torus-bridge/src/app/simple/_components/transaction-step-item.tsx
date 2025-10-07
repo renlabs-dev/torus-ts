@@ -98,14 +98,18 @@ export function TransactionStepItem({
       <div className="flex flex-col items-center">
         <div className="flex-shrink-0">{getStatusIcon(status)}</div>
         {!isLast && (
-          <div className={`mt-2 w-px flex-1 ${getStepConnectorColor(status)}`} />
+          <div
+            className={`mt-2 w-px flex-1 ${getStepConnectorColor(status)}`}
+          />
         )}
       </div>
 
       <div className="min-w-0 flex-1 pb-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <span className={`mr-2 ${getStatusColor(status)}`}>{displayIcon}</span>
+            <span className={`mr-2 ${getStatusColor(status)}`}>
+              {displayIcon}
+            </span>
             <h3 className={`font-medium ${getStatusColor(status)}`}>{title}</h3>
             {isSignatureRequired && status === "active" && (
               <span className="rounded-full border border-blue-200 bg-transparent px-2 py-1 text-xs text-blue-600">

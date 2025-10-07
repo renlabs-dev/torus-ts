@@ -78,7 +78,9 @@ interface BaseToNativeStep1Params {
  * @param warpCore - Warp Core configuration to validate
  * @throws {Error} If Base TORUS token or connection to Torus is not found
  */
-function validateWarpConfiguration(warpCore: BaseToNativeStep1Params["warpCore"]) {
+function validateWarpConfiguration(
+  warpCore: BaseToNativeStep1Params["warpCore"],
+) {
   const baseToken = warpCore.tokens.find(
     (token) => token.chainName === "base" && token.symbol === "TORUS",
   );
@@ -161,7 +163,8 @@ export async function executeBaseToNativeStep1(
     });
     updateBridgeState({
       step: SimpleBridgeStep.ERROR,
-      errorMessage: switchResult.errorMessage ?? "Failed to switch to Base chain",
+      errorMessage:
+        switchResult.errorMessage ?? "Failed to switch to Base chain",
     });
     throwOnChainSwitchFailure(switchResult);
   }
@@ -239,9 +242,12 @@ export async function executeBaseToNativeStep1(
     });
     updateBridgeState({
       step: SimpleBridgeStep.ERROR,
-      errorMessage: pollingResult.errorMessage ?? "Transfer confirmation failed",
+      errorMessage:
+        pollingResult.errorMessage ?? "Transfer confirmation failed",
     });
-    throw new Error(pollingResult.errorMessage ?? "Transfer confirmation failed");
+    throw new Error(
+      pollingResult.errorMessage ?? "Transfer confirmation failed",
+    );
   }
 
   updateBridgeState({ step: SimpleBridgeStep.STEP_1_COMPLETE });
@@ -387,7 +393,8 @@ export async function executeBaseToNativeStep2(
       });
       updateBridgeState({
         step: SimpleBridgeStep.ERROR,
-        errorMessage: switchResult.errorMessage ?? "Failed to switch to Torus EVM",
+        errorMessage:
+          switchResult.errorMessage ?? "Failed to switch to Torus EVM",
       });
       throwOnChainSwitchFailure(switchResult);
     }
@@ -404,7 +411,9 @@ export async function executeBaseToNativeStep2(
 
   updateBridgeState({ step: SimpleBridgeStep.STEP_2_SIGNING });
 
-  const torusEvmChain = wagmiConfig.chains.find((c) => c.id === torusEvmChainId);
+  const torusEvmChain = wagmiConfig.chains.find(
+    (c) => c.id === torusEvmChainId,
+  );
   if (!torusEvmChain) {
     throw new Error(`Torus EVM chain ${torusEvmChainId} not found in config`);
   }
@@ -490,9 +499,12 @@ export async function executeBaseToNativeStep2(
     });
     updateBridgeState({
       step: SimpleBridgeStep.ERROR,
-      errorMessage: pollingResult.errorMessage ?? "Withdrawal confirmation failed",
+      errorMessage:
+        pollingResult.errorMessage ?? "Withdrawal confirmation failed",
     });
-    throw new Error(pollingResult.errorMessage ?? "Withdrawal confirmation failed");
+    throw new Error(
+      pollingResult.errorMessage ?? "Withdrawal confirmation failed",
+    );
   }
 
   addTransaction({

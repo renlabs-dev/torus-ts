@@ -16,12 +16,8 @@ interface DualWalletConnectorProps {
 }
 
 export function DualWalletConnector({ direction }: DualWalletConnectorProps) {
-  const {
-    connectionState,
-    areWalletsReady,
-    getConnectionStatus,
-    chainIds,
-  } = useDualWallet();
+  const { connectionState, areWalletsReady, getConnectionStatus, chainIds } =
+    useDualWallet();
 
   const connectionStatus = getConnectionStatus();
   const walletsReady = areWalletsReady(direction);
@@ -114,7 +110,8 @@ export function DualWalletConnector({ direction }: DualWalletConnectorProps) {
             />
             <div>
               <p className="font-medium">
-                {connectionState.evmWallet.isConnected && connectionState.evmWallet.chainId
+                {connectionState.evmWallet.isConnected &&
+                connectionState.evmWallet.chainId
                   ? getChainName(connectionState.evmWallet.chainId)
                   : "EVM"}{" "}
                 Wallet

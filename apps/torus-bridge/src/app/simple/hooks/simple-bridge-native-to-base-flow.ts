@@ -406,7 +406,8 @@ export async function executeNativeToBaseStep2(
       });
       updateBridgeState({
         step: SimpleBridgeStep.ERROR,
-        errorMessage: switchResult.errorMessage ?? "Failed to switch to Torus EVM",
+        errorMessage:
+          switchResult.errorMessage ?? "Failed to switch to Torus EVM",
       });
       throwOnChainSwitchFailure(switchResult);
     }
@@ -499,9 +500,12 @@ export async function executeNativeToBaseStep2(
     });
     updateBridgeState({
       step: SimpleBridgeStep.ERROR,
-      errorMessage: pollingResult.errorMessage ?? "Transfer confirmation failed",
+      errorMessage:
+        pollingResult.errorMessage ?? "Transfer confirmation failed",
     });
-    throw new Error(pollingResult.errorMessage ?? "Transfer confirmation failed");
+    throw new Error(
+      pollingResult.errorMessage ?? "Transfer confirmation failed",
+    );
   }
 
   updateBridgeState({ step: SimpleBridgeStep.COMPLETE });
