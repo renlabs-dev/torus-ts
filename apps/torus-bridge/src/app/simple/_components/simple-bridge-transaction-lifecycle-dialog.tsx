@@ -89,14 +89,13 @@ export function TransactionLifecycleDialog({
       return;
     }
 
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setShowSignatureWarning(false);
     const timer = setTimeout(() => {
       setShowSignatureWarning(true);
     }, 30000);
 
     return () => {
       clearTimeout(timer);
+      setShowSignatureWarning(false);
     };
   }, [isCurrentlySigning]);
 

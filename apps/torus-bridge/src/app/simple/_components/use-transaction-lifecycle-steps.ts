@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useCallback, useMemo } from "react";
 import type { SimpleBridgeDirection, SimpleBridgeTransaction } from "./simple-bridge-types";
 import { SimpleBridgeStep } from "./simple-bridge-types";
 
@@ -27,7 +27,7 @@ export function useTransactionLifecycleSteps(
   const step1Transaction = transactions.find((tx) => tx.step === 1);
   const step2Transaction = transactions.find((tx) => tx.step === 2);
 
-  function getErrorStepStatus(stepId: string): StepStatus | null {
+  const getErrorStepStatus = useCallback((stepId: string): StepStatus | null => {
     const isStep1 = stepId.startsWith("step1");
     const isStep2 = stepId.startsWith("step2");
 
@@ -68,9 +68,9 @@ export function useTransactionLifecycleSteps(
     }
 
     return null;
-  }
+  }, [step1Transaction, step2Transaction]);
 
-  function getStep1Status(stepId: string): StepStatus {
+  const getStep1Status = useCallback((stepId: string): StepStatus => {
     if (currentStep === SimpleBridgeStep.IDLE) return "pending";
 
     if (
@@ -99,9 +99,9 @@ export function useTransactionLifecycleSteps(
     }
 
     return "pending";
-  }
+  }, [currentStep]);
 
-  function getStep2Status(stepId: string): StepStatus {
+  const getStep2Status = useCallback((stepId: string): StepStatus => {
     if (
       currentStep === SimpleBridgeStep.IDLE ||
       currentStep === SimpleBridgeStep.STEP_1_PREPARING ||
@@ -132,9 +132,9 @@ export function useTransactionLifecycleSteps(
     }
 
     return "pending";
-  }
+  }, [currentStep]);
 
-  function getStepStatus(stepId: string): StepStatus {
+  const getStepStatus = useCallback((stepId: string): StepStatus => {
     const isStep1 = stepId.startsWith("step1");
     const isStep2 = stepId.startsWith("step2");
 
@@ -152,7 +152,7 @@ export function useTransactionLifecycleSteps(
     }
 
     return "pending";
-  }
+  }, [currentStep, getErrorStepStatus, getStep1Status, getStep2Status]);
 
   const steps = useMemo((): LifecycleStep[] => {
     const baseSteps = isBaseToNative
@@ -250,8 +250,14 @@ export function useTransactionLifecycleSteps(
     }
 
     return baseSteps;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isBaseToNative, currentStep, step1Transaction, step2Transaction, amount]);
+  }, [
+    isBaseToNative,
+    currentStep,
+    step1Transaction,
+    step2Transaction,
+    amount,
+    getStepStatus,
+  ]);
 
   return steps;
 }

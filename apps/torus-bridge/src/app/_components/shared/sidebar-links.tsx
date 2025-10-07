@@ -16,7 +16,24 @@ import { env } from "~/env";
 import { Check } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { Suspense, useCallback, useMemo } from "react";
+import { Suspense, useCallback, useMemo, useSyncExternalStore } from "react";
+
+function getCurrentUrl() {
+  return typeof window !== "undefined" ? window.location.href : "";
+}
+
+function subscribe(callback: () => void) {
+  window.addEventListener("popstate", callback);
+  window.addEventListener("hashchange", callback);
+  return () => {
+    window.removeEventListener("popstate", callback);
+    window.removeEventListener("hashchange", callback);
+  };
+}
+
+function useCurrentUrl() {
+  return useSyncExternalStore(subscribe, getCurrentUrl, () => "");
+}
 
 interface SidebarOptionProps {
   option: {
@@ -61,6 +78,7 @@ function SidebarOption({ option }: SidebarOptionProps) {
 const Sidebar = () => {
   const pathname = usePathname();
   const router = useRouter();
+  const currentUrl = useCurrentUrl();
 
   const baseOptions = useMemo(
     () => [
@@ -74,24 +92,53 @@ const Sidebar = () => {
     [],
   );
 
-  const getActiveOptions = useCallback(
-    (pathname: string) =>
-      baseOptions.map((option) => ({
-        ...option,
-        isActive: option.href === pathname,
-      })),
-    [baseOptions],
+  const isOptionActive = useCallback(
+    (optionHref: string) => {
+      if (optionHref === pathname) {
+        return true;
+      }
+
+      if (optionHref.startsWith("http") && currentUrl) {
+        if (optionHref === currentUrl) {
+          return true;
+        }
+
+        try {
+          const optionUrl = new URL(optionHref);
+          const currentUrlObj = new URL(currentUrl);
+
+          return (
+            optionUrl.hostname === currentUrlObj.hostname &&
+            optionUrl.pathname === currentUrlObj.pathname
+          );
+        } catch {
+          return false;
+        }
+      }
+
+      return false;
+    },
+    [pathname, currentUrl],
   );
 
   const activeOptions = useMemo(
-    () => getActiveOptions(pathname),
-    [pathname, getActiveOptions],
+    () =>
+      baseOptions.map((option) => ({
+        ...option,
+        isActive: isOptionActive(option.href),
+      })),
+    [baseOptions, isOptionActive],
   );
+
+  const selectedValue = useMemo(() => {
+    const activeOption = activeOptions.find((opt) => opt.isActive);
+    return activeOption?.href ?? pathname;
+  }, [activeOptions, pathname]);
 
   const handleSelectChange = useCallback(
     (value: string) => {
       if (value.startsWith("http")) {
-        window.open(value, "_blank", "noopener,noreferrer");
+        window.location.assign(value);
         return;
       }
 
@@ -102,7 +149,7 @@ const Sidebar = () => {
 
   return (
     <>
-      <Select value={pathname} onValueChange={handleSelectChange}>
+      <Select value={selectedValue} onValueChange={handleSelectChange}>
         <SelectTrigger className="w-full lg:hidden">
           <SelectValue placeholder="Select a view" />
         </SelectTrigger>
