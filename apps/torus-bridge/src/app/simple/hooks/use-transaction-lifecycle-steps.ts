@@ -2,8 +2,8 @@ import { useCallback, useMemo } from "react";
 import type {
   SimpleBridgeDirection,
   SimpleBridgeTransaction,
-} from "./simple-bridge-types";
-import { SimpleBridgeStep } from "./simple-bridge-types";
+} from "../_components/simple-bridge-types";
+import { SimpleBridgeStep } from "../_components/simple-bridge-types";
 
 type StepStatus = "pending" | "active" | "completed" | "error" | "waiting";
 
