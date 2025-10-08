@@ -11,16 +11,16 @@ import { HoverHeader } from "./_components/hover-header";
 
 export function generateMetadata() {
   return createSeoMetadata({
-    title: "Torus Network",
+    title: "Torus",
     description: "The thermodynamic god's favorite child.",
     keywords: [
-      "torus network",
+      "torus",
       "decentralized infrastructure",
       "substrate blockchain",
       "web3 platform",
       "blockchain technology",
     ],
-    ogSiteName: "Torus Network",
+    ogSiteName: "Torus",
     canonical: "/",
     baseUrl: env("BASE_URL"),
   });
