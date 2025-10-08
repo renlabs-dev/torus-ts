@@ -18,12 +18,7 @@ const config = {
   },
 
   // Use Turbopack for faster builds
-  turbopack: {
-    rules: {
-      "*.yaml": ["yaml-loader"],
-      "*.yml": ["yaml-loader"],
-    },
-  },
+  turbopack: {},
 
   transpilePackages: [
     "@torus-ts/api",
@@ -37,12 +32,6 @@ const config = {
   typescript: { ignoreBuildErrors: true },
 
   webpack: (config, { isServer }) => {
-    // YAML loader for config files
-    config.module.rules.push({
-      test: /\.ya?ml$/,
-      use: "yaml-loader",
-    });
-
     // Optimize bundle splitting
     if (!isServer) {
       config.optimization.splitChunks = {
