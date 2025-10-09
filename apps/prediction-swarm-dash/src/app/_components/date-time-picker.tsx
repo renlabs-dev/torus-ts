@@ -1,21 +1,20 @@
 "use client";
 
-import dayjs from "dayjs";
-import utc from "dayjs/plugin/utc";
-
-dayjs.extend(utc);
-
-import { ChevronDownIcon } from "lucide-react";
-import * as React from "react";
-import { Calendar } from "@/components/ui/calendar";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Button } from "@torus-ts/ui/components/button";
+import { Input } from "@torus-ts/ui/components/input";
+import { Label } from "@torus-ts/ui/components/label";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@/components/ui/popover";
-import { Button } from "./button";
+} from "@torus-ts/ui/components/popover";
+import dayjs from "dayjs";
+import utc from "dayjs/plugin/utc";
+import { ChevronDownIcon } from "lucide-react";
+import * as React from "react";
+import { Calendar } from "./calendar";
+
+dayjs.extend(utc);
 
 export function DateTimePicker({
   label = "Date/time",
@@ -35,7 +34,7 @@ export function DateTimePicker({
   const [open, setOpen] = React.useState(false);
   const [date, setDate] = React.useState<Date | undefined>(value);
   const [time, setTime] = React.useState<string>(
-    value ? dayjs(value).utc().format("HH:mm") : ""
+    value ? dayjs(value).utc().format("HH:mm") : "",
   );
 
   // Sync local state when external value changes (no onChange here to avoid loops)
@@ -51,8 +50,8 @@ export function DateTimePicker({
 
   return (
     <div className={className}>
-      <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 sm:items-end">
-        <div className="flex flex-col gap-2 w-full sm:w-auto">
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:gap-4">
+        <div className="flex w-full flex-col gap-2 sm:w-auto">
           <Label htmlFor={`${id}-date`} className="px-1">
             {label}
           </Label>
@@ -61,7 +60,7 @@ export function DateTimePicker({
               <Button
                 id={`${id}-date`}
                 variant="outline"
-                className="w-full sm:w-40 justify-between font-norma"
+                className="font-norma w-full justify-between sm:w-40"
               >
                 {date ? date.toLocaleDateString() : "Select date"}
                 <ChevronDownIcon />
@@ -100,7 +99,7 @@ export function DateTimePicker({
             </PopoverContent>
           </Popover>
         </div>
-        <div className="flex flex-col gap-2 w-full sm:w-auto">
+        <div className="flex w-full flex-col gap-2 sm:w-auto">
           <Label htmlFor={`${id}-time`} className="px-1">
             Time
           </Label>
@@ -127,7 +126,7 @@ export function DateTimePicker({
               }
             }}
             placeholder="HH:MM"
-            className="bg-transparent border border-border"
+            className="border-border border bg-transparent"
           />
         </div>
       </div>

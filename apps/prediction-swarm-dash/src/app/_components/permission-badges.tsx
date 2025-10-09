@@ -1,5 +1,7 @@
 "use client";
 
+import { Badge } from "@torus-ts/ui/components/badge";
+import { cn } from "@torus-ts/ui/lib/utils";
 import {
   CheckCircle,
   ClipboardList,
@@ -7,8 +9,6 @@ import {
   Gavel,
   Shield,
 } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
-import { cn } from "@/lib/utils";
 
 const permissionConfig = {
   InsertPredictions: {
@@ -48,12 +48,13 @@ export function PermissionBadges({
   variant = "default",
   className,
 }: PermissionBadgesProps) {
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
   if (!permissions || permissions.length === 0) {
     return (
       <div
         className={cn(
-          "flex items-center gap-1 text-muted-foreground",
-          className
+          "text-muted-foreground flex items-center gap-1",
+          className,
         )}
       >
         <Shield className="h-3 w-3" />
@@ -65,7 +66,7 @@ export function PermissionBadges({
   if (variant === "compact") {
     return (
       <div className={cn("flex items-center gap-1", className)}>
-        <Shield className="h-3 w-3 text-muted-foreground" />
+        <Shield className="text-muted-foreground h-3 w-3" />
         <span className="text-muted-foreground">
           {permissions.length} permission{permissions.length !== 1 ? "s" : ""}
         </span>
@@ -78,13 +79,14 @@ export function PermissionBadges({
       .map((permission) => {
         const config =
           permissionConfig[permission as keyof typeof permissionConfig];
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
         return config ? config.label : permission;
       })
       .join(", ");
 
     return (
       <div className={cn("flex items-center gap-2", className)}>
-        <Shield className="h-3 w-3 text-muted-foreground" />
+        <Shield className="text-muted-foreground h-3 w-3" />
         <span>{permissionLabels}</span>
       </div>
     );
@@ -101,6 +103,7 @@ export function PermissionBadges({
           {permissions.map((permission) => {
             const config =
               permissionConfig[permission as keyof typeof permissionConfig];
+            // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
             if (!config) return null;
 
             const Icon = config.icon;
@@ -127,6 +130,7 @@ export function PermissionBadges({
       {permissions.map((permission) => {
         const config =
           permissionConfig[permission as keyof typeof permissionConfig];
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
         if (!config) {
           return (
             <Badge key={permission} variant="outline">

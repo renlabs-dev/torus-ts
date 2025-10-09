@@ -1,8 +1,8 @@
 import { Suspense } from "react";
-import { Header } from "@/components/header";
-import { SearchInput } from "@/components/search-input";
-import SphereAnimation from "@/components/sphere-animation";
-import { cn } from "@/lib/utils";
+import { Header } from "~/app/_components/header";
+import { SearchInput } from "~/app/_components/search-input";
+import SphereAnimation from "~/app/_components/sphere-animation";
+import { cn } from "~/lib/utils";
 
 export default function RootLayout({
   children,

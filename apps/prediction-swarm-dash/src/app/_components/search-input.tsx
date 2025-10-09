@@ -1,9 +1,6 @@
 "use client";
 
-import { Check, SearchIcon } from "lucide-react";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import React, { useCallback, useMemo, useState } from "react";
-import { Button } from "@/components/ui/button";
+import { Button } from "@torus-ts/ui/components/button";
 import {
   CommandDialog,
   CommandEmpty,
@@ -11,17 +8,20 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
-} from "@/components/ui/command";
-import { Input } from "@/components/ui/input";
-import { LoadingDots } from "@/components/ui/loading-dots";
-import { useAgentContributionStatsQuery } from "@/hooks/api/use-agent-contribution-stats-query";
-import { useAgentDetailedMetrics } from "@/hooks/api/use-agent-detailed-metrics-query";
-import { useAgentName } from "@/hooks/api/use-agent-name-query";
-import { useIsMobile } from "@/hooks/use-mobile";
-import type { TimeWindowParams } from "@/lib/api-schemas";
-import { formatAddress } from "@/lib/api-utils";
-import { cn } from "@/lib/utils";
+} from "@torus-ts/ui/components/command";
+import { Input } from "@torus-ts/ui/components/input";
+import { useIsMobile } from "@torus-ts/ui/hooks/use-mobile";
+import { cn } from "@torus-ts/ui/lib/utils";
+import { useAgentContributionStatsQuery } from "~/hooks/api/use-agent-contribution-stats-query";
+import { useAgentDetailedMetrics } from "~/hooks/api/use-agent-detailed-metrics-query";
+import { useAgentName } from "~/hooks/api/use-agent-name-query";
+import type { TimeWindowParams } from "~/lib/api-schemas";
+import { formatAddress } from "~/lib/api-utils";
+import { Check, SearchIcon } from "lucide-react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import React, { useCallback, useMemo, useState } from "react";
 import { BorderContainer } from "./border-container";
+import { LoadingDots } from "./loading-dots";
 import Silk from "./silk-animation";
 
 interface AgentItemProps {
@@ -59,7 +59,7 @@ function AgentItem({
       key={address}
       value={address}
       onSelect={onSelect}
-      className="flex items-center justify-between cursor-pointer"
+      className="flex cursor-pointer items-center justify-between"
       data-predictions={totalPredictions}
       data-claims={totalVerificationClaims}
       data-verdicts={totalVerificationVerdicts}
@@ -76,7 +76,7 @@ function AgentItem({
         </div>
       </div>
 
-      <div className="flex items-center gap-3 text-muted-foreground">
+      <div className="text-muted-foreground flex items-center gap-3">
         <span title="Predictions">{totalPredictions}P</span>
         <span title="Claims">{totalVerificationClaims}C</span>
         <span title="Verdicts">{totalVerificationVerdicts}V</span>
@@ -111,6 +111,7 @@ export function SearchInput({
     useAgentContributionStatsQuery();
 
   // Process agents list
+  // eslint-disable-next-line react-hooks/preserve-manual-memoization
   const agents = useMemo(() => {
     if (!statsData?.agent_contribution_stats) return [];
 
@@ -136,7 +137,7 @@ export function SearchInput({
   };
 
   const [selectedAgent, setSelectedAgent] = React.useState<string>(
-    pathname === "/agents" ? searchParams.get("agent") || "" : ""
+    pathname === "/agents" ? searchParams.get("agent") || "" : "",
   );
 
   const handleAgentChange = useCallback(
@@ -151,7 +152,7 @@ export function SearchInput({
         router.push("/agents", { scroll: false });
       }
     },
-    [router]
+    [router],
   );
 
   const { agentName } = useAgentName(selectedAgent);
@@ -221,15 +222,15 @@ export function SearchInput({
       </CommandDialog>
 
       <BorderContainer>
-        <div className="relative flex-1 flex justify-center items-center px-[8%] md:px-0">
-          <div className="relative w-full border-x border-border sm:border-none">
-            <SearchIcon className="absolute left-4 sm:left-8 top-1/2 transform -translate-y-1/2 h-5 w-5 text-muted-foreground z-10" />
+        <div className="relative flex flex-1 items-center justify-center px-[8%] md:px-0">
+          <div className="border-border relative w-full border-x sm:border-none">
+            <SearchIcon className="text-muted-foreground absolute left-4 top-1/2 z-10 h-5 w-5 -translate-y-1/2 transform sm:left-8" />
             <Input
               type="search"
               id="search"
               placeholder={effectivePlaceholder}
               value=""
-              className="h-18 rounded-none pl-12 sm:pl-18 cursor-pointer border-none w-full"
+              className="h-18 sm:pl-18 w-full cursor-pointer rounded-none border-none pl-12"
               onClick={handleInputClick}
               readOnly
             />
@@ -237,13 +238,13 @@ export function SearchInput({
         </div>
         <Button
           type="submit"
-          className="hidden md:flex h-18 rounded-none bg-transparent hover:bg-transparent text-white relative overflow-hidden px-16 cursor-pointer border-l border-border"
+          className="h-18 border-border relative hidden cursor-pointer overflow-hidden rounded-none border-l bg-transparent px-16 text-white hover:bg-transparent md:flex"
           onClick={handleAskSwarmClick}
         >
-          <span className="relative z-10 tracking-[0.60em] font-extralight text-base pointer-events-none">
+          <span className="pointer-events-none relative z-10 text-base font-extralight tracking-[0.60em]">
             ASK TORUS
           </span>
-          <div className="absolute inset-0 opacity-30 hover:opacity-50 transition duration-200">
+          <div className="absolute inset-0 opacity-30 transition duration-200 hover:opacity-50">
             <Silk scale={0.5} speed={4} noiseIntensity={0} />
           </div>
         </Button>

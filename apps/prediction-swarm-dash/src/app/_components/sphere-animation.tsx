@@ -10,7 +10,7 @@ function getPoint(
   v: THREE.Vector4,
   size: number,
   data: Float32Array,
-  offset: number
+  offset: number,
 ) {
   v.set(Math.random() * 2 - 1, Math.random() * 2 - 1, Math.random() * 2 - 1, 0);
   if (v.length() > 1) return getPoint(v, size, data, offset);
@@ -21,7 +21,7 @@ function getPoint(
 function getSphere(
   count: number,
   size: number,
-  p = new THREE.Vector4()
+  p = new THREE.Vector4(),
 ): Float32Array {
   const data = new Float32Array(count * 4);
   for (let i = 0; i < count * 4; i += 4) getPoint(p, size, data, i);
@@ -247,7 +247,7 @@ interface ParticlesProps
 
 const Particles = forwardRef<THREE.Points, ParticlesProps>(function Particles(
   { speed, fov, aperture, focus, curl, size },
-  ref
+  ref,
 ) {
   const simRef = useRef<THREE.ShaderMaterial | null>(null);
   const renderRef = useRef<THREE.ShaderMaterial | null>(null);
@@ -255,7 +255,7 @@ const Particles = forwardRef<THREE.Points, ParticlesProps>(function Particles(
   // Set up FBO scene
   const [scene] = useState(() => new THREE.Scene());
   const [camera] = useState(
-    () => new THREE.OrthographicCamera(-1, 1, 1, -1, 1 / 2 ** 53, 1)
+    () => new THREE.OrthographicCamera(-1, 1, 1, -1, 1 / 2 ** 53, 1),
   );
 
   // Geometry data
@@ -263,10 +263,10 @@ const Particles = forwardRef<THREE.Points, ParticlesProps>(function Particles(
     () =>
       new Float32Array([
         -1, -1, 0, 1, -1, 0, 1, 1, 0, -1, -1, 0, 1, 1, 0, -1, 1, 0,
-      ])
+      ]),
   );
   const [uvs] = useState(
-    () => new Float32Array([0, 1, 1, 1, 1, 0, 0, 1, 1, 0, 0, 0])
+    () => new Float32Array([0, 1, 1, 1, 1, 0, 0, 1, 1, 0, 0, 0]),
   );
 
   // FBO setup
@@ -284,7 +284,7 @@ const Particles = forwardRef<THREE.Points, ParticlesProps>(function Particles(
       size,
       size,
       THREE.RGBAFormat,
-      THREE.FloatType
+      THREE.FloatType,
     );
     positionsTexture.needsUpdate = true;
 
@@ -303,7 +303,7 @@ const Particles = forwardRef<THREE.Points, ParticlesProps>(function Particles(
       uFov: { value: fov },
       uBlur: { value: (5.6 - aperture) * 9 },
     }),
-    [focus, fov, aperture]
+    [focus, fov, aperture],
   );
 
   // Particle positions for rendering
@@ -331,7 +331,7 @@ const Particles = forwardRef<THREE.Points, ParticlesProps>(function Particles(
       simRef.current.uniforms.uCurlFreq.value = THREE.MathUtils.lerp(
         simRef.current.uniforms.uCurlFreq.value,
         curl,
-        0.1
+        0.1,
       );
     }
 
@@ -342,17 +342,17 @@ const Particles = forwardRef<THREE.Points, ParticlesProps>(function Particles(
       renderRef.current.uniforms.uFocus.value = THREE.MathUtils.lerp(
         renderRef.current.uniforms.uFocus.value,
         focus,
-        0.1
+        0.1,
       );
       renderRef.current.uniforms.uFov.value = THREE.MathUtils.lerp(
         renderRef.current.uniforms.uFov.value,
         fov,
-        0.1
+        0.1,
       );
       renderRef.current.uniforms.uBlur.value = THREE.MathUtils.lerp(
         renderRef.current.uniforms.uBlur.value,
         (5.6 - aperture) * 9,
-        0.1
+        0.1,
       );
     }
   });
@@ -376,7 +376,7 @@ const Particles = forwardRef<THREE.Points, ParticlesProps>(function Particles(
             <bufferAttribute attach="attributes-uv" args={[uvs, 2]} />
           </bufferGeometry>
         </mesh>,
-        scene
+        scene,
       )}
 
       {/* Render points */}
@@ -415,7 +415,7 @@ export function SphereAnimation({
       shadows="basic"
       eventPrefix="client"
       camera={{ position: cameraPosition, fov: cameraFov }}
-      className="min-w-full min-h-full"
+      className="min-h-full min-w-full"
     >
       <OrbitControls
         enablePan={false}

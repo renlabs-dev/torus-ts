@@ -4,11 +4,11 @@ import { BarChart3, User } from "lucide-react";
 import Link from "next/link";
 import React from "react";
 
-import type { DateRangeFilterData } from "@/components/date-range-filter";
-import { DateRangeFilter } from "@/components/date-range-filter";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { cn } from "@/lib/utils";
+import type { DateRangeFilterData } from "~/app/_components/date-range-filter";
+import { DateRangeFilter } from "~/app/_components/date-range-filter";
+import { Button } from "@torus-ts/ui/components/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@torus-ts/ui/components/card";
+import { cn } from "~/lib/utils";
 import { DashboardActivity } from "./components/dashboard-activity";
 import { DashboardAgents } from "./components/dashboard-agents";
 import { DashboardPermissions } from "./components/dashboard-permissions";

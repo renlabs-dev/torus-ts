@@ -1,14 +1,13 @@
 "use client";
 
-import dayjs from "dayjs";
-import relativeTime from "dayjs/plugin/relativeTime";
-
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from "@/components/ui/tooltip";
+} from "@torus-ts/ui/components/tooltip";
+import dayjs from "dayjs";
+import relativeTime from "dayjs/plugin/relativeTime";
 
 dayjs.extend(relativeTime);
 

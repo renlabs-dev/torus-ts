@@ -1,10 +1,5 @@
 "use client";
 
-import Link from "next/link";
-
-import { cn } from "@/lib/utils";
-
-import DecryptedText from "./decrypted-text";
 import {
   NavigationMenu,
   NavigationMenuContent,
@@ -12,7 +7,10 @@ import {
   NavigationMenuLink,
   NavigationMenuList,
   NavigationMenuTrigger,
-} from "./ui/navigation-menu";
+} from "@torus-ts/ui/components/navigation-menu";
+import { cn } from "@torus-ts/ui/lib/utils";
+import Link from "next/link";
+import DecryptedText from "./decrypted-text";
 
 export function Header({ className }: { className?: string }) {
   const navigationItemsLeft = [
@@ -34,11 +32,11 @@ export function Header({ className }: { className?: string }) {
     <header
       className={cn(
         className,
-        "w-full flex items-center justify-center fixed top-0 z-50 h-20"
+        "fixed top-0 z-50 flex h-20 w-full items-center justify-center",
       )}
     >
       {/* Desktop Navigation */}
-      <div className="hidden md:flex items-center gap-10 font-extralight pr-7">
+      <div className="hidden items-center gap-10 pr-7 font-extralight md:flex">
         <div className="flex items-center gap-10">
           {navigationItemsLeft.map((item) => (
             <Link
@@ -55,7 +53,7 @@ export function Header({ className }: { className?: string }) {
             </Link>
           ))}
         </div>
-        <h3 className="tracking-[0.25em] text-xl cursor-pointer">
+        <h3 className="cursor-pointer text-xl tracking-[0.25em]">
           <Link href="/">
             <DecryptedText
               speed={70}
@@ -88,7 +86,7 @@ export function Header({ className }: { className?: string }) {
         <NavigationMenuList>
           <NavigationMenuItem>
             <NavigationMenuTrigger className="bg-transparent">
-              <h3 className="tracking-[0.25em] text-xl ml-5">
+              <h3 className="ml-5 text-xl tracking-[0.25em]">
                 <DecryptedText
                   speed={70}
                   text="PREDICTION SWARM"
@@ -103,7 +101,7 @@ export function Header({ className }: { className?: string }) {
                   <li key={item.label}>
                     <NavigationMenuLink asChild>
                       <Link href={item.href}>
-                        <div className="text-sm font-extralight leading-none text-muted-foreground">
+                        <div className="text-muted-foreground text-sm font-extralight leading-none">
                           <DecryptedText
                             text={item.label}
                             animateOn="hover"

@@ -1,7 +1,6 @@
 "use client";
 
-import { Check, ChevronsUpDown, User } from "lucide-react";
-import { useMemo, useState } from "react";
+import { Button } from "@torus-ts/ui/components/button";
 import {
   Command,
   CommandEmpty,
@@ -9,20 +8,21 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
-} from "@/components/ui/command";
-import { LoadingDots } from "@/components/ui/loading-dots";
+} from "@torus-ts/ui/components/command";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@/components/ui/popover";
-import { useAgentContributionStatsQuery } from "@/hooks/api/use-agent-contribution-stats-query";
-import { useAgentDetailedMetrics } from "@/hooks/api/use-agent-detailed-metrics-query";
-import { useAgentName } from "@/hooks/api/use-agent-name-query";
-import type { TimeWindowParams } from "@/lib/api-schemas";
-import { formatAddress } from "@/lib/api-utils";
-import { cn } from "@/lib/utils";
-import { Button } from "./ui/button";
+} from "@torus-ts/ui/components/popover";
+import { cn } from "@torus-ts/ui/lib/utils";
+import { useAgentContributionStatsQuery } from "~/hooks/api/use-agent-contribution-stats-query";
+import { useAgentDetailedMetrics } from "~/hooks/api/use-agent-detailed-metrics-query";
+import { useAgentName } from "~/hooks/api/use-agent-name-query";
+import type { TimeWindowParams } from "~/lib/api-schemas";
+import { formatAddress } from "~/lib/api-utils";
+import { Check, ChevronsUpDown, User } from "lucide-react";
+import { useMemo, useState } from "react";
+import { LoadingDots } from "./loading-dots";
 
 interface AgentItemProps {
   address: string;
@@ -59,7 +59,7 @@ function AgentItem({
       key={address}
       value={address}
       onSelect={onSelect}
-      className="flex items-center justify-between cursor-pointer"
+      className="flex cursor-pointer items-center justify-between"
       data-predictions={totalPredictions}
       data-claims={totalVerificationClaims}
       data-verdicts={totalVerificationVerdicts}
@@ -76,7 +76,7 @@ function AgentItem({
         </div>
       </div>
 
-      <div className="flex items-center gap-3 text-muted-foreground">
+      <div className="text-muted-foreground flex items-center gap-3">
         <span title="Predictions">{totalPredictions}P</span>
         <span title="Claims">{totalVerificationClaims}C</span>
         <span title="Verdicts">{totalVerificationVerdicts}V</span>
@@ -115,6 +115,7 @@ export function AgentSelector({
     useAgentContributionStatsQuery();
 
   // Process agents list (without names for now)
+  // eslint-disable-next-line react-hooks/preserve-manual-memoization
   const agents = useMemo(() => {
     if (!statsData?.agent_contribution_stats) return [];
 
@@ -140,7 +141,7 @@ export function AgentSelector({
           className={cn(
             "w-full justify-between",
             !value && "text-muted-foreground",
-            className
+            className,
           )}
           disabled={isLoading}
         >
@@ -158,7 +159,7 @@ export function AgentSelector({
         </Button>
       </PopoverTrigger>
 
-      <PopoverContent className="w-full p-0 bg-transparent">
+      <PopoverContent className="w-full bg-transparent p-0">
         <Command>
           <CommandInput
             placeholder="Search agents..."
@@ -188,7 +189,7 @@ export function AgentSelector({
                     timeWindow={timeWindow}
                     onSelect={() => {
                       onValueChange(
-                        agent.address === value ? "" : agent.address
+                        agent.address === value ? "" : agent.address,
                       );
                       setOpen(false);
                     }}

@@ -3,16 +3,16 @@
 import { ExternalLink } from "lucide-react";
 import Link from "next/link";
 import React from "react";
-import { PermissionBadges } from "@/components/permission-badges";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { LoadingDots } from "@/components/ui/loading-dots";
-import { RankBadge } from "@/components/ui/rank-badge";
-import { useAgentDetailedMetricsComparison } from "@/hooks/api/use-agent-detailed-metrics-comparison-query";
-import { useAgentName } from "@/hooks/api/use-agent-name-query";
-import { dateToISOStringSafe, formatLargeNumber } from "@/lib/api-utils";
-import { clientEnv } from "@/lib/env";
-import { smallAddress } from "@/lib/utils";
+import { PermissionBadges } from "~/app/_components/permission-badges";
+import { Button } from "@torus-ts/ui/components/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@torus-ts/ui/components/card";
+import { LoadingDots } from "@torus-ts/ui/components/loading-dots";
+import { RankBadge } from "@torus-ts/ui/components/rank-badge";
+import { useAgentDetailedMetricsComparison } from "~/hooks/api/use-agent-detailed-metrics-comparison-query";
+import { useAgentName } from "~/hooks/api/use-agent-name-query";
+import { dateToISOStringSafe, formatLargeNumber } from "~/lib/api-utils";
+import { clientEnv } from "~/lib/env";
+import { smallAddress } from "~/lib/utils";
 import { ComparisonCharts } from "./comparison-charts";
 
 interface ComparisonGridProps {

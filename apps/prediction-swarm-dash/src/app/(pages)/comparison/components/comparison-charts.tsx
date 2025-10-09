@@ -3,16 +3,16 @@
 import { PieChart as PieChartIcon } from "lucide-react";
 import React from "react";
 import { Pie, PieChart } from "recharts";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@torus-ts/ui/components/card";
 import {
   type ChartConfig,
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
-} from "@/components/ui/chart";
-import { useAgentDetailedMetricsComparison } from "@/hooks/api/use-agent-detailed-metrics-comparison-query";
-import { useAgentName } from "@/hooks/api/use-agent-name-query";
-import { dateToISOStringSafe, formatLargeNumber } from "@/lib/api-utils";
+} from "@torus-ts/ui/components/chart";
+import { useAgentDetailedMetricsComparison } from "~/hooks/api/use-agent-detailed-metrics-comparison-query";
+import { useAgentName } from "~/hooks/api/use-agent-name-query";
+import { dateToISOStringSafe, formatLargeNumber } from "~/lib/api-utils";
 
 interface ComparisonChartsProps {
   selectedAgents: string[];

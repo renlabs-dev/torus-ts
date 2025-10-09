@@ -1,11 +1,11 @@
 "use client";
 
-import { LoadingDots } from "@/components/ui/loading-dots";
-import { RelativeTime } from "@/components/ui/relative-time";
-import { useLiveActivityFeed } from "@/hooks/api";
-import { useAgentName } from "@/hooks/api/use-agent-name-query";
-import type { TimeWindowParams } from "@/lib/api-schemas";
-import { useAuthStore } from "@/lib/auth-store";
+import { LoadingDots } from "@torus-ts/ui/components/loading-dots";
+import { RelativeTime } from "@torus-ts/ui/components/relative-time";
+import { useLiveActivityFeed } from "~/hooks/api";
+import { useAgentName } from "~/hooks/api/use-agent-name-query";
+import type { TimeWindowParams } from "~/lib/api-schemas";
+import { useAuthStore } from "~/lib/auth-store";
 
 interface Activity {
   id: string | number;

@@ -1,30 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-
-import dayjs from "dayjs";
-import utc from "dayjs/plugin/utc";
-import { Filter, Search } from "lucide-react";
-import { useCallback, useMemo, useState } from "react";
-import { useForm, useWatch } from "react-hook-form";
-import { z } from "zod";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import type { TimeWindowParams } from "@/lib/api-schemas";
-import {
-  createLastDaysTimeWindow,
-  createLastHoursTimeWindow,
-  createTodayTimeWindow,
-} from "@/lib/api-utils";
-
-import { Button } from "./ui/button";
-import { DateTimePicker } from "./ui/date-time-picker";
+import { Button } from "@torus-ts/ui/components/button";
 import {
   Dialog,
   DialogContent,
@@ -32,7 +9,28 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "./ui/dialog";
+} from "@torus-ts/ui/components/dialog";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormMessage,
+} from "@torus-ts/ui/components/form";
+import { Input } from "@torus-ts/ui/components/input";
+import type { TimeWindowParams } from "~/lib/api-schemas";
+import {
+  createLastDaysTimeWindow,
+  createLastHoursTimeWindow,
+  createTodayTimeWindow,
+} from "~/lib/api-utils";
+import dayjs from "dayjs";
+import utc from "dayjs/plugin/utc";
+import { Filter, Search } from "lucide-react";
+import { useCallback, useMemo, useState } from "react";
+import { useForm, useWatch } from "react-hook-form";
+import { z } from "zod";
+import { DateTimePicker } from "./date-time-picker";
 
 dayjs.extend(utc);
 
@@ -126,7 +124,7 @@ export function DateRangeFilter({
       }
 
       const isDayPreset = ["today", "7d", "30d", "90d"].includes(
-        activeButton || ""
+        activeButton || "",
       );
 
       if (isDayPreset) {
@@ -145,50 +143,50 @@ export function DateRangeFilter({
       onSubmit(data);
       setOpen(false);
     },
-    [activeButton, onSubmit]
+    [activeButton, onSubmit],
   );
 
   const setFastDate = useCallback(
     (timeWindow: TimeWindowParams) => {
       form.setValue(
         "from",
-        timeWindow.from ? new Date(timeWindow.from) : undefined
+        timeWindow.from ? new Date(timeWindow.from) : undefined,
       );
       form.setValue("to", timeWindow.to ? new Date(timeWindow.to) : undefined);
     },
-    [form]
+    [form],
   );
 
   // Individual handlers for hour buttons
   const handle3Hours = useCallback(
     () => setFastDate(createLastHoursTimeWindow(3)),
-    [setFastDate]
+    [setFastDate],
   );
   const handle6Hours = useCallback(
     () => setFastDate(createLastHoursTimeWindow(6)),
-    [setFastDate]
+    [setFastDate],
   );
   const handle12Hours = useCallback(
     () => setFastDate(createLastHoursTimeWindow(12)),
-    [setFastDate]
+    [setFastDate],
   );
 
   // Individual handlers for period buttons
   const handle7Days = useCallback(
     () => setFastDate(createLastDaysTimeWindow(7)),
-    [setFastDate]
+    [setFastDate],
   );
   const handle30Days = useCallback(
     () => setFastDate(createLastDaysTimeWindow(30)),
-    [setFastDate]
+    [setFastDate],
   );
   const handle90Days = useCallback(
     () => setFastDate(createLastDaysTimeWindow(90)),
-    [setFastDate]
+    [setFastDate],
   );
   const handleToday = useCallback(
     () => setFastDate(createTodayTimeWindow()),
-    [setFastDate]
+    [setFastDate],
   );
   const handleAllTime = useCallback(() => {
     form.setValue("from", undefined);
@@ -202,7 +200,7 @@ export function DateRangeFilter({
       "6h": handle6Hours,
       "12h": handle12Hours,
     }),
-    [handle3Hours, handle6Hours, handle12Hours]
+    [handle3Hours, handle6Hours, handle12Hours],
   );
 
   const periodHandlerMap = useMemo(
@@ -213,7 +211,7 @@ export function DateRangeFilter({
       today: handleToday,
       all: handleAllTime,
     }),
-    [handle7Days, handle30Days, handle90Days, handleToday, handleAllTime]
+    [handle7Days, handle30Days, handle90Days, handleToday, handleAllTime],
   );
 
   const getPeriodText = useCallback((period: string) => {
@@ -253,7 +251,7 @@ export function DateRangeFilter({
 
   return (
     <div className="flex items-center gap-3">
-      <span className="text-sm text-muted-foreground">
+      <span className="text-muted-foreground text-sm">
         Showing:{" "}
         <span className="text-foreground font-medium">
           {getFilterDescription}
@@ -264,9 +262,9 @@ export function DateRangeFilter({
           <Button
             size="lg"
             variant="outline"
-            className="border border-border cursor-pointer"
+            className="border-border cursor-pointer border"
           >
-            <Filter className="h-4 w-4 mr-2" />
+            <Filter className="mr-2 h-4 w-4" />
             Filter
           </Button>
         </DialogTrigger>
@@ -279,12 +277,12 @@ export function DateRangeFilter({
           </DialogHeader>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(handleSubmit)}>
-              <div className="flex flex-col md:flex-row gap-4 flex-wrap">
+              <div className="flex flex-col flex-wrap gap-4 md:flex-row">
                 <FormField
                   control={form.control}
                   name="from"
                   render={({ field }) => (
-                    <FormItem className="w-full md:flex-shrink-0 md:w-auto">
+                    <FormItem className="w-full md:w-auto md:flex-shrink-0">
                       <FormControl>
                         <DateTimePicker
                           id="from-datetime"
@@ -304,7 +302,7 @@ export function DateRangeFilter({
                   control={form.control}
                   name="to"
                   render={({ field }) => (
-                    <FormItem className="w-full md:flex-shrink-0 md:w-auto">
+                    <FormItem className="w-full md:w-auto md:flex-shrink-0">
                       <FormControl>
                         <DateTimePicker
                           id="to-datetime"
@@ -320,7 +318,7 @@ export function DateRangeFilter({
                   )}
                 />
 
-                <div className="w-full md:w-auto flex items-end gap-1 flex-wrap">
+                <div className="flex w-full flex-wrap items-end gap-1 md:w-auto">
                   {["3h", "6h", "12h"].map((hours) => (
                     <Button
                       key={hours}
@@ -354,7 +352,7 @@ export function DateRangeFilter({
                   ))}
                 </div>
 
-                <div className="w-full md:w-auto md:ml-auto md:items-end md:flex">
+                <div className="w-full md:ml-auto md:flex md:w-auto md:items-end">
                   <Button
                     type="submit"
                     disabled={isLoading}
@@ -363,7 +361,7 @@ export function DateRangeFilter({
                     {isLoading ? (
                       <div className="h-4 w-4 animate-spin rounded-full border border-current border-t-transparent" />
                     ) : (
-                      <Search className="h-4 w-4 mr-2" />
+                      <Search className="mr-2 h-4 w-4" />
                     )}
                     Apply
                   </Button>

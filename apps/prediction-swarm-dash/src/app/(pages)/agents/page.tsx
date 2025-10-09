@@ -8,23 +8,23 @@ import React, { Suspense, useCallback, useMemo } from "react";
 import {
   type ActivityType,
   ActivityTypeSelector,
-} from "@/components/activity-type-selector";
-import { AgentHistoryViewer } from "@/components/agent-history-viewer";
-import { Container } from "@/components/container";
-import { CopyButton } from "@/components/copy-button";
+} from "~/app/_components/activity-type-selector";
+import { AgentHistoryViewer } from "~/app/_components/agent-history-viewer";
+import { Container } from "~/app/_components/container";
+import { CopyButton } from "~/app/_components/copy-button";
 import {
   DateRangeFilter,
   type DateRangeFilterData,
-} from "@/components/date-range-filter";
-import { PermissionBadges } from "@/components/permission-badges";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { LoadingDots } from "@/components/ui/loading-dots";
-import { useAgentDetailedMetrics } from "@/hooks/api/use-agent-detailed-metrics-query";
-import { useAgentName } from "@/hooks/api/use-agent-name-query";
-import { dateToISOStringSafe } from "@/lib/api-utils";
-import { useAuthStore } from "@/lib/auth-store";
-import { cn } from "@/lib/utils";
+} from "~/app/_components/date-range-filter";
+import { PermissionBadges } from "~/app/_components/permission-badges";
+import { Button } from "@torus-ts/ui/components/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@torus-ts/ui/components/card";
+import { LoadingDots } from "@torus-ts/ui/components/loading-dots";
+import { useAgentDetailedMetrics } from "~/hooks/api/use-agent-detailed-metrics-query";
+import { useAgentName } from "~/hooks/api/use-agent-name-query";
+import { dateToISOStringSafe } from "~/lib/api-utils";
+import { useAuthStore } from "~/lib/auth-store";
+import { cn } from "~/lib/utils";
 import { AgentNoSelection } from "./components/agent-no-selection";
 
 function AgentsPageContent() {

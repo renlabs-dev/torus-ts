@@ -1,6 +1,7 @@
 "use client";
 
-import { type HTMLMotionProps, motion } from "motion/react";
+import { motion } from "motion/react";
+import type { HTMLMotionProps } from "motion/react";
 import { useEffect, useRef, useState } from "react";
 
 interface DecryptedTextProps extends HTMLMotionProps<"span"> {

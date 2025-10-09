@@ -1,6 +1,5 @@
+import { Badge } from "@torus-ts/ui/components/badge";
 import { Award, Medal, Trophy } from "lucide-react";
-
-import { Badge } from "@/components/ui/badge";
 
 interface RankBadgeProps {
   rank: number;
@@ -37,7 +36,7 @@ export function RankBadge({ rank, className = "" }: RankBadgeProps) {
   const IconComponent = rankData.icon;
 
   return (
-    <Badge className={`${rankData.color} ${rankData.bg} text-sm  ${className}`}>
+    <Badge className={`${rankData.color} ${rankData.bg} text-sm ${className}`}>
       <IconComponent className="h-3 w-3" />
       {rankData.label}
     </Badge>

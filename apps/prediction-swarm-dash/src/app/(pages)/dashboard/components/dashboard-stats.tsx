@@ -1,9 +1,9 @@
 "use client";
 
-import { BorderContainer } from "@/components/border-container";
-import { StatCard } from "@/components/stat-card";
-import { useSwarmTotalMetrics } from "@/hooks/api";
-import type { TimeWindowParams } from "@/lib/api-schemas";
+import { BorderContainer } from "~/app/_components/border-container";
+import { StatCard } from "~/app/_components/stat-card";
+import { useSwarmTotalMetrics } from "~/hooks/api";
+import type { TimeWindowParams } from "~/lib/api-schemas";
 
 interface DashboardStatsProps {
   timeWindow?: TimeWindowParams;

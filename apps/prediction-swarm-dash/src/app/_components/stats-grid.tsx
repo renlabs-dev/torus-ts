@@ -1,10 +1,10 @@
 "use client";
 
+import { Button } from "@torus-ts/ui/components/button";
+import { cn } from "@torus-ts/ui/lib/utils";
+import { Container } from "~/app/_components/container";
+import { useStreamAgentsQuery, useSwarmTotalMetrics } from "~/hooks/api";
 import Link from "next/link";
-import { Container } from "@/components/container";
-import { Button } from "@/components/ui/button";
-import { useStreamAgentsQuery, useSwarmTotalMetrics } from "@/hooks/api";
-import { cn } from "@/lib/utils";
 
 const DEFAULT_STREAM_ID =
   "0x1e3a46555c704698c6484ea3388134d590525cd8a6cc95f479420ce56fc5a346";
@@ -46,34 +46,32 @@ export function StatsGrid() {
   return (
     <Container>
       <div className="my-36 w-full">
-        <h2 className="text-2xl font-extralight text-foreground mb-4">
+        <h2 className="text-foreground mb-4 text-2xl font-extralight">
           Prediction Swarm
           <span className="text-muted-foreground text-base"> /Statistics</span>
         </h2>
-        <div className="grid grid-cols-3 grid-rows-2 border border-border rounded-md w-full">
+        <div className="border-border grid w-full grid-cols-3 grid-rows-2 rounded-md border">
           {stats.map((stat, i) => (
             <div
               key={stat.label}
               className={cn(
-                "border-border p-8 flex items-end justify-start min-h-[160px] w-full",
+                "border-border flex min-h-[160px] w-full items-end justify-start p-8",
                 i % 3 !== 2 && "border-r",
-                i < 3 && "border-b"
+                i < 3 && "border-b",
               )}
             >
               <div className="flex flex-col">
                 <div className="text-xl font-semibold">
-                  {stat.isLoading
-                    ? "..."
-                    : (stat.value?.toLocaleString() ?? "—")}
+                  {stat.isLoading ? "..." : stat.value.toLocaleString()}
                 </div>
-                <div className="text-sm text-muted-foreground">
+                <div className="text-muted-foreground text-sm">
                   {stat.label}
                 </div>
               </div>
             </div>
           ))}
         </div>
-        <div className="flex justify-center -mt-5">
+        <div className="-mt-5 flex justify-center">
           <Link href="/dashboard">
             <Button variant="outline" size="lg" className="bg-background">
               Go to Dashboard

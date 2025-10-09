@@ -1,4 +1,4 @@
-import { cn } from "@/lib/utils";
+import { cn } from "@torus-ts/ui/lib/utils";
 
 interface LoadingDotsProps {
   className?: string;
@@ -17,21 +17,21 @@ export function LoadingDots({ className, size = "md" }: LoadingDotsProps) {
   return (
     <div className={cn("flex items-center justify-center gap-1", className)}>
       <div
-        className={cn("bg-current rounded-full animate-pulse", dotSize)}
+        className={cn("animate-pulse rounded-full bg-current", dotSize)}
         style={{
           animationDelay: "0ms",
           animationDuration: "1400ms",
         }}
       />
       <div
-        className={cn("bg-current rounded-full animate-pulse", dotSize)}
+        className={cn("animate-pulse rounded-full bg-current", dotSize)}
         style={{
           animationDelay: "200ms",
           animationDuration: "1400ms",
         }}
       />
       <div
-        className={cn("bg-current rounded-full animate-pulse", dotSize)}
+        className={cn("animate-pulse rounded-full bg-current", dotSize)}
         style={{
           animationDelay: "400ms",
           animationDuration: "1400ms",

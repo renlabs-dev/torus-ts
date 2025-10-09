@@ -6,8 +6,11 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+} from "@torus-ts/ui/components/select";
+import {
+  ToggleGroup,
+  ToggleGroupItem,
+} from "@torus-ts/ui/components/toggle-group";
 import type { ActivityType } from "./activity-type-selector";
 
 // Topic filter types

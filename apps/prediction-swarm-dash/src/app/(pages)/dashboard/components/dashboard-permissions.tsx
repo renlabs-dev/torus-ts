@@ -1,8 +1,8 @@
 "use client";
 
-import { Badge } from "@/components/ui/badge";
-import { LoadingDots } from "@/components/ui/loading-dots";
-import { usePermissionsQuery } from "@/hooks/api";
+import { Badge } from "@torus-ts/ui/components/badge";
+import { LoadingDots } from "@torus-ts/ui/components/loading-dots";
+import { usePermissionsQuery } from "~/hooks/api";
 
 export function DashboardPermissions() {
   const { data: permissionsData, isLoading, error } = usePermissionsQuery({});

@@ -1,7 +1,8 @@
 import { cryptoWaitReady } from "@polkadot/util-crypto";
-import { type NextRequest, NextResponse } from "next/server";
-import { env } from "@/lib/env";
-import { WalletProof } from "@/lib/wallet-proof";
+import { env } from "~/env";
+import { WalletProof } from "~/lib/wallet-proof";
+import { NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
 
 export async function POST(request: NextRequest) {
   try {

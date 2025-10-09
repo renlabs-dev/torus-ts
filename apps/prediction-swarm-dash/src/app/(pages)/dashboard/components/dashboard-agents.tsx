@@ -3,17 +3,17 @@
 import Link from "next/link";
 import { useMemo, useState } from "react";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { LoadingDots } from "@/components/ui/loading-dots";
-import { RankBadge } from "@/components/ui/rank-badge";
-import { useAgentContributionStatsQuery } from "@/hooks/api";
-import { useAgentName } from "@/hooks/api/use-agent-name-query";
+import { Card, CardContent, CardHeader, CardTitle } from "@torus-ts/ui/components/card";
+import { LoadingDots } from "@torus-ts/ui/components/loading-dots";
+import { RankBadge } from "@torus-ts/ui/components/rank-badge";
+import { useAgentContributionStatsQuery } from "~/hooks/api";
+import { useAgentName } from "~/hooks/api/use-agent-name-query";
 import type {
   AgentContributionStatsItem,
   TimeWindowParams,
-} from "@/lib/api-schemas";
-import { formatLargeNumber } from "@/lib/api-utils";
-import { smallAddress } from "@/lib/utils";
+} from "~/lib/api-schemas";
+import { formatLargeNumber } from "~/lib/api-utils";
+import { smallAddress } from "~/lib/utils";
 
 type MetricFilter = "all" | "predictions" | "verdicts" | "claims";
 

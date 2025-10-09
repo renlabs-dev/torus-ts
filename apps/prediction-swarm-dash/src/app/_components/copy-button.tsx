@@ -1,6 +1,6 @@
+import { formatAddress } from "~/lib/api-utils";
 import { Copy } from "lucide-react";
 import React from "react";
-import { formatAddress } from "@/lib/api-utils";
 
 export function CopyButton({ text }: { text: string }) {
   const [copied, setCopied] = React.useState(false);
@@ -16,13 +16,13 @@ export function CopyButton({ text }: { text: string }) {
   };
 
   return (
-    <span className="text-sm text-muted-foreground">
-      <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground mb-2">
+    <span className="text-muted-foreground text-sm">
+      <div className="text-muted-foreground mb-2 flex items-center justify-center gap-2 text-sm">
         <span>{formatAddress(text)}</span>
         <button
           type="button"
           onClick={handleCopy}
-          className={`flex items-center gap-1 transition-colors cursor-pointer ${
+          className={`flex cursor-pointer items-center gap-1 transition-colors ${
             copied ? "text-blue-200" : "hover:text-blue-200"
           }`}
           title="Copy full address"

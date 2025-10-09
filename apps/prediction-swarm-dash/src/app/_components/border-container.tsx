@@ -1,4 +1,4 @@
-import { cn } from "@/lib/utils";
+import { cn } from "@torus-ts/ui/lib/utils";
 
 export function BorderContainer({
   children,
@@ -11,10 +11,10 @@ export function BorderContainer({
     <div
       className={cn(
         className,
-        "grid items-center gap-3 w-full border-y border-border bg-background"
+        "border-border bg-background grid w-full items-center gap-3 border-y",
       )}
     >
-      <div className="flex w-full max-w-screen-xl mx-auto border-x border-border">
+      <div className="border-border mx-auto flex w-full max-w-screen-xl border-x">
         {children}
       </div>
     </div>

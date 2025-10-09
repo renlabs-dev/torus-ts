@@ -1,5 +1,5 @@
-import { LoadingDots } from "@/components/ui/loading-dots";
-import { formatLargeNumber } from "@/lib/api-utils";
+import { formatLargeNumber } from "~/lib/api-utils";
+import { LoadingDots } from "./loading-dots";
 
 interface StatCardProps {
   value?: number;
@@ -23,9 +23,9 @@ export function StatCard({
 
   return (
     <div
-      className={`${desktopBorderClass} ${mobileBorderClass} h-full flex flex-col items-center justify-center text-center p-4 md:p-2 text-muted-foreground`}
+      className={`${desktopBorderClass} ${mobileBorderClass} text-muted-foreground flex h-full flex-col items-center justify-center p-4 text-center md:p-2`}
     >
-      <span className="font-bold text-white text-lg">
+      <span className="text-lg font-bold text-white">
         {isLoading ? (
           <LoadingDots className="h-6" />
         ) : error ? (

@@ -1,7 +1,7 @@
 "use client";
 
 import { BarChart3, Plus } from "lucide-react";
-import { CardDescription } from "@/components/ui/card";
+import { CardDescription } from "@torus-ts/ui/components/card";
 
 export function ComparisonEmpty() {
   return (

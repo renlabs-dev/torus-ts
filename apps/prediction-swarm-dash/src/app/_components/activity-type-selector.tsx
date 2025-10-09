@@ -1,16 +1,16 @@
 "use client";
 
-import { CheckCircle, ClipboardList, FileText, Gavel } from "lucide-react";
+import { Badge } from "@torus-ts/ui/components/badge";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { cn } from "@/lib/utils";
-import { Badge } from "./ui/badge";
+} from "@torus-ts/ui/components/select";
+import { Tabs, TabsList, TabsTrigger } from "@torus-ts/ui/components/tabs";
+import { cn } from "@torus-ts/ui/lib/utils";
+import { CheckCircle, ClipboardList, FileText, Gavel } from "lucide-react";
 
 export type ActivityType = "predictions" | "claims" | "verdicts" | "tasks";
 
@@ -64,18 +64,18 @@ export function ActivityTypeSelector({
   return (
     <>
       {/* Mobile: Select Dropdown */}
-      <div className={cn("md:hidden w-full", className)}>
+      <div className={cn("w-full md:hidden", className)}>
         <Select
           value={value}
           onValueChange={(val) => onValueChange(val as ActivityType)}
         >
-          <SelectTrigger className="w-full mb-2">
+          <SelectTrigger className="mb-2 w-full">
             <SelectValue>
               <div className="flex items-center gap-2">
                 {currentType && <currentType.icon className="h-4 w-4" />}
                 <span className="font-medium">{currentType?.label}</span>
                 {showCounts && (
-                  <Badge className="text-xs ml-auto">
+                  <Badge className="ml-auto text-xs">
                     {showCounts[value] || 0}
                   </Badge>
                 )}
@@ -85,11 +85,11 @@ export function ActivityTypeSelector({
           <SelectContent>
             {activityTypes.map((type) => (
               <SelectItem key={type.value} value={type.value}>
-                <div className="flex items-center gap-2 w-full">
+                <div className="flex w-full items-center gap-2">
                   <type.icon className="h-4 w-4" />
                   <span className="font-medium">{type.label}</span>
                   {showCounts && (
-                    <Badge className="text-xs ml-auto">
+                    <Badge className="ml-auto text-xs">
                       {showCounts[type.value] || 0}
                     </Badge>
                   )}
@@ -104,18 +104,18 @@ export function ActivityTypeSelector({
       <Tabs
         value={value}
         onValueChange={(val) => onValueChange(val as ActivityType)}
-        className={cn("hidden md:block w-full", className)}
+        className={cn("hidden w-full md:block", className)}
       >
-        <TabsList className="grid grid-cols-4 w-full bg-transparent">
+        <TabsList className="grid w-full grid-cols-4 bg-transparent">
           {activityTypes.map((type) => (
             <TabsTrigger key={type.value} value={type.value}>
-              <div className="flex items-center gap-2 mb-1">
+              <div className="mb-1 flex items-center gap-2">
                 <type.icon className="h-4 w-4" />
                 <span className="font-medium">{type.label}</span>
               </div>
 
               {showCounts && (
-                <Badge className="text-xs mb-1">
+                <Badge className="mb-1 text-xs">
                   {showCounts[type.value] || 0}
                 </Badge>
               )}

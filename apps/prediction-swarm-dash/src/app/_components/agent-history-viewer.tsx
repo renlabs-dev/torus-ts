@@ -1,36 +1,35 @@
 "use client";
 
-import { CircleSlash2, ExternalLink, Gavel } from "lucide-react";
-import Link from "next/link";
-import { useCallback, useMemo, useState } from "react";
-import { Badge } from "@/components/ui/badge";
-import { LoadingDots } from "@/components/ui/loading-dots";
-import { Pagination } from "@/components/ui/pagination";
+import { Badge } from "@torus-ts/ui/components/badge";
+import { Card, CardContent } from "@torus-ts/ui/components/card";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@/components/ui/popover";
-import { RelativeTime } from "@/components/ui/relative-time";
-import { SearchInput } from "@/components/ui/search-input";
-import { useAgentActivityByType } from "@/hooks/api/use-agent-detailed-metrics-query";
-import { useAgentName } from "@/hooks/api/use-agent-name-query";
-import { usePredictionByIdQuery } from "@/hooks/api/use-prediction-by-id-query";
-import { useVerificationClaimByIdQuery } from "@/hooks/api/use-verification-claim-by-id-query";
+} from "@torus-ts/ui/components/popover";
+import { useAgentActivityByType } from "~/hooks/api/use-agent-detailed-metrics-query";
+import { useAgentName } from "~/hooks/api/use-agent-name-query";
+import { usePredictionByIdQuery } from "~/hooks/api/use-prediction-by-id-query";
+import { useVerificationClaimByIdQuery } from "~/hooks/api/use-verification-claim-by-id-query";
 import type {
   Prediction,
   TimeWindowParams,
   VerificationClaim,
   VerificationVerdict,
-} from "@/lib/api-schemas";
-import { extractClaimIdFromReasoning } from "@/lib/api-utils";
-import { ActivityFilters, type FilterState } from "./activity-filters";
-import {
-  type ActivityType,
-  getActivityTypeInfo,
-} from "./activity-type-selector";
-import { Button } from "./ui/button";
-import { Card, CardContent } from "./ui/card";
+} from "~/lib/api-schemas";
+import { extractClaimIdFromReasoning } from "~/lib/api-utils";
+import { CircleSlash2, ExternalLink, Gavel } from "lucide-react";
+import Link from "next/link";
+import { useCallback, useMemo, useState } from "react";
+import { Button } from "react-day-picker";
+import { ActivityFilters } from "./activity-filters";
+import type { FilterState } from "./activity-filters";
+import { getActivityTypeInfo } from "./activity-type-selector";
+import type { ActivityType } from "./activity-type-selector";
+import { LoadingDots } from "./loading-dots";
+import { Pagination } from "./pagination";
+import { RelativeTime } from "./relative-time";
+import { SearchInput } from "./search-input";
 
 function HighlightedText({
   fullText,
@@ -47,7 +46,7 @@ function HighlightedText({
   return (
     <span>
       {fullText.substring(0, index)}
-      <span className="bg-amber-500/10 text-amber-300 px-1.5 py-1 rounded">
+      <span className="rounded bg-amber-500/10 px-1.5 py-1 text-amber-300">
         {fullText.substring(index, index + highlight.length)}
       </span>
       {fullText.substring(index + highlight.length)}
@@ -68,10 +67,10 @@ interface AgentHistoryViewerProps {
 
 function PredictionItem({ item }: { item: Prediction }) {
   return (
-    <div className="border-b border-border space-y-4 py-6">
-      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
-        <div className="flex flex-wrap items-center gap-2 text-muted-foreground text-xs sm:text-sm">
-          <Badge className="text-xs sm:text-sm mr-1" variant="outline">
+    <div className="border-border space-y-4 border-b py-6">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+        <div className="text-muted-foreground flex flex-wrap items-center gap-2 text-xs sm:text-sm">
+          <Badge className="mr-1 text-xs sm:text-sm" variant="outline">
             {item.topic || "General"}
           </Badge>
           {item.tweet?.author_twitter_username ? (
@@ -88,10 +87,17 @@ function PredictionItem({ item }: { item: Prediction }) {
           )}
           ·<span>#{item.id}</span>·
           <span>
-            Predicted <RelativeTime date={item.tweet?.tweet_timestamp || item.prediction_timestamp || item.inserted_at} />
+            Predicted{" "}
+            <RelativeTime
+              date={
+                item.tweet?.tweet_timestamp ||
+                item.prediction_timestamp ||
+                item.inserted_at
+              }
+            />
           </span>
         </div>
-        <div className="flex items-center gap-2 sm:gap-4 flex-wrap">
+        <div className="flex flex-wrap items-center gap-2 sm:gap-4">
           {/* Verdict Popover */}
           {item.verification_verdict?.reasoning ? (
             <Popover>
@@ -99,7 +105,7 @@ function PredictionItem({ item }: { item: Prediction }) {
                 <Button
                   variant="outline"
                   size="sm"
-                  className="flex items-center border-emerald-600 text-emerald-600 hover:text-emerald-600 gap-1 hover:bg-emerald-600/10 cursor-pointer"
+                  className="flex cursor-pointer items-center gap-1 border-emerald-600 text-emerald-600 hover:bg-emerald-600/10 hover:text-emerald-600"
                 >
                   <Gavel className="h-3 w-3 sm:h-4 sm:w-4" />
                   <span className="text-xs">View Verdict</span>
@@ -108,14 +114,14 @@ function PredictionItem({ item }: { item: Prediction }) {
               <PopoverContent className="w-80">
                 <div className="space-y-2">
                   <h4 className="font-medium">Verification Verdict</h4>
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-muted-foreground text-sm">
                     {item.verification_verdict.reasoning}
                   </p>
                 </div>
               </PopoverContent>
             </Popover>
           ) : (
-            <div className="flex items-center gap-2 text-muted-foreground cursor-not-allowed">
+            <div className="text-muted-foreground flex cursor-not-allowed items-center gap-2">
               <CircleSlash2 className="h-3 w-3 sm:h-4 sm:w-4" />
               <span className="text-xs">No Verdict Yet</span>
             </div>
@@ -127,7 +133,7 @@ function PredictionItem({ item }: { item: Prediction }) {
               href={item.tweet.url}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-1 text-muted-foreground hover:text-blue-300 text-xs"
+              className="text-muted-foreground flex items-center gap-1 text-xs hover:text-blue-300"
             >
               <ExternalLink className="h-3 w-3 sm:h-4 sm:w-4" />
               Post
@@ -137,16 +143,16 @@ function PredictionItem({ item }: { item: Prediction }) {
       </div>
 
       <div className="space-y-2">
-        <p className="leading-relaxed text-sm sm:text-base">
+        <p className="text-sm leading-relaxed sm:text-base">
           <HighlightedText
             fullText={item.tweet?.full_text || item.prediction}
             highlight={item.prediction}
           />
         </p>
         {item.context && (
-          <div className="p-3 bg-muted-foreground/5 rounded w-full overflow-x-auto">
-            <div className="text-sm mb-2 text-muted-foreground">Context:</div>
-            <div className="leading-relaxed text-xs sm:text-sm">
+          <div className="bg-muted-foreground/5 w-full overflow-x-auto rounded p-3">
+            <div className="text-muted-foreground mb-2 text-sm">Context:</div>
+            <div className="text-xs leading-relaxed sm:text-sm">
               {JSON.stringify(item.context, null, 2)}
             </div>
           </div>
@@ -204,14 +210,14 @@ function ClaimItem({ item }: { item: VerificationClaim }) {
   const outcomeConfig = getOutcomeConfig(item.outcome);
 
   return (
-    <div className="border-b border-border space-y-4 py-6">
-      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
-        <div className="flex flex-wrap items-center gap-2 text-muted-foreground text-xs sm:text-sm">
-          <Badge className="text-xs sm:text-sm mr-1" variant="outline">
+    <div className="border-border space-y-4 border-b py-6">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+        <div className="text-muted-foreground flex flex-wrap items-center gap-2 text-xs sm:text-sm">
+          <Badge className="mr-1 text-xs sm:text-sm" variant="outline">
             Claim #{item.id}
           </Badge>
           <Badge
-            className={`text-xs sm:text-sm mr-1 ${outcomeConfig.className}`}
+            className={`mr-1 text-xs sm:text-sm ${outcomeConfig.className}`}
             variant="outline"
           >
             {outcomeConfig.text}
@@ -220,14 +226,14 @@ function ClaimItem({ item }: { item: VerificationClaim }) {
             Submitted <RelativeTime date={item.inserted_at} />
           </span>
         </div>
-        <div className="flex items-center gap-2 sm:gap-4 flex-wrap">
+        <div className="flex flex-wrap items-center gap-2 sm:gap-4">
           {/* Related Prediction Link */}
           {prediction?.url && (
             <Link
               href={prediction.url}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-1 text-muted-foreground hover:text-blue-300 text-xs"
+              className="text-muted-foreground flex items-center gap-1 text-xs hover:text-blue-300"
             >
               <ExternalLink className="h-3 w-3 sm:h-4 sm:w-4" />
               Post
@@ -239,29 +245,29 @@ function ClaimItem({ item }: { item: VerificationClaim }) {
       <div className="space-y-2">
         {/* Related Prediction */}
         {(prediction || predictionLoading) && (
-          <div className="p-3 bg-muted-foreground/5 rounded">
-            <div className="text-sm mb-2 text-muted-foreground flex items-center gap-2">
+          <div className="bg-muted-foreground/5 rounded p-3">
+            <div className="text-muted-foreground mb-2 flex items-center gap-2 text-sm">
               Prediction #{item.prediction_id}:
               {predictionLoading && <LoadingDots size="sm" />}
             </div>
             {predictionLoading ? (
-              <div className="h-4 bg-muted/40 rounded animate-pulse" />
+              <div className="bg-muted/40 h-4 animate-pulse rounded" />
             ) : prediction ? (
-              <div className="leading-relaxed text-xs sm:text-sm">
+              <div className="text-xs leading-relaxed sm:text-sm">
                 <HighlightedText
                   fullText={prediction.full_post || prediction.prediction}
                   highlight={prediction.prediction}
                 />
               </div>
             ) : (
-              <div className="leading-relaxed text-xs sm:text-sm text-muted-foreground">
+              <div className="text-muted-foreground text-xs leading-relaxed sm:text-sm">
                 Prediction not found
               </div>
             )}
           </div>
         )}
 
-        <p className="leading-relaxed text-sm sm:text-base break-all">
+        <p className="break-all text-sm leading-relaxed sm:text-base">
           {item.proof}
         </p>
       </div>
@@ -278,20 +284,20 @@ function VerdictItem({ item }: { item: VerificationVerdict }) {
   const { data: claim, isLoading: claimLoading } =
     useVerificationClaimByIdQuery(claimId);
   const { agentName: claimAgentName } = useAgentName(
-    claim?.inserted_by_address || ""
+    claim?.inserted_by_address || "",
   );
 
   return (
-    <div className="border-b border-border space-y-4 py-6">
-      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
-        <div className="flex flex-wrap items-center gap-2 text-muted-foreground text-xs sm:text-sm">
-          <Badge className="text-xs sm:text-sm mr-1" variant="outline">
+    <div className="border-border space-y-4 border-b py-6">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+        <div className="text-muted-foreground flex flex-wrap items-center gap-2 text-xs sm:text-sm">
+          <Badge className="mr-1 text-xs sm:text-sm" variant="outline">
             Verdict #{item.id}
           </Badge>
           {!claimId && (
             <Badge
               variant="outline"
-              className="bg-blue-500/10 text-blue-500 border-blue"
+              className="border-blue bg-blue-500/10 text-blue-500"
             >
               Verdict does not agree with any provided claims
             </Badge>
@@ -300,14 +306,14 @@ function VerdictItem({ item }: { item: VerificationVerdict }) {
             Submitted <RelativeTime date={item.inserted_at} />
           </span>
         </div>
-        <div className="flex items-center gap-2 sm:gap-4 flex-wrap">
+        <div className="flex flex-wrap items-center gap-2 sm:gap-4">
           {/* Related Prediction Link */}
           {prediction?.url && (
             <Link
               href={prediction.url}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-1 text-muted-foreground hover:text-blue-300 text-xs"
+              className="text-muted-foreground flex items-center gap-1 text-xs hover:text-blue-300"
             >
               <ExternalLink className="h-3 w-3 sm:h-4 sm:w-4" />
               Post
@@ -319,22 +325,22 @@ function VerdictItem({ item }: { item: VerificationVerdict }) {
       <div className="space-y-2">
         {/* Related Prediction */}
         {(prediction || predictionLoading) && (
-          <div className="p-3 bg-muted-foreground/5 rounded">
-            <div className="text-sm mb-2 text-muted-foreground flex items-center gap-2">
+          <div className="bg-muted-foreground/5 rounded p-3">
+            <div className="text-muted-foreground mb-2 flex items-center gap-2 text-sm">
               Prediction #{item.prediction_id}:
               {predictionLoading && <LoadingDots size="sm" />}
             </div>
             {predictionLoading ? (
-              <div className="h-4 bg-muted/40 rounded animate-pulse" />
+              <div className="bg-muted/40 h-4 animate-pulse rounded" />
             ) : prediction ? (
-              <div className="leading-relaxed text-xs sm:text-sm">
+              <div className="text-xs leading-relaxed sm:text-sm">
                 <HighlightedText
                   fullText={prediction.full_post || prediction.prediction}
                   highlight={prediction.prediction}
                 />
               </div>
             ) : (
-              <div className="leading-relaxed text-xs sm:text-sm text-muted-foreground">
+              <div className="text-muted-foreground text-xs leading-relaxed sm:text-sm">
                 Prediction not found
               </div>
             )}
@@ -343,16 +349,16 @@ function VerdictItem({ item }: { item: VerificationVerdict }) {
 
         {/* Related Claim */}
         {claimId && (
-          <div className="p-3 bg-muted-foreground/5 rounded">
-            <div className="text-sm mb-2 text-muted-foreground flex items-center gap-2">
+          <div className="bg-muted-foreground/5 rounded p-3">
+            <div className="text-muted-foreground mb-2 flex items-center gap-2 text-sm">
               Referenced Claim #{claimId}:
               {claimLoading && <LoadingDots size="sm" />}
             </div>
             {claimLoading ? (
-              <div className="h-4 bg-muted/40 rounded animate-pulse" />
+              <div className="bg-muted/40 h-4 animate-pulse rounded" />
             ) : claim ? (
-              <div className="leading-relaxed text-xs sm:text-sm space-y-1">
-                <div className="flex items-center gap-2 mb-1 flex-wrap">
+              <div className="space-y-1 text-xs leading-relaxed sm:text-sm">
+                <div className="mb-1 flex flex-wrap items-center gap-2">
                   <Badge
                     variant={
                       claim.outcome === "correct" ? "default" : "outline"
@@ -361,21 +367,21 @@ function VerdictItem({ item }: { item: VerificationVerdict }) {
                   >
                     {claim.outcome}
                   </Badge>
-                  <span className="text-xs text-muted-foreground">
+                  <span className="text-muted-foreground text-xs">
                     by {claimAgentName}
                   </span>
                 </div>
                 <div className="break-all">{claim.proof}</div>
               </div>
             ) : (
-              <div className="leading-relaxed text-xs sm:text-sm text-muted-foreground">
+              <div className="text-muted-foreground text-xs leading-relaxed sm:text-sm">
                 Claim not found
               </div>
             )}
           </div>
         )}
 
-        <p className="leading-relaxed text-sm sm:text-base break-all">
+        <p className="break-all text-sm leading-relaxed sm:text-base">
           {item.reasoning}
         </p>
       </div>
@@ -389,13 +395,13 @@ function TaskItem({
   item: { id?: string | number; inserted_at?: string };
 }) {
   return (
-    <div className="border-b border-border space-y-4 py-6">
-      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
-        <div className="flex flex-wrap items-center gap-2 text-muted-foreground text-xs sm:text-sm">
-          <Badge className="text-xs sm:text-sm mr-1" variant="outline">
+    <div className="border-border space-y-4 border-b py-6">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+        <div className="text-muted-foreground flex flex-wrap items-center gap-2 text-xs sm:text-sm">
+          <Badge className="mr-1 text-xs sm:text-sm" variant="outline">
             Task #{item.id || "N/A"}
           </Badge>
-          <Badge className="text-xs sm:text-sm mr-1" variant="outline">
+          <Badge className="mr-1 text-xs sm:text-sm" variant="outline">
             Completed
           </Badge>
           <span>
@@ -408,7 +414,7 @@ function TaskItem({
       </div>
 
       <div className="space-y-2">
-        <p className="leading-relaxed text-sm sm:text-base text-muted-foreground italic">
+        <p className="text-muted-foreground text-sm italic leading-relaxed sm:text-base">
           Task details not available yet
         </p>
       </div>
@@ -441,7 +447,7 @@ export function AgentHistoryViewer({
         onOffsetChange?.(0);
       }
     },
-    [searchTerm, onOffsetChange]
+    [searchTerm, onOffsetChange],
   );
 
   // Handle filter changes with pagination reset
@@ -450,7 +456,7 @@ export function AgentHistoryViewer({
       setFilters(newFilters);
       onOffsetChange?.(0);
     },
-    [onOffsetChange]
+    [onOffsetChange],
   );
 
   // Calculate current page from offset
@@ -465,9 +471,10 @@ export function AgentHistoryViewer({
       offset: currentOffset,
       search: searchTerm || undefined,
       sort_order: "desc",
-    }
+    },
   );
 
+  // eslint-disable-next-line react-hooks/preserve-manual-memoization
   const sortedData = useMemo(() => {
     if (!data) return [];
 
@@ -530,7 +537,7 @@ export function AgentHistoryViewer({
       | VerificationClaim
       | VerificationVerdict
       | Record<string, unknown>,
-    index: number
+    index: number,
   ) => {
     const key = `${activityType}-${item.id || index}`;
 
@@ -561,8 +568,8 @@ export function AgentHistoryViewer({
   }
 
   return (
-    <div className="flex flex-col gap-3 min-w-full">
-      <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
+    <div className="flex min-w-full flex-col gap-3">
+      <div className="flex flex-col gap-3 sm:flex-row sm:gap-4">
         <SearchInput
           placeholder="Search..."
           onSearchChange={handleSearchChange}
@@ -583,9 +590,9 @@ export function AgentHistoryViewer({
             <LoadingDots size="lg" className="text-muted-foreground" />
           </div>
         ) : sortedData.length === 0 ? (
-          <div className="text-center py-8 text-muted-foreground">
+          <div className="text-muted-foreground py-8 text-center">
             {typeInfo && (
-              <typeInfo.icon className="h-12 w-12 mx-auto mb-4 opacity-50" />
+              <typeInfo.icon className="mx-auto mb-4 h-12 w-12 opacity-50" />
             )}
             <p>NO {typeInfo?.label.toUpperCase()} FOUND</p>
             <p className="mt-2 text-sm">
@@ -600,7 +607,7 @@ export function AgentHistoryViewer({
             </div>
 
             {sortedData.length > 0 && (hasMorePages || currentPage > 1) && (
-              <div className="pt-6 border-t border-border">
+              <div className="border-border border-t pt-6">
                 <Pagination
                   currentPage={currentPage}
                   totalItems={actualTotalItems}

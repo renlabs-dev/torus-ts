@@ -1,7 +1,7 @@
 "use client";
 
+import { Button } from "@torus-ts/ui/components/button";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { Button } from "@/components/ui/button";
 
 export interface PaginationProps {
   currentPage: number;
@@ -31,13 +31,13 @@ export function Pagination({
 
   return (
     <div
-      className={`flex flex-col sm:flex-row items-center justify-between gap-4 ${className}`}
+      className={`flex flex-col items-center justify-between gap-4 sm:flex-row ${className}`}
     >
-      <div className="text-muted-foreground text-xs sm:text-sm order-2 sm:order-1">
+      <div className="text-muted-foreground order-2 text-xs sm:order-1 sm:text-sm">
         Showing {startItem}-{endItem} of {totalItems} items
       </div>
 
-      <div className="flex items-center gap-1 sm:gap-2 order-1 sm:order-2">
+      <div className="order-1 flex items-center gap-1 sm:order-2 sm:gap-2">
         <Button
           variant="outline"
           size="sm"
@@ -59,7 +59,7 @@ export function Pagination({
                 variant={page === currentPage ? "default" : "outline"}
                 size="sm"
                 onClick={() => onPageChange(page)}
-                className={`min-w-[2rem] sm:min-w-[2.5rem] h-8 px-1 sm:px-2 text-xs sm:text-sm ${
+                className={`h-8 min-w-[2rem] px-1 text-xs sm:min-w-[2.5rem] sm:px-2 sm:text-sm ${
                   page === currentPage
                     ? "bg-primary text-primary-foreground"
                     : "hover:bg-muted/50"
@@ -77,7 +77,7 @@ export function Pagination({
                     variant="outline"
                     size="sm"
                     onClick={() => onPageChange(1)}
-                    className="min-w-[2rem] sm:min-w-[2.5rem] h-8 px-1 sm:px-2 text-xs sm:text-sm hover:bg-muted/50"
+                    className="hover:bg-muted/50 h-8 min-w-[2rem] px-1 text-xs sm:min-w-[2.5rem] sm:px-2 sm:text-sm"
                   >
                     1
                   </Button>
@@ -99,7 +99,7 @@ export function Pagination({
                   variant={page === currentPage ? "default" : "outline"}
                   size="sm"
                   onClick={() => onPageChange(page)}
-                  className={`min-w-[2rem] sm:min-w-[2.5rem] h-8 px-1 sm:px-2 text-xs sm:text-sm ${
+                  className={`h-8 min-w-[2rem] px-1 text-xs sm:min-w-[2.5rem] sm:px-2 sm:text-sm ${
                     page === currentPage
                       ? "bg-primary text-primary-foreground"
                       : "hover:bg-muted/50"
@@ -120,7 +120,7 @@ export function Pagination({
                     variant="outline"
                     size="sm"
                     onClick={() => onPageChange(totalPages)}
-                    className="min-w-[2rem] sm:min-w-[2.5rem] h-8 px-1 sm:px-2 text-xs sm:text-sm hover:bg-muted/50"
+                    className="hover:bg-muted/50 h-8 min-w-[2rem] px-1 text-xs sm:min-w-[2.5rem] sm:px-2 sm:text-sm"
                   >
                     {totalPages}
                   </Button>

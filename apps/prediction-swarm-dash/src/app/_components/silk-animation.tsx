@@ -1,9 +1,11 @@
 "use client";
 
-import { Canvas, type RootState, useFrame, useThree } from "@react-three/fiber";
+import { Canvas, useFrame, useThree } from "@react-three/fiber";
+import type { RootState } from "@react-three/fiber";
 import type React from "react";
 import { forwardRef, useLayoutEffect, useMemo, useRef } from "react";
-import { Color, type IUniform, type Mesh, type ShaderMaterial } from "three";
+import { Color } from "three";
+import type { IUniform, Mesh, ShaderMaterial } from "three";
 
 type NormalizedRGB = [number, number, number];
 
@@ -92,7 +94,7 @@ interface SilkPlaneProps {
 
 const SilkPlane = forwardRef<Mesh, SilkPlaneProps>(function SilkPlane(
   { uniforms },
-  ref
+  ref,
 ) {
   const { viewport } = useThree();
 
@@ -152,7 +154,7 @@ const Silk: React.FC<SilkProps> = ({
       uRotation: { value: rotation },
       uTime: { value: 0 },
     }),
-    [speed, scale, noiseIntensity, color, rotation]
+    [speed, scale, noiseIntensity, color, rotation],
   );
 
   return (
