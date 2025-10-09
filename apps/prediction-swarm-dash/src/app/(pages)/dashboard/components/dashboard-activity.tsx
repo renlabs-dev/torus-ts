@@ -1,7 +1,7 @@
 "use client";
 
-import { LoadingDots } from "@torus-ts/ui/components/loading-dots";
-import { RelativeTime } from "@torus-ts/ui/components/relative-time";
+import { LoadingDots } from "~/app/_components/loading-dots";
+import { RelativeTime } from "~/app/_components/relative-time";
 import { useLiveActivityFeed } from "~/hooks/api";
 import { useAgentName } from "~/hooks/api/use-agent-name-query";
 import type { TimeWindowParams } from "~/lib/api-schemas";
@@ -29,7 +29,7 @@ export function DashboardActivity({ timeWindow }: DashboardActivityProps) {
     },
     {
       enabled: isAuthenticated,
-    }
+    },
   );
 
   if (error) {
@@ -78,13 +78,13 @@ export function DashboardActivity({ timeWindow }: DashboardActivityProps) {
     const { agentName } = useAgentName(activity.agent_address || "");
 
     return (
-      <div className="flex flex-col sm:flex-row items-center gap-1.5 pb-3 hover:bg-muted/50 border-b border-border/40">
-        <div className="flex items-center gap-2 w-full sm:w-auto">
+      <div className="hover:bg-muted/50 border-border/40 flex flex-col items-center gap-1.5 border-b pb-3 sm:flex-row">
+        <div className="flex w-full items-center gap-2 sm:w-auto">
           <div
             className={`h-10 w-1 rounded-xl ${getActivityColor(activity.type)}`}
           />
-          <div className="flex-1 min-w-0 sm:min-w-[120px]">
-            <span className="font-medium text-sm sm:text-base block">
+          <div className="min-w-0 flex-1 sm:min-w-[120px]">
+            <span className="block text-sm font-medium sm:text-base">
               {getActivityLabel(activity.type)}
             </span>
             <p className="text-muted-foreground truncate text-xs sm:text-sm">
@@ -92,7 +92,7 @@ export function DashboardActivity({ timeWindow }: DashboardActivityProps) {
             </p>
           </div>
         </div>
-        <div className="w-full sm:w-auto sm:ml-auto">
+        <div className="w-full sm:ml-auto sm:w-auto">
           <span className="text-muted-foreground text-xs sm:text-sm">
             <RelativeTime date={activity.created_at} />
           </span>

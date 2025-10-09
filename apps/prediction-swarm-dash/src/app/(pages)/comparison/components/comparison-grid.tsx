@@ -1,18 +1,23 @@
 "use client";
 
-import { ExternalLink } from "lucide-react";
-import Link from "next/link";
-import React from "react";
-import { PermissionBadges } from "~/app/_components/permission-badges";
+import { smallAddress } from "@torus-network/torus-utils/torus/address";
 import { Button } from "@torus-ts/ui/components/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@torus-ts/ui/components/card";
-import { LoadingDots } from "@torus-ts/ui/components/loading-dots";
-import { RankBadge } from "@torus-ts/ui/components/rank-badge";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@torus-ts/ui/components/card";
+import { LoadingDots } from "~/app/_components/loading-dots";
+import { PermissionBadges } from "~/app/_components/permission-badges";
+import { RankBadge } from "~/app/_components/rank-badge";
+import { env } from "~/env";
 import { useAgentDetailedMetricsComparison } from "~/hooks/api/use-agent-detailed-metrics-comparison-query";
 import { useAgentName } from "~/hooks/api/use-agent-name-query";
 import { dateToISOStringSafe, formatLargeNumber } from "~/lib/api-utils";
-import { clientEnv } from "~/lib/env";
-import { smallAddress } from "~/lib/utils";
+import { ExternalLink } from "lucide-react";
+import Link from "next/link";
+import React from "react";
 import { ComparisonCharts } from "./comparison-charts";
 
 interface ComparisonGridProps {
@@ -46,7 +51,7 @@ function AgentComparisonCard({
   // Helper function to safely convert Date to ISO string
   const toISOStringSafe = (
     date: Date | undefined,
-    endOfDay: boolean = false
+    endOfDay: boolean = false,
   ) => {
     return dateToISOStringSafe(date, endOfDay);
   };
@@ -66,12 +71,12 @@ function AgentComparisonCard({
   return (
     <Card className="bg-card/50">
       <CardHeader>
-        <CardTitle className="flex items-start flex-col gap-2">
-          <div className="flex gap-2 items-center">
+        <CardTitle className="flex flex-col items-start gap-2">
+          <div className="flex items-center gap-2">
             {rank && <RankBadge rank={rank} />}
             {agentName}
           </div>
-          <div className="flex gap-2 items-center text-sm text-muted-foreground">
+          <div className="text-muted-foreground flex items-center gap-2 text-sm">
             {smallAddress(agentAddress)} •
             <PermissionBadges permissions={permissions} variant="compact" />
           </div>
@@ -88,12 +93,12 @@ function AgentComparisonCard({
             {/* Total Activity Score */}
 
             {/* Metrics Row */}
-            <div className="grid grid-cols-2 sm:flex items-center justify-start gap-6">
+            <div className="grid grid-cols-2 items-center justify-start gap-6 sm:flex">
               <div className="flex items-baseline gap-1">
                 <span className="text-lg font-bold">
                   {formatLargeNumber(totalPredictions)}
                 </span>
-                <span className="text-sm text-muted-foreground">
+                <span className="text-muted-foreground text-sm">
                   /predictions
                 </span>
               </div>
@@ -102,33 +107,33 @@ function AgentComparisonCard({
                 <span className="text-lg font-bold">
                   {formatLargeNumber(totalVerificationClaims)}
                 </span>
-                <span className="text-sm text-muted-foreground">/claims</span>
+                <span className="text-muted-foreground text-sm">/claims</span>
               </div>
 
               <div className="flex items-baseline gap-1">
                 <span className="text-lg font-bold">
                   {formatLargeNumber(totalVerificationVerdicts)}
                 </span>
-                <span className="text-sm text-muted-foreground">/verdicts</span>
+                <span className="text-muted-foreground text-sm">/verdicts</span>
               </div>
 
               <div className="flex items-baseline gap-1">
                 <span className="text-lg font-bold">
                   {formatLargeNumber(totalTasksCompleted)}
                 </span>
-                <span className="text-sm text-muted-foreground">/tasks</span>
+                <span className="text-muted-foreground text-sm">/tasks</span>
               </div>
             </div>
 
             {/* Portal Link */}
             <div className="">
               <Link
-                href={`${clientEnv.NEXT_PUBLIC_TORUS_PORTAL_URL}/?id=${agentAddress}`}
+                href={`${env("NEXT_PUBLIC_TORUS_PORTAL_URL")}/?id=${agentAddress}`}
                 target="_blank"
                 rel="noopener noreferrer"
               >
                 <Button variant="outline" className="w-full">
-                  <ExternalLink className="h-3 w-3 mr-2" />
+                  <ExternalLink className="mr-2 h-3 w-3" />
                   View in portal
                 </Button>
               </Link>
@@ -151,12 +156,12 @@ function RankingCalculator({
   onRankingReady: (rankingMap: Map<string, number>) => void;
 }) {
   const [_agentDataForRanking, setAgentDataForRanking] = React.useState<
-    Array<{
+    {
       address: string;
       name: string;
       totalActivity: number;
       isLoading: boolean;
-    }>
+    }[]
   >([]);
 
   const handleDataReady = React.useCallback(
@@ -175,24 +180,24 @@ function RankingCalculator({
 
         // Only keep data for agents that are still selected
         const validAgents = updated.filter((agent) =>
-          selectedAgents.includes(agent.address)
+          selectedAgents.includes(agent.address),
         );
 
         return validAgents;
       });
     },
-    [selectedAgents]
+    [selectedAgents],
   );
 
   // Separate effect to handle ranking calculation
   React.useEffect(() => {
     const loadedValidAgents = _agentDataForRanking.filter(
-      (agent) => !agent.isLoading && selectedAgents.includes(agent.address)
+      (agent) => !agent.isLoading && selectedAgents.includes(agent.address),
     );
 
     if (loadedValidAgents.length > 0) {
       const rankedAgents = loadedValidAgents.sort(
-        (a, b) => b.totalActivity - a.totalActivity
+        (a, b) => b.totalActivity - a.totalActivity,
       );
 
       const rankingMap = new Map<string, number>();
@@ -211,17 +216,17 @@ function RankingCalculator({
     setAgentDataForRanking((prev) => {
       // Filter out agents that are no longer selected
       const validAgents = prev.filter((agent) =>
-        selectedAgents.includes(agent.address)
+        selectedAgents.includes(agent.address),
       );
 
       // If we have fewer valid agents than before, immediately recalculate
       if (validAgents.length !== prev.length) {
         const loadedValidAgents = validAgents.filter(
-          (agent) => !agent.isLoading
+          (agent) => !agent.isLoading,
         );
         if (loadedValidAgents.length > 0) {
           const rankedAgents = loadedValidAgents.sort(
-            (a, b) => b.totalActivity - a.totalActivity
+            (a, b) => b.totalActivity - a.totalActivity,
           );
 
           const rankingMap = new Map<string, number>();
@@ -271,7 +276,7 @@ function AgentRankingDataCollector({
   const { agentName } = useAgentName(agent);
   const toISOStringSafe = (
     date: Date | undefined,
-    endOfDay: boolean = false
+    endOfDay: boolean = false,
   ) => {
     return dateToISOStringSafe(date, endOfDay);
   };
@@ -310,18 +315,18 @@ export function ComparisonGrid({
   searchFilters,
 }: ComparisonGridProps) {
   const [rankingMap, setRankingMap] = React.useState<Map<string, number>>(
-    new Map()
+    new Map(),
   );
 
   const handleRankingReady = React.useCallback(
     (newRankingMap: Map<string, number>) => {
       setRankingMap(newRankingMap);
     },
-    []
+    [],
   );
 
   return (
-    <div className="space-y-6 w-full">
+    <div className="w-full space-y-6">
       {/* Ranking calculator - invisible component */}
       <RankingCalculator
         selectedAgents={selectedAgents}
@@ -332,7 +337,7 @@ export function ComparisonGrid({
       {/* Grid Header */}
 
       {/* Responsive Grid */}
-      <div className="grid gap-6 grid-cols-1 md:grid-cols-2 w-full">
+      <div className="grid w-full grid-cols-1 gap-6 md:grid-cols-2">
         {selectedAgents.map((agent) => (
           <AgentComparisonCard
             key={agent}
@@ -353,12 +358,12 @@ export function ComparisonGrid({
 
       {/* Comparison Table for Desktop */}
       {selectedAgents.length > 1 && (
-        <Card className="hidden lg:block mt-4">
+        <Card className="mt-4 hidden lg:block">
           <CardHeader>
             <CardTitle>Metrics Table</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="mb-4 text-muted-foreground">
+            <div className="text-muted-foreground mb-4">
               Detailed comparison table for easier analysis
             </div>
             <ComparisonTable
@@ -382,15 +387,15 @@ function ComparisonTable({
     <div className="overflow-x-auto">
       <table className="w-full">
         <thead>
-          <tr className="border-b border-border">
-            <th className="text-center p-3 font-medium">Rank</th>
-            <th className="text-left p-3 font-medium">Agent</th>
-            <th className="text-center p-3 font-medium">Predictions</th>
-            <th className="text-center p-3 font-medium">Claims</th>
-            <th className="text-center p-3 font-medium">Verdicts</th>
-            <th className="text-center p-3 font-medium">Tasks</th>
-            <th className="text-center p-3 font-medium">Total</th>
-            <th className="text-center p-3 font-medium">Portal</th>
+          <tr className="border-border border-b">
+            <th className="p-3 text-center font-medium">Rank</th>
+            <th className="p-3 text-left font-medium">Agent</th>
+            <th className="p-3 text-center font-medium">Predictions</th>
+            <th className="p-3 text-center font-medium">Claims</th>
+            <th className="p-3 text-center font-medium">Verdicts</th>
+            <th className="p-3 text-center font-medium">Tasks</th>
+            <th className="p-3 text-center font-medium">Total</th>
+            <th className="p-3 text-center font-medium">Portal</th>
           </tr>
         </thead>
         <tbody>
@@ -423,7 +428,7 @@ function ComparisonTableRow({
 
   const toISOStringSafe = (
     date: Date | undefined,
-    endOfDay: boolean = false
+    endOfDay: boolean = false,
   ) => {
     return dateToISOStringSafe(date, endOfDay);
   };
@@ -458,8 +463,8 @@ function ComparisonTableRow({
 
   if (metricsLoading) {
     return (
-      <tr className="border-b border-border">
-        <td colSpan={8} className="text-center p-6">
+      <tr className="border-border border-b">
+        <td colSpan={8} className="p-6 text-center">
           <LoadingDots size="sm" className="text-muted-foreground" />
         </td>
       </tr>
@@ -467,32 +472,32 @@ function ComparisonTableRow({
   }
 
   return (
-    <tr className="border-b border-border hover:bg-muted/30">
-      <td className="text-center p-3">{getRankBadgeTable(rank)}</td>
+    <tr className="border-border hover:bg-muted/30 border-b">
+      <td className="p-3 text-center">{getRankBadgeTable(rank)}</td>
       <td className="p-3">
         <div className="font-medium">{agentName}</div>
         <div className="text-muted-foreground font-mono text-sm">
           {agentAddress.slice(0, 8)}...{agentAddress.slice(-8)}
         </div>
       </td>
-      <td className="text-center p-3 font-mono">
+      <td className="p-3 text-center font-mono">
         {formatLargeNumber(totalPredictions)}
       </td>
-      <td className="text-center p-3 font-mono">
+      <td className="p-3 text-center font-mono">
         {formatLargeNumber(totalVerificationClaims)}
       </td>
-      <td className="text-center p-3 font-mono">
+      <td className="p-3 text-center font-mono">
         {formatLargeNumber(totalVerificationVerdicts)}
       </td>
-      <td className="text-center p-3 font-mono">
+      <td className="p-3 text-center font-mono">
         {formatLargeNumber(totalTasksCompleted)}
       </td>
-      <td className="text-center p-3 font-mono text-primary font-bold">
+      <td className="text-primary p-3 text-center font-mono font-bold">
         {formatLargeNumber(totalActivity)}
       </td>
       <td className="p-3">
         <Link
-          href={`${clientEnv.NEXT_PUBLIC_TORUS_PORTAL_URL}/?id=${agentAddress}`}
+          href={`${env("NEXT_PUBLIC_TORUS_PORTAL_URL")}/?id=${agentAddress}`}
           target="_blank"
           rel="noopener noreferrer"
         >

@@ -1,8 +1,8 @@
-import { Suspense } from "react";
+import { cn } from "@torus-ts/ui/lib/utils";
 import { Header } from "~/app/_components/header";
 import { SearchInput } from "~/app/_components/search-input";
 import SphereAnimation from "~/app/_components/sphere-animation";
-import { cn } from "~/lib/utils";
+import { Suspense } from "react";
 
 export default function RootLayout({
   children,
@@ -12,17 +12,17 @@ export default function RootLayout({
   return (
     <div>
       <Header className="bg-background" />
-      <div className="fixed top-20 left-0 right-0 z-40">
+      <div className="fixed left-0 right-0 top-20 z-40">
         <Suspense fallback={<div className="h-18" />}>
-          <div className="animate-in fade-in slide-in-from-top duration-1000 delay-0 fill-mode-both">
+          <div className="animate-in fade-in slide-in-from-top fill-mode-both delay-0 duration-1000">
             <SearchInput />
           </div>
         </Suspense>
       </div>
       <div
         className={cn(
-          "flex flex-col items-center justify-center w-full relative h-52 bg-background mt-36",
-          "animate-in fade-in duration-500 delay-1000 fill-mode-both"
+          "bg-background relative mt-36 flex h-52 w-full flex-col items-center justify-center",
+          "animate-in fade-in fill-mode-both delay-1000 duration-500",
         )}
       >
         <SphereAnimation

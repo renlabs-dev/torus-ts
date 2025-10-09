@@ -1,30 +1,29 @@
 "use client";
 
-import { ArrowLeft, BarChart3 } from "lucide-react";
-import Link from "next/link";
-import { useSearchParams } from "next/navigation";
-import React, { Suspense, useCallback, useMemo } from "react";
-
+import { Button } from "@torus-ts/ui/components/button";
 import {
-  type ActivityType,
-  ActivityTypeSelector,
-} from "~/app/_components/activity-type-selector";
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@torus-ts/ui/components/card";
+import { ActivityTypeSelector } from "~/app/_components/activity-type-selector";
+import type { ActivityType } from "~/app/_components/activity-type-selector";
 import { AgentHistoryViewer } from "~/app/_components/agent-history-viewer";
 import { Container } from "~/app/_components/container";
 import { CopyButton } from "~/app/_components/copy-button";
-import {
-  DateRangeFilter,
-  type DateRangeFilterData,
-} from "~/app/_components/date-range-filter";
+import { DateRangeFilter } from "~/app/_components/date-range-filter";
+import type { DateRangeFilterData } from "~/app/_components/date-range-filter";
+import { LoadingDots } from "~/app/_components/loading-dots";
 import { PermissionBadges } from "~/app/_components/permission-badges";
-import { Button } from "@torus-ts/ui/components/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@torus-ts/ui/components/card";
-import { LoadingDots } from "@torus-ts/ui/components/loading-dots";
 import { useAgentDetailedMetrics } from "~/hooks/api/use-agent-detailed-metrics-query";
 import { useAgentName } from "~/hooks/api/use-agent-name-query";
 import { dateToISOStringSafe } from "~/lib/api-utils";
 import { useAuthStore } from "~/lib/auth-store";
-import { cn } from "~/lib/utils";
+import { ArrowLeft, BarChart3 } from "lucide-react";
+import Link from "next/link";
+import { useSearchParams } from "next/navigation";
+import React, { Suspense, useCallback, useMemo } from "react";
 import { AgentNoSelection } from "./components/agent-no-selection";
 
 function AgentsPageContent() {
@@ -77,7 +76,7 @@ function AgentsPageContent() {
       totalVerificationClaims,
       totalVerificationVerdicts,
       totalTasksCompleted,
-    ]
+    ],
   );
 
   // Determine the activity type with the most items
@@ -86,7 +85,7 @@ function AgentsPageContent() {
       predictions: number,
       claims: number,
       verdicts: number,
-      tasks: number
+      tasks: number,
     ): ActivityType => {
       const counts = {
         predictions,
@@ -101,12 +100,12 @@ function AgentsPageContent() {
           count > max.count
             ? { activity: activity as ActivityType, count }
             : max,
-        { activity: "predictions" as ActivityType, count: predictions }
+        { activity: "predictions" as ActivityType, count: predictions },
       );
 
       return maxActivity.activity;
     },
-    []
+    [],
   );
 
   // Update selected activity type when agent changes or when metrics are loaded
@@ -122,7 +121,7 @@ function AgentsPageContent() {
         totalPredictions,
         totalVerificationClaims,
         totalVerificationVerdicts,
-        totalTasksCompleted
+        totalTasksCompleted,
       );
       setSelectedActivityType(defaultActivity);
     }
@@ -141,14 +140,14 @@ function AgentsPageContent() {
       totalPredictions: number,
       totalVerificationClaims: number,
       totalVerificationVerdicts: number,
-      totalTasksCompleted: number
+      totalTasksCompleted: number,
     ): number => {
       if (activityType === "predictions") return totalPredictions;
       if (activityType === "claims") return totalVerificationClaims;
       if (activityType === "verdicts") return totalVerificationVerdicts;
       return totalTasksCompleted;
     },
-    []
+    [],
   );
 
   const handleDateRangeFilterSubmit = useCallback(
@@ -160,7 +159,7 @@ function AgentsPageContent() {
         offset: 0, // Reset offset when filters change
       }));
     },
-    []
+    [],
   );
 
   if (!isAuthenticated) {
@@ -178,18 +177,18 @@ function AgentsPageContent() {
   }
 
   return (
-    <Card className="border-none w-full mb-12 p-0 animate-in fade-in slide-in-from-top-10 duration-1000 delay-0 fill-mode-both">
-      <CardHeader className="border-y border-border pt-6 flex items-center px-4 md:px-6">
-        <div className="max-w-screen-xl mx-auto w-full flex flex-col gap-6">
+    <Card className="animate-in fade-in slide-in-from-top-10 fill-mode-both mb-12 w-full border-none p-0 delay-0 duration-1000">
+      <CardHeader className="border-border flex items-center border-y px-4 pt-6 md:px-6">
+        <div className="mx-auto flex w-full max-w-screen-xl flex-col gap-6">
           <div
             className={cn(
-              "flex flex-col sm:flex-row items-start sm:items-center sm:justify-between gap-4 pb-2",
-              "animate-in fade-in slide-in-from-bottom-10 duration-600 delay-400 fill-mode-both"
+              "flex flex-col items-start gap-4 pb-2 sm:flex-row sm:items-center sm:justify-between",
+              "animate-in fade-in slide-in-from-bottom-10 duration-600 delay-400 fill-mode-both",
             )}
           >
-            <CardTitle className="text-xl md:text-2xl flex flex-col items-start">
+            <CardTitle className="flex flex-col items-start text-xl md:text-2xl">
               {selectedAgent ? agentName : "Agent Analysis"}
-              <div className="flex flex-row text-xs md:text-sm text-muted-foreground gap-2 flex-wrap">
+              <div className="text-muted-foreground flex flex-row flex-wrap gap-2 text-xs md:text-sm">
                 {selectedAgent && (
                   <>
                     <CopyButton text={selectedAgent} /> |
@@ -203,7 +202,7 @@ function AgentsPageContent() {
                 )}
               </div>
             </CardTitle>
-            <div className="flex flex-wrap gap-2 md:gap-3 w-full sm:w-auto justify-start sm:justify-end animate-in fade-in slide-in-from-bottom-10 duration-600 delay-600 fill-mode-both">
+            <div className="animate-in fade-in slide-in-from-bottom-10 duration-600 delay-600 fill-mode-both flex w-full flex-wrap justify-start gap-2 sm:w-auto sm:justify-end md:gap-3">
               <DateRangeFilter
                 onSubmit={handleDateRangeFilterSubmit}
                 defaultValues={{
@@ -249,7 +248,7 @@ function AgentsPageContent() {
       <CardContent className="px-4 md:px-6">
         <Container>
           {selectedAgent && (
-            <div className="animate-in fade-in slide-in-from-bottom-10 duration-1000 delay-1000 fill-mode-both">
+            <div className="animate-in fade-in slide-in-from-bottom-10 fill-mode-both delay-1000 duration-1000">
               <AgentHistoryViewer
                 agentAddress={selectedAgent}
                 activityType={selectedActivityType}
@@ -270,14 +269,14 @@ function AgentsPageContent() {
                   totalPredictions,
                   totalVerificationClaims,
                   totalVerificationVerdicts,
-                  totalTasksCompleted
+                  totalTasksCompleted,
                 )}
               />
             </div>
           )}
 
           {!selectedAgent && (
-            <div className="animate-in fade-in slide-in-from-bottom-10 duration-1000 delay-1000 fill-mode-both w-full">
+            <div className="animate-in fade-in slide-in-from-bottom-10 fill-mode-both w-full delay-1000 duration-1000">
               <AgentNoSelection />
             </div>
           )}

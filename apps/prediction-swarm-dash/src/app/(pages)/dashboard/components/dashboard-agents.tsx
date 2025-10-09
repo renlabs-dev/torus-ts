@@ -1,11 +1,14 @@
 "use client";
 
-import Link from "next/link";
-import { useMemo, useState } from "react";
-
-import { Card, CardContent, CardHeader, CardTitle } from "@torus-ts/ui/components/card";
-import { LoadingDots } from "@torus-ts/ui/components/loading-dots";
-import { RankBadge } from "@torus-ts/ui/components/rank-badge";
+import { smallAddress } from "@torus-network/torus-utils/torus/address";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@torus-ts/ui/components/card";
+import { LoadingDots } from "~/app/_components/loading-dots";
+import { RankBadge } from "~/app/_components/rank-badge";
 import { useAgentContributionStatsQuery } from "~/hooks/api";
 import { useAgentName } from "~/hooks/api/use-agent-name-query";
 import type {
@@ -13,7 +16,8 @@ import type {
   TimeWindowParams,
 } from "~/lib/api-schemas";
 import { formatLargeNumber } from "~/lib/api-utils";
-import { smallAddress } from "~/lib/utils";
+import Link from "next/link";
+import { useMemo, useState } from "react";
 
 type MetricFilter = "all" | "predictions" | "verdicts" | "claims";
 
@@ -35,17 +39,19 @@ function AgentRow({ agent, index, filter }: AgentRowProps) {
 
   const displayMetric =
     filter === "all"
-      ? metrics.reduce((max, metric) => (metric.value > max.value ? metric : max))
+      ? metrics.reduce((max, metric) =>
+          metric.value > max.value ? metric : max,
+        )
       : metrics.find((m) => m.label === filter) || metrics[0];
 
   return (
     <Link href={`/agents?agent=${encodeURIComponent(agent.wallet_address)}`}>
-      <div className="flex items-center justify-between p-2 hover:bg-muted/50 cursor-pointer border-b border-border/40">
-        <div className="flex items-center gap-3 w-full sm:w-auto">
+      <div className="hover:bg-muted/50 border-border/40 flex cursor-pointer items-center justify-between border-b p-2">
+        <div className="flex w-full items-center gap-3 sm:w-auto">
           <RankBadge rank={index + 1} />
-          <div className="flex-1  min-w-0">
-            <div className="font-medium truncate">{agentName}</div>
-            <div className="text-muted-foreground font-mono truncate">
+          <div className="min-w-0 flex-1">
+            <div className="truncate font-medium">{agentName}</div>
+            <div className="text-muted-foreground truncate font-mono">
               {smallAddress(agent.wallet_address)}
             </div>
           </div>
@@ -54,7 +60,7 @@ function AgentRow({ agent, index, filter }: AgentRowProps) {
         <div className="flex items-center gap-4">
           <span className="font-bold">
             {formatLargeNumber(displayMetric.value)}
-            <span className="text-muted-foreground font-thin text-sm">
+            <span className="text-muted-foreground text-sm font-thin">
               /{displayMetric.label}
             </span>
           </span>
@@ -73,6 +79,7 @@ export function DashboardAgents({ timeWindow }: DashboardAgentsProps) {
   const [filter, setFilter] = useState<MetricFilter>("all");
 
   // Sort agents based on selected filter
+  // eslint-disable-next-line react-hooks/preserve-manual-memoization
   const topAgents = useMemo(() => {
     if (!data?.agent_contribution_stats) return [];
 
@@ -91,9 +98,15 @@ export function DashboardAgents({ timeWindow }: DashboardAgentsProps) {
         case "predictions":
           return b.num_predictions_submitted - a.num_predictions_submitted;
         case "verdicts":
-          return b.num_verification_verdicts_submitted - a.num_verification_verdicts_submitted;
+          return (
+            b.num_verification_verdicts_submitted -
+            a.num_verification_verdicts_submitted
+          );
         case "claims":
-          return b.num_verification_claims_submitted - a.num_verification_claims_submitted;
+          return (
+            b.num_verification_claims_submitted -
+            a.num_verification_claims_submitted
+          );
         default:
           return b.totalActivity - a.totalActivity;
       }
@@ -116,26 +129,26 @@ export function DashboardAgents({ timeWindow }: DashboardAgentsProps) {
     <Card className="h-full">
       <CardHeader>
         <div className="flex items-center justify-between">
-          <CardTitle className="bg-muted-foreground/35 w-fit p-2 rounded-md">
+          <CardTitle className="bg-muted-foreground/35 w-fit rounded-md p-2">
             /TOP-PERFORMING-AGENTS
           </CardTitle>
-          <div className="hidden md:flex items-center gap-1 text-xs">
-            {(["all", "predictions", "verdicts", "claims"] as MetricFilter[]).map(
-              (option) => (
-                <button
-                  key={option}
-                  type="button"
-                  onClick={() => setFilter(option)}
-                  className={`px-3 py-1 rounded-md transition-colors ${
-                    filter === option
-                      ? "bg-muted-foreground/35 text-foreground"
-                      : "text-muted-foreground hover:text-foreground"
-                  }`}
-                >
-                  {option}
-                </button>
-              )
-            )}
+          <div className="hidden items-center gap-1 text-xs md:flex">
+            {(
+              ["all", "predictions", "verdicts", "claims"] as MetricFilter[]
+            ).map((option) => (
+              <button
+                key={option}
+                type="button"
+                onClick={() => setFilter(option)}
+                className={`rounded-md px-3 py-1 transition-colors ${
+                  filter === option
+                    ? "bg-muted-foreground/35 text-foreground"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                {option}
+              </button>
+            ))}
           </div>
         </div>
       </CardHeader>
@@ -145,7 +158,7 @@ export function DashboardAgents({ timeWindow }: DashboardAgentsProps) {
             <LoadingDots size="lg" className="text-muted-foreground" />
           </div>
         ) : (
-          <div className="h-full overflow-y-auto pr-2 -mr-2">
+          <div className="-mr-2 h-full overflow-y-auto pr-2">
             <div className="">
               {topAgents.map((agent, index) => (
                 <AgentRow

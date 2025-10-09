@@ -1,7 +1,7 @@
 "use client";
 
 import { Badge } from "@torus-ts/ui/components/badge";
-import { LoadingDots } from "@torus-ts/ui/components/loading-dots";
+import { LoadingDots } from "~/app/_components/loading-dots";
 import { usePermissionsQuery } from "~/hooks/api";
 
 export function DashboardPermissions() {
@@ -58,10 +58,10 @@ export function DashboardPermissions() {
       {sortedPermissions.map(([permission, count], index) => (
         <div
           key={permission}
-          className="flex justify-between items-center border-b border-border/40 pb-2"
+          className="border-border/40 flex items-center justify-between border-b pb-2"
         >
           <div className="flex items-center gap-2">
-            <Badge variant="outline" className="w-6 h-6 p-2">
+            <Badge variant="outline" className="h-6 w-6 p-2">
               {index + 1}
             </Badge>
             {formatPermissionForDisplay(permission)}

@@ -1,14 +1,19 @@
 "use client";
 
+import { Button } from "@torus-ts/ui/components/button";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@torus-ts/ui/components/card";
+import { Container } from "~/app/_components/container";
+import { LoadingDots } from "~/app/_components/loading-dots";
+import { useAuthStore } from "~/lib/auth-store";
 import { ArrowLeft, User } from "lucide-react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import React, { Suspense } from "react";
-import { Container } from "~/app/_components/container";
-import { Button } from "@torus-ts/ui/components/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@torus-ts/ui/components/card";
-import { LoadingDots } from "@torus-ts/ui/components/loading-dots";
-import { useAuthStore } from "~/lib/auth-store";
 import { ComparisonEmpty } from "./components/comparison-empty";
 import { ComparisonGrid } from "./components/comparison-grid";
 import { ComparisonSelector } from "./components/comparison-selector";
@@ -55,7 +60,7 @@ function ComparisonPageContent() {
         scroll: false,
       });
     },
-    [router, searchParams]
+    [router, searchParams],
   );
 
   const addAgent = React.useCallback(
@@ -64,16 +69,16 @@ function ComparisonPageContent() {
         handleAgentsChange([...selectedAgents, agentAddress]);
       }
     },
-    [selectedAgents, handleAgentsChange]
+    [selectedAgents, handleAgentsChange],
   );
 
   const removeAgent = React.useCallback(
     (agentAddress: string) => {
       handleAgentsChange(
-        selectedAgents.filter((agent) => agent !== agentAddress)
+        selectedAgents.filter((agent) => agent !== agentAddress),
       );
     },
-    [selectedAgents, handleAgentsChange]
+    [selectedAgents, handleAgentsChange],
   );
 
   if (!isAuthenticated) {
@@ -91,17 +96,17 @@ function ComparisonPageContent() {
   }
 
   return (
-    <Card className="border-none w-full mb-12 p-0 animate-in fade-in slide-in-from-top-10 duration-1000 delay-200 fill-mode-both">
-      <CardHeader className="border-y border-border pt-6 flex items-center">
-        <div className="max-w-screen-xl mx-auto w-full flex flex-col gap-6">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-2 animate-in fade-in slide-in-from-bottom-10 duration-600 delay-400 fill-mode-both">
-            <CardTitle className="text-2xl flex flex-col items-start">
+    <Card className="animate-in fade-in slide-in-from-top-10 fill-mode-both mb-12 w-full border-none p-0 delay-200 duration-1000">
+      <CardHeader className="border-border flex items-center border-y pt-6">
+        <div className="mx-auto flex w-full max-w-screen-xl flex-col gap-6">
+          <div className="animate-in fade-in slide-in-from-bottom-10 duration-600 delay-400 fill-mode-both flex flex-col gap-4 pb-2 sm:flex-row sm:items-center sm:justify-between">
+            <CardTitle className="flex flex-col items-start text-2xl">
               Agent Comparison
-              <div className="flex flex-row text-sm text-muted-foreground gap-2">
+              <div className="text-muted-foreground flex flex-row gap-2 text-sm">
                 Add up to 4 agents to compare their performance metrics
               </div>
             </CardTitle>
-            <div className="flex gap-3 justify-end animate-in fade-in slide-in-from-bottom-10 duration-600 delay-600 fill-mode-both">
+            <div className="animate-in fade-in slide-in-from-bottom-10 duration-600 delay-600 fill-mode-both flex justify-end gap-3">
               <Link href="/agents" className="w-full">
                 <Button
                   type="button"
@@ -110,7 +115,7 @@ function ComparisonPageContent() {
                   className="w-full"
                 >
                   <User className="h-4 w-4" />
-                  <span className="truncate max-w-[120px] sm:max-w-none">
+                  <span className="max-w-[120px] truncate sm:max-w-none">
                     Agents
                   </span>
                 </Button>
@@ -123,7 +128,7 @@ function ComparisonPageContent() {
                   className="w-full"
                 >
                   <ArrowLeft className="h-4 w-4" />
-                  <span className="truncate max-w-[120px] sm:max-w-none">
+                  <span className="max-w-[120px] truncate sm:max-w-none">
                     Dashboard
                   </span>
                 </Button>
@@ -151,14 +156,14 @@ function ComparisonPageContent() {
       <CardContent>
         <Container>
           {selectedAgents.length > 0 ? (
-            <div className="animate-in fade-in slide-in-from-bottom-10 duration-1000 delay-1000 fill-mode-both">
+            <div className="animate-in fade-in slide-in-from-bottom-10 fill-mode-both delay-1000 duration-1000">
               <ComparisonGrid
                 selectedAgents={selectedAgents}
                 searchFilters={searchFilters}
               />
             </div>
           ) : (
-            <div className="animate-in fade-in slide-in-from-bottom-10 duration-1000 delay-1000 fill-mode-both w-full">
+            <div className="animate-in fade-in slide-in-from-bottom-10 fill-mode-both w-full delay-1000 duration-1000">
               <ComparisonEmpty />
             </div>
           )}

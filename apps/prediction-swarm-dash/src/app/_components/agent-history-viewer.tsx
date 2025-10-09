@@ -1,6 +1,7 @@
 "use client";
 
 import { Badge } from "@torus-ts/ui/components/badge";
+import { Button } from "@torus-ts/ui/components/button";
 import { Card, CardContent } from "@torus-ts/ui/components/card";
 import {
   Popover,
@@ -21,7 +22,6 @@ import { extractClaimIdFromReasoning } from "~/lib/api-utils";
 import { CircleSlash2, ExternalLink, Gavel } from "lucide-react";
 import Link from "next/link";
 import { useCallback, useMemo, useState } from "react";
-import { Button } from "react-day-picker";
 import { ActivityFilters } from "./activity-filters";
 import type { FilterState } from "./activity-filters";
 import { getActivityTypeInfo } from "./activity-type-selector";

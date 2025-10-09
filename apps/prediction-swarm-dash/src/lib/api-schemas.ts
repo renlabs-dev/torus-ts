@@ -5,8 +5,8 @@ import { z } from "zod";
 // =============================================================================
 
 export const timeWindowParamsSchema = z.object({
-  from: z.iso.datetime().optional(),
-  to: z.iso.datetime().optional(),
+  from: z.string().datetime().optional(),
+  to: z.string().datetime().optional(),
 });
 
 export const paginationParamsSchema = z.object({
@@ -67,24 +67,24 @@ export const tweetSchema = z.object({
   full_text: z.string(),
   id: z.number().int(),
   in_reply_to_tweet_id: z.string().nullable(),
-  inserted_at: z.iso.datetime(),
+  inserted_at: z.string().datetime(),
   inserted_by_address: z.string(),
   quoted_tweet_id: z.string().nullable(),
   raw_json: z.string(),
   retweeted_tweet_id: z.string().nullable(),
   tweet_id: z.string(),
-  tweet_timestamp: z.iso.datetime(),
+  tweet_timestamp: z.string().datetime(),
   tweet_type: z.string(),
   url: z.string().url(),
 });
 
 export const predictionSchema = z.object({
   id: z.number().int(),
-  inserted_at: z.iso.datetime(),
+  inserted_at: z.string().datetime(),
   inserted_by_address: z.string(),
   predictor_twitter_username: z.string().optional(),
   predictor_twitter_user_id: z.string().nullable().optional(),
-  prediction_timestamp: z.iso.datetime().optional(),
+  prediction_timestamp: z.string().datetime().optional(),
   url: z.string().url().optional(),
   full_post: z.string().optional(),
   prediction: z.string(),
@@ -103,7 +103,7 @@ export const predictionsResponseSchema = z.array(predictionSchema);
 
 export const verificationClaimSchema = z.object({
   id: z.number().int(),
-  inserted_at: z.iso.datetime(),
+  inserted_at: z.string().datetime(),
   inserted_by_address: z.string(),
   prediction_id: z.number().int(),
   outcome: z.string(),
@@ -116,7 +116,7 @@ export const verificationClaimsResponseSchema = z.array(
 
 export const verificationVerdictSchema = z.object({
   id: z.number().int(),
-  inserted_at: z.iso.datetime(),
+  inserted_at: z.string().datetime(),
   inserted_by_address: z.string(),
   prediction_id: z.number().int(),
   verdict: z.string(),
@@ -137,7 +137,7 @@ export const contentScoreSchema = z.object({
   content_id: z.string(),
   content_type: z.enum(["prediction", "verification_claim", "verdict"]),
   score: z.number(),
-  created_at: z.iso.datetime(),
+  created_at: z.string().datetime(),
   metadata: z.record(z.string(), z.any()).optional(),
 });
 
@@ -160,7 +160,7 @@ export const permissionSchema = z.object({
     "InsertVerificationVerdicts",
     "InsertTasks",
   ]),
-  created_at: z.iso.datetime(),
+  created_at: z.string().datetime(),
 });
 
 export const permissionsResponseSchema = z.array(permissionSchema);
@@ -176,7 +176,7 @@ export const authChallengeRequestSchema = z.object({
 export const authChallengeResponseSchema = z.object({
   challenge_token: z.string().uuid(),
   message: z.string(),
-  expires_at: z.iso.datetime(),
+  expires_at: z.string().datetime(),
 });
 
 export const authVerifyRequestSchema = z.object({
@@ -188,16 +188,16 @@ export const authVerifyResponseSchema = z.object({
   success: z.boolean().optional(),
   token: z.string().optional(),
   wallet_address: z.string().optional(),
-  expires_at: z.iso.datetime().optional(),
+  expires_at: z.string().datetime().optional(),
   message: z.string().optional(),
 });
 
 export const authSessionSchema = z.object({
   token: z.string(),
   wallet_address: z.string(),
-  created_at: z.iso.datetime(),
-  expires_at: z.iso.datetime(),
-  last_used_at: z.iso.datetime().optional(),
+  created_at: z.string().datetime(),
+  expires_at: z.string().datetime(),
+  last_used_at: z.string().datetime().optional(),
 });
 
 export const authSessionsResponseSchema = z.object({

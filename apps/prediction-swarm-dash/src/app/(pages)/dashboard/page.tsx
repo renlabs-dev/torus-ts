@@ -1,14 +1,18 @@
 "use client";
 
+import { Button } from "@torus-ts/ui/components/button";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@torus-ts/ui/components/card";
+import { cn } from "@torus-ts/ui/lib/utils";
+import type { DateRangeFilterData } from "~/app/_components/date-range-filter";
+import { DateRangeFilter } from "~/app/_components/date-range-filter";
 import { BarChart3, User } from "lucide-react";
 import Link from "next/link";
 import React from "react";
-
-import type { DateRangeFilterData } from "~/app/_components/date-range-filter";
-import { DateRangeFilter } from "~/app/_components/date-range-filter";
-import { Button } from "@torus-ts/ui/components/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@torus-ts/ui/components/card";
-import { cn } from "~/lib/utils";
 import { DashboardActivity } from "./components/dashboard-activity";
 import { DashboardAgents } from "./components/dashboard-agents";
 import { DashboardPermissions } from "./components/dashboard-permissions";
@@ -26,16 +30,16 @@ function DashboardContent() {
   };
   return (
     <div className="flex flex-1 flex-col">
-      <div className="animate-in fade-in slide-in-from-bottom duration-1000 delay-200 fill-mode-both">
+      <div className="animate-in fade-in slide-in-from-bottom fill-mode-both delay-200 duration-1000">
         <DashboardStats timeWindow={timeWindow} />
       </div>
 
-      <div className="flex items-center justify-center mt-12 w-full px-[2.1em] sm:px-0">
-        <div className="flex flex-col max-w-screen-xl w-full gap-6">
+      <div className="mt-12 flex w-full items-center justify-center px-[2.1em] sm:px-0">
+        <div className="flex w-full max-w-screen-xl flex-col gap-6">
           <div
             className={cn(
-              "flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 w-full",
-              "animate-in fade-in slide-in-from-bottom duration-1000 delay-400 fill-mode-both"
+              "flex w-full flex-col gap-4 sm:flex-row sm:items-end sm:justify-between",
+              "animate-in fade-in slide-in-from-bottom delay-400 fill-mode-both duration-1000",
             )}
           >
             <div className="flex flex-col">
@@ -57,31 +61,31 @@ function DashboardContent() {
               }}
             />
           </div>
-          <div className="flex flex-col gap-3 mb-12">
-            <div className="flex flex-col md:flex-row gap-3 md:h-[600px]">
+          <div className="mb-12 flex flex-col gap-3">
+            <div className="flex flex-col gap-3 md:h-[600px] md:flex-row">
               <div
                 className={cn(
-                  "w-full md:w-[65%] h-[600px] md:h-full",
-                  "animate-in fade-in slide-in-from-bottom-10 duration-600 delay-600 fill-mode-both"
+                  "h-[600px] w-full md:h-full md:w-[65%]",
+                  "animate-in fade-in slide-in-from-bottom-10 duration-600 delay-600 fill-mode-both",
                 )}
               >
                 <DashboardAgents timeWindow={timeWindow} />
               </div>
 
-              <div className="w-full md:w-[35%] flex flex-col gap-3">
+              <div className="flex w-full flex-col gap-3 md:w-[35%]">
                 <Card
                   className={cn(
                     "h-[400px] sm:max-h-[294px] md:h-1/2",
-                    "animate-in fade-in slide-in-from-bottom-10 duration-600 delay-800 fill-mode-both"
+                    "animate-in fade-in slide-in-from-bottom-10 duration-600 delay-800 fill-mode-both",
                   )}
                 >
                   <CardHeader>
-                    <CardTitle className="bg-muted-foreground/35 w-fit p-2 rounded-md">
+                    <CardTitle className="bg-muted-foreground/35 w-fit rounded-md p-2">
                       /LIVE-SWARM-ACTIVITY-FEED
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="h-[calc(100%-4rem)] pb-4">
-                    <div className="h-full overflow-y-auto pr-2 -mr-2">
+                    <div className="-mr-2 h-full overflow-y-auto pr-2">
                       <div className="pb-4">
                         <DashboardActivity timeWindow={timeWindow} />
                       </div>
@@ -92,16 +96,16 @@ function DashboardContent() {
                 <Card
                   className={cn(
                     "h-[400px] sm:max-h-[294px] md:h-1/2",
-                    "animate-in fade-in slide-in-from-bottom-10 duration-600 delay-1000 fill-mode-both"
+                    "animate-in fade-in slide-in-from-bottom-10 duration-600 fill-mode-both delay-1000",
                   )}
                 >
                   <CardHeader>
-                    <CardTitle className="bg-muted-foreground/35 w-fit p-2 rounded-md">
+                    <CardTitle className="bg-muted-foreground/35 w-fit rounded-md p-2">
                       /PERMISSION-BREAKDOWN
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="h-[calc(100%-4rem)] pb-4">
-                    <div className="h-full overflow-y-auto pr-2 -mr-2">
+                    <div className="-mr-2 h-full overflow-y-auto pr-2">
                       <div className="pb-4">
                         <DashboardPermissions />
                       </div>
@@ -111,10 +115,10 @@ function DashboardContent() {
               </div>
             </div>
 
-            <div className="flex flex-col sm:flex-row gap-3">
-              <Card className="animate-in fade-in slide-in-from-bottom-10 duration-1000 delay-1200 fill-mode-both">
+            <div className="flex flex-col gap-3 sm:flex-row">
+              <Card className="animate-in fade-in slide-in-from-bottom-10 delay-1200 fill-mode-both duration-1000">
                 <CardHeader>
-                  <CardTitle className="bg-muted-foreground/35 w-fit p-2 rounded-md flex items-center">
+                  <CardTitle className="bg-muted-foreground/35 flex w-fit items-center rounded-md p-2">
                     /AGENT-ANALYSIS
                   </CardTitle>
                 </CardHeader>
@@ -131,9 +135,9 @@ function DashboardContent() {
                   </Link>
                 </CardContent>
               </Card>
-              <Card className="animate-in fade-in slide-in-from-bottom-10 duration-1000 delay-1400 fill-mode-both">
+              <Card className="animate-in fade-in slide-in-from-bottom-10 delay-1400 fill-mode-both duration-1000">
                 <CardHeader>
-                  <CardTitle className="bg-muted-foreground/35 w-fit p-2 rounded-md flex items-center">
+                  <CardTitle className="bg-muted-foreground/35 flex w-fit items-center rounded-md p-2">
                     /AGENT-COMPARISON
                   </CardTitle>
                 </CardHeader>
