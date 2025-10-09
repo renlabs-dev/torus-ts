@@ -1,4 +1,4 @@
-import "./globals.css";
+import "@torus-ts/ui/globals.css";
 import { GoogleAnalytics } from "@next/third-parties/google";
 import { ReactQueryProvider } from "@torus-ts/query-provider";
 import { TorusProvider } from "@torus-ts/torus-provider";
@@ -42,9 +42,9 @@ export default function RootLayout({
           <ProphetFinderHeader
             torusCacheUrl={env("NEXT_PUBLIC_TORUS_CACHE_URL")}
           />
-          <QueryProvider>
-            <AuthProvider>{children}</AuthProvider>
-          </QueryProvider>
+          {/* <QueryProvider> */}
+          <AuthProvider>{children}</AuthProvider>
+          {/* </QueryProvider> */}
           <Toaster />
         </TorusProvider>
         <GoogleAnalytics gaId="G-7YCMH64Q4J" />
