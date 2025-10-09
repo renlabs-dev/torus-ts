@@ -6,11 +6,11 @@ import { useFreeBalance } from "@torus-ts/query-provider/hooks";
 import { useTorus } from "@torus-ts/torus-provider";
 import { Button } from "@torus-ts/ui/components/button";
 import { Card, CardContent } from "@torus-ts/ui/components/card";
-import { Input } from "@torus-ts/ui/components/input";
+import { Input, InputReadonly } from "@torus-ts/ui/components/input";
 import { Label } from "@torus-ts/ui/components/label";
 import { contractAddresses } from "~/config";
 import { env } from "~/env";
-import { ArrowLeftRight } from "lucide-react";
+import { ArrowLeftRight, Info } from "lucide-react";
 import Image from "next/image";
 import { useCallback, useMemo, useState } from "react";
 import { erc20Abi } from "viem";
@@ -26,7 +26,7 @@ import { SimpleBridgeStep } from "./simple-bridge-types";
 export function SimpleBridgeForm() {
   const [direction, setDirection] =
     useState<SimpleBridgeDirection>("base-to-native");
-  const [amount, setAmount] = useState<string>("");
+  const [amountFrom, setAmountFrom] = useState<string>("");
   const [showTransactionDialog, setShowTransactionDialog] = useState(false);
 
   const { areWalletsReady, connectionState, chainIds } = useDualWallet();
@@ -66,7 +66,7 @@ export function SimpleBridgeForm() {
     setDirection((prev) =>
       prev === "base-to-native" ? "native-to-base" : "base-to-native",
     );
-    setAmount("");
+    setAmountFrom("");
   }, [isTransferInProgress]);
 
   const handleFractionClick = useCallback(
@@ -80,7 +80,7 @@ export function SimpleBridgeForm() {
         const fractionAmountString = (Number(fractionAmount) / 1e18).toFixed(
           18,
         );
-        setAmount(fractionAmountString.replace(/\.?0+$/, ""));
+        setAmountFrom(fractionAmountString.replace(/\.?0+$/, ""));
       } else if (direction === "native-to-base" && nativeBalance.data) {
         const maxAmount = nativeBalance.data - BigInt(1e18); // Reserve 1 token for gas
         // Use pure BigInt arithmetic to avoid precision loss
@@ -90,7 +90,7 @@ export function SimpleBridgeForm() {
         const fractionAmountString = (Number(fractionAmount) / 1e18).toFixed(
           18,
         );
-        setAmount(fractionAmountString.replace(/\.?0+$/, ""));
+        setAmountFrom(fractionAmountString.replace(/\.?0+$/, ""));
       }
     },
     [direction, baseBalance, nativeBalance.data],
@@ -101,16 +101,16 @@ export function SimpleBridgeForm() {
   }, [handleFractionClick]);
 
   const handleSubmit = useCallback(async () => {
-    if (!amount || !walletsReady) return;
+    if (!amountFrom || !walletsReady) return;
 
     setShowTransactionDialog(true);
     try {
-      await executeTransfer(direction, amount);
+      await executeTransfer(direction, amountFrom);
     } catch (error) {
       console.error("Transfer failed:", error);
       // Dialog stays open to show ERROR state from hook
     }
-  }, [amount, walletsReady, executeTransfer, direction]);
+  }, [amountFrom, walletsReady, executeTransfer, direction]);
 
   const handleCloseDialog = useCallback(() => {
     if (
@@ -120,7 +120,7 @@ export function SimpleBridgeForm() {
       setShowTransactionDialog(false);
       // Clear the form when transaction is complete or has error
       if (bridgeState.step === SimpleBridgeStep.COMPLETE) {
-        setAmount("");
+        setAmountFrom("");
       }
     }
   }, [bridgeState.step]);
@@ -164,10 +164,10 @@ export function SimpleBridgeForm() {
 
   const isFormValid = useMemo(() => {
     if (!walletsReady) return false;
-    if (!amount) return false;
-    if (parseFloat(amount) <= 0) return false;
+    if (!amountFrom) return false;
+    if (parseFloat(amountFrom) <= 0) return false;
 
-    const amountBigInt = BigInt(Math.floor(parseFloat(amount) * 1e18));
+    const amountBigInt = BigInt(Math.floor(parseFloat(amountFrom) * 1e18));
 
     // Validate sufficient balance for Base to Native
     if (direction === "base-to-native") {
@@ -180,15 +180,15 @@ export function SimpleBridgeForm() {
     if (!nativeBalance.data) return false;
     const requiredBalance = amountBigInt + BigInt(1e18); // 1 token for gas
     return nativeBalance.data >= requiredBalance;
-  }, [walletsReady, amount, direction, baseBalance, nativeBalance.data]);
+  }, [walletsReady, amountFrom, direction, baseBalance, nativeBalance.data]);
 
   const getButtonText = () => {
     if (isTransferInProgress) return "Processing...";
     if (!walletsReady) return "Connect Wallets";
-    if (!amount) return "Enter Amount";
-    if (parseFloat(amount) <= 0) return "Invalid Amount";
+    if (!amountFrom) return "Enter Amount";
+    if (parseFloat(amountFrom) <= 0) return "Invalid Amount";
 
-    const amountBigInt = BigInt(Math.floor(parseFloat(amount) * 1e18));
+    const amountBigInt = BigInt(Math.floor(parseFloat(amountFrom) * 1e18));
 
     // Check for insufficient balance - Base to Native
     if (direction === "base-to-native") {
@@ -204,13 +204,54 @@ export function SimpleBridgeForm() {
       if (nativeBalance.data < requiredBalance) return "Insufficient Balance";
     }
 
-    return `Transfer ${amount} TORUS`;
+    // Return specific transaction description based on direction
+    return direction === "base-to-native"
+      ? "Submit Base to Torus Transaction"
+      : "Submit Torus to Base Transaction";
   };
 
-  const getAmountPlaceholder = () => {
-    return direction === "base-to-native"
-      ? "Enter Base TORUS amount"
-      : "Enter Native TORUS amount";
+  const hasInsufficientBalance = () => {
+    if (!amountFrom || parseFloat(amountFrom) <= 0) return false;
+
+    const amountBigInt = BigInt(Math.floor(parseFloat(amountFrom) * 1e18));
+
+    // Check for insufficient balance - Base to Native
+    if (direction === "base-to-native") {
+      if (!baseBalance) return false;
+      const requiredBalance = amountBigInt + BigInt(1e16);
+      return baseBalance < requiredBalance;
+    }
+
+    // Check for insufficient balance - Native to Base
+    if (!nativeBalance.data) return false;
+    const requiredBalance = amountBigInt + BigInt(1e18);
+    return nativeBalance.data < requiredBalance;
+  };
+
+  const renderChainValue = (
+    chain: typeof fromChain,
+    showBaseFormat: boolean = false,
+  ) => {
+    if (showBaseFormat && chain.name === "Base") {
+      return (
+        <div className="flex items-center gap-2">
+          <Image src={chain.icon} alt={chain.name} width={20} height={20} />
+          <span className="text-foreground font-medium">
+            <span className="font-bold">$BASE</span> Base mainnet
+          </span>
+        </div>
+      );
+    }
+
+    return (
+      <div className="flex items-center gap-2">
+        <Image src={chain.icon} alt={chain.name} width={20} height={20} />
+        <span className="text-foreground font-medium">
+          <span className="font-bold">$TORUS</span>{" "}
+          {chain.name.replace("Torus Native", "Native")}
+        </span>
+      </div>
+    );
   };
 
   return (
@@ -220,110 +261,105 @@ export function SimpleBridgeForm() {
       {walletsReady && (
         <Card className="w-full">
           <CardContent className="space-y-6 pt-6">
-            <div className="space-y-4">
-              <div className="flex items-center gap-4">
-                <div className="flex-1 space-y-2">
-                  <Label className="text-sm font-medium">From</Label>
-                  <div className="flex items-center justify-between rounded-lg border p-3">
-                    <div className="flex items-center gap-3">
-                      <Image
-                        src={fromChain.icon}
-                        alt={fromChain.name}
-                        width={24}
-                        height={24}
-                      />
-                      <div>
-                        <p className="font-medium">{fromChain.name}</p>
-                        <p className="text-muted-foreground text-sm">
-                          {fromChain.balance}
-                        </p>
-                        <p className="text-muted-foreground text-xs">
-                          {fromChain.address}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
+            <div className="flex items-center gap-4">
+              <div className="flex-1 space-y-2">
+                <Label className="text-sm font-medium">From</Label>
+                <InputReadonly
+                  label="TORUS"
+                  value={renderChainValue(fromChain, true)}
+                  className="w-full"
+                />
+                <div className="text-muted-foreground flex items-center justify-between text-xs">
+                  <span>
+                    Balance:{" "}
+                    <span className="font-bold">{fromChain.balance}</span>
+                  </span>
+                  <span className="text-muted-foreground">|</span>
+                  <span>
+                    Account:{" "}
+                    <span className="font-bold">{fromChain.address}</span>
+                  </span>
                 </div>
+              </div>
 
-                <div className="flex items-center justify-center pt-6">
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={toggleDirection}
-                    disabled={isTransferInProgress}
-                    className="rounded-full"
-                  >
-                    <ArrowLeftRight className="h-4 w-4" />
-                  </Button>
-                </div>
+              <div className="mt-2 flex items-center justify-center">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={toggleDirection}
+                  disabled={isTransferInProgress}
+                  className="rounded-full"
+                >
+                  <ArrowLeftRight className="h-4 w-4" />
+                </Button>
+              </div>
 
-                <div className="flex-1 space-y-2">
-                  <Label className="text-sm font-medium">To</Label>
-                  <div className="flex items-center justify-between rounded-lg border p-3">
-                    <div className="flex items-center gap-3">
-                      <Image
-                        src={toChain.icon}
-                        alt={toChain.name}
-                        width={24}
-                        height={24}
-                      />
-                      <div>
-                        <p className="font-medium">{toChain.name}</p>
-                        <p className="text-muted-foreground text-sm">
-                          {toChain.balance}
-                        </p>
-                        <p className="text-muted-foreground text-xs">
-                          {toChain.address}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
+              <div className="flex-1 space-y-2">
+                <Label className="text-sm font-medium">To</Label>
+                <InputReadonly
+                  label="TORUS"
+                  value={renderChainValue(toChain, true)}
+                  className="w-full"
+                />
+                <div className="text-muted-foreground flex items-center justify-between text-xs">
+                  <span>
+                    Balance:{" "}
+                    <span className="font-bold">{toChain.balance}</span>
+                  </span>
+                  <span className="text-muted-foreground">|</span>
+                  <span>
+                    Account:{" "}
+                    <span className="font-bold">{toChain.address}</span>
+                  </span>
                 </div>
               </div>
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="amount">Amount</Label>
-              <div className="space-y-2">
-                <Input
-                  id="amount"
-                  type="number"
-                  value={amount}
-                  onChange={(e) => setAmount(e.target.value)}
-                  placeholder={getAmountPlaceholder()}
-                  disabled={isTransferInProgress}
-                  className="w-full"
-                />
-
-                <FractionButtons
-                  handleFractionClick={handleFractionClick}
-                  walletsReady={walletsReady}
-                  isTransferInProgress={isTransferInProgress}
-                  handleMaxClick={handleMaxClick}
-                />
-              </div>
+              <Label className="text-sm font-medium">Amount</Label>
+              <Input
+                type="number"
+                value={amountFrom}
+                onChange={(e) => setAmountFrom(e.target.value)}
+                placeholder="0.00"
+                disabled={isTransferInProgress}
+                className="w-full"
+              />
+              <FractionButtons
+                handleFractionClick={handleFractionClick}
+                walletsReady={walletsReady}
+                isTransferInProgress={isTransferInProgress}
+                handleMaxClick={handleMaxClick}
+              />
             </div>
 
-            <Button
-              onClick={handleSubmit}
-              disabled={!isFormValid || isTransferInProgress}
-              className="w-full"
-              size="lg"
-            >
-              {getButtonText()}
-            </Button>
+            <div className="flex flex-col gap-1">
+              <Button
+                onClick={handleSubmit}
+                disabled={!isFormValid || isTransferInProgress}
+                className={`w-full ${hasInsufficientBalance() ? "bg-red-600 text-white hover:bg-red-700" : ""}`}
+                size="lg"
+              >
+                {getButtonText()}
+              </Button>
+              <div className="text-muted-foreground mb-4 flex items-center gap-2 text-xs font-normal">
+                <Info className="h-3.5 w-3.5 align-middle" />
+                <span className="align-middle text-[12px] font-normal leading-5 tracking-normal">
+                  This transaction will ask for multiple signatures
+                </span>
+              </div>
+            </div>
           </CardContent>
         </Card>
       )}
 
-      {/* Transaction Lifecycle Dialog */}
       <TransactionLifecycleDialog
         isOpen={showTransactionDialog}
         onClose={handleCloseDialog}
         direction={direction}
         currentStep={bridgeState.step}
         transactions={transactions}
-        amount={amount}
+        amount={amountFrom}
         onRetry={retryFromFailedStep}
       />
     </div>

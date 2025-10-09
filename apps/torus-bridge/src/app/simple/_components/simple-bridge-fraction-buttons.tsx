@@ -22,7 +22,7 @@ export function FractionButton({
       variant="outline"
       disabled={disabled}
       className={cn(
-        "flex items-center justify-center rounded-none border border-[#262631] bg-[#19191A] py-2 text-xs hover:bg-[#262631]",
+        "flex h-6 w-[35px] items-center justify-center rounded-none border border-[#262631] bg-[#19191A] text-xs hover:bg-[#262631]",
         selected && "bg-[#262631]",
       )}
     >
