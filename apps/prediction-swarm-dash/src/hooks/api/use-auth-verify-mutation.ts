@@ -1,11 +1,10 @@
 import { useMutation } from "@tanstack/react-query";
 import {
-  type AuthVerifyRequest,
-  type AuthVerifyResponse,
   authVerifyRequestSchema,
   authVerifyResponseSchema,
-} from "@/lib/api-schemas";
-import { apiFetch } from "@/lib/fetch";
+} from "~/lib/api-schemas";
+import type { AuthVerifyRequest, AuthVerifyResponse } from "~/lib/api-schemas";
+import { apiFetch } from "~/lib/fetch";
 
 export async function verifyAuthSignature(
   params: AuthVerifyRequest,
@@ -42,6 +41,7 @@ export async function verifyAuthSignature(
     }
 
     return validatedData;
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
   } catch (_error) {
     // Return mapped data as fallback for debugging purposes
     return mappedData as AuthVerifyResponse;

@@ -1,11 +1,11 @@
+import { formatAddress } from "~/lib/api-utils";
+import { torusApi } from "~/lib/torus-api";
 import { useEffect, useState } from "react";
-import { formatAddress } from "@/lib/api-utils";
-import { type PolkadotCodec, torusApi } from "@/lib/torus-api";
 
 const CACHE_PREFIX = "agent_name_";
 
 async function fetchAgentName(address: string): Promise<string> {
-  if (!address?.trim()) return "Unknown Agent";
+  if (!address.trim()) return "Unknown Agent";
 
   const cacheKey = `${CACHE_PREFIX}${address}`;
 
@@ -15,9 +15,9 @@ async function fetchAgentName(address: string): Promise<string> {
 
   try {
     const agentData = await torusApi.getAgentData(address);
-    const codec = agentData as PolkadotCodec;
+    const codec = agentData;
 
-    if (!agentData || codec.isEmpty) {
+    if (codec.isEmpty) {
       const fallback = `Agent ${formatAddress(address)}`;
       sessionStorage.setItem(cacheKey, fallback);
       return fallback;
@@ -31,7 +31,7 @@ async function fetchAgentName(address: string): Promise<string> {
       }
     }
 
-    const name = agent?.name?.toString()?.trim();
+    const name = agent.name?.toString().trim();
     if (name && name !== "undefined" && name !== "null") {
       sessionStorage.setItem(cacheKey, name);
       return name;
@@ -54,7 +54,8 @@ export function useAgentName(address: string) {
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    if (!address?.trim()) {
+    if (!address.trim()) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setAgentName("Unknown Agent");
       return;
     }
@@ -68,19 +69,19 @@ export function useAgentName(address: string) {
     }
 
     setIsLoading(true);
-    fetchAgentName(address)
+    void fetchAgentName(address)
       .then(setAgentName)
       .finally(() => setIsLoading(false));
   }, [address]);
 
   const refetch = () => {
-    if (!address?.trim()) return;
+    if (!address.trim()) return;
 
     const cacheKey = `${CACHE_PREFIX}${address}`;
     sessionStorage.removeItem(cacheKey);
 
     setIsLoading(true);
-    fetchAgentName(address)
+    void fetchAgentName(address)
       .then(setAgentName)
       .finally(() => setIsLoading(false));
   };

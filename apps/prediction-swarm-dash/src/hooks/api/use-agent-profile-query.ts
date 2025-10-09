@@ -1,4 +1,3 @@
-import { useMemo } from "react";
 import type {
   AgentContributionStatsItem,
   Permission,
@@ -6,7 +5,8 @@ import type {
   TimeWindowParams,
   VerificationClaim,
   VerificationVerdict,
-} from "@/lib/api-schemas";
+} from "~/lib/api-schemas";
+import { useMemo } from "react";
 import { useAgentContributionStatsQuery } from "./use-agent-contribution-stats-query";
 import { usePermissionsQuery } from "./use-permissions-query";
 import { usePredictionsQuery } from "./use-predictions-query";
@@ -88,7 +88,7 @@ export function useAgentProfile(
       permissionsError;
 
     return {
-      summary: statsData?.agent_contribution_stats?.[0] || null,
+      summary: statsData?.agent_contribution_stats[0] || null,
       activity: {
         predictions: predictionsData || [],
         claims: claimsData || [],

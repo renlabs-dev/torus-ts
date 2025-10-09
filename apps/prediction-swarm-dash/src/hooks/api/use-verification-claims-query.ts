@@ -1,12 +1,12 @@
 import { useQuery } from "@tanstack/react-query";
-import { buildContentListUrl } from "@/lib/api-query-builder";
-import {
-  type ContentListParams,
-  contentListParamsSchema,
-  type VerificationClaimsResponse,
-} from "@/lib/api-schemas";
-import { createQueryKey } from "@/lib/api-utils";
-import { apiFetch } from "@/lib/fetch";
+import { buildContentListUrl } from "~/lib/api-query-builder";
+import { contentListParamsSchema } from "~/lib/api-schemas";
+import type {
+  ContentListParams,
+  VerificationClaimsResponse,
+} from "~/lib/api-schemas";
+import { createQueryKey } from "~/lib/api-utils";
+import { apiFetch } from "~/lib/fetch";
 
 async function fetchVerificationClaims(
   params: ContentListParams,
@@ -46,6 +46,7 @@ async function fetchVerificationClaims(
     });
 
     return validatedResponse as VerificationClaimsResponse;
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
   } catch (_error) {
     throw new Error(
       "VERIFICATION-CLAIMS API response does not match expected schema",

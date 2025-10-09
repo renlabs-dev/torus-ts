@@ -1,11 +1,13 @@
 import { useQuery } from "@tanstack/react-query";
 import {
-  type ContentListParams,
-  type ContentScoresResponse,
   contentListParamsSchema,
   contentScoresResponseSchema,
-} from "@/lib/api-schemas";
-import { apiFetch } from "@/lib/fetch";
+} from "~/lib/api-schemas";
+import type {
+  ContentListParams,
+  ContentScoresResponse,
+} from "~/lib/api-schemas";
+import { apiFetch } from "~/lib/fetch";
 
 async function fetchContentScores(
   params: ContentListParams,
@@ -41,6 +43,7 @@ async function fetchContentScores(
   try {
     const validatedResponse = contentScoresResponseSchema.parse(data);
     return validatedResponse;
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
   } catch (_error) {
     throw new Error("API response does not match expected schema");
   }

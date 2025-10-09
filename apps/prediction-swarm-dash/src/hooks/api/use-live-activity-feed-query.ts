@@ -5,7 +5,7 @@ import type {
   Prediction,
   VerificationClaim,
   VerificationVerdict,
-} from "@/lib/api-schemas";
+} from "~/lib/api-schemas";
 
 import { usePredictionsQuery } from "./use-predictions-query";
 import { useVerificationClaimsQuery } from "./use-verification-claims-query";

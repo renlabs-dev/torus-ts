@@ -1,14 +1,14 @@
 import { useQuery } from "@tanstack/react-query";
+import { agentContributionStatsParamsSchema } from "~/lib/api-schemas";
+import type {
+  AgentContributionStatsParams,
+  AgentContributionStatsResponse,
+  PermissionsResponse,
+  TimeWindowParams,
+} from "~/lib/api-schemas";
+import { createQueryKey } from "~/lib/api-utils";
+import { apiFetch } from "~/lib/fetch";
 import { useMemo } from "react";
-import {
-  type AgentContributionStatsParams,
-  type AgentContributionStatsResponse,
-  agentContributionStatsParamsSchema,
-  type PermissionsResponse,
-  type TimeWindowParams,
-} from "@/lib/api-schemas";
-import { createQueryKey } from "@/lib/api-utils";
-import { apiFetch } from "@/lib/fetch";
 
 interface SwarmTotalMetrics {
   totalPredictions: number;

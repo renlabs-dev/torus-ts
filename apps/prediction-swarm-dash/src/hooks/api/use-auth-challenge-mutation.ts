@@ -1,10 +1,10 @@
 import { useMutation } from "@tanstack/react-query";
-import {
-  type AuthChallengeRequest,
-  type AuthChallengeResponse,
-  authChallengeRequestSchema,
-} from "@/lib/api-schemas";
-import { apiFetch } from "@/lib/fetch";
+import { authChallengeRequestSchema } from "~/lib/api-schemas";
+import type {
+  AuthChallengeRequest,
+  AuthChallengeResponse,
+} from "~/lib/api-schemas";
+import { apiFetch } from "~/lib/fetch";
 
 export async function createAuthChallenge(
   params: AuthChallengeRequest,
@@ -25,7 +25,7 @@ export async function createAuthChallenge(
     body: JSON.stringify(validatedParams),
   });
 
-  if (!data || typeof data !== "object") {
+  if (typeof data !== "object") {
     throw new Error("Response is not an object");
   }
 

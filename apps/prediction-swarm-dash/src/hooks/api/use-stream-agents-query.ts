@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { apiFetch } from "@/lib/fetch";
+import { apiFetch } from "~/lib/fetch";
 
 interface StreamAgentsResponse {
   agent_addresses: string[];
@@ -36,7 +36,7 @@ export function useStreamAgentsQuery(
 
   return {
     agentAddresses: data?.agent_addresses || [],
-    totalAgentsInStream: data?.agent_addresses?.length || 0,
+    totalAgentsInStream: data?.agent_addresses.length || 0,
     isLoading,
     error,
   };

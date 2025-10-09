@@ -1,10 +1,10 @@
 import { useQuery } from "@tanstack/react-query";
-import {
-  type PermissionsListParams,
-  type PermissionsResponse,
-  permissionsListParamsSchema,
-} from "@/lib/api-schemas";
-import { apiFetch } from "@/lib/fetch";
+import { permissionsListParamsSchema } from "~/lib/api-schemas";
+import type {
+  PermissionsListParams,
+  PermissionsResponse,
+} from "~/lib/api-schemas";
+import { apiFetch } from "~/lib/fetch";
 
 async function fetchPermissions(
   params: PermissionsListParams,
@@ -47,6 +47,7 @@ async function fetchPermissions(
     });
 
     return validatedResponse as PermissionsResponse;
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
   } catch (_error) {
     throw new Error("PERMISSIONS API response does not match expected schema");
   }

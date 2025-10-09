@@ -1,10 +1,10 @@
-import { useMemo } from "react";
 import type {
   Prediction,
   TimeWindowParams,
   VerificationClaim,
   VerificationVerdict,
-} from "@/lib/api-schemas";
+} from "~/lib/api-schemas";
+import { useMemo } from "react";
 import { useAgentContributionStatsQuery } from "./use-agent-contribution-stats-query";
 import { usePermissionsQuery } from "./use-permissions-query";
 import { usePredictionsQuery } from "./use-predictions-query";
@@ -104,7 +104,7 @@ export function useAgentDetailedMetrics(
       permissionsError;
 
     // Extract stats from agent contribution data
-    const agentStats = statsData?.agent_contribution_stats?.[0];
+    const agentStats = statsData?.agent_contribution_stats[0];
 
     return {
       // Summary metrics

@@ -1,6 +1,7 @@
 "use client";
 
 import { useMutation } from "@tanstack/react-query";
+import { internalApiFetch } from "~/lib/fetch";
 
 interface SignMessageRequest {
   message: string;
@@ -10,8 +11,6 @@ interface SignMessageResponse {
   signature: string;
   address: string;
 }
-
-import { internalApiFetch } from "@/lib/fetch";
 
 export async function signMessageAPI(
   params: SignMessageRequest,

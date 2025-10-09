@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
-import type { VerificationClaim } from "@/lib/api-schemas";
-import { apiFetch } from "@/lib/fetch";
+import type { VerificationClaim } from "~/lib/api-schemas";
+import { apiFetch } from "~/lib/fetch";
 
 async function fetchVerificationClaimById(
   claimId: number,

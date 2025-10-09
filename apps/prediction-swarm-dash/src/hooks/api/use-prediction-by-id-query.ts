@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
-import type { Prediction } from "@/lib/api-schemas";
-import { apiFetch } from "@/lib/fetch";
+import type { Prediction } from "~/lib/api-schemas";
+import { apiFetch } from "~/lib/fetch";
 
 export function usePredictionByIdQuery(
   predictionId: number | null | undefined,

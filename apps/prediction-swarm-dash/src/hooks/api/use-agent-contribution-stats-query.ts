@@ -1,10 +1,10 @@
 import { useQuery } from "@tanstack/react-query";
-import {
-  type AgentContributionStatsParams,
-  type AgentContributionStatsResponse,
-  agentContributionStatsParamsSchema,
-} from "@/lib/api-schemas";
-import { apiFetch } from "@/lib/fetch";
+import { agentContributionStatsParamsSchema } from "~/lib/api-schemas";
+import type {
+  AgentContributionStatsParams,
+  AgentContributionStatsResponse,
+} from "~/lib/api-schemas";
+import { apiFetch } from "~/lib/fetch";
 
 async function fetchAgentContributionStats(
   params: AgentContributionStatsParams,
@@ -72,6 +72,7 @@ async function fetchAgentContributionStats(
     };
 
     return validatedResponse as AgentContributionStatsResponse;
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
   } catch (_error) {
     throw new Error(
       "AGENT-CONTRIBUTION-STATS API response does not match expected schema",

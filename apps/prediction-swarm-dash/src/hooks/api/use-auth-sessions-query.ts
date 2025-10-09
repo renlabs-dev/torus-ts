@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
-import type { AuthSessionsResponse } from "@/lib/api-schemas";
-import { createQueryKey } from "@/lib/api-utils";
-import { apiFetch } from "@/lib/fetch";
+import type { AuthSessionsResponse } from "~/lib/api-schemas";
+import { createQueryKey } from "~/lib/api-utils";
+import { apiFetch } from "~/lib/fetch";
 
 async function fetchAuthSessions(token: string): Promise<AuthSessionsResponse> {
   const data = await apiFetch<AuthSessionsResponse>("auth/sessions", {
@@ -14,7 +14,7 @@ async function fetchAuthSessions(token: string): Promise<AuthSessionsResponse> {
   // Validate response data
   try {
     // Basic validation - check structure
-    if (!data || typeof data !== "object") {
+    if (typeof data !== "object") {
       throw new Error("Response is not an object");
     }
 
@@ -38,10 +38,11 @@ async function fetchAuthSessions(token: string): Promise<AuthSessionsResponse> {
           last_used_at: sessionItem.last_used_at,
         };
       }),
-      total: (data.total as number) || 0,
+      total: data.total || 0,
     };
 
     return validatedResponse as AuthSessionsResponse;
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
   } catch (_error) {
     throw new Error(
       "AUTH-SESSIONS API response does not match expected schema",

@@ -1,5 +1,5 @@
 import { useMutation } from "@tanstack/react-query";
-import { apiFetch } from "@/lib/fetch";
+import { apiFetch } from "~/lib/fetch";
 
 interface AuthLogoutResponse {
   message: string;
@@ -16,7 +16,7 @@ async function logoutAuthSession(token: string): Promise<AuthLogoutResponse> {
     );
 
     // Validate response data
-    if (!data || typeof data !== "object") {
+    if (typeof data !== "object") {
       // If response is empty or invalid, consider logout successful
       return { message: "Logout successful" };
     }

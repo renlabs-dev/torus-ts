@@ -1,6 +1,6 @@
 import { useMutation } from "@tanstack/react-query";
-import { useAuthStore } from "@/lib/auth-store";
-import { apiFetch } from "@/lib/fetch";
+import { useAuthStore } from "~/lib/auth-store";
+import { apiFetch } from "~/lib/fetch";
 
 async function refreshAuthSession(): Promise<{
   session_token: string;
@@ -16,7 +16,7 @@ async function refreshAuthSession(): Promise<{
     },
   });
 
-  if (!data || typeof data !== "object") {
+  if (typeof data !== "object") {
     throw new Error("Response is not an object");
   }
 
