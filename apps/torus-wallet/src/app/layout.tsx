@@ -2,6 +2,7 @@ import "@torus-ts/ui/globals.css";
 import { GoogleAnalytics } from "@next/third-parties/google";
 import { ReactQueryProvider } from "@torus-ts/query-provider";
 import { TorusProvider } from "@torus-ts/torus-provider";
+import { APRBarClient } from "@torus-ts/ui/components/apr";
 import { Container } from "@torus-ts/ui/components/container";
 import { Footer } from "@torus-ts/ui/components/footer";
 import { Layout } from "@torus-ts/ui/components/layout";
@@ -12,7 +13,6 @@ import { WalletProvider } from "~/context/wallet-provider";
 import { env, EnvScript } from "~/env";
 import { firaMono } from "~/utils/fonts";
 import PlausibleProvider from "next-plausible";
-import { APRBar } from "./_components/apr-bar/apr-bar";
 import { SidebarLinks } from "./_components/sidebar-links";
 import { TransactionsSheet } from "./_components/transactions-sheet";
 import { WalletBalance } from "./_components/wallet-balance";
@@ -73,7 +73,7 @@ export default function RootLayout({
           torusCacheUrl={env("NEXT_PUBLIC_TORUS_CACHE_URL")}
         >
           <WalletHeader />
-          <APRBar />
+          <APRBarClient />
           <Container>
             <main className="mx-auto flex min-w-full flex-col items-center gap-3 text-white">
               <div className="flex w-full max-w-screen-xl flex-col justify-around gap-4 lg:mt-[10vh] lg:flex-row">

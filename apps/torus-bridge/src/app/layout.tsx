@@ -2,13 +2,12 @@ import "@torus-ts/ui/globals.css";
 import "@rainbow-me/rainbowkit/styles.css";
 import "@interchain-ui/react/styles";
 import "@solana/wallet-adapter-react-ui/styles.css";
+import { APRBarClient } from "@torus-ts/ui/components/apr";
 import { Layout } from "@torus-ts/ui/components/layout";
 import { createSeoMetadata } from "@torus-ts/ui/components/seo";
 import { AppContextProvider } from "~/context/app-context-provider";
 import { env, EnvScript } from "~/env";
 import { Fira_Mono as FiraMono } from "next/font/google";
-
-// import { WalletConflictGuard } from "./_components/wallet-conflict-guard";
 
 export function generateMetadata() {
   return createSeoMetadata({
@@ -41,9 +40,12 @@ export default function RootLayout({
 }>) {
   return (
     <Layout font={firaMono} headScripts={[EnvScript]}>
-      {/* <WalletConflictGuard> */}
-      <AppContextProvider>{children}</AppContextProvider>
-      {/* </WalletConflictGuard> */}
+      <AppContextProvider>
+        <div className="fixed left-0 top-0 z-50 flex w-full justify-end">
+          <APRBarClient />
+        </div>
+        {children}
+      </AppContextProvider>
     </Layout>
   );
 }

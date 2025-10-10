@@ -2,8 +2,12 @@
 
 import type { SS58Address } from "@torus-network/sdk/types";
 import { formatToken } from "@torus-network/torus-utils/torus/token";
-import { useFreeBalance } from "@torus-ts/query-provider/hooks";
+import {
+  useFreeBalance,
+  useGetTorusPrice,
+} from "@torus-ts/query-provider/hooks";
 import { useTorus } from "@torus-ts/torus-provider";
+import { TorusToUSD } from "@torus-ts/ui/components/apr/torus-to-usd";
 import { Button } from "@torus-ts/ui/components/button";
 import { Card, CardContent } from "@torus-ts/ui/components/card";
 import { Input, InputReadonly } from "@torus-ts/ui/components/input";
@@ -44,6 +48,8 @@ export function SimpleBridgeForm() {
     api,
     selectedAccount?.address as SS58Address,
   );
+
+  const { data: usdPrice } = useGetTorusPrice();
 
   const baseTorusAddress =
     contractAddresses.base[env("NEXT_PUBLIC_TORUS_CHAIN_ENV")].torusErc20;
@@ -269,16 +275,32 @@ export function SimpleBridgeForm() {
                   value={renderChainValue(fromChain, true)}
                   className="w-full"
                 />
-                <div className="text-muted-foreground flex items-center justify-between text-xs">
-                  <span>
+                <div className="text-muted-foreground flex flex-col gap-1 text-xs">
+                  <div>
                     Balance:{" "}
-                    <span className="font-bold">{fromChain.balance}</span>
-                  </span>
-                  <span className="text-muted-foreground">|</span>
-                  <span>
+                    <span className="font-bold">
+                      {fromChain.balance}
+                      {usdPrice && (
+                        <span className="text-muted-foreground ml-1 font-normal">
+                          (
+                          <TorusToUSD
+                            torusAmount={parseFloat(
+                              fromChain.balance
+                                .replace(" TORUS", "")
+                                .replace(",", ""),
+                            )}
+                            usdPrice={usdPrice}
+                            decimals={2}
+                          />
+                          )
+                        </span>
+                      )}
+                    </span>
+                  </div>
+                  <div>
                     Account:{" "}
                     <span className="font-bold">{fromChain.address}</span>
-                  </span>
+                  </div>
                 </div>
               </div>
 
@@ -301,16 +323,32 @@ export function SimpleBridgeForm() {
                   value={renderChainValue(toChain, true)}
                   className="w-full"
                 />
-                <div className="text-muted-foreground flex items-center justify-between text-xs">
-                  <span>
+                <div className="text-muted-foreground flex flex-col gap-1 text-xs">
+                  <div>
                     Balance:{" "}
-                    <span className="font-bold">{toChain.balance}</span>
-                  </span>
-                  <span className="text-muted-foreground">|</span>
-                  <span>
+                    <span className="font-bold">
+                      {toChain.balance}
+                      {usdPrice && (
+                        <span className="text-muted-foreground ml-1 font-normal">
+                          (
+                          <TorusToUSD
+                            torusAmount={parseFloat(
+                              toChain.balance
+                                .replace(" TORUS", "")
+                                .replace(",", ""),
+                            )}
+                            usdPrice={usdPrice}
+                            decimals={2}
+                          />
+                          )
+                        </span>
+                      )}
+                    </span>
+                  </div>
+                  <div>
                     Account:{" "}
                     <span className="font-bold">{toChain.address}</span>
-                  </span>
+                  </div>
                 </div>
               </div>
             </div>
@@ -342,7 +380,7 @@ export function SimpleBridgeForm() {
               >
                 {getButtonText()}
               </Button>
-              <div className="text-muted-foreground mb-4 flex items-center gap-2 text-xs font-normal">
+              <div className="text-muted-foreground flex items-center gap-2 text-xs font-normal">
                 <Info className="h-3.5 w-3.5 align-middle" />
                 <span className="align-middle text-[12px] font-normal leading-5 tracking-normal">
                   This transaction will ask for multiple signatures

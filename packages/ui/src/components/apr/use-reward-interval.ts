@@ -1,9 +1,16 @@
+"use client";
+
+import type { ApiPromise } from "@polkadot/api";
 import { CONSTANTS } from "@torus-network/sdk/constants";
-import { useWallet } from "~/context/wallet-provider";
+import {
+  useLastBlock,
+  useRewardInterval,
+} from "@torus-ts/query-provider/hooks";
 import { useEffect, useState } from "react";
 
-export function useRewardIntervalProgress() {
-  const { lastBlock, rewardInterval } = useWallet();
+export function useRewardIntervalProgress(api: ApiPromise | null) {
+  const lastBlock = useLastBlock(api);
+  const rewardInterval = useRewardInterval(api);
   const [timeLeft, setTimeLeft] = useState<number | null>(null);
   const [time, setTime] = useState({ minutes: 0, seconds: 0 });
 
