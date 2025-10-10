@@ -1,6 +1,4 @@
 import "@torus-ts/ui/globals.css";
-import { GoogleAnalytics } from "@next/third-parties/google";
-import { ReactQueryProvider } from "@torus-ts/query-provider";
 import { TorusProvider } from "@torus-ts/torus-provider";
 import { Layout } from "@torus-ts/ui/components/layout";
 import { Toaster } from "@torus-ts/ui/components/toaster";
@@ -8,8 +6,7 @@ import { AuthProvider } from "~/contexts/auth-provider";
 import { env, EnvScript } from "~/env";
 import { QueryProvider } from "~/lib/query-client";
 import type { Metadata } from "next";
-import { Fira_Mono as FiraMono } from "next/font/google";
-import { ProphetFinderHeader } from "./_components/prophet-finder-header";
+import { Geist_Mono as GeistMono } from "next/font/google";
 
 const APP_NAME = "Torus Prediction Swarm";
 
@@ -21,7 +18,7 @@ export const metadata: Metadata = {
     "Join the Torus Prediction Swarm: a decentralized network of AI agents that detect, verify, and store online predictions. Explore verifiable forecasts about tech, AI, crypto, and more.",
 };
 
-export const firaMono = FiraMono({
+export const geistMono = GeistMono({
   subsets: ["latin"],
   display: "swap",
   weight: "400",
@@ -33,22 +30,25 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <Layout font={firaMono} headScripts={[EnvScript]}>
-      <ReactQueryProvider>
-        <TorusProvider
+    <Layout font={geistMono} headScripts={[EnvScript]}>
+      {/* <ReactQueryProvider> */}
+      <QueryProvider>
+        {/* <TorusProvider
           wsEndpoint={env("NEXT_PUBLIC_TORUS_RPC_URL")}
           torusCacheUrl={env("NEXT_PUBLIC_TORUS_CACHE_URL")}
-        >
-          <ProphetFinderHeader
+        > */}
+        {/* <ProphetFinderHeader
             torusCacheUrl={env("NEXT_PUBLIC_TORUS_CACHE_URL")}
-          />
-          {/* <QueryProvider> */}
-          <AuthProvider>{children}</AuthProvider>
-          {/* </QueryProvider> */}
-          <Toaster />
-        </TorusProvider>
-        <GoogleAnalytics gaId="G-7YCMH64Q4J" />
-      </ReactQueryProvider>
+          /> */}
+        {/* <QueryProvider> */}
+        <AuthProvider>
+          <div className="bg-background">{children}</div>
+        </AuthProvider>
+        {/* </QueryProvider> */}
+        <Toaster />
+        {/* </TorusProvider> */}
+      </QueryProvider>
+      {/* </ReactQueryProvider> */}
     </Layout>
   );
 }

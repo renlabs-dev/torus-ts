@@ -230,7 +230,7 @@ export function SearchInput({
               id="search"
               placeholder={effectivePlaceholder}
               value=""
-              className="h-18 sm:pl-18 w-full cursor-pointer rounded-none border-none pl-12"
+              className="h-[4.25rem] w-full cursor-pointer rounded-none border-none pl-12 sm:pl-16"
               onClick={handleInputClick}
               readOnly
             />

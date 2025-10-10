@@ -128,7 +128,7 @@ function DashboardContent() {
                     permission details for individual agents.
                   </p>
                   <Link href="/agents">
-                    <Button variant="outline" className="w-full">
+                    <Button variant="outline" className="w-full rounded-sm">
                       <User className="mr-2 h-4 w-4" />
                       Open agent analysis
                     </Button>
@@ -147,7 +147,7 @@ function DashboardContent() {
                     ranking systems, and detailed metrics analysis.
                   </p>
                   <Link href="/comparison">
-                    <Button variant="outline" className="w-full">
+                    <Button variant="outline" className="w-full rounded-sm">
                       <BarChart3 className="mr-2 h-4 w-4" />
                       Compare agents
                     </Button>

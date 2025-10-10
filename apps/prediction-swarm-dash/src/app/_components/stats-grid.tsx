@@ -73,7 +73,11 @@ export function StatsGrid() {
         </div>
         <div className="-mt-5 flex justify-center">
           <Link href="/dashboard">
-            <Button variant="outline" size="lg" className="bg-background">
+            <Button
+              variant="outline"
+              size="lg"
+              className="bg-background rounded-md"
+            >
               Go to Dashboard
             </Button>
           </Link>

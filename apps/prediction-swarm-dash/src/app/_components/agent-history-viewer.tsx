@@ -29,7 +29,7 @@ import type { ActivityType } from "./activity-type-selector";
 import { LoadingDots } from "./loading-dots";
 import { Pagination } from "./pagination";
 import { RelativeTime } from "./relative-time";
-import { SearchInput } from "./search-input";
+import { SearchInput } from "./search-field";
 
 function HighlightedText({
   fullText,
@@ -476,14 +476,12 @@ export function AgentHistoryViewer({
 
   // eslint-disable-next-line react-hooks/preserve-manual-memoization
   const sortedData = useMemo(() => {
-    if (!data) return [];
-
     // Apply client-side filtering
     const filtered = data.filter((item) => {
       // Topic filter (for predictions)
       if (activityType === "predictions" && filters.topic !== "all") {
         const prediction = item as Prediction;
-        const itemTopic = prediction.topic?.toLowerCase() || "";
+        const itemTopic = prediction.topic.toLowerCase() || "";
         if (!itemTopic.includes(filters.topic.toLowerCase())) {
           return false;
         }

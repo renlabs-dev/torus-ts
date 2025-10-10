@@ -23,7 +23,7 @@ export default function Home() {
       <div className="text-muted-foreground flex w-full justify-center px-10 sm:px-0">
         <div
           className={cn(
-            "my-18 flex w-full max-w-screen-xl justify-between",
+            "my-[4.5rem] flex w-full max-w-screen-xl justify-between",
             "animate-in fade-in slide-in-from-bottom fill-mode-both delay-1000 duration-1000",
           )}
         >

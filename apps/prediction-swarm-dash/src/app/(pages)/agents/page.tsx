@@ -7,6 +7,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@torus-ts/ui/components/card";
+import { cn } from "@torus-ts/ui/lib/utils";
 import { ActivityTypeSelector } from "~/app/_components/activity-type-selector";
 import type { ActivityType } from "~/app/_components/activity-type-selector";
 import { AgentHistoryViewer } from "~/app/_components/agent-history-viewer";
@@ -177,7 +178,7 @@ function AgentsPageContent() {
   }
 
   return (
-    <Card className="animate-in fade-in slide-in-from-top-10 fill-mode-both mb-12 w-full border-none p-0 delay-0 duration-1000">
+    <Card className="animate-in fade-in slide-in-from-top-10 fill-mode-both mb-12 h-full w-full border-none p-0 delay-0 duration-1000">
       <CardHeader className="border-border flex items-center border-y px-4 pt-6 md:px-6">
         <div className="mx-auto flex w-full max-w-screen-xl flex-col gap-6">
           <div
