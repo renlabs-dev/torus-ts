@@ -1298,9 +1298,6 @@ importers:
       '@torus-ts/query-provider':
         specifier: workspace:*
         version: link:../query-provider
-      '@torus-ts/torus-provider':
-        specifier: workspace:*
-        version: link:../torus-provider
       '@uiw/react-markdown-preview':
         specifier: ^5.1.1
         version: 5.1.5(@types/react@19.0.14)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
