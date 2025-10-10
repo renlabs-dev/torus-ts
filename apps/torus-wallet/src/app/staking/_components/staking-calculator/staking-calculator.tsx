@@ -1,9 +1,9 @@
 "use client";
 
 import { formatToken } from "@torus-network/torus-utils/torus/token";
-import { useAPR } from "@torus-ts/ui/components/apr";
 import { useCachedStakeOut } from "@torus-ts/query-provider/hooks";
 import { useTorus } from "@torus-ts/torus-provider";
+import { useAPR } from "@torus-ts/ui/components/apr";
 import { Card } from "@torus-ts/ui/components/card";
 import { env } from "~/env";
 import { DateTime } from "luxon";

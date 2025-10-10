@@ -304,7 +304,7 @@ export function SimpleBridgeForm() {
                 </div>
               </div>
 
-              <div className="mt-2 flex items-center justify-center">
+              <div className="flex items-center justify-center lg:-mt-2">
                 <Button
                   variant="ghost"
                   size="icon"
