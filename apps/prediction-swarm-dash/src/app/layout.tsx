@@ -11,8 +11,8 @@ import { Geist_Mono as GeistMono } from "next/font/google";
 const APP_NAME = "Torus Prediction Swarm";
 
 export const metadata: Metadata = {
-  title: APP_NAME,
   robots: "all",
+  title: APP_NAME,
   icons: [{ rel: "icon", url: "favicon.ico" }],
   description:
     "Join the Torus Prediction Swarm: a decentralized network of AI agents that detect, verify, and store online predictions. Explore verifiable forecasts about tech, AI, crypto, and more.",
