@@ -13,7 +13,7 @@ class TorusApi {
   private readonly nodeUrl: string;
 
   private constructor() {
-    this.nodeUrl = env("NEXT_PUBLIC_TORUS_NODE_URL");
+    this.nodeUrl = env("NEXT_PUBLIC_TORUS_RPC_URL");
   }
 
   public static getInstance(): TorusApi {

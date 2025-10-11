@@ -22,7 +22,6 @@ export const envSchema = {
    * For them to be exposed to the client, prefix them with `NEXT_PUBLIC_`.
    */
   /** Origin URI used in the statement signed by the user to authenticate */
-  NEXT_PUBLIC_TORUS_NODE_URL: z.string().url(),
   NEXT_PUBLIC_AUTH_ORIGIN: z.string().default(AUTH_ORIGIN_DEFAULT), // Origin URI used in the statement signed by the user to authenticate
   NEXT_PUBLIC_TORUS_RPC_URL: z.string().url(),
   NEXT_PUBLIC_TORUS_CACHE_URL: z.string().url(),
