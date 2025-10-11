@@ -2,10 +2,9 @@ import "@torus-ts/ui/globals.css";
 import "@rainbow-me/rainbowkit/styles.css";
 import "@interchain-ui/react/styles";
 import "@solana/wallet-adapter-react-ui/styles.css";
-import { useTorus } from "@torus-ts/torus-provider";
-import { APRBarClient } from "@torus-ts/ui/components/apr";
 import { Layout } from "@torus-ts/ui/components/layout";
 import { createSeoMetadata } from "@torus-ts/ui/components/seo";
+import { APRBarWrapper } from "~/components/apr-bar-wrapper";
 import { AppContextProvider } from "~/context/app-context-provider";
 import { env, EnvScript } from "~/env";
 import { Fira_Mono as FiraMono } from "next/font/google";
@@ -33,11 +32,6 @@ export const firaMono = FiraMono({
   display: "swap",
   weight: "400",
 });
-
-function APRBarWrapper() {
-  const { api } = useTorus();
-  return <APRBarClient api={api} />;
-}
 
 export default function RootLayout({
   children,

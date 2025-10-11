@@ -1,13 +1,13 @@
 import "@torus-ts/ui/globals.css";
 import { GoogleAnalytics } from "@next/third-parties/google";
 import { ReactQueryProvider } from "@torus-ts/query-provider";
-import { TorusProvider, useTorus } from "@torus-ts/torus-provider";
-import { APRBarClient } from "@torus-ts/ui/components/apr";
+import { TorusProvider } from "@torus-ts/torus-provider";
 import { Container } from "@torus-ts/ui/components/container";
 import { Footer } from "@torus-ts/ui/components/footer";
 import { Layout } from "@torus-ts/ui/components/layout";
 import { createSeoMetadata } from "@torus-ts/ui/components/seo";
 import { Toaster } from "@torus-ts/ui/components/toaster";
+import { APRBarWrapper } from "~/components/apr-bar-wrapper";
 import { UsdPriceProvider } from "~/context/usd-price-provider";
 import { WalletProvider } from "~/context/wallet-provider";
 import { env, EnvScript } from "~/env";
@@ -56,11 +56,6 @@ const Providers: React.FC<ProvidersProps> = ({
     </ReactQueryProvider>
   </TorusProvider>
 );
-
-function APRBarWrapper() {
-  const { api } = useTorus();
-  return <APRBarClient api={api} />;
-}
 
 export default function RootLayout({
   children,
