@@ -14,8 +14,9 @@ import { useIsMobile } from "@torus-ts/ui/hooks/use-mobile";
 import { cn } from "@torus-ts/ui/lib/utils";
 import { useAgentContributionStatsQuery } from "~/hooks/api/use-agent-contribution-stats-query";
 import { useAgentName } from "~/hooks/api/use-agent-name-query";
+import { useProphetProfilesSearchQuery } from "~/hooks/api/use-prophet-profiles-search-query";
 import { formatAddress } from "~/lib/api-utils";
-import { Check, SearchIcon } from "lucide-react";
+import { Check, SearchIcon, User } from "lucide-react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import React, { useCallback, useMemo, useState } from "react";
 import { BorderContainer } from "./border-container";
@@ -104,6 +105,10 @@ export function SearchInput({
   const { data: statsData, isLoading: statsLoading } =
     useAgentContributionStatsQuery();
 
+  // Search for prophet profiles (only when user has typed >= 3 characters)
+  const { data: prophetProfiles, isLoading: prophetProfilesLoading } =
+    useProphetProfilesSearchQuery(search);
+
   // Process agents list
 
   const agents = useMemo(() => {
@@ -120,7 +125,7 @@ export function SearchInput({
       .sort((a, b) => b.predictions - a.predictions);
   }, [statsData, excludeAgents]);
 
-  const isLoading = statsLoading;
+  const isLoading = statsLoading || (search.length >= 3 && prophetProfilesLoading);
 
   const handleInputClick = () => {
     setShowCommand(true);
@@ -133,10 +138,14 @@ export function SearchInput({
   const [selectedAgent, setSelectedAgent] = React.useState<string>(
     pathname === "/agents" ? searchParams.get("agent") || "" : "",
   );
+  const [selectedProphetUsername, setSelectedProphetUsername] = React.useState<string>(
+    pathname === "/prophet" ? searchParams.get("username") || "" : "",
+  );
 
   const handleAgentChange = useCallback(
     (agentAddress: string) => {
       setSelectedAgent(agentAddress);
+      setSelectedProphetUsername("");
 
       if (agentAddress) {
         router.push(`/agents?agent=${encodeURIComponent(agentAddress)}`, {
@@ -150,24 +159,39 @@ export function SearchInput({
   );
 
   const { agentName } = useAgentName(selectedAgent);
+  const { data: selectedProphetProfile } = useProphetProfilesSearchQuery(
+    selectedProphetUsername,
+    { enabled: !!selectedProphetUsername },
+  );
 
   React.useEffect(() => {
-    if (pathname !== "/agents") {
-      setSelectedAgent("");
-    } else {
+    if (pathname === "/agents") {
       const agentParam = searchParams.get("agent");
       if (agentParam !== selectedAgent) {
         setSelectedAgent(agentParam || "");
+        setSelectedProphetUsername("");
       }
+    } else if (pathname === "/prophet") {
+      const usernameParam = searchParams.get("username");
+      if (usernameParam !== selectedProphetUsername) {
+        setSelectedProphetUsername(usernameParam || "");
+        setSelectedAgent("");
+      }
+    } else {
+      setSelectedAgent("");
+      setSelectedProphetUsername("");
     }
-  }, [pathname, searchParams, selectedAgent]);
+  }, [pathname, searchParams, selectedAgent, selectedProphetUsername]);
 
   const effectivePlaceholder = useMemo(() => {
     if (selectedAgent && agentName) {
       return `Selected Agent: ${agentName}`;
     }
+    if (selectedProphetUsername && selectedProphetProfile?.[0]) {
+      return `Selected Account: @${selectedProphetProfile[0].username}`;
+    }
     return isMobile ? "Search accounts or tickers..." : placeholder;
-  }, [selectedAgent, agentName, placeholder, isMobile]);
+  }, [selectedAgent, agentName, selectedProphetUsername, selectedProphetProfile, placeholder, isMobile]);
 
   return (
     <>
@@ -190,29 +214,66 @@ export function SearchInput({
           </CommandEmpty>
 
           {!isLoading && (
-            <CommandGroup>
-              {agents.map((agent) => (
-                <AgentItem
-                  key={agent.address}
-                  address={agent.address}
-                  isSelected={selectedAgent === agent.address}
-                  searchTerm={search}
-                  predictions={agent.predictions}
-                  claims={agent.claims}
-                  verdicts={agent.verdicts}
-                  onSelect={() => {
-                    const newValue =
-                      agent.address === selectedAgent ? "" : agent.address;
-                    handleAgentChange(newValue);
-                    if (onValueChange) {
-                      onValueChange(newValue);
-                    }
-                    setShowCommand(false);
-                    setSearch("");
-                  }}
-                />
-              ))}
-            </CommandGroup>
+            <>
+              {/* Prophet Profiles Group */}
+              {prophetProfiles && prophetProfiles.length > 0 && (
+                <CommandGroup heading="Twitter Accounts">
+                  {prophetProfiles.map((profile) => (
+                    <CommandItem
+                      key={profile.id}
+                      value={profile.username}
+                      onSelect={() => {
+                        router.push(
+                          `/prophet?username=${encodeURIComponent(profile.username)}`,
+                          { scroll: false },
+                        );
+                        setShowCommand(false);
+                        setSearch("");
+                      }}
+                      className="flex cursor-pointer items-center justify-between"
+                    >
+                      <div className="flex items-center gap-2">
+                        <User className="h-4 w-4" />
+                        <div className="flex flex-col">
+                          <span>{profile.display_name}</span>
+                          <span className="text-muted-foreground">
+                            @{profile.username}
+                          </span>
+                        </div>
+                      </div>
+                      <div className="text-muted-foreground flex items-center gap-3 text-xs">
+                        <span>{profile.follower_count.toLocaleString()} followers</span>
+                      </div>
+                    </CommandItem>
+                  ))}
+                </CommandGroup>
+              )}
+
+              {/* Agents Group */}
+              <CommandGroup heading="Agents">
+                {agents.map((agent) => (
+                  <AgentItem
+                    key={agent.address}
+                    address={agent.address}
+                    isSelected={selectedAgent === agent.address}
+                    searchTerm={search}
+                    predictions={agent.predictions}
+                    claims={agent.claims}
+                    verdicts={agent.verdicts}
+                    onSelect={() => {
+                      const newValue =
+                        agent.address === selectedAgent ? "" : agent.address;
+                      handleAgentChange(newValue);
+                      if (onValueChange) {
+                        onValueChange(newValue);
+                      }
+                      setShowCommand(false);
+                      setSearch("");
+                    }}
+                  />
+                ))}
+              </CommandGroup>
+            </>
           )}
         </CommandList>
       </CommandDialog>
