@@ -102,6 +102,39 @@ export const predictionSchema = z.object({
 
 export const predictionsResponseSchema = z.array(predictionSchema);
 
+export const predictionsListParamsSchema = timeWindowParamsSchema
+  .extend(paginationParamsSchema.shape)
+  .extend(agentParamsSchema.shape)
+  .extend(
+    z.object({
+      search: z.string().optional(),
+      sort_by: z.enum(["id", "twitter_username"]).optional(),
+      sort_order: z.enum(["asc", "desc"]).optional(),
+    }).shape,
+  );
+
+// =============================================================================
+// PROPHET FINDER SCHEMAS
+// =============================================================================
+
+export const prophetProfileSchema = z.object({
+  id: z.string(),
+  username: z.string(),
+  display_name: z.string(),
+  profile_image_url: z.string(),
+  follower_count: z.number().int(),
+  following_count: z.number().int(),
+  profile_tweet_count: z.number().int(),
+  scraped_tweet_count: z.number().int(),
+  last_scraped: z.string().datetime().nullable(),
+});
+
+export const prophetProfilesResponseSchema = z.array(prophetProfileSchema);
+
+export const prophetProfilesParamsSchema = paginationParamsSchema.extend({
+  twitter_username: z.string().optional(),
+});
+
 // =============================================================================
 // VERIFICATION SCHEMAS
 // =============================================================================
@@ -235,6 +268,12 @@ export type AgentContributionStatsResponse = z.infer<
 // Prediction types
 export type Prediction = z.infer<typeof predictionSchema>;
 export type PredictionsResponse = z.infer<typeof predictionsResponseSchema>;
+export type PredictionsListParams = z.infer<typeof predictionsListParamsSchema>;
+
+// Prophet Finder types
+export type ProphetProfile = z.infer<typeof prophetProfileSchema>;
+export type ProphetProfilesResponse = z.infer<typeof prophetProfilesResponseSchema>;
+export type ProphetProfilesParams = z.infer<typeof prophetProfilesParamsSchema>;
 
 // Verification types
 export type VerificationClaim = z.infer<typeof verificationClaimSchema>;
