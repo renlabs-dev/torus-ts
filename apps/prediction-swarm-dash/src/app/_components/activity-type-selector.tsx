@@ -107,9 +107,16 @@ export function ActivityTypeSelector({
         className={cn("hidden w-full md:block", className)}
         variant="underline"
       >
-        <TabsList className="grid w-full grid-cols-4 bg-transparent" variant="underline">
+        <TabsList
+          className="grid w-full grid-cols-4 bg-transparent"
+          variant="underline"
+        >
           {activityTypes.map((type) => (
-            <TabsTrigger key={type.value} value={type.value} variant="underline">
+            <TabsTrigger
+              key={type.value}
+              value={type.value}
+              variant="underline"
+            >
               <div className="mb-1 flex items-center gap-2">
                 <type.icon className="h-4 w-4" />
                 <span className="font-medium">{type.label}</span>
