@@ -240,10 +240,9 @@ interface SphereAnimationProps {
 }
 
 // Internal Particles component
-interface ParticlesProps
-  extends Required<
-    Omit<SphereAnimationProps, "cameraPosition" | "cameraFov">
-  > {}
+type ParticlesProps = Required<
+  Omit<SphereAnimationProps, "cameraPosition" | "cameraFov">
+>;
 
 const Particles = forwardRef<THREE.Points, ParticlesProps>(function Particles(
   { speed, fov, aperture, focus, curl, size },
@@ -327,33 +326,43 @@ const Particles = forwardRef<THREE.Points, ParticlesProps>(function Particles(
 
     // Update simulation uniforms
     if (simRef.current) {
-      simRef.current.uniforms.uTime.value = state.clock.elapsedTime * speed;
-      simRef.current.uniforms.uCurlFreq.value = THREE.MathUtils.lerp(
-        simRef.current.uniforms.uCurlFreq.value,
-        curl,
-        0.1,
-      );
+      const uTime = simRef.current.uniforms.uTime;
+      const uCurlFreq = simRef.current.uniforms.uCurlFreq;
+      if (uTime) {
+        uTime.value = state.clock.elapsedTime * speed;
+      }
+      if (uCurlFreq && typeof uCurlFreq.value === "number") {
+        uCurlFreq.value = THREE.MathUtils.lerp(uCurlFreq.value, curl, 0.1);
+      }
     }
 
     // Update render uniforms
     if (renderRef.current) {
-      renderRef.current.uniforms.positions.value = target.texture;
-      renderRef.current.uniforms.uTime.value = state.clock.elapsedTime;
-      renderRef.current.uniforms.uFocus.value = THREE.MathUtils.lerp(
-        renderRef.current.uniforms.uFocus.value,
-        focus,
-        0.1,
-      );
-      renderRef.current.uniforms.uFov.value = THREE.MathUtils.lerp(
-        renderRef.current.uniforms.uFov.value,
-        fov,
-        0.1,
-      );
-      renderRef.current.uniforms.uBlur.value = THREE.MathUtils.lerp(
-        renderRef.current.uniforms.uBlur.value,
-        (5.6 - aperture) * 9,
-        0.1,
-      );
+      const positions = renderRef.current.uniforms.positions;
+      const uTime = renderRef.current.uniforms.uTime;
+      const uFocus = renderRef.current.uniforms.uFocus;
+      const uFov = renderRef.current.uniforms.uFov;
+      const uBlur = renderRef.current.uniforms.uBlur;
+
+      if (positions) {
+        positions.value = target.texture;
+      }
+      if (uTime) {
+        uTime.value = state.clock.elapsedTime;
+      }
+      if (uFocus && typeof uFocus.value === "number") {
+        uFocus.value = THREE.MathUtils.lerp(uFocus.value, focus, 0.1);
+      }
+      if (uFov && typeof uFov.value === "number") {
+        uFov.value = THREE.MathUtils.lerp(uFov.value, fov, 0.1);
+      }
+      if (uBlur && typeof uBlur.value === "number") {
+        uBlur.value = THREE.MathUtils.lerp(
+          uBlur.value,
+          (5.6 - aperture) * 9,
+          0.1,
+        );
+      }
     }
   });
 

@@ -1,9 +1,8 @@
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
+import type { TimeWindowParams } from "./api-schemas";
 
 dayjs.extend(utc);
-
-import type { TimeWindowParams } from "./api-schemas";
 
 /**
  * Formats a wallet address to show first 6 and last 6 characters
@@ -145,6 +144,7 @@ export function groupBy<T, K extends string | number | symbol>(
   return array.reduce(
     (groups, item) => {
       const key = keyFn(item);
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
       if (!groups[key]) {
         groups[key] = [];
       }
@@ -170,8 +170,9 @@ export function extractClaimIdFromReasoning(reasoning: string): number | null {
   if (!reasoning) return null;
 
   // Match patterns like "claim 3311", "Claim 1234", etc.
-  const claimMatch = reasoning.match(/\bclaim\s+(\d+)/i);
-  if (claimMatch) {
+  const regex = /\bclaim\s+(\d+)/i;
+  const claimMatch = regex.exec(reasoning);
+  if (claimMatch?.[1]) {
     return parseInt(claimMatch[1], 10);
   }
 

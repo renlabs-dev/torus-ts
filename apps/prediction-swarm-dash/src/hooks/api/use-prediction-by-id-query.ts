@@ -14,27 +14,8 @@ export function usePredictionByIdQuery(
 
       const data = await apiFetch<Prediction>(`predictions/${predictionId}`);
 
-      // Normalize the prediction data
-      return {
-        ...data,
-        id: data.id || 0,
-        inserted_at: data.inserted_at || new Date().toISOString(),
-        inserted_by_address: data.inserted_by_address || "unknown",
-        predictor_twitter_username:
-          data.predictor_twitter_username || "unknown",
-        predictor_twitter_user_id: data.predictor_twitter_user_id,
-        prediction_timestamp:
-          data.prediction_timestamp ||
-          data.inserted_at ||
-          new Date().toISOString(),
-        url: data.url || "",
-        full_post: data.full_post || "",
-        prediction: data.prediction || "",
-        topic: data.topic || "",
-        context: data.context,
-        verification_claims: data.verification_claims || [],
-        verification_verdict: data.verification_verdict,
-      } as Prediction;
+      // Return the data as-is since it's already typed
+      return data;
     },
     enabled: !!predictionId,
     staleTime: 5 * 60 * 1000, // 5 minutes

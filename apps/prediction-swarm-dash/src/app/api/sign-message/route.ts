@@ -6,12 +6,18 @@ import type { NextRequest } from "next/server";
 
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json();
-    const { message } = body;
-
-    if (!message) {
+    const body = (await request.json()) as unknown;
+    if (!body || typeof body !== "object") {
       return NextResponse.json(
-        { error: "Message is required" },
+        { error: "Invalid request body" },
+        { status: 400 },
+      );
+    }
+    const { message } = body as { message?: unknown };
+
+    if (!message || typeof message !== "string") {
+      return NextResponse.json(
+        { error: "Message is required and must be a string" },
         { status: 400 },
       );
     }
@@ -19,6 +25,13 @@ export async function POST(request: NextRequest) {
     await cryptoWaitReady();
 
     const seedPhrase = env("TORUS_WALLET_SEED_PHRASE");
+
+    if (!seedPhrase) {
+      return NextResponse.json(
+        { error: "TORUS_WALLET_SEED_PHRASE not configured" },
+        { status: 500 },
+      );
+    }
 
     const walletProof = new WalletProof(seedPhrase);
 

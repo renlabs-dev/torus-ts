@@ -34,7 +34,7 @@ function ComparisonPageContent() {
     const agentsParam = searchParams.get("agents");
     if (agentsParam) {
       try {
-        const agents = JSON.parse(decodeURIComponent(agentsParam));
+        const agents = JSON.parse(decodeURIComponent(agentsParam)) as unknown;
         if (Array.isArray(agents)) {
           setSelectedAgents(agents);
         }

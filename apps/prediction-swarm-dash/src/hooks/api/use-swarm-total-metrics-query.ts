@@ -41,7 +41,7 @@ async function fetchAgentContributionStats(
 
   try {
     // Basic validation - check structure
-    if (!data || typeof data !== "object") {
+    if (typeof data !== "object") {
       throw new Error("Response is not an object");
     }
 
@@ -80,6 +80,7 @@ async function fetchAgentContributionStats(
     };
 
     return validatedResponse as AgentContributionStatsResponse;
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
   } catch (_error) {
     throw new Error(
       "SWARM-METRICS AGENT-CONTRIBUTION-STATS API response does not match expected schema",
@@ -112,6 +113,7 @@ async function fetchPermissions(): Promise<PermissionsResponse> {
     });
 
     return validatedResponse as PermissionsResponse;
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
   } catch (_error) {
     throw new Error(
       "SWARM-METRICS PERMISSIONS API response does not match expected schema",
@@ -171,17 +173,19 @@ export function useSwarmTotalMetrics(
     const totals = statsData.agent_contribution_stats.reduce(
       (acc: Record<string, number>, agent: Record<string, unknown>) => ({
         totalPredictions:
-          acc.totalPredictions + (agent.num_predictions_submitted as number),
+          (acc.totalPredictions ?? 0) +
+          (agent.num_predictions_submitted as number),
         totalVerificationClaims:
-          acc.totalVerificationClaims +
+          (acc.totalVerificationClaims ?? 0) +
           (agent.num_verification_claims_submitted as number),
         totalVerificationVerdicts:
-          acc.totalVerificationVerdicts +
+          (acc.totalVerificationVerdicts ?? 0) +
           (agent.num_verification_verdicts_submitted as number),
         totalTasksClaimed:
-          acc.totalTasksClaimed + (agent.num_tasks_claimed as number),
+          (acc.totalTasksClaimed ?? 0) + (agent.num_tasks_claimed as number),
         totalTasksCompleted:
-          acc.totalTasksCompleted + (agent.num_tasks_completed as number),
+          (acc.totalTasksCompleted ?? 0) +
+          (agent.num_tasks_completed as number),
       }),
       {
         totalPredictions: 0,

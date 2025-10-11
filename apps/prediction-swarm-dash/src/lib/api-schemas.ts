@@ -92,7 +92,12 @@ export const predictionSchema = z.object({
   context: z.any().nullable(),
   tweet: tweetSchema.nullable().optional(),
   verification_claims: z.array(z.any()),
-  verification_verdict: z.any().nullable(),
+  verification_verdict: z
+    .object({
+      reasoning: z.string().optional(),
+    })
+    .nullable()
+    .optional(),
 });
 
 export const predictionsResponseSchema = z.array(predictionSchema);

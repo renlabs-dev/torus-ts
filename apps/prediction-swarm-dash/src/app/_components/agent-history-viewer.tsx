@@ -99,7 +99,10 @@ function PredictionItem({ item }: { item: Prediction }) {
         </div>
         <div className="flex flex-wrap items-center gap-2 sm:gap-4">
           {/* Verdict Popover */}
-          {item.verification_verdict?.reasoning ? (
+          {item.verification_verdict &&
+          typeof item.verification_verdict === "object" &&
+          "reasoning" in item.verification_verdict &&
+          item.verification_verdict.reasoning ? (
             <Popover>
               <PopoverTrigger asChild>
                 <Button
@@ -115,7 +118,9 @@ function PredictionItem({ item }: { item: Prediction }) {
                 <div className="space-y-2">
                   <h4 className="font-medium">Verification Verdict</h4>
                   <p className="text-muted-foreground text-sm">
-                    {item.verification_verdict.reasoning}
+                    {typeof item.verification_verdict.reasoning === "string"
+                      ? item.verification_verdict.reasoning
+                      : ""}
                   </p>
                 </div>
               </PopoverContent>
@@ -537,7 +542,11 @@ export function AgentHistoryViewer({
       | Record<string, unknown>,
     index: number,
   ) => {
-    const key = `${activityType}-${item.id || index}`;
+    const itemId =
+      typeof item.id === "number" || typeof item.id === "string"
+        ? item.id
+        : index;
+    const key = `${activityType}-${itemId}`;
 
     switch (activityType) {
       case "predictions":

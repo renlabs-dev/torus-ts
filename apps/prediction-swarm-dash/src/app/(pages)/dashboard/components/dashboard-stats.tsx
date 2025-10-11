@@ -22,7 +22,7 @@ export function DashboardStats({ timeWindow }: DashboardStatsProps) {
   if (error) {
     return (
       <BorderContainer>
-        <div className="w-full text-center text-red-500 p-4 h-18">
+        <div className="h-18 w-full p-4 text-center text-red-500">
           ERROR LOADING SWARM METRICS: {error.message}
         </div>
       </BorderContainer>
@@ -37,7 +37,7 @@ export function DashboardStats({ timeWindow }: DashboardStatsProps) {
 
   return (
     <BorderContainer>
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-5 items-center w-full sm:h-18">
+      <div className="sm:h-18 grid w-full grid-cols-1 items-center gap-4 md:grid-cols-2 lg:grid-cols-5">
         <StatCard
           value={totalPredictions}
           label="/total-predictions"

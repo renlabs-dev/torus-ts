@@ -42,7 +42,7 @@ export default function DecryptedText({
   const containerRef = useRef<HTMLSpanElement>(null);
 
   useEffect(() => {
-    let interval: NodeJS.Timeout;
+    let interval: NodeJS.Timeout | undefined;
     let currentIteration = 0;
 
     const getNextIndex = (revealedSet: Set<number>): number => {
@@ -97,18 +97,20 @@ export default function DecryptedText({
 
         for (let i = nonSpaceChars.length - 1; i > 0; i--) {
           const j = Math.floor(Math.random() * (i + 1));
-          [nonSpaceChars[i], nonSpaceChars[j]] = [
-            nonSpaceChars[j],
-            nonSpaceChars[i],
-          ];
+          const temp = nonSpaceChars[i];
+          const swap = nonSpaceChars[j];
+          if (temp !== undefined && swap !== undefined) {
+            nonSpaceChars[i] = swap;
+            nonSpaceChars[j] = temp;
+          }
         }
 
         let charIndex = 0;
         return positions
           .map((p) => {
             if (p.isSpace) return " ";
-            if (p.isRevealed) return originalText[p.index];
-            return nonSpaceChars[charIndex++];
+            if (p.isRevealed) return originalText[p.index] ?? "";
+            return nonSpaceChars[charIndex++] ?? "";
           })
           .join("");
       } else {
@@ -116,10 +118,12 @@ export default function DecryptedText({
           .split("")
           .map((char, i) => {
             if (char === " ") return " ";
-            if (currentRevealed.has(i)) return originalText[i];
-            return availableChars[
-              Math.floor(Math.random() * availableChars.length)
-            ];
+            if (currentRevealed.has(i)) return originalText[i] ?? "";
+            return (
+              availableChars[
+                Math.floor(Math.random() * availableChars.length)
+              ] ?? ""
+            );
           })
           .join("");
       }

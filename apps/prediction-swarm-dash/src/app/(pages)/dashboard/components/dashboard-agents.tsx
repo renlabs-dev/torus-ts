@@ -42,7 +42,11 @@ function AgentRow({ agent, index, filter }: AgentRowProps) {
       ? metrics.reduce((max, metric) =>
           metric.value > max.value ? metric : max,
         )
-      : metrics.find((m) => m.label === filter) || metrics[0];
+      : (metrics.find((m) => m.label === filter) ?? metrics[0]);
+
+  if (!displayMetric) {
+    return null;
+  }
 
   return (
     <Link href={`/agents?agent=${encodeURIComponent(agent.wallet_address)}`}>

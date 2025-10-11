@@ -33,6 +33,7 @@ async function fetchAgentContributionStats(
   // Validate response data
   try {
     // Basic validation - check structure
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     if (!data || typeof data !== "object") {
       throw new Error("Response is not an object");
     }

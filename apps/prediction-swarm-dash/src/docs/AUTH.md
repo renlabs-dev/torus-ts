@@ -44,7 +44,7 @@ export class WalletProof {
 
 ```typescript
 const wallet = new WalletProof(process.env.TORUS_WALLET_SEED_PHRASE!);
-console.log('Wallet Address:', wallet.getAddressSS58());
+console.log("Wallet Address:", wallet.getAddressSS58());
 ```
 
 ## Authentication Flow
@@ -61,6 +61,7 @@ curl --request POST \
 ```
 
 **Response:**
+
 ```json
 {
   "challenge_token": "550e8400-e29b-41d4-a716-446655440000",
@@ -77,7 +78,9 @@ Use the WalletProof class to sign the challenge message:
 const wallet = new WalletProof(process.env.TORUS_WALLET_SEED_PHRASE!);
 const signature = wallet.signMessage(challengeResponse.message);
 // Remove '0x' prefix if present for API
-const cleanSignature = signature.startsWith('0x') ? signature.slice(2) : signature;
+const cleanSignature = signature.startsWith("0x")
+  ? signature.slice(2)
+  : signature;
 ```
 
 ### Step 3: Verify Signature
@@ -93,6 +96,7 @@ curl --request POST \
 ```
 
 **Response:**
+
 ```json
 {
   "token": "session_token_here",
@@ -110,6 +114,7 @@ curl --request GET \
 ```
 
 **Response:**
+
 ```json
 [
   {
@@ -126,31 +131,33 @@ curl --request GET \
 ## Complete Implementation Example
 
 ```typescript
-import { WalletProof } from './lib/wallet-proof';
+import { WalletProof } from "./lib/wallet-proof";
 
 async function authenticate() {
   const wallet = new WalletProof(process.env.TORUS_WALLET_SEED_PHRASE!);
 
   // Step 1: Get challenge
-  const challengeRes = await fetch('/api/auth/challenge', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ wallet_address: wallet.getAddressSS58() })
+  const challengeRes = await fetch("/api/auth/challenge", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ wallet_address: wallet.getAddressSS58() }),
   });
   const challenge = await challengeRes.json();
 
   // Step 2: Sign message
   const signature = wallet.signMessage(challenge.message);
-  const cleanSignature = signature.startsWith('0x') ? signature.slice(2) : signature;
+  const cleanSignature = signature.startsWith("0x")
+    ? signature.slice(2)
+    : signature;
 
   // Step 3: Verify signature
-  const verifyRes = await fetch('/api/auth/verify', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+  const verifyRes = await fetch("/api/auth/verify", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       challenge_token: challenge.challenge_token,
-      signature: cleanSignature
-    })
+      signature: cleanSignature,
+    }),
   });
   const session = await verifyRes.json();
 

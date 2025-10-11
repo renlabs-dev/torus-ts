@@ -1,9 +1,8 @@
 import "@torus-ts/ui/globals.css";
-import { TorusProvider } from "@torus-ts/torus-provider";
 import { Layout } from "@torus-ts/ui/components/layout";
 import { Toaster } from "@torus-ts/ui/components/toaster";
 import { AuthProvider } from "~/contexts/auth-provider";
-import { env, EnvScript } from "~/env";
+import { EnvScript } from "~/env";
 import { QueryProvider } from "~/lib/query-client";
 import type { Metadata } from "next";
 import { Geist_Mono as GeistMono } from "next/font/google";

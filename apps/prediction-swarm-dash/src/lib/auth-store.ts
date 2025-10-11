@@ -95,9 +95,12 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         return;
       }
 
-      const parsedSession = JSON.parse(savedSession);
+      const parsedSession = JSON.parse(savedSession) as unknown;
 
       if (
+        !parsedSession ||
+        typeof parsedSession !== "object" ||
+        !("session_token" in parsedSession) ||
         typeof parsedSession.session_token !== "string" ||
         parsedSession.session_token.length === 0
       ) {
@@ -105,17 +108,23 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       }
 
       if (
+        !("expires_at" in parsedSession) ||
         typeof parsedSession.expires_at !== "string" ||
         dayjs(parsedSession.expires_at).isBefore(dayjs())
       ) {
         throw new Error("Session expired or invalid expires_at");
       }
 
+      const session: AuthSession = {
+        session_token: parsedSession.session_token,
+        expires_at: parsedSession.expires_at,
+      };
+
       set({
-        session: parsedSession,
+        session,
         isAuthenticated: true,
         authHeaders: {
-          Authorization: `Bearer ${parsedSession.session_token}`,
+          Authorization: `Bearer ${session.session_token}`,
         },
       });
     } catch (error) {
