@@ -8,9 +8,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@torus-ts/ui/components/select";
-import { Tabs, TabsList, TabsTrigger } from "@torus-ts/ui/components/tabs";
 import { cn } from "@torus-ts/ui/lib/utils";
 import { CheckCircle, ClipboardList, FileText, Gavel } from "lucide-react";
+import { Tabs, TabsList, TabsTrigger } from "./tabs";
 
 export type ActivityType = "predictions" | "claims" | "verdicts" | "tasks";
 

@@ -238,7 +238,7 @@ export function SearchInput({
         </div>
         <Button
           type="submit"
-          className="h-18 border-border relative hidden cursor-pointer overflow-hidden rounded-none border-l bg-transparent px-16 text-white hover:bg-transparent md:flex"
+          className="h-18 border-border relative hidden cursor-pointer overflow-hidden !rounded-none border-l bg-transparent px-16 text-white hover:bg-transparent md:flex"
           onClick={handleAskSwarmClick}
         >
           <span className="pointer-events-none relative z-10 text-base font-extralight tracking-[0.60em]">

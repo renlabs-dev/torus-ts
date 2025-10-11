@@ -184,8 +184,8 @@ function AgentsPageContent() {
         "animate-fade-down",
       )}
     >
-      <CardHeader className="border-border flex items-center border-y px-4 pt-6 md:px-6">
-        <div className="mx-auto flex w-full max-w-screen-xl flex-col gap-6">
+      <CardHeader className="border-border border-t px-4 pt-6 md:px-6">
+        <div className="mx-auto flex w-full max-w-screen-xl flex-col">
           <div
             className={cn(
               "flex flex-col items-start gap-4 pb-2 sm:flex-row sm:items-center sm:justify-between",
@@ -245,17 +245,24 @@ function AgentsPageContent() {
               </Link>
             </div>
           </div>
-          {selectedAgent && (
-            <div className={cn("animate-fade-up animate-delay-[800ms]")}>
-              <ActivityTypeSelector
-                value={selectedActivityType}
-                onValueChange={setSelectedActivityType}
-                showCounts={showCounts}
-              />
-            </div>
-          )}
         </div>
       </CardHeader>
+      {selectedAgent && (
+        <div
+          className={cn(
+            "border-border border-b px-4 md:px-6",
+            "animate-fade-up animate-delay-[800ms]",
+          )}
+        >
+          <div className="mx-auto mb-1.5 w-full max-w-screen-xl">
+            <ActivityTypeSelector
+              value={selectedActivityType}
+              onValueChange={setSelectedActivityType}
+              showCounts={showCounts}
+            />
+          </div>
+        </div>
+      )}
       <CardContent className="px-4 md:px-6">
         <Container>
           {selectedAgent && (

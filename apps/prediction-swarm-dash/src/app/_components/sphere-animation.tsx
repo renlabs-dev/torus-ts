@@ -456,5 +456,3 @@ export function SphereAnimation({
     </Canvas>
   );
 }
-
-export default SphereAnimation;

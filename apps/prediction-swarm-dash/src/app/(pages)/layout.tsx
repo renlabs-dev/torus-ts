@@ -1,7 +1,7 @@
 import { cn } from "@torus-ts/ui/lib/utils";
 import { Header } from "~/app/_components/header";
 import { SearchInput } from "~/app/_components/search-input";
-import SphereAnimation from "~/app/_components/sphere-animation";
+import { SphereAnimation } from "~/app/_components/sphere-animation";
 import { Suspense } from "react";
 
 export default function RootLayout({

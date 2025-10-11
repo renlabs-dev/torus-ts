@@ -104,6 +104,12 @@
   }
 }
 
+@layer utilities {
+  .rounded-radius {
+    border-radius: var(--radius);
+  }
+}
+
 /* Custom Scrollbar Styles */
 ::-webkit-scrollbar {
   width: 8px;

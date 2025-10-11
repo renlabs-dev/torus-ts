@@ -5,7 +5,7 @@ import { Footer } from "./_components/footer";
 import { FractalGrid } from "./_components/fractal-grid";
 import { Header } from "./_components/header";
 import { SearchInput } from "./_components/search-input";
-import SphereAnimation from "./_components/sphere-animation";
+import { SphereAnimation } from "./_components/sphere-animation";
 import { StatsGrid } from "./_components/stats-grid";
 
 export default function Home() {
@@ -16,7 +16,12 @@ export default function Home() {
         <SphereAnimation />
       </div>
       <Suspense fallback={<div className="h-18" />}>
-        <div className={cn("sticky top-0 z-40", "animate-fade-up animate-delay-500")}>
+        <div
+          className={cn(
+            "sticky top-0 z-40",
+            "animate-fade-up animate-delay-500",
+          )}
+        >
           <SearchInput />
         </div>
       </Suspense>
