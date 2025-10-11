@@ -178,13 +178,18 @@ function AgentsPageContent() {
   }
 
   return (
-    <Card className="animate-in fade-in slide-in-from-top-10 fill-mode-both mb-12 min-h-screen w-full border-none p-0 delay-0 duration-1000">
+    <Card
+      className={cn(
+        "mb-12 min-h-screen w-full border-none p-0",
+        "animate-fade-down",
+      )}
+    >
       <CardHeader className="border-border flex items-center border-y px-4 pt-6 md:px-6">
         <div className="mx-auto flex w-full max-w-screen-xl flex-col gap-6">
           <div
             className={cn(
               "flex flex-col items-start gap-4 pb-2 sm:flex-row sm:items-center sm:justify-between",
-              "animate-in fade-in slide-in-from-bottom-10 duration-600 delay-400 fill-mode-both",
+              "animate-fade-up animate-delay-[400ms]",
             )}
           >
             <CardTitle className="flex flex-col items-start text-xl md:text-2xl">
@@ -203,7 +208,12 @@ function AgentsPageContent() {
                 )}
               </div>
             </CardTitle>
-            <div className="animate-in fade-in slide-in-from-bottom-10 duration-600 delay-600 fill-mode-both flex w-full flex-wrap justify-start gap-2 sm:w-auto sm:justify-end md:gap-3">
+            <div
+              className={cn(
+                "flex w-full flex-wrap justify-start gap-2 sm:w-auto sm:justify-end md:gap-3",
+                "animate-fade-up animate-delay-[600ms]",
+              )}
+            >
               <DateRangeFilter
                 onSubmit={handleDateRangeFilterSubmit}
                 defaultValues={{
@@ -236,7 +246,7 @@ function AgentsPageContent() {
             </div>
           </div>
           {selectedAgent && (
-            <div className="animate-in fade-in slide-in-from-bottom-10 duration-600 delay-800 fill-mode-both">
+            <div className={cn("animate-fade-up animate-delay-[800ms]")}>
               <ActivityTypeSelector
                 value={selectedActivityType}
                 onValueChange={setSelectedActivityType}
@@ -249,7 +259,12 @@ function AgentsPageContent() {
       <CardContent className="px-4 md:px-6">
         <Container>
           {selectedAgent && (
-            <div className="animate-in fade-in slide-in-from-bottom-10 fill-mode-both mt-4 w-full delay-1000 duration-1000">
+            <div
+              className={cn(
+                "mt-4 w-full",
+                "animate-fade-up animate-delay-1000",
+              )}
+            >
               <AgentHistoryViewer
                 agentAddress={selectedAgent}
                 activityType={selectedActivityType}
@@ -277,7 +292,7 @@ function AgentsPageContent() {
           )}
 
           {!selectedAgent && (
-            <div className="animate-in fade-in slide-in-from-bottom-10 fill-mode-both w-full delay-1000 duration-1000">
+            <div className={cn("w-full", "animate-fade-up animate-delay-1000")}>
               <AgentNoSelection />
             </div>
           )}

@@ -30,7 +30,7 @@ function DashboardContent() {
   };
   return (
     <div className="flex flex-1 flex-col">
-      <div className="animate-in fade-in slide-in-from-bottom fill-mode-both delay-200 duration-1000">
+      <div className={cn("animate-fade-up animate-delay-200")}>
         <DashboardStats timeWindow={timeWindow} />
       </div>
 
@@ -39,7 +39,7 @@ function DashboardContent() {
           <div
             className={cn(
               "flex w-full flex-col gap-4 sm:flex-row sm:items-end sm:justify-between",
-              "animate-in fade-in slide-in-from-bottom delay-400 fill-mode-both duration-1000",
+              "animate-fade-up animate-delay-[400ms]",
             )}
           >
             <div className="flex flex-col">
@@ -66,7 +66,7 @@ function DashboardContent() {
               <div
                 className={cn(
                   "h-[600px] w-full md:h-full md:w-[65%]",
-                  "animate-in fade-in slide-in-from-bottom-10 duration-600 delay-600 fill-mode-both",
+                  "animate-fade-up animate-delay-500",
                 )}
               >
                 <DashboardAgents timeWindow={timeWindow} />
@@ -76,7 +76,7 @@ function DashboardContent() {
                 <Card
                   className={cn(
                     "h-[400px] sm:max-h-[294px] md:h-1/2",
-                    "animate-in fade-in slide-in-from-bottom-10 duration-600 delay-800 fill-mode-both",
+                    "animate-fade-up animate-delay-700",
                   )}
                 >
                   <CardHeader>
@@ -96,7 +96,7 @@ function DashboardContent() {
                 <Card
                   className={cn(
                     "h-[400px] sm:max-h-[294px] md:h-1/2",
-                    "animate-in fade-in slide-in-from-bottom-10 duration-600 fill-mode-both delay-1000",
+                    "animate-fade-up animate-delay-1000",
                   )}
                 >
                   <CardHeader>
@@ -116,7 +116,7 @@ function DashboardContent() {
             </div>
 
             <div className="flex flex-col gap-3 sm:flex-row">
-              <Card className="animate-in fade-in slide-in-from-bottom-10 delay-1200 fill-mode-both duration-1000">
+              <Card className={cn("animate-fade-up animate-delay-[1200ms]")}>
                 <CardHeader>
                   <CardTitle className="bg-muted-foreground/35 flex w-fit items-center rounded-md p-2">
                     /AGENT-ANALYSIS
@@ -135,7 +135,7 @@ function DashboardContent() {
                   </Link>
                 </CardContent>
               </Card>
-              <Card className="animate-in fade-in slide-in-from-bottom-10 delay-1400 fill-mode-both duration-1000">
+              <Card className={cn("animate-fade-up animate-delay-[1400ms]")}>
                 <CardHeader>
                   <CardTitle className="bg-muted-foreground/35 flex w-fit items-center rounded-md p-2">
                     /AGENT-COMPARISON

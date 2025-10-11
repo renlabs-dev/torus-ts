@@ -7,8 +7,8 @@ environments:
       - environmentName: dev
       - wssApiEndpoint: wss://api.testnet.torus.network
       - cacheUrl: https://cache.testnet.torus.network
-      - releaseName: dev-prophet-finder
-      - ingressHost: prophet-finder.testnet.torus.network
+      - releaseName: dev-prediction-swarm-dash
+      - ingressHost: prediction-swarm.testnet.torus.network
       - chainEnv: testnet
   prod:
     values:

@@ -7,6 +7,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@torus-ts/ui/components/card";
+import { cn } from "@torus-ts/ui/lib/utils";
 import { Container } from "~/app/_components/container";
 import { LoadingDots } from "~/app/_components/loading-dots";
 import { useAuthStore } from "~/lib/auth-store";
@@ -96,17 +97,17 @@ function ComparisonPageContent() {
   }
 
   return (
-    <Card className="animate-in fade-in slide-in-from-top-10 fill-mode-both mb-12 w-full border-none p-0 delay-200 duration-1000">
+    <Card className={cn("mb-12 w-full border-none p-0", "animate-fade-down animate-delay-200")}>
       <CardHeader className="border-border flex items-center border-y pt-6">
         <div className="mx-auto flex w-full max-w-screen-xl flex-col gap-6">
-          <div className="animate-in fade-in slide-in-from-bottom-10 duration-600 delay-400 fill-mode-both flex flex-col gap-4 pb-2 sm:flex-row sm:items-center sm:justify-between">
+          <div className={cn("flex flex-col gap-4 pb-2 sm:flex-row sm:items-center sm:justify-between", "animate-fade-up animate-delay-[400ms]")}>
             <CardTitle className="flex flex-col items-start text-2xl">
               Agent Comparison
               <div className="text-muted-foreground flex flex-row gap-2 text-sm">
                 Add up to 4 agents to compare their performance metrics
               </div>
             </CardTitle>
-            <div className="animate-in fade-in slide-in-from-bottom-10 duration-600 delay-600 fill-mode-both flex justify-end gap-3">
+            <div className={cn("flex justify-end gap-3", "animate-fade-up animate-delay-[600ms]")}>
               <Link href="/agents" className="w-full">
                 <Button
                   type="button"
@@ -135,7 +136,7 @@ function ComparisonPageContent() {
               </Link>
             </div>
           </div>
-          <div className="animate-in fade-in slide-in-from-bottom-10 duration-600 delay-800 fill-mode-both">
+          <div className={cn("animate-fade-up animate-delay-[800ms]")}>
             <ComparisonSelector
               selectedAgents={selectedAgents}
               onAddAgent={addAgent}
@@ -156,14 +157,14 @@ function ComparisonPageContent() {
       <CardContent>
         <Container>
           {selectedAgents.length > 0 ? (
-            <div className="animate-in fade-in slide-in-from-bottom-10 fill-mode-both delay-1000 duration-1000">
+            <div className={cn("animate-fade-up animate-delay-1000")}>
               <ComparisonGrid
                 selectedAgents={selectedAgents}
                 searchFilters={searchFilters}
               />
             </div>
           ) : (
-            <div className="animate-in fade-in slide-in-from-bottom-10 fill-mode-both w-full delay-1000 duration-1000">
+            <div className={cn("w-full", "animate-fade-up animate-delay-1000")}>
               <ComparisonEmpty />
             </div>
           )}

@@ -10,13 +10,13 @@ import { StatsGrid } from "./_components/stats-grid";
 
 export default function Home() {
   return (
-    <main className="animate-in fade-in fill-mode-both duration-1000">
+    <main className={cn("animate-fade")}>
       <Header className="from-background bg-gradient-to-b to-transparent" />
       <div className="bg-background relative flex h-[calc(100vh-15rem)] w-full flex-col items-center justify-center">
         <SphereAnimation />
       </div>
       <Suspense fallback={<div className="h-18" />}>
-        <div className="animate-in fade-in slide-in-from-bottom fill-mode-both sticky top-0 z-40 delay-500 duration-1000">
+        <div className={cn("sticky top-0 z-40", "animate-fade-up animate-delay-500")}>
           <SearchInput />
         </div>
       </Suspense>
@@ -24,7 +24,7 @@ export default function Home() {
         <div
           className={cn(
             "my-[4.5rem] flex w-full max-w-screen-xl justify-between",
-            "animate-in fade-in slide-in-from-bottom fill-mode-both delay-1000 duration-1000",
+            "animate-fade-up animate-delay-1000",
           )}
         >
           <span>Scroll to view more.</span>
