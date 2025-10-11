@@ -1,0 +1,6 @@
+deployment:
+  image:
+    repository: ghcr.io/renlabs-dev/prediction-swarm-dash
+
+  podLabels:
+    app: prediction-swarm-dash
