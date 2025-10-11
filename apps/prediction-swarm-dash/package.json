@@ -28,7 +28,6 @@
     "@torus-network/torus-utils": "workspace:*",
     "@torus-ts/api": "workspace:*",
     "@torus-ts/env-validation": "workspace:*",
-    "@radix-ui/react-tabs": "^1.1.1",
     "@torus-ts/query-provider": "workspace:*",
     "@torus-ts/torus-provider": "workspace:*",
     "@torus-ts/ui": "workspace:*",

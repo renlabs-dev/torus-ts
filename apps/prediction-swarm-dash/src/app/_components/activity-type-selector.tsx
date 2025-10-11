@@ -8,9 +8,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@torus-ts/ui/components/select";
+import { Tabs, TabsList, TabsTrigger } from "@torus-ts/ui/components/tabs";
 import { cn } from "@torus-ts/ui/lib/utils";
 import { CheckCircle, ClipboardList, FileText, Gavel } from "lucide-react";
-import { Tabs, TabsList, TabsTrigger } from "./tabs";
 
 export type ActivityType = "predictions" | "claims" | "verdicts" | "tasks";
 
@@ -105,10 +105,11 @@ export function ActivityTypeSelector({
         value={value}
         onValueChange={(val) => onValueChange(val as ActivityType)}
         className={cn("hidden w-full md:block", className)}
+        variant="underline"
       >
-        <TabsList className="grid w-full grid-cols-4 bg-transparent">
+        <TabsList className="grid w-full grid-cols-4 bg-transparent" variant="underline">
           {activityTypes.map((type) => (
-            <TabsTrigger key={type.value} value={type.value}>
+            <TabsTrigger key={type.value} value={type.value} variant="underline">
               <div className="mb-1 flex items-center gap-2">
                 <type.icon className="h-4 w-4" />
                 <span className="font-medium">{type.label}</span>
