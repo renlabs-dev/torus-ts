@@ -1,18 +1,23 @@
 "use client";
 
-import { PieChart as PieChartIcon } from "lucide-react";
-import React from "react";
-import { Pie, PieChart } from "recharts";
-import { Card, CardContent, CardHeader, CardTitle } from "@torus-ts/ui/components/card";
 import {
-  type ChartConfig,
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@torus-ts/ui/components/card";
+import {
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
 } from "@torus-ts/ui/components/chart";
+import type { ChartConfig } from "@torus-ts/ui/components/chart";
 import { useAgentDetailedMetricsComparison } from "~/hooks/api/use-agent-detailed-metrics-comparison-query";
 import { useAgentName } from "~/hooks/api/use-agent-name-query";
 import { dateToISOStringSafe, formatLargeNumber } from "~/lib/api-utils";
+import { PieChart as PieChartIcon } from "lucide-react";
+import React from "react";
+import { Pie, PieChart } from "recharts";
 
 interface ComparisonChartsProps {
   selectedAgents: string[];
@@ -54,7 +59,7 @@ export function ComparisonCharts({
       from: dateToISOStringSafe(searchFilters.from, false),
       to: dateToISOStringSafe(searchFilters.to, true),
     }),
-    [searchFilters.from, searchFilters.to]
+    [searchFilters.from, searchFilters.to],
   );
 
   return (
@@ -98,7 +103,7 @@ function AgentDataCollector({
         totalVerificationClaims +
         totalVerificationVerdicts +
         totalTasksCompleted,
-      color: CHART_COLORS[index % CHART_COLORS.length],
+      color: CHART_COLORS[index % CHART_COLORS.length] || "#ffffff",
       isLoading,
     });
   }, [
@@ -133,10 +138,10 @@ function ComparisonChartsContent({
         const updated = [...filtered, data].sort(
           (a, b) =>
             selectedAgents.indexOf(a.address) -
-            selectedAgents.indexOf(b.address)
+            selectedAgents.indexOf(b.address),
         );
         return updated.filter((agent) =>
-          selectedAgents.includes(agent.address)
+          selectedAgents.includes(agent.address),
         );
       });
       setLoadedAgents((prev) => {
@@ -151,12 +156,12 @@ function ComparisonChartsContent({
         return filteredAgents;
       });
     },
-    [selectedAgents]
+    [selectedAgents],
   );
 
   React.useEffect(() => {
     setAgentData((prev) =>
-      prev.filter((agent) => selectedAgents.includes(agent.address))
+      prev.filter((agent) => selectedAgents.includes(agent.address)),
     );
     setLoadedAgents((prev) => {
       const filteredAgents = new Set<string>();
@@ -185,11 +190,11 @@ function ComparisonChartsContent({
           />
         ))}
 
-        <div className="grid gap-6 grid-cols-1 lg:grid-cols-2">
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
           <Card>
             <CardContent className="flex items-center justify-center py-12">
               <div className="text-center">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+                <div className="border-primary mx-auto mb-4 h-8 w-8 animate-spin rounded-full border-b-2"></div>
                 <p className="text-muted-foreground">Loading chart data...</p>
               </div>
             </CardContent>
@@ -203,7 +208,7 @@ function ComparisonChartsContent({
     const sortedAgents = [...agentData].sort((a, b) => b.total - a.total);
     const rank =
       sortedAgents.findIndex(
-        (agent) => agent.address === agentData[index].address
+        (agent) => agent.address === agentData[index]?.address,
       ) + 1;
 
     const rankColors = {
@@ -228,7 +233,7 @@ function ComparisonChartsContent({
         label: agent.name,
         color: CHART_COLORS[index % CHART_COLORS.length],
       },
-    ])
+    ]),
   ) satisfies ChartConfig;
 
   return (
@@ -244,7 +249,7 @@ function ComparisonChartsContent({
         />
       ))}
 
-      <div className="space-y-6 hidden md:block">
+      <div className="hidden space-y-6 md:block">
         <Card className="mt-4">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -253,7 +258,7 @@ function ComparisonChartsContent({
             </CardTitle>
           </CardHeader>
           <CardContent className="flex flex-col items-center">
-            <div className="mb-4 text-muted-foreground">
+            <div className="text-muted-foreground mb-4">
               Relative contribution of each agent
             </div>
             <ChartContainer config={chartConfig} className="h-[300px] w-full">
@@ -272,7 +277,7 @@ function ComparisonChartsContent({
                   content={<ChartTooltipContent />}
                   formatter={(value, name) => [
                     `${name}: ${formatLargeNumber(
-                      Number(value)
+                      Number(value),
                     )} Total Activity`,
                     "",
                   ]}
@@ -295,7 +300,7 @@ function ComparisonChartsContent({
                   dataKey="value"
                   nameKey="name"
                   label={({ name, percent, value }) =>
-                    `${name}: ${formatLargeNumber(value)} (${(
+                    `${name}: ${formatLargeNumber(value as number)} (${(
                       percent * 100
                     ).toFixed(1)}%)`
                   }
