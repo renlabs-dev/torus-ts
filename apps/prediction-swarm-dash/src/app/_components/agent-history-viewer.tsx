@@ -486,7 +486,8 @@ export function AgentHistoryViewer({
       // Topic filter (for predictions)
       if (activityType === "predictions" && filters.topic !== "all") {
         const prediction = item as Prediction;
-        const itemTopic = prediction.topic.toLowerCase() || "";
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+        const itemTopic = (prediction.topic ?? "").toLowerCase();
         if (!itemTopic.includes(filters.topic.toLowerCase())) {
           return false;
         }

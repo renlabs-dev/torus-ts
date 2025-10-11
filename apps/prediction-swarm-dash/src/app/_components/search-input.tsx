@@ -13,9 +13,7 @@ import { Input } from "@torus-ts/ui/components/input";
 import { useIsMobile } from "@torus-ts/ui/hooks/use-mobile";
 import { cn } from "@torus-ts/ui/lib/utils";
 import { useAgentContributionStatsQuery } from "~/hooks/api/use-agent-contribution-stats-query";
-import { useAgentDetailedMetrics } from "~/hooks/api/use-agent-detailed-metrics-query";
 import { useAgentName } from "~/hooks/api/use-agent-name-query";
-import type { TimeWindowParams } from "~/lib/api-schemas";
 import { formatAddress } from "~/lib/api-utils";
 import { Check, SearchIcon } from "lucide-react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
@@ -29,7 +27,9 @@ interface AgentItemProps {
   isSelected: boolean;
   onSelect: () => void;
   searchTerm: string;
-  timeWindow?: TimeWindowParams;
+  predictions: number;
+  claims: number;
+  verdicts: number;
 }
 
 function AgentItem({
@@ -37,15 +37,11 @@ function AgentItem({
   isSelected,
   onSelect,
   searchTerm,
-  timeWindow,
+  predictions,
+  claims,
+  verdicts,
 }: AgentItemProps) {
   const { agentName } = useAgentName(address);
-
-  const {
-    totalPredictions,
-    totalVerificationClaims,
-    totalVerificationVerdicts,
-  } = useAgentDetailedMetrics(address, timeWindow);
 
   const matchesSearch =
     !searchTerm ||
@@ -60,9 +56,9 @@ function AgentItem({
       value={address}
       onSelect={onSelect}
       className="flex cursor-pointer items-center justify-between"
-      data-predictions={totalPredictions}
-      data-claims={totalVerificationClaims}
-      data-verdicts={totalVerificationVerdicts}
+      data-predictions={predictions}
+      data-claims={claims}
+      data-verdicts={verdicts}
     >
       <div className="flex items-center gap-2">
         <Check
@@ -77,9 +73,9 @@ function AgentItem({
       </div>
 
       <div className="text-muted-foreground flex items-center gap-3">
-        <span title="Predictions">{totalPredictions}P</span>
-        <span title="Claims">{totalVerificationClaims}C</span>
-        <span title="Verdicts">{totalVerificationVerdicts}V</span>
+        <span title="Predictions">{predictions}P</span>
+        <span title="Claims">{claims}C</span>
+        <span title="Verdicts">{verdicts}V</span>
       </div>
     </CommandItem>
   );
@@ -89,14 +85,12 @@ interface SearchInputProps {
   onValueChange?: (address: string) => void;
   placeholder?: string;
   excludeAgents?: string[];
-  timeWindow?: TimeWindowParams;
 }
 
 export function SearchInput({
   onValueChange,
   placeholder = "Search for any agent in the swarm...",
   excludeAgents = [],
-  timeWindow,
 }: SearchInputProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -203,7 +197,9 @@ export function SearchInput({
                   address={agent.address}
                   isSelected={selectedAgent === agent.address}
                   searchTerm={search}
-                  timeWindow={timeWindow}
+                  predictions={agent.predictions}
+                  claims={agent.claims}
+                  verdicts={agent.verdicts}
                   onSelect={() => {
                     const newValue =
                       agent.address === selectedAgent ? "" : agent.address;

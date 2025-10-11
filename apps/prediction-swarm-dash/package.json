@@ -13,7 +13,8 @@
     "lint-fix": "eslint --cache --cache-location .cache/.eslintcache --fix",
     "start": "next start",
     "typecheck": "tsc --noEmit",
-    "with-env": "dotenv -e ../../.env --"
+    "with-env": "dotenv -e ../../.env --",
+    "dotenv": "^16.4.5"
   },
   "dependencies": {
     "@hookform/resolvers": "catalog:",
