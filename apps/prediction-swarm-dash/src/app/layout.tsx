@@ -1,9 +1,9 @@
-import "@torus-ts/ui/globals.css";
+import "./globals.css";
+import { ReactQueryProvider } from "@torus-ts/query-provider/";
 import { Layout } from "@torus-ts/ui/components/layout";
 import { Toaster } from "@torus-ts/ui/components/toaster";
 import { AuthProvider } from "~/contexts/auth-provider";
 import { EnvScript } from "~/env";
-import { QueryProvider } from "~/lib/query-client";
 import type { Metadata } from "next";
 import { Geist_Mono as GeistMono } from "next/font/google";
 
@@ -29,9 +29,12 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <Layout font={geistMono} headScripts={[EnvScript]}>
-      {/* <ReactQueryProvider> */}
-      <QueryProvider>
+    <Layout
+      font={geistMono}
+      headScripts={[EnvScript]}
+      className="bg-background min-h-screen"
+    >
+      <ReactQueryProvider>
         {/* <TorusProvider
           wsEndpoint={env("NEXT_PUBLIC_TORUS_RPC_URL")}
           torusCacheUrl={env("NEXT_PUBLIC_TORUS_CACHE_URL")}
@@ -39,15 +42,12 @@ export default function RootLayout({
         {/* <ProphetFinderHeader
             torusCacheUrl={env("NEXT_PUBLIC_TORUS_CACHE_URL")}
           /> */}
-        {/* <QueryProvider> */}
         <AuthProvider>
-          <div className="bg-background">{children}</div>
+          {children}
+          <Toaster />
         </AuthProvider>
-        {/* </QueryProvider> */}
-        <Toaster />
         {/* </TorusProvider> */}
-      </QueryProvider>
-      {/* </ReactQueryProvider> */}
+      </ReactQueryProvider>
     </Layout>
   );
 }

@@ -57,7 +57,7 @@ export function SearchInput({
         value={searchInput}
         onChange={(e) => setSearchInput(e.target.value)}
         onBlur={handleSearchBlur}
-        className="w-full pl-9"
+        className="w-full rounded-md pl-9"
       />
     </div>
   );

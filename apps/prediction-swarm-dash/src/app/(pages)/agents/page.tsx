@@ -178,7 +178,7 @@ function AgentsPageContent() {
   }
 
   return (
-    <Card className="animate-in fade-in slide-in-from-top-10 fill-mode-both mb-12 h-full w-full border-none p-0 delay-0 duration-1000">
+    <Card className="animate-in fade-in slide-in-from-top-10 fill-mode-both mb-12 min-h-screen w-full border-none p-0 delay-0 duration-1000">
       <CardHeader className="border-border flex items-center border-y px-4 pt-6 md:px-6">
         <div className="mx-auto flex w-full max-w-screen-xl flex-col gap-6">
           <div
@@ -249,7 +249,7 @@ function AgentsPageContent() {
       <CardContent className="px-4 md:px-6">
         <Container>
           {selectedAgent && (
-            <div className="animate-in fade-in slide-in-from-bottom-10 fill-mode-both delay-1000 duration-1000">
+            <div className="animate-in fade-in slide-in-from-bottom-10 fill-mode-both mt-4 w-full delay-1000 duration-1000">
               <AgentHistoryViewer
                 agentAddress={selectedAgent}
                 activityType={selectedActivityType}

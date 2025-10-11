@@ -575,7 +575,7 @@ export function AgentHistoryViewer({
   }
 
   return (
-    <div className="flex min-w-full flex-col gap-3">
+    <div className="flex flex-col gap-3">
       <div className="flex flex-col gap-3 sm:flex-row sm:gap-4">
         <SearchInput
           placeholder="Search..."
@@ -591,7 +591,7 @@ export function AgentHistoryViewer({
         />
       </div>
 
-      <div>
+      <div className="min-w-full">
         {isLoading ? (
           <div className="flex items-center justify-center py-8">
             <LoadingDots size="lg" className="text-muted-foreground" />
