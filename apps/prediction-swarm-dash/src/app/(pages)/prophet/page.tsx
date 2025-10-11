@@ -34,16 +34,9 @@ function ProphetPageContent() {
     useProphetProfileQuery(username);
 
   const { data: predictions, isLoading: predictionsLoading } =
-    usePredictionsListQuery(
-      {
-        sort_by: "twitter_username",
-      },
-      { enabled: !!username },
-    );
+    usePredictionsListQuery({}, { enabled: !!username });
 
-  console.log(predictions);
-
-  // Calculate prediction counts
+  // Calculate prediction counts from all predictions for this user
   const {
     truePredictionsCount,
     falsePredictionsCount,

@@ -41,6 +41,21 @@ function PredictionCard({ prediction }: { prediction: Prediction }) {
           <Badge className="text-xs sm:text-sm" variant="outline">
             {prediction.topic || "General"}
           </Badge>
+          {hasTrueClaim && (
+            <Badge className="border-green-600/40 bg-green-600/20 text-xs text-green-400 sm:text-sm">
+              Verified True
+            </Badge>
+          )}
+          {hasFalseClaim && (
+            <Badge className="border-red-600/40 bg-red-600/20 text-xs text-red-400 sm:text-sm">
+              Verified False
+            </Badge>
+          )}
+          {hasUnmaturedClaim && !hasTrueClaim && !hasFalseClaim && (
+            <Badge className="border-amber-600/40 bg-amber-600/20 text-xs text-amber-400 sm:text-sm">
+              Not Yet Matured
+            </Badge>
+          )}
           <span>#{prediction.id}</span>
           <span>·</span>
           <span>
@@ -70,25 +85,6 @@ function PredictionCard({ prediction }: { prediction: Prediction }) {
       <p className="text-sm leading-relaxed sm:text-base">
         {prediction.tweet?.full_text || prediction.prediction}
       </p>
-
-      {/* Verification Status */}
-      <div className="flex flex-wrap gap-2">
-        {hasTrueClaim && (
-          <Badge className="border-green-600/40 bg-green-600/20 text-green-400">
-            Verified True
-          </Badge>
-        )}
-        {hasFalseClaim && (
-          <Badge className="border-red-600/40 bg-red-600/20 text-red-400">
-            Verified False
-          </Badge>
-        )}
-        {hasUnmaturedClaim && !hasTrueClaim && !hasFalseClaim && (
-          <Badge className="border-amber-600/40 bg-amber-600/20 text-amber-400">
-            Not Yet Matured
-          </Badge>
-        )}
-      </div>
     </div>
   );
 }
@@ -97,8 +93,10 @@ export function PredictionsList({
   username,
   searchFilters,
 }: PredictionsListProps) {
+  // Use search parameter to filter by username since there's no dedicated filter
   const { data: allPredictions, isLoading } = usePredictionsListQuery({
     ...searchFilters,
+    search: username,
     sort_by: "twitter_username",
   });
 
@@ -114,7 +112,7 @@ export function PredictionsList({
         };
       }
 
-      // Filter by username
+      // Further filter by exact username match
       const userPredictions = allPredictions.filter(
         (p) =>
           p.tweet?.author_twitter_username.toLowerCase() ===

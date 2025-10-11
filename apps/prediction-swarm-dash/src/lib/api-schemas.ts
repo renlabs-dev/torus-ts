@@ -78,6 +78,17 @@ export const tweetSchema = z.object({
   url: z.string().url(),
 });
 
+export const tweetsListParamsSchema = timeWindowParamsSchema
+  .extend(paginationParamsSchema.shape)
+  .extend(agentParamsSchema.shape)
+  .extend(
+    z.object({
+      author_twitter_username: z.string().optional(),
+      search: z.string().optional(),
+      sort_order: z.enum(["asc", "desc"]).optional(),
+    }).shape,
+  );
+
 export const predictionSchema = z.object({
   id: z.number().int(),
   inserted_at: z.string().datetime(),
@@ -264,6 +275,10 @@ export type AgentContributionStatsItem = z.infer<
 export type AgentContributionStatsResponse = z.infer<
   typeof agentContributionStatsResponseSchema
 >;
+
+// Tweet types
+export type Tweet = z.infer<typeof tweetSchema>;
+export type TweetsListParams = z.infer<typeof tweetsListParamsSchema>;
 
 // Prediction types
 export type Prediction = z.infer<typeof predictionSchema>;
