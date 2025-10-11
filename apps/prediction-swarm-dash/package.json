@@ -32,6 +32,7 @@
     "@torus-ts/query-provider": "workspace:*",
     "@torus-ts/torus-provider": "workspace:*",
     "@torus-ts/ui": "workspace:*",
+    "next-plausible": "catalog:",
     "dayjs": "^1.11.13",
     "lucide-react": "catalog:",
     "motion": "catalog:",

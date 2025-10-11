@@ -241,6 +241,9 @@ importers:
       next:
         specifier: 'catalog:'
         version: 15.5.3(@babel/core@7.28.4)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
+      next-plausible:
+        specifier: 'catalog:'
+        version: 3.12.4(next@15.5.3(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
       react:
         specifier: ^19.0.0
         version: 19.1.1
@@ -313,7 +316,7 @@ importers:
         version: 15.5.3(@babel/core@7.28.4)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
       next-plausible:
         specifier: 'catalog:'
-        version: 3.12.4(next@15.5.3(@babel/core@7.28.4)(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
+        version: 3.12.4(next@15.5.3(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
       react:
         specifier: ^19.0.0
         version: 19.1.1
@@ -598,7 +601,7 @@ importers:
         version: 4.24.11(next@15.5.3(@babel/core@7.28.4)(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
       next-plausible:
         specifier: 'catalog:'
-        version: 3.12.4(next@15.5.3(@babel/core@7.28.4)(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
+        version: 3.12.4(next@15.5.3(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
       react:
         specifier: ^19.0.0
         version: 19.1.1
@@ -680,7 +683,7 @@ importers:
         version: 15.5.3(@babel/core@7.28.4)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
       next-plausible:
         specifier: 'catalog:'
-        version: 3.12.4(next@15.5.3(@babel/core@7.28.4)(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
+        version: 3.12.4(next@15.5.3(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
       react:
         specifier: ^19.0.0
         version: 19.1.1
@@ -792,7 +795,7 @@ importers:
         version: 15.5.3(@babel/core@7.28.4)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
       next-plausible:
         specifier: 'catalog:'
-        version: 3.12.4(next@15.5.3(@babel/core@7.28.4)(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
+        version: 3.12.4(next@15.5.3(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
       pixi-viewport:
         specifier: ^6.0.3
         version: 6.0.3(pixi.js@8.13.2)
@@ -910,7 +913,7 @@ importers:
         version: 15.5.3(@babel/core@7.28.4)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
       next-plausible:
         specifier: 'catalog:'
-        version: 3.12.4(next@15.5.3(@babel/core@7.28.4)(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
+        version: 3.12.4(next@15.5.3(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
       react:
         specifier: ^19.0.0
         version: 19.1.1
@@ -1013,7 +1016,7 @@ importers:
         version: 15.5.3(@babel/core@7.28.4)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
       next-plausible:
         specifier: 'catalog:'
-        version: 3.12.4(next@15.5.3(@babel/core@7.28.4)(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
+        version: 3.12.4(next@15.5.3(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
       react:
         specifier: ^19.0.0
         version: 19.1.1
@@ -29039,7 +29042,7 @@ snapshots:
       react-dom: 19.1.1(react@19.1.1)
       uuid: 8.3.2
 
-  next-plausible@3.12.4(next@15.5.3(@babel/core@7.28.4)(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(react-dom@19.1.1(react@19.1.1))(react@19.1.1):
+  next-plausible@3.12.4(next@15.5.3(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(react-dom@19.1.1(react@19.1.1))(react@19.1.1):
     dependencies:
       next: 15.5.3(@babel/core@7.28.4)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
       react: 19.1.1

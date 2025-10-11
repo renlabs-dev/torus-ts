@@ -5,6 +5,7 @@ import { Toaster } from "@torus-ts/ui/components/toaster";
 import { AuthProvider } from "~/contexts/auth-provider";
 import { EnvScript } from "~/env";
 import type { Metadata } from "next";
+import PlausibleProvider from "next-plausible";
 import { Geist_Mono as GeistMono } from "next/font/google";
 
 const APP_NAME = "Torus Prediction Swarm";
@@ -29,21 +30,23 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <Layout font={geistMono} headScripts={[EnvScript]} className="!min-h-max">
-      <ReactQueryProvider>
-        {/* <TorusProvider
+    <PlausibleProvider domain="sension.torus.directory" trackOutboundLinks>
+      <Layout font={geistMono} headScripts={[EnvScript]} className="!min-h-max">
+        <ReactQueryProvider>
+          {/* <TorusProvider
           wsEndpoint={env("NEXT_PUBLIC_TORUS_RPC_URL")}
           torusCacheUrl={env("NEXT_PUBLIC_TORUS_CACHE_URL")}
         > */}
-        {/* <ProphetFinderHeader
+          {/* <ProphetFinderHeader
             torusCacheUrl={env("NEXT_PUBLIC_TORUS_CACHE_URL")}
           /> */}
-        <AuthProvider>
-          {children}
-          <Toaster />
-        </AuthProvider>
-        {/* </TorusProvider> */}
-      </ReactQueryProvider>
-    </Layout>
+          <AuthProvider>
+            {children}
+            <Toaster />
+          </AuthProvider>
+          {/* </TorusProvider> */}
+        </ReactQueryProvider>
+      </Layout>
+    </PlausibleProvider>
   );
 }
