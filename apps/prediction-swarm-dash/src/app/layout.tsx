@@ -29,11 +29,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <Layout
-      font={geistMono}
-      headScripts={[EnvScript]}
-      className="bg-background min-h-screen"
-    >
+    <Layout font={geistMono} headScripts={[EnvScript]} className="!min-h-max">
       <ReactQueryProvider>
         {/* <TorusProvider
           wsEndpoint={env("NEXT_PUBLIC_TORUS_RPC_URL")}

@@ -178,12 +178,7 @@ function AgentsPageContent() {
   }
 
   return (
-    <Card
-      className={cn(
-        "mb-12 min-h-screen w-full border-none p-0",
-        "animate-fade-down",
-      )}
-    >
+    <Card className={cn("mb-6 w-full border-none p-0", "animate-fade-down")}>
       <CardHeader className="border-border border-t px-4 pt-6 md:px-6">
         <div className="mx-auto flex w-full max-w-screen-xl flex-col">
           <div
@@ -254,7 +249,7 @@ function AgentsPageContent() {
             "animate-fade-up animate-delay-[800ms]",
           )}
         >
-          <div className="mx-auto mb-1.5 w-full max-w-screen-xl">
+          <div className="mx-auto mb-4 w-full max-w-screen-xl sm:mb-1.5">
             <ActivityTypeSelector
               value={selectedActivityType}
               onValueChange={setSelectedActivityType}

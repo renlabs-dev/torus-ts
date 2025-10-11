@@ -69,7 +69,7 @@ function AgentComparisonCard({
   });
 
   return (
-    <Card className="bg-card/50">
+    <Card className="bg-card/50 w-full">
       <CardHeader>
         <CardTitle className="flex flex-col items-start gap-2">
           <div className="flex items-center gap-2">
@@ -337,7 +337,7 @@ export function ComparisonGrid({
       {/* Grid Header */}
 
       {/* Responsive Grid */}
-      <div className="grid w-full grid-cols-1 gap-6 md:grid-cols-2">
+      <div className="mt-6 grid w-full min-w-full grid-cols-1 gap-6 md:grid-cols-2">
         {selectedAgents.map((agent) => (
           <AgentComparisonCard
             key={agent}

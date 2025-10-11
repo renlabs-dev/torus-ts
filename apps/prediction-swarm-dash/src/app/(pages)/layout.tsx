@@ -10,7 +10,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <div>
+    <>
       <Header className="bg-background" />
       <div className="fixed left-0 right-0 top-20 z-40">
         <Suspense fallback={<div className="h-18" />}>
@@ -34,6 +34,6 @@ export default function RootLayout({
         />
       </div>
       {children}
-    </div>
+    </>
   );
 }

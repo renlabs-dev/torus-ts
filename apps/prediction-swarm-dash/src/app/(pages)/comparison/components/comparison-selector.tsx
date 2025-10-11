@@ -1,7 +1,6 @@
 "use client";
 
 import { Button } from "@torus-ts/ui/components/button";
-import { Card, CardContent } from "@torus-ts/ui/components/card";
 import { useIsMobile } from "@torus-ts/ui/hooks/use-mobile";
 import { AgentSelector } from "~/app/_components/agent-selector";
 import type { DateRangeFilterData } from "~/app/_components/date-range-filter";
@@ -71,70 +70,68 @@ export function ComparisonSelector({
   const isMobile = useIsMobile();
 
   return (
-    <Card className="mb-6">
-      <CardContent className="space-y-4">
-        {/* Add New Agent */}
-        {selectedAgents.length < 4 && (
-          <div>
-            <label
-              htmlFor="new-agent-selector"
-              className="text-foreground mb-2 block font-medium"
-            >
-              Add agent
-            </label>
-            <AgentSelector
-              value={newAgent}
-              onValueChange={handleAgentSelect}
-              placeholder={
-                isMobile
-                  ? "Search agents..."
-                  : "Search and select an agent to add..."
-              }
-              className="w-full"
-              excludeAgents={selectedAgents}
-            />
-          </div>
-        )}
+    <div className="mb-2 border-none p-0">
+      {/* Add New Agent */}
+      {selectedAgents.length < 4 && (
+        <div>
+          <label
+            htmlFor="new-agent-selector"
+            className="text-foreground mb-2 block font-medium"
+          >
+            Add agent
+          </label>
+          <AgentSelector
+            value={newAgent}
+            onValueChange={handleAgentSelect}
+            placeholder={
+              isMobile
+                ? "Search agents..."
+                : "Search and select an agent to add..."
+            }
+            className="w-full"
+            excludeAgents={selectedAgents}
+          />
+        </div>
+      )}
 
-        {/* Selected Agents */}
-        {selectedAgents.length > 0 && (
-          <div className="space-y-2">
-            <div className="text-foreground font-medium">
-              Selected agents ({selectedAgents.length}/4)
-            </div>
-            <div className="flex flex-wrap gap-2">
-              {selectedAgents.map((agent) => (
-                <AgentChip
-                  key={agent}
-                  address={agent}
-                  onRemove={() => onRemoveAgent(agent)}
-                />
-              ))}
-            </div>
+      {/* Selected Agents */}
+      {selectedAgents.length > 0 && (
+        <div className="mt-4 space-y-2 rounded-md border p-4">
+          <div className="text-foreground font-medium">
+            Selected agents ({selectedAgents.length}/4)
           </div>
-        )}
+          <div className="flex flex-wrap gap-2">
+            {selectedAgents.map((agent) => (
+              <AgentChip
+                key={agent}
+                address={agent}
+                onRemove={() => onRemoveAgent(agent)}
+              />
+            ))}
+          </div>
+        </div>
+      )}
 
-        {/* Date Range Filter - Always Visible */}
-        {selectedAgents.length > 0 && (
-          <div className="pt-4">
-            <DateRangeFilter
-              onSubmit={(data: DateRangeFilterData) => {
-                onFiltersChange({
-                  from: data.from,
-                  to: data.to,
-                  limit: data.limit || 10,
-                  offset: 0,
-                });
-              }}
-              defaultValues={{
-                from: searchFilters.from,
-                to: searchFilters.to,
-                limit: searchFilters.limit,
-              }}
-            />
-          </div>
-        )}
-      </CardContent>
-    </Card>
+      {/* Date Range Filter - Always Visible */}
+      {selectedAgents.length > 0 && (
+        <div className="pt-4">
+          <DateRangeFilter
+            onSubmit={(data: DateRangeFilterData) => {
+              onFiltersChange({
+                from: data.from,
+                to: data.to,
+                limit: data.limit || 10,
+                offset: 0,
+              });
+            }}
+            defaultValues={{
+              from: searchFilters.from,
+              to: searchFilters.to,
+              limit: searchFilters.limit,
+            }}
+          />
+        </div>
+      )}
+    </div>
   );
 }

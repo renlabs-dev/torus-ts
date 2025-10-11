@@ -97,17 +97,32 @@ function ComparisonPageContent() {
   }
 
   return (
-    <Card className={cn("mb-12 w-full border-none p-0", "animate-fade-down animate-delay-200")}>
+    <Card
+      className={cn(
+        "mb-12 w-full border-none p-0",
+        "animate-fade-down animate-delay-200",
+      )}
+    >
       <CardHeader className="border-border flex items-center border-y pt-6">
         <div className="mx-auto flex w-full max-w-screen-xl flex-col gap-6">
-          <div className={cn("flex flex-col gap-4 pb-2 sm:flex-row sm:items-center sm:justify-between", "animate-fade-up animate-delay-[400ms]")}>
+          <div
+            className={cn(
+              "flex flex-col gap-4 pb-2 sm:flex-row sm:items-center sm:justify-between",
+              "animate-fade-up animate-delay-[400ms]",
+            )}
+          >
             <CardTitle className="flex flex-col items-start text-2xl">
               Agent Comparison
               <div className="text-muted-foreground flex flex-row gap-2 text-sm">
                 Add up to 4 agents to compare their performance metrics
               </div>
             </CardTitle>
-            <div className={cn("flex justify-end gap-3", "animate-fade-up animate-delay-[600ms]")}>
+            <div
+              className={cn(
+                "flex justify-end gap-3",
+                "animate-fade-up animate-delay-[600ms]",
+              )}
+            >
               <Link href="/agents" className="w-full">
                 <Button
                   type="button"

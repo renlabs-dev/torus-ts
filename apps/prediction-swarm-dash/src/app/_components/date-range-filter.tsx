@@ -250,7 +250,7 @@ export function DateRangeFilter({
     activeButton === buttonId ? "border border-primary" : "";
 
   return (
-    <div className="flex items-center gap-3">
+    <div className="flex w-full items-center justify-between gap-3 sm:w-fit sm:justify-end">
       <span className="text-muted-foreground text-sm">
         Showing:{" "}
         <span className="text-foreground font-medium">
