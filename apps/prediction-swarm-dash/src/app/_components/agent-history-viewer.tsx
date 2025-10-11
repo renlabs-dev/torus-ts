@@ -31,6 +31,47 @@ import { Pagination } from "./pagination";
 import { RelativeTime } from "./relative-time";
 import { SearchInput } from "./search-field";
 
+// Format outcome text and determine badge color
+function getOutcomeConfig(outcome: string) {
+  switch (outcome) {
+    case "MaturedTrue":
+      return {
+        text: "Matured True",
+        className: "bg-green-600/20 text-green-400 border-green-600/40",
+      };
+    case "MaturedFalse":
+      return {
+        text: "Matured False",
+        className: "bg-red-600/20 text-red-400 border-red-600/40",
+      };
+    case "MaturedMostlyTrue":
+      return {
+        text: "Mostly True",
+        className: "bg-emerald-600/20 text-emerald-400 border-emerald-600/40",
+      };
+    case "NotMatured":
+      return {
+        text: "Not Matured",
+        className: "bg-amber-600/20 text-amber-400 border-amber-600/40",
+      };
+    case "Invalid":
+      return {
+        text: "Invalid",
+        className: "bg-gray-600/20 text-gray-400 border-gray-600/40",
+      };
+    case "MissingContext":
+      return {
+        text: "Missing Context",
+        className: "bg-orange-600/20 text-orange-400 border-orange-600/40",
+      };
+    default:
+      return {
+        text: outcome,
+        className: "bg-muted/20 text-muted-foreground border-muted",
+      };
+  }
+}
+
 function HighlightedText({
   fullText,
   highlight,
@@ -171,47 +212,6 @@ function ClaimItem({ item }: { item: VerificationClaim }) {
   const { data: prediction, isLoading: predictionLoading } =
     usePredictionByIdQuery(item.prediction_id);
 
-  // Format outcome text and determine badge color
-  const getOutcomeConfig = (outcome: string) => {
-    switch (outcome) {
-      case "MaturedTrue":
-        return {
-          text: "Matured True",
-          className: "bg-green-600/20 text-green-400 border-green-600/40",
-        };
-      case "MaturedFalse":
-        return {
-          text: "Matured False",
-          className: "bg-red-600/20 text-red-400 border-red-600/40",
-        };
-      case "MaturedMostlyTrue":
-        return {
-          text: "Mostly True",
-          className: "bg-emerald-600/20 text-emerald-400 border-emerald-600/40",
-        };
-      case "NotMatured":
-        return {
-          text: "Not Matured",
-          className: "bg-amber-600/20 text-amber-400 border-amber-600/40",
-        };
-      case "Invalid":
-        return {
-          text: "Invalid",
-          className: "bg-gray-600/20 text-gray-400 border-gray-600/40",
-        };
-      case "MissingContext":
-        return {
-          text: "Missing Context",
-          className: "bg-orange-600/20 text-orange-400 border-orange-600/40",
-        };
-      default:
-        return {
-          text: outcome,
-          className: "bg-muted/20 text-muted-foreground border-muted",
-        };
-    }
-  };
-
   const outcomeConfig = getOutcomeConfig(item.outcome);
 
   return (
@@ -299,14 +299,21 @@ function VerdictItem({ item }: { item: VerificationVerdict }) {
           <Badge className="mr-1 text-xs sm:text-sm" variant="outline">
             Verdict #{item.id}
           </Badge>
-          {!claimId && (
+          {claimId && claim ? (
+            <Badge
+              className={`mr-1 text-xs sm:text-sm ${getOutcomeConfig(claim.outcome).className}`}
+              variant="outline"
+            >
+              Claim: {getOutcomeConfig(claim.outcome).text}
+            </Badge>
+          ) : !claimId ? (
             <Badge
               variant="outline"
               className="border-blue bg-blue-500/10 text-blue-500"
             >
               Verdict does not agree with any provided claims
             </Badge>
-          )}
+          ) : null}
           <span>
             Submitted <RelativeTime date={item.inserted_at} />
           </span>
