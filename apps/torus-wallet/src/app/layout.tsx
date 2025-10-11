@@ -1,7 +1,7 @@
 import "@torus-ts/ui/globals.css";
 import { GoogleAnalytics } from "@next/third-parties/google";
 import { ReactQueryProvider } from "@torus-ts/query-provider";
-import { TorusProvider } from "@torus-ts/torus-provider";
+import { TorusProvider, useTorus } from "@torus-ts/torus-provider";
 import { APRBarClient } from "@torus-ts/ui/components/apr";
 import { Container } from "@torus-ts/ui/components/container";
 import { Footer } from "@torus-ts/ui/components/footer";
@@ -57,6 +57,11 @@ const Providers: React.FC<ProvidersProps> = ({
   </TorusProvider>
 );
 
+function APRBarWrapper() {
+  const { api } = useTorus();
+  return <APRBarClient api={api} />;
+}
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -73,7 +78,7 @@ export default function RootLayout({
           torusCacheUrl={env("NEXT_PUBLIC_TORUS_CACHE_URL")}
         >
           <WalletHeader />
-          <APRBarClient />
+          <APRBarWrapper />
           <Container>
             <main className="mx-auto flex min-w-full flex-col items-center gap-3 text-white">
               <div className="flex w-full max-w-screen-xl flex-col justify-around gap-4 lg:mt-[10vh] lg:flex-row">
