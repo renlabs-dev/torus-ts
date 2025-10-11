@@ -13,6 +13,10 @@ catalog:
   "@next/eslint-plugin-next": ^14.2.5
   "@t3-oss/env-nextjs": ^0.10.1
   "dotenv-cli": ^7.4.2
+  "react-hook-form": ^7.53.2
+  "@hookform/resolvers": ^3.9.1
+  "motion": ^12.23.19
+  "recharts": ^2.15.4
   "@polkadot/api": ^14.2.3
   "@polkadot/keyring": ^13.4.3
   "@polkadot/util": ^13.2.1

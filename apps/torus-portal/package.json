@@ -16,7 +16,7 @@
     "with-env": "dotenv -e ../../.env --"
   },
   "dependencies": {
-    "@hookform/resolvers": "^3.9.1",
+    "@hookform/resolvers": "catalog:",
     "@next/third-parties": "catalog:",
     "@react-three/drei": "catalog:",
     "@react-three/fiber": "catalog:",
@@ -45,7 +45,7 @@
     "r3f-forcegraph": "^1.0.8",
     "react": "catalog:react19",
     "react-dom": "catalog:react19",
-    "react-hook-form": "^7.53.2",
+    "react-hook-form": "catalog:",
     "shadcn-dropzone": "^0.2.1",
     "three": "catalog:",
     "tsafe": "catalog:",

@@ -6,6 +6,9 @@ settings:
 
 catalogs:
   default:
+    '@hookform/resolvers':
+      specifier: ^3.9.1
+      version: 3.10.0
     '@next/eslint-plugin-next':
       specifier: ^14.2.5
       version: 14.2.33
@@ -84,6 +87,9 @@ catalogs:
     luxon:
       specifier: ^3.5.0
       version: 3.7.2
+    motion:
+      specifier: ^12.23.19
+      version: 12.23.22
     multiformats:
       specifier: ^13.2.3
       version: 13.4.0
@@ -99,6 +105,12 @@ catalogs:
     prettier:
       specifier: ^3.3.3
       version: 3.6.2
+    react-hook-form:
+      specifier: ^7.53.2
+      version: 7.62.0
+    recharts:
+      specifier: ^2.15.4
+      version: 2.15.4
     rustie:
       specifier: ^0.4.0
       version: 0.4.0
@@ -173,8 +185,8 @@ importers:
   apps/prediction-swarm-dash:
     dependencies:
       '@hookform/resolvers':
-        specifier: ^5.1.1
-        version: 5.2.2(react-hook-form@7.62.0(react@19.1.1))
+        specifier: 'catalog:'
+        version: 3.10.0(react-hook-form@7.62.0(react@19.1.1))
       '@polkadot/api':
         specifier: 'catalog:'
         version: 14.3.1(bufferutil@4.0.9)(utf-8-validate@5.0.10)
@@ -224,7 +236,7 @@ importers:
         specifier: 'catalog:'
         version: 0.475.0(react@19.1.1)
       motion:
-        specifier: ^12.23.19
+        specifier: 'catalog:'
         version: 12.23.22(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
       next:
         specifier: 'catalog:'
@@ -239,10 +251,10 @@ importers:
         specifier: ^19.0.0
         version: 19.1.1(react@19.1.1)
       react-hook-form:
-        specifier: ^7.61.1
+        specifier: 'catalog:'
         version: 7.62.0(react@19.1.1)
       recharts:
-        specifier: ^2.15.4
+        specifier: 'catalog:'
         version: 2.15.4(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
       three:
         specifier: 'catalog:'
@@ -522,7 +534,7 @@ importers:
   apps/torus-governance:
     dependencies:
       '@hookform/resolvers':
-        specifier: ^3.9.1
+        specifier: 'catalog:'
         version: 3.10.0(react-hook-form@7.62.0(react@19.1.1))
       '@next/third-parties':
         specifier: 'catalog:'
@@ -594,7 +606,7 @@ importers:
         specifier: ^19.0.0
         version: 19.1.1(react@19.1.1)
       react-hook-form:
-        specifier: ^7.53.2
+        specifier: 'catalog:'
         version: 7.62.0(react@19.1.1)
       rustie:
         specifier: 'catalog:'
@@ -661,8 +673,8 @@ importers:
         specifier: 'catalog:'
         version: 0.475.0(react@19.1.1)
       motion:
-        specifier: ^12.23.12
-        version: 12.23.12(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
+        specifier: 'catalog:'
+        version: 12.23.22(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
       next:
         specifier: 'catalog:'
         version: 15.5.3(@babel/core@7.28.4)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
@@ -710,7 +722,7 @@ importers:
   apps/torus-portal:
     dependencies:
       '@hookform/resolvers':
-        specifier: ^3.9.1
+        specifier: 'catalog:'
         version: 3.10.0(react-hook-form@7.62.0(react@19.1.1))
       '@next/third-parties':
         specifier: 'catalog:'
@@ -797,7 +809,7 @@ importers:
         specifier: ^19.0.0
         version: 19.1.1(react@19.1.1)
       react-hook-form:
-        specifier: ^7.53.2
+        specifier: 'catalog:'
         version: 7.62.0(react@19.1.1)
       shadcn-dropzone:
         specifier: ^0.2.1
@@ -852,7 +864,7 @@ importers:
   apps/torus-prophet-finder:
     dependencies:
       '@hookform/resolvers':
-        specifier: ^3.9.1
+        specifier: 'catalog:'
         version: 3.10.0(react-hook-form@7.62.0(react@19.1.1))
       '@next/third-parties':
         specifier: 'catalog:'
@@ -906,7 +918,7 @@ importers:
         specifier: ^19.0.0
         version: 19.1.1(react@19.1.1)
       react-hook-form:
-        specifier: ^7.53.2
+        specifier: 'catalog:'
         version: 7.62.0(react@19.1.1)
       three:
         specifier: ^0.180.0
@@ -952,7 +964,7 @@ importers:
   apps/torus-wallet:
     dependencies:
       '@hookform/resolvers':
-        specifier: ^3.9.1
+        specifier: 'catalog:'
         version: 3.10.0(react-hook-form@7.62.0(react@19.1.1))
       '@next/third-parties':
         specifier: 'catalog:'
@@ -1009,10 +1021,10 @@ importers:
         specifier: ^19.0.0
         version: 19.1.1(react@19.1.1)
       react-hook-form:
-        specifier: ^7.53.2
+        specifier: 'catalog:'
         version: 7.62.0(react@19.1.1)
       recharts:
-        specifier: ^2.13.0-alpha.4
+        specifier: 'catalog:'
         version: 2.15.4(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
       three:
         specifier: 'catalog:'
@@ -1562,10 +1574,10 @@ importers:
         specifier: ^19.0.0
         version: 19.1.1(react@19.1.1)
       react-hook-form:
-        specifier: ^7.53.2
+        specifier: 'catalog:'
         version: 7.62.0(react@19.1.1)
       recharts:
-        specifier: ^2.13.0-alpha.4
+        specifier: 'catalog:'
         version: 2.15.4(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
       sonner:
         specifier: ^2.0.6
@@ -3022,11 +3034,6 @@ packages:
     resolution: {integrity: sha512-79Dv+3mDF7i+2ajj7SkypSKHhl1cbln1OGavqrsF7p6mbUv11xpqpacPsGDCTRvCSjEEIez2ef1NveSVL3b0Ag==}
     peerDependencies:
       react-hook-form: ^7.0.0
-
-  '@hookform/resolvers@5.2.2':
-    resolution: {integrity: sha512-A/IxlMLShx3KjV/HeTcTfaMxdwy690+L/ZADoeaTltLx+CVuzkeVIPuybK3jrRfw7YZnmdKsVVHAlEPIAEUNlA==}
-    peerDependencies:
-      react-hook-form: ^7.55.0
 
   '@humanfs/core@0.19.1':
     resolution: {integrity: sha512-5DyQ4+1JEUzejeK1JGICcideyfUbGixgS9jNgex5nqkW+cY7WZhxBigmieN5Qnw9ZosSNVC9KQKyb+GUaGyKUA==}
@@ -6430,9 +6437,6 @@ packages:
     peerDependencies:
       '@solana/web3.js': '*'
 
-  '@standard-schema/utils@0.3.0':
-    resolution: {integrity: sha512-e7Mew686owMaPJVNNLs55PUvgz371nKgwsc4vxE49zsODpJEnxgxRo2y/OKrqueavXgZNMDVj3DdHFlaSAeU8g==}
-
   '@starknet-io/get-starknet-core@4.0.7':
     resolution: {integrity: sha512-ocwQTdDvGa+0CvjGygyaTuFkda2R82dofydts8uXr9p0Diy/bmYW1fkuqJfi1nC5M+YcvvuEpl6wFvwXM1og5w==}
 
@@ -9489,20 +9493,6 @@ packages:
   fraction.js@4.3.7:
     resolution: {integrity: sha512-ZsDfxO51wGAXREY55a7la9LScWpwv9RxIrYABrlvOFBlH/ShPnrtsXeuUIfXKKOVicNxQ+o8JTbJvjS4M89yew==}
 
-  framer-motion@12.23.12:
-    resolution: {integrity: sha512-6e78rdVtnBvlEVgu6eFEAgG9v3wLnYEboM8I5O5EXvfKC8gxGQB8wXJdhkMy10iVcn05jl6CNw7/HTsTCfwcWg==}
-    peerDependencies:
-      '@emotion/is-prop-valid': '*'
-      react: ^19.0.0
-      react-dom: ^19.0.0
-    peerDependenciesMeta:
-      '@emotion/is-prop-valid':
-        optional: true
-      react:
-        optional: true
-      react-dom:
-        optional: true
-
   framer-motion@12.23.22:
     resolution: {integrity: sha512-ZgGvdxXCw55ZYvhoZChTlG6pUuehecgvEAJz0BHoC5pQKW1EC5xf1Mul1ej5+ai+pVY0pylyFfdl45qnM1/GsA==}
     peerDependencies:
@@ -11089,28 +11079,11 @@ packages:
   modern-ahocorasick@1.1.0:
     resolution: {integrity: sha512-sEKPVl2rM+MNVkGQt3ChdmD8YsigmXdn5NifZn6jiwn9LRJpWm8F3guhaqrJT/JOat6pwpbXEk6kv+b9DMIjsQ==}
 
-  motion-dom@12.23.12:
-    resolution: {integrity: sha512-RcR4fvMCTESQBD/uKQe49D5RUeDOokkGRmz4ceaJKDBgHYtZtntC/s2vLvY38gqGaytinij/yi3hMcWVcEF5Kw==}
-
   motion-dom@12.23.21:
     resolution: {integrity: sha512-5xDXx/AbhrfgsQmSE7YESMn4Dpo6x5/DTZ4Iyy4xqDvVHWvFVoV+V2Ri2S/ksx+D40wrZ7gPYiMWshkdoqNgNQ==}
 
   motion-utils@12.23.6:
     resolution: {integrity: sha512-eAWoPgr4eFEOFfg2WjIsMoqJTW6Z8MTUCgn/GZ3VRpClWBdnbjryiA3ZSNLyxCTmCQx4RmYX6jX1iWHbenUPNQ==}
-
-  motion@12.23.12:
-    resolution: {integrity: sha512-8jCD8uW5GD1csOoqh1WhH1A6j5APHVE15nuBkFeRiMzYBdRwyAHmSP/oXSuW0WJPZRXTFdBoG4hY9TFWNhhwng==}
-    peerDependencies:
-      '@emotion/is-prop-valid': '*'
-      react: ^19.0.0
-      react-dom: ^19.0.0
-    peerDependenciesMeta:
-      '@emotion/is-prop-valid':
-        optional: true
-      react:
-        optional: true
-      react-dom:
-        optional: true
 
   motion@12.23.22:
     resolution: {integrity: sha512-iSq6X9vLHbeYwmHvhK//+U74ROaPnZmBuy60XZzqNl0QtZkWfoZyMDHYnpKuWFv0sNMqHgED8aCXk94LCoQPGg==}
@@ -16640,11 +16613,6 @@ snapshots:
 
   '@hookform/resolvers@3.10.0(react-hook-form@7.62.0(react@19.1.1))':
     dependencies:
-      react-hook-form: 7.62.0(react@19.1.1)
-
-  '@hookform/resolvers@5.2.2(react-hook-form@7.62.0(react@19.1.1))':
-    dependencies:
-      '@standard-schema/utils': 0.3.0
       react-hook-form: 7.62.0(react@19.1.1)
 
   '@humanfs/core@0.19.1': {}
@@ -22187,8 +22155,6 @@ snapshots:
       eventemitter3: 5.0.1
       uuid: 9.0.1
 
-  '@standard-schema/utils@0.3.0': {}
-
   '@starknet-io/get-starknet-core@4.0.7':
     dependencies:
       '@module-federation/runtime': 0.1.21
@@ -26881,15 +26847,6 @@ snapshots:
 
   fraction.js@4.3.7: {}
 
-  framer-motion@12.23.12(react-dom@19.1.1(react@19.1.1))(react@19.1.1):
-    dependencies:
-      motion-dom: 12.23.12
-      motion-utils: 12.23.6
-      tslib: 2.8.1
-    optionalDependencies:
-      react: 19.1.1
-      react-dom: 19.1.1(react@19.1.1)
-
   framer-motion@12.23.22(react-dom@19.1.1(react@19.1.1))(react@19.1.1):
     dependencies:
       motion-dom: 12.23.21
@@ -28990,23 +28947,11 @@ snapshots:
 
   modern-ahocorasick@1.1.0: {}
 
-  motion-dom@12.23.12:
-    dependencies:
-      motion-utils: 12.23.6
-
   motion-dom@12.23.21:
     dependencies:
       motion-utils: 12.23.6
 
   motion-utils@12.23.6: {}
-
-  motion@12.23.12(react-dom@19.1.1(react@19.1.1))(react@19.1.1):
-    dependencies:
-      framer-motion: 12.23.12(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
-      tslib: 2.8.1
-    optionalDependencies:
-      react: 19.1.1
-      react-dom: 19.1.1(react@19.1.1)
 
   motion@12.23.22(react-dom@19.1.1(react@19.1.1))(react@19.1.1):
     dependencies:

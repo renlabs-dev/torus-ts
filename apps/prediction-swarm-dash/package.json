@@ -16,7 +16,7 @@
     "with-env": "dotenv -e ../../.env --"
   },
   "dependencies": {
-    "@hookform/resolvers": "^5.1.1",
+    "@hookform/resolvers": "catalog:",
     "@polkadot/api": "catalog:",
     "@polkadot/keyring": "catalog:",
     "@polkadot/util": "catalog:",
@@ -33,13 +33,13 @@
     "@torus-ts/ui": "workspace:*",
     "dayjs": "^1.11.13",
     "lucide-react": "catalog:",
-    "motion": "^12.23.19",
+    "motion": "catalog:",
     "next": "catalog:",
     "react": "catalog:react19",
     "react-day-picker": "^9.8.0",
     "react-dom": "catalog:react19",
-    "react-hook-form": "^7.61.1",
-    "recharts": "^2.15.4",
+    "react-hook-form": "catalog:",
+    "recharts": "catalog:",
     "three": "catalog:",
     "zod": "catalog:",
     "zustand": "catalog:"
