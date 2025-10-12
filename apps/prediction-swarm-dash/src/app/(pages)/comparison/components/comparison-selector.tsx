@@ -1,0 +1,137 @@
+"use client";
+
+import { Button } from "@torus-ts/ui/components/button";
+import { useIsMobile } from "@torus-ts/ui/hooks/use-mobile";
+import { AgentSelector } from "~/app/_components/agent-selector";
+import type { DateRangeFilterData } from "~/app/_components/date-range-filter";
+import { DateRangeFilter } from "~/app/_components/date-range-filter";
+import { useAgentName } from "~/hooks/api/use-agent-name-query";
+import { X } from "lucide-react";
+import React from "react";
+
+interface SearchFilters {
+  from?: Date;
+  to?: Date;
+  limit: number;
+  offset: number;
+}
+
+interface ComparisonSelectorProps {
+  selectedAgents: string[];
+  onAddAgent: (agentAddress: string) => void;
+  onRemoveAgent: (agentAddress: string) => void;
+  searchFilters: SearchFilters;
+  onFiltersChange: (filters: SearchFilters) => void;
+}
+
+interface AgentChipProps {
+  address: string;
+  onRemove: () => void;
+}
+
+function AgentChip({ address, onRemove }: AgentChipProps) {
+  const { agentName } = useAgentName(address);
+
+  return (
+    <div className="bg-muted flex items-center gap-2 rounded-md px-3 py-2">
+      <span className="text-foreground">{agentName}</span>
+      <Button
+        variant="ghost"
+        size="sm"
+        onClick={onRemove}
+        className="h-4 w-4 p-0 hover:cursor-pointer"
+      >
+        <X className="h-3 w-3" />
+      </Button>
+    </div>
+  );
+}
+
+export function ComparisonSelector({
+  selectedAgents,
+  onAddAgent,
+  onRemoveAgent,
+  searchFilters,
+  onFiltersChange,
+}: ComparisonSelectorProps) {
+  const [newAgent, setNewAgent] = React.useState("");
+
+  const handleAgentSelect = (agentAddress: string) => {
+    if (
+      agentAddress &&
+      !selectedAgents.includes(agentAddress) &&
+      selectedAgents.length < 4
+    ) {
+      onAddAgent(agentAddress);
+      setNewAgent("");
+    }
+  };
+
+  const isMobile = useIsMobile();
+
+  return (
+    <div className="mb-2 border-none p-0">
+      {/* Add New Agent */}
+      {selectedAgents.length < 4 && (
+        <div>
+          <label
+            htmlFor="new-agent-selector"
+            className="text-foreground mb-2 block font-medium"
+          >
+            Add agent
+          </label>
+          <AgentSelector
+            value={newAgent}
+            onValueChange={handleAgentSelect}
+            placeholder={
+              isMobile
+                ? "Search agents..."
+                : "Search and select an agent to add..."
+            }
+            className="w-full"
+            excludeAgents={selectedAgents}
+          />
+        </div>
+      )}
+
+      {/* Selected Agents */}
+      {selectedAgents.length > 0 && (
+        <div className="mt-4 space-y-2 rounded-md border p-4">
+          <div className="text-foreground font-medium">
+            Selected agents ({selectedAgents.length}/4)
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {selectedAgents.map((agent) => (
+              <AgentChip
+                key={agent}
+                address={agent}
+                onRemove={() => onRemoveAgent(agent)}
+              />
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Date Range Filter - Always Visible */}
+      {selectedAgents.length > 0 && (
+        <div className="pt-4">
+          <DateRangeFilter
+            onSubmit={(data: DateRangeFilterData) => {
+              onFiltersChange({
+                from: data.from,
+                to: data.to,
+                limit: data.limit || 10,
+                offset: 0,
+              });
+            }}
+            defaultValues={{
+              from: searchFilters.from,
+              to: searchFilters.to,
+              limit: searchFilters.limit,
+            }}
+          />
+        </div>
+      )}
+    </div>
+  );
+}
