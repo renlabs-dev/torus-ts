@@ -89,7 +89,7 @@ catalogs:
       version: 3.7.2
     motion:
       specifier: ^12.23.19
-      version: 12.23.22
+      version: 12.23.24
     multiformats:
       specifier: ^13.2.3
       version: 13.4.1
@@ -107,7 +107,7 @@ catalogs:
       version: 3.6.2
     react-hook-form:
       specifier: ^7.53.2
-      version: 7.62.0
+      version: 7.65.0
     recharts:
       specifier: ^2.15.4
       version: 2.15.4
@@ -187,7 +187,7 @@ importers:
     dependencies:
       '@hookform/resolvers':
         specifier: 'catalog:'
-        version: 3.10.0(react-hook-form@7.62.0(react@19.1.1))
+        version: 3.10.0(react-hook-form@7.65.0(react@19.2.0))
       '@polkadot/api':
         specifier: 'catalog:'
         version: 14.3.1(bufferutil@4.0.9)(utf-8-validate@5.0.10)
@@ -202,13 +202,13 @@ importers:
         version: 13.5.6(@polkadot/util@13.4.3)
       '@react-three/drei':
         specifier: 'catalog:'
-        version: 10.7.6(@react-three/fiber@9.3.0(@types/react@19.0.14)(immer@10.1.3)(react-dom@19.1.1(react@19.1.1))(react-native@0.81.1(@babel/core@7.28.4)(@types/react@19.0.14)(bufferutil@4.0.9)(react@19.1.1)(utf-8-validate@5.0.10))(react@19.1.1)(three@0.175.0))(@types/react@19.0.14)(@types/three@0.175.0)(immer@10.1.3)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)(three@0.175.0)
+        version: 10.7.6(@react-three/fiber@9.3.0(@types/react@19.0.14)(immer@10.1.3)(react-dom@19.2.0(react@19.2.0))(react-native@0.82.0(@babel/core@7.28.4)(@types/react@19.0.14)(bufferutil@4.0.9)(react@19.2.0)(utf-8-validate@5.0.10))(react@19.2.0)(three@0.175.0))(@types/react@19.0.14)(@types/three@0.175.0)(immer@10.1.3)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)(three@0.175.0)
       '@react-three/fiber':
         specifier: 'catalog:'
-        version: 9.3.0(@types/react@19.0.14)(immer@10.1.3)(react-dom@19.1.1(react@19.1.1))(react-native@0.81.1(@babel/core@7.28.4)(@types/react@19.0.14)(bufferutil@4.0.9)(react@19.1.1)(utf-8-validate@5.0.10))(react@19.1.1)(three@0.175.0)
+        version: 9.3.0(@types/react@19.0.14)(immer@10.1.3)(react-dom@19.2.0(react@19.2.0))(react-native@0.82.0(@babel/core@7.28.4)(@types/react@19.0.14)(bufferutil@4.0.9)(react@19.2.0)(utf-8-validate@5.0.10))(react@19.2.0)(three@0.175.0)
       '@tanstack/react-query':
         specifier: 'catalog:'
-        version: 5.87.4(react@19.1.1)
+        version: 5.90.2(react@19.2.0)
       '@torus-network/sdk':
         specifier: workspace:*
         version: link:../../packages/torus-sdk-ts
@@ -235,31 +235,31 @@ importers:
         version: 1.11.18
       lucide-react:
         specifier: 'catalog:'
-        version: 0.475.0(react@19.1.1)
+        version: 0.475.0(react@19.2.0)
       motion:
         specifier: 'catalog:'
-        version: 12.23.22(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
+        version: 12.23.24(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
       next:
         specifier: 'catalog:'
-        version: 15.5.3(@babel/core@7.28.4)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
+        version: 15.5.4(@babel/core@7.28.4)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
       next-plausible:
         specifier: 'catalog:'
-        version: 3.12.4(next@15.5.3(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
+        version: 3.12.4(next@15.5.4(react-dom@19.2.0(react@19.2.0))(react@19.2.0))(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
       react:
         specifier: ^19.0.0
-        version: 19.1.1
+        version: 19.2.0
       react-day-picker:
         specifier: ^9.8.0
-        version: 9.11.1(react@19.1.1)
+        version: 9.11.1(react@19.2.0)
       react-dom:
         specifier: ^19.0.0
-        version: 19.1.1(react@19.1.1)
+        version: 19.2.0(react@19.2.0)
       react-hook-form:
         specifier: 'catalog:'
-        version: 7.62.0(react@19.1.1)
+        version: 7.65.0(react@19.2.0)
       recharts:
         specifier: 'catalog:'
-        version: 2.15.4(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
+        version: 2.15.4(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
       three:
         specifier: 'catalog:'
         version: 0.175.0
@@ -268,7 +268,7 @@ importers:
         version: 3.25.76
       zustand:
         specifier: 'catalog:'
-        version: 5.0.8(@types/react@19.0.14)(immer@10.1.3)(react@19.1.1)(use-sync-external-store@1.5.0(react@19.1.1))
+        version: 5.0.8(@types/react@19.0.14)(immer@10.1.3)(react@19.2.0)(use-sync-external-store@1.6.0(react@19.2.0))
     devDependencies:
       '@torus-ts/eslint-config':
         specifier: workspace:*
@@ -278,7 +278,7 @@ importers:
         version: link:../../tooling/typescript
       '@types/node':
         specifier: 'catalog:'
-        version: 20.19.13
+        version: 20.19.21
       '@types/react':
         specifier: catalog:react19
         version: 19.0.14
@@ -293,10 +293,10 @@ importers:
         version: 8.5.6
       tailwindcss:
         specifier: 'catalog:'
-        version: 3.4.17
+        version: 3.4.18(tsx@4.20.6)(yaml@2.8.1)
       typescript:
         specifier: 'catalog:'
-        version: 5.9.2
+        version: 5.9.3
 
   apps/torus-allocator:
     dependencies:
@@ -317,11 +317,7 @@ importers:
         version: 15.5.4(@babel/core@7.28.4)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
       next-plausible:
         specifier: 'catalog:'
-<<<<<<< HEAD
-        version: 3.12.4(next@15.5.4(@babel/core@7.28.4)(react-dom@19.2.0(react@19.2.0))(react@19.2.0))(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
-=======
-        version: 3.12.4(next@15.5.3(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
->>>>>>> origin/dev
+        version: 3.12.4(next@15.5.4(react-dom@19.2.0(react@19.2.0))(react@19.2.0))(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
       react:
         specifier: ^19.0.0
         version: 19.2.0
@@ -528,11 +524,7 @@ importers:
         version: 7.4.4
       eslint:
         specifier: 'catalog:'
-<<<<<<< HEAD
-        version: 9.37.0(jiti@1.21.7)
-=======
-        version: 9.35.0(jiti@2.6.1)
->>>>>>> origin/dev
+        version: 9.37.0(jiti@2.6.1)
       prettier:
         specifier: 'catalog:'
         version: 3.6.2
@@ -543,13 +535,8 @@ importers:
   apps/torus-governance:
     dependencies:
       '@hookform/resolvers':
-<<<<<<< HEAD
-        specifier: ^3.9.1
-        version: 3.10.0(react-hook-form@7.65.0(react@19.2.0))
-=======
         specifier: 'catalog:'
-        version: 3.10.0(react-hook-form@7.62.0(react@19.1.1))
->>>>>>> origin/dev
+        version: 3.10.0(react-hook-form@7.65.0(react@19.2.0))
       '@next/third-parties':
         specifier: 'catalog:'
         version: 15.5.4(next@15.5.4(@babel/core@7.28.4)(react-dom@19.2.0(react@19.2.0))(react@19.2.0))(react@19.2.0)
@@ -612,11 +599,7 @@ importers:
         version: 4.24.11(next@15.5.4(@babel/core@7.28.4)(react-dom@19.2.0(react@19.2.0))(react@19.2.0))(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
       next-plausible:
         specifier: 'catalog:'
-<<<<<<< HEAD
-        version: 3.12.4(next@15.5.4(@babel/core@7.28.4)(react-dom@19.2.0(react@19.2.0))(react@19.2.0))(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
-=======
-        version: 3.12.4(next@15.5.3(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
->>>>>>> origin/dev
+        version: 3.12.4(next@15.5.4(react-dom@19.2.0(react@19.2.0))(react@19.2.0))(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
       react:
         specifier: ^19.0.0
         version: 19.2.0
@@ -624,13 +607,8 @@ importers:
         specifier: ^19.0.0
         version: 19.2.0(react@19.2.0)
       react-hook-form:
-<<<<<<< HEAD
-        specifier: ^7.53.2
-        version: 7.65.0(react@19.2.0)
-=======
         specifier: 'catalog:'
-        version: 7.62.0(react@19.1.1)
->>>>>>> origin/dev
+        version: 7.65.0(react@19.2.0)
       rustie:
         specifier: 'catalog:'
         version: 0.4.0
@@ -696,23 +674,14 @@ importers:
         specifier: 'catalog:'
         version: 0.475.0(react@19.2.0)
       motion:
-<<<<<<< HEAD
-        specifier: ^12.23.12
-        version: 12.23.24(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
-=======
         specifier: 'catalog:'
-        version: 12.23.22(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
->>>>>>> origin/dev
+        version: 12.23.24(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
       next:
         specifier: 'catalog:'
         version: 15.5.4(@babel/core@7.28.4)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
       next-plausible:
         specifier: 'catalog:'
-<<<<<<< HEAD
-        version: 3.12.4(next@15.5.4(@babel/core@7.28.4)(react-dom@19.2.0(react@19.2.0))(react@19.2.0))(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
-=======
-        version: 3.12.4(next@15.5.3(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
->>>>>>> origin/dev
+        version: 3.12.4(next@15.5.4(react-dom@19.2.0(react@19.2.0))(react@19.2.0))(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
       react:
         specifier: ^19.0.0
         version: 19.2.0
@@ -754,13 +723,8 @@ importers:
   apps/torus-portal:
     dependencies:
       '@hookform/resolvers':
-<<<<<<< HEAD
-        specifier: ^3.9.1
-        version: 3.10.0(react-hook-form@7.65.0(react@19.2.0))
-=======
         specifier: 'catalog:'
-        version: 3.10.0(react-hook-form@7.62.0(react@19.1.1))
->>>>>>> origin/dev
+        version: 3.10.0(react-hook-form@7.65.0(react@19.2.0))
       '@next/third-parties':
         specifier: 'catalog:'
         version: 15.5.4(next@15.5.4(@babel/core@7.28.4)(react-dom@19.2.0(react@19.2.0))(react@19.2.0))(react@19.2.0)
@@ -829,11 +793,7 @@ importers:
         version: 15.5.4(@babel/core@7.28.4)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
       next-plausible:
         specifier: 'catalog:'
-<<<<<<< HEAD
-        version: 3.12.4(next@15.5.4(@babel/core@7.28.4)(react-dom@19.2.0(react@19.2.0))(react@19.2.0))(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
-=======
-        version: 3.12.4(next@15.5.3(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
->>>>>>> origin/dev
+        version: 3.12.4(next@15.5.4(react-dom@19.2.0(react@19.2.0))(react@19.2.0))(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
       pixi-viewport:
         specifier: ^6.0.3
         version: 6.0.3(pixi.js@8.14.0)
@@ -850,13 +810,8 @@ importers:
         specifier: ^19.0.0
         version: 19.2.0(react@19.2.0)
       react-hook-form:
-<<<<<<< HEAD
-        specifier: ^7.53.2
-        version: 7.65.0(react@19.2.0)
-=======
         specifier: 'catalog:'
-        version: 7.62.0(react@19.1.1)
->>>>>>> origin/dev
+        version: 7.65.0(react@19.2.0)
       shadcn-dropzone:
         specifier: ^0.2.1
         version: 0.2.1(react-dom@19.2.0(react@19.2.0))(react@19.2.0)(tailwindcss@3.4.18(tsx@4.20.6)(yaml@2.8.1))
@@ -910,13 +865,8 @@ importers:
   apps/torus-prophet-finder:
     dependencies:
       '@hookform/resolvers':
-<<<<<<< HEAD
-        specifier: ^3.9.1
-        version: 3.10.0(react-hook-form@7.65.0(react@19.2.0))
-=======
         specifier: 'catalog:'
-        version: 3.10.0(react-hook-form@7.62.0(react@19.1.1))
->>>>>>> origin/dev
+        version: 3.10.0(react-hook-form@7.65.0(react@19.2.0))
       '@next/third-parties':
         specifier: 'catalog:'
         version: 15.5.4(next@15.5.4(@babel/core@7.28.4)(react-dom@19.2.0(react@19.2.0))(react@19.2.0))(react@19.2.0)
@@ -961,11 +911,7 @@ importers:
         version: 15.5.4(@babel/core@7.28.4)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
       next-plausible:
         specifier: 'catalog:'
-<<<<<<< HEAD
-        version: 3.12.4(next@15.5.4(@babel/core@7.28.4)(react-dom@19.2.0(react@19.2.0))(react@19.2.0))(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
-=======
-        version: 3.12.4(next@15.5.3(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
->>>>>>> origin/dev
+        version: 3.12.4(next@15.5.4(react-dom@19.2.0(react@19.2.0))(react@19.2.0))(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
       react:
         specifier: ^19.0.0
         version: 19.2.0
@@ -973,13 +919,8 @@ importers:
         specifier: ^19.0.0
         version: 19.2.0(react@19.2.0)
       react-hook-form:
-<<<<<<< HEAD
-        specifier: ^7.53.2
-        version: 7.65.0(react@19.2.0)
-=======
         specifier: 'catalog:'
-        version: 7.62.0(react@19.1.1)
->>>>>>> origin/dev
+        version: 7.65.0(react@19.2.0)
       three:
         specifier: ^0.180.0
         version: 0.180.0
@@ -1024,13 +965,8 @@ importers:
   apps/torus-wallet:
     dependencies:
       '@hookform/resolvers':
-<<<<<<< HEAD
-        specifier: ^3.9.1
-        version: 3.10.0(react-hook-form@7.65.0(react@19.2.0))
-=======
         specifier: 'catalog:'
-        version: 3.10.0(react-hook-form@7.62.0(react@19.1.1))
->>>>>>> origin/dev
+        version: 3.10.0(react-hook-form@7.65.0(react@19.2.0))
       '@next/third-parties':
         specifier: 'catalog:'
         version: 15.5.4(next@15.5.4(@babel/core@7.28.4)(react-dom@19.2.0(react@19.2.0))(react@19.2.0))(react@19.2.0)
@@ -1078,11 +1014,7 @@ importers:
         version: 15.5.4(@babel/core@7.28.4)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
       next-plausible:
         specifier: 'catalog:'
-<<<<<<< HEAD
-        version: 3.12.4(next@15.5.4(@babel/core@7.28.4)(react-dom@19.2.0(react@19.2.0))(react@19.2.0))(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
-=======
-        version: 3.12.4(next@15.5.3(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
->>>>>>> origin/dev
+        version: 3.12.4(next@15.5.4(react-dom@19.2.0(react@19.2.0))(react@19.2.0))(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
       react:
         specifier: ^19.0.0
         version: 19.2.0
@@ -1090,19 +1022,11 @@ importers:
         specifier: ^19.0.0
         version: 19.2.0(react@19.2.0)
       react-hook-form:
-<<<<<<< HEAD
-        specifier: ^7.53.2
+        specifier: 'catalog:'
         version: 7.65.0(react@19.2.0)
       recharts:
-        specifier: ^2.13.0-alpha.4
+        specifier: 'catalog:'
         version: 2.15.4(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
-=======
-        specifier: 'catalog:'
-        version: 7.62.0(react@19.1.1)
-      recharts:
-        specifier: 'catalog:'
-        version: 2.15.4(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
->>>>>>> origin/dev
       three:
         specifier: 'catalog:'
         version: 0.175.0
@@ -1185,11 +1109,7 @@ importers:
         version: 7.4.4
       eslint:
         specifier: 'catalog:'
-<<<<<<< HEAD
-        version: 9.37.0(jiti@1.21.7)
-=======
-        version: 9.35.0(jiti@2.6.1)
->>>>>>> origin/dev
+        version: 9.37.0(jiti@2.6.1)
       prettier:
         specifier: 'catalog:'
         version: 3.6.2
@@ -1244,11 +1164,7 @@ importers:
         version: 9.0.10
       eslint:
         specifier: 'catalog:'
-<<<<<<< HEAD
-        version: 9.37.0(jiti@1.21.7)
-=======
-        version: 9.35.0(jiti@2.6.1)
->>>>>>> origin/dev
+        version: 9.37.0(jiti@2.6.1)
       prettier:
         specifier: 'catalog:'
         version: 3.6.2
@@ -1291,11 +1207,7 @@ importers:
         version: 0.30.6
       eslint:
         specifier: 'catalog:'
-<<<<<<< HEAD
-        version: 9.37.0(jiti@1.21.7)
-=======
-        version: 9.35.0(jiti@2.6.1)
->>>>>>> origin/dev
+        version: 9.37.0(jiti@2.6.1)
       prettier:
         specifier: 'catalog:'
         version: 3.6.2
@@ -1326,11 +1238,7 @@ importers:
         version: 20.19.21
       eslint:
         specifier: 'catalog:'
-<<<<<<< HEAD
-        version: 9.37.0(jiti@1.21.7)
-=======
-        version: 9.35.0(jiti@2.6.1)
->>>>>>> origin/dev
+        version: 9.37.0(jiti@2.6.1)
       prettier:
         specifier: 'catalog:'
         version: 3.6.2
@@ -1438,11 +1346,7 @@ importers:
         version: 19.0.14
       eslint:
         specifier: 'catalog:'
-<<<<<<< HEAD
-        version: 9.37.0(jiti@1.21.7)
-=======
-        version: 9.35.0(jiti@2.6.1)
->>>>>>> origin/dev
+        version: 9.37.0(jiti@2.6.1)
       prettier:
         specifier: 'catalog:'
         version: 3.6.2
@@ -1521,11 +1425,7 @@ importers:
         version: 4.20.6
       vitest:
         specifier: 'catalog:'
-<<<<<<< HEAD
-        version: 3.2.4(@types/debug@4.1.12)(@types/node@22.18.10)(jiti@1.21.7)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
-=======
-        version: 3.2.4(@types/debug@4.1.12)(@types/node@22.18.1)(jiti@2.6.1)(lightningcss@1.30.1)(terser@5.44.0)(tsx@4.20.5)(yaml@2.8.1)
->>>>>>> origin/dev
+        version: 3.2.4(@types/debug@4.1.12)(@types/node@22.18.10)(jiti@2.6.1)(lightningcss@1.30.1)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
 
   packages/torus-utils:
     dependencies:
@@ -1571,11 +1471,7 @@ importers:
         version: 4.41.0
       vitest:
         specifier: 'catalog:'
-<<<<<<< HEAD
-        version: 3.2.4(@types/debug@4.1.12)(@types/node@22.18.10)(jiti@1.21.7)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
-=======
-        version: 3.2.4(@types/debug@4.1.12)(@types/node@22.18.1)(jiti@2.6.1)(lightningcss@1.30.1)(terser@5.44.0)(tsx@4.20.5)(yaml@2.8.1)
->>>>>>> origin/dev
+        version: 3.2.4(@types/debug@4.1.12)(@types/node@22.18.10)(jiti@2.6.1)(lightningcss@1.30.1)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
       zod:
         specifier: 'catalog:'
         version: 3.25.76
@@ -1685,19 +1581,11 @@ importers:
         specifier: ^19.0.0
         version: 19.2.0(react@19.2.0)
       react-hook-form:
-<<<<<<< HEAD
-        specifier: ^7.53.2
+        specifier: 'catalog:'
         version: 7.65.0(react@19.2.0)
       recharts:
-        specifier: ^2.13.0-alpha.4
+        specifier: 'catalog:'
         version: 2.15.4(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
-=======
-        specifier: 'catalog:'
-        version: 7.62.0(react@19.1.1)
-      recharts:
-        specifier: 'catalog:'
-        version: 2.15.4(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
->>>>>>> origin/dev
       sonner:
         specifier: ^2.0.6
         version: 2.0.7(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
@@ -1731,11 +1619,7 @@ importers:
         version: 10.4.21(postcss@8.5.6)
       eslint:
         specifier: 'catalog:'
-<<<<<<< HEAD
-        version: 9.37.0(jiti@1.21.7)
-=======
-        version: 9.35.0(jiti@2.6.1)
->>>>>>> origin/dev
+        version: 9.37.0(jiti@2.6.1)
       postcss:
         specifier: ^8.4.47
         version: 8.5.6
@@ -1753,45 +1637,25 @@ importers:
     dependencies:
       '@eslint/compat':
         specifier: ^1.1.1
-<<<<<<< HEAD
-        version: 1.4.0(eslint@9.37.0(jiti@1.21.7))
-=======
-        version: 1.3.2(eslint@9.35.0(jiti@2.6.1))
->>>>>>> origin/dev
+        version: 1.4.0(eslint@9.37.0(jiti@2.6.1))
       '@next/eslint-plugin-next':
         specifier: ^15.2.4
         version: 15.5.4
       eslint-plugin-import:
         specifier: ^2.29.1
-<<<<<<< HEAD
-        version: 2.32.0(@typescript-eslint/parser@8.46.0(eslint@9.37.0(jiti@1.21.7))(typescript@5.9.3))(eslint@9.37.0(jiti@1.21.7))
+        version: 2.32.0(@typescript-eslint/parser@8.46.0(eslint@9.37.0(jiti@2.6.1))(typescript@5.9.3))(eslint@9.37.0(jiti@2.6.1))
       eslint-plugin-react:
         specifier: ^7.35.0
-        version: 7.37.5(eslint@9.37.0(jiti@1.21.7))
+        version: 7.37.5(eslint@9.37.0(jiti@2.6.1))
       eslint-plugin-react-hooks:
         specifier: rc
-        version: 6.0.0-rc.2(eslint@9.37.0(jiti@1.21.7))
+        version: 6.0.0-rc.2(eslint@9.37.0(jiti@2.6.1))
       eslint-plugin-turbo:
         specifier: ^2.1.1
-        version: 2.5.8(eslint@9.37.0(jiti@1.21.7))(turbo@2.5.8)
+        version: 2.5.8(eslint@9.37.0(jiti@2.6.1))(turbo@2.5.8)
       typescript-eslint:
         specifier: ^8.3.0
-        version: 8.46.0(eslint@9.37.0(jiti@1.21.7))(typescript@5.9.3)
-=======
-        version: 2.32.0(@typescript-eslint/parser@8.43.0(eslint@9.35.0(jiti@2.6.1))(typescript@5.9.2))(eslint@9.35.0(jiti@2.6.1))
-      eslint-plugin-react:
-        specifier: ^7.35.0
-        version: 7.37.5(eslint@9.35.0(jiti@2.6.1))
-      eslint-plugin-react-hooks:
-        specifier: rc
-        version: 6.0.0-rc.2(eslint@9.35.0(jiti@2.6.1))
-      eslint-plugin-turbo:
-        specifier: ^2.1.1
-        version: 2.5.6(eslint@9.35.0(jiti@2.6.1))(turbo@2.5.6)
-      typescript-eslint:
-        specifier: ^8.3.0
-        version: 8.43.0(eslint@9.35.0(jiti@2.6.1))(typescript@5.9.2)
->>>>>>> origin/dev
+        version: 8.46.0(eslint@9.37.0(jiti@2.6.1))(typescript@5.9.3)
     devDependencies:
       '@torus-ts/prettier-config':
         specifier: workspace:*
@@ -1801,11 +1665,7 @@ importers:
         version: link:../typescript
       eslint:
         specifier: 'catalog:'
-<<<<<<< HEAD
-        version: 9.37.0(jiti@1.21.7)
-=======
-        version: 9.35.0(jiti@2.6.1)
->>>>>>> origin/dev
+        version: 9.37.0(jiti@2.6.1)
       prettier:
         specifier: 'catalog:'
         version: 3.6.2
@@ -9645,13 +9505,8 @@ packages:
   fraction.js@4.3.7:
     resolution: {integrity: sha512-ZsDfxO51wGAXREY55a7la9LScWpwv9RxIrYABrlvOFBlH/ShPnrtsXeuUIfXKKOVicNxQ+o8JTbJvjS4M89yew==}
 
-<<<<<<< HEAD
   framer-motion@12.23.24:
     resolution: {integrity: sha512-HMi5HRoRCTou+3fb3h9oTLyJGBxHfW+HnNE25tAXOvVx/IvwMHK0cx7IR4a2ZU6sh3IX1Z+4ts32PcYBOqka8w==}
-=======
-  framer-motion@12.23.22:
-    resolution: {integrity: sha512-ZgGvdxXCw55ZYvhoZChTlG6pUuehecgvEAJz0BHoC5pQKW1EC5xf1Mul1ej5+ai+pVY0pylyFfdl45qnM1/GsA==}
->>>>>>> origin/dev
     peerDependencies:
       '@emotion/is-prop-valid': '*'
       react: ^19.0.0
@@ -11224,24 +11079,14 @@ packages:
   modern-ahocorasick@1.1.0:
     resolution: {integrity: sha512-sEKPVl2rM+MNVkGQt3ChdmD8YsigmXdn5NifZn6jiwn9LRJpWm8F3guhaqrJT/JOat6pwpbXEk6kv+b9DMIjsQ==}
 
-<<<<<<< HEAD
   motion-dom@12.23.23:
     resolution: {integrity: sha512-n5yolOs0TQQBRUFImrRfs/+6X4p3Q4n1dUEqt/H58Vx7OW6RF+foWEgmTVDhIWJIMXOuNNL0apKH2S16en9eiA==}
-=======
-  motion-dom@12.23.21:
-    resolution: {integrity: sha512-5xDXx/AbhrfgsQmSE7YESMn4Dpo6x5/DTZ4Iyy4xqDvVHWvFVoV+V2Ri2S/ksx+D40wrZ7gPYiMWshkdoqNgNQ==}
->>>>>>> origin/dev
 
   motion-utils@12.23.6:
     resolution: {integrity: sha512-eAWoPgr4eFEOFfg2WjIsMoqJTW6Z8MTUCgn/GZ3VRpClWBdnbjryiA3ZSNLyxCTmCQx4RmYX6jX1iWHbenUPNQ==}
 
-<<<<<<< HEAD
   motion@12.23.24:
     resolution: {integrity: sha512-Rc5E7oe2YZ72N//S3QXGzbnXgqNrTESv8KKxABR20q2FLch9gHLo0JLyYo2hZ238bZ9Gx6cWhj9VO0IgwbMjCw==}
-=======
-  motion@12.23.22:
-    resolution: {integrity: sha512-iSq6X9vLHbeYwmHvhK//+U74ROaPnZmBuy60XZzqNl0QtZkWfoZyMDHYnpKuWFv0sNMqHgED8aCXk94LCoQPGg==}
->>>>>>> origin/dev
     peerDependencies:
       '@emotion/is-prop-valid': '*'
       react: ^19.0.0
@@ -16251,30 +16096,18 @@ snapshots:
   '@esbuild/win32-x64@0.25.10':
     optional: true
 
-<<<<<<< HEAD
-  '@eslint-community/eslint-utils@4.9.0(eslint@9.37.0(jiti@1.21.7))':
+  '@eslint-community/eslint-utils@4.9.0(eslint@9.37.0(jiti@2.6.1))':
     dependencies:
-      eslint: 9.37.0(jiti@1.21.7)
-=======
-  '@eslint-community/eslint-utils@4.9.0(eslint@9.35.0(jiti@2.6.1))':
-    dependencies:
-      eslint: 9.35.0(jiti@2.6.1)
->>>>>>> origin/dev
+      eslint: 9.37.0(jiti@2.6.1)
       eslint-visitor-keys: 3.4.3
 
   '@eslint-community/regexpp@4.12.1': {}
 
-<<<<<<< HEAD
-  '@eslint/compat@1.4.0(eslint@9.37.0(jiti@1.21.7))':
+  '@eslint/compat@1.4.0(eslint@9.37.0(jiti@2.6.1))':
     dependencies:
       '@eslint/core': 0.16.0
     optionalDependencies:
-      eslint: 9.37.0(jiti@1.21.7)
-=======
-  '@eslint/compat@1.3.2(eslint@9.35.0(jiti@2.6.1))':
-    optionalDependencies:
-      eslint: 9.35.0(jiti@2.6.1)
->>>>>>> origin/dev
+      eslint: 9.37.0(jiti@2.6.1)
 
   '@eslint/config-array@0.21.0':
     dependencies:
@@ -23213,27 +23046,15 @@ snapshots:
     dependencies:
       '@types/yargs-parser': 21.0.3
 
-<<<<<<< HEAD
-  '@typescript-eslint/eslint-plugin@8.46.0(@typescript-eslint/parser@8.46.0(eslint@9.37.0(jiti@1.21.7))(typescript@5.9.3))(eslint@9.37.0(jiti@1.21.7))(typescript@5.9.3)':
+  '@typescript-eslint/eslint-plugin@8.46.0(@typescript-eslint/parser@8.46.0(eslint@9.37.0(jiti@2.6.1))(typescript@5.9.3))(eslint@9.37.0(jiti@2.6.1))(typescript@5.9.3)':
     dependencies:
       '@eslint-community/regexpp': 4.12.1
-      '@typescript-eslint/parser': 8.46.0(eslint@9.37.0(jiti@1.21.7))(typescript@5.9.3)
+      '@typescript-eslint/parser': 8.46.0(eslint@9.37.0(jiti@2.6.1))(typescript@5.9.3)
       '@typescript-eslint/scope-manager': 8.46.0
-      '@typescript-eslint/type-utils': 8.46.0(eslint@9.37.0(jiti@1.21.7))(typescript@5.9.3)
-      '@typescript-eslint/utils': 8.46.0(eslint@9.37.0(jiti@1.21.7))(typescript@5.9.3)
+      '@typescript-eslint/type-utils': 8.46.0(eslint@9.37.0(jiti@2.6.1))(typescript@5.9.3)
+      '@typescript-eslint/utils': 8.46.0(eslint@9.37.0(jiti@2.6.1))(typescript@5.9.3)
       '@typescript-eslint/visitor-keys': 8.46.0
-      eslint: 9.37.0(jiti@1.21.7)
-=======
-  '@typescript-eslint/eslint-plugin@8.43.0(@typescript-eslint/parser@8.43.0(eslint@9.35.0(jiti@2.6.1))(typescript@5.9.2))(eslint@9.35.0(jiti@2.6.1))(typescript@5.9.2)':
-    dependencies:
-      '@eslint-community/regexpp': 4.12.1
-      '@typescript-eslint/parser': 8.43.0(eslint@9.35.0(jiti@2.6.1))(typescript@5.9.2)
-      '@typescript-eslint/scope-manager': 8.43.0
-      '@typescript-eslint/type-utils': 8.43.0(eslint@9.35.0(jiti@2.6.1))(typescript@5.9.2)
-      '@typescript-eslint/utils': 8.43.0(eslint@9.35.0(jiti@2.6.1))(typescript@5.9.2)
-      '@typescript-eslint/visitor-keys': 8.43.0
-      eslint: 9.35.0(jiti@2.6.1)
->>>>>>> origin/dev
+      eslint: 9.37.0(jiti@2.6.1)
       graphemer: 1.4.0
       ignore: 7.0.5
       natural-compare: 1.4.0
@@ -23242,27 +23063,15 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-<<<<<<< HEAD
-  '@typescript-eslint/parser@8.46.0(eslint@9.37.0(jiti@1.21.7))(typescript@5.9.3)':
+  '@typescript-eslint/parser@8.46.0(eslint@9.37.0(jiti@2.6.1))(typescript@5.9.3)':
     dependencies:
       '@typescript-eslint/scope-manager': 8.46.0
       '@typescript-eslint/types': 8.46.0
       '@typescript-eslint/typescript-estree': 8.46.0(typescript@5.9.3)
       '@typescript-eslint/visitor-keys': 8.46.0
       debug: 4.4.3(supports-color@8.1.1)
-      eslint: 9.37.0(jiti@1.21.7)
+      eslint: 9.37.0(jiti@2.6.1)
       typescript: 5.9.3
-=======
-  '@typescript-eslint/parser@8.43.0(eslint@9.35.0(jiti@2.6.1))(typescript@5.9.2)':
-    dependencies:
-      '@typescript-eslint/scope-manager': 8.43.0
-      '@typescript-eslint/types': 8.43.0
-      '@typescript-eslint/typescript-estree': 8.43.0(typescript@5.9.2)
-      '@typescript-eslint/visitor-keys': 8.43.0
-      debug: 4.4.1(supports-color@8.1.1)
-      eslint: 9.35.0(jiti@2.6.1)
-      typescript: 5.9.2
->>>>>>> origin/dev
     transitivePeerDependencies:
       - supports-color
 
@@ -23284,27 +23093,15 @@ snapshots:
     dependencies:
       typescript: 5.9.3
 
-<<<<<<< HEAD
-  '@typescript-eslint/type-utils@8.46.0(eslint@9.37.0(jiti@1.21.7))(typescript@5.9.3)':
+  '@typescript-eslint/type-utils@8.46.0(eslint@9.37.0(jiti@2.6.1))(typescript@5.9.3)':
     dependencies:
       '@typescript-eslint/types': 8.46.0
       '@typescript-eslint/typescript-estree': 8.46.0(typescript@5.9.3)
-      '@typescript-eslint/utils': 8.46.0(eslint@9.37.0(jiti@1.21.7))(typescript@5.9.3)
+      '@typescript-eslint/utils': 8.46.0(eslint@9.37.0(jiti@2.6.1))(typescript@5.9.3)
       debug: 4.4.3(supports-color@8.1.1)
-      eslint: 9.37.0(jiti@1.21.7)
+      eslint: 9.37.0(jiti@2.6.1)
       ts-api-utils: 2.1.0(typescript@5.9.3)
       typescript: 5.9.3
-=======
-  '@typescript-eslint/type-utils@8.43.0(eslint@9.35.0(jiti@2.6.1))(typescript@5.9.2)':
-    dependencies:
-      '@typescript-eslint/types': 8.43.0
-      '@typescript-eslint/typescript-estree': 8.43.0(typescript@5.9.2)
-      '@typescript-eslint/utils': 8.43.0(eslint@9.35.0(jiti@2.6.1))(typescript@5.9.2)
-      debug: 4.4.1(supports-color@8.1.1)
-      eslint: 9.35.0(jiti@2.6.1)
-      ts-api-utils: 2.1.0(typescript@5.9.2)
-      typescript: 5.9.2
->>>>>>> origin/dev
     transitivePeerDependencies:
       - supports-color
 
@@ -23326,25 +23123,14 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-<<<<<<< HEAD
-  '@typescript-eslint/utils@8.46.0(eslint@9.37.0(jiti@1.21.7))(typescript@5.9.3)':
+  '@typescript-eslint/utils@8.46.0(eslint@9.37.0(jiti@2.6.1))(typescript@5.9.3)':
     dependencies:
-      '@eslint-community/eslint-utils': 4.9.0(eslint@9.37.0(jiti@1.21.7))
+      '@eslint-community/eslint-utils': 4.9.0(eslint@9.37.0(jiti@2.6.1))
       '@typescript-eslint/scope-manager': 8.46.0
       '@typescript-eslint/types': 8.46.0
       '@typescript-eslint/typescript-estree': 8.46.0(typescript@5.9.3)
-      eslint: 9.37.0(jiti@1.21.7)
+      eslint: 9.37.0(jiti@2.6.1)
       typescript: 5.9.3
-=======
-  '@typescript-eslint/utils@8.43.0(eslint@9.35.0(jiti@2.6.1))(typescript@5.9.2)':
-    dependencies:
-      '@eslint-community/eslint-utils': 4.9.0(eslint@9.35.0(jiti@2.6.1))
-      '@typescript-eslint/scope-manager': 8.43.0
-      '@typescript-eslint/types': 8.43.0
-      '@typescript-eslint/typescript-estree': 8.43.0(typescript@5.9.2)
-      eslint: 9.35.0(jiti@2.6.1)
-      typescript: 5.9.2
->>>>>>> origin/dev
     transitivePeerDependencies:
       - supports-color
 
@@ -23447,21 +23233,13 @@ snapshots:
       chai: 5.3.3
       tinyrainbow: 2.0.0
 
-<<<<<<< HEAD
-  '@vitest/mocker@3.2.4(vite@7.1.9(@types/node@22.18.10)(jiti@1.21.7)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))':
-=======
-  '@vitest/mocker@3.2.4(vite@7.1.5(@types/node@22.18.1)(jiti@2.6.1)(lightningcss@1.30.1)(terser@5.44.0)(tsx@4.20.5)(yaml@2.8.1))':
->>>>>>> origin/dev
+  '@vitest/mocker@3.2.4(vite@7.1.9(@types/node@22.18.10)(jiti@2.6.1)(lightningcss@1.30.1)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))':
     dependencies:
       '@vitest/spy': 3.2.4
       estree-walker: 3.0.3
       magic-string: 0.30.19
     optionalDependencies:
-<<<<<<< HEAD
-      vite: 7.1.9(@types/node@22.18.10)(jiti@1.21.7)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
-=======
-      vite: 7.1.5(@types/node@22.18.1)(jiti@2.6.1)(lightningcss@1.30.1)(terser@5.44.0)(tsx@4.20.5)(yaml@2.8.1)
->>>>>>> origin/dev
+      vite: 7.1.9(@types/node@22.18.10)(jiti@2.6.1)(lightningcss@1.30.1)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
 
   '@vitest/pretty-format@3.2.4':
     dependencies:
@@ -26506,30 +26284,17 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-<<<<<<< HEAD
-  eslint-module-utils@2.12.1(@typescript-eslint/parser@8.46.0(eslint@9.37.0(jiti@1.21.7))(typescript@5.9.3))(eslint-import-resolver-node@0.3.9)(eslint@9.37.0(jiti@1.21.7)):
+  eslint-module-utils@2.12.1(@typescript-eslint/parser@8.46.0(eslint@9.37.0(jiti@2.6.1))(typescript@5.9.3))(eslint-import-resolver-node@0.3.9)(eslint@9.37.0(jiti@2.6.1)):
     dependencies:
       debug: 3.2.7
     optionalDependencies:
-      '@typescript-eslint/parser': 8.46.0(eslint@9.37.0(jiti@1.21.7))(typescript@5.9.3)
-      eslint: 9.37.0(jiti@1.21.7)
-=======
-  eslint-module-utils@2.12.1(@typescript-eslint/parser@8.43.0(eslint@9.35.0(jiti@2.6.1))(typescript@5.9.2))(eslint-import-resolver-node@0.3.9)(eslint@9.35.0(jiti@2.6.1)):
-    dependencies:
-      debug: 3.2.7
-    optionalDependencies:
-      '@typescript-eslint/parser': 8.43.0(eslint@9.35.0(jiti@2.6.1))(typescript@5.9.2)
-      eslint: 9.35.0(jiti@2.6.1)
->>>>>>> origin/dev
+      '@typescript-eslint/parser': 8.46.0(eslint@9.37.0(jiti@2.6.1))(typescript@5.9.3)
+      eslint: 9.37.0(jiti@2.6.1)
       eslint-import-resolver-node: 0.3.9
     transitivePeerDependencies:
       - supports-color
 
-<<<<<<< HEAD
-  eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.46.0(eslint@9.37.0(jiti@1.21.7))(typescript@5.9.3))(eslint@9.37.0(jiti@1.21.7)):
-=======
-  eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.43.0(eslint@9.35.0(jiti@2.6.1))(typescript@5.9.2))(eslint@9.35.0(jiti@2.6.1)):
->>>>>>> origin/dev
+  eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.46.0(eslint@9.37.0(jiti@2.6.1))(typescript@5.9.3))(eslint@9.37.0(jiti@2.6.1)):
     dependencies:
       '@rtsao/scc': 1.1.0
       array-includes: 3.1.9
@@ -26538,15 +26303,9 @@ snapshots:
       array.prototype.flatmap: 1.3.3
       debug: 3.2.7
       doctrine: 2.1.0
-<<<<<<< HEAD
-      eslint: 9.37.0(jiti@1.21.7)
+      eslint: 9.37.0(jiti@2.6.1)
       eslint-import-resolver-node: 0.3.9
-      eslint-module-utils: 2.12.1(@typescript-eslint/parser@8.46.0(eslint@9.37.0(jiti@1.21.7))(typescript@5.9.3))(eslint-import-resolver-node@0.3.9)(eslint@9.37.0(jiti@1.21.7))
-=======
-      eslint: 9.35.0(jiti@2.6.1)
-      eslint-import-resolver-node: 0.3.9
-      eslint-module-utils: 2.12.1(@typescript-eslint/parser@8.43.0(eslint@9.35.0(jiti@2.6.1))(typescript@5.9.2))(eslint-import-resolver-node@0.3.9)(eslint@9.35.0(jiti@2.6.1))
->>>>>>> origin/dev
+      eslint-module-utils: 2.12.1(@typescript-eslint/parser@8.46.0(eslint@9.37.0(jiti@2.6.1))(typescript@5.9.3))(eslint-import-resolver-node@0.3.9)(eslint@9.37.0(jiti@2.6.1))
       hasown: 2.0.2
       is-core-module: 2.16.1
       is-glob: 4.0.3
@@ -26558,41 +26317,25 @@ snapshots:
       string.prototype.trimend: 1.0.9
       tsconfig-paths: 3.15.0
     optionalDependencies:
-<<<<<<< HEAD
-      '@typescript-eslint/parser': 8.46.0(eslint@9.37.0(jiti@1.21.7))(typescript@5.9.3)
-=======
-      '@typescript-eslint/parser': 8.43.0(eslint@9.35.0(jiti@2.6.1))(typescript@5.9.2)
->>>>>>> origin/dev
+      '@typescript-eslint/parser': 8.46.0(eslint@9.37.0(jiti@2.6.1))(typescript@5.9.3)
     transitivePeerDependencies:
       - eslint-import-resolver-typescript
       - eslint-import-resolver-webpack
       - supports-color
 
-<<<<<<< HEAD
-  eslint-plugin-react-hooks@6.0.0-rc.2(eslint@9.37.0(jiti@1.21.7)):
-=======
-  eslint-plugin-react-hooks@6.0.0-rc.2(eslint@9.35.0(jiti@2.6.1)):
->>>>>>> origin/dev
+  eslint-plugin-react-hooks@6.0.0-rc.2(eslint@9.37.0(jiti@2.6.1)):
     dependencies:
       '@babel/core': 7.28.4
       '@babel/parser': 7.28.4
       '@babel/plugin-proposal-private-methods': 7.18.6(@babel/core@7.28.4)
-<<<<<<< HEAD
-      eslint: 9.37.0(jiti@1.21.7)
-=======
-      eslint: 9.35.0(jiti@2.6.1)
->>>>>>> origin/dev
+      eslint: 9.37.0(jiti@2.6.1)
       hermes-parser: 0.25.1
       zod: 3.25.76
       zod-validation-error: 3.5.3(zod@3.25.76)
     transitivePeerDependencies:
       - supports-color
 
-<<<<<<< HEAD
-  eslint-plugin-react@7.37.5(eslint@9.37.0(jiti@1.21.7)):
-=======
-  eslint-plugin-react@7.37.5(eslint@9.35.0(jiti@2.6.1)):
->>>>>>> origin/dev
+  eslint-plugin-react@7.37.5(eslint@9.37.0(jiti@2.6.1)):
     dependencies:
       array-includes: 3.1.9
       array.prototype.findlast: 1.2.5
@@ -26600,11 +26343,7 @@ snapshots:
       array.prototype.tosorted: 1.1.4
       doctrine: 2.1.0
       es-iterator-helpers: 1.2.1
-<<<<<<< HEAD
-      eslint: 9.37.0(jiti@1.21.7)
-=======
-      eslint: 9.35.0(jiti@2.6.1)
->>>>>>> origin/dev
+      eslint: 9.37.0(jiti@2.6.1)
       estraverse: 5.3.0
       hasown: 2.0.2
       jsx-ast-utils: 3.3.5
@@ -26618,19 +26357,11 @@ snapshots:
       string.prototype.matchall: 4.0.12
       string.prototype.repeat: 1.0.0
 
-<<<<<<< HEAD
-  eslint-plugin-turbo@2.5.8(eslint@9.37.0(jiti@1.21.7))(turbo@2.5.8):
+  eslint-plugin-turbo@2.5.8(eslint@9.37.0(jiti@2.6.1))(turbo@2.5.8):
     dependencies:
       dotenv: 16.0.3
-      eslint: 9.37.0(jiti@1.21.7)
+      eslint: 9.37.0(jiti@2.6.1)
       turbo: 2.5.8
-=======
-  eslint-plugin-turbo@2.5.6(eslint@9.35.0(jiti@2.6.1))(turbo@2.5.6):
-    dependencies:
-      dotenv: 16.0.3
-      eslint: 9.35.0(jiti@2.6.1)
-      turbo: 2.5.6
->>>>>>> origin/dev
 
   eslint-scope@8.4.0:
     dependencies:
@@ -26641,15 +26372,9 @@ snapshots:
 
   eslint-visitor-keys@4.2.1: {}
 
-<<<<<<< HEAD
-  eslint@9.37.0(jiti@1.21.7):
+  eslint@9.37.0(jiti@2.6.1):
     dependencies:
-      '@eslint-community/eslint-utils': 4.9.0(eslint@9.37.0(jiti@1.21.7))
-=======
-  eslint@9.35.0(jiti@2.6.1):
-    dependencies:
-      '@eslint-community/eslint-utils': 4.9.0(eslint@9.35.0(jiti@2.6.1))
->>>>>>> origin/dev
+      '@eslint-community/eslint-utils': 4.9.0(eslint@9.37.0(jiti@2.6.1))
       '@eslint-community/regexpp': 4.12.1
       '@eslint/config-array': 0.21.0
       '@eslint/config-helpers': 0.4.0
@@ -27149,15 +26874,9 @@ snapshots:
 
   fraction.js@4.3.7: {}
 
-<<<<<<< HEAD
   framer-motion@12.23.24(react-dom@19.2.0(react@19.2.0))(react@19.2.0):
     dependencies:
       motion-dom: 12.23.23
-=======
-  framer-motion@12.23.22(react-dom@19.1.1(react@19.1.1))(react@19.1.1):
-    dependencies:
-      motion-dom: 12.23.21
->>>>>>> origin/dev
       motion-utils: 12.23.6
       tslib: 2.8.1
     optionalDependencies:
@@ -28393,7 +28112,7 @@ snapshots:
 
   lightningcss@1.30.1:
     dependencies:
-      detect-libc: 2.0.4
+      detect-libc: 2.1.2
     optionalDependencies:
       lightningcss-darwin-arm64: 1.30.1
       lightningcss-darwin-x64: 1.30.1
@@ -29238,25 +28957,15 @@ snapshots:
 
   modern-ahocorasick@1.1.0: {}
 
-<<<<<<< HEAD
   motion-dom@12.23.23:
-=======
-  motion-dom@12.23.21:
->>>>>>> origin/dev
     dependencies:
       motion-utils: 12.23.6
 
   motion-utils@12.23.6: {}
 
-<<<<<<< HEAD
   motion@12.23.24(react-dom@19.2.0(react@19.2.0))(react@19.2.0):
     dependencies:
       framer-motion: 12.23.24(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
-=======
-  motion@12.23.22(react-dom@19.1.1(react@19.1.1))(react@19.1.1):
-    dependencies:
-      framer-motion: 12.23.22(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
->>>>>>> origin/dev
       tslib: 2.8.1
     optionalDependencies:
       react: 19.2.0
@@ -29342,11 +29051,7 @@ snapshots:
       react-dom: 19.2.0(react@19.2.0)
       uuid: 8.3.2
 
-<<<<<<< HEAD
-  next-plausible@3.12.4(next@15.5.4(@babel/core@7.28.4)(react-dom@19.2.0(react@19.2.0))(react@19.2.0))(react-dom@19.2.0(react@19.2.0))(react@19.2.0):
-=======
-  next-plausible@3.12.4(next@15.5.3(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(react-dom@19.1.1(react@19.1.1))(react@19.1.1):
->>>>>>> origin/dev
+  next-plausible@3.12.4(next@15.5.4(react-dom@19.2.0(react@19.2.0))(react@19.2.0))(react-dom@19.2.0(react@19.2.0))(react@19.2.0):
     dependencies:
       next: 15.5.4(@babel/core@7.28.4)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
       react: 19.2.0
@@ -29613,25 +29318,7 @@ snapshots:
 
   ox@0.6.7(typescript@5.9.3)(zod@3.25.76):
     dependencies:
-<<<<<<< HEAD
       '@adraffy/ens-normalize': 1.11.1
-=======
-      '@adraffy/ens-normalize': 1.11.0
-      '@noble/curves': 1.9.7
-      '@noble/hashes': 1.8.0
-      '@scure/bip32': 1.6.2
-      '@scure/bip39': 1.5.4
-      abitype: 1.0.8(typescript@5.9.2)(zod@3.25.76)
-      eventemitter3: 5.0.1
-    optionalDependencies:
-      typescript: 5.9.2
-    transitivePeerDependencies:
-      - zod
-
-  ox@0.6.9(typescript@5.9.2)(zod@3.25.76):
-    dependencies:
-      '@adraffy/ens-normalize': 1.11.0
->>>>>>> origin/dev
       '@noble/curves': 1.9.7
       '@noble/hashes': 1.8.0
       '@scure/bip32': 1.7.0
@@ -29645,12 +29332,7 @@ snapshots:
 
   ox@0.6.9(typescript@5.9.3)(zod@3.25.76):
     dependencies:
-<<<<<<< HEAD
       '@adraffy/ens-normalize': 1.11.1
-=======
-      '@adraffy/ens-normalize': 1.11.0
-      '@noble/ciphers': 1.3.0
->>>>>>> origin/dev
       '@noble/curves': 1.9.7
       '@noble/hashes': 1.8.0
       '@scure/bip32': 1.7.0
@@ -30340,12 +30022,12 @@ snapshots:
       react: 19.2.0
       react-dom: 19.2.0(react@19.2.0)
 
-  react-day-picker@9.11.1(react@19.1.1):
+  react-day-picker@9.11.1(react@19.2.0):
     dependencies:
       '@date-fns/tz': 1.4.1
       date-fns: 4.1.0
       date-fns-jalali: 4.1.0-0
-      react: 19.1.1
+      react: 19.2.0
 
   react-devtools-core@6.1.5(bufferutil@4.0.9)(utf-8-validate@5.0.10):
     dependencies:
@@ -32027,25 +31709,14 @@ snapshots:
 
   typeforce@1.18.0: {}
 
-<<<<<<< HEAD
-  typescript-eslint@8.46.0(eslint@9.37.0(jiti@1.21.7))(typescript@5.9.3):
+  typescript-eslint@8.46.0(eslint@9.37.0(jiti@2.6.1))(typescript@5.9.3):
     dependencies:
-      '@typescript-eslint/eslint-plugin': 8.46.0(@typescript-eslint/parser@8.46.0(eslint@9.37.0(jiti@1.21.7))(typescript@5.9.3))(eslint@9.37.0(jiti@1.21.7))(typescript@5.9.3)
-      '@typescript-eslint/parser': 8.46.0(eslint@9.37.0(jiti@1.21.7))(typescript@5.9.3)
+      '@typescript-eslint/eslint-plugin': 8.46.0(@typescript-eslint/parser@8.46.0(eslint@9.37.0(jiti@2.6.1))(typescript@5.9.3))(eslint@9.37.0(jiti@2.6.1))(typescript@5.9.3)
+      '@typescript-eslint/parser': 8.46.0(eslint@9.37.0(jiti@2.6.1))(typescript@5.9.3)
       '@typescript-eslint/typescript-estree': 8.46.0(typescript@5.9.3)
-      '@typescript-eslint/utils': 8.46.0(eslint@9.37.0(jiti@1.21.7))(typescript@5.9.3)
-      eslint: 9.37.0(jiti@1.21.7)
+      '@typescript-eslint/utils': 8.46.0(eslint@9.37.0(jiti@2.6.1))(typescript@5.9.3)
+      eslint: 9.37.0(jiti@2.6.1)
       typescript: 5.9.3
-=======
-  typescript-eslint@8.43.0(eslint@9.35.0(jiti@2.6.1))(typescript@5.9.2):
-    dependencies:
-      '@typescript-eslint/eslint-plugin': 8.43.0(@typescript-eslint/parser@8.43.0(eslint@9.35.0(jiti@2.6.1))(typescript@5.9.2))(eslint@9.35.0(jiti@2.6.1))(typescript@5.9.2)
-      '@typescript-eslint/parser': 8.43.0(eslint@9.35.0(jiti@2.6.1))(typescript@5.9.2)
-      '@typescript-eslint/typescript-estree': 8.43.0(typescript@5.9.2)
-      '@typescript-eslint/utils': 8.43.0(eslint@9.35.0(jiti@2.6.1))(typescript@5.9.2)
-      eslint: 9.35.0(jiti@2.6.1)
-      typescript: 5.9.2
->>>>>>> origin/dev
     transitivePeerDependencies:
       - supports-color
 
@@ -32356,21 +32027,13 @@ snapshots:
       - utf-8-validate
       - zod
 
-<<<<<<< HEAD
-  vite-node@3.2.4(@types/node@22.18.10)(jiti@1.21.7)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1):
-=======
-  vite-node@3.2.4(@types/node@22.18.1)(jiti@2.6.1)(lightningcss@1.30.1)(terser@5.44.0)(tsx@4.20.5)(yaml@2.8.1):
->>>>>>> origin/dev
+  vite-node@3.2.4(@types/node@22.18.10)(jiti@2.6.1)(lightningcss@1.30.1)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1):
     dependencies:
       cac: 6.7.14
       debug: 4.4.3(supports-color@8.1.1)
       es-module-lexer: 1.7.0
       pathe: 2.0.3
-<<<<<<< HEAD
-      vite: 7.1.9(@types/node@22.18.10)(jiti@1.21.7)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
-=======
-      vite: 7.1.5(@types/node@22.18.1)(jiti@2.6.1)(lightningcss@1.30.1)(terser@5.44.0)(tsx@4.20.5)(yaml@2.8.1)
->>>>>>> origin/dev
+      vite: 7.1.9(@types/node@22.18.10)(jiti@2.6.1)(lightningcss@1.30.1)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
     transitivePeerDependencies:
       - '@types/node'
       - jiti
@@ -32385,11 +32048,7 @@ snapshots:
       - tsx
       - yaml
 
-<<<<<<< HEAD
-  vite@7.1.9(@types/node@22.18.10)(jiti@1.21.7)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1):
-=======
-  vite@7.1.5(@types/node@22.18.1)(jiti@2.6.1)(lightningcss@1.30.1)(terser@5.44.0)(tsx@4.20.5)(yaml@2.8.1):
->>>>>>> origin/dev
+  vite@7.1.9(@types/node@22.18.10)(jiti@2.6.1)(lightningcss@1.30.1)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1):
     dependencies:
       esbuild: 0.25.10
       fdir: 6.5.0(picomatch@4.0.3)
@@ -32406,19 +32065,11 @@ snapshots:
       tsx: 4.20.6
       yaml: 2.8.1
 
-<<<<<<< HEAD
-  vitest@3.2.4(@types/debug@4.1.12)(@types/node@22.18.10)(jiti@1.21.7)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1):
+  vitest@3.2.4(@types/debug@4.1.12)(@types/node@22.18.10)(jiti@2.6.1)(lightningcss@1.30.1)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1):
     dependencies:
       '@types/chai': 5.2.2
       '@vitest/expect': 3.2.4
-      '@vitest/mocker': 3.2.4(vite@7.1.9(@types/node@22.18.10)(jiti@1.21.7)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))
-=======
-  vitest@3.2.4(@types/debug@4.1.12)(@types/node@22.18.1)(jiti@2.6.1)(lightningcss@1.30.1)(terser@5.44.0)(tsx@4.20.5)(yaml@2.8.1):
-    dependencies:
-      '@types/chai': 5.2.2
-      '@vitest/expect': 3.2.4
-      '@vitest/mocker': 3.2.4(vite@7.1.5(@types/node@22.18.1)(jiti@2.6.1)(lightningcss@1.30.1)(terser@5.44.0)(tsx@4.20.5)(yaml@2.8.1))
->>>>>>> origin/dev
+      '@vitest/mocker': 3.2.4(vite@7.1.9(@types/node@22.18.10)(jiti@2.6.1)(lightningcss@1.30.1)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))
       '@vitest/pretty-format': 3.2.4
       '@vitest/runner': 3.2.4
       '@vitest/snapshot': 3.2.4
@@ -32436,13 +32087,8 @@ snapshots:
       tinyglobby: 0.2.15
       tinypool: 1.1.1
       tinyrainbow: 2.0.0
-<<<<<<< HEAD
-      vite: 7.1.9(@types/node@22.18.10)(jiti@1.21.7)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
-      vite-node: 3.2.4(@types/node@22.18.10)(jiti@1.21.7)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
-=======
-      vite: 7.1.5(@types/node@22.18.1)(jiti@2.6.1)(lightningcss@1.30.1)(terser@5.44.0)(tsx@4.20.5)(yaml@2.8.1)
-      vite-node: 3.2.4(@types/node@22.18.1)(jiti@2.6.1)(lightningcss@1.30.1)(terser@5.44.0)(tsx@4.20.5)(yaml@2.8.1)
->>>>>>> origin/dev
+      vite: 7.1.9(@types/node@22.18.10)(jiti@2.6.1)(lightningcss@1.30.1)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
+      vite-node: 3.2.4(@types/node@22.18.10)(jiti@2.6.1)(lightningcss@1.30.1)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
       why-is-node-running: 2.3.0
     optionalDependencies:
       '@types/debug': 4.1.12
