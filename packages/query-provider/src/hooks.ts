@@ -459,7 +459,12 @@ export interface CoingeckoResponse {
 }
 
 /**
- * Get the current Torus price in USD from Coingecko API
+ * Fetches the Torus token price in USD from the Coingecko API.
+ *
+ * Performs an HTTP request to Coingecko and returns the reported `torus.usd` value.
+ *
+ * @returns The Torus price in USD.
+ * @throws Error when the network request fails, the response status is not OK, or the response format is invalid.
  */
 export function useGetTorusPrice(
   options?: Omit<QueryObserverOptions<number, Error>, "queryKey" | "queryFn">,

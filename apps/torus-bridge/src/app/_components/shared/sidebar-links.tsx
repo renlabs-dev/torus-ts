@@ -18,10 +18,23 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { Suspense, useCallback, useMemo, useSyncExternalStore } from "react";
 
+/**
+ * Get the current full URL of the browser window.
+ *
+ * @returns The current location `href` as a string, or an empty string if `window` is not available.
+ */
 function getCurrentUrl() {
   return typeof window !== "undefined" ? window.location.href : "";
 }
 
+/**
+ * Subscribe to browser navigation events and return an unsubscribe function.
+ *
+ * Invokes `callback` when the history state or URL hash changes.
+ *
+ * @param callback - Function called on "popstate" or "hashchange" events
+ * @returns A cleanup function that removes the attached event listeners
+ */
 function subscribe(callback: () => void) {
   window.addEventListener("popstate", callback);
   window.addEventListener("hashchange", callback);
@@ -31,6 +44,11 @@ function subscribe(callback: () => void) {
   };
 }
 
+/**
+ * Subscribes to browser URL changes and returns the current full URL.
+ *
+ * @returns The current full URL as a string, or an empty string when the URL cannot be determined.
+ */
 function useCurrentUrl() {
   return useSyncExternalStore(subscribe, getCurrentUrl, () => "");
 }
@@ -43,6 +61,14 @@ interface SidebarOptionProps {
   };
 }
 
+/**
+ * Render a sidebar navigation item that links to the provided `href` and visually indicates whether it is active.
+ *
+ * The rendered element is a linked button showing `option.title` and a check icon whose visibility reflects `option.isActive`. If `option.href` starts with `'/'`, the link is prefetched; if it starts with `'http'`, it opens in a new tab with `rel="noopener noreferrer"`.
+ *
+ * @param option - Navigation item data: `title` is the visible label, `href` is the target URL, and `isActive` controls active styling and the check-icon visibility
+ * @returns A JSX element representing the linked button for the sidebar item
+ */
 function SidebarOption({ option }: SidebarOptionProps) {
   const className = cn(
     "w-full justify-between gap-2 border-none px-3 py-2 text-sm font-medium",

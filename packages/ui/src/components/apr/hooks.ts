@@ -77,7 +77,12 @@ function calculateEmissionRate(
 }
 
 /**
- * Calculate yearly rewards with incentives and treasury fee applied
+ * Compute the total annual rewards allocated to stakers after applying the incentives share and treasury fee.
+ *
+ * @param currentEmission - Per-block emission amount as a bigint
+ * @param incentivesRatio - Fraction in [0, 1] representing the portion reserved for incentives (not for stakers)
+ * @param treasuryFee - Fraction in [0, 1] representing the treasury fee applied to yearly rewards
+ * @returns The yearly rewards for stakers, returned as a bigint scaled by 10^18 (fixed-point precision)
  */
 function calculateYearlyRewards(
   currentEmission: bigint,
@@ -112,7 +117,10 @@ function calculateYearlyRewards(
 // == Hooks ==
 
 /**
- * Calculate and return the Annual Percentage Rate (APR)
+ * Compute the current staking APR from on-chain metrics.
+ *
+ * @param api - The Substrate `Api` instance to use for queries, or `null`/`undefined` to disable queries.
+ * @returns An `APRResult` containing the computed `apr` (percentage as a `number`, or `null` if unavailable), `isLoading` and `isError` flags, and the raw `totalStake` and `totalIssuance` values (or `undefined` if not present).
  */
 export function useAPR(api: Api | Nullish): APRResult {
   const totalStakeQuery = useTotalStake(api);

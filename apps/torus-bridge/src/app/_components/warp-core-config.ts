@@ -10,6 +10,14 @@ import { warpRouteWhitelist } from "~/consts/warp-route-whitelist";
 import { WarpRoutesTs } from "~/consts/warp-routes";
 import WarpRoutesJson from "~/consts/warp-routes.json";
 
+/**
+ * Assembles the Warp Core configuration by validating registry, TypeScript, and JSON route configs, collecting and deduplicating tokens, and merging route options.
+ *
+ * Options with the same key are merged by concatenating their array values.
+ *
+ * @returns An object containing deduplicated `tokens` and merged `options`.
+ * @throws Error if no tokens are found after aggregating registry/whitelist and custom configs.
+ */
 export function assembleWarpCoreConfig(): WarpCoreConfig {
   const resultJson = WarpCoreConfigSchema.safeParse(WarpRoutesJson);
   const configJson = validateZodResult(resultJson, "warp core json config");

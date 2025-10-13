@@ -29,6 +29,12 @@ interface TransactionLifecycleDialogProps {
   onRetry?: () => void;
 }
 
+/**
+ * Get the user-facing status message for a transfer lifecycle step.
+ *
+ * @param currentStep - The lifecycle step to generate a message for.
+ * @returns A human-readable status message corresponding to `currentStep`.
+ */
 function getCurrentMessage(currentStep: SimpleBridgeStep) {
   if (
     currentStep === SimpleBridgeStep.STEP_1_PREPARING ||
@@ -68,6 +74,21 @@ function getCurrentMessage(currentStep: SimpleBridgeStep) {
   return "Initializing transfer...";
 }
 
+/**
+ * Render a dialog showing the multi-step lifecycle of a token bridge transfer.
+ *
+ * Renders a modal that displays a high-level status message, a vertical list of lifecycle steps with per-step details, and context-specific footer actions (retry or close). While a signing step is active, a signature warning is shown after 30 seconds. The dialog prevents closing via Escape or outside clicks when an error is present.
+ *
+ * @param isOpen - Whether the dialog is visible.
+ * @param onClose - Callback invoked to close the dialog.
+ * @param direction - Transfer direction, either `"base-to-native"` or `"native-to-base"`, used to label the header.
+ * @param currentStep - Current lifecycle step used to determine displayed status and behaviors (signing, complete, error).
+ * @param transactions - Array of transaction entries describing each transaction's step, status, and message for constructing lifecycle steps.
+ * @param amount - Transfer amount displayed in the dialog header and passed to step items.
+ * @param onRetry - Optional callback invoked when the user requests a retry after an error.
+ *
+ * @returns The dialog React element that visualizes transfer progress and controls.
+ */
 export function TransactionLifecycleDialog({
   isOpen,
   onClose,

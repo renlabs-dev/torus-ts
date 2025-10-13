@@ -35,15 +35,10 @@ interface ChainSwitchParams {
 }
 
 /**
- * Attempts to switch to target chain with retry logic and verification.
+ * Attempts to switch to the target chain with retries and verification.
  *
- * Features:
- * - Retries up to MAX_SWITCH_ATTEMPTS times
- * - Verifies switch success after each attempt
- * - Adds delay between retries
- * - Distinguishes user rejections from other errors
- *
- * @param params - Chain switch parameters
+ * @param params - Parameters for performing and verifying the chain switch.
+ * @returns A result object indicating success; on failure includes a user-facing `errorMessage`, `errorDetails`, and `isUserRejected` set to `true` when the failure was caused by the user rejecting the switch.
  */
 export async function switchChainWithRetry(
   params: ChainSwitchParams,
@@ -144,11 +139,11 @@ export async function switchChainWithRetry(
 }
 
 /**
- * Throws appropriate error based on chain switch result.
+ * Throw an error when a chain switch did not succeed.
  *
- * @param result - Chain switch result from switchChainWithRetry
- * @throws {UserRejectedError} If user rejected the switch
- * @throws {Error} For other switch failures
+ * @param result - Outcome of an attempted chain switch
+ * @throws UserRejectedError if the user rejected the chain switch
+ * @throws Error for other failures; message is `result.errorMessage` or "Chain switch failed"
  */
 export function throwOnChainSwitchFailure(result: ChainSwitchResult): void {
   if (result.success) {

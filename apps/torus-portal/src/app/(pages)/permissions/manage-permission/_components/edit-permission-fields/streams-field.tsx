@@ -17,6 +17,16 @@ interface StreamsFieldProps {
   disabled?: boolean;
 }
 
+/**
+ * Render a form-managed list of streams where each stream has an ID and a percentage allocation.
+ *
+ * The component displays the total percentage, allows adding and removing streams, highlights duplicate
+ * stream IDs, and clamps percentage inputs to the range 0–100.
+ *
+ * @param control - Form control bound to the "newStreams" field array for managing stream entries
+ * @param disabled - When true, disables user interactions and applies muted styling (default: false)
+ * @returns A JSX element containing the UI for viewing and editing stream IDs and their percentage allocations
+ */
 export function StreamsField({ control, disabled = false }: StreamsFieldProps) {
   const {
     fields: streamFields,

@@ -32,16 +32,14 @@ interface BalancePollingParams<T> {
 }
 
 /**
- * Polls balance until target is reached or timeout occurs.
+ * Polls a balance until it reaches the target (baselineBalance + expectedIncrease) or polling times out.
  *
- * Features:
- * - Polls at configured intervals (POLLING_CONFIG.INTERVAL_MS)
- * - Stops after MAX_POLLS attempts or timeout
- * - Handles refetch errors gracefully
- * - Provides detailed logging for debugging
- * - Uses immutable abort signal pattern to stop polling
+ * Repeatedly invokes the provided `refetchBalance` and applies `extractValue` to determine the current balance.
+ * Resolves when the current balance is greater than or equal to the target; otherwise returns a failure result
+ * with an explanatory `errorMessage` if polling stops due to timeout or reaching the configured maximum attempts.
  *
- * @param params - Balance polling parameters
+ * @param params - Balance polling parameters including `refetchBalance`, `baselineBalance`, `expectedIncrease`, `extractValue`, and `locationName`
+ * @returns `PollingResult` with `success: true` when the target is reached; otherwise `success: false` and an `errorMessage` describing the timeout or failure
  */
 export async function pollBalanceUntilTarget<T>(
   params: BalancePollingParams<T>,
@@ -141,7 +139,13 @@ export async function pollBalanceUntilTarget<T>(
 }
 
 /**
- * Specialized polling for EVM balance with value property.
+ * Polls an EVM-style balance until it has increased by the expected amount.
+ *
+ * @param refetchBalance - Function that refetches the balance and returns an object with `status` and optional `data.value` as the balance
+ * @param baselineBalance - The starting balance to compare against
+ * @param expectedIncrease - The required increase to consider the polling successful
+ * @param locationName - Human-readable identifier used in timeout/error messages
+ * @returns A PollingResult with `success` true if the balance reached `baselineBalance + expectedIncrease`, `false` otherwise; `errorMessage` may be set when polling times out or fails
  */
 export async function pollEvmBalance(
   refetchBalance: () => Promise<{ status: string; data?: { value: bigint } }>,

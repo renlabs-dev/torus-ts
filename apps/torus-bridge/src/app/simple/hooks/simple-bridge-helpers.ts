@@ -69,15 +69,14 @@ export const TIMEOUT_CONFIG = {
 } as const;
 
 /**
- * Races a Promise<T> against a timeout, rejecting with an Error if the timeout elapses first.
+ * Race an operation against a timeout and reject if the timeout elapses first.
  *
- * Note: The underlying promise is not cancelled when timeout occurs - it continues running.
+ * The underlying operation is not cancelled if a timeout occurs — it continues running.
  *
- * @param promise - The Promise<T> to race against the timeout
- * @param timeoutMs - Timeout duration in milliseconds
- * @param errorMessage - Optional error message for timeout rejection (defaults to "Operation timeout")
- * @returns Promise<T> that resolves/rejects with the original promise result or rejects with Error on timeout
- * @throws Error when timeout elapses before the promise resolves
+ * @param promise - The operation whose result should be returned if it settles first
+ * @param timeoutMs - Maximum time to wait in milliseconds
+ * @param errorMessage - Error message used when the timeout is reached (defaults to "Operation timeout")
+ * @returns The resolved value of `promise` if it settles before the timeout; otherwise the returned promise rejects with an `Error` constructed from `errorMessage`
  */
 export function withTimeout<T>(
   promise: Promise<T>,
@@ -93,9 +92,9 @@ export function withTimeout<T>(
 }
 
 /**
- * Detects user-rejection style errors from Error objects.
- * @param error - Error object to check for user rejection patterns
- * @returns True if the error indicates user rejection (cancelled/denied transaction), false otherwise
+ * Determines whether an Error represents a user rejection (for example, a cancelled or denied transaction).
+ *
+ * @returns `true` if the error indicates the user rejected or cancelled the operation, `false` otherwise.
  */
 export function isUserRejectionError(error: Error): boolean {
   const errorMessage = error.message.toLowerCase();
@@ -143,8 +142,13 @@ export function getExplorerUrl(txHash: string, chainName: string): string {
 }
 
 /**
- * Formats error messages from wallet/transaction errors into user-friendly text.
- * Extracts key details like hardware wallet issues, insufficient funds, etc.
+ * Convert wallet- or transaction-related Error objects into concise, user-facing messages.
+ *
+ * Attempts to map common technical errors (hardware wallet states, insufficient funds/gas,
+ * network/timeouts, user rejections, and RPC/transaction execution details) to a clear message
+ * and falls back to a short, displayable error string when no specific mapping applies.
+ *
+ * @returns A user-friendly message describing the error suitable for display to end users.
  */
 export function formatErrorForUser(error: Error): string {
   const errorMessage = error.message;

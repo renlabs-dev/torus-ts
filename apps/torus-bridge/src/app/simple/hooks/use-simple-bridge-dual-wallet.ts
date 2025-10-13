@@ -11,6 +11,18 @@ import type {
   WalletConnectionState,
 } from "../_components/simple-bridge-types";
 
+/**
+ * Exposes combined connection state and helper utilities for Torus (native) and EVM wallets used by the dual-wallet bridge UI.
+ *
+ * @returns An object containing:
+ * - `connectionState`: memoized `WalletConnectionState` with `torusWallet` and `evmWallet` connection details (`isConnected`, `address`, `chainId` for EVM, and `isConnecting` flags).
+ * - `isRequiredChainConnected(direction)`: `true` if the connected EVM wallet is on the chain required for the given `SimpleBridgeDirection`, `false` otherwise.
+ * - `isOnOptimalChain(direction)`: `true` if the connected EVM wallet is on the optimal chain for the given `SimpleBridgeDirection`, `false` otherwise.
+ * - `getRequiredChainId(direction)`: the numeric chain ID required for the given `SimpleBridgeDirection`.
+ * - `areWalletsReady(direction)`: `true` if both Torus and EVM wallets are connected, `false` otherwise.
+ * - `getConnectionStatus()`: overall connection status string: `"connecting"`, `"connected"`, `"disconnected"`, or `"partially_connected"`.
+ * - `chainIds`: object with `base` (base chain ID) and `torusEvm` (Torus-targeted EVM chain ID).
+ */
 export function useDualWallet() {
   const {
     selectedAccount: torusAccount,

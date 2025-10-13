@@ -64,17 +64,15 @@ interface NativeToBaseStep1Params {
 }
 
 /**
- * Tracks Substrate transaction finalization and Torus EVM balance confirmation.
+ * Waits for a Substrate transaction to finalize, then polls the Torus EVM balance to confirm the expected token arrival and updates UI/transaction state accordingly.
  *
- * Uses promise-based approach with event listeners for finalized/error events.
- * Polls Torus EVM balance after finalization to confirm tokens arrived.
- *
- * @param tracker - Event tracker from Substrate transaction
- * @param refetchTorusEvmBalance - Function to refetch balance
- * @param baselineBalance - Starting balance before transfer
- * @param expectedIncrease - Expected balance increase
- * @param updateBridgeState - UI state update function
- * @param addTransaction - Transaction tracking function
+ * @param tracker - Substrate transaction event emitter with `on`/`off` for "finalized" and "error"
+ * @param refetchTorusEvmBalance - Function that refetches the Torus EVM balance and returns { status, data? }
+ * @param baselineBalance - Balance on Torus EVM before the transfer
+ * @param expectedIncrease - Expected balance increase on Torus EVM after the transfer
+ * @param amount - Human-readable transfer amount used for transaction messages
+ * @param updateBridgeState - Callback to update bridge UI step and optional error message
+ * @param addTransaction - Callback to record a bridge transaction entry in UI/telemetry
  */
 async function trackSubstrateTransaction(
   tracker: {
@@ -203,14 +201,13 @@ async function trackSubstrateTransaction(
 }
 
 /**
- * Executes Step 1 of the Native-to-Base bridge flow.
+ * Execute step 1 of the Native→Base bridge: transfer native TORUS to the Torus EVM and confirm receipt.
  *
- * Orchestrates Native TORUS → Torus EVM transfer including Substrate transaction,
- * finalization tracking, and Torus EVM balance polling for confirmation.
+ * Sends the Substrate transfer, tracks transaction finalization, and polls the Torus EVM balance until the expected increase is observed.
  *
  * @param params - Step 1 execution parameters
- * @throws {UserRejectedError} If user rejects the Substrate transaction
- * @throws {Error} On transaction failure, network errors, or confirmation timeout
+ * @throws {UserRejectedError} If the user rejects the Substrate transaction
+ * @throws {Error} On transaction submission/failure, network errors, or confirmation timeout
  */
 export async function executeNativeToBaseStep1(
   params: NativeToBaseStep1Params,

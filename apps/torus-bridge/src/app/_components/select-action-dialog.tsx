@@ -11,6 +11,14 @@ import { ArrowBigRightDash, Logs } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 
+/**
+ * Render a dialog that lets the user choose a bridge action from a list.
+ *
+ * The dialog includes a trigger labeled "Bridge options menu" and an alert-style
+ * content area that displays a SelectCard for each entry in the action list.
+ *
+ * @returns A JSX element containing the AlertDialog trigger and its content with selectable cards.
+ */
 export function SelectActionDialog() {
   return (
     <AlertDialog>
@@ -53,6 +61,12 @@ interface SelectCardProps {
   priority?: boolean;
 }
 
+/**
+ * Render a selectable dialog card that links to a destination and displays title, description, and from/to icons, with optional priority styling.
+ *
+ * @param props - Properties for the card; `priority` highlights the card when true.
+ * @returns The rendered AlertDialog action card as a React element.
+ */
 function SelectCard(props: Readonly<SelectCardProps>) {
   return (
     <AlertDialogAction

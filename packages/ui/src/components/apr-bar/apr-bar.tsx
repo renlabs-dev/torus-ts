@@ -23,6 +23,17 @@ interface APRBarProps {
   };
 }
 
+/**
+ * Render an informational APR bar showing APR, total staked, staked ratio, USD price, and the reward interval.
+ *
+ * @param apr - Annual percentage rate to display (may be undefined to show default `0%`)
+ * @param usdPrice - Token USD price to display (may be undefined to show default `$0`)
+ * @param totalStake - Total amount staked as a `bigint` (used to compute staked ratio)
+ * @param totalIssuance - Total token issuance as a `bigint` (used to compute staked ratio)
+ * @param isLoading - When true, data groups show a loading state (defaults to `false`)
+ * @param rewardIntervalProgress - Object containing `full` string for reward interval display; falls back to `"00:00"` when absent
+ * @returns The APR bar React element containing repeated data groups and separators for visual layout
+ */
 export function APRBar({
   apr,
   usdPrice,

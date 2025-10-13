@@ -509,6 +509,15 @@ interface ChainFieldProps {
   chainName: string;
 }
 
+/**
+ * Renders a labeled, non-interactive field that displays a chain name with its icon.
+ *
+ * Displays the provided label above a full-width, disabled button showing an icon and the `chainName`.
+ *
+ * @param label - Text label shown above the field
+ * @param chainName - Name of the chain to display; when `"Torus EVM"` the Torus EVM icon is used
+ * @returns A React element that visually indicates the selected chain (label + disabled button with icon)
+ */
 function ChainField({ label, chainName }: ChainFieldProps) {
   const isTorusEVM = chainName === "Torus EVM";
   return (

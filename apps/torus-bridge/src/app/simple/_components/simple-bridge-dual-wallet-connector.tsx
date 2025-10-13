@@ -15,6 +15,12 @@ interface DualWalletConnectorProps {
   direction: SimpleBridgeDirection;
 }
 
+/**
+ * Render a UI card that displays connection status for Torus Native and EVM wallets for a given transfer direction.
+ *
+ * @param direction - Transfer direction that controls label text and messaging; when `"base-to-native"` the header reads "Transfer Base TORUS → Native TORUS", otherwise it reads "Transfer Native TORUS → Base TORUS"
+ * @returns A JSX element that renders the dual-wallet connection UI with per-wallet indicators, connected addresses, and an overall readiness message
+ */
 export function DualWalletConnector({ direction }: DualWalletConnectorProps) {
   const { connectionState, areWalletsReady, getConnectionStatus, chainIds } =
     useDualWallet();

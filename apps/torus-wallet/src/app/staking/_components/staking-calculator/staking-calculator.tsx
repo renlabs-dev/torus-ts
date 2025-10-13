@@ -29,6 +29,13 @@ const MONTHLY_COMPOUNDS = 12;
 export const FORECAST_MONTHS = 24;
 export const FORECAST_PERIODS = [3, 6, 12, 24];
 
+/**
+ * Renders the staking calculator UI that lets a user specify a stake amount and view projected growth and summary metrics over predefined forecast periods.
+ *
+ * The component reads the selected account and API from Torus context, derives APR and cached stake data, computes projected growth series and summary values, and composes input, chart, period selectors, header, and footer subcomponents.
+ *
+ * @returns A React element containing the staking calculator user interface
+ */
 function StakingCalculator() {
   const { selectedAccount, api } = useTorus();
   const { apr } = useAPR(api);

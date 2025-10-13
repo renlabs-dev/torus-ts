@@ -19,6 +19,16 @@ interface RecipientsFieldProps {
   isWeightsOnly?: boolean;
 }
 
+/**
+ * Renders a list of recipient address and percentage inputs with controls to add, edit, and remove entries.
+ *
+ * Renders form fields bound to `newTargets` that track recipient addresses and allocation percentages, shows the total percentage with over-limit styling, highlights duplicate addresses, and disables editing when configured.
+ *
+ * @param control - React Hook Form control for the EditPermissionFormData form containing `newTargets`.
+ * @param canEditRecipients - When `false`, disables add/edit/remove controls and renders the UI in a read-only state. Defaults to `true`.
+ * @param isWeightsOnly - When `true`, disables address editing and only allows weight-related behavior; also disables add/remove controls. Defaults to `false`.
+ * @returns The recipients form UI element.
+ */
 export function RecipientsField({
   control,
   canEditRecipients = true,

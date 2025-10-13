@@ -28,6 +28,13 @@ import { TokenSection } from "../_sections/token-section";
 import { WalletTransactionReview } from "../../shared/wallet-review";
 import { validateForm } from "./validate-form";
 
+/**
+ * Render the transfer token form with a transaction review panel, handling form state, validation, review mode, and synchronization of origin/destination with the URL.
+ *
+ * The component initializes form values from URL query parameters or defaults, validates values against Warp Core and account data, transitions the UI into a review state on submit, and updates the browser URL (using replace) when origin/destination are derived from defaults.
+ *
+ * @returns The React element containing the transfer form and the transaction review UI.
+ */
 export function TransferTokenForm() {
   const searchParams = useSearchParams();
   const router = useRouter();

@@ -9,6 +9,15 @@ interface FractionButtonProps {
   selected: boolean;
 }
 
+/**
+ * Renders a compact outline-styled button representing a selectable fraction option.
+ *
+ * @param children - Content displayed inside the button (typically the fraction label).
+ * @param onClick - Click handler invoked when the button is activated.
+ * @param disabled - When true, disables interaction and applies disabled styling.
+ * @param selected - When true, applies the selected visual state.
+ * @returns The rendered fraction button element.
+ */
 export function FractionButton({
   children,
   onClick,
@@ -38,6 +47,15 @@ interface FractionButtonsProps {
   handleMaxClick: () => void;
 }
 
+/**
+ * Renders a horizontal group of fraction-selection buttons (1/4, 1/3, 1/2, All) and manages the selected state.
+ *
+ * @param handleFractionClick - Called with the chosen fraction (e.g., 0.25, 0.33, 0.5) when a non-"All" button is selected.
+ * @param walletsReady - When `false`, all buttons are disabled.
+ * @param isTransferInProgress - When `true`, all buttons are disabled.
+ * @param handleMaxClick - Called when the "All" (1.0) button is selected.
+ * @returns A React element containing the fraction buttons.
+ */
 export function FractionButtons({
   handleFractionClick,
   walletsReady,

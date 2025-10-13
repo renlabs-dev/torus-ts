@@ -73,10 +73,12 @@ interface BaseToNativeStep1Params {
 }
 
 /**
- * Validates warp configuration and returns Base token connection.
+ * Locate the TORUS token on the Base chain and its connection to Torus EVM.
  *
- * @param warpCore - Warp Core configuration to validate
- * @throws {Error} If Base TORUS token or connection to Torus is not found
+ * @param warpCore - Warp Core configuration containing token definitions and connections
+ * @returns An object with `baseToken` (the Base-chain TORUS token) and `connection` (the connection from Base to Torus EVM)
+ * @throws {Error} If the Base TORUS token is not present in the configuration
+ * @throws {Error} If no connection from Base to Torus EVM is found for the TORUS token
  */
 function validateWarpConfiguration(
   warpCore: BaseToNativeStep1Params["warpCore"],
@@ -98,18 +100,13 @@ function validateWarpConfiguration(
 }
 
 /**
- * Executes Step 1 of the Base-to-Native bridge flow.
+ * Perform the first step of the Base → Torus EVM bridge transfer.
  *
- * Orchestrates the Base → Torus EVM transfer:
- * 1. Validates warp configuration
- * 2. Switches to Base chain with retries
- * 3. Initiates Hyperlane cross-chain transfer
- * 4. Polls Torus EVM balance for confirmation
- * 5. Returns to Base chain for cleanup
+ * Validates the warp configuration, ensures the wallet is on the Base chain, initiates the Hyperlane transfer to the Torus EVM recipient, and confirms receipt by polling the Torus EVM balance.
  *
- * @param params - Step 1 execution parameters
- * @throws {UserRejectedError} If user rejects chain switch or transaction
- * @throws {Error} On switch failure, transfer failure, confirmation timeout, or configuration errors
+ * @param params - Parameters required to execute step 1 of the Base-to-Native flow
+ * @throws {UserRejectedError} If the user rejects the chain switch or the transfer transaction
+ * @throws {Error} On chain switch failure, transfer failure, or confirmation timeout
  */
 export async function executeBaseToNativeStep1(
   params: BaseToNativeStep1Params,
@@ -314,17 +311,13 @@ interface BaseToNativeStep2Params {
 }
 
 /**
- * Executes Step 2 of the Base-to-Native bridge flow.
+ * Perform the Torus EVM → Native withdrawal and confirm the native balance increase.
  *
- * Orchestrates the Torus EVM → Native withdrawal:
- * 1. Optionally switches to Torus EVM chain with verification
- * 2. Initiates withdrawal transaction to Native
- * 3. Waits for transaction receipt
- * 4. Polls Native balance for confirmation
+ * Initiates (and, if necessary, switches to) the Torus EVM withdrawal transaction, waits for its confirmation, and polls the native balance until the expected increase is observed.
  *
- * @param params - Step 2 execution parameters
- * @throws {UserRejectedError} If user rejects chain switch or transaction
- * @throws {Error} On switch failure, withdrawal failure, or confirmation timeout
+ * @param params - Parameters required to execute Step 2 of the Base-to-Native flow
+ * @throws {UserRejectedError} If the user rejects the chain switch or the withdrawal transaction
+ * @throws {Error} If chain switching fails, the withdrawal fails for reasons other than user rejection, or confirmation polling times out
  */
 export async function executeBaseToNativeStep2(
   params: BaseToNativeStep2Params,

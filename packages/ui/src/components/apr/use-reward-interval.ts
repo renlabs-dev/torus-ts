@@ -11,9 +11,10 @@ import {
 import { useEffect, useState } from "react";
 
 /**
- * Hook that calculates and tracks the progress of the current reward interval.
- * @param api - The Polkadot.js API instance for blockchain interaction
- * @returns Object containing the time remaining in the current reward interval formatted as minutes:seconds
+ * Calculate and track the remaining time in the current reward interval.
+ *
+ * @param api - The Polkadot.js API instance to read chain data from
+ * @returns `minutes` and `seconds` as two-digit padded strings and `full` as `MM:SS` representing the remaining time in the current reward interval
  */
 export function useRewardIntervalProgress(api: Api | ApiPromise | Nullish) {
   const lastBlock = useLastBlock(api);

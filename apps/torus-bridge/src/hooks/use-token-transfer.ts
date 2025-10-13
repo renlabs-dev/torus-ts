@@ -25,6 +25,15 @@ const CHAIN_MISMATCH_ERROR = "ChainMismatchError";
 const TRANSFER_TIMEOUT_ERROR1 = "block height exceeded";
 const TRANSFER_TIMEOUT_ERROR2 = "timeout";
 
+/**
+ * Provides state and a trigger for executing a token transfer flow.
+ *
+ * @param onDone - Optional callback invoked when the transfer finishes (successfully or with a terminal failure).
+ * @param throwOnError - If `true`, re-throws errors that occur during signing stages so callers can handle them.
+ * @returns An object with:
+ *   - `isLoading`: `true` while the transfer flow is in progress.
+ *   - `triggerTransactions`: a function that initiates the transfer and returns the last transaction hash or `undefined`.
+ */
 export function useTokenTransfer(onDone?: () => void, throwOnError = false) {
   const transfers = useStore((s) => s.transfers);
   const addTransfer = useStore((s) => s.addTransfer);
@@ -85,6 +94,27 @@ export function useTokenTransfer(onDone?: () => void, throwOnError = false) {
   };
 }
 
+/**
+ * Execute an end-to-end token transfer via WarpCore, updating store state and showing UI toasts for progress and errors.
+ *
+ * This function prepares the transfer, validates collateral, constructs and sends the necessary remote transactions,
+ * confirms them, updates the transfer status at each stage, and records the final origin transaction hash.
+ *
+ * @param warpCore - WarpCore instance used to query routes, collateral, and remote transactions
+ * @param values - Transfer form values (origin, destination, tokenIndex, amount, recipient)
+ * @param transferIndex - Index to use when updating the transfer entry in shared state
+ * @param activeAccounts - Active accounts hook result used to resolve the sender address
+ * @param activeChains - Active chains hook result used to resolve chain metadata for sending transactions
+ * @param transactionFns - Per-protocol transaction functions used to send and confirm blockchain transactions
+ * @param addTransfer - Callback to add a TransferContext to the shared transfer list
+ * @param updateTransferStatus - Callback to update the transfer status for the given transferIndex
+ * @param setIsLoading - Setter for local loading state
+ * @param onDone - Optional callback invoked when the transfer process finishes (success or failure)
+ * @param toast - Toast function for showing error and info messages
+ * @param txSuccessToast - Helper to show transaction-success toasts
+ * @param throwOnError - If `true`, errors that occur during signing stages (`SigningApprove` or `SigningTransfer`) are re-thrown to the caller; otherwise they are handled internally
+ * @returns The origin transaction hash of the final sent transaction if the transfer completed, or `undefined` if the transfer failed or was aborted.
+ */
 async function executeTransfer({
   warpCore,
   values,

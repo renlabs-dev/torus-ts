@@ -32,6 +32,11 @@ import {
 } from "./simple-bridge-native-to-base-flow";
 import { useSimpleBridgeSharedState } from "./use-simple-bridge-shared-state";
 
+/**
+ * Provides orchestrated, two-direction transfer logic and related helpers for the Simple Bridge.
+ *
+ * @returns An object exposing the current bridge state and transactions, functions to start a transfer (`executeTransfer(direction, amount)`), reset the transfer (`resetTransfer()`), retry a previously failed step (`retryFromFailedStep()`), and a boolean `isTransferInProgress` that is `true` while a transfer is running.
+ */
 export function useOrchestratedTransfer() {
   const {
     bridgeState,

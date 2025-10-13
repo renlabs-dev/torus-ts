@@ -10,6 +10,12 @@ interface APRBarClientProps {
   api?: ApiPromise | null;
 }
 
+/**
+ * Render an APRBar component populated with APR, staking, pricing, and reward interval data.
+ *
+ * @param api - Optional Polkadot ApiPromise instance used to fetch APR and staking data; pass `null` or omit to operate without an RPC API.
+ * @returns The APRBar element configured with computed `apr`, `usdPrice`, `totalStake`, `totalIssuance`, `isLoading`, and `rewardIntervalProgress`, or `null` if `apr` is unavailable.
+ */
 export function APRBarClient({ api }: APRBarClientProps) {
   const finalApi = api ?? null;
   const { apr, isLoading, totalStake, totalIssuance } = useAPR(finalApi);

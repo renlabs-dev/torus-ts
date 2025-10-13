@@ -57,6 +57,12 @@ const Providers: React.FC<ProvidersProps> = ({
   </TorusProvider>
 );
 
+/**
+ * Renders the application's root layout including analytics, global providers, header, navigation, and page chrome.
+ *
+ * @param children - Page content to render in the main content area
+ * @returns The top-level React element that composes analytics providers, app-wide context providers, header/footer, and the main page container
+ */
 export default function RootLayout({
   children,
 }: Readonly<{

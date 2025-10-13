@@ -30,6 +30,13 @@ import { SimpleBridgeStep } from "./simple-bridge-types";
 const BASE_GAS_RESERVE = 10n ** 16n;
 const NATIVE_GAS_RESERVE = 10n ** 18n;
 
+/**
+ * Format a bigint amount expressed in smallest units into a human-readable decimal string.
+ *
+ * @param amount - The amount in smallest units (e.g., wei) as a `bigint`
+ * @param decimals - Number of fractional decimals the unit uses (default `18`)
+ * @returns The decimal string representation with trailing fractional zeros removed; `"0"` for a zero value
+ */
 function formatWeiToDecimalString(amount: bigint, decimals = 18): string {
   const amountStr = amount.toString();
   if (amountStr === "0") return "0";
@@ -45,6 +52,16 @@ function formatWeiToDecimalString(amount: bigint, decimals = 18): string {
   return integerPart;
 }
 
+/**
+ * Converts a decimal amount string into a bigint scaled to 18 decimal places.
+ *
+ * Accepts an optional leading plus sign and an optional fractional part. Empty or badly
+ * formatted strings produce `0n`. Fractional digits are padded with zeros or truncated
+ * to fit 18 decimal places.
+ *
+ * @param amountStr - Decimal amount string (e.g., "1.5", "+0.0001", "42")
+ * @returns A bigint representing the input scaled by 10^18 (wei-like units); `0n` for empty or invalid input
+ */
 function parseDecimalToBigInt(amountStr: string): bigint {
   if (!amountStr || amountStr.trim() === "") return 0n;
 
@@ -58,6 +75,14 @@ function parseDecimalToBigInt(amountStr: string): bigint {
   return BigInt(combined);
 }
 
+/**
+ * Renders a two-way token bridge form for transferring TORUS between Base and Torus Native chains.
+ *
+ * The component manages direction toggling, amount input with fraction/max helpers, wallet readiness and balance checks,
+ * and initiates orchestrated transfers while presenting a transaction lifecycle dialog.
+ *
+ * @returns A React element containing the bridge form UI and its associated transaction dialog
+ */
 export function SimpleBridgeForm() {
   const [direction, setDirection] =
     useState<SimpleBridgeDirection>("base-to-native");

@@ -10,6 +10,16 @@ import { config } from "~/consts/config";
 import { logger } from "~/utils/logger";
 import { z } from "zod";
 
+/**
+ * Builds combined chain metadata by validating filesystem data, optionally fetching registry data and logos, filtering by the provided token chains, and applying optional per-chain overrides.
+ *
+ * @param chainsInTokens - Array of chain names to include; any registry entries not in this list are discarded.
+ * @param registry - Registry client used to obtain registry metadata and chain logo URIs.
+ * @param storeMetadataOverrides - Optional map of per-chain partial overrides that are merged onto the final metadata.
+ * @returns An object containing:
+ *   - `chainMetadata`: the merged chain metadata from registry (with logos) and filesystem sources,
+ *   - `chainMetadataWithOverrides`: `chainMetadata` after applying `storeMetadataOverrides`.
+ */
 export async function assembleChainMetadata(
   chainsInTokens: ChainName[],
   registry: IRegistry,

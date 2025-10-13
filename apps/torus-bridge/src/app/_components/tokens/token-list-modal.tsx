@@ -83,6 +83,17 @@ function SearchBar({
   );
 }
 
+/**
+ * Renders a list of multi-chain tokens filtered by search and route availability, allowing the user to select one.
+ *
+ * Tokens are ordered so supported tokens appear before unsupported ones; unsupported tokens are shown dimmed and disabled unless configuration allows showing them. Each token row displays icon, symbol, name, address/denom, decimals, and chain; unsupported rows include an explanatory message about the origin-to-destination route.
+ *
+ * @param origin - Source chain used to determine which tokens are routable
+ * @param destination - Target chain used to determine which tokens are routable
+ * @param searchQuery - Query string used to filter tokens by name, symbol, or address/denom
+ * @param onSelect - Called with the selected `IToken` when a token row is activated
+ * @returns The component's rendered JSX element containing the token list or an empty-state message
+ */
 function TokenList({
   origin,
   destination,

@@ -32,6 +32,12 @@ interface TransactionStepItemProps {
   isLast?: boolean;
 }
 
+/**
+ * Get the icon element that represents a step's status.
+ *
+ * @param status - The step status to render an icon for
+ * @returns A JSX element for the status icon: `completed` → check circle, `active` → spinning loader, `waiting` → clock, `error` → alert circle, otherwise a gray rounded placeholder
+ */
 function getStatusIcon(status: StepStatus) {
   if (status === "completed") {
     return <CheckCircle className="h-5 w-5 text-green-500" />;
@@ -52,6 +58,12 @@ function getStatusIcon(status: StepStatus) {
   return <div className="h-5 w-5 rounded-full border-2 border-gray-300" />;
 }
 
+/**
+ * Map a step status to the corresponding Tailwind text color class.
+ *
+ * @param status - The step status to map
+ * @returns The Tailwind CSS text color class associated with `status`
+ */
 function getStatusColor(status: StepStatus) {
   if (status === "completed") return "text-green-600";
   if (status === "active") return "text-blue-600";
@@ -60,6 +72,12 @@ function getStatusColor(status: StepStatus) {
   return "text-gray-500";
 }
 
+/**
+ * Get the Tailwind CSS background color class for a step connector based on the step status.
+ *
+ * @param status - The step's status
+ * @returns The Tailwind background color utility class for the connector (`bg-green-500`, `bg-blue-500`, `bg-red-500`, or `bg-gray-300`)
+ */
 function getStepConnectorColor(status: StepStatus) {
   if (status === "completed") return "bg-green-500";
   if (status === "active") return "bg-blue-500";
@@ -67,6 +85,13 @@ function getStepConnectorColor(status: StepStatus) {
   return "bg-gray-300";
 }
 
+/**
+ * Determine the network name from a step title and optional description.
+ *
+ * @param title - Primary text inspected for network keywords
+ * @param description - Optional additional text inspected for network keywords
+ * @returns The network name: `"Base"`, `"Torus Native"`, or `"Torus EVM"`
+ */
 function getNetworkName(title: string, description?: string) {
   const context = `${title} ${description ?? ""}`;
   if (context.includes("Base")) return "Base";
@@ -74,6 +99,23 @@ function getNetworkName(title: string, description?: string) {
   return "Torus EVM";
 }
 
+/**
+ * Render a transaction step row that displays status, title, description, optional timing, warnings, errors, and a collapsible details panel for completed transactions.
+ *
+ * @param id - Unique identifier for the step
+ * @param title - Primary label for the step
+ * @param description - Short explanatory text displayed under the title
+ * @param status - Step status; determines icons and colors (`"pending" | "active" | "completed" | "error" | "waiting"`)
+ * @param estimatedTime - Optional human-readable estimated time (e.g., "30s")
+ * @param txHash - Optional transaction hash; used to show transaction details when present
+ * @param explorerUrl - Optional URL to the transaction on a block explorer; used by the "View on Explorer" action
+ * @param isSignatureRequired - When true, indicates the step requires a wallet signature and adjusts the leading icon and badge
+ * @param errorDetails - Optional error message displayed when `status` is `"error"`
+ * @param showSignatureWarning - When true and a signature is required for an active step, displays a signature approval warning
+ * @param amount - Optional numeric or string amount displayed in the completed step details (shown with "TORUS" unit)
+ * @param isLast - When true, omits the vertical connector after this step
+ * @returns The rendered JSX element for the transaction step row
+ */
 export function TransactionStepItem({
   id,
   title,

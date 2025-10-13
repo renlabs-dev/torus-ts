@@ -9,6 +9,11 @@ import { AppContextProvider } from "~/context/app-context-provider";
 import { env, EnvScript } from "~/env";
 import { Fira_Mono as FiraMono } from "next/font/google";
 
+/**
+ * Produce the SEO metadata for the Torus Bridge page.
+ *
+ * @returns An object containing page metadata: title, description, keywords, Open Graph site name, canonical path, and base URL derived from environment configuration.
+ */
 export function generateMetadata() {
   return createSeoMetadata({
     title: "Torus Bridge",
@@ -33,6 +38,12 @@ export const firaMono = FiraMono({
   weight: "400",
 });
 
+/**
+ * Wraps page content with the application layout, app context provider, and a fixed APR bar.
+ *
+ * @param children - The page content to render inside the layout and context provider
+ * @returns The composed layout element containing the fixed APR bar and the provided children
+ */
 export default function RootLayout({
   children,
 }: Readonly<{

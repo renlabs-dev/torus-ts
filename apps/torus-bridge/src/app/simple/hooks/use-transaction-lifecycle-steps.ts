@@ -21,6 +21,15 @@ interface LifecycleStep {
   errorDetails?: string;
 }
 
+/**
+ * Builds the lifecycle steps for a bridge transaction, including dynamic per-step status and metadata.
+ *
+ * @param direction - Bridge direction, either `"base-to-native"` or `"native-to-base"`, used to choose step titles and order
+ * @param currentStep - Current lifecycle phase from `SimpleBridgeStep` used to compute each step's status
+ * @param transactions - Array of bridge transactions (step 1 and step 2) used to populate tx hashes, explorer URLs, and error details
+ * @param amount - Human-readable amount string included in the final success step description
+ * @returns An ordered array of `LifecycleStep` objects representing sign/confirm steps (and a success step when complete), each containing id, title, description, icon, status, optional estimatedTime, txHash, explorerUrl, isSignatureRequired, and errorDetails
+ */
 export function useTransactionLifecycleSteps(
   direction: SimpleBridgeDirection,
   currentStep: SimpleBridgeStep,

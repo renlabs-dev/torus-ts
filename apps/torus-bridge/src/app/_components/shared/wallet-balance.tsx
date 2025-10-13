@@ -17,6 +17,13 @@ const BalanceIcon = ({ src, alt }: { src: string; alt: string }) => (
   <Image src={src} alt={alt} width={24} height={24} className="flex-shrink-0" />
 );
 
+/**
+ * Display the user's TORUS balances across native, EVM, and Base chains in a card.
+ *
+ * Renders three balance entries (TORUS native, Torus EVM token, and Base token). Each entry shows a formatted token amount or a skeleton placeholder when unavailable, an asset label, an icon, and the associated account address.
+ *
+ * @returns A React element containing a card with the three balance rows described above.
+ */
 export function WalletBalance() {
   const getChainValues = getChainValuesOnEnv(
     env("NEXT_PUBLIC_TORUS_CHAIN_ENV"),

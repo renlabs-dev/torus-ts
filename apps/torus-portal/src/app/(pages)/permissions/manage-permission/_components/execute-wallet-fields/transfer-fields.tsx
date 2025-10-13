@@ -23,6 +23,16 @@ interface TransferFieldsProps {
   delegatorAddress: string;
 }
 
+/**
+ * Render the three form fields used to transfer stake: from account, to account, and amount.
+ *
+ * The "From Account" field shows the delegator's stake for the selected account when available.
+ *
+ * @param control - React Hook Form control object for the execute wallet form
+ * @param isAccountConnected - Whether the user's account is connected; when false fields are disabled
+ * @param delegatorAddress - Delegator address used to look up staking information for the "From Account" field
+ * @returns A React element containing the three transfer form fields
+ */
 export function TransferFields({
   control,
   isAccountConnected,

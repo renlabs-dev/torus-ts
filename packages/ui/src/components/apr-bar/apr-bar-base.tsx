@@ -4,6 +4,12 @@ interface APRBarBaseProps {
   children: React.ReactNode;
 }
 
+/**
+ * Renders a fixed-position top bar with an animated diagonal overlay and a horizontal marquee for its content.
+ *
+ * @param children - Elements to display inside the marquee area (rendered inline and animated across the bar)
+ * @returns A JSX element representing the positioned, animated top bar
+ */
 export function APRBarBase({ children }: APRBarBaseProps) {
   return (
     <div className="absolute top-[3.3em] w-full animate-fade-up">

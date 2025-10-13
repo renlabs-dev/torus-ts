@@ -21,6 +21,17 @@ interface UnstakeFieldsProps {
   delegatorAddress: string;
 }
 
+/**
+ * Render form fields for selecting a staked account and entering an unstake amount.
+ *
+ * Renders a staked account selector (with delegated stake info when available) and a token amount input,
+ * disabling inputs when the user account is not connected.
+ *
+ * @param control - react-hook-form control object for managing form state
+ * @param isAccountConnected - If `false`, disables the form inputs
+ * @param delegatorAddress - Address used to look up delegations for displaying stake details
+ * @returns A React fragment containing the unstake-related form fields
+ */
 export function UnstakeFields({
   control,
   isAccountConnected,
