@@ -152,9 +152,11 @@ export function TransactionStepItem({
                 View Transaction Details
               </AccordionTrigger>
               <AccordionContent className="space-y-2 text-sm">
-                <div>
-                  Amount: <strong>{amount} TORUS</strong>
-                </div>
+                {amount && (
+                  <div>
+                    Amount: <strong>{amount} TORUS</strong>
+                  </div>
+                )}
                 <div>
                   Network: <strong>{getNetworkName(title, description)}</strong>
                 </div>

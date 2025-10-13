@@ -1,4 +1,5 @@
 import { useCallback, useMemo } from "react";
+import type { ReactNode } from "react";
 import type {
   SimpleBridgeDirection,
   SimpleBridgeTransaction,
@@ -11,7 +12,7 @@ interface LifecycleStep {
   id: string;
   title: string;
   description: string;
-  icon: React.ReactNode;
+  icon: ReactNode;
   status: StepStatus;
   estimatedTime?: string;
   txHash?: string;

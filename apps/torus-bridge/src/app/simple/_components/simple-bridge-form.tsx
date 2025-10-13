@@ -208,13 +208,13 @@ export function SimpleBridgeForm() {
     // Validate sufficient balance for Base to Native
     if (direction === "base-to-native") {
       if (!baseBalance) return false;
-      const requiredBalance = amountBigInt + BigInt(1e16); // 0.01 tokens for gas
+      const requiredBalance = amountBigInt + BASE_GAS_RESERVE;
       return baseBalance >= requiredBalance;
     }
 
     // Validate sufficient balance for Native to Base
     if (!nativeBalance.data) return false;
-    const requiredBalance = amountBigInt + BigInt(1e18); // 1 token for gas
+    const requiredBalance = amountBigInt + NATIVE_GAS_RESERVE;
     return nativeBalance.data >= requiredBalance;
   }, [walletsReady, amountFrom, direction, baseBalance, nativeBalance.data]);
 
@@ -229,14 +229,14 @@ export function SimpleBridgeForm() {
     // Check for insufficient balance - Base to Native
     if (direction === "base-to-native") {
       if (!baseBalance) return "Loading Balance...";
-      const requiredBalance = amountBigInt + BigInt(1e16);
+      const requiredBalance = amountBigInt + BASE_GAS_RESERVE;
       if (baseBalance < requiredBalance) return "Insufficient Balance";
     }
 
     // Check for insufficient balance - Native to Base
     if (direction === "native-to-base") {
       if (!nativeBalance.data) return "Loading Balance...";
-      const requiredBalance = amountBigInt + BigInt(1e18);
+      const requiredBalance = amountBigInt + NATIVE_GAS_RESERVE;
       if (nativeBalance.data < requiredBalance) return "Insufficient Balance";
     }
 
@@ -254,13 +254,13 @@ export function SimpleBridgeForm() {
     // Check for insufficient balance - Base to Native
     if (direction === "base-to-native") {
       if (!baseBalance) return false;
-      const requiredBalance = amountBigInt + BigInt(1e16);
+      const requiredBalance = amountBigInt + BASE_GAS_RESERVE;
       return baseBalance < requiredBalance;
     }
 
     // Check for insufficient balance - Native to Base
     if (!nativeBalance.data) return false;
-    const requiredBalance = amountBigInt + BigInt(1e18);
+    const requiredBalance = amountBigInt + NATIVE_GAS_RESERVE;
     return nativeBalance.data < requiredBalance;
   };
 

@@ -1,10 +1,20 @@
 import { cn } from "../lib/utils";
 import * as React from "react";
 
+/**
+ * Internal props for the input component.
+ * @internal
+ * @property {string} [label] - Optional label text displayed on the input field
+ */
 interface BaseInputProps {
   label?: string;
 }
 
+/**
+ * Props for the Input component. Extends React.InputHTMLAttributes<HTMLInputElement>
+ * and BaseInputProps to provide a customizable input field with optional label support.
+ * Supports standard input properties like value, onChange, placeholder, disabled, etc.
+ */
 export interface InputProps
   extends React.InputHTMLAttributes<HTMLInputElement>,
     BaseInputProps {}
@@ -43,6 +53,20 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
 );
 Input.displayName = "Input";
 
+/**
+ * A read-only input-like display component that renders content in a styled container.
+ * Useful for displaying values that appear like input fields but cannot be edited.
+ * Supports optional label, disabled state, and custom styling.
+ *
+ * @example
+ * ```tsx
+ * <InputReadonly
+ *   label="TORUS"
+ *   value="100.00"
+ *   disabled={false}
+ * />
+ * ```
+ */
 const InputReadonly = React.forwardRef<HTMLDivElement, InputReadonlyProps>(
   ({ className, label, value, disabled, ...props }, ref) => {
     return (
@@ -54,11 +78,15 @@ const InputReadonly = React.forwardRef<HTMLDivElement, InputReadonlyProps>(
             className,
           )}
           ref={ref}
+          role="textbox"
+          aria-readonly="true"
+          aria-disabled={disabled}
+          tabIndex={disabled ? -1 : 0}
           {...props}
         >
           {value}
           {label && (
-            <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">
+            <span className="absolute right-8 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">
               {label}
             </span>
           )}
