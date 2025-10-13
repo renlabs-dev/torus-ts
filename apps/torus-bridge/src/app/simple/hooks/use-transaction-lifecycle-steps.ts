@@ -45,7 +45,8 @@ export function useTransactionLifecycleSteps(
           if (errorPhase === "sign" && stepId === "step2-sign") return "error";
           if (errorPhase === "confirm" && stepId === "step2-confirm")
             return "error";
-          if (errorPhase === "confirm" && stepId === "step2-sign") return "completed";
+          if (errorPhase === "confirm" && stepId === "step2-sign")
+            return "completed";
 
           if (!errorPhase) {
             if (stepId === "step2-sign") return "error";
@@ -61,7 +62,8 @@ export function useTransactionLifecycleSteps(
         if (errorPhase === "sign" && stepId === "step1-sign") return "error";
         if (errorPhase === "confirm" && stepId === "step1-confirm")
           return "error";
-        if (errorPhase === "confirm" && stepId === "step1-sign") return "completed";
+        if (errorPhase === "confirm" && stepId === "step1-sign")
+          return "completed";
 
         if (!errorPhase) {
           if (stepId === "step1-sign") return "error";
