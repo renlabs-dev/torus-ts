@@ -197,6 +197,7 @@ export function useTransactionLifecycleSteps(
             estimatedTime: "~1-2 minutes",
             txHash: step1Transaction?.txHash,
             explorerUrl: step1Transaction?.explorerUrl,
+            errorDetails: step1Transaction?.errorDetails,
           },
           {
             id: "step2-sign",
@@ -217,6 +218,7 @@ export function useTransactionLifecycleSteps(
             estimatedTime: "~30-60 seconds",
             txHash: step2Transaction?.txHash,
             explorerUrl: step2Transaction?.explorerUrl,
+            errorDetails: step2Transaction?.errorDetails,
           },
         ]
       : [
@@ -238,6 +240,7 @@ export function useTransactionLifecycleSteps(
             estimatedTime: "~30-60 seconds",
             txHash: step1Transaction?.txHash,
             explorerUrl: step1Transaction?.explorerUrl,
+            errorDetails: step1Transaction?.errorDetails,
           },
           {
             id: "step2-sign",
@@ -257,6 +260,7 @@ export function useTransactionLifecycleSteps(
             estimatedTime: "~1-2 minutes",
             txHash: step2Transaction?.txHash,
             explorerUrl: step2Transaction?.explorerUrl,
+            errorDetails: step2Transaction?.errorDetails,
           },
         ];
 

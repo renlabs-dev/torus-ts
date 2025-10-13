@@ -364,8 +364,8 @@ export function SimpleBridgeForm() {
                           <TorusToUSD
                             torusAmount={
                               direction === "base-to-native"
-                                ? (baseBalance ?? 0n)
-                                : (nativeBalance.data ?? 0n)
+                                ? (nativeBalance.data ?? 0n)
+                                : (baseBalance ?? 0n)
                             }
                             usdPrice={usdPrice}
                             decimals={2}

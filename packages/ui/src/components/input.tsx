@@ -81,6 +81,7 @@ const InputReadonly = React.forwardRef<HTMLDivElement, InputReadonlyProps>(
           role="textbox"
           aria-readonly="true"
           aria-disabled={disabled}
+          aria-label={label}
           tabIndex={disabled ? -1 : 0}
           {...props}
         >
