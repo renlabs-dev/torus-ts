@@ -9,9 +9,13 @@ export interface InputProps
   extends React.InputHTMLAttributes<HTMLInputElement>,
     BaseInputProps {}
 
-export interface InputReadonlyProps extends BaseInputProps {
+/**
+ * Props for the InputReadonly component, which renders a read-only input-like display.
+ */
+export interface InputReadonlyProps
+  extends React.HTMLAttributes<HTMLDivElement>,
+    BaseInputProps {
   value: React.ReactNode;
-  className?: string;
   disabled?: boolean;
 }
 

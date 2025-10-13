@@ -67,9 +67,10 @@ function getStepConnectorColor(status: StepStatus) {
   return "bg-gray-300";
 }
 
-function getNetworkName(title: string) {
-  if (title.includes("Base")) return "Base";
-  if (title.includes("Native")) return "Torus Native";
+function getNetworkName(title: string, description?: string) {
+  const context = `${title} ${description ?? ""}`;
+  if (context.includes("Base")) return "Base";
+  if (context.includes("Native")) return "Torus Native";
   return "Torus EVM";
 }
 
@@ -155,7 +156,7 @@ export function TransactionStepItem({
                   Amount: <strong>{amount} TORUS</strong>
                 </div>
                 <div>
-                  Network: <strong>{getNetworkName(title)}</strong>
+                  Network: <strong>{getNetworkName(title, description)}</strong>
                 </div>
                 <div>
                   Transaction ID:{" "}
@@ -172,7 +173,7 @@ export function TransactionStepItem({
                   size="sm"
                   onClick={(e) => {
                     e.stopPropagation();
-                    window.open(explorerUrl, "_blank");
+                    window.open(explorerUrl, "_blank", "noopener,noreferrer");
                   }}
                   className="mt-2 w-full justify-start"
                 >

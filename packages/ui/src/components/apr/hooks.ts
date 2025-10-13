@@ -155,11 +155,11 @@ export function useAPR(api: Api | Nullish): APRResult {
 
   const isDataComplete = useMemo(
     () =>
-      !!totalStakeQuery.data &&
-      !!totalIssuanceQuery.data &&
-      !!recyclingPercentageQuery.data &&
-      !!treasuryEmissionFeeQuery.data &&
-      !!incentivesRatioQuery.data,
+      totalStakeQuery.data != null &&
+      totalIssuanceQuery.data != null &&
+      recyclingPercentageQuery.data != null &&
+      treasuryEmissionFeeQuery.data != null &&
+      incentivesRatioQuery.data != null,
     [
       totalStakeQuery.data,
       totalIssuanceQuery.data,

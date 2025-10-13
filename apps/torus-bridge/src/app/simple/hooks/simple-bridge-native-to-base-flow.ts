@@ -221,7 +221,6 @@ export async function executeNativeToBaseStep1(
     api,
     sendTx,
     refetchTorusEvmBalance,
-    torusEvmBalance,
     updateBridgeState,
     addTransaction,
   } = params;
@@ -275,8 +274,8 @@ export async function executeNativeToBaseStep1(
 
   updateBridgeState({ step: SimpleBridgeStep.STEP_1_CONFIRMING });
 
-  await refetchTorusEvmBalance();
-  const baselineBalance = torusEvmBalance?.value ?? 0n;
+  const refetchResult = await refetchTorusEvmBalance();
+  const baselineBalance = refetchResult.data?.value ?? 0n;
   const expectedIncrease = toNano(amount.trim());
 
   await trackSubstrateTransaction(

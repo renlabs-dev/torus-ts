@@ -27,6 +27,37 @@ import { TransactionLifecycleDialog } from "./simple-bridge-transaction-lifecycl
 import type { SimpleBridgeDirection } from "./simple-bridge-types";
 import { SimpleBridgeStep } from "./simple-bridge-types";
 
+const BASE_GAS_RESERVE = 10n ** 16n;
+const NATIVE_GAS_RESERVE = 10n ** 18n;
+
+function formatWeiToDecimalString(amount: bigint, decimals = 18): string {
+  const amountStr = amount.toString();
+  if (amountStr === "0") return "0";
+
+  // Pad with leading zeros if needed to reach decimal places
+  const paddedAmount = amountStr.padStart(decimals + 1, "0");
+  const integerPart = paddedAmount.slice(0, -decimals) || "0";
+  const fractionalPart = paddedAmount.slice(-decimals).replace(/0+$/, "");
+
+  if (fractionalPart) {
+    return `${integerPart}.${fractionalPart}`;
+  }
+  return integerPart;
+}
+
+function parseDecimalToBigInt(amountStr: string): bigint {
+  if (!amountStr || amountStr.trim() === "") return 0n;
+
+  const trimmed = amountStr.trim().replace(/^\+/, "");
+  if (!/^\d*\.?\d*$/.test(trimmed)) return 0n;
+
+  const [whole = "0", fraction = ""] = trimmed.split(".");
+  const paddedFraction = fraction.padEnd(18, "0").slice(0, 18);
+  const combined = whole + paddedFraction;
+
+  return BigInt(combined);
+}
+
 export function SimpleBridgeForm() {
   const [direction, setDirection] =
     useState<SimpleBridgeDirection>("base-to-native");
@@ -54,14 +85,19 @@ export function SimpleBridgeForm() {
   const baseTorusAddress =
     contractAddresses.base[env("NEXT_PUBLIC_TORUS_CHAIN_ENV")].torusErc20;
 
+  const evmAddress = connectionState.evmWallet.address as
+    | `0x${string}`
+    | undefined;
+
   const { data: baseBalance } = useReadContract({
     chainId: chainIds.base,
     address: baseTorusAddress,
     abi: erc20Abi,
     functionName: "balanceOf",
-    args: connectionState.evmWallet.address
-      ? [connectionState.evmWallet.address as `0x${string}`]
-      : undefined,
+    args: evmAddress ? [evmAddress] : undefined,
+    query: {
+      enabled: Boolean(evmAddress),
+    },
   });
 
   const walletsReady = areWalletsReady(direction);
@@ -78,25 +114,19 @@ export function SimpleBridgeForm() {
   const handleFractionClick = useCallback(
     (fraction: number) => {
       if (direction === "base-to-native" && baseBalance) {
-        const maxAmount = baseBalance - BigInt(1e16); // Reserve 0.01 tokens for gas
-        // Use pure BigInt arithmetic to avoid precision loss
+        const maxAmount =
+          baseBalance > BASE_GAS_RESERVE ? baseBalance - BASE_GAS_RESERVE : 0n;
         const fractionNumerator = BigInt(Math.floor(fraction * 1_000_000));
-        const fractionAmount =
-          (maxAmount * fractionNumerator) / BigInt(1_000_000);
-        const fractionAmountString = (Number(fractionAmount) / 1e18).toFixed(
-          18,
-        );
-        setAmountFrom(fractionAmountString.replace(/\.?0+$/, ""));
+        const fractionAmount = (maxAmount * fractionNumerator) / 1_000_000n;
+        setAmountFrom(formatWeiToDecimalString(fractionAmount));
       } else if (direction === "native-to-base" && nativeBalance.data) {
-        const maxAmount = nativeBalance.data - BigInt(1e18); // Reserve 1 token for gas
-        // Use pure BigInt arithmetic to avoid precision loss
+        const maxAmount =
+          nativeBalance.data > NATIVE_GAS_RESERVE
+            ? nativeBalance.data - NATIVE_GAS_RESERVE
+            : 0n;
         const fractionNumerator = BigInt(Math.floor(fraction * 1_000_000));
-        const fractionAmount =
-          (maxAmount * fractionNumerator) / BigInt(1_000_000);
-        const fractionAmountString = (Number(fractionAmount) / 1e18).toFixed(
-          18,
-        );
-        setAmountFrom(fractionAmountString.replace(/\.?0+$/, ""));
+        const fractionAmount = (maxAmount * fractionNumerator) / 1_000_000n;
+        setAmountFrom(formatWeiToDecimalString(fractionAmount));
       }
     },
     [direction, baseBalance, nativeBalance.data],
@@ -173,7 +203,7 @@ export function SimpleBridgeForm() {
     if (!amountFrom) return false;
     if (parseFloat(amountFrom) <= 0) return false;
 
-    const amountBigInt = BigInt(Math.floor(parseFloat(amountFrom) * 1e18));
+    const amountBigInt = parseDecimalToBigInt(amountFrom);
 
     // Validate sufficient balance for Base to Native
     if (direction === "base-to-native") {
@@ -194,7 +224,7 @@ export function SimpleBridgeForm() {
     if (!amountFrom) return "Enter Amount";
     if (parseFloat(amountFrom) <= 0) return "Invalid Amount";
 
-    const amountBigInt = BigInt(Math.floor(parseFloat(amountFrom) * 1e18));
+    const amountBigInt = parseDecimalToBigInt(amountFrom);
 
     // Check for insufficient balance - Base to Native
     if (direction === "base-to-native") {
@@ -219,7 +249,7 @@ export function SimpleBridgeForm() {
   const hasInsufficientBalance = () => {
     if (!amountFrom || parseFloat(amountFrom) <= 0) return false;
 
-    const amountBigInt = BigInt(Math.floor(parseFloat(amountFrom) * 1e18));
+    const amountBigInt = parseDecimalToBigInt(amountFrom);
 
     // Check for insufficient balance - Base to Native
     if (direction === "base-to-native") {
@@ -284,11 +314,11 @@ export function SimpleBridgeForm() {
                         <span className="text-muted-foreground ml-1 font-normal">
                           (
                           <TorusToUSD
-                            torusAmount={parseFloat(
-                              fromChain.balance
-                                .replace(" TORUS", "")
-                                .replace(",", ""),
-                            )}
+                            torusAmount={
+                              direction === "base-to-native"
+                                ? (baseBalance ?? 0n)
+                                : (nativeBalance.data ?? 0n)
+                            }
                             usdPrice={usdPrice}
                             decimals={2}
                           />
@@ -332,11 +362,11 @@ export function SimpleBridgeForm() {
                         <span className="text-muted-foreground ml-1 font-normal">
                           (
                           <TorusToUSD
-                            torusAmount={parseFloat(
-                              toChain.balance
-                                .replace(" TORUS", "")
-                                .replace(",", ""),
-                            )}
+                            torusAmount={
+                              direction === "base-to-native"
+                                ? (baseBalance ?? 0n)
+                                : (nativeBalance.data ?? 0n)
+                            }
                             usdPrice={usdPrice}
                             decimals={2}
                           />
