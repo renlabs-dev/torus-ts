@@ -18,9 +18,95 @@ gen-types name:
 
 # == Dev ==
 
-# Install dependencies
+# Install dependencies securely (ignores scripts for security)
 install:
-  pnpm install
+  # --ignore-scripts: don't run scripts (eg. preinstall, postinstall) for security
+  # --frozen-lockfile: don't update the lockfile
+  pnpm install --ignore-scripts --frozen-lockfile
+
+# Check if Snyk CLI is installed
+snyk-check:
+  @snyk --version > /dev/null || (echo "❌ Snyk CLI is not installed. Install with: npm install -g snyk" && exit 1)
+  @echo "✅ Snyk CLI is available"
+
+# Scan all project dependencies for vulnerabilities (all severity levels)
+snyk-scan: snyk-check
+  @echo "🔍 Scanning all dependencies for vulnerabilities..."
+  snyk test --all-projects --severity-threshold=low
+
+# Quick security check of project dependencies
+snyk-quick: snyk-check
+  @echo "🔍 Running quick security scan..."
+  pnpm audit --prod --audit-level=high || true
+  snyk test --severity-threshold=high
+
+# Authenticate with Snyk (run once)
+snyk-auth:
+  @snyk --version > /dev/null || (echo "❌ Snyk CLI is not installed. Install with: npm install -g snyk" && exit 1)
+  snyk auth
+
+# Test a package for vulnerabilities before installing
+# Usage: just snyk-test <package>[@version]
+snyk-test package:
+  @echo "🔍 Checking {{package}} for vulnerabilities..."
+  @snyk test --package-manager=npm --severity-threshold=high {{package}} || \
+    (echo "❌ Security vulnerabilities found in {{package}}" && exit 1)
+  @echo "✅ {{package}} passed security check"
+
+# Safely add a package with security checks
+# Usage: just add <package>[@version] [--dev]
+add package *flags: snyk-check
+  #!/usr/bin/env bash
+  set -e
+
+  echo "🔍 Running security check on {{package}}..."
+
+  # Test package with Snyk
+  if snyk test --package-manager=npm --severity-threshold=high {{package}}; then
+    echo "✅ {{package}} passed security check"
+    echo "📦 Installing {{package}}..."
+    pnpm add {{package}} {{flags}} --ignore-scripts
+    echo "✅ {{package}} installed successfully"
+  else
+    echo "❌ Security vulnerabilities detected in {{package}}"
+    echo "⚠️  Installation aborted for security reasons"
+    echo ""
+    echo "To see detailed vulnerability report, run:"
+    echo "  snyk test {{package}}"
+    exit 1
+  fi
+
+# Add multiple packages with security checks
+# Usage: just add-multiple "package1 package2 package3" [--dev]
+add-multiple packages *flags: snyk-check
+  #!/usr/bin/env bash
+  set -e
+
+  IFS=' ' read -ra PKGS <<< "{{packages}}"
+
+  echo "🔍 Checking ${#PKGS[@]} packages for vulnerabilities..."
+
+  FAILED=()
+  for pkg in "${PKGS[@]}"; do
+    echo ""
+    echo "Checking $pkg..."
+    if ! snyk test --package-manager=npm --severity-threshold=high "$pkg"; then
+      FAILED+=("$pkg")
+    fi
+  done
+
+  if [ ${#FAILED[@]} -gt 0 ]; then
+    echo ""
+    echo "❌ The following packages failed security checks:"
+    printf '  - %s\n' "${FAILED[@]}"
+    exit 1
+  fi
+
+  echo ""
+  echo "✅ All packages passed security checks"
+  echo "📦 Installing packages..."
+  pnpm add {{packages}} {{flags}} --ignore-scripts
+  echo "✅ All packages installed successfully"
 
 # List all packages in the workspace
 ls:

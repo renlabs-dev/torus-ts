@@ -105,6 +105,41 @@ just db-dump
 # Note: Migrations are handled by Atlas and stored in atlas/migrations/
 ```
 
+### Security: Adding Dependencies Safely
+
+The project uses Snyk to verify dependencies for vulnerabilities before installation.
+See [docs/SECURITY_DEPENDENCIES.md](./docs/SECURITY_DEPENDENCIES.md) for full documentation.
+
+```sh
+# Setup (one-time)
+npm install -g snyk
+just snyk-auth
+
+# Scan existing project dependencies
+just snyk-scan           # Full scan (LOW to CRITICAL - all levels)
+just snyk-quick          # Quick scan (HIGH/CRITICAL only)
+
+# Add a single package with security check
+just add <package>[@version] [--dev]
+
+# Examples
+just add react@18.2.0
+just add vitest --dev
+
+# Add multiple packages
+just add-multiple "react react-dom @types/react" --dev
+
+# Test a package before deciding
+just snyk-test <package>
+```
+
+**Important Notes:**
+
+- Always use `just add` instead of `pnpm add` for new dependencies
+- All installs use `--ignore-scripts` to prevent malicious script execution
+- High/Critical vulnerabilities block installation automatically
+- Supply chain attack protection is enabled by default
+
 ## Development Guidelines
 
 ### Package Targeting
