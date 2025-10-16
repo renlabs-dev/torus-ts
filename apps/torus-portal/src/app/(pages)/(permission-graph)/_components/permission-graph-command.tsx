@@ -23,6 +23,14 @@ import React, {
 } from "react";
 import { useGraphData } from "./force-graph/use-graph-data";
 
+interface GraphAgent {
+  accountId: string;
+  name: string;
+  role: "Allocator" | "Root Agent" | "Target Agent";
+  isWhitelisted?: boolean;
+  isAllocated?: boolean;
+}
+
 interface SearchItem {
   id: string;
   displayName: string;
@@ -172,7 +180,74 @@ export function PermissionGraphCommand() {
     [agentNamesMap],
   );
 
-  const searchGroups = useMemo(() => {
+  // Pre-compute agent lookup maps for O(1) search
+  const agentMaps = (() => {
+    if (!graphData)
+      return {
+        byId: new Map<string, GraphAgent>(),
+        byName: new Map<string, GraphAgent>(),
+      };
+
+    const byId = new Map<string, GraphAgent>();
+    const byName = new Map<string, GraphAgent>();
+
+    graphData.agents.forEach((agent) => {
+      byId.set(agent.accountId.toLowerCase(), agent);
+      if (agent.name) {
+        byName.set(agent.name.toLowerCase(), agent);
+      }
+    });
+
+    return { byId, byName };
+  })();
+
+  // Pre-compute agent relationships for O(1) lookup
+  const agentRelationships = (() => {
+    if (!graphData) return new Map<string, Set<string>>();
+
+    const relationships = new Map<string, Set<string>>();
+
+    graphData.agents.forEach((agent) => {
+      const related = new Set<string>();
+
+      // Add emission permissions
+      graphData.permissions.emission.forEach((p) => {
+        if (
+          p.delegatorAccountId === agent.accountId ||
+          p.recipientAccountId === agent.accountId ||
+          p.distributionTargets?.some(
+            (target) => target.targetAccountId === agent.accountId,
+          )
+        ) {
+          related.add(`permission-${p.id}`);
+        }
+      });
+
+      // Add namespace permissions
+      graphData.permissions.namespace.forEach((p) => {
+        if (
+          p.delegatorAccountId === agent.accountId ||
+          p.recipientAccountId === agent.accountId
+        ) {
+          related.add(`permission-${p.id}`);
+        }
+      });
+
+      // Add signals
+      graphData.signals.forEach((signal) => {
+        if (signal.agentKey === agent.accountId) {
+          related.add(`signal-${signal.id}`);
+        }
+      });
+
+      relationships.set(agent.accountId, related);
+    });
+
+    return relationships;
+  })();
+
+  // Base groups computation
+  const baseGroups = (() => {
     if (!graphData) return [];
 
     return [
@@ -257,7 +332,36 @@ export function PermissionGraphCommand() {
         ),
       },
     ];
-  }, [graphData, getFormattedAddress]);
+  })();
+
+  // Optimize query-based filtering with O(1) lookups
+  const searchGroups = (() => {
+    // If there's a query, try to find the specific agent and show all related items
+    if (query.trim()) {
+      const queryLower = query.toLowerCase();
+      const matchingAgent =
+        agentMaps.byId.get(queryLower) || agentMaps.byName.get(queryLower);
+
+      if (matchingAgent?.accountId) {
+        const relatedItems =
+          agentRelationships.get(matchingAgent.accountId) || new Set();
+
+        // Filter groups to show only the agent and related items
+        return baseGroups
+          .map((group) => ({
+            ...group,
+            items: group.items.filter((item) => {
+              return (
+                item.id === matchingAgent.accountId || relatedItems.has(item.id)
+              );
+            }),
+          }))
+          .filter((group) => group.items.length > 0);
+      }
+    }
+
+    return baseGroups;
+  })();
 
   if (!graphData) {
     return (
