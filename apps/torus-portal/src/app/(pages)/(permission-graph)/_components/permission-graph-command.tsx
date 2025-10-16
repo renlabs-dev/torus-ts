@@ -14,20 +14,95 @@ import { useIsMobile } from "@torus-ts/ui/hooks/use-mobile";
 import { api as trpcApi } from "~/trpc/react";
 import { Check, Package, Radio, Search, Users, Zap } from "lucide-react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import React, { useCallback, useMemo, useState } from "react";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { useGraphData } from "./force-graph/use-graph-data";
+
+interface SearchItem {
+  id: string;
+  displayName: string;
+  subtitle: string;
+  searchText: string;
+}
+
+interface SearchGroup {
+  type: string;
+  icon: React.ComponentType<{ className?: string }>;
+  heading: string;
+  items: SearchItem[];
+}
+
+interface SearchGroupsProps {
+  groups: SearchGroup[];
+  selectedId: string | null;
+  onSelect: (id: string) => void;
+}
+
+function SearchGroups({ groups, selectedId, onSelect }: SearchGroupsProps) {
+  return (
+    <>
+      {groups.map(
+        (group) =>
+          group.items.length > 0 && (
+            <CommandGroup key={group.type} heading={group.heading}>
+              {group.items.map((item) => {
+                const isSelected = selectedId === item.id;
+                return (
+                  <CommandItem
+                    key={item.id}
+                    value={`${item.searchText} ${item.displayName} ${item.subtitle}`}
+                    className="flex max-w-full items-start gap-2 py-2"
+                    onSelect={() => onSelect(item.id)}
+                  >
+                    <group.icon className="mt-0.5 h-3 w-3 shrink-0" />
+                    <div className="min-w-0 flex-1 overflow-hidden">
+                      <div className="flex items-center justify-between">
+                        <span className="truncate text-sm">
+                          {item.displayName}
+                        </span>
+                        {isSelected && (
+                          <Check className="ml-2 h-4 w-4 shrink-0" />
+                        )}
+                      </div>
+                      <div className="text-muted-foreground truncate text-xs">
+                        {item.subtitle}
+                      </div>
+                    </div>
+                  </CommandItem>
+                );
+              })}
+            </CommandGroup>
+          ),
+      )}
+    </>
+  );
+}
 
 export function PermissionGraphCommand() {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const [open, setOpen] = useState(false);
+  const [query, setQuery] = useState("");
   const isMobile = useIsMobile();
   const { graphData } = useGraphData();
+  const commandListRef = useRef<HTMLDivElement>(null);
 
   // Detect current route and parameters using stable pathname
   const is2DView = pathname.includes("2d-hypergraph");
   const selectedId = searchParams.get(is2DView ? "agent" : "id");
+
+  // Reset scroll to top when query changes
+  useEffect(() => {
+    if (commandListRef.current) {
+      commandListRef.current.scrollTop = 0;
+    }
+  }, [query]);
 
   const handleSelect = useCallback(
     (nodeId: string) => {
@@ -90,7 +165,6 @@ export function PermissionGraphCommand() {
     [agentNamesMap],
   );
 
-  // eslint-disable-next-line react-hooks/preserve-manual-memoization
   const searchGroups = useMemo(() => {
     if (!graphData) return [];
 
@@ -210,43 +284,18 @@ export function PermissionGraphCommand() {
 
       <CommandDialog open={open} onOpenChange={setOpen}>
         <DialogTitle className="hidden">{title}</DialogTitle>
-        <CommandInput placeholder={title} />
-        <CommandList>
+        <CommandInput
+          placeholder={title}
+          value={query}
+          onValueChange={setQuery}
+        />
+        <CommandList ref={commandListRef}>
           <CommandEmpty>No results found.</CommandEmpty>
-
-          {searchGroups.map(
-            (group) =>
-              group.items.length > 0 && (
-                <CommandGroup key={group.type} heading={group.heading}>
-                  {group.items.map((item) => {
-                    const isSelected = selectedId === item.id;
-                    return (
-                      <CommandItem
-                        key={item.id}
-                        value={`${item.searchText} ${item.displayName} ${item.subtitle}`}
-                        className="flex max-w-full items-start gap-2 py-2"
-                        onSelect={() => handleSelect(item.id)}
-                      >
-                        <group.icon className="mt-0.5 h-3 w-3 shrink-0" />
-                        <div className="min-w-0 flex-1 overflow-hidden">
-                          <div className="flex items-center justify-between">
-                            <span className="truncate text-sm">
-                              {item.displayName}
-                            </span>
-                            {isSelected && (
-                              <Check className="ml-2 h-4 w-4 shrink-0" />
-                            )}
-                          </div>
-                          <div className="text-muted-foreground truncate text-xs">
-                            {item.subtitle}
-                          </div>
-                        </div>
-                      </CommandItem>
-                    );
-                  })}
-                </CommandGroup>
-              ),
-          )}
+          <SearchGroups
+            groups={searchGroups}
+            selectedId={selectedId}
+            onSelect={handleSelect}
+          />
         </CommandList>
       </CommandDialog>
     </>
