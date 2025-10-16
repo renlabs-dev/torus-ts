@@ -117,6 +117,13 @@ export function PermissionGraphCommand() {
     [router, searchParams, is2DView],
   );
 
+  const handleOpenChange = useCallback((newOpen: boolean) => {
+    setOpen(newOpen);
+    if (!newOpen) {
+      setQuery("");
+    }
+  }, []);
+
   const allAddresses = useMemo(() => {
     if (!graphData) return new Set<string>();
 
@@ -282,7 +289,7 @@ export function PermissionGraphCommand() {
         </span>
       </button>
 
-      <CommandDialog open={open} onOpenChange={setOpen}>
+      <CommandDialog open={open} onOpenChange={handleOpenChange}>
         <DialogTitle className="hidden">{title}</DialogTitle>
         <CommandInput
           placeholder={title}
