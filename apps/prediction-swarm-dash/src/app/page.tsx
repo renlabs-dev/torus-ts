@@ -11,7 +11,7 @@ import { StatsGrid } from "./_components/stats-grid";
 export default function Home() {
   return (
     <main className={cn("animate-fade")}>
-      <Header className="from-background bg-gradient-to-b to-transparent" />
+      <Header className="from-background !absolute bg-gradient-to-b to-transparent" />
       <div className="bg-background relative flex h-[calc(100vh-15rem)] w-full flex-col items-center justify-center">
         <SphereAnimation />
       </div>
