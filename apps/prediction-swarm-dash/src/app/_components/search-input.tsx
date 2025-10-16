@@ -14,7 +14,7 @@ import { useIsMobile } from "@torus-ts/ui/hooks/use-mobile";
 import { cn } from "@torus-ts/ui/lib/utils";
 import { useAgentContributionStatsQuery } from "~/hooks/api/use-agent-contribution-stats-query";
 import { useAgentName } from "~/hooks/api/use-agent-name-query";
-import { useProphetProfilesSearchQuery } from "~/hooks/api/use-prophet-profiles-search-query";
+import { useUsernamesSearchQuery } from "~/hooks/api/use-usernames-search-query";
 import { formatAddress } from "~/lib/api-utils";
 import { Check, SearchIcon, User } from "lucide-react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
@@ -105,9 +105,9 @@ export function SearchInput({
   const { data: statsData, isLoading: statsLoading } =
     useAgentContributionStatsQuery();
 
-  // Search for prophet profiles (only when user has typed >= 3 characters)
-  const { data: prophetProfiles, isLoading: prophetProfilesLoading } =
-    useProphetProfilesSearchQuery(search);
+  // Search for usernames (only when user has typed >= 2 characters)
+  const { data: usernames, isLoading: usernamesLoading } =
+    useUsernamesSearchQuery(search);
 
   // Process agents list
 
@@ -125,7 +125,7 @@ export function SearchInput({
       .sort((a, b) => b.predictions - a.predictions);
   }, [statsData, excludeAgents]);
 
-  const isLoading = statsLoading || (search.length >= 3 && prophetProfilesLoading);
+  const isLoading = statsLoading || (search.length >= 2 && usernamesLoading);
 
   const handleInputClick = () => {
     setShowCommand(true);
@@ -135,17 +135,23 @@ export function SearchInput({
     setShowCommand(true);
   };
 
+  // TODO: Implement add to memory functionality
+  const handleAddToMemory = useCallback(() => {
+    console.log("Adding to memory:", search);
+    // TODO: Implement API call to add prophet to memory, @steinerkelvin
+  }, [search]);
+
   const [selectedAgent, setSelectedAgent] = React.useState<string>(
     pathname === "/agents" ? searchParams.get("agent") || "" : "",
   );
-  const [selectedProphetUsername, setSelectedProphetUsername] = React.useState<string>(
+  const [selectedUsername, setSelectedUsername] = React.useState<string>(
     pathname === "/prophet" ? searchParams.get("username") || "" : "",
   );
 
   const handleAgentChange = useCallback(
     (agentAddress: string) => {
       setSelectedAgent(agentAddress);
-      setSelectedProphetUsername("");
+      setSelectedUsername("");
 
       if (agentAddress) {
         router.push(`/agents?agent=${encodeURIComponent(agentAddress)}`, {
@@ -159,39 +165,35 @@ export function SearchInput({
   );
 
   const { agentName } = useAgentName(selectedAgent);
-  const { data: selectedProphetProfile } = useProphetProfilesSearchQuery(
-    selectedProphetUsername,
-    { enabled: !!selectedProphetUsername },
-  );
 
   React.useEffect(() => {
     if (pathname === "/agents") {
       const agentParam = searchParams.get("agent");
       if (agentParam !== selectedAgent) {
         setSelectedAgent(agentParam || "");
-        setSelectedProphetUsername("");
+        setSelectedUsername("");
       }
     } else if (pathname === "/prophet") {
       const usernameParam = searchParams.get("username");
-      if (usernameParam !== selectedProphetUsername) {
-        setSelectedProphetUsername(usernameParam || "");
+      if (usernameParam !== selectedUsername) {
+        setSelectedUsername(usernameParam || "");
         setSelectedAgent("");
       }
     } else {
       setSelectedAgent("");
-      setSelectedProphetUsername("");
+      setSelectedUsername("");
     }
-  }, [pathname, searchParams, selectedAgent, selectedProphetUsername]);
+  }, [pathname, searchParams, selectedAgent, selectedUsername]);
 
   const effectivePlaceholder = useMemo(() => {
     if (selectedAgent && agentName) {
       return `Selected Agent: ${agentName}`;
     }
-    if (selectedProphetUsername && selectedProphetProfile?.[0]) {
-      return `Selected Account: @${selectedProphetProfile[0].username}`;
+    if (selectedUsername) {
+      return `Selected Account: @${selectedUsername}`;
     }
     return isMobile ? "Search accounts or tickers..." : placeholder;
-  }, [selectedAgent, agentName, selectedProphetUsername, selectedProphetProfile, placeholder, isMobile]);
+  }, [selectedAgent, agentName, selectedUsername, placeholder, isMobile]);
 
   return (
     <>
@@ -206,25 +208,37 @@ export function SearchInput({
             {isLoading ? (
               <div className="flex items-center justify-center gap-2">
                 <LoadingDots size="sm" />
-                <span>Loading agents...</span>
+                <span>Loading agents / prophet accounts...</span>
               </div>
             ) : (
-              "No agents found."
+              <div className="flex flex-col items-center gap-3">
+                <span>No agents or prophet accounts found.</span>
+                {search.length >= 2 && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleAddToMemory}
+                    className="gap-2"
+                  >
+                    Add to Memory
+                  </Button>
+                )}
+              </div>
             )}
           </CommandEmpty>
 
           {!isLoading && (
             <>
-              {/* Prophet Profiles Group */}
-              {prophetProfiles && prophetProfiles.length > 0 && (
+              {/* Twitter Accounts Group */}
+              {usernames && usernames.length > 0 && (
                 <CommandGroup heading="Twitter Accounts">
-                  {prophetProfiles.map((profile) => (
+                  {usernames.map((account) => (
                     <CommandItem
-                      key={profile.id}
-                      value={profile.username}
+                      key={account.username}
+                      value={account.username}
                       onSelect={() => {
                         router.push(
-                          `/prophet?username=${encodeURIComponent(profile.username)}`,
+                          `/prophet?username=${encodeURIComponent(account.username)}`,
                           { scroll: false },
                         );
                         setShowCommand(false);
@@ -235,14 +249,15 @@ export function SearchInput({
                       <div className="flex items-center gap-2">
                         <User className="h-4 w-4" />
                         <div className="flex flex-col">
-                          <span>{profile.display_name}</span>
                           <span className="text-muted-foreground">
-                            @{profile.username}
+                            @{account.username}
                           </span>
                         </div>
                       </div>
                       <div className="text-muted-foreground flex items-center gap-3 text-xs">
-                        <span>{profile.follower_count.toLocaleString()} followers</span>
+                        <span title="Predictions">
+                          {account.predictions_count} predictions
+                        </span>
                       </div>
                     </CommandItem>
                   ))}
