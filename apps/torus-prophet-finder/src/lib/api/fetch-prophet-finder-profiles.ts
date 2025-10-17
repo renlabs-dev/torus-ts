@@ -13,10 +13,26 @@ export interface ProphetFinderProfile {
   last_scraped?: string; // ISO timestamp (optional)
 }
 
+export interface FetchProphetProfilesOptions {
+  limit?: number;
+  offset?: number;
+  twitter_username?: string;
+  signal?: AbortSignal;
+}
+
 export async function fetchProphetFinderProfiles(
-  signal?: AbortSignal,
+  options?: FetchProphetProfilesOptions,
 ): Promise<ProphetFinderProfile[]> {
-  const res = await fetch(PROPHET_FINDER_PROFILES_URL, {
+  const { limit, offset, twitter_username, signal } = options ?? {};
+
+  const params = new URLSearchParams();
+  if (limit !== undefined) params.append("limit", limit.toString());
+  if (offset !== undefined) params.append("offset", offset.toString());
+  if (twitter_username) params.append("twitter_username", twitter_username);
+
+  const url = `${PROPHET_FINDER_PROFILES_URL}${params.toString() ? `?${params.toString()}` : ""}`;
+
+  const res = await fetch(url, {
     method: "GET",
     signal,
   });
