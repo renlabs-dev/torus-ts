@@ -10,6 +10,7 @@ import {
   CommandList,
 } from "@torus-ts/ui/components/command";
 import { DialogTitle } from "@torus-ts/ui/components/dialog";
+import { useDebounce } from "@torus-ts/ui/hooks/use-debounce";
 import { useIsMobile } from "@torus-ts/ui/hooks/use-mobile";
 import { api as trpcApi } from "~/trpc/react";
 import { Check, Package, Radio, Search, Users, Zap } from "lucide-react";
@@ -96,7 +97,8 @@ export function PermissionGraphCommand() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const [open, setOpen] = useState(false);
-  const [query, setQuery] = useState("");
+  const [inputValue, setInputValue] = useState("");
+  const query = useDebounce(inputValue, 500);
   const isMobile = useIsMobile();
   const { graphData } = useGraphData();
   const commandListRef = useRef<HTMLDivElement>(null);
@@ -128,7 +130,7 @@ export function PermissionGraphCommand() {
   const handleOpenChange = useCallback((newOpen: boolean) => {
     setOpen(newOpen);
     if (!newOpen) {
-      setQuery("");
+      setInputValue("");
     }
   }, []);
 
@@ -334,7 +336,7 @@ export function PermissionGraphCommand() {
     ];
   })();
 
-  // Optimize query-based filtering with O(1) lookups
+  // Query-based filtering with O(1) lookups - only executes when query changes due to debounce
   const searchGroups = (() => {
     // If there's a query, try to find the specific agent and show all related items
     if (query.trim()) {
@@ -393,12 +395,16 @@ export function PermissionGraphCommand() {
         </span>
       </button>
 
-      <CommandDialog open={open} onOpenChange={handleOpenChange}>
+      <CommandDialog
+        open={open}
+        onOpenChange={handleOpenChange}
+        shouldFilter={false}
+      >
         <DialogTitle className="hidden">{title}</DialogTitle>
         <CommandInput
           placeholder={title}
-          value={query}
-          onValueChange={setQuery}
+          value={inputValue}
+          onValueChange={setInputValue}
         />
         <CommandList ref={commandListRef}>
           <CommandEmpty>No results found.</CommandEmpty>
