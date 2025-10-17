@@ -98,7 +98,7 @@ export function PermissionGraphCommand() {
   const searchParams = useSearchParams();
   const [open, setOpen] = useState(false);
   const [inputValue, setInputValue] = useState("");
-  const query = useDebounce(inputValue, 500);
+  const query = useDebounce<string>(inputValue, 500);
   const isMobile = useIsMobile();
   const { graphData } = useGraphData();
   const commandListRef = useRef<HTMLDivElement>(null);
