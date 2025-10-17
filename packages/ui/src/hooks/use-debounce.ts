@@ -2,10 +2,10 @@ import { useEffect, useState } from "react";
 
 /**
  * Debounce a value for a given delay.
- * 
+ *
  * @example
  * const debouncedValue = useDebounce(value, 500);
- * 
+ *
  * useEffect(() => {
  *   console.log(debouncedValue);
  * }, [debouncedValue]);
