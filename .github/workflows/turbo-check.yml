@@ -26,6 +26,12 @@ on:
       torus-governance:
         description: "Whether torus-governance changed"
         value: ${{ jobs.run.outputs.torus-governance }}
+      torus-prophet-finder:
+        description: "Whether torus-prophet-finder changed"
+        value: ${{ jobs.run.outputs.torus-prophet-finder }}
+      prediction-swarm-dash:
+        description: "Whether prediction-swarm-dash changed"
+        value: ${{ jobs.run.outputs.prediction-swarm-dash }}
 
 jobs:
   run:
@@ -39,6 +45,8 @@ jobs:
       torus-bridge: ${{ steps.changed.outputs.torus-bridge }}
       torus-worker: ${{ steps.changed.outputs.torus-worker }}
       torus-governance: ${{ steps.changed.outputs.torus-governance }}
+      torus-prophet-finder: ${{ steps.changed.outputs.torus-prophet-finder }}
+      prediction-swarm-dash: ${{ steps.changed.outputs.prediction-swarm-dash }}
     steps:
       - uses: actions/checkout@v4
         with:

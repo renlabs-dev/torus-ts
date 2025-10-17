@@ -195,7 +195,7 @@ export function ConstraintTutorialDialog() {
                   <div>
                     <h4 className="font-medium">Select a Permission</h4>
                     <p className="text-muted-foreground text-sm">
-                      Choose the emission permission you want to add constraints
+                      Choose the stream permission you want to add constraints
                       to from the dropdown
                     </p>
                   </div>

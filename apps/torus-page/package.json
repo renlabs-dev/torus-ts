@@ -20,7 +20,7 @@
     "@torus-ts/env-validation": "workspace:*",
     "@torus-ts/ui": "workspace:*",
     "lucide-react": "catalog:",
-    "motion": "^12.23.12",
+    "motion": "catalog:",
     "next": "catalog:",
     "next-plausible": "catalog:",
     "react": "catalog:react19",

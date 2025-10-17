@@ -152,6 +152,32 @@ jobs:
       app_name: torus-worker
       skip_build: ${{ inputs.skip_build || false }}
 
+  torus-prophet-finder:
+    needs: turbo-check
+    if: |
+      inputs.skip_build ||
+      contains(github.event.head_commit.message, 'skip build') ||
+      (needs.turbo-check.outputs.torus-prophet-finder == 'true' &&
+      (github.ref_name == 'main' || github.ref_name == 'dev' || github.ref_name == 'cicd'))
+    uses: ./.github/workflows/app-deployment-template.yml
+    secrets: inherit
+    with:
+      app_name: torus-prophet-finder
+      skip_build: ${{ inputs.skip_build || false }}
+
+  prediction-swarm-dash:
+    needs: turbo-check
+    if: |
+      inputs.skip_build ||
+      contains(github.event.head_commit.message, 'skip build') ||
+      (needs.turbo-check.outputs.prediction-swarm-dash == 'true' &&
+      (github.ref_name == 'main' || github.ref_name == 'dev' || github.ref_name == 'cicd'))
+    uses: ./.github/workflows/app-deployment-template.yml
+    secrets: inherit
+    with:
+      app_name: prediction-swarm-dash
+      skip_build: ${{ inputs.skip_build || false }}
+
   ###################################
   ######## DRY RUN BUILDS  ##########
   ###################################
@@ -261,6 +287,32 @@ jobs:
     secrets: inherit
     with:
       app_name: torus-worker
+
+  torus-prophet-finder-dry-run:
+    needs: [turbo-check, pr-check]
+    if: |
+      github.ref_name != 'main' &&
+      github.ref_name != 'dev' &&
+      github.ref_name != 'cicd' &&
+      needs.turbo-check.outputs.torus-prophet-finder == 'true' &&
+      needs.pr-check.outputs.pr_exists == 'false'
+    uses: ./.github/workflows/dry-run-build-template.yml
+    secrets: inherit
+    with:
+      app_name: torus-prophet-finder
+
+  prediction-swarm-dash-dry-run:
+    needs: [turbo-check, pr-check]
+    if: |
+      github.ref_name != 'main' &&
+      github.ref_name != 'dev' &&
+      github.ref_name != 'cicd' &&
+      needs.turbo-check.outputs.prediction-swarm-dash == 'true' &&
+      needs.pr-check.outputs.pr_exists == 'false'
+    uses: ./.github/workflows/dry-run-build-template.yml
+    secrets: inherit
+    with:
+      app_name: prediction-swarm-dash
 
   ###################################
   ########### PR PREVIEW ############
@@ -422,6 +474,50 @@ jobs:
       app_name: torus-bridge
       delete: true
 
+  torus-prophet-finder-pr-activate:
+    needs: turbo-check
+    if: |
+      github.event.pull_request.state == 'open' && !github.event.repository.fork
+      && !github.event.pull_request.draft
+      && github.head_ref != 'main' && github.head_ref != 'dev' &&
+      needs.turbo-check.outputs.torus-prophet-finder == 'true'
+    uses: ./.github/workflows/pr-preview-template.yml
+    secrets: inherit
+    with:
+      app_name: torus-prophet-finder
+
+  torus-prophet-finder-pr-delete:
+    if: |
+      github.event.pull_request.state == 'closed'
+      && github.head_ref != 'main' && github.head_ref != 'dev'
+    uses: ./.github/workflows/pr-preview-template.yml
+    secrets: inherit
+    with:
+      app_name: torus-prophet-finder
+      delete: true
+
+  prediction-swarm-dash-pr-activate:
+    needs: turbo-check
+    if: |
+      github.event.pull_request.state == 'open' && !github.event.repository.fork
+      && !github.event.pull_request.draft
+      && github.head_ref != 'main' && github.head_ref != 'dev' &&
+      needs.turbo-check.outputs.prediction-swarm-dash == 'true'
+    uses: ./.github/workflows/pr-preview-template.yml
+    secrets: inherit
+    with:
+      app_name: prediction-swarm-dash
+
+  prediction-swarm-dash-pr-delete:
+    if: |
+      github.event.pull_request.state == 'closed'
+      && github.head_ref != 'main' && github.head_ref != 'dev'
+    uses: ./.github/workflows/pr-preview-template.yml
+    secrets: inherit
+    with:
+      app_name: prediction-swarm-dash
+      delete: true
+
   deployment-summary:
     if: always()
     needs:
@@ -435,6 +531,8 @@ jobs:
         torus-cache,
         torus-governance,
         torus-worker,
+        torus-prophet-finder,
+        prediction-swarm-dash,
         torus-page-dry-run,
         torus-portal-dry-run,
         torus-wallet-dry-run,
@@ -443,6 +541,8 @@ jobs:
         torus-cache-dry-run,
         torus-governance-dry-run,
         torus-worker-dry-run,
+        torus-prophet-finder-dry-run,
+        prediction-swarm-dash-dry-run,
         torus-allocator-pr-activate,
         torus-cache-pr-activate,
         torus-governance-pr-activate,
@@ -450,6 +550,8 @@ jobs:
         torus-portal-pr-activate,
         torus-wallet-pr-activate,
         torus-bridge-pr-activate,
+        torus-prophet-finder-pr-activate,
+        prediction-swarm-dash-pr-activate,
         torus-allocator-pr-delete,
         torus-cache-pr-delete,
         torus-governance-pr-delete,
@@ -457,6 +559,8 @@ jobs:
         torus-portal-pr-delete,
         torus-wallet-pr-delete,
         torus-bridge-pr-delete,
+        torus-prophet-finder-pr-delete,
+        prediction-swarm-dash-pr-delete,
       ]
     runs-on: ubicloud-standard-2
     steps:
@@ -483,7 +587,7 @@ jobs:
           echo "" >> $GITHUB_STEP_SUMMARY
 
           # Define application list
-          apps=(torus-page torus-portal torus-wallet torus-allocator torus-bridge torus-cache torus-governance torus-worker)
+          apps=(torus-page torus-portal torus-wallet torus-allocator torus-bridge torus-cache torus-governance torus-worker torus-prophet-finder prediction-swarm-dash)
 
           # Production/Dev Deployments
           if [ "${{ github.ref_name }}" == "main" ] || [ "${{ github.ref_name }}" == "dev" ] || [ "${{ github.ref_name }}" == "cicd" ]; then
@@ -525,6 +629,14 @@ jobs:
                   changed="${{ needs.turbo-check.outputs.torus-worker }}"
                   deploy_result="${{ needs.torus-worker.result }}"
                   ;;
+                "torus-prophet-finder")
+                  changed="${{ needs.turbo-check.outputs.torus-prophet-finder }}"
+                  deploy_result="${{ needs.torus-prophet-finder.result }}"
+                  ;;
+                "prediction-swarm-dash")
+                  changed="${{ needs.turbo-check.outputs.prediction-swarm-dash }}"
+                  deploy_result="${{ needs.prediction-swarm-dash.result }}"
+                  ;;
               esac
 
               if [ "$changed" == "true" ]; then change_icon="✅"; change_text="Yes"; else change_icon="⏭️"; change_text="No"; fi
@@ -546,7 +658,7 @@ jobs:
             echo "|-------------|--------|-------------|" >> $GITHUB_STEP_SUMMARY
 
             # PR preview apps (subset of all apps)
-            pr_apps=(torus-allocator torus-cache torus-governance torus-page torus-portal torus-wallet torus-bridge)
+            pr_apps=(torus-allocator torus-cache torus-governance torus-page torus-portal torus-wallet torus-bridge torus-prophet-finder prediction-swarm-dash)
 
             for app in "${pr_apps[@]}"; do
               case "$app" in
@@ -577,6 +689,14 @@ jobs:
                 "torus-bridge")
                   activate_result="${{ needs.torus-bridge-pr-activate.result }}"
                   delete_result="${{ needs.torus-bridge-pr-delete.result }}"
+                  ;;
+                "torus-prophet-finder")
+                  activate_result="${{ needs.torus-prophet-finder-pr-activate.result }}"
+                  delete_result="${{ needs.torus-prophet-finder-pr-delete.result }}"
+                  ;;
+                "prediction-swarm-dash")
+                  activate_result="${{ needs.prediction-swarm-dash-pr-activate.result }}"
+                  delete_result="${{ needs.prediction-swarm-dash-pr-delete.result }}"
                   ;;
               esac
 
@@ -624,6 +744,12 @@ jobs:
                   ;;
                 "torus-worker")
                   dry_run_result="${{ needs.torus-worker-dry-run.result }}"
+                  ;;
+                "torus-prophet-finder")
+                  dry_run_result="${{ needs.torus-prophet-finder-dry-run.result }}"
+                  ;;
+                "prediction-swarm-dash")
+                  dry_run_result="${{ needs.prediction-swarm-dash-dry-run.result }}"
                   ;;
               esac
 

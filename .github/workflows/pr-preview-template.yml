@@ -119,6 +119,15 @@ jobs:
             --set environmentName=dev \
             renlabs/utils | kubectl apply -f -
 
+      - name: Set preview domain
+        id: domain
+        run: |
+          if [ "${{ inputs.app_name }}" == "torus-prophet-finder" ]; then
+            echo "host=pr-${{ github.event.number }}.prophetfinder.com" >> $GITHUB_OUTPUT
+          else
+            echo "host=pr-${{ github.event.number }}.${{ inputs.app_name }}.torus.network" >> $GITHUB_OUTPUT
+          fi
+
       - name: Deploy application
         id: deploy
         working-directory: apps/${{ inputs.app_name }}
@@ -126,7 +135,7 @@ jobs:
           helmfile sync -e dev \
           --set deployment.image.tag=${{ steps.commit.outputs.short }}-pr \
           --state-values-set cacheUrl="https://pr-${{ github.event.number }}.torus-cache.torus.network" \
-          --state-values-set ingressHost=pr-${{ github.event.number }}.${{ inputs.app_name }}.torus.network \
+          --state-values-set ingressHost=${{ steps.domain.outputs.host }} \
           --state-values-set releaseName=pr-${{ github.event.number }}-${{ inputs.app_name }} \
           --state-values-set releasePrefix=pr-${{ github.event.number }}-${{ inputs.app_name }}
 
@@ -135,7 +144,7 @@ jobs:
         uses: thollander/actions-comment-pull-request@v3
         with:
           message: |
-            🚀 **${{ inputs.app_name }}** Preview deployment will be available at: https://pr-${{ github.event.number }}.${{ inputs.app_name }}.torus.network
+            🚀 **${{ inputs.app_name }}** Preview deployment will be available at: https://${{ steps.domain.outputs.host }}
           comment-tag: ${{ inputs.app_name }}-preview-url
 
       - name: Generate PR preview deployment summary
@@ -165,7 +174,7 @@ jobs:
           if [ "${{ inputs.hasURL }}" == "true" ]; then
             echo "### 🌐 Application URL" >> $GITHUB_STEP_SUMMARY
             echo "✅ **Application is accessible**" >> $GITHUB_STEP_SUMMARY
-            echo "- **Preview URL:** https://pr-${{ github.event.number }}.${{ inputs.app_name }}.torus.network" >> $GITHUB_STEP_SUMMARY
+            echo "- **Preview URL:** https://${{ steps.domain.outputs.host }}" >> $GITHUB_STEP_SUMMARY
           else
             echo "### 🌐 Application Access" >> $GITHUB_STEP_SUMMARY
             echo "ℹ️ **No public URL configured for this application**" >> $GITHUB_STEP_SUMMARY
@@ -212,6 +221,15 @@ jobs:
             exit $DESTROY_EXIT_CODE
           fi
 
+      - name: Set preview domain for cleanup
+        id: cleanup-domain
+        run: |
+          if [ "${{ inputs.app_name }}" == "torus-prophet-finder" ]; then
+            echo "host=pr-${{ github.event.number }}.prophetfinder.com" >> $GITHUB_OUTPUT
+          else
+            echo "host=pr-${{ github.event.number }}.${{ inputs.app_name }}.torus.network" >> $GITHUB_OUTPUT
+          fi
+
       - name: Generate PR preview cleanup summary
         if: always()
         run: |
@@ -227,7 +245,7 @@ jobs:
             echo "" >> $GITHUB_STEP_SUMMARY
             echo "- **Status:** Resources deleted" >> $GITHUB_STEP_SUMMARY
             echo "- **Release:** \`pr-${{ github.event.number }}-${{ inputs.app_name }}\` removed" >> $GITHUB_STEP_SUMMARY
-            echo "- **URL:** https://pr-${{ github.event.number }}.${{ inputs.app_name }}.torus.network (no longer accessible)" >> $GITHUB_STEP_SUMMARY
+            echo "- **URL:** https://${{ steps.cleanup-domain.outputs.host }} (no longer accessible)" >> $GITHUB_STEP_SUMMARY
           else
             echo "❌ **PR preview cleanup failed**" >> $GITHUB_STEP_SUMMARY
             echo "" >> $GITHUB_STEP_SUMMARY

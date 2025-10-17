@@ -5,6 +5,7 @@ import Link from "next/link";
 
 interface HeaderProps {
   appName: string;
+  className?: string;
   wallet?: React.ReactNode;
 }
 
@@ -12,6 +13,7 @@ export function Header(props: Readonly<HeaderProps>) {
   return (
     <header
       className={cn(
+        props.className,
         "fixed z-[70] flex w-full animate-fade-down items-center justify-between border-b border-border bg-accent py-1 pl-4 pr-2",
       )}
     >

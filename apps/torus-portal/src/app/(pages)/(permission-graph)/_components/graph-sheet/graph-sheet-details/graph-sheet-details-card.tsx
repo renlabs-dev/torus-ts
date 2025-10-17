@@ -327,10 +327,10 @@ export function NodeDetailsCard({
             </div>
           )}
 
-          {/* Emissions section */}
+          {/* Stream section */}
           {permissions.some((p) => p.details?.emission_permissions) && (
             <div>
-              <div className="mb-2 px-2 text-sm text-gray-400">Emissions</div>
+              <div className="mb-2 px-2 text-sm text-gray-400">Streams</div>
               <div className="border-l-2 border-green-500/30 pl-2">
                 {permissions
                   .filter((p) => p.details?.emission_permissions)
@@ -345,7 +345,7 @@ export function NodeDetailsCard({
                           <div className="flex items-center justify-between">
                             <span className="font-medium text-white">
                               {details?.emission_permissions
-                                ? "Emission permission"
+                                ? "Stream permission"
                                 : "Permission"}
                             </span>
                           </div>

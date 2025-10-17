@@ -1,0 +1,262 @@
+"use client";
+
+import type { SS58Address } from "@torus-network/sdk/types";
+import { useBalance } from "@torus-ts/query-provider/hooks";
+import { useTorus } from "@torus-ts/torus-provider";
+import { useToast } from "@torus-ts/ui/hooks/use-toast";
+import AddProphetForm from "~/app/_components/cards/add-prophet-form";
+import CardsBorderGlow from "~/app/_components/cards/cards-border-glow";
+import CardsHeader from "~/app/_components/cards/cards-header";
+import CardsRaysBackground from "~/app/_components/cards/cards-rays-background";
+import TextureFilters from "~/app/_components/cards/effects/texture-filters";
+// import EntityModeToggle from "~/app/_components/cards/entity-mode-toggle";
+import type { EntityMode } from "~/app/_components/cards/entity-mode-toggle";
+// import AddTickerForm from "~/app/_components/cards/add-ticker-form";
+import InfiniteCardsGrid from "~/app/_components/cards/infinite-cards-grid";
+import SearchInput from "~/app/_components/cards/search-input";
+// import TickersGrid from "~/app/_components/cards/tickers-grid";
+import { useProphets } from "~/app/_components/cards/use-prophets";
+// import { useTickers } from "~/app/_components/cards/use-tickers";
+import StarfieldBackground from "~/app/_components/effects/starfield-background";
+import { useSubmitProphetTask } from "~/hooks/use-submit-prophet-task";
+import * as React from "react";
+
+export default function CardsSection() {
+  const STAKE_REQUIRED_MSG = "You must have staked balance present.";
+  const { validateProphet } = useProphets();
+  // const { tickers, addTicker } = useTickers();
+  const { api, selectedAccount } = useTorus();
+  const { submit: submitProphetTask } = useSubmitProphetTask();
+  const { toast } = useToast();
+  const accountBalance = useBalance(
+    api,
+    selectedAccount?.address as SS58Address,
+  );
+  const hasStake = React.useMemo(() => {
+    const staked = accountBalance.data?.staked ?? 0n;
+    return staked > 0n;
+  }, [accountBalance.data?.staked]);
+  const showStakeWarning =
+    selectedAccount != null && accountBalance.isFetching === false && !hasStake;
+  const [query, setQuery] = React.useState("");
+  const mode: EntityMode = "prophets"; // Fixed to prophets only
+  const [uiError, setUiError] = React.useState<string | null>(null);
+
+  const handleAddProphet = React.useCallback(
+    async (raw: string) => {
+      if (!hasStake) {
+        setUiError(STAKE_REQUIRED_MSG);
+        toast.error(STAKE_REQUIRED_MSG);
+        return STAKE_REQUIRED_MSG;
+      }
+
+      // Validate the handle first
+      const validation = validateProphet(raw);
+      if (validation.error) {
+        setUiError(validation.error);
+        toast.error(validation.error);
+        return validation.error;
+      }
+
+      const normalizedUsername =
+        validation.core || raw.replace(/^@/, "").trim();
+
+      // Show loading toast
+      const toastId = toast.loading(`Adding @${normalizedUsername}...`);
+
+      // Submit the task
+      try {
+        await submitProphetTask(normalizedUsername);
+
+        // Dismiss loading toast
+        toast.dismiss(toastId);
+
+        setUiError(null);
+        toast.success(
+          `@${normalizedUsername} added successfully! The swarm is now learning.`,
+        );
+        return null;
+      } catch (error) {
+        toast.dismiss(toastId);
+        const errorMsg =
+          error instanceof Error ? error.message : "Failed to submit task";
+
+        // Check for permission error
+        if (errorMsg.includes("doesn't have any of the expected permissions")) {
+          const permissionError =
+            "Your wallet doesn't have permission to add prophets. Please contact support.";
+          setUiError(permissionError);
+          toast.error(permissionError);
+          return permissionError;
+        }
+
+        setUiError(errorMsg);
+        toast.error(`Failed to add prophet: ${errorMsg}`);
+        return errorMsg;
+      }
+    },
+    [validateProphet, hasStake, submitProphetTask, toast],
+  );
+
+  // const handleAddTicker = React.useCallback(
+  //   (raw: string) => {
+  //     if (!hasStake) {
+  //       setUiError(STAKE_REQUIRED_MSG);
+  //       return STAKE_REQUIRED_MSG;
+  //     }
+  //     const err = addTicker(raw).error ?? null;
+  //     setUiError(err);
+  //     return err;
+  //   },
+  //   [addTicker, hasStake],
+  // );
+
+  // const handleModeChange = React.useCallback(
+  //   (next: EntityMode) => {
+  //     if (next === mode) return;
+  //     if (isOverlayVisible) return; // prevent re-entrancy during transition
+  //     // Begin fade-through-black transition
+  //     setOverlayVisible(true);
+  //     // ensure transition kicks in
+  //     requestAnimationFrame(() => setOverlayOpaque(true));
+  //     const t1 = window.setTimeout(() => {
+  //       setMode(next); // switch content while covered
+  //       setOverlayOpaque(false);
+  //       const t2 = window.setTimeout(() => setOverlayVisible(false), 220);
+  //       timeouts.current.push(t2);
+  //     }, 220);
+  //     timeouts.current.push(t1);
+  //   },
+  //   [mode, isOverlayVisible],
+  // );
+
+  // React.useEffect(() => {
+  //   return () => {
+  //     timeouts.current.forEach((id) => window.clearTimeout(id));
+  //     timeouts.current = [];
+  //   };
+  // }, []);
+
+  return (
+    <section
+      id="content"
+      className="relative w-full overflow-hidden py-12 sm:py-16 md:py-20"
+    >
+      <TextureFilters />
+      <StarfieldBackground />
+      {/* Central godrays background and extremely subtle border glow */}
+      <CardsRaysBackground />
+      <CardsBorderGlow />
+      {/* Exact mirror of hero bottom shadow at the top */}
+      <div className="pointer-events-none absolute inset-x-0 top-0 z-[16] h-24 bg-gradient-to-b from-black/60 via-black/20 to-transparent" />
+      <div className="pointer-events-none absolute inset-0 z-0 bg-black/60" />
+      <div className="relative z-20 mx-auto w-full max-w-6xl px-6 sm:px-8 md:px-10">
+        <CardsHeader mode={mode} />
+
+        {/* <div className="flex flex-wrap items-center justify-center gap-4">
+          <EntityModeToggle mode={mode} onChange={handleModeChange} />
+        </div> */}
+
+        <div className="relative mb-6 mt-5 flex flex-wrap items-center gap-3 sm:mb-8 md:mb-10">
+          {(uiError != null || showStakeWarning) && (
+            <div
+              aria-live="polite"
+              className="pointer-events-none absolute -top-5 right-0 text-[11px] font-medium text-red-300/90"
+            >
+              {uiError ?? STAKE_REQUIRED_MSG}
+            </div>
+          )}
+          <SearchInput
+            value={query}
+            onChange={setQuery}
+            id="prophet-search"
+            label="Type a prophet handle to search"
+            placeholder="Type a prophet handle (e.g., @satoshi) to add…"
+          />
+          <AddProphetForm
+            onAdd={handleAddProphet}
+            suppressErrorMessage={() => true}
+            searchValue={query}
+          />
+          {/* {mode === "prophets" ? (
+            <>
+              <SearchInput
+                value={query}
+                onChange={setQuery}
+                id="prophet-search"
+                label="Search prophets by name"
+                placeholder="Search prophets by name…"
+              />
+              <AddProphetForm
+                onAdd={handleAddProphet}
+                suppressErrorMessage={() => true}
+                searchValue={query}
+              />
+            </>
+          ) : (
+            <>
+              <SearchInput
+                value={query}
+                onChange={setQuery}
+                id="ticker-search"
+                label="Search tickers by symbol"
+                placeholder="Search tickers (e.g., BTC, ETH)…"
+              />
+              <AddTickerForm
+                onAdd={handleAddTicker}
+                suppressErrorMessage={() => true}
+              />
+            </>
+          )} */}
+        </div>
+
+        <div className="relative">
+          <InfiniteCardsGrid
+            search={query}
+            onAddProphet={handleAddProphet}
+            validateProphet={validateProphet}
+          />
+          {/* {mode === "prophets" ? (
+            <StableHeight
+              locked={filteredProphets.length === 0}
+              minEmptyPx={640}
+              className="min-h-[40vh]"
+            >
+              {filteredProphets.length > 0 ? (
+                <CardsGrid prophets={filteredProphets} />
+              ) : (
+                <EmptyState
+                  title="No prophets match your search"
+                  hint="Try a different name or clear the search."
+                />
+              )}
+            </StableHeight>
+          ) : (
+            <StableHeight
+              locked={filteredTickers.length === 0}
+              minEmptyPx={640}
+              className="min-h-[40vh]"
+            >
+              {filteredTickers.length > 0 ? (
+                <TickersGrid tickers={filteredTickers} />
+              ) : (
+                <EmptyState
+                  title="No tickers match your search"
+                  hint="Try BTC, ETH, SOL… or clear the search."
+                />
+              )}
+            </StableHeight>
+          )} */}
+        </div>
+      </div>
+      {/* {isOverlayVisible && (
+        <div
+          aria-hidden
+          className={`pointer-events-none absolute inset-0 z-50 bg-black transition-opacity duration-200 ease-out ${
+            isOverlayOpaque ? "opacity-100" : "opacity-0"
+          }`}
+        />
+      )} */}
+    </section>
+  );
+}

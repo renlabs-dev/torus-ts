@@ -14,7 +14,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@hookform/resolvers": "^3.9.1",
+    "@hookform/resolvers": "catalog:",
     "@next/third-parties": "catalog:",
     "@react-three/drei": "catalog:",
     "@react-three/fiber": "catalog:",
@@ -38,7 +38,7 @@
     "next-plausible": "catalog:",
     "react": "catalog:react19",
     "react-dom": "catalog:react19",
-    "react-hook-form": "^7.53.2",
+    "react-hook-form": "catalog:",
     "rustie": "catalog:",
     "superjson": "catalog:",
     "three": "catalog:",

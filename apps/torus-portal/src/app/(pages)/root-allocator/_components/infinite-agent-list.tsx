@@ -2,8 +2,8 @@
 
 import type { RouterOutputs } from "@torus-ts/api";
 import { AgentItemSkeleton } from "@torus-ts/ui/components/agent-card/agent-card-skeleton-loader";
+import { InfiniteList } from "@torus-ts/ui/components/infinite-list";
 import { api } from "~/trpc/react";
-import { useEffect, useRef } from "react";
 import { AgentCard } from "./agent-card";
 
 type InfiniteAgentData = RouterOutputs["agent"]["infinite"];
@@ -44,100 +44,45 @@ export function InfiniteAgentList({
     },
   );
 
-  const loadMoreRef = useRef<HTMLDivElement>(null);
-
-  // Intersection Observer for infinite scroll
-  useEffect(() => {
-    if (!hasNextPage || isFetchingNextPage) return;
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0]?.isIntersecting) {
-          void fetchNextPage();
-        }
-      },
-      {
-        rootMargin: "100px", // Load more when user is 100px from the bottom
-      },
-    );
-
-    const currentRef = loadMoreRef.current;
-    if (currentRef) {
-      observer.observe(currentRef);
-    }
-
-    return () => {
-      if (currentRef) {
-        observer.unobserve(currentRef);
-      }
-    };
-  }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
-
-  if (isLoading) {
-    return (
-      <div className="flex w-full flex-col">
-        <div className="grid w-full grid-cols-1 gap-3 lg:grid-cols-2 xl:grid-cols-3">
-          {Array.from({ length: 9 }).map((_, i) => (
-            <AgentItemSkeleton key={i} />
-          ))}
-        </div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="flex w-full justify-center py-8">
-        <p className="text-red-500">Error loading agents: {error.message}</p>
-      </div>
-    );
-  }
-
   const agents: AgentType[] =
     data?.pages.flatMap((page: InfiniteAgentData) => page.agents) ?? [];
 
-  if (agents.length === 0) {
-    return (
-      <div className="flex w-full justify-center py-8">
-        <p className="text-zinc-400">No agents found.</p>
-      </div>
-    );
-  }
-
   return (
-    <div className="flex w-full flex-col">
-      <div className="grid w-full grid-cols-1 gap-3 lg:grid-cols-2 xl:grid-cols-3">
-        {agents.map((agent: AgentType, index: number) => (
-          <AgentCard
-            id={agent.id}
-            key={`${agent.id}-${agent.key}-${index}`}
-            name={agent.name ?? "<MISSING_NAME>"}
-            agentKey={agent.key}
-            metadataUri={agent.metadataUri}
-            weightFactor={agent.weightFactor}
-            registrationBlock={agent.registrationBlock}
-            percComputedWeight={agent.percComputedWeight}
-            isWhitelisted={agent.isWhitelisted ?? false}
-          />
-        ))}
-      </div>
-
-      {/* Load more trigger */}
-      {isFetchingNextPage && (
-        <div className="mt-3 grid w-full grid-cols-1 gap-3 lg:grid-cols-2 xl:grid-cols-3">
-          {Array.from({ length: 3 }).map((_, i) => (
-            <AgentItemSkeleton key={i} />
-          ))}
+    <InfiniteList
+      items={agents}
+      renderItem={(agent: AgentType) => (
+        <AgentCard
+          id={agent.id}
+          name={agent.name ?? "<MISSING_NAME>"}
+          agentKey={agent.key}
+          metadataUri={agent.metadataUri}
+          weightFactor={agent.weightFactor}
+          registrationBlock={agent.registrationBlock}
+          percComputedWeight={agent.percComputedWeight}
+          isWhitelisted={agent.isWhitelisted ?? false}
+        />
+      )}
+      getItemKey={(agent: AgentType, index: number) =>
+        `${agent.id}-${agent.key}-${index}`
+      }
+      hasNextPage={hasNextPage}
+      isFetchingNextPage={isFetchingNextPage}
+      isLoading={isLoading}
+      fetchNextPage={() => void fetchNextPage()}
+      error={error ? new Error(error.message) : null}
+      gridClassName="grid-cols-1 lg:grid-cols-2 xl:grid-cols-3"
+      skeletonComponent={<AgentItemSkeleton />}
+      skeletonCount={9}
+      emptyComponent={
+        <div className="flex w-full justify-center py-8">
+          <p className="text-zinc-400">No agents found.</p>
+        </div>
+      }
+      errorComponent={(err) => (
+        <div className="flex w-full justify-center py-8">
+          <p className="text-red-500">Error loading agents: {err.message}</p>
         </div>
       )}
-
-      <div ref={loadMoreRef} className="py-4">
-        {!hasNextPage && agents.length > 0 && (
-          <div className="flex justify-center">
-            <p className="text-zinc-400">You've reached the end</p>
-          </div>
-        )}
-      </div>
-    </div>
+    />
   );
 }

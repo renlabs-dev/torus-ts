@@ -17,13 +17,13 @@ export function CreatePermissionTabs({ children }: CreatePermissionTabsProps) {
   const router = useRouter();
 
   // Determine active tab based on pathname
-  const activeTab = pathname.includes("/emission") ? "emission" : "capability";
+  const activeTab = pathname.includes("/stream") ? "stream" : "capability";
 
   const handleTabChange = (value: string) => {
     if (value === "capability") {
       router.push("/permissions/create-permission/capability");
     } else {
-      router.push("/permissions/create-permission/emission");
+      router.push("/permissions/create-permission/stream");
     }
   };
 
@@ -31,7 +31,7 @@ export function CreatePermissionTabs({ children }: CreatePermissionTabsProps) {
     <Tabs value={activeTab} onValueChange={handleTabChange} className="mt-6">
       <TabsList className="grid w-full grid-cols-2">
         <TabsTrigger value="capability">Capability</TabsTrigger>
-        <TabsTrigger value="emission">Emission</TabsTrigger>
+        <TabsTrigger value="stream">Stream</TabsTrigger>
       </TabsList>
 
       <TabsContent value={activeTab} className="mt-6">
