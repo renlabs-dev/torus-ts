@@ -3,6 +3,7 @@ import {
   agentApplicationVoteSchema,
   agentDemandSignalSchema,
   agentReportSchema,
+  askTorusUsageSchema,
   cadreCandidateSchema,
   cadreVoteSchema,
   commentInteractionSchema,

@@ -29,8 +29,7 @@ export function useUsernamesSearchQuery(
 ) {
   return useQuery({
     queryKey: ["usernames-search", searchTerm],
-    queryFn: () =>
-      fetchUsernames({ twitter_username: searchTerm || null }),
+    queryFn: () => fetchUsernames({ twitter_username: searchTerm || null }),
     enabled: (options.enabled ?? true) && searchTerm.length >= 2,
     staleTime: 30 * 1000, // 30 seconds
   });

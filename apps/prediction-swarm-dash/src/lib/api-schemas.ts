@@ -129,7 +129,9 @@ export const usernameWithCountSchema = z.object({
   predictions_count: z.number().int().min(0),
 });
 
-export const usernamesWithCountsResponseSchema = z.array(usernameWithCountSchema);
+export const usernamesWithCountsResponseSchema = z.array(
+  usernameWithCountSchema,
+);
 
 export const usernamesListParamsSchema = z.object({
   twitter_username: z.string().nullable().optional(),
@@ -296,12 +298,16 @@ export type Prediction = z.infer<typeof predictionSchema>;
 export type PredictionsResponse = z.infer<typeof predictionsResponseSchema>;
 export type PredictionsListParams = z.infer<typeof predictionsListParamsSchema>;
 export type UsernameWithCount = z.infer<typeof usernameWithCountSchema>;
-export type UsernamesWithCountsResponse = z.infer<typeof usernamesWithCountsResponseSchema>;
+export type UsernamesWithCountsResponse = z.infer<
+  typeof usernamesWithCountsResponseSchema
+>;
 export type UsernamesListParams = z.infer<typeof usernamesListParamsSchema>;
 
 // Prophet Finder types
 export type ProphetProfile = z.infer<typeof prophetProfileSchema>;
-export type ProphetProfilesResponse = z.infer<typeof prophetProfilesResponseSchema>;
+export type ProphetProfilesResponse = z.infer<
+  typeof prophetProfilesResponseSchema
+>;
 export type ProphetProfilesParams = z.infer<typeof prophetProfilesParamsSchema>;
 
 // Verification types
