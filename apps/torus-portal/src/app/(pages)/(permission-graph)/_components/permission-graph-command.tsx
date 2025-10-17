@@ -183,7 +183,7 @@ export function PermissionGraphCommand() {
   );
 
   // Pre-compute agent lookup maps for O(1) search
-  const agentMaps = (() => {
+  const agentMaps = useMemo(() => {
     if (!graphData)
       return {
         byId: new Map<string, GraphAgent>(),
@@ -201,10 +201,10 @@ export function PermissionGraphCommand() {
     });
 
     return { byId, byName };
-  })();
+  }, [graphData]);
 
   // Pre-compute agent relationships for O(1) lookup
-  const agentRelationships = (() => {
+  const agentRelationships = useMemo(() => {
     if (!graphData) return new Map<string, Set<string>>();
 
     const relationships = new Map<string, Set<string>>();
@@ -246,10 +246,10 @@ export function PermissionGraphCommand() {
     });
 
     return relationships;
-  })();
+  }, [graphData]);
 
   // Base groups computation
-  const baseGroups = (() => {
+  const baseGroups = useMemo(() => {
     if (!graphData) return [];
 
     return [
@@ -334,10 +334,10 @@ export function PermissionGraphCommand() {
         ),
       },
     ];
-  })();
+  }, [graphData, getFormattedAddress]);
 
   // Query-based filtering with O(1) lookups - only executes when query changes due to debounce
-  const searchGroups = (() => {
+  const searchGroups = useMemo(() => {
     // If there's a query, try to find the specific agent and show all related items
     if (query.trim()) {
       const queryLower = query.toLowerCase();
@@ -363,7 +363,7 @@ export function PermissionGraphCommand() {
     }
 
     return baseGroups;
-  })();
+  }, [query, agentMaps, agentRelationships, baseGroups]);
 
   if (!graphData) {
     return (
