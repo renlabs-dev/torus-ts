@@ -486,7 +486,6 @@ export function AgentHistoryViewer({
     },
   );
 
-  // eslint-disable-next-line react-hooks/preserve-manual-memoization
   const sortedData = useMemo(() => {
     // Apply client-side filtering
     const filtered = data.filter((item) => {

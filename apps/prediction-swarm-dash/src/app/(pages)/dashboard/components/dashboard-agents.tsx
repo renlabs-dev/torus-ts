@@ -83,7 +83,7 @@ export function DashboardAgents({ timeWindow }: DashboardAgentsProps) {
   const [filter, setFilter] = useState<MetricFilter>("all");
 
   // Sort agents based on selected filter
-  // eslint-disable-next-line react-hooks/preserve-manual-memoization
+
   const topAgents = useMemo(() => {
     if (!data?.agent_contribution_stats) return [];
 
