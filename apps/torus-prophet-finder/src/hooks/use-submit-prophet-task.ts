@@ -46,6 +46,11 @@ export function useSubmitProphetTask(): SubmitProphetTaskResult {
           value: username,
         });
 
+        await client.tasks.createTask({
+          task_type: "FindAllPredictionsOfUser",
+          value: username,
+        });
+
         setSuccess(true);
       } catch (err) {
         const message =
