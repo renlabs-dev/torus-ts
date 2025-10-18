@@ -7,13 +7,7 @@ import {
   AccordionTrigger,
 } from "@torus-ts/ui/components/accordion";
 import { Badge } from "@torus-ts/ui/components/badge";
-import { Button } from "@torus-ts/ui/components/button";
 import { Card, CardContent } from "@torus-ts/ui/components/card";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@torus-ts/ui/components/popover";
 import { Separator } from "@torus-ts/ui/components/separator";
 import {
   Tabs,
@@ -26,7 +20,7 @@ import { RelativeTime } from "~/app/_components/relative-time";
 import { useAgentName } from "~/hooks/api/use-agent-name-query";
 import { usePredictionsListQuery } from "~/hooks/api/use-predictions-list-query";
 import type { Prediction, PredictionsListParams } from "~/lib/api-schemas";
-import { CircleSlash2, ExternalLink, Gavel } from "lucide-react";
+import { ExternalLink, Gavel } from "lucide-react";
 import Link from "next/link";
 import { useMemo } from "react";
 
@@ -84,42 +78,6 @@ function PredictionCard({ prediction }: { prediction: Prediction }) {
           <Badge className="text-xs sm:text-sm" variant="outline">
             {prediction.topic || "General"}
           </Badge>
-
-          {/* Verdict Indicator */}
-          {prediction.verification_verdict &&
-          typeof prediction.verification_verdict === "object" &&
-          "reasoning" in prediction.verification_verdict &&
-          prediction.verification_verdict.reasoning ? (
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="h-8 cursor-pointer gap-1 border-purple-600 text-xs text-purple-600 hover:bg-purple-600/20 hover:text-purple-600 sm:text-sm"
-                >
-                  <Gavel className="h-2.5 w-2.5" />
-                  <span className="text-xs">View Verdict</span>
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-80">
-                <div className="space-y-2">
-                  <h4 className="font-medium">Verification Verdict</h4>
-                  <p className="text-muted-foreground text-sm">
-                    {typeof prediction.verification_verdict.reasoning ===
-                    "string"
-                      ? prediction.verification_verdict.reasoning
-                      : ""}
-                  </p>
-                </div>
-              </PopoverContent>
-            </Popover>
-          ) : (
-            <div className="text-muted-foreground flex items-center gap-1">
-              <CircleSlash2 className="h-3 w-3" />
-              <span className="text-xs">No Verdict</span>
-            </div>
-          )}
-
           <span>#{prediction.id}</span>
           <span>·</span>
           <span>
@@ -183,6 +141,35 @@ function PredictionCard({ prediction }: { prediction: Prediction }) {
             </AccordionItem>
           </Accordion>
         )}
+
+        {/* Verdict Section */}
+        {prediction.verification_verdict &&
+        typeof prediction.verification_verdict === "object" &&
+        "reasoning" in prediction.verification_verdict &&
+        prediction.verification_verdict.reasoning ? (
+          <Accordion
+            type="single"
+            collapsible
+            defaultValue="verdict"
+            className="w-full"
+          >
+            <AccordionItem value="verdict" className="border-none">
+              <AccordionTrigger className="rounded border border-purple-600/40 bg-purple-600/5 px-3 py-2 text-sm font-medium text-purple-600 hover:bg-purple-600/10 hover:text-purple-600 hover:no-underline">
+                <div className="flex items-center gap-2">
+                  <Gavel className="h-3.5 w-3.5" />
+                  <span>Verification Verdict</span>
+                </div>
+              </AccordionTrigger>
+              <AccordionContent className="pt-2">
+                <div className="text-muted-foreground rounded border border-purple-600/40 bg-purple-600/5 p-3 text-sm leading-relaxed">
+                  {typeof prediction.verification_verdict.reasoning === "string"
+                    ? prediction.verification_verdict.reasoning
+                    : ""}
+                </div>
+              </AccordionContent>
+            </AccordionItem>
+          </Accordion>
+        ) : null}
       </div>
     </div>
   );
