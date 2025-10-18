@@ -72,6 +72,7 @@
     "./components/*": "./src/components/*.tsx",
     "./hooks/use-mobile": "./src/hooks/use-mobile.ts",
     "./hooks/use-toast": "./src/hooks/use-toast.ts",
-    "./hooks/use-infinite-scroll": "./src/hooks/use-infinite-scroll.tsx"
+    "./hooks/use-infinite-scroll": "./src/hooks/use-infinite-scroll.tsx",
+    "./hooks/use-debounce": "./src/hooks/use-debounce.ts"
   }
 }
