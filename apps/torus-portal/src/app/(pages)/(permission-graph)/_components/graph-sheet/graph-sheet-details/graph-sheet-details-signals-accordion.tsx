@@ -21,7 +21,6 @@ export function GraphSheetDetailsSignalsAccordion({
 }: SignalsAccordionProps) {
   const { data: allSignals, isLoading } = api.signal.all.useQuery();
 
-  // eslint-disable-next-line react-hooks/preserve-manual-memoization
   const nodeSignals = useMemo(() => {
     if (!allSignals || !selectedNode?.id) return [];
 

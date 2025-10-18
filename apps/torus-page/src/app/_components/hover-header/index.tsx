@@ -4,7 +4,7 @@ import { Icons } from "@torus-ts/ui/components/icons";
 import { cn } from "@torus-ts/ui/lib/utils";
 import type { Variants } from "motion/react";
 import { AnimatePresence, motion } from "motion/react";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ANIMATIONS } from "./_components/data";
 import { ButtonsSection } from "./_components/desktop/buttons-section";
 import { LinesSVG } from "./_components/desktop/lines-svg";
@@ -22,18 +22,15 @@ export function HoverHeader() {
 
   const [isExpanded, setIsExpanded] = useState(false);
 
-  const calculateDistance = (
-    x1: number,
-    y1: number,
-    x2: number,
-    y2: number,
-  ): number => {
-    return Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
-  };
+  const calculateDistance = useCallback(
+    (x1: number, y1: number, x2: number, y2: number): number => {
+      return Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
+    },
+    [],
+  );
 
-  useEffect(() => {
-    const handleMouseMove = (event: MouseEvent) => {
-      // Calculate glow size here where ref access is safe
+  const handleMouseMove = useCallback(
+    (event: MouseEvent) => {
       const logoRect = contentRef.current?.getBoundingClientRect();
       if (!logoRect) {
         setGlowSize(0.8);
@@ -55,36 +52,42 @@ export function HoverHeader() {
 
       const scale = 0.15 + (maxDistance - distance) / maxDistance;
       setGlowSize(scale / 1.2);
-    };
+    },
+    [calculateDistance],
+  );
 
+  useEffect(() => {
     window.addEventListener("mousemove", handleMouseMove);
 
     return () => {
       window.removeEventListener("mousemove", handleMouseMove);
     };
+  }, [handleMouseMove]);
+
+  const glowVariants = useMemo(
+    () => ({
+      pulse: (scale: number) => ({
+        scale: [scale, scale * 1.2, scale],
+        transition: {
+          duration: 2,
+          repeat: Infinity,
+          ease: "easeInOut",
+        },
+      }),
+    }),
+    [],
+  );
+
+  const handleClickOutside = useCallback((event: MouseEvent) => {
+    if (
+      contentRef.current &&
+      !contentRef.current.contains(event.target as Node)
+    ) {
+      setIsVisible(false);
+    }
   }, []);
 
-  const glowVariants = {
-    pulse: (scale: number) => ({
-      scale: [scale, scale * 1.2, scale],
-      transition: {
-        duration: 2,
-        repeat: Infinity,
-        ease: "easeInOut",
-      },
-    }),
-  };
-
   useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (
-        contentRef.current &&
-        !contentRef.current.contains(event.target as Node)
-      ) {
-        setIsVisible(false);
-      }
-    };
-
     if (isVisible) {
       document.addEventListener("mousedown", handleClickOutside);
     }
@@ -92,7 +95,7 @@ export function HoverHeader() {
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
-  }, [isVisible]);
+  }, [isVisible, handleClickOutside]);
 
   return (
     <>

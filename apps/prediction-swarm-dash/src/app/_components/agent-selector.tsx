@@ -115,7 +115,7 @@ export function AgentSelector({
     useAgentContributionStatsQuery();
 
   // Process agents list (without names for now)
-  // eslint-disable-next-line react-hooks/preserve-manual-memoization
+
   const agents = useMemo(() => {
     if (!statsData?.agent_contribution_stats) return [];
 

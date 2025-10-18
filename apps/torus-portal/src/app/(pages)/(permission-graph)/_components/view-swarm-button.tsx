@@ -24,7 +24,7 @@ export function ViewSwarmButton({
   const router = useRouter();
 
   // Find which swarm this node belongs to
-  // eslint-disable-next-line react-hooks/preserve-manual-memoization
+
   const nodeSwarm = useMemo(() => {
     if (!graphData) return null;
 

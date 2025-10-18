@@ -105,7 +105,7 @@ export function SearchInput({
     useAgentContributionStatsQuery();
 
   // Process agents list
-  // eslint-disable-next-line react-hooks/preserve-manual-memoization
+
   const agents = useMemo(() => {
     if (!statsData?.agent_contribution_stats) return [];
 
