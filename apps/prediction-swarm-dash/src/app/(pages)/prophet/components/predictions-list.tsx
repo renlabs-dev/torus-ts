@@ -29,6 +29,37 @@ interface PredictionsListProps {
   searchFilters?: Omit<PredictionsListParams, "agent_address">;
 }
 
+// Categorize a prediction based on its claims (mutually exclusive)
+export function categorizePrediction(
+  prediction: Prediction,
+): "true" | "false" | "unmatured" {
+  const claims = prediction.verification_claims;
+
+  // If no claims, it's unmatured
+  if (claims.length === 0) {
+    return "unmatured";
+  }
+
+  // Check if ANY claim is MaturedTrue (takes priority)
+  const hasTrueClaim = claims.some(
+    (c: { outcome: string }) => c.outcome === "MaturedTrue",
+  );
+  if (hasTrueClaim) {
+    return "true";
+  }
+
+  // Check if ANY claim is MaturedFalse
+  const hasFalseClaim = claims.some(
+    (c: { outcome: string }) => c.outcome === "MaturedFalse",
+  );
+  if (hasFalseClaim) {
+    return "false";
+  }
+
+  // All other cases (NotMatured, Invalid, etc.) are unmatured
+  return "unmatured";
+}
+
 // Format outcome text and determine badge color
 function getOutcomeConfig(outcome: string) {
   switch (outcome) {
@@ -239,22 +270,14 @@ export function PredictionsList({
       );
 
       return {
-        truePredictions: userPredictions.filter((p) =>
-          p.verification_claims.some(
-            (c: { outcome: string }) => c.outcome === "MaturedTrue",
-          ),
+        truePredictions: userPredictions.filter(
+          (p) => categorizePrediction(p) === "true",
         ),
-        falsePredictions: userPredictions.filter((p) =>
-          p.verification_claims.some(
-            (c: { outcome: string }) => c.outcome === "MaturedFalse",
-          ),
+        falsePredictions: userPredictions.filter(
+          (p) => categorizePrediction(p) === "false",
         ),
         unmaturedPredictions: userPredictions.filter(
-          (p) =>
-            p.verification_claims.length === 0 ||
-            p.verification_claims.every(
-              (c: { outcome: string }) => c.outcome === "NotMatured",
-            ),
+          (p) => categorizePrediction(p) === "unmatured",
         ),
       };
     }, [allPredictions, username]);

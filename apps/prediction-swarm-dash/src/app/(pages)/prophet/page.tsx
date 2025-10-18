@@ -11,7 +11,10 @@ import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import React, { Suspense, useMemo } from "react";
-import { PredictionsList } from "./components/predictions-list";
+import {
+  PredictionsList,
+  categorizePrediction,
+} from "./components/predictions-list";
 import { ProfileHeader } from "./components/profile-header";
 
 function ProphetPageContent() {
@@ -34,7 +37,13 @@ function ProphetPageContent() {
     useProphetProfileQuery(username);
 
   const { data: predictions, isLoading: predictionsLoading } =
-    usePredictionsListQuery({}, { enabled: !!username });
+    usePredictionsListQuery(
+      {
+        search: username,
+        sort_by: "twitter_username",
+      },
+      { enabled: !!username },
+    );
 
   // Calculate prediction counts from all predictions for this user
   const {
@@ -60,22 +69,14 @@ function ProphetPageContent() {
     );
 
     return {
-      truePredictionsCount: userPredictions.filter((p) =>
-        p.verification_claims.some(
-          (c: { outcome: string }) => c.outcome === "MaturedTrue",
-        ),
+      truePredictionsCount: userPredictions.filter(
+        (p) => categorizePrediction(p) === "true",
       ).length,
-      falsePredictionsCount: userPredictions.filter((p) =>
-        p.verification_claims.some(
-          (c: { outcome: string }) => c.outcome === "MaturedFalse",
-        ),
+      falsePredictionsCount: userPredictions.filter(
+        (p) => categorizePrediction(p) === "false",
       ).length,
       unmaturedPredictionsCount: userPredictions.filter(
-        (p) =>
-          p.verification_claims.length === 0 ||
-          p.verification_claims.every(
-            (c: { outcome: string }) => c.outcome === "NotMatured",
-          ),
+        (p) => categorizePrediction(p) === "unmatured",
       ).length,
       totalPredictions: userPredictions.length,
     };

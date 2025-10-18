@@ -16,14 +16,16 @@ interface ProfileHeaderProps {
 export function ProfileHeader({
   profile,
   truePredictionsCount,
-  // falsePredictionsCount,
+  falsePredictionsCount,
   // unmaturedPredictionsCount,
-  totalPredictions,
+  // totalPredictions,
   // onFiltersClick,
 }: ProfileHeaderProps) {
+  // Calculate accuracy based only on resolved predictions (true + false)
+  const resolvedPredictionsCount = truePredictionsCount + falsePredictionsCount;
   const accuracyPercentage =
-    totalPredictions > 0
-      ? Math.round((truePredictionsCount / totalPredictions) * 100)
+    resolvedPredictionsCount > 0
+      ? Math.round((truePredictionsCount / resolvedPredictionsCount) * 100)
       : 0;
 
   return (
