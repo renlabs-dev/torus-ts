@@ -93,7 +93,7 @@ interface SearchInputProps {
 
 export function SearchInput({
   onValueChange,
-  placeholder = "Search for any agent in the swarm...",
+  placeholder = "Search for any agent or account in the swarm...",
   excludeAgents = [],
 }: SearchInputProps) {
   const router = useRouter();
