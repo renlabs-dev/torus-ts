@@ -32,6 +32,9 @@
     "@torus-ts/query-provider": "workspace:*",
     "@torus-ts/torus-provider": "workspace:*",
     "@torus-ts/ui": "workspace:*",
+    "@trpc/client": "catalog:",
+    "@trpc/react-query": "catalog:",
+    "@trpc/server": "catalog:",
     "next-plausible": "catalog:",
     "dayjs": "^1.11.18",
     "lucide-react": "catalog:",
@@ -42,6 +45,7 @@
     "react-dom": "catalog:react19",
     "react-hook-form": "catalog:",
     "recharts": "catalog:",
+    "superjson": "catalog:",
     "three": "catalog:",
     "zod": "catalog:",
     "zustand": "catalog:"

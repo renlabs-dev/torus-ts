@@ -232,6 +232,15 @@ importers:
       '@torus-ts/ui':
         specifier: workspace:*
         version: link:../../packages/ui
+      '@trpc/client':
+        specifier: 'catalog:'
+        version: 11.5.0(@trpc/server@11.5.0(typescript@5.9.2))(typescript@5.9.2)
+      '@trpc/react-query':
+        specifier: 'catalog:'
+        version: 11.5.0(@tanstack/react-query@5.85.5(react@19.1.1))(@trpc/client@11.5.0(@trpc/server@11.5.0(typescript@5.9.2))(typescript@5.9.2))(@trpc/server@11.5.0(typescript@5.9.2))(react-dom@19.1.1(react@19.1.1))(react@19.1.1)(typescript@5.9.2)
+      '@trpc/server':
+        specifier: 'catalog:'
+        version: 11.5.0(typescript@5.9.2)
       dayjs:
         specifier: ^1.11.18
         version: 1.11.18
@@ -262,6 +271,9 @@ importers:
       recharts:
         specifier: 'catalog:'
         version: 2.15.4(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
+      superjson:
+        specifier: 'catalog:'
+        version: 2.2.1
       three:
         specifier: 'catalog:'
         version: 0.175.0
@@ -27993,7 +28005,7 @@ snapshots:
       solc: 0.8.26(debug@4.4.1)
       source-map-support: 0.5.21
       stacktrace-parser: 0.1.11
-      tinyglobby: 0.2.14
+      tinyglobby: 0.2.15
       tsort: 0.0.1
       undici: 5.29.0
       uuid: 8.3.2

@@ -27,7 +27,6 @@ export function SearchInput({
     setSearchInput(externalValue);
     setDebouncedSearch(externalValue);
   }, [externalValue]);
-
   // Debounce search input
   useEffect(() => {
     const timeoutId = setTimeout(() => {

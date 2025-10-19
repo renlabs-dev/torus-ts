@@ -6,7 +6,6 @@ import {
   useFreeBalance,
 } from "@torus-ts/query-provider/hooks";
 import { useTorus } from "@torus-ts/torus-provider";
-import { Header } from "@torus-ts/ui/components/header";
 import { WalletDropdown } from "@torus-ts/ui/components/wallet-dropdown/wallet-dropdown";
 import { env } from "~/env";
 
@@ -31,22 +30,18 @@ export function ProphetFinderHeader({
   const stakeOut = useCachedStakeOut(torusCacheUrl);
 
   return (
-    <Header
-      className="!border-none !bg-transparent"
-      appName="Torus Prophet Finder"
-      wallet={
-        <WalletDropdown
-          balance={accountFreeBalance.data}
-          stakeOut={stakeOut.data}
-          accounts={accounts}
-          isInitialized={isInitialized}
-          selectedAccount={selectedAccount}
-          handleLogout={handleLogout}
-          handleGetWallets={handleGetWallets}
-          handleSelectWallet={handleSelectWallet}
-          torusChainEnv={env("NEXT_PUBLIC_TORUS_CHAIN_ENV")}
-        />
-      }
-    />
+    <div className="absolute right-2 top-2 z-[100] w-fit">
+      <WalletDropdown
+        balance={accountFreeBalance.data}
+        stakeOut={stakeOut.data}
+        accounts={accounts}
+        isInitialized={isInitialized}
+        selectedAccount={selectedAccount}
+        handleLogout={handleLogout}
+        handleGetWallets={handleGetWallets}
+        handleSelectWallet={handleSelectWallet}
+        torusChainEnv={env("NEXT_PUBLIC_TORUS_CHAIN_ENV")}
+      />
+    </div>
   );
 }
