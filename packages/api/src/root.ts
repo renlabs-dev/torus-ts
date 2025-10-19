@@ -15,6 +15,7 @@ import { commentInteractionRouter } from "./router/comment/comment-interaction";
 import { commentReportRouter } from "./router/comment/comment-report";
 import { penaltyRouter } from "./router/penalty/penalty";
 import { permissionRouter } from "./router/permission/permission";
+import { prophetRouter } from "./router/prophet/prophet";
 import { signalRouter } from "./router/permission/signal";
 // import { constraintRouter } from "./router/constraint/constraint";
 import { createTRPCRouter } from "./trpc";
@@ -53,6 +54,9 @@ export const appRouter = createTRPCRouter({
   // Permission
   permission: permissionRouter,
   signal: signalRouter,
+
+  // Prophet
+  prophet: prophetRouter,
 });
 
 export type AppRouter = typeof appRouter;

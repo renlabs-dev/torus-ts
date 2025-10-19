@@ -1,10 +1,10 @@
 import "./globals.css";
-import { ReactQueryProvider } from "@torus-ts/query-provider/";
 import { TorusProvider } from "@torus-ts/torus-provider";
 import { Layout } from "@torus-ts/ui/components/layout";
 import { Toaster } from "@torus-ts/ui/components/toaster";
 import { AuthProvider } from "~/contexts/auth-provider";
 import { env, EnvScript } from "~/env";
+import { TRPCReactProvider } from "~/trpc/react";
 import type { Metadata } from "next";
 import PlausibleProvider from "next-plausible";
 import { Geist_Mono as GeistMono } from "next/font/google";
@@ -34,11 +34,11 @@ export default function RootLayout({
   return (
     <PlausibleProvider domain="sension.torus.directory" trackOutboundLinks>
       <Layout font={geistMono} headScripts={[EnvScript]} className="!min-h-max">
-        <ReactQueryProvider>
-          <TorusProvider
-            wsEndpoint={env("NEXT_PUBLIC_TORUS_RPC_URL")}
-            torusCacheUrl={env("NEXT_PUBLIC_TORUS_CACHE_URL")}
-          >
+        <TorusProvider
+          wsEndpoint={env("NEXT_PUBLIC_TORUS_RPC_URL")}
+          torusCacheUrl={env("NEXT_PUBLIC_TORUS_CACHE_URL")}
+        >
+          <TRPCReactProvider>
             <ProphetFinderHeader
               torusCacheUrl={env("NEXT_PUBLIC_TORUS_CACHE_URL")}
             />
@@ -46,8 +46,8 @@ export default function RootLayout({
               {children}
               <Toaster />
             </AuthProvider>
-          </TorusProvider>
-        </ReactQueryProvider>
+          </TRPCReactProvider>
+        </TorusProvider>
       </Layout>
     </PlausibleProvider>
   );

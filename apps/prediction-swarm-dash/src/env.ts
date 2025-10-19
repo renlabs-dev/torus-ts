@@ -2,7 +2,7 @@ import { buildZodEnvScript } from "@torus-ts/env-validation";
 import { chainEnvSchema } from "@torus-ts/ui/lib/data";
 import { z } from "zod";
 
-const AUTH_ORIGIN_DEFAULT = "validator.torus.network";
+const AUTH_ORIGIN_DEFAULT = "sension.torus.directory";
 
 const NodeEnvSchema = z
   .enum(["development", "production", "test"])
@@ -16,7 +16,9 @@ if (process?.env) {
 export const envSchema = {
   NODE_ENV: NodeEnvSchema.default("development"),
   PORT: z.string(),
-  TORUS_WALLET_SEED_PHRASE: z.string().optional(),
+  JWT_SECRET: z.string().min(32),
+  TORUS_WALLET_SEED_PHRASE: z.string(),
+  POSTGRES_URL: z.string().url(),
   /**
    * Specify your client-side environment variables schema here.
    * For them to be exposed to the client, prefix them with `NEXT_PUBLIC_`.
@@ -28,7 +30,7 @@ export const envSchema = {
   NEXT_PUBLIC_NODE_ENV: NodeEnvSchema,
   NEXT_PUBLIC_TORUS_CHAIN_ENV: chainEnvSchema,
   NEXT_PUBLIC_GITHUB_REPO_URL: z.string().optional(),
-  NEXT_PUBLIC_API_BASE_URL: z.string().optional(),
+  NEXT_PUBLIC_API_BASE_URL: z.string().default("https://memory.sension.torus.directory/api/"),
   NEXT_PUBLIC_TORUS_PORTAL_URL: z
     .string()
     .url()
@@ -36,6 +38,9 @@ export const envSchema = {
   NEXT_PUBLIC_DEFAULT_WALLET_ADDRESS: z
     .string()
     .default("5GTgBYqsprVdZkvxaF77VmdgRMuhB3pe1A6dDsCPLjyidtpX"),
+  NEXT_PUBLIC_TORUS_ALLOCATOR_ADDRESS: z
+    .string()
+    .default("5DoVVgN7R6vHw4mvPX8s4EkkR8fgN1UJ5TDfKzab8eW9z89b"),
 };
 
 export const { EnvScript, env } = buildZodEnvScript(envSchema, {

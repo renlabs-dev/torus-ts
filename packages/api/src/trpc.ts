@@ -63,6 +63,8 @@ export interface TRPCContext {
   authOrigin: string;
   allocatorAddress: SS58Address;
   wsAPI: Promise<ApiPromise>;
+  swarmMnemonic?: string;
+  swarmApiUrl?: string;
 }
 
 export interface AuthenticatedTRPCContext extends TRPCContext {
@@ -75,6 +77,8 @@ export const createTRPCContext = (opts: {
   jwtSecret: string;
   authOrigin: string;
   allocatorAddress: SS58Address;
+  swarmMnemonic?: string;
+  swarmApiUrl?: string;
 }) => {
   const db = cacheCreateDb();
   const wsAPI = cacheCreateWsApi();
@@ -129,6 +133,8 @@ export const createTRPCContext = (opts: {
     authOrigin: opts.authOrigin,
     allocatorAddress: opts.allocatorAddress,
     wsAPI,
+    swarmMnemonic: opts.swarmMnemonic,
+    swarmApiUrl: opts.swarmApiUrl,
   };
 };
 

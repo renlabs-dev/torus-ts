@@ -10,10 +10,12 @@ import {
   CommandList,
 } from "@torus-ts/ui/components/command";
 import { Input } from "@torus-ts/ui/components/input";
+import { useToast } from "@torus-ts/ui/hooks/use-toast";
 import { useIsMobile } from "@torus-ts/ui/hooks/use-mobile";
 import { cn } from "@torus-ts/ui/lib/utils";
 import { useAgentContributionStatsQuery } from "~/hooks/api/use-agent-contribution-stats-query";
 import { useAgentName } from "~/hooks/api/use-agent-name-query";
+import { useAddProphetMutation } from "~/hooks/api/use-add-prophet-mutation";
 import { useUsernamesSearchQuery } from "~/hooks/api/use-usernames-search-query";
 import { formatAddress } from "~/lib/api-utils";
 import { Check, SearchIcon, User } from "lucide-react";
@@ -97,9 +99,12 @@ export function SearchInput({
   const searchParams = useSearchParams();
   const pathname = usePathname();
   const isMobile = useIsMobile();
+  const { toast } = useToast();
 
   const [showCommand, setShowCommand] = useState(false);
   const [search, setSearch] = useState("");
+
+  const addProphetMutation = useAddProphetMutation();
 
   // Get all agents from contribution stats
   const { data: statsData, isLoading: statsLoading } =
@@ -135,11 +140,32 @@ export function SearchInput({
     setShowCommand(true);
   };
 
-  // TODO: Implement add to memory functionality
-  const handleAddToMemory = useCallback(() => {
-    console.log("Adding to memory:", search);
-    // TODO: Implement API call to add prophet to memory, @steinerkelvin
-  }, [search]);
+  const handleAddToMemory = useCallback(async () => {
+    if (!search.trim()) return;
+
+    try {
+      await addProphetMutation.mutateAsync({
+        username: search.trim(),
+      });
+
+      toast({
+        title: "Prophet added successfully!",
+        description: `@${search.trim().replace(/^@/, "")} has been queued for scraping.`,
+      });
+
+      setShowCommand(false);
+      setSearch("");
+    } catch (error) {
+      toast({
+        title: "Failed to add prophet",
+        description:
+          error instanceof Error
+            ? error.message
+            : "An error occurred while adding the prophet to memory.",
+        variant: "destructive",
+      });
+    }
+  }, [search, addProphetMutation, toast]);
 
   const [selectedAgent, setSelectedAgent] = React.useState<string>(
     pathname === "/agents" ? searchParams.get("agent") || "" : "",
@@ -218,9 +244,10 @@ export function SearchInput({
                     variant="outline"
                     size="sm"
                     onClick={handleAddToMemory}
+                    disabled={addProphetMutation.isPending}
                     className="gap-2"
                   >
-                    Add to Memory
+                    {addProphetMutation.isPending ? "Adding..." : "Add to Memory"}
                   </Button>
                 )}
               </div>
