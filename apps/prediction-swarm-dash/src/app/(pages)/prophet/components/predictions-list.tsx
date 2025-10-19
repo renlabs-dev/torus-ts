@@ -27,6 +27,7 @@ import { useMemo } from "react";
 interface PredictionsListProps {
   username: string;
   searchFilters?: Omit<PredictionsListParams, "agent_address">;
+  hasVerdictFilter?: boolean;
 }
 
 // Categorize a prediction based on its claims (mutually exclusive)
@@ -243,6 +244,7 @@ function ClaimDisplay({
 export function PredictionsList({
   username,
   searchFilters,
+  hasVerdictFilter = false,
 }: PredictionsListProps) {
   // Use search parameter to filter by username since there's no dedicated filter
   const { data: allPredictions, isLoading } = usePredictionsListQuery({
@@ -263,11 +265,22 @@ export function PredictionsList({
       }
 
       // Further filter by exact username match
-      const userPredictions = allPredictions.filter(
+      let userPredictions = allPredictions.filter(
         (p) =>
           p.tweet?.author_twitter_username.toLowerCase() ===
           username.toLowerCase(),
       );
+
+      // Apply verdict filter if enabled
+      if (hasVerdictFilter) {
+        userPredictions = userPredictions.filter(
+          (p) =>
+            p.verification_verdict &&
+            typeof p.verification_verdict === "object" &&
+            "reasoning" in p.verification_verdict &&
+            p.verification_verdict.reasoning,
+        );
+      }
 
       return {
         truePredictions: userPredictions.filter(
@@ -280,7 +293,7 @@ export function PredictionsList({
           (p) => categorizePrediction(p) === "unmatured",
         ),
       };
-    }, [allPredictions, username]);
+    }, [allPredictions, username, hasVerdictFilter]);
 
   if (isLoading) {
     return (

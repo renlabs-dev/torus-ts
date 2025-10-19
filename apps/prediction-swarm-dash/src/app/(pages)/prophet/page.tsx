@@ -3,14 +3,16 @@
 import { Button } from "@torus-ts/ui/components/button";
 import { cn } from "@torus-ts/ui/lib/utils";
 import { Container } from "~/app/_components/container";
+import type { DateRangeFilterData } from "~/app/_components/date-range-filter";
 import { LoadingDots } from "~/app/_components/loading-dots";
 import { usePredictionsListQuery } from "~/hooks/api/use-predictions-list-query";
 import { useProphetProfileQuery } from "~/hooks/api/use-prophet-profile-query";
+import { dateToISOStringSafe } from "~/lib/api-utils";
 import { useAuthStore } from "~/lib/auth-store";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import React, { Suspense, useMemo } from "react";
+import React, { Suspense, useCallback, useMemo } from "react";
 import {
   categorizePrediction,
   PredictionsList,
@@ -21,6 +23,11 @@ function ProphetPageContent() {
   const searchParams = useSearchParams();
   const { isAuthenticated } = useAuthStore();
   const [username, setUsername] = React.useState<string>("");
+  const [hasVerdictFilter, setHasVerdictFilter] = React.useState(false);
+  const [searchFilters, setSearchFilters] = React.useState({
+    from: undefined as Date | undefined,
+    to: undefined as Date | undefined,
+  });
 
   React.useEffect(() => {
     const usernameParam = searchParams.get("username");
@@ -41,9 +48,21 @@ function ProphetPageContent() {
       {
         search: username,
         sort_by: "twitter_username",
+        from: dateToISOStringSafe(searchFilters.from, false),
+        to: dateToISOStringSafe(searchFilters.to, true),
       },
       { enabled: !!username },
     );
+
+  const handleDateRangeFilterSubmit = useCallback(
+    (data: DateRangeFilterData) => {
+      setSearchFilters({
+        from: data.from,
+        to: data.to,
+      });
+    },
+    [],
+  );
 
   // Calculate prediction counts from all predictions for this user
   const {
@@ -156,10 +175,21 @@ function ProphetPageContent() {
         falsePredictionsCount={falsePredictionsCount}
         unmaturedPredictionsCount={unmaturedPredictionsCount}
         totalPredictions={totalPredictions}
+        onDateRangeFilterSubmit={handleDateRangeFilterSubmit}
+        dateRangeFilterValues={searchFilters}
+        hasVerdictFilter={hasVerdictFilter}
+        onHasVerdictChange={setHasVerdictFilter}
       />
 
       <div className={cn("animate-fade-up animate-delay-[400ms]")}>
-        <PredictionsList username={username} />
+        <PredictionsList
+          username={username}
+          searchFilters={{
+            from: dateToISOStringSafe(searchFilters.from, false),
+            to: dateToISOStringSafe(searchFilters.to, true),
+          }}
+          hasVerdictFilter={hasVerdictFilter}
+        />
       </div>
     </div>
   );

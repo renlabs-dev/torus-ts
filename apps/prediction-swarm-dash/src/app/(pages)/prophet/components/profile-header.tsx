@@ -1,7 +1,11 @@
 "use client";
 
+import { Toggle } from "@torus-ts/ui/components/toggle";
 import { cn } from "@torus-ts/ui/lib/utils";
+import { DateRangeFilter } from "~/app/_components/date-range-filter";
+import type { DateRangeFilterData } from "~/app/_components/date-range-filter";
 import type { ProphetProfile } from "~/lib/api-schemas";
+import { Gavel } from "lucide-react";
 import Image from "next/image";
 
 interface ProfileHeaderProps {
@@ -11,6 +15,13 @@ interface ProfileHeaderProps {
   unmaturedPredictionsCount: number;
   totalPredictions: number;
   onFiltersClick?: () => void;
+  onDateRangeFilterSubmit?: (data: DateRangeFilterData) => void;
+  dateRangeFilterValues?: {
+    from?: Date;
+    to?: Date;
+  };
+  hasVerdictFilter?: boolean;
+  onHasVerdictChange?: (enabled: boolean) => void;
 }
 
 export function ProfileHeader({
@@ -20,6 +31,10 @@ export function ProfileHeader({
   // unmaturedPredictionsCount,
   // totalPredictions,
   // onFiltersClick,
+  onDateRangeFilterSubmit,
+  dateRangeFilterValues,
+  hasVerdictFilter = false,
+  onHasVerdictChange,
 }: ProfileHeaderProps) {
   // Calculate accuracy based only on resolved predictions (true + false)
   const resolvedPredictionsCount = truePredictionsCount + falsePredictionsCount;
@@ -65,16 +80,27 @@ export function ProfileHeader({
               </div>
             </div>
 
-            {/* Filters Button */}
-            {/* <Button
-              variant="outline"
-              size="sm"
-              onClick={onFiltersClick}
-              className="w-fit"
-            >
-              <Filter className="h-4 w-4" />
-              Filters
-            </Button> */}
+            {/* Filters Section */}
+            <div className="flex w-full flex-wrap items-end justify-start gap-2 sm:w-auto sm:justify-end md:gap-3">
+              {onDateRangeFilterSubmit && (
+                <DateRangeFilter
+                  onSubmit={onDateRangeFilterSubmit}
+                  defaultValues={dateRangeFilterValues}
+                />
+              )}
+              {onHasVerdictChange && (
+                <Toggle
+                  variant="outline"
+                  pressed={hasVerdictFilter}
+                  onPressedChange={onHasVerdictChange}
+                  aria-label="Filter by verdict"
+                  className="border-border h-[2.9em] rounded-lg border px-4 data-[state=on]:border-purple-600 data-[state=on]:text-purple-600"
+                >
+                  <Gavel className="h-4 w-4" />
+                  <span className="hidden sm:inline">Has Verdict</span>
+                </Toggle>
+              )}
+            </div>
           </div>
 
           {/* Stats Row */}
