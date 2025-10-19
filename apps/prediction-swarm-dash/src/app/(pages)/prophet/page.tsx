@@ -12,8 +12,8 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import React, { Suspense, useMemo } from "react";
 import {
-  PredictionsList,
   categorizePrediction,
+  PredictionsList,
 } from "./components/predictions-list";
 import { ProfileHeader } from "./components/profile-header";
 

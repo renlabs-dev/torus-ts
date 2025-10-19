@@ -10,7 +10,12 @@ import {
 } from "@torus-ts/ui/components/card";
 import { Input } from "@torus-ts/ui/components/input";
 import { Label } from "@torus-ts/ui/components/label";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@torus-ts/ui/components/tabs";
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@torus-ts/ui/components/tabs";
 import {
   useAgentContributionStatsQuery,
   usePredictionsQuery,
@@ -18,7 +23,11 @@ import {
 } from "~/hooks/api";
 import { useState } from "react";
 
-function JsonViewer({ data, isLoading, error }: {
+function JsonViewer({
+  data,
+  isLoading,
+  error,
+}: {
   data: unknown;
   isLoading: boolean;
   error: Error | null;
@@ -33,15 +42,15 @@ function JsonViewer({ data, isLoading, error }: {
 
   if (error) {
     return (
-      <div className="p-4 rounded-md bg-destructive/10 text-destructive">
+      <div className="bg-destructive/10 text-destructive rounded-md p-4">
         <p className="font-semibold">Error:</p>
-        <p className="text-sm mt-1">{error.message}</p>
+        <p className="mt-1 text-sm">{error.message}</p>
       </div>
     );
   }
 
   return (
-    <pre className="p-4 rounded-md bg-muted overflow-auto max-h-[600px] text-xs">
+    <pre className="bg-muted max-h-[600px] overflow-auto rounded-md p-4 text-xs">
       {JSON.stringify(data, null, 2)}
     </pre>
   );
@@ -58,7 +67,7 @@ function PredictionsQueryExample() {
 
   return (
     <div className="space-y-4">
-      <div className="flex gap-4 items-end">
+      <div className="flex items-end gap-4">
         <div className="flex-1">
           <Label htmlFor="limit">Limit</Label>
           <Input
@@ -99,7 +108,7 @@ function PredictionsQueryExample() {
         </div>
       </div>
 
-      <div className="text-sm text-muted-foreground">
+      <div className="text-muted-foreground text-sm">
         <p>
           <strong>Endpoint:</strong> <code>predictions/list</code>
         </p>
@@ -147,7 +156,11 @@ function AgentStatsQueryExample() {
               id="from"
               type="datetime-local"
               value={from}
-              onChange={(e) => setFrom(e.target.value ? new Date(e.target.value).toISOString() : "")}
+              onChange={(e) =>
+                setFrom(
+                  e.target.value ? new Date(e.target.value).toISOString() : "",
+                )
+              }
             />
           </div>
           <div>
@@ -156,13 +169,17 @@ function AgentStatsQueryExample() {
               id="to"
               type="datetime-local"
               value={to}
-              onChange={(e) => setTo(e.target.value ? new Date(e.target.value).toISOString() : "")}
+              onChange={(e) =>
+                setTo(
+                  e.target.value ? new Date(e.target.value).toISOString() : "",
+                )
+              }
             />
           </div>
         </div>
       </div>
 
-      <div className="text-sm text-muted-foreground">
+      <div className="text-muted-foreground text-sm">
         <p>
           <strong>Endpoint:</strong> <code>agent-contribution-stats</code>
         </p>
@@ -170,7 +187,8 @@ function AgentStatsQueryExample() {
           <strong>Hook:</strong> <code>useAgentContributionStatsQuery</code>
         </p>
         <p className="mt-2">
-          Query agent contribution statistics with optional time window filtering.
+          Query agent contribution statistics with optional time window
+          filtering.
         </p>
       </div>
 
@@ -197,7 +215,11 @@ function SwarmMetricsQueryExample() {
             id="metrics-from"
             type="datetime-local"
             value={from}
-            onChange={(e) => setFrom(e.target.value ? new Date(e.target.value).toISOString() : "")}
+            onChange={(e) =>
+              setFrom(
+                e.target.value ? new Date(e.target.value).toISOString() : "",
+              )
+            }
           />
         </div>
         <div>
@@ -206,14 +228,19 @@ function SwarmMetricsQueryExample() {
             id="metrics-to"
             type="datetime-local"
             value={to}
-            onChange={(e) => setTo(e.target.value ? new Date(e.target.value).toISOString() : "")}
+            onChange={(e) =>
+              setTo(
+                e.target.value ? new Date(e.target.value).toISOString() : "",
+              )
+            }
           />
         </div>
       </div>
 
-      <div className="text-sm text-muted-foreground">
+      <div className="text-muted-foreground text-sm">
         <p>
-          <strong>Endpoints:</strong> <code>agent-contribution-stats</code> + <code>permissions/list</code>
+          <strong>Endpoints:</strong> <code>agent-contribution-stats</code> +{" "}
+          <code>permissions/list</code>
         </p>
         <p>
           <strong>Hook:</strong> <code>useSwarmTotalMetrics</code>
@@ -234,12 +261,13 @@ function SwarmMetricsQueryExample() {
 
 export default function PlaygroundPage() {
   return (
-    <div className="container mx-auto py-8 max-w-6xl">
+    <div className="container mx-auto max-w-6xl py-8">
       <Card>
         <CardHeader>
           <CardTitle>Database Query Playground</CardTitle>
           <CardDescription>
-            Explore and test database queries with live data from the prediction swarm API.
+            Explore and test database queries with live data from the prediction
+            swarm API.
           </CardDescription>
         </CardHeader>
         <CardContent>

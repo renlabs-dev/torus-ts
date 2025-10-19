@@ -30,7 +30,9 @@ export const envSchema = {
   NEXT_PUBLIC_NODE_ENV: NodeEnvSchema,
   NEXT_PUBLIC_TORUS_CHAIN_ENV: chainEnvSchema,
   NEXT_PUBLIC_GITHUB_REPO_URL: z.string().optional(),
-  NEXT_PUBLIC_API_BASE_URL: z.string().default("https://memory.sension.torus.directory/api/"),
+  NEXT_PUBLIC_API_BASE_URL: z
+    .string()
+    .default("https://memory.sension.torus.directory/api/"),
   NEXT_PUBLIC_TORUS_PORTAL_URL: z
     .string()
     .url()

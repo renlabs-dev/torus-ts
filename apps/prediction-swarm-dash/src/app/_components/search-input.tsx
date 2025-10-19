@@ -10,12 +10,12 @@ import {
   CommandList,
 } from "@torus-ts/ui/components/command";
 import { Input } from "@torus-ts/ui/components/input";
-import { useToast } from "@torus-ts/ui/hooks/use-toast";
 import { useIsMobile } from "@torus-ts/ui/hooks/use-mobile";
+import { useToast } from "@torus-ts/ui/hooks/use-toast";
 import { cn } from "@torus-ts/ui/lib/utils";
+import { useAddProphetMutation } from "~/hooks/api/use-add-prophet-mutation";
 import { useAgentContributionStatsQuery } from "~/hooks/api/use-agent-contribution-stats-query";
 import { useAgentName } from "~/hooks/api/use-agent-name-query";
-import { useAddProphetMutation } from "~/hooks/api/use-add-prophet-mutation";
 import { useUsernamesSearchQuery } from "~/hooks/api/use-usernames-search-query";
 import { formatAddress } from "~/lib/api-utils";
 import { Check, SearchIcon, User } from "lucide-react";
@@ -247,7 +247,9 @@ export function SearchInput({
                     disabled={addProphetMutation.isPending}
                     className="gap-2"
                   >
-                    {addProphetMutation.isPending ? "Adding..." : "Add to Memory"}
+                    {addProphetMutation.isPending
+                      ? "Adding..."
+                      : "Add to Memory"}
                   </Button>
                 )}
               </div>
