@@ -35,7 +35,7 @@ export function useProphetProfilesSearchQuery(
     queryKey: ["prophet-profiles-search", searchTerm],
     queryFn: () =>
       fetchProphetProfiles({ twitter_username: searchTerm, limit: 10 }),
-    enabled: (options.enabled ?? true) && searchTerm.length >= 3,
+    enabled: (options.enabled ?? true) && searchTerm.length >= 2,
     staleTime: 30 * 1000, // 30 seconds
   });
 }

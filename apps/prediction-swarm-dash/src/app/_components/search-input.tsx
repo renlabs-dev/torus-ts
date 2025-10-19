@@ -16,9 +16,10 @@ import { cn } from "@torus-ts/ui/lib/utils";
 import { useAddProphetMutation } from "~/hooks/api/use-add-prophet-mutation";
 import { useAgentContributionStatsQuery } from "~/hooks/api/use-agent-contribution-stats-query";
 import { useAgentName } from "~/hooks/api/use-agent-name-query";
+import { useProphetProfilesSearchQuery } from "~/hooks/api/use-prophet-profiles-search-query";
 import { useUsernamesSearchQuery } from "~/hooks/api/use-usernames-search-query";
 import { formatAddress } from "~/lib/api-utils";
-import { Check, SearchIcon, User } from "lucide-react";
+import { Check, Clock, SearchIcon, User } from "lucide-react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import React, { useCallback, useMemo, useState } from "react";
 import { BorderContainer } from "./border-container";
@@ -114,6 +115,10 @@ export function SearchInput({
   const { data: usernames, isLoading: usernamesLoading } =
     useUsernamesSearchQuery(search);
 
+  // Search for prophet profiles (to show processing accounts)
+  const { data: prophetProfiles, isLoading: prophetProfilesLoading } =
+    useProphetProfilesSearchQuery(search);
+
   // Process agents list
 
   const agents = useMemo(() => {
@@ -130,7 +135,36 @@ export function SearchInput({
       .sort((a, b) => b.predictions - a.predictions);
   }, [statsData, excludeAgents]);
 
-  const isLoading = statsLoading || (search.length >= 2 && usernamesLoading);
+  // Identify processing profiles (in prophet-finder but not in predictions)
+  const processingProfiles = useMemo(() => {
+    if (!prophetProfiles || !usernames) return [];
+
+    const usernamesSet = new Set(
+      usernames.map((u) => u.username.toLowerCase()),
+    );
+    return prophetProfiles.filter(
+      (profile) => !usernamesSet.has(profile.username.toLowerCase()),
+    );
+  }, [prophetProfiles, usernames]);
+
+  // Check if searched username exists anywhere
+  const searchedUsernameExists = useMemo(() => {
+    const cleanSearch = search.toLowerCase().replace(/^@/, "");
+    if (cleanSearch.length < 2) return false;
+
+    const inPredictions = usernames?.some(
+      (u) => u.username.toLowerCase() === cleanSearch,
+    );
+    const inProphetFinder = prophetProfiles?.some(
+      (p) => p.username.toLowerCase() === cleanSearch,
+    );
+
+    return inPredictions || inProphetFinder;
+  }, [search, usernames, prophetProfiles]);
+
+  const isLoading =
+    statsLoading ||
+    (search.length >= 2 && (usernamesLoading || prophetProfilesLoading));
 
   const handleInputClick = () => {
     setShowCommand(true);
@@ -239,7 +273,7 @@ export function SearchInput({
             ) : (
               <div className="flex flex-col items-center gap-3">
                 <span>No agents or prophet accounts found.</span>
-                {search.length >= 2 && (
+                {search.length >= 2 && !searchedUsernameExists && (
                   <Button
                     variant="outline"
                     size="sm"
@@ -251,6 +285,11 @@ export function SearchInput({
                       ? "Adding..."
                       : "Add to Memory"}
                   </Button>
+                )}
+                {search.length >= 2 && searchedUsernameExists && (
+                  <span className="text-muted-foreground text-sm">
+                    This account has already been added
+                  </span>
                 )}
               </div>
             )}
@@ -286,6 +325,38 @@ export function SearchInput({
                       <div className="text-muted-foreground flex items-center gap-3 text-xs">
                         <span title="Predictions">
                           {account.predictions_count} predictions
+                        </span>
+                      </div>
+                    </CommandItem>
+                  ))}
+                </CommandGroup>
+              )}
+
+              {/* Processing Accounts Group */}
+              {processingProfiles.length > 0 && (
+                <CommandGroup heading="Processing Accounts">
+                  {processingProfiles.map((profile) => (
+                    <CommandItem
+                      key={profile.username}
+                      value={profile.username}
+                      disabled
+                      className="flex cursor-default items-center justify-between opacity-60"
+                    >
+                      <div className="flex items-center gap-2">
+                        <Clock className="h-4 w-4" />
+                        <div className="flex flex-col">
+                          <span className="text-muted-foreground">
+                            @{profile.username}
+                          </span>
+                          <span className="text-muted-foreground text-xs">
+                            Being scraped...
+                          </span>
+                        </div>
+                      </div>
+                      <div className="text-muted-foreground flex items-center gap-3 text-xs">
+                        <span title="Scraping progress">
+                          {profile.scraped_tweet_count}/
+                          {profile.profile_tweet_count} tweets
                         </span>
                       </div>
                     </CommandItem>
