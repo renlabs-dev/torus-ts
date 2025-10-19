@@ -30,7 +30,7 @@ export function ProphetFinderHeader({
   const stakeOut = useCachedStakeOut(torusCacheUrl);
 
   return (
-    <div className="absolute right-2 top-2 z-[100] w-fit">
+    <div className="right-3 top-2.5 z-[100] hidden w-fit sm:fixed">
       <WalletDropdown
         balance={accountFreeBalance.data}
         stakeOut={stakeOut.data}
