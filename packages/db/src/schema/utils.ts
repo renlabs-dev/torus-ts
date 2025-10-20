@@ -3,6 +3,7 @@ import {
   bigint as drizzleBigint,
   timestamp as drizzleTimestamp,
   pgTableCreator,
+  uuid,
   varchar,
 } from "drizzle-orm/pg-core";
 
@@ -17,6 +18,9 @@ export const timestampzNow = (name: string) =>
   timestampz(name).defaultNow().notNull();
 
 export const ss58Address = (name: string) => varchar(name, { length: 256 });
+
+export const uuidv7 = (name: string) =>
+  uuid(name).default(sql`uuid_generate_v7()`);
 
 export const timeFields = () => ({
   createdAt: timestampzNow("created_at"),

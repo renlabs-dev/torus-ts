@@ -1,11 +1,10 @@
+import type { AnyPgColumn } from "drizzle-orm/pg-core";
 import {
   index,
   integer,
   jsonb,
   pgEnum,
-  serial,
   text,
-  unique,
   varchar,
 } from "drizzle-orm/pg-core";
 import type { Equals } from "tsafe";
@@ -17,6 +16,7 @@ import {
   ss58Address,
   timeFields,
   timestampz,
+  uuidv7,
 } from "./utils";
 
 // ==== Tracked Users ====
@@ -27,9 +27,7 @@ import {
 export const trackedUsersSchema = createTable(
   "tracked_users",
   {
-    id: serial("id").primaryKey(),
-    userId: bigint("user_id").notNull().unique(),
-    lastScrapedAt: timestampz("last_scraped_at"),
+    userId: bigint("user_id").primaryKey(),
     lastKnownTweetCount: integer("last_known_tweet_count"),
     ...timeFields(),
   },
@@ -41,20 +39,13 @@ export const trackedUsersSchema = createTable(
 /**
  * Stores wallet-based user suggestions
  */
-export const userSuggestionsSchema = createTable(
-  "user_suggestions",
+export const twitterUserSuggestionsSchema = createTable(
+  "twitter_user_suggestions",
   {
-    id: serial("id").primaryKey(),
-    userId: bigint("user_id").notNull(),
+    userId: bigint("user_id").notNull(), // make this composite
     wallet: ss58Address("wallet").notNull(),
-    suggestedAt: timestampz("suggested_at"),
     ...timeFields(),
   },
-  (t) => [
-    unique().on(t.userId, t.wallet),
-    index("user_suggestions_user_id_idx").on(t.userId),
-    index("user_suggestions_wallet_idx").on(t.wallet),
-  ],
 );
 
 // ==== Scraped Tweets ====
@@ -95,9 +86,41 @@ export const scrapedTweetSchema = createTable(
 // ==== Predictions ====
 
 /**
- * Custom type for prediction ID
+ * Custom type for parsed prediction ID
  */
-export type PredictionId = string;
+export type ParsedPredictionId = string;
+
+/**
+ * Parsed predictions table - stores individual parsed predictions
+ */
+export const parsedPredictionSchema = createTable(
+  "parsed_prediction",
+  {
+    id: uuidv7("id").primaryKey(),
+    predictionId: uuidv7("prediction_id")
+      .notNull()
+      .references((): AnyPgColumn => predictionSchema.id, {
+        onDelete: "cascade",
+      }),
+    goalPostId: varchar("goal_post_id", { length: 256 }).notNull(),
+    goalStart: integer("goal_start").notNull(),
+    goalEnd: integer("goal_end").notNull(),
+    timeframePostId: varchar("timeframe_post_id", { length: 256 }).notNull(),
+    timeframeStart: integer("timeframe_start").notNull(),
+    timeframeEnd: integer("timeframe_end").notNull(),
+    llmConfidence: integer("llm_confidence").notNull(), // Stored as basis points (0-1)
+    confidence: integer("confidence"), // Stored as basis points (0-1)
+    vagueness: integer("vagueness"), // Stored as basis points (0-1)
+    topicId: uuidv7("topic_id"),
+    context: jsonb("context"), // JsonB - whatever the filter agent thinks is relevant
+    filterAgentId: varchar("filter_agent_id", { length: 256 }),
+    ...timeFields(),
+  },
+  (t) => [
+    index("parsed_prediction_prediction_id_idx").on(t.predictionId),
+    index("parsed_prediction_topic_id_idx").on(t.topicId),
+  ],
+);
 
 /**
  * Main predictions table
@@ -105,8 +128,10 @@ export type PredictionId = string;
 export const predictionSchema = createTable(
   "prediction",
   {
-    id: varchar("id", { length: 256 }).primaryKey().$type<PredictionId>(),
-    parsed: jsonb("parsed").notNull().$type<ParsedPrediction[]>(), // Array of ParsedPrediction
+    id: uuidv7("id").primaryKey(),
+    parsedId: uuidv7("parsed_id")
+      .notNull()
+      .references((): AnyPgColumn => parsedPredictionSchema.id),
     source: jsonb("source").notNull().$type<PredictionSource>(),
     version: text("version").notNull(), // e.g., "1.0"
     ...timeFields(),
@@ -122,39 +147,14 @@ export interface PredictionSource {
 }
 
 /**
- * Parsed prediction data
- */
-export interface ParsedPrediction {
-  pred_id: PredictionId;
-  parsed_id: ParsedPredictionId;
-  goal: PostSlice;
-  timeframe: PostSlice;
-  llm_confidence: number;
-  confidence?: number;
-  vagueness?: number;
-  topic?: PredictionTopicId;
-  context?: unknown; // JsonB - whatever the filter agent thinks is relevant
-  filter_agent_id?: string;
-}
-
-/**
- * Custom type for parsed prediction ID
- */
-export type ParsedPredictionId = string;
-
-/**
  * Post slice reference
  */
 export interface PostSlice {
   post_id: string;
+  source: PredictionSource;
   start: number;
   end: number;
 }
-
-/**
- * Custom type for prediction topic ID
- */
-export type PredictionTopicId = string;
 
 // ==== Prediction Topics ====
 
@@ -164,8 +164,8 @@ export type PredictionTopicId = string;
 export const predictionTopicSchema = createTable(
   "prediction_topic",
   {
-    id: varchar("id", { length: 256 }).primaryKey().$type<PredictionTopicId>(),
-    parentId: varchar("parent_id", { length: 256 }).$type<PredictionTopicId>(),
+    id: uuidv7("id").primaryKey(),
+    parentId: uuidv7("parent_id"),
     name: text("name").notNull(),
     contextSchema: jsonb("context_schema"), // The JSONB schema needed
     ...timeFields(),
@@ -184,10 +184,8 @@ export const predictionTopicSchema = createTable(
 export const verdictSchema = createTable(
   "verdict",
   {
-    id: serial("id").primaryKey(),
-    predictionId: varchar("prediction_id", { length: 256 })
-      .notNull()
-      .$type<PredictionId>(),
+    id: uuidv7("id").primaryKey(),
+    predictionId: uuidv7("prediction_id").notNull(),
     conclusion: jsonb("conclusion").notNull().$type<VerdictConclusion[]>(), // Array of VerdictConclusion
     ...timeFields(),
   },
@@ -201,7 +199,6 @@ export const verdictSchema = createTable(
  * Verdict conclusion data
  */
 export interface VerdictConclusion {
-  parsed_id: ParsedPredictionId;
-  grok_is_true: boolean;
+  parsedId: ParsedPredictionId;
   feedback: string;
 }
