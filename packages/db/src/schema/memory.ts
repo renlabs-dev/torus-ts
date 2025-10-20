@@ -4,6 +4,7 @@ import {
   integer,
   jsonb,
   pgEnum,
+  primaryKey,
   text,
   varchar,
 } from "drizzle-orm/pg-core";
@@ -42,10 +43,11 @@ export const trackedUsersSchema = createTable(
 export const twitterUserSuggestionsSchema = createTable(
   "twitter_user_suggestions",
   {
-    userId: bigint("user_id").notNull(), // make this composite
+    userId: bigint("user_id").notNull(),
     wallet: ss58Address("wallet").notNull(),
     ...timeFields(),
   },
+  (t) => [primaryKey({ columns: [t.userId, t.wallet] })],
 );
 
 // ==== Scraped Tweets ====
@@ -111,7 +113,7 @@ export const parsedPredictionSchema = createTable(
     llmConfidence: integer("llm_confidence").notNull(), // Stored as basis points (0-1)
     confidence: integer("confidence"), // Stored as basis points (0-1)
     vagueness: integer("vagueness"), // Stored as basis points (0-1)
-    topicId: uuidv7("topic_id"),
+    topicId: uuidv7("topic_id").references(() => predictionTopicSchema.id),
     context: jsonb("context"), // JsonB - whatever the filter agent thinks is relevant
     filterAgentId: varchar("filter_agent_id", { length: 256 }),
     ...timeFields(),
@@ -165,7 +167,9 @@ export const predictionTopicSchema = createTable(
   "prediction_topic",
   {
     id: uuidv7("id").primaryKey(),
-    parentId: uuidv7("parent_id"),
+    parentId: uuidv7("parent_id").references(
+      (): AnyPgColumn => predictionTopicSchema.id,
+    ),
     name: text("name").notNull(),
     contextSchema: jsonb("context_schema"), // The JSONB schema needed
     ...timeFields(),
@@ -185,7 +189,9 @@ export const verdictSchema = createTable(
   "verdict",
   {
     id: uuidv7("id").primaryKey(),
-    predictionId: uuidv7("prediction_id").notNull(),
+    predictionId: uuidv7("prediction_id")
+      .notNull()
+      .references(() => predictionSchema.id),
     conclusion: jsonb("conclusion").notNull().$type<VerdictConclusion[]>(), // Array of VerdictConclusion
     ...timeFields(),
   },
