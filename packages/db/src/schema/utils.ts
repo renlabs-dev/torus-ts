@@ -2,8 +2,11 @@ import { sql } from "drizzle-orm";
 import {
   bigint as drizzleBigint,
   timestamp as drizzleTimestamp,
+  pgTableCreator,
   varchar,
 } from "drizzle-orm/pg-core";
+
+export const createTable = pgTableCreator((name) => `${name}`);
 
 export const bigint = (name: string) => drizzleBigint(name, { mode: "bigint" });
 

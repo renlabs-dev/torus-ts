@@ -8,7 +8,6 @@ import {
   numeric,
   pgEnum,
   pgMaterializedView,
-  pgTableCreator,
   pgView,
   primaryKey,
   real,
@@ -23,13 +22,12 @@ import { assert } from "tsafe";
 import { extract_pgenum_values } from "../utils";
 import {
   bigint,
+  createTable,
   ss58Address,
   timeFields,
   timestampz,
   timestampzNow,
 } from "./utils";
-
-export const createTable = pgTableCreator((name) => `${name}`);
 
 // ==== Worker State ====
 
