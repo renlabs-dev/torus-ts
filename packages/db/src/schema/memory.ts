@@ -1,5 +1,6 @@
 import type { AnyPgColumn } from "drizzle-orm/pg-core";
 import {
+    decimal,
   index,
   integer,
   jsonb,
@@ -103,18 +104,13 @@ export const parsedPredictionSchema = createTable(
       .references((): AnyPgColumn => predictionSchema.id, {
         onDelete: "cascade",
       }),
-    goalPostId: varchar("goal_post_id", { length: 256 }).notNull(),
-    goalStart: integer("goal_start").notNull(),
-    goalEnd: integer("goal_end").notNull(),
-    timeframePostId: varchar("timeframe_post_id", { length: 256 }).notNull(),
-    timeframeStart: integer("timeframe_start").notNull(),
-    timeframeEnd: integer("timeframe_end").notNull(),
-    llmConfidence: integer("llm_confidence").notNull(), // Stored as basis points (0-1)
-    confidence: integer("confidence"), // Stored as basis points (0-1)
-    vagueness: integer("vagueness"), // Stored as basis points (0-1)
+    goal: jsonb("goal").$type<PostSlice[]>().notNull(),
+    timeframe: jsonb("timeframe").$type<PostSlice[]>().notNull(),
+    llmConfidence: decimal("llm_confidence").notNull(), // Stored as basis points (0-1)
+    vagueness: decimal("vagueness"), // Stored as basis points (0-1)
     topicId: uuidv7("topic_id").references(() => predictionTopicSchema.id),
     context: jsonb("context"), // JsonB - whatever the filter agent thinks is relevant
-    filterAgentId: varchar("filter_agent_id", { length: 256 }),
+    filterAgentId: ss58Address("filter_agent_id"),
     ...timeFields(),
   },
   (t) => [
@@ -134,7 +130,7 @@ export const predictionSchema = createTable(
       .notNull()
       .references((): AnyPgColumn => parsedPredictionSchema.id),
     source: jsonb("source").notNull().$type<PredictionSource>(),
-    version: text("version").notNull(), // e.g., "1.0"
+    version: integer("version").notNull().default(1), // e.g., "1.0"
     ...timeFields(),
   },
   (t) => [index("prediction_created_at_idx").on(t.createdAt)],
@@ -151,7 +147,6 @@ export interface PredictionSource {
  * Post slice reference
  */
 export interface PostSlice {
-  post_id: string;
   source: PredictionSource;
   start: number;
   end: number;
@@ -180,6 +175,10 @@ export const predictionTopicSchema = createTable(
 );
 
 // ==== Verdicts ====
+
+// TODO: I don't think the JSON for the conclusion works
+// Some of our queries are more complicated than this allows
+// We shall see
 
 /**
  * Stores verdicts for predictions
