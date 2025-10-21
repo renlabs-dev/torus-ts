@@ -24,6 +24,7 @@
   },
   "dependencies": {
     "@torus-network/sdk": "workspace:*",
+    "rustie": "catalog:",
     "superjson": "catalog:",
     "zod": "catalog:"
   },

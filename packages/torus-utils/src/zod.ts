@@ -21,26 +21,26 @@ import { makeErr, makeOk } from "./result/sync.js";
  * // Error path becomes ["user", "name"] instead of []
  * ```
  */
-export function prefixPath<I, O>(
-  res: z.SafeParseReturnType<I, O>,
+export function prefixPath<T>(
+  res: z.ZodSafeParseResult<T>,
   path: (string | number)[],
-): z.SafeParseReturnType<I, O> {
+): z.ZodSafeParseResult<T> {
   if (res.success) return res;
   return {
     success: false as const,
     error: new ZodError(
-      res.error.issues.map((iss) => ({
+      res.error.issues.map((iss: any) => ({
         ...iss,
         path: [...path, ...iss.path],
       })),
-    ),
+    ) as z.ZodError<T>,
   };
 }
 
 /**
  * Parse a typed value using a Zod schema, instead of accepting any value.
  */
-export function parseTyped<S extends z.ZodType<unknown>>(
+export function parseTyped<S extends z.ZodType>(
   schema: S,
   val: z.input<S>,
 ): z.output<S> {
@@ -53,7 +53,7 @@ export function parseTyped<S extends z.ZodType<unknown>>(
 export function safeParseTyped<S extends z.ZodType>(
   schema: S,
   val: z.input<S>,
-): z.SafeParseReturnType<z.input<S>, z.output<S>> {
+): z.ZodSafeParseResult<z.output<S>> {
   return schema.safeParse(val);
 }
 
@@ -98,19 +98,15 @@ export function safeParseTyped<S extends z.ZodType>(
  * // res1 and res2 are Result<{ name: string }, z.ZodError<{ name: unknown }>>
  */
 export const zodParseResult =
-  <O, I, S extends z.ZodSchema<O, z.ZodTypeDef, I>>(
-    schema: S,
-    params?: Parameters<S["safeParse"]>[1],
-  ) =>
+  <S extends z.ZodType>(schema: S, params?: Parameters<S["safeParse"]>[1]) =>
   <Strict extends boolean = false>(
-    input: Strict extends true ? z.input<S> : I,
-  ): Result<z.output<S>, z.ZodError<I>> => {
+    input: Strict extends true ? z.input<S> : unknown,
+  ): Result<z.output<S>, z.ZodError<z.output<S>>> => {
     const parseRes = schema.safeParse(input, params);
     if (parseRes.success) {
       return makeOk(parseRes.data);
     }
-    // [After migration to Zod V4] Note: the error type using `z.output<S>` here
-    // is weird, but seems consistent with Zod's internal usage.
-
-    return makeErr<z.ZodError<I>>(parseRes.error);
+    // Note: the error type using `z.output<S>` here is weird, but seems
+    // consistent with Zod's internal usage.
+    return makeErr<z.ZodError<z.output<S>>>(parseRes.error);
   };

@@ -2,11 +2,11 @@ import type { StorageKey } from "@polkadot/types";
 import type { Codec } from "@polkadot/types/types";
 import { assert_error } from "@torus-network/torus-utils";
 import { trySync } from "@torus-network/torus-utils/try-catch";
-import type { z, ZodTypeAny } from "zod";
+import type { z, ZodType } from "zod";
 
 // ==== Storage maps ====
 
-export function handleMapValues<K extends Codec, T extends ZodTypeAny>(
+export function handleMapValues<K extends Codec, T extends ZodType>(
   rawEntries: [K, Codec][],
   schema: T,
 ): [z.output<T>[], Error[]] {
@@ -33,7 +33,7 @@ export function handleMapValues<K extends Codec, T extends ZodTypeAny>(
   return [entries, errors];
 }
 
-export function handleMapEntries<K extends ZodTypeAny, V extends ZodTypeAny>(
+export function handleMapEntries<K extends ZodType, V extends ZodType>(
   rawEntries: [StorageKey<[Codec]>, Codec][],
   keySchema: K,
   valueSchema: V,
@@ -74,9 +74,9 @@ export function handleMapEntries<K extends ZodTypeAny, V extends ZodTypeAny>(
 }
 
 export function handleDoubleMapEntries<
-  K1 extends ZodTypeAny,
-  K2 extends ZodTypeAny,
-  V extends ZodTypeAny,
+  K1 extends ZodType,
+  K2 extends ZodType,
+  V extends ZodType,
 >(
   rawEntries: [StorageKey<[Codec, Codec]>, Codec][],
   key1Schema: K1,

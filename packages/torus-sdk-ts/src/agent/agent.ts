@@ -10,6 +10,7 @@ import { z } from "zod";
 import { queryNamespacePermissions } from "../chain/permission0/permission0-storage.js";
 import { queryAgents } from "../chain/torus0/torus0-storage.js";
 import type { SS58Address } from "../types/index.js";
+import { checkSS58 } from "../types/index.js";
 import { validateNamespacePath } from "../types/namespace/namespace-path.js";
 import { connectToChainRpc } from "../utils/index.js";
 import type { Helpers } from "./helpers.js";
@@ -653,7 +654,8 @@ export class AgentServer {
           );
         }
 
-        authData = { userWalletAddress: authResult.data.userWalletAddress };
+        const userWalletAddress = checkSS58(authResult.data.userWalletAddress);
+        authData = { userWalletAddress };
       }
 
       if (options.namespace?.enabled !== false && authData) {
@@ -702,13 +704,14 @@ export class AgentServer {
           : {}),
         checkTransaction: checkTransaction(this.api),
       };
-
+      // @ts-expect-error idk
       const result = await callback(input, context);
 
       if ("ok" in result) {
+        // @ts-expect-error idk
         return c.json(result.ok);
       }
-
+      // @ts-expect-error idk
       return c.json(result.err, 400);
     };
 

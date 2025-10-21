@@ -7,14 +7,13 @@
  *
  */
 
-import type { FC } from "react";
-
 import { env, PublicEnvScript } from "next-runtime-env";
 import type { NonceConfig } from "next-runtime-env/build/typings/nonce";
 import { unstable_noStore as noStore } from "next/cache";
+import type { FC } from "react";
 import type { Equals } from "tsafe";
 import { assert } from "tsafe";
-import type { ZodType, ZodTypeAny } from "zod";
+import type { ZodType } from "zod";
 import { z } from "zod";
 
 interface EnvScriptProps {
@@ -23,7 +22,7 @@ interface EnvScriptProps {
 
 interface ZodEnvScriptProps extends EnvScriptProps {
   skipValidation?: boolean;
-  schema: Record<string, ZodTypeAny>;
+  schema: Record<string, ZodType>;
 }
 
 /**
@@ -88,12 +87,12 @@ interface BuildEnvProviderOptions {
  * const a = env('NEXT_PUBLIC_FAVORITE_COLOR')
  * ```
  */
-export function buildZodEnvScript<S extends Record<string, ZodType<unknown>>>(
+export function buildZodEnvScript<S extends Record<string, ZodType>>(
   schema: S,
   opts?: BuildEnvProviderOptions,
 ): {
   EnvScript: FC<EnvScriptProps>;
-  env: <K extends string & keyof S>(key: K) => z.infer<S[K]>;
+  env: <K extends string & keyof S>(key: K) => z.output<S[K]>;
 } {
   return {
     EnvScript: (props) => (
@@ -103,19 +102,20 @@ export function buildZodEnvScript<S extends Record<string, ZodType<unknown>>>(
         {...props}
       />
     ),
-    env: (key) => {
+    env: <K extends string & keyof S>(key: K): z.output<S[K]> => {
       const val = env(key);
-      if (opts?.skipValidation) {
-        return val;
-      }
-      assert(schema[key], `Schema not found for environment variable ${key}`);
-      const parsed = schema[key].safeParse(val);
+      // if (opts?.skipValidation) {
+      //   return val;
+      // }
+      const keySchema: S[K] = schema[key];
+      assert(keySchema, `Schema not found for environment variable ${key}`);
+      const parsed = keySchema.safeParse(val);
       if (!parsed.success) {
         const msg = `Failed to validate environment variable ${key}: ${parsed.error.message}`;
         console.log(msg, parsed.error);
         throw new Error(msg);
       }
-      return parsed.data;
+      return parsed.data as z.output<S[K]>;
     },
   };
 }

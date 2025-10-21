@@ -151,11 +151,7 @@ export const isValidNamespaceSegment = (segment: string): boolean => {
  * });
  * ```
  */
-export const namespaceSegmentField = (): z.ZodType<
-  NamespaceSegment,
-  z.ZodTypeDef,
-  string
-> =>
+export const namespaceSegmentField = (): z.ZodType<NamespaceSegment, string> =>
   z.string().transform((segment, ctx) => {
     const [error, validSegment] = validateNamespaceSegment(segment);
     if (error !== undefined) {
@@ -244,11 +240,7 @@ export const isValidNamespacePath = (path: string): boolean => {
  * });
  * ```
  */
-export const namespacePathParser = (): z.ZodType<
-  NamespacePath,
-  z.ZodTypeDef,
-  string
-> =>
+export const namespacePathParser = (): z.ZodType<NamespacePath, string> =>
   z.string().transform((path, ctx) => {
     const [error, segments] = validateNamespacePath(path);
     if (error !== undefined) {

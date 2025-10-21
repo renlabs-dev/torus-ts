@@ -2,7 +2,7 @@ import { Option as polkadot_Option } from "@polkadot/types";
 import type { Codec } from "@polkadot/types/types";
 import type { Option } from "@torus-network/torus-utils";
 import { match } from "rustie";
-import type { ZodType, ZodTypeAny, ZodTypeDef } from "zod";
+import type { ZodType } from "zod";
 import { z } from "zod";
 
 // ==== Option ====
@@ -18,9 +18,9 @@ export const Option_schema = z.custom<polkadot_Option<Codec>>(
 /**
  * Parser for Substrate `Option` types to Rust-like `{Some: T} | {None: null}` format.
  */
-export const sb_option = <T extends ZodTypeAny>(
+export const sb_option = <T extends ZodType>(
   inner: T,
-): ZodType<Option<z.output<T>>, z.ZodTypeDef, polkadot_Option<Codec>> =>
+): ZodType<Option<z.output<T>>, polkadot_Option<Codec>> =>
   Option_schema.transform((val, ctx): Option<z.output<T>> => {
     type Out = z.output<T>;
     if (val.isNone) {
@@ -49,12 +49,10 @@ export const sb_option = <T extends ZodTypeAny>(
 /**
  * Parser for Substrate `Option` types with fallback to default value when `None`.
  */
-export const sb_option_default = <
-  T extends ZodType<unknown, ZodTypeDef, unknown>,
->(
+export const sb_option_default = <T extends ZodType>(
   inner: T,
   defaultValue: z.output<T>,
-): ZodType<z.output<T>, z.ZodTypeDef, polkadot_Option<Codec>> =>
+): ZodType<z.output<T>, polkadot_Option<Codec>> =>
   sb_option<T>(inner).transform((val, _ctx) => {
     const r = match(val)({
       Some: (value) => value,
@@ -68,12 +66,11 @@ export const sb_option_default = <
 /**
  * Parser that requires Substrate `Option` to be `Some`, failing if `None`.
  */
-export const sb_some = <T extends ZodTypeAny>(
+export const sb_some = <T extends ZodType>(
   inner: T,
-): ZodType<z.output<T>, z.ZodTypeDef, polkadot_Option<z.input<T>>> =>
+): ZodType<z.output<T>, polkadot_Option<Codec>> =>
   sb_option<T>(inner).transform(
     (val, ctx): z.output<T> =>
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-return
       match(val)({
         None: () => {
           ctx.addIssue({
@@ -83,7 +80,6 @@ export const sb_some = <T extends ZodTypeAny>(
           });
           return z.NEVER;
         },
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         Some: (value) => value,
       }),
   );

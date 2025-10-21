@@ -9,7 +9,7 @@ export const validateEnvOrExit =
 
     if (!result.success) {
       console.error("❌ Invalid environment variables:");
-      console.error(JSON.stringify(result.error.format(), null, 2));
+      console.error(z.prettifyError(result.error));
       process.exit(1);
     }
 

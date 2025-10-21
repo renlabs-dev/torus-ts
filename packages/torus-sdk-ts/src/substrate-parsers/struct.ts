@@ -1,7 +1,15 @@
 import { Struct } from "@polkadot/types";
+import type { Equals } from "tsafe";
+import { assert } from "tsafe";
 import type { Merge } from "type-fest";
 import type { ZodRawShape } from "zod";
 import { z } from "zod";
+import type { $InferObjectOutput } from "zod/v4/core";
+
+export const Map_schema = z.custom<Map<unknown, unknown>>(
+  (val) => val instanceof Map,
+  "not a Map",
+);
 
 export declare type ZodRawCreateParams =
   | {
@@ -16,31 +24,36 @@ export declare type ZodRawCreateParams =
 /**
  * Similar to `z.object()` but accepts JavaScript `Map`.
  */
-export const z_typed_map = <T extends ZodRawShape>(
-  shape: T,
+export const z_typed_map = <Shape extends ZodRawShape>(
+  shape: Shape,
   params?: ZodRawCreateParams,
-) =>
-  z
-    .custom<Map<unknown, unknown>>((data) => data instanceof Map, "not a Map")
-    .transform((map, ctx) => {
-      const obj: Record<string | number | symbol, unknown> = {};
-      for (const [key, value] of map.entries()) {
-        if (
-          typeof key !== "string" &&
-          typeof key !== "number" &&
-          typeof key !== "symbol"
-        ) {
-          ctx.addIssue({
-            code: "custom",
-            message: `Map key must be a string, number, or symbol. Received ${typeof key}`,
-          });
-          continue;
-        }
-        obj[key] = value;
+): z.ZodType<
+  $InferObjectOutput<Shape, Record<never, never>>,
+  Map<unknown, unknown>
+> =>
+  Map_schema.transform((map, ctx) => {
+    const obj: Record<string, unknown> = {};
+    for (const [key, value] of map.entries()) {
+      if (typeof key !== "string") {
+        ctx.addIssue({
+          code: "custom",
+          message: `Map key must be a string, number, or symbol. Received ${typeof key}`,
+        });
+        continue;
       }
-      return obj;
-    })
-    .pipe(z.object(shape, params));
+      obj[key] = value;
+    }
+    return obj;
+  }).pipe(z.object(shape, params));
+
+function _test_z_typed_map() {
+  const _map_schema = z_typed_map({
+    a: z.string(),
+    b: z.number(),
+  });
+  type _map_schema_out_t = z.output<typeof _map_schema>;
+  assert<Equals<_map_schema_out_t, { a: string; b: number }>>();
+}
 
 // ==== Struct ====
 
@@ -73,10 +86,22 @@ export const Struct_schema = z.custom<Struct>(
  * // - struct.get('name') returns a `Text`/`Bytes` `Codec`
  * ```
  */
-export const sb_struct = <T extends ZodRawShape>(
-  shape: T,
+export const sb_struct = <Shape extends ZodRawShape>(
+  shape: Shape,
   params?: ZodRawCreateParams,
-) => Struct_schema.pipe(z_typed_map(shape, params));
+): z.ZodType<$InferObjectOutput<Shape, Record<never, never>>, Struct> =>
+  Struct_schema.transform((v) => v as Map<unknown, unknown>).pipe(
+    z_typed_map(shape, params),
+  );
+
+function _test_sb_struct() {
+  const _struct_schema = sb_struct({
+    a: z.string(),
+    b: z.number(),
+  });
+  type _struct_schema_out_t = z.output<typeof _struct_schema>;
+  assert<Equals<_struct_schema_out_t, { a: string; b: number }>>();
+}
 
 /**
  * Parser for hybrid Substrate `Struct` types that have both `Map`-like and object-like

@@ -267,41 +267,43 @@ async function main() {
         console.log(`\n🔍 Permission ${permId.slice(0, 8)}...:`);
         console.log(`  Delegator: ${emission.delegator}`);
         // Extract first recipient from stream scope
-        const firstRecipient = Array.from(emission.scope.recipients.keys())[0];
+        const firstRecipient = Array.from(
+          emission.streamScope.recipients.keys(),
+        )[0];
         console.log(`  First Recipient: ${firstRecipient ?? "None"}`);
-        console.log(`  Accumulating: ${emission.scope.accumulating}`);
+        console.log(`  Accumulating: ${emission.streamScope.accumulating}`);
 
         // Show allocation type
-        if ("Streams" in emission.scope.allocation) {
+        if ("Streams" in emission.streamScope.allocation) {
           console.log(
-            `  Allocation: Streams (${emission.scope.allocation.Streams.size} streams)`,
+            `  Allocation: Streams (${emission.streamScope.allocation.Streams.size} streams)`,
           );
-          for (const [streamId, percentage] of emission.scope.allocation
+          for (const [streamId, percentage] of emission.streamScope.allocation
             .Streams) {
             console.log(
               `    - Stream ${streamId.slice(0, 8)}...: ${percentage}%`,
             );
           }
-        } else if ("FixedAmount" in emission.scope.allocation) {
+        } else if ("FixedAmount" in emission.streamScope.allocation) {
           console.log(
-            `  Allocation: FixedAmount (${emission.scope.allocation.FixedAmount})`,
+            `  Allocation: FixedAmount (${emission.streamScope.allocation.FixedAmount})`,
           );
         }
 
         // Show distribution type
-        if ("Manual" in emission.scope.distribution) {
+        if ("Manual" in emission.streamScope.distribution) {
           console.log(`  Distribution: Manual`);
-        } else if ("Automatic" in emission.scope.distribution) {
+        } else if ("Automatic" in emission.streamScope.distribution) {
           console.log(
-            `  Distribution: Automatic (threshold: ${emission.scope.distribution.Automatic})`,
+            `  Distribution: Automatic (threshold: ${emission.streamScope.distribution.Automatic})`,
           );
-        } else if ("AtBlock" in emission.scope.distribution) {
+        } else if ("AtBlock" in emission.streamScope.distribution) {
           console.log(
-            `  Distribution: AtBlock (${emission.scope.distribution.AtBlock})`,
+            `  Distribution: AtBlock (${emission.streamScope.distribution.AtBlock})`,
           );
-        } else if ("Interval" in emission.scope.distribution) {
+        } else if ("Interval" in emission.streamScope.distribution) {
           console.log(
-            `  Distribution: Interval (${emission.scope.distribution.Interval} blocks)`,
+            `  Distribution: Interval (${emission.streamScope.distribution.Interval} blocks)`,
           );
         }
 
@@ -313,7 +315,7 @@ async function main() {
     console.log("\n📋 Test 4.2: Filtering by recipient");
     const [emissionError2, recipientEmissions] = await queryStreamPermissions(
       api,
-      (perm: StreamContract) => perm.scope.recipients.has(testAddress),
+      (perm: StreamContract) => perm.streamScope.recipients.has(testAddress),
     );
 
     if (emissionError2) {
@@ -328,7 +330,7 @@ async function main() {
     console.log("\n📋 Test 4.3: Filtering for stream-based allocations");
     const [emissionError3, streamEmissions] = await queryStreamPermissions(
       api,
-      (perm: StreamContract) => "Streams" in perm.scope.allocation,
+      (perm: StreamContract) => "Streams" in perm.streamScope.allocation,
     );
 
     if (emissionError3) {
@@ -342,7 +344,7 @@ async function main() {
     const [emissionError4, accumulatingEmissions] =
       await queryStreamPermissions(
         api,
-        (perm: StreamContract) => perm.scope.accumulating === true,
+        (perm: StreamContract) => perm.streamScope.accumulating === true,
       );
 
     if (emissionError4) {
@@ -360,7 +362,8 @@ async function main() {
     const [emissionError5, complexFiltered] = await queryStreamPermissions(
       api,
       (perm: StreamContract) =>
-        perm.scope.accumulating === true && "Manual" in perm.scope.distribution,
+        perm.streamScope.accumulating === true &&
+        "Manual" in perm.streamScope.distribution,
     );
 
     if (emissionError5) {

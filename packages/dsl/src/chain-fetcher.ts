@@ -6,9 +6,9 @@ import {
   queryPermission,
   queryStakeOut,
 } from "@torus-network/sdk/chain";
-import type { SS58Address } from "@torus-network/sdk/types";
 import { checkSS58, H256_HEX } from "@torus-network/sdk/types";
 import { connectToChainRpc } from "@torus-network/sdk/utils";
+import { match } from "rustie";
 import type {
   BlockFact,
   InactiveUnlessRedelegatedFact,
@@ -242,21 +242,18 @@ export class TorusChainFetcher implements ChainFetcher {
         };
       }
 
-      // Extract recipient based on permission type
-      let recipient: SS58Address | null = null;
-      if ("Stream" in permission.scope) {
-        // For stream permissions, get first recipient from recipients map
-        const recipients = Array.from(
-          permission.scope.Stream.recipients.keys(),
-        );
-        if (recipients.length > 0) {
-          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-          recipient = recipients[0]!;
-        }
-      } else if ("Namespace" in permission.scope) {
-        // For namespace permissions, use the recipient field
-        recipient = permission.scope.Namespace.recipient;
-      }
+      // Rewriting abobe code
+      // let recipient: SS58Address | null = null;
+      const recipient = match(permission.scope)({
+        Stream: (streamScope) => {
+          // For stream permissions, get first recipient from recipients map
+          const recipients = Array.from(streamScope.recipients.keys());
+          return recipients[0] ?? null;
+        },
+        Namespace: ({ recipient }) => recipient,
+        Curator: ({ recipient: _ }) => null,
+        Wallet: ({ recipient: _ }) => null,
+      });
 
       if (!recipient) {
         console.warn(`No recipient found for permission ${permissionId}`);

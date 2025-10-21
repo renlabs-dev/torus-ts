@@ -42,6 +42,10 @@
       "types": "./dist/types/index.d.ts",
       "default": "./dist/types/index.js"
     },
+    "./substrate-parsers": {
+      "types": "./dist/substrate-parsers/index.d.ts",
+      "default": "./dist/substrate-parsers/index.js"
+    },
     "./utils": {
       "types": "./dist/utils/index.d.ts",
       "default": "./dist/utils/index.js"

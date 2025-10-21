@@ -110,7 +110,7 @@ export const isValidAgentName = (name: string): boolean => {
  * });
  * ```
  */
-export const agentNameField = (): z.ZodType<AgentName, z.ZodTypeDef, string> =>
+export const agentNameField = (): z.ZodType<AgentName, string> =>
   z.string().transform((name, ctx) => {
     const [error, agentName] = validateAgentName(name);
     if (error !== undefined) {

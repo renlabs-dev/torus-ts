@@ -16,9 +16,9 @@ export const BTreeSet_schema = z.custom<BTreeSet>(
  *
  * Converts to JavaScript `Array` with validated elements.
  */
-export const sb_array = <T, S extends ZodType<T, z.ZodTypeDef, unknown>>(
+export const sb_array = <S extends ZodType>(
   inner: S,
-): z.ZodType<z.output<S>[], z.ZodTypeDef, unknown> =>
+): z.ZodType<z.output<S>[]> =>
   z
     .custom<unknown[] | Set<unknown> | BTreeSet>((val: unknown) => {
       if (Array.isArray(val)) {
@@ -32,8 +32,8 @@ export const sb_array = <T, S extends ZodType<T, z.ZodTypeDef, unknown>>(
       }
       return false;
     })
-    .transform((val, ctx): T[] => {
-      const xs: T[] = [];
+    .transform((val, ctx): z.output<S>[] => {
+      const xs: z.output<S>[] = [];
       val.forEach((v, i) => {
         const result = inner.safeParse(v);
         if (!result.success) {
@@ -62,20 +62,14 @@ const Map_schema = z.custom<Map<unknown, unknown>>(
 /**
  * Parser for JavaScript `Map` with validated keys and values.
  */
-export const sb_map = <
-  K,
-  V,
-  KS extends z.ZodType<K, z.ZodTypeDef, unknown>,
-  VS extends z.ZodType<V, z.ZodTypeDef, unknown>,
->(
+export const sb_map = <KS extends z.ZodType, VS extends z.ZodType>(
   keySchema: KS,
   valueSchema: VS,
-): z.ZodType<
-  Map<z.output<KS>, z.output<VS>>,
-  z.ZodTypeDef,
-  Map<unknown, unknown>
-> => {
+): z.ZodType<Map<z.output<KS>, z.output<VS>>> => {
   return Map_schema.transform((val, ctx) => {
+    type K = z.output<KS>;
+    type V = z.output<VS>;
+
     const result = new Map<K, V>();
     for (const [keyRaw, valueRaw] of val) {
       const parsedKey = keySchema.safeParse(keyRaw);

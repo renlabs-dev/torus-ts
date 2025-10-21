@@ -5,11 +5,9 @@ import { z } from "zod";
 import { sb_number } from "./primitives.js";
 import type { ZodRawCreateParams } from "./struct.js";
 
-export type BaseSchema = z.ZodType<unknown, z.ZodTypeDef, unknown>;
+export type ZodSubstrateEnumVariants = Record<string, z.ZodType>;
 
-export type ZodSubstrateEnumVariants = Record<string, BaseSchema>;
-
-export type zOut<S extends BaseSchema> = z.output<S>;
+export type zOut<S extends z.ZodType> = z.output<S>;
 
 export type MapZodVariantsToRaw<V extends ZodSubstrateEnumVariants> = {
   [K in keyof V & string]: Record<K, zOut<V[K]>>;
@@ -44,7 +42,7 @@ export const Enum_schema = z.custom<SubstrateEnum>(
  */
 export const sb_enum = <Variants extends ZodSubstrateEnumVariants>(
   variants: Variants,
-) =>
+): z.ZodType<MapZodVariantsToRaw<Variants>> =>
   Enum_schema.transform((input, ctx): MapZodVariantsToRaw<Variants> => {
     // 1) Must be a polkadot-js Enum instance
     if (!(input instanceof SubstrateEnum)) {

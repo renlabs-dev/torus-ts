@@ -189,7 +189,7 @@ export async function queryStreamPermissions(
         // Reconstruct as StreamContract with the extracted stream scope
         const streamPermission: StreamContract = {
           ...permission,
-          scope: streamScope,
+          streamScope,
         };
         if (filterFn(streamPermission)) {
           streamPermissions.set(permissionId, streamPermission);
