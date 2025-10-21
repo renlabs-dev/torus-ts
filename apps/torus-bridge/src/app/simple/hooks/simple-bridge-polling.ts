@@ -29,6 +29,8 @@ interface BalancePollingParams<T> {
   extractValue: (data: T) => bigint;
   /** Human-readable chain/location name for logging */
   locationName: string;
+  /** If true, success when balance differs from baseline (for cases with unpredictable fees) */
+  anyChange?: boolean;
 }
 
 /**
@@ -52,14 +54,10 @@ export async function pollBalanceUntilTarget<T>(
     expectedIncrease,
     extractValue,
     locationName,
+    anyChange = false,
   } = params;
 
-  console.log(
-    `Polling ${locationName} balance - Baseline: ${Number(baselineBalance) / 1e18} TORUS, Expected increase: ${Number(expectedIncrease) / 1e18} TORUS`,
-  );
-
   const targetBalance = baselineBalance + expectedIncrease;
-  console.log(`Target balance: ${Number(targetBalance) / 1e18} TORUS`);
 
   let pollCount = 0;
   const abortController = new AbortController();
@@ -72,7 +70,6 @@ export async function pollBalanceUntilTarget<T>(
         }
 
         pollCount++;
-        console.log(`Poll ${pollCount}: Checking ${locationName} balance`);
 
         const [refetchError, refetchResult] = await tryAsync(refetchBalance());
 
@@ -84,7 +81,6 @@ export async function pollBalanceUntilTarget<T>(
         }
 
         if (refetchResult.status === "error") {
-          console.warn(`Refetch returned error status, skipping this poll`);
           return;
         }
 
@@ -92,10 +88,12 @@ export async function pollBalanceUntilTarget<T>(
           ? extractValue(refetchResult.data)
           : 0n;
 
-        console.log(`Current balance: ${Number(currentBalance) / 1e18} TORUS`);
+        // Check success condition based on mode
+        const isSuccess = anyChange
+          ? currentBalance !== baselineBalance
+          : currentBalance >= targetBalance;
 
-        if (currentBalance >= targetBalance) {
-          console.log(`Balance target reached! Resolving polling`);
+        if (isSuccess) {
           clearInterval(intervalId);
           abortController.abort();
           resolve({ success: true });
@@ -103,7 +101,6 @@ export async function pollBalanceUntilTarget<T>(
         }
 
         if (pollCount >= POLLING_CONFIG.MAX_POLLS) {
-          console.log(`Polling timeout reached after ${pollCount} attempts`);
           clearInterval(intervalId);
           abortController.abort();
           reject(
@@ -142,12 +139,19 @@ export async function pollBalanceUntilTarget<T>(
 
 /**
  * Specialized polling for EVM balance with value property.
+ *
+ * @param refetchBalance - Function to refetch balance
+ * @param baselineBalance - Current baseline balance
+ * @param expectedIncrease - Expected balance increase (ignored if anyChange is true)
+ * @param locationName - Chain/location name for logging
+ * @param anyChange - If true, succeeds when balance differs from baseline (for unpredictable fees)
  */
 export async function pollEvmBalance(
   refetchBalance: () => Promise<{ status: string; data?: { value: bigint } }>,
   baselineBalance: bigint,
   expectedIncrease: bigint,
   locationName: string,
+  anyChange?: boolean,
 ): Promise<PollingResult> {
   return pollBalanceUntilTarget({
     refetchBalance,
@@ -155,5 +159,6 @@ export async function pollEvmBalance(
     expectedIncrease,
     extractValue: (data) => data.value,
     locationName,
+    anyChange,
   });
 }

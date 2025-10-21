@@ -61,6 +61,11 @@ interface BaseToNativeStep1Params {
   }>;
   /** Optional current Torus EVM balance with value as bigint, undefined if not loaded */
   torusEvmBalance?: { value: bigint };
+  /** Function to refetch Base balance from the network */
+  refetchBaseBalance: () => Promise<{
+    status: string;
+    data?: { value: bigint };
+  }>;
   /** Function to update the bridge UI state */
   updateBridgeState: (updates: {
     step: SimpleBridgeStep;
@@ -123,6 +128,7 @@ export async function executeBaseToNativeStep1(
     warpCore,
     refetchTorusEvmBalance,
     torusEvmBalance,
+    refetchBaseBalance,
     updateBridgeState,
     addTransaction,
     getExplorerUrl,
@@ -179,6 +185,11 @@ export async function executeBaseToNativeStep1(
     message: "Signing transaction...",
   });
 
+  // Capture baseline balance BEFORE sending transaction
+  await refetchTorusEvmBalance();
+  const baselineBalance = torusEvmBalance?.value ?? 0n;
+  const expectedIncrease = toNano(amount.trim());
+
   const [hyperlaneError, step1TxHash] = await tryAsync(
     triggerHyperlaneTransfer({
       origin: "base",
@@ -220,10 +231,6 @@ export async function executeBaseToNativeStep1(
 
   updateBridgeState({ step: SimpleBridgeStep.STEP_1_CONFIRMING });
 
-  await refetchTorusEvmBalance();
-  const baselineBalance = torusEvmBalance?.value ?? 0n;
-  const expectedIncrease = toNano(amount.trim());
-
   const pollingResult = await pollEvmBalance(
     refetchTorusEvmBalance,
     baselineBalance,
@@ -249,6 +256,9 @@ export async function executeBaseToNativeStep1(
       pollingResult.errorMessage ?? "Transfer confirmation failed",
     );
   }
+
+  // Refetch Base balance to reflect the debit from the transfer
+  await refetchBaseBalance();
 
   updateBridgeState({ step: SimpleBridgeStep.STEP_1_COMPLETE });
   addTransaction({
@@ -418,6 +428,15 @@ export async function executeBaseToNativeStep2(
     throw new Error(`Torus EVM chain ${torusEvmChainId} not found in config`);
   }
 
+  // Capture baseline balance BEFORE sending transaction
+  await refetchNativeBalance();
+  const baselineNativeBalance = nativeBalance?.value ?? 0n;
+  const expectedNativeIncrease = toNano(amount.trim());
+
+  console.log(
+    `Polling Native balance - Baseline: ${Number(baselineNativeBalance) / 1e18} TORUS, Expected increase: ${parseFloat(amount)} TORUS`,
+  );
+
   const [withdrawError, txHash] = await tryAsync(
     withdrawFromTorusEvm(
       walletClient,
@@ -472,14 +491,6 @@ export async function executeBaseToNativeStep2(
     console.warn("Failed to get transaction receipt:", receiptError.message);
   }
 
-  await refetchNativeBalance();
-  const baselineNativeBalance = nativeBalance?.value ?? 0n;
-  const expectedNativeIncrease = toNano(amount.trim());
-
-  console.log(
-    `Polling Native balance - Baseline: ${Number(baselineNativeBalance) / 1e18} TORUS, Expected increase: ${parseFloat(amount)} TORUS`,
-  );
-
   const pollingResult = await pollEvmBalance(
     refetchNativeBalance,
     baselineNativeBalance,
@@ -506,6 +517,9 @@ export async function executeBaseToNativeStep2(
       pollingResult.errorMessage ?? "Withdrawal confirmation failed",
     );
   }
+
+  // Refetch Torus EVM balance to reflect the debit from the withdrawal
+  await refetchTorusEvmBalance();
 
   addTransaction({
     step: 2,

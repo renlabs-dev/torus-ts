@@ -54,6 +54,11 @@ interface NativeToBaseStep1Params {
   }>;
   /** Optional current Torus EVM balance with value as bigint, undefined if not loaded */
   torusEvmBalance?: { value: bigint };
+  /** Function to refetch Native balance from the network, returns status and optional balance data */
+  refetchNativeBalance: () => Promise<{
+    status: string;
+    data?: { value: bigint };
+  }>;
   /** Function to update the bridge UI state with step progress and error messages */
   updateBridgeState: (updates: {
     step: SimpleBridgeStep;
@@ -61,6 +66,8 @@ interface NativeToBaseStep1Params {
   }) => void;
   /** Function to add transaction entries to the UI for tracking progress */
   addTransaction: (tx: SimpleBridgeTransaction) => void;
+  /** Function to generate blockchain explorer URLs */
+  getExplorerUrl: (txHash: string, chainName: string) => string;
 }
 
 /**
@@ -70,7 +77,8 @@ interface NativeToBaseStep1Params {
  * Polls Torus EVM balance after finalization to confirm tokens arrived.
  *
  * @param tracker - Event tracker from Substrate transaction
- * @param refetchTorusEvmBalance - Function to refetch balance
+ * @param refetchTorusEvmBalance - Function to refetch Torus EVM balance
+ * @param refetchNativeBalance - Function to refetch Native balance
  * @param baselineBalance - Starting balance before transfer
  * @param expectedIncrease - Expected balance increase
  * @param updateBridgeState - UI state update function
@@ -85,6 +93,10 @@ async function trackSubstrateTransaction(
     status: string;
     data?: { value: bigint };
   }>,
+  refetchNativeBalance: () => Promise<{
+    status: string;
+    data?: { value: bigint };
+  }>,
   baselineBalance: bigint,
   expectedIncrease: bigint,
   amount: string,
@@ -93,8 +105,10 @@ async function trackSubstrateTransaction(
     errorMessage?: string;
   }) => void,
   addTransaction: (tx: SimpleBridgeTransaction) => void,
+  getExplorerUrl: (txHash: string, chainName: string) => string,
 ): Promise<void> {
   const abortController = new AbortController();
+  let capturedTxHash: string | undefined;
 
   const trackerPromise = new Promise<void>((resolve, reject) => {
     const handleFinalized = async () => {
@@ -104,10 +118,6 @@ async function trackSubstrateTransaction(
 
       tracker.off("finalized", onFinalized);
       tracker.off("error", onError);
-
-      console.log(
-        "DEBUG - Substrate transaction finalized! Starting Torus EVM balance polling",
-      );
 
       const pollingResult = await pollEvmBalance(
         refetchTorusEvmBalance,
@@ -135,12 +145,19 @@ async function trackSubstrateTransaction(
         return;
       }
 
+      // Refetch Native balance to reflect the debit from the transfer
+      await refetchNativeBalance();
+
       updateBridgeState({ step: SimpleBridgeStep.STEP_1_COMPLETE });
       addTransaction({
         step: 1,
         status: "SUCCESS",
         chainName: "Torus Native",
         message: "Bridge complete - tokens arrived in Torus EVM",
+        txHash: capturedTxHash,
+        explorerUrl: capturedTxHash
+          ? getExplorerUrl(capturedTxHash, "Torus EVM")
+          : undefined,
       });
       resolve();
     };
@@ -166,11 +183,28 @@ async function trackSubstrateTransaction(
       reject(error instanceof Error ? error : new Error(String(error)));
     };
 
-    const onFinalized = () => void handleFinalized();
+    // Capture txHash from early events
+    const handleTxHash = (data?: unknown) => {
+      if (data && typeof data === "object" && "txHash" in data) {
+        const hash = (data as { txHash?: string }).txHash;
+        if (hash && !capturedTxHash) {
+          capturedTxHash = hash;
+        }
+      }
+    };
+
+    const onFinalized = (data?: unknown) => {
+      handleTxHash(data);
+      void handleFinalized();
+    };
     const onError = (error: unknown) => void handleError(error);
+    const onSubmitted = (data?: unknown) => handleTxHash(data);
+    const onInBlock = (data?: unknown) => handleTxHash(data);
 
     tracker.on("finalized", onFinalized);
     tracker.on("error", onError);
+    tracker.on("submitted", onSubmitted);
+    tracker.on("inBlock", onInBlock);
   });
 
   const [timeoutError] = await tryAsync(
@@ -221,8 +255,10 @@ export async function executeNativeToBaseStep1(
     api,
     sendTx,
     refetchTorusEvmBalance,
+    refetchNativeBalance,
     updateBridgeState,
     addTransaction,
+    getExplorerUrl,
   } = params;
 
   const amountRems = toNano(amount.trim());
@@ -235,6 +271,11 @@ export async function executeNativeToBaseStep1(
     chainName: "Torus Native",
     message: "Preparing Native → Torus EVM bridge",
   });
+
+  // Capture baseline balance BEFORE sending transaction
+  const refetchResult = await refetchTorusEvmBalance();
+  const baselineBalance = refetchResult.data?.value ?? 0n;
+  const expectedIncrease = toNano(amount.trim());
 
   updateBridgeState({ step: SimpleBridgeStep.STEP_1_SIGNING });
 
@@ -274,18 +315,16 @@ export async function executeNativeToBaseStep1(
 
   updateBridgeState({ step: SimpleBridgeStep.STEP_1_CONFIRMING });
 
-  const refetchResult = await refetchTorusEvmBalance();
-  const baselineBalance = refetchResult.data?.value ?? 0n;
-  const expectedIncrease = toNano(amount.trim());
-
   await trackSubstrateTransaction(
     tracker,
     refetchTorusEvmBalance,
+    refetchNativeBalance,
     baselineBalance,
     expectedIncrease,
     amount,
     updateBridgeState,
     addTransaction,
+    getExplorerUrl,
   );
 }
 
@@ -316,10 +355,18 @@ interface NativeToBaseStep2Params {
     amount: string;
     recipient: string;
   }) => Promise<string>;
-  /** Function to refetch Base balance */
-  refetchBaseBalance: () => Promise<unknown>;
+  /** Function to refetch Base balance from the network, returns status and optional balance data */
+  refetchBaseBalance: () => Promise<{
+    status: string;
+    data?: { value: bigint };
+  }>;
   /** Optional current Base balance */
   baseBalance?: { value: bigint };
+  /** Function to refetch Torus EVM balance from the network */
+  refetchTorusEvmBalance: () => Promise<{
+    status: string;
+    data?: { value: bigint };
+  }>;
   /** Function to update bridge UI state */
   updateBridgeState: (updates: {
     step: SimpleBridgeStep;
@@ -352,7 +399,7 @@ export async function executeNativeToBaseStep2(
     switchChain,
     triggerHyperlaneTransfer,
     refetchBaseBalance,
-    baseBalance,
+    refetchTorusEvmBalance,
     updateBridgeState,
     addTransaction,
     getExplorerUrl,
@@ -431,6 +478,11 @@ export async function executeNativeToBaseStep2(
     message: "Signing transaction...",
   });
 
+  // Capture baseline balance BEFORE sending transaction
+  const refetchResult = await refetchBaseBalance();
+  const baseBaselineBalance = refetchResult.data?.value ?? 0n;
+  const baseExpectedIncrease = toNano(amount.trim());
+
   const [hyperlaneError, txHash2] = await tryAsync(
     triggerHyperlaneTransfer({
       origin: "torus",
@@ -473,18 +525,13 @@ export async function executeNativeToBaseStep2(
 
   updateBridgeState({ step: SimpleBridgeStep.STEP_2_CONFIRMING });
 
-  await refetchBaseBalance();
-  const baseBaselineBalance = baseBalance?.value ?? 0n;
-  const baseExpectedIncrease = toNano(parseFloat(amount));
-
+  // Use anyChange mode because Torus EVM fees make the exact amount unpredictable
   const pollingResult = await pollEvmBalance(
-    refetchBaseBalance as () => Promise<{
-      status: string;
-      data?: { value: bigint };
-    }>,
+    refetchBaseBalance,
     baseBaselineBalance,
     baseExpectedIncrease,
     "Base",
+    true, // anyChange = true
   );
 
   if (!pollingResult.success) {
@@ -506,6 +553,9 @@ export async function executeNativeToBaseStep2(
       pollingResult.errorMessage ?? "Transfer confirmation failed",
     );
   }
+
+  // Refetch Torus EVM balance to reflect the debit from the transfer
+  await refetchTorusEvmBalance();
 
   updateBridgeState({ step: SimpleBridgeStep.COMPLETE });
 
