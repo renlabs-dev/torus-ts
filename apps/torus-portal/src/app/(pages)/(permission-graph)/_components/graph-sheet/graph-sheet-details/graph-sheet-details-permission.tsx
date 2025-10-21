@@ -47,8 +47,7 @@ export function GraphSheetDetailsPermission({
   const distributionTargets = useMemo(() => {
     if (
       !allPermissions ||
-      !permissionData ||
-      permissionData.permissionType !== "stream"
+      permissionData?.permissionType !== "stream"
     ) {
       return [];
     }
