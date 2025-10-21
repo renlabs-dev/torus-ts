@@ -24,6 +24,9 @@ install:
   # --frozen-lockfile: don't update the lockfile
   pnpm install --ignore-scripts --frozen-lockfile
 
+install-no-lockfile:
+  pnpm install --ignore-scripts
+
 # List all packages in the workspace
 ls:
   pnpm exec turbo ls

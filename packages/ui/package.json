@@ -67,16 +67,16 @@
     "typescript": "catalog:"
   },
   "exports": {
-    "./globals.css": "./src/styles/globals.css",
-    "./postcss.config": "./postcss.config.mjs",
-    "./tailwind.config": "./tailwind.config.ts",
-    "./lib/*": "./src/lib/*.ts",
     "./components/*": "./src/components/*.tsx",
     "./components/apr": "./src/components/apr/index.ts",
-    "./hooks/*": "./src/hooks/*.ts"
+    "./globals.css": "./src/styles/globals.css",
+    "./hooks/*": "./src/hooks/*.ts",
+    "./hooks/use-debounce": "./src/hooks/use-debounce.ts",
+    "./hooks/use-infinite-scroll": "./src/hooks/use-infinite-scroll.tsx",
     "./hooks/use-mobile": "./src/hooks/use-mobile.ts",
     "./hooks/use-toast": "./src/hooks/use-toast.ts",
-    "./hooks/use-infinite-scroll": "./src/hooks/use-infinite-scroll.tsx",
-    "./hooks/use-debounce": "./src/hooks/use-debounce.ts"
+    "./lib/*": "./src/lib/*.ts",
+    "./postcss.config": "./postcss.config.mjs",
+    "./tailwind.config": "./tailwind.config.ts"
   }
 }
