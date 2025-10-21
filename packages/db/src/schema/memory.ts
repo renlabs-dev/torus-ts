@@ -25,8 +25,8 @@ import {
 /**
  * Tracks users being monitored for predictions
  */
-export const trackedUsersSchema = createTable(
-  "tracked_users",
+export const trackedTwitterUsersSchema = createTable(
+  "tracked_twitter_users",
   {
     userId: bigint("user_id").primaryKey(),
     lastKnownTweetCount: integer("last_known_tweet_count"),
@@ -73,7 +73,6 @@ export const scrapedTweetSchema = createTable(
     conversationId: bigint("conversation_id"), // Thread identifier
     parentTweetId: bigint("parent_tweet_id"), // The parent comment
 
-    scrapedAt: timestampz("scraped_at"),
     status: scrapingStatus("status").notNull(),
     ...timeFields(),
   },
