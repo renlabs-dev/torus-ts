@@ -38,13 +38,13 @@
       in
       {
         checks = {
-          pre-push-check = git-hooks.lib.${system}.run {
+          git-checks = git-hooks.lib.${system}.run {
             src = ./.;
             hooks = {
               push = {
                 enable = true;
-                name = "Format code";
-                entry = "just format-fix";
+                name = "Test it all";
+                entry = "just check-test";
                 pass_filenames = false;
                 stages = [ "pre-push" ];
               };
@@ -57,7 +57,7 @@
           packages = shellPkgs;
 
           shellHook = ''
-            ${self.checks.${system}.pre-push-check.shellHook}
+            ${self.checks.${system}.git-checks.shellHook}
           '';
         };
       });

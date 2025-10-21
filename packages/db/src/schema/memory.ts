@@ -126,9 +126,6 @@ export const predictionSchema = createTable(
   "prediction",
   {
     id: uuidv7("id").primaryKey(),
-    parsedId: uuidv7("parsed_id")
-      .notNull()
-      .references((): AnyPgColumn => parsedPredictionSchema.id),
     source: jsonb("source").notNull().$type<PredictionSource>(),
     version: integer("version").notNull().default(1), // e.g., "1.0"
     ...timeFields(),
@@ -140,7 +137,7 @@ export const predictionSchema = createTable(
  * Source information for predictions
  */
 export interface PredictionSource {
-  tweet_id: bigint;
+  tweet_id: string;
 }
 
 /**
