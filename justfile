@@ -76,7 +76,7 @@ test-all filter="*":
   pnpm exec ./scripts/dev-helper with-env turbo run test:all --continue -F "{{filter}}"
 
 # Typecheck, lint, and run tests
-check-test filter="*":
+check-test filter="*": (format-fix filter)
   pnpm exec turbo run typecheck lint test --continue -F "{{filter}}"
 
 create-package:
