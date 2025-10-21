@@ -232,6 +232,26 @@ The database uses Drizzle ORM with PostgreSQL and follows these conventions:
 
 **Reason**: These directives hide problems instead of solving them. Always fix the root cause by refactoring the code to follow best practices. If a rule genuinely needs to be changed project-wide, update the ESLint configuration file instead.
 
+### Non-Null Assertions
+
+**NEVER use the non-null assertion operator (`!`)** in TypeScript code. Instead, use `assert()` from `tsafe` with a descriptive message:
+
+```ts
+// ❌ WRONG: Non-null assertion without explanation
+const value = maybeUndefined!;
+
+// ✅ CORRECT: Use assert with a message
+import { assert } from "tsafe";
+const value = maybeUndefined;
+assert(value !== undefined, "Value should be defined because...");
+```
+
+**Rationale:**
+- `assert()` provides a clear error message when the assertion fails
+- Makes the assumption explicit and documentable
+- Helps with debugging by explaining why the value should exist
+- Follows the project's code quality standards
+
 ### Avoid Top-Level Stateful Singletons
 
 - **Never** instantiate stateful singleton objects at the module top level
@@ -284,8 +304,6 @@ type casts.
 
 Reference: <https://github.com/steinerkelvin/rustie-ts>
 
-# <<<<<<< HEAD
-
 ### Result<T,E> Error Handling
 
 Use the canonical pattern for handling `Result<T,E>` types from `@torus-network/torus-utils/result`:
@@ -307,8 +325,6 @@ console.log("Success:", data);
 - `isOk()` helper functions
 - `.success` or `.data` property access
 - try/catch wrapping
-
-> > > > > > > origin/dev
 
 ### Substrate Integration
 

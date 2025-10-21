@@ -29,8 +29,10 @@ export const ExpandedViewContent = (props: ExpandedViewContentProps) => {
     if (contentRef.current) {
       const contentHeight = contentRef.current.scrollHeight;
       const maxAllowedHeight = 250;
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setIsOverflowing(contentHeight > maxAllowedHeight);
+      const timer = setTimeout(() => {
+        setIsOverflowing(contentHeight > maxAllowedHeight);
+      }, 0);
+      return () => clearTimeout(timer);
     }
   }, [body]);
 

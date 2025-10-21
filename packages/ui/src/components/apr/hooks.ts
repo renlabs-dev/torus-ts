@@ -198,11 +198,11 @@ export function useAPR(api: Api | Nullish): APRResult {
     return result;
   }, [
     isDataComplete,
-    totalStakeQuery.data,
-    totalIssuanceQuery.data,
-    recyclingPercentageQuery.data,
-    treasuryEmissionFeeQuery.data,
-    incentivesRatioQuery.data,
+    totalStakeQuery,
+    totalIssuanceQuery,
+    recyclingPercentageQuery,
+    treasuryEmissionFeeQuery,
+    incentivesRatioQuery,
   ]);
 
   return {

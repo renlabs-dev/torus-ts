@@ -1,0 +1,218 @@
+"use client";
+
+import { Button } from "@torus-ts/ui/components/button";
+import { cn } from "@torus-ts/ui/lib/utils";
+import { Container } from "~/app/_components/container";
+import type { DateRangeFilterData } from "~/app/_components/date-range-filter";
+import { LoadingDots } from "~/app/_components/loading-dots";
+import { usePredictionsListQuery } from "~/hooks/api/use-predictions-list-query";
+import { useProphetProfileQuery } from "~/hooks/api/use-prophet-profile-query";
+import { dateToISOStringSafe } from "~/lib/api-utils";
+import { useAuthStore } from "~/lib/auth-store";
+import { ArrowLeft } from "lucide-react";
+import Link from "next/link";
+import { useSearchParams } from "next/navigation";
+import React, { Suspense, useCallback, useMemo } from "react";
+import {
+  categorizePrediction,
+  PredictionsList,
+} from "./components/predictions-list";
+import { ProfileHeader } from "./components/profile-header";
+
+function ProphetPageContent() {
+  const searchParams = useSearchParams();
+  const { isAuthenticated } = useAuthStore();
+  const [username, setUsername] = React.useState<string>("");
+  const [hasVerdictFilter, setHasVerdictFilter] = React.useState(false);
+  const [searchFilters, setSearchFilters] = React.useState({
+    from: undefined as Date | undefined,
+    to: undefined as Date | undefined,
+  });
+
+  React.useEffect(() => {
+    const usernameParam = searchParams.get("username");
+    if (usernameParam) {
+      // Remove @ if present
+      const cleanUsername = usernameParam.startsWith("@")
+        ? usernameParam.slice(1)
+        : usernameParam;
+      setUsername(cleanUsername);
+    }
+  }, [searchParams]);
+
+  const { data: profile, isLoading: profileLoading } =
+    useProphetProfileQuery(username);
+
+  const { data: predictions, isLoading: predictionsLoading } =
+    usePredictionsListQuery(
+      {
+        search: username,
+        sort_by: "twitter_username",
+        from: dateToISOStringSafe(searchFilters.from, false),
+        to: dateToISOStringSafe(searchFilters.to, true),
+      },
+      { enabled: !!username },
+    );
+
+  const handleDateRangeFilterSubmit = useCallback(
+    (data: DateRangeFilterData) => {
+      setSearchFilters({
+        from: data.from,
+        to: data.to,
+      });
+    },
+    [],
+  );
+
+  // Calculate prediction counts from all predictions for this user
+  const {
+    truePredictionsCount,
+    falsePredictionsCount,
+    unmaturedPredictionsCount,
+    totalPredictions,
+  } = useMemo(() => {
+    if (!predictions) {
+      return {
+        truePredictionsCount: 0,
+        falsePredictionsCount: 0,
+        unmaturedPredictionsCount: 0,
+        totalPredictions: 0,
+      };
+    }
+
+    // Filter by username
+    const userPredictions = predictions.filter(
+      (p) =>
+        p.tweet?.author_twitter_username.toLowerCase() ===
+        username.toLowerCase(),
+    );
+
+    return {
+      truePredictionsCount: userPredictions.filter(
+        (p) => categorizePrediction(p) === "true",
+      ).length,
+      falsePredictionsCount: userPredictions.filter(
+        (p) => categorizePrediction(p) === "false",
+      ).length,
+      unmaturedPredictionsCount: userPredictions.filter(
+        (p) => categorizePrediction(p) === "unmatured",
+      ).length,
+      totalPredictions: userPredictions.length,
+    };
+  }, [predictions, username]);
+
+  if (!isAuthenticated) {
+    return (
+      <div className="flex flex-1 flex-col">
+        <div className="flex flex-1 flex-col gap-2">
+          <div className="flex flex-col gap-6 p-4 md:p-6">
+            <div className="flex items-center justify-center py-8">
+              <LoadingDots size="lg" className="text-muted-foreground" />
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!username) {
+    return (
+      <Container>
+        <div className="text-muted-foreground flex flex-col items-center justify-center py-12 text-center">
+          <p className="text-lg">No username specified</p>
+          <p className="mt-2 text-sm">
+            Please provide a username in the URL (?username=example)
+          </p>
+          <Link href="/dashboard" className="mt-6">
+            <Button variant="outline">
+              <ArrowLeft className="h-4 w-4" />
+              Back to Dashboard
+            </Button>
+          </Link>
+        </div>
+      </Container>
+    );
+  }
+
+  if (profileLoading || predictionsLoading) {
+    return (
+      <div className="flex flex-1 flex-col">
+        <div className="flex flex-1 flex-col gap-2">
+          <div className="flex flex-col gap-6 p-4 md:p-6">
+            <div className="flex items-center justify-center py-8">
+              <LoadingDots size="lg" className="text-muted-foreground" />
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!profile) {
+    return (
+      <Container>
+        <div className="text-muted-foreground flex flex-col items-center justify-center py-12 text-center">
+          <p className="text-lg">Profile not found</p>
+          <p className="mt-2 text-sm">
+            The username @{username} was not found in the system
+          </p>
+          <Link href="/dashboard" className="mt-6">
+            <Button variant="outline">
+              <ArrowLeft className="h-4 w-4" />
+              Back to Dashboard
+            </Button>
+          </Link>
+        </div>
+      </Container>
+    );
+  }
+
+  return (
+    <div className="space-y-0">
+      <ProfileHeader
+        profile={profile}
+        truePredictionsCount={truePredictionsCount}
+        falsePredictionsCount={falsePredictionsCount}
+        unmaturedPredictionsCount={unmaturedPredictionsCount}
+        totalPredictions={totalPredictions}
+        onDateRangeFilterSubmit={handleDateRangeFilterSubmit}
+        dateRangeFilterValues={searchFilters}
+        hasVerdictFilter={hasVerdictFilter}
+        onHasVerdictChange={setHasVerdictFilter}
+      />
+
+      <div className={cn("animate-fade-up animate-delay-[400ms]")}>
+        <PredictionsList
+          username={username}
+          searchFilters={{
+            from: dateToISOStringSafe(searchFilters.from, false),
+            to: dateToISOStringSafe(searchFilters.to, true),
+          }}
+          hasVerdictFilter={hasVerdictFilter}
+        />
+      </div>
+    </div>
+  );
+}
+
+function ProphetPageFallback() {
+  return (
+    <div className="flex flex-1 flex-col">
+      <div className="flex flex-1 flex-col gap-2">
+        <div className="flex flex-col gap-6 p-4 md:p-6">
+          <div className="flex items-center justify-center py-8">
+            <LoadingDots size="lg" className="text-muted-foreground" />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default function ProphetPage() {
+  return (
+    <Suspense fallback={<ProphetPageFallback />}>
+      <ProphetPageContent />
+    </Suspense>
+  );
+}

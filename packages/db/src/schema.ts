@@ -2,6 +2,7 @@ import { asc, eq, isNull, sql, sum } from "drizzle-orm";
 import {
   boolean,
   check,
+  date,
   bigint as drizzleBigint,
   timestamp as drizzleTimestamp,
   index,
@@ -965,6 +966,35 @@ export const agentDemandSignalSchema = createTable(
       "percent_check",
       sql`${t.proposedAllocation} >= 0 and ${t.proposedAllocation} <= 100`,
     ),
+  ],
+);
+
+// ==== Ask Torus Usage Tracking ====
+
+/**
+ * Tracks daily usage of the "Ask Torus" feature for rate limiting.
+ *
+ * Daily limits reset at 00:00 UTC. Each user gets a new row per UTC day.
+ * The `usageDate` field stores calendar dates (YYYY-MM-DD) without timezone
+ * information. Date comparisons use UTC (server timezone).
+ *
+ * Old records can be cleaned up opportunistically (e.g., keep last 90 days)
+ * using: DELETE FROM ask_torus_daily_usage WHERE usage_date < CURRENT_DATE - INTERVAL '90 days'
+ */
+export const askTorusUsageSchema = createTable(
+  "ask_torus_daily_usage",
+  {
+    id: serial("id").primaryKey(),
+    userKey: ss58Address("user_key").notNull(),
+    usageDate: date("usage_date").notNull(), // UTC date retrieved via CURRENT_DATE or new Date().toISOString().split('T')[0]
+    usageCount: integer("usage_count").notNull().default(0),
+    ...timeFields(),
+  },
+  (t) => [
+    unique().on(t.userKey, t.usageDate),
+    index("ask_torus_user_key_idx").on(t.userKey),
+    index("ask_torus_usage_date_idx").on(t.usageDate),
+    check("usage_count_positive", sql`${t.usageCount} >= 0`),
   ],
 );
 

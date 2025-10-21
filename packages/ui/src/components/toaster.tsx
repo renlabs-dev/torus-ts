@@ -1,12 +1,22 @@
 "use client";
 
 import { Toaster as SonnerToaster } from "sonner";
+import { cn } from "../lib/utils";
 
 export const DEFAULT_DURATION = 8000;
 
 const CLASS_NAMES = {
-  toast:
-    "group-[.toaster]:bottom-[30px] group-[.toaster]:bg-background group-[.toaster]:right-[10px]",
+  toast: cn(
+    "group-[.toaster]:bottom-[20px]",
+    "group-[.toaster]:bg-background",
+    "group-[.toaster]:right-[20px]",
+    "md:group-[.toaster]:bottom-[80px]",
+    "md:group-[.toaster]:right-[30px]",
+    "group-[.toaster]:left-[20px]",
+    "md:group-[.toaster]:left-auto",
+    "group-[.toaster]:max-w-[calc(100vw-40px)]",
+    "md:group-[.toaster]:max-w-[420px]",
+  ),
   title: "text-sm font-semibold",
   description: "text-xs my-2",
 };

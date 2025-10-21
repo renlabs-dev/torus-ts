@@ -7,6 +7,7 @@ environments:
       - environmentName: dev
       - wssApiEndpoint: wss://api.testnet.torus.network
       - cacheUrl: https://cache.testnet.torus.network
+      - apiBaseUrl: https://memory.sension.torus.directory/api/
       - releaseName: dev-torus-prediction-swarm-dashboard
       - ingressHost: dev.sension.torus.directory
       - chainEnv: testnet
@@ -18,6 +19,7 @@ environments:
       - environmentName: prod
       - wssApiEndpoint: wss://api.torus.network
       - cacheUrl: https://cache.torus.network
+      - apiBaseUrl: https://memory.sension.torus.directory/api/
       - releaseName: torus-prediction-swarm-dashboard
       - ingressHost: sension.torus.directory
       - chainEnv: mainnet

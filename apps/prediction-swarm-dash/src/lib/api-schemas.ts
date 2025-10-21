@@ -78,6 +78,17 @@ export const tweetSchema = z.object({
   url: z.string().url(),
 });
 
+export const tweetsListParamsSchema = timeWindowParamsSchema
+  .extend(paginationParamsSchema.shape)
+  .extend(agentParamsSchema.shape)
+  .extend(
+    z.object({
+      author_twitter_username: z.string().optional(),
+      search: z.string().optional(),
+      sort_order: z.enum(["asc", "desc"]).optional(),
+    }).shape,
+  );
+
 export const predictionSchema = z.object({
   id: z.number().int(),
   inserted_at: z.string().datetime(),
@@ -101,6 +112,52 @@ export const predictionSchema = z.object({
 });
 
 export const predictionsResponseSchema = z.array(predictionSchema);
+
+export const predictionsListParamsSchema = timeWindowParamsSchema
+  .extend(paginationParamsSchema.shape)
+  .extend(agentParamsSchema.shape)
+  .extend(
+    z.object({
+      search: z.string().optional(),
+      sort_by: z.enum(["id", "twitter_username"]).optional(),
+      sort_order: z.enum(["asc", "desc"]).optional(),
+    }).shape,
+  );
+
+export const usernameWithCountSchema = z.object({
+  username: z.string(),
+  predictions_count: z.number().int().min(0),
+});
+
+export const usernamesWithCountsResponseSchema = z.array(
+  usernameWithCountSchema,
+);
+
+export const usernamesListParamsSchema = z.object({
+  twitter_username: z.string().nullable().optional(),
+});
+
+// =============================================================================
+// PROPHET FINDER SCHEMAS
+// =============================================================================
+
+export const prophetProfileSchema = z.object({
+  id: z.string(),
+  username: z.string(),
+  display_name: z.string(),
+  profile_image_url: z.string(),
+  follower_count: z.number().int(),
+  following_count: z.number().int(),
+  profile_tweet_count: z.number().int(),
+  scraped_tweet_count: z.number().int(),
+  last_scraped: z.string().datetime().nullable(),
+});
+
+export const prophetProfilesResponseSchema = z.array(prophetProfileSchema);
+
+export const prophetProfilesParamsSchema = paginationParamsSchema.extend({
+  twitter_username: z.string().optional(),
+});
 
 // =============================================================================
 // VERIFICATION SCHEMAS
@@ -232,9 +289,26 @@ export type AgentContributionStatsResponse = z.infer<
   typeof agentContributionStatsResponseSchema
 >;
 
+// Tweet types
+export type Tweet = z.infer<typeof tweetSchema>;
+export type TweetsListParams = z.infer<typeof tweetsListParamsSchema>;
+
 // Prediction types
 export type Prediction = z.infer<typeof predictionSchema>;
 export type PredictionsResponse = z.infer<typeof predictionsResponseSchema>;
+export type PredictionsListParams = z.infer<typeof predictionsListParamsSchema>;
+export type UsernameWithCount = z.infer<typeof usernameWithCountSchema>;
+export type UsernamesWithCountsResponse = z.infer<
+  typeof usernamesWithCountsResponseSchema
+>;
+export type UsernamesListParams = z.infer<typeof usernamesListParamsSchema>;
+
+// Prophet Finder types
+export type ProphetProfile = z.infer<typeof prophetProfileSchema>;
+export type ProphetProfilesResponse = z.infer<
+  typeof prophetProfilesResponseSchema
+>;
+export type ProphetProfilesParams = z.infer<typeof prophetProfilesParamsSchema>;
 
 // Verification types
 export type VerificationClaim = z.infer<typeof verificationClaimSchema>;
