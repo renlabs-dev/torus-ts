@@ -19,13 +19,13 @@ gen-types name:
 # == Dev ==
 
 # Install dependencies (no scripts will run)
+# --ignore-scripts: don't run scripts (eg. preinstall, postinstall)
+# --frozen-lockfile: don't update the lockfile
 install:
-  # --ignore-scripts: don't run scripts (eg. preinstall, postinstall)
-  # --frozen-lockfile: don't update the lockfile
-  pnpm install --ignore-scripts --frozen-lockfile
-
-install-no-lockfile:
-  pnpm install --ignore-scripts
+  if not exists "pnpm-lock.yaml":
+    pnpm install --ignore-scripts
+  else:
+    pnpm install --ignore-scripts --frozen-lockfile
 
 # List all packages in the workspace
 ls:
