@@ -22,10 +22,10 @@ gen-types name:
 # --ignore-scripts: don't run scripts (eg. preinstall, postinstall)
 # --frozen-lockfile: don't update the lockfile
 install:
-  if not exists "pnpm-lock.yaml":
-    pnpm install --ignore-scripts
-  else:
-    pnpm install --ignore-scripts --frozen-lockfile
+	if not exists "pnpm-lock.yaml":
+	pnpm install --ignore-scripts
+	else:
+	pnpm install --ignore-scripts --frozen-lockfile
 
 # List all packages in the workspace
 ls:
