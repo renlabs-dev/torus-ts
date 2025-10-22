@@ -1,3 +1,4 @@
+import { SS58_SCHEMA } from "@torus-network/sdk/types";
 import { buildZodEnvScript } from "@torus-ts/env-validation";
 import { chainEnvSchema } from "@torus-ts/ui/lib/data";
 import { z } from "zod";
@@ -15,7 +16,7 @@ if (process?.env) {
 // warning: DO NOT expose any sensitive data on the schema default values!
 export const envSchema = {
   NODE_ENV: NodeEnvSchema.default("development"),
-  PORT: z.string(),
+  PORT: z.string().default("3004"),
   /**
    * Specify your client-side environment variables schema here.
    * For them to be exposed to the client, prefix them with `NEXT_PUBLIC_`.
@@ -26,6 +27,8 @@ export const envSchema = {
   NEXT_PUBLIC_TORUS_CACHE_URL: z.string().url(),
   NEXT_PUBLIC_NODE_ENV: NodeEnvSchema,
   NEXT_PUBLIC_TORUS_CHAIN_ENV: chainEnvSchema,
+  NEXT_PUBLIC_TORUS_ALLOCATOR_ADDRESS: SS58_SCHEMA,
+  JWT_SECRET: z.string(),
 };
 
 export const { EnvScript, env } = buildZodEnvScript(envSchema, {

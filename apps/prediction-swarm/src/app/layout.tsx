@@ -5,6 +5,7 @@ import { TorusProvider } from "@torus-ts/torus-provider";
 import { Layout } from "@torus-ts/ui/components/layout";
 import PrismaticBurst from "@torus-ts/ui/components/PrismaticBurst";
 import { Toaster } from "@torus-ts/ui/components/toaster";
+import { TRPCReactProvider } from "~/trpc/react";
 import { env, EnvScript } from "~/env";
 import type { Metadata } from "next";
 import { Fira_Mono as FiraMono } from "next/font/google";
@@ -36,16 +37,18 @@ export default function RootLayout({
           wsEndpoint={env("NEXT_PUBLIC_TORUS_RPC_URL")}
           torusCacheUrl={env("NEXT_PUBLIC_TORUS_CACHE_URL")}
         >
-          <div className="fixed inset-0 -z-10">
-            <PrismaticBurst
-              distort={3}
-              speed={0.2}
-              // animationType="hover"
-              colors={["##e6e6e6", "#696969", "#383838"]}
-            />
-          </div>
-          {children}
-          <Toaster />
+          <TRPCReactProvider>
+            <div className="fixed inset-0 -z-10">
+              <PrismaticBurst
+                distort={3}
+                speed={0.2}
+                // animationType="hover"
+                colors={["##e6e6e6", "#696969", "#383838"]}
+              />
+            </div>
+            {children}
+            <Toaster />
+          </TRPCReactProvider>
         </TorusProvider>
         <GoogleAnalytics gaId="G-7YCMH64Q4J" />
       </ReactQueryProvider>
