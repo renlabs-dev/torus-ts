@@ -30,7 +30,7 @@ import {
 export const twitterUsersSchema = createTable(
   "twitter_users",
   {
-    userId: bigint("user_id").primaryKey(),
+    id: bigint("id").primaryKey(),
 
     username: varchar("username", { length: 15 }),
     screen_name: varchar("screen_name", { length: 50 }),
@@ -52,7 +52,7 @@ export const twitterUsersSchema = createTable(
 
     ...timeFields(),
   },
-  (t) => [index("tracked_users_user_id_idx").on(t.userId)],
+  (t) => [index("twitter_users_id_idx").on(t.id)],
 );
 
 // ==== User Suggestions ====
@@ -63,11 +63,11 @@ export const twitterUsersSchema = createTable(
 export const twitterUserSuggestionsSchema = createTable(
   "twitter_user_suggestions",
   {
-    userId: bigint("user_id").notNull(),
+    username: varchar("username", { length: 15 }),
     wallet: ss58Address("wallet").notNull(),
     ...timeFields(),
   },
-  (t) => [primaryKey({ columns: [t.userId, t.wallet] })],
+  (t) => [primaryKey({ columns: [t.username, t.wallet] })],
 );
 
 // ==== Scraped Tweets ====
