@@ -1,5 +1,6 @@
 import type { AnyPgColumn } from "drizzle-orm/pg-core";
 import {
+  boolean,
   decimal,
   index,
   integer,
@@ -26,11 +27,29 @@ import {
 /**
  * Tracks users being monitored for predictions
  */
-export const trackedTwitterUsersSchema = createTable(
-  "tracked_twitter_users",
+export const twitterUsersSchema = createTable(
+  "twitter_users",
   {
     userId: bigint("user_id").primaryKey(),
-    lastKnownTweetCount: integer("last_known_tweet_count"),
+
+    username: varchar("username", { length: 15 }),
+    screen_name: varchar("screen_name", { length: 50 }),
+    description: varchar("description", { length: 280 }),
+    avatar_url: varchar("avatar_url", { length: 280 }),
+    is_verified: boolean("is_verified"),
+    verified_type: varchar("verified_type", { length: 32 }),
+    is_automated: boolean("is_automated"),
+    automated_by: bigint("automated_by"),
+    unavailable: boolean("unavailable"),
+    unavailable_reason: varchar("description", { length: 280 }),
+    user_created_at: timestampz("user_created_at"),
+
+    tweet_count: integer("tweet_count"),
+    follower_count: integer("follower_count"),
+    following_count: integer("following_count"),
+
+    tracked: boolean("tracked").notNull(),
+
     ...timeFields(),
   },
   (t) => [index("tracked_users_user_id_idx").on(t.userId)],
@@ -66,7 +85,7 @@ export const scrapedTweetSchema = createTable(
   "scraped_tweet",
   {
     id: bigint("id").primaryKey(), // Tweet ID from the platform
-    text: text("text").notNull(),
+    text: varchar("text", { length: 280 }).notNull(),
     authorId: bigint("author_id").notNull(),
     date: timestampz("date").notNull(),
     retweetedId: bigint("retweeted_id"), // The inner tweet (for retweets)
