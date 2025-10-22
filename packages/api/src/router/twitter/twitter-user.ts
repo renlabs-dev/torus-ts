@@ -35,12 +35,12 @@ export const twitterUserRouter = {
         .select({
           userId: twitterUsersSchema.id,
           username: twitterUsersSchema.username,
-          screenName: twitterUsersSchema.screen_name,
+          screenName: twitterUsersSchema.screenName,
           description: twitterUsersSchema.description,
-          avatarUrl: twitterUsersSchema.avatar_url,
-          isVerified: twitterUsersSchema.is_verified,
-          verifiedType: twitterUsersSchema.verified_type,
-          followerCount: twitterUsersSchema.follower_count,
+          avatarUrl: twitterUsersSchema.avatarUrl,
+          isVerified: twitterUsersSchema.isVerified,
+          verifiedType: twitterUsersSchema.verifiedType,
+          followerCount: twitterUsersSchema.followerCount,
         })
         .from(twitterUsersSchema)
         .where(ilike(twitterUsersSchema.username, `%${query}%`))

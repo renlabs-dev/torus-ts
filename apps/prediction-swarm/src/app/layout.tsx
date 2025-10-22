@@ -5,8 +5,8 @@ import { TorusProvider } from "@torus-ts/torus-provider";
 import { Layout } from "@torus-ts/ui/components/layout";
 import PrismaticBurst from "@torus-ts/ui/components/PrismaticBurst";
 import { Toaster } from "@torus-ts/ui/components/toaster";
-import { TRPCReactProvider } from "~/trpc/react";
 import { env, EnvScript } from "~/env";
+import { TRPCReactProvider } from "~/trpc/react";
 import type { Metadata } from "next";
 import { Fira_Mono as FiraMono } from "next/font/google";
 
