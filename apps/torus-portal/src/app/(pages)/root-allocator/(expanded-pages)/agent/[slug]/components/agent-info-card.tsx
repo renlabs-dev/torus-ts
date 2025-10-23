@@ -2,11 +2,11 @@
 
 import { smallAddress } from "@torus-network/torus-utils/torus/address";
 import type { AppRouter } from "@torus-ts/api";
+import { useGetTorusPrice } from "@torus-ts/query-provider/hooks";
 import { Card, CardContent, CardTitle } from "@torus-ts/ui/components/card";
 import { CopyButton } from "@torus-ts/ui/components/copy-button";
 import type { inferProcedureOutput } from "@trpc/server";
 import { useMultipleAccountEmissions } from "~/hooks/use-multiple-account-emissions";
-import { useGetTorusPrice } from "@torus-ts/query-provider/hooks";
 import { Copy } from "lucide-react";
 import type { ReactNode } from "react";
 import { useMemo } from "react";
@@ -75,12 +75,13 @@ export function AgentInfoCard({ agent }: AgentInfoCardProps) {
     isError: isTorusPriceError,
   } = useGetTorusPrice();
 
-  const isLoading = agentEmission?.isLoading || isTorusPriceLoading;
-  const isError = agentEmission?.isError || isTorusPriceError;
+  const isLoading =
+    !agentEmission || agentEmission.isLoading || isTorusPriceLoading;
+  const isError = !agentEmission || agentEmission.isError || isTorusPriceError;
 
   // Calculate USD value
   const displayUsdValue = useMemo(() => {
-    if (isLoading || isError || !torusPrice || !agentEmission) {
+    if (isLoading || isError || !torusPrice) {
       return "$0.00";
     }
     const usdValue =
