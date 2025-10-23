@@ -3,7 +3,6 @@ import { GoogleAnalytics } from "@next/third-parties/google";
 import { ReactQueryProvider } from "@torus-ts/query-provider";
 import { TorusProvider } from "@torus-ts/torus-provider";
 import { Layout } from "@torus-ts/ui/components/layout";
-import PrismaticBurst from "@torus-ts/ui/components/PrismaticBurst";
 import { Toaster } from "@torus-ts/ui/components/toaster";
 import { env, EnvScript } from "~/env";
 import { TRPCReactProvider } from "~/trpc/react";
@@ -38,14 +37,6 @@ export default function RootLayout({
           torusCacheUrl={env("NEXT_PUBLIC_TORUS_CACHE_URL")}
         >
           <TRPCReactProvider>
-            <div className="fixed inset-0 -z-10">
-              <PrismaticBurst
-                distort={3}
-                speed={0.2}
-                // animationType="hover"
-                colors={["#696969", "#383838", "#e78a53"]}
-              />
-            </div>
             {children}
             <Toaster />
           </TRPCReactProvider>
