@@ -177,14 +177,16 @@ export function SearchInput({
   const handleAddToMemory = useCallback(async () => {
     if (!search.trim()) return;
 
+    const cleanUsername = search.trim().replace(/^@/, "");
+
     try {
       await addProphetMutation.mutateAsync({
-        username: search.trim(),
+        username: cleanUsername,
       });
 
       toast({
         title: "Prophet added successfully!",
-        description: `@${search.trim().replace(/^@/, "")} has been queued for scraping.`,
+        description: `@${cleanUsername} has been queued for scraping.`,
       });
 
       setShowCommand(false);
@@ -305,8 +307,12 @@ export function SearchInput({
                       key={account.username}
                       value={account.username}
                       onSelect={() => {
+                        const cleanUsername = account.username.replace(
+                          /^@/,
+                          "",
+                        );
                         router.push(
-                          `/prophet?username=${encodeURIComponent(account.username)}`,
+                          `/prophet?username=${encodeURIComponent(cleanUsername)}`,
                           { scroll: false },
                         );
                         setShowCommand(false);

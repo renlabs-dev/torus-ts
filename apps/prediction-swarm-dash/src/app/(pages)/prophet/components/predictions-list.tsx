@@ -180,7 +180,12 @@ function PredictionCard({
 
         {/* Claims Section */}
         {validClaims.length > 0 && (
-          <Accordion type="single" collapsible className="w-full">
+          <Accordion
+            type="single"
+            collapsible
+            defaultValue="claims"
+            className="w-full"
+          >
             <AccordionItem value="claims" className="border-none">
               <AccordionTrigger className="bg-muted-foreground/5 hover:bg-muted-foreground/10 rounded px-3 py-2 text-sm font-medium hover:no-underline">
                 <span className="text-muted-foreground">
