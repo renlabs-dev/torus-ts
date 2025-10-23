@@ -1,3 +1,4 @@
+import type { AppRouter } from "@torus-ts/api";
 import {
   Avatar,
   AvatarFallback,
@@ -6,36 +7,65 @@ import {
 import { Badge } from "@torus-ts/ui/components/badge";
 import { Button } from "@torus-ts/ui/components/button";
 import { Card, CardContent } from "@torus-ts/ui/components/card";
+import type { inferProcedureOutput } from "@trpc/server";
 import { BadgeCheck } from "lucide-react";
 
-export default function ProfileHeader() {
+type TwitterUser = NonNullable<
+  inferProcedureOutput<AppRouter["twitterUser"]["getByUsername"]>
+>;
+
+interface ProfileHeaderProps {
+  user: TwitterUser;
+}
+
+export default function ProfileHeader({ user }: ProfileHeaderProps) {
   return (
     <Card className="bg-background/80 backdrop-blur-lg">
       <CardContent className="p-6">
         <div className="flex flex-col items-start gap-6 md:flex-row md:items-center">
           <div className="relative">
-            <Avatar className="h-24 w-24">
+            <Avatar className="h-24 w-24 border">
               <AvatarImage
-                src="https://bundui-images.netlify.app/avatars/08.png"
-                alt="Profile"
+                src={user.avatarUrl ?? undefined}
+                alt={user.screenName ?? user.username ?? "User avatar"}
               />
-              <AvatarFallback className="text-2xl">JD</AvatarFallback>
+              <AvatarFallback className="text-2xl">
+                {(user.screenName ?? user.username ?? "U")
+                  .slice(0, 2)
+                  .toUpperCase()}
+              </AvatarFallback>
             </Avatar>
           </div>
           <div className="flex-1 space-y-2">
             <Badge variant="default">96% Accuracy</Badge>
             <div className="flex flex-col gap-2 md:flex-row md:items-center">
-              <h1 className="text-2xl font-bold">John Doe</h1>
-              <BadgeCheck className="text-primary size-5" />
+              <h1 className="text-2xl font-bold">
+                {user.screenName ?? user.username}
+              </h1>
+              {user.isVerified && (
+                <BadgeCheck className="text-primary size-5" />
+              )}
             </div>
             <div className="text-muted-foreground flex flex-wrap gap-4 text-sm">
-              <div className="flex items-center gap-1">@johndoe.com</div>
-              <div className="flex items-center gap-1">
-                <span className="font-bold">3,840</span> Followers
-              </div>
-              <div className="flex items-center gap-1">
-                <span className="font-bold">13,840</span> Posts
-              </div>
+              {user.username && (
+                <div className="flex items-center gap-1">@{user.username}</div>
+              )}
+              {user.followerCount !== null && (
+                <div className="flex items-center gap-1">
+                  <span className="font-bold">
+                    {user.followerCount.toLocaleString()}
+                  </span>{" "}
+                  Followers
+                </div>
+              )}
+              {user.tweetCount !== null && (
+                <div className="flex items-center gap-1">
+                  <span className="font-bold">
+                    {user.tweetCount.toLocaleString()}
+                  </span>{" "}
+                  Posts
+                </div>
+              )}
             </div>
           </div>
           {/* TODO: Add filters */}
