@@ -29,11 +29,24 @@ export async function generateMetadata({
     api.agent.byKeyLastBlock({ key: slug }),
   );
 
-  if (mdlError !== undefined) {
-    return {};
+  if (mdlError !== undefined || !mdl) {
+    return createSeoMetadata({
+      title: "Agent Details | Torus Portal",
+      description: "View agent detailed information.",
+      keywords: [
+        "agent details",
+        "agent profile",
+        "network participant",
+        "agent information",
+        "allocation details",
+      ],
+      ogSiteName: "Torus Portal",
+      canonical: `/root-allocator/agent/${slug}`,
+      baseUrl: env("BASE_URL"),
+    });
   }
 
-  const agentName = mdl?.name;
+  const agentName = mdl.name;
 
   return createSeoMetadata({
     title: `${agentName} - Agent Details | Torus Portal`,
