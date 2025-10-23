@@ -1,5 +1,1 @@
-import { redirect } from "next/navigation";
-
-export default function HomePage() {
-  redirect("/fast");
-}
+// This page will be automatically redirected to /fast via next.config.mjs
