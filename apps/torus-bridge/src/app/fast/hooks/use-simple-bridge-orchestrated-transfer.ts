@@ -55,7 +55,7 @@ export function useOrchestratedTransfer() {
     selectedAccount,
     wsEndpoint,
     wallet: torusApi,
-    transactionType: "Simple Bridge Transfer",
+    transactionType: "Fast Bridge Transfer",
   });
 
   const sendTx = useCallback(

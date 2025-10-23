@@ -4,13 +4,13 @@ import { SimpleBridge } from "./_components/simple-bridge";
 
 export function generateMetadata() {
   return {
-    title: "Simple Bridge - Torus Network",
+    title: "Fast Bridge - Torus Network",
     description:
       "Transfer TORUS tokens between Base and Native chains in one seamless flow",
   };
 }
 
-export default function SimpleBridgePage() {
+export default function FastBridgePage() {
   return (
     <main className="mx-auto flex min-w-full flex-col items-start gap-3 text-white lg:mt-[calc(20vh-64px)]">
       <div className="flex w-full flex-col justify-around gap-6 lg:flex-row">
