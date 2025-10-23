@@ -1,7 +1,7 @@
-import { notFound } from "next/navigation";
 import ProfileContent from "~/app/_components/user-profile/profile-content";
 import ProfileHeader from "~/app/_components/user-profile/profile-header";
 import { api } from "~/trpc/server";
+import { notFound } from "next/navigation";
 
 interface PageProps {
   params: Promise<{

@@ -7,7 +7,7 @@ import { Toaster } from "@torus-ts/ui/components/toaster";
 import { env, EnvScript } from "~/env";
 import { TRPCReactProvider } from "~/trpc/react";
 import type { Metadata } from "next";
-import { Fira_Mono as FiraMono } from "next/font/google";
+import { Geist_Mono as GeistMono } from "next/font/google";
 
 const APP_NAME = "Prophet Finder";
 
@@ -18,10 +18,8 @@ export const metadata: Metadata = {
   description: "The thermodynamic god's favorite Prophet Finder.",
 };
 
-export const firaMono = FiraMono({
+export const geistMono = GeistMono({
   subsets: ["latin"],
-  display: "swap",
-  weight: "400",
 });
 
 export default function RootLayout({
@@ -30,7 +28,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <Layout font={firaMono} headScripts={[EnvScript]}>
+    <Layout font={geistMono} headScripts={[EnvScript]}>
       <ReactQueryProvider>
         <TorusProvider
           wsEndpoint={env("NEXT_PUBLIC_TORUS_RPC_URL")}

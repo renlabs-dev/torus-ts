@@ -94,7 +94,7 @@ export function SearchProphet() {
         <Input
           id={id}
           placeholder="Search for any x account"
-          className="focus-visible:z-1 -me-px h-12 bg-transparent pl-14 shadow-none backdrop-blur-xl"
+          className="focus-visible:z-1 bg-background/80 -me-px h-12 pl-14 shadow-none backdrop-blur-lg"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           onKeyDown={handleKeyDown}

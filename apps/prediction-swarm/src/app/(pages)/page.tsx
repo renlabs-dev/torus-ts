@@ -1,4 +1,4 @@
-import PrismaticBurst from "@torus-ts/ui/components/PrismaticBurst";
+// import PrismaticBurst from "@torus-ts/ui/components/PrismaticBurst";
 import FAQ from "../_components/main-page/faq";
 import ListItem from "../_components/main-page/list-item";
 import { SearchProphet } from "../_components/main-page/search-prophet";
@@ -33,38 +33,37 @@ const faqItems = [
 export default function Page() {
   return (
     <div>
-      <div className="relative pt-[18rem]">
-        <div className="absolute inset-0 -z-10">
+      <div className="bg-accent/20 relative pt-[35rem]">
+        {/* <div className="absolute inset-0 -z-10">
           <PrismaticBurst
-            distort={3}
+            distort={6}
             speed={0.2}
-            // animationType="hover"
-            colors={["#696969", "#383838", "#e78a53"]}
+            colors={["#696969", "#383838", "#383838"]}
           />
-        </div>
+        </div> */}
         <div className="container relative mx-auto px-4 py-16 md:py-24">
-          <div className="mb-60">
+          <div className="mb-20">
             <SearchProphet />
           </div>
 
           <div className="mx-auto -mb-36 grid max-w-6xl gap-6 md:grid-cols-3">
             <ListItem
               title="Predictor Profiles"
-              description="View "
-              linkText="Go to FAQs"
+              description="View detailed profiles of any predictor on the swarm."
+              linkText="View profiles"
               href="#faqs"
             />
             <ListItem
-              title="Guides"
-              description="Articles and resources to guide you"
-              linkText="Check guides"
-              href="/guides"
+              title="Tickers"
+              description="View real-time predictions for all tickers on the swarm."
+              linkText="View tickers"
+              href="#tickers"
             />
             <ListItem
-              title="Support"
-              description="Contact us for more detailed support"
-              linkText="Contact us"
-              href="/contact"
+              title="Predictor Feed"
+              description="View the latest predictions from all predictors on the swarm."
+              linkText="View feed"
+              href="#feed"
             />
           </div>
         </div>
@@ -73,12 +72,13 @@ export default function Page() {
       <div id="faqs" className="bg-background/80 py-16 md:py-32">
         <div className="container mx-auto px-4">
           <div className="mb-12 text-center">
-            <h2 className="text-foreground mb-4 text-2xl font-bold md:text-3xl">
-              Most frequently asked questions
+            <h2 className="text-foreground mb-2 text-2xl font-bold">
+              The fractal nature of foresight
             </h2>
-            <p className="text-muted-foreground mx-auto max-w-3xl">
-              Here are the most frequently asked questions you may check before
-              getting started
+            <p className="text-muted-foreground mx-auto max-w-2xl">
+              From cells to societies, intelligence emerges through nested
+              agency. The swarm applies this principle to predictions, mapping
+              who to trust and when, turning uncertainty into clarity.
             </p>
           </div>
 
