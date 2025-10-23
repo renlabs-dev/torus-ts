@@ -359,7 +359,7 @@ export function TransferEVM() {
       to: null,
       mode: mode === "bridge" ? "withdraw" : "bridge",
     });
-    router.push(`/?${newQuery}`);
+    router.push(`/standard?${newQuery}`);
   }, [mode, router, searchParams]);
 
   const fromChain = mode === "bridge" ? "Torus" : "Torus EVM";
