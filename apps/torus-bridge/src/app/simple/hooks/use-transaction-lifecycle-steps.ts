@@ -267,7 +267,7 @@ export function useTransactionLifecycleSteps(
     if (currentStep === SimpleBridgeStep.COMPLETE) {
       baseSteps.push({
         id: "success",
-        title: "🎉 Transfer Successful",
+        title: "Transfer Successful",
         description: `Congratulations! Your ${amount} TORUS tokens have been successfully bridged from ${isBaseToNative ? "Base to Native" : "Native to Base"}. Check your wallet balances.`,
         icon: null,
         status: "completed" as StepStatus,

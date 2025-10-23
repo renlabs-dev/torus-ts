@@ -58,11 +58,11 @@ function getCurrentMessage(currentStep: SimpleBridgeStep) {
   }
 
   if (currentStep === SimpleBridgeStep.COMPLETE) {
-    return "🎉 Transfer complete! All transactions successful.";
+    return "Transfer complete! All transactions successful.";
   }
 
   if (currentStep === SimpleBridgeStep.ERROR) {
-    return "❌ Transaction failed. Please try again.";
+    return "Transaction failed. Please try again.";
   }
 
   return "Initializing transfer...";
