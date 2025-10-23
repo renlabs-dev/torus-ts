@@ -1,1 +1,5 @@
-// This page will be automatically redirected to /fast via next.config.mjs
+import FastBridgePage from "./fast/page";
+
+export default function HomePage() {
+  return <FastBridgePage />;
+}

@@ -36,15 +36,6 @@ const config = {
   eslint: { ignoreDuringBuilds: true },
   typescript: { ignoreBuildErrors: true },
 
-  // Redirect root to Fast Bridge
-  redirects: async () => [
-    {
-      source: "/",
-      destination: "/fast",
-      permanent: true,
-    },
-  ],
-
   webpack: (config, { isServer }) => {
     // Optimize bundle splitting
     if (!isServer) {
