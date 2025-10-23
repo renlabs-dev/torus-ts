@@ -1,4 +1,4 @@
-import "@torus-ts/ui/globals.css";
+import "../globals.css";
 import { GoogleAnalytics } from "@next/third-parties/google";
 import { ReactQueryProvider } from "@torus-ts/query-provider";
 import { TorusProvider } from "@torus-ts/torus-provider";
@@ -43,7 +43,7 @@ export default function RootLayout({
                 distort={3}
                 speed={0.2}
                 // animationType="hover"
-                colors={["##e6e6e6", "#696969", "#383838"]}
+                colors={["#696969", "#383838", "#e78a53"]}
               />
             </div>
             {children}

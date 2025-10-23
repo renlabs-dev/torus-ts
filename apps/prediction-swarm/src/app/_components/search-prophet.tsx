@@ -1,6 +1,5 @@
 "use client";
 
-import { Button } from "@torus-ts/ui/components/button";
 import { Input } from "@torus-ts/ui/components/input";
 import { Label } from "@torus-ts/ui/components/label";
 import { api } from "~/trpc/react";
@@ -96,7 +95,7 @@ export function SearchProphet() {
           <Input
             id={id}
             placeholder="Search for any x account"
-            className="focus-visible:z-1 -me-px h-12 rounded-l-full rounded-r-none bg-transparent pl-14 shadow-none backdrop-blur-xl"
+            className="focus-visible:z-1 -me-px h-12 bg-transparent pl-14 shadow-none backdrop-blur-xl"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             onKeyDown={handleKeyDown}
@@ -150,9 +149,6 @@ export function SearchProphet() {
             </div>
           )}
         </div>
-        <Button size="lg" className="h-12 rounded-l-none rounded-r-full">
-          ASK SWARM
-        </Button>
       </div>
       <Label htmlFor={id} className="text-muted-foreground text-sm">
         View prediction history, current and account breakdown

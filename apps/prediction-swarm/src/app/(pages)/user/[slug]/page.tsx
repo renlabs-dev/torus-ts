@@ -3,7 +3,7 @@ import ProfileHeader from "~/app/_components/user-profile/profile-header";
 
 export default function Page() {
   return (
-    <div className="mx-auto max-w-3xl space-y-6 px-4 py-10">
+    <div className="mx-auto max-w-screen-lg space-y-6 px-4 py-10">
       <ProfileHeader />
       <ProfileContent />
     </div>
