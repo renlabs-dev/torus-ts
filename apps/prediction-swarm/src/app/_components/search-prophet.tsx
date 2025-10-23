@@ -5,6 +5,7 @@ import { Input } from "@torus-ts/ui/components/input";
 import { Label } from "@torus-ts/ui/components/label";
 import { api } from "~/trpc/react";
 import { Search } from "lucide-react";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useEffect, useId, useRef, useState } from "react";
 
@@ -13,74 +14,74 @@ export function SearchProphet() {
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState("");
   const [debouncedQuery, setDebouncedQuery] = useState("");
-  const [isOpen, setIsOpen] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(-1);
+  const [isForceClosed, setIsForceClosed] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // Debounce search query
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setDebouncedQuery(searchQuery);
-    }, 300);
-
+    const timer = setTimeout(() => setDebouncedQuery(searchQuery), 300);
     return () => clearTimeout(timer);
   }, [searchQuery]);
 
-  // Search users with tRPC
   const { data: searchResults, isLoading } = api.twitterUser.search.useQuery(
-    {
-      query: debouncedQuery,
-      limit: 10,
-    },
-    {
-      enabled: debouncedQuery.length > 0,
-    },
+    { query: debouncedQuery, limit: 10 },
+    { enabled: debouncedQuery.length > 0 },
   );
 
-  // Close dropdown when clicking outside
+  const hasResults = Boolean(searchResults?.length);
+  const isOpen =
+    !isForceClosed && debouncedQuery.length > 0 && (isLoading || hasResults);
+
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
         containerRef.current &&
         !containerRef.current.contains(event.target as Node)
       ) {
-        setIsOpen(false);
+        setIsForceClosed(true);
       }
     };
-
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // Show dropdown when there are results
   useEffect(() => {
-    setIsOpen(
-      debouncedQuery.length > 0 &&
-        (isLoading || (searchResults && searchResults.length > 0)),
-    );
-  }, [debouncedQuery, searchResults, isLoading]);
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    if (debouncedQuery) setIsForceClosed(false);
+  }, [debouncedQuery]);
 
   const handleSelectUser = (username: string | null) => {
     if (!username) return;
     router.push(`/user/${username}`);
     setSearchQuery("");
-    setIsOpen(false);
+    setIsForceClosed(true);
+    setSelectedIndex(-1);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (!searchResults || searchResults.length === 0) return;
+    if (!searchResults?.length) return;
 
-    if (e.key === "ArrowDown") {
-      e.preventDefault();
-      setSelectedIndex((prev) =>
-        prev < searchResults.length - 1 ? prev + 1 : prev,
-      );
-    } else if (e.key === "ArrowUp") {
-      e.preventDefault();
-      setSelectedIndex((prev) => (prev > 0 ? prev - 1 : -1));
-    } else if (e.key === "Enter" && selectedIndex >= 0) {
-      e.preventDefault();
-      handleSelectUser(searchResults[selectedIndex]?.username ?? null);
+    switch (e.key) {
+      case "ArrowDown":
+        e.preventDefault();
+        setSelectedIndex((prev) =>
+          prev < searchResults.length - 1 ? prev + 1 : prev,
+        );
+        break;
+      case "ArrowUp":
+        e.preventDefault();
+        setSelectedIndex((prev) => (prev > 0 ? prev - 1 : -1));
+        break;
+      case "Enter":
+        if (selectedIndex >= 0) {
+          e.preventDefault();
+          handleSelectUser(searchResults[selectedIndex]?.username ?? null);
+        }
+        break;
+      case "Escape":
+        setIsForceClosed(true);
+        setSelectedIndex(-1);
+        break;
     }
   };
 
@@ -94,7 +95,6 @@ export function SearchProphet() {
           <Search className="text-muted-foreground absolute left-6 top-1/2 z-10 h-5 w-5 -translate-y-1/2" />
           <Input
             id={id}
-            type="text"
             placeholder="Search for any x account"
             className="focus-visible:z-1 -me-px h-12 rounded-l-full rounded-r-none bg-transparent pl-14 shadow-none backdrop-blur-xl"
             value={searchQuery}
@@ -107,20 +107,20 @@ export function SearchProphet() {
                 <div className="text-muted-foreground p-4 text-center text-sm">
                   Searching...
                 </div>
-              ) : searchResults && searchResults.length > 0 ? (
+              ) : searchResults?.length ? (
                 <div className="py-2">
                   {searchResults.map((user, index) => (
                     <button
                       key={user.userId}
                       onClick={() => handleSelectUser(user.username)}
-                      className={`hover:bg-accent flex w-full items-center gap-3 px-4 py-3 text-left transition-colors ${
-                        index === selectedIndex ? "bg-accent" : ""
-                      }`}
+                      className={`hover:bg-accent flex w-full items-center gap-3 px-4 py-3 text-left transition-colors ${index === selectedIndex ? "bg-accent" : ""}`}
                     >
                       {user.avatarUrl && (
-                        <img
+                        <Image
                           src={user.avatarUrl}
                           alt={user.username ?? ""}
+                          width={40}
+                          height={40}
                           className="h-10 w-10 rounded-full"
                         />
                       )}
