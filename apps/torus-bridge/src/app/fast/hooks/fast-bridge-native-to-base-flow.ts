@@ -4,20 +4,20 @@ import { convertH160ToSS58 } from "@torus-network/sdk/evm";
 import type { SS58Address } from "@torus-network/sdk/types";
 import { toNano } from "@torus-network/torus-utils/torus/token";
 import { tryAsync } from "@torus-network/torus-utils/try-catch";
-import type { SimpleBridgeTransaction } from "../_components/simple-bridge-types";
-import { SimpleBridgeStep } from "../_components/simple-bridge-types";
+import type { SimpleBridgeTransaction } from "../_components/fast-bridge-types";
+import { SimpleBridgeStep } from "../_components/fast-bridge-types";
 import {
   switchChainWithRetry,
   throwOnChainSwitchFailure,
-} from "./simple-bridge-chain-switch";
+} from "./fast-bridge-chain-switch";
 import {
   formatErrorForUser,
   isUserRejectionError,
   TIMEOUT_CONFIG,
   UserRejectedError,
   withTimeout,
-} from "./simple-bridge-helpers";
-import { pollEvmBalance } from "./simple-bridge-polling";
+} from "./fast-bridge-helpers";
+import { pollEvmBalance } from "./fast-bridge-polling";
 
 /**
  * Parameters for executing Step 1 of the Native-to-Base bridge flow.

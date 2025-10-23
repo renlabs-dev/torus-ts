@@ -8,8 +8,8 @@ import {
   CardTitle,
 } from "@torus-ts/ui/components/card";
 import { CheckCircle, Wallet } from "lucide-react";
-import { useDualWallet } from "../hooks/use-simple-bridge-dual-wallet";
-import type { SimpleBridgeDirection } from "./simple-bridge-types";
+import { useDualWallet } from "../hooks/use-fast-bridge-dual-wallet";
+import type { SimpleBridgeDirection } from "./fast-bridge-types";
 
 interface DualWalletConnectorProps {
   direction: SimpleBridgeDirection;

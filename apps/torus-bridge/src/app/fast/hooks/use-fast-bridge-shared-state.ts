@@ -4,9 +4,9 @@ import { useCallback, useState } from "react";
 import type {
   SimpleBridgeState,
   SimpleBridgeTransaction,
-} from "../_components/simple-bridge-types";
-import { SimpleBridgeStep } from "../_components/simple-bridge-types";
-import { getExplorerUrl } from "./simple-bridge-helpers";
+} from "../_components/fast-bridge-types";
+import { SimpleBridgeStep } from "../_components/fast-bridge-types";
+import { getExplorerUrl } from "./fast-bridge-helpers";
 
 export function useSimpleBridgeSharedState() {
   const [bridgeState, setBridgeState] = useState<SimpleBridgeState>({

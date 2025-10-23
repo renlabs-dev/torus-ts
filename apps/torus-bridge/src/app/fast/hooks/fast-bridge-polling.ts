@@ -3,7 +3,7 @@ import {
   POLLING_CONFIG,
   TIMEOUT_CONFIG,
   withTimeout,
-} from "./simple-bridge-helpers";
+} from "./fast-bridge-helpers";
 
 /**
  * Result of a balance polling operation.

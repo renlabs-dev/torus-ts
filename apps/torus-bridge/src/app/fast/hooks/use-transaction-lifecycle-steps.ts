@@ -3,8 +3,8 @@ import type { ReactNode } from "react";
 import type {
   SimpleBridgeDirection,
   SimpleBridgeTransaction,
-} from "../_components/simple-bridge-types";
-import { SimpleBridgeStep } from "../_components/simple-bridge-types";
+} from "../_components/fast-bridge-types";
+import { SimpleBridgeStep } from "../_components/fast-bridge-types";
 
 type StepStatus = "pending" | "active" | "completed" | "error" | "waiting";
 

@@ -1,6 +1,6 @@
 import { SidebarLinks } from "../_components/shared/sidebar-links";
 import { WalletBalance } from "../_components/shared/wallet-balance";
-import { SimpleBridge } from "./_components/simple-bridge";
+import { FastBridge } from "./_components/fast-bridge";
 
 export function generateMetadata() {
   return {
@@ -19,7 +19,7 @@ export default function FastBridgePage() {
           <WalletBalance />
         </div>
         <div className="flex w-full flex-col gap-6">
-          <SimpleBridge />
+          <FastBridge />
         </div>
       </div>
     </main>

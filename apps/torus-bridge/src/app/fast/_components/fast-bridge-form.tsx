@@ -19,13 +19,13 @@ import Image from "next/image";
 import { useCallback, useMemo, useState } from "react";
 import { erc20Abi } from "viem";
 import { useReadContract } from "wagmi";
-import { useDualWallet } from "../hooks/use-simple-bridge-dual-wallet";
-import { useOrchestratedTransfer } from "../hooks/use-simple-bridge-orchestrated-transfer";
-import { DualWalletConnector } from "./simple-bridge-dual-wallet-connector";
-import { FractionButtons } from "./simple-bridge-fraction-buttons";
-import { TransactionLifecycleDialog } from "./simple-bridge-transaction-lifecycle-dialog";
-import type { SimpleBridgeDirection } from "./simple-bridge-types";
-import { SimpleBridgeStep } from "./simple-bridge-types";
+import { useDualWallet } from "../hooks/use-fast-bridge-dual-wallet";
+import { useOrchestratedTransfer } from "../hooks/use-fast-bridge-orchestrated-transfer";
+import { DualWalletConnector } from "./fast-bridge-dual-wallet-connector";
+import { FractionButtons } from "./fast-bridge-fraction-buttons";
+import { TransactionLifecycleDialog } from "./fast-bridge-transaction-lifecycle-dialog";
+import type { SimpleBridgeDirection } from "./fast-bridge-types";
+import { SimpleBridgeStep } from "./fast-bridge-types";
 
 const BASE_GAS_RESERVE = 10n ** 16n;
 const NATIVE_GAS_RESERVE = 10n ** 18n;
@@ -58,7 +58,7 @@ function parseDecimalToBigInt(amountStr: string): bigint {
   return BigInt(combined);
 }
 
-export function SimpleBridgeForm() {
+export function FastBridgeForm() {
   const [direction, setDirection] =
     useState<SimpleBridgeDirection>("base-to-native");
   const [amountFrom, setAmountFrom] = useState<string>("");

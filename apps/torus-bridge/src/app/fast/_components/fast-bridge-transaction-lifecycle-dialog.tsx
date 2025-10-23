@@ -12,12 +12,12 @@ import { env } from "~/env";
 import { logger } from "~/utils/logger";
 import { useEffect, useState } from "react";
 import { useTransactionLifecycleSteps } from "../hooks/use-transaction-lifecycle-steps";
-import { TransactionStepItem } from "./simple-bridge-transaction-step-item";
+import { TransactionStepItem } from "./fast-bridge-transaction-step-item";
 import type {
   SimpleBridgeDirection,
   SimpleBridgeTransaction,
-} from "./simple-bridge-types";
-import { SimpleBridgeStep } from "./simple-bridge-types";
+} from "./fast-bridge-types";
+import { SimpleBridgeStep } from "./fast-bridge-types";
 
 interface TransactionLifecycleDialogProps {
   isOpen: boolean;

@@ -4,7 +4,7 @@ import {
   isUserRejectionError,
   POLLING_CONFIG,
   UserRejectedError,
-} from "./simple-bridge-helpers";
+} from "./fast-bridge-helpers";
 
 /**
  * Result of a chain switch operation.

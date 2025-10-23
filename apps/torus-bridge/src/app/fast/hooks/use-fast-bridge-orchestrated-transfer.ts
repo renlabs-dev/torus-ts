@@ -21,18 +21,18 @@ import {
   useSwitchChain,
   useWalletClient,
 } from "wagmi";
-import type { SimpleBridgeDirection } from "../_components/simple-bridge-types";
-import { SimpleBridgeStep } from "../_components/simple-bridge-types";
+import type { SimpleBridgeDirection } from "../_components/fast-bridge-types";
+import { SimpleBridgeStep } from "../_components/fast-bridge-types";
 import {
   executeBaseToNativeStep1,
   executeBaseToNativeStep2,
-} from "./simple-bridge-base-to-native-flow";
-import { BASE_CHAIN_ID, UserRejectedError } from "./simple-bridge-helpers";
+} from "./fast-bridge-base-to-native-flow";
+import { BASE_CHAIN_ID, UserRejectedError } from "./fast-bridge-helpers";
 import {
   executeNativeToBaseStep1,
   executeNativeToBaseStep2,
-} from "./simple-bridge-native-to-base-flow";
-import { useSimpleBridgeSharedState } from "./use-simple-bridge-shared-state";
+} from "./fast-bridge-native-to-base-flow";
+import { useSimpleBridgeSharedState } from "./use-fast-bridge-shared-state";
 
 export function useOrchestratedTransfer() {
   const {

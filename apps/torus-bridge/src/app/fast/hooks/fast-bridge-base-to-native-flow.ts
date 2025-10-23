@@ -7,20 +7,20 @@ import { toNano } from "@torus-network/torus-utils/torus/token";
 import { tryAsync } from "@torus-network/torus-utils/try-catch";
 import type { Chain, WalletClient } from "viem";
 import type { Config } from "wagmi";
-import type { SimpleBridgeTransaction } from "../_components/simple-bridge-types";
-import { SimpleBridgeStep } from "../_components/simple-bridge-types";
+import type { SimpleBridgeTransaction } from "../_components/fast-bridge-types";
+import { SimpleBridgeStep } from "../_components/fast-bridge-types";
 import {
   switchChainWithRetry,
   throwOnChainSwitchFailure,
-} from "./simple-bridge-chain-switch";
+} from "./fast-bridge-chain-switch";
 import {
   BASE_CHAIN_ID,
   CONFIRMATION_CONFIG,
   formatErrorForUser,
   isUserRejectionError,
   UserRejectedError,
-} from "./simple-bridge-helpers";
-import { pollEvmBalance } from "./simple-bridge-polling";
+} from "./fast-bridge-helpers";
+import { pollEvmBalance } from "./fast-bridge-polling";
 
 /**
  * Parameters for executing Step 1 of the Base-to-Native bridge flow.
