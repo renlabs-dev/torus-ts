@@ -4,9 +4,16 @@ import {
   AvatarFallback,
   AvatarImage,
 } from "@torus-ts/ui/components/avatar";
+import {
+  Empty,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from "@torus-ts/ui/components/empty";
 import type { inferProcedureOutput } from "@trpc/server";
 import dayjs from "dayjs";
-import { BadgeCheck, TrendingUp } from "lucide-react";
+import { BadgeCheck, ScanSearch, TrendingUp } from "lucide-react";
 
 type PredictionData = inferProcedureOutput<
   AppRouter["prediction"]["getByUsername"]
@@ -111,9 +118,17 @@ export function ProfileFeed({
   return (
     <div className="mx-auto p-4 md:p-4">
       {predictions.length === 0 ? (
-        <div className="text-muted-foreground py-12 text-center">
-          <p>No predictions found</p>
-        </div>
+        <Empty>
+          <EmptyHeader>
+            <EmptyMedia variant="icon">
+              <ScanSearch />
+            </EmptyMedia>
+            <EmptyTitle>No predictions found</EmptyTitle>
+            <EmptyDescription>
+              We couldn't find any predictions for this filter / user.
+            </EmptyDescription>
+          </EmptyHeader>
+        </Empty>
       ) : (
         <div>
           {predictions.map((prediction, idx) => (
@@ -123,9 +138,7 @@ export function ProfileFeed({
                 idx < predictions.length - 1 ? "border-border border-b" : ""
               }
             >
-              {/* Prediction Item */}
               <div className="relative flex gap-2 py-4 md:gap-3 md:py-6">
-                {/* Content */}
                 <div className="min-w-0 flex-1">
                   <div className="flex flex-col gap-1 text-xs sm:flex-row sm:items-center sm:gap-2 md:text-sm">
                     <div className="flex flex-wrap items-center gap-1 sm:gap-2">
@@ -184,9 +197,7 @@ export function ProfileFeed({
                     </span>
                   </div>
 
-                  {/* Prediction Content */}
                   <div className="mt-4 space-y-2 p-1">
-                    {/* Original Tweet with Highlights */}
                     <div className="text-foreground text-sm leading-relaxed md:text-base">
                       {highlightTweetText(
                         prediction.tweetText,
@@ -195,53 +206,49 @@ export function ProfileFeed({
                       )}
                     </div>
 
-                    {/* Prediction Details */}
-                    <div className="space-y-2">
-                      {/* Verdict */}
-                      {prediction.verdictConclusion && (
-                        <div className="bg-accent/20 rounded-lg border p-3">
-                          <div className="mb-2 flex items-center gap-2">
-                            <span className="text-muted-foreground text-xs font-medium uppercase">
-                              Prediction Verdict
-                            </span>
-                            {prediction.verdictCreatedAt && (
-                              <>
-                                <span className="text-muted-foreground text-xs">
-                                  •
-                                </span>
-                                <span className="text-muted-foreground text-xs">
-                                  {dayjs(prediction.verdictCreatedAt).format(
-                                    "M/D/YY h:mm A",
-                                  )}
-                                </span>
-                              </>
-                            )}
-                            <span className="text-muted-foreground text-xs">
-                              •
-                            </span>
-                            <span
-                              className={`${getConfidenceColor(prediction.llmConfidence)} flex items-center text-xs`}
-                            >
-                              <TrendingUp className="mr-1 h-3 w-3" />
-                              {getConfidenceLabel(prediction.llmConfidence)} LLM
-                              Confidence
-                            </span>
-                          </div>
-                          <div className="space-y-1">
-                            {prediction.verdictConclusion.map(
-                              (conclusion, idx) => (
-                                <div
-                                  key={idx}
-                                  className="text-foreground text-sm"
-                                >
-                                  {conclusion.feedback}
-                                </div>
-                              ),
-                            )}
-                          </div>
+                    {prediction.verdictConclusion && (
+                      <div className="bg-accent/20 rounded-lg border p-3">
+                        <div className="mb-2 flex items-center gap-2">
+                          <span className="text-muted-foreground text-xs font-medium uppercase">
+                            Prediction Verdict
+                          </span>
+                          {prediction.verdictCreatedAt && (
+                            <>
+                              <span className="text-muted-foreground text-xs">
+                                •
+                              </span>
+                              <span className="text-muted-foreground text-xs">
+                                {dayjs(prediction.verdictCreatedAt).format(
+                                  "M/D/YY h:mm A",
+                                )}
+                              </span>
+                            </>
+                          )}
+                          <span className="text-muted-foreground text-xs">
+                            •
+                          </span>
+                          <span
+                            className={`${getConfidenceColor(prediction.llmConfidence)} flex items-center text-xs`}
+                          >
+                            <TrendingUp className="mr-1 h-3 w-3" />
+                            {getConfidenceLabel(prediction.llmConfidence)} LLM
+                            Confidence
+                          </span>
                         </div>
-                      )}
-                    </div>
+                        <div className="space-y-1">
+                          {prediction.verdictConclusion.map(
+                            (conclusion, idx) => (
+                              <div
+                                key={idx}
+                                className="text-foreground text-sm"
+                              >
+                                {conclusion.feedback}
+                              </div>
+                            ),
+                          )}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
