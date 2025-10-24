@@ -5,12 +5,13 @@ import {
   TabsList,
   TabsTrigger,
 } from "@torus-ts/ui/components/tabs";
+import { ProfileFeed } from "./profile-feed";
 
 export default function ProfileContent() {
   return (
     <Card className="bg-background/80 backdrop-blur-lg">
-      <Tabs defaultValue="ongoing" className="space-y-6">
-        <CardHeader>
+      <Tabs defaultValue="ongoing">
+        <CardHeader className="pb-0">
           <TabsList className="bg-accent/60 grid w-full grid-cols-3">
             <TabsTrigger value="ongoing">Ongoing predictions</TabsTrigger>
             <TabsTrigger value="true">True predictions</TabsTrigger>
@@ -19,8 +20,10 @@ export default function ProfileContent() {
         </CardHeader>
 
         {/* Ongoing Predictions */}
-        <TabsContent value="ongoing" className="space-y-6">
-          <CardContent className="space-y-6">x</CardContent>
+        <TabsContent value="ongoing">
+          <CardContent>
+            <ProfileFeed />
+          </CardContent>
         </TabsContent>
       </Tabs>
     </Card>
