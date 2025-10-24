@@ -18,10 +18,15 @@ export default async function Page({ params }: PageProps) {
     notFound();
   }
 
+  const predictions = await api.prediction.getByUsername({
+    username: slug,
+    limit: 50,
+  });
+
   return (
     <div className="mx-auto max-w-screen-lg space-y-6 px-4 py-10">
       <ProfileHeader user={user} />
-      <ProfileContent />
+      <ProfileContent predictions={predictions} />
     </div>
   );
 }

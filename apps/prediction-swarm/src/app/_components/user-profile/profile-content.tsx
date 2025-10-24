@@ -1,3 +1,4 @@
+import type { AppRouter } from "@torus-ts/api";
 import { Card, CardContent, CardHeader } from "@torus-ts/ui/components/card";
 import {
   Tabs,
@@ -5,9 +6,18 @@ import {
   TabsList,
   TabsTrigger,
 } from "@torus-ts/ui/components/tabs";
+import type { inferProcedureOutput } from "@trpc/server";
 import { ProfileFeed } from "./profile-feed";
 
-export default function ProfileContent() {
+type PredictionData = inferProcedureOutput<
+  AppRouter["prediction"]["getByUsername"]
+>;
+
+interface ProfileContentProps {
+  predictions: PredictionData;
+}
+
+export default function ProfileContent({ predictions }: ProfileContentProps) {
   return (
     <Card className="bg-background/80 backdrop-blur-lg">
       <Tabs defaultValue="ongoing">
@@ -22,7 +32,7 @@ export default function ProfileContent() {
         {/* Ongoing Predictions */}
         <TabsContent value="ongoing">
           <CardContent>
-            <ProfileFeed />
+            <ProfileFeed predictions={predictions} variant="user" />
           </CardContent>
         </TabsContent>
       </Tabs>
