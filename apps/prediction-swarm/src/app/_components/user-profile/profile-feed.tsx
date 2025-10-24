@@ -14,6 +14,7 @@ import {
 import type { inferProcedureOutput } from "@trpc/server";
 import dayjs from "dayjs";
 import { BadgeCheck, ScanSearch, TrendingUp } from "lucide-react";
+import Link from "next/link";
 
 type PredictionData = inferProcedureOutput<
   AppRouter["prediction"]["getByUsername"]
@@ -116,7 +117,7 @@ export function ProfileFeed({
   // variant = "user",
 }: ProfileFeedProps) {
   return (
-    <div className="mx-auto p-4 md:p-4">
+    <div className="mx-auto px-4">
       {predictions.length === 0 ? (
         <Empty>
           <EmptyHeader>
@@ -164,17 +165,23 @@ export function ProfileFeed({
                         </Avatar>
                       </div>
                       <>
-                        <span className="text-foreground font-medium">
+                        <Link
+                          href={`/user/${prediction.username}`}
+                          className="text-foreground font-medium hover:underline"
+                        >
                           {prediction.screenName}
-                        </span>
+                        </Link>
                         {prediction.isVerified && (
                           <BadgeCheck className="text-primary size-4" />
                         )}
                       </>
                       <span className="text-muted-foreground text-xs">•</span>
-                      <span className="text-muted-foreground">
+                      <Link
+                        href={`/user/${prediction.username}`}
+                        className="text-muted-foreground hover:underline"
+                      >
                         @{prediction.username}
-                      </span>
+                      </Link>
                       {prediction.vagueness && (
                         <>
                           <span className="text-muted-foreground text-xs">

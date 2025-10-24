@@ -1,4 +1,4 @@
-// import PrismaticBurst from "@torus-ts/ui/components/PrismaticBurst";
+import PrismaticBurst from "@torus-ts/ui/components/PrismaticBurst";
 import FAQ from "../_components/main-page/faq";
 import ListItem from "../_components/main-page/list-item";
 import { SearchProphet } from "../_components/main-page/search-prophet";
@@ -34,13 +34,13 @@ export default function Page() {
   return (
     <div>
       <div className="bg-accent/6£0 relative pt-[35rem]">
-        {/* <div className="absolute inset-0 -z-10">
+        <div className="absolute inset-0 -z-10">
           <PrismaticBurst
             distort={6}
             speed={0.2}
             colors={["#696969", "#383838", "#383838"]}
           />
-        </div> */}
+        </div>
         <div className="container relative mx-auto px-4 py-16 md:py-24">
           <div className="mb-20">
             <SearchProphet />
