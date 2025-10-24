@@ -6,7 +6,7 @@ import {
 } from "@torus-ts/ui/components/avatar";
 import { Badge } from "@torus-ts/ui/components/badge";
 import type { inferProcedureOutput } from "@trpc/server";
-import { BadgeCheck, Calendar, Target, TrendingUp } from "lucide-react";
+import { BadgeCheck, TrendingUp } from "lucide-react";
 
 type PredictionData = inferProcedureOutput<
   AppRouter["prediction"]["getByUsername"]
@@ -48,17 +48,70 @@ function formatTime(date: Date): string {
 }
 
 /**
- * Extracts text from goal PostSlice array
+ * Highlights goal and timeframe portions in the tweet text
  */
-function extractGoalText(goal: PredictionData["goal"]): string {
-  return goal.map((slice) => slice.source.tweet_id).join(" ");
-}
+function highlightTweetText(
+  tweetText: string,
+  goal: PredictionData["goal"],
+  timeframe: PredictionData["timeframe"],
+): React.ReactNode {
+  // Collect all slices with their types
+  const slices: {
+    start: number;
+    end: number;
+    type: "goal" | "timeframe";
+  }[] = [
+    ...goal.map((s) => ({ start: s.start, end: s.end, type: "goal" as const })),
+    ...timeframe.map((s) => ({
+      start: s.start,
+      end: s.end,
+      type: "timeframe" as const,
+    })),
+  ];
 
-/**
- * Extracts text from timeframe PostSlice array
- */
-function extractTimeframeText(timeframe: PredictionData["timeframe"]): string {
-  return timeframe.map((slice) => slice.source.tweet_id).join(" ");
+  // Sort by start position
+  slices.sort((a, b) => a.start - b.start);
+
+  const parts: React.ReactNode[] = [];
+  let lastIndex = 0;
+
+  slices.forEach((slice, idx) => {
+    // Add text before this slice
+    if (slice.start > lastIndex) {
+      parts.push(tweetText.substring(lastIndex, slice.start));
+    }
+
+    // Add highlighted slice
+    const sliceText = tweetText.substring(slice.start, slice.end);
+    if (slice.type === "goal") {
+      parts.push(
+        <span
+          key={`goal-${idx}`}
+          className="bg-primary/20 text-primary rounded px-1 font-medium"
+        >
+          {sliceText}
+        </span>,
+      );
+    } else {
+      parts.push(
+        <span
+          key={`timeframe-${idx}`}
+          className="rounded bg-blue-500/20 px-1 font-medium text-blue-600"
+        >
+          {sliceText}
+        </span>,
+      );
+    }
+
+    lastIndex = slice.end;
+  });
+
+  // Add remaining text
+  if (lastIndex < tweetText.length) {
+    parts.push(tweetText.substring(lastIndex));
+  }
+
+  return parts;
 }
 
 /**
@@ -185,39 +238,17 @@ export function ProfileFeed({
 
                         {/* Prediction Content */}
                         <div className="bg-muted/60 mt-2 space-y-3 rounded-lg p-3 md:mt-3 md:p-4">
-                          {/* Original Tweet */}
+                          {/* Original Tweet with Highlights */}
                           <div className="text-foreground text-sm leading-relaxed md:text-base">
-                            {prediction.tweetText}
+                            {highlightTweetText(
+                              prediction.tweetText,
+                              prediction.goal,
+                              prediction.timeframe,
+                            )}
                           </div>
 
                           {/* Prediction Details */}
                           <div className="space-y-2">
-                            {/* Goal */}
-                            <div className="flex items-start gap-2">
-                              <Target className="text-muted-foreground mt-0.5 h-4 w-4 shrink-0" />
-                              <div className="flex-1">
-                                <div className="text-muted-foreground text-xs font-medium">
-                                  PREDICTION
-                                </div>
-                                <div className="text-foreground text-sm">
-                                  {extractGoalText(prediction.goal)}
-                                </div>
-                              </div>
-                            </div>
-
-                            {/* Timeframe */}
-                            <div className="flex items-start gap-2">
-                              <Calendar className="text-muted-foreground mt-0.5 h-4 w-4 shrink-0" />
-                              <div className="flex-1">
-                                <div className="text-muted-foreground text-xs font-medium">
-                                  TIMEFRAME
-                                </div>
-                                <div className="text-foreground text-sm">
-                                  {extractTimeframeText(prediction.timeframe)}
-                                </div>
-                              </div>
-                            </div>
-
                             {/* Metadata */}
                             <div className="border-muted-foreground/20 flex flex-wrap gap-2 border-t pt-2">
                               {prediction.vagueness && (
