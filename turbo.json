@@ -114,6 +114,10 @@
     "VERCEL",
     "VERCEL_ENV",
     "VERCEL_URL",
-    "npm_lifecycle_event"
+    "npm_lifecycle_event",
+    "OPENROUTER_API_KEY",
+    "PREDICTION_CHECK_MODEL",
+    "TOPIC_CLASSIFICATION_MODEL",
+    "PREDICTION_EXTRACTION_MODEL"
   ]
 }

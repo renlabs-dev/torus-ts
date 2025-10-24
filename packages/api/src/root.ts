@@ -19,6 +19,7 @@ import { signalRouter } from "./router/permission/signal";
 import { predictionRouter } from "./router/prediction/prediction";
 import { topicRouter } from "./router/prediction/topic";
 import { prophetRouter } from "./router/prophet/prophet";
+import { swarmFilterRouter } from "./router/swarm-filter/swarm-filter";
 import { twitterUserRouter } from "./router/twitter/twitter-user";
 // import { constraintRouter } from "./router/constraint/constraint";
 import { createTRPCRouter } from "./trpc";
@@ -67,6 +68,8 @@ export const appRouter = createTRPCRouter({
 
   // Twitter
   twitterUser: twitterUserRouter,
+  // Swarm Filter (internal service endpoints)
+  swarmFilter: swarmFilterRouter,
 });
 
 export type AppRouter = typeof appRouter;

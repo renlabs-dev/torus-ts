@@ -30,6 +30,7 @@ type RouterOutputs = inferRouterOutputs<AppRouter>;
 
 export { createTRPCContext, appRouter, createCaller };
 export type { AppRouter, RouterInputs, RouterOutputs };
+export { encodeCursor } from "./router/prophet/prophet";
 
 // TODO: move all DB query code out of this package into functions in the
 // `db` package

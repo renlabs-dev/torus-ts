@@ -13,6 +13,7 @@ import {
   varchar,
 } from "drizzle-orm/pg-core";
 import { extract_pgenum_values } from "../utils";
+import type { Context } from "./context-schemas";
 import {
   bigint,
   createTable,
@@ -172,7 +173,7 @@ export const parsedPredictionSchema = createTable(
     briefRationale: text("brief_rationale").notNull(), // Max 300 words explaining quality
     llmConfidence: decimal("llm_confidence").notNull(), // Stored as basis points (0-1)
     vagueness: decimal("vagueness"), // Stored as basis points (0-1)
-    context: jsonb("context"), // JsonB - whatever the filter agent thinks is relevant
+    context: jsonb("context").$type<Context>(), // Discriminated union of context schemas
     filterAgentId: ss58Address("filter_agent_id"),
     ...timeFields(),
   },
