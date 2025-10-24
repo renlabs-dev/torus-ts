@@ -5,14 +5,11 @@ import {
   index,
   integer,
   jsonb,
-  pgEnum,
   primaryKey,
   text,
+  unique,
   varchar,
 } from "drizzle-orm/pg-core";
-import type { Equals } from "tsafe";
-import { assert } from "tsafe";
-import { extract_pgenum_values } from "../utils";
 import {
   bigint,
   createTable,
@@ -39,7 +36,7 @@ export const twitterUsersSchema = createTable(
     isVerified: boolean("is_verified"),
     verifiedType: varchar("verified_type", { length: 32 }),
     isAutomated: boolean("is_automated"),
-    automatedBy: bigint("automated_by"),
+    automatedBy: varchar("automated_by", { length: 15 }),
     unavailable: boolean("unavailable"),
     unavailableReason: varchar("unavailable_reason", { length: 280 }),
     userCreatedAt: timestampz("user_created_at"),
@@ -48,6 +45,8 @@ export const twitterUsersSchema = createTable(
     followerCount: integer("follower_count"),
     followingCount: integer("following_count"),
 
+    oldestTrackedTweet: bigint("oldest_tracked_tweet"),
+    newestTrackedTweet: bigint("newest_tracked_tweet"),
     tracked: boolean("tracked").notNull(),
 
     ...timeFields(),
@@ -63,20 +62,38 @@ export const twitterUsersSchema = createTable(
 export const twitterUserSuggestionsSchema = createTable(
   "twitter_user_suggestions",
   {
-    username: varchar("username", { length: 15 }),
+    username: varchar("username", { length: 15 }).notNull(),
     wallet: ss58Address("wallet").notNull(),
     ...timeFields(),
   },
   (t) => [primaryKey({ columns: [t.username, t.wallet] })],
 );
 
+export const twitterScrapingJobsSchema = createTable(
+  "twitter_scraping_jobs",
+  {
+    userId: bigint("user_id"),
+    query: varchar("query", { length: 128 }),
+
+    conversationId: bigint("conversation_id"),
+    originalReplyId: bigint("original_reply_id"),
+    nextReplyId: bigint("next_reply_id"),
+
+    ...timeFields(),
+  },
+  (t) => [
+    index("twitter_scraping_jobs_conversation_id_idx").on(t.conversationId),
+    unique("twitter_scraping_jobs_user_id_idx").on(t.userId),
+    unique("twitter_scraping_jobs_original_reply_id_idx").on(
+      t.conversationId,
+      t.originalReplyId,
+    ),
+  ],
+);
+
 // ==== Scraped Tweets ====
 
-export const scrapingStatus = pgEnum("scraping_status", ["SCRAPING", "DONE"]);
-
-export const scrapingStatusValues = extract_pgenum_values(scrapingStatus);
-
-assert<Equals<keyof typeof scrapingStatusValues, "SCRAPING" | "DONE">>();
+export type ScrapedTweet = typeof scrapedTweetSchema.$inferInsert;
 
 /**
  * Stores scraped tweet data and metadata
@@ -85,7 +102,7 @@ export const scrapedTweetSchema = createTable(
   "scraped_tweet",
   {
     id: bigint("id").primaryKey(), // Tweet ID from the platform
-    text: varchar("text", { length: 280 }).notNull(),
+    text: varchar("text", { length: 25_000 }).notNull(),
     authorId: bigint("author_id").notNull(),
     date: timestampz("date").notNull(),
     retweetedId: bigint("retweeted_id"), // The inner tweet (for retweets)
@@ -93,14 +110,12 @@ export const scrapedTweetSchema = createTable(
     conversationId: bigint("conversation_id"), // Thread identifier
     parentTweetId: bigint("parent_tweet_id"), // The parent comment
 
-    status: scrapingStatus("status").notNull(),
     ...timeFields(),
   },
   (t) => [
     index("scraped_tweet_author_id_idx").on(t.authorId),
     index("scraped_tweet_date_idx").on(t.date),
     index("scraped_tweet_conversation_id_idx").on(t.conversationId),
-    index("scraped_tweet_status_idx").on(t.status),
   ],
 );
 
