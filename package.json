@@ -10,7 +10,7 @@
     "@torus-ts/prettier-config": "workspace:*",
     "babel-plugin-react-compiler": "19.1.0-rc.3",
     "prettier": "catalog:",
-    "turbo": "^2.3.3",
+    "turbo": "^2.5.8",
     "typescript": "catalog:"
   },
   "packageManager": "pnpm@9.7.1",
