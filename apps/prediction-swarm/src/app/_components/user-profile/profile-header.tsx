@@ -14,11 +14,34 @@ type TwitterUser = NonNullable<
   inferProcedureOutput<AppRouter["twitterUser"]["getByUsername"]>
 >;
 
+type PredictionData = inferProcedureOutput<
+  AppRouter["prediction"]["getByUsername"]
+>;
+
 interface ProfileHeaderProps {
   user: TwitterUser;
+  predictions: PredictionData;
 }
 
-export default function ProfileHeader({ user }: ProfileHeaderProps) {
+export default function ProfileHeader({
+  user,
+  predictions,
+}: ProfileHeaderProps) {
+  // Calculate accuracy based on verdicts
+  const verdictedPredictions = predictions.filter(
+    (p) => p.verdictConclusion && p.verdictConclusion.length > 0,
+  );
+
+  const truePredictions = verdictedPredictions.filter((p) => {
+    const feedback = p.verdictConclusion?.[0]?.feedback.toLowerCase() ?? "";
+    return feedback.includes("true") || feedback.includes("correct");
+  }).length;
+
+  const accuracy =
+    verdictedPredictions.length > 0
+      ? Math.round((truePredictions / verdictedPredictions.length) * 100)
+      : null;
+
   return (
     <Card className="bg-background/80 backdrop-blur-lg">
       <CardContent className="p-6">
@@ -37,7 +60,11 @@ export default function ProfileHeader({ user }: ProfileHeaderProps) {
             </Avatar>
           </div>
           <div className="flex-1 space-y-2">
-            <Badge variant="default">96% Accuracy</Badge>
+            {accuracy !== null ? (
+              <Badge variant="default">{accuracy}% Accuracy</Badge>
+            ) : (
+              <Badge variant="secondary">No verdicts yet</Badge>
+            )}
             <div className="flex flex-col gap-2 md:flex-row md:items-center">
               <h1 className="text-2xl font-bold">
                 {user.screenName ?? user.username}

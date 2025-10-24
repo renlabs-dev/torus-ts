@@ -4,6 +4,7 @@ import {
   predictionSchema,
   scrapedTweetSchema,
   twitterUsersSchema,
+  verdictSchema,
 } from "@torus-ts/db/schema";
 import type { TRPCRouterRecord } from "@trpc/server";
 import { z } from "zod";
@@ -35,7 +36,7 @@ export const predictionRouter = {
     .query(async ({ ctx, input }) => {
       const { username, limit, offset } = input;
 
-      // Join predictions with parsed predictions, tweets, and users
+      // Join predictions with parsed predictions, tweets, users, and verdicts
       const predictions = await ctx.db
         .select({
           // Prediction data
@@ -62,6 +63,11 @@ export const predictionRouter = {
           screenName: twitterUsersSchema.screenName,
           avatarUrl: twitterUsersSchema.avatarUrl,
           isVerified: twitterUsersSchema.isVerified,
+
+          // Verdict data (optional)
+          verdictId: verdictSchema.id,
+          verdictConclusion: verdictSchema.conclusion,
+          verdictCreatedAt: verdictSchema.createdAt,
         })
         .from(predictionSchema)
         .innerJoin(
@@ -75,6 +81,10 @@ export const predictionRouter = {
         .innerJoin(
           twitterUsersSchema,
           eq(twitterUsersSchema.id, scrapedTweetSchema.authorId),
+        )
+        .leftJoin(
+          verdictSchema,
+          eq(verdictSchema.predictionId, predictionSchema.id),
         )
         .where(
           and(
@@ -136,6 +146,11 @@ export const predictionRouter = {
           screenName: twitterUsersSchema.screenName,
           avatarUrl: twitterUsersSchema.avatarUrl,
           isVerified: twitterUsersSchema.isVerified,
+
+          // Verdict data (optional)
+          verdictId: verdictSchema.id,
+          verdictConclusion: verdictSchema.conclusion,
+          verdictCreatedAt: verdictSchema.createdAt,
         })
         .from(predictionSchema)
         .innerJoin(
@@ -149,6 +164,10 @@ export const predictionRouter = {
         .innerJoin(
           twitterUsersSchema,
           eq(twitterUsersSchema.id, scrapedTweetSchema.authorId),
+        )
+        .leftJoin(
+          verdictSchema,
+          eq(verdictSchema.predictionId, predictionSchema.id),
         )
         .where(eq(twitterUsersSchema.tracked, true))
         .orderBy(desc(predictionSchema.createdAt))

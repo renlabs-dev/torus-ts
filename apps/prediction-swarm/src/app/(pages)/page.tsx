@@ -33,7 +33,7 @@ const faqItems = [
 export default function Page() {
   return (
     <div>
-      <div className="bg-accent/20 relative pt-[35rem]">
+      <div className="bg-accent/6£0 relative pt-[35rem]">
         {/* <div className="absolute inset-0 -z-10">
           <PrismaticBurst
             distort={6}

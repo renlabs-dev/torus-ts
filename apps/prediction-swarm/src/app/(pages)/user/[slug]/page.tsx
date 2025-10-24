@@ -25,7 +25,7 @@ export default async function Page({ params }: PageProps) {
 
   return (
     <div className="mx-auto max-w-screen-lg space-y-6 px-4 py-10">
-      <ProfileHeader user={user} />
+      <ProfileHeader user={user} predictions={predictions} />
       <ProfileContent predictions={predictions} />
     </div>
   );
