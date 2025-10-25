@@ -16,7 +16,7 @@ services:
       - ./docker/subspace-extra:/subspace/extra:ro
 
   postgres:
-    image: postgres:16-alpine
+    image: postgres:18-alpine
     ports:
       - 5432:5432
     volumes:
@@ -26,6 +26,15 @@ services:
       - POSTGRES_USER=postgres
       - POSTGRES_DB=torus-ts-db
       - POSTGRES_HOST_AUTH_METHOD=md5
+  pgadmin4:
+    image: dpage/pgadmin4
+    container_name: pgadmin4
+    restart: unless-stopped
+    environment:
+      PGADMIN_DEFAULT_EMAIL: postgres@example.org
+      PGADMIN_DEFAULT_PASSWORD: postgres
+    ports:
+      - "5050:80"
 
   # torus-cache:
   #   build:

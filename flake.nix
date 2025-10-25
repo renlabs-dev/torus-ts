@@ -1,6 +1,6 @@
 {
   inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs/nixos-25.05";
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
     flake-utils.url = "github:numtide/flake-utils";
 
     git-hooks.url = "github:cachix/git-hooks.nix";
@@ -29,6 +29,8 @@
           pkgs.act
           # Git is our choice of source control :)
           pkgs.git
+          # The postgres package provides necessary utils
+          pkgs.postgresql_18
 
           # Atlas Community does not have some features
           # e.g. data.external_schema
