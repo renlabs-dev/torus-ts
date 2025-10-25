@@ -5,10 +5,7 @@
   "license": "MIT",
   "type": "module",
   "exports": {
-    ".": {
-      "types": "./dist/index.d.ts",
-      "default": "./src/index.ts"
-    },
+    ".": "./src/index.ts",
     "./client": "./src/client.ts"
   },
   "scripts": {

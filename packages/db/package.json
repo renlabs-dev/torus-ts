@@ -5,22 +5,10 @@
   "license": "MIT",
   "type": "module",
   "exports": {
-    ".": {
-      "types": "./dist/index.d.ts",
-      "default": "./src/index.ts"
-    },
-    "./client": {
-      "types": "./dist/client.d.ts",
-      "default": "./src/client.ts"
-    },
-    "./schema": {
-      "types": "./dist/schema.d.ts",
-      "default": "./src/schema.ts"
-    },
-    "./validation": {
-      "types": "./dist/validation.d.ts",
-      "default": "./src/validation.ts"
-    }
+    ".": "./src/index.ts",
+    "./client": "./src/client.ts",
+    "./schema": "./src/schema/index.ts",
+    "./validation": "./src/validation.ts",
   },
   "scripts": {
     "build": "tsc",
