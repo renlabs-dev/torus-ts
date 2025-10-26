@@ -226,6 +226,12 @@ The database uses Drizzle ORM with PostgreSQL and follows these conventions:
 
 ## Code Quality & Patterns
 
+### Never Use eslint-disable
+
+**Rule**: Never use `// eslint-disable` or `// eslint-disable-next-line` to suppress linting errors.
+
+**Reason**: These directives hide problems instead of solving them. Always fix the root cause by refactoring the code to follow best practices. If a rule genuinely needs to be changed project-wide, update the ESLint configuration file instead.
+
 ### Non-Null Assertions
 
 **NEVER use the non-null assertion operator (`!`)** in TypeScript code. Instead, use `assert()` from `tsafe` with a descriptive message:

@@ -359,7 +359,7 @@ export function TransferEVM() {
       to: null,
       mode: mode === "bridge" ? "withdraw" : "bridge",
     });
-    router.push(`/?${newQuery}`);
+    router.push(`/standard?${newQuery}`);
   }, [mode, router, searchParams]);
 
   const fromChain = mode === "bridge" ? "Torus" : "Torus EVM";
@@ -524,8 +524,8 @@ function ChainField({ label, chainName }: ChainFieldProps) {
           <Image
             src={
               isTorusEVM
-                ? "/torus-evm-balance-icon.svg"
-                : "/torus-balance-icon.svg"
+                ? "/assets/icons/bridge/torus-evm.svg"
+                : "/assets/icons/balance/torus.svg"
             }
             alt={label}
             width={28}

@@ -1,9 +1,6 @@
 "use client";
 
 import { formatToken } from "@torus-network/torus-utils/torus/token";
-import { useGetTorusPrice } from "@torus-ts/query-provider/hooks";
-import { useAPR } from "~/hooks/useAPR";
-import { useRewardIntervalProgress } from "~/hooks/useRewardInterval";
 import { Fragment, useMemo } from "react";
 import { APRBarBase } from "./apr-bar-base";
 import { AppBarDataGroup, AppBarSeparator } from "./apr-bar-shared";
@@ -15,11 +12,25 @@ interface APRInfo {
   isLoading?: boolean;
 }
 
-export function APRBar() {
-  const { apr, isLoading, totalStake, totalIssuance } = useAPR();
-  const rewardIntervalProgress = useRewardIntervalProgress();
-  const { data: usdPrice } = useGetTorusPrice();
+interface APRBarProps {
+  apr?: number;
+  usdPrice?: number;
+  totalStake?: bigint;
+  totalIssuance?: bigint;
+  isLoading?: boolean;
+  rewardIntervalProgress?: {
+    full: string;
+  };
+}
 
+export function APRBar({
+  apr,
+  usdPrice,
+  totalStake,
+  totalIssuance,
+  isLoading = false,
+  rewardIntervalProgress,
+}: APRBarProps) {
   const stakedPercentage = useMemo(() => {
     if (!totalStake || !totalIssuance) return "0.00";
     const totalSupply = (totalStake || 0n) + (totalIssuance || 0n);
@@ -52,7 +63,7 @@ export function APRBar() {
 
   const dynamicInfo: APRInfo = {
     label: "REWARD INTERVAL",
-    value: rewardIntervalProgress.full,
+    value: rewardIntervalProgress?.full ?? "00:00",
   };
 
   const infos = [...staticInfos, dynamicInfo];

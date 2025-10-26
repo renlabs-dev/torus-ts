@@ -458,6 +458,9 @@ export interface CoingeckoResponse {
   };
 }
 
+/**
+ * Get the current Torus price in USD from Coingecko API
+ */
 export function useGetTorusPrice(
   options?: Omit<QueryObserverOptions<number, Error>, "queryKey" | "queryFn">,
 ): UseQueryResult<number, Error> {

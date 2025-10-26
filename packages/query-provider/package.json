@@ -16,10 +16,8 @@
     "clean": "rm -rf .turbo node_modules",
     "typecheck": "tsc --noEmit"
   },
-  "peerDependencies": {
-    "@tanstack/react-query": "catalog:"
-  },
   "dependencies": {
+    "@tanstack/react-query": "catalog:",
     "@torus-network/sdk": "workspace:*",
     "@torus-network/torus-utils": "workspace:*",
     "react": "catalog:react19"
