@@ -1,8 +1,11 @@
 import { ilike } from "@torus-ts/db";
-import { twitterUsersSchema } from "@torus-ts/db/schema";
+import {
+  twitterUsersSchema,
+  twitterUserSuggestionsSchema,
+} from "@torus-ts/db/schema";
 import type { TRPCRouterRecord } from "@trpc/server";
 import { z } from "zod";
-import { publicProcedure } from "../../trpc";
+import { authenticatedProcedure, publicProcedure } from "../../trpc";
 
 /**
  * Twitter user router - handles operations for searching and retrieving Twitter user data
@@ -71,5 +74,29 @@ export const twitterUserRouter = {
         .limit(1);
 
       return users[0] ?? null;
+    }),
+
+  /**
+   * Suggest a Twitter user to be added to the swarm
+   *
+   * Creates a suggestion record linking the authenticated user's wallet
+   * to a Twitter username they want tracked.
+   */
+  suggestUser: authenticatedProcedure
+    .input(
+      z.object({
+        username: z
+          .string()
+          .min(1, "Username is required")
+          .max(15, "Username too long")
+          .transform((val) => (val.startsWith("@") ? val.slice(1) : val)),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const userKey = ctx.sessionData.userKey;
+      await ctx.db.insert(twitterUserSuggestionsSchema).values({
+        username: input.username,
+        wallet: userKey,
+      });
     }),
 } satisfies TRPCRouterRecord;

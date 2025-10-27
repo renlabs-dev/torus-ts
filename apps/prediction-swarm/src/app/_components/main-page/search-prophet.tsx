@@ -13,6 +13,7 @@ import { SearchIcon } from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { AddProphet } from "./add-prophet";
 
 export function SearchProphet() {
   const router = useRouter();
@@ -67,7 +68,9 @@ export function SearchProphet() {
           onValueChange={setSearch}
         />
         <CommandList>
-          <CommandEmpty>No users found</CommandEmpty>
+          <CommandEmpty>
+            <AddProphet username={search} onSuccess={() => setOpen(false)} />
+          </CommandEmpty>
           {searchResults && searchResults.length > 0 && (
             <CommandGroup heading="Users">
               {searchResults.map((user) => (

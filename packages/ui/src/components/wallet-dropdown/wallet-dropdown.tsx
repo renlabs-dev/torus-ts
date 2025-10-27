@@ -43,6 +43,7 @@ interface WalletDropdownProps {
   stakeOut: StakeOutData | undefined;
   shouldDisplayText?: boolean;
   torusChainEnv: string;
+  className?: string;
 }
 
 export const WalletDropdown = (props: WalletDropdownProps) => {
@@ -93,6 +94,7 @@ export const WalletDropdown = (props: WalletDropdownProps) => {
         <DropdownMenuTrigger disabled={!isInitialized} asChild>
           <button
             className={cn(
+              props.className,
               "flex items-center gap-2 bg-transparent p-2 transition duration-200 hover:bg-background/60",
             )}
           >

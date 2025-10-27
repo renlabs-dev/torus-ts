@@ -1,4 +1,3 @@
-import PrismaticBurst from "@torus-ts/ui/components/PrismaticBurst";
 import FAQ from "../_components/main-page/faq";
 import ListItem from "../_components/main-page/list-item";
 import { SearchProphet } from "../_components/main-page/search-prophet";
@@ -33,14 +32,8 @@ const faqItems = [
 export default function Page() {
   return (
     <div>
-      <div className="bg-accent/6£0 relative pt-[35rem]">
-        <div className="absolute inset-0 -z-10">
-          <PrismaticBurst
-            distort={6}
-            speed={0.2}
-            colors={["#696969", "#383838", "#383838"]}
-          />
-        </div>
+      <div className="relative pt-[35rem]">
+        <div className="absolute inset-0 -z-10 bg-white/10"></div>
         <div className="container relative mx-auto px-4 py-16 md:py-24">
           <div className="mb-20">
             <SearchProphet />
@@ -63,13 +56,16 @@ export default function Page() {
               title="Predictor Feed"
               description="View the latest predictions from all predictors on the swarm."
               linkText="View feed"
-              href="#feed"
+              href="/feed"
             />
           </div>
         </div>
       </div>
 
-      <div id="faqs" className="bg-background/80 py-16 md:py-32">
+      <div
+        id="faqs"
+        className="bg-[url(/background.svg)] bg-cover py-16 md:py-32"
+      >
         <div className="container mx-auto px-4">
           <div className="mb-12 text-center">
             <h2 className="text-foreground mb-2 text-2xl font-bold">

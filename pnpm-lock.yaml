@@ -337,7 +337,7 @@ importers:
         version: 15.5.2(@babel/core@7.28.3)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
       next-plausible:
         specifier: 'catalog:'
-        version: 3.12.4(next@15.5.2(@babel/core@7.28.3)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
+        version: 3.12.4(next@15.5.2(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
       react:
         specifier: ^19.0.0
         version: 19.1.1
@@ -413,7 +413,7 @@ importers:
         version: 15.5.2(@babel/core@7.28.3)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
       next-plausible:
         specifier: 'catalog:'
-        version: 3.12.4(next@15.5.2(@babel/core@7.28.3)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
+        version: 3.12.4(next@15.5.2(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
       react:
         specifier: ^19.0.0
         version: 19.1.1
@@ -698,7 +698,7 @@ importers:
         version: 4.24.11(next@15.5.2(@babel/core@7.28.3)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
       next-plausible:
         specifier: 'catalog:'
-        version: 3.12.4(next@15.5.2(@babel/core@7.28.3)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
+        version: 3.12.4(next@15.5.2(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
       react:
         specifier: ^19.0.0
         version: 19.1.1
@@ -780,7 +780,7 @@ importers:
         version: 15.5.2(@babel/core@7.28.3)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
       next-plausible:
         specifier: 'catalog:'
-        version: 3.12.4(next@15.5.2(@babel/core@7.28.3)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
+        version: 3.12.4(next@15.5.2(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
       react:
         specifier: ^19.0.0
         version: 19.1.1
@@ -892,7 +892,7 @@ importers:
         version: 15.5.2(@babel/core@7.28.3)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
       next-plausible:
         specifier: 'catalog:'
-        version: 3.12.4(next@15.5.2(@babel/core@7.28.3)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
+        version: 3.12.4(next@15.5.2(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
       pixi-viewport:
         specifier: ^6.0.3
         version: 6.0.3(pixi.js@8.12.0)
@@ -1010,7 +1010,7 @@ importers:
         version: 15.5.2(@babel/core@7.28.3)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
       next-plausible:
         specifier: 'catalog:'
-        version: 3.12.4(next@15.5.2(@babel/core@7.28.3)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
+        version: 3.12.4(next@15.5.2(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
       react:
         specifier: ^19.0.0
         version: 19.1.1
@@ -1113,7 +1113,7 @@ importers:
         version: 15.5.2(@babel/core@7.28.3)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
       next-plausible:
         specifier: 'catalog:'
-        version: 3.12.4(next@15.5.2(@babel/core@7.28.3)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
+        version: 3.12.4(next@15.5.2(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
       react:
         specifier: ^19.0.0
         version: 19.1.1
@@ -1673,9 +1673,6 @@ importers:
       lucide-react:
         specifier: 0.456.0
         version: 0.456.0(react@19.1.1)
-      ogl:
-        specifier: ^1.0.11
-        version: 1.0.11
       react:
         specifier: ^19.0.0
         version: 19.1.1
@@ -11863,9 +11860,6 @@ packages:
 
   ofetch@1.4.1:
     resolution: {integrity: sha512-QZj2DfGplQAr2oj9KzceK9Hwz6Whxazmn85yYeVuS3u9XTMOGMRx0kO95MQ+vLsj/S/NwBDMMLU5hpxvI6Tklw==}
-
-  ogl@1.0.11:
-    resolution: {integrity: sha512-kUpC154AFfxi16pmZUK4jk3J+8zxwTWGPo03EoYA8QPbzikHoaC82n6pNTbd+oEaJonaE8aPWBlX7ad9zrqLsA==}
 
   oidc-token-hash@5.1.1:
     resolution: {integrity: sha512-D7EmwxJV6DsEB6vOFLrBM2OzsVgQzgPWyHlV2OOAVj772n+WTXpudC9e9u5BVKQnYwaD30Ivhi9b+4UeBcGu9g==}
@@ -30067,7 +30061,7 @@ snapshots:
       react-dom: 19.1.1(react@19.1.1)
       uuid: 8.3.2
 
-  next-plausible@3.12.4(next@15.5.2(@babel/core@7.28.3)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(react-dom@19.1.1(react@19.1.1))(react@19.1.1):
+  next-plausible@3.12.4(next@15.5.2(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(react-dom@19.1.1(react@19.1.1))(react@19.1.1):
     dependencies:
       next: 15.5.2(@babel/core@7.28.3)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
       react: 19.1.1
@@ -30273,8 +30267,6 @@ snapshots:
       destr: 2.0.5
       node-fetch-native: 1.6.7
       ufo: 1.6.1
-
-  ogl@1.0.11: {}
 
   oidc-token-hash@5.1.1: {}
 
