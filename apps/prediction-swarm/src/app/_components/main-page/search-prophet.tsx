@@ -1,157 +1,111 @@
 "use client";
 
-import { Input } from "@torus-ts/ui/components/input";
-import { Label } from "@torus-ts/ui/components/label";
+import {
+  CommandDialog,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@torus-ts/ui/components/command";
 import { api } from "~/trpc/react";
 import { SearchIcon } from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { useEffect, useId, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 
 export function SearchProphet() {
-  const id = useId();
   const router = useRouter();
-  const [searchQuery, setSearchQuery] = useState("");
-  const [debouncedQuery, setDebouncedQuery] = useState("");
-  const [selectedIndex, setSelectedIndex] = useState(-1);
-  const [isForceClosed, setIsForceClosed] = useState(false);
-  const containerRef = useRef<HTMLDivElement>(null);
+  const [open, setOpen] = useState(false);
+  const [search, setSearch] = useState("");
 
   useEffect(() => {
-    const timer = setTimeout(() => setDebouncedQuery(searchQuery), 300);
-    return () => clearTimeout(timer);
-  }, [searchQuery]);
-
-  const { data: searchResults, isLoading } = api.twitterUser.search.useQuery(
-    { query: debouncedQuery, limit: 10 },
-    { enabled: debouncedQuery.length > 0 },
-  );
-
-  const hasResults = Boolean(searchResults?.length);
-  const isOpen =
-    !isForceClosed && debouncedQuery.length > 0 && (isLoading || hasResults);
-
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (
-        containerRef.current &&
-        !containerRef.current.contains(event.target as Node)
-      ) {
-        setIsForceClosed(true);
+    const down = (e: KeyboardEvent) => {
+      if (e.key === "k" && (e.metaKey || e.ctrlKey)) {
+        e.preventDefault();
+        setOpen((open) => !open);
       }
     };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
+
+    document.addEventListener("keydown", down);
+    return () => document.removeEventListener("keydown", down);
   }, []);
 
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    if (debouncedQuery) setIsForceClosed(false);
-  }, [debouncedQuery]);
+  const { data: searchResults } = api.twitterUser.search.useQuery(
+    { query: search, limit: 10 },
+    { enabled: search.length > 0 },
+  );
 
   const handleSelectUser = (username: string | null) => {
     if (!username) return;
+    setOpen(false);
     router.push(`/user/${username}`);
-    setSearchQuery("");
-    setIsForceClosed(true);
-    setSelectedIndex(-1);
-  };
-
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (!searchResults?.length) return;
-
-    switch (e.key) {
-      case "ArrowDown":
-        e.preventDefault();
-        setSelectedIndex((prev) =>
-          prev < searchResults.length - 1 ? prev + 1 : prev,
-        );
-        break;
-      case "ArrowUp":
-        e.preventDefault();
-        setSelectedIndex((prev) => (prev > 0 ? prev - 1 : -1));
-        break;
-      case "Enter":
-        if (selectedIndex >= 0) {
-          e.preventDefault();
-          handleSelectUser(searchResults[selectedIndex]?.username ?? null);
-        }
-        break;
-      case "Escape":
-        setIsForceClosed(true);
-        setSelectedIndex(-1);
-        break;
-    }
   };
 
   return (
-    <div
-      ref={containerRef}
-      className="relative mx-auto w-full max-w-lg space-y-2 text-center"
-    >
-      <div className="relative flex-1">
-        <SearchIcon className="text-muted-foreground absolute left-5 top-1/2 z-10 h-5 w-5 -translate-y-1/2" />
-        <Input
-          id={id}
-          placeholder="Search for any x account"
-          className="focus-visible:z-1 bg-background/80 -me-px h-12 pl-14 shadow-none backdrop-blur-lg"
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          onKeyDown={handleKeyDown}
-        />
-        {isOpen && (
-          <div className="bg-background/80 absolute left-0 right-0 top-full z-50 mt-2 max-h-96 overflow-y-auto rounded-lg border shadow-lg backdrop-blur-lg">
-            {isLoading ? (
-              <div className="text-muted-foreground p-4 text-center text-sm">
-                Searching...
-              </div>
-            ) : searchResults?.length ? (
-              <div className="py-2">
-                {searchResults.map((user, index) => (
-                  <button
-                    key={user.userId}
-                    onClick={() => handleSelectUser(user.username)}
-                    className={`hover:bg-accent flex w-full items-center gap-3 px-4 py-3 text-left transition-colors ${index === selectedIndex ? "bg-accent" : ""}`}
-                  >
-                    {user.avatarUrl && (
-                      <Image
-                        src={user.avatarUrl}
-                        alt={user.username ?? ""}
-                        width={40}
-                        height={40}
-                        className="h-10 w-10 rounded-full"
-                      />
-                    )}
-                    <div className="flex-1 overflow-hidden">
-                      <div className="flex items-center gap-2">
-                        <span className="font-medium">
-                          {user.screenName ?? user.username}
-                        </span>
-                        {user.isVerified && (
-                          <span className="text-xs text-blue-500">✓</span>
-                        )}
-                      </div>
-                      {user.username && (
-                        <div className="text-muted-foreground text-sm">
-                          @{user.username}
-                        </div>
-                      )}
-                    </div>
-                  </button>
-                ))}
-              </div>
-            ) : (
-              <div className="text-muted-foreground p-4 text-center text-sm">
-                No users found
-              </div>
-            )}
-          </div>
-        )}
+    <>
+      <div className="relative mx-auto w-full max-w-lg space-y-2 text-center">
+        <button
+          onClick={() => setOpen(true)}
+          className="bg-background/80 text-muted-foreground hover:bg-background flex h-12 w-full items-center gap-3 rounded-lg border px-4 backdrop-blur-lg transition-colors"
+        >
+          <SearchIcon className="h-5 w-5" />
+          <span className="flex-1 text-left">Search for any x account</span>
+          <kbd className="bg-muted text-muted-foreground pointer-events-none inline-flex h-5 items-center gap-1 rounded border px-1.5 font-mono text-[10px] font-medium opacity-100">
+            <span className="text-xs">⌘</span>K
+          </kbd>
+        </button>
+        <p className="text-muted-foreground text-sm">
+          View prediction history, current and account breakdown
+        </p>
       </div>
 
-      <Label htmlFor={id} className="text-muted-foreground text-sm">
-        View prediction history, current and account breakdown
-      </Label>
-    </div>
+      <CommandDialog open={open} onOpenChange={setOpen} shouldFilter={false}>
+        <CommandInput
+          placeholder="Search for any x account..."
+          value={search}
+          onValueChange={setSearch}
+        />
+        <CommandList>
+          <CommandEmpty>No users found</CommandEmpty>
+          {searchResults && searchResults.length > 0 && (
+            <CommandGroup heading="Users">
+              {searchResults.map((user) => (
+                <CommandItem
+                  key={user.userId}
+                  onSelect={() => handleSelectUser(user.username)}
+                  className="flex items-center gap-3"
+                >
+                  {user.avatarUrl && (
+                    <Image
+                      src={user.avatarUrl}
+                      alt={user.username ?? ""}
+                      width={32}
+                      height={32}
+                      className="h-8 w-8 rounded-full"
+                    />
+                  )}
+                  <div className="flex-1 overflow-hidden">
+                    <div className="flex items-center gap-2">
+                      <span className="font-medium">
+                        {user.screenName ?? user.username}
+                      </span>
+                      {user.isVerified && (
+                        <span className="text-xs text-blue-500">✓</span>
+                      )}
+                    </div>
+                    {user.username && (
+                      <div className="text-muted-foreground text-sm">
+                        @{user.username}
+                      </div>
+                    )}
+                  </div>
+                </CommandItem>
+              ))}
+            </CommandGroup>
+          )}
+        </CommandList>
+      </CommandDialog>
+    </>
   );
 }
