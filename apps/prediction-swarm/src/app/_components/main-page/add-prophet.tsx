@@ -18,6 +18,7 @@ import { WalletDropdown } from "@torus-ts/ui/components/wallet-dropdown/wallet-d
 import { useToast } from "@torus-ts/ui/hooks/use-toast";
 import { env } from "~/env";
 import { api } from "~/trpc/react";
+import { UserRoundPlus } from "lucide-react";
 
 interface AddProphetProps {
   username: string;
@@ -55,6 +56,7 @@ export function AddProphet({ username, onSuccess }: AddProphetProps) {
     handleSelectWallet,
     isInitialized,
     selectedAccount,
+    isAccountConnected,
   } = useTorus();
 
   const accountFreeBalance = useFreeBalance(
@@ -74,25 +76,37 @@ export function AddProphet({ username, onSuccess }: AddProphetProps) {
         </EmptyDescription>
       </EmptyHeader>
       <EmptyContent>
-        <div className="flex items-center gap-2">
-          <WalletDropdown
-            balance={accountFreeBalance.data}
-            stakeOut={stakeOut.data}
-            accounts={accounts}
-            isInitialized={isInitialized}
-            selectedAccount={selectedAccount}
-            handleLogout={handleLogout}
-            handleGetWallets={handleGetWallets}
-            handleSelectWallet={handleSelectWallet}
-            torusChainEnv={env("NEXT_PUBLIC_TORUS_CHAIN_ENV")}
-            className="text-nowrap !rounded-md !border !border-white !px-4"
-          />
+        <div className="flex w-full flex-col items-center gap-2">
+          <div className="border-button-border flex h-10 w-full justify-center border">
+            <WalletDropdown
+              balance={accountFreeBalance.data}
+              stakeOut={stakeOut.data}
+              accounts={accounts}
+              isInitialized={isInitialized}
+              selectedAccount={selectedAccount}
+              handleLogout={handleLogout}
+              handleGetWallets={handleGetWallets}
+              handleSelectWallet={handleSelectWallet}
+              torusChainEnv={env("NEXT_PUBLIC_TORUS_CHAIN_ENV")}
+              className="text-nowrap !rounded-md"
+            />
+          </div>
+
+          {/* Separator with text */}
+          <div className="relative flex w-full items-center">
+            <div className="border-border flex-1 border-t" />
+            <span className="text-muted-foreground px-3 text-xs">THEN</span>
+            <div className="border-border flex-1 border-t" />
+          </div>
+
           <Button
             size="lg"
             variant="outline"
             onClick={handleAddUser}
-            disabled={suggestUser.isPending || !username}
+            className="h-10 w-full"
+            disabled={suggestUser.isPending || !username || !isAccountConnected}
           >
+            <UserRoundPlus className="h-12 w-12" />
             {suggestUser.isPending ? "Adding..." : "Add account to swarm"}
           </Button>
         </div>

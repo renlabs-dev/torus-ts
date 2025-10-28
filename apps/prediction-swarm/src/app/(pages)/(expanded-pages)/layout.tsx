@@ -6,7 +6,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <span>
+    <span className="animate-fade">
       {children}{" "}
       <div className="fixed inset-0 -z-10 opacity-40">
         <Dither
