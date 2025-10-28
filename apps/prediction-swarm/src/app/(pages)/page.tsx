@@ -12,17 +12,18 @@ export default function Page() {
   return (
     <div>
       <div className="relative flex min-h-[90vh] flex-col">
-        <div className="animate-fade absolute inset-0 -z-10">
+        <div className="animate-fade absolute inset-0">
           <Dither
             pixelSize={1}
             waveSpeed={0.02}
             waveFrequency={4}
             waveAmplitude={0.3}
+            mouseRadius={0.2}
           />
         </div>
 
         {/* Centered title */}
-        <div className="mt-40 flex flex-1 items-center justify-center">
+        <div className="pointer-events-none relative z-10 mt-40 flex flex-1 items-center justify-center">
           <h3
             className={`bg-gradient-to-b from-white to-gray-600 bg-clip-text text-center text-4xl font-normal leading-tight text-transparent opacity-40 md:text-[10rem] ${jacquard.className}`}
           >
@@ -31,11 +32,11 @@ export default function Page() {
         </div>
 
         {/* Search and list items at bottom */}
-        <div className="relative z-20 mx-auto w-full pb-12">
-          <div className="animate-fade-up animate-delay-[100ms] mb-14">
+        <div className="pointer-events-none relative z-10 mx-auto w-full pb-12">
+          <div className="animate-fade-up animate-delay-[100ms] pointer-events-auto mb-14">
             <SearchProphet />
           </div>
-          <div className="mx-auto -mb-[6.125rem] grid max-w-6xl gap-6 md:grid-cols-3">
+          <div className="pointer-events-auto mx-auto -mb-[6.125rem] grid max-w-6xl gap-6 md:grid-cols-3">
             <ListItem
               title="Predictor Profiles"
               description="View detailed profiles of any predictor on the swarm."
