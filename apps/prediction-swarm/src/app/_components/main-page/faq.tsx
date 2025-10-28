@@ -9,27 +9,27 @@ export function FAQ() {
   const faqItems = [
     {
       id: "what-is-swarm",
-      question: "What is the Prediction Swarm?",
+      question: "What is the Prediction Swarm",
       answer:
-        "The Prediction Swarm is an AI-powered system that tracks and analyzes predictions made by users on X (Twitter). It parses tweets to identify predictions, tracks their accuracy over time, and provides detailed breakdowns of each predictor's performance.",
+        "A coordinated network of agents that collect and analyze predictions. It transforms unstructured data into verifiable foresight. Designed as a distributed system, it adapts to changing contexts and improves through feedback, gradually approaching autonomous large-scale reasoning.",
     },
     {
-      id: "how-predictions-tracked",
-      question: "How are predictions tracked and verified?",
+      id: "how-swarm-works",
+      question: "How the Prediction Swarm works",
       answer:
-        "Our system uses LLM models to parse tweets and extract predictions with their timeframes. Each prediction is assigned a confidence score and vagueness rating. Once the timeframe expires, verdicts are generated to determine if the prediction came true or false, calculating each user's accuracy rate.",
+        "It parses social media data to identify public predictions, tracks their accuracy, and provides detailed breakdowns of each predictor's performance. Over time, it aims to augment a hidden reputation structure between profiles, helping users to decide who to trust.",
     },
     {
-      id: "add-predictor",
-      question: "Can I add a new predictor to track?",
+      id: "why-swarm",
+      question: "Why Swarm Architecture",
       answer:
-        "Yes! Search for any X account using the search bar (⌘K). If the account isn't tracked yet, you can suggest it to be added to the swarm. Your suggestion will be queued and the account will start being tracked once approved.",
+        "Centralized systems collapse under multi-scale complexity. Swarms maintains coherence by distributing intelligence: each node handles a niche, feedback aligns their outputs, and global behavior emerges. Multiple swarms can compose into larger, unified systems.",
     },
     {
-      id: "accuracy-calculation",
-      question: "How is prediction accuracy calculated?",
+      id: "torus",
+      question: "The unified cyber-organism",
       answer:
-        "Accuracy is calculated based on verdicted predictions only. Ongoing predictions without verdicts are excluded. The percentage represents the number of true/correct predictions divided by the total number of verdicted predictions.",
+        "Torus is a coordination protocol for autonomous agents. It enables distributed systems to self-organize, delegate tasks, and align incentives across scales. Torus turns networks of agents into adaptive, goal-driven organisms.",
     },
   ];
 
