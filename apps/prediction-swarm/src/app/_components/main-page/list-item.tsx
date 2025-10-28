@@ -5,6 +5,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@torus-ts/ui/components/card";
+import { cn } from "@torus-ts/ui/lib/utils";
 import { ArrowRight } from "lucide-react";
 import Link from "next/link";
 
@@ -13,16 +14,23 @@ interface HelpCenterCardProps {
   description: string;
   linkText: string;
   href: string;
+  className?: string;
 }
 
-const ListItem = ({
+export function ListItem({
   title,
   description,
   linkText,
   href,
-}: HelpCenterCardProps) => {
+  className,
+}: HelpCenterCardProps) {
   return (
-    <Card className="bg-card/80 plus-corners border-border h-full pb-0 transition-shadow duration-200 hover:shadow-lg">
+    <Card
+      className={cn(
+        "bg-card/80 plus-corners border-border h-full pb-0 transition-shadow duration-200 hover:shadow-lg",
+        className,
+      )}
+    >
       <CardHeader>
         <CardTitle>{title}</CardTitle>
         <CardDescription>{description}</CardDescription>
@@ -38,6 +46,4 @@ const ListItem = ({
       </CardContent>
     </Card>
   );
-};
-
-export default ListItem;
+}

@@ -1,7 +1,7 @@
 import { Jacquard_12 as Jacquard } from "next/font/google";
 import Dither from "../_components/dither";
 import { FAQ } from "../_components/main-page/faq";
-import ListItem from "../_components/main-page/list-item";
+import { ListItem } from "../_components/main-page/list-item";
 import { SearchProphet } from "../_components/main-page/search-prophet";
 
 export const jacquard = Jacquard({
@@ -12,7 +12,7 @@ export default function Page() {
   return (
     <div>
       <div className="relative pt-[22rem]">
-        <div className="absolute inset-0 -z-10 bg-white/10">
+        <div className="animate-fade absolute inset-0 -z-10">
           <Dither
             pixelSize={1}
             waveSpeed={0.02}
@@ -26,7 +26,7 @@ export default function Page() {
           Prediction Swarm
         </h3>
         <div className="relative z-20 mx-auto w-full py-24">
-          <div className="mb-14">
+          <div className="animate-fade-up animate-delay-[100ms] mb-14">
             <SearchProphet />
           </div>
           <div className="mx-auto -mb-[9.125rem] grid max-w-6xl gap-6 md:grid-cols-3">
@@ -35,18 +35,21 @@ export default function Page() {
               description="View detailed profiles of any predictor on the swarm."
               linkText="View profiles"
               href="#faqs"
+              className="animate-fade-up animate-delay-[500ms] duration-1000"
             />
             <ListItem
               title="Tickers"
               description="View real-time predictions for all tickers on the swarm."
               linkText="View tickers"
               href="#tickers"
+              className="animate-fade-up animate-delay-[750ms] duration-1000"
             />
             <ListItem
               title="Predictor Feed"
               description="View the latest predictions from all predictors on the swarm."
               linkText="View feed"
               href="/feed"
+              className="animate-fade-up animate-delay-[1000ms] duration-1000"
             />
           </div>
         </div>

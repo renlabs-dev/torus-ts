@@ -14,6 +14,7 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { AddProphet } from "./add-prophet";
+import { SearchEmpty } from "./search-empty";
 
 export function SearchProphet() {
   const router = useRouter();
@@ -73,7 +74,13 @@ export function SearchProphet() {
         />
         <CommandList>
           <CommandEmpty>
-            <AddProphet username={search} onSuccess={() => setOpen(false)} />
+            {searchResults === undefined ? (
+              <div className="flex flex-col gap-2">
+                <SearchEmpty />
+              </div>
+            ) : (
+              <AddProphet username={search} onSuccess={() => setOpen(false)} />
+            )}
           </CommandEmpty>
           {searchResults && searchResults.length > 0 && (
             <CommandGroup heading="Users">
