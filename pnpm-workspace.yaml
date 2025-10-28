@@ -27,10 +27,6 @@ catalog:
   "@polkadot/extension-dapp": ^0.52.3
   "@polkadot/extension-inject": ^0.52.3
   "@next/third-parties": ^15.2.3
-  "@react-three/fiber": ^9.1.2
-  "@react-three/drei": ^10.0.6
-  "three": ^0.175.0
-  "@types/three": ^0.175.0
   "eslint": ^9.9.0
   "prettier": ^3.3.3
   "tailwindcss": ^3.4.10
@@ -54,6 +50,13 @@ catalog:
   # Hyperlane
   "viem": ^2.22.1
   "next-plausible": ^3.12.4
+  # 3D
+  "@react-three/fiber": ^9.4.0
+  "@react-three/drei": ^10.7.6
+  "@react-three/postprocessing": ^3.0.4
+  "three": ^0.180.0
+  "@types/three": ^0.180.0
+  "postprocessing": ^6.37.8
 
 catalogs:
   react18:

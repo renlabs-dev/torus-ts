@@ -17,6 +17,8 @@
   },
   "dependencies": {
     "@next/third-parties": "catalog:",
+    "@react-three/fiber": "catalog:",
+    "@react-three/postprocessing": "catalog:",
     "@tanstack/react-query": "catalog:",
     "@torus-network/sdk": "workspace:*",
     "@torus-network/torus-utils": "workspace:*",
@@ -28,8 +30,10 @@
     "dayjs": "^1.11.18",
     "lucide-react": "catalog:",
     "next": "catalog:",
+    "postprocessing": "catalog:",
     "react": "catalog:react19",
     "react-dom": "catalog:react19",
+    "three": "catalog:",
     "zod": "catalog:"
   },
   "devDependencies": {

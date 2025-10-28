@@ -106,6 +106,58 @@
   .rounded-radius {
     border-radius: var(--radius);
   }
+
+  .plus-corners::before {
+    content: "";
+    position: absolute;
+    top: -1px;
+    left: -1px;
+    width: 14px;
+    height: 14px;
+    border-top: 1.75px solid #454545;
+    border-left: 1.75px solid #454545;
+    pointer-events: none;
+    z-index: 10;
+  }
+
+  .plus-corners::after {
+    content: "";
+    position: absolute;
+    top: -1px;
+    right: -1px;
+    width: 14px;
+    height: 14px;
+    border-top: 1.75px solid #454545;
+    border-right: 1.75px solid #454545;
+    pointer-events: none;
+    z-index: 10;
+  }
+
+  .plus-corners > *:first-child::before {
+    content: "";
+    position: absolute;
+    bottom: -1px;
+    left: -1px;
+    width: 14px;
+    height: 14px;
+    border-bottom: 1.75px solid #454545;
+    border-left: 1.75px solid #454545;
+    pointer-events: none;
+    z-index: 10;
+  }
+
+  .plus-corners > *:first-child::after {
+    content: "";
+    position: absolute;
+    bottom: -1px;
+    right: -1px;
+    width: 14px;
+    height: 14px;
+    border-bottom: 1.75px solid #454545;
+    border-right: 1.75px solid #454545;
+    pointer-events: none;
+    z-index: 10;
+  }
 }
 
 body {

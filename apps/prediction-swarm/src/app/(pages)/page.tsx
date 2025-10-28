@@ -1,3 +1,4 @@
+import Dither from "../_components/dither";
 import FAQ from "../_components/main-page/faq";
 import ListItem from "../_components/main-page/list-item";
 import { SearchProphet } from "../_components/main-page/search-prophet";
@@ -33,13 +34,20 @@ export default function Page() {
   return (
     <div>
       <div className="relative pt-[35rem]">
-        <div className="absolute inset-0 -z-10 bg-white/10"></div>
+        <div className="absolute inset-0 -z-10 bg-white/10">
+          <Dither
+            pixelSize={1}
+            waveSpeed={0.02}
+            waveFrequency={4}
+            waveAmplitude={0.3}
+          />
+        </div>
         <div className="container relative mx-auto px-4 py-16 md:py-24">
           <div className="mb-20">
             <SearchProphet />
           </div>
 
-          <div className="mx-auto -mb-36 grid max-w-6xl gap-6 md:grid-cols-3">
+          <div className="mx-auto -mb-[9.125rem] grid max-w-6xl gap-6 md:grid-cols-3">
             <ListItem
               title="Predictor Profiles"
               description="View detailed profiles of any predictor on the swarm."
@@ -64,7 +72,7 @@ export default function Page() {
 
       <div
         id="faqs"
-        className="bg-[url(/background.svg)] bg-cover py-16 md:py-32"
+        className="border-border border-t bg-[url(/background.svg)] bg-cover py-16 md:py-32"
       >
         <div className="container mx-auto px-4">
           <div className="mb-12 text-center">
