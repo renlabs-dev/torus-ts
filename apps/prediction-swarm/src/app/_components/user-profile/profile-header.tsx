@@ -43,7 +43,7 @@ export default function ProfileHeader({
       : null;
 
   return (
-    <Card className="bg-background/80 backdrop-blur-lg">
+    <Card className="bg-background/80 plus-corners">
       <CardContent className="p-6">
         <div className="flex flex-col items-start gap-6 md:flex-row md:items-center">
           <div className="relative">

@@ -36,7 +36,7 @@ export default function ProfileContent({ predictions }: ProfileContentProps) {
   });
 
   return (
-    <Card className="bg-background/80 backdrop-blur-lg">
+    <Card className="bg-background/80 plus-corners">
       <Tabs defaultValue="ongoing">
         <CardHeader className="pb-0">
           <TabsList className="bg-accent/60 grid w-full grid-cols-3">

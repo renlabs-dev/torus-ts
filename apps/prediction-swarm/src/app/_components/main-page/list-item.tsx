@@ -22,7 +22,7 @@ const ListItem = ({
   href,
 }: HelpCenterCardProps) => {
   return (
-    <Card className="bg-card/80 plus-corners border-border h-full pb-0 backdrop-blur-lg transition-shadow duration-200 hover:shadow-lg">
+    <Card className="bg-card/80 plus-corners border-border h-full pb-0 transition-shadow duration-200 hover:shadow-lg">
       <CardHeader>
         <CardTitle>{title}</CardTitle>
         <CardDescription>{description}</CardDescription>
