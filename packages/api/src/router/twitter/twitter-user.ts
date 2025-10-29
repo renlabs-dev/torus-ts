@@ -1,7 +1,11 @@
-import { ilike } from "@torus-ts/db";
+import { and, desc, eq, ilike, sql } from "@torus-ts/db";
 import {
+  parsedPredictionSchema,
+  predictionSchema,
+  scrapedTweetSchema,
   twitterUsersSchema,
   twitterUserSuggestionsSchema,
+  verdictSchema,
 } from "@torus-ts/db/schema";
 import type { TRPCRouterRecord } from "@trpc/server";
 import { z } from "zod";
@@ -98,5 +102,81 @@ export const twitterUserRouter = {
         username: input.username,
         wallet: userKey,
       });
+    }),
+
+  /**
+   * Get top predictors ranked by accuracy
+   *
+   * Calculates accuracy for each user based on their verdicted predictions
+   * and returns users sorted by accuracy percentage.
+   */
+  getTopPredictors: publicProcedure
+    .input(
+      z.object({
+        limit: z.number().min(1).max(100).default(20),
+        minPredictions: z.number().min(1).default(5),
+      }),
+    )
+    .query(async ({ ctx, input }) => {
+      const { limit, minPredictions } = input;
+
+      // Get all predictions with verdicts grouped by user
+      const userStats = await ctx.db
+        .select({
+          userId: twitterUsersSchema.id,
+          username: twitterUsersSchema.username,
+          screenName: twitterUsersSchema.screenName,
+          avatarUrl: twitterUsersSchema.avatarUrl,
+          isVerified: twitterUsersSchema.isVerified,
+          followerCount: twitterUsersSchema.followerCount,
+          totalPredictions: sql<number>`COUNT(DISTINCT ${predictionSchema.id})`,
+          verdictedPredictions: sql<number>`COUNT(DISTINCT CASE WHEN ${verdictSchema.id} IS NOT NULL THEN ${predictionSchema.id} END)`,
+          truePredictions: sql<number>`COUNT(DISTINCT CASE WHEN ${verdictSchema.conclusion}->0->>'feedback' ILIKE '%true%' OR ${verdictSchema.conclusion}->0->>'feedback' ILIKE '%correct%' THEN ${predictionSchema.id} END)`,
+        })
+        .from(twitterUsersSchema)
+        .innerJoin(
+          scrapedTweetSchema,
+          eq(scrapedTweetSchema.authorId, twitterUsersSchema.id),
+        )
+        .innerJoin(
+          predictionSchema,
+          sql`${scrapedTweetSchema.id} = CAST((${predictionSchema.source}->>'tweet_id') AS BIGINT)`,
+        )
+        .innerJoin(
+          parsedPredictionSchema,
+          eq(parsedPredictionSchema.predictionId, predictionSchema.id),
+        )
+        .leftJoin(
+          verdictSchema,
+          eq(verdictSchema.predictionId, predictionSchema.id),
+        )
+        .where(eq(twitterUsersSchema.tracked, true))
+        .groupBy(
+          twitterUsersSchema.id,
+          twitterUsersSchema.username,
+          twitterUsersSchema.screenName,
+          twitterUsersSchema.avatarUrl,
+          twitterUsersSchema.isVerified,
+          twitterUsersSchema.followerCount,
+        )
+        .having(
+          sql`COUNT(DISTINCT CASE WHEN ${verdictSchema.id} IS NOT NULL THEN ${predictionSchema.id} END) >= ${minPredictions}`,
+        );
+
+      // Calculate accuracy and sort
+      const topPredictors = userStats
+        .map((user) => ({
+          ...user,
+          accuracy:
+            user.verdictedPredictions > 0
+              ? Math.round(
+                  (user.truePredictions / user.verdictedPredictions) * 100,
+                )
+              : 0,
+        }))
+        .sort((a, b) => b.accuracy - a.accuracy)
+        .slice(0, limit);
+
+      return topPredictors;
     }),
 } satisfies TRPCRouterRecord;
