@@ -48,3 +48,6 @@
 # Crush
 .crush
 CRUSH.md
+
+# Act (GitHub Actions local testing)
+.secrets

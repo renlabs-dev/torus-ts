@@ -69,7 +69,10 @@ jobs:
             BASE_COMMIT="$(git merge-base ${{ github.event.before }} HEAD)"
             pnpm exec turbo run build --filter="...[${BASE_COMMIT}]" --dry-run=json 2>/dev/null > build.json
           else
-            pnpm exec turbo run build --dry-run=json 2>/dev/null > build.json
+            # Fallback: compare with HEAD~1 instead of building everything
+            echo "⚠️  Warning: Cannot find previous commit, comparing with HEAD~1"
+            pnpm exec turbo run build --filter="...[HEAD~1]" --dry-run=json 2>/dev/null > build.json || \
+              pnpm exec turbo run build --dry-run=json 2>/dev/null > build.json
           fi
 
       - name: Get changed packages
