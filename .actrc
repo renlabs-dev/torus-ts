@@ -1,0 +1,12 @@
+# Map custom runners to Docker images
+-P ubicloud-standard-2=catthehacker/ubuntu:full-latest
+-P ubicloud-standard-16=catthehacker/ubuntu:full-latest
+
+# Don't reuse containers (fixes stability issues)
+# --reuse
+
+# Container architecture
+--container-architecture linux/amd64
+
+# Enable verbose logging for debugging
+--verbose
