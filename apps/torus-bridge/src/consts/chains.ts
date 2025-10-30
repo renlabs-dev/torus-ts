@@ -30,6 +30,6 @@ export const chainsTS: ChainMap<ChainMetadata & { mailbox?: Address }> = {
         apiUrl: "https://api.blockscout.torus.network/api",
       },
     ],
-    logoURI: "/logo.svg",
+    logoURI: "/assets/icons/ui/logo.svg",
   },
 };

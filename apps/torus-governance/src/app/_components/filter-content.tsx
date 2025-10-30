@@ -59,7 +59,6 @@ export function FilterContent({
   const [search, setSearch] = useState(searchParams.get("search") ?? "");
 
   // Determine which filter options to use based on the current page
-  // eslint-disable-next-line react-hooks/preserve-manual-memoization
   const { filterOptions, searchPlaceholder } = useMemo(() => {
     if (pathname.includes("/proposals")) {
       return {

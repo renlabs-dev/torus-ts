@@ -45,7 +45,10 @@ export function UnstakeFields({
           return (
             <div className="space-y-2">
               <FormAddressField
-                field={field}
+                field={{
+                  ...field,
+                  value: field.value || "",
+                }}
                 label="Staked Account"
                 disabled={!isAccountConnected}
               />
@@ -79,7 +82,7 @@ export function UnstakeFields({
             <FormLabel>Amount</FormLabel>
             <FormControl>
               <TokenAmountInput
-                value={field.value}
+                value={field.value || ""}
                 onChange={field.onChange}
                 placeholder="Enter amount to unstake"
                 disabled={!isAccountConnected}

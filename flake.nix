@@ -27,6 +27,8 @@
           pkgs.just
           # Run Github actions locally
           pkgs.act
+          # Git is our choice of source control :)
+          pkgs.git
 
           # Atlas Community does not have some features
           # e.g. data.external_schema

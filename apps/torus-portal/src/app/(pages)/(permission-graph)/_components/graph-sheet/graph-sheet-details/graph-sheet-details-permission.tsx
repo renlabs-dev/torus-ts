@@ -44,13 +44,8 @@ export function GraphSheetDetailsPermission({
   const permissionData = selectedNode.permissionData;
 
   // Group distribution targets by target account to avoid duplicates and show streams per target
-  // eslint-disable-next-line react-hooks/preserve-manual-memoization
   const distributionTargets = useMemo(() => {
-    if (
-      !allPermissions ||
-      !permissionData ||
-      permissionData.permissionType !== "stream"
-    ) {
+    if (!allPermissions || permissionData?.permissionType !== "stream") {
       return [];
     }
 
@@ -107,7 +102,6 @@ export function GraphSheetDetailsPermission({
   }, [allPermissions, permissionData]);
 
   // Get emission data for all target accounts and the delegator
-  // eslint-disable-next-line react-hooks/preserve-manual-memoization
   const allAccountIds = useMemo(() => {
     const accounts = new Set<string>();
 
@@ -122,7 +116,6 @@ export function GraphSheetDetailsPermission({
     });
 
     return Array.from(accounts);
-    // eslint-disable-next-line react-hooks/preserve-manual-memoization
   }, [permissionData, distributionTargets]);
 
   const emissionsData = useMultipleAccountEmissions({

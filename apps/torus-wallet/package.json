@@ -14,7 +14,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@hookform/resolvers": "^3.9.1",
+    "@hookform/resolvers": "catalog:",
     "@next/third-parties": "catalog:",
     "@polkadot/api": "catalog:",
     "@polkadot/util": "catalog:",
@@ -34,8 +34,8 @@
     "next-plausible": "catalog:",
     "react": "catalog:react19",
     "react-dom": "catalog:react19",
-    "react-hook-form": "^7.53.2",
-    "recharts": "^2.13.0-alpha.4",
+    "react-hook-form": "catalog:",
+    "recharts": "catalog:",
     "zod": "catalog:"
   },
   "devDependencies": {

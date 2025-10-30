@@ -6,7 +6,10 @@ import { TorusProvider } from "@torus-ts/torus-provider";
 import { Container } from "@torus-ts/ui/components/container";
 import { Footer } from "@torus-ts/ui/components/footer";
 import { Toaster } from "@torus-ts/ui/components/toaster";
-import { ProviderRenderer } from "~/app/_components/provider-renderer";
+import {
+  createProviderWithProps,
+  ProviderRenderer,
+} from "~/app/_components/provider-renderer";
 import { WalletHeader } from "~/app/_components/shared/wallet-header";
 import { CosmosWalletProvider } from "~/context/cosmos-wallet-provider";
 import { EvmWalletProvider } from "~/context/evm-wallet-provider";
@@ -20,31 +23,27 @@ export function AppContextProvider({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const isSsr = useIsSsr();
-  if (isSsr) {
-    return <div></div>;
-  }
+  if (useIsSsr()) return <div></div>;
 
   return (
-    <TorusProvider
-      wsEndpoint={env("NEXT_PUBLIC_TORUS_RPC_URL")}
-      torusCacheUrl={env("NEXT_PUBLIC_TORUS_CACHE_URL")}
+    <ProviderRenderer
+      providers={[
+        createProviderWithProps(TorusProvider, {
+          wsEndpoint: env("NEXT_PUBLIC_TORUS_RPC_URL"),
+          torusCacheUrl: env("NEXT_PUBLIC_TORUS_CACHE_URL"),
+        }),
+        ReactQueryProvider,
+        WarpContextInitGateProvider,
+        EvmWalletProvider,
+        SolanaWalletProvider,
+        StarknetWalletProvider,
+        CosmosWalletProvider,
+      ]}
     >
-      <ProviderRenderer
-        providers={[
-          ReactQueryProvider,
-          WarpContextInitGateProvider,
-          EvmWalletProvider,
-          SolanaWalletProvider,
-          StarknetWalletProvider,
-          CosmosWalletProvider,
-        ]}
-      >
-        <WalletHeader />
-        <Container>{children}</Container>
-        <Toaster />
-        <Footer torusChainEnv={env("NEXT_PUBLIC_TORUS_CHAIN_ENV")} />
-      </ProviderRenderer>
-    </TorusProvider>
+      <WalletHeader />
+      <Container>{children}</Container>
+      <Toaster />
+      <Footer torusChainEnv={env("NEXT_PUBLIC_TORUS_CHAIN_ENV")} />
+    </ProviderRenderer>
   );
 }

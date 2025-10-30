@@ -34,7 +34,7 @@ export function SwapChainsButton({
       from,
       to,
     });
-    router.push(`/?${newQuery}`);
+    router.push(`/standard?${newQuery}`);
   };
 
   return (

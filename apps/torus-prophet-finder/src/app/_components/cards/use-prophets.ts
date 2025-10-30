@@ -23,7 +23,9 @@ export function useProphets() {
 
     async function run() {
       try {
-        const profiles = await fetchProphetFinderProfiles(controller.signal);
+        const profiles = await fetchProphetFinderProfiles({
+          signal: controller.signal,
+        });
         if (cancelled) return;
         const mapped: Prophet[] = profiles.map((p) => {
           const username = p.username;

@@ -25,7 +25,7 @@ const CHAIN_MISMATCH_ERROR = "ChainMismatchError";
 const TRANSFER_TIMEOUT_ERROR1 = "block height exceeded";
 const TRANSFER_TIMEOUT_ERROR2 = "timeout";
 
-export function useTokenTransfer(onDone?: () => void) {
+export function useTokenTransfer(onDone?: () => void, throwOnError = false) {
   const transfers = useStore((s) => s.transfers);
   const addTransfer = useStore((s) => s.addTransfer);
   const updateTransferStatus = useStore((s) => s.updateTransferStatus);
@@ -45,8 +45,8 @@ export function useTokenTransfer(onDone?: () => void) {
 
   // TODO implement cancel callback for when modal is closed?
   const triggerTransactions = useCallback(
-    (values: TransferFormValues) =>
-      executeTransfer({
+    async (values: TransferFormValues): Promise<string | undefined> => {
+      const result = await executeTransfer({
         warpCore,
         values,
         transferIndex,
@@ -59,19 +59,23 @@ export function useTokenTransfer(onDone?: () => void) {
         onDone,
         toast,
         txSuccessToast,
-      }),
+        throwOnError,
+      });
+      return result;
+    },
     [
       warpCore,
       transferIndex,
       activeAccounts,
       activeChains,
       transactionFns,
-      setIsLoading,
       addTransfer,
       updateTransferStatus,
+      setIsLoading,
       onDone,
       toast,
       txSuccessToast,
+      throwOnError,
     ],
   );
 
@@ -94,6 +98,7 @@ async function executeTransfer({
   onDone,
   toast,
   txSuccessToast,
+  throwOnError = false,
 }: {
   warpCore: WarpCore;
   values: TransferFormValues;
@@ -107,6 +112,7 @@ async function executeTransfer({
   onDone?: () => void;
   toast: ReturnType<typeof useToast>["toast"];
   txSuccessToast: ReturnType<typeof useTxSuccessToast>;
+  throwOnError?: boolean;
 }) {
   logger.debug("Preparing transfer transaction(s)");
   setIsLoading(true);
@@ -136,6 +142,16 @@ async function executeTransfer({
     });
     setIsLoading(false);
     onDone?.();
+
+    // Re-throw for signing stage to allow propagation to simple-bridge for custom handling
+    // Only throw if throwOnError is true to maintain backward compatibility
+    if (
+      throwOnError &&
+      (stage === TransferStatus.SigningTransfer ||
+        stage === TransferStatus.SigningApprove)
+    ) {
+      throw error;
+    }
   };
 
   // Step 1: Get token by index
@@ -152,7 +168,7 @@ async function executeTransfer({
       updateTransferStatus,
       onDone,
     });
-    return;
+    return undefined;
   }
 
   // Step 2: Get connection for chain
@@ -172,7 +188,7 @@ async function executeTransfer({
       updateTransferStatus,
       onDone,
     });
-    return;
+    return undefined;
   }
 
   const originProtocol = originToken.protocol;
@@ -191,7 +207,7 @@ async function executeTransfer({
       updateTransferStatus,
       onDone,
     });
-    return;
+    return undefined;
   }
 
   // Step 4: Create token amount
@@ -208,7 +224,7 @@ async function executeTransfer({
       updateTransferStatus,
       onDone,
     });
-    return;
+    return undefined;
   }
 
   const sendTransaction = transactionFns[originProtocol].sendTransaction;
@@ -228,7 +244,7 @@ async function executeTransfer({
       updateTransferStatus,
       onDone,
     });
-    return;
+    return undefined;
   }
 
   // Step 6: Check collateral
@@ -251,7 +267,7 @@ async function executeTransfer({
       updateTransferStatus,
       onDone,
     });
-    return;
+    return undefined;
   }
 
   if (!isCollateralSufficient) {
@@ -266,7 +282,7 @@ async function executeTransfer({
       updateTransferStatus,
       onDone,
     });
-    return;
+    return undefined;
   }
 
   // Add transfer to state
@@ -306,7 +322,7 @@ async function executeTransfer({
       updateTransferStatus,
       onDone,
     });
-    return;
+    return undefined;
   }
 
   const hashes: string[] = [];
@@ -363,6 +379,17 @@ async function executeTransfer({
 
       setIsLoading(false);
       if (onDone) onDone();
+
+      // Re-throw for signing stages to propagate to simple-bridge for custom handling
+      // Only throw if throwOnError is true to maintain backward compatibility
+      if (
+        throwOnError &&
+        (transferStatus === TransferStatus.SigningTransfer ||
+          transferStatus === TransferStatus.SigningApprove)
+      ) {
+        throw sendError;
+      }
+
       return;
     }
 
@@ -420,6 +447,9 @@ async function executeTransfer({
 
   setIsLoading(false);
   if (onDone) onDone();
+
+  // Return the last transaction hash
+  return hashes.at(-1);
 }
 
 const errorMessages: Partial<Record<TransferStatus, string>> = {

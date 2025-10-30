@@ -8,6 +8,7 @@
   "devDependencies": {
     "@changesets/cli": "^2.29.5",
     "@torus-ts/prettier-config": "workspace:*",
+    "babel-plugin-react-compiler": "19.1.0-rc.3",
     "prettier": "catalog:",
     "turbo": "^2.3.3",
     "typescript": "catalog:"
@@ -25,7 +26,8 @@
       "@walletconnect/types": "^2.19.1",
       "@starknet-react/core": "^3.7.2",
       "@starknet-react/chains": "^4.0.4",
-      "starknet": "^6.24.1"
+      "starknet": "^6.24.1",
+      "@wagmi/core": "^2.22.0"
     },
     "peerDependencyRules": {
       "ignoreMissing": [
