@@ -109,6 +109,7 @@
   "globalPassThroughEnv": [
     "NODE_ENV",
     "CI",
+    "TWITTERAPI_IO_KEY",
     "VERCEL",
     "VERCEL_ENV",
     "VERCEL_URL",

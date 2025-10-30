@@ -7,12 +7,12 @@ data "external_schema" "drizzle" {
         "--dialect",
         "postgresql",
         "--schema",
-        "packages/db/src/schema.ts",
+        "packages/db/src/schema/index.ts",
     ]
 }
 
 env "local" {
-    dev = "docker://postgres/16/dev"
+    dev = "docker://postgres/18/dev"
     schema {
         src = data.external_schema.drizzle.url
     }

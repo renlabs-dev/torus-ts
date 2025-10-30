@@ -7,7 +7,7 @@ if (!process.env.POSTGRES_URL) {
 const nonPoolingUrl = process.env.POSTGRES_URL.replace(":6543", ":5432");
 console.log(`Using db url: ${nonPoolingUrl}`);
 export default defineConfig({
-  schema: "./packages/db/src/schema.ts",
+  schema: "./packages/db/src/schema/index.ts",
   dialect: "postgresql",
   dbCredentials: { url: nonPoolingUrl },
   out: "./packages/db/drizzle",
