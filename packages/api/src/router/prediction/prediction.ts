@@ -76,7 +76,7 @@ export const predictionRouter = {
         )
         .innerJoin(
           scrapedTweetSchema,
-          sql`${scrapedTweetSchema.id} = CAST((${predictionSchema.source}->>'tweet_id') AS BIGINT)`,
+          sql`${scrapedTweetSchema.id} = CAST((${parsedPredictionSchema.goal}::jsonb->0->'source'->>'tweet_id') AS BIGINT)`,
         )
         .innerJoin(
           twitterUsersSchema,
@@ -159,7 +159,7 @@ export const predictionRouter = {
         )
         .innerJoin(
           scrapedTweetSchema,
-          sql`${scrapedTweetSchema.id} = CAST((${predictionSchema.source}->>'tweet_id') AS BIGINT)`,
+          sql`${scrapedTweetSchema.id} = CAST((${parsedPredictionSchema.goal}::jsonb->0->'source'->>'tweet_id') AS BIGINT)`,
         )
         .innerJoin(
           twitterUsersSchema,
@@ -232,7 +232,7 @@ export const predictionRouter = {
         )
         .innerJoin(
           scrapedTweetSchema,
-          sql`${scrapedTweetSchema.id} = CAST((${predictionSchema.source}->>'tweet_id') AS BIGINT)`,
+          sql`${scrapedTweetSchema.id} = CAST((${parsedPredictionSchema.goal}::jsonb->0->'source'->>'tweet_id') AS BIGINT)`,
         )
         .innerJoin(
           twitterUsersSchema,

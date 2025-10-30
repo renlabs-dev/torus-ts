@@ -131,7 +131,7 @@ export const twitterUserRouter = {
           followerCount: twitterUsersSchema.followerCount,
           totalPredictions: sql<number>`COUNT(DISTINCT ${predictionSchema.id})`,
           verdictedPredictions: sql<number>`COUNT(DISTINCT CASE WHEN ${verdictSchema.id} IS NOT NULL THEN ${predictionSchema.id} END)`,
-          truePredictions: sql<number>`COUNT(DISTINCT CASE WHEN ${verdictSchema.conclusion}->0->>'feedback' ILIKE '%true%' OR ${verdictSchema.conclusion}->0->>'feedback' ILIKE '%correct%' THEN ${predictionSchema.id} END)`,
+          truePredictions: sql<number>`COUNT(DISTINCT CASE WHEN ${verdictSchema.conclusion}::jsonb->0->>'feedback' ILIKE '%true%' OR ${verdictSchema.conclusion}::jsonb->0->>'feedback' ILIKE '%correct%' THEN ${predictionSchema.id} END)`,
         })
         .from(twitterUsersSchema)
         .innerJoin(
@@ -140,11 +140,14 @@ export const twitterUserRouter = {
         )
         .innerJoin(
           predictionSchema,
-          sql`${scrapedTweetSchema.id} = CAST((${predictionSchema.source}->>'tweet_id') AS BIGINT)`,
+          sql`true`, // We'll filter via parsedPrediction
         )
         .innerJoin(
           parsedPredictionSchema,
-          eq(parsedPredictionSchema.predictionId, predictionSchema.id),
+          and(
+            eq(parsedPredictionSchema.predictionId, predictionSchema.id),
+            sql`${scrapedTweetSchema.id} = CAST((${parsedPredictionSchema.goal}::jsonb->0->'source'->>'tweet_id') AS BIGINT)`,
+          ),
         )
         .leftJoin(
           verdictSchema,
