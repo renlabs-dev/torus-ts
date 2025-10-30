@@ -230,22 +230,50 @@ export const verdictSchema = createTable(
   "verdict",
   {
     id: uuidv7("id").primaryKey(),
-    predictionId: uuidv7("prediction_id")
+    parsedPredictionId: uuidv7("parsed_prediction_id")
       .notNull()
-      .references(() => predictionSchema.id),
-    conclusion: jsonb("conclusion").notNull().$type<VerdictConclusion[]>(), // Array of VerdictConclusion
+      .references(() => parsedPredictionSchema.id),
+    verdict: boolean("verdict").notNull(), // True if prediction came true, false otherwise
+    context: jsonb("context").notNull().$type<VerdictContext>(), // Context explaining the verdict
     ...timeFields(),
   },
   (t) => [
-    index("verdict_prediction_id_idx").on(t.predictionId),
+    index("verdict_parsed_prediction_id_idx").on(t.parsedPredictionId),
     index("verdict_created_at_idx").on(t.createdAt),
+    index("verdict_verdict_idx").on(t.verdict),
   ],
 );
 
 /**
- * Verdict conclusion data
+ * Verdict context data
  */
-export interface VerdictConclusion {
-  parsedId: ParsedPredictionId;
+export interface VerdictContext {
   feedback: string;
 }
+
+// ==== Prediction Feedback ====
+
+/**
+ * Stores feedback for predictions that failed validation
+ */
+export const parsedPredictionFeedbackSchema = createTable(
+  "parsed_prediction_feedback",
+  {
+    parsedPredictionId: uuidv7("parsed_prediction_id")
+      .primaryKey()
+      .references(() => parsedPredictionSchema.id, {
+        onDelete: "cascade",
+      }),
+    reason: text("reason").notNull(), // Why it failed validation
+    validationStep: varchar("validation_step", { length: 64 }).notNull(), // Which step failed: "slice_validation", "timeframe_extraction", "filter_validation"
+    ...timeFields(),
+  },
+  (t) => [
+    index("parsed_prediction_feedback_parsed_prediction_id_idx").on(
+      t.parsedPredictionId,
+    ),
+    index("parsed_prediction_feedback_validation_step_idx").on(
+      t.validationStep,
+    ),
+  ],
+);
