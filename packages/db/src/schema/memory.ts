@@ -1,3 +1,4 @@
+import { sql } from "drizzle-orm";
 import type { AnyPgColumn } from "drizzle-orm/pg-core";
 import {
   boolean,
@@ -110,12 +111,19 @@ export const scrapedTweetSchema = createTable(
     conversationId: bigint("conversation_id"), // Thread identifier
     parentTweetId: bigint("parent_tweet_id"), // The parent comment
 
+    predictionId: uuidv7("prediction_id")
+      .references((): AnyPgColumn => predictionSchema.id, {
+        onDelete: "set null",
+      })
+      .default(sql`NULL`),
+
     ...timeFields(),
   },
   (t) => [
     index("scraped_tweet_author_id_idx").on(t.authorId),
     index("scraped_tweet_date_idx").on(t.date),
     index("scraped_tweet_conversation_id_idx").on(t.conversationId),
+    index("scraped_tweet_prediction_id_idx").on(t.predictionId),
   ],
 );
 
@@ -140,9 +148,13 @@ export const parsedPredictionSchema = createTable(
       }),
     goal: jsonb("goal").$type<PostSlice[]>().notNull(),
     timeframe: jsonb("timeframe").$type<PostSlice[]>().notNull(),
+    topicId: uuidv7("topic_id")
+      .notNull()
+      .references(() => predictionTopicSchema.id),
+    predictionQuality: integer("prediction_quality").notNull(), // 0-100 overall quality score
+    briefRationale: text("brief_rationale").notNull(), // Max 300 words explaining quality
     llmConfidence: decimal("llm_confidence").notNull(), // Stored as basis points (0-1)
     vagueness: decimal("vagueness"), // Stored as basis points (0-1)
-    topicId: uuidv7("topic_id").references(() => predictionTopicSchema.id),
     context: jsonb("context"), // JsonB - whatever the filter agent thinks is relevant
     filterAgentId: ss58Address("filter_agent_id"),
     ...timeFields(),
@@ -150,6 +162,7 @@ export const parsedPredictionSchema = createTable(
   (t) => [
     index("parsed_prediction_prediction_id_idx").on(t.predictionId),
     index("parsed_prediction_topic_id_idx").on(t.topicId),
+    index("parsed_prediction_quality_idx").on(t.predictionQuality),
   ],
 );
 
@@ -160,8 +173,7 @@ export const predictionSchema = createTable(
   "prediction",
   {
     id: uuidv7("id").primaryKey(),
-    source: jsonb("source").notNull().$type<PredictionSource>(),
-    version: integer("version").notNull().default(1), // e.g., "1.0"
+    version: integer("version").notNull().default(1),
     ...timeFields(),
   },
   (t) => [index("prediction_created_at_idx").on(t.createdAt)],
@@ -192,9 +204,9 @@ export const predictionTopicSchema = createTable(
   "prediction_topic",
   {
     id: uuidv7("id").primaryKey(),
-    parentId: uuidv7("parent_id").references(
-      (): AnyPgColumn => predictionTopicSchema.id,
-    ),
+    parentId: uuidv7("parent_id")
+      .references((): AnyPgColumn => predictionTopicSchema.id)
+      .default(sql`NULL`),
     name: text("name").notNull(),
     contextSchema: jsonb("context_schema"), // The JSONB schema needed
     ...timeFields(),

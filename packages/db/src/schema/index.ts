@@ -4,3 +4,5 @@ export * from "./base";
 export * from "./utils";
 
 export * from "./memory";
+
+export * from "./swarm-filter";
