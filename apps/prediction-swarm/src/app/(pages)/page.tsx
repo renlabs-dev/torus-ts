@@ -38,17 +38,17 @@ export default function Page() {
           </div>
           <div className="pointer-events-auto mx-auto -mb-[6.125rem] grid max-w-6xl gap-6 md:grid-cols-3">
             <ListItem
-              title="Predictor Profiles"
+              title="Top Predictors"
               description="View detailed profiles of any predictor on the swarm."
               linkText="View profiles"
-              href="#faqs"
+              href="/top-predictors"
               className="animate-fade-up animate-delay-[500ms] duration-1000"
             />
             <ListItem
               title="Tickers"
               description="View real-time predictions for all tickers on the swarm."
               linkText="View tickers"
-              href="#tickers"
+              href="/tickers"
               className="animate-fade-up animate-delay-[750ms] duration-1000"
             />
             <ListItem

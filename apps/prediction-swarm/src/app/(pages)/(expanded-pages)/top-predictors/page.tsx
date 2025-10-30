@@ -6,7 +6,7 @@ import {
 import { Badge } from "@torus-ts/ui/components/badge";
 import { Card } from "@torus-ts/ui/components/card";
 import { api } from "~/trpc/server";
-import { BadgeCheck, Trophy } from "lucide-react";
+import { BadgeCheck } from "lucide-react";
 import Link from "next/link";
 
 export default async function TopPredictorsPage() {
@@ -23,8 +23,7 @@ export default async function TopPredictorsPage() {
       {/* Header section */}
       <div className="relative mx-auto max-w-screen-lg px-4">
         <div className="pb-8">
-          <h1 className="flex items-center gap-2 text-3xl font-bold">
-            <Trophy className="text-primary h-8 w-8" />
+          <h1 className="flex items-center gap-2 text-3xl font-thin">
             Top Predictors
           </h1>
           <p className="text-muted-foreground mt-2">

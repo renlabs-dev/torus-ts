@@ -17,6 +17,7 @@ import { penaltyRouter } from "./router/penalty/penalty";
 import { permissionRouter } from "./router/permission/permission";
 import { signalRouter } from "./router/permission/signal";
 import { predictionRouter } from "./router/prediction/prediction";
+import { topicRouter } from "./router/prediction/topic";
 import { prophetRouter } from "./router/prophet/prophet";
 import { twitterUserRouter } from "./router/twitter/twitter-user";
 // import { constraintRouter } from "./router/constraint/constraint";
@@ -59,6 +60,7 @@ export const appRouter = createTRPCRouter({
 
   // Prediction
   prediction: predictionRouter,
+  topic: topicRouter,
 
   // Prophet
   prophet: prophetRouter,

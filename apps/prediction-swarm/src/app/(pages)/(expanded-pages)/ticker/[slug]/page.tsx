@@ -5,11 +5,32 @@ import {
   TabsList,
   TabsTrigger,
 } from "@torus-ts/ui/components/tabs";
+import { TrendingUp } from "lucide-react";
+import { notFound } from "next/navigation";
 import { ProfileFeed } from "~/app/_components/user-profile/profile-feed";
 import { api } from "~/trpc/server";
 
-export default async function FeedPage() {
-  const predictions = await api.prediction.getFeed({
+interface PageProps {
+  params: Promise<{
+    slug: string;
+  }>;
+}
+
+export default async function TickerPage({ params }: PageProps) {
+  const { slug } = await params;
+
+  // Get all tickers and find the one matching the slug
+  const tickers = await api.topic.getTickers();
+  const ticker = tickers.find(
+    (t) => t.name.toLowerCase() === slug.toLowerCase(),
+  );
+
+  if (!ticker) {
+    notFound();
+  }
+
+  const predictions = await api.prediction.getByTopic({
+    topicId: ticker.id,
     limit: 50,
   });
 
@@ -38,9 +59,12 @@ export default async function FeedPage() {
       {/* Header section */}
       <div className="relative mx-auto max-w-screen-lg px-4">
         <div className="pb-8">
-          <h1 className="text-3xl font-thin">Prediction Feed</h1>
+          <h1 className="flex items-center gap-2 text-3xl font-bold">
+            <TrendingUp className="text-primary h-8 w-8" />
+            {ticker.name.toUpperCase()} Predictions
+          </h1>
           <p className="text-muted-foreground mt-2">
-            View predictions from all tracked users
+            View all predictions related to {ticker.name.toUpperCase()}
           </p>
         </div>
       </div>

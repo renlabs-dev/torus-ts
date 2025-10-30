@@ -1,4 +1,5 @@
 import Dither from "~/app/_components/dither";
+import { PageNavigation } from "~/app/_components/page-navigation";
 
 export default function RootLayout({
   children,
@@ -7,6 +8,7 @@ export default function RootLayout({
 }>) {
   return (
     <span className="animate-fade">
+      <PageNavigation />
       {children}{" "}
       <div className="fixed inset-0 -z-10 opacity-40">
         <Dither

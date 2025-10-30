@@ -176,4 +176,82 @@ export const predictionRouter = {
 
       return predictions;
     }),
+
+  /**
+   * Get predictions by topic ID
+   *
+   * Fetches predictions filtered by a specific topic/ticker.
+   */
+  getByTopic: publicProcedure
+    .input(
+      z.object({
+        topicId: z.string(),
+        limit: z.number().min(1).max(100).default(50),
+        offset: z.number().min(0).default(0),
+      }),
+    )
+    .query(async ({ ctx, input }) => {
+      const { topicId, limit, offset } = input;
+
+      const predictions = await ctx.db
+        .select({
+          // Prediction data
+          predictionId: predictionSchema.id,
+          predictionCreatedAt: predictionSchema.createdAt,
+          predictionVersion: predictionSchema.version,
+
+          // Parsed prediction data
+          parsedId: parsedPredictionSchema.id,
+          goal: parsedPredictionSchema.goal,
+          timeframe: parsedPredictionSchema.timeframe,
+          llmConfidence: parsedPredictionSchema.llmConfidence,
+          vagueness: parsedPredictionSchema.vagueness,
+          context: parsedPredictionSchema.context,
+
+          // Tweet data
+          tweetId: scrapedTweetSchema.id,
+          tweetText: scrapedTweetSchema.text,
+          tweetDate: scrapedTweetSchema.date,
+
+          // User data
+          userId: twitterUsersSchema.id,
+          username: twitterUsersSchema.username,
+          screenName: twitterUsersSchema.screenName,
+          avatarUrl: twitterUsersSchema.avatarUrl,
+          isVerified: twitterUsersSchema.isVerified,
+
+          // Verdict data (optional)
+          verdictId: verdictSchema.id,
+          verdictConclusion: verdictSchema.conclusion,
+          verdictCreatedAt: verdictSchema.createdAt,
+        })
+        .from(predictionSchema)
+        .innerJoin(
+          parsedPredictionSchema,
+          eq(parsedPredictionSchema.predictionId, predictionSchema.id),
+        )
+        .innerJoin(
+          scrapedTweetSchema,
+          sql`${scrapedTweetSchema.id} = CAST((${predictionSchema.source}->>'tweet_id') AS BIGINT)`,
+        )
+        .innerJoin(
+          twitterUsersSchema,
+          eq(twitterUsersSchema.id, scrapedTweetSchema.authorId),
+        )
+        .leftJoin(
+          verdictSchema,
+          eq(verdictSchema.predictionId, predictionSchema.id),
+        )
+        .where(
+          and(
+            eq(parsedPredictionSchema.topicId, topicId),
+            eq(twitterUsersSchema.tracked, true),
+          ),
+        )
+        .orderBy(desc(predictionSchema.createdAt))
+        .limit(limit)
+        .offset(offset);
+
+      return predictions;
+    }),
 } satisfies TRPCRouterRecord;
