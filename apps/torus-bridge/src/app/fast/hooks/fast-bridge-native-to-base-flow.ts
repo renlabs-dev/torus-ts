@@ -1,6 +1,9 @@
-import type { ApiPromise } from "@polkadot/api";
-import { getAccountAddressAndPubKey } from "@hyperlane-xyz/widgets";
+import type { WarpCore } from "@hyperlane-xyz/sdk";
+import type { ProtocolType } from "@hyperlane-xyz/utils";
 import { toWei } from "@hyperlane-xyz/utils";
+import type { AccountInfo } from "@hyperlane-xyz/widgets";
+import { getAccountAddressAndPubKey } from "@hyperlane-xyz/widgets";
+import type { ApiPromise } from "@polkadot/api";
 import { transferAllowDeath } from "@torus-network/sdk/chain";
 import { convertH160ToSS58 } from "@torus-network/sdk/evm";
 import type { SS58Address } from "@torus-network/sdk/types";
@@ -359,12 +362,9 @@ interface NativeToBaseStep2Params {
     recipient: string;
   }) => Promise<string>;
   /** WarpCore instance for Hyperlane operations */
-  warpCore: import("@hyperlane-xyz/sdk").WarpCore;
+  warpCore: WarpCore;
   /** Connected accounts for multi-protocol operations */
-  accounts: Record<
-    import("@hyperlane-xyz/utils").ProtocolType,
-    import("@hyperlane-xyz/widgets").AccountInfo
-  >;
+  accounts: Record<ProtocolType, AccountInfo>;
   /** Function to refetch Base balance from the network, returns status and optional balance data */
   refetchBaseBalance: () => Promise<{
     status: string;
@@ -530,9 +530,9 @@ export async function executeNativeToBaseStep2(
     }),
   );
 
-  if (maxAmountError || !maxTransferAmount) {
+  if (maxAmountError !== undefined) {
     throw new Error(
-      `Failed to calculate max transfer amount: ${maxAmountError?.message ?? "Unknown error"}`,
+      `Failed to calculate max transfer amount: ${maxAmountError.message}`,
     );
   }
 

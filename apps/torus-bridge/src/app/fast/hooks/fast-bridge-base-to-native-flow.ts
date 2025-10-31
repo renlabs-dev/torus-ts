@@ -191,7 +191,9 @@ export async function executeBaseToNativeStep1(
   const expectedIncrease = toNano(amount.trim());
 
   // Get the correct token index for the Base chain dynamically
-  const baseTokenIndex = warpCore.tokens.map((t) => t.chainName).indexOf("base");
+  const baseTokenIndex = warpCore.tokens
+    .map((t) => t.chainName)
+    .indexOf("base");
   if (baseTokenIndex < 0) {
     throw new Error("Base token not found in warp configuration");
   }
