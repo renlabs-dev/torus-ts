@@ -8,6 +8,7 @@ import {
 } from "@torus-ts/db/schema";
 import type { ScrapedTweet } from "@torus-ts/db/schema";
 import { and, asc, eq, gte, isNotNull, isNull, sql } from "drizzle-orm";
+import { decode } from "html-entities";
 import { logger } from "./index";
 import type { KaitoTwitterAPI, SimpleTweet, User } from "./twitterapi-io";
 import {
@@ -592,7 +593,7 @@ export class TwitterAccountScraper {
 
       const tweetData: ScrapedTweet = {
         id: BigInt(tweet.id),
-        text: tweet.text,
+        text: decode(tweet.text),
         authorId: BigInt(tweet.author_id || tweet.author?.id || "0"),
         date: new Date(tweet.createdAt || tweet.created_at || new Date()),
         retweetedId: tweet.quoted_tweet
