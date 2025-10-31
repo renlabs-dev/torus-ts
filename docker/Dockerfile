@@ -60,27 +60,10 @@ ARG APP_NAME
 LABEL org.opencontainers.image.source=https://github.com/renlabs-dev/torus-ts
 
 ENV PORT=8000
-ENV NODE_ENV=production
 
 WORKDIR /app
 
-# Copy root package.json and workspace config for pnpm
-COPY --from=builder /app/package.json ./package.json
-COPY --from=builder /app/pnpm-workspace.yaml ./pnpm-workspace.yaml 2>/dev/null || true
-
-# Copy the app's package.json
-COPY --from=builder /app/apps/${APP_NAME}/package.json ./apps/${APP_NAME}/package.json
-
-# Copy build outputs (handles both Next.js and Node.js apps)
-COPY --from=builder /app/apps/${APP_NAME}/.next ./apps/${APP_NAME}/.next 2>/dev/null || true
-COPY --from=builder /app/apps/${APP_NAME}/dist ./apps/${APP_NAME}/dist 2>/dev/null || true
-COPY --from=builder /app/apps/${APP_NAME}/public ./apps/${APP_NAME}/public 2>/dev/null || true
-
-# Copy workspace packages (your apps use @torus-ts/* and @torus-network/* packages)
-COPY --from=builder /app/packages ./packages
-
-# Copy only production node_modules
-COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/ .
 
 WORKDIR /app/apps/${APP_NAME}
 

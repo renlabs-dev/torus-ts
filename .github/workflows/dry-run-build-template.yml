@@ -60,14 +60,10 @@ jobs:
           context: .
           push: false
           file: docker/Dockerfile
-          # Enhanced caching with per-app scopes
-          cache-from: |
-            type=gha,scope=build-${{ inputs.app_name }}
-            type=gha,scope=build-shared
-          cache-to: type=gha,mode=max,scope=build-${{ inputs.app_name }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
           build-args: |
             APP_NAME=${{ inputs.app_name }}
             TURBO_API=${{ vars.TURBO_API }}
             TURBO_TEAM=${{ vars.TURBO_TEAM }}
             TURBO_TOKEN=${{ secrets.TURBO_TOKEN }}
-            BUILDKIT_INLINE_CACHE=1
