@@ -11,13 +11,13 @@ import type { TRPCRouterRecord } from "@trpc/server";
 import { z } from "zod";
 import { publicProcedure } from "../../trpc";
 
-interface PostSlice {
+export interface PostSlice {
   source: { tweet_id: string };
   start: number;
   end: number;
 }
 
-interface VerdictContext {
+export interface VerdictContext {
   feedback: string;
 }
 
@@ -47,7 +47,7 @@ interface RawPrediction {
   verdictCreatedAt: Date | null;
 }
 
-interface GroupedTweet {
+export interface GroupedTweet {
   tweetId: bigint;
   tweetText: string;
   tweetDate: Date;

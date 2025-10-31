@@ -168,6 +168,7 @@ const RetroEffect = forwardRef<
   const { colorNum, pixelSize } = props;
   const WrappedRetroEffect = wrapEffect(RetroEffectImpl);
   return (
+    // eslint-disable-next-line react-hooks/static-components
     <WrappedRetroEffect ref={ref} colorNum={colorNum} pixelSize={pixelSize} />
   );
 });
@@ -280,6 +281,7 @@ function DitheredWaves({
         <shaderMaterial
           vertexShader={waveVertexShader}
           fragmentShader={waveFragmentShader}
+          // eslint-disable-next-line react-hooks/refs
           uniforms={waveUniformsRef.current}
         />
       </mesh>

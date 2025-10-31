@@ -106,6 +106,44 @@ export const twitterUserRouter = {
     }),
 
   /**
+   * Check if user is being scraped (in suggestions but not in twitter_users)
+   */
+  getScrapingStatus: publicProcedure
+    .input(
+      z.object({
+        username: z
+          .string()
+          .min(1)
+          .transform((val) => (val.startsWith("@") ? val.slice(1) : val)),
+      }),
+    )
+    .query(async ({ ctx, input }) => {
+      // Check if user exists in twitter_users
+      const existingUsers = await ctx.db
+        .select()
+        .from(twitterUsersSchema)
+        .where(ilike(twitterUsersSchema.username, input.username))
+        .limit(1);
+
+      if (existingUsers[0]) {
+        return { status: "ready" as const, username: input.username };
+      }
+
+      // Check if user is in suggestions (being scraped)
+      const suggestions = await ctx.db
+        .select()
+        .from(twitterUserSuggestionsSchema)
+        .where(ilike(twitterUserSuggestionsSchema.username, input.username))
+        .limit(1);
+
+      if (suggestions[0]) {
+        return { status: "scraping" as const, username: input.username };
+      }
+
+      return { status: "not_found" as const, username: input.username };
+    }),
+
+  /**
    * Get top predictors ranked by accuracy
    *
    * Calculates accuracy for each user based on their verdicted predictions

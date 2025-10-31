@@ -38,6 +38,11 @@ export function SearchProphet() {
     { enabled: search.length > 0 },
   );
 
+  const { data: scrapingStatus } = api.twitterUser.getScrapingStatus.useQuery(
+    { username: search },
+    { enabled: search.length > 0 && searchResults?.length === 0 },
+  );
+
   const handleSelectUser = (username: string | null) => {
     if (!username) return;
     setOpen(false);
@@ -77,6 +82,19 @@ export function SearchProphet() {
             {searchResults === undefined ? (
               <div className="flex flex-col gap-2">
                 <SearchEmpty />
+              </div>
+            ) : scrapingStatus?.status === "scraping" ? (
+              <div className="flex flex-col items-center gap-4 px-4 py-8">
+                <div className="relative">
+                  <div className="border-primary h-8 w-8 animate-spin rounded-full border-4 border-t-transparent" />
+                </div>
+                <div className="text-center">
+                  <h3 className="font-semibold">@{search} is being scraped</h3>
+                  <p className="text-muted-foreground mt-1 text-sm">
+                    This account is currently being added to the swarm. Check
+                    back soon!
+                  </p>
+                </div>
               </div>
             ) : (
               <AddProphet username={search} onSuccess={() => setOpen(false)} />
