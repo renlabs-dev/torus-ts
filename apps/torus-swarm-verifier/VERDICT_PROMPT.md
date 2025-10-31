@@ -175,7 +175,7 @@ Return ONLY valid JSON (no markdown fences):
 {
   "valid": true,
   "verdict": false,
-  "confidence": 0.70,
+  "confidence": 0.7,
   "reasoning": "Unable to find reliable price data for XYZ token during the specified timeframe. Insufficient evidence to verify the prediction."
 }
 ```

@@ -71,6 +71,7 @@ Return ONLY valid JSON (no markdown fences):
 ```
 
 **Fields:**
+
 - `context`: Brief summary of the thread and what the author was saying
 - `is_valid`: Boolean indicating if this is a valid prediction
 - `failure_cause`: Category of failure (null if is_valid is true). Must be one of:

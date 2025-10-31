@@ -13,7 +13,7 @@ import type {
   ScrapedTweet,
   VerdictContext,
 } from "@torus-ts/db/schema";
-import { and, asc, eq, inArray, notExists, sql } from "drizzle-orm";
+import { and, asc, eq, notExists } from "drizzle-orm";
 import { logger } from "./index";
 import { sleep } from "./utils";
 
@@ -688,21 +688,21 @@ export class PredictionVerifier {
     }
 
     const result = (await response.json()) as {
-      choices: Array<{
+      choices: {
         message: {
           content: string;
-          annotations?: Array<{
-            type: "url_citation";
-            url_citation: {
+          annotations?: {
+            type: string;
+            url_citation?: {
               url: string;
               title?: string;
               content?: string;
               start_index?: number;
               end_index?: number;
             };
-          }>;
+          }[];
         };
-      }>;
+      }[];
     };
 
     const message = result.choices[0]?.message;
@@ -714,8 +714,9 @@ export class PredictionVerifier {
 
     const sources: UrlCitation[] | undefined =
       message.annotations
-        ?.filter((ann) => ann.type === "url_citation")
-        .map((ann) => ann.url_citation) ?? undefined;
+        ?.filter((ann) => ann.type === "url_citation" && ann.url_citation)
+        // eslint-disable-next-line
+        .map((ann) => ann.url_citation!!) ?? undefined;
 
     return {
       ...verdictResult,
@@ -810,14 +811,14 @@ export class PredictionVerifier {
     }
 
     const result = (await response.json()) as {
-      choices: Array<{
+      choices: {
         message: {
           content: string;
         };
-      }>;
+      }[];
     };
 
-    const jsonText = result.choices[0]?.message?.content;
+    const jsonText = result.choices[0]?.message.content;
     if (!jsonText) {
       throw new Error("No response from OpenRouter API");
     }
@@ -897,14 +898,14 @@ export class PredictionVerifier {
     }
 
     const result = (await response.json()) as {
-      choices: Array<{
+      choices: {
         message: {
           content: string;
         };
-      }>;
+      }[];
     };
 
-    const jsonText = result.choices[0]?.message?.content;
+    const jsonText = result.choices[0]?.message.content;
     if (!jsonText) {
       throw new Error("No response from OpenRouter API");
     }
