@@ -1,9 +1,12 @@
+"use client";
+
 import type { AppRouter } from "@torus-ts/api";
 import {
   Avatar,
   AvatarFallback,
   AvatarImage,
 } from "@torus-ts/ui/components/avatar";
+import { Button } from "@torus-ts/ui/components/button";
 import {
   Empty,
   EmptyDescription,
@@ -16,43 +19,59 @@ import dayjs from "dayjs";
 import {
   BadgeCheck,
   CheckCircle2,
+  ChevronLeft,
+  ChevronRight,
   ScanSearch,
   TrendingUp,
   XCircle,
 } from "lucide-react";
 import Link from "next/link";
+import { useState } from "react";
 
-type PredictionData = inferProcedureOutput<
+type GroupedTweetData = inferProcedureOutput<
   AppRouter["prediction"]["getByUsername"]
 >[number];
 
 interface ProfileFeedProps {
-  predictions: PredictionData[];
+  predictions: GroupedTweetData[];
   variant?: "user" | "feed";
 }
 
 /**
- * Highlights goal and timeframe portions in the tweet text
+ * Highlights goal and timeframe portions in the tweet text for multiple predictions
  */
 function highlightTweetText(
   tweetText: string,
-  goal: PredictionData["goal"],
-  timeframe: PredictionData["timeframe"],
+  activePrediction: GroupedTweetData["predictions"][0],
+  allPredictions: GroupedTweetData["predictions"],
 ): React.ReactNode {
+  const { goal, timeframe } = activePrediction;
+  const inactivePredictions = allPredictions.filter(
+    (p) => p.parsedId !== activePrediction.parsedId,
+  );
   // Collect all position markers
   const markers: {
     pos: number;
     type: "start" | "end";
-    style: "goal" | "timeframe";
+    style: "goal" | "timeframe" | "inactive";
   }[] = [];
 
-  goal.forEach((s) => {
+  // Add inactive prediction goals (gray highlights)
+  inactivePredictions.forEach((pred) => {
+    pred.goal.forEach((s: { start: number; end: number }) => {
+      markers.push({ pos: s.start, type: "start", style: "inactive" });
+      markers.push({ pos: s.end, type: "end", style: "inactive" });
+    });
+  });
+
+  // Add active prediction goal (orange highlights)
+  goal.forEach((s: { start: number; end: number }) => {
     markers.push({ pos: s.start, type: "start", style: "goal" });
     markers.push({ pos: s.end, type: "end", style: "goal" });
   });
 
   // Only add timeframe markers if they have actual text content
-  timeframe.forEach((s) => {
+  timeframe.forEach((s: { start: number; end: number }) => {
     const text = tweetText.substring(s.start, s.end).trim();
     if (text.length > 0) {
       markers.push({ pos: s.start, type: "start", style: "timeframe" });
@@ -71,6 +90,7 @@ function highlightTweetText(
   const parts: React.ReactNode[] = [];
   let lastIndex = 0;
   let inGoal = false;
+  let inInactive = false;
 
   markers.forEach((marker, idx) => {
     // Render text up to this position
@@ -86,6 +106,15 @@ function highlightTweetText(
             {text}
           </span>,
         );
+      } else if (inInactive) {
+        parts.push(
+          <span
+            key={`text-inactive-${idx}`}
+            className="bg-gray-500/10 text-gray-500"
+          >
+            {text}
+          </span>,
+        );
       } else {
         parts.push(text);
       }
@@ -93,7 +122,13 @@ function highlightTweetText(
     }
 
     // Handle marker
-    if (marker.style === "timeframe") {
+    if (marker.style === "inactive") {
+      if (marker.type === "start") {
+        inInactive = true;
+      } else {
+        inInactive = false;
+      }
+    } else if (marker.style === "timeframe") {
       if (marker.type === "start") {
         const bracket = (
           <span key={`bracket-open-${idx}`} className="font-bold text-blue-600">
@@ -152,8 +187,15 @@ function highlightTweetText(
       parts.push(
         <span
           key="final"
-          className="bg-primary/20 text-primary rounded px-1 font-medium"
+          className="bg-primary/20 text-primary px-1 font-medium"
         >
+          {text}
+        </span>,
+      );
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+    } else if (inInactive) {
+      parts.push(
+        <span key="final-inactive" className="bg-gray-500/10 text-gray-500">
           {text}
         </span>,
       );
@@ -189,6 +231,29 @@ export function ProfileFeed({
   predictions,
   // variant = "user",
 }: ProfileFeedProps) {
+  // State to track active prediction index for each tweet
+  const [activePredictionIndex, setActivePredictionIndex] = useState<
+    Record<string, number>
+  >({});
+
+  const handleNavigate = (tweetId: string, direction: "prev" | "next") => {
+    const tweet = predictions.find((p) => p.tweetId.toString() === tweetId);
+    if (!tweet) return;
+
+    const currentIndex = activePredictionIndex[tweetId] ?? 0;
+    let newIndex = currentIndex;
+
+    if (direction === "prev") {
+      newIndex =
+        currentIndex > 0 ? currentIndex - 1 : tweet.predictions.length - 1;
+    } else {
+      newIndex =
+        currentIndex < tweet.predictions.length - 1 ? currentIndex + 1 : 0;
+    }
+
+    setActivePredictionIndex((prev) => ({ ...prev, [tweetId]: newIndex }));
+  };
+
   return (
     <div className="mx-auto px-4">
       {predictions.length === 0 ? (
@@ -205,133 +270,157 @@ export function ProfileFeed({
         </Empty>
       ) : (
         <div>
-          {predictions.map((prediction, idx) => (
-            <div
-              key={prediction.parsedId}
-              className={
-                idx < predictions.length - 1 ? "border-border border-b" : ""
-              }
-            >
-              <div className="relative flex gap-2 py-4 md:gap-3 md:py-6">
-                <div className="min-w-0 flex-1">
-                  <div className="flex flex-col gap-1 text-xs sm:flex-row sm:items-center sm:gap-2 md:text-sm">
-                    <div className="flex flex-wrap items-center gap-1 sm:gap-2">
-                      <div className="relative z-10">
-                        <Avatar className="h-6 w-6 md:h-8 md:w-8">
-                          <AvatarImage
-                            src={prediction.avatarUrl ?? undefined}
-                            alt={
-                              prediction.screenName ??
-                              prediction.username ??
-                              "User"
-                            }
-                          />
-                          <AvatarFallback className="bg-primary text-primary-foreground text-xs font-medium">
-                            {(
-                              prediction.screenName ??
-                              prediction.username ??
-                              "U"
-                            )
-                              .slice(0, 2)
-                              .toUpperCase()}
-                          </AvatarFallback>
-                        </Avatar>
-                      </div>
-                      <>
-                        <Link
-                          href={`/user/${prediction.username}`}
-                          className="text-foreground font-medium hover:underline"
-                        >
-                          {prediction.screenName}
-                        </Link>
-                        {prediction.isVerified && (
-                          <BadgeCheck className="text-primary size-4" />
-                        )}
-                      </>
-                      <span className="text-muted-foreground text-xs">•</span>
-                      <Link
-                        href={`/user/${prediction.username}`}
-                        className="text-muted-foreground hover:underline"
-                      >
-                        @{prediction.username}
-                      </Link>
-                      {prediction.vagueness && (
-                        <>
-                          <span className="text-muted-foreground text-xs">
-                            •
-                          </span>
-                          <span className="text-muted-foreground text-xs sm:ml-auto md:text-sm">
-                            Vagueness:{" "}
-                            {(parseFloat(prediction.vagueness) * 100).toFixed(
-                              0,
-                            )}
-                            %
-                          </span>
-                        </>
-                      )}
-                    </div>
-                    <span className="text-muted-foreground text-xs sm:ml-auto md:text-sm">
-                      {dayjs(prediction.predictionCreatedAt).format(
-                        "M/D/YY h:mm A",
-                      )}
-                    </span>
-                  </div>
+          {predictions.map((tweet, idx) => {
+            const tweetId = tweet.tweetId.toString();
+            const activeIndex = activePredictionIndex[tweetId] ?? 0;
+            const activePrediction = tweet.predictions[activeIndex];
 
-                  <div className="mt-4 space-y-2 p-1">
-                    <div className="text-foreground text-sm leading-relaxed md:text-base">
-                      {highlightTweetText(
-                        prediction.tweetText,
-                        prediction.goal,
-                        prediction.timeframe,
-                      )}
-                    </div>
+            if (!activePrediction) return null;
 
-                    {prediction.verdictId && (
-                      <div className="bg-accent/20 rounded-lg border p-3">
-                        <div className="mb-2 flex items-center gap-2">
-                          {prediction.verdict ? (
-                            <CheckCircle2 className="h-4 w-4 text-green-600" />
-                          ) : (
-                            <XCircle className="h-4 w-4 text-red-600" />
-                          )}
-                          <span className="text-muted-foreground text-xs font-medium uppercase">
-                            {prediction.verdict ? "True" : "False"}
-                          </span>
-                          {prediction.verdictCreatedAt && (
-                            <>
-                              <span className="text-muted-foreground text-xs">
-                                •
-                              </span>
-                              <span className="text-muted-foreground text-xs">
-                                {dayjs(prediction.verdictCreatedAt).format(
-                                  "M/D/YY h:mm A",
-                                )}
-                              </span>
-                            </>
-                          )}
-                          <span className="text-muted-foreground text-xs">
-                            •
-                          </span>
-                          <span
-                            className={`${getConfidenceColor(prediction.llmConfidence)} flex items-center text-xs`}
-                          >
-                            <TrendingUp className="mr-1 h-3 w-3" />
-                            {getConfidenceLabel(prediction.llmConfidence)} LLM
-                            Confidence
-                          </span>
+            return (
+              <div
+                key={tweetId}
+                className={
+                  idx < predictions.length - 1 ? "border-border border-b" : ""
+                }
+              >
+                <div className="relative flex gap-2 py-4 md:gap-3 md:py-6">
+                  <div className="min-w-0 flex-1">
+                    <div className="flex flex-col gap-1 text-xs sm:flex-row sm:items-center sm:gap-2 md:text-sm">
+                      <div className="flex flex-wrap items-center gap-1 sm:gap-2">
+                        <div className="relative z-10">
+                          <Avatar className="h-6 w-6 md:h-8 md:w-8">
+                            <AvatarImage
+                              src={tweet.avatarUrl ?? undefined}
+                              alt={tweet.screenName ?? tweet.username ?? "User"}
+                            />
+                            <AvatarFallback className="bg-primary text-primary-foreground text-xs font-medium">
+                              {(tweet.screenName ?? tweet.username ?? "U")
+                                .slice(0, 2)
+                                .toUpperCase()}
+                            </AvatarFallback>
+                          </Avatar>
                         </div>
-                        {prediction.verdictContext && (
-                          <div className="text-foreground text-sm">
-                            {prediction.verdictContext.feedback}
-                          </div>
+                        <>
+                          <Link
+                            href={`/user/${tweet.username}`}
+                            className="text-foreground font-medium hover:underline"
+                          >
+                            {tweet.screenName}
+                          </Link>
+                          {tweet.isVerified && (
+                            <BadgeCheck className="text-primary size-4" />
+                          )}
+                        </>
+                        <span className="text-muted-foreground text-xs">•</span>
+                        <Link
+                          href={`/user/${tweet.username}`}
+                          className="text-muted-foreground hover:underline"
+                        >
+                          @{tweet.username}
+                        </Link>
+                        {activePrediction.vagueness && (
+                          <>
+                            <span className="text-muted-foreground text-xs">
+                              •
+                            </span>
+                            <span className="text-muted-foreground text-xs sm:ml-auto md:text-sm">
+                              Vagueness:{" "}
+                              {(
+                                parseFloat(activePrediction.vagueness) * 100
+                              ).toFixed(0)}
+                              %
+                            </span>
+                          </>
                         )}
                       </div>
-                    )}
+                      <span className="text-muted-foreground text-xs sm:ml-auto md:text-sm">
+                        {dayjs(tweet.tweetDate).format("M/D/YY h:mm A")}
+                      </span>
+                      {/* Navigation Arrows - only show if multiple predictions */}
+                      {tweet.predictions.length > 1 && (
+                        <div className="flex items-center gap-1 border">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-6 w-6"
+                            onClick={() => handleNavigate(tweetId, "prev")}
+                          >
+                            <ChevronLeft className="h-4 w-4" />
+                          </Button>
+                          <span className="text-muted-foreground text-xs">
+                            {activeIndex + 1}/{tweet.predictions.length}
+                          </span>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-6 w-6"
+                            onClick={() => handleNavigate(tweetId, "next")}
+                          >
+                            <ChevronRight className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="mt-4 space-y-2 p-1">
+                      <div className="text-foreground text-sm leading-relaxed md:text-base">
+                        {highlightTweetText(
+                          tweet.tweetText,
+                          activePrediction,
+                          tweet.predictions,
+                        )}
+                      </div>
+
+                      {activePrediction.verdictId && (
+                        <div className="bg-accent/20 rounded-lg border p-3">
+                          <div className="mb-2 flex items-center gap-2">
+                            {activePrediction.verdict ? (
+                              <CheckCircle2 className="h-4 w-4 text-green-600" />
+                            ) : (
+                              <XCircle className="h-4 w-4 text-red-600" />
+                            )}
+                            <span className="text-muted-foreground text-xs font-medium uppercase">
+                              {activePrediction.verdict ? "True" : "False"}
+                            </span>
+                            {activePrediction.verdictCreatedAt && (
+                              <>
+                                <span className="text-muted-foreground text-xs">
+                                  •
+                                </span>
+                                <span className="text-muted-foreground text-xs">
+                                  {dayjs(
+                                    activePrediction.verdictCreatedAt,
+                                  ).format("M/D/YY h:mm A")}
+                                </span>
+                              </>
+                            )}
+                            <span className="text-muted-foreground text-xs">
+                              •
+                            </span>
+                            <span
+                              className={`${getConfidenceColor(activePrediction.llmConfidence)} flex items-center text-xs`}
+                            >
+                              <TrendingUp className="mr-1 h-3 w-3" />
+                              {getConfidenceLabel(
+                                activePrediction.llmConfidence,
+                              )}{" "}
+                              LLM Confidence
+                            </span>
+                          </div>
+                          {activePrediction.verdictContext && (
+                            <div className="text-foreground text-sm">
+                              {activePrediction.verdictContext.feedback}
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
     </div>

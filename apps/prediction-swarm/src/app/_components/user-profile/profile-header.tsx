@@ -27,10 +27,13 @@ export default function ProfileHeader({
   user,
   predictions,
 }: ProfileHeaderProps) {
-  // Calculate accuracy based on verdicts
-  const verdictedPredictions = predictions.filter((p) => p.verdictId !== null);
+  // Calculate accuracy based on verdicts from all predictions in all tweets
+  const allPredictions = predictions.flatMap((tweet) => tweet.predictions);
+  const verdictedPredictions = allPredictions.filter(
+    (p) => p.verdictId !== null,
+  );
 
-  const truePredictions = predictions.filter(
+  const truePredictions = allPredictions.filter(
     (p) => p.verdictId !== null && p.verdict === true,
   ).length;
 

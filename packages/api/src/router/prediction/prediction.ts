@@ -11,6 +11,118 @@ import type { TRPCRouterRecord } from "@trpc/server";
 import { z } from "zod";
 import { publicProcedure } from "../../trpc";
 
+interface PostSlice {
+  source: { tweet_id: string };
+  start: number;
+  end: number;
+}
+
+interface VerdictContext {
+  feedback: string;
+}
+
+interface RawPrediction {
+  predictionId: string;
+  predictionCreatedAt: Date;
+  predictionVersion: number;
+  parsedId: string;
+  goal: PostSlice[];
+  timeframe: PostSlice[];
+  llmConfidence: string;
+  vagueness: string | null;
+  context: unknown;
+  predictionQuality: number;
+  briefRationale: string;
+  tweetId: bigint;
+  tweetText: string;
+  tweetDate: Date;
+  userId: bigint;
+  username: string | null;
+  screenName: string | null;
+  avatarUrl: string | null;
+  isVerified: boolean | null;
+  verdictId: string | null;
+  verdict: boolean | null;
+  verdictContext: VerdictContext | null;
+  verdictCreatedAt: Date | null;
+}
+
+interface GroupedTweet {
+  tweetId: bigint;
+  tweetText: string;
+  tweetDate: Date;
+  userId: bigint;
+  username: string | null;
+  screenName: string | null;
+  avatarUrl: string | null;
+  isVerified: boolean | null;
+  predictions: {
+    parsedId: string;
+    predictionId: string;
+    predictionCreatedAt: Date;
+    predictionVersion: number;
+    goal: PostSlice[];
+    timeframe: PostSlice[];
+    llmConfidence: string;
+    vagueness: string | null;
+    context: unknown;
+    predictionQuality: number;
+    briefRationale: string;
+    verdictId: string | null;
+    verdict: boolean | null;
+    verdictContext: VerdictContext | null;
+    verdictCreatedAt: Date | null;
+  }[];
+}
+
+/**
+ * Groups raw predictions by tweet ID
+ */
+function groupPredictionsByTweet(
+  rawPredictions: RawPrediction[],
+): GroupedTweet[] {
+  const groupedByTweet: Record<string, GroupedTweet> = {};
+
+  rawPredictions.forEach((pred) => {
+    const tweetId = pred.tweetId.toString();
+    if (!groupedByTweet[tweetId]) {
+      groupedByTweet[tweetId] = {
+        tweetId: pred.tweetId,
+        tweetText: pred.tweetText,
+        tweetDate: pred.tweetDate,
+        userId: pred.userId,
+        username: pred.username,
+        screenName: pred.screenName,
+        avatarUrl: pred.avatarUrl,
+        isVerified: pred.isVerified,
+        predictions: [],
+      };
+    }
+    groupedByTweet[tweetId].predictions.push({
+      parsedId: pred.parsedId,
+      predictionId: pred.predictionId,
+      predictionCreatedAt: pred.predictionCreatedAt,
+      predictionVersion: pred.predictionVersion,
+      goal: pred.goal,
+      timeframe: pred.timeframe,
+      llmConfidence: pred.llmConfidence,
+      vagueness: pred.vagueness,
+      context: pred.context,
+      predictionQuality: pred.predictionQuality,
+      briefRationale: pred.briefRationale,
+      verdictId: pred.verdictId,
+      verdict: pred.verdict,
+      verdictContext: pred.verdictContext,
+      verdictCreatedAt: pred.verdictCreatedAt,
+    });
+  });
+
+  // Convert to array and sort by most recent tweet
+  return Object.values(groupedByTweet).sort(
+    (a, b) => b.tweetDate.getTime() - a.tweetDate.getTime(),
+  );
+}
+
 /**
  * Prediction router - handles operations for retrieving predictions
  */
@@ -36,8 +148,8 @@ export const predictionRouter = {
     .query(async ({ ctx, input }) => {
       const { username, offset } = input;
 
-      // Join predictions with parsed predictions, tweets, users, and verdicts
-      const predictions = await ctx.db
+      // Get all predictions with their data
+      const rawPredictions = await ctx.db
         .select({
           // Prediction data
           predictionId: predictionSchema.id,
@@ -51,6 +163,8 @@ export const predictionRouter = {
           llmConfidence: parsedPredictionSchema.llmConfidence,
           vagueness: parsedPredictionSchema.vagueness,
           context: parsedPredictionSchema.context,
+          predictionQuality: parsedPredictionSchema.predictionQuality,
+          briefRationale: parsedPredictionSchema.briefRationale,
 
           // Tweet data
           tweetId: scrapedTweetSchema.id,
@@ -107,7 +221,7 @@ export const predictionRouter = {
         .orderBy(desc(predictionSchema.createdAt))
         .offset(offset);
 
-      return predictions;
+      return groupPredictionsByTweet(rawPredictions as RawPrediction[]);
     }),
 
   /**
@@ -128,7 +242,7 @@ export const predictionRouter = {
     .query(async ({ ctx, input }) => {
       const { limit, offset } = input;
 
-      const predictions = await ctx.db
+      const rawPredictions = await ctx.db
         .select({
           // Prediction data
           predictionId: predictionSchema.id,
@@ -142,6 +256,8 @@ export const predictionRouter = {
           llmConfidence: parsedPredictionSchema.llmConfidence,
           vagueness: parsedPredictionSchema.vagueness,
           context: parsedPredictionSchema.context,
+          predictionQuality: parsedPredictionSchema.predictionQuality,
+          briefRationale: parsedPredictionSchema.briefRationale,
 
           // Tweet data
           tweetId: scrapedTweetSchema.id,
@@ -195,7 +311,7 @@ export const predictionRouter = {
         .limit(limit)
         .offset(offset);
 
-      return predictions;
+      return groupPredictionsByTweet(rawPredictions as RawPrediction[]);
     }),
 
   /**
@@ -214,7 +330,7 @@ export const predictionRouter = {
     .query(async ({ ctx, input }) => {
       const { topicId, limit, offset } = input;
 
-      const predictions = await ctx.db
+      const rawPredictions = await ctx.db
         .select({
           // Prediction data
           predictionId: predictionSchema.id,
@@ -228,6 +344,8 @@ export const predictionRouter = {
           llmConfidence: parsedPredictionSchema.llmConfidence,
           vagueness: parsedPredictionSchema.vagueness,
           context: parsedPredictionSchema.context,
+          predictionQuality: parsedPredictionSchema.predictionQuality,
+          briefRationale: parsedPredictionSchema.briefRationale,
 
           // Tweet data
           tweetId: scrapedTweetSchema.id,
@@ -282,6 +400,6 @@ export const predictionRouter = {
         .limit(limit)
         .offset(offset);
 
-      return predictions;
+      return groupPredictionsByTweet(rawPredictions as RawPrediction[]);
     }),
 } satisfies TRPCRouterRecord;

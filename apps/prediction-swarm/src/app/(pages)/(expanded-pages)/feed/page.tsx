@@ -13,12 +13,18 @@ export default async function FeedPage() {
     limit: 50,
   });
 
-  // Filter predictions by verdict status
-  const ongoingPredictions = predictions.filter((p) => p.verdictId === null);
+  // Filter grouped tweets by verdict status
+  const ongoingPredictions = predictions.filter((tweet) =>
+    tweet.predictions.every((p) => p.verdictId === null),
+  );
 
-  const truePredictions = predictions.filter((p) => p.verdict === true);
+  const truePredictions = predictions.filter((tweet) =>
+    tweet.predictions.some((p) => p.verdict === true),
+  );
 
-  const falsePredictions = predictions.filter((p) => p.verdict === false);
+  const falsePredictions = predictions.filter((tweet) =>
+    tweet.predictions.some((p) => p.verdict === false),
+  );
 
   return (
     <div className="relative py-10">
