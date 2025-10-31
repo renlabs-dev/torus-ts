@@ -51,9 +51,13 @@ function highlightTweetText(
     markers.push({ pos: s.end, type: "end", style: "goal" });
   });
 
+  // Only add timeframe markers if they have actual text content
   timeframe.forEach((s) => {
-    markers.push({ pos: s.start, type: "start", style: "timeframe" });
-    markers.push({ pos: s.end, type: "end", style: "timeframe" });
+    const text = tweetText.substring(s.start, s.end).trim();
+    if (text.length > 0) {
+      markers.push({ pos: s.start, type: "start", style: "timeframe" });
+      markers.push({ pos: s.end, type: "end", style: "timeframe" });
+    }
   });
 
   // Sort by position, then by type (ends before starts at same position)
