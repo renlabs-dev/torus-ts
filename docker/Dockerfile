@@ -47,11 +47,16 @@ COPY --from=pruner /build/out/pnpm-lock.yaml ./pnpm-lock.yaml
 
 # Install dependencies using only package.json files to reduce changes
 COPY --from=pruner /build/out/json/ .
-RUN pnpm install --frozen-lockfile
+# Use cache mount for pnpm store
+RUN --mount=type=cache,id=pnpm-store,target=/pnpm/store \
+    pnpm install --frozen-lockfile
 
 # Build the app
 COPY --from=pruner /build/out/full/ .
-RUN CI=1 pnpm turbo run build --filter=${APP_NAME}
+# Use cache mount for turbo cache and Next.js cache
+RUN --mount=type=cache,target=/app/.turbo \
+    --mount=type=cache,target=/app/.next/cache \
+    CI=1 pnpm turbo run build --filter=${APP_NAME}
 
 # ======== runner layer ======== #
 FROM base AS runner

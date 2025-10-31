@@ -16,7 +16,9 @@ const config = {
       "@starknet-react/core",
       "starknet",
     ],
-    // Build optimizations enabled
+
+    // Build optimizations for faster builds
+    webpackBuildWorker: true,
   },
 
   // Use Turbopack for faster builds
@@ -69,4 +71,5 @@ const config = {
 };
 
 export default config;
-// CI/CD optimization test - 20251031
+
+// test again
