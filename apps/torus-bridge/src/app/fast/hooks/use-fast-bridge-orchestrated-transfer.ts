@@ -1,5 +1,6 @@
 "use client";
 
+import { useAccounts } from "@hyperlane-xyz/widgets";
 import type { SS58Address } from "@torus-network/sdk/types";
 import { useFreeBalance } from "@torus-ts/query-provider/hooks";
 import { useTorus } from "@torus-ts/torus-provider";
@@ -100,6 +101,7 @@ export function useOrchestratedTransfer() {
 
   const warpCore = useWarpCore();
   const _multiProvider = useMultiProvider();
+  const { accounts } = useAccounts(_multiProvider);
 
   const { triggerTransactions: _triggerTransactions } = useTokenTransfer(
     undefined,
@@ -324,6 +326,8 @@ export function useOrchestratedTransfer() {
           walletClient,
           switchChain: switchChainAsync,
           triggerHyperlaneTransfer,
+          warpCore,
+          accounts,
           refetchBaseBalance,
           baseBalance: baseBalanceWrapped,
           refetchTorusEvmBalance,
@@ -363,6 +367,8 @@ export function useOrchestratedTransfer() {
       chain?.id,
       getExplorerUrl,
       torusEvmChainId,
+      warpCore,
+      accounts,
     ],
   );
 
@@ -450,6 +456,8 @@ export function useOrchestratedTransfer() {
         walletClient,
         switchChain: switchChainAsync,
         triggerHyperlaneTransfer,
+        warpCore,
+        accounts,
         refetchBaseBalance,
         baseBalance: baseBalanceWrapped,
         refetchTorusEvmBalance,
@@ -478,6 +486,8 @@ export function useOrchestratedTransfer() {
       baseBalanceWrapped,
       getExplorerUrl,
       setTransactions,
+      warpCore,
+      accounts,
     ],
   );
 
