@@ -3,9 +3,9 @@
 import { formatToken } from "@torus-network/torus-utils/torus/token";
 import { useCachedStakeOut } from "@torus-ts/query-provider/hooks";
 import { useTorus } from "@torus-ts/torus-provider";
+import { useAPR } from "@torus-ts/ui/components/apr";
 import { Card } from "@torus-ts/ui/components/card";
 import { env } from "~/env";
-import { useAPR } from "~/hooks/useAPR";
 import { DateTime } from "luxon";
 import { useEffect, useMemo, useState } from "react";
 import { StakingCalculatorAmountInput } from "./staking-calculator-amount-input";
@@ -30,8 +30,8 @@ export const FORECAST_MONTHS = 24;
 export const FORECAST_PERIODS = [3, 6, 12, 24];
 
 function StakingCalculator() {
-  const { selectedAccount } = useTorus();
-  const { apr } = useAPR();
+  const { selectedAccount, api } = useTorus();
+  const { apr } = useAPR(api);
   const stakeOut = useCachedStakeOut(env("NEXT_PUBLIC_TORUS_CACHE_URL"));
   const projectedApr = apr ?? 24;
   const [customAmount, setCustomAmount] = useState("");

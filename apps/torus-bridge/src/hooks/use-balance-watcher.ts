@@ -33,6 +33,5 @@ export function useRecipientBalanceWatcher(
     }
 
     prevRecipientBalance.current = { balance, recipient: recipient };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [balance, recipient, prevRecipientBalance]);
+  }, [balance, recipient, toast]);
 }

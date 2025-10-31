@@ -3,6 +3,7 @@ import { agentApplicationVoteRouter } from "./router/agent/agent-application-vot
 import { agentReportRouter } from "./router/agent/agent-report";
 import { computedAgentWeightRouter } from "./router/agent/computed-agent-weight";
 import { userAgentWeightRouter } from "./router/agent/user-agent-weight";
+import { askTorusRouter } from "./router/ask-torus/ask-torus";
 import { authRouter } from "./router/auth";
 import { cadreRouter } from "./router/cadre/cadre";
 import { cadreCandidateRouter } from "./router/cadre/cadre-candidate";
@@ -15,6 +16,7 @@ import { commentReportRouter } from "./router/comment/comment-report";
 import { penaltyRouter } from "./router/penalty/penalty";
 import { permissionRouter } from "./router/permission/permission";
 import { signalRouter } from "./router/permission/signal";
+import { prophetRouter } from "./router/prophet/prophet";
 // import { constraintRouter } from "./router/constraint/constraint";
 import { createTRPCRouter } from "./trpc";
 
@@ -28,6 +30,9 @@ export const appRouter = createTRPCRouter({
   computedAgentWeight: computedAgentWeightRouter,
   // Agent Application
   agentApplicationVote: agentApplicationVoteRouter,
+
+  // Ask Torus Usage
+  askTorus: askTorusRouter,
 
   // Cadre
   cadre: cadreRouter,
@@ -49,6 +54,9 @@ export const appRouter = createTRPCRouter({
   // Permission
   permission: permissionRouter,
   signal: signalRouter,
+
+  // Prophet
+  prophet: prophetRouter,
 });
 
 export type AppRouter = typeof appRouter;

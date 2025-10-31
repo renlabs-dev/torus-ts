@@ -1,0 +1,143 @@
+@tailwind base;
+
+@custom-variant dark (&:is(.dark *));
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    color-scheme: dark;
+    --dark: 240 3.4483% 5.6863%;
+    --background: 240 3.4483% 5.6863%;
+    --foreground: 223.8136 0.0004% 98.0256%;
+    --card: 240 3.4483% 5.6863%;
+    --card-foreground: 223.8136 0.0004% 98.0256%;
+    --popover: 240 3.4483% 5.6863%;
+    --popover-foreground: 223.8136 0.0004% 98.0256%;
+    --primary: 223.8136 0.0001% 89.8161%;
+    --primary-foreground: 240 3.4483% 5.6863%;
+    --secondary: 240 3.4483% 5.6863%;
+    --secondary-foreground: 223.8136 0.0004% 98.0256%;
+    --muted: 300 2.7027% 7.2549%;
+    --muted-foreground: 223.8136 0% 63.0163%;
+    --accent: 300 2.7027% 7.2549%;
+    --accent-foreground: 223.8136 0.0004% 98.0256%;
+    --destructive: 358.7594 101.8439% 69.8357%;
+    --destructive-foreground: 223.8136 0.0004% 98.0256%;
+    --border: 0 0% 18.8235%;
+    --button-border: 0 0% 18.8235%;
+    --input: 300 2.7027% 7.2549%;
+    --ring: 0 0% 18.8235%;
+    --chart-1: 211.788 101.9718% 78.6759%;
+    --chart-2: 217.4076 91.3672% 59.5787%;
+    --chart-3: 221.4336 86.3731% 54.0624%;
+    --chart-4: 223.6587 78.718% 47.8635%;
+    --chart-5: 226.5426 70.0108% 39.9224%;
+    --sidebar: 240 3.4483% 5.6863%;
+    --sidebar-foreground: 223.8136 0.0004% 98.0256%;
+    --sidebar-primary: 225.3451 84.0953% 48.9841%;
+    --sidebar-primary-foreground: 223.8136 0.0004% 98.0256%;
+    --sidebar-accent: 240 3.4483% 5.6863%;
+    --sidebar-accent-foreground: 223.8136 0.0004% 98.0256%;
+    --sidebar-border: 240 3.4483% 5.6863%;
+    --sidebar-ring: 0 0% 18.8235%;
+    --font-sans: Geist, ui-sans-serif, sans-serif, system-ui;
+    --font-serif: ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
+    --font-mono:
+      ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono",
+      "Courier New", monospace;
+    --radius: 0.5rem;
+    --shadow-x: 0;
+    --shadow-y: 1px;
+    --shadow-blur: 3px;
+    --shadow-spread: 0px;
+    --shadow-opacity: 0.1;
+    --shadow-color: oklch(0 0 0);
+    --shadow-2xs: 0 1px 3px 0px hsl(0 0% 0% / 0.05);
+    --shadow-xs: 0 1px 3px 0px hsl(0 0% 0% / 0.05);
+    --shadow-sm:
+      0 1px 3px 0px hsl(0 0% 0% / 0.1), 0 1px 2px -1px hsl(0 0% 0% / 0.1);
+    --shadow:
+      0 1px 3px 0px hsl(0 0% 0% / 0.1), 0 1px 2px -1px hsl(0 0% 0% / 0.1);
+    --shadow-md:
+      0 1px 3px 0px hsl(0 0% 0% / 0.1), 0 2px 4px -1px hsl(0 0% 0% / 0.1);
+    --shadow-lg:
+      0 1px 3px 0px hsl(0 0% 0% / 0.1), 0 4px 6px -1px hsl(0 0% 0% / 0.1);
+    --shadow-xl:
+      0 1px 3px 0px hsl(0 0% 0% / 0.1), 0 8px 10px -1px hsl(0 0% 0% / 0.1);
+    --shadow-2xl: 0 1px 3px 0px hsl(0 0% 0% / 0.25);
+  }
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+@layer utilities {
+  .rounded-radius {
+    border-radius: var(--radius);
+  }
+}
+
+/* Custom Scrollbar Styles */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: oklch(0.1642 0.0021 286.1694);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: oklch(0.3092 0 0);
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: oklch(0.4 0 0);
+}
+
+::-webkit-scrollbar-corner {
+  background: oklch(0.1642 0.0021 286.1694);
+}
+
+/* Firefox scrollbar */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: oklch(0.3092 0 0) oklch(0.1642 0.0021 286.1694);
+}

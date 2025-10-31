@@ -1,8 +1,11 @@
+import { fileURLToPath } from "url";
+
 /** @type {import("next").NextConfig} */
 const config = {
   reactStrictMode: true,
 
   experimental: {
+    reactCompiler: true,
     // Optimize imports for heavy packages
     optimizePackageImports: [
       "@hyperlane-xyz/sdk",
@@ -13,17 +16,11 @@ const config = {
       "@starknet-react/core",
       "starknet",
     ],
-
     // Build optimizations enabled
   },
 
   // Use Turbopack for faster builds
-  turbopack: {
-    rules: {
-      "*.yaml": ["yaml-loader"],
-      "*.yml": ["yaml-loader"],
-    },
-  },
+  turbopack: {},
 
   transpilePackages: [
     "@torus-ts/api",
@@ -33,16 +30,13 @@ const config = {
     "@torus-ts/env-validation",
   ],
 
+  productionBrowserSourceMaps: true,
+
+  /** We already do linting and typechecking as separate tasks in CI */
   eslint: { ignoreDuringBuilds: true },
   typescript: { ignoreBuildErrors: true },
 
   webpack: (config, { isServer }) => {
-    // YAML loader for config files
-    config.module.rules.push({
-      test: /\.ya?ml$/,
-      use: "yaml-loader",
-    });
-
     // Optimize bundle splitting
     if (!isServer) {
       config.optimization.splitChunks = {
@@ -63,6 +57,12 @@ const config = {
         },
       };
     }
+
+    // YAML loader for config files
+    config.module.rules.push({
+      test: /\.ya?ml$/,
+      use: "yaml-loader",
+    });
 
     return config;
   },

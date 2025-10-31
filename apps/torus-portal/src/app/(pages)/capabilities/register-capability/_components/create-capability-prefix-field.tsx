@@ -27,7 +27,6 @@ export function RegisterCapabilityPrefixField({
 }: RegisterCapabilityPrefixFieldProps) {
   const isMobile = useIsMobile();
 
-  // eslint-disable-next-line react-hooks/preserve-manual-memoization
   const prefixOptions = useMemo(() => {
     if (!namespaceEntries.data || namespaceEntries.data.length === 0) {
       return [];

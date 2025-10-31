@@ -29,6 +29,9 @@ on:
       torus-prophet-finder:
         description: "Whether torus-prophet-finder changed"
         value: ${{ jobs.run.outputs.torus-prophet-finder }}
+      prediction-swarm-dash:
+        description: "Whether prediction-swarm-dash changed"
+        value: ${{ jobs.run.outputs.prediction-swarm-dash }}
 
 jobs:
   run:
@@ -43,13 +46,14 @@ jobs:
       torus-worker: ${{ steps.changed.outputs.torus-worker }}
       torus-governance: ${{ steps.changed.outputs.torus-governance }}
       torus-prophet-finder: ${{ steps.changed.outputs.torus-prophet-finder }}
+      prediction-swarm-dash: ${{ steps.changed.outputs.prediction-swarm-dash }}
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: Turbo setup (no deps)
-        uses: ./.github/actions/setup-turbo
+      - name: PNPM setup
+        uses: ./.github/actions/setup
 
       - name: Get apps list
         run: |
@@ -60,19 +64,16 @@ jobs:
       - name: Get build json (PR based)
         if: github.event_name == 'pull_request'
         run: |
-          turbo run build --filter="...[origin/${{ github.base_ref }}]" --dry-run=json 2>/dev/null > build.json
+          pnpm exec turbo run build --filter="...[origin/${{ github.base_ref }}]" --dry-run=json 2>/dev/null > build.json
 
       - name: Get build json (Push based)
         if: github.event_name == 'push'
         run: |
           if git rev-parse --quiet --verify ${{ github.event.before }}^{commit}; then
             BASE_COMMIT="$(git merge-base ${{ github.event.before }} HEAD)"
-            turbo run build --filter="...[${BASE_COMMIT}]" --dry-run=json 2>/dev/null > build.json
+            pnpm exec turbo run build --filter="...[${BASE_COMMIT}]" --dry-run=json 2>/dev/null > build.json
           else
-            # Fallback: compare with HEAD~1 instead of building everything
-            echo "⚠️  Warning: Cannot find previous commit, comparing with HEAD~1"
-            turbo run build --filter="...[HEAD~1]" --dry-run=json 2>/dev/null > build.json || \
-              turbo run build --dry-run=json 2>/dev/null > build.json
+            pnpm exec turbo run build --dry-run=json 2>/dev/null > build.json
           fi
 
       - name: Get changed packages

@@ -6,16 +6,14 @@ import { useTorus } from "@torus-ts/torus-provider";
 import { useToast } from "@torus-ts/ui/hooks/use-toast";
 import AddProphetForm from "~/app/_components/cards/add-prophet-form";
 import CardsBorderGlow from "~/app/_components/cards/cards-border-glow";
-// import AddTickerForm from "~/app/_components/cards/add-ticker-form";
-import CardsGrid from "~/app/_components/cards/cards-grid";
 import CardsHeader from "~/app/_components/cards/cards-header";
 import CardsRaysBackground from "~/app/_components/cards/cards-rays-background";
 import TextureFilters from "~/app/_components/cards/effects/texture-filters";
-import EmptyState from "~/app/_components/cards/empty-state";
 // import EntityModeToggle from "~/app/_components/cards/entity-mode-toggle";
 import type { EntityMode } from "~/app/_components/cards/entity-mode-toggle";
+// import AddTickerForm from "~/app/_components/cards/add-ticker-form";
+import InfiniteCardsGrid from "~/app/_components/cards/infinite-cards-grid";
 import SearchInput from "~/app/_components/cards/search-input";
-import StableHeight from "~/app/_components/cards/stable-height";
 // import TickersGrid from "~/app/_components/cards/tickers-grid";
 import { useProphets } from "~/app/_components/cards/use-prophets";
 // import { useTickers } from "~/app/_components/cards/use-tickers";
@@ -25,7 +23,7 @@ import * as React from "react";
 
 export default function CardsSection() {
   const STAKE_REQUIRED_MSG = "You must have staked balance present.";
-  const { prophets, addProphet, validateProphet } = useProphets();
+  const { validateProphet } = useProphets();
   // const { tickers, addTicker } = useTickers();
   const { api, selectedAccount } = useTorus();
   const { submit: submitProphetTask } = useSubmitProphetTask();
@@ -42,46 +40,7 @@ export default function CardsSection() {
     selectedAccount != null && accountBalance.isFetching === false && !hasStake;
   const [query, setQuery] = React.useState("");
   const mode: EntityMode = "prophets"; // Fixed to prophets only
-  // const [mode, setMode] = React.useState<EntityMode>("prophets");
-  // const [isOverlayVisible, setOverlayVisible] = React.useState(false);
-  // const [isOverlayOpaque, setOverlayOpaque] = React.useState(false);
   const [uiError, setUiError] = React.useState<string | null>(null);
-  // const timeouts = React.useRef<number[]>([]);
-
-  const filteredProphets = React.useMemo(() => {
-    const q = query.trim().toLowerCase();
-    if (!q) return prophets;
-
-    // Support searching by both display name and handle.
-    // Normalize the query for different comparisons:
-    // - qNoAt: without leading '@'
-    // - qForName: treat '_' as spaces (display names render '_' as ' ')
-    // - qCollapsed: remove '_' and spaces for lenient matching (e.g., '@a_bc' ~ 'A BC')
-    const qNoAt = q.replace(/^@+/, "");
-    const qForName = qNoAt.replace(/_/g, " ");
-    const qCollapsed = qNoAt.replace(/[_\s]+/g, "");
-
-    return prophets.filter((p) => {
-      const name = p.name.toLowerCase();
-      const handle = p.handle.toLowerCase(); // includes leading '@'
-      const username = handle.startsWith("@") ? handle.slice(1) : handle;
-      const usernameCollapsed = username.replace(/_/g, "");
-      const nameCollapsed = name.replace(/\s+/g, "");
-      return (
-        handle.includes(q) || // raw query (e.g., '@satoshi')
-        username.includes(qNoAt) || // username without '@'
-        name.includes(qForName) || // display name with '_' treated as space
-        usernameCollapsed.includes(qCollapsed) || // lenient: ignore '_' in username
-        nameCollapsed.includes(qCollapsed) // lenient: ignore spaces in name
-      );
-    });
-  }, [query, prophets]);
-
-  // const filteredTickers = React.useMemo(() => {
-  //   const q = query.trim().replace(/^\$+/, "").toUpperCase();
-  //   if (!q) return tickers;
-  //   return tickers.filter((t) => t.symbol.toUpperCase().includes(q));
-  // }, [query, tickers]);
 
   const handleAddProphet = React.useCallback(
     async (raw: string) => {
@@ -105,22 +64,12 @@ export default function CardsSection() {
       // Show loading toast
       const toastId = toast.loading(`Adding @${normalizedUsername}...`);
 
-      // Submit the task first
+      // Submit the task
       try {
         await submitProphetTask(normalizedUsername);
 
         // Dismiss loading toast
         toast.dismiss(toastId);
-
-        // Only add the placeholder card after successful submission
-        const result = addProphet(raw);
-        const err = result.error ?? null;
-
-        if (err) {
-          setUiError(err);
-          toast.error(err);
-          return err;
-        }
 
         setUiError(null);
         toast.success(
@@ -146,7 +95,7 @@ export default function CardsSection() {
         return errorMsg;
       }
     },
-    [addProphet, validateProphet, hasStake, submitProphetTask, toast],
+    [validateProphet, hasStake, submitProphetTask, toast],
   );
 
   // const handleAddTicker = React.useCallback(
@@ -262,20 +211,11 @@ export default function CardsSection() {
         </div>
 
         <div className="relative">
-          <StableHeight
-            locked={filteredProphets.length === 0}
-            minEmptyPx={640}
-            className="min-h-[40vh]"
-          >
-            {filteredProphets.length > 0 ? (
-              <CardsGrid prophets={filteredProphets} />
-            ) : (
-              <EmptyState
-                title="No prophets match your search."
-                hint="Try a different name or add a new prophet."
-              />
-            )}
-          </StableHeight>
+          <InfiniteCardsGrid
+            search={query}
+            onAddProphet={handleAddProphet}
+            validateProphet={validateProphet}
+          />
           {/* {mode === "prophets" ? (
             <StableHeight
               locked={filteredProphets.length === 0}

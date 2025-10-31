@@ -60,7 +60,6 @@ ARG APP_NAME
 LABEL org.opencontainers.image.source=https://github.com/renlabs-dev/torus-ts
 
 ENV PORT=8000
-ENV NODE_ENV=production
 
 WORKDIR /app
 
@@ -74,7 +73,7 @@ COPY --from=builder /app/apps/${APP_NAME}/package.json ./apps/${APP_NAME}/packag
 # Copy the entire built app directory (includes .next, dist, public, etc.)
 COPY --from=builder /app/apps/${APP_NAME} ./apps/${APP_NAME}
 
-# Copy workspace packages (your apps use @torus-ts/* and @torus-network/* packages)
+# Copy workspace packages
 COPY --from=builder /app/packages ./packages
 
 # Copy only production node_modules

@@ -44,10 +44,9 @@
 .DS_Store
 
 **/.claude/settings.local.json
+*PLANS.md
+*TASKS.md
 
 # Crush
 .crush
 CRUSH.md
-
-# Act (GitHub Actions local testing)
-.secrets
