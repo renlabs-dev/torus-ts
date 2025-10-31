@@ -224,18 +224,16 @@ export const twitterUserRouter = {
           // verdictedPredictions includes both true and false
           // So n should just be verdictedPredictions, and w = n - r
           const n = user.verdictedPredictions;
-          const w = n - r;
 
           const accuracy =
-            user.verdictedPredictions > 0
-              ? Math.round((r / n) * 100)
-              : 0;
+            user.verdictedPredictions > 0 ? Math.round((r / n) * 100) : 0;
 
           // Score formula: (r / n) * log10(n + 1)
-          const score =
-            n > 0 ? (r / n) * Math.log10(n + 1) : 0;
+          const score = n > 0 ? (r / n) * Math.log10(n + 1) : 0;
 
-          console.log(`${user.username}: r=${r}, n=${n}, accuracy=${accuracy}, score=${score}`);
+          console.log(
+            `${user.username}: r=${r}, n=${n}, accuracy=${accuracy}, score=${score}`,
+          );
 
           return {
             ...user,
