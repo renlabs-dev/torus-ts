@@ -3,21 +3,19 @@ environments:
     values:
       - ../../helm/values.yaml
       - values.yaml
-      - namespace: torus-dev-web-apps
+      - releaseName: dev-torus-swarm-twitter
       - environmentName: dev
       - wssApiEndpoint: wss://api.testnet.torus.network
-      - releaseName: dev-torus-cache
-      - ingressHost: cache.testnet.torus.network
+      - namespace: torus-dev-web-apps
       - chainEnv: testnet
   prod:
     values:
       - ../../helm/values.yaml
       - values.yaml
-      - namespace: torus-prod-web-apps
+      - releaseName: torus-swarm-twitter
       - environmentName: prod
       - wssApiEndpoint: wss://api.torus.network
-      - releaseName: torus-cache
-      - ingressHost: cache.torus.network
+      - namespace: torus-prod-web-apps
       - chainEnv: mainnet
 ---
 helmDefaults:
@@ -34,9 +32,4 @@ releases:
     chart: renlabs/application
     values:
       - ../../helm/values.yaml.gotmpl
-      - ingress:
-          hosts:
-            - host: "{{ .Values.ingressHost }}"
-              paths:
-                - path: /
-                  pathType: Prefix
+      - values.yaml

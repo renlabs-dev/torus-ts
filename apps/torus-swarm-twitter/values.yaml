@@ -1,5 +1,11 @@
 cacheUrl: ""
 
+ingress:
+  enabled: false
+
+service:
+  enabled: false
+
 deployment:
   image:
     repository: ghcr.io/renlabs-dev/torus-swarm-twitter
@@ -22,17 +28,22 @@ deployment:
   args: ["tsx", "./src/index.ts"]
 
   startupProbe:
-    httpGet:
-      path: /api/stake-out
+    enabled: false
 
   readinessProbe:
-    periodSeconds: 30
-    timeoutSeconds: 3
-    httpGet:
-      path: /api/stake-out
+    enabled: false
 
   livenessProbe:
-    periodSeconds: 30
-    timeoutSeconds: 3
-    httpGet:
-      path: /api/stake-out
+    enabled: false
+
+  env:
+    TWITTERAPI_IO_KEY:
+      valueFrom:
+        secretKeyRef:
+          name: "torus-{{ .Values.environmentName }}-web-apps-secret"
+          key: TWITTERAPI_IO_KEY
+    POSTGRES_URL:
+      valueFrom:
+        secretKeyRef:
+          name: "torus-{{ .Values.environmentName }}-web-apps-secret"
+          key: hetzner_dev_db
