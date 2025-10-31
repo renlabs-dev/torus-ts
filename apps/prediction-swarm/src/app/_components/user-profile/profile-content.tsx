@@ -18,17 +18,17 @@ interface ProfileContentProps {
 }
 
 export default function ProfileContent({ predictions }: ProfileContentProps) {
-  // Filter grouped tweets by verdict status of their predictions
-  const ongoingPredictions = predictions.filter((tweet) =>
-    tweet.predictions.every((p) => p.verdictId === null),
+  // Filter grouped tweets by verdict status of the FIRST (highest quality) prediction
+  const ongoingPredictions = predictions.filter(
+    (tweet) => tweet.predictions[0]?.verdictId === null,
   );
 
-  const truePredictions = predictions.filter((tweet) =>
-    tweet.predictions.some((p) => p.verdict === true),
+  const truePredictions = predictions.filter(
+    (tweet) => tweet.predictions[0]?.verdict === true,
   );
 
-  const falsePredictions = predictions.filter((tweet) =>
-    tweet.predictions.some((p) => p.verdict === false),
+  const falsePredictions = predictions.filter(
+    (tweet) => tweet.predictions[0]?.verdict === false,
   );
 
   return (
