@@ -5,10 +5,10 @@ import {
   TabsList,
   TabsTrigger,
 } from "@torus-ts/ui/components/tabs";
-import { TrendingUp } from "lucide-react";
-import { notFound } from "next/navigation";
 import { ProfileFeed } from "~/app/_components/user-profile/profile-feed";
 import { api } from "~/trpc/server";
+import { TrendingUp } from "lucide-react";
+import { notFound } from "next/navigation";
 
 interface PageProps {
   params: Promise<{
@@ -35,21 +35,15 @@ export default async function TickerPage({ params }: PageProps) {
   });
 
   // Filter predictions by verdict status
-  const ongoingPredictions = predictions.filter(
-    (p) => !p.verdictConclusion || p.verdictConclusion.length === 0,
+  const ongoingPredictions = predictions.filter((p) => p.verdictId === null);
+
+  const truePredictions = predictions.filter(
+    (p) => p.verdictId !== null && p.verdict === true,
   );
 
-  const truePredictions = predictions.filter((p) => {
-    if (!p.verdictConclusion || p.verdictConclusion.length === 0) return false;
-    const feedback = p.verdictConclusion[0]?.feedback.toLowerCase() ?? "";
-    return feedback.includes("true") || feedback.includes("correct");
-  });
-
-  const falsePredictions = predictions.filter((p) => {
-    if (!p.verdictConclusion || p.verdictConclusion.length === 0) return false;
-    const feedback = p.verdictConclusion[0]?.feedback.toLowerCase() ?? "";
-    return !feedback.includes("true") && !feedback.includes("correct");
-  });
+  const falsePredictions = predictions.filter(
+    (p) => p.verdictId !== null && p.verdict === false,
+  );
 
   return (
     <div className="relative py-10">

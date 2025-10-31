@@ -129,9 +129,9 @@ export const twitterUserRouter = {
           avatarUrl: twitterUsersSchema.avatarUrl,
           isVerified: twitterUsersSchema.isVerified,
           followerCount: twitterUsersSchema.followerCount,
-          totalPredictions: sql<number>`COUNT(DISTINCT ${predictionSchema.id})`,
-          verdictedPredictions: sql<number>`COUNT(DISTINCT CASE WHEN ${verdictSchema.id} IS NOT NULL THEN ${predictionSchema.id} END)`,
-          truePredictions: sql<number>`COUNT(DISTINCT CASE WHEN ${verdictSchema.conclusion}::jsonb->0->>'feedback' ILIKE '%true%' OR ${verdictSchema.conclusion}::jsonb->0->>'feedback' ILIKE '%correct%' THEN ${predictionSchema.id} END)`,
+          totalPredictions: sql<number>`COUNT(DISTINCT ${parsedPredictionSchema.id})`,
+          verdictedPredictions: sql<number>`COUNT(DISTINCT CASE WHEN ${verdictSchema.id} IS NOT NULL THEN ${parsedPredictionSchema.id} END)`,
+          truePredictions: sql<number>`COUNT(DISTINCT CASE WHEN ${verdictSchema.verdict} = true THEN ${parsedPredictionSchema.id} END)`,
         })
         .from(twitterUsersSchema)
         .innerJoin(
@@ -146,12 +146,12 @@ export const twitterUserRouter = {
           parsedPredictionSchema,
           and(
             eq(parsedPredictionSchema.predictionId, predictionSchema.id),
-            sql`${scrapedTweetSchema.id} = CAST((${parsedPredictionSchema.goal}::jsonb->0->'source'->>'tweet_id') AS BIGINT)`,
+            sql`${scrapedTweetSchema.id} = CAST(CAST(${parsedPredictionSchema.goal} AS jsonb)->0->'source'->>'tweet_id' AS BIGINT)`,
           ),
         )
         .leftJoin(
           verdictSchema,
-          eq(verdictSchema.predictionId, predictionSchema.id),
+          eq(verdictSchema.parsedPredictionId, parsedPredictionSchema.id),
         )
         .where(eq(twitterUsersSchema.tracked, true))
         .groupBy(
@@ -163,7 +163,7 @@ export const twitterUserRouter = {
           twitterUsersSchema.followerCount,
         )
         .having(
-          sql`COUNT(DISTINCT CASE WHEN ${verdictSchema.id} IS NOT NULL THEN ${predictionSchema.id} END) >= ${minPredictions}`,
+          sql`COUNT(DISTINCT CASE WHEN ${verdictSchema.id} IS NOT NULL THEN ${parsedPredictionSchema.id} END) >= ${minPredictions}`,
         );
 
       // Calculate accuracy and sort

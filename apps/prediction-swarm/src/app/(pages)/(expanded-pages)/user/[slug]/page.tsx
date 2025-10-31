@@ -20,7 +20,6 @@ export default async function Page({ params }: PageProps) {
 
   const predictions = await api.prediction.getByUsername({
     username: slug,
-    limit: 50,
   });
 
   return (

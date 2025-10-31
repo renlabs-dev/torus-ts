@@ -28,14 +28,11 @@ export default function ProfileHeader({
   predictions,
 }: ProfileHeaderProps) {
   // Calculate accuracy based on verdicts
-  const verdictedPredictions = predictions.filter(
-    (p) => p.verdictConclusion && p.verdictConclusion.length > 0,
-  );
+  const verdictedPredictions = predictions.filter((p) => p.verdictId !== null);
 
-  const truePredictions = verdictedPredictions.filter((p) => {
-    const feedback = p.verdictConclusion?.[0]?.feedback.toLowerCase() ?? "";
-    return feedback.includes("true") || feedback.includes("correct");
-  }).length;
+  const truePredictions = predictions.filter(
+    (p) => p.verdictId !== null && p.verdict === true,
+  ).length;
 
   const accuracy =
     verdictedPredictions.length > 0

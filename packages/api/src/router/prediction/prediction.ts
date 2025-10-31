@@ -29,12 +29,11 @@ export const predictionRouter = {
           .string()
           .min(1, "Username is required")
           .transform((val) => (val.startsWith("@") ? val.slice(1) : val)),
-        limit: z.number().min(1).max(100).default(50),
         offset: z.number().min(0).default(0),
       }),
     )
     .query(async ({ ctx, input }) => {
-      const { username, limit, offset } = input;
+      const { username, offset } = input;
 
       // Join predictions with parsed predictions, tweets, users, and verdicts
       const predictions = await ctx.db
@@ -66,7 +65,8 @@ export const predictionRouter = {
 
           // Verdict data (optional)
           verdictId: verdictSchema.id,
-          verdictConclusion: verdictSchema.conclusion,
+          verdict: verdictSchema.verdict,
+          verdictContext: verdictSchema.context,
           verdictCreatedAt: verdictSchema.createdAt,
         })
         .from(predictionSchema)
@@ -76,7 +76,7 @@ export const predictionRouter = {
         )
         .innerJoin(
           scrapedTweetSchema,
-          sql`${scrapedTweetSchema.id} = CAST((${parsedPredictionSchema.goal}::jsonb->0->'source'->>'tweet_id') AS BIGINT)`,
+          sql`${scrapedTweetSchema.id} = CAST(CAST(${parsedPredictionSchema.goal} AS jsonb)->0->'source'->>'tweet_id' AS BIGINT)`,
         )
         .innerJoin(
           twitterUsersSchema,
@@ -84,7 +84,7 @@ export const predictionRouter = {
         )
         .leftJoin(
           verdictSchema,
-          eq(verdictSchema.predictionId, predictionSchema.id),
+          eq(verdictSchema.parsedPredictionId, parsedPredictionSchema.id),
         )
         .where(
           and(
@@ -96,7 +96,6 @@ export const predictionRouter = {
           ),
         )
         .orderBy(desc(predictionSchema.createdAt))
-        .limit(limit)
         .offset(offset);
 
       return predictions;
@@ -149,7 +148,8 @@ export const predictionRouter = {
 
           // Verdict data (optional)
           verdictId: verdictSchema.id,
-          verdictConclusion: verdictSchema.conclusion,
+          verdict: verdictSchema.verdict,
+          verdictContext: verdictSchema.context,
           verdictCreatedAt: verdictSchema.createdAt,
         })
         .from(predictionSchema)
@@ -159,7 +159,7 @@ export const predictionRouter = {
         )
         .innerJoin(
           scrapedTweetSchema,
-          sql`${scrapedTweetSchema.id} = CAST((${parsedPredictionSchema.goal}::jsonb->0->'source'->>'tweet_id') AS BIGINT)`,
+          sql`${scrapedTweetSchema.id} = CAST(CAST(${parsedPredictionSchema.goal} AS jsonb)->0->'source'->>'tweet_id' AS BIGINT)`,
         )
         .innerJoin(
           twitterUsersSchema,
@@ -167,7 +167,7 @@ export const predictionRouter = {
         )
         .leftJoin(
           verdictSchema,
-          eq(verdictSchema.predictionId, predictionSchema.id),
+          eq(verdictSchema.parsedPredictionId, parsedPredictionSchema.id),
         )
         .where(eq(twitterUsersSchema.tracked, true))
         .orderBy(desc(predictionSchema.createdAt))
@@ -222,7 +222,8 @@ export const predictionRouter = {
 
           // Verdict data (optional)
           verdictId: verdictSchema.id,
-          verdictConclusion: verdictSchema.conclusion,
+          verdict: verdictSchema.verdict,
+          verdictContext: verdictSchema.context,
           verdictCreatedAt: verdictSchema.createdAt,
         })
         .from(predictionSchema)
@@ -232,7 +233,7 @@ export const predictionRouter = {
         )
         .innerJoin(
           scrapedTweetSchema,
-          sql`${scrapedTweetSchema.id} = CAST((${parsedPredictionSchema.goal}::jsonb->0->'source'->>'tweet_id') AS BIGINT)`,
+          sql`${scrapedTweetSchema.id} = CAST(CAST(${parsedPredictionSchema.goal} AS jsonb)->0->'source'->>'tweet_id' AS BIGINT)`,
         )
         .innerJoin(
           twitterUsersSchema,
@@ -240,7 +241,7 @@ export const predictionRouter = {
         )
         .leftJoin(
           verdictSchema,
-          eq(verdictSchema.predictionId, predictionSchema.id),
+          eq(verdictSchema.parsedPredictionId, parsedPredictionSchema.id),
         )
         .where(
           and(

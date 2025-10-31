@@ -19,21 +19,11 @@ interface ProfileContentProps {
 
 export default function ProfileContent({ predictions }: ProfileContentProps) {
   // Filter predictions by verdict status
-  const ongoingPredictions = predictions.filter(
-    (p) => !p.verdictConclusion || p.verdictConclusion.length === 0,
-  );
+  const ongoingPredictions = predictions.filter((p) => p.verdictId === null);
 
-  const truePredictions = predictions.filter((p) => {
-    if (!p.verdictConclusion || p.verdictConclusion.length === 0) return false;
-    const feedback = p.verdictConclusion[0]?.feedback.toLowerCase() ?? "";
-    return feedback.includes("true") || feedback.includes("correct");
-  });
+  const truePredictions = predictions.filter((p) => p.verdict === true);
 
-  const falsePredictions = predictions.filter((p) => {
-    if (!p.verdictConclusion || p.verdictConclusion.length === 0) return false;
-    const feedback = p.verdictConclusion[0]?.feedback.toLowerCase() ?? "";
-    return !feedback.includes("true") && !feedback.includes("correct");
-  });
+  const falsePredictions = predictions.filter((p) => p.verdict === false);
 
   return (
     <Card className="bg-background/80 plus-corners">

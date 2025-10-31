@@ -13,7 +13,13 @@ import {
 } from "@torus-ts/ui/components/empty";
 import type { inferProcedureOutput } from "@trpc/server";
 import dayjs from "dayjs";
-import { BadgeCheck, ScanSearch, TrendingUp } from "lucide-react";
+import {
+  BadgeCheck,
+  CheckCircle2,
+  ScanSearch,
+  TrendingUp,
+  XCircle,
+} from "lucide-react";
 import Link from "next/link";
 
 type PredictionData = inferProcedureOutput<
@@ -213,11 +219,16 @@ export function ProfileFeed({
                       )}
                     </div>
 
-                    {prediction.verdictConclusion && (
+                    {prediction.verdictId && (
                       <div className="bg-accent/20 rounded-lg border p-3">
                         <div className="mb-2 flex items-center gap-2">
+                          {prediction.verdict ? (
+                            <CheckCircle2 className="h-4 w-4 text-green-600" />
+                          ) : (
+                            <XCircle className="h-4 w-4 text-red-600" />
+                          )}
                           <span className="text-muted-foreground text-xs font-medium uppercase">
-                            Prediction Verdict
+                            {prediction.verdict ? "True" : "False"}
                           </span>
                           {prediction.verdictCreatedAt && (
                             <>
@@ -242,18 +253,11 @@ export function ProfileFeed({
                             Confidence
                           </span>
                         </div>
-                        <div className="space-y-1">
-                          {prediction.verdictConclusion.map(
-                            (conclusion, idx) => (
-                              <div
-                                key={idx}
-                                className="text-foreground text-sm"
-                              >
-                                {conclusion.feedback}
-                              </div>
-                            ),
-                          )}
-                        </div>
+                        {prediction.verdictContext && (
+                          <div className="text-foreground text-sm">
+                            {prediction.verdictContext.feedback}
+                          </div>
+                        )}
                       </div>
                     )}
                   </div>
