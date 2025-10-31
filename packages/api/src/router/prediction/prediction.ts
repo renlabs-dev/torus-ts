@@ -117,6 +117,18 @@ function groupPredictionsByTweet(
     });
   });
 
+  // Sort predictions within each tweet by quality score, then by confidence
+  Object.values(groupedByTweet).forEach((tweet) => {
+    tweet.predictions.sort((a, b) => {
+      // Primary: quality score (higher is better)
+      if (a.predictionQuality !== b.predictionQuality) {
+        return b.predictionQuality - a.predictionQuality;
+      }
+      // Secondary: LLM confidence (higher is better)
+      return parseFloat(b.llmConfidence) - parseFloat(a.llmConfidence);
+    });
+  });
+
   // Convert to array and sort by most recent tweet
   return Object.values(groupedByTweet).sort(
     (a, b) => b.tweetDate.getTime() - a.tweetDate.getTime(),
