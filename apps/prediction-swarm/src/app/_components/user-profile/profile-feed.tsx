@@ -473,6 +473,36 @@ export function ProfileFeed({
                         )}
                       </div>
 
+                      {/* Display images if tweet contains image URLs */}
+                      {(() => {
+                        const imageUrlMatch = tweet.tweetText.match(
+                          /https?:\/\/(?:pbs\.twimg\.com|t\.co)\/\S+/g,
+                        );
+                        if (imageUrlMatch) {
+                          return (
+                            <div className="flex flex-wrap gap-2">
+                              {imageUrlMatch.map((url, idx) => (
+                                <a
+                                  key={idx}
+                                  href={url}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="block"
+                                >
+                                  <div className="text-muted-foreground hover:text-foreground flex items-center gap-2 text-xs transition-colors">
+                                    <ExternalLink className="h-3 w-3" />
+                                    {url.includes("pbs.twimg.com")
+                                      ? "View Image"
+                                      : "View Media"}
+                                  </div>
+                                </a>
+                              ))}
+                            </div>
+                          );
+                        }
+                        return null;
+                      })()}
+
                       {activePrediction.verdictId && (
                         <div className="bg-accent/20 rounded-lg border p-3">
                           <div className="mb-2 flex items-center gap-2">
