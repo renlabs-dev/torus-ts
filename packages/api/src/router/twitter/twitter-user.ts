@@ -1,5 +1,6 @@
-import { and, desc, eq, ilike, sql } from "@torus-ts/db";
+import { and, eq, ilike, isNull, sql } from "@torus-ts/db";
 import {
+  parsedPredictionFeedbackSchema,
   parsedPredictionSchema,
   predictionSchema,
   scrapedTweetSchema,
@@ -153,7 +154,19 @@ export const twitterUserRouter = {
           verdictSchema,
           eq(verdictSchema.parsedPredictionId, parsedPredictionSchema.id),
         )
-        .where(eq(twitterUsersSchema.tracked, true))
+        .leftJoin(
+          parsedPredictionFeedbackSchema,
+          eq(
+            parsedPredictionFeedbackSchema.parsedPredictionId,
+            parsedPredictionSchema.id,
+          ),
+        )
+        .where(
+          and(
+            eq(twitterUsersSchema.tracked, true),
+            isNull(parsedPredictionFeedbackSchema.parsedPredictionId),
+          ),
+        )
         .groupBy(
           twitterUsersSchema.id,
           twitterUsersSchema.username,

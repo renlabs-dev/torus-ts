@@ -1,5 +1,6 @@
-import { and, desc, eq, sql } from "@torus-ts/db";
+import { and, desc, eq, isNull, sql } from "@torus-ts/db";
 import {
+  parsedPredictionFeedbackSchema,
   parsedPredictionSchema,
   predictionSchema,
   scrapedTweetSchema,
@@ -86,6 +87,13 @@ export const predictionRouter = {
           verdictSchema,
           eq(verdictSchema.parsedPredictionId, parsedPredictionSchema.id),
         )
+        .leftJoin(
+          parsedPredictionFeedbackSchema,
+          eq(
+            parsedPredictionFeedbackSchema.parsedPredictionId,
+            parsedPredictionSchema.id,
+          ),
+        )
         .where(
           and(
             eq(
@@ -93,6 +101,7 @@ export const predictionRouter = {
               username.toLowerCase(),
             ),
             eq(twitterUsersSchema.tracked, true),
+            isNull(parsedPredictionFeedbackSchema.parsedPredictionId),
           ),
         )
         .orderBy(desc(predictionSchema.createdAt))
@@ -169,7 +178,19 @@ export const predictionRouter = {
           verdictSchema,
           eq(verdictSchema.parsedPredictionId, parsedPredictionSchema.id),
         )
-        .where(eq(twitterUsersSchema.tracked, true))
+        .leftJoin(
+          parsedPredictionFeedbackSchema,
+          eq(
+            parsedPredictionFeedbackSchema.parsedPredictionId,
+            parsedPredictionSchema.id,
+          ),
+        )
+        .where(
+          and(
+            eq(twitterUsersSchema.tracked, true),
+            isNull(parsedPredictionFeedbackSchema.parsedPredictionId),
+          ),
+        )
         .orderBy(desc(predictionSchema.createdAt))
         .limit(limit)
         .offset(offset);
@@ -243,10 +264,18 @@ export const predictionRouter = {
           verdictSchema,
           eq(verdictSchema.parsedPredictionId, parsedPredictionSchema.id),
         )
+        .leftJoin(
+          parsedPredictionFeedbackSchema,
+          eq(
+            parsedPredictionFeedbackSchema.parsedPredictionId,
+            parsedPredictionSchema.id,
+          ),
+        )
         .where(
           and(
             eq(parsedPredictionSchema.topicId, topicId),
             eq(twitterUsersSchema.tracked, true),
+            isNull(parsedPredictionFeedbackSchema.parsedPredictionId),
           ),
         )
         .orderBy(desc(predictionSchema.createdAt))
