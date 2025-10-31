@@ -5,6 +5,7 @@ import {
   TabsList,
   TabsTrigger,
 } from "@torus-ts/ui/components/tabs";
+import { PageHeader } from "~/app/_components/page-header";
 import { FeedLegend } from "~/app/_components/user-profile/feed-legend";
 import { ProfileFeed } from "~/app/_components/user-profile/profile-feed";
 import { api } from "~/trpc/server";
@@ -28,22 +29,18 @@ export default async function FeedPage() {
   );
 
   return (
-    <div className="relative py-10">
+    <div className="relative pt-4">
       {/* Vertical borders spanning full height */}
       <div className="border-border pointer-events-none absolute inset-y-0 left-1/2 w-full max-w-screen-lg -translate-x-1/2 border-x" />
 
       {/* Header section */}
-      <div className="relative mx-auto max-w-screen-lg px-4">
-        <div className="pb-8">
-          <h1 className="text-3xl font-thin">Prediction Feed</h1>
-          <p className="text-muted-foreground mt-2">
-            View predictions from all tracked users
-          </p>
-        </div>
-      </div>
+      <PageHeader
+        title="Prediction Feed"
+        description="View predictions from all tracked users"
+      />
 
       {/* Full-width horizontal border */}
-      <div className="border-border relative my-6 border-t" />
+      <div className="border-border relative my-4 border-t" />
 
       {/* Legend */}
       <div className="relative mx-auto max-w-screen-lg px-4">
@@ -51,11 +48,11 @@ export default async function FeedPage() {
       </div>
 
       {/* Full-width horizontal border */}
-      <div className="border-border relative my-6 border-t" />
+      <div className="border-border relative my-4 border-t" />
 
       {/* Content section */}
       <div className="relative mx-auto max-w-screen-lg px-4">
-        <Card className="bg-background/80 backdrop-blur-lg">
+        <Card className="bg-background/80 plus-corners relative backdrop-blur-lg">
           <Tabs defaultValue="ongoing">
             <CardHeader className="pb-0">
               <TabsList className="bg-accent/60 grid w-full grid-cols-3">

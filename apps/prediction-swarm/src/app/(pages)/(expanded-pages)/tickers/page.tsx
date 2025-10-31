@@ -1,4 +1,5 @@
 import { Card } from "@torus-ts/ui/components/card";
+import { PageHeader } from "~/app/_components/page-header";
 import { api } from "~/trpc/server";
 import Link from "next/link";
 
@@ -6,21 +7,15 @@ export default async function TickersPage() {
   const tickers = await api.topic.getTickers();
 
   return (
-    <div className="relative py-10">
+    <div className="relative pt-4">
       {/* Vertical borders spanning full height */}
       <div className="border-border pointer-events-none absolute inset-y-0 left-1/2 w-full max-w-screen-lg -translate-x-1/2 border-x" />
 
       {/* Header section */}
-      <div className="relative mx-auto max-w-screen-lg px-4">
-        <div className="pb-8">
-          <h1 className="flex items-center gap-2 text-3xl font-thin">
-            Tickers
-          </h1>
-          <p className="text-muted-foreground mt-2">
-            Browse predictions by cryptocurrency ticker
-          </p>
-        </div>
-      </div>
+      <PageHeader
+        title="Tickers"
+        description="Browse predictions by cryptocurrency ticker"
+      />
 
       {/* Full-width horizontal border */}
       <div className="border-border relative my-6 border-t" />

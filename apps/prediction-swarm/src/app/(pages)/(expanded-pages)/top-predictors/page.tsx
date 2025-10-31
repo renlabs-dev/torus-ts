@@ -10,6 +10,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@torus-ts/ui/components/tooltip";
+import { PageHeader } from "~/app/_components/page-header";
 import { api } from "~/trpc/server";
 import { BadgeCheck, Info } from "lucide-react";
 import Link from "next/link";
@@ -21,54 +22,51 @@ export default async function TopPredictorsPage() {
   });
 
   return (
-    <div className="relative py-10">
+    <div className="relative pt-4">
       {/* Vertical borders spanning full height */}
       <div className="border-border pointer-events-none absolute inset-y-0 left-1/2 w-full max-w-screen-lg -translate-x-1/2 border-x" />
 
       {/* Header section */}
-      <div className="relative mx-auto max-w-screen-lg px-4">
-        <div className="pb-8">
-          <div className="flex items-center gap-2">
-            <h1 className="text-3xl font-thin">Top Predictors</h1>
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <button className="text-muted-foreground hover:text-foreground transition-colors">
-                    <Info className="h-5 w-5" />
-                  </button>
-                </TooltipTrigger>
-                <TooltipContent className="bg-background/80 max-w-sm text-white">
-                  <div className="space-y-2">
-                    <p className="font-semibold">Ranking Formula</p>
-                    <div className="font-mono text-xs">
-                      <p>score = (r / n) × log₁₀(n + 1)</p>
-                    </div>
-                    <div className="text-xs">
-                      <p>r = correct predictions</p>
-                      <p>w = wrong predictions</p>
-                      <p>n = r + w (total verdicted)</p>
-                    </div>
-                    <p className="text-xs">
-                      This rewards both accuracy and volume, preventing users
-                      with few predictions from dominating the leaderboard.
-                    </p>
-                    <p className="text-muted-foreground text-xs">
-                      p.s. if you think the math isn't mathing, hit us up, it
-                      was made by the front end guy.
-                    </p>
+
+      <PageHeader
+        title="Top Dogs"
+        description="Ranked by quality score (minimum 2 verdicted predictions)"
+        children={
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button className="text-muted-foreground hover:text-foreground transition-colors">
+                  <Info className="h-5 w-5" />
+                </button>
+              </TooltipTrigger>
+              <TooltipContent className="bg-background/80 max-w-sm text-white">
+                <div className="space-y-2">
+                  <p className="font-semibold">Ranking Formula</p>
+                  <div className="font-mono text-xs">
+                    <p>score = (r / n) × log₁₀(n + 1)</p>
                   </div>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-          </div>
-          <p className="text-muted-foreground mt-2">
-            Ranked by quality score (minimum 2 verdicted predictions)
-          </p>
-        </div>
-      </div>
+                  <div className="text-xs">
+                    <p>r = correct predictions</p>
+                    <p>w = wrong predictions</p>
+                    <p>n = r + w (total verdicted)</p>
+                  </div>
+                  <p className="text-xs">
+                    This rewards both accuracy and volume, preventing users with
+                    few predictions from dominating the leaderboard.
+                  </p>
+                  <p className="text-muted-foreground text-xs">
+                    p.s. if you think the math isn't mathing, hit us up, it was
+                    made by the front end guy.
+                  </p>
+                </div>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        }
+      />
 
       {/* Full-width horizontal border */}
-      <div className="border-border relative my-6 border-t" />
+      <div className="border-border relative my-4 border-t" />
 
       {/* Content section */}
       <div className="relative mx-auto max-w-screen-lg px-4">

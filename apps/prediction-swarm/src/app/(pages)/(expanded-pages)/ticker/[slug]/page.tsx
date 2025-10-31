@@ -5,10 +5,10 @@ import {
   TabsList,
   TabsTrigger,
 } from "@torus-ts/ui/components/tabs";
+import { PageHeader } from "~/app/_components/page-header";
 import { FeedLegend } from "~/app/_components/user-profile/feed-legend";
 import { ProfileFeed } from "~/app/_components/user-profile/profile-feed";
 import { api } from "~/trpc/server";
-import { TrendingUp } from "lucide-react";
 import { notFound } from "next/navigation";
 
 interface PageProps {
@@ -54,17 +54,10 @@ export default async function TickerPage({ params }: PageProps) {
       <div className="border-border pointer-events-none absolute inset-y-0 left-1/2 w-full max-w-screen-lg -translate-x-1/2 border-x" />
 
       {/* Header section */}
-      <div className="relative mx-auto max-w-screen-lg px-4">
-        <div className="pb-8">
-          <h1 className="flex items-center gap-2 text-3xl font-bold">
-            <TrendingUp className="text-primary h-8 w-8" />
-            {ticker.name.toUpperCase()} Predictions
-          </h1>
-          <p className="text-muted-foreground mt-2">
-            View all predictions related to {ticker.name.toUpperCase()}
-          </p>
-        </div>
-      </div>
+      <PageHeader
+        title={`${ticker.name.toUpperCase()} Predictions`}
+        description={`View all predictions related to ${ticker.name.toUpperCase()}`}
+      />
 
       {/* Full-width horizontal border */}
       <div className="border-border relative my-6 border-t" />
