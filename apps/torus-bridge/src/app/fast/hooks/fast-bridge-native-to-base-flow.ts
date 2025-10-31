@@ -418,9 +418,9 @@ export async function executeNativeToBaseStep2(
   } = params;
 
   // Get the correct token index for the Torus chain dynamically
-  const torusTokenIndex = warpCore.tokens
-    .map((t) => t.chainName)
-    .indexOf("torus");
+  const torusTokenIndex = warpCore.tokens.findIndex(
+    (t) => t.chainName === "torus" && t.symbol === "TORUS",
+  );
   if (torusTokenIndex < 0) {
     throw new Error("Torus token not found in warp configuration");
   }
@@ -545,8 +545,8 @@ export async function executeNativeToBaseStep2(
   const refetchResult = await refetchBaseBalance();
   const baseBaselineBalance = refetchResult.data?.value ?? 0n;
 
-  // Calculate expected increase based on max transfer amount
-  const baseExpectedIncrease = toNano(maxTransferAmountDecimal);
+  // Calculate expected increase after fees based on max transfer amount
+  const expectedIncreaseAfterFees = toNano(maxTransferAmountDecimal);
 
   // Use the max transfer amount instead of the original amount
   const [hyperlaneError, txHash2] = await tryAsync(
@@ -595,7 +595,7 @@ export async function executeNativeToBaseStep2(
   const pollingResult = await pollEvmBalance(
     refetchBaseBalance,
     baseBaselineBalance,
-    baseExpectedIncrease,
+    expectedIncreaseAfterFees,
     "Base",
     true, // anyChange = true
   );
