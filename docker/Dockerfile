@@ -66,15 +66,13 @@ WORKDIR /app
 
 # Copy root package.json and workspace config for pnpm
 COPY --from=builder /app/package.json ./package.json
-COPY --from=builder /app/pnpm-workspace.yaml ./pnpm-workspace.yaml 2>/dev/null || true
+COPY --from=builder /app/pnpm-workspace.yaml ./pnpm-workspace.yaml
 
 # Copy the app's package.json
 COPY --from=builder /app/apps/${APP_NAME}/package.json ./apps/${APP_NAME}/package.json
 
-# Copy build outputs (handles both Next.js and Node.js apps)
-COPY --from=builder /app/apps/${APP_NAME}/.next ./apps/${APP_NAME}/.next 2>/dev/null || true
-COPY --from=builder /app/apps/${APP_NAME}/dist ./apps/${APP_NAME}/dist 2>/dev/null || true
-COPY --from=builder /app/apps/${APP_NAME}/public ./apps/${APP_NAME}/public 2>/dev/null || true
+# Copy the entire built app directory (includes .next, dist, public, etc.)
+COPY --from=builder /app/apps/${APP_NAME} ./apps/${APP_NAME}
 
 # Copy workspace packages (your apps use @torus-ts/* and @torus-network/* packages)
 COPY --from=builder /app/packages ./packages
