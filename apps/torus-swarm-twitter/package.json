@@ -23,16 +23,17 @@
   "prettier": "@torus-ts/prettier-config",
   "dependencies": {
     "@t3-oss/env-core": "^0.11.1",
-    "@torus-ts/db": "workspace:*",
     "@torus-network/sdk": "workspace:*",
     "@torus-network/torus-utils": "workspace:*",
+    "@torus-ts/db": "workspace:*",
     "cors": "^2.8.5",
     "express": "^4.19.2",
+    "html-entities": "^2.6.0",
     "node-fetch": "^3.3.2",
     "superjson": "catalog:",
-    "zod": "catalog:",
     "tsafe": "catalog:",
-    "vitest": "catalog:"
+    "vitest": "catalog:",
+    "zod": "catalog:"
   },
   "devDependencies": {
     "@torus-ts/eslint-config": "workspace:*",
