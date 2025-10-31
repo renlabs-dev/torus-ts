@@ -14,6 +14,11 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from "@torus-ts/ui/components/empty";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@torus-ts/ui/components/popover";
 import type { inferProcedureOutput } from "@trpc/server";
 import dayjs from "dayjs";
 import {
@@ -21,6 +26,8 @@ import {
   CheckCircle2,
   ChevronLeft,
   ChevronRight,
+  ExternalLink,
+  MoreVertical,
   ScanSearch,
   TrendingUp,
   XCircle,
@@ -337,30 +344,124 @@ export function ProfileFeed({
                       <span className="text-muted-foreground text-xs sm:ml-auto md:text-sm">
                         {dayjs(tweet.tweetDate).format("M/D/YY h:mm A")}
                       </span>
-                      {/* Navigation Arrows - only show if multiple predictions */}
-                      {tweet.predictions.length > 1 && (
-                        <div className="flex items-center gap-1 border">
+                      {/* Actions: Navigation, External Link, More Info */}
+                      <div className="flex items-center gap-1">
+                        {/* Navigation Arrows - only show if multiple predictions */}
+                        {tweet.predictions.length > 1 && (
+                          <>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-6 w-6"
+                              onClick={() => handleNavigate(tweetId, "prev")}
+                            >
+                              <ChevronLeft className="h-4 w-4" />
+                            </Button>
+                            <span className="text-muted-foreground text-xs">
+                              {activeIndex + 1}/{tweet.predictions.length}
+                            </span>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-6 w-6"
+                              onClick={() => handleNavigate(tweetId, "next")}
+                            >
+                              <ChevronRight className="h-4 w-4" />
+                            </Button>
+                          </>
+                        )}
+
+                        {/* External Link to Tweet */}
+                        <Link
+                          href={`https://twitter.com/${tweet.username}/status/${tweet.tweetId}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
                           <Button
                             variant="ghost"
                             size="icon"
                             className="h-6 w-6"
-                            onClick={() => handleNavigate(tweetId, "prev")}
                           >
-                            <ChevronLeft className="h-4 w-4" />
+                            <ExternalLink className="h-4 w-4" />
                           </Button>
-                          <span className="text-muted-foreground text-xs">
-                            {activeIndex + 1}/{tweet.predictions.length}
-                          </span>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-6 w-6"
-                            onClick={() => handleNavigate(tweetId, "next")}
-                          >
-                            <ChevronRight className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      )}
+                        </Link>
+
+                        {/* More Info Popover */}
+                        <Popover>
+                          <PopoverTrigger asChild>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-6 w-6"
+                            >
+                              <MoreVertical className="h-4 w-4" />
+                            </Button>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-80" align="end">
+                            <div className="space-y-3">
+                              <h4 className="font-semibold">
+                                Prediction Details
+                              </h4>
+
+                              <div className="space-y-2 text-sm">
+                                <div>
+                                  <span className="text-muted-foreground">
+                                    Prediction ID:
+                                  </span>
+                                  <p className="font-mono text-xs">
+                                    {activePrediction.predictionId}
+                                  </p>
+                                </div>
+
+                                <div>
+                                  <span className="text-muted-foreground">
+                                    Parsed ID:
+                                  </span>
+                                  <p className="font-mono text-xs">
+                                    {activePrediction.parsedId}
+                                  </p>
+                                </div>
+
+                                <div>
+                                  <span className="text-muted-foreground">
+                                    Quality Score:
+                                  </span>
+                                  <p>
+                                    {activePrediction.predictionQuality}/100
+                                  </p>
+                                </div>
+
+                                <div>
+                                  <span className="text-muted-foreground">
+                                    Brief Rationale:
+                                  </span>
+                                  <p className="text-xs leading-relaxed">
+                                    {activePrediction.briefRationale}
+                                  </p>
+                                </div>
+
+                                <div>
+                                  <span className="text-muted-foreground">
+                                    Version:
+                                  </span>
+                                  <p>v{activePrediction.predictionVersion}</p>
+                                </div>
+
+                                {activePrediction.verdictId && (
+                                  <div>
+                                    <span className="text-muted-foreground">
+                                      Verdict ID:
+                                    </span>
+                                    <p className="font-mono text-xs">
+                                      {activePrediction.verdictId}
+                                    </p>
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          </PopoverContent>
+                        </Popover>
+                      </div>
                     </div>
 
                     <div className="mt-4 space-y-2 p-1">
