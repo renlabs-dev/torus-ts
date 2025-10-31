@@ -1,9 +1,15 @@
+import type { WarpCore } from "@hyperlane-xyz/sdk";
+import type { ProtocolType } from "@hyperlane-xyz/utils";
+import { toWei } from "@hyperlane-xyz/utils";
+import type { AccountInfo } from "@hyperlane-xyz/widgets";
+import { getAccountAddressAndPubKey } from "@hyperlane-xyz/widgets";
 import type { ApiPromise } from "@polkadot/api";
 import { transferAllowDeath } from "@torus-network/sdk/chain";
 import { convertH160ToSS58 } from "@torus-network/sdk/evm";
 import type { SS58Address } from "@torus-network/sdk/types";
 import { toNano } from "@torus-network/torus-utils/torus/token";
-import { tryAsync } from "@torus-network/torus-utils/try-catch";
+import { tryAsync, trySync } from "@torus-network/torus-utils/try-catch";
+import { getTokenByIndex } from "~/hooks/token";
 import type { SimpleBridgeTransaction } from "../_components/fast-bridge-types";
 import { SimpleBridgeStep } from "../_components/fast-bridge-types";
 import {
@@ -355,6 +361,10 @@ interface NativeToBaseStep2Params {
     amount: string;
     recipient: string;
   }) => Promise<string>;
+  /** WarpCore instance for Hyperlane operations */
+  warpCore: WarpCore;
+  /** Connected accounts for multi-protocol operations */
+  accounts: Record<ProtocolType, AccountInfo>;
   /** Function to refetch Base balance from the network, returns status and optional balance data */
   refetchBaseBalance: () => Promise<{
     status: string;
@@ -398,12 +408,22 @@ export async function executeNativeToBaseStep2(
     walletClient,
     switchChain,
     triggerHyperlaneTransfer,
+    warpCore,
+    accounts,
     refetchBaseBalance,
     refetchTorusEvmBalance,
     updateBridgeState,
     addTransaction,
     getExplorerUrl,
   } = params;
+
+  // Get the correct token index for the Torus chain dynamically
+  const torusTokenIndex = warpCore.tokens.findIndex(
+    (t) => t.chainName === "torus" && t.symbol === "TORUS",
+  );
+  if (torusTokenIndex < 0) {
+    throw new Error("Torus token not found in warp configuration");
+  }
 
   updateBridgeState({ step: SimpleBridgeStep.STEP_2_PREPARING });
   addTransaction({
@@ -414,13 +434,6 @@ export async function executeNativeToBaseStep2(
   });
 
   const actualChainId = await walletClient.getChainId();
-  console.log(
-    "Step 2 - Actual wallet chain:",
-    actualChainId,
-    "Target: Torus EVM (",
-    torusEvmChainId,
-    ")",
-  );
 
   if (actualChainId !== torusEvmChainId) {
     updateBridgeState({ step: SimpleBridgeStep.STEP_2_SWITCHING });
@@ -458,9 +471,6 @@ export async function executeNativeToBaseStep2(
       throwOnChainSwitchFailure(switchResult);
     }
 
-    console.log(
-      "Confirmed on Torus EVM chain, proceeding to Hyperlane transfer",
-    );
     addTransaction({
       step: 2,
       status: "SUCCESS",
@@ -478,17 +488,73 @@ export async function executeNativeToBaseStep2(
     message: "Signing transaction...",
   });
 
+  // Get the Torus token to create TokenAmount
+  const [tokenError, torusToken] = trySync(() =>
+    getTokenByIndex(warpCore, torusTokenIndex),
+  );
+  if (tokenError || !torusToken) {
+    throw new Error("Failed to get Torus token from warp configuration");
+  }
+
+  // Convert the user's requested amount to wei
+  const [amountWeiError, amountWei] = trySync(() =>
+    toWei(amount.trim(), torusToken.decimals),
+  );
+  if (amountWeiError) {
+    throw new Error("Failed to convert amount to wei");
+  }
+
+  // Create TokenAmount with the REQUESTED amount (not total balance)
+  const requestedTokenAmount = torusToken.amount(amountWei);
+
+  // Get sender address
+  const multiProvider = warpCore.multiProvider;
+  const [addressError, { address, publicKey } = {}] = trySync(() =>
+    getAccountAddressAndPubKey(multiProvider, "torus", accounts),
+  );
+  if (addressError || !address) {
+    throw new Error("Failed to get account address for Torus chain");
+  }
+
+  // Get public key (may be async)
+  const senderPubKey =
+    publicKey instanceof Promise ? await publicKey : publicKey;
+
+  // Calculate maximum transferable amount from the requested amount
+  const [maxAmountError, maxTransferAmount] = await tryAsync(
+    warpCore.getMaxTransferAmount({
+      balance: requestedTokenAmount,
+      destination: "base",
+      sender: address,
+      senderPubKey,
+    }),
+  );
+
+  if (maxAmountError !== undefined) {
+    throw new Error(
+      `Failed to calculate max transfer amount: ${maxAmountError.message}`,
+    );
+  }
+
+  // Convert maxTransferAmount to decimal string
+  const maxTransferAmountDecimal = String(
+    maxTransferAmount.getDecimalFormattedAmount(),
+  );
+
   // Capture baseline balance BEFORE sending transaction
   const refetchResult = await refetchBaseBalance();
   const baseBaselineBalance = refetchResult.data?.value ?? 0n;
-  const baseExpectedIncrease = toNano(amount.trim());
 
+  // Calculate expected increase after fees based on max transfer amount
+  const expectedIncreaseAfterFees = toNano(maxTransferAmountDecimal);
+
+  // Use the max transfer amount instead of the original amount
   const [hyperlaneError, txHash2] = await tryAsync(
     triggerHyperlaneTransfer({
       origin: "torus",
       destination: "base",
-      tokenIndex: 1,
-      amount,
+      tokenIndex: torusTokenIndex,
+      amount: maxTransferAmountDecimal,
       recipient: evmAddress,
     }),
   );
@@ -529,7 +595,7 @@ export async function executeNativeToBaseStep2(
   const pollingResult = await pollEvmBalance(
     refetchBaseBalance,
     baseBaselineBalance,
-    baseExpectedIncrease,
+    expectedIncreaseAfterFees,
     "Base",
     true, // anyChange = true
   );

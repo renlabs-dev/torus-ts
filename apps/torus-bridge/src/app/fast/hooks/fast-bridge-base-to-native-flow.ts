@@ -190,12 +190,20 @@ export async function executeBaseToNativeStep1(
   const baselineBalance = torusEvmBalance?.value ?? 0n;
   const expectedIncrease = toNano(amount.trim());
 
+  // Get the correct token index for the Base chain dynamically
+  const baseTokenIndex = warpCore.tokens.findIndex(
+    (t) => t.chainName === "base" && t.symbol === "TORUS",
+  );
+  if (baseTokenIndex < 0) {
+    throw new Error("Base token not found in warp configuration");
+  }
+
   const [hyperlaneError, step1TxHash] = await tryAsync(
     triggerHyperlaneTransfer({
       origin: "base",
       destination: "torus",
-      tokenIndex: 0,
-      amount,
+      tokenIndex: baseTokenIndex,
+      amount: amount.trim(),
       recipient: evmAddress,
     }),
   );
