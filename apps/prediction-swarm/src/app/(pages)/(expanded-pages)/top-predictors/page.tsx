@@ -35,7 +35,7 @@ export default async function TopPredictorsPage() {
                 <TooltipTrigger asChild>
                   <button className="text-muted-foreground hover:text-foreground transition-colors">
                     <Info className="h-5 w-5" />
-                  </button>
+                  </button
                 </TooltipTrigger>
                 <TooltipContent className="bg-background/80 max-w-sm text-white">
                   <div className="space-y-2">
@@ -184,7 +184,7 @@ export default async function TopPredictorsPage() {
       </div>
 
       {/* Bottom border */}
-      <div className="border-border relative mt-10 border-t" />
+      <div className="border-border relative mt-4 border-t" />
     </div>
   );
 }
