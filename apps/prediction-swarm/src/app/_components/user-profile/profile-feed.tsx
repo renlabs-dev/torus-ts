@@ -39,60 +39,123 @@ function highlightTweetText(
   goal: PredictionData["goal"],
   timeframe: PredictionData["timeframe"],
 ): React.ReactNode {
-  // Collect all slices with their types
-  const slices: {
-    start: number;
-    end: number;
-    type: "goal" | "timeframe";
-  }[] = [
-    ...goal.map((s) => ({ start: s.start, end: s.end, type: "goal" as const })),
-    ...timeframe.map((s) => ({
-      start: s.start,
-      end: s.end,
-      type: "timeframe" as const,
-    })),
-  ];
+  // Collect all position markers
+  const markers: {
+    pos: number;
+    type: "start" | "end";
+    style: "goal" | "timeframe";
+  }[] = [];
 
-  // Sort by start position
-  slices.sort((a, b) => a.start - b.start);
+  goal.forEach((s) => {
+    markers.push({ pos: s.start, type: "start", style: "goal" });
+    markers.push({ pos: s.end, type: "end", style: "goal" });
+  });
+
+  timeframe.forEach((s) => {
+    markers.push({ pos: s.start, type: "start", style: "timeframe" });
+    markers.push({ pos: s.end, type: "end", style: "timeframe" });
+  });
+
+  // Sort by position, then by type (ends before starts at same position)
+  markers.sort((a, b) => {
+    if (a.pos !== b.pos) return a.pos - b.pos;
+    if (a.type === "end" && b.type === "start") return -1;
+    if (a.type === "start" && b.type === "end") return 1;
+    return 0;
+  });
 
   const parts: React.ReactNode[] = [];
   let lastIndex = 0;
+  let inGoal = false;
 
-  slices.forEach((slice, idx) => {
-    // Add text before this slice
-    if (slice.start > lastIndex) {
-      parts.push(tweetText.substring(lastIndex, slice.start));
+  markers.forEach((marker, idx) => {
+    // Render text up to this position
+    if (marker.pos > lastIndex) {
+      const text = tweetText.substring(lastIndex, marker.pos);
+
+      if (inGoal) {
+        parts.push(
+          <span
+            key={`text-${idx}`}
+            className="bg-primary/20 text-primary px-1 font-medium"
+          >
+            {text}
+          </span>,
+        );
+      } else {
+        parts.push(text);
+      }
+      lastIndex = marker.pos;
     }
 
-    // Add highlighted slice
-    const sliceText = tweetText.substring(slice.start, slice.end);
-    if (slice.type === "goal") {
-      parts.push(
-        <span
-          key={`goal-${idx}`}
-          className="bg-primary/20 text-primary rounded px-1 font-medium"
-        >
-          {sliceText}
-        </span>,
-      );
+    // Handle marker
+    if (marker.style === "timeframe") {
+      if (marker.type === "start") {
+        const bracket = (
+          <span key={`bracket-open-${idx}`} className="font-bold text-blue-600">
+            [
+          </span>
+        );
+        if (inGoal) {
+          parts.push(
+            <span
+              className="bg-primary/20 text-primary"
+              key={`bracket-goal-${idx}`}
+            >
+              {bracket}
+            </span>,
+          );
+        } else {
+          parts.push(bracket);
+        }
+      } else {
+        const bracket = (
+          <span
+            key={`bracket-close-${idx}`}
+            className="font-bold text-blue-600"
+          >
+            ]
+          </span>
+        );
+        if (inGoal) {
+          parts.push(
+            <span
+              className="bg-primary/20 text-primary"
+              key={`bracket-goal-close-${idx}`}
+            >
+              {bracket}
+            </span>,
+          );
+        } else {
+          parts.push(bracket);
+        }
+      }
     } else {
-      parts.push(
-        <span
-          key={`timeframe-${idx}`}
-          className="rounded bg-blue-500/20 px-1 font-medium text-blue-600"
-        >
-          {sliceText}
-        </span>,
-      );
+      // goal marker
+      if (marker.type === "start") {
+        inGoal = true;
+      } else {
+        inGoal = false;
+      }
     }
-
-    lastIndex = slice.end;
   });
 
   // Add remaining text
   if (lastIndex < tweetText.length) {
-    parts.push(tweetText.substring(lastIndex));
+    const text = tweetText.substring(lastIndex);
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+    if (inGoal) {
+      parts.push(
+        <span
+          key="final"
+          className="bg-primary/20 text-primary rounded px-1 font-medium"
+        >
+          {text}
+        </span>,
+      );
+    } else {
+      parts.push(text);
+    }
   }
 
   return parts;
