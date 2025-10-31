@@ -1,3 +1,4 @@
+import { FeedLegend } from "~/app/_components/user-profile/feed-legend";
 import ProfileContent from "~/app/_components/user-profile/profile-content";
 import ProfileHeader from "~/app/_components/user-profile/profile-header";
 import { api } from "~/trpc/server";
@@ -28,6 +29,10 @@ export default async function Page({ params }: PageProps) {
       <div className="border-border relative my-4 border-t" />
       <div className="relative mx-auto max-w-screen-lg px-4">
         <ProfileHeader user={user} predictions={predictions} />
+      </div>
+      <div className="border-border relative my-4 border-t" />
+      <div className="relative mx-auto max-w-screen-lg px-4">
+        <FeedLegend />
       </div>
       <div className="border-border relative my-4 border-t" />
       <div className="relative mx-auto max-w-screen-lg px-4">

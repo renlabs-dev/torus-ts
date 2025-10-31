@@ -5,6 +5,7 @@ import {
   TabsList,
   TabsTrigger,
 } from "@torus-ts/ui/components/tabs";
+import { FeedLegend } from "~/app/_components/user-profile/feed-legend";
 import { ProfileFeed } from "~/app/_components/user-profile/profile-feed";
 import { api } from "~/trpc/server";
 import { TrendingUp } from "lucide-react";
@@ -63,6 +64,14 @@ export default async function TickerPage({ params }: PageProps) {
             View all predictions related to {ticker.name.toUpperCase()}
           </p>
         </div>
+      </div>
+
+      {/* Full-width horizontal border */}
+      <div className="border-border relative my-6 border-t" />
+
+      {/* Legend */}
+      <div className="relative mx-auto max-w-screen-lg px-4">
+        <FeedLegend />
       </div>
 
       {/* Full-width horizontal border */}
