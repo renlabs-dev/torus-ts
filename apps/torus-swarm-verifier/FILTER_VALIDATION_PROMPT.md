@@ -64,9 +64,25 @@ Return ONLY valid JSON (no markdown fences):
 {
   "context": "Brief summary of what the thread is about and what the author was saying",
   "is_valid": true | false,
+  "failure_cause": "negation" | "sarcasm" | "conditional" | "quoting_others" | "heavy_hedging" | "future_timeframe" | "other" | null,
+  "confidence": 0.95,
   "reasoning": "Explanation of why this is or isn't a valid prediction"
 }
 ```
+
+**Fields:**
+- `context`: Brief summary of the thread and what the author was saying
+- `is_valid`: Boolean indicating if this is a valid prediction
+- `failure_cause`: Category of failure (null if is_valid is true). Must be one of:
+  - `"negation"`: Prediction is negated ("I don't think", "won't", "unlikely")
+  - `"sarcasm"`: Sarcastic or joking tone ("lol", "lmao", emojis)
+  - `"conditional"`: Conditional prediction ("if X happens", "assuming Y")
+  - `"quoting_others"`: Author is quoting someone else's view
+  - `"heavy_hedging"`: Heavily hedged ("maybe", "possibly", "could")
+  - `"future_timeframe"`: Prediction hasn't matured yet (end_utc > current_date)
+  - `"other"`: Other disqualifying factors not covered above
+- `confidence`: Confidence score from 0.0 to 1.0 indicating how certain the validation is
+- `reasoning`: Human-readable explanation
 
 ## Examples
 
@@ -97,6 +113,8 @@ Return ONLY valid JSON (no markdown fences):
 {
   "context": "Author is making a confident price prediction for Bitcoin reaching 100k by end of Q1 2025.",
   "is_valid": true,
+  "failure_cause": null,
+  "confidence": 0.98,
   "reasoning": "Clear, unconditional prediction with specific target and deadline. No hedging, sarcasm, or conditions. Timeframe has passed (ended 2025-03-31), so it's mature for verification."
 }
 ```
@@ -126,6 +144,8 @@ Return ONLY valid JSON (no markdown fences):
 {
   "context": "Author is expressing doubt that Bitcoin will reach 100k by end of Q1. This is a negative prediction.",
   "is_valid": false,
+  "failure_cause": "negation",
+  "confidence": 0.99,
   "reasoning": "Author explicitly stated 'I don't think' which negates the prediction. The filter removed the negation."
 }
 ```
@@ -155,6 +175,8 @@ Return ONLY valid JSON (no markdown fences):
 {
   "context": "Author is sarcastically mocking the idea that Bitcoin could reach 100k in such a short timeframe.",
   "is_valid": false,
+  "failure_cause": "sarcasm",
+  "confidence": 0.97,
   "reasoning": "Clear sarcasm indicators: 'totally', 'lmaooo', clown emoji, and unrealistic timeframe. This is a joke, not a serious prediction."
 }
 ```
@@ -184,6 +206,8 @@ Return ONLY valid JSON (no markdown fences):
 {
   "context": "Author is making a conditional prediction based on ETF approval.",
   "is_valid": false,
+  "failure_cause": "conditional",
+  "confidence": 0.96,
   "reasoning": "Prediction is conditional on ETF approval. Filter removed the 'if' clause to make it appear unconditional."
 }
 ```
@@ -213,6 +237,8 @@ Return ONLY valid JSON (no markdown fences):
 {
   "context": "Author is making a confident price prediction for Bitcoin reaching 100k by end of 2026.",
   "is_valid": false,
+  "failure_cause": "future_timeframe",
+  "confidence": 1.0,
   "reasoning": "While this is a valid prediction, the timeframe ends on 2026-12-31 which is after the current date of 2025-01-20. Prediction has not matured yet and cannot be verified."
 }
 ```

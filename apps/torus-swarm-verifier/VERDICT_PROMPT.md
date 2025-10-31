@@ -53,6 +53,7 @@ Return ONLY valid JSON (no markdown fences):
 {
   "valid": true,
   "verdict": true,
+  "confidence": 0.95,
   "reasoning": "Brief explanation of why the prediction came true or false, citing specific sources and dates"
 }
 ```
@@ -61,6 +62,7 @@ Return ONLY valid JSON (no markdown fences):
 
 - `valid`: Boolean indicating if this was a legitimate prediction (true) or invalid/news (false)
 - `verdict`: Boolean indicating if the prediction came true (true) or false (false). Only meaningful when valid=true.
+- `confidence`: Confidence score from 0.0 to 1.0 indicating certainty in the verdict determination
 - `reasoning`: Explanation with sources and dates
 
 **When to set valid=false:**
@@ -92,6 +94,7 @@ Return ONLY valid JSON (no markdown fences):
 {
   "valid": true,
   "verdict": true,
+  "confidence": 0.98,
   "reasoning": "According to CoinGecko, Bitcoin reached $102,450 on March 28, 2025, which is within the timeframe and exceeds the $100k target."
 }
 ```
@@ -118,6 +121,7 @@ Return ONLY valid JSON (no markdown fences):
 {
   "valid": true,
   "verdict": false,
+  "confidence": 0.95,
   "reasoning": "Bitcoin peaked at $87,300 on March 31, 2025 according to market data, falling short of the $100k target."
 }
 ```
@@ -144,6 +148,7 @@ Return ONLY valid JSON (no markdown fences):
 {
   "valid": true,
   "verdict": false,
+  "confidence": 0.97,
   "reasoning": "Bitcoin reached $102,000 on April 3, 2025, which is after the deadline of March 31, 2025. The prediction failed."
 }
 ```
@@ -170,6 +175,7 @@ Return ONLY valid JSON (no markdown fences):
 {
   "valid": true,
   "verdict": false,
+  "confidence": 0.70,
   "reasoning": "Unable to find reliable price data for XYZ token during the specified timeframe. Insufficient evidence to verify the prediction."
 }
 ```
@@ -196,6 +202,7 @@ Return ONLY valid JSON (no markdown fences):
 {
   "valid": false,
   "verdict": false,
+  "confidence": 0.99,
   "reasoning": "Bitcoin reached $100,000 on January 12, 2025 according to CoinGecko, which is BEFORE the prediction was made on January 15, 2025. This is not a prediction but rather news reporting or commentary on an event that already happened. Prediction is invalid."
 }
 ```
@@ -222,6 +229,7 @@ Return ONLY valid JSON (no markdown fences):
 {
   "valid": false,
   "verdict": false,
+  "confidence": 0.98,
   "reasoning": "Microsoft announced the acquisition of OpenAI on February 8, 2025 according to Reuters and Bloomberg. The tweet was made on February 10, 2025, which is AFTER the announcement. This is news commentary, not a prediction. Prediction is invalid."
 }
 ```
@@ -248,6 +256,7 @@ Return ONLY valid JSON (no markdown fences):
 {
   "valid": true,
   "verdict": true,
+  "confidence": 0.96,
   "reasoning": "Verified that ETH was trading at $3,200 when the prediction was made on December 1, 2024. ETH reached $5,100 on March 15, 2025 according to CoinGecko, which is within the timeframe. This was a genuine forward-looking prediction that came true."
 }
 ```

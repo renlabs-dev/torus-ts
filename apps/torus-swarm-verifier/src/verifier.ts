@@ -1,6 +1,7 @@
 import { AsyncLocalStorage } from "node:async_hooks";
 import type { DB, Transaction } from "@torus-ts/db/client";
 import {
+  parsedPredictionDetailsSchema,
   parsedPredictionFeedbackSchema,
   parsedPredictionSchema,
   scrapedTweetSchema,
@@ -82,12 +83,57 @@ interface TimeframeExtractionResult {
 }
 
 /**
+ * Slice validation failure reasons
+ */
+type SliceValidationFailureCause =
+  | "empty_slices" // No slices provided
+  | "missing_tweet" // Slice references a tweet that doesn't exist
+  | "negative_indices" // Start or end index is negative
+  | "invalid_range" // Start >= end (inverted or zero-length range)
+  | "slice_too_short" // Slice length < 2 characters
+  | "out_of_bounds"; // End index exceeds tweet text length
+
+/**
+ * Result from slice validation
+ */
+interface SliceValidationResult {
+  valid: boolean;
+  failureCause?: SliceValidationFailureCause;
+  message?: string;
+}
+
+/**
+ * Filter validation failure reasons
+ */
+type FilterValidationFailureCause =
+  | "negation"
+  | "sarcasm"
+  | "conditional"
+  | "quoting_others"
+  | "heavy_hedging"
+  | "future_timeframe"
+  | "other";
+
+/**
  * Filter validation response
  */
 interface FilterValidationResult {
   context: string;
   is_valid: boolean;
+  failure_cause: FilterValidationFailureCause | null;
+  confidence: number;
   reasoning: string;
+}
+
+/**
+ * URL citation from OpenRouter web search
+ */
+interface UrlCitation {
+  url: string;
+  title?: string;
+  content?: string;
+  start_index?: number;
+  end_index?: number;
 }
 
 /**
@@ -96,7 +142,9 @@ interface FilterValidationResult {
 interface VerdictResult {
   valid: boolean;
   verdict: boolean;
+  confidence: number;
   reasoning: string;
+  sources?: UrlCitation[]; // Extracted from OpenRouter annotations
 }
 
 /**
@@ -180,12 +228,34 @@ const FILTER_VALIDATION_SCHEMA = {
       type: "boolean",
       description: "Whether this is a valid prediction that should be verified",
     },
+    failure_cause: {
+      type: ["string", "null"],
+      enum: [
+        "negation",
+        "sarcasm",
+        "conditional",
+        "quoting_others",
+        "heavy_hedging",
+        "future_timeframe",
+        "other",
+        null,
+      ],
+      description:
+        "Category of failure (null if is_valid is true). Negation: prediction is negated. Sarcasm: sarcastic/joking tone. Conditional: conditional prediction. Quoting_others: quoting someone else. Heavy_hedging: heavily hedged. Future_timeframe: prediction hasn't matured yet. Other: other disqualifying factors.",
+    },
+    confidence: {
+      type: "number",
+      minimum: 0,
+      maximum: 1,
+      description:
+        "Confidence score from 0.0 to 1.0 indicating how certain the validation is",
+    },
     reasoning: {
       type: "string",
       description: "Explanation of why this is or isn't a valid prediction",
     },
   },
-  required: ["context", "is_valid", "reasoning"],
+  required: ["context", "is_valid", "failure_cause", "confidence", "reasoning"],
   additionalProperties: false,
 } as const;
 
@@ -195,9 +265,21 @@ const FILTER_VALIDATION_SCHEMA = {
 const VERDICT_SCHEMA = {
   type: "object",
   properties: {
+    valid: {
+      type: "boolean",
+      description:
+        "Whether this was a legitimate prediction (true) or invalid/news (false)",
+    },
     verdict: {
       type: "boolean",
       description: "Whether the prediction came true",
+    },
+    confidence: {
+      type: "number",
+      minimum: 0,
+      maximum: 1,
+      description:
+        "Confidence score from 0.0 to 1.0 indicating certainty in the verdict determination",
     },
     reasoning: {
       type: "string",
@@ -205,7 +287,7 @@ const VERDICT_SCHEMA = {
         "Brief explanation of why the prediction came true or false, citing specific sources and dates",
     },
   },
-  required: ["verdict", "reasoning"],
+  required: ["valid", "verdict", "confidence", "reasoning"],
   additionalProperties: false,
 } as const;
 
@@ -375,17 +457,146 @@ export class PredictionVerifier {
     parsedPredictionId: string,
     validationStep: string,
     reason: string,
+    failureCause?: string | null,
   ): Promise<void> {
     await tx.insert(parsedPredictionFeedbackSchema).values({
       parsedPredictionId,
       validationStep,
+      failureCause: failureCause ?? undefined,
       reason,
     });
 
     logInfo("Stored prediction feedback", {
       parsedPredictionId,
       validationStep,
+      failureCause: failureCause ?? "none",
       reason: reason.substring(0, 100),
+    });
+  }
+
+  /**
+   * Stores timeframe extraction results to parsed_prediction_details.
+   * Uses upsert to handle incremental updates.
+   */
+  private async storeTimeframeDetails(
+    tx: Transaction,
+    parsedPredictionId: string,
+    timeframeResult: TimeframeExtractionResult,
+  ): Promise<void> {
+    await tx
+      .insert(parsedPredictionDetailsSchema)
+      .values({
+        parsedPredictionId,
+        timeframeStatus: timeframeResult.timeframe_status,
+        timeframeStartUtc: timeframeResult.start_utc
+          ? new Date(timeframeResult.start_utc)
+          : undefined,
+        timeframeEndUtc: timeframeResult.end_utc
+          ? new Date(timeframeResult.end_utc)
+          : undefined,
+        timeframePrecision: timeframeResult.precision,
+        timeframeReasoning: timeframeResult.reasoning,
+        timeframeAssumptions: timeframeResult.assumptions,
+        timeframeConfidence: timeframeResult.confidence.toString(),
+      })
+      .onConflictDoUpdate({
+        target: parsedPredictionDetailsSchema.parsedPredictionId,
+        set: {
+          timeframeStatus: timeframeResult.timeframe_status,
+          timeframeStartUtc: timeframeResult.start_utc
+            ? new Date(timeframeResult.start_utc)
+            : undefined,
+          timeframeEndUtc: timeframeResult.end_utc
+            ? new Date(timeframeResult.end_utc)
+            : undefined,
+          timeframePrecision: timeframeResult.precision,
+          timeframeReasoning: timeframeResult.reasoning,
+          timeframeAssumptions: timeframeResult.assumptions,
+          timeframeConfidence: timeframeResult.confidence.toString(),
+          updatedAt: new Date(),
+        },
+      });
+
+    logInfo("Stored timeframe details", {
+      parsedPredictionId,
+      status: timeframeResult.timeframe_status,
+      startUtc: timeframeResult.start_utc,
+      endUtc: timeframeResult.end_utc,
+    });
+  }
+
+  /**
+   * Stores filter validation context to parsed_prediction_details.
+   * Uses upsert to handle incremental updates.
+   */
+  private async storeFilterValidationContext(
+    tx: Transaction,
+    parsedPredictionId: string,
+    validationResult: FilterValidationResult,
+  ): Promise<void> {
+    await tx
+      .insert(parsedPredictionDetailsSchema)
+      .values({
+        parsedPredictionId,
+        predictionContext: validationResult.context,
+        filterValidationConfidence: validationResult.confidence.toString(),
+        filterValidationReasoning: validationResult.reasoning,
+      })
+      .onConflictDoUpdate({
+        target: parsedPredictionDetailsSchema.parsedPredictionId,
+        set: {
+          predictionContext: validationResult.context,
+          filterValidationConfidence: validationResult.confidence.toString(),
+          filterValidationReasoning: validationResult.reasoning,
+          updatedAt: new Date(),
+        },
+      });
+
+    logInfo("Stored filter validation context", {
+      parsedPredictionId,
+      contextLength: validationResult.context.length,
+      confidence: validationResult.confidence,
+    });
+  }
+
+  /**
+   * Stores verdict details (confidence and sources) to parsed_prediction_details.
+   * Uses upsert to handle incremental updates.
+   */
+  private async storeVerdictDetails(
+    tx: Transaction,
+    parsedPredictionId: string,
+    verdictResult: VerdictResult,
+  ): Promise<void> {
+    const sourcesData =
+      verdictResult.sources && verdictResult.sources.length > 0
+        ? verdictResult.sources.map((s) => ({
+            url: s.url,
+            title: s.title,
+            content: s.content,
+          }))
+        : undefined;
+
+    await tx
+      .insert(parsedPredictionDetailsSchema)
+      .values({
+        parsedPredictionId,
+        verdictConfidence: verdictResult.confidence.toString(),
+        verdictSources: sourcesData,
+      })
+      .onConflictDoUpdate({
+        target: parsedPredictionDetailsSchema.parsedPredictionId,
+        set: {
+          verdictConfidence: verdictResult.confidence.toString(),
+          verdictSources: sourcesData,
+          updatedAt: new Date(),
+        },
+      });
+
+    logInfo("Stored verdict details", {
+      parsedPredictionId,
+      confidence: verdictResult.confidence,
+      sourcesCount: verdictResult.sources?.length ?? 0,
     });
   }
 
@@ -458,7 +669,12 @@ export class PredictionVerifier {
           temperature: 0.1,
           plugins: [{ id: "web" }],
           response_format: {
-            type: "json_object",
+            type: "json_schema",
+            json_schema: {
+              name: "verdict_generation",
+              strict: true,
+              schema: VERDICT_SCHEMA,
+            },
           },
         }),
       },
@@ -475,16 +691,36 @@ export class PredictionVerifier {
       choices: Array<{
         message: {
           content: string;
+          annotations?: Array<{
+            type: "url_citation";
+            url_citation: {
+              url: string;
+              title?: string;
+              content?: string;
+              start_index?: number;
+              end_index?: number;
+            };
+          }>;
         };
       }>;
     };
 
-    const jsonText = result.choices[0]?.message?.content;
-    if (!jsonText) {
+    const message = result.choices[0]?.message;
+    if (!message?.content) {
       throw new Error("No response from OpenRouter API");
     }
 
-    return JSON.parse(jsonText) as VerdictResult;
+    const verdictResult = JSON.parse(message.content) as VerdictResult;
+
+    const sources: UrlCitation[] | undefined =
+      message.annotations
+        ?.filter((ann) => ann.type === "url_citation")
+        .map((ann) => ann.url_citation) ?? undefined;
+
+    return {
+      ...verdictResult,
+      sources: sources && sources.length > 0 ? sources : undefined,
+    };
   }
 
   /**
@@ -555,7 +791,12 @@ export class PredictionVerifier {
           ],
           temperature: 0.1,
           response_format: {
-            type: "json_object",
+            type: "json_schema",
+            json_schema: {
+              name: "filter_validation",
+              strict: true,
+              schema: FILTER_VALIDATION_SCHEMA,
+            },
           },
         }),
       },
@@ -636,16 +877,13 @@ export class PredictionVerifier {
             },
           ],
           temperature: 0.1,
-          // response_format: {
-          //   type: "json_schema",
-          //   json_schema: {
-          //     name: "timeframe_extraction",
-          //     strict: true,
-          //     schema: TIMEFRAME_EXTRACTION_SCHEMA,
-          //   },
-          // },
           response_format: {
-            type: "json_object",
+            type: "json_schema",
+            json_schema: {
+              name: "timeframe_extraction",
+              strict: true,
+              schema: TIMEFRAME_EXTRACTION_SCHEMA,
+            },
           },
         }),
       },
@@ -682,10 +920,15 @@ export class PredictionVerifier {
     slices: PostSlice[],
     tweetMap: Map<bigint, PredictionTweet>,
     sliceType: string,
-  ): boolean {
+  ): SliceValidationResult {
     if (slices.length === 0) {
-      logInfo(`${sliceType} slices are empty`);
-      return false;
+      const message = `${sliceType} slices are empty`;
+      logInfo(message);
+      return {
+        valid: false,
+        failureCause: "empty_slices",
+        message,
+      };
     }
 
     for (const slice of slices) {
@@ -693,50 +936,58 @@ export class PredictionVerifier {
       const tweet = tweetMap.get(BigInt(tweetId));
 
       if (!tweet) {
-        logInfo(`${sliceType} slice references missing tweet`, {
-          tweetId,
-        });
-        return false;
+        const message = `${sliceType} slice references missing tweet ${tweetId}`;
+        logInfo(message);
+        return {
+          valid: false,
+          failureCause: "missing_tweet",
+          message,
+        };
       }
 
       if (slice.start < 0 || slice.end < 0) {
-        logInfo(`${sliceType} slice has negative indices`, {
-          tweetId,
-          start: slice.start,
-          end: slice.end,
-        });
-        return false;
+        const message = `${sliceType} slice has negative indices (start: ${slice.start}, end: ${slice.end})`;
+        logInfo(message, { tweetId });
+        return {
+          valid: false,
+          failureCause: "negative_indices",
+          message,
+        };
       }
 
       if (slice.start >= slice.end) {
-        logInfo(`${sliceType} slice has invalid range`, {
-          tweetId,
-          start: slice.start,
-          end: slice.end,
-        });
-        return false;
+        const message = `${sliceType} slice has invalid range (start: ${slice.start}, end: ${slice.end})`;
+        logInfo(message, { tweetId });
+        return {
+          valid: false,
+          failureCause: "invalid_range",
+          message,
+        };
       }
 
       const sliceLength = slice.end - slice.start;
       if (sliceLength < 2) {
-        logInfo(`${sliceType} slice too short (minimum 2 characters)`, {
-          tweetId,
-          length: sliceLength,
-        });
-        return false;
+        const message = `${sliceType} slice too short (${sliceLength} characters, minimum 2)`;
+        logInfo(message, { tweetId });
+        return {
+          valid: false,
+          failureCause: "slice_too_short",
+          message,
+        };
       }
 
       if (slice.end > tweet.text.length) {
-        logInfo(`${sliceType} slice end index out of bounds`, {
-          tweetId,
-          end: slice.end,
-          textLength: tweet.text.length,
-        });
-        return false;
+        const message = `${sliceType} slice end index ${slice.end} exceeds tweet text length ${tweet.text.length}`;
+        logInfo(message, { tweetId });
+        return {
+          valid: false,
+          failureCause: "out_of_bounds",
+          message,
+        };
       }
     }
 
-    return true;
+    return { valid: true };
   }
 
   /**
@@ -839,24 +1090,36 @@ export class PredictionVerifier {
     const goal = prediction.goal as PostSlice[];
     const timeframe = prediction.timeframe as PostSlice[];
 
-    if (!this.validatePostSlices(goal, tweetMap, "Goal")) {
-      logInfo("Goal slices validation failed");
+    const goalValidation = this.validatePostSlices(goal, tweetMap, "Goal");
+    if (!goalValidation.valid) {
+      logInfo("Goal slices validation failed", {
+        failureCause: goalValidation.failureCause,
+      });
       await this.storeFeedback(
         tx,
         prediction.id,
         "slice_validation",
-        "Goal slices validation failed: invalid structure or references",
+        goalValidation.message ?? "Goal slices validation failed",
+        goalValidation.failureCause,
       );
       return true;
     }
 
-    if (!this.validatePostSlices(timeframe, tweetMap, "Timeframe")) {
-      logInfo("Timeframe slices validation failed");
+    const timeframeValidation = this.validatePostSlices(
+      timeframe,
+      tweetMap,
+      "Timeframe",
+    );
+    if (!timeframeValidation.valid) {
+      logInfo("Timeframe slices validation failed", {
+        failureCause: timeframeValidation.failureCause,
+      });
       await this.storeFeedback(
         tx,
         prediction.id,
         "slice_validation",
-        "Timeframe slices validation failed: invalid structure or references",
+        timeframeValidation.message ?? "Timeframe slices validation failed",
+        timeframeValidation.failureCause,
       );
       return true;
     }
@@ -893,6 +1156,8 @@ export class PredictionVerifier {
       confidence: timeframeResult.confidence,
     });
 
+    await this.storeTimeframeDetails(tx, prediction.id, timeframeResult);
+
     const validationResult = await this.validateFilterExtraction(
       goalText,
       timeframeText,
@@ -905,10 +1170,18 @@ export class PredictionVerifier {
     logInfo("Filter validation completed", {
       isValid: validationResult.is_valid,
       context: validationResult.context.substring(0, 100),
+      confidence: validationResult.confidence,
     });
+
+    await this.storeFilterValidationContext(
+      tx,
+      prediction.id,
+      validationResult,
+    );
 
     if (!validationResult.is_valid) {
       logInfo("Prediction marked as invalid by filter validation", {
+        failureCause: validationResult.failure_cause,
         reasoning: validationResult.reasoning,
       });
       await this.storeFeedback(
@@ -916,6 +1189,7 @@ export class PredictionVerifier {
         prediction.id,
         "filter_validation",
         validationResult.reasoning,
+        validationResult.failure_cause,
       );
       return true;
     }
@@ -930,8 +1204,12 @@ export class PredictionVerifier {
     logInfo("Verdict generated", {
       valid: verdictResult.valid,
       verdict: verdictResult.verdict,
+      confidence: verdictResult.confidence,
+      sourcesCount: verdictResult.sources?.length ?? 0,
       reasoning: verdictResult.reasoning.substring(0, 150),
     });
+
+    await this.storeVerdictDetails(tx, prediction.id, verdictResult);
 
     if (!verdictResult.valid) {
       logInfo("Prediction marked as invalid by verdict generation", {
