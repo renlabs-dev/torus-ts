@@ -1664,9 +1664,6 @@ importers:
       '@radix-ui/react-tooltip':
         specifier: ^1.1.8
         version: 1.2.8(@types/react-dom@19.0.6(@types/react@19.0.14))(@types/react@19.0.14)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
-      '@react-three/fiber':
-        specifier: ^9.4.0
-        version: 9.4.0(@types/react@19.0.14)(immer@10.1.1)(react-dom@19.1.1(react@19.1.1))(react-native@0.81.0(@babel/core@7.28.3)(@react-native/metro-config@0.81.0(@babel/core@7.28.3))(@types/react@19.0.14)(bufferutil@4.0.9)(react@19.1.1)(utf-8-validate@5.0.10))(react@19.1.1)(three@0.180.0)
       '@torus-network/torus-utils':
         specifier: workspace:*
         version: link:../torus-utils
