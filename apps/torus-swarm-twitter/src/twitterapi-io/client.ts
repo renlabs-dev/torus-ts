@@ -70,7 +70,6 @@ export class KaitoTwitterAPIClient extends BaseAPIClient {
         throw error; // Re-throw API errors
       }
       if (error instanceof z.ZodError) {
-        console.log(error.issues);
         throw new KaitoValidationError("Response validation failed", error);
       }
       throw error;

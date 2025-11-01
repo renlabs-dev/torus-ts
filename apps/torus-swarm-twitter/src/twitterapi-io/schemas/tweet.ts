@@ -111,7 +111,7 @@ export const SimpleTweetSchema = z.object({
   likeCount: z.number().min(0).optional(),
   replyCount: z.number().min(0).optional(),
   quoteCount: z.number().min(0).optional(),
-  viewCount: z.number().min(0).optional(),
+  // viewCount: z.number().min(0).optional(),
   bookmarkCount: z.number().min(0).optional(),
 
   // Legacy snake_case versions (for compatibility)

@@ -1,4 +1,5 @@
 import { AsyncLocalStorage } from "node:async_hooks";
+import { BaseAPIError } from "@torus-network/torus-utils/base-api-client";
 import type { DB, Transaction } from "@torus-ts/db/client";
 import {
   scrapedTweetSchema,
@@ -440,6 +441,10 @@ export class TwitterAccountScraper {
       return true;
     }
 
+    logInfo("Fetching thread tweets", {
+      tweetIds: toFetch.map((row) => String(row.nextReplyId)).join(","),
+    });
+
     const tweets = (
       await this.config.twitterClient.tweets.getByIds({
         tweetIds: toFetch.map((row) => String(row.nextReplyId)),
@@ -738,27 +743,33 @@ export class TwitterAccountScraper {
         } catch (e) {
           consecutiveFailures++;
 
-          if (e instanceof KaitoRateLimitError) {
-            const waitTime = e.retryAfter
-              ? e.retryAfter * 1000
-              : 1000 * 60 * 15;
-            logError("Rate limit hit", {
-              message: e.message,
-              waitSeconds: waitTime / 1000,
-            });
-            await sleep(waitTime);
-            consecutiveFailures = 0;
-            continue;
-          } else if (e instanceof KaitoValidationError) {
-            logError("Validation error", {
-              message: e.message,
-              issues: JSON.stringify(e.zodError.issues),
-            });
-          } else if (e instanceof KaitoTwitterAPIError) {
-            logError("Twitter API error", {
-              message: e.message,
-              status: e.status,
-            });
+          if (e instanceof BaseAPIError) {
+            const cause = e.cause;
+
+            if (cause instanceof KaitoRateLimitError) {
+              const waitTime = cause.retryAfter
+                ? cause.retryAfter * 1000
+                : 1000 * 60 * 15;
+              logError("Rate limit hit", {
+                message: cause.message,
+                waitSeconds: waitTime / 1000,
+              });
+              await sleep(waitTime);
+              consecutiveFailures = 0;
+              continue;
+            } else if (cause instanceof KaitoValidationError) {
+              logError("Validation error", {
+                message: cause.message,
+                issues: JSON.stringify(cause.zodError.issues),
+              });
+            } else if (cause instanceof KaitoTwitterAPIError) {
+              logError("Twitter API error", {
+                message: cause.message,
+                status: cause.status,
+              });
+            } else {
+              logError("Scraper failed", { error: String(cause) });
+            }
           } else {
             logError("Scraper failed", { error: String(e) });
           }
