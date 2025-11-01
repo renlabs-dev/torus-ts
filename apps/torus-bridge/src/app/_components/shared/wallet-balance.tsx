@@ -6,6 +6,7 @@ import { useFreeBalance } from "@torus-ts/query-provider/hooks";
 import { useTorus } from "@torus-ts/torus-provider";
 import { Card } from "@torus-ts/ui/components/card";
 import { Skeleton } from "@torus-ts/ui/components/skeleton";
+import { cn } from "@torus-ts/ui/lib/utils";
 import { contractAddresses, getChainValuesOnEnv } from "~/config";
 import { env } from "~/env";
 import Image from "next/image";
@@ -121,15 +122,20 @@ export function WalletBalance() {
       {balancesList.map((item) => (
         <div
           key={item.label}
-          className={`flex flex-col gap-1 ${item.isSecondary ? "opacity-60" : ""}`}
+          className={cn("flex flex-col gap-1", item.isSecondary && "opacity-60")}
         >
           {item.amount == null ? (
-            <Skeleton className={item.isSecondary ? "h-4 w-20" : "h-5 w-24"} />
+            <Skeleton
+              className={cn(
+                item.isSecondary ? "h-4 w-20" : "h-5 w-24",
+              )}
+            />
           ) : (
             <div
-              className={`-my-0.5 font-semibold leading-5 text-white ${
-                item.isSecondary ? "text-xs" : "text-sm"
-              }`}
+              className={cn(
+                "-my-0.5 font-semibold leading-5 text-white",
+                item.isSecondary ? "text-xs" : "text-sm",
+              )}
             >
               {formatToken(item.amount)} {item.asset}
             </div>
@@ -138,9 +144,10 @@ export function WalletBalance() {
           <div className="flex items-center gap-2">
             <BalanceIcon src={item.iconSrc} alt={item.iconAlt} />
             <span
-              className={`leading-5 text-zinc-400 ${
-                item.isSecondary ? "text-[10px]" : "text-xs"
-              }`}
+              className={cn(
+                "leading-5 text-zinc-400",
+                item.isSecondary ? "text-[10px]" : "text-xs",
+              )}
             >
               {item.label}
             </span>
