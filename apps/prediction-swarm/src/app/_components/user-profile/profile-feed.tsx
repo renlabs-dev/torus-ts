@@ -495,6 +495,34 @@ export function ProfileFeed({
                         )}
                       </div>
 
+                      {/* Display media links if tweet contains them */}
+                      {(() => {
+                        const mediaUrlMatch = tweet.tweetText.match(
+                          /https?:\/\/(?:pbs\.twimg\.com|t\.co)\/\S+/g,
+                        );
+                        if (mediaUrlMatch) {
+                          return (
+                            <div className="flex flex-wrap gap-2">
+                              {mediaUrlMatch.map((url, idx) => (
+                                <a
+                                  key={idx}
+                                  href={url}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="text-muted-foreground hover:text-foreground flex items-center gap-2 text-xs transition-colors"
+                                >
+                                  <ExternalLink className="h-3 w-3" />
+                                  {url.includes("pbs.twimg.com")
+                                    ? "View Image"
+                                    : "View Media"}
+                                </a>
+                              ))}
+                            </div>
+                          );
+                        }
+                        return null;
+                      })()}
+
                       {activePrediction.verdictId && (
                         <div className="bg-accent/20 rounded-lg border p-3">
                           <div className="mb-2 flex items-center gap-2">
