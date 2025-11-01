@@ -231,10 +231,6 @@ export const twitterUserRouter = {
           // Score formula: (r / n) * log10(n + 1)
           const score = n > 0 ? (r / n) * Math.log10(n + 1) : 0;
 
-          console.log(
-            `${user.username}: r=${r}, n=${n}, accuracy=${accuracy}, score=${score}`,
-          );
-
           return {
             ...user,
             accuracy,

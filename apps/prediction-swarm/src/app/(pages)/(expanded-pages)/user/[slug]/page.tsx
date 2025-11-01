@@ -19,15 +19,11 @@ export default async function Page({ params }: PageProps) {
     notFound();
   }
 
-  const predictions = await api.prediction.getByUsername({
-    username: slug,
-  });
-
   return (
     <div className="relative py-4">
       <div className="border-border pointer-events-none absolute inset-y-0 left-1/2 w-full max-w-screen-lg -translate-x-1/2 border-x" />
       <div className="relative mx-auto max-w-screen-lg px-4">
-        <ProfileHeader user={user} predictions={predictions} />
+        <ProfileHeader user={user} username={slug} />
       </div>
       <div className="border-border relative my-4 border-t" />
       <div className="relative mx-auto max-w-screen-lg px-4">
@@ -35,7 +31,7 @@ export default async function Page({ params }: PageProps) {
       </div>
       <div className="border-border relative my-4 border-t" />
       <div className="relative mx-auto max-w-screen-lg px-4">
-        <ProfileContent predictions={predictions} />
+        <ProfileContent username={slug} />
       </div>
       <div className="border-border relative my-4 border-t" />
     </div>

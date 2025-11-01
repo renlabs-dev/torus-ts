@@ -1,4 +1,13 @@
+"use client";
+
 import { Card, CardContent, CardHeader } from "@torus-ts/ui/components/card";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationNext,
+  PaginationPrevious,
+} from "@torus-ts/ui/components/pagination";
 import {
   Tabs,
   TabsContent,
@@ -8,25 +17,33 @@ import {
 import { PageHeader } from "~/app/_components/page-header";
 import { FeedLegend } from "~/app/_components/user-profile/feed-legend";
 import { ProfileFeed } from "~/app/_components/user-profile/profile-feed";
-import { api } from "~/trpc/server";
+import { api } from "~/trpc/react";
+import { useState } from "react";
 
-export default async function FeedPage() {
-  const predictions = await api.prediction.getFeed({
-    limit: 50,
+export default function FeedPage() {
+  const [page, setPage] = useState(0);
+  const limit = 20;
+
+  const { data: predictions, isLoading } = api.prediction.getFeed.useQuery({
+    limit,
+    offset: page * limit,
   });
 
   // Filter grouped tweets by verdict status of the FIRST (highest quality) prediction
-  const ongoingPredictions = predictions.filter(
-    (tweet) => tweet.predictions[0]?.verdictId === null,
-  );
+  const ongoingPredictions =
+    predictions?.filter((tweet) => tweet.predictions[0]?.verdictId === null) ??
+    [];
 
-  const truePredictions = predictions.filter(
-    (tweet) => tweet.predictions[0]?.verdict === true,
-  );
+  const truePredictions =
+    predictions?.filter((tweet) => tweet.predictions[0]?.verdict === true) ??
+    [];
 
-  const falsePredictions = predictions.filter(
-    (tweet) => tweet.predictions[0]?.verdict === false,
-  );
+  const falsePredictions =
+    predictions?.filter((tweet) => tweet.predictions[0]?.verdict === false) ??
+    [];
+
+  const hasNext = (predictions?.length ?? 0) >= limit;
+  const hasPrev = page > 0;
 
   return (
     <div className="relative pt-4">
@@ -71,21 +88,64 @@ export default async function FeedPage() {
             {/* Ongoing Predictions */}
             <TabsContent value="ongoing">
               <CardContent>
-                <ProfileFeed predictions={ongoingPredictions} variant="feed" />
+                <ProfileFeed
+                  predictions={ongoingPredictions}
+                  variant="feed"
+                  isLoading={isLoading}
+                />
+                {(hasNext || hasPrev) && (
+                  <Pagination className="mt-6">
+                    <PaginationContent>
+                      <PaginationItem>
+                        <PaginationPrevious
+                          onClick={() => hasPrev && setPage(page - 1)}
+                          className={
+                            !hasPrev
+                              ? "pointer-events-none opacity-50"
+                              : "cursor-pointer"
+                          }
+                        />
+                      </PaginationItem>
+                      <PaginationItem>
+                        <span className="text-muted-foreground text-sm">
+                          Page {page + 1}
+                        </span>
+                      </PaginationItem>
+                      <PaginationItem>
+                        <PaginationNext
+                          onClick={() => hasNext && setPage(page + 1)}
+                          className={
+                            !hasNext
+                              ? "pointer-events-none opacity-50"
+                              : "cursor-pointer"
+                          }
+                        />
+                      </PaginationItem>
+                    </PaginationContent>
+                  </Pagination>
+                )}
               </CardContent>
             </TabsContent>
 
             {/* True Predictions */}
             <TabsContent value="true">
               <CardContent>
-                <ProfileFeed predictions={truePredictions} variant="feed" />
+                <ProfileFeed
+                  predictions={truePredictions}
+                  variant="feed"
+                  isLoading={isLoading}
+                />
               </CardContent>
             </TabsContent>
 
             {/* False Predictions */}
             <TabsContent value="false">
               <CardContent>
-                <ProfileFeed predictions={falsePredictions} variant="feed" />
+                <ProfileFeed
+                  predictions={falsePredictions}
+                  variant="feed"
+                  isLoading={isLoading}
+                />
               </CardContent>
             </TabsContent>
           </Tabs>

@@ -1,3 +1,5 @@
+"use client";
+
 import type { AppRouter } from "@torus-ts/api";
 import {
   Avatar,
@@ -8,27 +10,27 @@ import { Badge } from "@torus-ts/ui/components/badge";
 import { Button } from "@torus-ts/ui/components/button";
 import { Card, CardContent } from "@torus-ts/ui/components/card";
 import type { inferProcedureOutput } from "@trpc/server";
+import { api } from "~/trpc/react";
 import { BadgeCheck } from "lucide-react";
 
 type TwitterUser = NonNullable<
   inferProcedureOutput<AppRouter["twitterUser"]["getByUsername"]>
 >;
 
-type PredictionData = inferProcedureOutput<
-  AppRouter["prediction"]["getByUsername"]
->;
-
 interface ProfileHeaderProps {
   user: TwitterUser;
-  predictions: PredictionData;
+  username: string;
 }
 
-export default function ProfileHeader({
-  user,
-  predictions,
-}: ProfileHeaderProps) {
-  // Calculate accuracy based on verdicts from all predictions in all tweets
-  const allPredictions = predictions.flatMap((tweet) => tweet.predictions);
+export default function ProfileHeader({ user, username }: ProfileHeaderProps) {
+  // Fetch first 100 predictions to calculate accuracy
+  const { data: predictions } = api.prediction.getByUsername.useQuery({
+    username,
+    offset: 0,
+  });
+
+  const allPredictions =
+    predictions?.flatMap((tweet) => tweet.predictions) ?? [];
   const verdictedPredictions = allPredictions.filter(
     (p) => p.verdictId !== null,
   );

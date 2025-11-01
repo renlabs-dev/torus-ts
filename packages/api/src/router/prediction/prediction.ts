@@ -327,6 +327,82 @@ export const predictionRouter = {
     }),
 
   /**
+   * Get prediction counts by username (for pagination)
+   */
+  getCountsByUsername: publicProcedure
+    .input(
+      z.object({
+        username: z
+          .string()
+          .min(1)
+          .transform((val) => (val.startsWith("@") ? val.slice(1) : val)),
+      }),
+    )
+    .query(async ({ ctx, input }) => {
+      const { username } = input;
+
+      // Count all predictions grouped by verdict status
+      const counts = await ctx.db
+        .select({
+          verdictStatus: sql<string | null>`CASE
+            WHEN ${verdictSchema.id} IS NULL THEN 'ongoing'
+            WHEN ${verdictSchema.verdict} = true THEN 'true'
+            WHEN ${verdictSchema.verdict} = false THEN 'false'
+          END`.as("verdict_status"),
+          count: sql<number>`COUNT(DISTINCT ${parsedPredictionSchema.id})`,
+        })
+        .from(predictionSchema)
+        .innerJoin(
+          parsedPredictionSchema,
+          eq(parsedPredictionSchema.predictionId, predictionSchema.id),
+        )
+        .innerJoin(
+          scrapedTweetSchema,
+          sql`${scrapedTweetSchema.id} = CAST(CAST(${parsedPredictionSchema.goal} AS jsonb)->0->'source'->>'tweet_id' AS BIGINT)`,
+        )
+        .innerJoin(
+          twitterUsersSchema,
+          eq(twitterUsersSchema.id, scrapedTweetSchema.authorId),
+        )
+        .leftJoin(
+          verdictSchema,
+          eq(verdictSchema.parsedPredictionId, parsedPredictionSchema.id),
+        )
+        .leftJoin(
+          parsedPredictionFeedbackSchema,
+          eq(
+            parsedPredictionFeedbackSchema.parsedPredictionId,
+            parsedPredictionSchema.id,
+          ),
+        )
+        .where(
+          and(
+            eq(
+              sql`LOWER(${twitterUsersSchema.username})`,
+              username.toLowerCase(),
+            ),
+            eq(twitterUsersSchema.tracked, true),
+            isNull(parsedPredictionFeedbackSchema.parsedPredictionId),
+          ),
+        )
+        .groupBy(sql`verdict_status`);
+
+      const result = {
+        ongoing: 0,
+        true: 0,
+        false: 0,
+      };
+
+      counts.forEach((row) => {
+        if (row.verdictStatus === "ongoing") result.ongoing = row.count;
+        if (row.verdictStatus === "true") result.true = row.count;
+        if (row.verdictStatus === "false") result.false = row.count;
+      });
+
+      return result;
+    }),
+
+  /**
    * Get predictions by topic ID
    *
    * Fetches predictions filtered by a specific topic/ticker.

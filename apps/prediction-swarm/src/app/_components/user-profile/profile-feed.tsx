@@ -19,6 +19,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@torus-ts/ui/components/popover";
+import { Skeleton } from "@torus-ts/ui/components/skeleton";
 import type { inferProcedureOutput } from "@trpc/server";
 import dayjs from "dayjs";
 import {
@@ -42,6 +43,7 @@ type GroupedTweetData = inferProcedureOutput<
 interface ProfileFeedProps {
   predictions: GroupedTweetData[];
   variant?: "user" | "feed";
+  isLoading?: boolean;
 }
 
 /**
@@ -236,6 +238,7 @@ function getConfidenceLabel(confidence: string): string {
 
 export function ProfileFeed({
   predictions,
+  isLoading = false,
   // variant = "user",
 }: ProfileFeedProps) {
   // State to track active prediction index for each tweet
@@ -263,7 +266,25 @@ export function ProfileFeed({
 
   return (
     <div className="mx-auto px-4">
-      {predictions.length === 0 ? (
+      {isLoading ? (
+        <div className="space-y-4">
+          {[...Array(3)].map((_, idx) => (
+            <div key={idx} className="border-border border-b pb-6">
+              <div className="flex items-start gap-3">
+                <Skeleton className="h-8 w-8 rounded-full" />
+                <div className="flex-1 space-y-3">
+                  <div className="flex items-center gap-2">
+                    <Skeleton className="h-4 w-32" />
+                    <Skeleton className="h-4 w-24" />
+                  </div>
+                  <Skeleton className="h-20 w-full" />
+                  <Skeleton className="h-16 w-full" />
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : predictions.length === 0 ? (
         <Empty>
           <EmptyHeader>
             <EmptyMedia variant="icon">
