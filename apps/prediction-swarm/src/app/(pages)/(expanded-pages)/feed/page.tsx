@@ -18,32 +18,52 @@ import { PageHeader } from "~/app/_components/page-header";
 import { FeedLegend } from "~/app/_components/user-profile/feed-legend";
 import { ProfileFeed } from "~/app/_components/user-profile/profile-feed";
 import { api } from "~/trpc/react";
-import { useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 
 export default function FeedPage() {
-  const [page, setPage] = useState(0);
-  const limit = 20;
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const limit = 30;
 
-  const { data: predictions, isLoading } = api.prediction.getFeed.useQuery({
-    limit,
-    offset: page * limit,
-  });
+  const ongoingPage = parseInt(searchParams.get("ongoing") ?? "1");
+  const truePage = parseInt(searchParams.get("true") ?? "1");
+  const falsePage = parseInt(searchParams.get("false") ?? "1");
 
-  // Filter grouped tweets by verdict status of the FIRST (highest quality) prediction
-  const ongoingPredictions =
-    predictions?.filter((tweet) => tweet.predictions[0]?.verdictId === null) ??
-    [];
+  // Get total counts
+  const { data: counts } = api.prediction.getFeedCounts.useQuery();
 
-  const truePredictions =
-    predictions?.filter((tweet) => tweet.predictions[0]?.verdict === true) ??
-    [];
+  // Fetch predictions separately per verdict status
+  const { data: ongoingPredictions, isLoading: ongoingLoading } =
+    api.prediction.getFeedByVerdict.useQuery({
+      verdictStatus: "ongoing",
+      limit,
+      offset: (ongoingPage - 1) * limit,
+    });
 
-  const falsePredictions =
-    predictions?.filter((tweet) => tweet.predictions[0]?.verdict === false) ??
-    [];
+  const { data: truePredictions, isLoading: trueLoading } =
+    api.prediction.getFeedByVerdict.useQuery({
+      verdictStatus: "true",
+      limit,
+      offset: (truePage - 1) * limit,
+    });
 
-  const hasNext = (predictions?.length ?? 0) >= limit;
-  const hasPrev = page > 0;
+  const { data: falsePredictions, isLoading: falseLoading } =
+    api.prediction.getFeedByVerdict.useQuery({
+      verdictStatus: "false",
+      limit,
+      offset: (falsePage - 1) * limit,
+    });
+
+  // Calculate total pages from counts
+  const ongoingTotalPages = Math.ceil((counts?.ongoing ?? 0) / limit);
+  const trueTotalPages = Math.ceil((counts?.true ?? 0) / limit);
+  const falseTotalPages = Math.ceil((counts?.false ?? 0) / limit);
+
+  const updatePage = (tab: string, newPage: number) => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.set(tab, newPage.toString());
+    router.push(`?${params.toString()}`);
+  };
 
   return (
     <div className="relative pt-4">
@@ -73,15 +93,9 @@ export default function FeedPage() {
           <Tabs defaultValue="ongoing">
             <CardHeader className="pb-0">
               <TabsList className="bg-accent/60 grid w-full grid-cols-3">
-                <TabsTrigger value="ongoing">
-                  Ongoing predictions ({ongoingPredictions.length})
-                </TabsTrigger>
-                <TabsTrigger value="true">
-                  True predictions ({truePredictions.length})
-                </TabsTrigger>
-                <TabsTrigger value="false">
-                  False predictions ({falsePredictions.length})
-                </TabsTrigger>
+                <TabsTrigger value="ongoing">Ongoing predictions</TabsTrigger>
+                <TabsTrigger value="true">True predictions</TabsTrigger>
+                <TabsTrigger value="false">False predictions</TabsTrigger>
               </TabsList>
             </CardHeader>
 
@@ -89,18 +103,21 @@ export default function FeedPage() {
             <TabsContent value="ongoing">
               <CardContent>
                 <ProfileFeed
-                  predictions={ongoingPredictions}
+                  predictions={ongoingPredictions ?? []}
                   variant="feed"
-                  isLoading={isLoading}
+                  isLoading={ongoingLoading}
                 />
-                {(hasNext || hasPrev) && (
+                {ongoingTotalPages > 1 && (
                   <Pagination className="mt-6">
                     <PaginationContent>
                       <PaginationItem>
                         <PaginationPrevious
-                          onClick={() => hasPrev && setPage(page - 1)}
+                          onClick={() =>
+                            ongoingPage > 1 &&
+                            updatePage("ongoing", ongoingPage - 1)
+                          }
                           className={
-                            !hasPrev
+                            ongoingPage <= 1
                               ? "pointer-events-none opacity-50"
                               : "cursor-pointer"
                           }
@@ -108,14 +125,17 @@ export default function FeedPage() {
                       </PaginationItem>
                       <PaginationItem>
                         <span className="text-muted-foreground text-sm">
-                          Page {page + 1}
+                          Page {ongoingPage} of {ongoingTotalPages}
                         </span>
                       </PaginationItem>
                       <PaginationItem>
                         <PaginationNext
-                          onClick={() => hasNext && setPage(page + 1)}
+                          onClick={() =>
+                            ongoingPage < ongoingTotalPages &&
+                            updatePage("ongoing", ongoingPage + 1)
+                          }
                           className={
-                            !hasNext
+                            ongoingPage >= ongoingTotalPages
                               ? "pointer-events-none opacity-50"
                               : "cursor-pointer"
                           }
@@ -131,10 +151,46 @@ export default function FeedPage() {
             <TabsContent value="true">
               <CardContent>
                 <ProfileFeed
-                  predictions={truePredictions}
+                  predictions={truePredictions ?? []}
                   variant="feed"
-                  isLoading={isLoading}
+                  isLoading={trueLoading}
                 />
+                {trueTotalPages > 1 && (
+                  <Pagination className="mt-6">
+                    <PaginationContent>
+                      <PaginationItem>
+                        <PaginationPrevious
+                          onClick={() =>
+                            truePage > 1 && updatePage("true", truePage - 1)
+                          }
+                          className={
+                            truePage <= 1
+                              ? "pointer-events-none opacity-50"
+                              : "cursor-pointer"
+                          }
+                        />
+                      </PaginationItem>
+                      <PaginationItem>
+                        <span className="text-muted-foreground text-sm">
+                          Page {truePage} of {trueTotalPages}
+                        </span>
+                      </PaginationItem>
+                      <PaginationItem>
+                        <PaginationNext
+                          onClick={() =>
+                            truePage < trueTotalPages &&
+                            updatePage("true", truePage + 1)
+                          }
+                          className={
+                            truePage >= trueTotalPages
+                              ? "pointer-events-none opacity-50"
+                              : "cursor-pointer"
+                          }
+                        />
+                      </PaginationItem>
+                    </PaginationContent>
+                  </Pagination>
+                )}
               </CardContent>
             </TabsContent>
 
@@ -142,10 +198,46 @@ export default function FeedPage() {
             <TabsContent value="false">
               <CardContent>
                 <ProfileFeed
-                  predictions={falsePredictions}
+                  predictions={falsePredictions ?? []}
                   variant="feed"
-                  isLoading={isLoading}
+                  isLoading={falseLoading}
                 />
+                {falseTotalPages > 1 && (
+                  <Pagination className="mt-6">
+                    <PaginationContent>
+                      <PaginationItem>
+                        <PaginationPrevious
+                          onClick={() =>
+                            falsePage > 1 && updatePage("false", falsePage - 1)
+                          }
+                          className={
+                            falsePage <= 1
+                              ? "pointer-events-none opacity-50"
+                              : "cursor-pointer"
+                          }
+                        />
+                      </PaginationItem>
+                      <PaginationItem>
+                        <span className="text-muted-foreground text-sm">
+                          Page {falsePage} of {falseTotalPages}
+                        </span>
+                      </PaginationItem>
+                      <PaginationItem>
+                        <PaginationNext
+                          onClick={() =>
+                            falsePage < falseTotalPages &&
+                            updatePage("false", falsePage + 1)
+                          }
+                          className={
+                            falsePage >= falseTotalPages
+                              ? "pointer-events-none opacity-50"
+                              : "cursor-pointer"
+                          }
+                        />
+                      </PaginationItem>
+                    </PaginationContent>
+                  </Pagination>
+                )}
               </CardContent>
             </TabsContent>
           </Tabs>

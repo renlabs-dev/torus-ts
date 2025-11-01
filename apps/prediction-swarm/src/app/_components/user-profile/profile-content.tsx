@@ -36,45 +36,35 @@ export default function ProfileContent({ username }: ProfileContentProps) {
     username,
   });
 
-  // Fetch all predictions and filter client-side
-  const { data: allPredictions, isLoading } =
-    api.prediction.getByUsername.useQuery({
+  // Fetch predictions separately per verdict status
+  const { data: ongoingPredictions, isLoading: ongoingLoading } =
+    api.prediction.getByUsernameAndVerdict.useQuery({
       username,
-      offset: 0,
+      verdictStatus: "ongoing",
+      limit,
+      offset: (ongoingPage - 1) * limit,
     });
 
-  // Filter by verdict status
-  const ongoingPredictions =
-    allPredictions?.filter(
-      (tweet) => tweet.predictions[0]?.verdictId === null,
-    ) ?? [];
+  const { data: truePredictions, isLoading: trueLoading } =
+    api.prediction.getByUsernameAndVerdict.useQuery({
+      username,
+      verdictStatus: "true",
+      limit,
+      offset: (truePage - 1) * limit,
+    });
 
-  const truePredictions =
-    allPredictions?.filter((tweet) => tweet.predictions[0]?.verdict === true) ??
-    [];
-
-  const falsePredictions =
-    allPredictions?.filter(
-      (tweet) => tweet.predictions[0]?.verdict === false,
-    ) ?? [];
+  const { data: falsePredictions, isLoading: falseLoading } =
+    api.prediction.getByUsernameAndVerdict.useQuery({
+      username,
+      verdictStatus: "false",
+      limit,
+      offset: (falsePage - 1) * limit,
+    });
 
   // Pagination logic per tab using actual counts
   const ongoingTotalPages = Math.ceil((counts?.ongoing ?? 0) / limit);
   const trueTotalPages = Math.ceil((counts?.true ?? 0) / limit);
   const falseTotalPages = Math.ceil((counts?.false ?? 0) / limit);
-
-  const ongoingPaginated = ongoingPredictions.slice(
-    (ongoingPage - 1) * limit,
-    ongoingPage * limit,
-  );
-  const truePaginated = truePredictions.slice(
-    (truePage - 1) * limit,
-    truePage * limit,
-  );
-  const falsePaginated = falsePredictions.slice(
-    (falsePage - 1) * limit,
-    falsePage * limit,
-  );
 
   const updatePage = (tab: string, newPage: number) => {
     const params = new URLSearchParams(searchParams.toString());
@@ -87,15 +77,9 @@ export default function ProfileContent({ username }: ProfileContentProps) {
       <Tabs defaultValue="ongoing">
         <CardHeader className="pb-0">
           <TabsList className="bg-accent/60 grid w-full grid-cols-3">
-            <TabsTrigger value="ongoing">
-              Ongoing predictions ({ongoingPredictions.length})
-            </TabsTrigger>
-            <TabsTrigger value="true">
-              True predictions ({truePredictions.length})
-            </TabsTrigger>
-            <TabsTrigger value="false">
-              False predictions ({falsePredictions.length})
-            </TabsTrigger>
+            <TabsTrigger value="ongoing">Ongoing predictions</TabsTrigger>
+            <TabsTrigger value="true">True predictions</TabsTrigger>
+            <TabsTrigger value="false">False predictions</TabsTrigger>
           </TabsList>
         </CardHeader>
 
@@ -103,9 +87,9 @@ export default function ProfileContent({ username }: ProfileContentProps) {
         <TabsContent value="ongoing">
           <CardContent>
             <ProfileFeed
-              predictions={ongoingPaginated}
+              predictions={ongoingPredictions ?? []}
               variant="user"
-              isLoading={isLoading}
+              isLoading={ongoingLoading}
             />
             {ongoingTotalPages > 1 && (
               <Pagination className="mt-6">
@@ -151,9 +135,9 @@ export default function ProfileContent({ username }: ProfileContentProps) {
         <TabsContent value="true">
           <CardContent>
             <ProfileFeed
-              predictions={truePaginated}
+              predictions={truePredictions ?? []}
               variant="user"
-              isLoading={isLoading}
+              isLoading={trueLoading}
             />
             {trueTotalPages > 1 && (
               <Pagination className="mt-6">
@@ -198,9 +182,9 @@ export default function ProfileContent({ username }: ProfileContentProps) {
         <TabsContent value="false">
           <CardContent>
             <ProfileFeed
-              predictions={falsePaginated}
+              predictions={falsePredictions ?? []}
               variant="user"
-              isLoading={isLoading}
+              isLoading={falseLoading}
             />
             {falseTotalPages > 1 && (
               <Pagination className="mt-6">

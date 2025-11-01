@@ -268,6 +268,7 @@ export function ProfileFeed({
     <div className="mx-auto px-4">
       {isLoading ? (
         <div className="space-y-4">
+          {/* eslint-disable-next-line @typescript-eslint/no-unsafe-assignment */}
           {[...Array(3)].map((_, idx) => (
             <div key={idx} className="border-border border-b pb-6">
               <div className="flex items-start gap-3">
