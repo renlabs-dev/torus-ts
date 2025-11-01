@@ -178,6 +178,11 @@ export class TwitterAccountScraper {
    * the full scraping pipeline.
    */
   async processNextSuggestion(tx: Transaction): Promise<boolean> {
+    if (await this.isDailyLimitReached()) {
+      logInfo("Too many suggestions processed in the last hour");
+      return false;
+    }
+
     const suggested = await this.getSuggestedUser(tx);
     if (!suggested) {
       return false;
@@ -719,12 +724,6 @@ export class TwitterAccountScraper {
       logInfo("Worker started");
 
       while (!stopHook()) {
-        if (await this.isDailyLimitReached()) {
-          logInfo("Daily tweet limit reached, waiting 1 hour");
-          await sleep(1000 * 60 * 60);
-          continue;
-        }
-
         try {
           const progress = await this.db.transaction(
             async (tx) =>

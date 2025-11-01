@@ -16,6 +16,7 @@ const scraper = new TwitterAccountScraper(
       apiKey: process.env.TWITTERAPI_IO_KEY,
     }),
     concurrency: 8,
+    dailyTweetLimit: 500_000,
   },
   createDb(),
 );
