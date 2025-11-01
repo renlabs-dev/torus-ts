@@ -32,7 +32,7 @@ export const twitterUsersSchema = createTable(
 
     username: varchar("username", { length: 15 }),
     screenName: varchar("screen_name", { length: 50 }),
-    description: varchar("description", { length: 280 }),
+    description: text("description"),
     avatarUrl: varchar("avatar_url", { length: 280 }),
     isVerified: boolean("is_verified"),
     verifiedType: varchar("verified_type", { length: 32 }),
