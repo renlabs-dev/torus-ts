@@ -122,13 +122,14 @@ export function WalletBalance() {
       {balancesList.map((item) => (
         <div
           key={item.label}
-          className={cn("flex flex-col gap-1", item.isSecondary && "opacity-60")}
+          className={cn(
+            "flex flex-col gap-1",
+            item.isSecondary && "opacity-60",
+          )}
         >
           {item.amount == null ? (
             <Skeleton
-              className={cn(
-                item.isSecondary ? "h-4 w-20" : "h-5 w-24",
-              )}
+              className={cn(item.isSecondary ? "h-4 w-20" : "h-5 w-24")}
             />
           ) : (
             <div
