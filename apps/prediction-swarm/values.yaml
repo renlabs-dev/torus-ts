@@ -29,3 +29,5 @@ deployment:
       value: "{{ .Values.chainEnv }}"
     NEXT_PUBLIC_WSS_API_ENDPOINT:
       value: "{{ .Values.wssApiEndpoint }}"
+    NEXT_PUBLIC_TORUS_RPC_URL:
+      value: "{{ .Values.wssApiEndpoint }}"
