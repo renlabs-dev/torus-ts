@@ -94,14 +94,7 @@ export function WalletBalance() {
       iconSrc: "/assets/icons/balance/torus-native.svg",
       iconAlt: "Torus Native",
       address: selectedAccount?.address,
-    },
-    {
-      amount: torusEvmBalance?.value ?? null,
-      asset: "EVM",
-      label: "Torus EVM Balance",
-      iconSrc: "/assets/icons/balance/torus-evm.svg",
-      iconAlt: "Torus EVM",
-      address: evmAddress,
+      isSecondary: false,
     },
     {
       amount: baseBalance ?? null,
@@ -110,24 +103,47 @@ export function WalletBalance() {
       iconSrc: "/assets/icons/balance/torus-base.svg",
       iconAlt: "Base",
       address: evmAddress,
+      isSecondary: false,
+    },
+    {
+      amount: torusEvmBalance?.value ?? null,
+      asset: "EVM",
+      label: "Torus EVM Balance",
+      iconSrc: "/assets/icons/balance/torus-evm.svg",
+      iconAlt: "Torus EVM",
+      address: evmAddress,
+      isSecondary: true,
     },
   ];
 
   return (
     <Card className="flex w-full flex-col gap-6 p-4">
       {balancesList.map((item) => (
-        <div key={item.label} className="flex flex-col gap-1">
+        <div
+          key={item.label}
+          className={`flex flex-col gap-1 ${item.isSecondary ? "opacity-60" : ""}`}
+        >
           {item.amount == null ? (
-            <Skeleton className="h-5 w-24" />
+            <Skeleton
+              className={item.isSecondary ? "h-4 w-20" : "h-5 w-24"}
+            />
           ) : (
-            <div className="-my-0.5 text-sm font-semibold leading-5 text-white">
+            <div
+              className={`-my-0.5 font-semibold leading-5 text-white ${
+                item.isSecondary ? "text-xs" : "text-sm"
+              }`}
+            >
               {formatToken(item.amount)} {item.asset}
             </div>
           )}
 
           <div className="flex items-center gap-2">
             <BalanceIcon src={item.iconSrc} alt={item.iconAlt} />
-            <span className="text-xs leading-5 text-zinc-400">
+            <span
+              className={`leading-5 text-zinc-400 ${
+                item.isSecondary ? "text-[10px]" : "text-xs"
+              }`}
+            >
               {item.label}
             </span>
           </div>

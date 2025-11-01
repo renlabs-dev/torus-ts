@@ -91,7 +91,7 @@ function SelectCard(props: Readonly<SelectCardProps>) {
 const SelectCardList = [
   {
     href: "/fast",
-    text: "🚀 Fast Bridge (Recommended)",
+    text: "Fast Bridge (Recommended)",
     description: "Direct transfers: Base ⟷ Native Torus in one flow",
     iconFrom: "/assets/icons/bridge/torus-base.svg",
     iconTo: "/assets/icons/balance/torus.svg",
