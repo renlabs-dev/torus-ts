@@ -124,9 +124,7 @@ export function WalletBalance() {
           className={`flex flex-col gap-1 ${item.isSecondary ? "opacity-60" : ""}`}
         >
           {item.amount == null ? (
-            <Skeleton
-              className={item.isSecondary ? "h-4 w-20" : "h-5 w-24"}
-            />
+            <Skeleton className={item.isSecondary ? "h-4 w-20" : "h-5 w-24"} />
           ) : (
             <div
               className={`-my-0.5 font-semibold leading-5 text-white ${
