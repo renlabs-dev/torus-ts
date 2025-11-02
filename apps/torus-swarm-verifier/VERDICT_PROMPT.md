@@ -29,19 +29,26 @@ Search the web for evidence and determine if the goal was achieved within the ti
 
 **Critical Instructions:**
 
-1. **Check if this was NEWS, not a prediction:**
+1. **Check if this is a SELF-ANNOUNCEMENT, not a prediction:**
+   - If the author is announcing their OWN actions, plans, or decisions, this is NOT a prediction
+   - Examples: Artist announcing album release, athlete announcing retirement, CEO announcing product launch
+   - The author must be predicting something OUTSIDE their control
+   - This includes both obvious announcements ("I'm releasing X") and subtle ones ("And now I get to tour America??")
+   - If this is a self-announcement, valid MUST be false
+
+2. **Check if this was NEWS, not a prediction:**
    - Search for evidence that the goal was ALREADY TRUE before start_utc
    - If the goal was achieved, announced, or reported BEFORE the prediction was made, verdict MUST be false
    - Example: Tweet says "BTC will hit 100k by March" on Jan 15, but BTC already hit 100k on Jan 10
    - This disqualifies the "prediction" as it's just reporting existing news
 
-2. **Only evaluate predictions that were actually predictive:**
+3. **Only evaluate predictions that were actually predictive:**
    - ONLY consider evidence from dates between start_utc and end_utc
    - Ignore any evidence from after end_utc (too late)
    - For price predictions: Target reached at ANY point during the window counts as true
    - If you cannot find sufficient evidence, verdict is false
 
-3. **Search authoritative sources:**
+4. **Search authoritative sources:**
    - Use reliable sources for verification (news sites, official announcements, market data)
    - Cite specific sources and dates in your reasoning
 
@@ -67,6 +74,7 @@ Return ONLY valid JSON (no markdown fences):
 
 **When to set valid=false:**
 
+- Author is announcing their own actions/plans (self-announcement, not a prediction)
 - Goal was already achieved/announced BEFORE start_utc (this was news, not a prediction)
 - When valid=false, verdict should also be false
 
@@ -258,5 +266,59 @@ Return ONLY valid JSON (no markdown fences):
   "verdict": true,
   "confidence": 0.96,
   "reasoning": "Verified that ETH was trading at $3,200 when the prediction was made on December 1, 2024. ETH reached $5,100 on March 15, 2025 according to CoinGecko, which is within the timeframe. This was a genuine forward-looking prediction that came true."
+}
+```
+
+### Example 8: Invalid - Self-Announcement (Obvious)
+
+**Input:**
+
+```json
+{
+  "context": "Artist announcing new album release date on their own account.",
+  "goal_text": "My new album drops July 17th",
+  "timeframe_text": "July 17th",
+  "timeframe_parsed": {
+    "start_utc": "2025-05-10T18:30:00Z",
+    "end_utc": "2025-07-17T23:59:59Z"
+  }
+}
+```
+
+**Output:**
+
+```json
+{
+  "valid": false,
+  "verdict": false,
+  "confidence": 0.99,
+  "reasoning": "This is a self-announcement where the author is declaring their own plans for releasing their album. The author has full control over when they release their album, so this is not a prediction about an uncertain future event. This is an announcement of their own decision, not a prediction. Prediction is invalid."
+}
+```
+
+### Example 9: Invalid - Self-Announcement (Subtle)
+
+**Input:**
+
+```json
+{
+  "context": "Artist making an excited statement about touring.",
+  "goal_text": "I get to tour America this year",
+  "timeframe_text": "this year",
+  "timeframe_parsed": {
+    "start_utc": "2025-03-15T20:00:00Z",
+    "end_utc": "2025-12-31T23:59:59Z"
+  }
+}
+```
+
+**Output:**
+
+```json
+{
+  "valid": false,
+  "verdict": false,
+  "confidence": 0.97,
+  "reasoning": "Despite the casual phrasing ('And now I get to tour'), this is the author announcing their own tour plans. The author controls their tour schedule, making this a self-announcement rather than a prediction. Even though it's phrased as an excited statement rather than a formal announcement, it's still declaring the author's own planned actions. Prediction is invalid."
 }
 ```
