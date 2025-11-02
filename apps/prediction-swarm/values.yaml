@@ -18,11 +18,3 @@ deployment:
           key: hetzner_db
     NEXT_PUBLIC_AUTH_ORIGIN:
       value: "https://{{ .Values.ingressHost }}"
-    NEXT_PUBLIC_TORUS_CACHE_URL:
-      value: "{{ .Values.cacheUrl }}"
-    NEXT_PUBLIC_TORUS_CHAIN_ENV:
-      value: "{{ .Values.chainEnv }}"
-    NEXT_PUBLIC_WSS_API_ENDPOINT:
-      value: "{{ .Values.wssApiEndpoint }}"
-    NEXT_PUBLIC_TORUS_RPC_URL:
-      value: "{{ .Values.wssApiEndpoint }}"
