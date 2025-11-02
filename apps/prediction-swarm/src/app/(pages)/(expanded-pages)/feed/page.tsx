@@ -93,9 +93,15 @@ export default function FeedPage() {
           <Tabs defaultValue="ongoing">
             <CardHeader className="pb-0">
               <TabsList className="bg-accent/60 grid w-full grid-cols-3">
-                <TabsTrigger value="ongoing">Ongoing predictions</TabsTrigger>
-                <TabsTrigger value="true">True predictions</TabsTrigger>
-                <TabsTrigger value="false">False predictions</TabsTrigger>
+                <TabsTrigger value="ongoing">
+                  Ongoing predictions ({counts?.ongoing ?? 0})
+                </TabsTrigger>
+                <TabsTrigger value="true">
+                  True predictions ({counts?.true ?? 0})
+                </TabsTrigger>
+                <TabsTrigger value="false">
+                  False predictions ({counts?.false ?? 0})
+                </TabsTrigger>
               </TabsList>
             </CardHeader>
 
