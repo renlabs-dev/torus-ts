@@ -7,8 +7,8 @@ environments:
       - environmentName: dev
       - wssApiEndpoint: wss://api.testnet.torus.network
       - cacheUrl: https://cache.testnet.torus.network
-      - releaseName: dev-predictionswarm
-      - ingressHost: dev.predictionswarm.com
+      - releaseName: staging-predictionswarm
+      - ingressHost: staging.predictionswarm.com
       - chainEnv: testnet
   prod:
     values:
