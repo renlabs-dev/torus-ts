@@ -114,9 +114,7 @@ export class TwitterAccountScraper {
    */
   async processNextIncompleteUsers(tx: Transaction): Promise<boolean> {
     const incompleteUsers = await this.getNextIncompleteUsers(tx);
-    if (!incompleteUsers.length) {
-      return false;
-    }
+    if (!incompleteUsers.length) return false;
 
     logInfo("Selected incomplete profiles", { count: incompleteUsers.length });
     const infos = await this.config.twitterClient.users.batchGetInfo({
@@ -162,6 +160,7 @@ export class TwitterAccountScraper {
       .where(
         and(
           isNull(twitterUsersSchema.username),
+          isNull(twitterUsersSchema.unavailableReason),
           isNull(twitterUsersSchema.deletedAt),
         ),
       )
@@ -184,9 +183,7 @@ export class TwitterAccountScraper {
     }
 
     const suggested = await this.getSuggestedUser(tx);
-    if (!suggested) {
-      return false;
-    }
+    if (!suggested) return false;
 
     logInfo("Selected suggested profile", { username: suggested.username });
     const user = (await this.config.twitterClient.users.getInfo({
