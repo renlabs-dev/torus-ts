@@ -314,7 +314,12 @@ export function ProfileFeed({
                   idx < predictions.length - 1 ? "border-border border-b" : ""
                 }
               >
-                <div className="relative flex gap-2 py-4 md:gap-3 md:py-6">
+                {/* Thread/Reply Context */}
+                <div className="pt-4 md:pt-6">
+                  <ThreadContext tweet={tweet} />
+                </div>
+
+                <div className="relative flex gap-2 pb-4 md:gap-3 md:pb-6">
                   <div className="min-w-0 flex-1">
                     <div className="flex flex-col gap-1 text-xs sm:flex-row sm:items-center sm:gap-2 md:text-sm">
                       <div className="flex flex-wrap items-center gap-1 sm:gap-2">
@@ -485,11 +490,6 @@ export function ProfileFeed({
                           </PopoverContent>
                         </Popover>
                       </div>
-                    </div>
-
-                    {/* Thread/Reply Context */}
-                    <div className="mt-4">
-                      <ThreadContext tweet={tweet} />
                     </div>
 
                     <div className="mt-4 space-y-2 p-1">
