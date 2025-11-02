@@ -20,14 +20,6 @@ export function ThreadContext({ tweet }: ThreadContextProps) {
   const { parentTweet, rootTweet, parentTweetId, conversationId, tweetId } =
     tweet;
 
-  console.log("ThreadContext:", {
-    tweetId,
-    conversationId,
-    parentTweetId,
-    hasParentTweet: !!parentTweet,
-    hasRootTweet: !!rootTweet,
-  });
-
   // Case 1: Standalone tweet (no thread/reply)
   if (!parentTweetId && (!conversationId || conversationId === tweetId)) {
     return null;

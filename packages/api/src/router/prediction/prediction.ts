@@ -10,6 +10,7 @@ import {
 import type { TRPCRouterRecord } from "@trpc/server";
 import { z } from "zod";
 import { publicProcedure } from "../../trpc";
+import type { TRPCContext } from "../../trpc";
 
 export interface PostSlice {
   source: { tweet_id: string };
@@ -95,7 +96,7 @@ export interface GroupedTweet {
  * Fetches parent and root tweets for thread context
  */
 async function fetchThreadContext(
-  ctx: any,
+  ctx: TRPCContext,
   tweetIds: bigint[],
 ): Promise<Map<bigint, ParentTweet>> {
   if (tweetIds.length === 0) return new Map();
@@ -123,7 +124,7 @@ async function fetchThreadContext(
     );
 
   const result = new Map<bigint, ParentTweet>();
-  tweets.forEach((t: any) => {
+  tweets.forEach((t) => {
     result.set(t.tweetId, {
       tweetId: t.tweetId,
       tweetText: t.tweetText,
@@ -142,7 +143,7 @@ async function fetchThreadContext(
  */
 async function groupPredictionsByTweet(
   rawPredictions: RawPrediction[],
-  ctx: any,
+  ctx: TRPCContext,
 ): Promise<GroupedTweet[]> {
   const groupedByTweet: Record<string, GroupedTweet> = {};
 
@@ -166,12 +167,6 @@ async function groupPredictionsByTweet(
 
   rawPredictions.forEach((pred) => {
     const tweetId = pred.tweetId.toString();
-
-    console.log("Processing tweet:", {
-      tweetId: pred.tweetId,
-      conversationId: pred.conversationId,
-      parentTweetId: pred.parentTweetId,
-    });
 
     if (!groupedByTweet[tweetId]) {
       groupedByTweet[tweetId] = {
