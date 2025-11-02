@@ -434,24 +434,6 @@ export function ProfileFeed({
                               <div className="space-y-2 text-sm">
                                 <div>
                                   <span className="text-muted-foreground">
-                                    Prediction ID:
-                                  </span>
-                                  <p className="font-mono text-xs">
-                                    {activePrediction.predictionId}
-                                  </p>
-                                </div>
-
-                                <div>
-                                  <span className="text-muted-foreground">
-                                    Parsed ID:
-                                  </span>
-                                  <p className="font-mono text-xs">
-                                    {activePrediction.parsedId}
-                                  </p>
-                                </div>
-
-                                <div>
-                                  <span className="text-muted-foreground">
                                     Quality Score:
                                   </span>
                                   <p>
@@ -473,6 +455,15 @@ export function ProfileFeed({
                                     Version:
                                   </span>
                                   <p>v{activePrediction.predictionVersion}</p>
+                                </div>
+
+                                <div>
+                                  <span className="text-muted-foreground">
+                                    Prediction ID:
+                                  </span>
+                                  <p className="font-mono text-xs">
+                                    {activePrediction.predictionId}
+                                  </p>
                                 </div>
 
                                 {activePrediction.verdictId && (
