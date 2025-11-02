@@ -761,7 +761,15 @@ jobs:
               esac
 
               if [ "$activate_result" == "success" ]; then
-                echo "| ${app} | ✅ Deployed | [Preview](https://pr-${{ github.event.number }}.${app}.torus.network) |" >> $GITHUB_STEP_SUMMARY
+                # Set custom domain for specific apps
+                if [ "$app" == "torus-prophet-finder" ]; then
+                  preview_url="https://pr-${{ github.event.number }}.prophetfinder.com"
+                elif [ "$app" == "prediction-swarm" ]; then
+                  preview_url="https://pr-${{ github.event.number }}.predictionswarm.com"
+                else
+                  preview_url="https://pr-${{ github.event.number }}.${app}.torus.network"
+                fi
+                echo "| ${app} | ✅ Deployed | [Preview](${preview_url}) |" >> $GITHUB_STEP_SUMMARY
               elif [ "$delete_result" == "success" ]; then
                 echo "| ${app} | 🗑️ Deleted | - |" >> $GITHUB_STEP_SUMMARY
               elif [ "$activate_result" == "skipped" ] && [ "$delete_result" == "skipped" ]; then
