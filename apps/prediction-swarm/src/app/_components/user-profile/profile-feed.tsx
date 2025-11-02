@@ -35,6 +35,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
+import { ThreadContext } from "./thread-context";
 
 type GroupedTweetData = inferProcedureOutput<
   AppRouter["prediction"]["getByUsername"]
@@ -484,6 +485,11 @@ export function ProfileFeed({
                           </PopoverContent>
                         </Popover>
                       </div>
+                    </div>
+
+                    {/* Thread/Reply Context */}
+                    <div className="mt-4">
+                      <ThreadContext tweet={tweet} />
                     </div>
 
                     <div className="mt-4 space-y-2 p-1">

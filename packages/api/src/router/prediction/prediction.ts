@@ -36,6 +36,8 @@ interface RawPrediction {
   tweetId: bigint;
   tweetText: string;
   tweetDate: Date;
+  conversationId: bigint | null;
+  parentTweetId: bigint | null;
   userId: bigint;
   username: string | null;
   screenName: string | null;
@@ -47,15 +49,29 @@ interface RawPrediction {
   verdictCreatedAt: Date | null;
 }
 
+export interface ParentTweet {
+  tweetId: bigint;
+  tweetText: string;
+  tweetDate: Date;
+  authorId: bigint;
+  username: string | null;
+  screenName: string | null;
+  avatarUrl: string | null;
+}
+
 export interface GroupedTweet {
   tweetId: bigint;
   tweetText: string;
   tweetDate: Date;
+  conversationId: bigint | null;
+  parentTweetId: bigint | null;
   userId: bigint;
   username: string | null;
   screenName: string | null;
   avatarUrl: string | null;
   isVerified: boolean | null;
+  parentTweet: ParentTweet | null;
+  rootTweet: ParentTweet | null;
   predictions: {
     parsedId: string;
     predictionId: string;
@@ -76,25 +92,106 @@ export interface GroupedTweet {
 }
 
 /**
- * Groups raw predictions by tweet ID
+ * Fetches parent and root tweets for thread context
  */
-function groupPredictionsByTweet(
+async function fetchThreadContext(
+  ctx: any,
+  tweetIds: bigint[],
+): Promise<Map<bigint, ParentTweet>> {
+  if (tweetIds.length === 0) return new Map();
+
+  const tweets = await ctx.db
+    .select({
+      tweetId: scrapedTweetSchema.id,
+      tweetText: scrapedTweetSchema.text,
+      tweetDate: scrapedTweetSchema.date,
+      authorId: scrapedTweetSchema.authorId,
+      username: twitterUsersSchema.username,
+      screenName: twitterUsersSchema.screenName,
+      avatarUrl: twitterUsersSchema.avatarUrl,
+    })
+    .from(scrapedTweetSchema)
+    .leftJoin(
+      twitterUsersSchema,
+      eq(twitterUsersSchema.id, scrapedTweetSchema.authorId),
+    )
+    .where(
+      sql`${scrapedTweetSchema.id} IN (${sql.join(
+        tweetIds.map((id) => sql`${id}`),
+        sql`, `,
+      )})`,
+    );
+
+  const result = new Map<bigint, ParentTweet>();
+  tweets.forEach((t: any) => {
+    result.set(t.tweetId, {
+      tweetId: t.tweetId,
+      tweetText: t.tweetText,
+      tweetDate: t.tweetDate,
+      authorId: t.authorId,
+      username: t.username,
+      screenName: t.screenName,
+      avatarUrl: t.avatarUrl,
+    });
+  });
+  return result;
+}
+
+/**
+ * Groups raw predictions by tweet ID and includes thread context
+ */
+async function groupPredictionsByTweet(
   rawPredictions: RawPrediction[],
-): GroupedTweet[] {
+  ctx: any,
+): Promise<GroupedTweet[]> {
   const groupedByTweet: Record<string, GroupedTweet> = {};
+
+  // Collect unique parent and root tweet IDs
+  const parentTweetIds = new Set<bigint>();
+  const rootTweetIds = new Set<bigint>();
+
+  rawPredictions.forEach((pred) => {
+    if (pred.parentTweetId) parentTweetIds.add(pred.parentTweetId);
+    if (pred.conversationId && pred.conversationId !== pred.tweetId) {
+      rootTweetIds.add(pred.conversationId);
+    }
+  });
+
+  // Fetch all context tweets in batch
+  const allContextIds = [
+    ...Array.from(parentTweetIds),
+    ...Array.from(rootTweetIds),
+  ];
+  const contextTweets = await fetchThreadContext(ctx, allContextIds);
 
   rawPredictions.forEach((pred) => {
     const tweetId = pred.tweetId.toString();
+
+    console.log("Processing tweet:", {
+      tweetId: pred.tweetId,
+      conversationId: pred.conversationId,
+      parentTweetId: pred.parentTweetId,
+    });
+
     if (!groupedByTweet[tweetId]) {
       groupedByTweet[tweetId] = {
         tweetId: pred.tweetId,
         tweetText: pred.tweetText,
         tweetDate: pred.tweetDate,
+        conversationId: pred.conversationId,
+        parentTweetId: pred.parentTweetId,
         userId: pred.userId,
         username: pred.username,
         screenName: pred.screenName,
         avatarUrl: pred.avatarUrl,
         isVerified: pred.isVerified,
+        parentTweet: pred.parentTweetId
+          ? (contextTweets.get(pred.parentTweetId) ?? null)
+          : null,
+        rootTweet:
+          pred.conversationId && pred.conversationId !== pred.tweetId
+            ? (contextTweets.get(pred.conversationId) ?? null)
+            : null,
         predictions: [],
       };
     }
@@ -182,6 +279,8 @@ export const predictionRouter = {
           tweetId: scrapedTweetSchema.id,
           tweetText: scrapedTweetSchema.text,
           tweetDate: scrapedTweetSchema.date,
+          conversationId: scrapedTweetSchema.conversationId,
+          parentTweetId: scrapedTweetSchema.parentTweetId,
 
           // User data
           userId: twitterUsersSchema.id,
@@ -233,7 +332,10 @@ export const predictionRouter = {
         .orderBy(desc(predictionSchema.createdAt))
         .offset(offset);
 
-      return groupPredictionsByTweet(rawPredictions as RawPrediction[]);
+      return await groupPredictionsByTweet(
+        rawPredictions as RawPrediction[],
+        ctx,
+      );
     }),
 
   /**
@@ -275,6 +377,8 @@ export const predictionRouter = {
           tweetId: scrapedTweetSchema.id,
           tweetText: scrapedTweetSchema.text,
           tweetDate: scrapedTweetSchema.date,
+          conversationId: scrapedTweetSchema.conversationId,
+          parentTweetId: scrapedTweetSchema.parentTweetId,
 
           // User data
           userId: twitterUsersSchema.id,
@@ -323,7 +427,10 @@ export const predictionRouter = {
         .limit(limit)
         .offset(offset);
 
-      return groupPredictionsByTweet(rawPredictions as RawPrediction[]);
+      return await groupPredictionsByTweet(
+        rawPredictions as RawPrediction[],
+        ctx,
+      );
     }),
 
   /**
@@ -436,6 +543,8 @@ export const predictionRouter = {
           tweetId: scrapedTweetSchema.id,
           tweetText: scrapedTweetSchema.text,
           tweetDate: scrapedTweetSchema.date,
+          conversationId: scrapedTweetSchema.conversationId,
+          parentTweetId: scrapedTweetSchema.parentTweetId,
           userId: twitterUsersSchema.id,
           username: twitterUsersSchema.username,
           screenName: twitterUsersSchema.screenName,
@@ -489,7 +598,10 @@ export const predictionRouter = {
         .limit(limit)
         .offset(offset);
 
-      return groupPredictionsByTweet(rawPredictions as RawPrediction[]);
+      return await groupPredictionsByTweet(
+        rawPredictions as RawPrediction[],
+        ctx,
+      );
     }),
 
   /**
@@ -522,6 +634,8 @@ export const predictionRouter = {
           tweetId: scrapedTweetSchema.id,
           tweetText: scrapedTweetSchema.text,
           tweetDate: scrapedTweetSchema.date,
+          conversationId: scrapedTweetSchema.conversationId,
+          parentTweetId: scrapedTweetSchema.parentTweetId,
           userId: twitterUsersSchema.id,
           username: twitterUsersSchema.username,
           screenName: twitterUsersSchema.screenName,
@@ -571,7 +685,10 @@ export const predictionRouter = {
         .limit(limit)
         .offset(offset);
 
-      return groupPredictionsByTweet(rawPredictions as RawPrediction[]);
+      return await groupPredictionsByTweet(
+        rawPredictions as RawPrediction[],
+        ctx,
+      );
     }),
 
   /**
@@ -671,6 +788,8 @@ export const predictionRouter = {
           tweetId: scrapedTweetSchema.id,
           tweetText: scrapedTweetSchema.text,
           tweetDate: scrapedTweetSchema.date,
+          conversationId: scrapedTweetSchema.conversationId,
+          parentTweetId: scrapedTweetSchema.parentTweetId,
 
           // User data
           userId: twitterUsersSchema.id,
@@ -720,6 +839,9 @@ export const predictionRouter = {
         .limit(limit)
         .offset(offset);
 
-      return groupPredictionsByTweet(rawPredictions as RawPrediction[]);
+      return await groupPredictionsByTweet(
+        rawPredictions as RawPrediction[],
+        ctx,
+      );
     }),
 } satisfies TRPCRouterRecord;
