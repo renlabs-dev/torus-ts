@@ -352,7 +352,7 @@ jobs:
     secrets: inherit
     with:
       app_name: prediction-swarm
-torus-swarm-twitter-dry-run:
+  torus-swarm-twitter-dry-run:
     needs: [turbo-check, pr-check]
     if: |
       github.ref_name != 'main' &&
