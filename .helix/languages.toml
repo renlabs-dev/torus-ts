@@ -1,0 +1,5 @@
+[[language]]
+name = "typescript"
+formatter = { command = "pnpm", args = ["prettier", "--stdin-filepath", "%{buffer_name}"] }
+auto-format = true
+
