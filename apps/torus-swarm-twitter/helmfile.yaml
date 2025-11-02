@@ -1,0 +1,35 @@
+environments:
+  dev:
+    values:
+      - ../../helm/values.yaml
+      - values.yaml
+      - releaseName: dev-torus-swarm-twitter
+      - environmentName: dev
+      - wssApiEndpoint: wss://api.testnet.torus.network
+      - namespace: torus-dev-web-apps
+      - chainEnv: testnet
+  prod:
+    values:
+      - ../../helm/values.yaml
+      - values.yaml
+      - releaseName: torus-swarm-twitter
+      - environmentName: prod
+      - wssApiEndpoint: wss://api.torus.network
+      - namespace: torus-prod-web-apps
+      - chainEnv: mainnet
+---
+helmDefaults:
+  wait: true
+  createNamespace: false
+
+repositories:
+  - name: renlabs
+    url: https://charts.renlabs.dev/
+
+releases:
+  - name: "{{ .Values.releaseName }}"
+    namespace: "{{ .Values.namespace }}"
+    chart: renlabs/application
+    values:
+      - ../../helm/values.yaml.gotmpl
+      - values.yaml

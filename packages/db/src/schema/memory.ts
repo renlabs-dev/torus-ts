@@ -32,7 +32,7 @@ export const twitterUsersSchema = createTable(
 
     username: varchar("username", { length: 15 }),
     screenName: varchar("screen_name", { length: 50 }),
-    description: varchar("description", { length: 280 }),
+    description: text("description"),
     avatarUrl: varchar("avatar_url", { length: 280 }),
     isVerified: boolean("is_verified"),
     verifiedType: varchar("verified_type", { length: 32 }),
@@ -167,6 +167,57 @@ export const parsedPredictionSchema = createTable(
 );
 
 /**
+ * Stores extracted/parsed details from verification process.
+ * All fields nullable except parsedPredictionId to support incremental population.
+ */
+export const parsedPredictionDetailsSchema = createTable(
+  "parsed_prediction_details",
+  {
+    parsedPredictionId: uuidv7("parsed_prediction_id")
+      .primaryKey()
+      .references(() => parsedPredictionSchema.id, {
+        onDelete: "cascade",
+      }),
+
+    // Thread summary explaining what the prediction is about
+    predictionContext: text("prediction_context"),
+
+    timeframeStatus: varchar("timeframe_status", { length: 32 }), // "explicit", "implicit", "inferred", "event_trigger", "missing"
+    timeframeStartUtc: timestampz("timeframe_start_utc"), // Parsed start time
+    timeframeEndUtc: timestampz("timeframe_end_utc"), // Parsed end time
+    timeframePrecision: varchar("timeframe_precision", { length: 32 }), // "hour", "day", "week", "month", "quarter", "year", "unbounded", "event"
+    timeframeReasoning: text("timeframe_reasoning"), // Why this timeframe was extracted
+    timeframeAssumptions: jsonb("timeframe_assumptions").$type<string[]>(), // Assumptions made during extraction
+    timeframeConfidence: decimal("timeframe_confidence"), // 0.0 to 1.0
+
+    filterValidationConfidence: decimal("filter_validation_confidence"), // 0.0 to 1.0
+    filterValidationReasoning: text("filter_validation_reasoning"), // Why the filter validation passed/failed
+
+    verdictConfidence: decimal("verdict_confidence"), // 0.0 to 1.0 confidence in verdict determination
+    verdictSources: jsonb("verdict_sources").$type<
+      {
+        url: string;
+        title?: string;
+        content?: string;
+      }[]
+    >(), // URL citations from web search
+
+    ...timeFields(),
+  },
+  (t) => [
+    index("parsed_prediction_details_timeframe_start_utc_idx").on(
+      t.timeframeStartUtc,
+    ),
+    index("parsed_prediction_details_timeframe_end_utc_idx").on(
+      t.timeframeEndUtc,
+    ),
+    index("parsed_prediction_details_timeframe_status_idx").on(
+      t.timeframeStatus,
+    ),
+  ],
+);
+
+/**
  * Main predictions table
  */
 export const predictionSchema = createTable(
@@ -264,8 +315,9 @@ export const parsedPredictionFeedbackSchema = createTable(
       .references(() => parsedPredictionSchema.id, {
         onDelete: "cascade",
       }),
-    reason: text("reason").notNull(), // Why it failed validation
-    validationStep: varchar("validation_step", { length: 64 }).notNull(), // Which step failed: "slice_validation", "timeframe_extraction", "filter_validation"
+    validationStep: varchar("validation_step", { length: 64 }).notNull(), // Which step failed: "slice_validation", "timeframe_extraction", "filter_validation", "verdict_validation"
+    failureCause: varchar("failure_cause", { length: 64 }), // Structured failure reason (for filter_validation and verdict_validation)
+    reason: text("reason").notNull(), // Human-readable explanation of why it failed validation
     ...timeFields(),
   },
   (t) => [
@@ -275,5 +327,6 @@ export const parsedPredictionFeedbackSchema = createTable(
     index("parsed_prediction_feedback_validation_step_idx").on(
       t.validationStep,
     ),
+    index("parsed_prediction_feedback_failure_cause_idx").on(t.failureCause),
   ],
 );
