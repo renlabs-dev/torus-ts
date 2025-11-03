@@ -1181,6 +1181,26 @@ export class PredictionVerifier {
       return true;
     }
 
+    if (timeframeResult.end_utc) {
+      const endDate = new Date(timeframeResult.end_utc);
+      const currentDate = new Date();
+
+      if (endDate > currentDate) {
+        logInfo("Timeframe has not matured yet", {
+          endUtc: timeframeResult.end_utc,
+          currentDate: currentDate.toISOString(),
+        });
+        await this.storeFeedback(
+          tx,
+          prediction.id,
+          "timeframe_extraction",
+          `Prediction timeframe ends on ${timeframeResult.end_utc} which is after the current date ${currentDate.toISOString()}. Prediction has not matured yet and cannot be verified.`,
+          "future_timeframe",
+        );
+        return true;
+      }
+    }
+
     const validationResult = await this.validateFilterExtraction(
       goalText,
       timeframeText,
