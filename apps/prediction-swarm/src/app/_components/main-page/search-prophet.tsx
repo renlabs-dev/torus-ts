@@ -21,6 +21,7 @@ export function SearchProphet() {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
   const [validationError, setValidationError] = useState("");
+  const [showAddAccount, setShowAddAccount] = useState<string | null>(null);
 
   // Validate and clean input
   const validateInput = (input: string) => {
@@ -53,6 +54,10 @@ export function SearchProphet() {
     setSearch(value);
     const validation = validateInput(value);
     setValidationError(validation.valid ? "" : (validation.error ?? ""));
+    // Reset add account screen when search changes
+    if (showAddAccount) {
+      setShowAddAccount(null);
+    }
   };
 
   useEffect(() => {
@@ -117,63 +122,120 @@ export function SearchProphet() {
           </div>
         )}
         <CommandList>
-          <CommandEmpty>
-            {searchResults === undefined ? (
-              <div className="flex flex-col gap-2">
-                <SearchEmpty />
-              </div>
-            ) : scrapingStatus?.status === "scraping" ? (
-              <div className="flex flex-col items-center gap-4 px-4 py-8">
-                <div className="relative">
-                  <div className="border-primary h-8 w-8 animate-spin rounded-full border-4 border-t-transparent" />
-                </div>
-                <div className="text-center">
-                  <h3 className="font-semibold">@{search} is being scraped</h3>
-                  <p className="text-muted-foreground mt-1 text-sm">
-                    This account is currently being added to the swarm. Check
-                    back soon!
-                  </p>
-                </div>
-              </div>
-            ) : (
-              <AddProphet username={search} onSuccess={() => setOpen(false)} />
-            )}
-          </CommandEmpty>
-          {searchResults && searchResults.length > 0 && (
-            <CommandGroup heading="Users">
-              {searchResults.map((user) => (
-                <CommandItem
-                  key={user.userId}
-                  onSelect={() => handleSelectUser(user.username)}
-                  className="flex items-center gap-3"
-                >
-                  {user.avatarUrl && (
-                    <Image
-                      src={user.avatarUrl}
-                      alt={user.username ?? ""}
-                      width={32}
-                      height={32}
-                      className="h-8 w-8 rounded-full"
-                    />
-                  )}
-                  <div className="flex-1 overflow-hidden">
-                    <div className="flex items-center gap-2">
-                      <span className="font-medium">
-                        {user.screenName ?? user.username}
-                      </span>
-                      {user.isVerified && (
-                        <span className="text-xs text-blue-500">✓</span>
-                      )}
-                    </div>
-                    {user.username && (
-                      <div className="text-muted-foreground text-sm">
-                        @{user.username}
-                      </div>
-                    )}
+          {showAddAccount ? (
+            <div className="p-2">
+              <AddProphet
+                username={showAddAccount}
+                onSuccess={() => {
+                  setOpen(false);
+                  setShowAddAccount(null);
+                }}
+              />
+            </div>
+          ) : (
+            <>
+              <CommandEmpty>
+                {searchResults === undefined ? (
+                  <div className="flex flex-col gap-2">
+                    <SearchEmpty />
                   </div>
-                </CommandItem>
-              ))}
-            </CommandGroup>
+                ) : scrapingStatus?.status === "scraping" ? (
+                  <div className="flex flex-col items-center gap-4 px-4 py-8">
+                    <div className="relative">
+                      <div className="border-primary h-8 w-8 animate-spin rounded-full border-4 border-t-transparent" />
+                    </div>
+                    <div className="text-center">
+                      <h3 className="font-semibold">
+                        @{search} is being scraped
+                      </h3>
+                      <p className="text-muted-foreground mt-1 text-sm">
+                        This account is currently being added to the swarm.
+                        Check back soon!
+                      </p>
+                    </div>
+                  </div>
+                ) : (
+                  <AddProphet
+                    username={search}
+                    onSuccess={() => setOpen(false)}
+                  />
+                )}
+              </CommandEmpty>
+              {searchResults && searchResults.length > 0 && (
+                <>
+                  {/* Show "Add account" if exact match doesn't exist */}
+                  {(() => {
+                    const validation = validateInput(search);
+                    const exactMatch = searchResults.find(
+                      (u) =>
+                        u.username?.toLowerCase() ===
+                        validation.cleaned.toLowerCase(),
+                    );
+
+                    if (!exactMatch && validation.valid && validation.cleaned) {
+                      return (
+                        <div className="border-b px-3 py-2">
+                          <CommandItem
+                            onSelect={() =>
+                              setShowAddAccount(validation.cleaned)
+                            }
+                            className="flex items-center gap-2"
+                          >
+                            <div className="bg-primary/10 text-primary flex h-8 w-8 items-center justify-center rounded-full">
+                              <span className="text-lg">+</span>
+                            </div>
+                            <div>
+                              <div className="font-medium">
+                                Add @{validation.cleaned}
+                              </div>
+                              <div className="text-muted-foreground text-xs">
+                                This account is not in the swarm yet
+                              </div>
+                            </div>
+                          </CommandItem>
+                        </div>
+                      );
+                    }
+                    return null;
+                  })()}
+
+                  <CommandGroup heading="Users">
+                    {searchResults.map((user) => (
+                      <CommandItem
+                        key={user.userId}
+                        onSelect={() => handleSelectUser(user.username)}
+                        className="flex items-center gap-3"
+                      >
+                        {user.avatarUrl && (
+                          <Image
+                            src={user.avatarUrl}
+                            alt={user.username ?? ""}
+                            width={32}
+                            height={32}
+                            className="h-8 w-8 rounded-full"
+                          />
+                        )}
+                        <div className="flex-1 overflow-hidden">
+                          <div className="flex items-center gap-2">
+                            <span className="font-medium">
+                              {user.screenName ?? user.username}
+                            </span>
+                            {user.isVerified && (
+                              <span className="text-xs text-blue-500">✓</span>
+                            )}
+                          </div>
+                          {user.username && (
+                            <div className="text-muted-foreground text-sm">
+                              @{user.username}
+                            </div>
+                          )}
+                        </div>
+                      </CommandItem>
+                    ))}
+                  </CommandGroup>
+                </>
+              )}
+            </>
           )}
         </CommandList>
       </CommandDialog>
