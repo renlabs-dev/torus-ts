@@ -1,4 +1,4 @@
-import { and, desc, eq, isNull, sql } from "@torus-ts/db";
+import { and, desc, eq, isNull, notExists, sql } from "@torus-ts/db";
 import {
   parsedPredictionFeedbackSchema,
   parsedPredictionSchema,
@@ -163,6 +163,7 @@ async function groupPredictionsByTweet(
     ...Array.from(parentTweetIds),
     ...Array.from(rootTweetIds),
   ];
+
   const contextTweets = await fetchThreadContext(ctx, allContextIds);
 
   rawPredictions.forEach((pred) => {
@@ -293,11 +294,29 @@ export const predictionRouter = {
         .from(predictionSchema)
         .innerJoin(
           parsedPredictionSchema,
-          eq(parsedPredictionSchema.predictionId, predictionSchema.id),
+          and(
+            eq(parsedPredictionSchema.predictionId, predictionSchema.id),
+            notExists(
+              ctx.db
+                .select({
+                  id: parsedPredictionFeedbackSchema.parsedPredictionId,
+                })
+                .from(parsedPredictionFeedbackSchema)
+                .where(
+                  eq(
+                    parsedPredictionFeedbackSchema.parsedPredictionId,
+                    parsedPredictionSchema.id,
+                  ),
+                ),
+            ),
+          ),
         )
         .innerJoin(
           scrapedTweetSchema,
-          sql`${scrapedTweetSchema.id} = CAST(CAST(${parsedPredictionSchema.goal} AS jsonb)->0->'source'->>'tweet_id' AS BIGINT)`,
+          eq(
+            scrapedTweetSchema.predictionId,
+            parsedPredictionSchema.predictionId,
+          ),
         )
         .innerJoin(
           twitterUsersSchema,
@@ -307,13 +326,6 @@ export const predictionRouter = {
           verdictSchema,
           eq(verdictSchema.parsedPredictionId, parsedPredictionSchema.id),
         )
-        .leftJoin(
-          parsedPredictionFeedbackSchema,
-          eq(
-            parsedPredictionFeedbackSchema.parsedPredictionId,
-            parsedPredictionSchema.id,
-          ),
-        )
         .where(
           and(
             eq(
@@ -321,7 +333,6 @@ export const predictionRouter = {
               username.toLowerCase(),
             ),
             eq(twitterUsersSchema.tracked, true),
-            isNull(parsedPredictionFeedbackSchema.parsedPredictionId),
           ),
         )
         .orderBy(desc(predictionSchema.createdAt))
@@ -391,11 +402,29 @@ export const predictionRouter = {
         .from(predictionSchema)
         .innerJoin(
           parsedPredictionSchema,
-          eq(parsedPredictionSchema.predictionId, predictionSchema.id),
+          and(
+            eq(parsedPredictionSchema.predictionId, predictionSchema.id),
+            notExists(
+              ctx.db
+                .select({
+                  id: parsedPredictionFeedbackSchema.parsedPredictionId,
+                })
+                .from(parsedPredictionFeedbackSchema)
+                .where(
+                  eq(
+                    parsedPredictionFeedbackSchema.parsedPredictionId,
+                    parsedPredictionSchema.id,
+                  ),
+                ),
+            ),
+          ),
         )
         .innerJoin(
           scrapedTweetSchema,
-          sql`${scrapedTweetSchema.id} = CAST(CAST(${parsedPredictionSchema.goal} AS jsonb)->0->'source'->>'tweet_id' AS BIGINT)`,
+          eq(
+            scrapedTweetSchema.predictionId,
+            parsedPredictionSchema.predictionId,
+          ),
         )
         .innerJoin(
           twitterUsersSchema,
@@ -405,19 +434,7 @@ export const predictionRouter = {
           verdictSchema,
           eq(verdictSchema.parsedPredictionId, parsedPredictionSchema.id),
         )
-        .leftJoin(
-          parsedPredictionFeedbackSchema,
-          eq(
-            parsedPredictionFeedbackSchema.parsedPredictionId,
-            parsedPredictionSchema.id,
-          ),
-        )
-        .where(
-          and(
-            eq(twitterUsersSchema.tracked, true),
-            isNull(parsedPredictionFeedbackSchema.parsedPredictionId),
-          ),
-        )
+        .where(and(eq(twitterUsersSchema.tracked, true)))
         .orderBy(desc(predictionSchema.createdAt))
         .limit(limit)
         .offset(offset);
@@ -456,11 +473,29 @@ export const predictionRouter = {
         .from(predictionSchema)
         .innerJoin(
           parsedPredictionSchema,
-          eq(parsedPredictionSchema.predictionId, predictionSchema.id),
+          and(
+            eq(parsedPredictionSchema.predictionId, predictionSchema.id),
+            notExists(
+              ctx.db
+                .select({
+                  id: parsedPredictionFeedbackSchema.parsedPredictionId,
+                })
+                .from(parsedPredictionFeedbackSchema)
+                .where(
+                  eq(
+                    parsedPredictionFeedbackSchema.parsedPredictionId,
+                    parsedPredictionSchema.id,
+                  ),
+                ),
+            ),
+          ),
         )
         .innerJoin(
           scrapedTweetSchema,
-          sql`${scrapedTweetSchema.id} = CAST(CAST(${parsedPredictionSchema.goal} AS jsonb)->0->'source'->>'tweet_id' AS BIGINT)`,
+          eq(
+            scrapedTweetSchema.predictionId,
+            parsedPredictionSchema.predictionId,
+          ),
         )
         .innerJoin(
           twitterUsersSchema,
@@ -470,13 +505,6 @@ export const predictionRouter = {
           verdictSchema,
           eq(verdictSchema.parsedPredictionId, parsedPredictionSchema.id),
         )
-        .leftJoin(
-          parsedPredictionFeedbackSchema,
-          eq(
-            parsedPredictionFeedbackSchema.parsedPredictionId,
-            parsedPredictionSchema.id,
-          ),
-        )
         .where(
           and(
             eq(
@@ -484,7 +512,6 @@ export const predictionRouter = {
               username.toLowerCase(),
             ),
             eq(twitterUsersSchema.tracked, true),
-            isNull(parsedPredictionFeedbackSchema.parsedPredictionId),
           ),
         )
         .groupBy(sql`verdict_status`);
@@ -553,11 +580,29 @@ export const predictionRouter = {
         .from(predictionSchema)
         .innerJoin(
           parsedPredictionSchema,
-          eq(parsedPredictionSchema.predictionId, predictionSchema.id),
+          and(
+            eq(parsedPredictionSchema.predictionId, predictionSchema.id),
+            notExists(
+              ctx.db
+                .select({
+                  id: parsedPredictionFeedbackSchema.parsedPredictionId,
+                })
+                .from(parsedPredictionFeedbackSchema)
+                .where(
+                  eq(
+                    parsedPredictionFeedbackSchema.parsedPredictionId,
+                    parsedPredictionSchema.id,
+                  ),
+                ),
+            ),
+          ),
         )
         .innerJoin(
           scrapedTweetSchema,
-          sql`${scrapedTweetSchema.id} = CAST(CAST(${parsedPredictionSchema.goal} AS jsonb)->0->'source'->>'tweet_id' AS BIGINT)`,
+          eq(
+            scrapedTweetSchema.predictionId,
+            parsedPredictionSchema.predictionId,
+          ),
         )
         .innerJoin(
           twitterUsersSchema,
@@ -567,13 +612,6 @@ export const predictionRouter = {
           verdictSchema,
           eq(verdictSchema.parsedPredictionId, parsedPredictionSchema.id),
         )
-        .leftJoin(
-          parsedPredictionFeedbackSchema,
-          eq(
-            parsedPredictionFeedbackSchema.parsedPredictionId,
-            parsedPredictionSchema.id,
-          ),
-        )
         .where(
           and(
             eq(
@@ -581,7 +619,6 @@ export const predictionRouter = {
               username.toLowerCase(),
             ),
             eq(twitterUsersSchema.tracked, true),
-            isNull(parsedPredictionFeedbackSchema.parsedPredictionId),
             verdictStatus === "ongoing"
               ? isNull(verdictSchema.id)
               : verdictStatus === "true"
@@ -644,11 +681,29 @@ export const predictionRouter = {
         .from(predictionSchema)
         .innerJoin(
           parsedPredictionSchema,
-          eq(parsedPredictionSchema.predictionId, predictionSchema.id),
+          and(
+            eq(parsedPredictionSchema.predictionId, predictionSchema.id),
+            notExists(
+              ctx.db
+                .select({
+                  id: parsedPredictionFeedbackSchema.parsedPredictionId,
+                })
+                .from(parsedPredictionFeedbackSchema)
+                .where(
+                  eq(
+                    parsedPredictionFeedbackSchema.parsedPredictionId,
+                    parsedPredictionSchema.id,
+                  ),
+                ),
+            ),
+          ),
         )
         .innerJoin(
           scrapedTweetSchema,
-          sql`${scrapedTweetSchema.id} = CAST(CAST(${parsedPredictionSchema.goal} AS jsonb)->0->'source'->>'tweet_id' AS BIGINT)`,
+          eq(
+            scrapedTweetSchema.predictionId,
+            parsedPredictionSchema.predictionId,
+          ),
         )
         .innerJoin(
           twitterUsersSchema,
@@ -658,17 +713,9 @@ export const predictionRouter = {
           verdictSchema,
           eq(verdictSchema.parsedPredictionId, parsedPredictionSchema.id),
         )
-        .leftJoin(
-          parsedPredictionFeedbackSchema,
-          eq(
-            parsedPredictionFeedbackSchema.parsedPredictionId,
-            parsedPredictionSchema.id,
-          ),
-        )
         .where(
           and(
             eq(twitterUsersSchema.tracked, true),
-            isNull(parsedPredictionFeedbackSchema.parsedPredictionId),
             verdictStatus === "ongoing"
               ? isNull(verdictSchema.id)
               : verdictStatus === "true"
@@ -702,11 +749,29 @@ export const predictionRouter = {
       .from(predictionSchema)
       .innerJoin(
         parsedPredictionSchema,
-        eq(parsedPredictionSchema.predictionId, predictionSchema.id),
+        and(
+          eq(parsedPredictionSchema.predictionId, predictionSchema.id),
+          notExists(
+            ctx.db
+              .select({
+                id: parsedPredictionFeedbackSchema.parsedPredictionId,
+              })
+              .from(parsedPredictionFeedbackSchema)
+              .where(
+                eq(
+                  parsedPredictionFeedbackSchema.parsedPredictionId,
+                  parsedPredictionSchema.id,
+                ),
+              ),
+          ),
+        ),
       )
       .innerJoin(
         scrapedTweetSchema,
-        sql`${scrapedTweetSchema.id} = CAST(CAST(${parsedPredictionSchema.goal} AS jsonb)->0->'source'->>'tweet_id' AS BIGINT)`,
+        eq(
+          scrapedTweetSchema.predictionId,
+          parsedPredictionSchema.predictionId,
+        ),
       )
       .innerJoin(
         twitterUsersSchema,
@@ -716,19 +781,7 @@ export const predictionRouter = {
         verdictSchema,
         eq(verdictSchema.parsedPredictionId, parsedPredictionSchema.id),
       )
-      .leftJoin(
-        parsedPredictionFeedbackSchema,
-        eq(
-          parsedPredictionFeedbackSchema.parsedPredictionId,
-          parsedPredictionSchema.id,
-        ),
-      )
-      .where(
-        and(
-          eq(twitterUsersSchema.tracked, true),
-          isNull(parsedPredictionFeedbackSchema.parsedPredictionId),
-        ),
-      )
+      .where(and(eq(twitterUsersSchema.tracked, true)))
       .groupBy(sql`verdict_status`);
 
     const result = {
@@ -802,11 +855,29 @@ export const predictionRouter = {
         .from(predictionSchema)
         .innerJoin(
           parsedPredictionSchema,
-          eq(parsedPredictionSchema.predictionId, predictionSchema.id),
+          and(
+            eq(parsedPredictionSchema.predictionId, predictionSchema.id),
+            notExists(
+              ctx.db
+                .select({
+                  id: parsedPredictionFeedbackSchema.parsedPredictionId,
+                })
+                .from(parsedPredictionFeedbackSchema)
+                .where(
+                  eq(
+                    parsedPredictionFeedbackSchema.parsedPredictionId,
+                    parsedPredictionSchema.id,
+                  ),
+                ),
+            ),
+          ),
         )
         .innerJoin(
           scrapedTweetSchema,
-          sql`${scrapedTweetSchema.id} = CAST(CAST(${parsedPredictionSchema.goal} AS jsonb)->0->'source'->>'tweet_id' AS BIGINT)`,
+          eq(
+            scrapedTweetSchema.predictionId,
+            parsedPredictionSchema.predictionId,
+          ),
         )
         .innerJoin(
           twitterUsersSchema,
@@ -816,18 +887,10 @@ export const predictionRouter = {
           verdictSchema,
           eq(verdictSchema.parsedPredictionId, parsedPredictionSchema.id),
         )
-        .leftJoin(
-          parsedPredictionFeedbackSchema,
-          eq(
-            parsedPredictionFeedbackSchema.parsedPredictionId,
-            parsedPredictionSchema.id,
-          ),
-        )
         .where(
           and(
             eq(parsedPredictionSchema.topicId, topicId),
             eq(twitterUsersSchema.tracked, true),
-            isNull(parsedPredictionFeedbackSchema.parsedPredictionId),
           ),
         )
         .orderBy(desc(predictionSchema.createdAt))
