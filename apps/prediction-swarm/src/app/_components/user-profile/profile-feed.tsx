@@ -35,6 +35,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
+import { FutureTimeframeBadge } from "./future-timeframe-badge";
 import { ThreadContext } from "./thread-context";
 
 type GroupedTweetData = inferProcedureOutput<
@@ -384,6 +385,20 @@ export function ProfileFeed({
                               ).toFixed(0)}
                               %
                             </span>
+                          </>
+                        )}
+                        {activePrediction.feedbackFailureCause ===
+                          "future_timeframe" && (
+                          <>
+                            <span className="text-muted-foreground text-xs">
+                              •
+                            </span>
+                            <FutureTimeframeBadge
+                              reason={
+                                activePrediction.feedbackReason ??
+                                "Timeframe is in the future"
+                              }
+                            />
                           </>
                         )}
                       </div>

@@ -1,5 +1,4 @@
 import { Jacquard_12 as Jacquard } from "next/font/google";
-
 import Dither from "../_components/dither";
 import { FAQ } from "../_components/main-page/faq";
 import { ListItem } from "../_components/main-page/list-item";

@@ -48,6 +48,8 @@ interface RawPrediction {
   verdict: boolean | null;
   verdictContext: VerdictContext | null;
   verdictCreatedAt: Date | null;
+  feedbackFailureCause: string | null;
+  feedbackReason: string | null;
 }
 
 export interface ParentTweet {
@@ -89,6 +91,8 @@ export interface GroupedTweet {
     verdict: boolean | null;
     verdictContext: VerdictContext | null;
     verdictCreatedAt: Date | null;
+    feedbackFailureCause: string | null;
+    feedbackReason: string | null;
   }[];
 }
 
@@ -207,6 +211,8 @@ async function groupPredictionsByTweet(
       verdict: pred.verdict,
       verdictContext: pred.verdictContext,
       verdictCreatedAt: pred.verdictCreatedAt,
+      feedbackFailureCause: pred.feedbackFailureCause,
+      feedbackReason: pred.feedbackReason,
     });
   });
 
@@ -290,6 +296,10 @@ export const predictionRouter = {
           verdict: verdictSchema.verdict,
           verdictContext: verdictSchema.context,
           verdictCreatedAt: verdictSchema.createdAt,
+
+          // Feedback data (for future_timeframe)
+          feedbackFailureCause: parsedPredictionFeedbackSchema.failureCause,
+          feedbackReason: parsedPredictionFeedbackSchema.reason,
         })
         .from(predictionSchema)
         .innerJoin(
@@ -303,9 +313,12 @@ export const predictionRouter = {
                 })
                 .from(parsedPredictionFeedbackSchema)
                 .where(
-                  eq(
-                    parsedPredictionFeedbackSchema.parsedPredictionId,
-                    parsedPredictionSchema.id,
+                  and(
+                    eq(
+                      parsedPredictionFeedbackSchema.parsedPredictionId,
+                      parsedPredictionSchema.id,
+                    ),
+                    sql`${parsedPredictionFeedbackSchema.failureCause} != 'future_timeframe'`,
                   ),
                 ),
             ),
@@ -325,6 +338,13 @@ export const predictionRouter = {
         .leftJoin(
           verdictSchema,
           eq(verdictSchema.parsedPredictionId, parsedPredictionSchema.id),
+        )
+        .leftJoin(
+          parsedPredictionFeedbackSchema,
+          eq(
+            parsedPredictionFeedbackSchema.parsedPredictionId,
+            parsedPredictionSchema.id,
+          ),
         )
         .where(
           and(
@@ -398,6 +418,10 @@ export const predictionRouter = {
           verdict: verdictSchema.verdict,
           verdictContext: verdictSchema.context,
           verdictCreatedAt: verdictSchema.createdAt,
+
+          // Feedback data (for future_timeframe)
+          feedbackFailureCause: parsedPredictionFeedbackSchema.failureCause,
+          feedbackReason: parsedPredictionFeedbackSchema.reason,
         })
         .from(predictionSchema)
         .innerJoin(
@@ -411,9 +435,12 @@ export const predictionRouter = {
                 })
                 .from(parsedPredictionFeedbackSchema)
                 .where(
-                  eq(
-                    parsedPredictionFeedbackSchema.parsedPredictionId,
-                    parsedPredictionSchema.id,
+                  and(
+                    eq(
+                      parsedPredictionFeedbackSchema.parsedPredictionId,
+                      parsedPredictionSchema.id,
+                    ),
+                    sql`${parsedPredictionFeedbackSchema.failureCause} != 'future_timeframe'`,
                   ),
                 ),
             ),
@@ -433,6 +460,13 @@ export const predictionRouter = {
         .leftJoin(
           verdictSchema,
           eq(verdictSchema.parsedPredictionId, parsedPredictionSchema.id),
+        )
+        .leftJoin(
+          parsedPredictionFeedbackSchema,
+          eq(
+            parsedPredictionFeedbackSchema.parsedPredictionId,
+            parsedPredictionSchema.id,
+          ),
         )
         .where(and(eq(twitterUsersSchema.tracked, true)))
         .orderBy(desc(predictionSchema.createdAt))
@@ -482,9 +516,12 @@ export const predictionRouter = {
                 })
                 .from(parsedPredictionFeedbackSchema)
                 .where(
-                  eq(
-                    parsedPredictionFeedbackSchema.parsedPredictionId,
-                    parsedPredictionSchema.id,
+                  and(
+                    eq(
+                      parsedPredictionFeedbackSchema.parsedPredictionId,
+                      parsedPredictionSchema.id,
+                    ),
+                    sql`${parsedPredictionFeedbackSchema.failureCause} != 'future_timeframe'`,
                   ),
                 ),
             ),
@@ -576,6 +613,8 @@ export const predictionRouter = {
           verdict: verdictSchema.verdict,
           verdictContext: verdictSchema.context,
           verdictCreatedAt: verdictSchema.createdAt,
+          feedbackFailureCause: parsedPredictionFeedbackSchema.failureCause,
+          feedbackReason: parsedPredictionFeedbackSchema.reason,
         })
         .from(predictionSchema)
         .innerJoin(
@@ -589,9 +628,12 @@ export const predictionRouter = {
                 })
                 .from(parsedPredictionFeedbackSchema)
                 .where(
-                  eq(
-                    parsedPredictionFeedbackSchema.parsedPredictionId,
-                    parsedPredictionSchema.id,
+                  and(
+                    eq(
+                      parsedPredictionFeedbackSchema.parsedPredictionId,
+                      parsedPredictionSchema.id,
+                    ),
+                    sql`${parsedPredictionFeedbackSchema.failureCause} != 'future_timeframe'`,
                   ),
                 ),
             ),
@@ -611,6 +653,13 @@ export const predictionRouter = {
         .leftJoin(
           verdictSchema,
           eq(verdictSchema.parsedPredictionId, parsedPredictionSchema.id),
+        )
+        .leftJoin(
+          parsedPredictionFeedbackSchema,
+          eq(
+            parsedPredictionFeedbackSchema.parsedPredictionId,
+            parsedPredictionSchema.id,
+          ),
         )
         .where(
           and(
@@ -677,6 +726,8 @@ export const predictionRouter = {
           verdict: verdictSchema.verdict,
           verdictContext: verdictSchema.context,
           verdictCreatedAt: verdictSchema.createdAt,
+          feedbackFailureCause: parsedPredictionFeedbackSchema.failureCause,
+          feedbackReason: parsedPredictionFeedbackSchema.reason,
         })
         .from(predictionSchema)
         .innerJoin(
@@ -690,9 +741,12 @@ export const predictionRouter = {
                 })
                 .from(parsedPredictionFeedbackSchema)
                 .where(
-                  eq(
-                    parsedPredictionFeedbackSchema.parsedPredictionId,
-                    parsedPredictionSchema.id,
+                  and(
+                    eq(
+                      parsedPredictionFeedbackSchema.parsedPredictionId,
+                      parsedPredictionSchema.id,
+                    ),
+                    sql`${parsedPredictionFeedbackSchema.failureCause} != 'future_timeframe'`,
                   ),
                 ),
             ),
@@ -712,6 +766,13 @@ export const predictionRouter = {
         .leftJoin(
           verdictSchema,
           eq(verdictSchema.parsedPredictionId, parsedPredictionSchema.id),
+        )
+        .leftJoin(
+          parsedPredictionFeedbackSchema,
+          eq(
+            parsedPredictionFeedbackSchema.parsedPredictionId,
+            parsedPredictionSchema.id,
+          ),
         )
         .where(
           and(
@@ -758,9 +819,12 @@ export const predictionRouter = {
               })
               .from(parsedPredictionFeedbackSchema)
               .where(
-                eq(
-                  parsedPredictionFeedbackSchema.parsedPredictionId,
-                  parsedPredictionSchema.id,
+                and(
+                  eq(
+                    parsedPredictionFeedbackSchema.parsedPredictionId,
+                    parsedPredictionSchema.id,
+                  ),
+                  sql`${parsedPredictionFeedbackSchema.failureCause} != 'future_timeframe'`,
                 ),
               ),
           ),
@@ -851,6 +915,10 @@ export const predictionRouter = {
           verdict: verdictSchema.verdict,
           verdictContext: verdictSchema.context,
           verdictCreatedAt: verdictSchema.createdAt,
+
+          // Feedback data (for future_timeframe)
+          feedbackFailureCause: parsedPredictionFeedbackSchema.failureCause,
+          feedbackReason: parsedPredictionFeedbackSchema.reason,
         })
         .from(predictionSchema)
         .innerJoin(
@@ -864,9 +932,12 @@ export const predictionRouter = {
                 })
                 .from(parsedPredictionFeedbackSchema)
                 .where(
-                  eq(
-                    parsedPredictionFeedbackSchema.parsedPredictionId,
-                    parsedPredictionSchema.id,
+                  and(
+                    eq(
+                      parsedPredictionFeedbackSchema.parsedPredictionId,
+                      parsedPredictionSchema.id,
+                    ),
+                    sql`${parsedPredictionFeedbackSchema.failureCause} != 'future_timeframe'`,
                   ),
                 ),
             ),
@@ -886,6 +957,13 @@ export const predictionRouter = {
         .leftJoin(
           verdictSchema,
           eq(verdictSchema.parsedPredictionId, parsedPredictionSchema.id),
+        )
+        .leftJoin(
+          parsedPredictionFeedbackSchema,
+          eq(
+            parsedPredictionFeedbackSchema.parsedPredictionId,
+            parsedPredictionSchema.id,
+          ),
         )
         .where(
           and(
