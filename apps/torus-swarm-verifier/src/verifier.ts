@@ -106,6 +106,7 @@ interface SliceValidationResult {
  * Filter validation failure reasons
  */
 type FilterValidationFailureCause =
+  | "broken_extraction"
   | "vague_goal"
   | "present_state"
   | "negation"
@@ -232,6 +233,7 @@ const FILTER_VALIDATION_SCHEMA = {
     failure_cause: {
       type: ["string", "null"],
       enum: [
+        "broken_extraction",
         "vague_goal",
         "present_state",
         "negation",
@@ -243,7 +245,7 @@ const FILTER_VALIDATION_SCHEMA = {
         null,
       ],
       description:
-        "Category of failure (null if is_valid is true). Vague_goal: goal is subjective or unmeasurable. Present_state: statement about current conditions, not a prediction. Negation: prediction is negated. Sarcasm: sarcastic/joking tone. Quoting_others: quoting someone else. Heavy_hedging: heavily hedged. Future_timeframe: prediction hasn't matured yet. Other: other disqualifying factors.",
+        "Category of failure (null if is_valid is true). Broken_extraction: slices cut through word boundaries or extract nonsensical fragments. Vague_goal: goal is subjective or unmeasurable. Present_state: statement about current conditions, not a prediction. Negation: prediction is negated. Sarcasm: sarcastic/joking tone. Quoting_others: quoting someone else. Heavy_hedging: heavily hedged. Future_timeframe: prediction hasn't matured yet. Other: other disqualifying factors.",
     },
     confidence: {
       type: "number",

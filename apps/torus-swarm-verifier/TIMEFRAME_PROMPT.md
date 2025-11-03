@@ -98,15 +98,18 @@ These are NOT valid timeframes and should be marked as `timeframe_status: "missi
 **1. Vague Temporal Phrases:**
 
 - "soon", "eventually", "someday", "one day"
-- "in the near future", "in the coming years"
+- "in the future", "in the near future", "in the coming years"
 - "before too long", "at some point"
+- "down the road", "down the line"
 - "yet" (as in "don't write an obituary yet")
 
 **2. Non-Temporal Words:**
 
 - Single words that aren't time references: "will", "would", "should", "may"
+- Meta-prediction phrases: "I'm predicting", "I predict", "I think", "I believe", "I'm calling"
 - Verbs or auxiliaries mistakenly extracted as timeframes
 - Random words from the sentence
+- These are statements ABOUT making predictions, not temporal deadlines
 
 **3. Excessively Long Timeframes:**
 
@@ -504,7 +507,65 @@ Tweet posted: Monday Jan 20, 2025
 
 ---
 
-### Example 11: Thread Context Clarification
+### Example 11: Invalid - "In the Future" is Vague
+
+**Input:**
+
+```json
+{
+  "timeframe_text": "In the future",
+  "goal_text": "BTC will dominate in hashpower charts",
+  "tweet_timestamp": "2020-03-20T10:00:00Z",
+  "current_time": "2025-01-20T10:00:00Z"
+}
+```
+
+**Output:**
+
+```json
+{
+  "timeframe_status": "missing",
+  "start_utc": null,
+  "end_utc": null,
+  "precision": "unbounded",
+  "reasoning": "'In the future' is completely unbounded with no specific deadline. This could mean next week or in 50 years. There's no way to determine when to verify this prediction.",
+  "assumptions": [],
+  "confidence": 1.0
+}
+```
+
+---
+
+### Example 12: Invalid - Meta-Prediction Phrase
+
+**Input:**
+
+```json
+{
+  "timeframe_text": "I'm predicting",
+  "goal_text": "the start of a California independence movement",
+  "tweet_timestamp": "2020-03-18T16:00:00Z",
+  "current_time": "2025-01-20T10:00:00Z"
+}
+```
+
+**Output:**
+
+```json
+{
+  "timeframe_status": "missing",
+  "start_utc": null,
+  "end_utc": null,
+  "precision": "unbounded",
+  "reasoning": "'I'm predicting' is a meta-statement about making a prediction, not a timeframe. This describes the ACT of predicting, not WHEN the prediction will come true. No temporal deadline exists.",
+  "assumptions": [],
+  "confidence": 1.0
+}
+```
+
+---
+
+### Example 12: Thread Context Clarification
 
 **Input:**
 

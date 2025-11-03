@@ -47,7 +47,21 @@ You will receive:
 
 Determine if this is a valid prediction that should be verified.
 
-**Check for disqualifying factors:**
+**CRITICAL: First check slice extraction quality:**
+
+Before evaluating the prediction content, verify the filter didn't create broken extractions:
+
+1. **Word boundary violations**: Check if slices cut through the middle of words
+   - Compare the extracted text against the full tweet at those indices
+   - Example: Extracting "now" from "k**now**" is INVALID - it cuts through the word "know"
+   - If a slice doesn't align with word boundaries, mark as invalid with `failure_cause: "broken_extraction"`
+
+2. **Semantic validity of extracted text**: Does the extracted text make sense in isolation?
+   - Is the timeframe slice actually a temporal expression? (not just random word fragments)
+   - Is the goal slice actually a predictive statement? (not just disconnected fragments)
+   - If extractions are nonsensical or fragments, mark as invalid with `failure_cause: "broken_extraction"`
+
+**Then check for disqualifying factors:**
 
 1. **Vague or unmeasurable goals**:
    - Subjective outcomes: "will be wild", "will be grim", "will be good/bad"
@@ -79,7 +93,7 @@ Return ONLY valid JSON (no markdown fences):
 {
   "context": "Brief summary of what the thread is about and what the author was saying",
   "is_valid": true | false,
-  "failure_cause": "vague_goal" | "present_state" | "negation" | "sarcasm" | "quoting_others" | "heavy_hedging" | "future_timeframe" | "other" | null,
+  "failure_cause": "broken_extraction" | "vague_goal" | "present_state" | "negation" | "sarcasm" | "quoting_others" | "heavy_hedging" | "future_timeframe" | "other" | null,
   "confidence": 0.95,
   "reasoning": "Explanation of why this is or isn't a valid prediction"
 }
@@ -90,6 +104,7 @@ Return ONLY valid JSON (no markdown fences):
 - `context`: Brief summary of the thread and what the author was saying
 - `is_valid`: Boolean indicating if this is a valid prediction
 - `failure_cause`: Category of failure (null if is_valid is true). Must be one of:
+  - `"broken_extraction"`: Slices cut through word boundaries or extract nonsensical fragments
   - `"vague_goal"`: Goal is subjective, unmeasurable, or has no clear success criteria
   - `"present_state"`: Statement about current conditions, not a future prediction
   - `"negation"`: Prediction is negated ("I don't think", "won't", "unlikely")
@@ -136,7 +151,55 @@ Return ONLY valid JSON (no markdown fences):
 }
 ```
 
-### Example 2: Invalid - Negation
+### Example 2: Invalid - Broken Extraction (Word Boundary Violation)
+
+**Input:**
+
+```json
+{
+  "current_date": "2025-04-15T00:00:00Z",
+  "thread_tweets": [
+    {
+      "tweet_id": "123456789",
+      "text": "@vgr My critique is deeper than \"Metaverse Wikipedia will beat Metaverse Encyclopedia Britannica\". It's that we don't really know the definition of \"the metaverse\" yet, it's far too early to know what people actually want. So anything Facebook creates now will misfire."
+    }
+  ],
+  "goal_slices": [
+    {
+      "tweet_id": "123456789",
+      "start": 180,
+      "end": 183,
+      "text": "now"
+    }
+  ],
+  "timeframe_slices": [
+    {
+      "tweet_id": "123456789",
+      "start": 175,
+      "end": 178,
+      "text": "now"
+    }
+  ],
+  "timeframe_parsed": {
+    "start_utc": "2020-03-18T10:00:00Z",
+    "end_utc": "2020-03-18T10:00:00Z"
+  }
+}
+```
+
+**Output:**
+
+```json
+{
+  "context": "Author is critiquing Facebook's metaverse strategy, saying it's too early to know what people want.",
+  "is_valid": false,
+  "failure_cause": "broken_extraction",
+  "confidence": 0.99,
+  "reasoning": "The filter extracted 'now' from the middle of the word 'know' at position 175-178. Looking at the full tweet, this is part of the phrase 'we don't really know' - the filter cut through the word boundary. The extracted 'now' is not a temporal expression but a fragment of the word 'know'. This is a broken extraction that doesn't represent the actual tweet content."
+}
+```
+
+### Example 3: Invalid - Negation
 
 **Input:**
 
