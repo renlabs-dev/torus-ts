@@ -37,7 +37,9 @@ export const twitterUserRouter = {
             cleaned = cleaned.replace(/^@/, ""); // Remove leading @
 
             // Extract username from Twitter URLs
-            const urlMatch = cleaned.match(/(?:twitter\.com|x\.com)\/([a-zA-Z0-9_]+)/);
+            const urlMatch = /(?:twitter\.com|x\.com)\/([a-zA-Z0-9_]+)/.exec(
+              cleaned,
+            );
             if (urlMatch) {
               cleaned = urlMatch[1] ?? cleaned;
             }
