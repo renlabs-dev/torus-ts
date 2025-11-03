@@ -91,15 +91,38 @@ If multiple timelines appear in text:
 2. If conflicting, choose the EARLIEST (most conservative).
 3. Note the conflict in `reasoning` field.
 
-### Vague Phrases (Mark as Unverifiable)
+### Invalid Timeframes (Mark as Missing)
 
-These phrases have NO concrete deadline:
+These are NOT valid timeframes and should be marked as `timeframe_status: "missing"`:
+
+**1. Vague Temporal Phrases:**
 
 - "soon", "eventually", "someday", "one day"
 - "in the near future", "in the coming years"
 - "before too long", "at some point"
+- "yet" (as in "don't write an obituary yet")
 
-Mark these as `timeframe_status: "missing"`.
+**2. Non-Temporal Words:**
+
+- Single words that aren't time references: "will", "would", "should", "may"
+- Verbs or auxiliaries mistakenly extracted as timeframes
+- Random words from the sentence
+
+**3. Excessively Long Timeframes:**
+
+- Multi-decade predictions: "the 21st century", "this century"
+- Any timeframe exceeding 10 years from tweet_timestamp
+- Reason: Too long to be meaningfully verifiable
+
+**4. Conditional Phrases (NOT timeframes):**
+
+- "when X happens" - This is a condition, not a time
+- "if/once/after X" - These are event triggers, not temporal deadlines
+- "when checks hit", "once approved", "after the announcement"
+- Mark these as `timeframe_status: "event_trigger"` if they reference a specific event
+- Mark as `timeframe_status: "missing"` if too vague
+
+**When you see these patterns, return `timeframe_status: "missing"` with null timestamps.**
 
 ### Event-Triggered Phrases
 
@@ -365,7 +388,123 @@ Tweet posted: Monday Jan 20, 2025
 
 ---
 
-### Example 7: Thread Context Clarification
+### Example 7: Invalid - Non-Temporal Word
+
+**Input:**
+
+```json
+{
+  "timeframe_text": "Will",
+  "goal_text": "have enormous consequences",
+  "tweet_timestamp": "2020-03-15T10:00:00Z",
+  "current_time": "2025-01-20T10:00:00Z"
+}
+```
+
+**Output:**
+
+```json
+{
+  "timeframe_status": "missing",
+  "start_utc": null,
+  "end_utc": null,
+  "precision": "unbounded",
+  "reasoning": "'Will' is a verb/auxiliary, not a timeframe. This appears to be a filter extraction error.",
+  "assumptions": [],
+  "confidence": 1.0
+}
+```
+
+---
+
+### Example 8: Invalid - "Yet" is Not a Timeframe
+
+**Input:**
+
+```json
+{
+  "timeframe_text": "yet",
+  "goal_text": "Don't write an obituary for globalism",
+  "tweet_timestamp": "2020-03-20T12:00:00Z",
+  "current_time": "2025-01-20T10:00:00Z"
+}
+```
+
+**Output:**
+
+```json
+{
+  "timeframe_status": "missing",
+  "start_utc": null,
+  "end_utc": null,
+  "precision": "unbounded",
+  "reasoning": "'yet' means 'at this time' or 'so far', not a future deadline. No verifiable timeframe exists.",
+  "assumptions": [],
+  "confidence": 1.0
+}
+```
+
+---
+
+### Example 9: Invalid - Excessively Long Timeframe
+
+**Input:**
+
+```json
+{
+  "timeframe_text": "The 21st century",
+  "goal_text": "The East will be in ascendance",
+  "tweet_timestamp": "2020-03-15T10:00:00Z",
+  "current_time": "2025-01-20T10:00:00Z"
+}
+```
+
+**Output:**
+
+```json
+{
+  "timeframe_status": "missing",
+  "start_utc": null,
+  "end_utc": null,
+  "precision": "unbounded",
+  "reasoning": "21st century spans 100 years (2001-2100). This is too long to be a meaningful verifiable prediction. Maximum reasonable timeframe is 10 years.",
+  "assumptions": [],
+  "confidence": 1.0
+}
+```
+
+---
+
+### Example 10: Invalid - Conditional Phrase Not a Timeframe
+
+**Input:**
+
+```json
+{
+  "timeframe_text": "When checks hit",
+  "goal_text": "people will spend on consumer staples",
+  "tweet_timestamp": "2020-03-22T14:30:00Z",
+  "current_time": "2025-01-20T10:00:00Z"
+}
+```
+
+**Output:**
+
+```json
+{
+  "timeframe_status": "missing",
+  "start_utc": null,
+  "end_utc": null,
+  "precision": "unbounded",
+  "reasoning": "'When checks hit' is a conditional trigger, not a temporal deadline. This is an 'if X then Y' statement, not a time-bound prediction.",
+  "assumptions": [],
+  "confidence": 1.0
+}
+```
+
+---
+
+### Example 11: Thread Context Clarification
 
 **Input:**
 

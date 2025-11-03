@@ -49,12 +49,27 @@ Determine if this is a valid prediction that should be verified.
 
 **Check for disqualifying factors:**
 
-- Negation: "I don't think", "won't", "unlikely"
-- Sarcasm: "lol", "lmao", emojis, "yeah right"
-- Conditionals: "if X happens", "assuming Y"
-- Quoting others: Author quoting someone else's view
-- Heavy hedging: "maybe", "possibly", "could"
-- Future timeframe: Prediction end_utc is AFTER current_date (not yet mature for verification)
+1. **Vague or unmeasurable goals**:
+   - Subjective outcomes: "will be wild", "will be grim", "will be good/bad"
+   - No clear success criteria: "will have consequences", "will impact X"
+   - Abstract philosophical statements: "the West in decline", "the East ascendant"
+   - Cannot objectively verify if it happened
+   - Note: Conditionals with specific, measurable outcomes are VALID. Only reject if the goal itself is vague.
+
+2. **Present-state commentary** (NOT predictions):
+   - Describing current conditions: "we already face", "things are now"
+   - Ongoing analysis of existing situations
+   - If it's about what IS rather than what WILL BE, it's not a prediction
+
+3. **Negation**: "I don't think", "won't", "unlikely"
+
+4. **Sarcasm**: "lol", "lmao", emojis, "yeah right"
+
+5. **Quoting others**: Author quoting someone else's view
+
+6. **Heavy hedging**: "maybe", "possibly", "could"
+
+7. **Future timeframe**: Prediction end_utc is AFTER current_date (not yet mature for verification)
 
 ## Output Format
 
@@ -64,7 +79,7 @@ Return ONLY valid JSON (no markdown fences):
 {
   "context": "Brief summary of what the thread is about and what the author was saying",
   "is_valid": true | false,
-  "failure_cause": "negation" | "sarcasm" | "conditional" | "quoting_others" | "heavy_hedging" | "future_timeframe" | "other" | null,
+  "failure_cause": "vague_goal" | "present_state" | "negation" | "sarcasm" | "quoting_others" | "heavy_hedging" | "future_timeframe" | "other" | null,
   "confidence": 0.95,
   "reasoning": "Explanation of why this is or isn't a valid prediction"
 }
@@ -75,9 +90,10 @@ Return ONLY valid JSON (no markdown fences):
 - `context`: Brief summary of the thread and what the author was saying
 - `is_valid`: Boolean indicating if this is a valid prediction
 - `failure_cause`: Category of failure (null if is_valid is true). Must be one of:
+  - `"vague_goal"`: Goal is subjective, unmeasurable, or has no clear success criteria
+  - `"present_state"`: Statement about current conditions, not a future prediction
   - `"negation"`: Prediction is negated ("I don't think", "won't", "unlikely")
   - `"sarcasm"`: Sarcastic or joking tone ("lol", "lmao", emojis)
-  - `"conditional"`: Conditional prediction ("if X happens", "assuming Y")
   - `"quoting_others"`: Author is quoting someone else's view
   - `"heavy_hedging"`: Heavily hedged ("maybe", "possibly", "could")
   - `"future_timeframe"`: Prediction hasn't matured yet (end_utc > current_date)
@@ -182,21 +198,19 @@ Return ONLY valid JSON (no markdown fences):
 }
 ```
 
-### Example 4: Invalid - Conditional
+### Example 4: Invalid - Vague Goal
 
 **Input:**
 
 ```json
 {
-  "current_date": "2025-01-20T00:00:00Z",
-  "thread_tweets": [
-    { "text": "If the ETF gets approved, BTC will hit 100k by end of year" }
-  ],
-  "goal_slices": [{ "text": "BTC will hit 100k" }],
-  "timeframe_slices": [{ "text": "by end of year" }],
+  "current_date": "2025-04-15T00:00:00Z",
+  "thread_tweets": [{ "text": "VR will be wild by end of Q1 2025" }],
+  "goal_slices": [{ "text": "VR will be wild" }],
+  "timeframe_slices": [{ "text": "by end of Q1 2025" }],
   "timeframe_parsed": {
     "start_utc": "2025-01-20T00:00:00Z",
-    "end_utc": "2025-12-31T23:59:59Z"
+    "end_utc": "2025-03-31T23:59:59Z"
   }
 }
 ```
@@ -205,15 +219,79 @@ Return ONLY valid JSON (no markdown fences):
 
 ```json
 {
-  "context": "Author is making a conditional prediction based on ETF approval.",
+  "context": "Author is making a vague prediction about VR technology becoming 'wild'.",
   "is_valid": false,
-  "failure_cause": "conditional",
-  "confidence": 0.96,
-  "reasoning": "Prediction is conditional on ETF approval. Filter removed the 'if' clause to make it appear unconditional."
+  "failure_cause": "vague_goal",
+  "confidence": 0.95,
+  "reasoning": "'Wild' is subjective with no clear success criteria. How would we objectively verify if VR became 'wild'? There's no measurable outcome to check. This is an opinion statement, not a verifiable prediction."
 }
 ```
 
-### Example 5: Invalid - Future Timeframe
+### Example 5: Invalid - Present State Commentary
+
+**Input:**
+
+```json
+{
+  "current_date": "2025-04-15T00:00:00Z",
+  "thread_tweets": [
+    {
+      "text": "We already face a combination of supply chain disruptions and soaring prices for masks"
+    }
+  ],
+  "goal_slices": [{ "text": "supply chain disruptions" }],
+  "timeframe_slices": [{ "text": "already" }],
+  "timeframe_parsed": {
+    "start_utc": "2020-03-22T14:30:00Z",
+    "end_utc": "2020-03-22T14:30:00Z"
+  }
+}
+```
+
+**Output:**
+
+```json
+{
+  "context": "Author is describing current conditions in March 2020, not making a prediction about the future.",
+  "is_valid": false,
+  "failure_cause": "present_state",
+  "confidence": 0.99,
+  "reasoning": "'We already face' indicates this is commentary on existing conditions, not a prediction. The author is describing what IS happening, not what WILL happen. This is analysis of the present, not a forecast."
+}
+```
+
+### Example 6: Valid - Conditional with Specific Outcome
+
+**Input:**
+
+```json
+{
+  "current_date": "2025-01-20T00:00:00Z",
+  "thread_tweets": [
+    { "text": "If BTC breaks $95k resistance, it will hit $100k within a week" }
+  ],
+  "goal_slices": [{ "text": "it will hit $100k" }],
+  "timeframe_slices": [{ "text": "within a week" }],
+  "timeframe_parsed": {
+    "start_utc": "2025-01-20T00:00:00Z",
+    "end_utc": "2025-01-27T23:59:59Z"
+  }
+}
+```
+
+**Output:**
+
+```json
+{
+  "context": "Author is making a conditional price prediction: if BTC breaks $95k, it will reach $100k within a week.",
+  "is_valid": true,
+  "failure_cause": null,
+  "confidence": 0.92,
+  "reasoning": "While this is conditional, both the condition ($95k break) and outcome ($100k target) are specific and measurable. We can verify if the condition was met and then check if the outcome happened. This is a legitimate causal prediction, not a vague statement."
+}
+```
+
+### Example 7: Invalid - Future Timeframe
 
 **Input:**
 

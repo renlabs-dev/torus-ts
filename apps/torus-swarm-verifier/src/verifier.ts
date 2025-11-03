@@ -106,9 +106,10 @@ interface SliceValidationResult {
  * Filter validation failure reasons
  */
 type FilterValidationFailureCause =
+  | "vague_goal"
+  | "present_state"
   | "negation"
   | "sarcasm"
-  | "conditional"
   | "quoting_others"
   | "heavy_hedging"
   | "future_timeframe"
@@ -231,9 +232,10 @@ const FILTER_VALIDATION_SCHEMA = {
     failure_cause: {
       type: ["string", "null"],
       enum: [
+        "vague_goal",
+        "present_state",
         "negation",
         "sarcasm",
-        "conditional",
         "quoting_others",
         "heavy_hedging",
         "future_timeframe",
@@ -241,7 +243,7 @@ const FILTER_VALIDATION_SCHEMA = {
         null,
       ],
       description:
-        "Category of failure (null if is_valid is true). Negation: prediction is negated. Sarcasm: sarcastic/joking tone. Conditional: conditional prediction. Quoting_others: quoting someone else. Heavy_hedging: heavily hedged. Future_timeframe: prediction hasn't matured yet. Other: other disqualifying factors.",
+        "Category of failure (null if is_valid is true). Vague_goal: goal is subjective or unmeasurable. Present_state: statement about current conditions, not a prediction. Negation: prediction is negated. Sarcasm: sarcastic/joking tone. Quoting_others: quoting someone else. Heavy_hedging: heavily hedged. Future_timeframe: prediction hasn't matured yet. Other: other disqualifying factors.",
     },
     confidence: {
       type: "number",
@@ -1158,6 +1160,26 @@ export class PredictionVerifier {
     });
 
     await this.storeTimeframeDetails(tx, prediction.id, timeframeResult);
+
+    if (
+      timeframeResult.timeframe_status === "missing" ||
+      timeframeResult.timeframe_status === "event_trigger"
+    ) {
+      logInfo("Timeframe is unverifiable", {
+        status: timeframeResult.timeframe_status,
+        reasoning: timeframeResult.reasoning,
+      });
+      await this.storeFeedback(
+        tx,
+        prediction.id,
+        "timeframe_extraction",
+        timeframeResult.reasoning,
+        timeframeResult.timeframe_status === "missing"
+          ? "missing_timeframe"
+          : "event_trigger",
+      );
+      return true;
+    }
 
     const validationResult = await this.validateFilterExtraction(
       goalText,
