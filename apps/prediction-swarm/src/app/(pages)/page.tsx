@@ -1,4 +1,5 @@
 import { Jacquard_12 as Jacquard } from "next/font/google";
+
 import Dither from "../_components/dither";
 import { FAQ } from "../_components/main-page/faq";
 import { ListItem } from "../_components/main-page/list-item";
@@ -39,21 +40,21 @@ export default function Page() {
           <div className="pointer-events-auto mx-auto -mb-[6.125rem] grid max-w-6xl gap-6 md:grid-cols-3">
             <ListItem
               title="Prophets"
-              description="Discover the most accurate predictors in the swarm."
+              description="Discover the most accurate predictors in the swarm"
               linkText="Explore profiles"
               href="/top-predictors"
               className="animate-fade-up animate-delay-[500ms] duration-1000"
             />
             <ListItem
               title="Tickers"
-              description="View live predictions across all active tickers in the swarm."
+              description="View live predictions across all active tickers in the swarm"
               linkText="Explore Tickers"
               href="/tickers"
               className="animate-fade-up animate-delay-[750ms] duration-1000"
             />
             <ListItem
               title="Predictor Feed"
-              description="Browse the latest predictions from all predictors on the swarm."
+              description="Track the newest activity from all predictors in the swarm"
               linkText="Explore feed"
               href="/feed"
               className="animate-fade-up animate-delay-[1000ms] duration-1000"
