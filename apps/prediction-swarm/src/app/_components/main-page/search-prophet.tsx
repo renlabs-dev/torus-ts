@@ -106,7 +106,7 @@ export function SearchProphet() {
           </button>
         </div>
         <p className="text-sm text-white/80">
-          View prediction history, current and account breakdown
+          Track prediction activity, outcomes, and performance
         </p>
       </div>
 
