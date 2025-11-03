@@ -30,16 +30,34 @@ export const twitterUserRouter = {
         query: z
           .string()
           .min(1, "Search query must be at least 1 character")
-          .max(50, "Search query is too long"),
+          .max(50, "Search query is too long")
+          .transform((val) => {
+            // Strip @ symbol and Twitter URL if present
+            let cleaned = val.trim();
+            cleaned = cleaned.replace(/^@/, ""); // Remove leading @
+
+            // Extract username from Twitter URLs
+            const urlMatch = cleaned.match(/(?:twitter\.com|x\.com)\/([a-zA-Z0-9_]+)/);
+            if (urlMatch) {
+              cleaned = urlMatch[1] ?? cleaned;
+            }
+
+            return cleaned;
+          }),
         limit: z.number().min(1).max(50).default(10),
       }),
     )
     .query(async ({ ctx, input }) => {
       const { query, limit } = input;
 
-      // Perform case-insensitive substring search
-      // Use ILIKE for PostgreSQL case-insensitive search
-      const users = await ctx.db
+      // Validate username format (alphanumeric + underscore only)
+      if (!/^[a-zA-Z0-9_]+$/.test(query)) {
+        return [];
+      }
+
+      // Three-tier search for ranking
+      // 1. Exact match
+      const exactMatch = await ctx.db
         .select({
           userId: twitterUsersSchema.id,
           username: twitterUsersSchema.username,
@@ -49,12 +67,61 @@ export const twitterUserRouter = {
           isVerified: twitterUsersSchema.isVerified,
           verifiedType: twitterUsersSchema.verifiedType,
           followerCount: twitterUsersSchema.followerCount,
+          matchType: sql<string>`'exact'`.as("match_type"),
         })
         .from(twitterUsersSchema)
-        .where(ilike(twitterUsersSchema.username, `%${query}%`))
-        .limit(limit);
+        .where(ilike(twitterUsersSchema.username, query))
+        .limit(1);
 
-      return users;
+      // 2. Starts with
+      const startsWithMatch = await ctx.db
+        .select({
+          userId: twitterUsersSchema.id,
+          username: twitterUsersSchema.username,
+          screenName: twitterUsersSchema.screenName,
+          description: twitterUsersSchema.description,
+          avatarUrl: twitterUsersSchema.avatarUrl,
+          isVerified: twitterUsersSchema.isVerified,
+          verifiedType: twitterUsersSchema.verifiedType,
+          followerCount: twitterUsersSchema.followerCount,
+          matchType: sql<string>`'starts_with'`.as("match_type"),
+        })
+        .from(twitterUsersSchema)
+        .where(
+          and(
+            ilike(twitterUsersSchema.username, `${query}%`),
+            sql`LOWER(${twitterUsersSchema.username}) != LOWER(${query})`, // Exclude exact match
+          ),
+        )
+        .limit(5);
+
+      // 3. Contains (limited to avoid false positives)
+      const containsMatch = await ctx.db
+        .select({
+          userId: twitterUsersSchema.id,
+          username: twitterUsersSchema.username,
+          screenName: twitterUsersSchema.screenName,
+          description: twitterUsersSchema.description,
+          avatarUrl: twitterUsersSchema.avatarUrl,
+          isVerified: twitterUsersSchema.isVerified,
+          verifiedType: twitterUsersSchema.verifiedType,
+          followerCount: twitterUsersSchema.followerCount,
+          matchType: sql<string>`'contains'`.as("match_type"),
+        })
+        .from(twitterUsersSchema)
+        .where(
+          and(
+            ilike(twitterUsersSchema.username, `%${query}%`),
+            sql`LOWER(${twitterUsersSchema.username}) NOT LIKE LOWER(${query} || '%')`, // Exclude starts-with
+            sql`LOWER(${twitterUsersSchema.username}) != LOWER(${query})`, // Exclude exact
+          ),
+        )
+        .limit(4);
+
+      // Combine results in order of relevance
+      const allResults = [...exactMatch, ...startsWithMatch, ...containsMatch];
+
+      return allResults.slice(0, limit);
     }),
 
   /**

@@ -20,6 +20,40 @@ export function SearchProphet() {
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
+  const [validationError, setValidationError] = useState("");
+
+  // Validate and clean input
+  const validateInput = (input: string) => {
+    const trimmed = input.trim();
+    if (!trimmed) return { valid: true, cleaned: "" };
+
+    // Remove @ symbol
+    let cleaned = trimmed.replace(/^@/, "");
+
+    // Check for Twitter URL
+    const urlMatch = /(?:twitter\.com|x\.com)\/([a-zA-Z0-9_]+)/.exec(cleaned);
+    if (urlMatch) {
+      cleaned = urlMatch[1] ?? cleaned;
+    }
+
+    // Validate format
+    if (!/^[a-zA-Z0-9_]+$/.test(cleaned)) {
+      return {
+        valid: false,
+        cleaned,
+        error:
+          "Invalid username format. Use only letters, numbers, and underscores.",
+      };
+    }
+
+    return { valid: true, cleaned };
+  };
+
+  const handleSearchChange = (value: string) => {
+    setSearch(value);
+    const validation = validateInput(value);
+    setValidationError(validation.valid ? "" : (validation.error ?? ""));
+  };
 
   useEffect(() => {
     const down = (e: KeyboardEvent) => {
@@ -35,7 +69,7 @@ export function SearchProphet() {
 
   const { data: searchResults } = api.twitterUser.search.useQuery(
     { query: search, limit: 10 },
-    { enabled: search.length > 0 },
+    { enabled: search.length > 0 && !validationError },
   );
 
   const { data: scrapingStatus } = api.twitterUser.getScrapingStatus.useQuery(
@@ -75,8 +109,13 @@ export function SearchProphet() {
         <CommandInput
           placeholder="Search for any x account..."
           value={search}
-          onValueChange={setSearch}
+          onValueChange={handleSearchChange}
         />
+        {validationError && (
+          <div className="border-t px-3 py-2">
+            <p className="text-xs text-red-500">{validationError}</p>
+          </div>
+        )}
         <CommandList>
           <CommandEmpty>
             {searchResults === undefined ? (

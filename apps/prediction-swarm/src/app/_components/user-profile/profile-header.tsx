@@ -7,7 +7,6 @@ import {
   AvatarImage,
 } from "@torus-ts/ui/components/avatar";
 import { Badge } from "@torus-ts/ui/components/badge";
-import { Button } from "@torus-ts/ui/components/button";
 import { Card, CardContent } from "@torus-ts/ui/components/card";
 import type { inferProcedureOutput } from "@trpc/server";
 import { api } from "~/trpc/react";
@@ -98,7 +97,7 @@ export default function ProfileHeader({ user, username }: ProfileHeaderProps) {
             </div>
           </div>
           {/* TODO: Add filters */}
-          <Button variant="default">Filters</Button>
+          {/* <Button variant="default">Filters</Button> */}
         </div>
       </CardContent>
     </Card>

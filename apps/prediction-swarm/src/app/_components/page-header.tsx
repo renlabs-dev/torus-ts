@@ -1,4 +1,3 @@
-import { Button } from "@torus-ts/ui/components/button";
 import { Card } from "@torus-ts/ui/components/card";
 import { jacquard } from "../(pages)/page";
 
@@ -21,7 +20,7 @@ export function PageHeader({ title, description, children }: PageHeaderProps) {
         {/* TODO: Add filters */}
         <div className="flex items-center gap-4">
           {children}
-          <Button variant="default">Filters</Button>
+          {/* <Button variant="default">Filters</Button> */}
         </div>
       </Card>
     </div>
