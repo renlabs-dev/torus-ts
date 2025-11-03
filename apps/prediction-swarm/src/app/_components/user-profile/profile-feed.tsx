@@ -49,16 +49,27 @@ interface ProfileFeedProps {
 
 /**
  * Highlights goal and timeframe portions in the tweet text for multiple predictions
+ * Only highlights slices that belong to the specified tweet
  */
 function highlightTweetText(
   tweetText: string,
+  tweetId: bigint,
   activePrediction: GroupedTweetData["predictions"][0],
   allPredictions: GroupedTweetData["predictions"],
 ): React.ReactNode {
+  const tweetIdStr = tweetId.toString();
   const { goal, timeframe } = activePrediction;
+
+  // Filter slices to only those belonging to this tweet
+  const goalSlices = goal.filter((s) => s.source.tweet_id === tweetIdStr);
+  const timeframeSlices = timeframe.filter(
+    (s) => s.source.tweet_id === tweetIdStr,
+  );
+
   const inactivePredictions = allPredictions.filter(
     (p) => p.parsedId !== activePrediction.parsedId,
   );
+
   // Collect all position markers
   const markers: {
     pos: number;
@@ -66,22 +77,24 @@ function highlightTweetText(
     style: "goal" | "timeframe" | "inactive";
   }[] = [];
 
-  // Add inactive prediction goals (gray highlights)
+  // Add inactive prediction goals (gray highlights) - only for this tweet
   inactivePredictions.forEach((pred) => {
-    pred.goal.forEach((s: { start: number; end: number }) => {
-      markers.push({ pos: s.start, type: "start", style: "inactive" });
-      markers.push({ pos: s.end, type: "end", style: "inactive" });
-    });
+    pred.goal
+      .filter((s) => s.source.tweet_id === tweetIdStr)
+      .forEach((s) => {
+        markers.push({ pos: s.start, type: "start", style: "inactive" });
+        markers.push({ pos: s.end, type: "end", style: "inactive" });
+      });
   });
 
   // Add active prediction goal (orange highlights)
-  goal.forEach((s: { start: number; end: number }) => {
+  goalSlices.forEach((s) => {
     markers.push({ pos: s.start, type: "start", style: "goal" });
     markers.push({ pos: s.end, type: "end", style: "goal" });
   });
 
   // Only add timeframe markers if they have actual text content
-  timeframe.forEach((s: { start: number; end: number }) => {
+  timeframeSlices.forEach((s) => {
     const text = tweetText.substring(s.start, s.end).trim();
     if (text.length > 0) {
       markers.push({ pos: s.start, type: "start", style: "timeframe" });
@@ -316,7 +329,12 @@ export function ProfileFeed({
               >
                 {/* Thread/Reply Context */}
                 <div className="pt-4 md:pt-6">
-                  <ThreadContext tweet={tweet} />
+                  <ThreadContext
+                    tweet={tweet}
+                    activePrediction={activePrediction}
+                    allPredictions={tweet.predictions}
+                    highlightFn={highlightTweetText}
+                  />
                 </div>
 
                 <div className="relative flex gap-2 pb-4 md:gap-3 md:pb-6">
@@ -487,6 +505,7 @@ export function ProfileFeed({
                       <div className="text-foreground text-sm leading-relaxed md:text-base">
                         {highlightTweetText(
                           tweet.tweetText,
+                          tweet.tweetId,
                           activePrediction,
                           tweet.predictions,
                         )}

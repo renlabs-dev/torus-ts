@@ -13,19 +13,41 @@ type GroupedTweetData = inferProcedureOutput<
 
 interface ThreadContextProps {
   tweet: GroupedTweetData;
+  activePrediction: GroupedTweetData["predictions"][0];
+  allPredictions: GroupedTweetData["predictions"];
+  highlightFn: (
+    text: string,
+    tweetId: bigint,
+    active: GroupedTweetData["predictions"][0],
+    all: GroupedTweetData["predictions"],
+  ) => React.ReactNode;
 }
 
 interface ContextTweetProps {
   tweetData: {
+    tweetId: bigint;
     avatarUrl: string | null;
     screenName: string | null;
     username: string | null;
     tweetText: string;
     tweetDate: Date;
   };
+  activePrediction: GroupedTweetData["predictions"][0];
+  allPredictions: GroupedTweetData["predictions"];
+  highlightFn: (
+    text: string,
+    tweetId: bigint,
+    active: GroupedTweetData["predictions"][0],
+    all: GroupedTweetData["predictions"],
+  ) => React.ReactNode;
 }
 
-function ContextTweet({ tweetData }: ContextTweetProps) {
+function ContextTweet({
+  tweetData,
+  activePrediction,
+  allPredictions,
+  highlightFn,
+}: ContextTweetProps) {
   return (
     <div className="flex gap-3">
       <div className="flex flex-col items-center">
@@ -53,15 +75,25 @@ function ContextTweet({ tweetData }: ContextTweetProps) {
             {dayjs(tweetData.tweetDate).format("MMM D")}
           </span>
         </div>
-        <p className="text-muted-foreground line-clamp-2 text-sm">
-          {tweetData.tweetText}
-        </p>
+        <div className="text-muted-foreground line-clamp-2 text-sm">
+          {highlightFn(
+            tweetData.tweetText,
+            tweetData.tweetId,
+            activePrediction,
+            allPredictions,
+          )}
+        </div>
       </div>
     </div>
   );
 }
 
-export function ThreadContext({ tweet }: ThreadContextProps) {
+export function ThreadContext({
+  tweet,
+  activePrediction,
+  allPredictions,
+  highlightFn,
+}: ThreadContextProps) {
   const { parentTweet, rootTweet, parentTweetId, conversationId, tweetId } =
     tweet;
 
@@ -74,7 +106,12 @@ export function ThreadContext({ tweet }: ThreadContextProps) {
   if (parentTweet && !rootTweet) {
     return (
       <div className="mt-3">
-        <ContextTweet tweetData={parentTweet} />
+        <ContextTweet
+          tweetData={parentTweet}
+          activePrediction={activePrediction}
+          allPredictions={allPredictions}
+          highlightFn={highlightFn}
+        />
       </div>
     );
   }
@@ -85,11 +122,21 @@ export function ThreadContext({ tweet }: ThreadContextProps) {
 
     return (
       <div className="space-y-0 p-1">
-        <ContextTweet tweetData={rootTweet} />
+        <ContextTweet
+          tweetData={rootTweet}
+          activePrediction={activePrediction}
+          allPredictions={allPredictions}
+          highlightFn={highlightFn}
+        />
 
         {/* Show parent if it's different from root (reply in middle of thread) */}
         {!isDirectThreadReply && parentTweet && (
-          <ContextTweet tweetData={parentTweet} />
+          <ContextTweet
+            tweetData={parentTweet}
+            activePrediction={activePrediction}
+            allPredictions={allPredictions}
+            highlightFn={highlightFn}
+          />
         )}
       </div>
     );
