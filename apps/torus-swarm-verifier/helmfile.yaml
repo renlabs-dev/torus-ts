@@ -5,9 +5,8 @@ environments:
       - values.yaml
       - namespace: torus-dev-web-apps
       - environmentName: dev
+      - releaseName: dev-torus-swarm-verifier
       - wssApiEndpoint: wss://api.testnet.torus.network
-      - releaseName: dev-torus-cache
-      - ingressHost: cache.testnet.torus.network
       - chainEnv: testnet
   prod:
     values:
@@ -15,9 +14,8 @@ environments:
       - values.yaml
       - namespace: torus-prod-web-apps
       - environmentName: prod
+      - releaseName: torus-swarm-verifier
       - wssApiEndpoint: wss://api.torus.network
-      - releaseName: torus-cache
-      - ingressHost: cache.torus.network
       - chainEnv: mainnet
 ---
 helmDefaults:
@@ -34,9 +32,3 @@ releases:
     chart: renlabs/application
     values:
       - ../../helm/values.yaml.gotmpl
-      - ingress:
-          hosts:
-            - host: "{{ .Values.ingressHost }}"
-              paths:
-                - path: /
-                  pathType: Prefix

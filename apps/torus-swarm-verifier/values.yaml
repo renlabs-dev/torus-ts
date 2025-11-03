@@ -1,14 +1,20 @@
 cacheUrl: ""
 
+ingress:
+  enabled: false
+
+service:
+  enabled: false
+
 deployment:
   image:
-    repository: ghcr.io/renlabs-dev/torus-swarm-twitter
+    repository: ghcr.io/renlabs-dev/torus-swarm-verifier
 
   additionalLabels:
-    app: torus-swarm-twitter
+    app: torus-swarm-verifier
 
   podLabels:
-    app: torus-swarm-twitter
+    app: torus-swarm-verifier
 
   resources:
     limits:
@@ -36,3 +42,15 @@ deployment:
     timeoutSeconds: 3
     httpGet:
       path: /api/stake-out
+
+  env:
+    OPENROUTER_API_KEY:
+      valueFrom:
+        secretKeyRef:
+          name: "torus-{{ .Values.environmentName }}-web-apps-secret"
+          key: OPENROUTER_API_KEY
+    POSTGRES_URL:
+      valueFrom:
+        secretKeyRef:
+          name: "torus-{{ .Values.environmentName }}-web-apps-secret"
+          key: hetzner_dev_db

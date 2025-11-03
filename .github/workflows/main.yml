@@ -204,6 +204,19 @@ jobs:
       skip_build: ${{ inputs.skip_build || false }}
       
 
+  torus-swarm-verifier:
+    needs: turbo-check
+    if: |
+      inputs.skip_build ||
+      contains(github.event.head_commit.message, 'skip build') ||
+      (needs.turbo-check.outputs.torus-swarm-verifier == 'true' &&
+      (github.ref_name == 'main' || github.ref_name == 'dev' || github.ref_name == 'cicd'))
+    uses: ./.github/workflows/app-deployment-template.yml
+    secrets: inherit
+    with:
+      app_name: torus-swarm-verifier
+      skip_build: ${{ inputs.skip_build || false }}
+
   ###################################
   ######## DRY RUN BUILDS  ##########
   ###################################
@@ -364,6 +377,19 @@ jobs:
     secrets: inherit
     with:
       app_name: torus-swarm-twitter
+
+  torus-swarm-verifier-dry-run:
+    needs: [turbo-check, pr-check]
+    if: |
+      github.ref_name != 'main' &&
+      github.ref_name != 'dev' &&
+      github.ref_name != 'cicd' &&
+      needs.turbo-check.outputs.torus-swarm-verifier == 'true' &&
+      needs.pr-check.outputs.pr_exists == 'false'
+    uses: ./.github/workflows/dry-run-build-template.yml
+    secrets: inherit
+    with:
+      app_name: torus-swarm-verifier
 
   ###################################
   ########### PR PREVIEW ############
@@ -608,6 +634,7 @@ jobs:
         prediction-swarm-dash,
         prediction-swarm,
         torus-swarm-twitter,
+        torus-swarm-verifier,
         torus-page-dry-run,
         torus-portal-dry-run,
         torus-wallet-dry-run,
@@ -620,6 +647,7 @@ jobs:
         prediction-swarm-dash-dry-run,
         prediction-swarm-dry-run,
         torus-swarm-twitter-dry-run,
+        torus-swarm-verifier-dry-run,
         torus-allocator-pr-activate,
         torus-cache-pr-activate,
         torus-governance-pr-activate,
@@ -666,7 +694,7 @@ jobs:
           echo "" >> $GITHUB_STEP_SUMMARY
 
           # Define application list
-          apps=(torus-page torus-portal torus-wallet torus-allocator torus-bridge torus-cache torus-governance torus-worker torus-prophet-finder prediction-swarm-dash prediction-swarm torus-swarm-twitter)
+          apps=(torus-page torus-portal torus-wallet torus-allocator torus-bridge torus-cache torus-governance torus-worker torus-prophet-finder prediction-swarm-dash prediction-swarm torus-swarm-twitter torus-swarm-verifier)
 
           # Production/Dev Deployments
           if [ "${{ github.ref_name }}" == "main" ] || [ "${{ github.ref_name }}" == "dev" ] || [ "${{ github.ref_name }}" == "cicd" ]; then
@@ -723,6 +751,10 @@ jobs:
                 "torus-swarm-twitter")
                   changed="${{ needs.turbo-check.outputs.torus-swarm-twitter }}"
                   deploy_result="${{ needs.torus-swarm-twitter.result }}"
+                  ;;
+                "torus-swarm-verifier")
+                  changed="${{ needs.turbo-check.outputs.torus-swarm-verifier }}"
+                  deploy_result="${{ needs.torus-swarm-verifier.result }}"
                   ;;
               esac
 
@@ -855,6 +887,9 @@ jobs:
                   ;;
                 "torus-swarm-twitter")
                   dry_run_result="${{ needs.torus-swarm-twitter-dry-run.result }}"
+                  ;;
+                "torus-swarm-verifier")
+                  dry_run_result="${{ needs.torus-swarm-verifier-dry-run.result }}"
                   ;;
               esac
 

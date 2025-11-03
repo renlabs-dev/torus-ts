@@ -38,6 +38,10 @@ on:
       torus-swarm-twitter:
         description: "Whether torus-swarm-twitter changed"
         value: ${{ jobs.run.outputs.torus-swarm-twitter }}
+      torus-swarm-verifier:
+        description: "Whether torus-swarm-verifier changed"
+        value: ${{ jobs.run.outputs.torus-swarm-verifier }}
+
 
 jobs:
   run:
@@ -55,6 +59,7 @@ jobs:
       prediction-swarm-dash: ${{ steps.changed.outputs.prediction-swarm-dash }}
       prediction-swarm: ${{ steps.changed.outputs.prediction-swarm }}
       torus-swarm-twitter: ${{ steps.changed.outputs.torus-swarm-twitter }}
+      torus-swarm-verifier: ${{ steps.changed.outputs.torus-swarm-verifier }}
     steps:
       - uses: actions/checkout@v4
         with:
