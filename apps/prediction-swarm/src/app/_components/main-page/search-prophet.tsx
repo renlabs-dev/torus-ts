@@ -154,6 +154,13 @@ export function SearchProphet() {
                       </p>
                     </div>
                   </div>
+                ) : scrapingStatus?.status === "untracked" ? (
+                  <AddProphet
+                    username={search}
+                    onSuccess={() => setOpen(false)}
+                    customTitle={`@${search} exists but is not tracked`}
+                    customDescription="This account was found in threads but doesn't have predictions yet. Add it to start tracking predictions."
+                  />
                 ) : (
                   <AddProphet
                     username={search}

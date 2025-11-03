@@ -23,9 +23,16 @@ import { UserRoundPlus } from "lucide-react";
 interface AddProphetProps {
   username: string;
   onSuccess?: () => void;
+  customTitle?: string;
+  customDescription?: string;
 }
 
-export function AddProphet({ username, onSuccess }: AddProphetProps) {
+export function AddProphet({
+  username,
+  onSuccess,
+  customTitle,
+  customDescription,
+}: AddProphetProps) {
   const { toast } = useToast();
   const suggestUser = api.twitterUser.suggestUser.useMutation({
     onSuccess: () => {
@@ -69,10 +76,10 @@ export function AddProphet({ username, onSuccess }: AddProphetProps) {
   return (
     <Empty className="!p-1">
       <EmptyHeader>
-        <EmptyTitle>No Predictor Found</EmptyTitle>
+        <EmptyTitle>{customTitle ?? "No Predictor Found"}</EmptyTitle>
         <EmptyDescription>
-          This account is not yet part of the Prediction Swarm. Add them to
-          start viewing their predictions.
+          {customDescription ??
+            "This account is not yet part of the Prediction Swarm. Add them to start viewing their predictions."}
         </EmptyDescription>
       </EmptyHeader>
       <EmptyContent>

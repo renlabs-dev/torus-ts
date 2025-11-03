@@ -57,7 +57,7 @@ export const twitterUserRouter = {
         return [];
       }
 
-      // Three-tier search for ranking
+      // Three-tier search for ranking (only tracked users)
       // 1. Exact match
       const exactMatch = await ctx.db
         .select({
@@ -69,10 +69,16 @@ export const twitterUserRouter = {
           isVerified: twitterUsersSchema.isVerified,
           verifiedType: twitterUsersSchema.verifiedType,
           followerCount: twitterUsersSchema.followerCount,
+          tracked: twitterUsersSchema.tracked,
           matchType: sql<string>`'exact'`.as("match_type"),
         })
         .from(twitterUsersSchema)
-        .where(ilike(twitterUsersSchema.username, query))
+        .where(
+          and(
+            ilike(twitterUsersSchema.username, query),
+            eq(twitterUsersSchema.tracked, true),
+          ),
+        )
         .limit(1);
 
       // 2. Starts with
@@ -86,6 +92,7 @@ export const twitterUserRouter = {
           isVerified: twitterUsersSchema.isVerified,
           verifiedType: twitterUsersSchema.verifiedType,
           followerCount: twitterUsersSchema.followerCount,
+          tracked: twitterUsersSchema.tracked,
           matchType: sql<string>`'starts_with'`.as("match_type"),
         })
         .from(twitterUsersSchema)
@@ -93,6 +100,7 @@ export const twitterUserRouter = {
           and(
             ilike(twitterUsersSchema.username, `${query}%`),
             sql`LOWER(${twitterUsersSchema.username}) != LOWER(${query})`, // Exclude exact match
+            eq(twitterUsersSchema.tracked, true),
           ),
         )
         .limit(5);
@@ -108,6 +116,7 @@ export const twitterUserRouter = {
           isVerified: twitterUsersSchema.isVerified,
           verifiedType: twitterUsersSchema.verifiedType,
           followerCount: twitterUsersSchema.followerCount,
+          tracked: twitterUsersSchema.tracked,
           matchType: sql<string>`'contains'`.as("match_type"),
         })
         .from(twitterUsersSchema)
@@ -116,6 +125,7 @@ export const twitterUserRouter = {
             ilike(twitterUsersSchema.username, `%${query}%`),
             sql`LOWER(${twitterUsersSchema.username}) NOT LIKE LOWER(${query} || '%')`, // Exclude starts-with
             sql`LOWER(${twitterUsersSchema.username}) != LOWER(${query})`, // Exclude exact
+            eq(twitterUsersSchema.tracked, true),
           ),
         )
         .limit(4);
@@ -175,7 +185,7 @@ export const twitterUserRouter = {
     }),
 
   /**
-   * Check if user is being scraped (in suggestions but not in twitter_users)
+   * Check if user is being scraped or exists with tracked status
    */
   getScrapingStatus: publicProcedure
     .input(
@@ -195,7 +205,12 @@ export const twitterUserRouter = {
         .limit(1);
 
       if (existingUsers[0]) {
-        return { status: "ready" as const, username: input.username };
+        // Check if user is tracked (has predictions) or untracked (only profile scraped)
+        if (existingUsers[0].tracked) {
+          return { status: "ready" as const, username: input.username };
+        } else {
+          return { status: "untracked" as const, username: input.username };
+        }
       }
 
       // Check if user is in suggestions (being scraped)
