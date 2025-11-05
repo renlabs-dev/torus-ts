@@ -1,4 +1,4 @@
-import { and, eq, ilike, isNull, sql } from "@torus-ts/db";
+import { and, eq, ilike, isNull, notExists, sql } from "@torus-ts/db";
 import {
   parsedPredictionFeedbackSchema,
   parsedPredictionSchema,
@@ -243,7 +243,6 @@ export const twitterUserRouter = {
     .query(async ({ ctx, input }) => {
       const { limit, minPredictions } = input;
 
-      // Get all predictions with verdicts grouped by user
       const userStats = await ctx.db
         .select({
           userId: twitterUsersSchema.id,
@@ -257,38 +256,44 @@ export const twitterUserRouter = {
           truePredictions: sql<number>`COUNT(DISTINCT CASE WHEN ${verdictSchema.verdict} = true THEN ${parsedPredictionSchema.id} END)`,
         })
         .from(twitterUsersSchema)
-        .innerJoin(
-          scrapedTweetSchema,
-          eq(scrapedTweetSchema.authorId, twitterUsersSchema.id),
-        )
-        .innerJoin(
-          predictionSchema,
-          sql`true`, // We'll filter via parsedPrediction
-        )
-        .innerJoin(
+        .innerJoin(predictionSchema, sql`true`)
+        .rightJoin(
           parsedPredictionSchema,
           and(
             eq(parsedPredictionSchema.predictionId, predictionSchema.id),
-            sql`${scrapedTweetSchema.id} = CAST(CAST(${parsedPredictionSchema.goal} AS jsonb)->0->'source'->>'tweet_id' AS BIGINT)`,
+            notExists(
+              ctx.db
+                .select({
+                  id: parsedPredictionFeedbackSchema.parsedPredictionId,
+                })
+                .from(parsedPredictionFeedbackSchema)
+                .where(
+                  and(
+                    eq(
+                      parsedPredictionFeedbackSchema.parsedPredictionId,
+                      parsedPredictionSchema.id,
+                    ),
+                    sql`${parsedPredictionFeedbackSchema.failureCause} != 'future_timeframe'`,
+                  ),
+                ),
+            ),
+          ),
+        )
+        .innerJoin(
+          scrapedTweetSchema,
+          and(
+            eq(scrapedTweetSchema.authorId, twitterUsersSchema.id),
+            eq(
+              scrapedTweetSchema.predictionId,
+              parsedPredictionSchema.predictionId,
+            ),
           ),
         )
         .leftJoin(
           verdictSchema,
           eq(verdictSchema.parsedPredictionId, parsedPredictionSchema.id),
         )
-        .leftJoin(
-          parsedPredictionFeedbackSchema,
-          eq(
-            parsedPredictionFeedbackSchema.parsedPredictionId,
-            parsedPredictionSchema.id,
-          ),
-        )
-        .where(
-          and(
-            eq(twitterUsersSchema.tracked, true),
-            isNull(parsedPredictionFeedbackSchema.parsedPredictionId),
-          ),
-        )
+        .where(eq(twitterUsersSchema.tracked, true))
         .groupBy(
           twitterUsersSchema.id,
           twitterUsersSchema.username,
@@ -301,7 +306,6 @@ export const twitterUserRouter = {
           sql`COUNT(DISTINCT CASE WHEN ${verdictSchema.id} IS NOT NULL THEN ${parsedPredictionSchema.id} END) >= ${minPredictions}`,
         );
 
-      // Calculate accuracy and score
       const topPredictors = userStats
         .map((user) => {
           const r = user.truePredictions;

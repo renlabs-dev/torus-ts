@@ -801,7 +801,7 @@ export const predictionRouter = {
     const counts = await ctx.db
       .select({
         verdictStatus: sql<string | null>`CASE
-          WHEN ${verdictSchema.id} IS NULL THEN 'ongoing'
+          WHEN ${verdictSchema.id} IS NULL AND (${parsedPredictionFeedbackSchema.parsedPredictionId} IS NULL OR ${parsedPredictionFeedbackSchema.failureCause} = 'future_timeframe') THEN 'ongoing'
           WHEN ${verdictSchema.verdict} = true THEN 'true'
           WHEN ${verdictSchema.verdict} = false THEN 'false'
         END`.as("verdict_status"),
