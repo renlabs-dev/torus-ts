@@ -93,7 +93,7 @@ Return ONLY valid JSON (no markdown fences):
 {
   "context": "Brief summary of what the thread is about and what the author was saying",
   "is_valid": true | false,
-  "failure_cause": "broken_extraction" | "vague_goal" | "present_state" | "negation" | "sarcasm" | "quoting_others" | "heavy_hedging" | "future_timeframe" | "other" | null,
+  "failure_cause": "BROKEN_EXTRACTION" | "VAGUE_GOAL" | "PRESENT_STATE" | "NEGATION" | "SARCASM" | "QUOTING_OTHERS" | "HEAVY_HEDGING" | "FUTURE_TIMEFRAME" | "OTHER" | null,
   "confidence": 0.95,
   "reasoning": "Explanation of why this is or isn't a valid prediction"
 }
@@ -104,15 +104,15 @@ Return ONLY valid JSON (no markdown fences):
 - `context`: Brief summary of the thread and what the author was saying
 - `is_valid`: Boolean indicating if this is a valid prediction
 - `failure_cause`: Category of failure (null if is_valid is true). Must be one of:
-  - `"broken_extraction"`: Slices cut through word boundaries or extract nonsensical fragments
-  - `"vague_goal"`: Goal is subjective, unmeasurable, or has no clear success criteria
-  - `"present_state"`: Statement about current conditions, not a future prediction
-  - `"negation"`: Prediction is negated ("I don't think", "won't", "unlikely")
-  - `"sarcasm"`: Sarcastic or joking tone ("lol", "lmao", emojis)
-  - `"quoting_others"`: Author is quoting someone else's view
-  - `"heavy_hedging"`: Heavily hedged ("maybe", "possibly", "could")
-  - `"future_timeframe"`: Prediction hasn't matured yet (end_utc > current_date)
-  - `"other"`: Other disqualifying factors not covered above
+  - `"BROKEN_EXTRACTION"`: Slices cut through word boundaries or extract nonsensical fragments
+  - `"VAGUE_GOAL"`: Goal is subjective, unmeasurable, or has no clear success criteria
+  - `"PRESENT_STATE"`: Statement about current conditions, not a future prediction
+  - `"NEGATION"`: Prediction is negated ("I don't think", "won't", "unlikely")
+  - `"SARCASM"`: Sarcastic or joking tone ("lol", "lmao", emojis)
+  - `"QUOTING_OTHERS"`: Author is quoting someone else's view
+  - `"HEAVY_HEDGING"`: Heavily hedged ("maybe", "possibly", "could")
+  - `"FUTURE_TIMEFRAME"`: Prediction hasn't matured yet (end_utc > current_date)
+  - `"OTHER"`: Other disqualifying factors not covered above
 - `confidence`: Confidence score from 0.0 to 1.0 indicating how certain the validation is
 - `reasoning`: Human-readable explanation
 
@@ -193,7 +193,7 @@ Return ONLY valid JSON (no markdown fences):
 {
   "context": "Author is critiquing Facebook's metaverse strategy, saying it's too early to know what people want.",
   "is_valid": false,
-  "failure_cause": "broken_extraction",
+  "failure_cause": "BROKEN_EXTRACTION",
   "confidence": 0.99,
   "reasoning": "The filter extracted 'now' from the middle of the word 'know' at position 175-178. Looking at the full tweet, this is part of the phrase 'we don't really know' - the filter cut through the word boundary. The extracted 'now' is not a temporal expression but a fragment of the word 'know'. This is a broken extraction that doesn't represent the actual tweet content."
 }
@@ -224,7 +224,7 @@ Return ONLY valid JSON (no markdown fences):
 {
   "context": "Author is expressing doubt that Bitcoin will reach 100k by end of Q1. This is a negative prediction.",
   "is_valid": false,
-  "failure_cause": "negation",
+  "failure_cause": "NEGATION",
   "confidence": 0.99,
   "reasoning": "Author explicitly stated 'I don't think' which negates the prediction. The filter removed the negation."
 }
@@ -255,7 +255,7 @@ Return ONLY valid JSON (no markdown fences):
 {
   "context": "Author is sarcastically mocking the idea that Bitcoin could reach 100k in such a short timeframe.",
   "is_valid": false,
-  "failure_cause": "sarcasm",
+  "failure_cause": "SARCASM",
   "confidence": 0.97,
   "reasoning": "Clear sarcasm indicators: 'totally', 'lmaooo', clown emoji, and unrealistic timeframe. This is a joke, not a serious prediction."
 }
@@ -284,7 +284,7 @@ Return ONLY valid JSON (no markdown fences):
 {
   "context": "Author is making a vague prediction about VR technology becoming 'wild'.",
   "is_valid": false,
-  "failure_cause": "vague_goal",
+  "failure_cause": "VAGUE_GOAL",
   "confidence": 0.95,
   "reasoning": "'Wild' is subjective with no clear success criteria. How would we objectively verify if VR became 'wild'? There's no measurable outcome to check. This is an opinion statement, not a verifiable prediction."
 }
@@ -317,7 +317,7 @@ Return ONLY valid JSON (no markdown fences):
 {
   "context": "Author is describing current conditions in March 2020, not making a prediction about the future.",
   "is_valid": false,
-  "failure_cause": "present_state",
+  "failure_cause": "PRESENT_STATE",
   "confidence": 0.99,
   "reasoning": "'We already face' indicates this is commentary on existing conditions, not a prediction. The author is describing what IS happening, not what WILL happen. This is analysis of the present, not a forecast."
 }
@@ -379,7 +379,7 @@ Return ONLY valid JSON (no markdown fences):
 {
   "context": "Author is making a confident price prediction for Bitcoin reaching 100k by end of 2026.",
   "is_valid": false,
-  "failure_cause": "future_timeframe",
+  "failure_cause": "FUTURE_TIMEFRAME",
   "confidence": 1.0,
   "reasoning": "While this is a valid prediction, the timeframe ends on 2026-12-31 which is after the current date of 2025-01-20. Prediction has not matured yet and cannot be verified."
 }

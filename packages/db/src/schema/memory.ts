@@ -6,11 +6,13 @@ import {
   index,
   integer,
   jsonb,
+  pgEnum,
   primaryKey,
   text,
   unique,
   varchar,
 } from "drizzle-orm/pg-core";
+import { extract_pgenum_values } from "../utils";
 import {
   bigint,
   createTable,
@@ -52,7 +54,14 @@ export const twitterUsersSchema = createTable(
 
     ...timeFields(),
   },
-  (t) => [index("twitter_users_id_idx").on(t.id)],
+  (t) => [
+    index("twitter_users_id_idx").using("hash", t.id),
+    index("twitter_users_tracked_idx").using("hash", t.tracked),
+    index("twitter_users_username_idx").using(
+      "btree",
+      sql`lower(${t.username})`,
+    ),
+  ],
 );
 
 // ==== User Suggestions ====
@@ -83,7 +92,10 @@ export const twitterScrapingJobsSchema = createTable(
     ...timeFields(),
   },
   (t) => [
-    index("twitter_scraping_jobs_conversation_id_idx").on(t.conversationId),
+    index("twitter_scraping_jobs_conversation_id_idx").using(
+      "hash",
+      t.conversationId,
+    ),
     unique("twitter_scraping_jobs_user_id_idx").on(t.userId),
     unique("twitter_scraping_jobs_original_reply_id_idx").on(
       t.conversationId,
@@ -120,10 +132,15 @@ export const scrapedTweetSchema = createTable(
     ...timeFields(),
   },
   (t) => [
-    index("scraped_tweet_author_id_idx").on(t.authorId),
+    index("scraped_tweet_author_id_idx").using("hash", t.authorId),
     index("scraped_tweet_date_idx").on(t.date),
     index("scraped_tweet_conversation_id_idx").on(t.conversationId),
     index("scraped_tweet_prediction_id_idx").on(t.predictionId),
+    index("scraped_tweet_author_id_prediction_id_idx").using(
+      "btree",
+      t.predictionId.nullsLast(),
+      t.authorId,
+    ),
   ],
 );
 
@@ -160,7 +177,7 @@ export const parsedPredictionSchema = createTable(
     ...timeFields(),
   },
   (t) => [
-    index("parsed_prediction_prediction_id_idx").on(t.predictionId),
+    index("parsed_prediction_prediction_id_idx").using("hash", t.predictionId),
     index("parsed_prediction_topic_id_idx").on(t.topicId),
     index("parsed_prediction_quality_idx").on(t.predictionQuality),
   ],
@@ -289,7 +306,10 @@ export const verdictSchema = createTable(
     ...timeFields(),
   },
   (t) => [
-    index("verdict_parsed_prediction_id_idx").on(t.parsedPredictionId),
+    index("verdict_parsed_prediction_id_idx").using(
+      "hash",
+      t.parsedPredictionId,
+    ),
     index("verdict_created_at_idx").on(t.createdAt),
     index("verdict_verdict_idx").on(t.verdict),
   ],
@@ -304,6 +324,30 @@ export interface VerdictContext {
 
 // ==== Prediction Feedback ====
 
+export const failureCauseEnum = pgEnum("failure_cause_enum", [
+  "NEGATION",
+  "SARCASM",
+  "CONDITIONAL",
+  "QUOTING_OTHERS",
+  "HEAVY_HEDGING",
+  "FUTURE_TIMEFRAME",
+  "MISSING_TIMEFRAME",
+  "BROKEN_EXTRACTION",
+  "VAGUE_GOAL",
+  "PRESENT_STATE",
+  "OTHER",
+  "EVENT_TRIGGER",
+  "EMPTY_SLICES",
+  "MISSING_TWEET",
+  "NEGATIVE_INDICES",
+  "INVALID_RANGE",
+  "SLICE_TOO_SHORT",
+  "OUT_OF_BOUNDS",
+]);
+
+export const failureCauseValues = extract_pgenum_values(failureCauseEnum);
+export type FailureCause = keyof typeof failureCauseValues;
+
 /**
  * Stores feedback for predictions that failed validation
  */
@@ -316,7 +360,7 @@ export const parsedPredictionFeedbackSchema = createTable(
         onDelete: "cascade",
       }),
     validationStep: varchar("validation_step", { length: 64 }).notNull(), // Which step failed: "slice_validation", "timeframe_extraction", "filter_validation", "verdict_validation"
-    failureCause: varchar("failure_cause", { length: 64 }), // Structured failure reason (for filter_validation and verdict_validation)
+    failureCause: failureCauseEnum("failure_cause"), // Structured failure reason (for filter_validation and verdict_validation)
     reason: text("reason").notNull(), // Human-readable explanation of why it failed validation
     ...timeFields(),
   },
@@ -328,5 +372,8 @@ export const parsedPredictionFeedbackSchema = createTable(
       t.validationStep,
     ),
     index("parsed_prediction_feedback_failure_cause_idx").on(t.failureCause),
+    index("parsed_prediction_feedback_future_timeframe_idx")
+      .on(t.parsedPredictionId)
+      .where(sql`failure_cause != 'FUTURE_TIMEFRAME'`),
   ],
 );
