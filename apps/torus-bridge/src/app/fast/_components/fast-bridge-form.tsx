@@ -8,27 +8,37 @@ import {
 } from "@torus-ts/query-provider/hooks";
 import { useTorus } from "@torus-ts/torus-provider";
 import { TorusToUSD } from "@torus-ts/ui/components/apr/torus-to-usd";
+import { Badge } from "@torus-ts/ui/components/badge";
 import { Button } from "@torus-ts/ui/components/button";
 import { Card, CardContent } from "@torus-ts/ui/components/card";
 import { Input, InputReadonly } from "@torus-ts/ui/components/input";
 import { Label } from "@torus-ts/ui/components/label";
-import { contractAddresses } from "~/config";
+import { contractAddresses, getChainValuesOnEnv } from "~/config";
 import { env } from "~/env";
-import { ArrowLeftRight, Info } from "lucide-react";
+import { ArrowLeftRight, History, Info, Zap } from "lucide-react";
 import Image from "next/image";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { erc20Abi } from "viem";
-import { useReadContract } from "wagmi";
+import { useBalance, useReadContract } from "wagmi";
 import { useDualWallet } from "../hooks/use-fast-bridge-dual-wallet";
 import { useOrchestratedTransfer } from "../hooks/use-fast-bridge-orchestrated-transfer";
+import { useFastBridgeTransactionHistory } from "../hooks/use-fast-bridge-transaction-history";
+import { useFastBridgeTransactionUrlState } from "../hooks/use-fast-bridge-transaction-url-state";
 import { DualWalletConnector } from "./fast-bridge-dual-wallet-connector";
 import { FractionButtons } from "./fast-bridge-fraction-buttons";
+import { QuickSendEvmDialog } from "./fast-bridge-quick-send-evm-dialog";
+import { TransactionHistoryDialog } from "./fast-bridge-transaction-history-dialog";
 import { TransactionLifecycleDialog } from "./fast-bridge-transaction-lifecycle-dialog";
-import type { SimpleBridgeDirection } from "./fast-bridge-types";
+import type {
+  FastBridgeTransactionHistoryItem,
+  SimpleBridgeDirection,
+  SimpleBridgeTransaction,
+} from "./fast-bridge-types";
 import { SimpleBridgeStep } from "./fast-bridge-types";
 
 const BASE_GAS_RESERVE = 10n ** 16n;
 const NATIVE_GAS_RESERVE = 10n ** 18n;
+const TORUS_EVM_GAS_RESERVE = 5n * 10n ** 15n; // 0.005 TORUS for gas fees
 
 function formatWeiToDecimalString(amount: bigint, decimals = 18): string {
   const amountStr = amount.toString();
@@ -63,6 +73,8 @@ export function FastBridgeForm() {
     useState<SimpleBridgeDirection>("base-to-native");
   const [amountFrom, setAmountFrom] = useState<string>("");
   const [showTransactionDialog, setShowTransactionDialog] = useState(false);
+  const [showHistoryDialog, setShowHistoryDialog] = useState(false);
+  const [showQuickSendDialog, setShowQuickSendDialog] = useState(false);
 
   const { areWalletsReady, connectionState, chainIds } = useDualWallet();
   const {
@@ -72,7 +84,22 @@ export function FastBridgeForm() {
     resetTransfer: _resetTransfer,
     retryFromFailedStep,
     isTransferInProgress,
+    getExplorerUrl,
+    setTransactions,
   } = useOrchestratedTransfer();
+
+  const { getTransactions, getTransactionById } =
+    useFastBridgeTransactionHistory();
+  const allTransactions = getTransactions();
+  const errorCount = allTransactions.filter(
+    (tx) => tx.status === "error",
+  ).length;
+
+  const {
+    setTransactionInUrl,
+    getTransactionFromUrl,
+    clearTransactionFromUrl,
+  } = useFastBridgeTransactionUrlState();
 
   const { selectedAccount, api } = useTorus();
   const nativeBalance = useFreeBalance(
@@ -98,6 +125,16 @@ export function FastBridgeForm() {
     query: {
       enabled: Boolean(evmAddress),
     },
+  });
+
+  const getChainValues = getChainValuesOnEnv(
+    env("NEXT_PUBLIC_TORUS_CHAIN_ENV"),
+  );
+  const { chainId: torusEvmChainId } = getChainValues("torus");
+
+  const { data: torusEvmBalance } = useBalance({
+    address: evmAddress,
+    chainId: torusEvmChainId,
   });
 
   const walletsReady = areWalletsReady(direction);
@@ -136,6 +173,58 @@ export function FastBridgeForm() {
     handleFractionClick(1.0); // All = 100%
   }, [handleFractionClick]);
 
+  const handleSendToNative = useCallback(async () => {
+    if (!torusEvmBalance || !walletsReady) return;
+
+    const evmBalance = torusEvmBalance.value;
+    const maxAmount =
+      evmBalance > TORUS_EVM_GAS_RESERVE
+        ? evmBalance - TORUS_EVM_GAS_RESERVE
+        : 0n;
+
+    if (maxAmount <= 0n) {
+      return;
+    }
+
+    setShowQuickSendDialog(false);
+    setDirection("base-to-native");
+    const amountStr = formatWeiToDecimalString(maxAmount);
+    setAmountFrom(amountStr);
+    setShowTransactionDialog(true);
+
+    try {
+      await executeTransfer("base-to-native", amountStr);
+    } catch (error) {
+      console.error("Send to Native failed:", error);
+    }
+  }, [torusEvmBalance, walletsReady, executeTransfer]);
+
+  const handleSendToBase = useCallback(async () => {
+    if (!torusEvmBalance || !walletsReady) return;
+
+    const evmBalance = torusEvmBalance.value;
+    const maxAmount =
+      evmBalance > TORUS_EVM_GAS_RESERVE
+        ? evmBalance - TORUS_EVM_GAS_RESERVE
+        : 0n;
+
+    if (maxAmount <= 0n) {
+      return;
+    }
+
+    setShowQuickSendDialog(false);
+    setDirection("native-to-base");
+    const amountStr = formatWeiToDecimalString(maxAmount);
+    setAmountFrom(amountStr);
+    setShowTransactionDialog(true);
+
+    try {
+      await executeTransfer("native-to-base", amountStr);
+    } catch (error) {
+      console.error("Send to Base failed:", error);
+    }
+  }, [torusEvmBalance, walletsReady, executeTransfer]);
+
   const handleSubmit = useCallback(async () => {
     if (!amountFrom || !walletsReady) return;
 
@@ -154,12 +243,97 @@ export function FastBridgeForm() {
       bridgeState.step === SimpleBridgeStep.ERROR
     ) {
       setShowTransactionDialog(false);
+      clearTransactionFromUrl(); // Clear URL state
       // Clear the form when transaction is complete or has error
       if (bridgeState.step === SimpleBridgeStep.COMPLETE) {
         setAmountFrom("");
       }
     }
-  }, [bridgeState.step]);
+  }, [bridgeState.step, clearTransactionFromUrl]);
+
+  const handleRetryFromHistory = useCallback(
+    (transaction: FastBridgeTransactionHistoryItem) => {
+      setShowHistoryDialog(false);
+      setDirection(transaction.direction);
+      setAmountFrom(transaction.amount);
+
+      // Set URL state for recovery
+      setTransactionInUrl(transaction.id);
+
+      // Restore transaction state to show in lifecycle dialog
+      const restoredTransactions: SimpleBridgeTransaction[] = [];
+
+      // Add step 1 if we have the hash
+      if (transaction.step1TxHash) {
+        restoredTransactions.push({
+          step: 1,
+          txHash: transaction.step1TxHash,
+          status: transaction.errorStep === 1 ? "ERROR" : "SUCCESS",
+          chainName:
+            transaction.direction === "base-to-native"
+              ? "Base"
+              : "Torus Native",
+          explorerUrl: getExplorerUrl(
+            transaction.step1TxHash,
+            transaction.direction === "base-to-native"
+              ? "Base"
+              : "Torus Native",
+          ),
+          message:
+            transaction.errorStep === 1
+              ? transaction.errorMessage
+              : "Transaction confirmed",
+          errorDetails:
+            transaction.errorStep === 1 ? transaction.errorMessage : undefined,
+        });
+      }
+
+      // Add step 2 if we have the hash or if error was at step 2
+      if (transaction.step2TxHash || transaction.errorStep === 2) {
+        restoredTransactions.push({
+          step: 2,
+          txHash: transaction.step2TxHash,
+          status:
+            transaction.errorStep === 2
+              ? "ERROR"
+              : transaction.step2TxHash
+                ? "SUCCESS"
+                : null,
+          chainName: "Torus EVM",
+          explorerUrl: transaction.step2TxHash
+            ? getExplorerUrl(transaction.step2TxHash, "Torus EVM")
+            : undefined,
+          message:
+            transaction.errorStep === 2
+              ? transaction.errorMessage
+              : transaction.step2TxHash
+                ? "Transaction confirmed"
+                : undefined,
+          errorDetails:
+            transaction.errorStep === 2 ? transaction.errorMessage : undefined,
+        });
+      }
+
+      // Restore the transactions to the shared state
+      setTransactions(restoredTransactions);
+
+      // Open dialog showing the error state
+      setShowTransactionDialog(true);
+    },
+    [getExplorerUrl, setTransactions, setTransactionInUrl],
+  );
+
+  // Check for transaction ID in URL on mount (F5 recovery)
+  useEffect(() => {
+    const txId = getTransactionFromUrl();
+    if (txId) {
+      const transaction = getTransactionById(txId);
+      if (transaction?.status === "error") {
+        // Auto-restore the transaction
+        handleRetryFromHistory(transaction);
+      }
+    }
+  }, [getTransactionFromUrl, getTransactionById, handleRetryFromHistory]);
 
   const getChainInfo = (isFrom: boolean) => {
     const isBaseToNative = direction === "base-to-native";
@@ -290,8 +464,44 @@ export function FastBridgeForm() {
     );
   };
 
+  const hasEvmBalance =
+    torusEvmBalance && torusEvmBalance.value > TORUS_EVM_GAS_RESERVE;
+
   return (
     <div className="mx-auto w-full space-y-6">
+      <div className="flex items-center justify-end">
+        <div className="flex gap-2">
+          {hasEvmBalance && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowQuickSendDialog(true)}
+              disabled={isTransferInProgress}
+            >
+              <Zap className="mr-2 h-4 w-4" />
+              Quick EVM
+            </Button>
+          )}
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setShowHistoryDialog(true)}
+            className="relative"
+          >
+            <History className="mr-2 h-4 w-4" />
+            History
+            {errorCount > 0 && (
+              <Badge
+                variant="destructive"
+                className="absolute -right-1 -top-1 flex h-5 min-w-[20px] items-center justify-center rounded-full px-1 text-[10px] font-bold"
+              >
+                {errorCount}
+              </Badge>
+            )}
+          </Button>
+        </div>
+      </div>
+
       {!walletsReady && <DualWalletConnector direction={direction} />}
 
       {walletsReady && (
@@ -429,6 +639,29 @@ export function FastBridgeForm() {
         transactions={transactions}
         amount={amountFrom}
         onRetry={retryFromFailedStep}
+      />
+
+      <TransactionHistoryDialog
+        isOpen={showHistoryDialog}
+        onClose={() => setShowHistoryDialog(false)}
+        onContinue={handleRetryFromHistory}
+        getExplorerUrl={getExplorerUrl}
+      />
+
+      <QuickSendEvmDialog
+        isOpen={showQuickSendDialog}
+        onClose={() => setShowQuickSendDialog(false)}
+        evmBalance={
+          torusEvmBalance && torusEvmBalance.value > TORUS_EVM_GAS_RESERVE
+            ? torusEvmBalance.value - TORUS_EVM_GAS_RESERVE
+            : 0n
+        }
+        nativeBalance={nativeBalance.data ?? 0n}
+        baseBalance={baseBalance ?? 0n}
+        onSendToNative={handleSendToNative}
+        onSendToBase={handleSendToBase}
+        formatAmount={formatWeiToDecimalString}
+        isTransferInProgress={isTransferInProgress}
       />
     </div>
   );

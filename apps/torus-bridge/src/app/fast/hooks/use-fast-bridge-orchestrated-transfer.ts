@@ -11,7 +11,7 @@ import { env } from "~/env";
 import { useWarpCore } from "~/hooks/token";
 import { useMultiProvider } from "~/hooks/use-multi-provider";
 import { useTokenTransfer } from "~/hooks/use-token-transfer";
-import { useCallback, useMemo } from "react";
+import { useCallback, useMemo, useRef } from "react";
 import { erc20Abi } from "viem";
 import {
   useAccount,
@@ -34,6 +34,7 @@ import {
   executeNativeToBaseStep2,
 } from "./fast-bridge-native-to-base-flow";
 import { useSimpleBridgeSharedState } from "./use-fast-bridge-shared-state";
+import { useFastBridgeTransactionHistory } from "./use-fast-bridge-transaction-history";
 
 export function useOrchestratedTransfer() {
   const {
@@ -46,6 +47,13 @@ export function useOrchestratedTransfer() {
     clearErrorDetails,
     getExplorerUrl,
   } = useSimpleBridgeSharedState();
+
+  const {
+    addTransaction: addToHistory,
+    updateTransaction: updateHistoryTransaction,
+  } = useFastBridgeTransactionHistory();
+
+  const currentTransactionIdRef = useRef<string | null>(null);
 
   const { toast } = useToast();
 
@@ -230,7 +238,29 @@ export function useOrchestratedTransfer() {
           addTransaction,
           getExplorerUrl,
         });
+
+        // Update history after step 1 complete
+        if (currentTransactionIdRef.current) {
+          const _step1Tx = transactions.find((tx) => tx.step === 1);
+          updateHistoryTransaction(currentTransactionIdRef.current, {
+            status: "step1_complete",
+            currentStep: SimpleBridgeStep.STEP_2_PREPARING,
+            step1TxHash: _step1Tx?.txHash,
+          });
+        }
       } catch (error) {
+        // Update history on error
+        if (currentTransactionIdRef.current) {
+          const _step1Tx = transactions.find((tx) => tx.step === 1);
+          updateHistoryTransaction(currentTransactionIdRef.current, {
+            status: "error",
+            currentStep: SimpleBridgeStep.ERROR,
+            errorMessage:
+              error instanceof Error ? error.message : "Unknown error",
+            errorStep: 1,
+            canRetry: !(error instanceof UserRejectedError),
+          });
+        }
         // Stop execution if user rejected the transaction
         if (error instanceof UserRejectedError) {
           return;
@@ -254,7 +284,31 @@ export function useOrchestratedTransfer() {
           addTransaction,
           getExplorerUrl,
         });
+
+        // Update history after step 2 complete
+        if (currentTransactionIdRef.current) {
+          const step2Tx = transactions.find((tx) => tx.step === 2);
+          updateHistoryTransaction(currentTransactionIdRef.current, {
+            status: "completed",
+            currentStep: SimpleBridgeStep.COMPLETE,
+            step2TxHash: step2Tx?.txHash,
+            canRetry: false,
+          });
+        }
       } catch (error) {
+        // Update history on error
+        if (currentTransactionIdRef.current) {
+          const step2Tx = transactions.find((tx) => tx.step === 2);
+          updateHistoryTransaction(currentTransactionIdRef.current, {
+            status: "error",
+            currentStep: SimpleBridgeStep.ERROR,
+            errorMessage:
+              error instanceof Error ? error.message : "Unknown error",
+            errorStep: 2,
+            step2TxHash: step2Tx?.txHash,
+            canRetry: !(error instanceof UserRejectedError),
+          });
+        }
         // Stop execution if user rejected the transaction
         if (error instanceof UserRejectedError) {
           return;
@@ -286,6 +340,8 @@ export function useOrchestratedTransfer() {
       torusEvmBalance,
       switchChainAsync,
       torusEvmChainId,
+      transactions,
+      updateHistoryTransaction,
     ],
   );
 
@@ -309,7 +365,29 @@ export function useOrchestratedTransfer() {
           addTransaction,
           getExplorerUrl,
         });
+
+        // Update history after step 1 complete
+        if (currentTransactionIdRef.current) {
+          const _step1Tx = transactions.find((tx) => tx.step === 1);
+          updateHistoryTransaction(currentTransactionIdRef.current, {
+            status: "step1_complete",
+            currentStep: SimpleBridgeStep.STEP_2_PREPARING,
+            step1TxHash: _step1Tx?.txHash,
+          });
+        }
       } catch (error) {
+        // Update history on error
+        if (currentTransactionIdRef.current) {
+          const _step1Tx = transactions.find((tx) => tx.step === 1);
+          updateHistoryTransaction(currentTransactionIdRef.current, {
+            status: "error",
+            currentStep: SimpleBridgeStep.ERROR,
+            errorMessage:
+              error instanceof Error ? error.message : "Unknown error",
+            errorStep: 1,
+            canRetry: !(error instanceof UserRejectedError),
+          });
+        }
         // Stop execution if user rejected the transaction
         if (error instanceof UserRejectedError) {
           return;
@@ -335,7 +413,31 @@ export function useOrchestratedTransfer() {
           addTransaction,
           getExplorerUrl,
         });
+
+        // Update history after step 2 complete
+        if (currentTransactionIdRef.current) {
+          const step2Tx = transactions.find((tx) => tx.step === 2);
+          updateHistoryTransaction(currentTransactionIdRef.current, {
+            status: "completed",
+            currentStep: SimpleBridgeStep.COMPLETE,
+            step2TxHash: step2Tx?.txHash,
+            canRetry: false,
+          });
+        }
       } catch (error) {
+        // Update history on error
+        if (currentTransactionIdRef.current) {
+          const step2Tx = transactions.find((tx) => tx.step === 2);
+          updateHistoryTransaction(currentTransactionIdRef.current, {
+            status: "error",
+            currentStep: SimpleBridgeStep.ERROR,
+            errorMessage:
+              error instanceof Error ? error.message : "Unknown error",
+            errorStep: 2,
+            step2TxHash: step2Tx?.txHash,
+            canRetry: !(error instanceof UserRejectedError),
+          });
+        }
         // Stop execution if user rejected the transaction
         if (error instanceof UserRejectedError) {
           return;
@@ -369,6 +471,8 @@ export function useOrchestratedTransfer() {
       torusEvmChainId,
       warpCore,
       accounts,
+      transactions,
+      updateHistoryTransaction,
     ],
   );
 
@@ -501,10 +605,27 @@ export function useOrchestratedTransfer() {
       });
       setTransactions([]);
 
-      if (direction === "base-to-native") {
-        await executeBaseToNative(amount);
-      } else {
-        await executeNativeToBase(amount);
+      // Create history entry
+      const historyId = addToHistory({
+        direction,
+        amount,
+        status: "pending",
+        currentStep: SimpleBridgeStep.STEP_1_PREPARING,
+        canRetry: false,
+        evmAddress,
+        nativeAddress: selectedAccount?.address,
+      });
+      currentTransactionIdRef.current = historyId;
+
+      try {
+        if (direction === "base-to-native") {
+          await executeBaseToNative(amount);
+        } else {
+          await executeNativeToBase(amount);
+        }
+      } catch {
+        // Error handling is done in individual flows
+        // Just ensure we keep the transaction ID for retry
       }
     },
     [
@@ -512,6 +633,9 @@ export function useOrchestratedTransfer() {
       executeNativeToBase,
       updateBridgeState,
       setTransactions,
+      addToHistory,
+      evmAddress,
+      selectedAccount?.address,
     ],
   );
 
@@ -565,6 +689,8 @@ export function useOrchestratedTransfer() {
     executeTransfer,
     resetTransfer,
     retryFromFailedStep,
+    getExplorerUrl,
+    setTransactions,
     isTransferInProgress:
       bridgeState.step !== SimpleBridgeStep.IDLE &&
       bridgeState.step !== SimpleBridgeStep.COMPLETE &&

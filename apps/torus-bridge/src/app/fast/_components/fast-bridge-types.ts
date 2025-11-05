@@ -67,3 +67,27 @@ export interface SimpleBridgeTransaction {
   errorDetails?: string; // User-friendly formatted error message
   errorPhase?: "sign" | "confirm"; // Phase where error occurred for step errors
 }
+
+export interface FastBridgeTransactionHistoryItem {
+  id: string;
+  timestamp: number;
+  direction: SimpleBridgeDirection;
+  amount: string;
+  status: "pending" | "step1_complete" | "completed" | "error";
+  currentStep: SimpleBridgeStep;
+
+  // Transaction details
+  step1TxHash?: string;
+  step2TxHash?: string;
+  errorMessage?: string;
+  errorStep?: 1 | 2;
+
+  // For recovery
+  canRetry: boolean;
+
+  // Metadata
+  evmAddress?: string;
+  nativeAddress?: string;
+}
+
+export type TransactionHistoryFilter = "all" | "completed" | "error";
