@@ -22,26 +22,15 @@ interface ProfileHeaderProps {
 }
 
 export default function ProfileHeader({ user, username }: ProfileHeaderProps) {
-  // Fetch first 100 predictions to calculate accuracy
-  const { data: predictions } = api.prediction.getByUsername.useQuery({
+  const { data: counts } = api.prediction.getCountsByUsername.useQuery({
     username,
-    offset: 0,
   });
 
-  const allPredictions =
-    predictions?.flatMap((tweet) => tweet.predictions) ?? [];
-  const verdictedPredictions = allPredictions.filter(
-    (p) => p.verdictId !== null,
-  );
-
-  const truePredictions = allPredictions.filter(
-    (p) => p.verdictId !== null && p.verdict === true,
-  ).length;
+  const truePredictions = Number(counts?.true || 0);
+  const total = truePredictions + Number(counts?.false || 0);
 
   const accuracy =
-    verdictedPredictions.length > 0
-      ? Math.round((truePredictions / verdictedPredictions.length) * 100)
-      : null;
+    total > 0 ? Math.round((truePredictions / total) * 100) : null;
 
   return (
     <Card className="bg-background/80 plus-corners">

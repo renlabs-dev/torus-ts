@@ -1,4 +1,4 @@
-import { and, eq, ilike, isNull, notExists, sql } from "@torus-ts/db";
+import { and, eq, ilike, notExists, sql } from "@torus-ts/db";
 import {
   parsedPredictionFeedbackSchema,
   parsedPredictionSchema,
@@ -273,7 +273,7 @@ export const twitterUserRouter = {
                       parsedPredictionFeedbackSchema.parsedPredictionId,
                       parsedPredictionSchema.id,
                     ),
-                    sql`${parsedPredictionFeedbackSchema.failureCause} != 'future_timeframe'`,
+                    sql`${parsedPredictionFeedbackSchema.failureCause} != 'FUTURE_TIMEFRAME'`,
                   ),
                 ),
             ),

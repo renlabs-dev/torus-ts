@@ -253,11 +253,12 @@ export const predictionRouter = {
           .string()
           .min(1, "Username is required")
           .transform((val) => (val.startsWith("@") ? val.slice(1) : val)),
+        limit: z.number().min(1).max(10000).default(50),
         offset: z.number().min(0).default(0),
       }),
     )
     .query(async ({ ctx, input }) => {
-      const { username, offset } = input;
+      const { username, limit, offset } = input;
 
       // Get all predictions with their data
       const rawPredictions = await ctx.db
@@ -297,7 +298,7 @@ export const predictionRouter = {
           verdictContext: verdictSchema.context,
           verdictCreatedAt: verdictSchema.createdAt,
 
-          // Feedback data (for future_timeframe)
+          // Feedback data (for FUTURE_TIMEFRAME)
           feedbackFailureCause: parsedPredictionFeedbackSchema.failureCause,
           feedbackReason: parsedPredictionFeedbackSchema.reason,
         })
@@ -318,7 +319,7 @@ export const predictionRouter = {
                       parsedPredictionFeedbackSchema.parsedPredictionId,
                       parsedPredictionSchema.id,
                     ),
-                    sql`${parsedPredictionFeedbackSchema.failureCause} != 'future_timeframe'`,
+                    sql`${parsedPredictionFeedbackSchema.failureCause} != 'FUTURE_TIMEFRAME'`,
                   ),
                 ),
             ),
@@ -356,6 +357,7 @@ export const predictionRouter = {
           ),
         )
         .orderBy(desc(predictionSchema.createdAt))
+        .limit(limit)
         .offset(offset);
 
       return await groupPredictionsByTweet(
@@ -419,7 +421,7 @@ export const predictionRouter = {
           verdictContext: verdictSchema.context,
           verdictCreatedAt: verdictSchema.createdAt,
 
-          // Feedback data (for future_timeframe)
+          // Feedback data (for FUTURE_TIMEFRAME)
           feedbackFailureCause: parsedPredictionFeedbackSchema.failureCause,
           feedbackReason: parsedPredictionFeedbackSchema.reason,
         })
@@ -440,7 +442,7 @@ export const predictionRouter = {
                       parsedPredictionFeedbackSchema.parsedPredictionId,
                       parsedPredictionSchema.id,
                     ),
-                    sql`${parsedPredictionFeedbackSchema.failureCause} != 'future_timeframe'`,
+                    sql`${parsedPredictionFeedbackSchema.failureCause} != 'FUTURE_TIMEFRAME'`,
                   ),
                 ),
             ),
@@ -521,7 +523,7 @@ export const predictionRouter = {
                       parsedPredictionFeedbackSchema.parsedPredictionId,
                       parsedPredictionSchema.id,
                     ),
-                    sql`${parsedPredictionFeedbackSchema.failureCause} != 'future_timeframe'`,
+                    sql`${parsedPredictionFeedbackSchema.failureCause} != 'FUTURE_TIMEFRAME'`,
                   ),
                 ),
             ),
@@ -633,7 +635,7 @@ export const predictionRouter = {
                       parsedPredictionFeedbackSchema.parsedPredictionId,
                       parsedPredictionSchema.id,
                     ),
-                    sql`${parsedPredictionFeedbackSchema.failureCause} != 'future_timeframe'`,
+                    sql`${parsedPredictionFeedbackSchema.failureCause} != 'FUTURE_TIMEFRAME'`,
                   ),
                 ),
             ),
@@ -746,7 +748,7 @@ export const predictionRouter = {
                       parsedPredictionFeedbackSchema.parsedPredictionId,
                       parsedPredictionSchema.id,
                     ),
-                    sql`${parsedPredictionFeedbackSchema.failureCause} != 'future_timeframe'`,
+                    sql`${parsedPredictionFeedbackSchema.failureCause} != 'FUTURE_TIMEFRAME'`,
                   ),
                 ),
             ),
@@ -801,7 +803,7 @@ export const predictionRouter = {
     const counts = await ctx.db
       .select({
         verdictStatus: sql<string | null>`CASE
-          WHEN ${verdictSchema.id} IS NULL AND (${parsedPredictionFeedbackSchema.parsedPredictionId} IS NULL OR ${parsedPredictionFeedbackSchema.failureCause} = 'future_timeframe') THEN 'ongoing'
+          WHEN ${verdictSchema.id} IS NULL AND (${parsedPredictionFeedbackSchema.parsedPredictionId} IS NULL OR ${parsedPredictionFeedbackSchema.failureCause} = 'FUTURE_TIMEFRAME') THEN 'ongoing'
           WHEN ${verdictSchema.verdict} = true THEN 'true'
           WHEN ${verdictSchema.verdict} = false THEN 'false'
         END`.as("verdict_status"),
@@ -824,7 +826,7 @@ export const predictionRouter = {
                     parsedPredictionFeedbackSchema.parsedPredictionId,
                     parsedPredictionSchema.id,
                   ),
-                  sql`${parsedPredictionFeedbackSchema.failureCause} != 'future_timeframe'`,
+                  sql`${parsedPredictionFeedbackSchema.failureCause} != 'FUTURE_TIMEFRAME'`,
                 ),
               ),
           ),
@@ -916,7 +918,7 @@ export const predictionRouter = {
           verdictContext: verdictSchema.context,
           verdictCreatedAt: verdictSchema.createdAt,
 
-          // Feedback data (for future_timeframe)
+          // Feedback data (for FUTURE_TIMEFRAME)
           feedbackFailureCause: parsedPredictionFeedbackSchema.failureCause,
           feedbackReason: parsedPredictionFeedbackSchema.reason,
         })
@@ -937,7 +939,7 @@ export const predictionRouter = {
                       parsedPredictionFeedbackSchema.parsedPredictionId,
                       parsedPredictionSchema.id,
                     ),
-                    sql`${parsedPredictionFeedbackSchema.failureCause} != 'future_timeframe'`,
+                    sql`${parsedPredictionFeedbackSchema.failureCause} != 'FUTURE_TIMEFRAME'`,
                   ),
                 ),
             ),

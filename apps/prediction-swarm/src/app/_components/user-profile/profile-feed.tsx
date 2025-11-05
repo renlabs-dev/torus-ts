@@ -388,7 +388,7 @@ export function ProfileFeed({
                           </>
                         )}
                         {activePrediction.feedbackFailureCause ===
-                          "future_timeframe" && (
+                          "FUTURE_TIMEFRAME" && (
                           <>
                             <span className="text-muted-foreground text-xs">
                               •
