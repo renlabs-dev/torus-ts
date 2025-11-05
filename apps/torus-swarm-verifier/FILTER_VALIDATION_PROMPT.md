@@ -47,14 +47,43 @@ You will receive:
 
 Determine if this is a valid prediction that should be verified.
 
-**Check for disqualifying factors:**
+**CRITICAL: First check slice extraction quality:**
 
-- Negation: "I don't think", "won't", "unlikely"
-- Sarcasm: "lol", "lmao", emojis, "yeah right"
-- Conditionals: "if X happens", "assuming Y"
-- Quoting others: Author quoting someone else's view
-- Heavy hedging: "maybe", "possibly", "could"
-- Future timeframe: Prediction end_utc is AFTER current_date (not yet mature for verification)
+Before evaluating the prediction content, verify the filter didn't create broken extractions:
+
+1. **Word boundary violations**: Check if slices cut through the middle of words
+   - Compare the extracted text against the full tweet at those indices
+   - Example: Extracting "now" from "k**now**" is INVALID - it cuts through the word "know"
+   - If a slice doesn't align with word boundaries, mark as invalid with `failure_cause: "broken_extraction"`
+
+2. **Semantic validity of extracted text**: Does the extracted text make sense in isolation?
+   - Is the timeframe slice actually a temporal expression? (not just random word fragments)
+   - Is the goal slice actually a predictive statement? (not just disconnected fragments)
+   - If extractions are nonsensical or fragments, mark as invalid with `failure_cause: "broken_extraction"`
+
+**Then check for disqualifying factors:**
+
+1. **Vague or unmeasurable goals**:
+   - Subjective outcomes: "will be wild", "will be grim", "will be good/bad"
+   - No clear success criteria: "will have consequences", "will impact X"
+   - Abstract philosophical statements: "the West in decline", "the East ascendant"
+   - Cannot objectively verify if it happened
+   - Note: Conditionals with specific, measurable outcomes are VALID. Only reject if the goal itself is vague.
+
+2. **Present-state commentary** (NOT predictions):
+   - Describing current conditions: "we already face", "things are now"
+   - Ongoing analysis of existing situations
+   - If it's about what IS rather than what WILL BE, it's not a prediction
+
+3. **Negation**: "I don't think", "won't", "unlikely"
+
+4. **Sarcasm**: "lol", "lmao", emojis, "yeah right"
+
+5. **Quoting others**: Author quoting someone else's view
+
+6. **Heavy hedging**: "maybe", "possibly", "could"
+
+7. **Future timeframe**: Prediction end_utc is AFTER current_date (not yet mature for verification)
 
 ## Output Format
 
@@ -64,7 +93,7 @@ Return ONLY valid JSON (no markdown fences):
 {
   "context": "Brief summary of what the thread is about and what the author was saying",
   "is_valid": true | false,
-  "failure_cause": "negation" | "sarcasm" | "conditional" | "quoting_others" | "heavy_hedging" | "future_timeframe" | "other" | null,
+  "failure_cause": "BROKEN_EXTRACTION" | "VAGUE_GOAL" | "PRESENT_STATE" | "NEGATION" | "SARCASM" | "QUOTING_OTHERS" | "HEAVY_HEDGING" | "FUTURE_TIMEFRAME" | "OTHER" | null,
   "confidence": 0.95,
   "reasoning": "Explanation of why this is or isn't a valid prediction"
 }
@@ -75,13 +104,15 @@ Return ONLY valid JSON (no markdown fences):
 - `context`: Brief summary of the thread and what the author was saying
 - `is_valid`: Boolean indicating if this is a valid prediction
 - `failure_cause`: Category of failure (null if is_valid is true). Must be one of:
-  - `"negation"`: Prediction is negated ("I don't think", "won't", "unlikely")
-  - `"sarcasm"`: Sarcastic or joking tone ("lol", "lmao", emojis)
-  - `"conditional"`: Conditional prediction ("if X happens", "assuming Y")
-  - `"quoting_others"`: Author is quoting someone else's view
-  - `"heavy_hedging"`: Heavily hedged ("maybe", "possibly", "could")
-  - `"future_timeframe"`: Prediction hasn't matured yet (end_utc > current_date)
-  - `"other"`: Other disqualifying factors not covered above
+  - `"BROKEN_EXTRACTION"`: Slices cut through word boundaries or extract nonsensical fragments
+  - `"VAGUE_GOAL"`: Goal is subjective, unmeasurable, or has no clear success criteria
+  - `"PRESENT_STATE"`: Statement about current conditions, not a future prediction
+  - `"NEGATION"`: Prediction is negated ("I don't think", "won't", "unlikely")
+  - `"SARCASM"`: Sarcastic or joking tone ("lol", "lmao", emojis)
+  - `"QUOTING_OTHERS"`: Author is quoting someone else's view
+  - `"HEAVY_HEDGING"`: Heavily hedged ("maybe", "possibly", "could")
+  - `"FUTURE_TIMEFRAME"`: Prediction hasn't matured yet (end_utc > current_date)
+  - `"OTHER"`: Other disqualifying factors not covered above
 - `confidence`: Confidence score from 0.0 to 1.0 indicating how certain the validation is
 - `reasoning`: Human-readable explanation
 
@@ -120,7 +151,55 @@ Return ONLY valid JSON (no markdown fences):
 }
 ```
 
-### Example 2: Invalid - Negation
+### Example 2: Invalid - Broken Extraction (Word Boundary Violation)
+
+**Input:**
+
+```json
+{
+  "current_date": "2025-04-15T00:00:00Z",
+  "thread_tweets": [
+    {
+      "tweet_id": "123456789",
+      "text": "@vgr My critique is deeper than \"Metaverse Wikipedia will beat Metaverse Encyclopedia Britannica\". It's that we don't really know the definition of \"the metaverse\" yet, it's far too early to know what people actually want. So anything Facebook creates now will misfire."
+    }
+  ],
+  "goal_slices": [
+    {
+      "tweet_id": "123456789",
+      "start": 180,
+      "end": 183,
+      "text": "now"
+    }
+  ],
+  "timeframe_slices": [
+    {
+      "tweet_id": "123456789",
+      "start": 175,
+      "end": 178,
+      "text": "now"
+    }
+  ],
+  "timeframe_parsed": {
+    "start_utc": "2020-03-18T10:00:00Z",
+    "end_utc": "2020-03-18T10:00:00Z"
+  }
+}
+```
+
+**Output:**
+
+```json
+{
+  "context": "Author is critiquing Facebook's metaverse strategy, saying it's too early to know what people want.",
+  "is_valid": false,
+  "failure_cause": "BROKEN_EXTRACTION",
+  "confidence": 0.99,
+  "reasoning": "The filter extracted 'now' from the middle of the word 'know' at position 175-178. Looking at the full tweet, this is part of the phrase 'we don't really know' - the filter cut through the word boundary. The extracted 'now' is not a temporal expression but a fragment of the word 'know'. This is a broken extraction that doesn't represent the actual tweet content."
+}
+```
+
+### Example 3: Invalid - Negation
 
 **Input:**
 
@@ -145,7 +224,7 @@ Return ONLY valid JSON (no markdown fences):
 {
   "context": "Author is expressing doubt that Bitcoin will reach 100k by end of Q1. This is a negative prediction.",
   "is_valid": false,
-  "failure_cause": "negation",
+  "failure_cause": "NEGATION",
   "confidence": 0.99,
   "reasoning": "Author explicitly stated 'I don't think' which negates the prediction. The filter removed the negation."
 }
@@ -176,27 +255,25 @@ Return ONLY valid JSON (no markdown fences):
 {
   "context": "Author is sarcastically mocking the idea that Bitcoin could reach 100k in such a short timeframe.",
   "is_valid": false,
-  "failure_cause": "sarcasm",
+  "failure_cause": "SARCASM",
   "confidence": 0.97,
   "reasoning": "Clear sarcasm indicators: 'totally', 'lmaooo', clown emoji, and unrealistic timeframe. This is a joke, not a serious prediction."
 }
 ```
 
-### Example 4: Invalid - Conditional
+### Example 4: Invalid - Vague Goal
 
 **Input:**
 
 ```json
 {
-  "current_date": "2025-01-20T00:00:00Z",
-  "thread_tweets": [
-    { "text": "If the ETF gets approved, BTC will hit 100k by end of year" }
-  ],
-  "goal_slices": [{ "text": "BTC will hit 100k" }],
-  "timeframe_slices": [{ "text": "by end of year" }],
+  "current_date": "2025-04-15T00:00:00Z",
+  "thread_tweets": [{ "text": "VR will be wild by end of Q1 2025" }],
+  "goal_slices": [{ "text": "VR will be wild" }],
+  "timeframe_slices": [{ "text": "by end of Q1 2025" }],
   "timeframe_parsed": {
     "start_utc": "2025-01-20T00:00:00Z",
-    "end_utc": "2025-12-31T23:59:59Z"
+    "end_utc": "2025-03-31T23:59:59Z"
   }
 }
 ```
@@ -205,15 +282,79 @@ Return ONLY valid JSON (no markdown fences):
 
 ```json
 {
-  "context": "Author is making a conditional prediction based on ETF approval.",
+  "context": "Author is making a vague prediction about VR technology becoming 'wild'.",
   "is_valid": false,
-  "failure_cause": "conditional",
-  "confidence": 0.96,
-  "reasoning": "Prediction is conditional on ETF approval. Filter removed the 'if' clause to make it appear unconditional."
+  "failure_cause": "VAGUE_GOAL",
+  "confidence": 0.95,
+  "reasoning": "'Wild' is subjective with no clear success criteria. How would we objectively verify if VR became 'wild'? There's no measurable outcome to check. This is an opinion statement, not a verifiable prediction."
 }
 ```
 
-### Example 5: Invalid - Future Timeframe
+### Example 5: Invalid - Present State Commentary
+
+**Input:**
+
+```json
+{
+  "current_date": "2025-04-15T00:00:00Z",
+  "thread_tweets": [
+    {
+      "text": "We already face a combination of supply chain disruptions and soaring prices for masks"
+    }
+  ],
+  "goal_slices": [{ "text": "supply chain disruptions" }],
+  "timeframe_slices": [{ "text": "already" }],
+  "timeframe_parsed": {
+    "start_utc": "2020-03-22T14:30:00Z",
+    "end_utc": "2020-03-22T14:30:00Z"
+  }
+}
+```
+
+**Output:**
+
+```json
+{
+  "context": "Author is describing current conditions in March 2020, not making a prediction about the future.",
+  "is_valid": false,
+  "failure_cause": "PRESENT_STATE",
+  "confidence": 0.99,
+  "reasoning": "'We already face' indicates this is commentary on existing conditions, not a prediction. The author is describing what IS happening, not what WILL happen. This is analysis of the present, not a forecast."
+}
+```
+
+### Example 6: Valid - Conditional with Specific Outcome
+
+**Input:**
+
+```json
+{
+  "current_date": "2025-01-20T00:00:00Z",
+  "thread_tweets": [
+    { "text": "If BTC breaks $95k resistance, it will hit $100k within a week" }
+  ],
+  "goal_slices": [{ "text": "it will hit $100k" }],
+  "timeframe_slices": [{ "text": "within a week" }],
+  "timeframe_parsed": {
+    "start_utc": "2025-01-20T00:00:00Z",
+    "end_utc": "2025-01-27T23:59:59Z"
+  }
+}
+```
+
+**Output:**
+
+```json
+{
+  "context": "Author is making a conditional price prediction: if BTC breaks $95k, it will reach $100k within a week.",
+  "is_valid": true,
+  "failure_cause": null,
+  "confidence": 0.92,
+  "reasoning": "While this is conditional, both the condition ($95k break) and outcome ($100k target) are specific and measurable. We can verify if the condition was met and then check if the outcome happened. This is a legitimate causal prediction, not a vague statement."
+}
+```
+
+### Example 7: Invalid - Future Timeframe
 
 **Input:**
 
@@ -238,7 +379,7 @@ Return ONLY valid JSON (no markdown fences):
 {
   "context": "Author is making a confident price prediction for Bitcoin reaching 100k by end of 2026.",
   "is_valid": false,
-  "failure_cause": "future_timeframe",
+  "failure_cause": "FUTURE_TIMEFRAME",
   "confidence": 1.0,
   "reasoning": "While this is a valid prediction, the timeframe ends on 2026-12-31 which is after the current date of 2025-01-20. Prediction has not matured yet and cannot be verified."
 }

@@ -9,6 +9,7 @@ import {
   verdictSchema,
 } from "@torus-ts/db/schema";
 import type {
+  FailureCause,
   PostSlice,
   ScrapedTweet,
   VerdictContext,
@@ -86,12 +87,12 @@ interface TimeframeExtractionResult {
  * Slice validation failure reasons
  */
 type SliceValidationFailureCause =
-  | "empty_slices" // No slices provided
-  | "missing_tweet" // Slice references a tweet that doesn't exist
-  | "negative_indices" // Start or end index is negative
-  | "invalid_range" // Start >= end (inverted or zero-length range)
-  | "slice_too_short" // Slice length < 2 characters
-  | "out_of_bounds"; // End index exceeds tweet text length
+  | "EMPTY_SLICES" // No slices provided
+  | "MISSING_TWEET" // Slice references a tweet that doesn't exist
+  | "NEGATIVE_INDICES" // Start or end index is negative
+  | "INVALID_RANGE" // Start >= end (inverted or zero-length range)
+  | "SLICE_TOO_SHORT" // Slice length < 2 characters
+  | "OUT_OF_BOUNDS"; // End index exceeds tweet text length
 
 /**
  * Result from slice validation
@@ -106,13 +107,15 @@ interface SliceValidationResult {
  * Filter validation failure reasons
  */
 type FilterValidationFailureCause =
-  | "negation"
-  | "sarcasm"
-  | "conditional"
-  | "quoting_others"
-  | "heavy_hedging"
-  | "future_timeframe"
-  | "other";
+  | "BROKEN_EXTRACTION"
+  | "VAGUE_GOAL"
+  | "PRESENT_STATE"
+  | "NEGATION"
+  | "SARCASM"
+  | "QUOTING_OTHERS"
+  | "HEAVY_HEDGING"
+  | "FUTURE_TIMEFRAME"
+  | "OTHER";
 
 /**
  * Filter validation response
@@ -231,17 +234,19 @@ const FILTER_VALIDATION_SCHEMA = {
     failure_cause: {
       type: ["string", "null"],
       enum: [
-        "negation",
-        "sarcasm",
-        "conditional",
-        "quoting_others",
-        "heavy_hedging",
-        "future_timeframe",
-        "other",
+        "BROKEN_EXTRACTION",
+        "VAGUE_GOAL",
+        "PRESENT_STATE",
+        "NEGATION",
+        "SARCASM",
+        "QUOTING_OTHERS",
+        "HEAVY_HEDGING",
+        "FUTURE_TIMEFRAME",
+        "OTHER",
         null,
       ],
       description:
-        "Category of failure (null if is_valid is true). Negation: prediction is negated. Sarcasm: sarcastic/joking tone. Conditional: conditional prediction. Quoting_others: quoting someone else. Heavy_hedging: heavily hedged. Future_timeframe: prediction hasn't matured yet. Other: other disqualifying factors.",
+        "Category of failure (null if is_valid is true). BROKEN_EXTRACTION: slices cut through word boundaries or extract nonsensical fragments. VAGUE_GOAL: goal is subjective or unmeasurable. PRESENT_STATE: statement about current conditions, not a prediction. NEGATION: prediction is negated. SARCASM: sarcastic/joking tone. QUOTING_OTHERS: quoting someone else. HEAVY_HEDGING: heavily hedged. FUTURE_TIMEFRAME: prediction hasn't matured yet. OTHER: other disqualifying factors.",
     },
     confidence: {
       type: "number",
@@ -457,7 +462,7 @@ export class PredictionVerifier {
     parsedPredictionId: string,
     validationStep: string,
     reason: string,
-    failureCause?: string | null,
+    failureCause?: FailureCause | null,
   ): Promise<void> {
     await tx.insert(parsedPredictionFeedbackSchema).values({
       parsedPredictionId,
@@ -927,7 +932,7 @@ export class PredictionVerifier {
       logInfo(message);
       return {
         valid: false,
-        failureCause: "empty_slices",
+        failureCause: "EMPTY_SLICES",
         message,
       };
     }
@@ -941,7 +946,7 @@ export class PredictionVerifier {
         logInfo(message);
         return {
           valid: false,
-          failureCause: "missing_tweet",
+          failureCause: "MISSING_TWEET",
           message,
         };
       }
@@ -951,7 +956,7 @@ export class PredictionVerifier {
         logInfo(message, { tweetId });
         return {
           valid: false,
-          failureCause: "negative_indices",
+          failureCause: "NEGATIVE_INDICES",
           message,
         };
       }
@@ -961,7 +966,7 @@ export class PredictionVerifier {
         logInfo(message, { tweetId });
         return {
           valid: false,
-          failureCause: "invalid_range",
+          failureCause: "INVALID_RANGE",
           message,
         };
       }
@@ -972,7 +977,7 @@ export class PredictionVerifier {
         logInfo(message, { tweetId });
         return {
           valid: false,
-          failureCause: "slice_too_short",
+          failureCause: "SLICE_TOO_SHORT",
           message,
         };
       }
@@ -982,7 +987,7 @@ export class PredictionVerifier {
         logInfo(message, { tweetId });
         return {
           valid: false,
-          failureCause: "out_of_bounds",
+          failureCause: "OUT_OF_BOUNDS",
           message,
         };
       }
@@ -1158,6 +1163,46 @@ export class PredictionVerifier {
     });
 
     await this.storeTimeframeDetails(tx, prediction.id, timeframeResult);
+
+    if (
+      timeframeResult.timeframe_status === "missing" ||
+      timeframeResult.timeframe_status === "event_trigger"
+    ) {
+      logInfo("Timeframe is unverifiable", {
+        status: timeframeResult.timeframe_status,
+        reasoning: timeframeResult.reasoning,
+      });
+      await this.storeFeedback(
+        tx,
+        prediction.id,
+        "timeframe_extraction",
+        timeframeResult.reasoning,
+        timeframeResult.timeframe_status === "missing"
+          ? "MISSING_TIMEFRAME"
+          : "EVENT_TRIGGER",
+      );
+      return true;
+    }
+
+    if (timeframeResult.end_utc) {
+      const endDate = new Date(timeframeResult.end_utc);
+      const currentDate = new Date();
+
+      if (endDate > currentDate) {
+        logInfo("Timeframe has not matured yet", {
+          endUtc: timeframeResult.end_utc,
+          currentDate: currentDate.toISOString(),
+        });
+        await this.storeFeedback(
+          tx,
+          prediction.id,
+          "timeframe_extraction",
+          `Prediction timeframe ends on ${timeframeResult.end_utc} which is after the current date ${currentDate.toISOString()}. Prediction has not matured yet and cannot be verified.`,
+          "FUTURE_TIMEFRAME",
+        );
+        return true;
+      }
+    }
 
     const validationResult = await this.validateFilterExtraction(
       goalText,
