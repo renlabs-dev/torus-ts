@@ -3,20 +3,36 @@ import { GoogleAnalytics } from "@next/third-parties/google";
 import { ReactQueryProvider } from "@torus-ts/query-provider";
 import { TorusProvider } from "@torus-ts/torus-provider";
 import { Layout } from "@torus-ts/ui/components/layout";
+import { createSeoMetadata } from "@torus-ts/ui/components/seo";
 import { Toaster } from "@torus-ts/ui/components/toaster";
 import { env, EnvScript } from "~/env";
 import { TRPCReactProvider } from "~/trpc/react";
-import type { Metadata } from "next";
 import { Geist_Mono as GeistMono } from "next/font/google";
 
-const APP_NAME = "Prophet Finder";
+const APP_NAME = "Prediction Swarm";
 
-export const metadata: Metadata = {
-  robots: "all",
-  title: APP_NAME,
-  icons: [{ rel: "icon", url: "favicon.ico" }],
-  description: "The thermodynamic god's favorite Prophet Finder.",
-};
+export function generateMetadata() {
+  return createSeoMetadata({
+    title: APP_NAME,
+    description:
+      "From cells to societies, intelligence emerges through nested agency. The swarm applies this principle to predictions, mapping who to trust and when, turning uncertainty into clarity.",
+    keywords: [
+      "torus portal",
+      "prediction swarm",
+      "decentralized predictions",
+      "collective intelligence",
+      "web3 predictions",
+      "torus network",
+      "torus",
+      "prediction",
+      "swarm",
+    ],
+    ogSiteName: APP_NAME,
+    canonical: "/",
+    baseUrl: env("BASE_URL"),
+    ogImagePath: "/og.svg",
+  });
+}
 
 export const geistMono = GeistMono({
   subsets: ["latin"],

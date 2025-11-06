@@ -1,13 +1,4 @@
-import {
-  and,
-  desc,
-  eq,
-  isNotNull,
-  isNull,
-  notExists,
-  or,
-  sql,
-} from "@torus-ts/db";
+import { and, desc, eq, isNotNull, isNull, notExists, sql } from "@torus-ts/db";
 import {
   parsedPredictionFeedbackSchema,
   parsedPredictionSchema,

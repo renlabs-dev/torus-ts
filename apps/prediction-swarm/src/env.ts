@@ -17,6 +17,17 @@ if (process?.env) {
 export const envSchema = {
   NODE_ENV: NodeEnvSchema.default("development"),
   PORT: z.string().default("3004"),
+  BASE_URL: z
+    .string()
+    .url()
+    .refine((u) => u.startsWith("https://"), {
+      message: "BASE_URL must be an HTTPS URL",
+    })
+    .default(
+      process.env.NODE_ENV === "production"
+        ? "https://predictionswarm.com"
+        : "https://localhost:3004",
+    ),
   /**
    * Specify your client-side environment variables schema here.
    * For them to be exposed to the client, prefix them with `NEXT_PUBLIC_`.
