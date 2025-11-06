@@ -11,7 +11,66 @@ export const jacquard = Jacquard({
 export default function Page() {
   return (
     <div>
-      <div className="relative flex min-h-[90vh] flex-col">
+      {/* Mobile Layout */}
+      <div className="relative min-h-[90vh] md:hidden">
+        <div className="animate-fade absolute inset-0">
+          <Dither
+            pixelSize={1}
+            waveSpeed={0.02}
+            waveFrequency={4}
+            waveAmplitude={0.3}
+            mouseRadius={0.2}
+          />
+        </div>
+
+        <div className="relative z-10 flex min-h-[100vh] flex-col sm:min-h-[90vh]">
+          {/* Centered title */}
+          <div className="pointer-events-none flex flex-1 items-center justify-center">
+            <h3
+              className={`bg-gradient-to-b from-white to-gray-600 bg-clip-text text-center text-8xl font-normal leading-none text-transparent opacity-40 ${jacquard.className}`}
+            >
+              <span>Prediction</span>
+              <br />
+              <span>Swarm</span>
+            </h3>
+          </div>
+
+          {/* Search at bottom */}
+          <div className="pointer-events-none pb-12">
+            <div className="animate-fade-up animate-delay-[100ms] pointer-events-auto px-4">
+              <SearchProphet />
+            </div>
+          </div>
+        </div>
+
+        {/* List items below viewport on mobile */}
+        <div className="pointer-events-auto mx-auto grid max-w-6xl gap-6 px-4 pb-6 md:pb-12">
+          <ListItem
+            title="Prophets"
+            description="Discover the most accurate predictors in the swarm"
+            linkText="Explore profiles"
+            href="/top-predictors"
+            className="animate-fade-up animate-delay-[500ms] duration-1000"
+          />
+          <ListItem
+            title="Tickers"
+            description="View live predictions across all active tickers in the swarm"
+            linkText="Explore Tickers"
+            href="/tickers"
+            className="animate-fade-up animate-delay-[750ms] duration-1000"
+          />
+          <ListItem
+            title="Predictor Feed"
+            description="Track the newest activity from all predictors in the swarm"
+            linkText="Explore feed"
+            href="/feed"
+            className="animate-fade-up animate-delay-[1000ms] duration-1000"
+          />
+        </div>
+      </div>
+
+      {/* Desktop Layout - Original */}
+      <div className="relative hidden min-h-[90vh] flex-col md:flex">
         <div className="animate-fade absolute inset-0">
           <Dither
             pixelSize={1}
@@ -25,7 +84,7 @@ export default function Page() {
         {/* Centered title */}
         <div className="pointer-events-none relative z-10 mt-40 flex flex-1 items-center justify-center">
           <h3
-            className={`bg-gradient-to-b from-white to-gray-600 bg-clip-text text-center text-4xl font-normal leading-tight text-transparent opacity-40 md:text-[10rem] ${jacquard.className}`}
+            className={`bg-gradient-to-b from-white to-gray-600 bg-clip-text text-center text-[10rem] font-normal leading-tight text-transparent opacity-40 ${jacquard.className}`}
           >
             Prediction Swarm
           </h3>

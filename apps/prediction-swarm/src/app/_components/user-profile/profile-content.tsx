@@ -105,14 +105,14 @@ export default function ProfileContent({
     <Card className="bg-background/80 plus-corners">
       <Tabs value={activeTab} onValueChange={handleTabChange}>
         <CardHeader className="pb-0">
-          <TabsList className="bg-accent/60 grid w-full grid-cols-3">
-            <TabsTrigger value="ongoing">
+          <TabsList className="bg-accent/60 flex h-full w-full flex-col sm:grid sm:grid-cols-3">
+            <TabsTrigger value="ongoing" className="w-full">
               Ongoing predictions ({counts.ongoing})
             </TabsTrigger>
-            <TabsTrigger value="true">
+            <TabsTrigger value="true" className="w-full">
               True predictions ({counts.true})
             </TabsTrigger>
-            <TabsTrigger value="false">
+            <TabsTrigger value="false" className="w-full">
               False predictions ({counts.false})
             </TabsTrigger>
           </TabsList>

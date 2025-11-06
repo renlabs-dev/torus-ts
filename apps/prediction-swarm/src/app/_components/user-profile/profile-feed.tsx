@@ -280,7 +280,7 @@ export function ProfileFeed({
   };
 
   return (
-    <div className="mx-auto px-4">
+    <div className="mx-auto sm:px-4">
       {isLoading ? (
         <div className="space-y-4">
           {/* eslint-disable-next-line @typescript-eslint/no-unsafe-assignment */}

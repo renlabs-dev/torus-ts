@@ -11,7 +11,37 @@ export function FeedLegend() {
   return (
     <Card className="bg-background/80 plus-corners relative backdrop-blur-sm">
       <TooltipProvider>
-        <div className="flex flex-wrap items-center justify-between gap-x-6 gap-y-3 p-4 text-sm">
+        <div className="flex flex-col flex-wrap items-center justify-between gap-x-6 gap-y-3 p-4 text-sm sm:flex-row">
+          {/* Details Menu */}
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <div className="flex cursor-help items-center gap-2">
+                <MoreVertical className="h-4 w-4" />
+                <span className="text-muted-foreground text-xs">Details</span>
+              </div>
+            </TooltipTrigger>
+            <TooltipContent className="bg-background/80 text-white">
+              <p className="max-w-xs text-xs">
+                View technical details including prediction IDs, quality score,
+                rationale, and version information.
+              </p>
+            </TooltipContent>
+          </Tooltip>
+          {/* Timeframe */}
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <div className="flex cursor-help items-center gap-2">
+                <div className="h-4 w-4 rounded border-2 border-blue-600" />
+                <span className="text-muted-foreground text-xs">Timeframe</span>
+              </div>
+            </TooltipTrigger>
+            <TooltipContent className="bg-background/80 text-white">
+              <p className="max-w-xs text-xs">
+                Text in [blue brackets] indicates when the prediction is
+                expected to occur or be verified.
+              </p>
+            </TooltipContent>
+          </Tooltip>
           {/* Prediction Goal */}
           <Tooltip>
             <TooltipTrigger asChild>
@@ -29,23 +59,6 @@ export function FeedLegend() {
               </p>
             </TooltipContent>
           </Tooltip>
-
-          {/* Timeframe */}
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <div className="flex cursor-help items-center gap-2">
-                <div className="h-4 w-4 rounded border-2 border-blue-600" />
-                <span className="text-muted-foreground text-xs">Timeframe</span>
-              </div>
-            </TooltipTrigger>
-            <TooltipContent className="bg-background/80 text-white">
-              <p className="max-w-xs text-xs">
-                Text in [blue brackets] indicates when the prediction is
-                expected to occur or be verified.
-              </p>
-            </TooltipContent>
-          </Tooltip>
-
           {/* Other Predictions */}
           <Tooltip>
             <TooltipTrigger asChild>
@@ -63,7 +76,6 @@ export function FeedLegend() {
               </p>
             </TooltipContent>
           </Tooltip>
-
           {/* Navigation */}
           <Tooltip>
             <TooltipTrigger asChild>
@@ -82,24 +94,6 @@ export function FeedLegend() {
               <p className="max-w-xs text-xs">
                 When multiple predictions exist for a tweet, use these arrows to
                 cycle through them. The counter shows current/total predictions.
-              </p>
-            </TooltipContent>
-          </Tooltip>
-
-          {/* Details Menu */}
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <div className="flex cursor-help items-center gap-2">
-                <MoreVertical className="h-4 w-4" />
-                <span className="text-muted-foreground text-xs">
-                  Extra details
-                </span>
-              </div>
-            </TooltipTrigger>
-            <TooltipContent className="bg-background/80 text-white">
-              <p className="max-w-xs text-xs">
-                View technical details including prediction IDs, quality score,
-                rationale, and version information.
               </p>
             </TooltipContent>
           </Tooltip>

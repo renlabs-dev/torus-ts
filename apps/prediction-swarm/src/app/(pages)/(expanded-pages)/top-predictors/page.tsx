@@ -29,7 +29,7 @@ export default async function TopPredictorsPage() {
       {/* Header section */}
 
       <PageHeader
-        title="Top Dogs"
+        title="Top Predictors"
         description="Ranked by quality score (minimum 2 verdicted predictions)"
         children={
           <TooltipProvider>
@@ -75,65 +75,71 @@ export default async function TopPredictorsPage() {
             <div key={predictor.userId} className="plus-corners">
               <Link href={`/user/${predictor.username}`} className="block">
                 <Card className="bg-background/80 hover:bg-background/90 relative backdrop-blur-lg transition-colors">
-                  <div className="flex items-center gap-4 p-4">
-                    {/* Rank */}
-                    <div className="flex w-12 items-center justify-center">
-                      <span
-                        className={`text-2xl font-bold ${
-                          index === 0
-                            ? "text-yellow-500"
-                            : index === 1
-                              ? "text-gray-400"
-                              : index === 2
-                                ? "text-orange-600"
-                                : "text-muted-foreground"
-                        }`}
-                      >
-                        {index + 1}
-                      </span>
-                    </div>
-
-                    {/* Avatar */}
-                    <Avatar className="h-12 w-12 border-2">
-                      <AvatarImage
-                        src={predictor.avatarUrl ?? undefined}
-                        alt={
-                          predictor.screenName ?? predictor.username ?? "User"
-                        }
-                      />
-                      <AvatarFallback>
-                        {(predictor.screenName ?? predictor.username ?? "U")
-                          .slice(0, 2)
-                          .toUpperCase()}
-                      </AvatarFallback>
-                    </Avatar>
-
-                    {/* User Info */}
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2">
-                        <span className="text-lg font-semibold">
-                          {predictor.screenName ?? predictor.username}
+                  <div className="flex flex-col gap-4 p-4 md:flex-row md:items-center">
+                    {/* Top row: Rank, Avatar, User Info */}
+                    <div className="flex items-center gap-2 md:flex-1 md:gap-4">
+                      {/* Rank */}
+                      <div className="flex w-12 items-center justify-center">
+                        <span
+                          className={`text-2xl font-bold ${
+                            index === 0
+                              ? "text-yellow-500"
+                              : index === 1
+                                ? "text-gray-400"
+                                : index === 2
+                                  ? "text-orange-600"
+                                  : "text-muted-foreground"
+                          }`}
+                        >
+                          {index + 1}
                         </span>
-                        {predictor.isVerified && (
-                          <BadgeCheck className="text-primary h-5 w-5" />
-                        )}
                       </div>
-                      <div className="text-muted-foreground flex items-center gap-2 text-sm">
-                        <span>@{predictor.username}</span>
-                        {predictor.followerCount !== null && (
-                          <>
-                            <span>•</span>
-                            <span>
-                              {predictor.followerCount.toLocaleString()}{" "}
-                              followers
+
+                      {/* Avatar */}
+                      <Avatar className="h-12 w-12 border-2">
+                        <AvatarImage
+                          src={predictor.avatarUrl ?? undefined}
+                          alt={
+                            predictor.screenName ?? predictor.username ?? "User"
+                          }
+                        />
+                        <AvatarFallback>
+                          {(predictor.screenName ?? predictor.username ?? "U")
+                            .slice(0, 2)
+                            .toUpperCase()}
+                        </AvatarFallback>
+                      </Avatar>
+
+                      {/* User Info */}
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2">
+                          <span className="text-lg font-semibold">
+                            {predictor.screenName ?? predictor.username}
+                          </span>
+                          {predictor.isVerified && (
+                            <BadgeCheck className="text-primary h-5 w-5" />
+                          )}
+                        </div>
+                        <div className="text-muted-foreground flex items-center gap-2 text-sm">
+                          <span>@{predictor.username}</span>
+                          {predictor.followerCount !== null && (
+                            <span className="hidden sm:block">
+                              <span>•</span>
+                              <span>
+                                {predictor.followerCount.toLocaleString()}{" "}
+                                followers
+                              </span>
                             </span>
-                          </>
-                        )}
+                          )}
+                        </div>
                       </div>
                     </div>
 
-                    {/* Stats */}
-                    <div className="flex items-center gap-6">
+                    {/* Separator (mobile only) */}
+                    <div className="border-border border-t md:hidden" />
+
+                    {/* Bottom row (mobile) / Right side (desktop): Stats */}
+                    <div className="flex items-center justify-around gap-4 md:gap-6">
                       <div className="text-center">
                         <div className="text-muted-foreground text-xs">
                           Accuracy
