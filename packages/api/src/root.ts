@@ -16,7 +16,10 @@ import { commentReportRouter } from "./router/comment/comment-report";
 import { penaltyRouter } from "./router/penalty/penalty";
 import { permissionRouter } from "./router/permission/permission";
 import { signalRouter } from "./router/permission/signal";
+import { predictionRouter } from "./router/prediction/prediction";
+import { topicRouter } from "./router/prediction/topic";
 import { prophetRouter } from "./router/prophet/prophet";
+import { twitterUserRouter } from "./router/twitter/twitter-user";
 // import { constraintRouter } from "./router/constraint/constraint";
 import { createTRPCRouter } from "./trpc";
 
@@ -55,8 +58,15 @@ export const appRouter = createTRPCRouter({
   permission: permissionRouter,
   signal: signalRouter,
 
+  // Prediction
+  prediction: predictionRouter,
+  topic: topicRouter,
+
   // Prophet
   prophet: prophetRouter,
+
+  // Twitter
+  twitterUser: twitterUserRouter,
 });
 
 export type AppRouter = typeof appRouter;
