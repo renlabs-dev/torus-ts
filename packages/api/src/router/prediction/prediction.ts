@@ -1,4 +1,13 @@
-import { and, desc, eq, isNull, notExists, or, sql } from "@torus-ts/db";
+import {
+  and,
+  desc,
+  eq,
+  isNotNull,
+  isNull,
+  notExists,
+  or,
+  sql,
+} from "@torus-ts/db";
 import {
   parsedPredictionFeedbackSchema,
   parsedPredictionSchema,
@@ -24,8 +33,6 @@ export interface VerdictContext {
 
 interface RawPrediction {
   predictionId: string;
-  predictionCreatedAt: Date;
-  predictionVersion: number;
   parsedId: string;
   goal: PostSlice[];
   timeframe: PostSlice[];
@@ -78,8 +85,6 @@ export interface GroupedTweet {
   predictions: {
     parsedId: string;
     predictionId: string;
-    predictionCreatedAt: Date;
-    predictionVersion: number;
     goal: PostSlice[];
     timeframe: PostSlice[];
     llmConfidence: string;
@@ -197,8 +202,6 @@ async function groupPredictionsByTweet(
     groupedByTweet[tweetId].predictions.push({
       parsedId: pred.parsedId,
       predictionId: pred.predictionId,
-      predictionCreatedAt: pred.predictionCreatedAt,
-      predictionVersion: pred.predictionVersion,
       goal: pred.goal,
       timeframe: pred.timeframe,
       llmConfidence: pred.llmConfidence,
@@ -259,15 +262,10 @@ export const predictionRouter = {
     .query(async ({ ctx, input }) => {
       const { username, limit, offset } = input;
 
-      // Get all predictions with their data
+      // Start from twitter_users to leverage indexes for username filtering
       const rawPredictions = await ctx.db
         .select({
-          // Prediction data
-          predictionId: predictionSchema.id,
-          predictionCreatedAt: predictionSchema.createdAt,
-          predictionVersion: predictionSchema.version,
-
-          // Parsed prediction data
+          predictionId: parsedPredictionSchema.predictionId,
           parsedId: parsedPredictionSchema.id,
           goal: parsedPredictionSchema.goal,
           timeframe: parsedPredictionSchema.timeframe,
@@ -276,36 +274,38 @@ export const predictionRouter = {
           context: parsedPredictionSchema.context,
           predictionQuality: parsedPredictionSchema.predictionQuality,
           briefRationale: parsedPredictionSchema.briefRationale,
-
-          // Tweet data
           tweetId: scrapedTweetSchema.id,
           tweetText: scrapedTweetSchema.text,
           tweetDate: scrapedTweetSchema.date,
           conversationId: scrapedTweetSchema.conversationId,
           parentTweetId: scrapedTweetSchema.parentTweetId,
-
-          // User data
+          verdictId: verdictSchema.id,
+          verdict: verdictSchema.verdict,
+          verdictContext: verdictSchema.context,
+          verdictCreatedAt: verdictSchema.createdAt,
+          feedbackFailureCause: parsedPredictionFeedbackSchema.failureCause,
+          feedbackReason: parsedPredictionFeedbackSchema.reason,
           userId: twitterUsersSchema.id,
           username: twitterUsersSchema.username,
           screenName: twitterUsersSchema.screenName,
           avatarUrl: twitterUsersSchema.avatarUrl,
           isVerified: twitterUsersSchema.isVerified,
-
-          // Verdict data (optional)
-          verdictId: verdictSchema.id,
-          verdict: verdictSchema.verdict,
-          verdictContext: verdictSchema.context,
-          verdictCreatedAt: verdictSchema.createdAt,
-
-          // Feedback data (for FUTURE_TIMEFRAME)
-          feedbackFailureCause: parsedPredictionFeedbackSchema.failureCause,
-          feedbackReason: parsedPredictionFeedbackSchema.reason,
         })
-        .from(predictionSchema)
+        .from(twitterUsersSchema)
+        .innerJoin(
+          scrapedTweetSchema,
+          and(
+            eq(scrapedTweetSchema.authorId, twitterUsersSchema.id),
+            isNotNull(scrapedTweetSchema.predictionId),
+          ),
+        )
         .innerJoin(
           parsedPredictionSchema,
           and(
-            eq(parsedPredictionSchema.predictionId, predictionSchema.id),
+            eq(
+              parsedPredictionSchema.predictionId,
+              scrapedTweetSchema.predictionId,
+            ),
             notExists(
               ctx.db
                 .select({
@@ -324,27 +324,16 @@ export const predictionRouter = {
             ),
           ),
         )
-        .innerJoin(
-          scrapedTweetSchema,
-          eq(
-            scrapedTweetSchema.predictionId,
-            parsedPredictionSchema.predictionId,
-          ),
-        )
-        .innerJoin(
-          twitterUsersSchema,
-          eq(twitterUsersSchema.id, scrapedTweetSchema.authorId),
-        )
-        .leftJoin(
-          verdictSchema,
-          eq(verdictSchema.parsedPredictionId, parsedPredictionSchema.id),
-        )
         .leftJoin(
           parsedPredictionFeedbackSchema,
           eq(
             parsedPredictionFeedbackSchema.parsedPredictionId,
             parsedPredictionSchema.id,
           ),
+        )
+        .leftJoin(
+          verdictSchema,
+          eq(verdictSchema.parsedPredictionId, parsedPredictionSchema.id),
         )
         .where(
           and(
@@ -355,7 +344,7 @@ export const predictionRouter = {
             eq(twitterUsersSchema.tracked, true),
           ),
         )
-        .orderBy(desc(predictionSchema.createdAt))
+        .orderBy(desc(parsedPredictionSchema.createdAt))
         .limit(limit)
         .offset(offset);
 
@@ -387,8 +376,6 @@ export const predictionRouter = {
         .select({
           // Prediction data
           predictionId: predictionSchema.id,
-          predictionCreatedAt: predictionSchema.createdAt,
-          predictionVersion: predictionSchema.version,
 
           // Parsed prediction data
           parsedId: parsedPredictionSchema.id,
@@ -495,7 +482,7 @@ export const predictionRouter = {
     .query(async ({ ctx, input }) => {
       const { username } = input;
 
-      // Count all predictions grouped by verdict status
+      // Start from twitter_users to leverage indexes for username filtering
       const counts = await ctx.db
         .select({
           verdictStatus: sql<string | null>`CASE
@@ -505,11 +492,21 @@ export const predictionRouter = {
           END`.as("verdict_status"),
           count: sql<number>`COUNT(DISTINCT ${parsedPredictionSchema.id})`,
         })
-        .from(predictionSchema)
+        .from(twitterUsersSchema)
+        .innerJoin(
+          scrapedTweetSchema,
+          and(
+            eq(scrapedTweetSchema.authorId, twitterUsersSchema.id),
+            isNotNull(scrapedTweetSchema.predictionId),
+          ),
+        )
         .innerJoin(
           parsedPredictionSchema,
           and(
-            eq(parsedPredictionSchema.predictionId, predictionSchema.id),
+            eq(
+              parsedPredictionSchema.predictionId,
+              scrapedTweetSchema.predictionId,
+            ),
             notExists(
               ctx.db
                 .select({
@@ -527,17 +524,6 @@ export const predictionRouter = {
                 ),
             ),
           ),
-        )
-        .innerJoin(
-          scrapedTweetSchema,
-          eq(
-            scrapedTweetSchema.predictionId,
-            parsedPredictionSchema.predictionId,
-          ),
-        )
-        .innerJoin(
-          twitterUsersSchema,
-          eq(twitterUsersSchema.id, scrapedTweetSchema.authorId),
         )
         .leftJoin(
           verdictSchema,
@@ -587,38 +573,9 @@ export const predictionRouter = {
     .query(async ({ ctx, input }) => {
       const { username, verdictStatus, limit, offset } = input;
 
-      const start2 = process.hrtime.bigint();
-      const users = await ctx.db
-        .select({
-          userId: twitterUsersSchema.id,
-          username: twitterUsersSchema.username,
-          screenName: twitterUsersSchema.screenName,
-          avatarUrl: twitterUsersSchema.avatarUrl,
-          isVerified: twitterUsersSchema.isVerified,
-        })
-        .from(twitterUsersSchema)
-        .where(
-          and(
-            eq(
-              sql`LOWER(${twitterUsersSchema.username})`,
-              username.toLowerCase(),
-            ),
-            eq(twitterUsersSchema.tracked, true),
-          ),
-        );
-      const user = users[0];
-      if (!user) {
-        return [];
-      }
-      const total2 = process.hrtime.bigint() - start2;
-      console.log(`${total2 / 1_000_000n}ms to process ${verdictStatus}`);
-
-      const start = process.hrtime.bigint();
       const rawPredictions = await ctx.db
         .select({
-          predictionId: predictionSchema.id,
-          predictionCreatedAt: predictionSchema.createdAt,
-          predictionVersion: predictionSchema.version,
+          predictionId: parsedPredictionSchema.predictionId,
           parsedId: parsedPredictionSchema.id,
           goal: parsedPredictionSchema.goal,
           timeframe: parsedPredictionSchema.timeframe,
@@ -638,12 +595,27 @@ export const predictionRouter = {
           verdictCreatedAt: verdictSchema.createdAt,
           feedbackFailureCause: parsedPredictionFeedbackSchema.failureCause,
           feedbackReason: parsedPredictionFeedbackSchema.reason,
+          userId: twitterUsersSchema.id,
+          username: twitterUsersSchema.username,
+          screenName: twitterUsersSchema.screenName,
+          avatarUrl: twitterUsersSchema.avatarUrl,
+          isVerified: twitterUsersSchema.isVerified,
         })
-        .from(predictionSchema)
+        .from(twitterUsersSchema)
+        .innerJoin(
+          scrapedTweetSchema,
+          and(
+            eq(scrapedTweetSchema.authorId, twitterUsersSchema.id),
+            isNotNull(scrapedTweetSchema.predictionId),
+          ),
+        )
         .innerJoin(
           parsedPredictionSchema,
           and(
-            eq(parsedPredictionSchema.predictionId, predictionSchema.id),
+            eq(
+              parsedPredictionSchema.predictionId,
+              scrapedTweetSchema.predictionId,
+            ),
             notExists(
               ctx.db
                 .select({
@@ -662,20 +634,6 @@ export const predictionRouter = {
             ),
           ),
         )
-        .innerJoin(
-          scrapedTweetSchema,
-          and(
-            eq(
-              scrapedTweetSchema.predictionId,
-              parsedPredictionSchema.predictionId,
-            ),
-            eq(scrapedTweetSchema.authorId, user.userId),
-          ),
-        )
-        .leftJoin(
-          verdictSchema,
-          eq(verdictSchema.parsedPredictionId, parsedPredictionSchema.id),
-        )
         .leftJoin(
           parsedPredictionFeedbackSchema,
           eq(
@@ -683,30 +641,30 @@ export const predictionRouter = {
             parsedPredictionSchema.id,
           ),
         )
+        .leftJoin(
+          verdictSchema,
+          eq(verdictSchema.parsedPredictionId, parsedPredictionSchema.id),
+        )
         .where(
           and(
+            eq(
+              sql`LOWER(${twitterUsersSchema.username})`,
+              username.toLowerCase(),
+            ),
             verdictStatus === "ongoing"
-              ? or(
-                  isNull(verdictSchema.id),
-                  sql`${parsedPredictionFeedbackSchema.failureCause} = 'FUTURE_TIMEFRAME'`,
-                )
+              ? isNull(verdictSchema.id)
               : eq(
                   verdictSchema.verdict,
                   verdictStatus === "true" ? true : false,
                 ),
           ),
         )
-        .orderBy(desc(predictionSchema.createdAt))
+        .orderBy(desc(parsedPredictionSchema.createdAt))
         .limit(limit)
         .offset(offset);
-      const total = process.hrtime.bigint() - start;
-      console.log(`${total / 1_000_000n}ms to process ${verdictStatus}`);
 
       return await groupPredictionsByTweet(
-        rawPredictions.map((val) => ({
-          ...val,
-          ...user,
-        })) as RawPrediction[],
+        rawPredictions as RawPrediction[],
         ctx,
       );
     }),
@@ -728,8 +686,6 @@ export const predictionRouter = {
       const rawPredictions = await ctx.db
         .select({
           predictionId: predictionSchema.id,
-          predictionCreatedAt: predictionSchema.createdAt,
-          predictionVersion: predictionSchema.version,
           parsedId: parsedPredictionSchema.id,
           goal: parsedPredictionSchema.goal,
           timeframe: parsedPredictionSchema.timeframe,
@@ -908,9 +864,7 @@ export const predictionRouter = {
       const rawPredictions = await ctx.db
         .select({
           // Prediction data
-          predictionId: predictionSchema.id,
-          predictionCreatedAt: predictionSchema.createdAt,
-          predictionVersion: predictionSchema.version,
+          predictionId: parsedPredictionSchema.predictionId,
 
           // Parsed prediction data
           parsedId: parsedPredictionSchema.id,

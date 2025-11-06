@@ -485,13 +485,6 @@ export function ProfileFeed({
 
                                 <div>
                                   <span className="text-muted-foreground">
-                                    Version:
-                                  </span>
-                                  <p>v{activePrediction.predictionVersion}</p>
-                                </div>
-
-                                <div>
-                                  <span className="text-muted-foreground">
                                     Prediction ID:
                                   </span>
                                   <p className="font-mono text-xs">
