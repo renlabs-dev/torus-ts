@@ -13,7 +13,12 @@ interface PageProps {
 export default async function Page({ params }: PageProps) {
   const { slug } = await params;
 
-  const user = await api.twitterUser.getByUsername({ username: slug });
+  const userFut = api.twitterUser.getByUsername({ username: slug });
+  const countsFut = api.prediction.getCountsByUsername({
+    username: slug,
+  });
+
+  const [user, counts] = await Promise.all([userFut, countsFut]);
 
   if (!user) {
     notFound();
@@ -23,7 +28,7 @@ export default async function Page({ params }: PageProps) {
     <div className="relative py-4">
       <div className="border-border pointer-events-none absolute inset-y-0 left-1/2 w-full max-w-screen-lg -translate-x-1/2 border-x" />
       <div className="relative mx-auto max-w-screen-lg px-4">
-        <ProfileHeader user={user} username={slug} />
+        <ProfileHeader user={user} counts={counts} username={slug} />
       </div>
       <div className="border-border relative my-4 border-t" />
       <div className="relative mx-auto max-w-screen-lg px-4">
@@ -31,7 +36,7 @@ export default async function Page({ params }: PageProps) {
       </div>
       <div className="border-border relative my-4 border-t" />
       <div className="relative mx-auto max-w-screen-lg px-4">
-        <ProfileContent username={slug} />
+        <ProfileContent username={slug} counts={counts} />
       </div>
       <div className="border-border relative my-4 border-t" />
     </div>

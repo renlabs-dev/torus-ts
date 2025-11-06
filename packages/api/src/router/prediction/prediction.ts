@@ -1,4 +1,4 @@
-import { and, desc, eq, isNull, notExists, sql } from "@torus-ts/db";
+import { and, desc, eq, isNull, notExists, or, sql } from "@torus-ts/db";
 import {
   parsedPredictionFeedbackSchema,
   parsedPredictionSchema,
@@ -151,24 +151,23 @@ async function groupPredictionsByTweet(
 ): Promise<GroupedTweet[]> {
   const groupedByTweet: Record<string, GroupedTweet> = {};
 
-  // Collect unique parent and root tweet IDs
-  const parentTweetIds = new Set<bigint>();
-  const rootTweetIds = new Set<bigint>();
+  const contextTweetIds = new Set<bigint>();
 
   rawPredictions.forEach((pred) => {
-    if (pred.parentTweetId) parentTweetIds.add(pred.parentTweetId);
+    if (pred.parentTweetId) contextTweetIds.add(pred.parentTweetId);
     if (pred.conversationId && pred.conversationId !== pred.tweetId) {
-      rootTweetIds.add(pred.conversationId);
+      contextTweetIds.add(pred.conversationId);
     }
   });
 
-  // Fetch all context tweets in batch
-  const allContextIds = [
-    ...Array.from(parentTweetIds),
-    ...Array.from(rootTweetIds),
-  ];
+  const allContextIds = Array.from(contextTweetIds);
 
+  const start = process.hrtime.bigint();
   const contextTweets = await fetchThreadContext(ctx, allContextIds);
+  const total = process.hrtime.bigint() - start;
+  console.log(
+    `fetched ${Array.from(contextTweets.keys()).length}/${allContextIds.length} in ${total / 1_000_000n}ms`,
+  );
 
   rawPredictions.forEach((pred) => {
     const tweetId = pred.tweetId.toString();
@@ -588,6 +587,33 @@ export const predictionRouter = {
     .query(async ({ ctx, input }) => {
       const { username, verdictStatus, limit, offset } = input;
 
+      const start2 = process.hrtime.bigint();
+      const users = await ctx.db
+        .select({
+          userId: twitterUsersSchema.id,
+          username: twitterUsersSchema.username,
+          screenName: twitterUsersSchema.screenName,
+          avatarUrl: twitterUsersSchema.avatarUrl,
+          isVerified: twitterUsersSchema.isVerified,
+        })
+        .from(twitterUsersSchema)
+        .where(
+          and(
+            eq(
+              sql`LOWER(${twitterUsersSchema.username})`,
+              username.toLowerCase(),
+            ),
+            eq(twitterUsersSchema.tracked, true),
+          ),
+        );
+      const user = users[0];
+      if (!user) {
+        return [];
+      }
+      const total2 = process.hrtime.bigint() - start2;
+      console.log(`${total2 / 1_000_000n}ms to process ${verdictStatus}`);
+
+      const start = process.hrtime.bigint();
       const rawPredictions = await ctx.db
         .select({
           predictionId: predictionSchema.id,
@@ -606,11 +632,6 @@ export const predictionRouter = {
           tweetDate: scrapedTweetSchema.date,
           conversationId: scrapedTweetSchema.conversationId,
           parentTweetId: scrapedTweetSchema.parentTweetId,
-          userId: twitterUsersSchema.id,
-          username: twitterUsersSchema.username,
-          screenName: twitterUsersSchema.screenName,
-          avatarUrl: twitterUsersSchema.avatarUrl,
-          isVerified: twitterUsersSchema.isVerified,
           verdictId: verdictSchema.id,
           verdict: verdictSchema.verdict,
           verdictContext: verdictSchema.context,
@@ -643,14 +664,13 @@ export const predictionRouter = {
         )
         .innerJoin(
           scrapedTweetSchema,
-          eq(
-            scrapedTweetSchema.predictionId,
-            parsedPredictionSchema.predictionId,
+          and(
+            eq(
+              scrapedTweetSchema.predictionId,
+              parsedPredictionSchema.predictionId,
+            ),
+            eq(scrapedTweetSchema.authorId, user.userId),
           ),
-        )
-        .innerJoin(
-          twitterUsersSchema,
-          eq(twitterUsersSchema.id, scrapedTweetSchema.authorId),
         )
         .leftJoin(
           verdictSchema,
@@ -665,24 +685,28 @@ export const predictionRouter = {
         )
         .where(
           and(
-            eq(
-              sql`LOWER(${twitterUsersSchema.username})`,
-              username.toLowerCase(),
-            ),
-            eq(twitterUsersSchema.tracked, true),
             verdictStatus === "ongoing"
-              ? isNull(verdictSchema.id)
-              : verdictStatus === "true"
-                ? eq(verdictSchema.verdict, true)
-                : eq(verdictSchema.verdict, false),
+              ? or(
+                  isNull(verdictSchema.id),
+                  sql`${parsedPredictionFeedbackSchema.failureCause} = 'FUTURE_TIMEFRAME'`,
+                )
+              : eq(
+                  verdictSchema.verdict,
+                  verdictStatus === "true" ? true : false,
+                ),
           ),
         )
         .orderBy(desc(predictionSchema.createdAt))
         .limit(limit)
         .offset(offset);
+      const total = process.hrtime.bigint() - start;
+      console.log(`${total / 1_000_000n}ms to process ${verdictStatus}`);
 
       return await groupPredictionsByTweet(
-        rawPredictions as RawPrediction[],
+        rawPredictions.map((val) => ({
+          ...val,
+          ...user,
+        })) as RawPrediction[],
         ctx,
       );
     }),

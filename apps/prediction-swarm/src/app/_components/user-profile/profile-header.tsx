@@ -9,25 +9,25 @@ import {
 import { Badge } from "@torus-ts/ui/components/badge";
 import { Card, CardContent } from "@torus-ts/ui/components/card";
 import type { inferProcedureOutput } from "@trpc/server";
-import { api } from "~/trpc/react";
 import { BadgeCheck } from "lucide-react";
 
 type TwitterUser = NonNullable<
   inferProcedureOutput<AppRouter["twitterUser"]["getByUsername"]>
 >;
 
+type UserCounts = NonNullable<
+  inferProcedureOutput<AppRouter["prediction"]["getCountsByUsername"]>
+>;
+
 interface ProfileHeaderProps {
   user: TwitterUser;
+  counts: UserCounts;
   username: string;
 }
 
-export default function ProfileHeader({ user, username }: ProfileHeaderProps) {
-  const { data: counts } = api.prediction.getCountsByUsername.useQuery({
-    username,
-  });
-
-  const truePredictions = Number(counts?.true || 0);
-  const total = truePredictions + Number(counts?.false || 0);
+export default function ProfileHeader({ user, counts }: ProfileHeaderProps) {
+  const truePredictions = parseInt(String(counts.true));
+  const total = truePredictions + parseInt(String(counts.false));
 
   const accuracy =
     total > 0 ? Math.round((truePredictions / total) * 100) : null;
