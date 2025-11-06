@@ -421,7 +421,7 @@ export class TwitterAccountScraper {
         .limit(1);
 
       if (existingParent.length) {
-        logInfo("Next reply already scraped, breaking traversal", {
+        logInfo("Parent reply already scraped, breaking traversal", {
           conversationId: row.conversationId,
           originalReplyId: row.originalReplyId,
           nextReplyId: row.nextReplyId,
@@ -461,7 +461,7 @@ export class TwitterAccountScraper {
       if (!tweet?.inReplyToId) {
         logInfo(
           !tweet
-            ? "Next tweet not found, breaking traversal"
+            ? "Parent tweet not found, breaking traversal"
             : "Reached root tweet, breaking traversal",
           {
             conversationId,
@@ -581,6 +581,91 @@ export class TwitterAccountScraper {
   }
 
   /**
+   * Handles quoted tweet insertion, user stub creation, and thread job creation.
+   * Called from insertTweets when a tweet has a quoted_tweet.
+   */
+  private async handleQuotedTweet(
+    tx: Transaction,
+    quotedTweet: SimpleTweet["quoted_tweet"],
+  ) {
+    if (!quotedTweet) return;
+
+    const quotedTweetId = BigInt(quotedTweet.id);
+    const quotedAuthorId = BigInt(
+      quotedTweet.author_id || quotedTweet.author?.id || "0",
+    );
+    const quotedConversationId = quotedTweet.conversationId
+      ? BigInt(quotedTweet.conversationId)
+      : null;
+    const quotedInReplyToId =
+      quotedTweet.inReplyToId && quotedTweet.inReplyToId !== ""
+        ? BigInt(quotedTweet.inReplyToId)
+        : null;
+
+    const quotedTweetData: ScrapedTweet = {
+      id: quotedTweetId,
+      text: decode(quotedTweet.text),
+      authorId: quotedAuthorId,
+      date: new Date(
+        quotedTweet.createdAt || quotedTweet.created_at || new Date(),
+      ),
+      quotedId: quotedTweet.quoted_tweet?.id
+        ? BigInt(String(quotedTweet.quoted_tweet.id))
+        : null,
+      conversationId: quotedConversationId,
+      parentTweetId: quotedInReplyToId,
+    };
+
+    await tx
+      .insert(scrapedTweetSchema)
+      .values(quotedTweetData)
+      .onConflictDoNothing();
+
+    await tx
+      .insert(twitterUsersSchema)
+      .values({
+        id: quotedAuthorId,
+        tracked: false,
+      })
+      .onConflictDoNothing();
+
+    if (quotedConversationId && quotedInReplyToId) {
+      const existingParent = await tx
+        .select({ id: scrapedTweetSchema.id })
+        .from(scrapedTweetSchema)
+        .where(eq(scrapedTweetSchema.id, quotedInReplyToId))
+        .limit(1);
+
+      if (!existingParent.length) {
+        logInfo("Quoted tweet is in thread, creating thread job", {
+          conversationId: quotedConversationId,
+          quotedTweetId,
+          parentId: quotedInReplyToId,
+        });
+
+        await tx
+          .insert(twitterScrapingJobsSchema)
+          .values({
+            conversationId: quotedConversationId,
+            originalReplyId: quotedTweetId,
+            nextReplyId: quotedInReplyToId,
+          })
+          .onConflictDoNothing();
+
+        if (quotedTweet.inReplyToUserId) {
+          await tx
+            .insert(twitterUsersSchema)
+            .values({
+              id: BigInt(quotedTweet.inReplyToUserId),
+              tracked: false,
+            })
+            .onConflictDoNothing();
+        }
+      }
+    }
+  }
+
+  /**
    * Upserts tweets into the database.
    */
   async insertTweets(tx: Transaction, tweets: SimpleTweet[]) {
@@ -603,7 +688,7 @@ export class TwitterAccountScraper {
         text: decode(tweet.text),
         authorId: BigInt(tweet.author_id || tweet.author?.id || "0"),
         date: new Date(tweet.createdAt || tweet.created_at || new Date()),
-        retweetedId: tweet.quoted_tweet
+        quotedId: tweet.quoted_tweet
           ? BigInt(String(tweet.quoted_tweet.id))
           : null,
         conversationId,
@@ -620,6 +705,10 @@ export class TwitterAccountScraper {
             updatedAt: new Date(),
           },
         });
+
+      if (tweet.quoted_tweet) {
+        await this.handleQuotedTweet(tx, tweet.quoted_tweet);
+      }
     }
   }
 

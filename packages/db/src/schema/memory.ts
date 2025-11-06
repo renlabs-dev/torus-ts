@@ -118,7 +118,7 @@ export const scrapedTweetSchema = createTable(
     text: varchar("text", { length: 25_000 }).notNull(),
     authorId: bigint("author_id").notNull(),
     date: timestampz("date").notNull(),
-    retweetedId: bigint("retweeted_id"), // The inner tweet (for retweets)
+    quotedId: bigint("quoted_id"), // The inner tweet (for retweets)
 
     conversationId: bigint("conversation_id"), // Thread identifier
     parentTweetId: bigint("parent_tweet_id"), // The parent comment

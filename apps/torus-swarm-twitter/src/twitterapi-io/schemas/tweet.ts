@@ -142,6 +142,24 @@ export const SimpleTweetSchema = z.object({
   quoted_tweet: z
     .object({
       id: TweetIdSchema,
+      text: z.string(),
+      createdAt: TwitterDateSchema.optional(),
+      created_at: TwitterDateSchema.optional(),
+      author_id: UserIdSchema.optional(),
+      author: SimpleUserSchema.optional(),
+      inReplyToId: z.union([TweetIdSchema, z.literal(""), z.null()]).optional(),
+      inReplyToUserId: z
+        .union([UserIdSchema, z.literal(""), z.null()])
+        .optional(),
+      inReplyToUsername: z.string().nullable().optional(),
+      isReply: z.boolean().optional(),
+      conversationId: TweetIdSchema.optional(),
+      quoted_tweet: z
+        .object({
+          id: TweetIdSchema,
+        })
+        .nullable()
+        .optional(),
     })
     .nullable()
     .optional(),
