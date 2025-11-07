@@ -1,8 +1,8 @@
+import { writeFile } from "node:fs/promises";
 import { createDb } from "@torus-ts/db";
 import * as schema from "@torus-ts/db/schema";
 import { eq } from "drizzle-orm";
 import { assert } from "tsafe";
-import { writeFile } from "node:fs/promises";
 import { OpenRouterClient } from "../src/ai/openrouter-client";
 import { PromptLoader } from "../src/ai/prompt-loader";
 import { PredictionExtractor } from "../src/services/prediction-extractor";
@@ -336,11 +336,7 @@ async function main() {
   const timestamp = Date.now();
   const datasetFilename = `apps/swarm-filter/derenash-${timestamp}.json`;
   console.log(`Saving fetched dataset to ${datasetFilename}...`);
-  await writeFile(
-    datasetFilename,
-    JSON.stringify(testCases, null, 2),
-    "utf-8"
-  );
+  await writeFile(datasetFilename, JSON.stringify(testCases, null, 2), "utf-8");
   console.log(`Dataset saved successfully!\n`);
 
   // Initialize models (all OpenRouter)
