@@ -1,4 +1,14 @@
-import { and, desc, eq, gte, isNotNull, isNull, lte, notExists, sql } from "@torus-ts/db";
+import {
+  and,
+  desc,
+  eq,
+  gte,
+  isNotNull,
+  isNull,
+  lte,
+  notExists,
+  sql,
+} from "@torus-ts/db";
 import {
   parsedPredictionFeedbackSchema,
   parsedPredictionSchema,
@@ -570,7 +580,15 @@ export const predictionRouter = {
       }),
     )
     .query(async ({ ctx, input }) => {
-      const { username, verdictStatus, limit, offset, dateFrom, dateTo, topicIds } = input;
+      const {
+        username,
+        verdictStatus,
+        limit,
+        offset,
+        dateFrom,
+        dateTo,
+        topicIds,
+      } = input;
 
       const rawPredictions = await ctx.db
         .select({
@@ -657,10 +675,15 @@ export const predictionRouter = {
                   verdictSchema.verdict,
                   verdictStatus === "true" ? true : false,
                 ),
-            dateFrom ? gte(scrapedTweetSchema.date, new Date(dateFrom)) : undefined,
+            dateFrom
+              ? gte(scrapedTweetSchema.date, new Date(dateFrom))
+              : undefined,
             dateTo ? lte(scrapedTweetSchema.date, new Date(dateTo)) : undefined,
             topicIds && topicIds.length > 0
-              ? sql`${parsedPredictionSchema.topicId} IN (${sql.join(topicIds.map((id) => sql`${id}`), sql`, `)})`
+              ? sql`${parsedPredictionSchema.topicId} IN (${sql.join(
+                  topicIds.map((id) => sql`${id}`),
+                  sql`, `,
+                )})`
               : undefined,
           ),
         )
@@ -689,7 +712,8 @@ export const predictionRouter = {
       }),
     )
     .query(async ({ ctx, input }) => {
-      const { verdictStatus, limit, offset, dateFrom, dateTo, topicIds } = input;
+      const { verdictStatus, limit, offset, dateFrom, dateTo, topicIds } =
+        input;
 
       const rawPredictions = await ctx.db
         .select({
@@ -773,10 +797,15 @@ export const predictionRouter = {
               : verdictStatus === "true"
                 ? eq(verdictSchema.verdict, true)
                 : eq(verdictSchema.verdict, false),
-            dateFrom ? gte(scrapedTweetSchema.date, new Date(dateFrom)) : undefined,
+            dateFrom
+              ? gte(scrapedTweetSchema.date, new Date(dateFrom))
+              : undefined,
             dateTo ? lte(scrapedTweetSchema.date, new Date(dateTo)) : undefined,
             topicIds && topicIds.length > 0
-              ? sql`${parsedPredictionSchema.topicId} IN (${sql.join(topicIds.map((id) => sql`${id}`), sql`, `)})`
+              ? sql`${parsedPredictionSchema.topicId} IN (${sql.join(
+                  topicIds.map((id) => sql`${id}`),
+                  sql`, `,
+                )})`
               : undefined,
           ),
         )

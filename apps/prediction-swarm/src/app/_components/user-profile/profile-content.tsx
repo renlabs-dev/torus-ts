@@ -49,7 +49,8 @@ export default function ProfileContent({
   // Read filter params from URL
   const dateFrom = searchParams.get("dateFrom") ?? undefined;
   const dateTo = searchParams.get("dateTo") ?? undefined;
-  const topicIds = searchParams.get("topics")?.split(",").filter(Boolean) ?? undefined;
+  const topicIds =
+    searchParams.get("topics")?.split(",").filter(Boolean) ?? undefined;
 
   // Fetch predictions separately per verdict status - only fetch active tab
   const { data: ongoingPredictions, isLoading: ongoingLoading } =

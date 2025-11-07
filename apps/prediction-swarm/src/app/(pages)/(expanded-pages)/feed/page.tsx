@@ -126,7 +126,6 @@ export default function FeedPage() {
             <TabsContent value="ongoing">
               <CardContent>
                 <ProfileFeed
-                  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
                   predictions={ongoingPredictions ?? []}
                   variant="feed"
                   isLoading={ongoingLoading}
@@ -175,7 +174,6 @@ export default function FeedPage() {
             <TabsContent value="true">
               <CardContent>
                 <ProfileFeed
-                  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
                   predictions={truePredictions ?? []}
                   variant="feed"
                   isLoading={trueLoading}
@@ -223,7 +221,6 @@ export default function FeedPage() {
             <TabsContent value="false">
               <CardContent>
                 <ProfileFeed
-                  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
                   predictions={falsePredictions ?? []}
                   variant="feed"
                   isLoading={falseLoading}

@@ -1,15 +1,15 @@
 "use client";
 
 import { Button } from "@torus-ts/ui/components/button";
+import { Checkbox } from "@torus-ts/ui/components/checkbox";
 import { Label } from "@torus-ts/ui/components/label";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@torus-ts/ui/components/popover";
-import { Checkbox } from "@torus-ts/ui/components/checkbox";
-import { ChevronDownIcon } from "lucide-react";
 import { api } from "~/trpc/react";
+import { ChevronDownIcon } from "lucide-react";
 import * as React from "react";
 
 interface TopicSelectProps {
@@ -64,14 +64,13 @@ export function TopicSelect({
             {isLoading ? (
               <p className="text-muted-foreground text-sm">Loading topics...</p>
             ) : !topics || topics.length === 0 ? (
-              <p className="text-muted-foreground text-sm">No topics available</p>
+              <p className="text-muted-foreground text-sm">
+                No topics available
+              </p>
             ) : (
               <div className="max-h-60 space-y-2 overflow-y-auto">
                 {topics.map((topic) => (
-                  <div
-                    key={topic.id}
-                    className="flex items-center space-x-2"
-                  >
+                  <div key={topic.id} className="flex items-center space-x-2">
                     <Checkbox
                       id={topic.id}
                       checked={selectedTopicIds.includes(topic.id)}
