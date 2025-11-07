@@ -114,6 +114,40 @@ services:
     ports:
       - 3024:8000
 
+  prediction-swarm-dash:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+      args:
+        APP_NAME: prediction-swarm-dash
+    environment:
+      - POSTGRES_URL=${POSTGRES_URL}
+      - JWT_SECRET=${JWT_SECRET}
+      - NEXT_PUBLIC_TORUS_RPC_URL=${NEXT_PUBLIC_TORUS_RPC_URL}
+      - PORT=3004
+    ports:
+      - "3004:3004"
+
+  swarm-filter:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+      args:
+        APP_NAME: swarm-filter
+    environment:
+      - POSTGRES_URL=${POSTGRES_URL}
+      - API_URL=http://prediction-swarm-dash:3004
+      - AUTH_ORIGIN=${AUTH_ORIGIN}
+      - OPENROUTER_API_KEY=${OPENROUTER_API_KEY}
+      - PREDICTION_CHECK_MODEL=${PREDICTION_CHECK_MODEL}
+      - TOPIC_CLASSIFICATION_MODEL=${TOPIC_CLASSIFICATION_MODEL}
+      - PREDICTION_EXTRACTION_MODEL=${PREDICTION_EXTRACTION_MODEL}
+      - FILTER_AGENT_MNEMONIC=${FILTER_AGENT_MNEMONIC}
+      - BATCH_SIZE=${BATCH_SIZE:-48}
+      - DEV=false
+
+    command: pnpm --filter swarm-filter dev
+
 # TODO: Traefik for local Docker services
 
 volumes:

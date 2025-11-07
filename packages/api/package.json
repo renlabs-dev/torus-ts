@@ -9,7 +9,8 @@
       "types": "./dist/index.d.ts",
       "default": "./src/index.ts"
     },
-    "./client": "./src/client.ts"
+    "./client": "./src/client.ts",
+    "./auth/sign": "./src/auth/sign.ts"
   },
   "scripts": {
     "build": "tsc",

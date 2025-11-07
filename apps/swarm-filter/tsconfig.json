@@ -1,0 +1,7 @@
+{
+  "extends": "@torus-ts/tsconfig/app-node.json",
+  "compilerOptions": {
+    "rootDir": "."
+  },
+  "include": ["src", "scripts"]
+}
