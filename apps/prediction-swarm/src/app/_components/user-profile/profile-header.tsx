@@ -10,6 +10,7 @@ import { Badge } from "@torus-ts/ui/components/badge";
 import { Card, CardContent } from "@torus-ts/ui/components/card";
 import type { inferProcedureOutput } from "@trpc/server";
 import { BadgeCheck } from "lucide-react";
+import { FilterDialog } from "../filter-dialog";
 
 type TwitterUser = NonNullable<
   inferProcedureOutput<AppRouter["twitterUser"]["getByUsername"]>
@@ -85,8 +86,7 @@ export default function ProfileHeader({ user, counts }: ProfileHeaderProps) {
               )}
             </div>
           </div>
-          {/* TODO: Add filters */}
-          {/* <Button variant="default">Filters</Button> */}
+          <FilterDialog />
         </div>
       </CardContent>
     </Card>

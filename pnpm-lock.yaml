@@ -195,7 +195,7 @@ importers:
     dependencies:
       '@next/third-parties':
         specifier: 'catalog:'
-        version: 15.5.3(next@15.5.2(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(react@19.1.1)
+        version: 15.5.3(next@15.5.2(@babel/core@7.28.3)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(react@19.1.1)
       '@react-three/fiber':
         specifier: 'catalog:'
         version: 9.4.0(@types/react@19.0.14)(immer@10.1.1)(react-dom@19.1.1(react@19.1.1))(react-native@0.81.0(@babel/core@7.28.3)(@react-native/metro-config@0.81.0(@babel/core@7.28.3)(bufferutil@4.0.9)(utf-8-validate@5.0.10))(@types/react@19.0.14)(bufferutil@4.0.9)(react@19.1.1)(utf-8-validate@5.0.10))(react@19.1.1)(three@0.180.0)
@@ -358,7 +358,7 @@ importers:
         version: 15.5.2(@babel/core@7.28.3)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
       next-plausible:
         specifier: 'catalog:'
-        version: 3.12.4(next@15.5.2(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
+        version: 3.12.4(next@15.5.2(@babel/core@7.28.3)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
       react:
         specifier: ^19.0.0
         version: 19.1.1
@@ -510,7 +510,7 @@ importers:
     dependencies:
       '@next/third-parties':
         specifier: 'catalog:'
-        version: 15.5.3(next@15.5.2(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(react@19.1.1)
+        version: 15.5.3(next@15.5.2(@babel/core@7.28.3)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(react@19.1.1)
       '@torus-network/sdk':
         specifier: workspace:*
         version: link:../../packages/torus-sdk-ts
@@ -525,7 +525,7 @@ importers:
         version: 15.5.2(@babel/core@7.28.3)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
       next-plausible:
         specifier: 'catalog:'
-        version: 3.12.4(next@15.5.2(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
+        version: 3.12.4(next@15.5.2(@babel/core@7.28.3)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
       react:
         specifier: ^19.0.0
         version: 19.1.1
@@ -750,7 +750,7 @@ importers:
         version: 3.10.0(react-hook-form@7.62.0(react@19.1.1))
       '@next/third-parties':
         specifier: 'catalog:'
-        version: 15.5.3(next@15.5.2(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(react@19.1.1)
+        version: 15.5.3(next@15.5.2(@babel/core@7.28.3)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(react@19.1.1)
       '@react-three/drei':
         specifier: 'catalog:'
         version: 10.7.6(@react-three/fiber@9.4.0(@types/react@19.0.14)(immer@10.1.1)(react-dom@19.1.1(react@19.1.1))(react-native@0.81.0(@babel/core@7.28.3)(@react-native/metro-config@0.81.0(@babel/core@7.28.3)(bufferutil@4.0.9)(utf-8-validate@5.0.10))(@types/react@19.0.14)(bufferutil@4.0.9)(react@19.1.1)(utf-8-validate@5.0.10))(react@19.1.1)(three@0.180.0))(@types/react@19.0.14)(@types/three@0.180.0)(immer@10.1.1)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)(three@0.180.0)
@@ -810,7 +810,7 @@ importers:
         version: 4.24.11(next@15.5.2(@babel/core@7.28.3)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
       next-plausible:
         specifier: 'catalog:'
-        version: 3.12.4(next@15.5.2(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
+        version: 3.12.4(next@15.5.2(@babel/core@7.28.3)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
       react:
         specifier: ^19.0.0
         version: 19.1.1
@@ -868,7 +868,7 @@ importers:
     dependencies:
       '@next/third-parties':
         specifier: 'catalog:'
-        version: 15.5.3(next@15.5.2(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(react@19.1.1)
+        version: 15.5.3(next@15.5.2(@babel/core@7.28.3)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(react@19.1.1)
       '@react-three/drei':
         specifier: 'catalog:'
         version: 10.7.6(@react-three/fiber@9.4.0(@types/react@19.0.14)(immer@10.1.1)(react-dom@19.1.1(react@19.1.1))(react-native@0.81.0(@babel/core@7.28.3)(@react-native/metro-config@0.81.0(@babel/core@7.28.3)(bufferutil@4.0.9)(utf-8-validate@5.0.10))(@types/react@19.0.14)(bufferutil@4.0.9)(react@19.1.1)(utf-8-validate@5.0.10))(react@19.1.1)(three@0.180.0))(@types/react@19.0.14)(@types/three@0.180.0)(immer@10.1.1)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)(three@0.180.0)
@@ -892,7 +892,7 @@ importers:
         version: 15.5.2(@babel/core@7.28.3)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
       next-plausible:
         specifier: 'catalog:'
-        version: 3.12.4(next@15.5.2(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
+        version: 3.12.4(next@15.5.2(@babel/core@7.28.3)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
       react:
         specifier: ^19.0.0
         version: 19.1.1
@@ -938,7 +938,7 @@ importers:
         version: 3.10.0(react-hook-form@7.62.0(react@19.1.1))
       '@next/third-parties':
         specifier: 'catalog:'
-        version: 15.5.3(next@15.5.2(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(react@19.1.1)
+        version: 15.5.3(next@15.5.2(@babel/core@7.28.3)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(react@19.1.1)
       '@react-three/drei':
         specifier: 'catalog:'
         version: 10.7.6(@react-three/fiber@9.4.0(@types/react@19.0.14)(immer@10.1.1)(react-dom@19.1.1(react@19.1.1))(react-native@0.81.0(@babel/core@7.28.3)(@react-native/metro-config@0.81.0(@babel/core@7.28.3)(bufferutil@4.0.9)(utf-8-validate@5.0.10))(@types/react@19.0.14)(bufferutil@4.0.9)(react@19.1.1)(utf-8-validate@5.0.10))(react@19.1.1)(three@0.180.0))(@types/react@19.0.14)(@types/three@0.180.0)(immer@10.1.1)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)(three@0.180.0)
@@ -1004,7 +1004,7 @@ importers:
         version: 15.5.2(@babel/core@7.28.3)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
       next-plausible:
         specifier: 'catalog:'
-        version: 3.12.4(next@15.5.2(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
+        version: 3.12.4(next@15.5.2(@babel/core@7.28.3)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
       pixi-viewport:
         specifier: ^6.0.3
         version: 6.0.3(pixi.js@8.12.0)
@@ -1080,7 +1080,7 @@ importers:
         version: 3.10.0(react-hook-form@7.62.0(react@19.1.1))
       '@next/third-parties':
         specifier: 'catalog:'
-        version: 15.5.3(next@15.5.2(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(react@19.1.1)
+        version: 15.5.3(next@15.5.2(@babel/core@7.28.3)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(react@19.1.1)
       '@react-three/drei':
         specifier: ^10.7.6
         version: 10.7.6(@react-three/fiber@9.3.0(@types/react@19.0.14)(immer@10.1.1)(react-dom@19.1.1(react@19.1.1))(react-native@0.81.0(@babel/core@7.28.3)(@react-native/metro-config@0.81.0(@babel/core@7.28.3)(bufferutil@4.0.9)(utf-8-validate@5.0.10))(@types/react@19.0.14)(bufferutil@4.0.9)(react@19.1.1)(utf-8-validate@5.0.10))(react@19.1.1)(three@0.180.0))(@types/react@19.0.14)(@types/three@0.180.0)(immer@10.1.1)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)(three@0.180.0)
@@ -1122,7 +1122,7 @@ importers:
         version: 15.5.2(@babel/core@7.28.3)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
       next-plausible:
         specifier: 'catalog:'
-        version: 3.12.4(next@15.5.2(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
+        version: 3.12.4(next@15.5.2(@babel/core@7.28.3)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
       react:
         specifier: ^19.0.0
         version: 19.1.1
@@ -1317,7 +1317,7 @@ importers:
         version: 3.10.0(react-hook-form@7.62.0(react@19.1.1))
       '@next/third-parties':
         specifier: 'catalog:'
-        version: 15.5.3(next@15.5.2(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(react@19.1.1)
+        version: 15.5.3(next@15.5.2(@babel/core@7.28.3)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(react@19.1.1)
       '@polkadot/api':
         specifier: 'catalog:'
         version: 14.3.1(bufferutil@4.0.9)(utf-8-validate@5.0.10)
@@ -1362,7 +1362,7 @@ importers:
         version: 15.5.2(@babel/core@7.28.3)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
       next-plausible:
         specifier: 'catalog:'
-        version: 3.12.4(next@15.5.2(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
+        version: 3.12.4(next@15.5.2(@babel/core@7.28.3)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
       react:
         specifier: ^19.0.0
         version: 19.1.1
@@ -1910,6 +1910,9 @@ importers:
       cmdk:
         specifier: ^1.0.0
         version: 1.1.1(@types/react-dom@19.0.6(@types/react@19.0.14))(@types/react@19.0.14)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
+      date-fns:
+        specifier: ^4.1.0
+        version: 4.1.0
       embla-carousel-react:
         specifier: ^8.6.0
         version: 8.6.0(react@19.1.1)
@@ -1922,6 +1925,9 @@ importers:
       react:
         specifier: ^19.0.0
         version: 19.1.1
+      react-day-picker:
+        specifier: ^9.11.1
+        version: 9.11.1(react@19.1.1)
       react-dom:
         specifier: ^19.0.0
         version: 19.1.1(react@19.1.1)
@@ -19214,7 +19220,7 @@ snapshots:
   '@next/swc-win32-x64-msvc@15.5.2':
     optional: true
 
-  '@next/third-parties@15.5.3(next@15.5.2(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(react@19.1.1)':
+  '@next/third-parties@15.5.3(next@15.5.2(@babel/core@7.28.3)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(react@19.1.1)':
     dependencies:
       next: 15.5.2(@babel/core@7.28.3)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
       react: 19.1.1
@@ -31279,7 +31285,7 @@ snapshots:
       react-dom: 19.1.1(react@19.1.1)
       uuid: 8.3.2
 
-  next-plausible@3.12.4(next@15.5.2(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(react-dom@19.1.1(react@19.1.1))(react@19.1.1):
+  next-plausible@3.12.4(next@15.5.2(@babel/core@7.28.3)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(react-dom@19.1.1(react@19.1.1))(react@19.1.1):
     dependencies:
       next: 15.5.2(@babel/core@7.28.3)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
       react: 19.1.1
