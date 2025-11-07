@@ -30,6 +30,7 @@ IMPORTANT RULES - READ CAREFULLY:
 - NEVER use ellipsis (...) or skip any words - extract the complete, continuous text
 - DO NOT paraphrase or reword the text in any way
 - The goal text snippets should combine to form ONE coherent statement about the future
+- The goal text snippets should be verbatim what is on the text
 - If no valid prediction exists, return has_prediction: false and omit other fields
 - CRITICAL: Return ONLY raw JSON, NO markdown code blocks, NO ```json wrapper, JUST the JSON object
 
@@ -70,7 +71,7 @@ CONTEXT TWEETS (for reference):
 {{context_tweets}}
 
 Extract:
-- goal: Array of exact text snippets forming ONE coherent statement about what will happen (can reference ANY tweet above)
+- goal: Array of exact (verbatim) text snippets forming ONE coherent statement about what will happen (can reference ANY tweet above)
 - timeframe: Array of exact text snippets describing when this will happen (can reference ANY tweet above)
 - topicName: Category string (e.g., "crypto", "finance", "sports", "technology", "politics", "entertainment", "business", "science", "general")
 - llmConfidence: 0-1 score of how confident the prediction is stated
@@ -79,7 +80,7 @@ Extract:
 
 IMPORTANT:
 - Copy the exact text verbatim from the tweets - do not paraphrase or modify
-- The goal/timeframe can reference text from the main tweet OR any context tweet
+- The goal/timeframe can reference text from the main tweet OR any context tweet. Each text snippet should be EXACTLY the same as the original tweet text
 - Use the correct tweet_id for each extracted text snippet
 - Return ONLY the raw JSON object - do NOT wrap it in markdown code blocks or ```json
 """
