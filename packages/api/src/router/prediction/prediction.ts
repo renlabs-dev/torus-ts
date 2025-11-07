@@ -32,6 +32,7 @@ interface RawPrediction {
   context: unknown;
   predictionQuality: number;
   briefRationale: string;
+  topicId: string | null;
   tweetId: bigint;
   tweetText: string;
   tweetDate: Date;
@@ -83,6 +84,7 @@ export interface GroupedTweet {
     context: unknown;
     predictionQuality: number;
     briefRationale: string;
+    topicId: string | null;
     verdictId: string | null;
     verdict: boolean | null;
     verdictContext: VerdictContext | null;
@@ -200,6 +202,7 @@ async function groupPredictionsByTweet(
       context: pred.context,
       predictionQuality: pred.predictionQuality,
       briefRationale: pred.briefRationale,
+      topicId: pred.topicId,
       verdictId: pred.verdictId,
       verdict: pred.verdict,
       verdictContext: pred.verdictContext,
@@ -265,6 +268,7 @@ export const predictionRouter = {
           context: parsedPredictionSchema.context,
           predictionQuality: parsedPredictionSchema.predictionQuality,
           briefRationale: parsedPredictionSchema.briefRationale,
+          topicId: parsedPredictionSchema.topicId,
           tweetId: scrapedTweetSchema.id,
           tweetText: scrapedTweetSchema.text,
           tweetDate: scrapedTweetSchema.date,
@@ -377,6 +381,7 @@ export const predictionRouter = {
           context: parsedPredictionSchema.context,
           predictionQuality: parsedPredictionSchema.predictionQuality,
           briefRationale: parsedPredictionSchema.briefRationale,
+          topicId: parsedPredictionSchema.topicId,
 
           // Tweet data
           tweetId: scrapedTweetSchema.id,
@@ -575,6 +580,7 @@ export const predictionRouter = {
           context: parsedPredictionSchema.context,
           predictionQuality: parsedPredictionSchema.predictionQuality,
           briefRationale: parsedPredictionSchema.briefRationale,
+          topicId: parsedPredictionSchema.topicId,
           tweetId: scrapedTweetSchema.id,
           tweetText: scrapedTweetSchema.text,
           tweetDate: scrapedTweetSchema.date,
@@ -685,6 +691,7 @@ export const predictionRouter = {
           context: parsedPredictionSchema.context,
           predictionQuality: parsedPredictionSchema.predictionQuality,
           briefRationale: parsedPredictionSchema.briefRationale,
+          topicId: parsedPredictionSchema.topicId,
           tweetId: scrapedTweetSchema.id,
           tweetText: scrapedTweetSchema.text,
           tweetDate: scrapedTweetSchema.date,
@@ -866,6 +873,7 @@ export const predictionRouter = {
           context: parsedPredictionSchema.context,
           predictionQuality: parsedPredictionSchema.predictionQuality,
           briefRationale: parsedPredictionSchema.briefRationale,
+          topicId: parsedPredictionSchema.topicId,
 
           // Tweet data
           tweetId: scrapedTweetSchema.id,

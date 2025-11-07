@@ -37,6 +37,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { FutureTimeframeBadge } from "./future-timeframe-badge";
 import { ThreadContext } from "./thread-context";
+import { TopicBadge } from "./topic-badge";
 
 type GroupedTweetData = inferProcedureOutput<
   AppRouter["prediction"]["getByUsername"]
@@ -360,7 +361,9 @@ export function ProfileFeed({
                             href={`/user/${tweet.username}`}
                             className="text-foreground font-medium hover:underline"
                           >
-                            {tweet.screenName}
+                            {tweet.screenName && tweet.screenName.length > 22
+                              ? `${tweet.screenName.slice(0, 22)}...`
+                              : tweet.screenName}
                           </Link>
                           {tweet.isVerified && (
                             <BadgeCheck className="text-primary size-4" />
@@ -388,7 +391,7 @@ export function ProfileFeed({
                           </>
                         )}
                         {activePrediction.feedbackFailureCause ===
-                          "FUTURE_TIMEFRAME" && (
+                          "future_timeframe" && (
                           <>
                             <span className="text-muted-foreground text-xs">
                               •
@@ -399,6 +402,14 @@ export function ProfileFeed({
                                 "Timeframe is in the future"
                               }
                             />
+                          </>
+                        )}
+                        {activePrediction.topicId && (
+                          <>
+                            <span className="text-muted-foreground text-xs">
+                              •
+                            </span>
+                            <TopicBadge topicId={activePrediction.topicId} />
                           </>
                         )}
                       </div>

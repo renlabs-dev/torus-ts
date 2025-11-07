@@ -38,10 +38,6 @@ export const topicRouter = {
 
     return tickers;
   }),
-
-  /**
-   * Get a specific topic by ID
-   */
   getById: publicProcedure
     .input(z.object({ id: z.string() }))
     .query(async ({ ctx, input }) => {
@@ -53,4 +49,14 @@ export const topicRouter = {
 
       return topics[0] ?? null;
     }),
+  getAll: publicProcedure.query(async ({ ctx }) => {
+    const topics = await ctx.db
+      .select({
+        id: predictionTopicSchema.id,
+        name: predictionTopicSchema.name,
+      })
+      .from(predictionTopicSchema);
+
+    return topics;
+  }),
 } satisfies TRPCRouterRecord;
