@@ -1,4 +1,4 @@
-import { and, desc, eq, isNotNull, isNull, notExists, sql } from "@torus-ts/db";
+import { and, desc, eq, gte, isNotNull, isNull, lte, notExists, sql } from "@torus-ts/db";
 import {
   parsedPredictionFeedbackSchema,
   parsedPredictionSchema,
@@ -564,10 +564,13 @@ export const predictionRouter = {
         verdictStatus: z.enum(["ongoing", "true", "false"]),
         limit: z.number().min(1).max(100).default(30),
         offset: z.number().min(0).default(0),
+        dateFrom: z.string().datetime().optional(),
+        dateTo: z.string().datetime().optional(),
+        topicIds: z.array(z.string()).optional(),
       }),
     )
     .query(async ({ ctx, input }) => {
-      const { username, verdictStatus, limit, offset } = input;
+      const { username, verdictStatus, limit, offset, dateFrom, dateTo, topicIds } = input;
 
       const rawPredictions = await ctx.db
         .select({
@@ -654,6 +657,11 @@ export const predictionRouter = {
                   verdictSchema.verdict,
                   verdictStatus === "true" ? true : false,
                 ),
+            dateFrom ? gte(scrapedTweetSchema.date, new Date(dateFrom)) : undefined,
+            dateTo ? lte(scrapedTweetSchema.date, new Date(dateTo)) : undefined,
+            topicIds && topicIds.length > 0
+              ? sql`${parsedPredictionSchema.topicId} IN (${sql.join(topicIds.map((id) => sql`${id}`), sql`, `)})`
+              : undefined,
           ),
         )
         .orderBy(desc(parsedPredictionSchema.createdAt))
@@ -675,10 +683,13 @@ export const predictionRouter = {
         verdictStatus: z.enum(["ongoing", "true", "false"]),
         limit: z.number().min(1).max(100).default(30),
         offset: z.number().min(0).default(0),
+        dateFrom: z.string().datetime().optional(),
+        dateTo: z.string().datetime().optional(),
+        topicIds: z.array(z.string()).optional(),
       }),
     )
     .query(async ({ ctx, input }) => {
-      const { verdictStatus, limit, offset } = input;
+      const { verdictStatus, limit, offset, dateFrom, dateTo, topicIds } = input;
 
       const rawPredictions = await ctx.db
         .select({
@@ -762,6 +773,11 @@ export const predictionRouter = {
               : verdictStatus === "true"
                 ? eq(verdictSchema.verdict, true)
                 : eq(verdictSchema.verdict, false),
+            dateFrom ? gte(scrapedTweetSchema.date, new Date(dateFrom)) : undefined,
+            dateTo ? lte(scrapedTweetSchema.date, new Date(dateTo)) : undefined,
+            topicIds && topicIds.length > 0
+              ? sql`${parsedPredictionSchema.topicId} IN (${sql.join(topicIds.map((id) => sql`${id}`), sql`, `)})`
+              : undefined,
           ),
         )
         .orderBy(desc(predictionSchema.createdAt))

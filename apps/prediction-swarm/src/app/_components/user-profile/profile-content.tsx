@@ -46,6 +46,11 @@ export default function ProfileContent({
   const truePage = parseInt(searchParams.get("true") ?? "1");
   const falsePage = parseInt(searchParams.get("false") ?? "1");
 
+  // Read filter params from URL
+  const dateFrom = searchParams.get("dateFrom") ?? undefined;
+  const dateTo = searchParams.get("dateTo") ?? undefined;
+  const topicIds = searchParams.get("topics")?.split(",").filter(Boolean) ?? undefined;
+
   // Fetch predictions separately per verdict status - only fetch active tab
   const { data: ongoingPredictions, isLoading: ongoingLoading } =
     api.prediction.getByUsernameAndVerdict.useQuery(
@@ -54,6 +59,9 @@ export default function ProfileContent({
         verdictStatus: "ongoing",
         limit,
         offset: (ongoingPage - 1) * limit,
+        dateFrom,
+        dateTo,
+        topicIds,
       },
       {
         enabled: activeTab === "ongoing",
@@ -67,6 +75,9 @@ export default function ProfileContent({
         verdictStatus: "true",
         limit,
         offset: (truePage - 1) * limit,
+        dateFrom,
+        dateTo,
+        topicIds,
       },
       {
         enabled: activeTab === "true",
@@ -80,6 +91,9 @@ export default function ProfileContent({
         verdictStatus: "false",
         limit,
         offset: (falsePage - 1) * limit,
+        dateFrom,
+        dateTo,
+        topicIds,
       },
       {
         enabled: activeTab === "false",
