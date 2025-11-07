@@ -841,6 +841,13 @@ export const predictionRouter = {
         verdictSchema,
         eq(verdictSchema.parsedPredictionId, parsedPredictionSchema.id),
       )
+      .leftJoin(
+        parsedPredictionFeedbackSchema,
+        eq(
+          parsedPredictionFeedbackSchema.parsedPredictionId,
+          parsedPredictionSchema.id,
+        ),
+      )
       .where(and(eq(twitterUsersSchema.tracked, true)))
       .groupBy(sql`verdict_status`);
 

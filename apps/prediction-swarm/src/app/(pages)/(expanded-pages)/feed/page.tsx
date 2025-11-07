@@ -14,6 +14,7 @@ import {
   TabsList,
   TabsTrigger,
 } from "@torus-ts/ui/components/tabs";
+import { FilterDialog } from "~/app/_components/filter-dialog";
 import { PageHeader } from "~/app/_components/page-header";
 import { FeedLegend } from "~/app/_components/user-profile/feed-legend";
 import { ProfileFeed } from "~/app/_components/user-profile/profile-feed";
@@ -29,6 +30,12 @@ export default function FeedPage() {
   const truePage = parseInt(searchParams.get("true") ?? "1");
   const falsePage = parseInt(searchParams.get("false") ?? "1");
 
+  // Read filter params from URL
+  const dateFrom = searchParams.get("dateFrom") ?? undefined;
+  const dateTo = searchParams.get("dateTo") ?? undefined;
+  const topicIds =
+    searchParams.get("topics")?.split(",").filter(Boolean) ?? undefined;
+
   // Get total counts
   const { data: counts } = api.prediction.getFeedCounts.useQuery();
 
@@ -38,6 +45,9 @@ export default function FeedPage() {
       verdictStatus: "ongoing",
       limit,
       offset: (ongoingPage - 1) * limit,
+      dateFrom,
+      dateTo,
+      topicIds,
     });
 
   const { data: truePredictions, isLoading: trueLoading } =
@@ -45,6 +55,9 @@ export default function FeedPage() {
       verdictStatus: "true",
       limit,
       offset: (truePage - 1) * limit,
+      dateFrom,
+      dateTo,
+      topicIds,
     });
 
   const { data: falsePredictions, isLoading: falseLoading } =
@@ -52,6 +65,9 @@ export default function FeedPage() {
       verdictStatus: "false",
       limit,
       offset: (falsePage - 1) * limit,
+      dateFrom,
+      dateTo,
+      topicIds,
     });
 
   // Calculate total pages from counts
@@ -74,6 +90,7 @@ export default function FeedPage() {
       <PageHeader
         title="Prediction Feed"
         description="View predictions from all tracked users"
+        children={<FilterDialog />}
       />
 
       {/* Full-width horizontal border */}
@@ -109,6 +126,7 @@ export default function FeedPage() {
             <TabsContent value="ongoing">
               <CardContent>
                 <ProfileFeed
+                  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
                   predictions={ongoingPredictions ?? []}
                   variant="feed"
                   isLoading={ongoingLoading}
@@ -157,6 +175,7 @@ export default function FeedPage() {
             <TabsContent value="true">
               <CardContent>
                 <ProfileFeed
+                  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
                   predictions={truePredictions ?? []}
                   variant="feed"
                   isLoading={trueLoading}
@@ -204,6 +223,7 @@ export default function FeedPage() {
             <TabsContent value="false">
               <CardContent>
                 <ProfileFeed
+                  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
                   predictions={falsePredictions ?? []}
                   variant="feed"
                   isLoading={falseLoading}
