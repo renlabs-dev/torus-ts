@@ -25,4 +25,3 @@ const config = {
 };
 
 export default config;
-// force build
