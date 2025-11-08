@@ -13,6 +13,12 @@ import { Button } from "@torus-ts/ui/components/button";
 import { Card, CardContent } from "@torus-ts/ui/components/card";
 import { Input, InputReadonly } from "@torus-ts/ui/components/input";
 import { Label } from "@torus-ts/ui/components/label";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@torus-ts/ui/components/tooltip";
 import { contractAddresses, getChainValuesOnEnv } from "~/config";
 import { env } from "~/env";
 import { ArrowLeftRight, History, Info, Zap } from "lucide-react";
@@ -86,6 +92,8 @@ export function FastBridgeForm() {
     isTransferInProgress,
     getExplorerUrl,
     setTransactions,
+    executeEvmToNative,
+    executeEvmToBase,
   } = useOrchestratedTransfer();
 
   const { getTransactions, getTransactionById } =
@@ -102,10 +110,11 @@ export function FastBridgeForm() {
   } = useFastBridgeTransactionUrlState();
 
   const { selectedAccount, api } = useTorus();
-  const nativeBalance = useFreeBalance(
+  const nativeBalanceQuery = useFreeBalance(
     api,
     selectedAccount?.address as SS58Address,
   );
+  const nativeBalance = nativeBalanceQuery;
 
   const { data: usdPrice } = useGetTorusPrice();
 
@@ -116,7 +125,7 @@ export function FastBridgeForm() {
     | `0x${string}`
     | undefined;
 
-  const { data: baseBalance } = useReadContract({
+  const baseBalanceQuery = useReadContract({
     chainId: chainIds.base,
     address: baseTorusAddress,
     abi: erc20Abi,
@@ -126,18 +135,29 @@ export function FastBridgeForm() {
       enabled: Boolean(evmAddress),
     },
   });
+  const { data: baseBalance } = baseBalanceQuery;
 
   const getChainValues = getChainValuesOnEnv(
     env("NEXT_PUBLIC_TORUS_CHAIN_ENV"),
   );
   const { chainId: torusEvmChainId } = getChainValues("torus");
 
-  const { data: torusEvmBalance } = useBalance({
+  const torusEvmBalanceQuery = useBalance({
     address: evmAddress,
     chainId: torusEvmChainId,
   });
+  const { data: torusEvmBalance } = torusEvmBalanceQuery;
 
   const walletsReady = areWalletsReady(direction);
+
+  // Function to refetch all balances
+  const refetchAllBalances = useCallback(async () => {
+    await Promise.all([
+      nativeBalanceQuery.refetch(),
+      baseBalanceQuery.refetch(),
+      torusEvmBalanceQuery.refetch(),
+    ]);
+  }, [nativeBalanceQuery, baseBalanceQuery, torusEvmBalanceQuery]);
 
   const toggleDirection = useCallback(() => {
     if (isTransferInProgress) return;
@@ -173,57 +193,41 @@ export function FastBridgeForm() {
     handleFractionClick(1.0); // All = 100%
   }, [handleFractionClick]);
 
-  const handleSendToNative = useCallback(async () => {
-    if (!torusEvmBalance || !walletsReady) return;
-
-    const evmBalance = torusEvmBalance.value;
-    const maxAmount =
-      evmBalance > TORUS_EVM_GAS_RESERVE
-        ? evmBalance - TORUS_EVM_GAS_RESERVE
-        : 0n;
-
-    if (maxAmount <= 0n) {
-      return;
+  const handleSendToNative = useCallback(async (amount: bigint) => {
+    if (!walletsReady) {
+      throw new Error("Wallets not ready");
     }
 
-    setShowQuickSendDialog(false);
-    setDirection("base-to-native");
-    const amountStr = formatWeiToDecimalString(maxAmount);
-    setAmountFrom(amountStr);
-    setShowTransactionDialog(true);
-
-    try {
-      await executeTransfer("base-to-native", amountStr);
-    } catch (error) {
-      console.error("Send to Native failed:", error);
-    }
-  }, [torusEvmBalance, walletsReady, executeTransfer]);
-
-  const handleSendToBase = useCallback(async () => {
-    if (!torusEvmBalance || !walletsReady) return;
-
-    const evmBalance = torusEvmBalance.value;
-    const maxAmount =
-      evmBalance > TORUS_EVM_GAS_RESERVE
-        ? evmBalance - TORUS_EVM_GAS_RESERVE
-        : 0n;
-
-    if (maxAmount <= 0n) {
-      return;
+    if (amount <= TORUS_EVM_GAS_RESERVE) {
+      throw new Error("Insufficient balance for gas fees");
     }
 
-    setShowQuickSendDialog(false);
-    setDirection("native-to-base");
-    const amountStr = formatWeiToDecimalString(maxAmount);
-    setAmountFrom(amountStr);
-    setShowTransactionDialog(true);
+    // Subtract gas reserve from the amount to send
+    const amountToSend = amount - TORUS_EVM_GAS_RESERVE;
+    const amountStr = formatWeiToDecimalString(amountToSend);
 
-    try {
-      await executeTransfer("native-to-base", amountStr);
-    } catch (error) {
-      console.error("Send to Base failed:", error);
+    // Quick Send from EVM to Native: Execute only Step 2 of base-to-native flow
+    // This withdraws directly from Torus EVM to Native
+    await executeEvmToNative(amountStr);
+  }, [walletsReady, executeEvmToNative]);
+
+  const handleSendToBase = useCallback(async (amount: bigint) => {
+    if (!walletsReady) {
+      throw new Error("Wallets not ready");
     }
-  }, [torusEvmBalance, walletsReady, executeTransfer]);
+
+    if (amount <= TORUS_EVM_GAS_RESERVE) {
+      throw new Error("Insufficient balance for gas fees");
+    }
+
+    // Subtract gas reserve from the amount to send
+    const amountToSend = amount - TORUS_EVM_GAS_RESERVE;
+    const amountStr = formatWeiToDecimalString(amountToSend);
+
+    // Quick Send from EVM to Base: Execute only Step 2 of native-to-base flow
+    // This deposits from Torus EVM to Base
+    await executeEvmToBase(amountStr);
+  }, [walletsReady, executeEvmToBase]);
 
   const handleSubmit = useCallback(async () => {
     if (!amountFrom || !walletsReady) return;
@@ -471,17 +475,32 @@ export function FastBridgeForm() {
     <div className="mx-auto w-full space-y-6">
       <div className="flex items-center justify-end">
         <div className="flex gap-2">
-          {hasEvmBalance && (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setShowQuickSendDialog(true)}
-              disabled={isTransferInProgress}
-            >
-              <Zap className="mr-2 h-4 w-4" />
-              Quick EVM
-            </Button>
-          )}
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <span className={!hasEvmBalance || isTransferInProgress ? "cursor-not-allowed" : ""}>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setShowQuickSendDialog(true)}
+                    disabled={!hasEvmBalance || isTransferInProgress}
+                    className={!hasEvmBalance || isTransferInProgress ? "pointer-events-none" : ""}
+                  >
+                    <Zap className="mr-2 h-4 w-4" />
+                    Quick EVM
+                  </Button>
+                </span>
+              </TooltipTrigger>
+              {!hasEvmBalance && (
+                <TooltipContent>
+                  <p className="text-sm">
+                    Quick Send is only available when you have TORUS in your EVM wallet
+                  </p>
+                </TooltipContent>
+              )}
+            </Tooltip>
+          </TooltipProvider>
+
           <Button
             variant="outline"
             size="sm"
@@ -651,17 +670,12 @@ export function FastBridgeForm() {
       <QuickSendEvmDialog
         isOpen={showQuickSendDialog}
         onClose={() => setShowQuickSendDialog(false)}
-        evmBalance={
-          torusEvmBalance && torusEvmBalance.value > TORUS_EVM_GAS_RESERVE
-            ? torusEvmBalance.value - TORUS_EVM_GAS_RESERVE
-            : 0n
-        }
-        nativeBalance={nativeBalance.data ?? 0n}
-        baseBalance={baseBalance ?? 0n}
+        evmBalance={torusEvmBalance?.value ?? 0n}
+        currentEvmBalance={torusEvmBalance?.value ?? 0n}
         onSendToNative={handleSendToNative}
         onSendToBase={handleSendToBase}
-        formatAmount={formatWeiToDecimalString}
-        isTransferInProgress={isTransferInProgress}
+        formatAmount={formatToken}
+        refetchBalances={refetchAllBalances}
       />
     </div>
   );

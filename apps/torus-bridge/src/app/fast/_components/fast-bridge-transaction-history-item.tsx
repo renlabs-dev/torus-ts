@@ -3,7 +3,7 @@
 import { Badge } from "@torus-ts/ui/components/badge";
 import { Button } from "@torus-ts/ui/components/button";
 import { cn } from "@torus-ts/ui/lib/utils";
-import { ChevronDown, ChevronUp, ExternalLink } from "lucide-react";
+import { ChevronDown, ChevronUp, ExternalLink, Play } from "lucide-react";
 import { useState } from "react";
 import type { FastBridgeTransactionHistoryItem } from "./fast-bridge-types";
 
@@ -77,10 +77,22 @@ export function TransactionHistoryItem({
       ? "Base → Native"
       : "Native → Base";
 
+  const handleCardClick = () => {
+    if (transaction.status === "error") {
+      setIsExpanded((prev) => !prev);
+    }
+  };
+
   return (
     <div className="border-border bg-card rounded-lg border p-4">
       <div className="flex items-start justify-between">
-        <div className="flex-1">
+        <div
+          className={cn(
+            "flex-1",
+            transaction.status === "error" && "cursor-pointer",
+          )}
+          onClick={handleCardClick}
+        >
           <div className="flex items-center gap-3">
             <span className="text-sm font-medium">{directionLabel}</span>
             {getStatusBadge(transaction.status)}
@@ -97,9 +109,10 @@ export function TransactionHistoryItem({
           {transaction.status === "error" && (
             <Button
               size="sm"
-              variant="default"
+              variant="outline"
               onClick={() => onContinue(transaction)}
             >
+              <Play className="mr-2 h-4 w-4" />
               Continue
             </Button>
           )}

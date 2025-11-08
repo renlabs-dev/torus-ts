@@ -683,6 +683,66 @@ export function useOrchestratedTransfer() {
     clearErrorDetails,
   ]);
 
+  // Wrapper for Quick Send EVM → Native
+  const executeQuickSendToNative = useCallback(
+    async (amount: string) => {
+      // Initialize transactions array for Step 2
+      setTransactions([
+        {
+          step: 1 as const,
+          status: "SUCCESS" as const,
+          chainName: "Base",
+          message: "Already on Torus EVM",
+        },
+        {
+          step: 2 as const,
+          status: null,
+          chainName: "Torus EVM",
+        },
+      ]);
+
+      // Initialize bridge state
+      updateBridgeState({
+        direction: "base-to-native",
+        amount,
+        step: SimpleBridgeStep.STEP_2_PREPARING,
+      });
+
+      await retryBaseToNativeStep2(amount);
+    },
+    [retryBaseToNativeStep2, setTransactions, updateBridgeState],
+  );
+
+  // Wrapper for Quick Send EVM → Base
+  const executeQuickSendToBase = useCallback(
+    async (amount: string) => {
+      // Initialize transactions array for Step 2
+      setTransactions([
+        {
+          step: 1 as const,
+          status: "SUCCESS" as const,
+          chainName: "Torus Native",
+          message: "Already on Torus EVM",
+        },
+        {
+          step: 2 as const,
+          status: null,
+          chainName: "Torus EVM",
+        },
+      ]);
+
+      // Initialize bridge state
+      updateBridgeState({
+        direction: "native-to-base",
+        amount,
+        step: SimpleBridgeStep.STEP_2_PREPARING,
+      });
+
+      await retryNativeToBaseStep2(amount);
+    },
+    [retryNativeToBaseStep2, setTransactions, updateBridgeState],
+  );
+
   return {
     bridgeState,
     transactions,
@@ -695,5 +755,8 @@ export function useOrchestratedTransfer() {
       bridgeState.step !== SimpleBridgeStep.IDLE &&
       bridgeState.step !== SimpleBridgeStep.COMPLETE &&
       bridgeState.step !== SimpleBridgeStep.ERROR,
+    // Expose Step 2 functions for Quick Send from EVM
+    executeEvmToNative: executeQuickSendToNative,
+    executeEvmToBase: executeQuickSendToBase,
   };
 }
