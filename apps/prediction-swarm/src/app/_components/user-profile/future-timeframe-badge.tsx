@@ -1,3 +1,4 @@
+import { Badge } from "@torus-ts/ui/components/badge";
 import {
   Tooltip,
   TooltipContent,
@@ -15,10 +16,13 @@ export function FutureTimeframeBadge({ reason }: FutureTimeframeBadgeProps) {
     <TooltipProvider>
       <Tooltip>
         <TooltipTrigger asChild>
-          <span className="flex items-center text-purple-600">
+          <Badge
+            variant="outline"
+            className="border-cyan-600/203 flex items-center rounded-full text-cyan-600"
+          >
             <Clock className="mr-1 h-3 w-3" />
             Future Timeframe
-          </span>
+          </Badge>
         </TooltipTrigger>
         <TooltipContent className="bg-background/80 max-w-xs text-white">
           <p className="text-xs">{reason}</p>

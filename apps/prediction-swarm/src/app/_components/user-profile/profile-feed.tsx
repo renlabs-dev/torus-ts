@@ -376,26 +376,23 @@ export function ProfileFeed({
                         >
                           @{tweet.username}
                         </Link>
-                        {activePrediction.feedbackFailureCause ===
-                          "FUTURE_TIMEFRAME" && (
-                          <>
-                            <span className="text-muted-foreground text-xs">
-                              •
-                            </span>
-                            <FutureTimeframeBadge
-                              reason={
-                                activePrediction.feedbackReason ??
-                                "Timeframe is in the future"
-                              }
-                            />
-                          </>
-                        )}
                         {activePrediction.topicId && (
                           <>
                             <span className="text-muted-foreground text-xs">
                               •
                             </span>
                             <TopicBadge topicId={activePrediction.topicId} />
+                          </>
+                        )}
+                        {activePrediction.feedbackFailureCause ===
+                          "FUTURE_TIMEFRAME" && (
+                          <>
+                            <FutureTimeframeBadge
+                              reason={
+                                activePrediction.feedbackReason ??
+                                "Timeframe is in the future"
+                              }
+                            />
                           </>
                         )}
                       </div>
