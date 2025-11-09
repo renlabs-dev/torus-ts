@@ -124,6 +124,8 @@ jobs:
         run: |
           if [ "${{ inputs.app_name }}" == "torus-prophet-finder" ]; then
             echo "host=pr-${{ github.event.number }}.prophetfinder.com" >> $GITHUB_OUTPUT
+          elif [ "${{ inputs.app_name }}" == "prediction-swarm" ]; then
+            echo "host=pr-${{ github.event.number }}.predictionswarm.com" >> $GITHUB_OUTPUT
           else
             echo "host=pr-${{ github.event.number }}.${{ inputs.app_name }}.torus.network" >> $GITHUB_OUTPUT
           fi
@@ -226,6 +228,8 @@ jobs:
         run: |
           if [ "${{ inputs.app_name }}" == "torus-prophet-finder" ]; then
             echo "host=pr-${{ github.event.number }}.prophetfinder.com" >> $GITHUB_OUTPUT
+          elif [ "${{ inputs.app_name }}" == "prediction-swarm" ]; then
+            echo "host=pr-${{ github.event.number }}.predictionswarm.com" >> $GITHUB_OUTPUT
           else
             echo "host=pr-${{ github.event.number }}.${{ inputs.app_name }}.torus.network" >> $GITHUB_OUTPUT
           fi

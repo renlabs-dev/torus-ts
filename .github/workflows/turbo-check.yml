@@ -32,6 +32,9 @@ on:
       prediction-swarm-dash:
         description: "Whether prediction-swarm-dash changed"
         value: ${{ jobs.run.outputs.prediction-swarm-dash }}
+      prediction-swarm:
+        description: "Whether prediction-swarm changed"
+        value: ${{ jobs.run.outputs.prediction-swarm }}
 
 jobs:
   run:
@@ -47,6 +50,7 @@ jobs:
       torus-governance: ${{ steps.changed.outputs.torus-governance }}
       torus-prophet-finder: ${{ steps.changed.outputs.torus-prophet-finder }}
       prediction-swarm-dash: ${{ steps.changed.outputs.prediction-swarm-dash }}
+      prediction-swarm: ${{ steps.changed.outputs.prediction-swarm }}
     steps:
       - uses: actions/checkout@v4
         with:
