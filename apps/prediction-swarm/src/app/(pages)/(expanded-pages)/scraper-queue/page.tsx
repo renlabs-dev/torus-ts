@@ -73,10 +73,11 @@ export default function ScraperQueuePage() {
       <div className="relative mx-auto max-w-screen-lg space-y-6 px-4">
         {!isAccountConnected ? (
           <Card className="bg-background/80 plus-corners backdrop-blur-lg">
-            <CardContent className="p-8 text-center">
+            <CardContent className="p-5 text-center">
               <p className="text-lg font-medium">Connect Your Wallet</p>
               <p className="text-muted-foreground mt-1 text-sm">
-                Connect your wallet to track accounts you've added to the queue
+                Connect your wallet on the top right to track accounts you've
+                added to the queue
               </p>
             </CardContent>
           </Card>

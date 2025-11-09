@@ -21,7 +21,7 @@ interface QueueItemProps {
 export function QueueItem({ item, isUserAccount = false }: QueueItemProps) {
   return (
     <Card className="bg-background/80 plus-corners backdrop-blur-lg">
-      <div className="flex items-center justify-between p-6">
+      <div className="flex flex-col justify-between gap-4 p-6 lg:flex-row lg:items-center">
         {/* Header */}
         <div className="flex items-center gap-4">
           <Avatar className="h-12 w-12 border-2">

@@ -78,7 +78,7 @@ export function ProgressStages({ status }: ProgressStagesProps) {
             </div>
             {idx < stages.length - 1 && (
               <div
-                className={`h-0.5 w-8 ${
+                className={`mb-5 h-0.5 w-8 ${
                   stage.complete ? "bg-primary" : "bg-muted-foreground/30"
                 }`}
               />
