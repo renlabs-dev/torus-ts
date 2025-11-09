@@ -19,6 +19,7 @@ import { useToast } from "@torus-ts/ui/hooks/use-toast";
 import { env } from "~/env";
 import { api } from "~/trpc/react";
 import { UserRoundPlus } from "lucide-react";
+import Link from "next/link";
 
 interface AddProphetProps {
   username: string;
@@ -38,7 +39,17 @@ export function AddProphet({
     onSuccess: () => {
       toast({
         title: "User suggested",
-        description: `@${username} has been to be added to the swarm queue.`,
+        description: (
+          <div>
+            <p>@{username} has been added to the swarm queue.</p>
+            <Link
+              href="/scraper-queue"
+              className="text-primary mt-1 inline-block text-sm underline"
+            >
+              Track it here →
+            </Link>
+          </div>
+        ),
       });
       onSuccess?.();
     },

@@ -11,8 +11,10 @@ import {
 import { api } from "~/trpc/react";
 import { SearchIcon } from "lucide-react";
 import Image from "next/image";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { ProgressStages } from "../scraper-queue/progress-stages";
 import { AddProphet } from "./add-prophet";
 import { SearchEmpty } from "./search-empty";
 
@@ -82,6 +84,16 @@ export function SearchProphet() {
     { enabled: search.length > 0 && searchResults?.length === 0 },
   );
 
+  // Get queue data to show progress for scraping users
+  const { data: queueData } = api.scraperQueue.getQueueStatus.useQuery(
+    undefined,
+    { enabled: scrapingStatus?.status === "scraping" },
+  );
+
+  const queueItem = queueData?.find(
+    (item) => item.username.toLowerCase() === search.toLowerCase(),
+  );
+
   const handleSelectUser = (username: string | null) => {
     if (!username) return;
     setOpen(false);
@@ -139,6 +151,24 @@ export function SearchProphet() {
                   <div className="flex flex-col gap-2">
                     <SearchEmpty />
                   </div>
+                ) : scrapingStatus?.status === "scraping" && queueItem ? (
+                  <div className="flex flex-col items-center gap-4 px-4 py-8">
+                    <div className="text-center">
+                      <h3 className="mb-4 font-semibold">
+                        @{search} is being processed
+                      </h3>
+                      <div className="scale-75">
+                        <ProgressStages status={queueItem.status} />
+                      </div>
+                      <Link
+                        href="/scraper-queue"
+                        className="text-primary mt-4 inline-block text-sm underline"
+                        onClick={() => setOpen(false)}
+                      >
+                        View full progress →
+                      </Link>
+                    </div>
+                  </div>
                 ) : scrapingStatus?.status === "scraping" ? (
                   <div className="flex flex-col items-center gap-4 px-4 py-8">
                     <div className="relative">
@@ -146,12 +176,18 @@ export function SearchProphet() {
                     </div>
                     <div className="text-center">
                       <h3 className="font-semibold">
-                        @{search} is being scraped
+                        @{search} is being processed
                       </h3>
                       <p className="text-muted-foreground mt-1 text-sm">
                         This account is currently being added to the swarm.
-                        Check back soon!
                       </p>
+                      <Link
+                        href="/scraper-queue"
+                        className="text-primary mt-2 inline-block text-sm underline"
+                        onClick={() => setOpen(false)}
+                      >
+                        Track progress →
+                      </Link>
                     </div>
                   </div>
                 ) : scrapingStatus?.status === "untracked" ? (
