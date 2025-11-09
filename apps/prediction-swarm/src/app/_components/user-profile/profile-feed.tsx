@@ -376,22 +376,8 @@ export function ProfileFeed({
                         >
                           @{tweet.username}
                         </Link>
-                        {activePrediction.vagueness && (
-                          <>
-                            <span className="text-muted-foreground text-xs">
-                              •
-                            </span>
-                            <span className="text-muted-foreground text-xs sm:ml-auto md:text-sm">
-                              Vagueness:{" "}
-                              {(
-                                parseFloat(activePrediction.vagueness) * 100
-                              ).toFixed(0)}
-                              %
-                            </span>
-                          </>
-                        )}
                         {activePrediction.feedbackFailureCause ===
-                          "future_timeframe" && (
+                          "FUTURE_TIMEFRAME" && (
                           <>
                             <span className="text-muted-foreground text-xs">
                               •
@@ -484,6 +470,21 @@ export function ProfileFeed({
                                     {activePrediction.predictionQuality}/100
                                   </p>
                                 </div>
+
+                                {activePrediction.vagueness && (
+                                  <div>
+                                    <span className="text-muted-foreground">
+                                      Vagueness
+                                    </span>
+                                    <p>
+                                      {(
+                                        parseFloat(activePrediction.vagueness) *
+                                        100
+                                      ).toFixed(0)}
+                                      %
+                                    </p>
+                                  </div>
+                                )}
 
                                 <div>
                                   <span className="text-muted-foreground">

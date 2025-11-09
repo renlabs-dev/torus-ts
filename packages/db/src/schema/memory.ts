@@ -74,7 +74,7 @@ export const twitterUserSuggestionsSchema = createTable(
   "twitter_user_suggestions",
   {
     username: varchar("username", { length: 15 }).notNull(),
-    wallet: ss58Address("wallet").notNull(),
+    wallet: ss58Address("woallet").notNull(),
     ...timeFields(),
   },
   (t) => [primaryKey({ columns: [t.username, t.wallet] })],
