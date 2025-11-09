@@ -18,7 +18,7 @@ export function FutureTimeframeBadge({ reason }: FutureTimeframeBadgeProps) {
         <TooltipTrigger asChild>
           <Badge
             variant="outline"
-            className="border-cyan-600/203 flex items-center rounded-full text-cyan-600"
+            className="flex items-center rounded-full border-cyan-600/20 text-cyan-600"
           >
             <Clock className="mr-1 h-3 w-3" />
             Future Timeframe
