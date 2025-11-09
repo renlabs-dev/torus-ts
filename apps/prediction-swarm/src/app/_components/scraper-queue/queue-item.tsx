@@ -20,18 +20,14 @@ interface QueueItemProps {
 
 export function QueueItem({ item, isUserAccount = false }: QueueItemProps) {
   return (
-    <Card
-      className={`bg-background/80 plus-corners backdrop-blur-lg ${
-        isUserAccount ? "border-primary border-2" : ""
-      }`}
-    >
-      <div className="p-6">
+    <Card className="bg-background/80 plus-corners backdrop-blur-lg">
+      <div className="flex items-center justify-between p-6">
         {/* Header */}
-        <div className="mb-4 flex items-center gap-4">
+        <div className="flex items-center gap-4">
           <Avatar className="h-12 w-12 border-2">
             <AvatarImage src={item.avatarUrl ?? undefined} />
             <AvatarFallback>
-              {(item.screenName ?? item.username)?.slice(0, 2).toUpperCase()}
+              {(item.screenName ?? item.username).slice(0, 2).toUpperCase()}
             </AvatarFallback>
           </Avatar>
 
@@ -42,28 +38,21 @@ export function QueueItem({ item, isUserAccount = false }: QueueItemProps) {
               </h3>
               {isUserAccount && (
                 <span className="bg-primary/20 text-primary rounded px-2 py-0.5 text-xs font-medium">
-                  Your Account
+                  Added by you
                 </span>
               )}
             </div>
             <div className="text-muted-foreground flex items-center gap-2 text-sm">
               <span>@{item.username}</span>
               <span>•</span>
-              <span>
-                Added {dayjs(item.suggestedAt).format("MMM D, YYYY")}
-              </span>
+              <span>Added {dayjs(item.suggestedAt).format("MMM D, YYYY")}</span>
             </div>
           </div>
         </div>
 
         {/* Progress Timeline */}
         <div className="overflow-x-auto">
-          <ProgressStages
-            status={item.status}
-            tweetCount={item.tweetCount}
-            predictionCount={item.predictionCount}
-            verdictCount={item.verdictCount}
-          />
+          <ProgressStages status={item.status} />
         </div>
       </div>
     </Card>

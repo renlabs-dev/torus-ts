@@ -1,20 +1,12 @@
-import { CheckCircle2, Clock, Download, Brain, ShieldCheck } from "lucide-react";
+import { Brain, Clock, Download, ShieldCheck } from "lucide-react";
 
 type ScraperStatus = "suggested" | "scraping" | "processing" | "complete";
 
 interface ProgressStagesProps {
   status: ScraperStatus;
-  tweetCount: number;
-  predictionCount: number;
-  verdictCount: number;
 }
 
-export function ProgressStages({
-  status,
-  tweetCount,
-  predictionCount,
-  verdictCount,
-}: ProgressStagesProps) {
+export function ProgressStages({ status }: ProgressStagesProps) {
   const stages = [
     {
       id: "suggested",
@@ -29,7 +21,6 @@ export function ProgressStages({
       icon: Download,
       active: status === "scraping",
       complete: ["processing", "complete"].includes(status),
-      metric: tweetCount > 0 ? `${tweetCount} tweets` : undefined,
     },
     {
       id: "processing",
@@ -37,7 +28,6 @@ export function ProgressStages({
       icon: Brain,
       active: status === "processing",
       complete: status === "complete",
-      metric: predictionCount > 0 ? `${predictionCount} predictions` : undefined,
     },
     {
       id: "complete",
@@ -45,7 +35,6 @@ export function ProgressStages({
       icon: ShieldCheck,
       active: status === "complete",
       complete: status === "complete",
-      metric: verdictCount > 0 ? `${verdictCount} verdicts` : undefined,
     },
   ];
 
@@ -61,15 +50,17 @@ export function ProgressStages({
                   stage.complete
                     ? "bg-primary border-primary"
                     : stage.active
-                      ? "border-primary animate-pulse"
-                      : "border-muted-foreground/30"
+                      ? "border-primary bg-primary/10 animate-pulse"
+                      : "border-muted-foreground/30 bg-muted/30"
                 }`}
               >
                 <Icon
                   className={`h-4 w-4 ${
-                    stage.complete || stage.active
+                    stage.complete
                       ? "text-primary-foreground"
-                      : "text-muted-foreground"
+                      : stage.active
+                        ? "text-primary"
+                        : "text-muted-foreground"
                   }`}
                 />
               </div>
@@ -83,11 +74,6 @@ export function ProgressStages({
                 >
                   {stage.label}
                 </div>
-                {stage.metric && (
-                  <div className="text-muted-foreground text-xs">
-                    {stage.metric}
-                  </div>
-                )}
               </div>
             </div>
             {idx < stages.length - 1 && (

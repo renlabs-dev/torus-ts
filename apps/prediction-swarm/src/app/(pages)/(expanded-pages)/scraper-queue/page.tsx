@@ -1,25 +1,60 @@
 "use client";
 
 import { useTorus } from "@torus-ts/torus-provider";
-import { api } from "~/trpc/react";
+import { Card, CardContent, CardHeader } from "@torus-ts/ui/components/card";
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "@torus-ts/ui/components/carousel";
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@torus-ts/ui/components/tabs";
+import { PageHeader } from "~/app/_components/page-header";
 import { QueueItem } from "~/app/_components/scraper-queue/queue-item";
+import { api } from "~/trpc/react";
+import dayjs from "dayjs";
 import { Loader2 } from "lucide-react";
 
 export default function ScraperQueuePage() {
   const { selectedAccount, isAccountConnected } = useTorus();
   const { data: queue, isLoading } = api.scraperQueue.getQueueStatus.useQuery();
 
-  // Separate user's accounts from general queue
-  const userAccounts = queue?.filter(
-    (item) =>
-      isAccountConnected &&
-      selectedAccount?.address &&
-      item.suggestedBy === selectedAccount.address,
-  ) ?? [];
+  // Filter completed accounts to only those from last 24 hours
+  const oneDayAgo = dayjs().subtract(1, "day");
+  const recentlyCompleted =
+    queue?.filter(
+      (item) =>
+        item.status === "complete" &&
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+        item.suggestedAt &&
+        dayjs(item.suggestedAt).isAfter(oneDayAgo),
+    ) ?? [];
 
-  const otherAccounts = queue?.filter(
-    (item) => !userAccounts.find((u) => u.username === item.username),
-  ) ?? [];
+  // Separate by status
+  const suggested = queue?.filter((item) => item.status === "suggested") ?? [];
+  const scraping = queue?.filter((item) => item.status === "scraping") ?? [];
+  const processing =
+    queue?.filter((item) => item.status === "processing") ?? [];
+
+  // Separate user's accounts from each category
+  const getUserAccounts = (items: typeof queue) =>
+    items?.filter(
+      (item) =>
+        isAccountConnected &&
+        selectedAccount?.address &&
+        item.suggestedBy === selectedAccount.address,
+    ) ?? [];
+
+  const getOtherAccounts = (items: typeof queue, userItems: typeof queue) =>
+    items?.filter(
+      (item) => !userItems?.find((u) => u.username === item.username),
+    ) ?? [];
 
   return (
     <div className="relative py-10">
@@ -27,71 +62,214 @@ export default function ScraperQueuePage() {
       <div className="border-border pointer-events-none absolute inset-y-0 left-1/2 w-full max-w-screen-lg -translate-x-1/2 border-x" />
 
       {/* Header */}
-      <div className="relative mx-auto max-w-screen-lg px-4">
-        <div className="pb-8">
-          <h1 className="text-3xl font-bold">Scraper Queue</h1>
-          <p className="text-muted-foreground mt-2">
-            Track the progress of accounts being added to the swarm
-          </p>
-        </div>
+      <PageHeader
+        title="Scraper Queue"
+        description="Track the progress of accounts being added to the swarm"
+      />
+
+      {/* Border */}
+      <div className="border-border relative my-6 border-t" />
+
+      <div className="relative mx-auto max-w-screen-lg space-y-6 px-4">
+        {!isAccountConnected ? (
+          <Card className="bg-background/80 plus-corners backdrop-blur-lg">
+            <CardContent className="p-8 text-center">
+              <p className="text-lg font-medium">Connect Your Wallet</p>
+              <p className="text-muted-foreground mt-1 text-sm">
+                Connect your wallet to track accounts you've added to the queue
+              </p>
+            </CardContent>
+          </Card>
+        ) : (
+          <>
+            {getUserAccounts(queue ?? []).length > 0 && (
+              <div className="space-y-3">
+                {getUserAccounts(queue ?? []).length === 1 ? (
+                  <QueueItem
+                    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+                    item={getUserAccounts(queue ?? [])[0]!}
+                    isUserAccount
+                  />
+                ) : (
+                  <Carousel>
+                    <CarouselContent>
+                      {getUserAccounts(queue ?? []).map((item) => (
+                        <CarouselItem
+                          key={`user-${item.username}-${item.suggestedBy}`}
+                        >
+                          <QueueItem item={item} isUserAccount />
+                        </CarouselItem>
+                      ))}
+                    </CarouselContent>
+                    <CarouselPrevious className="!left-4" />
+                    <CarouselNext className="!right-4" />
+                  </Carousel>
+                )}
+              </div>
+            )}
+          </>
+        )}
       </div>
 
       {/* Border */}
       <div className="border-border relative my-6 border-t" />
 
       {/* Content */}
-      <div className="relative mx-auto max-w-screen-lg space-y-8 px-4">
-        {/* User's Accounts Section */}
-        {!isAccountConnected ? (
-          <div className="bg-background/80 rounded-lg border p-8 text-center">
-            <div className="text-muted-foreground">
-              <p className="mb-2 text-lg font-medium">Connect Your Wallet</p>
-              <p className="text-sm">
-                Connect your wallet to view accounts you've added to the queue
-              </p>
-            </div>
-          </div>
-        ) : userAccounts.length > 0 ? (
-          <div className="space-y-4">
-            <h2 className="text-xl font-semibold">Your Accounts</h2>
-            <div className="space-y-3">
-              {userAccounts.map((item) => (
-                <QueueItem
-                  key={`${item.username}-${item.suggestedBy}`}
-                  item={item}
-                  isUserAccount
-                />
-              ))}
-            </div>
-          </div>
-        ) : null}
+      <div className="relative mx-auto max-w-screen-lg space-y-6 px-4">
+        {/* User's Accounts - Always visible at top */}
 
-        {/* All Queue Section */}
-        {isLoading ? (
-          <div className="flex items-center justify-center py-12">
-            <Loader2 className="text-primary h-8 w-8 animate-spin" />
-          </div>
-        ) : (
-          <div className="space-y-4">
-            <h2 className="text-xl font-semibold">
-              All Scraping Queue ({otherAccounts.length})
-            </h2>
-            {otherAccounts.length === 0 ? (
-              <div className="text-muted-foreground py-12 text-center">
-                <p>No accounts in queue</p>
-              </div>
-            ) : (
-              <div className="space-y-3">
-                {otherAccounts.map((item) => (
-                  <QueueItem
+        <Card className="bg-background/80 plus-corners backdrop-blur-lg">
+          <Tabs defaultValue="suggested">
+            <CardHeader className="pb-0">
+              <TabsList className="bg-accent/60 grid w-full grid-cols-4">
+                <TabsTrigger value="suggested">
+                  Suggested ({suggested.length})
+                </TabsTrigger>
+                <TabsTrigger value="scraping">
+                  Scraping ({scraping.length})
+                </TabsTrigger>
+                <TabsTrigger value="processing">
+                  Processing ({processing.length})
+                </TabsTrigger>
+                <TabsTrigger value="complete">
+                  Complete ({recentlyCompleted.length})
+                </TabsTrigger>
+              </TabsList>
+            </CardHeader>
+
+            {/* Suggested Tab */}
+            <TabsContent value="suggested">
+              <CardContent>
+                {isLoading ? (
+                  <div className="flex items-center justify-center py-12">
+                    <Loader2 className="text-primary h-8 w-8 animate-spin" />
+                  </div>
+                ) : (
+                  <>
+                    {getUserAccounts(suggested).map((item) => (
+                      <div
+                        key={`${item.username}-${item.suggestedBy}`}
+                        className="mb-3"
+                      >
+                        <QueueItem item={item} isUserAccount />
+                      </div>
+                    ))}
+                    {getOtherAccounts(
+                      suggested,
+                      getUserAccounts(suggested),
+                    ).map((item) => (
+                      <div
+                        key={`${item.username}-${item.suggestedBy}`}
+                        className="mb-3"
+                      >
+                        <QueueItem item={item} />
+                      </div>
+                    ))}
+                    {suggested.length === 0 && (
+                      <div className="text-muted-foreground py-12 text-center">
+                        No suggested accounts
+                      </div>
+                    )}
+                  </>
+                )}
+              </CardContent>
+            </TabsContent>
+
+            {/* Scraping Tab */}
+            <TabsContent value="scraping">
+              <CardContent>
+                {getUserAccounts(scraping).map((item) => (
+                  <div
                     key={`${item.username}-${item.suggestedBy}`}
-                    item={item}
-                  />
+                    className="mb-3"
+                  >
+                    <QueueItem item={item} isUserAccount />
+                  </div>
                 ))}
-              </div>
-            )}
-          </div>
-        )}
+                {getOtherAccounts(scraping, getUserAccounts(scraping)).map(
+                  (item) => (
+                    <div
+                      key={`${item.username}-${item.suggestedBy}`}
+                      className="mb-3"
+                    >
+                      <QueueItem item={item} />
+                    </div>
+                  ),
+                )}
+                {scraping.length === 0 && (
+                  <div className="text-muted-foreground py-12 text-center">
+                    No accounts currently scraping
+                  </div>
+                )}
+              </CardContent>
+            </TabsContent>
+
+            {/* Processing Tab */}
+            <TabsContent value="processing">
+              <CardContent>
+                {getUserAccounts(processing).map((item) => (
+                  <div
+                    key={`${item.username}-${item.suggestedBy}`}
+                    className="mb-3"
+                  >
+                    <QueueItem item={item} isUserAccount />
+                  </div>
+                ))}
+                {getOtherAccounts(processing, getUserAccounts(processing)).map(
+                  (item) => (
+                    <div
+                      key={`${item.username}-${item.suggestedBy}`}
+                      className="mb-3"
+                    >
+                      <QueueItem item={item} />
+                    </div>
+                  ),
+                )}
+                {processing.length === 0 && (
+                  <div className="text-muted-foreground py-12 text-center">
+                    No accounts being processed
+                  </div>
+                )}
+              </CardContent>
+            </TabsContent>
+
+            {/* Complete Tab */}
+            <TabsContent value="complete">
+              <CardContent>
+                {recentlyCompleted.length === 0 ? (
+                  <div className="text-muted-foreground py-12 text-center">
+                    <p>No recently completed accounts</p>
+                    <p className="mt-1 text-xs">
+                      (Showing accounts completed in the last 24 hours)
+                    </p>
+                  </div>
+                ) : (
+                  <>
+                    {getUserAccounts(recentlyCompleted).map((item) => (
+                      <div
+                        key={`${item.username}-${item.suggestedBy}`}
+                        className="mb-3"
+                      >
+                        <QueueItem item={item} isUserAccount />
+                      </div>
+                    ))}
+                    {getOtherAccounts(
+                      recentlyCompleted,
+                      getUserAccounts(recentlyCompleted),
+                    ).map((item) => (
+                      <div
+                        key={`${item.username}-${item.suggestedBy}`}
+                        className="mb-3"
+                      >
+                        <QueueItem item={item} />
+                      </div>
+                    ))}
+                  </>
+                )}
+              </CardContent>
+            </TabsContent>
+          </Tabs>
+        </Card>
       </div>
 
       {/* Bottom border */}
