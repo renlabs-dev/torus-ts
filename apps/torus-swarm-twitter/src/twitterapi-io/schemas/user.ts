@@ -12,13 +12,13 @@ export const AvailableUserSchema = z.object({
   // Core identification
   id: UserIdSchema,
   userName: z.string(),
-  name: z.string(),
+  name: z.string().nullable(),
   url: z.union([z.string().url(), z.literal("")]).optional(),
 
   // Profile information
   description: z.string().optional(),
-  location: z.string().optional(),
-  profilePicture: z.string().url(),
+  location: z.string().optional().nullable(),
+  profilePicture: z.string().url().nullable(),
   coverPicture: z.string().url().nullable().optional(),
 
   // Verification status
