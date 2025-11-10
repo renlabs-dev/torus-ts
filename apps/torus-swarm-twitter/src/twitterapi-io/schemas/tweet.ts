@@ -161,7 +161,7 @@ export const SimpleTweetSchema = z.object({
         .optional(),
       quoted_tweet: z
         .object({
-          id: TweetIdSchema,
+          id: z.union([TweetIdSchema, z.literal(""), z.null()]).optional(),
         })
         .nullable()
         .optional(),
