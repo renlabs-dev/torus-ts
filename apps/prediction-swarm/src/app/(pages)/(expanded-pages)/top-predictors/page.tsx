@@ -17,7 +17,7 @@ import Link from "next/link";
 
 export default async function TopPredictorsPage() {
   const topPredictors = await api.twitterUser.getTopPredictors({
-    limit: 20,
+    limit: 30,
     minPredictions: 2,
   });
 

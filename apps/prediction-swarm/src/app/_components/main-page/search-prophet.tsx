@@ -15,7 +15,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { ProgressStages } from "../scraper-queue/progress-stages";
-import { AddProphet } from "./add-prophet";
+import { AddAccountModal } from "./add-account-modal";
 import { SearchEmpty } from "./search-empty";
 
 export function SearchProphet() {
@@ -23,7 +23,8 @@ export function SearchProphet() {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
   const [validationError, setValidationError] = useState("");
-  const [showAddAccount, setShowAddAccount] = useState<string | null>(null);
+  const [addModalOpen, setAddModalOpen] = useState(false);
+  const [usernameToAdd, setUsernameToAdd] = useState("");
 
   // Validate and clean input
   const validateInput = (input: string) => {
@@ -56,10 +57,6 @@ export function SearchProphet() {
     setSearch(value);
     const validation = validateInput(value);
     setValidationError(validation.valid ? "" : (validation.error ?? ""));
-    // Reset add account screen when search changes
-    if (showAddAccount) {
-      setShowAddAccount(null);
-    }
   };
 
   useEffect(() => {
@@ -134,17 +131,7 @@ export function SearchProphet() {
           </div>
         )}
         <CommandList>
-          {showAddAccount ? (
-            <div className="p-2">
-              <AddProphet
-                username={showAddAccount}
-                onSuccess={() => {
-                  setOpen(false);
-                  setShowAddAccount(null);
-                }}
-              />
-            </div>
-          ) : (
+          {
             <>
               <CommandEmpty>
                 {searchResults === undefined ? (
@@ -190,18 +177,29 @@ export function SearchProphet() {
                       </Link>
                     </div>
                   </div>
-                ) : scrapingStatus?.status === "untracked" ? (
-                  <AddProphet
-                    username={search}
-                    onSuccess={() => setOpen(false)}
-                    customTitle={`@${search} exists but is not tracked`}
-                    customDescription="This account was found in threads but doesn't have predictions yet. Add it to start tracking predictions."
-                  />
                 ) : (
-                  <AddProphet
-                    username={search}
-                    onSuccess={() => setOpen(false)}
-                  />
+                  <div className="p-4">
+                    <button
+                      onClick={() => {
+                        const validation = validateInput(search);
+                        setUsernameToAdd(validation.cleaned);
+                        setAddModalOpen(true);
+                      }}
+                      className="hover:bg-accent flex w-full items-center gap-3 rounded-lg p-3 transition-colors"
+                    >
+                      <div className="bg-primary/10 text-primary flex h-10 w-10 items-center justify-center rounded-full">
+                        <span className="text-xl">+</span>
+                      </div>
+                      <div className="flex-1 text-left">
+                        <div className="font-medium">Add @{search}</div>
+                        <div className="text-muted-foreground text-sm">
+                          {scrapingStatus?.status === "untracked"
+                            ? "Account exists but not tracked yet"
+                            : "This account is not in the swarm yet"}
+                        </div>
+                      </div>
+                    </button>
+                  </div>
                 )}
               </CommandEmpty>
               {searchResults && searchResults.length > 0 && (
@@ -219,9 +217,10 @@ export function SearchProphet() {
                       return (
                         <div className="border-b px-3 py-2">
                           <CommandItem
-                            onSelect={() =>
-                              setShowAddAccount(validation.cleaned)
-                            }
+                            onSelect={() => {
+                              setUsernameToAdd(validation.cleaned);
+                              setAddModalOpen(true);
+                            }}
                             className="flex items-center gap-2"
                           >
                             <div className="bg-primary/10 text-primary flex h-8 w-8 items-center justify-center rounded-full">
@@ -279,9 +278,15 @@ export function SearchProphet() {
                 </>
               )}
             </>
-          )}
+          }
         </CommandList>
       </CommandDialog>
+
+      <AddAccountModal
+        open={addModalOpen}
+        onOpenChange={setAddModalOpen}
+        username={usernameToAdd}
+      />
     </>
   );
 }
