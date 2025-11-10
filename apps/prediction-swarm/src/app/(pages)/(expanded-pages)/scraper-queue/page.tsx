@@ -122,7 +122,7 @@ export default function ScraperQueuePage() {
         <Card className="bg-background/80 plus-corners backdrop-blur-lg">
           <Tabs defaultValue="suggested">
             <CardHeader className="pb-0">
-              <TabsList className="bg-accent/60 flex h-full w-full flex-col sm:grid sm:grid-cols-3">
+              <TabsList className="bg-accent/60 flex h-full w-full flex-col sm:grid sm:grid-cols-4">
                 <TabsTrigger value="suggested" className="w-full">
                   Suggested ({suggested.length})
                 </TabsTrigger>
