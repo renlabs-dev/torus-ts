@@ -588,12 +588,10 @@ export class TwitterAccountScraper {
     tx: Transaction,
     quotedTweet: SimpleTweet["quoted_tweet"],
   ) {
-    if (!quotedTweet || !quotedTweet.id) return;
+    if (!quotedTweet?.id || !quotedTweet.author_id) return;
 
     const quotedTweetId = BigInt(quotedTweet.id);
-    const quotedAuthorId = BigInt(
-      quotedTweet.author_id || quotedTweet.author?.id || "0",
-    );
+    const quotedAuthorId = BigInt(quotedTweet.author_id || "0");
     const quotedConversationId = quotedTweet.conversationId
       ? BigInt(quotedTweet.conversationId)
       : null;
