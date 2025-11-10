@@ -141,19 +141,24 @@ export const SimpleTweetSchema = z.object({
   // Quote/retweet related
   quoted_tweet: z
     .object({
-      id: TweetIdSchema,
+      id: z.union([TweetIdSchema, z.literal(""), z.null()]).optional(),
       text: z.string(),
-      createdAt: TwitterDateSchema.optional(),
-      created_at: TwitterDateSchema.optional(),
-      author_id: UserIdSchema.optional(),
-      author: SimpleUserSchema.optional(),
+      createdAt: z
+        .union([TwitterDateSchema, z.literal(""), z.null()])
+        .optional(),
+      created_at: z
+        .union([TwitterDateSchema, z.literal(""), z.null()])
+        .optional(),
+      author_id: z.union([UserIdSchema, z.literal(""), z.null()]).optional(),
       inReplyToId: z.union([TweetIdSchema, z.literal(""), z.null()]).optional(),
       inReplyToUserId: z
         .union([UserIdSchema, z.literal(""), z.null()])
         .optional(),
       inReplyToUsername: z.string().nullable().optional(),
       isReply: z.boolean().optional(),
-      conversationId: TweetIdSchema.optional(),
+      conversationId: z
+        .union([TweetIdSchema, z.literal(""), z.null()])
+        .optional(),
       quoted_tweet: z
         .object({
           id: TweetIdSchema,
