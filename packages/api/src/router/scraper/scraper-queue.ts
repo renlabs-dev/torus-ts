@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
 import { sql } from "@torus-ts/db";
 import {
   twitterScrapingJobsSchema,
@@ -5,6 +6,7 @@ import {
   twitterUserSuggestionsSchema,
 } from "@torus-ts/db/schema";
 import type { TRPCRouterRecord } from "@trpc/server";
+import { z } from "zod";
 import { publicProcedure } from "../../trpc";
 
 /**
@@ -46,13 +48,20 @@ export const scraperQueueRouter = {
     const enrichedQueue = queue.map((item) => {
       let status: "suggested" | "scraping" | "processing" | "complete";
 
-      if (item.isTracked) {
-        status = "complete";
-      } else if (item.tweetCount && item.tweetCount > 0) {
-        status = "processing";
-      } else if (item.hasScrapingJob || item.userId) {
+      if (
+        item.hasScrapingJob ||
+        (item.userId && (!item.tweetCount || item.tweetCount === 0))
+      ) {
+        // 2. Scraping - Profile exists, collecting tweets
         status = "scraping";
+      } else if (item.tweetCount && item.tweetCount > 0 && !item.isTracked) {
+        // 3. Processing - Has tweets, generating predictions/verdicts
+        status = "processing";
+      } else if (item.isTracked) {
+        // 4. Complete - User is tracked and ready
+        status = "complete";
       } else {
+        // 1. Suggested - In queue only
         status = "suggested";
       }
 
@@ -61,9 +70,43 @@ export const scraperQueueRouter = {
         status,
         predictionCount: 0,
         verdictCount: 0,
+        needsVerdictCheck:
+          item.tweetCount && item.tweetCount > 0 && !item.isTracked,
       };
     });
 
     return enrichedQueue;
   }),
+
+  /**
+   * Check if user has pending verdicts (expensive query, call separately)
+   */
+  checkPendingVerdicts: publicProcedure
+    .input(
+      z.object({
+        userId: z.string(),
+      }),
+    )
+    .query(async ({ ctx, input }) => {
+      const userId = BigInt(input.userId);
+
+      const result = await ctx.db.execute(
+        sql`
+          SELECT COUNT(DISTINCT pp.id)::int AS count
+          FROM parsed_prediction pp
+          INNER JOIN scraped_tweet st ON CAST(CAST(pp.goal AS jsonb)->0->'source'->>'tweet_id' AS BIGINT) = st.id
+          LEFT JOIN verdict v ON v.parsed_prediction_id = pp.id
+          WHERE st.author_id = ${userId} AND v.id IS NULL
+        `,
+      );
+
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition, @typescript-eslint/no-explicit-any
+      const pendingCount = ((result[0] as any)?.count as number) ?? 0;
+
+      return {
+        hasPending: pendingCount > 0,
+        pendingCount,
+        isComplete: pendingCount === 0,
+      };
+    }),
 } satisfies TRPCRouterRecord;
