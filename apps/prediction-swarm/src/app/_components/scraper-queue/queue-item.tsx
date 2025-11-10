@@ -7,6 +7,7 @@ import {
 import { Card } from "@torus-ts/ui/components/card";
 import type { inferProcedureOutput } from "@trpc/server";
 import dayjs from "dayjs";
+import Link from "next/link";
 import { ProgressStages } from "./progress-stages";
 
 type QueueItem = inferProcedureOutput<
@@ -33,9 +34,17 @@ export function QueueItem({ item, isUserAccount = false }: QueueItemProps) {
 
           <div className="flex-1">
             <div className="flex items-center gap-2">
-              <h3 className="text-lg font-semibold">
-                {item.screenName ?? `@${item.username}`}
-              </h3>
+              {item.userId ? (
+                <Link href={`/user/${item.username}`}>
+                  <h3 className="text-lg font-semibold hover:underline">
+                    {item.screenName ?? `@${item.username}`}
+                  </h3>
+                </Link>
+              ) : (
+                <h3 className="text-lg font-semibold">
+                  {item.screenName ?? `@${item.username}`}
+                </h3>
+              )}
               {isUserAccount && (
                 <span className="bg-primary/20 text-primary rounded px-2 py-0.5 text-xs font-medium">
                   Added by you
