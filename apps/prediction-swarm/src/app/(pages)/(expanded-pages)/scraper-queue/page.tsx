@@ -122,17 +122,17 @@ export default function ScraperQueuePage() {
         <Card className="bg-background/80 plus-corners backdrop-blur-lg">
           <Tabs defaultValue="suggested">
             <CardHeader className="pb-0">
-              <TabsList className="bg-accent/60 grid w-full grid-cols-4">
-                <TabsTrigger value="suggested">
+              <TabsList className="bg-accent/60 flex h-full w-full flex-col sm:grid sm:grid-cols-3">
+                <TabsTrigger value="suggested" className="w-full">
                   Suggested ({suggested.length})
                 </TabsTrigger>
-                <TabsTrigger value="scraping">
+                <TabsTrigger value="scraping" className="w-full">
                   Scraping ({scraping.length})
                 </TabsTrigger>
-                <TabsTrigger value="processing">
+                <TabsTrigger value="processing" className="w-full">
                   Processing ({processing.length})
                 </TabsTrigger>
-                <TabsTrigger value="complete">
+                <TabsTrigger value="complete" className="w-full">
                   Complete ({recentlyCompleted.length})
                 </TabsTrigger>
               </TabsList>
