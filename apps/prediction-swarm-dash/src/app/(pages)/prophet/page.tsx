@@ -23,7 +23,6 @@ function ProphetPageContent() {
   const searchParams = useSearchParams();
   const { isAuthenticated } = useAuthStore();
   const [username, setUsername] = React.useState<string>("");
-  const [hasVerdictFilter, setHasVerdictFilter] = React.useState(false);
   const [searchFilters, setSearchFilters] = React.useState({
     from: undefined as Date | undefined,
     to: undefined as Date | undefined,
@@ -87,15 +86,17 @@ function ProphetPageContent() {
         username.toLowerCase(),
     );
 
+    const claimAgentFilter = "5F1yYFh5hdfwxXJWTFGCjk6YY5cqRaSnXFxuWNac1wY31QCM";
+
     return {
       truePredictionsCount: userPredictions.filter(
-        (p) => categorizePrediction(p) === "true",
+        (p) => categorizePrediction(p, claimAgentFilter) === "true",
       ).length,
       falsePredictionsCount: userPredictions.filter(
-        (p) => categorizePrediction(p) === "false",
+        (p) => categorizePrediction(p, claimAgentFilter) === "false",
       ).length,
       unmaturedPredictionsCount: userPredictions.filter(
-        (p) => categorizePrediction(p) === "unmatured",
+        (p) => categorizePrediction(p, claimAgentFilter) === "unmatured",
       ).length,
       totalPredictions: userPredictions.length,
     };
@@ -177,8 +178,6 @@ function ProphetPageContent() {
         totalPredictions={totalPredictions}
         onDateRangeFilterSubmit={handleDateRangeFilterSubmit}
         dateRangeFilterValues={searchFilters}
-        hasVerdictFilter={hasVerdictFilter}
-        onHasVerdictChange={setHasVerdictFilter}
       />
 
       <div className={cn("animate-fade-up animate-delay-[400ms]")}>
@@ -188,7 +187,7 @@ function ProphetPageContent() {
             from: dateToISOStringSafe(searchFilters.from, false),
             to: dateToISOStringSafe(searchFilters.to, true),
           }}
-          hasVerdictFilter={hasVerdictFilter}
+          claimAgentFilter="5F1yYFh5hdfwxXJWTFGCjk6YY5cqRaSnXFxuWNac1wY31QCM"
         />
       </div>
     </div>

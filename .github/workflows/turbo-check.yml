@@ -42,7 +42,6 @@ on:
         description: "Whether torus-swarm-verifier changed"
         value: ${{ jobs.run.outputs.torus-swarm-verifier }}
 
-
 jobs:
   run:
     runs-on: ubicloud-standard-2
@@ -58,8 +57,11 @@ jobs:
       torus-prophet-finder: ${{ steps.changed.outputs.torus-prophet-finder }}
       prediction-swarm-dash: ${{ steps.changed.outputs.prediction-swarm-dash }}
       prediction-swarm: ${{ steps.changed.outputs.prediction-swarm }}
+<<<<<<< HEAD
       torus-swarm-twitter: ${{ steps.changed.outputs.torus-swarm-twitter }}
       torus-swarm-verifier: ${{ steps.changed.outputs.torus-swarm-verifier }}
+=======
+>>>>>>> 42ab2f2668b3d51a69c765c520d18e147b4c944a
     steps:
       - uses: actions/checkout@v4
         with:

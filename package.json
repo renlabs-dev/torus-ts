@@ -26,7 +26,8 @@
       "@walletconnect/types": "^2.19.1",
       "@starknet-react/core": "^3.7.2",
       "@starknet-react/chains": "^4.0.4",
-      "starknet": "^6.24.1"
+      "starknet": "^6.24.1",
+      "@wagmi/core": "^2.22.0"
     },
     "peerDependencyRules": {
       "ignoreMissing": [

@@ -11,15 +11,11 @@ import {
 } from "@torus-ts/ui/components/command";
 import { Input } from "@torus-ts/ui/components/input";
 import { useIsMobile } from "@torus-ts/ui/hooks/use-mobile";
-import { useToast } from "@torus-ts/ui/hooks/use-toast";
 import { cn } from "@torus-ts/ui/lib/utils";
-import { useAddProphetMutation } from "~/hooks/api/use-add-prophet-mutation";
 import { useAgentContributionStatsQuery } from "~/hooks/api/use-agent-contribution-stats-query";
 import { useAgentName } from "~/hooks/api/use-agent-name-query";
-import { useProphetProfilesSearchQuery } from "~/hooks/api/use-prophet-profiles-search-query";
-import { useUsernamesSearchQuery } from "~/hooks/api/use-usernames-search-query";
 import { formatAddress } from "~/lib/api-utils";
-import { Check, Clock, SearchIcon, User } from "lucide-react";
+import { Check, SearchIcon } from "lucide-react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import React, { useCallback, useMemo, useState } from "react";
 import { BorderContainer } from "./border-container";
@@ -93,31 +89,37 @@ interface SearchInputProps {
 
 export function SearchInput({
   onValueChange,
-  placeholder = "Search for any agent or account in the swarm...",
+  placeholder = "Search for any agent in the swarm...",
   excludeAgents = [],
 }: SearchInputProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const pathname = usePathname();
   const isMobile = useIsMobile();
-  const { toast } = useToast();
+  // const { toast } = useToast();
 
   const [showCommand, setShowCommand] = useState(false);
   const [search, setSearch] = useState("");
 
-  const addProphetMutation = useAddProphetMutation();
+  // const addProphetMutation = useAddProphetMutation();
 
   // Get all agents from contribution stats
   const { data: statsData, isLoading: statsLoading } =
     useAgentContributionStatsQuery();
 
   // Search for usernames (only when user has typed >= 2 characters)
-  const { data: usernames, isLoading: usernamesLoading } =
-    useUsernamesSearchQuery(search);
+  // DISABLED: Account search temporarily disabled
+  // const { data: usernames, isLoading: usernamesLoading } =
+  //   useUsernamesSearchQuery(search);
+  // const usernames = undefined;
+  const usernamesLoading = false;
 
   // Search for prophet profiles (to show processing accounts)
-  const { data: prophetProfiles, isLoading: prophetProfilesLoading } =
-    useProphetProfilesSearchQuery(search);
+  // DISABLED: Account search temporarily disabled
+  // const { data: prophetProfiles, isLoading: prophetProfilesLoading } =
+  //   useProphetProfilesSearchQuery(search);
+  // const prophetProfiles = undefined;
+  const prophetProfilesLoading = false;
 
   // Process agents list
 
@@ -136,34 +138,39 @@ export function SearchInput({
   }, [statsData, excludeAgents]);
 
   // Identify processing profiles (in prophet-finder but not in predictions)
-  const processingProfiles = useMemo(() => {
-    if (!prophetProfiles || !usernames) return [];
-
-    const usernamesSet = new Set(
-      usernames.map((u) => u.username.toLowerCase()),
-    );
-    return prophetProfiles.filter(
-      (profile) => !usernamesSet.has(profile.username.toLowerCase()),
-    );
-  }, [prophetProfiles, usernames]);
+  // DISABLED: Account search temporarily disabled
+  // const processingProfiles = useMemo(() => {
+  //   if (!prophetProfiles || !usernames) return [];
+  //
+  //   const usernamesSet = new Set(
+  //     usernames.map((u) => u.username.toLowerCase()),
+  //   );
+  //   return prophetProfiles.filter(
+  //     (profile) => !usernamesSet.has(profile.username.toLowerCase()),
+  //   );
+  // }, [prophetProfiles, usernames]);
+  // const processingProfiles: never[] = [];
 
   // Check if searched username exists anywhere
-  const searchedUsernameExists = useMemo(() => {
-    const cleanSearch = search.toLowerCase().replace(/^@/, "");
-    if (cleanSearch.length < 2) return false;
-
-    const inPredictions = usernames?.some(
-      (u) => u.username.toLowerCase() === cleanSearch,
-    );
-    const inProphetFinder = prophetProfiles?.some(
-      (p) => p.username.toLowerCase() === cleanSearch,
-    );
-
-    return inPredictions || inProphetFinder;
-  }, [search, usernames, prophetProfiles]);
+  // DISABLED: Account search temporarily disabled
+  // const searchedUsernameExists = useMemo(() => {
+  //   const cleanSearch = search.toLowerCase().replace(/^@/, "");
+  //   if (cleanSearch.length < 2) return false;
+  //
+  //   const inPredictions = usernames?.some(
+  //     (u) => u.username.toLowerCase() === cleanSearch,
+  //   );
+  //   const inProphetFinder = prophetProfiles?.some(
+  //     (p) => p.username.toLowerCase() === cleanSearch,
+  //   );
+  //
+  //   return inPredictions || inProphetFinder;
+  // }, [search, usernames, prophetProfiles]);
+  // const searchedUsernameExists = false;
 
   const isLoading =
     statsLoading ||
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     (search.length >= 2 && (usernamesLoading || prophetProfilesLoading));
 
   const handleInputClick = () => {
@@ -174,32 +181,34 @@ export function SearchInput({
     setShowCommand(true);
   };
 
-  const handleAddToMemory = useCallback(async () => {
-    if (!search.trim()) return;
+  // const handleAddToMemory = useCallback(async () => {
+  //   if (!search.trim()) return;
 
-    try {
-      await addProphetMutation.mutateAsync({
-        username: search.trim(),
-      });
+  //   const cleanUsername = search.trim().replace(/^@/, "");
 
-      toast({
-        title: "Prophet added successfully!",
-        description: `@${search.trim().replace(/^@/, "")} has been queued for scraping.`,
-      });
+  //   try {
+  //     await addProphetMutation.mutateAsync({
+  //       username: cleanUsername,
+  //     });
 
-      setShowCommand(false);
-      setSearch("");
-    } catch (error) {
-      toast({
-        title: "Failed to add prophet",
-        description:
-          error instanceof Error
-            ? error.message
-            : "An error occurred while adding the prophet to memory.",
-        variant: "destructive",
-      });
-    }
-  }, [search, addProphetMutation, toast]);
+  //     toast({
+  //       title: "Prophet added successfully!",
+  //       description: `@${cleanUsername} has been queued for scraping.`,
+  //     });
+
+  //     setShowCommand(false);
+  //     setSearch("");
+  //   } catch (error) {
+  //     toast({
+  //       title: "Failed to add prophet",
+  //       description:
+  //         error instanceof Error
+  //           ? error.message
+  //           : "An error occurred while adding the prophet to memory.",
+  //       variant: "destructive",
+  //     });
+  //   }
+  // }, [search, addProphetMutation, toast]);
 
   const [selectedAgent, setSelectedAgent] = React.useState<string>(
     pathname === "/agents" ? searchParams.get("agent") || "" : "",
@@ -268,12 +277,13 @@ export function SearchInput({
             {isLoading ? (
               <div className="flex items-center justify-center gap-2">
                 <LoadingDots size="sm" />
-                <span>Loading agents / prophet accounts...</span>
+                <span>Loading agents...</span>
               </div>
             ) : (
               <div className="flex flex-col items-center gap-3">
-                <span>No agents or prophet accounts found.</span>
-                {search.length >= 2 && !searchedUsernameExists && (
+                <span>No agents found.</span>
+                {/* DISABLED: Add to memory button - Account search temporarily disabled */}
+                {/* {search.length >= 2 && !searchedUsernameExists && (
                   <Button
                     variant="outline"
                     size="sm"
@@ -290,23 +300,27 @@ export function SearchInput({
                   <span className="text-muted-foreground text-sm">
                     This account has already been added
                   </span>
-                )}
+                )} */}
               </div>
             )}
           </CommandEmpty>
 
           {!isLoading && (
             <>
-              {/* Twitter Accounts Group */}
-              {usernames && usernames.length > 0 && (
+              {/* DISABLED: Twitter Accounts Group - Account search temporarily disabled */}
+              {/* {usernames && usernames.length > 0 && (
                 <CommandGroup heading="Twitter Accounts">
                   {usernames.map((account) => (
                     <CommandItem
                       key={account.username}
                       value={account.username}
                       onSelect={() => {
+                        const cleanUsername = account.username.replace(
+                          /^@/,
+                          "",
+                        );
                         router.push(
-                          `/prophet?username=${encodeURIComponent(account.username)}`,
+                          `/prophet?username=${encodeURIComponent(cleanUsername)}`,
                           { scroll: false },
                         );
                         setShowCommand(false);
@@ -330,10 +344,10 @@ export function SearchInput({
                     </CommandItem>
                   ))}
                 </CommandGroup>
-              )}
+              )} */}
 
-              {/* Processing Accounts Group */}
-              {processingProfiles.length > 0 && (
+              {/* DISABLED: Processing Accounts Group - Account search temporarily disabled */}
+              {/* {processingProfiles.length > 0 && (
                 <CommandGroup heading="Processing Accounts">
                   {processingProfiles.map((profile) => (
                     <CommandItem
@@ -362,7 +376,7 @@ export function SearchInput({
                     </CommandItem>
                   ))}
                 </CommandGroup>
-              )}
+              )} */}
 
               {/* Agents Group */}
               <CommandGroup heading="Agents">

@@ -49,12 +49,8 @@ const TOPICS: { value: TopicFilter; label: string }[] = [
 
 const CLAIMS: { value: ClaimsFilter; label: string }[] = [
   { value: "all", label: "All" },
-  { value: "NotMatured", label: "Not Matured" },
-  { value: "MaturedTrue", label: "Matured" },
+  { value: "MaturedTrue", label: "Matured True" },
   { value: "MaturedFalse", label: "Matured False" },
-  { value: "MaturedMostlyTrue", label: "Mostly True" },
-  { value: "Invalid", label: "Invalid" },
-  { value: "MissingContext", label: "No Context" },
 ];
 
 export function ActivityFilters({

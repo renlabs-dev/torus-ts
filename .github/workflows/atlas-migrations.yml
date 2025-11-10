@@ -9,6 +9,12 @@ on:
       - opened
       - reopened
       - synchronize
+    paths:
+      - "atlas/migrations/**"
+      - atlas.hcl
+      - ".github/workflows/atlas-migrations.yml"
+      - ".github/actions/import-db-secrets/**"
+      - "packages/db/src/schema.ts"
   push:
     branches:
       - main

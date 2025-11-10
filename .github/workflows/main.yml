@@ -190,6 +190,7 @@ jobs:
     with:
       app_name: prediction-swarm
       skip_build: ${{ inputs.skip_build || false }}
+
   torus-swarm-twitter:
     needs: turbo-check
     if: |
@@ -365,6 +366,7 @@ jobs:
     secrets: inherit
     with:
       app_name: prediction-swarm
+<<<<<<< HEAD
   torus-swarm-twitter-dry-run:
     needs: [turbo-check, pr-check]
     if: |
@@ -390,6 +392,8 @@ jobs:
     secrets: inherit
     with:
       app_name: torus-swarm-verifier
+=======
+>>>>>>> 42ab2f2668b3d51a69c765c520d18e147b4c944a
 
   ###################################
   ########### PR PREVIEW ############
@@ -633,8 +637,11 @@ jobs:
         torus-prophet-finder,
         prediction-swarm-dash,
         prediction-swarm,
+<<<<<<< HEAD
         torus-swarm-twitter,
         torus-swarm-verifier,
+=======
+>>>>>>> 42ab2f2668b3d51a69c765c520d18e147b4c944a
         torus-page-dry-run,
         torus-portal-dry-run,
         torus-wallet-dry-run,
@@ -646,8 +653,11 @@ jobs:
         torus-prophet-finder-dry-run,
         prediction-swarm-dash-dry-run,
         prediction-swarm-dry-run,
+<<<<<<< HEAD
         torus-swarm-twitter-dry-run,
         torus-swarm-verifier-dry-run,
+=======
+>>>>>>> 42ab2f2668b3d51a69c765c520d18e147b4c944a
         torus-allocator-pr-activate,
         torus-cache-pr-activate,
         torus-governance-pr-activate,
@@ -694,7 +704,11 @@ jobs:
           echo "" >> $GITHUB_STEP_SUMMARY
 
           # Define application list
+<<<<<<< HEAD
           apps=(torus-page torus-portal torus-wallet torus-allocator torus-bridge torus-cache torus-governance torus-worker torus-prophet-finder prediction-swarm-dash prediction-swarm torus-swarm-twitter torus-swarm-verifier)
+=======
+          apps=(torus-page torus-portal torus-wallet torus-allocator torus-bridge torus-cache torus-governance torus-worker torus-prophet-finder prediction-swarm-dash prediction-swarm)
+>>>>>>> 42ab2f2668b3d51a69c765c520d18e147b4c944a
 
           # Production/Dev Deployments
           if [ "${{ github.ref_name }}" == "main" ] || [ "${{ github.ref_name }}" == "dev" ] || [ "${{ github.ref_name }}" == "cicd" ]; then
@@ -748,6 +762,7 @@ jobs:
                   changed="${{ needs.turbo-check.outputs.prediction-swarm }}"
                   deploy_result="${{ needs.prediction-swarm.result }}"
                   ;;
+<<<<<<< HEAD
                 "torus-swarm-twitter")
                   changed="${{ needs.turbo-check.outputs.torus-swarm-twitter }}"
                   deploy_result="${{ needs.torus-swarm-twitter.result }}"
@@ -756,6 +771,8 @@ jobs:
                   changed="${{ needs.turbo-check.outputs.torus-swarm-verifier }}"
                   deploy_result="${{ needs.torus-swarm-verifier.result }}"
                   ;;
+=======
+>>>>>>> 42ab2f2668b3d51a69c765c520d18e147b4c944a
               esac
 
               if [ "$changed" == "true" ]; then change_icon="✅"; change_text="Yes"; else change_icon="⏭️"; change_text="No"; fi
@@ -885,12 +902,15 @@ jobs:
                 "prediction-swarm")
                   dry_run_result="${{ needs.prediction-swarm-dry-run.result }}"
                   ;;
+<<<<<<< HEAD
                 "torus-swarm-twitter")
                   dry_run_result="${{ needs.torus-swarm-twitter-dry-run.result }}"
                   ;;
                 "torus-swarm-verifier")
                   dry_run_result="${{ needs.torus-swarm-verifier-dry-run.result }}"
                   ;;
+=======
+>>>>>>> 42ab2f2668b3d51a69c765c520d18e147b4c944a
               esac
 
               case "$dry_run_result" in

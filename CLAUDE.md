@@ -5,8 +5,8 @@ repository.
 
 ## Project Overview
 
-Torus Network TypeScript monorepo built with Turborepo and pnpm. Contains web
-applications, services, and shared packages for the Torus Network ecosystem.
+Torus TypeScript monorepo built with Turborepo and pnpm. Contains web
+applications, services, and shared packages for the Torus ecosystem.
 
 ### Architecture Components
 
@@ -31,7 +31,7 @@ applications, services, and shared packages for the Torus Network ecosystem.
   - ESLint, Prettier, TypeScript, Tailwind
 
 The SDK (`@torus-network/sdk`) is the core library for interacting with the
-Torus Network blockchain, providing Substrate/Polkadot.js abstractions.
+Torus blockchain, providing Substrate/Polkadot.js abstractions.
 
 ## Essential Commands
 
@@ -225,6 +225,24 @@ The database uses Drizzle ORM with PostgreSQL and follows these conventions:
 5. **Permission Updates**: When updating permission schema, ensure agent-fetcher transformation logic is updated
 
 ## Code Quality & Patterns
+
+### Never Use eslint-disable
+
+**Rule**: Never use `// eslint-disable` or `// eslint-disable-next-line` to suppress linting errors.
+
+**Reason**: These directives hide problems instead of solving them. Always fix the root cause by refactoring the code to follow best practices. If a rule genuinely needs to be changed project-wide, update the ESLint configuration file instead.
+
+### Avoid "Torus Network" Terminology
+
+**Rule**: Do not use the term "Torus Network" in the codebase, documentation, or UI.
+
+**Reason**: According to project guidance, "Torus Network" is considered poor terminology. Use "Torus" or more specific terms like "Torus blockchain", "Torus ecosystem", or context-appropriate alternatives instead.
+
+### UI/UX Emoji Usage
+
+**Rule**: Never use emojis in UI/UX components unless explicitly requested by the engineer in the prompt.
+
+**Reason**: Emojis can clutter the interface and may not align with the project's design system. Keep UI text clean and professional by default. Only add emojis when specifically asked.
 
 ### Non-Null Assertions
 
