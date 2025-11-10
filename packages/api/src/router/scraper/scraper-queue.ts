@@ -43,7 +43,6 @@ export const scraperQueueRouter = {
       )
       .orderBy(sql`${twitterUserSuggestionsSchema.createdAt} DESC`);
 
-    // Determine status for each user
     const enrichedQueue = queue.map((item) => {
       let status: "suggested" | "scraping" | "processing" | "complete";
 

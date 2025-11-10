@@ -197,7 +197,6 @@ export const twitterUserRouter = {
       }),
     )
     .query(async ({ ctx, input }) => {
-      // First check if user is in suggestions (being scraped)
       const suggestions = await ctx.db
         .select()
         .from(twitterUserSuggestionsSchema)
@@ -208,7 +207,6 @@ export const twitterUserRouter = {
         return { status: "scraping" as const, username: input.username };
       }
 
-      // Then check if user exists in twitter_users
       const existingUsers = await ctx.db
         .select()
         .from(twitterUsersSchema)
