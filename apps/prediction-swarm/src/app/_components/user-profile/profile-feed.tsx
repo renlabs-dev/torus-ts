@@ -538,7 +538,7 @@ export function ProfileFeed({
                                   className="text-muted-foreground hover:text-foreground flex items-center gap-2 text-xs transition-colors"
                                 >
                                   <ExternalLink className="h-3 w-3" />
-                                  {url.includes("pbs.twimg.com")
+                                  {new URL(url).hostname === "pbs.twimg.com"
                                     ? "View Image"
                                     : "View Media"}
                                 </a>
