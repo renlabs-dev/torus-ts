@@ -11,7 +11,8 @@ import { env } from "~/env";
 
 export function WalletDropdown({
   torusCacheUrl,
-}: Readonly<{ torusCacheUrl: string }>) {
+  variant = "default",
+}: Readonly<{ torusCacheUrl: string; variant?: "default" | "icon" }>) {
   const {
     accounts,
     api,
@@ -31,6 +32,7 @@ export function WalletDropdown({
 
   return (
     <UIWalletDropdown
+      variant={variant}
       balance={accountFreeBalance.data}
       stakeOut={stakeOut.data}
       accounts={accounts}

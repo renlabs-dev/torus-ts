@@ -18,7 +18,7 @@ import { logger } from "~/utils/logger";
 import { updateSearchParams } from "~/utils/query-params";
 import type { TransferFormValues } from "~/utils/types";
 import { Form, Formik } from "formik";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { AmountSection } from "../_sections/amount-section";
 import { ButtonSection } from "../_sections/button-section";
@@ -31,7 +31,6 @@ import { validateForm } from "./validate-form";
 export function TransferTokenForm() {
   const searchParams = useSearchParams();
   const router = useRouter();
-  const pathname = usePathname();
   const fromParam = searchParams.get("from");
   const toParam = searchParams.get("to");
 
@@ -95,14 +94,13 @@ export function TransferTokenForm() {
         });
 
         // Use replace instead of push to avoid adding to history stack
-        router.replace(pathname + "?" + query);
+        router.replace("/?" + query);
       }
     }
   }, [
     fromParam,
     toParam,
     router,
-    pathname,
     searchParams,
     initialValues.origin,
     initialValues.destination,

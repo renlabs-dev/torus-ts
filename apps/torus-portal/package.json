@@ -50,7 +50,7 @@
     "three": "catalog:",
     "tsafe": "catalog:",
     "zod": "catalog:",
-    "zustand": "^4.5.4"
+    "zustand": "^5.0.8"
   },
   "devDependencies": {
     "@torus-ts/eslint-config": "workspace:*",

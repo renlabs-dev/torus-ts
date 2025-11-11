@@ -8,6 +8,7 @@ import { Toaster } from "@torus-ts/ui/components/toaster";
 import { env, EnvScript } from "~/env";
 import { TRPCReactProvider } from "~/trpc/react";
 import { Geist_Mono as GeistMono } from "next/font/google";
+import { SearchCommand } from "../_components/search-command";
 
 const APP_NAME = "Prediction Swarm";
 
@@ -52,6 +53,7 @@ export default function RootLayout({
         >
           <TRPCReactProvider>
             {children}
+            <SearchCommand />
             <Toaster />
           </TRPCReactProvider>
         </TorusProvider>

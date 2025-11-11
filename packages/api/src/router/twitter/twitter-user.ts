@@ -197,7 +197,16 @@ export const twitterUserRouter = {
       }),
     )
     .query(async ({ ctx, input }) => {
-      // Check if user exists in twitter_users
+      const suggestions = await ctx.db
+        .select()
+        .from(twitterUserSuggestionsSchema)
+        .where(ilike(twitterUserSuggestionsSchema.username, input.username))
+        .limit(1);
+
+      if (suggestions[0]) {
+        return { status: "scraping" as const, username: input.username };
+      }
+
       const existingUsers = await ctx.db
         .select()
         .from(twitterUsersSchema)
@@ -211,17 +220,6 @@ export const twitterUserRouter = {
         } else {
           return { status: "untracked" as const, username: input.username };
         }
-      }
-
-      // Check if user is in suggestions (being scraped)
-      const suggestions = await ctx.db
-        .select()
-        .from(twitterUserSuggestionsSchema)
-        .where(ilike(twitterUserSuggestionsSchema.username, input.username))
-        .limit(1);
-
-      if (suggestions[0]) {
-        return { status: "scraping" as const, username: input.username };
       }
 
       return { status: "not_found" as const, username: input.username };

@@ -17,7 +17,7 @@ import Link from "next/link";
 
 export default async function TopPredictorsPage() {
   const topPredictors = await api.twitterUser.getTopPredictors({
-    limit: 20,
+    limit: 30,
     minPredictions: 2,
   });
 
@@ -124,7 +124,7 @@ export default async function TopPredictorsPage() {
                           <span>@{predictor.username}</span>
                           {predictor.followerCount !== null && (
                             <span className="hidden sm:block">
-                              <span>•</span>
+                              <span>• </span>
                               <span>
                                 {predictor.followerCount.toLocaleString()}{" "}
                                 followers
