@@ -12,6 +12,7 @@ import { PageHeader } from "~/app/_components/page-header";
 import { FeedLegend } from "~/app/_components/user-profile/feed-legend";
 import { ProfileFeed } from "~/app/_components/user-profile/profile-feed";
 import { api } from "~/trpc/react";
+import Image from "next/image";
 import { notFound } from "next/navigation";
 import { use } from "react";
 
@@ -60,8 +61,23 @@ export default function TickerPage({ params }: PageProps) {
       <div className="border-border pointer-events-none absolute inset-y-0 left-1/2 w-full max-w-screen-lg -translate-x-1/2 border-x" />
 
       <PageHeader
-        title={`${symbol} Predictions`}
+        title={`${marketData?.name ?? symbol} Predictions`}
         description={`View all predictions related to ${symbol}`}
+        icon={
+          marketData?.image ? (
+            <Image
+              src={marketData.image}
+              alt={marketData.name}
+              width={64}
+              height={64}
+              className="h-16 w-16 rounded-full"
+            />
+          ) : (
+            <div className="bg-primary/10 flex h-16 w-16 items-center justify-center rounded-full">
+              <span className="text-2xl font-bold">{symbol.slice(0, 1)}</span>
+            </div>
+          )
+        }
       />
 
       <div className="border-border relative my-4 border-t" />
