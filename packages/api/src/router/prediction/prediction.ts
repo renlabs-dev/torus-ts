@@ -1033,4 +1033,127 @@ export const predictionRouter = {
         ctx,
       );
     }),
+
+  /**
+   * Get predictions by ticker symbol (e.g., "BTC", "ETH").
+   *
+   * Searches the context.tickers JSONB array field for predictions containing
+   * the specified ticker symbol (case-insensitive).
+   */
+  getByTickerSymbol: publicProcedure
+    .input(
+      z.object({
+        symbol: z.string().min(1).max(20),
+        limit: z.number().int().positive().max(100).default(50),
+        offset: z.number().int().nonnegative().default(0),
+      }),
+    )
+    .query(async ({ ctx, input }) => {
+      const { symbol, limit, offset } = input;
+      const symbolLower = symbol.toLowerCase();
+
+      const rawPredictions = await ctx.db
+        .select({
+          // Prediction data
+          predictionId: parsedPredictionSchema.predictionId,
+
+          // Parsed prediction data
+          parsedId: parsedPredictionSchema.id,
+          goal: parsedPredictionSchema.goal,
+          timeframe: parsedPredictionSchema.timeframe,
+          llmConfidence: parsedPredictionSchema.llmConfidence,
+          vagueness: parsedPredictionSchema.vagueness,
+          context: parsedPredictionSchema.context,
+          predictionQuality: parsedPredictionSchema.predictionQuality,
+          briefRationale: parsedPredictionSchema.briefRationale,
+          topicId: parsedPredictionSchema.topicId,
+
+          // Tweet data
+          tweetId: scrapedTweetSchema.id,
+          tweetText: scrapedTweetSchema.text,
+          tweetDate: scrapedTweetSchema.date,
+          conversationId: scrapedTweetSchema.conversationId,
+          parentTweetId: scrapedTweetSchema.parentTweetId,
+
+          // User data
+          userId: twitterUsersSchema.id,
+          username: twitterUsersSchema.username,
+          screenName: twitterUsersSchema.screenName,
+          avatarUrl: twitterUsersSchema.avatarUrl,
+          isVerified: twitterUsersSchema.isVerified,
+
+          // Verdict data (optional)
+          verdictId: verdictSchema.id,
+          verdict: verdictSchema.verdict,
+          verdictContext: verdictSchema.context,
+          verdictCreatedAt: verdictSchema.createdAt,
+
+          // Feedback data (for FUTURE_TIMEFRAME)
+          feedbackFailureCause: parsedPredictionFeedbackSchema.failureCause,
+          feedbackReason: parsedPredictionFeedbackSchema.reason,
+        })
+        .from(predictionSchema)
+        .innerJoin(
+          parsedPredictionSchema,
+          and(
+            eq(parsedPredictionSchema.predictionId, predictionSchema.id),
+            notExists(
+              ctx.db
+                .select({
+                  id: parsedPredictionFeedbackSchema.parsedPredictionId,
+                })
+                .from(parsedPredictionFeedbackSchema)
+                .where(
+                  and(
+                    eq(
+                      parsedPredictionFeedbackSchema.parsedPredictionId,
+                      parsedPredictionSchema.id,
+                    ),
+                    or(
+                      sql`${parsedPredictionFeedbackSchema.failureCause} != 'FUTURE_TIMEFRAME'`,
+                      isNull(parsedPredictionFeedbackSchema.failureCause),
+                    ),
+                  ),
+                ),
+            ),
+          ),
+        )
+        .innerJoin(
+          scrapedTweetSchema,
+          eq(
+            scrapedTweetSchema.predictionId,
+            parsedPredictionSchema.predictionId,
+          ),
+        )
+        .innerJoin(
+          twitterUsersSchema,
+          eq(twitterUsersSchema.id, scrapedTweetSchema.authorId),
+        )
+        .leftJoin(
+          verdictSchema,
+          eq(verdictSchema.parsedPredictionId, parsedPredictionSchema.id),
+        )
+        .leftJoin(
+          parsedPredictionFeedbackSchema,
+          eq(
+            parsedPredictionFeedbackSchema.parsedPredictionId,
+            parsedPredictionSchema.id,
+          ),
+        )
+        .where(
+          and(
+            sql`${parsedPredictionSchema.context}->>'schema_type' = 'crypto'`,
+            sql`LOWER(${parsedPredictionSchema.context}->>'tickers') LIKE ${'%"' + symbolLower + '"%'}`,
+            eq(twitterUsersSchema.tracked, true),
+          ),
+        )
+        .orderBy(desc(parsedPredictionSchema.predictionQuality))
+        .limit(limit)
+        .offset(offset);
+
+      return await groupPredictionsByTweet(
+        rawPredictions as RawPrediction[],
+        ctx,
+      );
+    }),
 } satisfies TRPCRouterRecord;
