@@ -1,3 +1,5 @@
+"use client";
+
 import { Card, CardContent, CardHeader } from "@torus-ts/ui/components/card";
 import {
   Tabs,
@@ -5,11 +7,13 @@ import {
   TabsList,
   TabsTrigger,
 } from "@torus-ts/ui/components/tabs";
+import { TOP_100_TICKERS } from "@torus-ts/ui/lib/tickers";
 import { PageHeader } from "~/app/_components/page-header";
 import { FeedLegend } from "~/app/_components/user-profile/feed-legend";
 import { ProfileFeed } from "~/app/_components/user-profile/profile-feed";
-import { api } from "~/trpc/server";
+import { api } from "~/trpc/react";
 import { notFound } from "next/navigation";
+import { use } from "react";
 
 interface PageProps {
   params: Promise<{
@@ -17,60 +21,52 @@ interface PageProps {
   }>;
 }
 
-export default async function TickerPage({ params }: PageProps) {
-  const { slug } = await params;
+export default function TickerPage({ params }: PageProps) {
+  const { slug } = use(params);
+  const symbol = slug.toUpperCase();
 
-  // Get all tickers and find the one matching the slug
-  const tickers = await api.topic.getTickers();
-  const ticker = tickers.find(
-    (t) => t.name.toLowerCase() === slug.toLowerCase(),
-  );
-
-  if (!ticker) {
+  // Validate ticker exists in our list
+  if (!TOP_100_TICKERS.includes(symbol as (typeof TOP_100_TICKERS)[number])) {
     notFound();
   }
 
-  const predictions = await api.prediction.getByTopic({
-    topicId: ticker.id,
-    limit: 50,
-  });
+  // Fetch predictions for this ticker symbol
+  const { data: predictions, isLoading } =
+    api.prediction.getByTickerSymbol.useQuery({
+      symbol,
+      limit: 50,
+    });
 
   // Filter grouped tweets by verdict status of the FIRST (highest quality) prediction
-  const ongoingPredictions = predictions.filter(
-    (tweet) => tweet.predictions[0]?.verdictId === null,
-  );
+  const ongoingPredictions =
+    predictions?.filter((tweet) => tweet.predictions[0]?.verdictId === null) ??
+    [];
 
-  const truePredictions = predictions.filter(
-    (tweet) => tweet.predictions[0]?.verdict === true,
-  );
+  const truePredictions =
+    predictions?.filter((tweet) => tweet.predictions[0]?.verdict === true) ??
+    [];
 
-  const falsePredictions = predictions.filter(
-    (tweet) => tweet.predictions[0]?.verdict === false,
-  );
+  const falsePredictions =
+    predictions?.filter((tweet) => tweet.predictions[0]?.verdict === false) ??
+    [];
 
   return (
-    <div className="relative py-10">
-      {/* Vertical borders spanning full height */}
+    <div className="relative py-4">
       <div className="border-border pointer-events-none absolute inset-y-0 left-1/2 w-full max-w-screen-lg -translate-x-1/2 border-x" />
 
-      {/* Header section */}
       <PageHeader
-        title={`${ticker.name.toUpperCase()} Predictions`}
-        description={`View all predictions related to ${ticker.name.toUpperCase()}`}
+        title={`${symbol} Predictions`}
+        description={`View all predictions related to ${symbol}`}
       />
 
-      {/* Full-width horizontal border */}
-      <div className="border-border relative my-6 border-t" />
+      <div className="border-border relative my-4 border-t" />
 
-      {/* Legend */}
       <div className="relative mx-auto max-w-screen-lg px-4">
         <FeedLegend />
       </div>
 
-      {/* Full-width horizontal border */}
-      <div className="border-border relative my-6 border-t" />
+      <div className="border-border relative my-4 border-t" />
 
-      {/* Content section */}
       <div className="relative mx-auto max-w-screen-lg px-4">
         <Card className="bg-background/80 backdrop-blur-lg">
           <Tabs defaultValue="ongoing">
@@ -88,32 +84,58 @@ export default async function TickerPage({ params }: PageProps) {
               </TabsList>
             </CardHeader>
 
-            {/* Ongoing Predictions */}
             <TabsContent value="ongoing">
               <CardContent>
-                <ProfileFeed predictions={ongoingPredictions} variant="feed" />
+                {isLoading ? (
+                  <div className="text-muted-foreground py-12 text-center">
+                    Loading predictions...
+                  </div>
+                ) : (
+                  <ProfileFeed
+                    predictions={ongoingPredictions}
+                    variant="feed"
+                    isLoading={isLoading}
+                  />
+                )}
               </CardContent>
             </TabsContent>
 
-            {/* True Predictions */}
             <TabsContent value="true">
               <CardContent>
-                <ProfileFeed predictions={truePredictions} variant="feed" />
+                {isLoading ? (
+                  <div className="text-muted-foreground py-12 text-center">
+                    Loading predictions...
+                  </div>
+                ) : (
+                  <ProfileFeed
+                    predictions={truePredictions}
+                    variant="feed"
+                    isLoading={isLoading}
+                  />
+                )}
               </CardContent>
             </TabsContent>
 
-            {/* False Predictions */}
             <TabsContent value="false">
               <CardContent>
-                <ProfileFeed predictions={falsePredictions} variant="feed" />
+                {isLoading ? (
+                  <div className="text-muted-foreground py-12 text-center">
+                    Loading predictions...
+                  </div>
+                ) : (
+                  <ProfileFeed
+                    predictions={falsePredictions}
+                    variant="feed"
+                    isLoading={isLoading}
+                  />
+                )}
               </CardContent>
             </TabsContent>
           </Tabs>
         </Card>
       </div>
 
-      {/* Bottom border */}
-      <div className="border-border relative mt-10 border-t" />
+      <div className="border-border relative mt-4 border-t" />
     </div>
   );
 }
