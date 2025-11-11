@@ -13,7 +13,7 @@ export function NavigationItems() {
     <div className="flex items-center gap-2">
       <button
         onClick={openSearch}
-        className="bg-background/80 border-border hover:bg-background/40 flex h-8 w-8 items-center justify-center border text-white/80 transition duration-200"
+        className="bg-background/80 border-border hover:bg-background/40 animate-fade-down animate-delay-500 flex h-8 w-8 items-center justify-center border text-white/80 transition"
       >
         <Search className="!h-4 !w-4" />
       </button>

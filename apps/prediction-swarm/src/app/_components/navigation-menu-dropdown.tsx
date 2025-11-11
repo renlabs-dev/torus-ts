@@ -18,7 +18,7 @@ export function NavigationMenuDropdown() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <button className="bg-background/80 border-border hover:bg-background/40 flex h-8 w-8 items-center justify-center border text-white/80 transition duration-200">
+        <button className="bg-background/80 border-border hover:bg-background/40 animate-fade-down animate-delay-200 flex h-8 w-8 items-center justify-center border text-white/80 transition">
           <Menu className="!h-4 !w-4" />
         </button>
       </DropdownMenuTrigger>
