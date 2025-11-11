@@ -6,7 +6,7 @@ import type { CachedCoinGeckoData, CoinGeckoMarketData } from "./types";
  */
 class CoinGeckoCache {
   private cache = new Map<string, CachedCoinGeckoData>();
-  private readonly DEFAULT_TTL_MS = 5 * 60 * 1000; // 5 minutes
+  private readonly DEFAULT_TTL_MS = 30 * 60 * 1000; // 30 minutes
 
   get(key: string): CoinGeckoMarketData | null {
     const cached = this.cache.get(key);
