@@ -80,8 +80,6 @@ export const appRouter = createTRPCRouter({
 
   // Twitter
   twitterUser: twitterUserRouter,
-  // Swarm Filter (internal service endpoints)
-  swarmFilter: swarmFilterRouter,
 });
 
 export type AppRouter = typeof appRouter;

@@ -21,6 +21,7 @@ import { assert } from "tsafe";
 import { z, ZodError } from "zod";
 import type { SessionData } from "./auth";
 import { decodeSessionToken } from "./auth";
+import { getPermissionCache } from "./services/permission-cache";
 
 let globalDb: ReturnType<typeof createDb> | null = null;
 let globalWsApi: ApiPromise | null = null;
@@ -35,6 +36,15 @@ const getEnv = validateEnvOrExit({
     .min(1, "PREDICTION_APP_ADDRESS is required for credit purchases")
     .transform((val) => checkSS58(val)),
   TWITTERAPI_IO_KEY: z.string().min(1, "TWITTERAPI_IO_KEY is required"),
+  PERMISSION_GRANTOR_ADDRESS: z
+    .string()
+    .min(1, "PERMISSION_GRANTOR_ADDRESS is required for permission checks")
+    .transform((val) => checkSS58(val)),
+  PERMISSION_CACHE_REFRESH_INTERVAL_MS: z
+    .string()
+    .optional()
+    .default("300000")
+    .transform((val) => Number.parseInt(val, 10)),
 });
 
 // TODO: better error and connection handling
@@ -83,6 +93,7 @@ export interface TRPCContext {
   allocatorAddress: SS58Address;
   predictionAppAddress: SS58Address;
   twitterClient: KaitoTwitterAPI;
+  permissionGrantorAddress: SS58Address;
   wsAPI: Promise<ApiPromise>;
   swarmMnemonic?: string;
   swarmApiUrl?: string;
@@ -99,6 +110,7 @@ export const createTRPCContext = (opts: {
   authOrigin: string;
   allocatorAddress: SS58Address;
   predictionAppAddress: SS58Address;
+  permissionGrantorAddress: SS58Address;
   swarmMnemonic?: string;
   swarmApiUrl?: string;
 }) => {
@@ -156,6 +168,7 @@ export const createTRPCContext = (opts: {
     allocatorAddress: opts.allocatorAddress,
     predictionAppAddress: opts.predictionAppAddress,
     twitterClient: getorCreateTwitterClient(),
+    permissionGrantorAddress: opts.permissionGrantorAddress,
     wsAPI,
     swarmMnemonic: opts.swarmMnemonic,
     swarmApiUrl: opts.swarmApiUrl,
@@ -191,6 +204,14 @@ export const createCallerFactory = t.createCallerFactory;
  * These are the pieces you use to build your tRPC API. You should import these
  * a lot in the /src/server/api/routers folder
  */
+
+export { t };
+
+/**
+ * Middleware builder for creating custom tRPC middleware
+ * @see https://trpc.io/docs/server/middlewares
+ */
+export const middleware = t.middleware;
 
 /**
  * This is how you create new routers and sub routers in your tRPC API

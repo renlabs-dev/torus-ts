@@ -11,7 +11,12 @@ import {
 import type { TRPCRouterRecord } from "@trpc/server";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
+import { requireNamespacePermission } from "../../middleware/namespace-permission";
 import { authenticatedProcedure } from "../../trpc";
+
+const filterPermissionProcedure = requireNamespacePermission([
+  "prediction.filter",
+]);
 
 const TWITTER_USER_INSERT_SCHEMA = createInsertSchema(twitterUsersSchema).omit({
   createdAt: true,
@@ -160,7 +165,7 @@ export const prophetRouter = {
    * Each response contains the main tweet and its context tweets.
    * Requires authentication - caller's SS58 address is available in ctx.sessionData.userKey
    */
-  getTweetsNext: authenticatedProcedure
+  getTweetsNext: filterPermissionProcedure
     .input(
       z.object({
         from: cursorSchema,
@@ -347,7 +352,7 @@ export const prophetRouter = {
    * Automatically sets filterAgentId from authenticated user.
    * Called by the swarm-filter service after LLM extraction.
    */
-  storePredictions: authenticatedProcedure
+  storePredictions: filterPermissionProcedure
     .input(
       z.array(
         z.object({

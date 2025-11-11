@@ -38,6 +38,7 @@ const handler = (req: Request) => {
         allocatorAddress: env(
           "NEXT_PUBLIC_TORUS_ALLOCATOR_ADDRESS",
         ) as SS58Address,
+        permissionGrantorAddress: env("PERMISSION_GRANTOR_ADDRESS"),
         swarmMnemonic,
         swarmApiUrl,
         predictionAppAddress: env("PREDICTION_APP_ADDRESS"),

@@ -33,6 +33,7 @@ const handler = (req: Request) => {
         authOrigin: env("NEXT_PUBLIC_AUTH_ORIGIN"),
         allocatorAddress: env("NEXT_PUBLIC_TORUS_ALLOCATOR_ADDRESS"),
         predictionAppAddress: env("PREDICTION_APP_ADDRESS"),
+        permissionGrantorAddress: env("PERMISSION_GRANTOR_ADDRESS"),
       }),
     onError:
       env("NEXT_PUBLIC_NODE_ENV") === "development"

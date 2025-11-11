@@ -45,6 +45,7 @@ export const envSchema = {
     .string()
     .default("5DoVVgN7R6vHw4mvPX8s4EkkR8fgN1UJ5TDfKzab8eW9z89b"),
   PREDICTION_APP_ADDRESS: SS58_SCHEMA,
+  PERMISSION_GRANTOR_ADDRESS: SS58_SCHEMA,
 };
 
 export const { EnvScript, env } = buildZodEnvScript(envSchema, {
