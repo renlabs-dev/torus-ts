@@ -1,9 +1,8 @@
 "use client";
 
-import { env } from "~/env";
 import { ArrowLeft } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { WalletDropdown } from "./wallet-dropdown";
+import { NavigationItems } from "./navigation-items";
 
 export function PageNavigation() {
   const router = useRouter();
@@ -22,10 +21,7 @@ export function PageNavigation() {
           <ArrowLeft className="h-4 w-4 transition-transform duration-200 group-hover:-translate-x-1" />
           Back
         </button>
-        <WalletDropdown
-          variant="icon"
-          torusCacheUrl={env("NEXT_PUBLIC_TORUS_CACHE_URL")}
-        />
+        <NavigationItems />
       </div>
       {/* Bottom border */}
       <div className="border-border relative border-t" />
