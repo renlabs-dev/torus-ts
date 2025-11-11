@@ -3,6 +3,7 @@ import Dither from "../_components/dither";
 import { FAQ } from "../_components/main-page/faq";
 import { ListItem } from "../_components/main-page/list-item";
 import { SearchProphet } from "../_components/main-page/search-prophet";
+import { NavigationItems } from "../_components/navigation-items";
 
 export const jacquard = Jacquard({
   weight: "400",
@@ -11,6 +12,9 @@ export const jacquard = Jacquard({
 export default function Page() {
   return (
     <div>
+      <div className="2 absolute right-2 top-2 z-50 opacity-70">
+        <NavigationItems />
+      </div>
       {/* Mobile Layout */}
       <div className="relative min-h-[90vh] md:hidden">
         <div className="animate-fade absolute inset-0">
