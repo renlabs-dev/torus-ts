@@ -673,14 +673,14 @@ export class PredictionVerifier {
           ],
           temperature: 0.1,
           plugins: [{ id: "web" }],
-          response_format: {
-            type: "json_schema",
-            json_schema: {
-              name: "verdict_generation",
-              strict: true,
-              schema: VERDICT_SCHEMA,
-            },
-          },
+          // response_format: {
+          //   type: "json_schema",
+          //   json_schema: {
+          //     name: "verdict_generation",
+          //     strict: true,
+          //     schema: VERDICT_SCHEMA,
+          //   },
+          // },
         }),
       },
     );
