@@ -1,9 +1,13 @@
+"use client";
+
 import { env } from "~/env";
 import { ArrowLeft } from "lucide-react";
-import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { WalletDropdown } from "./wallet-dropdown";
 
 export function PageNavigation() {
+  const router = useRouter();
+
   return (
     <div className="relative">
       {/* Vertical borders spanning full height */}
@@ -11,13 +15,13 @@ export function PageNavigation() {
       <div
         className={`relative mx-auto flex max-w-screen-lg items-center justify-between px-4 py-2 text-lg`}
       >
-        <Link
-          href="/"
+        <button
+          onClick={() => router.back()}
           className="text-link text-muted-foreground group relative flex items-center justify-start gap-2 font-medium transition-colors duration-200 hover:underline"
         >
           <ArrowLeft className="h-4 w-4 transition-transform duration-200 group-hover:-translate-x-1" />
           Back
-        </Link>
+        </button>
         <WalletDropdown
           variant="icon"
           torusCacheUrl={env("NEXT_PUBLIC_TORUS_CACHE_URL")}
