@@ -34,20 +34,6 @@ export const evmChainValues = {
 } satisfies Record<string, Record<ChainEnv, ChainValues>>;
 
 /**
- * Contract addresses for different chains and environments.
- */
-export const contractAddresses = {
-  base: {
-    mainnet: {
-      torusErc20: "0x78EC15C5FD8EfC5e924e9EEBb9e549e29C785867" as const,
-    },
-    testnet: {
-      torusErc20: "0x78EC15C5FD8EfC5e924e9EEBb9e549e29C785867" as const,
-    },
-  },
-} satisfies Record<string, Record<ChainEnv, { torusErc20: string }>>;
-
-/**
  * Returns a function that retrieves chain values for a given environment.
  *
  * @param env - The environment for which to retrieve chain values.

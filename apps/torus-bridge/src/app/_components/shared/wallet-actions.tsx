@@ -48,7 +48,7 @@ function WalletOptions() {
       }
 
       const newQuery = updateSearchParams(searchParams, updates);
-      router.push("/standard?" + newQuery);
+      router.push("/?" + newQuery);
     },
     [searchParams, router],
   );

@@ -1,6 +1,5 @@
-"use client";
-
-import type { Api } from "@torus-network/sdk/chain";
+import { toNano } from "@torus-network/torus-utils/torus/token";
+import { trySync } from "@torus-network/torus-utils/try-catch";
 import {
   useIncentivesRatio,
   useRecyclingPercentage,
@@ -8,29 +7,21 @@ import {
   useTotalStake,
   useTreasuryEmissionFee,
 } from "@torus-ts/query-provider/hooks";
-import { toNano } from "@torus-network/torus-utils/torus/token";
-import { trySync } from "@torus-network/torus-utils/try-catch";
-import type { Nullish } from "@torus-network/torus-utils/typing";
+import { useTorus } from "@torus-ts/torus-provider";
 import { useMemo } from "react";
-
-// == Constants ==
 
 // TODO: refactor magic numbers
 const BLOCKS_IN_DAY = 10_800n;
 const BLOCK_EMISSION = toNano(64_000) / BLOCKS_IN_DAY;
 const HALVING_INTERVAL = toNano(144_000_000);
 
-// == Types ==
-
-export interface APRResult {
+interface APRResult {
   apr: number | null;
   isLoading: boolean;
   isError: boolean;
   totalStake: bigint | undefined;
   totalIssuance: bigint | undefined;
 }
-
-// == Internal Functions ==
 
 /**
  * Calculate the Annual Percentage Rate (APR)
@@ -109,64 +100,45 @@ function calculateYearlyRewards(
   return finalRewardsScaled;
 }
 
-// == Hooks ==
+export function useAPR(): APRResult {
+  const { api } = useTorus();
 
-/**
- * Calculate and return the Annual Percentage Rate (APR)
- */
-export function useAPR(api: Api | Nullish): APRResult {
   const totalStakeQuery = useTotalStake(api);
   const totalIssuanceQuery = useTotalIssuance(api);
   const recyclingPercentageQuery = useRecyclingPercentage(api);
   const treasuryEmissionFeeQuery = useTreasuryEmissionFee(api);
   const incentivesRatioQuery = useIncentivesRatio(api);
 
-  const isAnyLoading = useMemo(
-    () =>
-      totalStakeQuery.isPending ||
-      totalIssuanceQuery.isPending ||
-      recyclingPercentageQuery.isPending ||
-      treasuryEmissionFeeQuery.isPending ||
-      incentivesRatioQuery.isPending,
-    [
-      totalStakeQuery.isPending,
-      totalIssuanceQuery.isPending,
-      recyclingPercentageQuery.isPending,
-      treasuryEmissionFeeQuery.isPending,
-      incentivesRatioQuery.isPending,
+  const queries = useMemo(
+    () => [
+      totalStakeQuery,
+      totalIssuanceQuery,
+      recyclingPercentageQuery,
+      treasuryEmissionFeeQuery,
+      incentivesRatioQuery,
     ],
+    [
+      totalStakeQuery,
+      totalIssuanceQuery,
+      recyclingPercentageQuery,
+      treasuryEmissionFeeQuery,
+      incentivesRatioQuery,
+    ],
+  );
+
+  const isAnyLoading = useMemo(
+    () => queries.some((query) => query.isPending),
+    [queries],
   );
 
   const isAnyError = useMemo(
-    () =>
-      totalStakeQuery.isError ||
-      totalIssuanceQuery.isError ||
-      recyclingPercentageQuery.isError ||
-      treasuryEmissionFeeQuery.isError ||
-      incentivesRatioQuery.isError,
-    [
-      totalStakeQuery.isError,
-      totalIssuanceQuery.isError,
-      recyclingPercentageQuery.isError,
-      treasuryEmissionFeeQuery.isError,
-      incentivesRatioQuery.isError,
-    ],
+    () => queries.some((query) => query.isError),
+    [queries],
   );
 
   const isDataComplete = useMemo(
-    () =>
-      totalStakeQuery.data != null &&
-      totalIssuanceQuery.data != null &&
-      recyclingPercentageQuery.data != null &&
-      treasuryEmissionFeeQuery.data != null &&
-      incentivesRatioQuery.data != null,
-    [
-      totalStakeQuery.data,
-      totalIssuanceQuery.data,
-      recyclingPercentageQuery.data,
-      treasuryEmissionFeeQuery.data,
-      incentivesRatioQuery.data,
-    ],
+    () => queries.every((query) => !!query.data),
+    [queries],
   );
 
   const apr = useMemo(() => {

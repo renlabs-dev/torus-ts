@@ -20,43 +20,29 @@ import { RelativeTime } from "~/app/_components/relative-time";
 import { useAgentName } from "~/hooks/api/use-agent-name-query";
 import { usePredictionsListQuery } from "~/hooks/api/use-predictions-list-query";
 import type { Prediction, PredictionsListParams } from "~/lib/api-schemas";
-import { ExternalLink } from "lucide-react";
+import { ExternalLink, Gavel } from "lucide-react";
 import Link from "next/link";
 import { useMemo } from "react";
 
 interface PredictionsListProps {
   username: string;
   searchFilters?: Omit<PredictionsListParams, "agent_address">;
-  claimAgentFilter?: string;
+  hasVerdictFilter?: boolean;
 }
 
 // Categorize a prediction based on its claims (mutually exclusive)
 export function categorizePrediction(
   prediction: Prediction,
-  claimAgentFilter?: string,
 ): "true" | "false" | "unmatured" {
-  // Filter claims by agent if filter is provided
-  let claims = prediction.verification_claims;
-  if (claimAgentFilter) {
-    claims = claims.filter(
-      (c: { inserted_by_address: string }) =>
-        c.inserted_by_address === claimAgentFilter,
-    );
-  }
+  const claims = prediction.verification_claims;
 
-  // Only consider MaturedTrue and MaturedFalse claims
-  const maturedClaims = claims.filter(
-    (c: { outcome: string }) =>
-      c.outcome === "MaturedTrue" || c.outcome === "MaturedFalse",
-  );
-
-  // If no matured claims, it's unmatured
-  if (maturedClaims.length === 0) {
+  // If no claims, it's unmatured
+  if (claims.length === 0) {
     return "unmatured";
   }
 
   // Check if ANY claim is MaturedTrue (takes priority)
-  const hasTrueClaim = maturedClaims.some(
+  const hasTrueClaim = claims.some(
     (c: { outcome: string }) => c.outcome === "MaturedTrue",
   );
   if (hasTrueClaim) {
@@ -64,14 +50,14 @@ export function categorizePrediction(
   }
 
   // Check if ANY claim is MaturedFalse
-  const hasFalseClaim = maturedClaims.some(
+  const hasFalseClaim = claims.some(
     (c: { outcome: string }) => c.outcome === "MaturedFalse",
   );
   if (hasFalseClaim) {
     return "false";
   }
 
-  // All other cases are unmatured
+  // All other cases (NotMatured, Invalid, etc.) are unmatured
   return "unmatured";
 }
 
@@ -116,27 +102,7 @@ function getOutcomeConfig(outcome: string) {
   }
 }
 
-function PredictionCard({
-  prediction,
-  claimAgentFilter,
-}: {
-  prediction: Prediction;
-  claimAgentFilter?: string;
-}) {
-  // Filter claims by agent if filter is provided
-  const filteredClaims = claimAgentFilter
-    ? prediction.verification_claims.filter(
-        (claim: { inserted_by_address: string }) =>
-          claim.inserted_by_address === claimAgentFilter,
-      )
-    : prediction.verification_claims;
-
-  // Only show MaturedTrue and MaturedFalse claims
-  const validClaims = filteredClaims.filter(
-    (claim: { outcome: string }) =>
-      claim.outcome === "MaturedTrue" || claim.outcome === "MaturedFalse",
-  );
-
+function PredictionCard({ prediction }: { prediction: Prediction }) {
   return (
     <div className="border-border space-y-4 border-b py-6 last:border-none">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
@@ -179,22 +145,17 @@ function PredictionCard({
         </p>
 
         {/* Claims Section */}
-        {validClaims.length > 0 && (
-          <Accordion
-            type="single"
-            collapsible
-            defaultValue="claims"
-            className="w-full"
-          >
+        {prediction.verification_claims.length > 0 && (
+          <Accordion type="single" collapsible className="w-full">
             <AccordionItem value="claims" className="border-none">
               <AccordionTrigger className="bg-muted-foreground/5 hover:bg-muted-foreground/10 rounded px-3 py-2 text-sm font-medium hover:no-underline">
                 <span className="text-muted-foreground">
-                  Verification Claims ({validClaims.length})
+                  Verification Claims ({prediction.verification_claims.length})
                 </span>
               </AccordionTrigger>
               <AccordionContent className="pt-2">
                 <div className="space-y-2">
-                  {validClaims.map(
+                  {prediction.verification_claims.map(
                     (
                       claim: {
                         id: number;
@@ -212,6 +173,35 @@ function PredictionCard({
             </AccordionItem>
           </Accordion>
         )}
+
+        {/* Verdict Section */}
+        {prediction.verification_verdict &&
+        typeof prediction.verification_verdict === "object" &&
+        "reasoning" in prediction.verification_verdict &&
+        prediction.verification_verdict.reasoning ? (
+          <Accordion
+            type="single"
+            collapsible
+            defaultValue="verdict"
+            className="w-full"
+          >
+            <AccordionItem value="verdict" className="border-none">
+              <AccordionTrigger className="rounded border border-purple-600/40 bg-purple-600/5 px-3 py-2 text-sm font-medium text-purple-600 hover:bg-purple-600/10 hover:text-purple-600 hover:no-underline">
+                <div className="flex items-center gap-2">
+                  <Gavel className="h-3.5 w-3.5" />
+                  <span>Verification Verdict</span>
+                </div>
+              </AccordionTrigger>
+              <AccordionContent className="pt-2">
+                <div className="text-muted-foreground rounded border border-purple-600/40 bg-purple-600/5 p-3 text-sm leading-relaxed">
+                  {typeof prediction.verification_verdict.reasoning === "string"
+                    ? prediction.verification_verdict.reasoning
+                    : ""}
+                </div>
+              </AccordionContent>
+            </AccordionItem>
+          </Accordion>
+        ) : null}
       </div>
     </div>
   );
@@ -254,7 +244,7 @@ function ClaimDisplay({
 export function PredictionsList({
   username,
   searchFilters,
-  claimAgentFilter,
+  hasVerdictFilter = false,
 }: PredictionsListProps) {
   // Use search parameter to filter by username since there's no dedicated filter
   const { data: allPredictions, isLoading } = usePredictionsListQuery({
@@ -281,43 +271,29 @@ export function PredictionsList({
           username.toLowerCase(),
       );
 
-      // Filter out predictions that don't have MaturedTrue or MaturedFalse claims
-      // when agent filter is applied
-      if (claimAgentFilter) {
-        userPredictions = userPredictions.filter((p) => {
-          const agentClaims = p.verification_claims.filter(
-            (claim: { inserted_by_address: string }) =>
-              claim.inserted_by_address === claimAgentFilter,
-          );
-
-          // If no claims from this agent, hide the prediction
-          if (agentClaims.length === 0) {
-            return false;
-          }
-
-          // Check if there's at least one MaturedTrue or MaturedFalse claim
-          const hasMaturedClaim = agentClaims.some(
-            (claim: { outcome: string }) =>
-              claim.outcome === "MaturedTrue" ||
-              claim.outcome === "MaturedFalse",
-          );
-
-          return hasMaturedClaim;
-        });
+      // Apply verdict filter if enabled
+      if (hasVerdictFilter) {
+        userPredictions = userPredictions.filter(
+          (p) =>
+            p.verification_verdict &&
+            typeof p.verification_verdict === "object" &&
+            "reasoning" in p.verification_verdict &&
+            p.verification_verdict.reasoning,
+        );
       }
 
       return {
         truePredictions: userPredictions.filter(
-          (p) => categorizePrediction(p, claimAgentFilter) === "true",
+          (p) => categorizePrediction(p) === "true",
         ),
         falsePredictions: userPredictions.filter(
-          (p) => categorizePrediction(p, claimAgentFilter) === "false",
+          (p) => categorizePrediction(p) === "false",
         ),
         unmaturedPredictions: userPredictions.filter(
-          (p) => categorizePrediction(p, claimAgentFilter) === "unmatured",
+          (p) => categorizePrediction(p) === "unmatured",
         ),
       };
-    }, [allPredictions, username, claimAgentFilter]);
+    }, [allPredictions, username, hasVerdictFilter]);
 
   if (isLoading) {
     return (
@@ -369,11 +345,7 @@ export function PredictionsList({
                 </div>
               ) : (
                 truePredictions.map((prediction) => (
-                  <PredictionCard
-                    key={prediction.id}
-                    prediction={prediction}
-                    claimAgentFilter={claimAgentFilter}
-                  />
+                  <PredictionCard key={prediction.id} prediction={prediction} />
                 ))
               )}
             </div>
@@ -387,11 +359,7 @@ export function PredictionsList({
                 </div>
               ) : (
                 falsePredictions.map((prediction) => (
-                  <PredictionCard
-                    key={prediction.id}
-                    prediction={prediction}
-                    claimAgentFilter={claimAgentFilter}
-                  />
+                  <PredictionCard key={prediction.id} prediction={prediction} />
                 ))
               )}
             </div>
@@ -405,11 +373,7 @@ export function PredictionsList({
                 </div>
               ) : (
                 unmaturedPredictions.map((prediction) => (
-                  <PredictionCard
-                    key={prediction.id}
-                    prediction={prediction}
-                    claimAgentFilter={claimAgentFilter}
-                  />
+                  <PredictionCard key={prediction.id} prediction={prediction} />
                 ))
               )}
             </div>

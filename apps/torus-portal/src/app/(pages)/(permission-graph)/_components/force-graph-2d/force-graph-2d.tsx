@@ -341,7 +341,10 @@ export function ForceGraphCanvas2D(props: ForceGraph2DProps) {
       });
 
       nodeGraphics.on("pointermove", (e: PIXI.FederatedPointerEvent) => {
-        if (tooltipRef.current?.style.display === "block") {
+        if (
+          tooltipRef.current &&
+          tooltipRef.current.style.display === "block"
+        ) {
           const rect = app.canvas.getBoundingClientRect();
           tooltipRef.current.style.left = `${rect.left + e.globalX + 10}px`;
           tooltipRef.current.style.top = `${rect.top + e.globalY - 10}px`;

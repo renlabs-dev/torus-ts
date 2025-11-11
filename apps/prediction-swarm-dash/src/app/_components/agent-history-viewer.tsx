@@ -447,7 +447,7 @@ export function AgentHistoryViewer({
   const typeInfo = getActivityTypeInfo(activityType);
   const [searchTerm, setSearchTerm] = useState("");
   const [filters, setFilters] = useState<FilterState>({
-    topic: "all",
+    topic: "crypto",
     claims: activityType === "claims" ? "all" : undefined,
   });
 
@@ -500,22 +500,14 @@ export function AgentHistoryViewer({
       }
 
       // Claims filter (for claims)
-      if (activityType === "claims") {
+      if (
+        activityType === "claims" &&
+        filters.claims &&
+        filters.claims !== "all"
+      ) {
         const claim = item as VerificationClaim;
-
-        // Only show MaturedTrue and MaturedFalse claims
-        if (
-          claim.outcome !== "MaturedTrue" &&
-          claim.outcome !== "MaturedFalse"
-        ) {
+        if (claim.outcome !== filters.claims) {
           return false;
-        }
-
-        // Apply additional filter if not "all"
-        if (filters.claims && filters.claims !== "all") {
-          if (claim.outcome !== filters.claims) {
-            return false;
-          }
         }
       }
 

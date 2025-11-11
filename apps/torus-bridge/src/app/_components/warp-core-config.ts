@@ -8,11 +8,11 @@ import { validateZodResult, WarpCoreConfigSchema } from "@hyperlane-xyz/sdk";
 import { objFilter, objMerge } from "@hyperlane-xyz/utils";
 import { warpRouteWhitelist } from "~/consts/warp-route-whitelist";
 import { WarpRoutesTs } from "~/consts/warp-routes";
-import WarpRoutesJson from "~/consts/warp-routes.json";
+import WarpRoutesYaml from "~/consts/warp-routes.yaml";
 
 export function assembleWarpCoreConfig(): WarpCoreConfig {
-  const resultJson = WarpCoreConfigSchema.safeParse(WarpRoutesJson);
-  const configJson = validateZodResult(resultJson, "warp core json config");
+  const resultYaml = WarpCoreConfigSchema.safeParse(WarpRoutesYaml);
+  const configYaml = validateZodResult(resultYaml, "warp core yaml config");
   const resultTs = WarpCoreConfigSchema.safeParse(WarpRoutesTs);
   const configTs = validateZodResult(resultTs, "warp core typescript config");
 
@@ -26,7 +26,7 @@ export function assembleWarpCoreConfig(): WarpCoreConfig {
   const tokens = dedupeTokens([
     ...configTokens,
     ...configTs.tokens,
-    ...configJson.tokens,
+    ...configYaml.tokens,
   ]);
 
   if (!tokens.length)
@@ -38,7 +38,7 @@ export function assembleWarpCoreConfig(): WarpCoreConfig {
   const combinedOptions = [
     ...configOptions,
     configTs.options,
-    configJson.options,
+    configYaml.options,
   ];
   const options = combinedOptions.reduce<WarpCoreConfig["options"]>(
     (acc, o) => {

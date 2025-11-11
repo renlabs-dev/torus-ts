@@ -1,23 +1,9 @@
-"use client";
-
-import type { ApiPromise } from "@polkadot/api";
-import type { Api } from "@torus-network/sdk/chain";
-import type { Nullish } from "@torus-network/torus-utils/typing";
 import { CONSTANTS } from "@torus-network/sdk/constants";
-import {
-  useLastBlock,
-  useRewardInterval,
-} from "@torus-ts/query-provider/hooks";
+import { useWallet } from "~/context/wallet-provider";
 import { useEffect, useState } from "react";
 
-/**
- * Hook that calculates and tracks the progress of the current reward interval.
- * @param api - The Polkadot.js API instance for blockchain interaction
- * @returns Object containing the time remaining in the current reward interval formatted as minutes:seconds
- */
-export function useRewardIntervalProgress(api: Api | ApiPromise | Nullish) {
-  const lastBlock = useLastBlock(api);
-  const rewardInterval = useRewardInterval(api);
+export function useRewardIntervalProgress() {
+  const { lastBlock, rewardInterval } = useWallet();
   const [timeLeft, setTimeLeft] = useState<number | null>(null);
   const [time, setTime] = useState({ minutes: 0, seconds: 0 });
 

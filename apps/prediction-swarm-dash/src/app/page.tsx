@@ -1,6 +1,5 @@
 import { cn } from "@torus-ts/ui/lib/utils";
 import { MoveDown } from "lucide-react";
-import { redirect } from "next/navigation";
 import { Suspense } from "react";
 import { Footer } from "./_components/footer";
 import { FractalGrid } from "./_components/fractal-grid";
@@ -10,8 +9,6 @@ import { SphereAnimation } from "./_components/sphere-animation";
 import { StatsGrid } from "./_components/stats-grid";
 
 export default function Home() {
-  redirect("/dashboard");
-
   return (
     <main className={cn("animate-fade")}>
       <Header className="from-background !absolute bg-gradient-to-b to-transparent" />
