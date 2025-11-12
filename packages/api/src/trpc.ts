@@ -20,9 +20,11 @@ import { assert } from "tsafe";
 import { z, ZodError } from "zod";
 import type { SessionData } from "./auth";
 import { decodeSessionToken } from "./auth";
+import { KaitoTwitterAPI } from "@torus-ts/twitter-client";
 
 let globalDb: ReturnType<typeof createDb> | null = null;
 let globalWsApi: ApiPromise | null = null;
+let globalTwitterClient: KaitoTwitterAPI | null = null;
 
 const getEnv = validateEnvOrExit({
   NEXT_PUBLIC_TORUS_RPC_URL: z
@@ -32,6 +34,7 @@ const getEnv = validateEnvOrExit({
     .string()
     .min(1, "PREDICTION_APP_ADDRESS is required for credit purchases")
     .transform((val) => checkSS58(val)),
+  TWITTERAPI_IO_KEY: z.string().min(1, "TWITTERAPI_IO_KEY is required"),
 });
 
 // TODO: better error and connection handling
@@ -46,6 +49,17 @@ async function cacheCreateWsApi() {
     globalWsApi ??
     (await connectToChainRpc(getEnv(process.env).NEXT_PUBLIC_TORUS_RPC_URL));
   return globalWsApi;
+}
+
+// Lazy init Twitter client
+function getorCreateTwitterClient() {
+  if (globalTwitterClient === null) {
+    const env = getEnv(process.env);
+    globalTwitterClient = new KaitoTwitterAPI({
+      apiKey: env.TWITTERAPI_IO_KEY,
+    });
+  }
+  return globalTwitterClient;
 }
 
 /**
@@ -68,6 +82,7 @@ export interface TRPCContext {
   authOrigin: string;
   allocatorAddress: SS58Address;
   predictionAppAddress: SS58Address;
+  twitterClient: KaitoTwitterAPI;
   wsAPI: Promise<ApiPromise>;
   swarmMnemonic?: string;
   swarmApiUrl?: string;
@@ -140,6 +155,7 @@ export const createTRPCContext = (opts: {
     authOrigin: opts.authOrigin,
     allocatorAddress: opts.allocatorAddress,
     predictionAppAddress: opts.predictionAppAddress,
+    twitterClient: getorCreateTwitterClient(),
     wsAPI,
     swarmMnemonic: opts.swarmMnemonic,
     swarmApiUrl: opts.swarmApiUrl,

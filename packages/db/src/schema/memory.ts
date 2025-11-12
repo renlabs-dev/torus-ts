@@ -415,7 +415,7 @@ export const creditPurchasesSchema = createTable(
     id: uuidv7("id").primaryKey(),
     userKey: ss58Address("user_key").notNull(),
     txHash: varchar("tx_hash", { length: 66 }).notNull().unique(),
-    torusAmount: bigint("torus_amount"),
+    torusAmount: decimal("torus_amount", { precision: 30, scale: 0 }),
     creditsGranted: decimal("credits_granted", { precision: 20, scale: 2 }),
     blockNumber: bigint("block_number"),
     ...timeFields(),

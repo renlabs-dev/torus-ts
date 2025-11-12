@@ -5,8 +5,8 @@
  * Run: pnpm tsx apps/swarm-filter/scripts/test-ticker-query.ts
  */
 
-import { createTRPCClient, httpBatchLink } from "@trpc/client";
 import type { AppRouter } from "@torus-ts/api/root";
+import { createTRPCClient, httpBatchLink } from "@trpc/client";
 import superjson from "superjson";
 
 async function main() {
@@ -32,8 +32,12 @@ async function main() {
     if (btc.length > 0) {
       const first = btc[0];
       if (first) {
-        console.log(`  First tweet has ${first.predictions.length} prediction(s)`);
-        console.log(`  First prediction quality: ${first.predictions[0]?.predictionQuality}`);
+        console.log(
+          `  First tweet has ${first.predictions.length} prediction(s)`,
+        );
+        console.log(
+          `  First prediction quality: ${first.predictions[0]?.predictionQuality}`,
+        );
       }
     }
 
@@ -56,7 +60,9 @@ async function main() {
     const btcLower = await client.prediction.getByTickerSymbol.query({
       symbol: "btc",
     });
-    console.log(`✓ Found ${btcLower.length} btc predictions (should match BTC count)`);
+    console.log(
+      `✓ Found ${btcLower.length} btc predictions (should match BTC count)`,
+    );
 
     console.log("\n✅ All tests passed!");
   } catch (error) {

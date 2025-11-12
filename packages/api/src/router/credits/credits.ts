@@ -1,7 +1,9 @@
 import { eq, sql } from "@torus-ts/db";
 import { creditPurchasesSchema, userCreditsSchema } from "@torus-ts/db/schema";
 import type { TRPCRouterRecord } from "@trpc/server";
+import { TRPCError } from "@trpc/server";
 import { z } from "zod";
+import { tryAsync } from "@torus-network/torus-utils/try-catch";
 import { authenticatedProcedure } from "../../trpc";
 import { torusToCredits } from "../../utils/scraping-cost";
 import { verifyTorusTransfer } from "../../utils/verify-transaction";
@@ -43,14 +45,29 @@ export const creditsRouter = {
     .mutation(async ({ ctx, input }) => {
       return await ctx.db.transaction(async (tx) => {
         // 1. Insert payment record with nulls (unique constraint prevents double-spend)
-        // Null creditsGranted indicates payment not yet verified/processed
-        await tx.insert(creditPurchasesSchema).values({
-          userKey: ctx.sessionData.userKey,
-          txHash: input.txHash,
-          torusAmount: null,
-          creditsGranted: null,
-          blockNumber: null,
-        });
+        // Catch duplicate key error and return friendly message
+        const [insertErr] = await tryAsync(
+          tx.insert(creditPurchasesSchema).values({
+            userKey: ctx.sessionData.userKey,
+            txHash: input.txHash,
+            torusAmount: null,
+            creditsGranted: null,
+            blockNumber: null,
+          }),
+        );
+
+        if (insertErr !== undefined) {
+          // Check if it's a duplicate key error (code 23505)
+          if ("code" in insertErr && insertErr.code === "23505") {
+            throw new TRPCError({
+              code: "BAD_REQUEST",
+              message:
+                "Transaction already used. Each transaction can only be used once to purchase credits.",
+            });
+          }
+          // Re-throw other errors
+          throw insertErr;
+        }
 
         // 2. Verify transaction on-chain
         const verified = await verifyTorusTransfer(
@@ -68,7 +85,7 @@ export const creditsRouter = {
         await tx
           .update(creditPurchasesSchema)
           .set({
-            torusAmount: verified.amount,
+            torusAmount: verified.amount.toString(),
             creditsGranted: credits.toString(),
             blockNumber: BigInt(verified.blockNumber),
           })

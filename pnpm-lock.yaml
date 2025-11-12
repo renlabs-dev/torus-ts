@@ -1485,6 +1485,9 @@ importers:
       '@torus-ts/db':
         specifier: workspace:*
         version: link:../db
+      '@torus-ts/twitter-client':
+        specifier: workspace:*
+        version: link:../twitter-client
       '@trpc/client':
         specifier: 'catalog:'
         version: 11.5.0(@trpc/server@11.5.0(typescript@5.9.2))(typescript@5.9.2)
@@ -1826,6 +1829,25 @@ importers:
       zod:
         specifier: 'catalog:'
         version: 3.25.76
+
+  packages/twitter-client:
+    dependencies:
+      '@torus-network/torus-utils':
+        specifier: workspace:*
+        version: link:../torus-utils
+      zod:
+        specifier: 'catalog:'
+        version: 3.25.76
+    devDependencies:
+      '@torus-ts/eslint-config':
+        specifier: workspace:*
+        version: link:../../tooling/eslint
+      '@torus-ts/tsconfig':
+        specifier: workspace:*
+        version: link:../../tooling/typescript
+      typescript:
+        specifier: 'catalog:'
+        version: 5.9.3
 
   packages/ui:
     dependencies:

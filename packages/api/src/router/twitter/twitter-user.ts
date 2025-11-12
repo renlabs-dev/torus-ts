@@ -10,8 +10,8 @@ import {
   verdictSchema,
 } from "@torus-ts/db/schema";
 import type { TRPCRouterRecord } from "@trpc/server";
-import { z } from "zod";
 import { TRPCError } from "@trpc/server";
+import { z } from "zod";
 import { authenticatedProcedure, publicProcedure } from "../../trpc";
 import {
   BASELINE_METADATA_COST,
@@ -210,8 +210,10 @@ export const twitterUserRouter = {
   /**
    * Purchase user metadata by fetching from Twitter API.
    *
-   * Deducts baseline metadata cost and inserts user into twitter_users table.
-   * Returns the user metadata and calculated scraping cost.
+   * Costs BASELINE_METADATA_COST credits.
+   * Optional budget parameter - fails if cost would exceed budget.
+   * Idempotent - returns existing data if user already in DB (free).
+   * Single transaction - if Twitter API fails, credits are not deducted.
    */
   purchaseMetadata: authenticatedProcedure
     .input(
@@ -221,18 +223,133 @@ export const twitterUserRouter = {
           .min(1)
           .max(15)
           .transform((val) => (val.startsWith("@") ? val.slice(1) : val)),
+        budget: z.number().positive().optional(),
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      // TODO: Implement once we have:
-      // 1. Twitter API client integration
-      // 2. User credits table exists (need migration)
-      throw new TRPCError({
-        code: "NOT_IMPLEMENTED",
-        message: "Metadata purchase not yet implemented - requires Twitter API integration",
+      const userKey = ctx.sessionData.userKey;
+
+      return await ctx.db.transaction(async (tx) => {
+        // 1. Idempotent check - return existing if already purchased
+        const existing = await tx.query.twitterUsersSchema.findFirst({
+          where: eq(twitterUsersSchema.username, input.username),
+        });
+
+        if (existing) {
+          return {
+            success: true,
+            alreadyExists: true,
+            creditsSpent: 0,
+            user: {
+              userId: existing.id.toString(),
+              username: existing.username,
+              screenName: existing.screenName,
+              tweetCount: existing.tweetCount,
+              followerCount: existing.followerCount,
+              avatarUrl: existing.avatarUrl,
+              isVerified: existing.isVerified,
+              unavailable: existing.unavailable,
+            },
+          };
+        }
+
+        // 2. Budget check BEFORE locking/charging
+        if (input.budget && BASELINE_METADATA_COST > input.budget) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: `Metadata cost (${BASELINE_METADATA_COST} credits) exceeds budget (${input.budget} credits)`,
+          });
+        }
+
+        // 3. Lock user credits row to prevent race conditions
+        const [locked] = await tx.execute<{ balance: string }>(sql`
+          SELECT balance
+          FROM user_credits
+          WHERE user_key = ${userKey}
+          FOR UPDATE
+        `);
+
+        if (!locked || Number(locked.balance) < BASELINE_METADATA_COST) {
+          throw new TRPCError({
+            code: "FORBIDDEN",
+            message: `Insufficient credits. Required: ${BASELINE_METADATA_COST}, Available: ${locked?.balance ?? 0}`,
+          });
+        }
+
+        // 3. Deduct metadata cost
+        await tx
+          .update(userCreditsSchema)
+          .set({
+            balance: sql`${userCreditsSchema.balance} - ${BASELINE_METADATA_COST}`,
+            totalSpent: sql`${userCreditsSchema.totalSpent} + ${BASELINE_METADATA_COST}`,
+            updatedAt: new Date(),
+          })
+          .where(eq(userCreditsSchema.userKey, userKey));
+
+        // 4. Fetch metadata from Twitter API
+        // If this fails, entire transaction rolls back (credits restored)
+        const user = await ctx.twitterClient.users.getInfo({
+          userName: input.username,
+        });
+
+        if (!user) {
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "Twitter user not found",
+          });
+        }
+
+        // 5. Check if user is unavailable - fail without refund (API call was made)
+        if (user.unavailable) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: `User is unavailable: ${user.unavailableReason}. Credits have been deducted.`,
+          });
+        }
+
+        // 6. Store available user with full metadata
+        await tx.insert(twitterUsersSchema).values({
+          id: BigInt(user.id),
+          username: user.userName,
+          screenName: user.name,
+          description: user.description,
+          avatarUrl: user.profilePicture,
+          isVerified: user.isVerified,
+          verifiedType: user.verifiedType ?? undefined,
+          isAutomated: user.isAutomated,
+          automatedBy: user.automatedBy ?? undefined,
+          unavailable: false,
+          userCreatedAt: new Date(user.createdAt),
+          tweetCount: user.statusesCount,
+          followerCount: user.followers,
+          followingCount: user.following,
+          tracked: false,
+        });
+
+        return {
+          success: true,
+          creditsSpent: BASELINE_METADATA_COST,
+          user: {
+            userId: user.id,
+            username: user.userName,
+            screenName: user.name,
+            tweetCount: user.statusesCount,
+            followerCount: user.followers,
+            avatarUrl: user.profilePicture,
+            isVerified: user.isVerified,
+            unavailable: false,
+          },
+        };
       });
     }),
 
+  /**
+   * Suggest a Twitter user for scraping.
+   *
+   * Requires user metadata to exist in DB (call purchaseMetadata first if not).
+   * Optional budget parameter - fails if scraping cost would exceed budget.
+   * Deducts credits and queues user for scraping.
+   */
   suggestUser: authenticatedProcedure
     .input(
       z.object({
@@ -241,6 +358,7 @@ export const twitterUserRouter = {
           .min(1, "Username is required")
           .max(15, "Username too long")
           .transform((val) => (val.startsWith("@") ? val.slice(1) : val)),
+        budget: z.number().positive().optional(),
       }),
     )
     .mutation(async ({ ctx, input }) => {
@@ -263,7 +381,15 @@ export const twitterUserRouter = {
         // 2. Calculate scraping cost
         const cost = calculateScrapingCost(user.tweetCount ?? 0);
 
-        // 3. Deduct credits atomically (only if sufficient balance)
+        // 3. Budget check BEFORE locking/charging
+        if (input.budget && cost > input.budget) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: `Scraping cost (${cost} credits) exceeds budget (${input.budget} credits)`,
+          });
+        }
+
+        // 4. Deduct credits atomically (only if sufficient balance)
         const updatedRows = await tx
           .update(userCreditsSchema)
           .set({

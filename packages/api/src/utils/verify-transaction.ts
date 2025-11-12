@@ -74,6 +74,13 @@ export async function verifyTorusTransfer(
   let recipient: string | null = null;
   let amount: bigint | null = null;
 
+  // Debug: log all extrinsic hashes in the block
+  console.log(`Searching for txHash: ${txHash}`);
+  console.log(`Block has ${signedBlock.block.extrinsics.length} extrinsics:`);
+  signedBlock.block.extrinsics.forEach((ext, i) => {
+    console.log(`  [${i}] ${ext.hash.toHex()} - ${ext.method.section}.${ext.method.method}`);
+  });
+
   signedBlock.block.extrinsics.forEach((extrinsic, index) => {
     const extrinsicHash = extrinsic.hash.toHex();
 

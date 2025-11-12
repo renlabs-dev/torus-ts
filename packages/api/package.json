@@ -9,7 +9,19 @@
       "types": "./dist/index.d.ts",
       "default": "./src/index.ts"
     },
+    "./root": {
+      "types": "./dist/root.d.ts",
+      "default": "./src/root.ts"
+    },
+    "./trpc": {
+      "types": "./dist/trpc.d.ts",
+      "default": "./src/trpc.ts"
+    },
     "./client": "./src/client.ts",
+    "./auth": {
+      "types": "./dist/auth/index.d.ts",
+      "default": "./src/auth/index.ts"
+    },
     "./auth/sign": "./src/auth/sign.ts"
   },
   "scripts": {
@@ -29,6 +41,7 @@
     "@torus-ts/db": "workspace:*",
     "@torus-network/sdk": "workspace:*",
     "@torus-network/torus-utils": "workspace:*",
+    "@torus-ts/twitter-client": "workspace:*",
     "@trpc/client": "catalog:",
     "@trpc/server": "catalog:",
     "jsonwebtoken": "^9.0.2",
