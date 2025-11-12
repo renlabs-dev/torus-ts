@@ -1,6 +1,9 @@
 import type { TRPCRouterRecord } from "@trpc/server";
 import { z } from "zod";
-import { getCoinMarketData, getMultipleCoinMarketData } from "../../services/coingecko/client";
+import {
+  getCoinMarketData,
+  getMultipleCoinMarketData,
+} from "../../services/coingecko/client";
 import type { CoinGeckoMarketData } from "../../services/coingecko/types";
 import { publicProcedure } from "../../trpc";
 
