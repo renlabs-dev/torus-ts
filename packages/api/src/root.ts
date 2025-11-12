@@ -10,6 +10,7 @@ import { cadreCandidateRouter } from "./router/cadre/cadre-candidate";
 import { cadreVoteRouter } from "./router/cadre/cadre-vote";
 import { cadreVoteHistoryRouter } from "./router/cadre/cadre-vote-history";
 import { discordInfoRouter } from "./router/cadre/discord-info";
+import { coinGeckoRouter } from "./router/coingecko/coingecko";
 import { commentRouter } from "./router/comment/comment";
 import { commentInteractionRouter } from "./router/comment/comment-interaction";
 import { commentReportRouter } from "./router/comment/comment-report";
@@ -44,6 +45,9 @@ export const appRouter = createTRPCRouter({
   cadreVote: cadreVoteRouter,
   cadreVoteHistory: cadreVoteHistoryRouter,
   cadreCandidate: cadreCandidateRouter,
+  // CoinGecko
+  coinGecko: coinGeckoRouter,
+
   // Comment
   comment: commentRouter,
   commentReport: commentReportRouter,

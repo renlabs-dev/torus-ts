@@ -267,6 +267,7 @@ const FILTER_VALIDATION_SCHEMA = {
 /**
  * JSON Schema for VerdictResult
  */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const VERDICT_SCHEMA = {
   type: "object",
   properties: {
