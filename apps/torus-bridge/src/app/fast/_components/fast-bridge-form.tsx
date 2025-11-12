@@ -533,7 +533,7 @@ export function FastBridgeForm() {
 
   return (
     <div className="mx-auto w-full space-y-6">
-      <div className="flex items-center justify-end">
+      <div className="-mt-[3.5rem] flex items-center justify-end">
         <div className="flex gap-2">
           <TooltipProvider>
             <Tooltip>
