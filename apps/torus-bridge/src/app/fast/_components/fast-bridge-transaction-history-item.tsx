@@ -117,7 +117,10 @@ export function TransactionHistoryItem({
                 <span className="relative inline-flex h-3 w-3 rounded-full bg-red-500"></span>
               </div>
             )}
-            <Badge variant="secondary" className="text-muted-foreground text-xs font-mono">
+            <Badge
+              variant="secondary"
+              className="text-muted-foreground font-mono text-xs"
+            >
               #{index + 1}
             </Badge>
             <span className="text-sm font-medium">{directionLabel}</span>

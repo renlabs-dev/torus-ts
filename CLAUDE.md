@@ -107,6 +107,28 @@ just db-dump
 
 ## Development Guidelines
 
+### Git Push Pre-Flight Check
+
+**IMPORTANT**: Before executing `git push`, ALWAYS run `just format-fix` to ensure code formatting is correct and prevent CI/CD failures.
+
+**Workflow when user requests git push:**
+1. Run `just format-fix` to auto-fix all formatting issues
+2. Stage any formatting changes if they exist
+3. Proceed with `git push`
+
+**Rationale:**
+- Prevents CI/CD failures due to formatting errors
+- Saves time by catching formatting issues before push
+- Only needed before push, not during active development
+
+**Example:**
+```sh
+# User asks to push code
+just format-fix                    # Fix all formatting
+git add .                          # Stage formatting fixes if any
+git push origin feature-branch     # Push to remote
+```
+
 ### Package Targeting
 
 When making changes, target specific packages for faster feedback:

@@ -96,12 +96,15 @@ export function QuickSendEvmDialog({
 
     // Save original values for consistent display
     setOriginalAmount(evmBalance);
-    setOriginalDestination(destination === "native" ? "Torus Native" : "Base Chain");
+    setOriginalDestination(
+      destination === "native" ? "Torus Native" : "Base Chain",
+    );
 
     // Send the exact amount shown in the dialog (evmBalance)
-    const sendPromise = destination === "native"
-      ? onSendToNative(evmBalance)
-      : onSendToBase(evmBalance);
+    const sendPromise =
+      destination === "native"
+        ? onSendToNative(evmBalance)
+        : onSendToBase(evmBalance);
 
     const [error, _] = await tryAsync(sendPromise);
     if (error !== undefined) {
@@ -127,7 +130,9 @@ export function QuickSendEvmDialog({
         errorMsg.includes("unlock")
       ) {
         setStatus("error");
-        setErrorMessage("Your wallet is locked. Please unlock it and try again.");
+        setErrorMessage(
+          "Your wallet is locked. Please unlock it and try again.",
+        );
         return;
       }
 
@@ -157,16 +162,22 @@ export function QuickSendEvmDialog({
         <DialogContent className="max-w-lg">
           <div className="flex flex-col items-center gap-6 py-8">
             <div className="bg-primary/10 flex h-24 w-24 items-center justify-center rounded-full">
-              <Loader2 className="h-12 w-12 animate-spin text-primary" />
+              <Loader2 className="text-primary h-12 w-12 animate-spin" />
             </div>
             <div className="text-center">
-              <h3 className="mb-2 text-xl font-semibold">Sending Transaction</h3>
+              <h3 className="mb-2 text-xl font-semibold">
+                Sending Transaction
+              </h3>
               <p className="text-muted-foreground text-sm">
-                Transferring <span className="font-semibold">{formatAmount(originalAmount)} TORUS</span> to{" "}
-                <span className="font-semibold">{originalDestination}</span>
+                Transferring{" "}
+                <span className="font-semibold">
+                  {formatAmount(originalAmount)} TORUS
+                </span>{" "}
+                to <span className="font-semibold">{originalDestination}</span>
               </p>
               <p className="text-muted-foreground mt-4 text-sm">
-                Please confirm the transaction in your wallet and wait for completion...
+                Please confirm the transaction in your wallet and wait for
+                completion...
               </p>
             </div>
           </div>
@@ -188,8 +199,11 @@ export function QuickSendEvmDialog({
                 Transfer Complete!
               </h3>
               <p className="text-muted-foreground text-sm">
-                Successfully sent <span className="font-semibold">{formatAmount(originalAmount)} TORUS</span> to{" "}
-                <span className="font-semibold">{originalDestination}</span>
+                Successfully sent{" "}
+                <span className="font-semibold">
+                  {formatAmount(originalAmount)} TORUS
+                </span>{" "}
+                to <span className="font-semibold">{originalDestination}</span>
               </p>
             </div>
             <Button onClick={handleClose} size="lg" className="w-full">
@@ -216,22 +230,31 @@ export function QuickSendEvmDialog({
               <p className="text-muted-foreground text-sm">
                 Failed to send to{" "}
                 <span className="font-semibold">
-                  {selectedDestination === "native" ? "Torus Native" : "Base Chain"}
+                  {selectedDestination === "native"
+                    ? "Torus Native"
+                    : "Base Chain"}
                 </span>
               </p>
               {errorMessage && (
                 <div className="bg-muted/50 mt-4 rounded-md p-3">
-                  <p className="text-sm break-words">{errorMessage}</p>
+                  <p className="break-words text-sm">{errorMessage}</p>
                 </div>
               )}
             </div>
             <div className="flex w-full gap-3">
-              <Button variant="outline" onClick={handleClose} size="lg" className="flex-1">
+              <Button
+                variant="outline"
+                onClick={handleClose}
+                size="lg"
+                className="flex-1"
+              >
                 Cancel
               </Button>
               <Button
                 onClick={() =>
-                  handleSend(selectedDestination === "native" ? "native" : "base")
+                  handleSend(
+                    selectedDestination === "native" ? "native" : "base",
+                  )
                 }
                 size="lg"
                 className="flex-1"
@@ -250,11 +273,12 @@ export function QuickSendEvmDialog({
       <DialogContent className="max-w-2xl">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-xl">
-            <Zap className="h-5 w-5 text-primary" />
+            <Zap className="text-primary h-5 w-5" />
             Quick Send EVM
           </DialogTitle>
           <DialogDescription className="text-sm">
-            Send your entire EVM balance to Native or Base in one click. Gas fees are automatically reserved.
+            Send your entire EVM balance to Native or Base in one click. Gas
+            fees are automatically reserved.
           </DialogDescription>
         </DialogHeader>
 
@@ -274,8 +298,12 @@ export function QuickSendEvmDialog({
                 </span>
               </div>
               <div className="flex items-baseline gap-2">
-                <span className="text-4xl font-bold">{formatAmount(evmBalance)}</span>
-                <span className="text-muted-foreground text-lg font-medium">TORUS</span>
+                <span className="text-4xl font-bold">
+                  {formatAmount(evmBalance)}
+                </span>
+                <span className="text-muted-foreground text-lg font-medium">
+                  TORUS
+                </span>
               </div>
             </div>
           </Card>
@@ -286,7 +314,7 @@ export function QuickSendEvmDialog({
             <div className="grid gap-3 md:grid-cols-2">
               <Card
                 className={cn(
-                  "border-border group cursor-pointer transition-all hover:border-primary hover:shadow-md",
+                  "border-border hover:border-primary group cursor-pointer transition-all hover:shadow-md",
                 )}
                 onClick={() => handleSend("native")}
               >
@@ -300,7 +328,9 @@ export function QuickSendEvmDialog({
                       className="flex-shrink-0"
                     />
                     <div>
-                      <h4 className="mb-1 text-lg font-semibold">Torus Native</h4>
+                      <h4 className="mb-1 text-lg font-semibold">
+                        Torus Native
+                      </h4>
                       <p className="text-muted-foreground text-xs">
                         Send to Torus Native chain
                       </p>
@@ -308,7 +338,7 @@ export function QuickSendEvmDialog({
                     <Button
                       variant="outline"
                       size="sm"
-                      className="w-full group-hover:bg-primary group-hover:text-primary-foreground"
+                      className="group-hover:bg-primary group-hover:text-primary-foreground w-full"
                     >
                       <Check className="mr-2 h-4 w-4" />
                       Select
@@ -319,7 +349,7 @@ export function QuickSendEvmDialog({
 
               <Card
                 className={cn(
-                  "border-border group cursor-pointer transition-all hover:border-primary hover:shadow-md",
+                  "border-border hover:border-primary group cursor-pointer transition-all hover:shadow-md",
                 )}
                 onClick={() => handleSend("base")}
               >
@@ -341,7 +371,7 @@ export function QuickSendEvmDialog({
                     <Button
                       variant="outline"
                       size="sm"
-                      className="w-full group-hover:bg-primary group-hover:text-primary-foreground"
+                      className="group-hover:bg-primary group-hover:text-primary-foreground w-full"
                     >
                       <Check className="mr-2 h-4 w-4" />
                       Select

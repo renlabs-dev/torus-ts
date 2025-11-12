@@ -193,41 +193,47 @@ export function FastBridgeForm() {
     handleFractionClick(1.0); // All = 100%
   }, [handleFractionClick]);
 
-  const handleSendToNative = useCallback(async (amount: bigint) => {
-    if (!walletsReady) {
-      throw new Error("Wallets not ready");
-    }
+  const handleSendToNative = useCallback(
+    async (amount: bigint) => {
+      if (!walletsReady) {
+        throw new Error("Wallets not ready");
+      }
 
-    if (amount <= TORUS_EVM_GAS_RESERVE) {
-      throw new Error("Insufficient balance for gas fees");
-    }
+      if (amount <= TORUS_EVM_GAS_RESERVE) {
+        throw new Error("Insufficient balance for gas fees");
+      }
 
-    // Subtract gas reserve from the amount to send
-    const amountToSend = amount - TORUS_EVM_GAS_RESERVE;
-    const amountStr = formatWeiToDecimalString(amountToSend);
+      // Subtract gas reserve from the amount to send
+      const amountToSend = amount - TORUS_EVM_GAS_RESERVE;
+      const amountStr = formatWeiToDecimalString(amountToSend);
 
-    // Quick Send from EVM to Native: Execute only Step 2 of base-to-native flow
-    // This withdraws directly from Torus EVM to Native
-    await executeEvmToNative(amountStr);
-  }, [walletsReady, executeEvmToNative]);
+      // Quick Send from EVM to Native: Execute only Step 2 of base-to-native flow
+      // This withdraws directly from Torus EVM to Native
+      await executeEvmToNative(amountStr);
+    },
+    [walletsReady, executeEvmToNative],
+  );
 
-  const handleSendToBase = useCallback(async (amount: bigint) => {
-    if (!walletsReady) {
-      throw new Error("Wallets not ready");
-    }
+  const handleSendToBase = useCallback(
+    async (amount: bigint) => {
+      if (!walletsReady) {
+        throw new Error("Wallets not ready");
+      }
 
-    if (amount <= TORUS_EVM_GAS_RESERVE) {
-      throw new Error("Insufficient balance for gas fees");
-    }
+      if (amount <= TORUS_EVM_GAS_RESERVE) {
+        throw new Error("Insufficient balance for gas fees");
+      }
 
-    // Subtract gas reserve from the amount to send
-    const amountToSend = amount - TORUS_EVM_GAS_RESERVE;
-    const amountStr = formatWeiToDecimalString(amountToSend);
+      // Subtract gas reserve from the amount to send
+      const amountToSend = amount - TORUS_EVM_GAS_RESERVE;
+      const amountStr = formatWeiToDecimalString(amountToSend);
 
-    // Quick Send from EVM to Base: Execute only Step 2 of native-to-base flow
-    // This deposits from Torus EVM to Base
-    await executeEvmToBase(amountStr);
-  }, [walletsReady, executeEvmToBase]);
+      // Quick Send from EVM to Base: Execute only Step 2 of native-to-base flow
+      // This deposits from Torus EVM to Base
+      await executeEvmToBase(amountStr);
+    },
+    [walletsReady, executeEvmToBase],
+  );
 
   const handleSubmit = useCallback(async () => {
     if (!amountFrom || !walletsReady) return;
@@ -256,13 +262,21 @@ export function FastBridgeForm() {
 
   const handleRetryFromHistory = useCallback(
     (transaction: FastBridgeTransactionHistoryItem) => {
-      console.log("[Retry from History] Starting restore for transaction:", transaction.id);
+      console.log(
+        "[Retry from History] Starting restore for transaction:",
+        transaction.id,
+      );
 
       setShowHistoryDialog(false);
       setDirection(transaction.direction);
       setAmountFrom(transaction.amount);
 
-      console.log("[Retry from History] Set direction:", transaction.direction, "amount:", transaction.amount);
+      console.log(
+        "[Retry from History] Set direction:",
+        transaction.direction,
+        "amount:",
+        transaction.amount,
+      );
 
       // Set URL state for recovery
       setTransactionInUrl(transaction.id);
@@ -273,9 +287,10 @@ export function FastBridgeForm() {
       // Restore bridge state to the current step (ERROR, or whatever step it was at)
       // This allows continuing from pending/step1_complete, not just errors
       updateBridgeState({
-        step: transaction.status === "error"
-          ? SimpleBridgeStep.ERROR
-          : transaction.currentStep,
+        step:
+          transaction.status === "error"
+            ? SimpleBridgeStep.ERROR
+            : transaction.currentStep,
         direction: transaction.direction,
         amount: transaction.amount,
       });
@@ -337,7 +352,10 @@ export function FastBridgeForm() {
       // Restore the transactions to the shared state
       setTransactions(restoredTransactions);
 
-      console.log("[Retry from History] Restored transactions:", restoredTransactions);
+      console.log(
+        "[Retry from History] Restored transactions:",
+        restoredTransactions,
+      );
       console.log("[Retry from History] Opening transaction dialog");
 
       // Open dialog showing the error state
@@ -362,10 +380,7 @@ export function FastBridgeForm() {
       console.log("[F5 Recovery] Found transaction:", transaction);
 
       // Auto-restore any incomplete transaction (error, pending, or step1_complete)
-      if (
-        transaction &&
-        transaction.status !== "completed"
-      ) {
+      if (transaction && transaction.status !== "completed") {
         console.log("[F5 Recovery] Restoring incomplete transaction:", {
           id: transaction.id,
           status: transaction.status,
@@ -375,7 +390,9 @@ export function FastBridgeForm() {
         });
         handleRetryFromHistory(transaction);
       } else if (transaction) {
-        console.log("[F5 Recovery] Transaction is already completed, skipping restore");
+        console.log(
+          "[F5 Recovery] Transaction is already completed, skipping restore",
+        );
       } else {
         console.log("[F5 Recovery] Transaction not found in history");
       }
@@ -521,13 +538,23 @@ export function FastBridgeForm() {
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
-                <span className={!hasEvmBalance || isTransferInProgress ? "cursor-not-allowed" : ""}>
+                <span
+                  className={
+                    !hasEvmBalance || isTransferInProgress
+                      ? "cursor-not-allowed"
+                      : ""
+                  }
+                >
                   <Button
                     variant="outline"
                     size="sm"
                     onClick={() => setShowQuickSendDialog(true)}
                     disabled={!hasEvmBalance || isTransferInProgress}
-                    className={!hasEvmBalance || isTransferInProgress ? "pointer-events-none" : ""}
+                    className={
+                      !hasEvmBalance || isTransferInProgress
+                        ? "pointer-events-none"
+                        : ""
+                    }
                   >
                     <Zap className="mr-2 h-4 w-4" />
                     Quick EVM
@@ -537,7 +564,8 @@ export function FastBridgeForm() {
               {!hasEvmBalance && (
                 <TooltipContent>
                   <p className="text-sm">
-                    Quick Send is only available when you have TORUS in your EVM wallet
+                    Quick Send is only available when you have TORUS in your EVM
+                    wallet
                   </p>
                 </TooltipContent>
               )}
