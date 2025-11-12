@@ -318,6 +318,9 @@ export function useOrchestratedTransfer() {
           currentStep: SimpleBridgeStep.COMPLETE,
           step2TxHash: step2Tx?.txHash,
           canRetry: false,
+          errorMessage: undefined,
+          errorStep: undefined,
+          viewedByUser: false, // Reset viewed status on success after retry
         });
       }
 
@@ -451,6 +454,9 @@ export function useOrchestratedTransfer() {
           currentStep: SimpleBridgeStep.COMPLETE,
           step2TxHash: step2Tx?.txHash,
           canRetry: false,
+          errorMessage: undefined,
+          errorStep: undefined,
+          viewedByUser: false, // Reset viewed status on success after retry
         });
       }
 
