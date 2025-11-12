@@ -1,11 +1,12 @@
+import { torusToCredits } from "@torus-network/torus-utils";
+import { makeTorAmount, toRems } from "@torus-network/torus-utils/torus/token";
+import { tryAsync } from "@torus-network/torus-utils/try-catch";
 import { eq, sql } from "@torus-ts/db";
 import { creditPurchasesSchema, userCreditsSchema } from "@torus-ts/db/schema";
 import type { TRPCRouterRecord } from "@trpc/server";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
-import { tryAsync } from "@torus-network/torus-utils/try-catch";
 import { authenticatedProcedure } from "../../trpc";
-import { torusToCredits } from "../../utils/scraping-cost";
 import { verifyTorusTransfer } from "../../utils/verify-transaction";
 
 /**
@@ -78,8 +79,8 @@ export const creditsRouter = {
           ctx.predictionAppAddress,
         );
 
-        // 3. Calculate credits (1 TORUS = 1 credit)
-        const credits = torusToCredits(verified.amount);
+        const credits = torusToCredits(makeTorAmount(verified.amount));
+        console.log("credits bought: ", credits);
 
         // 4. Update payment record with verified data
         await tx

@@ -1,3 +1,9 @@
+import {
+  BASELINE_METADATA_COST,
+  calculateScrapingCost,
+} from "@torus-network/torus-utils";
+import { makeTorAmount, toRems } from "@torus-network/torus-utils/torus/token";
+import type { TorAmount } from "@torus-network/torus-utils/torus/token";
 import { and, eq, gte, ilike, notExists, sql } from "@torus-ts/db";
 import {
   parsedPredictionFeedbackSchema,
@@ -13,10 +19,10 @@ import type { TRPCRouterRecord } from "@trpc/server";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { authenticatedProcedure, publicProcedure } from "../../trpc";
-import {
-  BASELINE_METADATA_COST,
-  calculateScrapingCost,
-} from "../../utils/scraping-cost";
+
+const torAmountSchema = z
+  .bigint()
+  .transform((val) => makeTorAmount(val.toString()));
 
 /**
  * Twitter user router - handles operations for searching and retrieving Twitter user data
@@ -223,7 +229,7 @@ export const twitterUserRouter = {
           .min(1)
           .max(15)
           .transform((val) => (val.startsWith("@") ? val.slice(1) : val)),
-        budget: z.number().positive().optional(),
+        budget: torAmountSchema.optional(),
       }),
     )
     .mutation(async ({ ctx, input }) => {
@@ -269,7 +275,10 @@ export const twitterUserRouter = {
           FOR UPDATE
         `);
 
-        if (!locked || Number(locked.balance) < BASELINE_METADATA_COST) {
+        if (
+          !locked ||
+          makeTorAmount(locked.balance).isLessThan(BASELINE_METADATA_COST)
+        ) {
           throw new TRPCError({
             code: "FORBIDDEN",
             message: `Insufficient credits. Required: ${BASELINE_METADATA_COST}, Available: ${locked?.balance ?? 0}`,
@@ -358,7 +367,7 @@ export const twitterUserRouter = {
           .min(1, "Username is required")
           .max(15, "Username too long")
           .transform((val) => (val.startsWith("@") ? val.slice(1) : val)),
-        budget: z.number().positive().optional(),
+        budget: torAmountSchema.optional(),
       }),
     )
     .mutation(async ({ ctx, input }) => {

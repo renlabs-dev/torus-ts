@@ -78,7 +78,9 @@ export async function verifyTorusTransfer(
   console.log(`Searching for txHash: ${txHash}`);
   console.log(`Block has ${signedBlock.block.extrinsics.length} extrinsics:`);
   signedBlock.block.extrinsics.forEach((ext, i) => {
-    console.log(`  [${i}] ${ext.hash.toHex()} - ${ext.method.section}.${ext.method.method}`);
+    console.log(
+      `  [${i}] ${ext.hash.toHex()} - ${ext.method.section}.${ext.method.method}`,
+    );
   });
 
   signedBlock.block.extrinsics.forEach((extrinsic, index) => {

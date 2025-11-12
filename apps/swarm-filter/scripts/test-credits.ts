@@ -24,9 +24,9 @@ import superjson from "superjson";
 // ========================================
 
 const TX_HASH =
-  "0xb18ced8dc59bec8ba5da91aa8c4c5ca322869c504f2cb62daf9c18ddac473c00"; // Paste transaction hash here (0x...)
+  "0x497f48bd43c69936f185d4045f2009562b75206745471342dc52049c2488e8fa"; // Paste transaction hash here (0x...)
 const BLOCK_HASH =
-  "0x7d9fafb2c1f4a9272f94ac4e056c868ee37ea58d97f9b6f2a8227ac978a7715e"; // Paste block hash here (0x...)
+  "0xf010e485d18f73c98147f22e03fa90d5064ae9334b8af72c925276827fb9152a"; // Paste block hash here (0x...)
 
 const UNKNOWN_USER = "unknown123"; // User that doesn't exist
 const TEST_USER = "furrydepressivo"; // User to test metadata purchase + scraping (leave empty to skip)
@@ -118,13 +118,13 @@ async function main() {
       console.log(`  TX Hash: ${TX_HASH}`);
       console.log(`  Block Hash: ${BLOCK_HASH}`);
 
-      // const result = await authClient.credits.purchaseCredits.mutate({
-      //   txHash: TX_HASH,
-      //   blockHash: BLOCK_HASH,
-      // });
+      const result = await authClient.credits.purchaseCredits.mutate({
+        txHash: TX_HASH,
+        blockHash: BLOCK_HASH,
+      });
 
-      // console.log(`✓ Credits granted: ${result.creditsGranted}`);
-      // console.log(`  TORUS amount: ${result.torusAmount}`);
+      console.log(`✓ Credits granted: ${result.creditsGranted}`);
+      console.log(`  TORUS amount: ${result.torusAmount}`);
 
       // Check balance again
       const newBalance = await authClient.credits.getBalance.query();

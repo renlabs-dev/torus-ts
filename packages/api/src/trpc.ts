@@ -14,13 +14,13 @@ import { connectToChainRpc } from "@torus-network/sdk/utils";
 import { validateEnvOrExit } from "@torus-network/torus-utils/env";
 import { trySync } from "@torus-network/torus-utils/try-catch";
 import { createDb } from "@torus-ts/db/client";
+import { KaitoTwitterAPI } from "@torus-ts/twitter-client";
 import { initTRPC, TRPCError } from "@trpc/server";
 import superjson from "superjson";
 import { assert } from "tsafe";
 import { z, ZodError } from "zod";
 import type { SessionData } from "./auth";
 import { decodeSessionToken } from "./auth";
-import { KaitoTwitterAPI } from "@torus-ts/twitter-client";
 
 let globalDb: ReturnType<typeof createDb> | null = null;
 let globalWsApi: ApiPromise | null = null;

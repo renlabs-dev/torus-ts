@@ -389,13 +389,13 @@ export const parsedPredictionFeedbackSchema = createTable(
  */
 export const userCreditsSchema = createTable("user_credits", {
   userKey: ss58Address("user_key").primaryKey(),
-  balance: decimal("balance", { precision: 20, scale: 2 })
+  balance: decimal("balance", { precision: 39, scale: 0 })
     .notNull()
     .default("0"),
-  totalPurchased: decimal("total_purchased", { precision: 20, scale: 2 })
+  totalPurchased: decimal("total_purchased", { precision: 39, scale: 0 })
     .notNull()
     .default("0"),
-  totalSpent: decimal("total_spent", { precision: 20, scale: 2 })
+  totalSpent: decimal("total_spent", { precision: 39, scale: 0 })
     .notNull()
     .default("0"),
   ...timeFields(),
@@ -415,8 +415,8 @@ export const creditPurchasesSchema = createTable(
     id: uuidv7("id").primaryKey(),
     userKey: ss58Address("user_key").notNull(),
     txHash: varchar("tx_hash", { length: 66 }).notNull().unique(),
-    torusAmount: decimal("torus_amount", { precision: 30, scale: 0 }),
-    creditsGranted: decimal("credits_granted", { precision: 20, scale: 2 }),
+    torusAmount: decimal("torus_amount", { precision: 39, scale: 0 }),
+    creditsGranted: decimal("credits_granted", { precision: 39, scale: 0 }),
     blockNumber: bigint("block_number"),
     ...timeFields(),
   },

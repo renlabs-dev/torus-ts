@@ -1190,6 +1190,9 @@ importers:
       '@torus-ts/db':
         specifier: workspace:*
         version: link:../../packages/db
+      '@torus-ts/twitter-client':
+        specifier: workspace:*
+        version: link:../../packages/twitter-client
       cors:
         specifier: ^2.8.5
         version: 2.8.5

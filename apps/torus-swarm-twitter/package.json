@@ -27,6 +27,7 @@
     "@torus-network/sdk": "workspace:*",
     "@torus-network/torus-utils": "workspace:*",
     "@torus-ts/db": "workspace:*",
+    "@torus-ts/twitter-client": "workspace:*",
     "cors": "^2.8.5",
     "express": "^4.19.2",
     "html-entities": "^2.6.0",
