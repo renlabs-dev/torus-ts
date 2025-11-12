@@ -2,6 +2,7 @@
 
 import type { SS58Address } from "@torus-network/sdk/types";
 import { formatToken } from "@torus-network/torus-utils/torus/token";
+import { tryAsync } from "@torus-network/torus-utils/try-catch";
 import {
   useFreeBalance,
   useGetTorusPrice,
@@ -232,9 +233,8 @@ export function FastBridgeForm() {
     if (!amountFrom || !walletsReady) return;
 
     setShowTransactionDialog(true);
-    try {
-      await executeTransfer(direction, amountFrom);
-    } catch (error) {
+    const [error, _] = await tryAsync(executeTransfer(direction, amountFrom));
+    if (error !== undefined) {
       console.error("Transfer failed:", error);
       // Dialog stays open to show ERROR state from hook
     }

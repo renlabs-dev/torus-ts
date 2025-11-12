@@ -316,6 +316,87 @@ type casts.
 
 Reference: <https://github.com/steinerkelvin/rustie-ts>
 
+### Error Handling with tryAsync and trySync
+
+**Rule**: NEVER use raw `try-catch` blocks in application code. Instead, use the error handling abstractions from `@torus-network/torus-utils/try-catch`.
+
+**Available Functions:**
+
+- `trySync<T>(fn: () => T): Result<T, Error>` - For synchronous operations
+- `tryAsync<T>(promise: PromiseLike<T>): AsyncResultObj<T, Error>` - For async operations
+- `trySyncStr<T>(fn: () => T): Result<T, string>` - Sync with string error
+- `tryAsyncStr<T>(promise: PromiseLike<T>): AsyncResultObj<T, string>` - Async with string error
+
+**Examples:**
+
+```ts
+// ✅ CORRECT: Using trySync for synchronous operations
+import { trySync } from "@torus-network/torus-utils/try-catch";
+
+const [error, result] = trySync(() => JSON.parse(jsonString));
+if (error !== undefined) {
+  console.error("Failed to parse JSON:", error.message);
+  return;
+}
+// Use result safely here
+console.log("Parsed:", result);
+```
+
+```ts
+// ✅ CORRECT: Using tryAsync for promises
+import { tryAsync } from "@torus-network/torus-utils/try-catch";
+
+const [error, data] = await tryAsync(fetch("/api/data"));
+if (error !== undefined) {
+  console.error("API request failed:", error.message);
+  return;
+}
+// Use data safely here
+console.log("API data:", data);
+```
+
+```ts
+// ✅ CORRECT: Using AsyncResultObj.match for cleaner code
+const result = await tryAsync(fetchUserData(userId));
+await result.match({
+  Ok: (user) => console.log("User:", user.name),
+  Err: (error) => console.error("Failed to fetch user:", error),
+});
+```
+
+```ts
+// ❌ WRONG: Raw try-catch block
+try {
+  const result = JSON.parse(jsonString);
+  console.log(result);
+} catch (error) {
+  console.error("Failed:", error);
+}
+
+// ❌ WRONG: Raw try-catch with async
+try {
+  const data = await fetch("/api/data");
+  console.log(data);
+} catch (error) {
+  console.error("Failed:", error);
+}
+```
+
+**Rationale:**
+
+- **Consistent Error Handling**: All errors follow the same Result<T, E> pattern throughout the codebase
+- **Type Safety**: TypeScript knows exactly when errors are handled vs. when data is available
+- **Go-style Error Handling**: Explicit error checking makes error paths visible in the code flow
+- **No Hidden Control Flow**: Unlike try-catch, error handling is explicit and doesn't use exceptions
+- **Composability**: Result types can be chained, mapped, and transformed functionally
+- **Testing**: Result-based code is easier to test than exception-based code
+
+**When raw try-catch IS allowed:**
+
+- Inside the `trySync`/`tryAsync` implementation itself (already done in `@torus-network/torus-utils`)
+- In very low-level infrastructure code where you're building the abstraction
+- Never in application/business logic code
+
 ### Result<T,E> Error Handling
 
 Use the canonical pattern for handling `Result<T,E>` types from `@torus-network/torus-utils/result`:
@@ -336,7 +417,7 @@ console.log("Success:", data);
 
 - `isOk()` helper functions
 - `.success` or `.data` property access
-- try/catch wrapping
+- Raw try/catch wrapping (use `tryAsync`/`trySync` instead)
 
 ### Substrate Integration
 

@@ -1,5 +1,6 @@
 "use client";
 
+import { tryAsync } from "@torus-network/torus-utils/try-catch";
 import { Button } from "@torus-ts/ui/components/button";
 import { Card, CardContent } from "@torus-ts/ui/components/card";
 import {
@@ -97,18 +98,14 @@ export function QuickSendEvmDialog({
     setOriginalAmount(evmBalance);
     setOriginalDestination(destination === "native" ? "Torus Native" : "Base Chain");
 
-    try {
-      // Send the exact amount shown in the dialog (evmBalance)
-      if (destination === "native") {
-        await onSendToNative(evmBalance);
-      } else {
-        await onSendToBase(evmBalance);
-      }
+    // Send the exact amount shown in the dialog (evmBalance)
+    const sendPromise = destination === "native"
+      ? onSendToNative(evmBalance)
+      : onSendToBase(evmBalance);
 
-      // Note: The useEffect monitoring currentEvmBalance will handle completion
-      // when balance decreases, so we don't manually complete here
-    } catch (error) {
-      const errorMsg = error instanceof Error ? error.message : "Transfer failed";
+    const [error, _] = await tryAsync(sendPromise);
+    if (error !== undefined) {
+      const errorMsg = error.message;
 
       if (
         errorMsg.includes("User rejected") ||
@@ -137,6 +134,9 @@ export function QuickSendEvmDialog({
       setStatus("error");
       setErrorMessage(errorMsg);
     }
+
+    // Note: The useEffect monitoring currentEvmBalance will handle completion
+    // when balance decreases, so we don't manually complete here
   };
 
   const handleClose = () => {

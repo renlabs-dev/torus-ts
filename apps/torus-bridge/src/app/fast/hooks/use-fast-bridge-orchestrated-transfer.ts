@@ -2,6 +2,7 @@
 
 import { useAccounts } from "@hyperlane-xyz/widgets";
 import type { SS58Address } from "@torus-network/sdk/types";
+import { tryAsync } from "@torus-network/torus-utils/try-catch";
 import { useFreeBalance } from "@torus-ts/query-provider/hooks";
 import { useTorus } from "@torus-ts/torus-provider";
 import { useSendTransaction } from "@torus-ts/torus-provider/use-send-transaction";
@@ -223,8 +224,9 @@ export function useOrchestratedTransfer() {
         throw new Error("Wallets not properly connected");
       }
 
-      try {
-        await executeBaseToNativeStep1({
+      // Execute step 1
+      const [step1Error, _] = await tryAsync(
+        executeBaseToNativeStep1({
           amount,
           evmAddress,
           chain,
@@ -237,39 +239,41 @@ export function useOrchestratedTransfer() {
           updateBridgeState,
           addTransaction,
           getExplorerUrl,
-        });
+        }),
+      );
 
-        // Update history after step 1 complete
-        if (currentTransactionIdRef.current) {
-          const _step1Tx = transactions.find((tx) => tx.step === 1);
-          updateHistoryTransaction(currentTransactionIdRef.current, {
-            status: "step1_complete",
-            currentStep: SimpleBridgeStep.STEP_2_PREPARING,
-            step1TxHash: _step1Tx?.txHash,
-          });
-        }
-      } catch (error) {
+      if (step1Error !== undefined) {
         // Update history on error
         if (currentTransactionIdRef.current) {
           const _step1Tx = transactions.find((tx) => tx.step === 1);
           updateHistoryTransaction(currentTransactionIdRef.current, {
             status: "error",
             currentStep: SimpleBridgeStep.ERROR,
-            errorMessage:
-              error instanceof Error ? error.message : "Unknown error",
+            errorMessage: step1Error.message,
             errorStep: 1,
-            canRetry: !(error instanceof UserRejectedError),
+            canRetry: !(step1Error instanceof UserRejectedError),
           });
         }
         // Stop execution if user rejected the transaction
-        if (error instanceof UserRejectedError) {
+        if (step1Error instanceof UserRejectedError) {
           return;
         }
-        throw error;
+        throw step1Error;
       }
 
-      try {
-        await executeBaseToNativeStep2({
+      // Update history after step 1 complete
+      if (currentTransactionIdRef.current) {
+        const _step1Tx = transactions.find((tx) => tx.step === 1);
+        updateHistoryTransaction(currentTransactionIdRef.current, {
+          status: "step1_complete",
+          currentStep: SimpleBridgeStep.STEP_2_PREPARING,
+          step1TxHash: _step1Tx?.txHash,
+        });
+      }
+
+      // Execute step 2
+      const [step2Error, __] = await tryAsync(
+        executeBaseToNativeStep2({
           amount,
           selectedAccount: { address: selectedAccount.address as SS58Address },
           walletClient,
@@ -283,37 +287,38 @@ export function useOrchestratedTransfer() {
           updateBridgeState,
           addTransaction,
           getExplorerUrl,
-        });
+        }),
+      );
 
-        // Update history after step 2 complete
-        if (currentTransactionIdRef.current) {
-          const step2Tx = transactions.find((tx) => tx.step === 2);
-          updateHistoryTransaction(currentTransactionIdRef.current, {
-            status: "completed",
-            currentStep: SimpleBridgeStep.COMPLETE,
-            step2TxHash: step2Tx?.txHash,
-            canRetry: false,
-          });
-        }
-      } catch (error) {
+      if (step2Error !== undefined) {
         // Update history on error
         if (currentTransactionIdRef.current) {
           const step2Tx = transactions.find((tx) => tx.step === 2);
           updateHistoryTransaction(currentTransactionIdRef.current, {
             status: "error",
             currentStep: SimpleBridgeStep.ERROR,
-            errorMessage:
-              error instanceof Error ? error.message : "Unknown error",
+            errorMessage: step2Error.message,
             errorStep: 2,
             step2TxHash: step2Tx?.txHash,
-            canRetry: !(error instanceof UserRejectedError),
+            canRetry: !(step2Error instanceof UserRejectedError),
           });
         }
         // Stop execution if user rejected the transaction
-        if (error instanceof UserRejectedError) {
+        if (step2Error instanceof UserRejectedError) {
           return;
         }
-        throw error;
+        throw step2Error;
+      }
+
+      // Update history after step 2 complete
+      if (currentTransactionIdRef.current) {
+        const step2Tx = transactions.find((tx) => tx.step === 2);
+        updateHistoryTransaction(currentTransactionIdRef.current, {
+          status: "completed",
+          currentStep: SimpleBridgeStep.COMPLETE,
+          step2TxHash: step2Tx?.txHash,
+          canRetry: false,
+        });
       }
 
       toast({
@@ -351,8 +356,9 @@ export function useOrchestratedTransfer() {
         throw new Error("Wallets not properly connected");
       }
 
-      try {
-        await executeNativeToBaseStep1({
+      // Execute step 1
+      const [step1Error, _] = await tryAsync(
+        executeNativeToBaseStep1({
           amount,
           evmAddress,
           selectedAccount: { address: selectedAccount.address as SS58Address },
@@ -364,39 +370,41 @@ export function useOrchestratedTransfer() {
           updateBridgeState,
           addTransaction,
           getExplorerUrl,
-        });
+        }),
+      );
 
-        // Update history after step 1 complete
-        if (currentTransactionIdRef.current) {
-          const _step1Tx = transactions.find((tx) => tx.step === 1);
-          updateHistoryTransaction(currentTransactionIdRef.current, {
-            status: "step1_complete",
-            currentStep: SimpleBridgeStep.STEP_2_PREPARING,
-            step1TxHash: _step1Tx?.txHash,
-          });
-        }
-      } catch (error) {
+      if (step1Error !== undefined) {
         // Update history on error
         if (currentTransactionIdRef.current) {
           const _step1Tx = transactions.find((tx) => tx.step === 1);
           updateHistoryTransaction(currentTransactionIdRef.current, {
             status: "error",
             currentStep: SimpleBridgeStep.ERROR,
-            errorMessage:
-              error instanceof Error ? error.message : "Unknown error",
+            errorMessage: step1Error.message,
             errorStep: 1,
-            canRetry: !(error instanceof UserRejectedError),
+            canRetry: !(step1Error instanceof UserRejectedError),
           });
         }
         // Stop execution if user rejected the transaction
-        if (error instanceof UserRejectedError) {
+        if (step1Error instanceof UserRejectedError) {
           return;
         }
-        throw error;
+        throw step1Error;
       }
 
-      try {
-        await executeNativeToBaseStep2({
+      // Update history after step 1 complete
+      if (currentTransactionIdRef.current) {
+        const _step1Tx = transactions.find((tx) => tx.step === 1);
+        updateHistoryTransaction(currentTransactionIdRef.current, {
+          status: "step1_complete",
+          currentStep: SimpleBridgeStep.STEP_2_PREPARING,
+          step1TxHash: _step1Tx?.txHash,
+        });
+      }
+
+      // Execute step 2
+      const [step2Error, __] = await tryAsync(
+        executeNativeToBaseStep2({
           amount,
           evmAddress,
           torusEvmChainId,
@@ -412,37 +420,38 @@ export function useOrchestratedTransfer() {
           updateBridgeState,
           addTransaction,
           getExplorerUrl,
-        });
+        }),
+      );
 
-        // Update history after step 2 complete
-        if (currentTransactionIdRef.current) {
-          const step2Tx = transactions.find((tx) => tx.step === 2);
-          updateHistoryTransaction(currentTransactionIdRef.current, {
-            status: "completed",
-            currentStep: SimpleBridgeStep.COMPLETE,
-            step2TxHash: step2Tx?.txHash,
-            canRetry: false,
-          });
-        }
-      } catch (error) {
+      if (step2Error !== undefined) {
         // Update history on error
         if (currentTransactionIdRef.current) {
           const step2Tx = transactions.find((tx) => tx.step === 2);
           updateHistoryTransaction(currentTransactionIdRef.current, {
             status: "error",
             currentStep: SimpleBridgeStep.ERROR,
-            errorMessage:
-              error instanceof Error ? error.message : "Unknown error",
+            errorMessage: step2Error.message,
             errorStep: 2,
             step2TxHash: step2Tx?.txHash,
-            canRetry: !(error instanceof UserRejectedError),
+            canRetry: !(step2Error instanceof UserRejectedError),
           });
         }
         // Stop execution if user rejected the transaction
-        if (error instanceof UserRejectedError) {
+        if (step2Error instanceof UserRejectedError) {
           return;
         }
-        throw error;
+        throw step2Error;
+      }
+
+      // Update history after step 2 complete
+      if (currentTransactionIdRef.current) {
+        const step2Tx = transactions.find((tx) => tx.step === 2);
+        updateHistoryTransaction(currentTransactionIdRef.current, {
+          status: "completed",
+          currentStep: SimpleBridgeStep.COMPLETE,
+          step2TxHash: step2Tx?.txHash,
+          canRetry: false,
+        });
       }
 
       toast({
