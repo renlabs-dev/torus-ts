@@ -1,6 +1,7 @@
 "use client";
 
 import { Card, CardContent, CardHeader } from "@torus-ts/ui/components/card";
+import { Skeleton } from "@torus-ts/ui/components/skeleton";
 import {
   Tabs,
   TabsContent,
@@ -15,7 +16,6 @@ import { api } from "~/trpc/react";
 import Image from "next/image";
 import { notFound } from "next/navigation";
 import { use } from "react";
-import { Skeleton } from "@torus-ts/ui/components/skeleton";
 
 interface PageProps {
   params: Promise<{
@@ -40,9 +40,10 @@ export default function TickerPage({ params }: PageProps) {
     });
 
   // Fetch CoinGecko market data
-  const { data: marketData, isLoading: isLoadingMarketData } = api.coinGecko.getMarketData.useQuery({
-    ticker: symbol,
-  });
+  const { data: marketData, isLoading: isLoadingMarketData } =
+    api.coinGecko.getMarketData.useQuery({
+      ticker: symbol,
+    });
 
   // Filter grouped tweets by verdict status of the FIRST (highest quality) prediction
   const ongoingPredictions =
@@ -92,7 +93,7 @@ export default function TickerPage({ params }: PageProps) {
                 <div className="text-muted-foreground text-sm">Price</div>
                 {isLoadingMarketData ? (
                   <>
-                    <Skeleton className="h-8 w-32 mb-1" />
+                    <Skeleton className="mb-1 h-8 w-32" />
                     <Skeleton className="h-4 w-20" />
                   </>
                 ) : marketData ? (
@@ -114,7 +115,7 @@ export default function TickerPage({ params }: PageProps) {
                 <div className="text-muted-foreground text-sm">Market Cap</div>
                 {isLoadingMarketData ? (
                   <>
-                    <Skeleton className="h-7 w-28 mb-1" />
+                    <Skeleton className="mb-1 h-7 w-28" />
                     <Skeleton className="h-4 w-16" />
                   </>
                 ) : marketData ? (
