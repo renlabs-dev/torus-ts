@@ -1,4 +1,4 @@
-import { and, eq, ilike, notExists, sql } from "@torus-ts/db";
+import { and, eq, gte, ilike, notExists, sql } from "@torus-ts/db";
 import {
   parsedPredictionFeedbackSchema,
   parsedPredictionSchema,
@@ -6,11 +6,17 @@ import {
   scrapedTweetSchema,
   twitterUsersSchema,
   twitterUserSuggestionsSchema,
+  userCreditsSchema,
   verdictSchema,
 } from "@torus-ts/db/schema";
 import type { TRPCRouterRecord } from "@trpc/server";
 import { z } from "zod";
+import { TRPCError } from "@trpc/server";
 import { authenticatedProcedure, publicProcedure } from "../../trpc";
+import {
+  BASELINE_METADATA_COST,
+  calculateScrapingCost,
+} from "../../utils/scraping-cost";
 
 /**
  * Twitter user router - handles operations for searching and retrieving Twitter user data
@@ -161,11 +167,72 @@ export const twitterUserRouter = {
     }),
 
   /**
-   * Suggest a Twitter user to be added to the swarm
+   * Check user status and get cost estimates for scraping.
    *
-   * Creates a suggestion record linking the authenticated user's wallet
-   * to a Twitter username they want tracked.
+   * Returns different costs depending on whether user metadata exists:
+   * - User not in DB: metadataCost (baseline to fetch metadata)
+   * - User in DB: scrapingCost (calculated from tweet count)
    */
+  checkUserStatus: publicProcedure
+    .input(
+      z.object({
+        username: z
+          .string()
+          .min(1)
+          .max(15)
+          .transform((val) => (val.startsWith("@") ? val.slice(1) : val)),
+      }),
+    )
+    .query(async ({ ctx, input }) => {
+      const user = await ctx.db.query.twitterUsersSchema.findFirst({
+        where: eq(twitterUsersSchema.username, input.username),
+      });
+
+      if (user) {
+        // User metadata exists - can calculate scraping cost
+        return {
+          hasMetadata: true,
+          metadataCost: 0,
+          scrapingCost: calculateScrapingCost(user.tweetCount ?? 0),
+          user,
+        };
+      }
+
+      // User not in DB - need to pay for metadata first
+      return {
+        hasMetadata: false,
+        metadataCost: BASELINE_METADATA_COST,
+        scrapingCost: null,
+        user: null,
+      };
+    }),
+
+  /**
+   * Purchase user metadata by fetching from Twitter API.
+   *
+   * Deducts baseline metadata cost and inserts user into twitter_users table.
+   * Returns the user metadata and calculated scraping cost.
+   */
+  purchaseMetadata: authenticatedProcedure
+    .input(
+      z.object({
+        username: z
+          .string()
+          .min(1)
+          .max(15)
+          .transform((val) => (val.startsWith("@") ? val.slice(1) : val)),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      // TODO: Implement once we have:
+      // 1. Twitter API client integration
+      // 2. User credits table exists (need migration)
+      throw new TRPCError({
+        code: "NOT_IMPLEMENTED",
+        message: "Metadata purchase not yet implemented - requires Twitter API integration",
+      });
+    }),
+
   suggestUser: authenticatedProcedure
     .input(
       z.object({
@@ -178,9 +245,58 @@ export const twitterUserRouter = {
     )
     .mutation(async ({ ctx, input }) => {
       const userKey = ctx.sessionData.userKey;
-      await ctx.db.insert(twitterUserSuggestionsSchema).values({
-        username: input.username,
-        wallet: userKey,
+
+      return await ctx.db.transaction(async (tx) => {
+        // 1. Get user metadata (must exist)
+        const user = await tx.query.twitterUsersSchema.findFirst({
+          where: eq(twitterUsersSchema.username, input.username),
+        });
+
+        if (!user) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message:
+              "User metadata not found. Purchase metadata first using purchaseMetadata endpoint.",
+          });
+        }
+
+        // 2. Calculate scraping cost
+        const cost = calculateScrapingCost(user.tweetCount ?? 0);
+
+        // 3. Deduct credits atomically (only if sufficient balance)
+        const updatedRows = await tx
+          .update(userCreditsSchema)
+          .set({
+            balance: sql`${userCreditsSchema.balance} - ${cost}`,
+            totalSpent: sql`${userCreditsSchema.totalSpent} + ${cost}`,
+            updatedAt: new Date(),
+          })
+          .where(
+            and(
+              eq(userCreditsSchema.userKey, userKey),
+              gte(userCreditsSchema.balance, cost.toString()),
+            ),
+          )
+          .returning({ balance: userCreditsSchema.balance });
+
+        // Check if update actually happened (empty array = insufficient balance)
+        if (updatedRows.length === 0) {
+          throw new TRPCError({
+            code: "FORBIDDEN",
+            message: `Insufficient credits. Required: ${cost}, check your balance with getBalance.`,
+          });
+        }
+
+        // 4. Insert suggestion
+        await tx.insert(twitterUserSuggestionsSchema).values({
+          username: input.username,
+          wallet: userKey,
+        });
+
+        return {
+          success: true,
+          creditsSpent: cost,
+        };
       });
     }),
 

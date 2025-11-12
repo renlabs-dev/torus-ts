@@ -1,0 +1,122 @@
+import { eq, sql } from "@torus-ts/db";
+import { creditPurchasesSchema, userCreditsSchema } from "@torus-ts/db/schema";
+import type { TRPCRouterRecord } from "@trpc/server";
+import { z } from "zod";
+import { authenticatedProcedure } from "../../trpc";
+import { torusToCredits } from "../../utils/scraping-cost";
+import { verifyTorusTransfer } from "../../utils/verify-transaction";
+
+/**
+ * Credits router - manage user credit balances and purchases.
+ *
+ * Credits are purchased with TORUS tokens and spent on services like Twitter scraping.
+ */
+export const creditsRouter = {
+  /**
+   * Get the authenticated user's credit balance.
+   */
+  getBalance: authenticatedProcedure.query(async ({ ctx }) => {
+    const record = await ctx.db.query.userCreditsSchema.findFirst({
+      where: eq(userCreditsSchema.userKey, ctx.sessionData.userKey),
+    });
+
+    return {
+      balance: record?.balance ?? "0",
+      totalPurchased: record?.totalPurchased ?? "0",
+      totalSpent: record?.totalSpent ?? "0",
+    };
+  }),
+
+  /**
+   * Purchase credits by verifying a TORUS token transfer.
+   *
+   * Verifies the transaction on-chain and grants credits at 1:1 rate.
+   * Transaction hash can only be used once (prevents double-spend).
+   */
+  purchaseCredits: authenticatedProcedure
+    .input(
+      z.object({
+        txHash: z.string().length(66),
+        blockHash: z.string().length(66),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      return await ctx.db.transaction(async (tx) => {
+        // 1. Insert payment record with nulls (unique constraint prevents double-spend)
+        // Null creditsGranted indicates payment not yet verified/processed
+        await tx.insert(creditPurchasesSchema).values({
+          userKey: ctx.sessionData.userKey,
+          txHash: input.txHash,
+          torusAmount: null,
+          creditsGranted: null,
+          blockNumber: null,
+        });
+
+        // 2. Verify transaction on-chain
+        const verified = await verifyTorusTransfer(
+          ctx.wsAPI,
+          input.txHash,
+          input.blockHash,
+          ctx.sessionData.userKey,
+          ctx.predictionAppAddress,
+        );
+
+        // 3. Calculate credits (1 TORUS = 1 credit)
+        const credits = torusToCredits(verified.amount);
+
+        // 4. Update payment record with verified data
+        await tx
+          .update(creditPurchasesSchema)
+          .set({
+            torusAmount: verified.amount,
+            creditsGranted: credits.toString(),
+            blockNumber: BigInt(verified.blockNumber),
+          })
+          .where(eq(creditPurchasesSchema.txHash, input.txHash));
+
+        // 5. Lock user's credit row to prevent race conditions
+        await tx.execute(sql`
+          SELECT balance FROM user_credits
+          WHERE user_key = ${ctx.sessionData.userKey}
+          FOR UPDATE
+        `);
+
+        // 6. Grant credits with Drizzle upsert
+        await tx
+          .insert(userCreditsSchema)
+          .values({
+            userKey: ctx.sessionData.userKey,
+            balance: credits.toString(),
+            totalPurchased: credits.toString(),
+            totalSpent: "0",
+          })
+          .onConflictDoUpdate({
+            target: userCreditsSchema.userKey,
+            set: {
+              balance: sql`${userCreditsSchema.balance} + ${credits}`,
+              totalPurchased: sql`${userCreditsSchema.totalPurchased} + ${credits}`,
+              updatedAt: new Date(),
+            },
+          });
+
+        return {
+          creditsGranted: credits,
+          torusAmount: verified.amount.toString(),
+        };
+      });
+    }),
+
+  /**
+   * Get credit purchase history for the authenticated user.
+   */
+  getPurchaseHistory: authenticatedProcedure.query(async ({ ctx }) => {
+    const purchases = await ctx.db
+      .select()
+      .from(creditPurchasesSchema)
+      .where(eq(creditPurchasesSchema.userKey, ctx.sessionData.userKey))
+      .orderBy(sql`${creditPurchasesSchema.createdAt} DESC`)
+      .limit(50);
+
+    return purchases;
+  }),
+} satisfies TRPCRouterRecord;

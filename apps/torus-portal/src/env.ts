@@ -42,6 +42,7 @@ const envSchema = {
   NEXT_PUBLIC_TORUS_CHAIN_ENV: chainEnvSchema,
   JWT_SECRET: z.string().min(8),
   NEXT_PUBLIC_TORUS_ALLOCATOR_ADDRESS: SS58_SCHEMA,
+  PREDICTION_APP_ADDRESS: SS58_SCHEMA,
 };
 
 export const { EnvScript, env } = buildZodEnvScript(envSchema, {
