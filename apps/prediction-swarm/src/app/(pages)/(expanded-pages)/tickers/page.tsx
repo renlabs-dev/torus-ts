@@ -124,12 +124,12 @@ export default function TickersPage() {
                             </Link>
                           </td>
                           <td className="p-4 text-right font-semibold">
-                            {data
+                            {data?.current_price
                               ? `$${data.current_price.toLocaleString()}`
                               : "-"}
                           </td>
                           <td className="p-4 text-right">
-                            {data ? (
+                            {data?.price_change_percentage_24h != null ? (
                               <span
                                 className={
                                   data.price_change_percentage_24h >= 0
@@ -150,12 +150,12 @@ export default function TickersPage() {
                             )}
                           </td>
                           <td className="p-4 text-right font-semibold">
-                            {data
+                            {data?.total_volume
                               ? `$${(data.total_volume / 1_000_000_000).toFixed(2)}B`
                               : "-"}
                           </td>
                           <td className="p-4 text-right font-semibold">
-                            {data
+                            {data?.market_cap
                               ? `$${(data.market_cap / 1_000_000_000).toFixed(2)}B`
                               : "-"}
                           </td>

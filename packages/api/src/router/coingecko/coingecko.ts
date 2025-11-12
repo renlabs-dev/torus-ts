@@ -1,6 +1,7 @@
 import type { TRPCRouterRecord } from "@trpc/server";
 import { z } from "zod";
-import { getCoinMarketData } from "../../services/coingecko/client";
+import { getCoinMarketData, getMultipleCoinMarketData } from "../../services/coingecko/client";
+import type { CoinGeckoMarketData } from "../../services/coingecko/types";
 import { publicProcedure } from "../../trpc";
 
 export const coinGeckoRouter = {
@@ -24,21 +25,13 @@ export const coinGeckoRouter = {
     .query(async ({ input }) => {
       const { tickers } = input;
 
-      const results = await Promise.all(
-        tickers.map(async (ticker) => {
-          const data = await getCoinMarketData(ticker);
-          return { ticker, data };
-        }),
-      );
+      // Use batched function to fetch all tickers in single API call
+      const resultMap = await getMultipleCoinMarketData(tickers);
 
-      const marketDataMap: Record<
-        string,
-        NonNullable<(typeof results)[0]["data"]>
-      > = {};
-      results.forEach(({ ticker, data }) => {
-        if (data) {
-          marketDataMap[ticker.toUpperCase()] = data;
-        }
+      // Convert Map to Record for tRPC
+      const marketDataMap: Record<string, CoinGeckoMarketData> = {};
+      resultMap.forEach((data, ticker) => {
+        marketDataMap[ticker] = data;
       });
 
       return marketDataMap;
