@@ -18,6 +18,11 @@ export default function TickersPage() {
       tickers,
     });
 
+  // Fetch prediction counts for all tickers
+  const { data: predictionCounts } = api.prediction.getTickerCounts.useQuery({
+    tickers,
+  });
+
   return (
     <div className="relative pt-4">
       {/* Vertical borders spanning full height */}
@@ -45,6 +50,7 @@ export default function TickersPage() {
                   <th className="p-4 text-right font-medium">24h</th>
                   <th className="p-4 text-right font-medium">24h Volume</th>
                   <th className="p-4 text-right font-medium">Market Cap</th>
+                  <th className="p-4 text-right font-medium">Predictions</th>
                 </tr>
               </thead>
               <tbody>
@@ -70,6 +76,9 @@ export default function TickersPage() {
                         </td>
                         <td className="p-4">
                           <Skeleton className="ml-auto h-6 w-32" />
+                        </td>
+                        <td className="p-4">
+                          <Skeleton className="ml-auto h-6 w-16" />
                         </td>
                       </tr>
                     ))
@@ -149,6 +158,9 @@ export default function TickersPage() {
                             {data
                               ? `$${(data.market_cap / 1_000_000_000).toFixed(2)}B`
                               : "-"}
+                          </td>
+                          <td className="p-4 text-right font-semibold">
+                            {predictionCounts?.[ticker] ?? 0}
                           </td>
                         </tr>
                       );

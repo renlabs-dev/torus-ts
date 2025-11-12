@@ -914,6 +914,62 @@ export const predictionRouter = {
     return result;
   }),
   /**
+   * Get prediction counts for multiple tickers
+   */
+  getTickerCounts: publicProcedure
+    .input(
+      z.object({
+        tickers: z.array(z.string()).min(1).max(100),
+      }),
+    )
+    .query(async ({ ctx, input }) => {
+      const { tickers } = input;
+
+      const counts: Record<string, number> = {};
+
+      await Promise.all(
+        tickers.map(async (ticker) => {
+          const result = await ctx.db
+            .select({
+              count: sql<number>`COUNT(DISTINCT ${parsedPredictionSchema.id})`,
+            })
+            .from(parsedPredictionSchema)
+            .where(
+              and(
+                sql`${parsedPredictionSchema.context}->>'schema_type' = 'crypto'`,
+                sql`LOWER(${parsedPredictionSchema.context}->>'tickers') LIKE ${'%"' + ticker.toLowerCase() + '"%'}`,
+                // Same feedback filter as other queries
+                notExists(
+                  ctx.db
+                    .select({
+                      id: parsedPredictionFeedbackSchema.parsedPredictionId,
+                    })
+                    .from(parsedPredictionFeedbackSchema)
+                    .where(
+                      and(
+                        eq(
+                          parsedPredictionFeedbackSchema.parsedPredictionId,
+                          parsedPredictionSchema.id,
+                        ),
+                        or(
+                          sql`${parsedPredictionFeedbackSchema.failureCause} != 'FUTURE_TIMEFRAME'`,
+                          isNull(parsedPredictionFeedbackSchema.failureCause),
+                        ),
+                      ),
+                    ),
+                ),
+              ),
+            )
+            .execute();
+
+          counts[ticker.toUpperCase()] = result[0]?.count ?? 0;
+        }),
+      );
+
+      return counts;
+    }),
+
+  /**
    * Get predictions by ticker symbol (e.g., "BTC", "ETH").
    *
    * Searches the context.tickers JSONB array field for predictions containing
