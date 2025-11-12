@@ -15,6 +15,7 @@ import { api } from "~/trpc/react";
 import Image from "next/image";
 import { notFound } from "next/navigation";
 import { use } from "react";
+import { Skeleton } from "@torus-ts/ui/components/skeleton";
 
 interface PageProps {
   params: Promise<{
@@ -39,7 +40,7 @@ export default function TickerPage({ params }: PageProps) {
     });
 
   // Fetch CoinGecko market data
-  const { data: marketData } = api.coinGecko.getMarketData.useQuery({
+  const { data: marketData, isLoading: isLoadingMarketData } = api.coinGecko.getMarketData.useQuery({
     ticker: symbol,
   });
 
@@ -83,14 +84,19 @@ export default function TickerPage({ params }: PageProps) {
       <div className="border-border relative my-4 border-t" />
 
       {/* Market Data */}
-      {marketData && (
-        <>
-          <div className="relative mx-auto max-w-screen-lg px-4">
-            <Card className="bg-background/80 plus-corners relative backdrop-blur-lg">
-              <CardContent className="px-5 py-4">
-                <div className="grid gap-6 md:grid-cols-4">
-                  <div>
-                    <div className="text-muted-foreground text-sm">Price</div>
+      <div className="relative mx-auto max-w-screen-lg px-4">
+        <Card className="bg-background/80 plus-corners relative backdrop-blur-lg">
+          <CardContent className="px-5 py-4">
+            <div className="grid gap-6 md:grid-cols-4">
+              <div>
+                <div className="text-muted-foreground text-sm">Price</div>
+                {isLoadingMarketData ? (
+                  <>
+                    <Skeleton className="h-8 w-32 mb-1" />
+                    <Skeleton className="h-4 w-20" />
+                  </>
+                ) : marketData ? (
+                  <>
                     <div className="text-2xl font-bold">
                       ${marketData.current_price.toLocaleString()}
                     </div>
@@ -99,42 +105,62 @@ export default function TickerPage({ params }: PageProps) {
                     >
                       {marketData.price_change_percentage_24h.toFixed(2)}% (24h)
                     </div>
-                  </div>
-                  <div>
-                    <div className="text-muted-foreground text-sm">
-                      Market Cap
-                    </div>
+                  </>
+                ) : (
+                  <div className="text-muted-foreground">-</div>
+                )}
+              </div>
+              <div>
+                <div className="text-muted-foreground text-sm">Market Cap</div>
+                {isLoadingMarketData ? (
+                  <>
+                    <Skeleton className="h-7 w-28 mb-1" />
+                    <Skeleton className="h-4 w-16" />
+                  </>
+                ) : marketData ? (
+                  <>
                     <div className="text-xl font-semibold">
                       ${(marketData.market_cap / 1_000_000_000).toFixed(2)}B
                     </div>
                     <div className="text-muted-foreground text-xs">
                       Rank #{marketData.market_cap_rank}
                     </div>
+                  </>
+                ) : (
+                  <div className="text-muted-foreground">-</div>
+                )}
+              </div>
+              <div>
+                <div className="text-muted-foreground text-sm">24h Volume</div>
+                {isLoadingMarketData ? (
+                  <Skeleton className="h-7 w-28" />
+                ) : marketData ? (
+                  <div className="text-xl font-semibold">
+                    ${(marketData.total_volume / 1_000_000_000).toFixed(2)}B
                   </div>
-                  <div>
-                    <div className="text-muted-foreground text-sm">
-                      24h Volume
-                    </div>
-                    <div className="text-xl font-semibold">
-                      ${(marketData.total_volume / 1_000_000_000).toFixed(2)}B
-                    </div>
+                ) : (
+                  <div className="text-muted-foreground">-</div>
+                )}
+              </div>
+              <div>
+                <div className="text-muted-foreground text-sm">24h Range</div>
+                {isLoadingMarketData ? (
+                  <Skeleton className="h-6 w-40" />
+                ) : marketData ? (
+                  <div className="font-semibold">
+                    ${marketData.low_24h.toLocaleString()} - $
+                    {marketData.high_24h.toLocaleString()}
                   </div>
-                  <div>
-                    <div className="text-muted-foreground text-sm">
-                      24h Range
-                    </div>
-                    <div className="font-semibold">
-                      ${marketData.low_24h.toLocaleString()} - $
-                      {marketData.high_24h.toLocaleString()}
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-          <div className="border-border relative my-4 border-t" />
-        </>
-      )}
+                ) : (
+                  <div className="text-muted-foreground">-</div>
+                )}
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      <div className="border-border relative my-4 border-t" />
 
       <div className="relative mx-auto max-w-screen-lg px-4">
         <FeedLegend />
