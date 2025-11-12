@@ -85,6 +85,9 @@ export interface FastBridgeTransactionHistoryItem {
   // For recovery
   canRetry: boolean;
 
+  // User interaction tracking
+  viewedByUser?: boolean; // True when user has viewed/interacted with this error transaction
+
   // Metadata
   evmAddress?: string;
   nativeAddress?: string;

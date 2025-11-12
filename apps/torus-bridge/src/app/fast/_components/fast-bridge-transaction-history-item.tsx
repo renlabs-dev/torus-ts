@@ -3,14 +3,16 @@
 import { Badge } from "@torus-ts/ui/components/badge";
 import { Button } from "@torus-ts/ui/components/button";
 import { cn } from "@torus-ts/ui/lib/utils";
-import { ChevronDown, ChevronUp, ExternalLink, Play } from "lucide-react";
+import { ChevronDown, ChevronUp, ExternalLink, RotateCw } from "lucide-react";
 import { useState } from "react";
 import type { FastBridgeTransactionHistoryItem } from "./fast-bridge-types";
 
 interface TransactionHistoryItemProps {
   transaction: FastBridgeTransactionHistoryItem;
+  index: number;
   onContinue: (transaction: FastBridgeTransactionHistoryItem) => void;
   getExplorerUrl: (txHash: string, chainName: string) => string;
+  onMarkAsViewed: (transactionId: string) => void;
 }
 
 function formatTimestamp(timestamp: number): string {
@@ -67,8 +69,10 @@ function getStatusBadge(status: FastBridgeTransactionHistoryItem["status"]) {
 
 export function TransactionHistoryItem({
   transaction,
+  index,
   onContinue,
   getExplorerUrl,
+  onMarkAsViewed,
 }: TransactionHistoryItemProps) {
   const [isExpanded, setIsExpanded] = useState(false);
 
@@ -80,7 +84,19 @@ export function TransactionHistoryItem({
   const handleCardClick = () => {
     if (transaction.status === "error") {
       setIsExpanded((prev) => !prev);
+      // Mark as viewed when expanding error transaction
+      if (!transaction.viewedByUser) {
+        onMarkAsViewed(transaction.id);
+      }
     }
+  };
+
+  const handleContinue = () => {
+    // Mark as viewed when clicking Continue
+    if (!transaction.viewedByUser) {
+      onMarkAsViewed(transaction.id);
+    }
+    onContinue(transaction);
   };
 
   return (
@@ -94,6 +110,16 @@ export function TransactionHistoryItem({
           onClick={handleCardClick}
         >
           <div className="flex items-center gap-3">
+            {/* Unviewed error indicator */}
+            {transaction.status === "error" && !transaction.viewedByUser && (
+              <div className="relative flex h-3 w-3 shrink-0">
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-400 opacity-75"></span>
+                <span className="relative inline-flex h-3 w-3 rounded-full bg-red-500"></span>
+              </div>
+            )}
+            <Badge variant="secondary" className="text-muted-foreground text-xs font-mono">
+              #{index + 1}
+            </Badge>
             <span className="text-sm font-medium">{directionLabel}</span>
             {getStatusBadge(transaction.status)}
           </div>
@@ -107,13 +133,9 @@ export function TransactionHistoryItem({
 
         <div className="flex gap-2">
           {transaction.status === "error" && (
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => onContinue(transaction)}
-            >
-              <Play className="mr-2 h-4 w-4" />
-              Continue
+            <Button size="sm" variant="outline" onClick={handleContinue}>
+              <RotateCw className="mr-2 h-4 w-4" />
+              Retry
             </Button>
           )}
           <Button

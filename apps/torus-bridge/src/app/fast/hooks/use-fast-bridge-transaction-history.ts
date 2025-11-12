@@ -19,6 +19,8 @@ interface FastBridgeTransactionHistoryState {
   ) => FastBridgeTransactionHistoryItem | undefined;
   clearHistory: () => void;
   markAsRetried: (id: string) => void;
+  markAsViewed: (id: string) => void;
+  getUnviewedErrorCount: () => number;
 }
 
 function generateId(): string {
@@ -75,6 +77,21 @@ export const useFastBridgeTransactionHistory =
                 : tx,
             ),
           }));
+        },
+
+        markAsViewed: (id) => {
+          set((state) => ({
+            transactions: state.transactions.map((tx) =>
+              tx.id === id ? { ...tx, viewedByUser: true } : tx,
+            ),
+          }));
+        },
+
+        getUnviewedErrorCount: () => {
+          const transactions = get().transactions;
+          return transactions.filter(
+            (tx) => tx.status === "error" && !tx.viewedByUser,
+          ).length;
         },
       }),
       {

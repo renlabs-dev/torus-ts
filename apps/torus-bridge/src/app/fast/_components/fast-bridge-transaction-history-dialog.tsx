@@ -15,7 +15,7 @@ import {
   TabsTrigger,
 } from "@torus-ts/ui/components/tabs";
 import { AlertCircle } from "lucide-react";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import { useFastBridgeTransactionHistory } from "../hooks/use-fast-bridge-transaction-history";
 import { TransactionHistoryItem } from "./fast-bridge-transaction-history-item";
 import type {
@@ -26,50 +26,24 @@ import type {
 const ITEMS_PER_PAGE = 10;
 
 interface TransactionListProps {
-  transactions: FastBridgeTransactionHistoryItem[];
+  transactionsWithIndex: {
+    transaction: FastBridgeTransactionHistoryItem;
+    originalIndex: number;
+  }[];
   filter: TransactionHistoryFilter;
-  totalCount: number;
   onContinue: (transaction: FastBridgeTransactionHistoryItem) => void;
   getExplorerUrl: (txHash: string, chainName: string) => string;
-  onLoadMore: () => void;
-  hasMore: boolean;
-  visibleCount: number;
+  onMarkAsViewed: (transactionId: string) => void;
 }
 
 function TransactionList({
-  transactions,
+  transactionsWithIndex,
   filter,
-  totalCount,
   onContinue,
   getExplorerUrl,
-  onLoadMore,
-  hasMore,
-  visibleCount,
+  onMarkAsViewed,
 }: TransactionListProps) {
-  const scrollContainerRef = useRef<HTMLDivElement>(null);
-
-  const handleScroll = useCallback(() => {
-    if (!scrollContainerRef.current || !hasMore) return;
-
-    const { scrollTop, scrollHeight, clientHeight } =
-      scrollContainerRef.current;
-    const scrollPercentage = (scrollTop + clientHeight) / scrollHeight;
-
-    // Load more when scrolled to 80%
-    if (scrollPercentage > 0.8) {
-      onLoadMore();
-    }
-  }, [hasMore, onLoadMore]);
-
-  useEffect(() => {
-    const container = scrollContainerRef.current;
-    if (!container) return;
-
-    container.addEventListener("scroll", handleScroll);
-    return () => container.removeEventListener("scroll", handleScroll);
-  }, [handleScroll]);
-
-  if (transactions.length === 0) {
+  if (transactionsWithIndex.length === 0) {
     const message =
       filter === "completed"
         ? "No completed transactions yet"
@@ -80,18 +54,17 @@ function TransactionList({
   }
 
   return (
-    <div ref={scrollContainerRef} className="space-y-3 pb-4">
-      {transactions.map((tx) => (
+    <div className="space-y-3 pb-4">
+      {transactionsWithIndex.map(({ transaction, originalIndex }) => (
         <TransactionHistoryItem
-          key={tx.id}
-          transaction={tx}
+          key={transaction.id}
+          transaction={transaction}
+          index={originalIndex}
           onContinue={onContinue}
           getExplorerUrl={getExplorerUrl}
+          onMarkAsViewed={onMarkAsViewed}
         />
       ))}
-      {hasMore && (
-        <LoadingIndicator visible={visibleCount} total={totalCount} />
-      )}
     </div>
   );
 }
@@ -109,9 +82,10 @@ export function TransactionHistoryDialog({
   onContinue,
   getExplorerUrl,
 }: TransactionHistoryDialogProps) {
-  const { getTransactions } = useFastBridgeTransactionHistory();
+  const { getTransactions, markAsViewed } = useFastBridgeTransactionHistory();
   const [filter, setFilter] = useState<TransactionHistoryFilter>("all");
   const [visibleCount, setVisibleCount] = useState(ITEMS_PER_PAGE);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   const allTransactions = getTransactions();
 
@@ -129,6 +103,16 @@ export function TransactionHistoryDialog({
   const visibleTransactions = useMemo(
     () => filteredTransactions.slice(0, visibleCount),
     [filteredTransactions, visibleCount],
+  );
+
+  // Map each visible transaction to its original index in filteredTransactions
+  const visibleTransactionsWithIndex = useMemo(
+    () =>
+      visibleTransactions.map((tx, visibleIndex) => ({
+        transaction: tx,
+        originalIndex: visibleIndex, // This is already the correct index since we're slicing from 0
+      })),
+    [visibleTransactions],
   );
 
   const hasMore = visibleCount < filteredTransactions.length;
@@ -152,6 +136,18 @@ export function TransactionHistoryDialog({
     [],
   );
 
+  const onScroll = useCallback(() => {
+    if (!scrollContainerRef.current || !hasMore) return;
+
+    const { scrollTop, scrollHeight, clientHeight } =
+      scrollContainerRef.current;
+
+    // Check if scrolled to bottom (with 1px tolerance for precision issues)
+    if (scrollTop + clientHeight >= scrollHeight - 1) {
+      handleLoadMore();
+    }
+  }, [hasMore, handleLoadMore]);
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="flex max-h-[85vh] max-w-2xl flex-col p-0">
@@ -162,7 +158,11 @@ export function TransactionHistoryDialog({
           </DialogDescription>
         </DialogHeader>
 
-        <div className="flex-1 overflow-y-auto px-6">
+        <div
+          ref={scrollContainerRef}
+          className="flex-1 overflow-y-auto px-6"
+          onScroll={onScroll}
+        >
           <Tabs
             value={filter}
             onValueChange={(v) =>
@@ -184,42 +184,33 @@ export function TransactionHistoryDialog({
             <TabsContent value="all" className="mt-0">
               <TransactionList
                 key={`${filter}-${isOpen}`}
-                transactions={visibleTransactions}
+                transactionsWithIndex={visibleTransactionsWithIndex}
                 filter={filter}
-                totalCount={filteredTransactions.length}
                 onContinue={onContinue}
                 getExplorerUrl={getExplorerUrl}
-                onLoadMore={handleLoadMore}
-                hasMore={hasMore}
-                visibleCount={visibleCount}
+                onMarkAsViewed={markAsViewed}
               />
             </TabsContent>
 
             <TabsContent value="completed" className="mt-0">
               <TransactionList
                 key={`${filter}-${isOpen}`}
-                transactions={visibleTransactions}
+                transactionsWithIndex={visibleTransactionsWithIndex}
                 filter={filter}
-                totalCount={filteredTransactions.length}
                 onContinue={onContinue}
                 getExplorerUrl={getExplorerUrl}
-                onLoadMore={handleLoadMore}
-                hasMore={hasMore}
-                visibleCount={visibleCount}
+                onMarkAsViewed={markAsViewed}
               />
             </TabsContent>
 
             <TabsContent value="error" className="mt-0">
               <TransactionList
                 key={`${filter}-${isOpen}`}
-                transactions={visibleTransactions}
+                transactionsWithIndex={visibleTransactionsWithIndex}
                 filter={filter}
-                totalCount={filteredTransactions.length}
                 onContinue={onContinue}
                 getExplorerUrl={getExplorerUrl}
-                onLoadMore={handleLoadMore}
-                hasMore={hasMore}
-                visibleCount={visibleCount}
+                onMarkAsViewed={markAsViewed}
               />
             </TabsContent>
           </Tabs>
@@ -240,25 +231,6 @@ function EmptyState({ message = "No transactions yet" }: { message?: string }) {
     <div className="flex flex-col items-center justify-center py-12 text-center">
       <AlertCircle className="text-muted-foreground mb-4 h-12 w-12" />
       <p className="text-muted-foreground text-sm">{message}</p>
-    </div>
-  );
-}
-
-function LoadingIndicator({
-  visible,
-  total,
-}: {
-  visible: number;
-  total: number;
-}) {
-  return (
-    <div className="flex flex-col items-center justify-center py-6 text-center">
-      <div className="text-muted-foreground text-sm">
-        Showing {visible} of {total} transactions
-      </div>
-      <div className="text-muted-foreground mt-1 text-xs">
-        Scroll down to load more...
-      </div>
     </div>
   );
 }

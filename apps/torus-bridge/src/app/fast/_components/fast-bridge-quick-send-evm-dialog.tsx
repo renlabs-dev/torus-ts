@@ -42,10 +42,6 @@ export function QuickSendEvmDialog({
   const [selectedDestination, setSelectedDestination] = useState<
     "native" | "base" | null
   >(null);
-  const [progress, setProgress] = useState(0);
-  const [transactionSigned, setTransactionSigned] = useState(false);
-  const progressIntervalRef = useRef<NodeJS.Timeout | null>(null);
-  const progressTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Save original amount to display consistently
   const [originalAmount, setOriginalAmount] = useState<bigint>(0n);
@@ -54,7 +50,7 @@ export function QuickSendEvmDialog({
 
   // Monitor EVM balance to auto-complete when transfer is detected
   useEffect(() => {
-    if (transactionSigned && currentEvmBalance !== undefined && status === "sending") {
+    if (status === "sending" && currentEvmBalance !== undefined) {
       // Save initial balance on first check
       if (initialBalanceRef.current === null) {
         initialBalanceRef.current = currentEvmBalance;
@@ -63,88 +59,43 @@ export function QuickSendEvmDialog({
 
       // Calculate how much balance has decreased
       const balanceDecrease = initialBalanceRef.current - currentEvmBalance;
-      const expectedDecrease = originalAmount - (5n * 10n ** 15n); // Original amount minus gas reserve
 
-      // If balance decreased by at least 90% of expected amount, consider it complete
-      // This handles cases where there's dust remaining or slight differences
-      const minExpectedDecrease = (expectedDecrease * 9n) / 10n; // 90%
+      // Gas reserve is 0.005 TORUS (in 12 decimals, which equals 5 * 10^15 wei)
+      const gasReserveWei = 5n * 10n ** 15n;
 
-      if (balanceDecrease >= minExpectedDecrease) {
-        // Clear any ongoing progress animations
-        if (progressIntervalRef.current) {
-          clearInterval(progressIntervalRef.current);
-          progressIntervalRef.current = null;
-        }
-        if (progressTimeoutRef.current) {
-          clearTimeout(progressTimeoutRef.current);
-          progressTimeoutRef.current = null;
-        }
+      // Expected decrease is the original amount minus gas reserve
+      const expectedDecrease = originalAmount - gasReserveWei;
 
+      // Detection logic:
+      // 1. If balance is now very small (< 0.01 TORUS = 10^16 wei), consider it complete
+      // 2. OR if balance decreased by at least 80% of expected amount
+      const dustThreshold = 10n ** 16n; // 0.01 TORUS in wei
+      const minExpectedDecrease = (expectedDecrease * 8n) / 10n; // 80%
+
+      const isBalanceNearZero = currentEvmBalance < dustThreshold;
+      const hasDecreasedEnough = balanceDecrease >= minExpectedDecrease;
+
+      if (isBalanceNearZero || hasDecreasedEnough) {
         // Force refresh all balances
         if (refetchBalances) {
           refetchBalances().catch(console.error);
         }
 
-        // Jump to 100% and show success immediately
-        setProgress(100);
+        // Show success immediately
         setStatus("success");
-        setTransactionSigned(false);
         initialBalanceRef.current = null;
       }
     }
-  }, [currentEvmBalance, transactionSigned, status, refetchBalances, originalAmount]);
-
-  const animateProgress = () => {
-    setProgress(0);
-
-    // Smooth continuous progress with gradual slowdown
-    // 0-20%: Fast (~3 seconds)
-    // 20-50%: Medium (~5 seconds)
-    // 50-80%: Slow (~8 seconds)
-    // 80-95%: Very slow (~10 seconds)
-    // Never reaches 100% (only balance detection does that)
-
-    const progressInterval = setInterval(() => {
-      setProgress((prev) => {
-        if (prev < 20) {
-          // Fast phase: 0-20% in ~3 seconds
-          return Math.min(prev + Math.random() * 1.5 + 1, 20);
-        } else if (prev < 50) {
-          // Medium phase: 20-50% in ~5 seconds
-          return Math.min(prev + Math.random() * 0.8 + 0.4, 50);
-        } else if (prev < 80) {
-          // Slow phase: 50-80% in ~8 seconds
-          return Math.min(prev + Math.random() * 0.4 + 0.2, 80);
-        } else if (prev < 95) {
-          // Very slow phase: 80-95% in ~10 seconds
-          return Math.min(prev + Math.random() * 0.15 + 0.05, 95);
-        }
-        // Stay at 95%, waiting for balance detection
-        return prev;
-      });
-    }, 200); // Check every 200ms for smooth animation
-
-    progressIntervalRef.current = progressInterval;
-
-    return () => {
-      if (progressIntervalRef.current) {
-        clearInterval(progressIntervalRef.current);
-        progressIntervalRef.current = null;
-      }
-    };
-  };
+  }, [currentEvmBalance, status, refetchBalances, originalAmount]);
 
   const handleSend = async (destination: "native" | "base") => {
     setSelectedDestination(destination);
     setStatus("sending");
     setErrorMessage("");
-    setTransactionSigned(false);
 
     // Save original values for consistent display
     setOriginalAmount(evmBalance);
     setOriginalDestination(destination === "native" ? "Torus Native" : "Base Chain");
-
-    let cleanup: (() => void) | null = null;
 
     try {
       // Send the exact amount shown in the dialog (evmBalance)
@@ -154,16 +105,9 @@ export function QuickSendEvmDialog({
         await onSendToBase(evmBalance);
       }
 
-      // Transaction signed successfully, start progress animation
-      setTransactionSigned(true);
-      cleanup = animateProgress();
-
       // Note: The useEffect monitoring currentEvmBalance will handle completion
-      // when balance reaches 0, so we don't manually complete here
+      // when balance decreases, so we don't manually complete here
     } catch (error) {
-      if (cleanup) cleanup();
-      setTransactionSigned(false);
-
       const errorMsg = error instanceof Error ? error.message : "Transfer failed";
 
       if (
@@ -200,22 +144,9 @@ export function QuickSendEvmDialog({
       setStatus("idle");
       setErrorMessage("");
       setSelectedDestination(null);
-      setTransactionSigned(false);
-      setProgress(0);
       setOriginalAmount(0n);
       setOriginalDestination("");
       initialBalanceRef.current = null;
-
-      // Clear any pending intervals/timeouts
-      if (progressIntervalRef.current) {
-        clearInterval(progressIntervalRef.current);
-        progressIntervalRef.current = null;
-      }
-      if (progressTimeoutRef.current) {
-        clearTimeout(progressTimeoutRef.current);
-        progressTimeoutRef.current = null;
-      }
-
       onClose();
     }
   };
@@ -234,26 +165,10 @@ export function QuickSendEvmDialog({
                 Transferring <span className="font-semibold">{formatAmount(originalAmount)} TORUS</span> to{" "}
                 <span className="font-semibold">{originalDestination}</span>
               </p>
-            </div>
-
-            {/* Only show progress bar after transaction is signed */}
-            {transactionSigned ? (
-              <div className="w-full space-y-3">
-                <div className="bg-muted h-2 w-full overflow-hidden rounded-full">
-                  <div
-                    className="bg-primary h-full rounded-full transition-all duration-300 ease-out"
-                    style={{ width: `${progress}%` }}
-                  />
-                </div>
-                <p className="text-muted-foreground text-center text-sm">
-                  Transaction confirmed, processing transfer...
-                </p>
-              </div>
-            ) : (
-              <p className="text-muted-foreground text-center text-sm">
-                Please confirm the transaction in your wallet
+              <p className="text-muted-foreground mt-4 text-sm">
+                Please confirm the transaction in your wallet and wait for completion...
               </p>
-            )}
+            </div>
           </div>
         </DialogContent>
       </Dialog>

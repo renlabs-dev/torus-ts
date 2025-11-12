@@ -92,16 +92,15 @@ export function FastBridgeForm() {
     isTransferInProgress,
     getExplorerUrl,
     setTransactions,
+    updateBridgeState,
+    setCurrentTransactionId,
     executeEvmToNative,
     executeEvmToBase,
   } = useOrchestratedTransfer();
 
-  const { getTransactions, getTransactionById } =
+  const { getTransactionById, getUnviewedErrorCount } =
     useFastBridgeTransactionHistory();
-  const allTransactions = getTransactions();
-  const errorCount = allTransactions.filter(
-    (tx) => tx.status === "error",
-  ).length;
+  const unviewedErrorCount = getUnviewedErrorCount();
 
   const {
     setTransactionInUrl,
@@ -257,12 +256,29 @@ export function FastBridgeForm() {
 
   const handleRetryFromHistory = useCallback(
     (transaction: FastBridgeTransactionHistoryItem) => {
+      console.log("[Retry from History] Starting restore for transaction:", transaction.id);
+
       setShowHistoryDialog(false);
       setDirection(transaction.direction);
       setAmountFrom(transaction.amount);
 
+      console.log("[Retry from History] Set direction:", transaction.direction, "amount:", transaction.amount);
+
       // Set URL state for recovery
       setTransactionInUrl(transaction.id);
+
+      // Set transaction ID so the orchestrator can update history when retry succeeds
+      setCurrentTransactionId(transaction.id);
+
+      // Restore bridge state to the current step (ERROR, or whatever step it was at)
+      // This allows continuing from pending/step1_complete, not just errors
+      updateBridgeState({
+        step: transaction.status === "error"
+          ? SimpleBridgeStep.ERROR
+          : transaction.currentStep,
+        direction: transaction.direction,
+        amount: transaction.amount,
+      });
 
       // Restore transaction state to show in lifecycle dialog
       const restoredTransactions: SimpleBridgeTransaction[] = [];
@@ -321,20 +337,47 @@ export function FastBridgeForm() {
       // Restore the transactions to the shared state
       setTransactions(restoredTransactions);
 
+      console.log("[Retry from History] Restored transactions:", restoredTransactions);
+      console.log("[Retry from History] Opening transaction dialog");
+
       // Open dialog showing the error state
       setShowTransactionDialog(true);
     },
-    [getExplorerUrl, setTransactions, setTransactionInUrl],
+    [
+      getExplorerUrl,
+      setTransactions,
+      setTransactionInUrl,
+      updateBridgeState,
+      setCurrentTransactionId,
+    ],
   );
 
   // Check for transaction ID in URL on mount (F5 recovery)
   useEffect(() => {
     const txId = getTransactionFromUrl();
+    console.log("[F5 Recovery] Checking URL for txId:", txId);
+
     if (txId) {
       const transaction = getTransactionById(txId);
-      if (transaction?.status === "error") {
-        // Auto-restore the transaction
+      console.log("[F5 Recovery] Found transaction:", transaction);
+
+      // Auto-restore any incomplete transaction (error, pending, or step1_complete)
+      if (
+        transaction &&
+        transaction.status !== "completed"
+      ) {
+        console.log("[F5 Recovery] Restoring incomplete transaction:", {
+          id: transaction.id,
+          status: transaction.status,
+          direction: transaction.direction,
+          amount: transaction.amount,
+          errorStep: transaction.errorStep,
+        });
         handleRetryFromHistory(transaction);
+      } else if (transaction) {
+        console.log("[F5 Recovery] Transaction is already completed, skipping restore");
+      } else {
+        console.log("[F5 Recovery] Transaction not found in history");
       }
     }
   }, [getTransactionFromUrl, getTransactionById, handleRetryFromHistory]);
@@ -509,12 +552,12 @@ export function FastBridgeForm() {
           >
             <History className="mr-2 h-4 w-4" />
             History
-            {errorCount > 0 && (
+            {unviewedErrorCount > 0 && (
               <Badge
                 variant="destructive"
                 className="absolute -right-1 -top-1 flex h-5 min-w-[20px] items-center justify-center rounded-full px-1 text-[10px] font-bold"
               >
-                {errorCount}
+                {unviewedErrorCount}
               </Badge>
             )}
           </Button>

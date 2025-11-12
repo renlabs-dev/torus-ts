@@ -743,6 +743,10 @@ export function useOrchestratedTransfer() {
     [retryNativeToBaseStep2, setTransactions, updateBridgeState],
   );
 
+  const setCurrentTransactionId = useCallback((id: string) => {
+    currentTransactionIdRef.current = id;
+  }, []);
+
   return {
     bridgeState,
     transactions,
@@ -751,6 +755,8 @@ export function useOrchestratedTransfer() {
     retryFromFailedStep,
     getExplorerUrl,
     setTransactions,
+    updateBridgeState,
+    setCurrentTransactionId,
     isTransferInProgress:
       bridgeState.step !== SimpleBridgeStep.IDLE &&
       bridgeState.step !== SimpleBridgeStep.COMPLETE &&
