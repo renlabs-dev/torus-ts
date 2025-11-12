@@ -113,6 +113,10 @@ export async function getCoinMarketData(
       Accept: "application/json",
     };
 
+    if (COINGECKO_API_KEY) {
+      headers["x-cg-pro-api-key"] = COINGECKO_API_KEY;
+    }
+
     const url = `${COINGECKO_API_BASE}/coins/markets?vs_currency=usd&ids=${coinId}&order=market_cap_desc&per_page=1&page=1&sparkline=false`;
 
     const response = await fetch(url, { headers });

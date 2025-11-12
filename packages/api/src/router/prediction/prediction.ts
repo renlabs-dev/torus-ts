@@ -929,6 +929,7 @@ export const predictionRouter = {
 
       await Promise.all(
         tickers.map(async (ticker) => {
+          const tickerUpper = ticker.toUpperCase();
           const result = await ctx.db
             .select({
               count: sql<number>`COUNT(DISTINCT ${parsedPredictionSchema.id})`,
@@ -937,7 +938,7 @@ export const predictionRouter = {
             .where(
               and(
                 sql`${parsedPredictionSchema.context}->>'schema_type' = 'crypto'`,
-                sql`LOWER(${parsedPredictionSchema.context}->>'tickers') LIKE ${'%"' + ticker.toLowerCase() + '"%'}`,
+                sql`${parsedPredictionSchema.context}->'tickers' @> ${JSON.stringify([tickerUpper])}`,
                 // Same feedback filter as other queries
                 notExists(
                   ctx.db
@@ -962,7 +963,7 @@ export const predictionRouter = {
             )
             .execute();
 
-          counts[ticker.toUpperCase()] = result[0]?.count ?? 0;
+          counts[tickerUpper] = result[0]?.count ?? 0;
         }),
       );
 
@@ -985,7 +986,7 @@ export const predictionRouter = {
     )
     .query(async ({ ctx, input }) => {
       const { symbol, limit, offset } = input;
-      const symbolLower = symbol.toLowerCase();
+      const symbolUpper = symbol.toUpperCase();
 
       const rawPredictions = await ctx.db
         .select({
@@ -1078,7 +1079,7 @@ export const predictionRouter = {
         .where(
           and(
             sql`${parsedPredictionSchema.context}->>'schema_type' = 'crypto'`,
-            sql`LOWER(${parsedPredictionSchema.context}->>'tickers') LIKE ${'%"' + symbolLower + '"%'}`,
+            sql`${parsedPredictionSchema.context}->'tickers' @> ${JSON.stringify([symbolUpper])}`,
             eq(twitterUsersSchema.tracked, true),
           ),
         )
