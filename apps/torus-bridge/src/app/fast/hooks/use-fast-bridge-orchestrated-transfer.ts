@@ -701,6 +701,19 @@ export function useOrchestratedTransfer() {
   // Wrapper for Quick Send EVM → Native
   const executeQuickSendToNative = useCallback(
     async (amount: string) => {
+      // Create history entry for Quick Send
+      const historyId = addToHistory({
+        direction: "base-to-native",
+        amount,
+        status: "step1_complete", // Step 1 is skipped (already on EVM)
+        currentStep: SimpleBridgeStep.STEP_2_PREPARING,
+        canRetry: false,
+        evmAddress,
+        nativeAddress: selectedAccount?.address,
+        step1TxHash: undefined, // No step 1 for quick send
+      });
+      currentTransactionIdRef.current = historyId;
+
       // Initialize transactions array for Step 2
       setTransactions([
         {
@@ -725,12 +738,32 @@ export function useOrchestratedTransfer() {
 
       await retryBaseToNativeStep2(amount);
     },
-    [retryBaseToNativeStep2, setTransactions, updateBridgeState],
+    [
+      retryBaseToNativeStep2,
+      setTransactions,
+      updateBridgeState,
+      addToHistory,
+      evmAddress,
+      selectedAccount?.address,
+    ],
   );
 
   // Wrapper for Quick Send EVM → Base
   const executeQuickSendToBase = useCallback(
     async (amount: string) => {
+      // Create history entry for Quick Send
+      const historyId = addToHistory({
+        direction: "native-to-base",
+        amount,
+        status: "step1_complete", // Step 1 is skipped (already on EVM)
+        currentStep: SimpleBridgeStep.STEP_2_PREPARING,
+        canRetry: false,
+        evmAddress,
+        nativeAddress: selectedAccount?.address,
+        step1TxHash: undefined, // No step 1 for quick send
+      });
+      currentTransactionIdRef.current = historyId;
+
       // Initialize transactions array for Step 2
       setTransactions([
         {
@@ -755,7 +788,14 @@ export function useOrchestratedTransfer() {
 
       await retryNativeToBaseStep2(amount);
     },
-    [retryNativeToBaseStep2, setTransactions, updateBridgeState],
+    [
+      retryNativeToBaseStep2,
+      setTransactions,
+      updateBridgeState,
+      addToHistory,
+      evmAddress,
+      selectedAccount?.address,
+    ],
   );
 
   const setCurrentTransactionId = useCallback((id: string) => {

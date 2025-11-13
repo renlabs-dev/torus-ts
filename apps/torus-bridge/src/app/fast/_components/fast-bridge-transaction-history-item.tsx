@@ -205,9 +205,7 @@ export function TransactionHistoryItem({
               <a
                 href={getExplorerUrl(
                   transaction.step2TxHash,
-                  transaction.direction === "base-to-native"
-                    ? "Torus EVM"
-                    : "Torus EVM",
+                  "Torus EVM", // Step 2 always occurs on Torus EVM regardless of direction
                 )}
                 target="_blank"
                 rel="noopener noreferrer"

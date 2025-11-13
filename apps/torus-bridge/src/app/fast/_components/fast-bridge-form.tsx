@@ -371,6 +371,8 @@ export function FastBridgeForm() {
   );
 
   // Check for transaction ID in URL on mount (F5 recovery)
+  // Note: This effect intentionally runs only once on mount to avoid re-triggering recovery
+  // when handleRetryFromHistory dependencies change. The recovery logic is idempotent.
   useEffect(() => {
     const txId = getTransactionFromUrl();
     console.log("[F5 Recovery] Checking URL for txId:", txId);
@@ -397,7 +399,8 @@ export function FastBridgeForm() {
         console.log("[F5 Recovery] Transaction not found in history");
       }
     }
-  }, [getTransactionFromUrl, getTransactionById, handleRetryFromHistory]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- Only run on mount for F5 recovery
+  }, []);
 
   const getChainInfo = (isFrom: boolean) => {
     const isBaseToNative = direction === "base-to-native";

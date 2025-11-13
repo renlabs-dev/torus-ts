@@ -28,6 +28,9 @@ interface QuickSendEvmDialogProps {
 
 type TransferStatus = "idle" | "sending" | "success" | "error";
 
+// Gas reserve for EVM transactions: 0.005 TORUS (in 12 decimals = 5 * 10^15 wei)
+const GAS_RESERVE_WEI = 5n * 10n ** 15n;
+
 export function QuickSendEvmDialog({
   isOpen,
   onClose,
@@ -61,11 +64,11 @@ export function QuickSendEvmDialog({
       // Calculate how much balance has decreased
       const balanceDecrease = initialBalanceRef.current - currentEvmBalance;
 
-      // Gas reserve is 0.005 TORUS (in 12 decimals, which equals 5 * 10^15 wei)
-      const gasReserveWei = 5n * 10n ** 15n;
-
       // Expected decrease is the original amount minus gas reserve
-      const expectedDecrease = originalAmount - gasReserveWei;
+      const expectedDecrease =
+        originalAmount > GAS_RESERVE_WEI
+          ? originalAmount - GAS_RESERVE_WEI
+          : 0n;
 
       // Detection logic:
       // 1. If balance is now very small (< 0.01 TORUS = 10^16 wei), consider it complete
@@ -171,7 +174,12 @@ export function QuickSendEvmDialog({
               <p className="text-muted-foreground text-sm">
                 Transferring{" "}
                 <span className="font-semibold">
-                  {formatAmount(originalAmount)} TORUS
+                  {formatAmount(
+                    originalAmount > GAS_RESERVE_WEI
+                      ? originalAmount - GAS_RESERVE_WEI
+                      : 0n,
+                  )}{" "}
+                  TORUS
                 </span>{" "}
                 to <span className="font-semibold">{originalDestination}</span>
               </p>
@@ -201,7 +209,12 @@ export function QuickSendEvmDialog({
               <p className="text-muted-foreground text-sm">
                 Successfully sent{" "}
                 <span className="font-semibold">
-                  {formatAmount(originalAmount)} TORUS
+                  {formatAmount(
+                    originalAmount > GAS_RESERVE_WEI
+                      ? originalAmount - GAS_RESERVE_WEI
+                      : 0n,
+                  )}{" "}
+                  TORUS
                 </span>{" "}
                 to <span className="font-semibold">{originalDestination}</span>
               </p>

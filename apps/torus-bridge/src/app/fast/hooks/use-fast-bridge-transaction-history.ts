@@ -24,6 +24,14 @@ interface FastBridgeTransactionHistoryState {
 }
 
 function generateId(): string {
+  // Use crypto.randomUUID() if available for better uniqueness
+  if (
+    typeof crypto !== "undefined" &&
+    typeof crypto.randomUUID === "function"
+  ) {
+    return crypto.randomUUID();
+  }
+  // Fallback for older environments
   return `${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
 }
 
