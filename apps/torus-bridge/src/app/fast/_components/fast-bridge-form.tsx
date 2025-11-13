@@ -151,7 +151,6 @@ export function FastBridgeForm() {
 
   const walletsReady = areWalletsReady(direction);
 
-  // Function to refetch all balances
   const refetchAllBalances = useCallback(async () => {
     await Promise.all([
       nativeBalanceQuery.refetch(),
@@ -253,8 +252,7 @@ export function FastBridgeForm() {
       bridgeState.step === SimpleBridgeStep.ERROR
     ) {
       setShowTransactionDialog(false);
-      clearTransactionFromUrl(); // Clear URL state
-      // Clear the form when transaction is complete or has error
+      clearTransactionFromUrl();
       if (bridgeState.step === SimpleBridgeStep.COMPLETE) {
         setAmountFrom("");
       }
@@ -382,22 +380,13 @@ export function FastBridgeForm() {
       const transaction = getTransactionById(txId);
       console.log("[F5 Recovery] Found transaction:", transaction);
 
-      // Auto-restore any incomplete transaction (error, pending, or step1_complete)
       if (transaction && transaction.status !== "completed") {
-        console.log("[F5 Recovery] Restoring incomplete transaction:", {
-          id: transaction.id,
-          status: transaction.status,
-          direction: transaction.direction,
-          amount: transaction.amount,
-          errorStep: transaction.errorStep,
-        });
-        handleRetryFromHistory(transaction);
-      } else if (transaction) {
-        console.log(
-          "[F5 Recovery] Transaction is already completed, skipping restore",
-        );
-      } else {
-        console.log("[F5 Recovery] Transaction not found in history");
+        try {
+          handleRetryFromHistory(transaction);
+        } catch (error) {
+          console.error("[F5 Recovery] Failed to restore transaction:", error);
+          clearTransactionFromUrl();
+        }
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps -- Only run on mount for F5 recovery
@@ -413,7 +402,7 @@ export function FastBridgeForm() {
     };
 
     const formatBalance = (balance?: bigint) => {
-      if (!balance) return "0 TORUS";
+      if (balance === undefined) return "0 TORUS";
       return `${formatToken(balance)} TORUS`;
     };
 

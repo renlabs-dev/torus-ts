@@ -256,6 +256,10 @@ export function useOrchestratedTransfer() {
         }
         // Stop execution if user rejected the transaction
         if (step1Error instanceof UserRejectedError) {
+          updateBridgeState({
+            step: SimpleBridgeStep.ERROR,
+            errorMessage: "Transaction cancelled by user",
+          });
           return;
         }
         throw step1Error;
@@ -305,6 +309,10 @@ export function useOrchestratedTransfer() {
         }
         // Stop execution if user rejected the transaction
         if (step2Error instanceof UserRejectedError) {
+          updateBridgeState({
+            step: SimpleBridgeStep.ERROR,
+            errorMessage: "Transaction cancelled by user",
+          });
           return;
         }
         throw step2Error;
@@ -390,6 +398,10 @@ export function useOrchestratedTransfer() {
         }
         // Stop execution if user rejected the transaction
         if (step1Error instanceof UserRejectedError) {
+          updateBridgeState({
+            step: SimpleBridgeStep.ERROR,
+            errorMessage: "Transaction cancelled by user",
+          });
           return;
         }
         throw step1Error;
@@ -441,6 +453,10 @@ export function useOrchestratedTransfer() {
         }
         // Stop execution if user rejected the transaction
         if (step2Error instanceof UserRejectedError) {
+          updateBridgeState({
+            step: SimpleBridgeStep.ERROR,
+            errorMessage: "Transaction cancelled by user",
+          });
           return;
         }
         throw step2Error;
