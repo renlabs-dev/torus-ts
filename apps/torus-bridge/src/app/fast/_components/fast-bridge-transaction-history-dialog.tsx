@@ -14,7 +14,14 @@ import {
   TabsList,
   TabsTrigger,
 } from "@torus-ts/ui/components/tabs";
-import { AlertCircle } from "lucide-react";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@torus-ts/ui/components/tooltip";
+import { env } from "~/env";
+import { AlertCircle, Trash2 } from "lucide-react";
 import { useCallback, useMemo, useRef, useState } from "react";
 import { useFastBridgeTransactionHistory } from "../hooks/use-fast-bridge-transaction-history";
 import { TransactionHistoryItem } from "./fast-bridge-transaction-history-item";
@@ -82,7 +89,8 @@ export function TransactionHistoryDialog({
   onContinue,
   getExplorerUrl,
 }: TransactionHistoryDialogProps) {
-  const { getTransactions, markAsViewed } = useFastBridgeTransactionHistory();
+  const { getTransactions, markAsViewed, clearHistory } =
+    useFastBridgeTransactionHistory();
   const [filter, setFilter] = useState<TransactionHistoryFilter>("all");
   const [visibleCount, setVisibleCount] = useState(ITEMS_PER_PAGE);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
@@ -148,14 +156,54 @@ export function TransactionHistoryDialog({
     }
   }, [hasMore, handleLoadMore]);
 
+  const isDevelopment = env("NEXT_PUBLIC_NODE_ENV") === "development";
+
+  const handleClearHistory = useCallback(() => {
+    if (
+      window.confirm(
+        "Are you sure you want to clear all transaction history? This action cannot be undone.",
+      )
+    ) {
+      clearHistory();
+    }
+  }, [clearHistory]);
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="flex max-h-[85vh] max-w-2xl flex-col p-0">
         <DialogHeader className="px-6 pt-6">
-          <DialogTitle>Transaction History</DialogTitle>
-          <DialogDescription>
-            View and manage your Fast Bridge transaction history
-          </DialogDescription>
+          <div className="flex items-start justify-between">
+            <div className="flex-1">
+              <DialogTitle>Transaction History</DialogTitle>
+              <DialogDescription>
+                View and manage your Fast Bridge transaction history
+              </DialogDescription>
+            </div>
+            {isDevelopment && (
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={handleClearHistory}
+                      className="ml-4 shrink-0"
+                    >
+                      <Trash2 className="mr-2 h-4 w-4" />
+                      Clear
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent side="bottom" className="max-w-xs">
+                    <p className="text-sm">
+                      Clear all transaction history. This feature is only
+                      available in development and PR preview environments for
+                      testing purposes.
+                    </p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            )}
+          </div>
         </DialogHeader>
 
         <div
