@@ -46,6 +46,7 @@ import { SimpleBridgeStep } from "./fast-bridge-types";
 const BASE_GAS_RESERVE = 10n ** 16n;
 const NATIVE_GAS_RESERVE = 10n ** 18n;
 const TORUS_EVM_GAS_RESERVE = 5n * 10n ** 15n; // 0.005 TORUS for gas fees
+const TORUS_EVM_MIN_BALANCE = 10n * 10n ** 15n; // 0.01 TORUS minimum for Quick Send
 
 function formatWeiToDecimalString(amount: bigint, decimals = 18): string {
   const amountStr = amount.toString();
@@ -532,7 +533,7 @@ export function FastBridgeForm() {
   };
 
   const hasEvmBalance =
-    torusEvmBalance && torusEvmBalance.value > TORUS_EVM_GAS_RESERVE;
+    torusEvmBalance && torusEvmBalance.value > TORUS_EVM_MIN_BALANCE;
 
   return (
     <div className="mx-auto w-full space-y-6">

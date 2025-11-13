@@ -22,7 +22,7 @@ import {
 } from "@torus-ts/ui/components/tooltip";
 import { env } from "~/env";
 import { AlertCircle, Trash2 } from "lucide-react";
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useFastBridgeTransactionHistory } from "../hooks/use-fast-bridge-transaction-history";
 import { TransactionHistoryItem } from "./fast-bridge-transaction-history-item";
 import type {
@@ -93,7 +93,22 @@ export function TransactionHistoryDialog({
     useFastBridgeTransactionHistory();
   const [filter, setFilter] = useState<TransactionHistoryFilter>("all");
   const [visibleCount, setVisibleCount] = useState(ITEMS_PER_PAGE);
+  const [tooltipEnabled, setTooltipEnabled] = useState(false);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
+
+  // Enable tooltip after 1 second to prevent it from showing on dialog open
+  useEffect(() => {
+    if (isOpen) {
+      const timer = setTimeout(() => {
+        setTooltipEnabled(true);
+      }, 1000);
+      return () => {
+        clearTimeout(timer);
+        setTooltipEnabled(false);
+      };
+    }
+    return undefined;
+  }, [isOpen]);
 
   const allTransactions = getTransactions();
 
@@ -172,7 +187,9 @@ export function TransactionHistoryDialog({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="flex max-h-[85vh] max-w-2xl flex-col p-0">
         <DialogHeader className="px-6 pt-6">
-          <div className="flex items-start justify-between gap-4">
+          <div
+            className={`flex items-start justify-between gap-4 ${isDevelopment ? "py-4" : ""}`}
+          >
             <div className="flex-1">
               <DialogTitle>Transaction History</DialogTitle>
               <DialogDescription>
@@ -181,7 +198,7 @@ export function TransactionHistoryDialog({
             </div>
             {isDevelopment && (
               <TooltipProvider delayDuration={300}>
-                <Tooltip>
+                <Tooltip open={tooltipEnabled ? undefined : false}>
                   <TooltipTrigger asChild>
                     <Button
                       variant="outline"
