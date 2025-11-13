@@ -172,7 +172,7 @@ export function TransactionHistoryDialog({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="flex max-h-[85vh] max-w-2xl flex-col p-0">
         <DialogHeader className="px-6 pt-6">
-          <div className="flex items-start justify-between">
+          <div className="flex items-start justify-between gap-4">
             <div className="flex-1">
               <DialogTitle>Transaction History</DialogTitle>
               <DialogDescription>
@@ -180,14 +180,14 @@ export function TransactionHistoryDialog({
               </DialogDescription>
             </div>
             {isDevelopment && (
-              <TooltipProvider>
+              <TooltipProvider delayDuration={300}>
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <Button
                       variant="outline"
                       size="sm"
                       onClick={handleClearHistory}
-                      className="ml-4 shrink-0"
+                      className="shrink-0"
                     >
                       <Trash2 className="mr-2 h-4 w-4" />
                       Clear
