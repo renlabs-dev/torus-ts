@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 
 import { assert, beforeAll, describe, expect, it } from "vitest";
-import { KaitoTwitterAPI } from "../index.js";
+import { KaitoTwitterAPI } from "../index";
 
 describe("KaitoTwitterAPI - Users Endpoints", () => {
   let client: KaitoTwitterAPI;

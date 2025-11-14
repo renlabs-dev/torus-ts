@@ -9,10 +9,12 @@
 
 import type { ApiPromise } from "@polkadot/api";
 import type { SS58Address } from "@torus-network/sdk/types";
+import { checkSS58 } from "@torus-network/sdk/types";
 import { connectToChainRpc } from "@torus-network/sdk/utils";
 import { validateEnvOrExit } from "@torus-network/torus-utils/env";
 import { trySync } from "@torus-network/torus-utils/try-catch";
 import { createDb } from "@torus-ts/db/client";
+import { KaitoTwitterAPI } from "@torus-ts/twitter-client";
 import { initTRPC, TRPCError } from "@trpc/server";
 import superjson from "superjson";
 import { assert } from "tsafe";
@@ -22,11 +24,17 @@ import { decodeSessionToken } from "./auth";
 
 let globalDb: ReturnType<typeof createDb> | null = null;
 let globalWsApi: ApiPromise | null = null;
+let globalTwitterClient: KaitoTwitterAPI | null = null;
 
 const getEnv = validateEnvOrExit({
   NEXT_PUBLIC_TORUS_RPC_URL: z
     .string()
     .nonempty("TORUS_CURATOR_MNEMONIC is required"),
+  PREDICTION_APP_ADDRESS: z
+    .string()
+    .min(1, "PREDICTION_APP_ADDRESS is required for credit purchases")
+    .transform((val) => checkSS58(val)),
+  TWITTERAPI_IO_KEY: z.string().min(1, "TWITTERAPI_IO_KEY is required"),
 });
 
 // TODO: better error and connection handling
@@ -41,6 +49,17 @@ async function cacheCreateWsApi() {
     globalWsApi ??
     (await connectToChainRpc(getEnv(process.env).NEXT_PUBLIC_TORUS_RPC_URL));
   return globalWsApi;
+}
+
+// Lazy init Twitter client
+function getorCreateTwitterClient() {
+  if (globalTwitterClient === null) {
+    const env = getEnv(process.env);
+    globalTwitterClient = new KaitoTwitterAPI({
+      apiKey: env.TWITTERAPI_IO_KEY,
+    });
+  }
+  return globalTwitterClient;
 }
 
 /**
@@ -62,6 +81,8 @@ export interface TRPCContext {
   jwtSecret: string;
   authOrigin: string;
   allocatorAddress: SS58Address;
+  predictionAppAddress: SS58Address;
+  twitterClient: KaitoTwitterAPI;
   wsAPI: Promise<ApiPromise>;
   swarmMnemonic?: string;
   swarmApiUrl?: string;
@@ -77,6 +98,7 @@ export const createTRPCContext = (opts: {
   jwtSecret: string;
   authOrigin: string;
   allocatorAddress: SS58Address;
+  predictionAppAddress: SS58Address;
   swarmMnemonic?: string;
   swarmApiUrl?: string;
 }) => {
@@ -132,6 +154,8 @@ export const createTRPCContext = (opts: {
     jwtSecret,
     authOrigin: opts.authOrigin,
     allocatorAddress: opts.allocatorAddress,
+    predictionAppAddress: opts.predictionAppAddress,
+    twitterClient: getorCreateTwitterClient(),
     wsAPI,
     swarmMnemonic: opts.swarmMnemonic,
     swarmApiUrl: opts.swarmApiUrl,

@@ -20,6 +20,7 @@ const createContext = cache(async () => {
     allocatorAddress: env("NEXT_PUBLIC_TORUS_ALLOCATOR_ADDRESS") as SS58Address,
     swarmMnemonic: env("TORUS_WALLET_SEED_PHRASE"),
     swarmApiUrl: env("NEXT_PUBLIC_API_BASE_URL"),
+    predictionAppAddress: env("PREDICTION_APP_ADDRESS"),
   });
 });
 

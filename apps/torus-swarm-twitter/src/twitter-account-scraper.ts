@@ -8,15 +8,19 @@ import {
   twitterUserSuggestionsSchema,
 } from "@torus-ts/db/schema";
 import type { ScrapedTweet } from "@torus-ts/db/schema";
-import { and, asc, eq, gte, isNotNull, isNull, sql } from "drizzle-orm";
-import { decode } from "html-entities";
-import { logger } from "./index";
-import type { KaitoTwitterAPI, SimpleTweet, User } from "./twitterapi-io";
+import type {
+  KaitoTwitterAPI,
+  SimpleTweet,
+  User,
+} from "@torus-ts/twitter-client";
 import {
   KaitoRateLimitError,
   KaitoTwitterAPIError,
   KaitoValidationError,
-} from "./twitterapi-io/utils/errors";
+} from "@torus-ts/twitter-client";
+import { and, asc, eq, gte, isNotNull, isNull, sql } from "drizzle-orm";
+import { decode } from "html-entities";
+import { logger } from "./index";
 import { sleep } from "./utils";
 
 const workerContext = new AsyncLocalStorage<{ workerId: number }>();

@@ -4,8 +4,8 @@ import {
   TwitterDateSchema,
   UrlEntitySchema,
   UserIdSchema,
-} from "./common.js";
-import { SimpleUserSchema } from "./user.js";
+} from "./common";
+import { SimpleUserSchema } from "./user";
 
 // Tweet media schema
 export const TweetMediaSchema = z.object({

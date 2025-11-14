@@ -5,7 +5,7 @@ import {
   TwitterDateSchema,
   UserIdSchema,
   UsernameSchema,
-} from "./common.js";
+} from "./common";
 
 // Available user schema - when the user is accessible
 export const AvailableUserSchema = z.object({

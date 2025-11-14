@@ -1,10 +1,10 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 
 import { assert } from "tsafe";
-import type { KaitoTwitterAPIClient } from "../client.js";
-import type { CursorPagination } from "../schemas/common.js";
-import type { SimpleTweet } from "../schemas/tweet.js";
-import { TweetRepliesResponseSchema } from "../schemas/tweet.js";
+import type { KaitoTwitterAPIClient } from "../client";
+import type { CursorPagination } from "../schemas/common";
+import type { SimpleTweet } from "../schemas/tweet";
+import { TweetRepliesResponseSchema } from "../schemas/tweet";
 import {
   BatchGetUserInfoParamsSchema,
   BatchUserInfoResponseSchema,
@@ -21,7 +21,7 @@ import {
   UserInfoResponseSchema,
   UserLastTweetsResponseSchema,
   UserSearchResponseSchema,
-} from "../schemas/user.js";
+} from "../schemas/user";
 import type {
   BatchGetUserInfoParams,
   CheckFollowRelationshipParams,
@@ -34,8 +34,8 @@ import type {
   SearchUserParams,
   SimpleUser,
   User,
-} from "../schemas/user.js";
-import { ENDPOINTS } from "../utils/constants.js";
+} from "../schemas/user";
+import { ENDPOINTS } from "../utils/constants";
 
 export class UsersEndpoint {
   constructor(readonly client: KaitoTwitterAPIClient) {}

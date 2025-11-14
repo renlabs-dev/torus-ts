@@ -1,8 +1,8 @@
-import { KaitoTwitterAPIClient } from "./client.js";
-import { ActionsEndpoint } from "./endpoints/actions.js";
-import { TweetsEndpoint } from "./endpoints/tweets.js";
-import { UsersEndpoint } from "./endpoints/users.js";
-import type { KaitoClientConfig } from "./types.js";
+import { KaitoTwitterAPIClient } from "./client";
+import { ActionsEndpoint } from "./endpoints/actions";
+import { TweetsEndpoint } from "./endpoints/tweets";
+import { UsersEndpoint } from "./endpoints/users";
+import type { KaitoClientConfig } from "./types";
 
 /**
  * KaitoTwitterAPI - A comprehensive TypeScript client for the KaitoTwitterAPI service
