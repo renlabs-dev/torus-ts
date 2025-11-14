@@ -57,7 +57,7 @@ export default function ScraperQueuePage() {
     ) ?? [];
 
   return (
-    <div className="relative py-10">
+    <div className="relative py-4">
       {/* Vertical borders */}
       <div className="border-border pointer-events-none absolute inset-y-0 left-1/2 w-full max-w-screen-lg -translate-x-1/2 border-x" />
 
@@ -68,7 +68,7 @@ export default function ScraperQueuePage() {
       />
 
       {/* Border */}
-      <div className="border-border relative my-6 border-t" />
+      <div className="border-border relative my-4 border-t" />
 
       <div className="relative mx-auto max-w-screen-lg space-y-6 px-4">
         {!isAccountConnected ? (
@@ -113,7 +113,7 @@ export default function ScraperQueuePage() {
       </div>
 
       {/* Border */}
-      <div className="border-border relative my-6 border-t" />
+      <div className="border-border relative my-4 border-t" />
 
       {/* Content */}
       <div className="relative mx-auto max-w-screen-lg space-y-6 px-4">
@@ -274,7 +274,7 @@ export default function ScraperQueuePage() {
       </div>
 
       {/* Bottom border */}
-      <div className="border-border relative mt-10 border-t" />
+      <div className="border-border relative mt-4 border-t" />
     </div>
   );
 }
