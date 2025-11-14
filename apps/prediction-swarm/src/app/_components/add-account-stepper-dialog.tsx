@@ -292,9 +292,9 @@ export default function AddAccountStepperDialog() {
         return (
           <div className="space-y-6">
             <CardHeader className="px-0 pt-0">
-              <CardTitle>Processing the Prophet</CardTitle>
+              <CardTitle>Processing the Prophet!</CardTitle>
               <CardDescription>
-                You can check the process{" "}
+                You can check the progress{" "}
                 <Link href="#" className="text-primary hover:underline">
                   here
                 </Link>
@@ -319,8 +319,8 @@ export default function AddAccountStepperDialog() {
           <UserRoundPlus />
         </Button>
       </DialogTrigger>
-      <DialogContent className="flex items-center justify-center p-4 sm:max-w-3xl">
-        <Card className="w-full max-w-3xl border-none p-0 shadow-lg">
+      <DialogContent className="bg-background/80 flex items-center justify-center p-4 sm:max-w-3xl">
+        <Card className="w-full max-w-3xl border-none bg-transparent p-0 shadow-none">
           <CardHeader className="pb-0">
             {/* Step Indicator */}
             <div className="mb-6 flex items-center justify-between">
