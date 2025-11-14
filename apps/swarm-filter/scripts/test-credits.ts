@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-unnecessary-condition */
+/* eslint-disable @typescript-eslint/restrict-template-expressions */
 /**
  * Test credit system endpoints
  *
@@ -14,6 +16,7 @@
 
 import { Keyring } from "@polkadot/keyring";
 import { cryptoWaitReady } from "@polkadot/util-crypto";
+import type { SS58Address } from "@torus-network/sdk/types";
 import { createSessionToken } from "@torus-ts/api/auth";
 import type { AppRouter } from "@torus-ts/api/root";
 import { createTRPCClient, httpBatchLink } from "@trpc/client";
@@ -28,7 +31,6 @@ const TX_HASH =
 const BLOCK_HASH =
   "0xf010e485d18f73c98147f22e03fa90d5064ae9334b8af72c925276827fb9152a"; // Paste block hash here (0x...)
 
-const UNKNOWN_USER = "unknown123"; // User that doesn't exist
 const TEST_USER = "furrydepressivo"; // User to test metadata purchase + scraping (leave empty to skip)
 
 // ========================================
@@ -53,7 +55,7 @@ async function main() {
   const authOrigin = process.env.AUTH_ORIGIN || "sension.torus.directory";
 
   const JWT_TOKEN = createSessionToken(
-    { userKey: address, uri: authOrigin },
+    { userKey: address as SS58Address, uri: authOrigin },
     jwtSecret,
   );
 
@@ -197,4 +199,4 @@ async function main() {
   }
 }
 
-main();
+void main();

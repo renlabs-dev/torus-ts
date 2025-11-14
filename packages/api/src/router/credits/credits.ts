@@ -1,5 +1,5 @@
 import { torusToCredits } from "@torus-network/torus-utils";
-import { makeTorAmount, toRems } from "@torus-network/torus-utils/torus/token";
+import { makeTorAmount } from "@torus-network/torus-utils/torus/token";
 import { tryAsync } from "@torus-network/torus-utils/try-catch";
 import { eq, sql } from "@torus-ts/db";
 import { creditPurchasesSchema, userCreditsSchema } from "@torus-ts/db/schema";

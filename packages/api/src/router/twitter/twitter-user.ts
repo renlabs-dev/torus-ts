@@ -2,8 +2,7 @@ import {
   BASELINE_METADATA_COST,
   calculateScrapingCost,
 } from "@torus-network/torus-utils";
-import { makeTorAmount, toRems } from "@torus-network/torus-utils/torus/token";
-import type { TorAmount } from "@torus-network/torus-utils/torus/token";
+import { makeTorAmount } from "@torus-network/torus-utils/torus/token";
 import { and, eq, gte, ilike, notExists, sql } from "@torus-ts/db";
 import {
   parsedPredictionFeedbackSchema,
@@ -263,6 +262,7 @@ export const twitterUserRouter = {
         if (input.budget && BASELINE_METADATA_COST > input.budget) {
           throw new TRPCError({
             code: "BAD_REQUEST",
+            // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
             message: `Metadata cost (${BASELINE_METADATA_COST} credits) exceeds budget (${input.budget} credits)`,
           });
         }
@@ -281,6 +281,7 @@ export const twitterUserRouter = {
         ) {
           throw new TRPCError({
             code: "FORBIDDEN",
+            // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
             message: `Insufficient credits. Required: ${BASELINE_METADATA_COST}, Available: ${locked?.balance ?? 0}`,
           });
         }
@@ -394,6 +395,7 @@ export const twitterUserRouter = {
         if (input.budget && cost > input.budget) {
           throw new TRPCError({
             code: "BAD_REQUEST",
+            // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
             message: `Scraping cost (${cost} credits) exceeds budget (${input.budget} credits)`,
           });
         }
@@ -418,6 +420,7 @@ export const twitterUserRouter = {
         if (updatedRows.length === 0) {
           throw new TRPCError({
             code: "FORBIDDEN",
+            // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
             message: `Insufficient credits. Required: ${cost}, check your balance with getBalance.`,
           });
         }

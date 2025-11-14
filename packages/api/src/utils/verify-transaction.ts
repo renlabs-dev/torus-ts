@@ -145,6 +145,7 @@ export async function verifyTorusTransfer(
     }
   });
 
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
   if (!found) {
     throw new TRPCError({
       code: "NOT_FOUND",
@@ -153,6 +154,7 @@ export async function verifyTorusTransfer(
   }
 
   // Verify sender
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
   if (sender !== expectedSender) {
     throw new TRPCError({
       code: "FORBIDDEN",
@@ -161,6 +163,7 @@ export async function verifyTorusTransfer(
   }
 
   // Verify recipient
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
   if (recipient !== serviceAddress) {
     throw new TRPCError({
       code: "BAD_REQUEST",
@@ -169,6 +172,7 @@ export async function verifyTorusTransfer(
   }
 
   // Verify amount is positive
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
   if (amount === null || amount <= 0n) {
     throw new TRPCError({
       code: "BAD_REQUEST",
