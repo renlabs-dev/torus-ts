@@ -1,4 +1,4 @@
-import type { KaitoTwitterAPIClient } from "../client.js";
+import type { KaitoTwitterAPIClient } from "../client";
 import {
   ActionApiResponseSchema,
   CommunityApiResponseSchema,
@@ -21,7 +21,7 @@ import {
   UnlikeTweetV2ParamsSchema,
   UploadMediaV2ApiResponseSchema,
   UploadMediaV2ParamsSchema,
-} from "../schemas/action.js";
+} from "../schemas/action";
 import type {
   ActionResponse,
   Community,
@@ -44,8 +44,8 @@ import type {
   UnlikeTweetV2Params,
   UploadMediaResponse,
   UploadMediaV2Params,
-} from "../schemas/action.js";
-import { ENDPOINTS } from "../utils/constants.js";
+} from "../schemas/action";
+import { ENDPOINTS } from "../utils/constants";
 
 export class ActionsEndpoint {
   constructor(private client: KaitoTwitterAPIClient) {}

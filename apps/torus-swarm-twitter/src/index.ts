@@ -1,7 +1,7 @@
 import { BasicLogger } from "@torus-network/torus-utils/logger";
 import { createDb } from "@torus-ts/db/client";
+import { KaitoTwitterAPI } from "@torus-ts/twitter-client";
 import { TwitterAccountScraper } from "./twitter-account-scraper";
-import KaitoTwitterAPI from "./twitterapi-io";
 
 export const logger = BasicLogger.create({ name: "torus-swarm-twitter" });
 

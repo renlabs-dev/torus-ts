@@ -3,14 +3,14 @@ import {
   BaseAPIClient,
 } from "@torus-network/torus-utils/base-api-client";
 import { z } from "zod";
-// import { ApiKeyAuth } from "../shared/auth/index.js";
-import type { KaitoApiResponse, KaitoClientConfig } from "./types.js";
+// import { ApiKeyAuth } from "../shared/auth/index";
+import type { KaitoApiResponse, KaitoClientConfig } from "./types";
 import {
   API_BASE_URL,
   DEFAULT_RETRY_CONFIG,
   DEFAULT_TIMEOUT,
-} from "./utils/constants.js";
-import { KaitoTwitterAPIError, KaitoValidationError } from "./utils/errors.js";
+} from "./utils/constants";
+import { KaitoTwitterAPIError, KaitoValidationError } from "./utils/errors";
 
 export class KaitoTwitterAPIClient extends BaseAPIClient {
   readonly apiKey: string;

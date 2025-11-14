@@ -378,3 +378,47 @@ export const parsedPredictionFeedbackSchema = createTable(
       .where(sql`failure_cause != 'FUTURE_TIMEFRAME'`),
   ],
 );
+
+// ==== Credit System ====
+
+/**
+ * User credit balances for paid services (e.g., Twitter scraping).
+ *
+ * Credits can be purchased with TORUS tokens and spent on various services.
+ * Uses row-level locking (SELECT FOR UPDATE) to prevent race conditions.
+ */
+export const userCreditsSchema = createTable("user_credits", {
+  userKey: ss58Address("user_key").primaryKey(),
+  balance: decimal("balance", { precision: 39, scale: 0 })
+    .notNull()
+    .default("0"),
+  totalPurchased: decimal("total_purchased", { precision: 39, scale: 0 })
+    .notNull()
+    .default("0"),
+  totalSpent: decimal("total_spent", { precision: 39, scale: 0 })
+    .notNull()
+    .default("0"),
+  ...timeFields(),
+});
+
+/**
+ * Credit purchase transactions via TORUS token transfers.
+ *
+ * Each transaction hash can only be used once (enforced by unique constraint).
+ * Backend verifies transactions on-chain before granting credits.
+ *
+ * TORUS amounts stored as bigint (18 decimals): 1 TORUS = 10^18
+ */
+export const creditPurchasesSchema = createTable(
+  "credit_purchases",
+  {
+    id: uuidv7("id").primaryKey(),
+    userKey: ss58Address("user_key").notNull(),
+    txHash: varchar("tx_hash", { length: 66 }).notNull().unique(),
+    torusAmount: decimal("torus_amount", { precision: 39, scale: 0 }),
+    creditsGranted: decimal("credits_granted", { precision: 39, scale: 0 }),
+    blockNumber: bigint("block_number"),
+    ...timeFields(),
+  },
+  (t) => [index("credit_purchases_user_key_idx").on(t.userKey)],
+);

@@ -1,4 +1,4 @@
-import { KaitoTwitterAPI } from "./index.js";
+import { KaitoTwitterAPI } from "./index";
 
 // Example usage of the KaitoTwitterAPI client
 async function example() {

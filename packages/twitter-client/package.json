@@ -1,0 +1,30 @@
+{
+  "name": "@torus-ts/twitter-client",
+  "version": "0.1.0",
+  "private": true,
+  "license": "MIT",
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./src/index.ts"
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "clean": "rm -rf .turbo node_modules",
+    "dev": "tsc --watch",
+    "lint": "eslint --cache --cache-location .cache/.eslintcache",
+    "lint-fix": "eslint --cache --cache-location .cache/.eslintcache --fix",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@torus-network/torus-utils": "workspace:*",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@torus-ts/eslint-config": "workspace:*",
+    "@torus-ts/tsconfig": "workspace:*",
+    "typescript": "catalog:"
+  }
+}

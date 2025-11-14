@@ -1,3 +1,4 @@
+import { SS58_SCHEMA } from "@torus-network/sdk/types";
 import { buildZodEnvScript } from "@torus-ts/env-validation";
 import { chainEnvSchema } from "@torus-ts/ui/lib/data";
 import { z } from "zod";
@@ -43,6 +44,7 @@ export const envSchema = {
   NEXT_PUBLIC_TORUS_ALLOCATOR_ADDRESS: z
     .string()
     .default("5DoVVgN7R6vHw4mvPX8s4EkkR8fgN1UJ5TDfKzab8eW9z89b"),
+  PREDICTION_APP_ADDRESS: SS58_SCHEMA,
 };
 
 export const { EnvScript, env } = buildZodEnvScript(envSchema, {

@@ -5,7 +5,7 @@ import {
   TweetIdSchema,
   UserIdSchema,
   UsernameSchema,
-} from "./common.js";
+} from "./common";
 
 // Login V2 request schema
 export const LoginV2ParamsSchema = z.object({

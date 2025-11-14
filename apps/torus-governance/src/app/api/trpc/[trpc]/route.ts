@@ -34,6 +34,7 @@ const handler = async (req: Request) => {
           jwtSecret: env("JWT_SECRET"),
           authOrigin: env("NEXT_PUBLIC_AUTH_ORIGIN"),
           allocatorAddress: env("NEXT_PUBLIC_TORUS_ALLOCATOR_ADDRESS"),
+          predictionAppAddress: env("PREDICTION_APP_ADDRESS"),
         }),
       onError({ error, path }) {
         console.error(`>>> tRPC Error on '${path}'`, error);

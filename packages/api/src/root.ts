@@ -14,6 +14,7 @@ import { coinGeckoRouter } from "./router/coingecko/coingecko";
 import { commentRouter } from "./router/comment/comment";
 import { commentInteractionRouter } from "./router/comment/comment-interaction";
 import { commentReportRouter } from "./router/comment/comment-report";
+import { creditsRouter } from "./router/credits/credits";
 import { penaltyRouter } from "./router/penalty/penalty";
 import { permissionRouter } from "./router/permission/permission";
 import { signalRouter } from "./router/permission/signal";
@@ -53,6 +54,9 @@ export const appRouter = createTRPCRouter({
   commentReport: commentReportRouter,
   commentInteraction: commentInteractionRouter,
   penalty: penaltyRouter,
+
+  // Credits
+  credits: creditsRouter,
 
   // Constraint Management (commented out due to schema incompatibility)
   // constraint: constraintRouter,

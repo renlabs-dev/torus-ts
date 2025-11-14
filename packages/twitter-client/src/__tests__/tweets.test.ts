@@ -2,8 +2,8 @@
 
 import { assert, beforeAll, describe, expect, it } from "vitest";
 import z from "zod";
-import type { SimpleTweet } from "../index.js";
-import { KaitoTwitterAPI } from "../index.js";
+import type { SimpleTweet } from "../index";
+import { KaitoTwitterAPI } from "../index";
 
 describe("KaitoTwitterAPI - Tweets Endpoints", () => {
   let client: KaitoTwitterAPI;

@@ -40,6 +40,7 @@ const handler = (req: Request) => {
         ) as SS58Address,
         swarmMnemonic,
         swarmApiUrl,
+        predictionAppAddress: env("PREDICTION_APP_ADDRESS"),
       }),
     onError:
       env("NEXT_PUBLIC_NODE_ENV") === "development"

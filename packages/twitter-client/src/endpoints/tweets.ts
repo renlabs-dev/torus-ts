@@ -1,6 +1,6 @@
 import { assert } from "tsafe";
-import type { KaitoTwitterAPIClient } from "../client.js";
-import type { CursorPagination } from "../schemas/common.js";
+import type { KaitoTwitterAPIClient } from "../client";
+import type { CursorPagination } from "../schemas/common";
 import {
   AdvancedSearchParamsSchema,
   AdvancedSearchResponseSchema,
@@ -16,7 +16,7 @@ import {
   TweetRepliesResponseSchema,
   TweetRetweetersResponseSchema,
   TweetsResponseSchema,
-} from "../schemas/tweet.js";
+} from "../schemas/tweet";
 import type {
   AdvancedSearchParams,
   Article,
@@ -31,8 +31,8 @@ import type {
   SimpleTweet,
   ThreadContext,
   TweetListEntry,
-} from "../schemas/tweet.js";
-import { ENDPOINTS } from "../utils/constants.js";
+} from "../schemas/tweet";
+import { ENDPOINTS } from "../utils/constants";
 
 export class TweetsEndpoint {
   constructor(readonly client: KaitoTwitterAPIClient) {}
