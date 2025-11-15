@@ -84,28 +84,25 @@ async function main() {
   });
 
   try {
-    // Test 1: Check user status (public endpoint)
-    console.log("Test 1: Check Twitter user status...");
-    const elonStatus = await publicClient.twitterUser.checkUserStatus.query({
+    // Test 1: Check user by username (public endpoint)
+    console.log("Test 1: Get Twitter user by username...");
+    const elonUser = await publicClient.twitterUser.getByUsername.query({
       username: "elonmusk",
     });
-    console.log(`✓ @elonmusk has metadata: ${elonStatus.hasMetadata}`);
-    if (elonStatus.hasMetadata && elonStatus.scrapingCost) {
-      console.log(`  Scraping cost: ${elonStatus.scrapingCost} credits`);
-      console.log(
-        `  Tweet count: ${elonStatus.user?.tweetCount?.toLocaleString()}`,
-      );
+    if (elonUser) {
+      console.log(`✓ @elonmusk found in database`);
+      console.log(`  Tweet count: ${elonUser.tweetCount?.toLocaleString()}`);
+      console.log(`  Tracked: ${elonUser.tracked}`);
     } else {
-      console.log(`  Metadata cost: ${elonStatus.metadataCost} credits`);
+      console.log(`✗ @elonmusk not found in database`);
     }
 
     // Test 2: Check unknown user
     console.log("\nTest 2: Check unknown user...");
-    const unknownStatus = await publicClient.twitterUser.checkUserStatus.query({
+    const unknownUser = await publicClient.twitterUser.getByUsername.query({
       username: "unknown123",
     });
-    console.log(`✓ Has metadata: ${unknownStatus.hasMetadata}`);
-    console.log(`  Metadata cost: ${unknownStatus.metadataCost} credits`);
+    console.log(`✓ Unknown user exists: ${unknownUser !== null}`);
 
     // Test 3: Get balance (authenticated)
     console.log("\nTest 3: Get credit balance (authenticated)...");
@@ -142,7 +139,10 @@ async function main() {
 
     // Test 5: Get purchase history
     console.log("\nTest 5: Get purchase history...");
-    const history = await authClient.credits.getPurchaseHistory.query();
+    const history = await authClient.credits.getPurchaseHistory.query({
+      limit: 10,
+      offset: 0,
+    });
     console.log(`✓ Found ${history.length} purchases`);
     if (history.length > 0) {
       const latest = history[0];
