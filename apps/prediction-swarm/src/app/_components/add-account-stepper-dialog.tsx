@@ -487,6 +487,16 @@ export default function AddAccountStepperDialog({
     return shortfall > 0n ? shortfall : 0n;
   };
 
+  // Update username when initialUsername changes while dialog is open
+  useEffect(() => {
+    if (isOpen && initialUsername) {
+      setFormData((prev) => ({
+        ...prev,
+        username: initialUsername.toLowerCase(),
+      }));
+    }
+  }, [initialUsername, isOpen]);
+
   // Handle dialog state change
   const handleOpenChange = (open: boolean) => {
     setIsOpen(open);
