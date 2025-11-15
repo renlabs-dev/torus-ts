@@ -355,14 +355,15 @@ export default function AddAccountStepperDialog({
       isFinalized &&
       txHash &&
       "Submitted" in txStage &&
-      txStage.Submitted.event.kind === "Finalized"
+      txStage.Submitted.event.kind === "Finalized" &&
+      !purchaseCredits.isPending // Don't trigger if already processing
     ) {
       // Check if we've already processed this transaction
       if (processedTxRef.current.has(txHash)) {
         return;
       }
 
-      // Mark as processed
+      // Mark as processed immediately to prevent race conditions
       processedTxRef.current.add(txHash);
 
       const blockHash = txStage.Submitted.event.blockHash;
