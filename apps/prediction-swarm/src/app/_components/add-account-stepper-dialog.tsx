@@ -2,8 +2,8 @@
 
 import { calculateScrapingCost } from "@torus-network/torus-utils";
 import {
+  formatToken,
   formatTorusToken,
-  fromRems,
   makeTorAmount,
   toRems,
 } from "@torus-network/torus-utils/torus/token";
@@ -69,6 +69,23 @@ const steps = [
   },
 ];
 
+function BalanceDisplay({
+  balance,
+  label = "Current Balance",
+}: {
+  balance: string;
+  label?: string;
+}) {
+  return (
+    <div className="bg-muted rounded-lg p-4">
+      <p className="text-sm font-medium">{label}</p>
+      <p className="text-2xl font-bold">
+        {formatToken(BigInt(balance))} Credits
+      </p>
+    </div>
+  );
+}
+
 interface AddAccountStepperDialogProps {
   /** Control dialog open state externally (optional) */
   open?: boolean;
@@ -128,9 +145,12 @@ export default function AddAccountStepperDialog({
 
   // API hooks
   const { data: balance, refetch: refetchBalance } =
-    api.credits.getBalance.useQuery(undefined, {
-      enabled: isAccountConnected,
-    });
+    api.credits.getBalance.useQuery(
+      { userKey: selectedAccount?.address },
+      {
+        enabled: isAccountConnected && !!selectedAccount,
+      },
+    );
 
   const { data: userStatus, refetch: refetchUserStatus } =
     api.twitterUser.checkUserStatus.useQuery(
@@ -216,7 +236,10 @@ export default function AddAccountStepperDialog({
   });
 
   const handleNext = () => {
-    if (currentStep < 5) {
+    if (currentStep === 1) {
+      // From intro, navigate based on selected flow
+      setCurrentStep(formData.flowType === "add-funds" ? 2 : 3);
+    } else if (currentStep < 5) {
       setCurrentStep(currentStep + 1);
     }
   };
@@ -367,28 +390,30 @@ export default function AddAccountStepperDialog({
       case 1:
         return (
           <div className="space-y-6">
-            <CardHeader className="px-0 pt-0">
+            <CardHeader className="px-0 pb-2 pt-0">
               <CardTitle>Add Account to the Swarm</CardTitle>
               <CardDescription>
                 Here you can add accounts to be scraped. The process happens in
                 two steps: first we add the account and check its scraping cost,
                 then we perform the actual scrape. You can also manually add
-                funds beforehand if you plan to batch-add accounts. if you need
-                more info, please check out our{" "}
-                <Link href="#" className="text-primary hover:underline">
-                  docs
-                </Link>
-                .
+                funds beforehand if you plan to batch-add accounts.
               </CardDescription>
+              <div className="mt-2 space-y-1 text-sm">
+                <p>
+                  • Account metadata check:{" "}
+                  <span className="font-semibold">10 credits</span>
+                </p>
+                <p>
+                  • Scraping cost:{" "}
+                  <span className="font-semibold">
+                    ~60 credits per 1,000 tweets
+                  </span>
+                </p>
+              </div>
             </CardHeader>
 
             {isAccountConnected && balance && (
-              <div className="bg-muted rounded-lg p-4">
-                <p className="text-sm font-medium">Current Balance</p>
-                <p className="text-2xl font-bold">
-                  {formatTorusToken(fromRems(BigInt(balance.balance)))} Credits
-                </p>
-              </div>
+              <BalanceDisplay balance={balance.balance} />
             )}
 
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
@@ -397,7 +422,7 @@ export default function AddAccountStepperDialog({
                   "cursor-pointer transition-all",
                   formData.flowType === "add-funds"
                     ? "bg-muted border-primary ring-primary ring-2"
-                    : "border-gray-200 hover:shadow-md",
+                    : "hover:shadow-md",
                 )}
                 onClick={() => handleFlowSelection("add-funds")}
               >
@@ -424,7 +449,7 @@ export default function AddAccountStepperDialog({
                   "cursor-pointer transition-all",
                   formData.flowType === "add-account"
                     ? "bg-muted border-primary ring-primary ring-2"
-                    : "border-gray-200 hover:shadow-md",
+                    : "hover:shadow-md",
                 )}
                 onClick={() => handleFlowSelection("add-account")}
               >
@@ -452,7 +477,7 @@ export default function AddAccountStepperDialog({
       case 2:
         return (
           <div className="space-y-6">
-            <CardHeader className="px-0 pt-0">
+            <CardHeader className="px-0 pb-2 pt-0">
               <CardTitle>Add Funds</CardTitle>
               <CardDescription>
                 Purchase credits by transferring TORUS tokens. Credits are
@@ -463,20 +488,14 @@ export default function AddAccountStepperDialog({
 
             <div className="space-y-6">
               {isAccountConnected && balance && (
-                <div className="bg-muted rounded-lg p-4">
-                  <p className="text-sm font-medium">Current Balance</p>
-                  <p className="text-2xl font-bold">
-                    {formatTorusToken(fromRems(BigInt(balance.balance)))}{" "}
-                    Credits
-                  </p>
-                </div>
+                <BalanceDisplay balance={balance.balance} />
               )}
 
               <div>
                 <Label htmlFor="wallet" className="text-base">
                   Select Torus Wallet
                 </Label>
-                <div className="mt-2">
+                <div className="border-border mt-2 border">
                   <WalletDropdown
                     variant="default"
                     torusCacheUrl={env("NEXT_PUBLIC_TORUS_CACHE_URL")}
@@ -533,7 +552,7 @@ export default function AddAccountStepperDialog({
       case 3:
         return (
           <div className="space-y-6">
-            <CardHeader className="px-0 pt-0">
+            <CardHeader className="px-0 pb-2 pt-0">
               <CardTitle>Select Account</CardTitle>
               <CardDescription>
                 Enter a Twitter username to check if metadata exists. If not,
@@ -544,20 +563,14 @@ export default function AddAccountStepperDialog({
 
             <div className="space-y-6">
               {isAccountConnected && balance && (
-                <div className="bg-muted rounded-lg p-4">
-                  <p className="text-sm font-medium">Current Balance</p>
-                  <p className="text-2xl font-bold">
-                    {formatTorusToken(fromRems(BigInt(balance.balance)))}{" "}
-                    Credits
-                  </p>
-                </div>
+                <BalanceDisplay balance={balance.balance} />
               )}
 
               <div>
                 <Label htmlFor="wallet" className="text-base">
                   Select Torus Wallet
                 </Label>
-                <div className="mt-2">
+                <div className="border-border mt-2 border">
                   <WalletDropdown
                     variant="default"
                     torusCacheUrl={env("NEXT_PUBLIC_TORUS_CACHE_URL")}
@@ -602,9 +615,7 @@ export default function AddAccountStepperDialog({
                             {
                               // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
                               userStatus.scrapingCost != null
-                                ? formatTorusToken(
-                                    makeTorAmount(userStatus.scrapingCost),
-                                  )
+                                ? formatToken(Number(userStatus.scrapingCost))
                                 : "0"
                             }{" "}
                             credits
@@ -622,9 +633,7 @@ export default function AddAccountStepperDialog({
                         {
                           // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
                           userStatus.metadataCost != null
-                            ? formatTorusToken(
-                                makeTorAmount(userStatus.metadataCost),
-                              )
+                            ? formatToken(Number(userStatus.metadataCost))
                             : "10"
                         }{" "}
                         credits
@@ -661,7 +670,7 @@ export default function AddAccountStepperDialog({
       case 4:
         return (
           <div className="space-y-6">
-            <CardHeader className="px-0 pt-0">
+            <CardHeader className="px-0 pb-2 pt-0">
               <CardTitle>Scrape Account</CardTitle>
               <CardDescription>
                 Queue @{formData.username} for scraping. The cost is calculated
@@ -678,8 +687,7 @@ export default function AddAccountStepperDialog({
                 <div className="bg-muted rounded-lg p-4">
                   <p className="text-sm font-medium">Current Balance</p>
                   <p className="text-2xl font-bold">
-                    {formatTorusToken(fromRems(BigInt(balance.balance)))}{" "}
-                    Credits
+                    {formatToken(BigInt(balance.balance))} Credits
                   </p>
                 </div>
               )}
@@ -701,8 +709,12 @@ export default function AddAccountStepperDialog({
                     </p>
                     <p className="text-sm font-semibold">
                       Scraping Cost:{" "}
-                      {formatTorusToken(
-                        calculateScrapingCost(userStatus.user.tweetCount ?? 0),
+                      {formatToken(
+                        Number(
+                          calculateScrapingCost(
+                            userStatus.user.tweetCount ?? 0,
+                          ),
+                        ),
                       )}{" "}
                       credits
                     </p>
@@ -735,7 +747,7 @@ export default function AddAccountStepperDialog({
       case 5:
         return (
           <div className="space-y-6">
-            <CardHeader className="px-0 pt-0">
+            <CardHeader className="px-0 pb-2 pt-0">
               <CardTitle>Account Queued Successfully!</CardTitle>
               <CardDescription>
                 @{formData.username} has been added to the scraping queue.
@@ -744,13 +756,10 @@ export default function AddAccountStepperDialog({
 
             <div className="space-y-6">
               {isAccountConnected && balance && (
-                <div className="bg-muted rounded-lg p-4">
-                  <p className="text-sm font-medium">Remaining Balance</p>
-                  <p className="text-2xl font-bold">
-                    {formatTorusToken(fromRems(BigInt(balance.balance)))}{" "}
-                    Credits
-                  </p>
-                </div>
+                <BalanceDisplay
+                  balance={balance.balance}
+                  label="Remaining Balance"
+                />
               )}
 
               <div className="bg-muted rounded-lg p-4">
@@ -793,7 +802,7 @@ export default function AddAccountStepperDialog({
   const canProceedToNextStep = () => {
     switch (currentStep) {
       case 1:
-        return false; // Must choose a flow option
+        return true; // Can proceed (add-account is pre-selected)
       case 2:
         return false; // Must complete purchase
       case 3:

@@ -6,7 +6,7 @@ import { creditPurchasesSchema, userCreditsSchema } from "@torus-ts/db/schema";
 import type { TRPCRouterRecord } from "@trpc/server";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
-import { authenticatedProcedure } from "../../trpc";
+import { authenticatedProcedure, publicProcedure } from "../../trpc";
 import { verifyTorusTransfer } from "../../utils/verify-transaction";
 
 /**
@@ -16,19 +16,40 @@ import { verifyTorusTransfer } from "../../utils/verify-transaction";
  */
 export const creditsRouter = {
   /**
-   * Get the authenticated user's credit balance.
+   * Get credit balance for a wallet address.
+   *
+   * Public endpoint - no authentication required.
+   * Returns zero balances if address not provided or not found.
    */
-  getBalance: authenticatedProcedure.query(async ({ ctx }) => {
-    const record = await ctx.db.query.userCreditsSchema.findFirst({
-      where: eq(userCreditsSchema.userKey, ctx.sessionData.userKey),
-    });
+  getBalance: publicProcedure
+    .input(
+      z
+        .object({
+          userKey: z.string().optional(),
+        })
+        .optional(),
+    )
+    .query(async ({ ctx, input }) => {
+      const userKey = input?.userKey;
 
-    return {
-      balance: record?.balance ?? "0",
-      totalPurchased: record?.totalPurchased ?? "0",
-      totalSpent: record?.totalSpent ?? "0",
-    };
-  }),
+      if (!userKey) {
+        return {
+          balance: "0",
+          totalPurchased: "0",
+          totalSpent: "0",
+        };
+      }
+
+      const record = await ctx.db.query.userCreditsSchema.findFirst({
+        where: eq(userCreditsSchema.userKey, userKey),
+      });
+
+      return {
+        balance: record?.balance ?? "0",
+        totalPurchased: record?.totalPurchased ?? "0",
+        totalSpent: record?.totalSpent ?? "0",
+      };
+    }),
 
   /**
    * Purchase credits by verifying a TORUS token transfer.
