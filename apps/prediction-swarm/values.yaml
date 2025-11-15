@@ -21,5 +21,20 @@ deployment:
         configMapKeyRef:
           name: '{{ template "application.name" . }}-config'
           key: torus_allocator_address
+    NEXT_PUBLIC_PREDICTION_APP_ADDRESS:
+      valueFrom:
+        configMapKeyRef:
+          name: '{{ template "application.name" . }}-config'
+          key: prediction_app_address
+    PREDICTION_APP_ADDRESS:
+      valueFrom:
+        configMapKeyRef:
+          name: '{{ template "application.name" . }}-config'
+          key: prediction_app_address
+    TWITTERAPI_IO_KEY:
+      valueFrom:
+        secretKeyRef:
+          name: "torus-{{ .Values.environmentName }}-web-apps-secret"
+          key: twitterapi_io_key
     NEXT_PUBLIC_AUTH_ORIGIN:
       value: "https://{{ .Values.ingressHost }}"
