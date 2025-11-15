@@ -4,7 +4,6 @@ import type { SS58Address } from "@torus-network/sdk/types";
 import { calculateScrapingCost } from "@torus-network/torus-utils";
 import {
   formatToken,
-  formatTorusToken,
   makeTorAmount,
   toRems,
 } from "@torus-network/torus-utils/torus/token";
@@ -195,7 +194,7 @@ export default function AddAccountStepperDialog({
     onSuccess: async (data) => {
       toast({
         title: "Credits Purchased",
-        description: `Successfully added ${formatTorusToken(makeTorAmount(data.creditsGranted))} credits`,
+        description: `Successfully added ${formatToken(Number(data.creditsGranted))} credits`,
       });
 
       // Wait for balance to update
@@ -240,7 +239,7 @@ export default function AddAccountStepperDialog({
       } else {
         toast({
           title: "Metadata Purchased",
-          description: `Spent ${formatTorusToken(makeTorAmount(data.creditsSpent))} credits. You can now see the scraping cost.`,
+          description: `Spent ${formatToken(Number(data.creditsSpent))} credits. You can now see the scraping cost.`,
         });
       }
       void refetchBalance();
@@ -264,7 +263,7 @@ export default function AddAccountStepperDialog({
           <div>
             <p>
               @{formData.username} has been added to the queue. Spent{" "}
-              {formatTorusToken(makeTorAmount(data.creditsSpent))} credits.
+              {formatToken(Number(data.creditsSpent))} credits.
             </p>
             <Link
               href="/scraper-queue"
@@ -420,13 +419,20 @@ export default function AddAccountStepperDialog({
       return;
     }
 
-    // Need 10 credits for metadata
-    const amount = "10";
-    const amountInRems = toRems(makeTorAmount(amount));
+    // Calculate shortfall: need 10 credits, buy only the difference
+    const currentBalance = BigInt(balance?.balance ?? "0");
+    const required = toRems(makeTorAmount(10));
+    const shortfall = required - currentBalance;
+
+    if (shortfall <= 0n) {
+      // User already has enough, just purchase metadata directly
+      handlePurchaseMetadata();
+      return;
+    }
 
     const transfer = torusApi.tx.balances.transferKeepAlive(
       env("NEXT_PUBLIC_PREDICTION_APP_ADDRESS"),
-      amountInRems,
+      shortfall,
     );
 
     setPendingAction("purchase-metadata");
@@ -444,23 +450,57 @@ export default function AddAccountStepperDialog({
       return;
     }
 
+    // Calculate shortfall: only buy the difference between current and required
     const scrapingCost = calculateScrapingCost(userStatus.user.tweetCount ?? 0);
-    // scrapingCost is already a TorAmount in rems, extract as bigint
-    const amountInRems = BigInt(scrapingCost.toFixed(0));
+    const currentBalance = BigInt(balance?.balance ?? "0");
+    const required = BigInt(scrapingCost.toFixed(0));
+    const shortfall = required - currentBalance;
+
+    if (shortfall <= 0n) {
+      // User already has enough, just queue scraping directly
+      handleRequestScraping();
+      return;
+    }
 
     const transfer = torusApi.tx.balances.transferKeepAlive(
       env("NEXT_PUBLIC_PREDICTION_APP_ADDRESS"),
-      amountInRems,
+      shortfall,
     );
 
     setPendingAction("queue-scraping");
     await sendTx(transfer);
   };
 
+  // Check if any operation is in progress (locks all buttons)
+  const isAnyOperationPending =
+    (isTxPending && !isFinalized) ||
+    purchaseCredits.isPending ||
+    purchaseMetadata.isPending ||
+    suggestUser.isPending ||
+    pendingAction !== "none"; // Keep locked if we have a pending action to execute
+
   // Check if user has sufficient balance for an operation
   const hasSufficientBalance = (requiredAmount: string) => {
     if (!balance) return false;
     return BigInt(balance.balance) >= BigInt(requiredAmount);
+  };
+
+  // Calculate shortfall for metadata (10 credits)
+  const getMetadataShortfall = () => {
+    const currentBalance = BigInt(balance?.balance ?? "0");
+    const required = toRems(makeTorAmount(10));
+    const shortfall = required - currentBalance;
+    return shortfall > 0n ? shortfall : 0n;
+  };
+
+  // Calculate shortfall for scraping
+  const getScrapingShortfall = () => {
+    if (!userStatus?.user) return 0n;
+    const currentBalance = BigInt(balance?.balance ?? "0");
+    const scrapingCost = calculateScrapingCost(userStatus.user.tweetCount ?? 0);
+    const required = BigInt(scrapingCost.toFixed(0));
+    const shortfall = required - currentBalance;
+    return shortfall > 0n ? shortfall : 0n;
   };
 
   // Handle dialog state change
@@ -646,8 +686,7 @@ export default function AddAccountStepperDialog({
                 disabled={
                   !isAccountConnected ||
                   !formData.torusAmount ||
-                  isTxPending ||
-                  purchaseCredits.isPending
+                  isAnyOperationPending
                 }
                 className="w-full"
               >
@@ -787,8 +826,7 @@ export default function AddAccountStepperDialog({
                         disabled={
                           !isAccountConnected ||
                           !formData.username ||
-                          purchaseMetadata.isPending ||
-                          isTxPending
+                          isAnyOperationPending
                         }
                         className="w-full"
                       >
@@ -807,9 +845,7 @@ export default function AddAccountStepperDialog({
                         disabled={
                           !isAccountConnected ||
                           !formData.username ||
-                          isTxPending ||
-                          purchaseCredits.isPending ||
-                          purchaseMetadata.isPending
+                          isAnyOperationPending
                         }
                         className="w-full"
                         variant="default"
@@ -825,7 +861,7 @@ export default function AddAccountStepperDialog({
                             Purchasing Metadata...
                           </>
                         ) : (
-                          "Buy 10 Credits & Purchase Metadata"
+                          `Buy ${formatToken(getMetadataShortfall())} Credits & Purchase Metadata`
                         )}
                       </Button>
                     )}
@@ -904,11 +940,7 @@ export default function AddAccountStepperDialog({
                   ) ? (
                   <Button
                     onClick={handleRequestScraping}
-                    disabled={
-                      !isAccountConnected ||
-                      suggestUser.isPending ||
-                      isTxPending
-                    }
+                    disabled={!isAccountConnected || isAnyOperationPending}
                     className="w-full"
                   >
                     {suggestUser.isPending ? (
@@ -929,12 +961,7 @@ export default function AddAccountStepperDialog({
                 ) : (
                   <Button
                     onClick={handleBuyAndQueueScraping}
-                    disabled={
-                      !isAccountConnected ||
-                      isTxPending ||
-                      purchaseCredits.isPending ||
-                      suggestUser.isPending
-                    }
+                    disabled={!isAccountConnected || isAnyOperationPending}
                     className="w-full"
                     variant="default"
                   >
@@ -949,13 +976,7 @@ export default function AddAccountStepperDialog({
                         Queueing Scraping...
                       </>
                     ) : (
-                      `Buy ${formatToken(
-                        Number(
-                          calculateScrapingCost(
-                            userStatus.user.tweetCount ?? 0,
-                          ),
-                        ),
-                      )} Credits & Queue Scraping`
+                      `Buy ${formatToken(getScrapingShortfall())} Credits & Queue Scraping`
                     )}
                   </Button>
                 ))}
