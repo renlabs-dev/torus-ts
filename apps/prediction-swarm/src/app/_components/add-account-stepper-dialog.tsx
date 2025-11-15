@@ -112,6 +112,9 @@ export default function AddAccountStepperDialog({
     txHash: "",
     blockHash: "",
   });
+  const [pendingAction, setPendingAction] = useState<
+    "none" | "purchase-metadata" | "queue-scraping"
+  >("none");
 
   // Use external or internal open state
   const isOpen = externalOpen ?? internalOpen;
@@ -161,15 +164,36 @@ export default function AddAccountStepperDialog({
     );
 
   const purchaseCredits = api.credits.purchaseCredits.useMutation({
-    onSuccess: (data) => {
+    onSuccess: async (data) => {
       toast({
         title: "Credits Purchased",
         description: `Successfully added ${formatTorusToken(makeTorAmount(data.creditsGranted))} credits`,
       });
-      void refetchBalance();
-      handleNext();
+
+      // Wait for balance to update
+      await refetchBalance();
+
+      // Execute pending action after balance is updated
+      const action = pendingAction;
+      setPendingAction("none");
+
+      if (action === "purchase-metadata") {
+        purchaseMetadata.mutate({ username: formData.username });
+      } else if (action === "queue-scraping" && userStatus?.user) {
+        const scrapingCost = calculateScrapingCost(
+          userStatus.user.tweetCount ?? 0,
+        );
+        suggestUser.mutate({
+          username: formData.username,
+          budget: BigInt(scrapingCost.toFixed(0)),
+        });
+      } else if (action === "none") {
+        // Regular credit purchase without pending action
+        handleNext();
+      }
     },
     onError: (error) => {
+      setPendingAction("none");
       toast({
         title: "Purchase Failed",
         description: error.message,
@@ -188,12 +212,12 @@ export default function AddAccountStepperDialog({
       } else {
         toast({
           title: "Metadata Purchased",
-          description: `Spent ${formatTorusToken(makeTorAmount(data.creditsSpent))} credits`,
+          description: `Spent ${formatTorusToken(makeTorAmount(data.creditsSpent))} credits. You can now see the scraping cost.`,
         });
       }
       void refetchBalance();
       void refetchUserStatus();
-      handleNext();
+      // Don't auto-advance - let user see the cost and manually proceed
     },
     onError: (error) => {
       toast({
@@ -357,6 +381,60 @@ export default function AddAccountStepperDialog({
     });
   };
 
+  // Buy credits and immediately purchase metadata
+  const handleBuyAndPurchaseMetadata = async () => {
+    if (!torusApi || !sendTx) {
+      toast({
+        title: "Wallet Not Connected",
+        description: "Please connect your wallet first",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Need 10 credits for metadata
+    const amount = "10";
+    const amountInRems = toRems(makeTorAmount(amount));
+
+    const transfer = torusApi.tx.balances.transferKeepAlive(
+      env("NEXT_PUBLIC_PREDICTION_APP_ADDRESS"),
+      amountInRems,
+    );
+
+    setPendingAction("purchase-metadata");
+    await sendTx(transfer);
+  };
+
+  // Buy credits and immediately queue scraping
+  const handleBuyAndQueueScraping = async () => {
+    if (!torusApi || !sendTx || !userStatus?.user) {
+      toast({
+        title: "Wallet Not Connected",
+        description: "Please connect your wallet first",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const scrapingCost = calculateScrapingCost(userStatus.user.tweetCount ?? 0);
+    // scrapingCost is already a TorAmount in rems, extract as bigint
+    const amountInRems = BigInt(scrapingCost.toFixed(0));
+
+    const transfer = torusApi.tx.balances.transferKeepAlive(
+      env("NEXT_PUBLIC_PREDICTION_APP_ADDRESS"),
+      amountInRems,
+    );
+
+    setPendingAction("queue-scraping");
+    await sendTx(transfer);
+  };
+
+  // Check if user has sufficient balance for an operation
+  const hasSufficientBalance = (requiredAmount: string) => {
+    if (!balance) return false;
+    return BigInt(balance.balance) >= BigInt(requiredAmount);
+  };
+
   // Handle dialog state change
   const handleOpenChange = (open: boolean) => {
     setIsOpen(open);
@@ -370,6 +448,7 @@ export default function AddAccountStepperDialog({
         blockHash: "",
       });
       setCurrentStep(3);
+      setPendingAction("none");
     } else if (!open) {
       // Reset form when dialog closes
       setCurrentStep(1);
@@ -382,6 +461,7 @@ export default function AddAccountStepperDialog({
       });
       // Clear processed transactions
       processedTxRef.current.clear();
+      setPendingAction("none");
     }
   };
 
@@ -644,24 +724,58 @@ export default function AddAccountStepperDialog({
               )}
 
               {userStatus && !userStatus.hasMetadata && (
-                <Button
-                  onClick={handlePurchaseMetadata}
-                  disabled={
-                    !isAccountConnected ||
-                    !formData.username ||
-                    purchaseMetadata.isPending
-                  }
-                  className="w-full"
-                >
-                  {purchaseMetadata.isPending ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Purchasing Metadata...
-                    </>
+                <>
+                  {hasSufficientBalance(
+                    toRems(makeTorAmount(10)).toString(),
+                  ) ? (
+                    <Button
+                      onClick={handlePurchaseMetadata}
+                      disabled={
+                        !isAccountConnected ||
+                        !formData.username ||
+                        purchaseMetadata.isPending ||
+                        isTxPending
+                      }
+                      className="w-full"
+                    >
+                      {purchaseMetadata.isPending ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          Purchasing Metadata...
+                        </>
+                      ) : (
+                        "Purchase Metadata (10 credits)"
+                      )}
+                    </Button>
                   ) : (
-                    "Purchase Metadata (10 credits)"
+                    <Button
+                      onClick={handleBuyAndPurchaseMetadata}
+                      disabled={
+                        !isAccountConnected ||
+                        !formData.username ||
+                        isTxPending ||
+                        purchaseCredits.isPending ||
+                        purchaseMetadata.isPending
+                      }
+                      className="w-full"
+                      variant="default"
+                    >
+                      {isTxPending || purchaseCredits.isPending ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          Buying Credits...
+                        </>
+                      ) : purchaseMetadata.isPending ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          Purchasing Metadata...
+                        </>
+                      ) : (
+                        "Buy 10 Credits & Purchase Metadata"
+                      )}
+                    </Button>
                   )}
-                </Button>
+                </>
               )}
             </div>
           </div>
@@ -673,23 +787,13 @@ export default function AddAccountStepperDialog({
             <CardHeader className="px-0 pb-2 pt-0">
               <CardTitle>Scrape Account</CardTitle>
               <CardDescription>
-                Queue @{formData.username} for scraping. The cost is calculated
-                based on tweet count
-                {userStatus?.user &&
-                  `: ${formatTorusToken(
-                    calculateScrapingCost(userStatus.user.tweetCount ?? 0),
-                  )} credits`}
+                Queue @{formData.username} for scraping.
               </CardDescription>
             </CardHeader>
 
             <div className="space-y-6">
               {isAccountConnected && balance && (
-                <div className="bg-muted rounded-lg p-4">
-                  <p className="text-sm font-medium">Current Balance</p>
-                  <p className="text-2xl font-bold">
-                    {formatToken(BigInt(balance.balance))} Credits
-                  </p>
-                </div>
+                <BalanceDisplay balance={balance.balance} />
               )}
 
               {userStatus?.user && (
@@ -722,24 +826,69 @@ export default function AddAccountStepperDialog({
                 </div>
               )}
 
-              <Button
-                onClick={handleRequestScraping}
-                disabled={
-                  !isAccountConnected ||
-                  !userStatus?.user ||
-                  suggestUser.isPending
-                }
-                className="w-full"
-              >
-                {suggestUser.isPending ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Queueing Scraping...
-                  </>
+              {userStatus?.user &&
+                (hasSufficientBalance(
+                  calculateScrapingCost(
+                    userStatus.user.tweetCount ?? 0,
+                  ).toFixed(0),
+                ) ? (
+                  <Button
+                    onClick={handleRequestScraping}
+                    disabled={
+                      !isAccountConnected ||
+                      suggestUser.isPending ||
+                      isTxPending
+                    }
+                    className="w-full"
+                  >
+                    {suggestUser.isPending ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Queueing Scraping...
+                      </>
+                    ) : (
+                      `Queue for Scraping (${formatToken(
+                        Number(
+                          calculateScrapingCost(
+                            userStatus.user.tweetCount ?? 0,
+                          ),
+                        ),
+                      )} credits)`
+                    )}
+                  </Button>
                 ) : (
-                  "Queue for Scraping"
-                )}
-              </Button>
+                  <Button
+                    onClick={handleBuyAndQueueScraping}
+                    disabled={
+                      !isAccountConnected ||
+                      isTxPending ||
+                      purchaseCredits.isPending ||
+                      suggestUser.isPending
+                    }
+                    className="w-full"
+                    variant="default"
+                  >
+                    {isTxPending || purchaseCredits.isPending ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Buying Credits...
+                      </>
+                    ) : suggestUser.isPending ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Queueing Scraping...
+                      </>
+                    ) : (
+                      `Buy ${formatToken(
+                        Number(
+                          calculateScrapingCost(
+                            userStatus.user.tweetCount ?? 0,
+                          ),
+                        ),
+                      )} Credits & Queue Scraping`
+                    )}
+                  </Button>
+                ))}
             </div>
           </div>
         );
@@ -755,13 +904,6 @@ export default function AddAccountStepperDialog({
             </CardHeader>
 
             <div className="space-y-6">
-              {isAccountConnected && balance && (
-                <BalanceDisplay
-                  balance={balance.balance}
-                  label="Remaining Balance"
-                />
-              )}
-
               <div className="bg-muted rounded-lg p-4">
                 <p className="text-sm font-medium">Next Steps</p>
                 <div className="mt-2 space-y-2">
