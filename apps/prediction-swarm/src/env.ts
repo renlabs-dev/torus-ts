@@ -28,6 +28,7 @@ export const envSchema = {
         ? "https://predictionswarm.com"
         : "https://localhost:3004",
     ),
+  TWITTERAPI_IO_KEY: z.string(),
   /**
    * Specify your client-side environment variables schema here.
    * For them to be exposed to the client, prefix them with `NEXT_PUBLIC_`.

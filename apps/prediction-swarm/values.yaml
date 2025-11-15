@@ -33,3 +33,8 @@ deployment:
         secretKeyRef:
           name: "torus-{{ .Values.environmentName }}-web-apps-secret"
           key: NEXT_PUBLIC_PREDICTION_APP_ADDRESS
+    TWITTERAPI_IO_KEY:
+      valueFrom:
+        secretKeyRef:
+          name: "torus-{{ .Values.environmentName }}-web-apps-secret"
+          key: TWITTERAPI_IO_KEY
