@@ -1,5 +1,6 @@
 "use client";
 
+import type { SS58Address } from "@torus-network/sdk/types";
 import { calculateScrapingCost } from "@torus-network/torus-utils";
 import {
   formatToken,
@@ -7,8 +8,14 @@ import {
   makeTorAmount,
   toRems,
 } from "@torus-network/torus-utils/torus/token";
+import { useFreeBalance } from "@torus-ts/query-provider/hooks";
 import { useTorus } from "@torus-ts/torus-provider";
 import { useSendTransaction } from "@torus-ts/torus-provider/use-send-transaction";
+import {
+  Alert,
+  AlertDescription,
+  AlertTitle,
+} from "@torus-ts/ui/components/alert";
 import { Button } from "@torus-ts/ui/components/button";
 import {
   Card,
@@ -30,6 +37,7 @@ import { cn } from "@torus-ts/ui/lib/utils";
 import { env } from "~/env";
 import { api } from "~/trpc/react";
 import {
+  AlertCircleIcon,
   Check,
   ChevronLeft,
   ChevronRight,
@@ -70,18 +78,33 @@ const steps = [
 ];
 
 function BalanceDisplay({
-  balance,
-  label = "Current Balance",
+  creditsBalance,
+  torusBalance,
+  isConnected,
 }: {
-  balance: string;
-  label?: string;
+  creditsBalance: { balance: string } | undefined;
+  torusBalance: bigint | null | undefined;
+  isConnected: boolean;
 }) {
+  if (!isConnected || !creditsBalance) {
+    return null;
+  }
+
   return (
-    <div className="bg-muted rounded-lg p-4">
-      <p className="text-sm font-medium">{label}</p>
-      <p className="text-2xl font-bold">
-        {formatToken(BigInt(balance))} Credits
-      </p>
+    <div className="flex items-center gap-1 rounded-lg py-1">
+      <div className="flex items-baseline gap-1 text-xs">
+        <p className="text-muted-foreground font-medium">Credit Balance: </p>
+        <p className="font-bold">
+          {formatToken(BigInt(creditsBalance.balance))} Credits
+        </p>
+      </div>
+      |
+      {torusBalance != null && (
+        <div className="flex items-baseline gap-1 text-xs">
+          <p className="text-muted-foreground font-medium">Torus Balance: </p>
+          <p className="font-bold">{formatToken(torusBalance)} TORUS</p>
+        </div>
+      )}
     </div>
   );
 }
@@ -145,6 +168,11 @@ export default function AddAccountStepperDialog({
     wallet: torusWalletApi,
     transactionType: "Purchase Credits",
   });
+
+  const accountFreeBalance = useFreeBalance(
+    torusApi,
+    selectedAccount?.address as SS58Address,
+  );
 
   // API hooks
   const { data: balance, refetch: refetchBalance } =
@@ -492,10 +520,6 @@ export default function AddAccountStepperDialog({
               </div>
             </CardHeader>
 
-            {isAccountConnected && balance && (
-              <BalanceDisplay balance={balance.balance} />
-            )}
-
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               <Card
                 className={cn(
@@ -564,13 +588,24 @@ export default function AddAccountStepperDialog({
                 converted at a 1:1 rate (1 TORUS = 1 Credit). The transaction
                 will be verified on-chain before credits are granted.
               </CardDescription>
+              <BalanceDisplay
+                creditsBalance={balance}
+                torusBalance={accountFreeBalance.data}
+                isConnected={isAccountConnected}
+              />
+              <Alert variant="destructive">
+                <AlertCircleIcon className="h-4 w-4" />
+                <AlertTitle>Warning</AlertTitle>
+                <AlertDescription>
+                  <p>
+                    Buying credits is irreversible. You will not be able to
+                    convert your credits back to TORUS.
+                  </p>
+                </AlertDescription>
+              </Alert>
             </CardHeader>
 
             <div className="space-y-6">
-              {isAccountConnected && balance && (
-                <BalanceDisplay balance={balance.balance} />
-              )}
-
               <div>
                 <Label htmlFor="wallet" className="text-base">
                   Select Torus Wallet
@@ -632,20 +667,21 @@ export default function AddAccountStepperDialog({
       case 3:
         return (
           <div className="space-y-6">
-            <CardHeader className="px-0 pb-2 pt-0">
+            <CardHeader className="px-0 pb-1 pt-0">
               <CardTitle>Select Account</CardTitle>
               <CardDescription>
                 Enter a Twitter username to check if metadata exists. If not,
                 you'll need to purchase metadata (10 credits) to see the
                 scraping cost.
               </CardDescription>
+              <BalanceDisplay
+                creditsBalance={balance}
+                torusBalance={accountFreeBalance.data}
+                isConnected={isAccountConnected}
+              />
             </CardHeader>
 
             <div className="space-y-6">
-              {isAccountConnected && balance && (
-                <BalanceDisplay balance={balance.balance} />
-              )}
-
               <div>
                 <Label htmlFor="wallet" className="text-base">
                   Select Torus Wallet
@@ -680,7 +716,7 @@ export default function AddAccountStepperDialog({
                       <p className="text-sm text-green-600">
                         ✓ Already tracked in the swarm
                       </p>
-                      <p className="text-sm text-muted-foreground">
+                      <p className="text-muted-foreground text-sm">
                         This account is already being scraped. You can view
                         predictions at{" "}
                         <Link
@@ -739,60 +775,62 @@ export default function AddAccountStepperDialog({
                 </div>
               )}
 
-              {userStatus && !userStatus.user?.tracked && !userStatus.hasMetadata && (
-                <>
-                  {hasSufficientBalance(
-                    toRems(makeTorAmount(10)).toString(),
-                  ) ? (
-                    <Button
-                      onClick={handlePurchaseMetadata}
-                      disabled={
-                        !isAccountConnected ||
-                        !formData.username ||
-                        purchaseMetadata.isPending ||
-                        isTxPending
-                      }
-                      className="w-full"
-                    >
-                      {purchaseMetadata.isPending ? (
-                        <>
-                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                          Purchasing Metadata...
-                        </>
-                      ) : (
-                        "Purchase Metadata (10 credits)"
-                      )}
-                    </Button>
-                  ) : (
-                    <Button
-                      onClick={handleBuyAndPurchaseMetadata}
-                      disabled={
-                        !isAccountConnected ||
-                        !formData.username ||
-                        isTxPending ||
-                        purchaseCredits.isPending ||
-                        purchaseMetadata.isPending
-                      }
-                      className="w-full"
-                      variant="default"
-                    >
-                      {isTxPending || purchaseCredits.isPending ? (
-                        <>
-                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                          Buying Credits...
-                        </>
-                      ) : purchaseMetadata.isPending ? (
-                        <>
-                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                          Purchasing Metadata...
-                        </>
-                      ) : (
-                        "Buy 10 Credits & Purchase Metadata"
-                      )}
-                    </Button>
-                  )}
-                </>
-              )}
+              {userStatus &&
+                !userStatus.user?.tracked &&
+                !userStatus.hasMetadata && (
+                  <>
+                    {hasSufficientBalance(
+                      toRems(makeTorAmount(10)).toString(),
+                    ) ? (
+                      <Button
+                        onClick={handlePurchaseMetadata}
+                        disabled={
+                          !isAccountConnected ||
+                          !formData.username ||
+                          purchaseMetadata.isPending ||
+                          isTxPending
+                        }
+                        className="w-full"
+                      >
+                        {purchaseMetadata.isPending ? (
+                          <>
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            Purchasing Metadata...
+                          </>
+                        ) : (
+                          "Purchase Metadata (10 credits)"
+                        )}
+                      </Button>
+                    ) : (
+                      <Button
+                        onClick={handleBuyAndPurchaseMetadata}
+                        disabled={
+                          !isAccountConnected ||
+                          !formData.username ||
+                          isTxPending ||
+                          purchaseCredits.isPending ||
+                          purchaseMetadata.isPending
+                        }
+                        className="w-full"
+                        variant="default"
+                      >
+                        {isTxPending || purchaseCredits.isPending ? (
+                          <>
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            Buying Credits...
+                          </>
+                        ) : purchaseMetadata.isPending ? (
+                          <>
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            Purchasing Metadata...
+                          </>
+                        ) : (
+                          "Buy 10 Credits & Purchase Metadata"
+                        )}
+                      </Button>
+                    )}
+                  </>
+                )}
             </div>
           </div>
         );
@@ -800,18 +838,19 @@ export default function AddAccountStepperDialog({
       case 4:
         return (
           <div className="space-y-6">
-            <CardHeader className="px-0 pb-2 pt-0">
+            <CardHeader className="px-0 pb-1 pt-0">
               <CardTitle>Scrape Account</CardTitle>
               <CardDescription>
                 Queue @{formData.username} for scraping.
               </CardDescription>
+              <BalanceDisplay
+                creditsBalance={balance}
+                torusBalance={accountFreeBalance.data}
+                isConnected={isAccountConnected}
+              />
             </CardHeader>
 
             <div className="space-y-6">
-              {isAccountConnected && balance && (
-                <BalanceDisplay balance={balance.balance} />
-              )}
-
               {userStatus?.user && (
                 <div className="bg-muted rounded-lg p-4">
                   <p className="text-sm font-medium">Account Details</p>
@@ -848,7 +887,7 @@ export default function AddAccountStepperDialog({
                     <p className="text-sm text-green-600">
                       ✓ This account is already tracked in the swarm
                     </p>
-                    <p className="text-sm text-muted-foreground mt-2">
+                    <p className="text-muted-foreground mt-2 text-sm">
                       You can view predictions at{" "}
                       <Link
                         href={`/user/${formData.username}`}
@@ -977,12 +1016,10 @@ export default function AddAccountStepperDialog({
       case 1:
         return true; // Can proceed (add-account is pre-selected)
       case 2:
-        return false; // Must complete purchase
+        return true; // Can skip adding funds (later steps have buy+spend options)
       case 3:
         // Can proceed if has metadata and not already tracked
-        return (
-          (userStatus?.hasMetadata && !userStatus.user?.tracked) ?? false
-        );
+        return (userStatus?.hasMetadata && !userStatus.user?.tracked) ?? false;
       case 4:
         return false; // Must queue scraping
       case 5:
@@ -1009,7 +1046,7 @@ export default function AddAccountStepperDialog({
         <Card className="w-full max-w-3xl border-none bg-transparent p-0 shadow-none">
           <CardHeader className="pb-0">
             {/* Step Indicator */}
-            <div className="mb-6 flex items-center justify-between">
+            <div className="flex items-center justify-between">
               {steps.map((step) => (
                 <div
                   key={step.id}
