@@ -39,7 +39,8 @@ export const envSchema = {
   NEXT_PUBLIC_NODE_ENV: NodeEnvSchema,
   NEXT_PUBLIC_TORUS_CHAIN_ENV: chainEnvSchema,
   NEXT_PUBLIC_TORUS_ALLOCATOR_ADDRESS: SS58_SCHEMA,
-  PREDICTION_APP_ADDRESS: SS58_SCHEMA,
+  NEXT_PUBLIC_PREDICTION_APP_ADDRESS: SS58_SCHEMA,
+  PREDICTION_APP_ADDRESS: SS58_SCHEMA, // Server-side only (for backward compatibility)
   JWT_SECRET: z.string(),
   COINGECKO_API_KEY: z.string().optional(),
 };

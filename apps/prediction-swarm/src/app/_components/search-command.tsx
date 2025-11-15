@@ -125,52 +125,72 @@ export function SearchCommand() {
         )}
         <CommandList>
           <>
-            <CommandEmpty>
-              {searchResults === undefined ? (
+            {/* Show empty states for non-actionable scenarios */}
+            {searchResults === undefined && (
+              <CommandEmpty>
                 <div className="flex flex-col gap-2">
                   <SearchEmpty />
                 </div>
-              ) : scrapingStatus?.status === "scraping" && queueItem ? (
-                <div className="flex flex-col items-center gap-4 px-4 py-8">
-                  <div className="text-center">
-                    <h3 className="mb-4 font-semibold">
-                      @{search} is being processed
-                    </h3>
-                    <div className="scale-75">
-                      <ProgressStages status={queueItem.status} />
+              </CommandEmpty>
+            )}
+            {searchResults !== undefined &&
+              searchResults.length === 0 &&
+              scrapingStatus?.status === "scraping" &&
+              queueItem && (
+                <CommandEmpty>
+                  <div className="flex flex-col items-center gap-4 px-4 py-8">
+                    <div className="text-center">
+                      <h3 className="mb-4 font-semibold">
+                        @{search} is being processed
+                      </h3>
+                      <div className="scale-75">
+                        <ProgressStages status={queueItem.status} />
+                      </div>
+                      <Link
+                        href="/scraper-queue"
+                        className="text-primary mt-4 inline-block text-sm underline"
+                        onClick={close}
+                      >
+                        View full progress →
+                      </Link>
                     </div>
-                    <Link
-                      href="/scraper-queue"
-                      className="text-primary mt-4 inline-block text-sm underline"
-                      onClick={close}
-                    >
-                      View full progress →
-                    </Link>
                   </div>
-                </div>
-              ) : scrapingStatus?.status === "scraping" ? (
-                <div className="flex flex-col items-center gap-4 px-4 py-8">
-                  <div className="relative">
-                    <div className="border-primary h-8 w-8 animate-spin rounded-full border-4 border-t-transparent" />
+                </CommandEmpty>
+              )}
+            {searchResults !== undefined &&
+              searchResults.length === 0 &&
+              scrapingStatus?.status === "scraping" &&
+              !queueItem && (
+                <CommandEmpty>
+                  <div className="flex flex-col items-center gap-4 px-4 py-8">
+                    <div className="relative">
+                      <div className="border-primary h-8 w-8 animate-spin rounded-full border-4 border-t-transparent" />
+                    </div>
+                    <div className="text-center">
+                      <h3 className="font-semibold">
+                        @{search} is being processed
+                      </h3>
+                      <p className="text-muted-foreground mt-1 text-sm">
+                        This account is currently being added to the swarm.
+                      </p>
+                      <Link
+                        href="/scraper-queue"
+                        className="text-primary mt-2 inline-block text-sm underline"
+                        onClick={close}
+                      >
+                        Track progress →
+                      </Link>
+                    </div>
                   </div>
-                  <div className="text-center">
-                    <h3 className="font-semibold">
-                      @{search} is being processed
-                    </h3>
-                    <p className="text-muted-foreground mt-1 text-sm">
-                      This account is currently being added to the swarm.
-                    </p>
-                    <Link
-                      href="/scraper-queue"
-                      className="text-primary mt-2 inline-block text-sm underline"
-                      onClick={close}
-                    >
-                      Track progress →
-                    </Link>
-                  </div>
-                </div>
-              ) : (
-                <div className="border-b px-3 py-2">
+                </CommandEmpty>
+              )}
+
+            {/* Show "Add" option as regular CommandItem when no results and not scraping */}
+            {searchResults !== undefined &&
+              searchResults.length === 0 &&
+              scrapingStatus?.status !== "scraping" &&
+              search.length > 0 && (
+                <CommandGroup>
                   <CommandItem
                     onSelect={() => {
                       const validation = validateInput(search);
@@ -191,9 +211,10 @@ export function SearchCommand() {
                       </div>
                     </div>
                   </CommandItem>
-                </div>
+                </CommandGroup>
               )}
-            </CommandEmpty>
+
+            {/* Show results with optional "Add" action and user list */}
             {searchResults && searchResults.length > 0 && (
               <>
                 {(() => {
@@ -206,7 +227,7 @@ export function SearchCommand() {
 
                   if (!exactMatch && validation.valid && validation.cleaned) {
                     return (
-                      <div className="border-b px-3 py-2">
+                      <CommandGroup>
                         <CommandItem
                           onSelect={() => {
                             setUsernameToAdd(validation.cleaned);
@@ -226,7 +247,7 @@ export function SearchCommand() {
                             </div>
                           </div>
                         </CommandItem>
-                      </div>
+                      </CommandGroup>
                     );
                   }
                   return null;
