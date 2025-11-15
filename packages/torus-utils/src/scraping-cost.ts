@@ -14,17 +14,14 @@ import type { TorAmount } from "./torus/token.js";
  * Fixed cost to fetch Twitter user metadata (one API call).
  * Required for users not yet in the database.
  */
-export const BASELINE_METADATA_COST = makeTorAmount(toRems(makeTorAmount(10)));
+export const BASELINE_METADATA_COST = makeTorAmount(toRems(makeTorAmount(5)));
 
-/**
- * Base cost for any scraping job (overhead, queue management, etc.).
- */
-export const BASELINE_SCRAPING_COST = makeTorAmount(toRems(makeTorAmount(50)));
+export const BASELINE_SCRAPING_COST = makeTorAmount(toRems(makeTorAmount(2)));
 
 /**
  * Cost per tweet scraped (gas price per unit of work).
  */
-export const COST_PER_TWEET = makeTorAmount(toRems(makeTorAmount(0.01)));
+export const COST_PER_TWEET = makeTorAmount(toRems(makeTorAmount(0.1)));
 
 /**
  * Calculates the cost to scrape a Twitter user's tweets.
@@ -34,18 +31,14 @@ export const COST_PER_TWEET = makeTorAmount(toRems(makeTorAmount(0.01)));
  * @param tweetCount - Number of tweets the user has posted
  * @returns Cost as TorAmount (bigint rems)
  *
- * @example
- * ```ts
- * calculateScrapingCost(10000) // 150 TORUS (as bigint rems)
- * calculateScrapingCost(1000)  // 60 TORUS (as bigint rems)
- * calculateScrapingCost(0)     // 50 TORUS (as bigint rems)
- * ```
  */
 export function calculateScrapingCost(tweetCount: number): TorAmount {
   // COST_PER_TWEET and BASELINE_SCRAPING_COST are TorAmount (branded bigint)
   // Extract bigint for math, then wrap result
   const tweetCostRems = COST_PER_TWEET.multipliedBy(makeTorAmount(tweetCount)); // TODO: this makes no sense, we need to improve the TorAmount type
-  const totalRems = BASELINE_SCRAPING_COST.plus(tweetCostRems);
+  const totalRems = BASELINE_SCRAPING_COST.plus(tweetCostRems).plus(
+    makeTorAmount(1.3),
+  );
   return totalRems;
 }
 

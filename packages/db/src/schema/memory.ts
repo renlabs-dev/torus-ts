@@ -68,7 +68,7 @@ export const twitterUsersSchema = createTable(
 // ==== User Suggestions ====
 
 /**
- * Stores wallet-based user suggestions
+ * Stores wallet-based user suggestions with scraping costs
  */
 export const twitterUserSuggestionsSchema = createTable(
   "twitter_user_suggestions",
@@ -421,4 +421,37 @@ export const creditPurchasesSchema = createTable(
     ...timeFields(),
   },
   (t) => [index("credit_purchases_user_key_idx").on(t.userKey)],
+);
+
+export const PURCHASE_TYPES = ["metadata", "scraping"] as const;
+export const purchaseTypeEnum = pgEnum("purchase_type_enum", PURCHASE_TYPES);
+
+export const purchaseTypeValues = extract_pgenum_values(purchaseTypeEnum);
+export type PurchaseType = keyof typeof purchaseTypeValues;
+
+/**
+ * Prediction-related purchases (metadata and scraping).
+ *
+ * Tracks all credit spending for prediction services:
+ * - metadata: Fetching Twitter user profile information
+ * - scraping: Full tweet scraping and prediction extraction
+ */
+export const predictionPurchasesSchema = createTable(
+  "prediction_purchases",
+  {
+    id: uuidv7("id").primaryKey(),
+    userKey: ss58Address("user_key").notNull(),
+    username: varchar("username", { length: 15 }).notNull(),
+    purchaseType: purchaseTypeEnum("purchase_type").notNull(),
+    creditsSpent: decimal("credits_spent", {
+      precision: 39,
+      scale: 0,
+    }).notNull(),
+    ...timeFields(),
+  },
+  (t) => [
+    index("prediction_purchases_user_key_idx").on(t.userKey),
+    index("prediction_purchases_username_idx").on(t.username),
+    index("prediction_purchases_type_idx").on(t.purchaseType),
+  ],
 );

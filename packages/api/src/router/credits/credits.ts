@@ -2,7 +2,12 @@ import { torusToCredits } from "@torus-network/torus-utils";
 import { makeTorAmount } from "@torus-network/torus-utils/torus/token";
 import { tryAsync } from "@torus-network/torus-utils/try-catch";
 import { eq, sql } from "@torus-ts/db";
-import { creditPurchasesSchema, userCreditsSchema } from "@torus-ts/db/schema";
+import {
+  creditPurchasesSchema,
+  predictionPurchasesSchema,
+  PURCHASE_TYPES,
+  userCreditsSchema,
+} from "@torus-ts/db/schema";
 import type { TRPCRouterRecord } from "@trpc/server";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
@@ -127,14 +132,55 @@ export const creditsRouter = {
   /**
    * Get credit purchase history for the authenticated user.
    */
-  getPurchaseHistory: authenticatedProcedure.query(async ({ ctx }) => {
-    const purchases = await ctx.db
-      .select()
-      .from(creditPurchasesSchema)
-      .where(eq(creditPurchasesSchema.userKey, ctx.sessionData.userKey))
-      .orderBy(sql`${creditPurchasesSchema.createdAt} DESC`)
-      .limit(50);
+  getPurchaseHistory: authenticatedProcedure
+    .input(
+      z.object({
+        limit: z.number().min(1).max(100).default(50),
+        offset: z.number().min(0).default(0),
+      }),
+    )
+    .query(async ({ ctx, input }) => {
+      const purchases = await ctx.db
+        .select()
+        .from(creditPurchasesSchema)
+        .where(eq(creditPurchasesSchema.userKey, ctx.sessionData.userKey))
+        .orderBy(sql`${creditPurchasesSchema.createdAt} DESC`)
+        .limit(input.limit)
+        .offset(input.offset);
 
-    return purchases;
-  }),
+      return purchases;
+    }),
+
+  /**
+   * Get spending history for the authenticated user.
+   *
+   * Returns all prediction-related purchases (metadata and scraping).
+   */
+  getSpendingHistory: authenticatedProcedure
+    .input(
+      z.object({
+        limit: z.number().min(1).max(100).default(50),
+        offset: z.number().min(0).default(0),
+        type: z.enum(PURCHASE_TYPES).optional(),
+      }),
+    )
+    .query(async ({ ctx, input }) => {
+      let query = ctx.db
+        .select()
+        .from(predictionPurchasesSchema)
+        .where(eq(predictionPurchasesSchema.userKey, ctx.sessionData.userKey))
+        .$dynamic();
+
+      // Apply type filter if provided
+      if (input.type) {
+        query = query.where(eq(predictionPurchasesSchema.purchaseType, input.type));
+      }
+
+      const purchases = await query
+        .orderBy(sql`${predictionPurchasesSchema.createdAt} DESC`)
+        .limit(input.limit)
+        .offset(input.offset);
+
+      return purchases;
+    }),
 } satisfies TRPCRouterRecord;

@@ -7,8 +7,10 @@ import { and, eq, gte, ilike, notExists, sql } from "@torus-ts/db";
 import {
   parsedPredictionFeedbackSchema,
   parsedPredictionSchema,
+  predictionPurchasesSchema,
   predictionSchema,
   scrapedTweetSchema,
+  twitterScrapingJobsSchema,
   twitterUsersSchema,
   twitterUserSuggestionsSchema,
   userCreditsSchema,
@@ -172,47 +174,6 @@ export const twitterUserRouter = {
     }),
 
   /**
-   * Check user status and get cost estimates for scraping.
-   *
-   * Returns different costs depending on whether user metadata exists:
-   * - User not in DB: metadataCost (baseline to fetch metadata)
-   * - User in DB: scrapingCost (calculated from tweet count)
-   */
-  checkUserStatus: publicProcedure
-    .input(
-      z.object({
-        username: z
-          .string()
-          .min(1)
-          .max(15)
-          .transform((val) => (val.startsWith("@") ? val.slice(1) : val)),
-      }),
-    )
-    .query(async ({ ctx, input }) => {
-      const user = await ctx.db.query.twitterUsersSchema.findFirst({
-        where: eq(twitterUsersSchema.username, input.username),
-      });
-
-      if (user) {
-        // User metadata exists - can calculate scraping cost
-        return {
-          hasMetadata: true,
-          metadataCost: 0,
-          scrapingCost: calculateScrapingCost(user.tweetCount ?? 0),
-          user,
-        };
-      }
-
-      // User not in DB - need to pay for metadata first
-      return {
-        hasMetadata: false,
-        metadataCost: BASELINE_METADATA_COST,
-        scrapingCost: null,
-        user: null,
-      };
-    }),
-
-  /**
    * Purchase user metadata by fetching from Twitter API.
    *
    * Costs BASELINE_METADATA_COST credits.
@@ -242,7 +203,6 @@ export const twitterUserRouter = {
 
         if (existing) {
           return {
-            success: true,
             alreadyExists: true,
             creditsSpent: 0,
             user: {
@@ -262,8 +222,7 @@ export const twitterUserRouter = {
         if (input.budget && BASELINE_METADATA_COST > input.budget) {
           throw new TRPCError({
             code: "BAD_REQUEST",
-            // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-            message: `Metadata cost (${BASELINE_METADATA_COST} credits) exceeds budget (${input.budget} credits)`,
+            message: `Metadata cost (${BASELINE_METADATA_COST.toString()} credits) exceeds budget (${input.budget.toString()} credits)`,
           });
         }
 
@@ -281,8 +240,7 @@ export const twitterUserRouter = {
         ) {
           throw new TRPCError({
             code: "FORBIDDEN",
-            // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-            message: `Insufficient credits. Required: ${BASELINE_METADATA_COST}, Available: ${locked?.balance ?? 0}`,
+            message: `Insufficient credits. Required: ${BASELINE_METADATA_COST.toString()}, Available: ${locked?.balance ?? 0}`,
           });
         }
 
@@ -336,8 +294,15 @@ export const twitterUserRouter = {
           tracked: false,
         });
 
+        // 7. Record metadata purchase
+        await tx.insert(predictionPurchasesSchema).values({
+          userKey,
+          username: user.userName,
+          purchaseType: "metadata",
+          creditsSpent: BASELINE_METADATA_COST.toString(),
+        });
+
         return {
-          success: true,
           creditsSpent: BASELINE_METADATA_COST,
           user: {
             userId: user.id,
@@ -356,6 +321,7 @@ export const twitterUserRouter = {
   /**
    * Suggest a Twitter user for scraping.
    *
+   * Idempotent - if user already queued or tracked, returns without charging.
    * Requires user metadata to exist in DB (call purchaseMetadata first if not).
    * Optional budget parameter - fails if scraping cost would exceed budget.
    * Deducts credits and queues user for scraping.
@@ -388,19 +354,44 @@ export const twitterUserRouter = {
           });
         }
 
-        // 2. Calculate scraping cost
+        // 2. Check if already tracked (scraping completed)
+        if (user.tracked) {
+          return {
+            alreadyQueued: true,
+            creditsSpent: makeTorAmount(0),
+          };
+        }
+
+        // 3. Calculate scraping cost
         const cost = calculateScrapingCost(user.tweetCount ?? 0);
 
-        // 3. Budget check BEFORE locking/charging
+        // 4. Budget check BEFORE locking/charging
         if (input.budget && cost > input.budget) {
           throw new TRPCError({
             code: "BAD_REQUEST",
-            // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-            message: `Scraping cost (${cost} credits) exceeds budget (${input.budget} credits)`,
+            message: `Scraping cost (${cost.toString()} credits) exceeds budget (${input.budget.toString()} credits)`,
           });
         }
 
-        // 4. Deduct credits atomically (only if sufficient balance)
+        // 5. Try to insert suggestion - if conflict, already queued
+        const insertedRows = await tx
+          .insert(twitterUserSuggestionsSchema)
+          .values({
+            username: input.username,
+            wallet: userKey,
+          })
+          .onConflictDoNothing()
+          .returning();
+
+        // If no rows returned, already queued by this or another user
+        if (insertedRows.length === 0) {
+          return {
+            alreadyQueued: true,
+            creditsSpent: makeTorAmount(0),
+          };
+        }
+
+        // 6. Deduct credits atomically (only if sufficient balance)
         const updatedRows = await tx
           .update(userCreditsSchema)
           .set({
@@ -420,22 +411,105 @@ export const twitterUserRouter = {
         if (updatedRows.length === 0) {
           throw new TRPCError({
             code: "FORBIDDEN",
-            // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-            message: `Insufficient credits. Required: ${cost}, check your balance with getBalance.`,
+            message: `Insufficient credits. Required: ${cost.toString()}, check your balance with getBalance.`,
           });
         }
 
-        // 4. Insert suggestion
-        await tx.insert(twitterUserSuggestionsSchema).values({
+        // 7. Record scraping purchase
+        await tx.insert(predictionPurchasesSchema).values({
+          userKey,
           username: input.username,
-          wallet: userKey,
+          purchaseType: "scraping",
+          creditsSpent: cost.toString(),
         });
 
         return {
-          success: true,
           creditsSpent: cost,
         };
       });
+    }),
+
+  /**
+   * Get user's scraping suggestions with status.
+   *
+   * Returns all usernames the authenticated user has requested to scrape,
+   * with their current status matching scraper queue page:
+   * - "suggested": In queue, not yet started
+   * - "scraping": Profile exists, collecting tweets
+   * - "processing": Has tweets, generating predictions/verdicts
+   * - "complete": User is tracked and ready
+   */
+  getUserSuggestions: authenticatedProcedure
+    .input(
+      z.object({
+        status: z
+          .enum(["suggested", "scraping", "processing", "complete"])
+          .optional(),
+        limit: z.number().min(1).max(100).default(50),
+        offset: z.number().min(0).default(0),
+      }),
+    )
+    .query(async ({ ctx, input }) => {
+      const userKey = ctx.sessionData.userKey;
+
+      // Get suggestions with user and scraping job data
+      const suggestions = await ctx.db
+        .select({
+          username: twitterUserSuggestionsSchema.username,
+          requestedAt: twitterUserSuggestionsSchema.createdAt,
+          userId: twitterUsersSchema.id,
+          tracked: twitterUsersSchema.tracked,
+          tweetCount: twitterUsersSchema.tweetCount,
+          hasScrapingJob: sql<boolean>`${twitterScrapingJobsSchema.userId} IS NOT NULL`,
+        })
+        .from(twitterUserSuggestionsSchema)
+        .leftJoin(
+          twitterUsersSchema,
+          sql`LOWER(${twitterUsersSchema.username}) = LOWER(${twitterUserSuggestionsSchema.username})`,
+        )
+        .leftJoin(
+          twitterScrapingJobsSchema,
+          sql`${twitterScrapingJobsSchema.userId} = ${twitterUsersSchema.id}`,
+        )
+        .where(eq(twitterUserSuggestionsSchema.wallet, userKey))
+        .orderBy(sql`${twitterUserSuggestionsSchema.createdAt} DESC`)
+        .limit(input.limit)
+        .offset(input.offset);
+
+      // Map to include status using same logic as scraper queue
+      const withStatus = suggestions.map((s) => {
+        let status: "suggested" | "scraping" | "processing" | "complete";
+
+        if (
+          s.hasScrapingJob ||
+          (s.userId && (!s.tweetCount || s.tweetCount === 0))
+        ) {
+          // 2. Scraping - Profile exists, collecting tweets
+          status = "scraping";
+        } else if (s.tweetCount && s.tweetCount > 0 && !s.tracked) {
+          // 3. Processing - Has tweets, generating predictions/verdicts
+          status = "processing";
+        } else if (s.tracked) {
+          // 4. Complete - User is tracked and ready
+          status = "complete";
+        } else {
+          // 1. Suggested - In queue only
+          status = "suggested";
+        }
+
+        return {
+          username: s.username,
+          requestedAt: s.requestedAt,
+          status,
+        };
+      });
+
+      // Apply status filter if provided
+      if (input.status) {
+        return withStatus.filter((s) => s.status === input.status);
+      }
+
+      return withStatus;
     }),
 
   /**

@@ -87,11 +87,7 @@ export async function verifyTorusTransfer(
     const extrinsicHash = extrinsic.hash.toHex();
 
     if (extrinsicHash !== txHash) return;
-
-    // Found the transaction!
     found = true;
-
-    // Verify it's a balance transfer
     if (extrinsic.method.section !== "balances") {
       throw new TRPCError({
         code: "BAD_REQUEST",
@@ -153,6 +149,14 @@ export async function verifyTorusTransfer(
     });
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+  if (sender === null || recipient === null || amount === null) {
+    throw new TRPCError({
+      code: "INTERNAL_SERVER_ERROR",
+      message: "Transaction data incomplete",
+    });
+  }
+
   // Verify sender
   // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
   if (sender !== expectedSender) {
@@ -167,13 +171,13 @@ export async function verifyTorusTransfer(
   if (recipient !== serviceAddress) {
     throw new TRPCError({
       code: "BAD_REQUEST",
+      // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
       message: `Transaction not sent to service address (expected: ${serviceAddress}, got: ${recipient})`,
     });
   }
 
   // Verify amount is positive
-  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-  if (amount === null || amount <= 0n) {
+  if (amount <= 0n) {
     throw new TRPCError({
       code: "BAD_REQUEST",
       message: "Transfer amount must be positive",
