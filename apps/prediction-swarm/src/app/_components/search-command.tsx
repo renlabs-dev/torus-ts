@@ -14,7 +14,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { AddAccountModal } from "./main-page/add-account-modal";
+import AddAccountStepperDialog from "./add-account-stepper-dialog";
 import { SearchEmpty } from "./main-page/search-empty";
 import { ProgressStages } from "./scraper-queue/progress-stages";
 
@@ -293,13 +293,14 @@ export function SearchCommand() {
         </CommandList>
       </CommandDialog>
 
-      <AddAccountModal
+      <AddAccountStepperDialog
         open={addModalOpen}
         onOpenChange={(open) => {
           setAddModalOpen(open);
           if (!open) setUsernameToAdd("");
         }}
-        username={usernameToAdd}
+        initialUsername={usernameToAdd}
+        showTrigger={false}
       />
     </>
   );

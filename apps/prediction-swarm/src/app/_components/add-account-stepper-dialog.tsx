@@ -69,16 +69,36 @@ const steps = [
   },
 ];
 
-export default function AddAccountStepperDialog() {
+interface AddAccountStepperDialogProps {
+  /** Control dialog open state externally (optional) */
+  open?: boolean;
+  /** Control dialog open state changes externally (optional) */
+  onOpenChange?: (open: boolean) => void;
+  /** Pre-fill username (optional) */
+  initialUsername?: string;
+  /** Show trigger button (default: true) */
+  showTrigger?: boolean;
+}
+
+export default function AddAccountStepperDialog({
+  open: externalOpen,
+  onOpenChange: externalOnOpenChange,
+  initialUsername = "",
+  showTrigger = true,
+}: AddAccountStepperDialogProps) {
   const [currentStep, setCurrentStep] = useState(1);
-  const [isOpen, setIsOpen] = useState(false);
+  const [internalOpen, setInternalOpen] = useState(false);
   const [formData, setFormData] = useState({
     flowType: "add-account" as "add-funds" | "add-account",
-    username: "",
+    username: initialUsername,
     torusAmount: "",
     txHash: "",
     blockHash: "",
   });
+
+  // Use external or internal open state
+  const isOpen = externalOpen ?? internalOpen;
+  const setIsOpen = externalOnOpenChange ?? setInternalOpen;
 
   // Track processed transactions to prevent duplicate calls
   const processedTxRef = useRef<Set<string>>(new Set());
@@ -314,10 +334,20 @@ export default function AddAccountStepperDialog() {
     });
   };
 
-  // Handle dialog state change (reset when closed)
+  // Handle dialog state change
   const handleOpenChange = (open: boolean) => {
     setIsOpen(open);
-    if (!open) {
+    if (open && initialUsername) {
+      // When opening with a username, pre-fill it and skip to step 3
+      setFormData({
+        flowType: "add-account",
+        username: initialUsername,
+        torusAmount: "",
+        txHash: "",
+        blockHash: "",
+      });
+      setCurrentStep(3);
+    } else if (!open) {
       // Reset form when dialog closes
       setCurrentStep(1);
       setFormData({
@@ -779,14 +809,16 @@ export default function AddAccountStepperDialog() {
 
   return (
     <Dialog open={isOpen} onOpenChange={handleOpenChange}>
-      <DialogTrigger asChild>
-        <Button
-          variant="outline"
-          className="bg-background/80 border-border hover:bg-background/40 animate-fade-down animate-delay-500 flex h-8 w-8 items-center justify-center border text-white/80 transition"
-        >
-          <UserRoundPlus />
-        </Button>
-      </DialogTrigger>
+      {showTrigger && (
+        <DialogTrigger asChild>
+          <Button
+            variant="outline"
+            className="bg-background/80 border-border hover:bg-background/40 animate-fade-down animate-delay-500 flex h-8 w-8 items-center justify-center border text-white/80 transition"
+          >
+            <UserRoundPlus />
+          </Button>
+        </DialogTrigger>
+      )}
       <DialogContent className="bg-background/80 flex items-center justify-center p-4 sm:max-w-3xl">
         <DialogTitle className="sr-only">Add Account to Swarm</DialogTitle>
         <Card className="w-full max-w-3xl border-none bg-transparent p-0 shadow-none">
