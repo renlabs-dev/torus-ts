@@ -357,7 +357,8 @@ export default function AddAccountStepperDialog({
         blockHash,
       });
     }
-  }, [isFinalized, txHash, txStage, purchaseCredits]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isFinalized, txHash, txStage]);
 
   // Handle metadata purchase
   const handlePurchaseMetadata = () => {
@@ -1126,10 +1127,7 @@ export default function AddAccountStepperDialog({
               </Button>
 
               {currentStep < 5 && (
-                <Button
-                  onClick={handleNext}
-                  disabled={!canProceedToNextStep()}
-                >
+                <Button onClick={handleNext} disabled={!canProceedToNextStep()}>
                   <span>Continue</span>
                   <ChevronRight className="h-4 w-4" />
                 </Button>
