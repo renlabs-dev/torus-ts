@@ -232,11 +232,12 @@ export default function AddAccountStepperDialog({
     onSuccess: () => {
       toast({
         title: "Ready to Scrape",
-        description: `Review the cost below and continue when ready`,
+        description: `Review the cost below and confirm`,
       });
       void refetchBalance();
       void refetchUserStatus();
-      // Don't auto-advance - let user see the cost and manually proceed
+      // Auto-advance to Step 4 to confirm scraping
+      handleNext();
     },
     onError: (error) => {
       toast({
@@ -809,60 +810,6 @@ export default function AddAccountStepperDialog({
                   )}
                 </div>
               )}
-
-              {userStatus &&
-                !userStatus.user?.tracked &&
-                !userStatus.hasMetadata && (
-                  <>
-                    {hasSufficientBalance(
-                      toRems(makeTorAmount(10)).toString(),
-                    ) ? (
-                      <Button
-                        onClick={handlePurchaseMetadata}
-                        disabled={
-                          !isAccountConnected ||
-                          !formData.username ||
-                          isAnyOperationPending
-                        }
-                        className="w-full"
-                      >
-                        {purchaseMetadata.isPending ? (
-                          <>
-                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                            Purchasing Metadata...
-                          </>
-                        ) : (
-                          "Purchase Metadata (10 credits)"
-                        )}
-                      </Button>
-                    ) : (
-                      <Button
-                        onClick={handleBuyAndPurchaseMetadata}
-                        disabled={
-                          !isAccountConnected ||
-                          !formData.username ||
-                          isAnyOperationPending
-                        }
-                        className="w-full"
-                        variant="default"
-                      >
-                        {isTxPending || purchaseCredits.isPending ? (
-                          <>
-                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                            Buying Credits...
-                          </>
-                        ) : purchaseMetadata.isPending ? (
-                          <>
-                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                            Purchasing Metadata...
-                          </>
-                        ) : (
-                          `Buy ${formatToken(getMetadataShortfall())} Credits & Purchase Metadata`
-                        )}
-                      </Button>
-                    )}
-                  </>
-                )}
             </div>
           </div>
         );
@@ -914,69 +861,22 @@ export default function AddAccountStepperDialog({
                 </div>
               )}
 
-              {userStatus?.user &&
-                (userStatus.user.tracked ? (
-                  <div className="bg-muted rounded-lg p-4">
-                    <p className="text-sm text-green-600">
-                      ✓ This account is already tracked in the swarm
-                    </p>
-                    <p className="text-muted-foreground mt-2 text-sm">
-                      You can view predictions at{" "}
-                      <Link
-                        href={`/user/${formData.username}`}
-                        className="text-primary hover:underline"
-                      >
-                        /user/{formData.username}
-                      </Link>
-                    </p>
-                  </div>
-                ) : hasSufficientBalance(
-                    calculateScrapingCost(
-                      userStatus.user.tweetCount ?? 0,
-                    ).toFixed(0),
-                  ) ? (
-                  <Button
-                    onClick={handleRequestScraping}
-                    disabled={!isAccountConnected || isAnyOperationPending}
-                    className="w-full"
-                  >
-                    {suggestUser.isPending ? (
-                      <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Queueing Scraping...
-                      </>
-                    ) : (
-                      `Queue for Scraping (${formatToken(
-                        Number(
-                          calculateScrapingCost(
-                            userStatus.user.tweetCount ?? 0,
-                          ),
-                        ),
-                      )} credits)`
-                    )}
-                  </Button>
-                ) : (
-                  <Button
-                    onClick={handleBuyAndQueueScraping}
-                    disabled={!isAccountConnected || isAnyOperationPending}
-                    className="w-full"
-                    variant="default"
-                  >
-                    {isTxPending || purchaseCredits.isPending ? (
-                      <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Buying Credits...
-                      </>
-                    ) : suggestUser.isPending ? (
-                      <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Queueing Scraping...
-                      </>
-                    ) : (
-                      `Buy ${formatToken(getScrapingShortfall())} Credits & Queue Scraping`
-                    )}
-                  </Button>
-                ))}
+              {userStatus?.user?.tracked && (
+                <div className="bg-muted rounded-lg p-4">
+                  <p className="text-sm text-green-600">
+                    ✓ This account is already tracked in the swarm
+                  </p>
+                  <p className="text-muted-foreground mt-2 text-sm">
+                    You can view predictions at{" "}
+                    <Link
+                      href={`/user/${formData.username}`}
+                      className="text-primary hover:underline"
+                    >
+                      /user/{formData.username}
+                    </Link>
+                  </p>
+                </div>
+              )}
             </div>
           </div>
         );
@@ -1011,15 +911,6 @@ export default function AddAccountStepperDialog({
                   </p>
                 </div>
               </div>
-
-              <Button
-                onClick={() => {
-                  handleOpenChange(false);
-                }}
-                className="w-full"
-              >
-                Done
-              </Button>
             </div>
           </div>
         );
@@ -1120,18 +1011,143 @@ export default function AddAccountStepperDialog({
               <Button
                 variant="outline"
                 onClick={handlePrevious}
-                disabled={currentStep === 1}
+                disabled={currentStep === 1 || currentStep === 5}
               >
                 <ChevronLeft className="h-4 w-4" />
                 <span>Previous</span>
               </Button>
 
-              {currentStep < 5 && (
+              {currentStep === 5 ? (
+                <Button onClick={() => handleOpenChange(false)}>
+                  <span>Done</span>
+                </Button>
+              ) : currentStep === 3 &&
+                userStatus &&
+                !userStatus.user?.tracked &&
+                !userStatus.hasMetadata ? (
+                // Step 3: Show metadata purchase button instead of Continue
+                hasSufficientBalance(toRems(makeTorAmount(10)).toString()) ? (
+                  <Button
+                    onClick={handlePurchaseMetadata}
+                    disabled={
+                      !isAccountConnected ||
+                      !formData.username ||
+                      purchaseMetadata.isPending
+                    }
+                  >
+                    {purchaseMetadata.isPending ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Purchasing...
+                      </>
+                    ) : (
+                      <>
+                        <span>Purchase Metadata (10 credits)</span>
+                        <ChevronRight className="h-4 w-4" />
+                      </>
+                    )}
+                  </Button>
+                ) : (
+                  <Button
+                    onClick={handleBuyAndPurchaseMetadata}
+                    disabled={
+                      !isAccountConnected ||
+                      !formData.username ||
+                      isTxPending ||
+                      purchaseCredits.isPending ||
+                      purchaseMetadata.isPending
+                    }
+                    variant="default"
+                  >
+                    {isTxPending || purchaseCredits.isPending ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Buying Credits...
+                      </>
+                    ) : purchaseMetadata.isPending ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Purchasing...
+                      </>
+                    ) : (
+                      <>
+                        <span>
+                          Buy {formatToken(getMetadataShortfall())} Credits &
+                          Purchase
+                        </span>
+                        <ChevronRight className="h-4 w-4" />
+                      </>
+                    )}
+                  </Button>
+                )
+              ) : currentStep === 4 &&
+                userStatus?.user &&
+                !userStatus.user.tracked ? (
+                // Step 4: Show scraping action button instead of Continue
+                hasSufficientBalance(
+                  calculateScrapingCost(
+                    userStatus.user.tweetCount ?? 0,
+                  ).toFixed(0),
+                ) ? (
+                  <Button
+                    onClick={handleRequestScraping}
+                    disabled={!isAccountConnected || isAnyOperationPending}
+                  >
+                    {suggestUser.isPending ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Queueing...
+                      </>
+                    ) : (
+                      <>
+                        <span>
+                          Queue for Scraping (
+                          {formatToken(
+                            Number(
+                              calculateScrapingCost(
+                                userStatus.user.tweetCount ?? 0,
+                              ),
+                            ),
+                          )}{" "}
+                          credits)
+                        </span>
+                        <ChevronRight className="h-4 w-4" />
+                      </>
+                    )}
+                  </Button>
+                ) : (
+                  <Button
+                    onClick={handleBuyAndQueueScraping}
+                    disabled={!isAccountConnected || isAnyOperationPending}
+                    variant="default"
+                  >
+                    {isTxPending || purchaseCredits.isPending ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Buying Credits...
+                      </>
+                    ) : suggestUser.isPending ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Queueing...
+                      </>
+                    ) : (
+                      <>
+                        <span>
+                          Buy {formatToken(getScrapingShortfall())} Credits &
+                          Queue
+                        </span>
+                        <ChevronRight className="h-4 w-4" />
+                      </>
+                    )}
+                  </Button>
+                )
+              ) : currentStep < 5 ? (
                 <Button onClick={handleNext} disabled={!canProceedToNextStep()}>
                   <span>Continue</span>
                   <ChevronRight className="h-4 w-4" />
                 </Button>
-              )}
+              ) : null}
             </div>
           </CardContent>
         </Card>
