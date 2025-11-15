@@ -58,10 +58,9 @@ export const twitterUsersSchema = createTable(
   (t) => [
     index("twitter_users_id_idx").using("hash", t.id),
     index("twitter_users_tracked_idx").using("hash", t.tracked),
-    index("twitter_users_username_idx").using(
-      "btree",
-      sql`lower(${t.username})`,
-    ),
+    index("idx_twitter_users_tracked_lower_username")
+      .using("btree", sql`lower(${t.username})`)
+      .where(sql`${t.tracked} = true`),
   ],
 );
 
