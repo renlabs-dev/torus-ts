@@ -190,7 +190,10 @@ export const twitterUserRouter = {
     )
     .query(async ({ ctx, input }) => {
       const user = await ctx.db.query.twitterUsersSchema.findFirst({
-        where: eq(twitterUsersSchema.username, input.username),
+        where: eq(
+          sql`LOWER(${twitterUsersSchema.username})`,
+          input.username.toLowerCase(),
+        ),
       });
 
       if (user) {
@@ -235,9 +238,12 @@ export const twitterUserRouter = {
       const userKey = ctx.sessionData.userKey;
 
       return await ctx.db.transaction(async (tx) => {
-        // 1. Idempotent check - return existing if already purchased
+        // 1. Idempotent check - return existing if already purchased (case-insensitive)
         const existing = await tx.query.twitterUsersSchema.findFirst({
-          where: eq(twitterUsersSchema.username, input.username),
+          where: eq(
+            sql`LOWER(${twitterUsersSchema.username})`,
+            input.username.toLowerCase(),
+          ),
         });
 
         if (existing) {
@@ -375,9 +381,12 @@ export const twitterUserRouter = {
       const userKey = ctx.sessionData.userKey;
 
       return await ctx.db.transaction(async (tx) => {
-        // 1. Get user metadata (must exist)
+        // 1. Get user metadata (must exist) - case-insensitive search
         const user = await tx.query.twitterUsersSchema.findFirst({
-          where: eq(twitterUsersSchema.username, input.username),
+          where: eq(
+            sql`LOWER(${twitterUsersSchema.username})`,
+            input.username.toLowerCase(),
+          ),
         });
 
         if (!user) {

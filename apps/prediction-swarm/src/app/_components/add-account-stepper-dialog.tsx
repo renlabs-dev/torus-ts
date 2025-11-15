@@ -129,7 +129,7 @@ export default function AddAccountStepperDialog({
   const [internalOpen, setInternalOpen] = useState(false);
   const [formData, setFormData] = useState({
     flowType: "add-account" as "add-funds" | "add-account",
-    username: initialUsername,
+    username: initialUsername.toLowerCase(),
     torusAmount: "",
     txHash: "",
     blockHash: "",
