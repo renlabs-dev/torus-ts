@@ -192,11 +192,6 @@ export default function AddAccountStepperDialog({
 
   const purchaseCredits = api.credits.purchaseCredits.useMutation({
     onSuccess: async (data) => {
-      toast({
-        title: "Credits Purchased",
-        description: `Successfully added ${formatToken(Number(data.creditsGranted))} credits`,
-      });
-
       // Wait for balance to update
       await refetchBalance();
 
@@ -215,7 +210,11 @@ export default function AddAccountStepperDialog({
           budget: BigInt(scrapingCost.toFixed(0)),
         });
       } else if (action === "none") {
-        // Regular credit purchase without pending action
+        // Regular credit purchase without pending action - show success
+        toast({
+          title: "Credits Added",
+          description: `${formatToken(Number(data.creditsGranted))} credits added to your balance`,
+        });
         handleNext();
       }
     },
@@ -230,18 +229,11 @@ export default function AddAccountStepperDialog({
   });
 
   const purchaseMetadata = api.twitterUser.purchaseMetadata.useMutation({
-    onSuccess: (data) => {
-      if (data.alreadyExists) {
-        toast({
-          title: "Metadata Already Exists",
-          description: `@${formData.username} is already in the system`,
-        });
-      } else {
-        toast({
-          title: "Metadata Purchased",
-          description: `Spent ${formatToken(Number(data.creditsSpent))} credits. You can now see the scraping cost.`,
-        });
-      }
+    onSuccess: () => {
+      toast({
+        title: "Ready to Scrape",
+        description: `Review the cost below and continue when ready`,
+      });
       void refetchBalance();
       void refetchUserStatus();
       // Don't auto-advance - let user see the cost and manually proceed
@@ -256,23 +248,10 @@ export default function AddAccountStepperDialog({
   });
 
   const suggestUser = api.twitterUser.suggestUser.useMutation({
-    onSuccess: (data) => {
+    onSuccess: () => {
       toast({
-        title: "Account Queued for Scraping",
-        description: (
-          <div>
-            <p>
-              @{formData.username} has been added to the queue. Spent{" "}
-              {formatToken(Number(data.creditsSpent))} credits.
-            </p>
-            <Link
-              href="/scraper-queue"
-              className="text-primary mt-1 inline-block text-sm underline"
-            >
-              Track it here →
-            </Link>
-          </div>
-        ),
+        title: "Account Queued",
+        description: `@${formData.username} is now being scraped`,
       });
       void refetchBalance();
       handleNext();
@@ -302,6 +281,10 @@ export default function AddAccountStepperDialog({
   };
 
   const updateFormData = (field: string, value: string) => {
+    // Normalize username to lowercase (Twitter is case-insensitive)
+    if (field === "username") {
+      value = value.toLowerCase();
+    }
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
@@ -511,7 +494,7 @@ export default function AddAccountStepperDialog({
       // When opening with a username, pre-fill it and skip to step 3
       setFormData({
         flowType: "add-account",
-        username: initialUsername,
+        username: initialUsername.toLowerCase(), // Normalize to lowercase
         torusAmount: "",
         txHash: "",
         blockHash: "",
@@ -649,7 +632,7 @@ export default function AddAccountStepperDialog({
             <div className="space-y-6">
               <div>
                 <Label htmlFor="wallet" className="text-base">
-                  Select Torus Wallet
+                  Select Torus Wallet <span className="text-red-500">*</span>
                 </Label>
                 <div className="border-border mt-2 border">
                   <WalletDropdown
@@ -725,7 +708,7 @@ export default function AddAccountStepperDialog({
             <div className="space-y-6">
               <div>
                 <Label htmlFor="wallet" className="text-base">
-                  Select Torus Wallet
+                  Select Torus Wallet <span className="text-red-500">*</span>
                 </Label>
                 <div className="border-border mt-2 border">
                   <WalletDropdown
@@ -1042,8 +1025,11 @@ export default function AddAccountStepperDialog({
       case 2:
         return true; // Can skip adding funds (later steps have buy+spend options)
       case 3:
-        // Can proceed if has metadata and not already tracked
-        return (userStatus?.hasMetadata && !userStatus.user?.tracked) ?? false;
+        // Can proceed if wallet connected, has metadata, and not already tracked
+        return (
+          isAccountConnected &&
+          ((userStatus?.hasMetadata && !userStatus.user?.tracked) ?? false)
+        );
       case 4:
         return false; // Must queue scraping
       case 5:
@@ -1129,8 +1115,11 @@ export default function AddAccountStepperDialog({
                 <span>Previous</span>
               </Button>
 
-              {currentStep < 5 && canProceedToNextStep() && (
-                <Button onClick={handleNext}>
+              {currentStep < 5 && (
+                <Button
+                  onClick={handleNext}
+                  disabled={!canProceedToNextStep()}
+                >
                   <span>Continue</span>
                   <ChevronRight className="h-4 w-4" />
                 </Button>
