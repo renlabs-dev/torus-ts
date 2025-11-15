@@ -675,7 +675,23 @@ export default function AddAccountStepperDialog({
               {userStatus && (
                 <div className="bg-muted rounded-lg p-4">
                   <p className="text-sm font-medium">Account Status</p>
-                  {userStatus.hasMetadata ? (
+                  {userStatus.user?.tracked ? (
+                    <div className="mt-2 space-y-1">
+                      <p className="text-sm text-green-600">
+                        ✓ Already tracked in the swarm
+                      </p>
+                      <p className="text-sm text-muted-foreground">
+                        This account is already being scraped. You can view
+                        predictions at{" "}
+                        <Link
+                          href={`/user/${formData.username}`}
+                          className="text-primary hover:underline"
+                        >
+                          /user/{formData.username}
+                        </Link>
+                      </p>
+                    </div>
+                  ) : userStatus.hasMetadata ? (
                     <div className="mt-2 space-y-1">
                       <p className="text-sm text-green-600">
                         ✓ Metadata exists
@@ -723,7 +739,7 @@ export default function AddAccountStepperDialog({
                 </div>
               )}
 
-              {userStatus && !userStatus.hasMetadata && (
+              {userStatus && !userStatus.user?.tracked && !userStatus.hasMetadata && (
                 <>
                   {hasSufficientBalance(
                     toRems(makeTorAmount(10)).toString(),
@@ -827,11 +843,26 @@ export default function AddAccountStepperDialog({
               )}
 
               {userStatus?.user &&
-                (hasSufficientBalance(
-                  calculateScrapingCost(
-                    userStatus.user.tweetCount ?? 0,
-                  ).toFixed(0),
-                ) ? (
+                (userStatus.user.tracked ? (
+                  <div className="bg-muted rounded-lg p-4">
+                    <p className="text-sm text-green-600">
+                      ✓ This account is already tracked in the swarm
+                    </p>
+                    <p className="text-sm text-muted-foreground mt-2">
+                      You can view predictions at{" "}
+                      <Link
+                        href={`/user/${formData.username}`}
+                        className="text-primary hover:underline"
+                      >
+                        /user/{formData.username}
+                      </Link>
+                    </p>
+                  </div>
+                ) : hasSufficientBalance(
+                    calculateScrapingCost(
+                      userStatus.user.tweetCount ?? 0,
+                    ).toFixed(0),
+                  ) ? (
                   <Button
                     onClick={handleRequestScraping}
                     disabled={
@@ -948,7 +979,10 @@ export default function AddAccountStepperDialog({
       case 2:
         return false; // Must complete purchase
       case 3:
-        return userStatus?.hasMetadata ?? false;
+        // Can proceed if has metadata and not already tracked
+        return (
+          (userStatus?.hasMetadata && !userStatus.user?.tracked) ?? false
+        );
       case 4:
         return false; // Must queue scraping
       case 5:
