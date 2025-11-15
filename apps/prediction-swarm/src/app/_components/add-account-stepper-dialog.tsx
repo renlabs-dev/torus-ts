@@ -541,10 +541,11 @@ export default function AddAccountStepperDialog({
             <CardHeader className="px-0 pb-2 pt-0">
               <CardTitle>Add Account to the Swarm</CardTitle>
               <CardDescription>
-                Here you can add accounts to be scraped. The process happens in
-                two steps: first we add the account and check its scraping cost,
-                then we perform the actual scrape. You can also manually add
-                funds beforehand if you plan to batch-add accounts.
+                Here you can add an 𝕏 account for the system to scrape. The
+                process happens in two steps: We check the account and estimate
+                how much scraping will cost We run the scraping once you
+                confirm. You can also add credits first if you plan to scrape
+                several accounts.
               </CardDescription>
               <div className="mt-2 space-y-1 text-sm">
                 <p>
@@ -581,8 +582,7 @@ export default function AddAccountStepperDialog({
                       Add funds
                     </h3>
                     <p className="text-muted-foreground text-sm">
-                      Here you can add funds beforehand if you plan to batch-add
-                      accounts
+                      Add credits to your balance before adding accounts.
                     </p>
                   </div>
                 </CardContent>
@@ -608,8 +608,8 @@ export default function AddAccountStepperDialog({
                       Add account
                     </h3>
                     <p className="text-muted-foreground text-sm">
-                      (Recommended) Here you can go straight to the add account
-                      section
+                      (Recommended) Go straight to adding an 𝕏 account.
+                      We&apos;ll estimate the cost for you.
                     </p>
                   </div>
                 </CardContent>
@@ -624,9 +624,9 @@ export default function AddAccountStepperDialog({
             <CardHeader className="px-0 pb-2 pt-0">
               <CardTitle>Add Funds</CardTitle>
               <CardDescription>
-                Purchase credits by transferring TORUS tokens. Credits are
-                converted at a 1:1 rate (1 TORUS = 1 Credit). The transaction
-                will be verified on-chain before credits are granted.
+                Buy credits by sending TORUS tokens. You get 1 credit for every
+                1 TORUS you send. Your transaction is confirmed on-chain before
+                the credits appear.
               </CardDescription>
               <BalanceDisplay
                 creditsBalance={balance}
@@ -709,9 +709,10 @@ export default function AddAccountStepperDialog({
             <CardHeader className="px-0 pb-1 pt-0">
               <CardTitle>Select Account</CardTitle>
               <CardDescription>
-                Enter a Twitter username to check if metadata exists. If not,
-                you'll need to purchase metadata (10 credits) to see the
-                scraping cost.
+                Type the 𝕏 username you want to scrape. We&apos;ll check if we
+                already have basic information about this account. If we
+                don&apos;t, you&apos;ll need to pay 10 credits to load the basic
+                info so we can calculate the scraping cost.
               </CardDescription>
               <BalanceDisplay
                 creditsBalance={balance}
@@ -748,8 +749,8 @@ export default function AddAccountStepperDialog({
               </div>
 
               {userStatus && (
-                <div className="bg-muted rounded-lg p-4">
-                  <p className="text-sm font-medium">Account Status</p>
+                <div className="bg-muted/70 plus-corners relative rounded-lg border p-4">
+                  <p className="text-sm font-bold">Account Status</p>
                   {userStatus.user?.tracked ? (
                     <div className="mt-2 space-y-1">
                       <p className="text-sm text-green-600">
@@ -877,7 +878,8 @@ export default function AddAccountStepperDialog({
             <CardHeader className="px-0 pb-1 pt-0">
               <CardTitle>Scrape Account</CardTitle>
               <CardDescription>
-                Queue @{formData.username} for scraping.
+                Here you can review the scraping cost before confirming to queue
+                @{formData.username} for scraping.
               </CardDescription>
               <BalanceDisplay
                 creditsBalance={balance}
@@ -888,8 +890,8 @@ export default function AddAccountStepperDialog({
 
             <div className="space-y-6">
               {userStatus?.user && (
-                <div className="bg-muted rounded-lg p-4">
-                  <p className="text-sm font-medium">Account Details</p>
+                <div className="bg-muted/80 plus-corners relative rounded-lg border p-4">
+                  <p className="text-sm font-bold">Account Details</p>
                   <div className="mt-2 space-y-1">
                     <p className="text-sm">Username: @{formData.username}</p>
                     <p className="text-sm">
