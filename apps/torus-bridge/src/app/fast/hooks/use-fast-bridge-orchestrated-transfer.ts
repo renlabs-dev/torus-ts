@@ -2,6 +2,7 @@
 
 import { useAccounts } from "@hyperlane-xyz/widgets";
 import type { SS58Address } from "@torus-network/sdk/types";
+import { tryAsync } from "@torus-network/torus-utils/try-catch";
 import { useFreeBalance } from "@torus-ts/query-provider/hooks";
 import { useTorus } from "@torus-ts/torus-provider";
 import { useSendTransaction } from "@torus-ts/torus-provider/use-send-transaction";
@@ -11,7 +12,7 @@ import { env } from "~/env";
 import { useWarpCore } from "~/hooks/token";
 import { useMultiProvider } from "~/hooks/use-multi-provider";
 import { useTokenTransfer } from "~/hooks/use-token-transfer";
-import { useCallback, useMemo } from "react";
+import { useCallback, useMemo, useRef } from "react";
 import { erc20Abi } from "viem";
 import {
   useAccount,
@@ -34,6 +35,7 @@ import {
   executeNativeToBaseStep2,
 } from "./fast-bridge-native-to-base-flow";
 import { useSimpleBridgeSharedState } from "./use-fast-bridge-shared-state";
+import { useFastBridgeTransactionHistory } from "./use-fast-bridge-transaction-history";
 
 export function useOrchestratedTransfer() {
   const {
@@ -46,6 +48,13 @@ export function useOrchestratedTransfer() {
     clearErrorDetails,
     getExplorerUrl,
   } = useSimpleBridgeSharedState();
+
+  const {
+    addTransaction: addToHistory,
+    updateTransaction: updateHistoryTransaction,
+  } = useFastBridgeTransactionHistory();
+
+  const currentTransactionIdRef = useRef<string | null>(null);
 
   const { toast } = useToast();
 
@@ -215,8 +224,9 @@ export function useOrchestratedTransfer() {
         throw new Error("Wallets not properly connected");
       }
 
-      try {
-        await executeBaseToNativeStep1({
+      // Execute step 1
+      const [step1Error, _] = await tryAsync(
+        executeBaseToNativeStep1({
           amount,
           evmAddress,
           chain,
@@ -229,17 +239,45 @@ export function useOrchestratedTransfer() {
           updateBridgeState,
           addTransaction,
           getExplorerUrl,
-        });
-      } catch (error) {
+        }),
+      );
+
+      if (step1Error !== undefined) {
+        // Update history on error
+        if (currentTransactionIdRef.current) {
+          const _step1Tx = transactions.find((tx) => tx.step === 1);
+          updateHistoryTransaction(currentTransactionIdRef.current, {
+            status: "error",
+            currentStep: SimpleBridgeStep.ERROR,
+            errorMessage: step1Error.message,
+            errorStep: 1,
+            canRetry: true,
+          });
+        }
         // Stop execution if user rejected the transaction
-        if (error instanceof UserRejectedError) {
+        if (step1Error instanceof UserRejectedError) {
+          updateBridgeState({
+            step: SimpleBridgeStep.ERROR,
+            errorMessage: "Transaction cancelled by user",
+          });
           return;
         }
-        throw error;
+        throw step1Error;
       }
 
-      try {
-        await executeBaseToNativeStep2({
+      // Update history after step 1 complete
+      if (currentTransactionIdRef.current) {
+        const _step1Tx = transactions.find((tx) => tx.step === 1);
+        updateHistoryTransaction(currentTransactionIdRef.current, {
+          status: "step1_complete",
+          currentStep: SimpleBridgeStep.STEP_2_PREPARING,
+          step1TxHash: _step1Tx?.txHash,
+        });
+      }
+
+      // Execute step 2
+      const [step2Error, __] = await tryAsync(
+        executeBaseToNativeStep2({
           amount,
           selectedAccount: { address: selectedAccount.address as SS58Address },
           walletClient,
@@ -253,13 +291,45 @@ export function useOrchestratedTransfer() {
           updateBridgeState,
           addTransaction,
           getExplorerUrl,
-        });
-      } catch (error) {
+        }),
+      );
+
+      if (step2Error !== undefined) {
+        // Update history on error
+        if (currentTransactionIdRef.current) {
+          const step2Tx = transactions.find((tx) => tx.step === 2);
+          updateHistoryTransaction(currentTransactionIdRef.current, {
+            status: "error",
+            currentStep: SimpleBridgeStep.ERROR,
+            errorMessage: step2Error.message,
+            errorStep: 2,
+            step2TxHash: step2Tx?.txHash,
+            canRetry: true,
+          });
+        }
         // Stop execution if user rejected the transaction
-        if (error instanceof UserRejectedError) {
+        if (step2Error instanceof UserRejectedError) {
+          updateBridgeState({
+            step: SimpleBridgeStep.ERROR,
+            errorMessage: "Transaction cancelled by user",
+          });
           return;
         }
-        throw error;
+        throw step2Error;
+      }
+
+      // Update history after step 2 complete
+      if (currentTransactionIdRef.current) {
+        const step2Tx = transactions.find((tx) => tx.step === 2);
+        updateHistoryTransaction(currentTransactionIdRef.current, {
+          status: "completed",
+          currentStep: SimpleBridgeStep.COMPLETE,
+          step2TxHash: step2Tx?.txHash,
+          canRetry: false,
+          errorMessage: undefined,
+          errorStep: undefined,
+          viewedByUser: false, // Reset viewed status on success after retry
+        });
       }
 
       toast({
@@ -286,6 +356,8 @@ export function useOrchestratedTransfer() {
       torusEvmBalance,
       switchChainAsync,
       torusEvmChainId,
+      transactions,
+      updateHistoryTransaction,
     ],
   );
 
@@ -295,8 +367,9 @@ export function useOrchestratedTransfer() {
         throw new Error("Wallets not properly connected");
       }
 
-      try {
-        await executeNativeToBaseStep1({
+      // Execute step 1
+      const [step1Error, _] = await tryAsync(
+        executeNativeToBaseStep1({
           amount,
           evmAddress,
           selectedAccount: { address: selectedAccount.address as SS58Address },
@@ -308,17 +381,45 @@ export function useOrchestratedTransfer() {
           updateBridgeState,
           addTransaction,
           getExplorerUrl,
-        });
-      } catch (error) {
+        }),
+      );
+
+      if (step1Error !== undefined) {
+        // Update history on error
+        if (currentTransactionIdRef.current) {
+          const _step1Tx = transactions.find((tx) => tx.step === 1);
+          updateHistoryTransaction(currentTransactionIdRef.current, {
+            status: "error",
+            currentStep: SimpleBridgeStep.ERROR,
+            errorMessage: step1Error.message,
+            errorStep: 1,
+            canRetry: true,
+          });
+        }
         // Stop execution if user rejected the transaction
-        if (error instanceof UserRejectedError) {
+        if (step1Error instanceof UserRejectedError) {
+          updateBridgeState({
+            step: SimpleBridgeStep.ERROR,
+            errorMessage: "Transaction cancelled by user",
+          });
           return;
         }
-        throw error;
+        throw step1Error;
       }
 
-      try {
-        await executeNativeToBaseStep2({
+      // Update history after step 1 complete
+      if (currentTransactionIdRef.current) {
+        const _step1Tx = transactions.find((tx) => tx.step === 1);
+        updateHistoryTransaction(currentTransactionIdRef.current, {
+          status: "step1_complete",
+          currentStep: SimpleBridgeStep.STEP_2_PREPARING,
+          step1TxHash: _step1Tx?.txHash,
+        });
+      }
+
+      // Execute step 2
+      const [step2Error, __] = await tryAsync(
+        executeNativeToBaseStep2({
           amount,
           evmAddress,
           torusEvmChainId,
@@ -334,13 +435,45 @@ export function useOrchestratedTransfer() {
           updateBridgeState,
           addTransaction,
           getExplorerUrl,
-        });
-      } catch (error) {
+        }),
+      );
+
+      if (step2Error !== undefined) {
+        // Update history on error
+        if (currentTransactionIdRef.current) {
+          const step2Tx = transactions.find((tx) => tx.step === 2);
+          updateHistoryTransaction(currentTransactionIdRef.current, {
+            status: "error",
+            currentStep: SimpleBridgeStep.ERROR,
+            errorMessage: step2Error.message,
+            errorStep: 2,
+            step2TxHash: step2Tx?.txHash,
+            canRetry: true,
+          });
+        }
         // Stop execution if user rejected the transaction
-        if (error instanceof UserRejectedError) {
+        if (step2Error instanceof UserRejectedError) {
+          updateBridgeState({
+            step: SimpleBridgeStep.ERROR,
+            errorMessage: "Transaction cancelled by user",
+          });
           return;
         }
-        throw error;
+        throw step2Error;
+      }
+
+      // Update history after step 2 complete
+      if (currentTransactionIdRef.current) {
+        const step2Tx = transactions.find((tx) => tx.step === 2);
+        updateHistoryTransaction(currentTransactionIdRef.current, {
+          status: "completed",
+          currentStep: SimpleBridgeStep.COMPLETE,
+          step2TxHash: step2Tx?.txHash,
+          canRetry: false,
+          errorMessage: undefined,
+          errorStep: undefined,
+          viewedByUser: false, // Reset viewed status on success after retry
+        });
       }
 
       toast({
@@ -369,6 +502,8 @@ export function useOrchestratedTransfer() {
       torusEvmChainId,
       warpCore,
       accounts,
+      transactions,
+      updateHistoryTransaction,
     ],
   );
 
@@ -406,6 +541,20 @@ export function useOrchestratedTransfer() {
         getExplorerUrl,
       });
 
+      // Update history after step 2 complete (for retry)
+      if (currentTransactionIdRef.current) {
+        const step2Tx = transactions.find((tx) => tx.step === 2);
+        updateHistoryTransaction(currentTransactionIdRef.current, {
+          status: "completed",
+          currentStep: SimpleBridgeStep.COMPLETE,
+          step2TxHash: step2Tx?.txHash,
+          canRetry: false,
+          errorMessage: undefined,
+          errorStep: undefined,
+          viewedByUser: false, // Reset viewed status on success after retry
+        });
+      }
+
       toast({
         title: "Transfer Complete!",
         description: "Successfully transferred Base TORUS to Native TORUS",
@@ -427,6 +576,8 @@ export function useOrchestratedTransfer() {
       torusEvmChainId,
       switchChainAsync,
       setTransactions,
+      transactions,
+      updateHistoryTransaction,
     ],
   );
 
@@ -466,6 +617,20 @@ export function useOrchestratedTransfer() {
         getExplorerUrl,
       });
 
+      // Update history after step 2 complete (for retry)
+      if (currentTransactionIdRef.current) {
+        const step2Tx = transactions.find((tx) => tx.step === 2);
+        updateHistoryTransaction(currentTransactionIdRef.current, {
+          status: "completed",
+          currentStep: SimpleBridgeStep.COMPLETE,
+          step2TxHash: step2Tx?.txHash,
+          canRetry: false,
+          errorMessage: undefined,
+          errorStep: undefined,
+          viewedByUser: false, // Reset viewed status on success after retry
+        });
+      }
+
       toast({
         title: "Transfer Complete!",
         description: "Successfully transferred Native TORUS to Base TORUS",
@@ -488,6 +653,8 @@ export function useOrchestratedTransfer() {
       setTransactions,
       warpCore,
       accounts,
+      transactions,
+      updateHistoryTransaction,
     ],
   );
 
@@ -501,10 +668,28 @@ export function useOrchestratedTransfer() {
       });
       setTransactions([]);
 
-      if (direction === "base-to-native") {
-        await executeBaseToNative(amount);
-      } else {
-        await executeNativeToBase(amount);
+      // Create history entry
+      const historyId = addToHistory({
+        direction,
+        amount,
+        status: "pending",
+        currentStep: SimpleBridgeStep.STEP_1_PREPARING,
+        canRetry: false,
+        baseAddress: evmAddress, // Base uses same EVM address
+        evmAddress,
+        nativeAddress: selectedAccount?.address,
+      });
+      currentTransactionIdRef.current = historyId;
+
+      try {
+        if (direction === "base-to-native") {
+          await executeBaseToNative(amount);
+        } else {
+          await executeNativeToBase(amount);
+        }
+      } catch {
+        // Error handling is done in individual flows
+        // Just ensure we keep the transaction ID for retry
       }
     },
     [
@@ -512,6 +697,9 @@ export function useOrchestratedTransfer() {
       executeNativeToBase,
       updateBridgeState,
       setTransactions,
+      addToHistory,
+      evmAddress,
+      selectedAccount?.address,
     ],
   );
 
@@ -559,15 +747,88 @@ export function useOrchestratedTransfer() {
     clearErrorDetails,
   ]);
 
+  // Wrapper for Quick Send EVM → Native
+  // Note: Quick Send does not save to history as it's a one-time operation
+  const executeQuickSendToNative = useCallback(
+    async (amount: string) => {
+      // Initialize transactions array for Step 2
+      setTransactions([
+        {
+          step: 1 as const,
+          status: "SUCCESS" as const,
+          chainName: "Base",
+          message: "Already on Torus EVM",
+        },
+        {
+          step: 2 as const,
+          status: null,
+          chainName: "Torus EVM",
+        },
+      ]);
+
+      // Initialize bridge state
+      updateBridgeState({
+        direction: "base-to-native",
+        amount,
+        step: SimpleBridgeStep.STEP_2_PREPARING,
+      });
+
+      await retryBaseToNativeStep2(amount);
+    },
+    [retryBaseToNativeStep2, setTransactions, updateBridgeState],
+  );
+
+  // Wrapper for Quick Send EVM → Base
+  // Note: Quick Send does not save to history as it's a one-time operation
+  const executeQuickSendToBase = useCallback(
+    async (amount: string) => {
+      // Initialize transactions array for Step 2
+      setTransactions([
+        {
+          step: 1 as const,
+          status: "SUCCESS" as const,
+          chainName: "Torus Native",
+          message: "Already on Torus EVM",
+        },
+        {
+          step: 2 as const,
+          status: null,
+          chainName: "Torus EVM",
+        },
+      ]);
+
+      // Initialize bridge state
+      updateBridgeState({
+        direction: "native-to-base",
+        amount,
+        step: SimpleBridgeStep.STEP_2_PREPARING,
+      });
+
+      await retryNativeToBaseStep2(amount);
+    },
+    [retryNativeToBaseStep2, setTransactions, updateBridgeState],
+  );
+
+  const setCurrentTransactionId = useCallback((id: string) => {
+    currentTransactionIdRef.current = id;
+  }, []);
+
   return {
     bridgeState,
     transactions,
     executeTransfer,
     resetTransfer,
     retryFromFailedStep,
+    getExplorerUrl,
+    setTransactions,
+    updateBridgeState,
+    setCurrentTransactionId,
     isTransferInProgress:
       bridgeState.step !== SimpleBridgeStep.IDLE &&
       bridgeState.step !== SimpleBridgeStep.COMPLETE &&
       bridgeState.step !== SimpleBridgeStep.ERROR,
+    // Expose Step 2 functions for Quick Send from EVM
+    executeEvmToNative: executeQuickSendToNative,
+    executeEvmToBase: executeQuickSendToBase,
   };
 }

@@ -86,8 +86,8 @@ const Sidebar = () => {
         title: "Wallet",
         href: getLinks(env("NEXT_PUBLIC_TORUS_CHAIN_ENV")).wallet,
       },
-      { title: "Fast Bridge (Recommended)", href: "/" },
-      { title: "Standard Bridge", href: "/standard" },
+      { title: "Bridge", href: "/" },
+      // { title: "Standard Bridge", href: "/standard" },
     ],
     [],
   );

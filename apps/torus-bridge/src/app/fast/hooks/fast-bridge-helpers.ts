@@ -169,15 +169,33 @@ export function formatErrorForUser(error: Error): string {
     return "Hardware wallet disconnected. Please reconnect your device and try again.";
   }
 
-  // Insufficient funds or ETH for gas
+  // Insufficient funds - detailed extraction from viem error
   if (
     lowerMessage.includes("insufficient") &&
     (lowerMessage.includes("funds") ||
       lowerMessage.includes("balance") ||
       lowerMessage.includes("eth"))
   ) {
+    // Try to extract "have X want Y" from viem error
+    const fundsRegex = /have\s+(\d+)\s+want\s+(\d+)/i;
+    const fundsMatch = fundsRegex.exec(errorMessage);
+
+    if (fundsMatch?.[1] && fundsMatch[2]) {
+      const have = BigInt(fundsMatch[1]);
+      const want = BigInt(fundsMatch[2]);
+      const missing = want - have;
+
+      // Convert wei to ETH for display (divide by 10^18)
+      const haveEth = Number(have) / 1e18;
+      const wantEth = Number(want) / 1e18;
+      const missingEth = Number(missing) / 1e18;
+
+      return `Insufficient funds. You have ${haveEth.toFixed(6)} ETH but need ${wantEth.toFixed(6)} ETH (missing ${missingEth.toFixed(6)} ETH). Please add funds to your wallet.`;
+    }
+
+    // Fallback to generic messages
     if (lowerMessage.includes("gas") || lowerMessage.includes("eth")) {
-      return "Insufficient ETH for gas fees on Torus EVM. Please add funds to your wallet and try again.";
+      return "Insufficient ETH for gas fees. Please add ETH to your wallet and try again.";
     }
     return "Insufficient funds. Please check your balance and try with a smaller amount.";
   }

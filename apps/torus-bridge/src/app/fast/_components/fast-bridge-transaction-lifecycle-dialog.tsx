@@ -142,6 +142,10 @@ export function TransactionLifecycleDialog({
     <Dialog open={isOpen} onOpenChange={handleOpenChange}>
       <DialogContent
         className="flex max-h-[85vh] max-w-2xl flex-col p-0"
+        onOpenAutoFocus={(e) => {
+          // Prevent autofocus that causes white border after F5
+          e.preventDefault();
+        }}
         onEscapeKeyDown={(e) => {
           if (hasError) {
             e.preventDefault();
