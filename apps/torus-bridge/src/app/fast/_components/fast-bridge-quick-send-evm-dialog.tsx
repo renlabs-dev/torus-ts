@@ -31,6 +31,13 @@ type TransferStatus = "idle" | "sending" | "success" | "error";
 // Gas reserve for EVM transactions: 0.005 TORUS (in 12 decimals = 5 * 10^15 wei)
 const GAS_RESERVE_WEI = 5n * 10n ** 15n;
 
+// Dust threshold: 0.01 TORUS - balance below this is considered "near zero"
+const DUST_THRESHOLD_WEI = 10n ** 16n;
+
+// Balance decrease detection: require at least 80% of expected transfer
+const BALANCE_DECREASE_THRESHOLD_NUMERATOR = 8n;
+const BALANCE_DECREASE_THRESHOLD_DENOMINATOR = 10n;
+
 export function QuickSendEvmDialog({
   isOpen,
   onClose,
@@ -71,12 +78,13 @@ export function QuickSendEvmDialog({
           : 0n;
 
       // Detection logic:
-      // 1. If balance is now very small (< 0.01 TORUS = 10^16 wei), consider it complete
+      // 1. If balance is now very small (dust threshold), consider it complete
       // 2. OR if balance decreased by at least 80% of expected amount
-      const dustThreshold = 10n ** 16n; // 0.01 TORUS in wei
-      const minExpectedDecrease = (expectedDecrease * 8n) / 10n; // 80%
+      const minExpectedDecrease =
+        (expectedDecrease * BALANCE_DECREASE_THRESHOLD_NUMERATOR) /
+        BALANCE_DECREASE_THRESHOLD_DENOMINATOR;
 
-      const isBalanceNearZero = currentEvmBalance < dustThreshold;
+      const isBalanceNearZero = currentEvmBalance < DUST_THRESHOLD_WEI;
       const hasDecreasedEnough = balanceDecrease >= minExpectedDecrease;
 
       if (isBalanceNearZero || hasDecreasedEnough) {
