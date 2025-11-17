@@ -251,7 +251,7 @@ export function useOrchestratedTransfer() {
             currentStep: SimpleBridgeStep.ERROR,
             errorMessage: step1Error.message,
             errorStep: 1,
-            canRetry: !(step1Error instanceof UserRejectedError),
+            canRetry: true,
           });
         }
         // Stop execution if user rejected the transaction
@@ -304,7 +304,7 @@ export function useOrchestratedTransfer() {
             errorMessage: step2Error.message,
             errorStep: 2,
             step2TxHash: step2Tx?.txHash,
-            canRetry: !(step2Error instanceof UserRejectedError),
+            canRetry: true,
           });
         }
         // Stop execution if user rejected the transaction
@@ -393,7 +393,7 @@ export function useOrchestratedTransfer() {
             currentStep: SimpleBridgeStep.ERROR,
             errorMessage: step1Error.message,
             errorStep: 1,
-            canRetry: !(step1Error instanceof UserRejectedError),
+            canRetry: true,
           });
         }
         // Stop execution if user rejected the transaction
@@ -448,7 +448,7 @@ export function useOrchestratedTransfer() {
             errorMessage: step2Error.message,
             errorStep: 2,
             step2TxHash: step2Tx?.txHash,
-            canRetry: !(step2Error instanceof UserRejectedError),
+            canRetry: true,
           });
         }
         // Stop execution if user rejected the transaction
@@ -541,6 +541,20 @@ export function useOrchestratedTransfer() {
         getExplorerUrl,
       });
 
+      // Update history after step 2 complete (for retry)
+      if (currentTransactionIdRef.current) {
+        const step2Tx = transactions.find((tx) => tx.step === 2);
+        updateHistoryTransaction(currentTransactionIdRef.current, {
+          status: "completed",
+          currentStep: SimpleBridgeStep.COMPLETE,
+          step2TxHash: step2Tx?.txHash,
+          canRetry: false,
+          errorMessage: undefined,
+          errorStep: undefined,
+          viewedByUser: false, // Reset viewed status on success after retry
+        });
+      }
+
       toast({
         title: "Transfer Complete!",
         description: "Successfully transferred Base TORUS to Native TORUS",
@@ -562,6 +576,8 @@ export function useOrchestratedTransfer() {
       torusEvmChainId,
       switchChainAsync,
       setTransactions,
+      transactions,
+      updateHistoryTransaction,
     ],
   );
 
@@ -601,6 +617,20 @@ export function useOrchestratedTransfer() {
         getExplorerUrl,
       });
 
+      // Update history after step 2 complete (for retry)
+      if (currentTransactionIdRef.current) {
+        const step2Tx = transactions.find((tx) => tx.step === 2);
+        updateHistoryTransaction(currentTransactionIdRef.current, {
+          status: "completed",
+          currentStep: SimpleBridgeStep.COMPLETE,
+          step2TxHash: step2Tx?.txHash,
+          canRetry: false,
+          errorMessage: undefined,
+          errorStep: undefined,
+          viewedByUser: false, // Reset viewed status on success after retry
+        });
+      }
+
       toast({
         title: "Transfer Complete!",
         description: "Successfully transferred Native TORUS to Base TORUS",
@@ -623,6 +653,8 @@ export function useOrchestratedTransfer() {
       setTransactions,
       warpCore,
       accounts,
+      transactions,
+      updateHistoryTransaction,
     ],
   );
 
@@ -643,6 +675,7 @@ export function useOrchestratedTransfer() {
         status: "pending",
         currentStep: SimpleBridgeStep.STEP_1_PREPARING,
         canRetry: false,
+        baseAddress: evmAddress, // Base uses same EVM address
         evmAddress,
         nativeAddress: selectedAccount?.address,
       });
@@ -715,21 +748,9 @@ export function useOrchestratedTransfer() {
   ]);
 
   // Wrapper for Quick Send EVM → Native
+  // Note: Quick Send does not save to history as it's a one-time operation
   const executeQuickSendToNative = useCallback(
     async (amount: string) => {
-      // Create history entry for Quick Send
-      const historyId = addToHistory({
-        direction: "base-to-native",
-        amount,
-        status: "step1_complete", // Step 1 is skipped (already on EVM)
-        currentStep: SimpleBridgeStep.STEP_2_PREPARING,
-        canRetry: false,
-        evmAddress,
-        nativeAddress: selectedAccount?.address,
-        step1TxHash: undefined, // No step 1 for quick send
-      });
-      currentTransactionIdRef.current = historyId;
-
       // Initialize transactions array for Step 2
       setTransactions([
         {
@@ -754,32 +775,13 @@ export function useOrchestratedTransfer() {
 
       await retryBaseToNativeStep2(amount);
     },
-    [
-      retryBaseToNativeStep2,
-      setTransactions,
-      updateBridgeState,
-      addToHistory,
-      evmAddress,
-      selectedAccount?.address,
-    ],
+    [retryBaseToNativeStep2, setTransactions, updateBridgeState],
   );
 
   // Wrapper for Quick Send EVM → Base
+  // Note: Quick Send does not save to history as it's a one-time operation
   const executeQuickSendToBase = useCallback(
     async (amount: string) => {
-      // Create history entry for Quick Send
-      const historyId = addToHistory({
-        direction: "native-to-base",
-        amount,
-        status: "step1_complete", // Step 1 is skipped (already on EVM)
-        currentStep: SimpleBridgeStep.STEP_2_PREPARING,
-        canRetry: false,
-        evmAddress,
-        nativeAddress: selectedAccount?.address,
-        step1TxHash: undefined, // No step 1 for quick send
-      });
-      currentTransactionIdRef.current = historyId;
-
       // Initialize transactions array for Step 2
       setTransactions([
         {
@@ -804,14 +806,7 @@ export function useOrchestratedTransfer() {
 
       await retryNativeToBaseStep2(amount);
     },
-    [
-      retryNativeToBaseStep2,
-      setTransactions,
-      updateBridgeState,
-      addToHistory,
-      evmAddress,
-      selectedAccount?.address,
-    ],
+    [retryNativeToBaseStep2, setTransactions, updateBridgeState],
   );
 
   const setCurrentTransactionId = useCallback((id: string) => {

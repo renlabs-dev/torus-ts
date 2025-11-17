@@ -297,8 +297,8 @@ export function FastBridgeForm() {
       // Restore transaction state to show in lifecycle dialog
       const restoredTransactions: SimpleBridgeTransaction[] = [];
 
-      // Add step 1 if we have the hash
-      if (transaction.step1TxHash) {
+      // Add step 1 if we have the hash OR if error happened at step 1
+      if (transaction.step1TxHash || transaction.errorStep === 1) {
         restoredTransactions.push({
           step: 1,
           txHash: transaction.step1TxHash,
@@ -307,12 +307,14 @@ export function FastBridgeForm() {
             transaction.direction === "base-to-native"
               ? "Base"
               : "Torus Native",
-          explorerUrl: getExplorerUrl(
-            transaction.step1TxHash,
-            transaction.direction === "base-to-native"
-              ? "Base"
-              : "Torus Native",
-          ),
+          explorerUrl: transaction.step1TxHash
+            ? getExplorerUrl(
+                transaction.step1TxHash,
+                transaction.direction === "base-to-native"
+                  ? "Base"
+                  : "Torus Native",
+              )
+            : undefined,
           message:
             transaction.errorStep === 1
               ? transaction.errorMessage

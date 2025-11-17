@@ -2,9 +2,16 @@
 
 import { Badge } from "@torus-ts/ui/components/badge";
 import { Button } from "@torus-ts/ui/components/button";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@torus-ts/ui/components/tooltip";
 import { cn } from "@torus-ts/ui/lib/utils";
 import { ChevronDown, ChevronUp, ExternalLink, RotateCw } from "lucide-react";
 import { useState } from "react";
+import { formatErrorForUser } from "../hooks/fast-bridge-helpers";
 import type { FastBridgeTransactionHistoryItem } from "./fast-bridge-types";
 
 interface TransactionHistoryItemProps {
@@ -132,6 +139,86 @@ export function TransactionHistoryItem({
           <div className="text-muted-foreground mt-1 text-xs">
             {formatTimestamp(transaction.timestamp)}
           </div>
+
+          {(transaction.step1TxHash || transaction.step2TxHash) && (
+            <div className="mt-2 flex items-center gap-2">
+              {transaction.step1TxHash && (
+                <TooltipProvider delayDuration={300}>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-7 gap-1 px-2 text-xs"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (transaction.step1TxHash) {
+                            window.open(
+                              getExplorerUrl(
+                                transaction.step1TxHash,
+                                transaction.direction === "base-to-native"
+                                  ? "Base"
+                                  : "Torus Native",
+                              ),
+                              "_blank",
+                              "noopener,noreferrer",
+                            );
+                          }
+                        }}
+                      >
+                        <ExternalLink className="h-3 w-3" />
+                        Step 1
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent side="top">
+                      <p className="text-xs">
+                        View Step 1 transaction on{" "}
+                        {transaction.direction === "base-to-native"
+                          ? "Base"
+                          : "Torus Native"}{" "}
+                        explorer
+                      </p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              )}
+
+              {transaction.step2TxHash && (
+                <TooltipProvider delayDuration={300}>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-7 gap-1 px-2 text-xs"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (transaction.step2TxHash) {
+                            window.open(
+                              getExplorerUrl(
+                                transaction.step2TxHash,
+                                "Torus EVM",
+                              ),
+                              "_blank",
+                              "noopener,noreferrer",
+                            );
+                          }
+                        }}
+                      >
+                        <ExternalLink className="h-3 w-3" />
+                        Step 2
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent side="top">
+                      <p className="text-xs">
+                        View Step 2 transaction on Torus EVM explorer
+                      </p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              )}
+            </div>
+          )}
         </div>
 
         <div className="flex gap-2">
@@ -162,7 +249,7 @@ export function TransactionHistoryItem({
             <div className="text-red-500">
               <div className="font-medium">Error:</div>
               <div className="text-muted-foreground mt-1 text-xs">
-                {transaction.errorMessage}
+                {formatErrorForUser(new Error(transaction.errorMessage))}
               </div>
               {transaction.errorStep && (
                 <div className="text-muted-foreground mt-1 text-xs">
@@ -217,6 +304,18 @@ export function TransactionHistoryItem({
                 {transaction.step2TxHash.slice(-8)}
                 <ExternalLink className="h-3 w-3 shrink-0" />
               </a>
+            </div>
+          )}
+
+          {transaction.baseAddress && (
+            <div>
+              <div className="text-muted-foreground mb-1 text-xs">
+                Base Address:
+              </div>
+              <div className="break-all text-xs">
+                {transaction.baseAddress.slice(0, 10)}...
+                {transaction.baseAddress.slice(-8)}
+              </div>
             </div>
           )}
 

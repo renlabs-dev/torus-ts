@@ -88,9 +88,10 @@ export interface FastBridgeTransactionHistoryItem {
   // User interaction tracking
   viewedByUser?: boolean; // True when user has viewed/interacted with this error transaction
 
-  // Metadata
-  evmAddress?: string;
-  nativeAddress?: string;
+  // Metadata - wallet addresses for all 3 chains involved
+  baseAddress?: string; // Base chain address (EVM)
+  evmAddress?: string; // Torus EVM address
+  nativeAddress?: string; // Torus Native address (SS58)
 }
 
 export type TransactionHistoryFilter = "all" | "completed" | "error";
