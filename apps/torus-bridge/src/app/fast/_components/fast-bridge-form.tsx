@@ -24,7 +24,7 @@ import { contractAddresses, getChainValuesOnEnv } from "~/config";
 import { env } from "~/env";
 import { ArrowLeftRight, History, Info, Zap } from "lucide-react";
 import Image from "next/image";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { erc20Abi } from "viem";
 import { useBalance, useReadContract } from "wagmi";
 import { useDualWallet } from "../hooks/use-fast-bridge-dual-wallet";
@@ -371,9 +371,14 @@ export function FastBridgeForm() {
     ],
   );
 
+  // Store the latest handleRetryFromHistory in a ref to avoid stale closures in F5 recovery
+  const handleRetryFromHistoryRef = useRef(handleRetryFromHistory);
+  useEffect(() => {
+    handleRetryFromHistoryRef.current = handleRetryFromHistory;
+  }, [handleRetryFromHistory]);
+
   // Check for transaction ID in URL on mount (F5 recovery)
-  // Note: This effect intentionally runs only once on mount to avoid re-triggering recovery
-  // when handleRetryFromHistory dependencies change. The recovery logic is idempotent.
+  // Uses ref to call the latest version of handleRetryFromHistory while only running once on mount
   useEffect(() => {
     const txId = getTransactionFromUrl();
     console.log("[F5 Recovery] Checking URL for txId:", txId);
@@ -384,15 +389,14 @@ export function FastBridgeForm() {
 
       if (transaction && transaction.status !== "completed") {
         try {
-          handleRetryFromHistory(transaction);
+          handleRetryFromHistoryRef.current(transaction);
         } catch (error) {
           console.error("[F5 Recovery] Failed to restore transaction:", error);
           clearTransactionFromUrl();
         }
       }
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- Only run on mount for F5 recovery
-  }, []);
+  }, [getTransactionFromUrl, getTransactionById, clearTransactionFromUrl]);
 
   const getChainInfo = (isFrom: boolean) => {
     const isBaseToNative = direction === "base-to-native";
