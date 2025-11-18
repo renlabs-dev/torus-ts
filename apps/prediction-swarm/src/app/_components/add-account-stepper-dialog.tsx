@@ -557,8 +557,9 @@ export default function AddAccountStepperDialog({
                     ~0.015 credits per 1,000 tweets
                   </span>
                 </p>
-                <p className="text-muted-foreground text-xs pt-1">
-                  Example: An account with 1,729 tweets costs ~0.026 credits to scrape
+                <p className="text-muted-foreground pt-1 text-xs">
+                  Example: An account with 1,729 tweets costs ~0.026 credits to
+                  scrape
                 </p>
               </div>
             </CardHeader>
@@ -713,8 +714,8 @@ export default function AddAccountStepperDialog({
               <CardDescription>
                 Type the 𝕏 username you want to scrape. We&apos;ll check if we
                 already have basic information about this account. If we
-                don&apos;t, you&apos;ll need to pay ~0.00003 credits to load the basic
-                info so we can calculate the scraping cost.
+                don&apos;t, you&apos;ll need to pay ~0.00003 credits to load the
+                basic info so we can calculate the scraping cost.
               </CardDescription>
               <BalanceDisplay
                 creditsBalance={balance}
@@ -804,8 +805,7 @@ export default function AddAccountStepperDialog({
                       </p>
                       <p className="text-sm">
                         Cost to fetch metadata:{" "}
-                        {formatToken(Number(userStatus.metadataCost))}{" "}
-                        credits
+                        {formatToken(Number(userStatus.metadataCost))} credits
                       </p>
                     </div>
                   )}
@@ -954,7 +954,12 @@ export default function AddAccountStepperDialog({
           </Button>
         </DialogTrigger>
       )}
-      <DialogContent className="bg-background/80 flex items-center justify-center p-4 sm:max-w-3xl">
+      <DialogContent
+        className="bg-background/80 flex items-center justify-center p-4 sm:max-w-3xl"
+        onInteractOutside={(e) => {
+          e.preventDefault();
+        }}
+      >
         <DialogTitle className="sr-only">Add Account to Swarm</DialogTitle>
         <Card className="w-full max-w-3xl border-none bg-transparent p-0 shadow-none">
           <CardHeader className="pb-0">
@@ -1027,7 +1032,9 @@ export default function AddAccountStepperDialog({
                 !userStatus.user?.tracked &&
                 !userStatus.hasMetadata ? (
                 // Step 3: Show metadata purchase button instead of Continue
-                hasSufficientBalance(toRems(BASELINE_METADATA_COST).toString()) ? (
+                hasSufficientBalance(
+                  toRems(BASELINE_METADATA_COST).toString(),
+                ) ? (
                   <Button
                     onClick={handlePurchaseMetadata}
                     disabled={
@@ -1043,7 +1050,10 @@ export default function AddAccountStepperDialog({
                       </>
                     ) : (
                       <>
-                        <span>Purchase Metadata ({formatToken(Number(BASELINE_METADATA_COST))} credits)</span>
+                        <span>
+                          Purchase Metadata (
+                          {formatToken(Number(BASELINE_METADATA_COST))} credits)
+                        </span>
                         <ChevronRight className="h-4 w-4" />
                       </>
                     )}
