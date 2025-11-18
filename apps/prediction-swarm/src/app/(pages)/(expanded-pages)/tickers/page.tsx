@@ -34,7 +34,7 @@ export default function TickersPage() {
       />
 
       {/* Full-width horizontal border */}
-      <div className="border-border relative my-6 border-t" />
+      <div className="border-border relative my-4 border-t" />
 
       {/* Content section - Table view */}
       <div className="relative mx-auto max-w-screen-lg px-4">
@@ -145,7 +145,7 @@ export default function TickersPage() {
       </div>
 
       {/* Bottom border */}
-      <div className="border-border relative mt-10 border-t" />
+      <div className="border-border relative mt-4 border-t" />
     </div>
   );
 }

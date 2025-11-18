@@ -3,18 +3,12 @@
 import { useTorus } from "@torus-ts/torus-provider";
 import { Card, CardContent, CardHeader } from "@torus-ts/ui/components/card";
 import {
-  Carousel,
-  CarouselContent,
-  CarouselItem,
-  CarouselNext,
-  CarouselPrevious,
-} from "@torus-ts/ui/components/carousel";
-import {
   Tabs,
   TabsContent,
   TabsList,
   TabsTrigger,
 } from "@torus-ts/ui/components/tabs";
+import { cn } from "@torus-ts/ui/lib/utils";
 import { PageHeader } from "~/app/_components/page-header";
 import { QueueItem } from "~/app/_components/scraper-queue/queue-item";
 import { api } from "~/trpc/react";
@@ -56,8 +50,11 @@ export default function ScraperQueuePage() {
       (item) => !userItems?.find((u) => u.username === item.username),
     ) ?? [];
 
+  const userQueue = getUserAccounts(queue ?? []);
+  const hasUserAccounts = userQueue.length > 0;
+
   return (
-    <div className="relative py-10">
+    <div className="relative py-4">
       {/* Vertical borders */}
       <div className="border-border pointer-events-none absolute inset-y-0 left-1/2 w-full max-w-screen-lg -translate-x-1/2 border-x" />
 
@@ -68,10 +65,10 @@ export default function ScraperQueuePage() {
       />
 
       {/* Border */}
-      <div className="border-border relative my-6 border-t" />
+      <div className="border-border relative my-4 border-t" />
 
       <div className="relative mx-auto max-w-screen-lg space-y-6 px-4">
-        {!isAccountConnected ? (
+        {!isAccountConnected && (
           <Card className="bg-background/80 plus-corners backdrop-blur-lg">
             <CardContent className="p-5 text-center">
               <p className="text-lg font-medium">Connect Your Wallet</p>
@@ -81,39 +78,11 @@ export default function ScraperQueuePage() {
               </p>
             </CardContent>
           </Card>
-        ) : (
-          <>
-            {getUserAccounts(queue ?? []).length > 0 && (
-              <div className="space-y-3">
-                {getUserAccounts(queue ?? []).length === 1 ? (
-                  <QueueItem
-                    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-                    item={getUserAccounts(queue ?? [])[0]!}
-                    isUserAccount
-                  />
-                ) : (
-                  <Carousel>
-                    <CarouselContent>
-                      {getUserAccounts(queue ?? []).map((item) => (
-                        <CarouselItem
-                          key={`user-${item.username}-${item.suggestedBy}`}
-                        >
-                          <QueueItem item={item} isUserAccount />
-                        </CarouselItem>
-                      ))}
-                    </CarouselContent>
-                    <CarouselPrevious className="!left-4" />
-                    <CarouselNext className="!right-4" />
-                  </Carousel>
-                )}
-              </div>
-            )}
-          </>
         )}
       </div>
 
       {/* Border */}
-      <div className="border-border relative my-6 border-t" />
+      <div className="border-border relative my-4 border-t" />
 
       {/* Content */}
       <div className="relative mx-auto max-w-screen-lg space-y-6 px-4">
@@ -122,7 +91,12 @@ export default function ScraperQueuePage() {
         <Card className="bg-background/80 plus-corners backdrop-blur-lg">
           <Tabs defaultValue="suggested">
             <CardHeader className="pb-0">
-              <TabsList className="bg-accent/60 flex h-full w-full flex-col sm:grid sm:grid-cols-4">
+              <TabsList
+                className={cn(
+                  "bg-accent/60 flex h-full w-full flex-col sm:grid",
+                  hasUserAccounts ? "sm:grid-cols-5" : "sm:grid-cols-4",
+                )}
+              >
                 <TabsTrigger value="suggested" className="w-full">
                   Suggested ({suggested.length})
                 </TabsTrigger>
@@ -135,6 +109,11 @@ export default function ScraperQueuePage() {
                 <TabsTrigger value="complete" className="w-full">
                   Complete ({recentlyCompleted.length})
                 </TabsTrigger>
+                {hasUserAccounts && (
+                  <TabsTrigger value="mine" className="w-full">
+                    My Accounts ({userQueue.length})
+                  </TabsTrigger>
+                )}
               </TabsList>
             </CardHeader>
 
@@ -152,7 +131,7 @@ export default function ScraperQueuePage() {
                         key={`${item.username}-${item.suggestedBy}`}
                         className="mb-3"
                       >
-                        <QueueItem item={item} isUserAccount />
+                        <QueueItem item={item} />
                       </div>
                     ))}
                     {getOtherAccounts(
@@ -184,7 +163,7 @@ export default function ScraperQueuePage() {
                     key={`${item.username}-${item.suggestedBy}`}
                     className="mb-3"
                   >
-                    <QueueItem item={item} isUserAccount />
+                    <QueueItem item={item} />
                   </div>
                 ))}
                 {getOtherAccounts(scraping, getUserAccounts(scraping)).map(
@@ -213,7 +192,7 @@ export default function ScraperQueuePage() {
                     key={`${item.username}-${item.suggestedBy}`}
                     className="mb-3"
                   >
-                    <QueueItem item={item} isUserAccount />
+                    <QueueItem item={item} />
                   </div>
                 ))}
                 {getOtherAccounts(processing, getUserAccounts(processing)).map(
@@ -251,7 +230,7 @@ export default function ScraperQueuePage() {
                         key={`${item.username}-${item.suggestedBy}`}
                         className="mb-3"
                       >
-                        <QueueItem item={item} isUserAccount />
+                        <QueueItem item={item} />
                       </div>
                     ))}
                     {getOtherAccounts(
@@ -269,12 +248,27 @@ export default function ScraperQueuePage() {
                 )}
               </CardContent>
             </TabsContent>
+
+            {hasUserAccounts && (
+              <TabsContent value="mine">
+                <CardContent>
+                  {userQueue.map((item) => (
+                    <div
+                      key={`${item.username}-${item.suggestedBy}`}
+                      className="mb-3"
+                    >
+                      <QueueItem item={item} />
+                    </div>
+                  ))}
+                </CardContent>
+              </TabsContent>
+            )}
           </Tabs>
         </Card>
       </div>
 
       {/* Bottom border */}
-      <div className="border-border relative mt-10 border-t" />
+      <div className="border-border relative mt-4 border-t" />
     </div>
   );
 }

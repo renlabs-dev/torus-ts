@@ -14,17 +14,21 @@ import type { TorAmount } from "./torus/token.js";
  * Fixed cost to fetch Twitter user metadata (one API call).
  * Required for users not yet in the database.
  */
-export const BASELINE_METADATA_COST = makeTorAmount(toRems(makeTorAmount(10)));
+export const BASELINE_METADATA_COST = makeTorAmount(
+  toRems(makeTorAmount(0.069)),
+);
 
 /**
  * Base cost for any scraping job (overhead, queue management, etc.).
  */
-export const BASELINE_SCRAPING_COST = makeTorAmount(toRems(makeTorAmount(50)));
+export const BASELINE_SCRAPING_COST = makeTorAmount(
+  toRems(makeTorAmount(0.069)),
+);
 
 /**
  * Cost per tweet scraped (gas price per unit of work).
  */
-export const COST_PER_TWEET = makeTorAmount(toRems(makeTorAmount(0.01)));
+export const COST_PER_TWEET = makeTorAmount(toRems(makeTorAmount(0.000015)));
 
 /**
  * Calculates the cost to scrape a Twitter user's tweets.

@@ -16,10 +16,9 @@ type QueueItem = inferProcedureOutput<
 
 interface QueueItemProps {
   item: QueueItem;
-  isUserAccount?: boolean;
 }
 
-export function QueueItem({ item, isUserAccount = false }: QueueItemProps) {
+export function QueueItem({ item }: QueueItemProps) {
   return (
     <Card className="bg-background/80 plus-corners backdrop-blur-lg">
       <div className="flex flex-col justify-between gap-4 p-6 lg:flex-row lg:items-center">
@@ -44,11 +43,6 @@ export function QueueItem({ item, isUserAccount = false }: QueueItemProps) {
                 <h3 className="text-lg font-semibold">
                   {item.screenName ?? `@${item.username}`}
                 </h3>
-              )}
-              {isUserAccount && (
-                <span className="bg-primary/20 text-primary rounded px-2 py-0.5 text-xs font-medium">
-                  Added by you
-                </span>
               )}
             </div>
             <div className="text-muted-foreground flex items-center gap-2 text-sm">
