@@ -98,7 +98,7 @@ function BalanceDisplay({
       )}
       {torusBalance != null && (
         <div className="flex items-baseline gap-1 text-xs">
-          <p className="text-muted-foreground font-medium">Wallet TORUS: </p>
+          <p className="text-muted-foreground font-medium">BALANCE: </p>
           <p className="font-bold">{formatToken(torusBalance)} TORUS</p>
         </div>
       )}
