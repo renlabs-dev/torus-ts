@@ -36,6 +36,7 @@ import { Input } from "@torus-ts/ui/components/input";
 import { Label } from "@torus-ts/ui/components/label";
 import { useToast } from "@torus-ts/ui/hooks/use-toast";
 import { cn } from "@torus-ts/ui/lib/utils";
+import { useDebounce } from "@uidotdev/usehooks";
 import { env } from "~/env";
 import { api } from "~/trpc/react";
 import {
@@ -140,6 +141,7 @@ export default function AddAccountStepperDialog({
   const [pendingAction, setPendingAction] = useState<
     "none" | "purchase-metadata" | "queue-scraping"
   >("none");
+  const debouncedUsername = useDebounce(formData.username, 500);
 
   // Use external or internal open state
   const isOpen = externalOpen ?? internalOpen;
@@ -187,9 +189,9 @@ export default function AddAccountStepperDialog({
 
   const { data: userStatus, refetch: refetchUserStatus } =
     api.twitterUser.checkUserStatus.useQuery(
-      { username: formData.username },
+      { username: debouncedUsername },
       {
-        enabled: formData.username.length > 0 && currentStep >= 3,
+        enabled: debouncedUsername.length > 0 && currentStep >= 3,
       },
     );
 
