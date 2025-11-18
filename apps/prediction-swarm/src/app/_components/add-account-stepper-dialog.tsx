@@ -289,7 +289,7 @@ export default function AddAccountStepperDialog({
   const updateFormData = (field: string, value: string) => {
     // Normalize username to lowercase (Twitter is case-insensitive)
     if (field === "username") {
-      value = value.toLowerCase();
+      value = value.slice(0, 15).toLowerCase();
     }
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
@@ -750,6 +750,7 @@ export default function AddAccountStepperDialog({
                   placeholder="e.g. elonmusk or @elonmusk"
                   className="mt-2"
                   disabled={purchaseMetadata.isPending}
+                  maxLength={15}
                 />
               </div>
 
