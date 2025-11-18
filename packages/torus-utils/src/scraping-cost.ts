@@ -15,14 +15,14 @@ import type { TorAmount } from "./torus/token.js";
  * Required for users not yet in the database.
  */
 export const BASELINE_METADATA_COST = makeTorAmount(
-  toRems(makeTorAmount(0.00003)),
+  toRems(makeTorAmount(0.069)),
 );
 
 /**
  * Base cost for any scraping job (overhead, queue management, etc.).
  */
 export const BASELINE_SCRAPING_COST = makeTorAmount(
-  toRems(makeTorAmount(0.00003)),
+  toRems(makeTorAmount(0.069)),
 );
 
 /**

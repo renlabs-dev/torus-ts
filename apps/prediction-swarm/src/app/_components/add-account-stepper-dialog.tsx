@@ -13,11 +13,6 @@ import {
 import { useFreeBalance } from "@torus-ts/query-provider/hooks";
 import { useTorus } from "@torus-ts/torus-provider";
 import { useSendTransaction } from "@torus-ts/torus-provider/use-send-transaction";
-import {
-  Alert,
-  AlertDescription,
-  AlertTitle,
-} from "@torus-ts/ui/components/alert";
 import { Button } from "@torus-ts/ui/components/button";
 import {
   Card,
@@ -40,11 +35,9 @@ import { useDebounce } from "@uidotdev/usehooks";
 import { env } from "~/env";
 import { api } from "~/trpc/react";
 import {
-  AlertCircleIcon,
   Check,
   ChevronLeft,
   ChevronRight,
-  HandCoins,
   Loader2,
   UserRoundPlus,
 } from "lucide-react";
@@ -60,21 +53,16 @@ const steps = [
   },
   {
     id: 2,
-    title: "Add Funds",
-    description: "",
-  },
-  {
-    id: 3,
     title: "Select Account",
     description: "Add the account details",
   },
   {
-    id: 4,
+    id: 3,
     title: "Scrape Account",
     description: "Scrape the account for predictions",
   },
   {
-    id: 5,
+    id: 4,
     title: "Completed",
     description: "Account added to the swarm",
   },
@@ -93,18 +81,24 @@ function BalanceDisplay({
     return null;
   }
 
+  const hasCredits = BigInt(creditsBalance.balance) > 0n;
+
   return (
     <div className="flex items-center gap-1 rounded-lg py-1">
-      <div className="flex items-baseline gap-1 text-xs">
-        <p className="text-muted-foreground font-medium">Credit Balance: </p>
-        <p className="font-bold">
-          {formatToken(BigInt(creditsBalance.balance))} Credits
-        </p>
-      </div>
-      |
+      {hasCredits && (
+        <>
+          <div className="flex items-baseline gap-1 text-xs">
+            <p className="text-muted-foreground font-medium">APP CREDITS: </p>
+            <p className="font-bold">
+              {formatToken(BigInt(creditsBalance.balance))} TORUS
+            </p>
+          </div>
+          {torusBalance != null && "|"}
+        </>
+      )}
       {torusBalance != null && (
         <div className="flex items-baseline gap-1 text-xs">
-          <p className="text-muted-foreground font-medium">Torus Balance: </p>
+          <p className="text-muted-foreground font-medium">Wallet TORUS: </p>
           <p className="font-bold">{formatToken(torusBalance)} TORUS</p>
         </div>
       )}
@@ -132,9 +126,7 @@ export default function AddAccountStepperDialog({
   const [currentStep, setCurrentStep] = useState(1);
   const [internalOpen, setInternalOpen] = useState(false);
   const [formData, setFormData] = useState({
-    flowType: "add-account" as "add-funds" | "add-account",
     username: initialUsername.toLowerCase(),
-    torusAmount: "",
     txHash: "",
     blockHash: "",
   });
@@ -170,7 +162,7 @@ export default function AddAccountStepperDialog({
     selectedAccount,
     wsEndpoint,
     wallet: torusWalletApi,
-    transactionType: "Purchase Credits",
+    transactionType: "Prediction Swarm Payment (TORUS)",
   });
 
   const accountFreeBalance = useFreeBalance(
@@ -191,7 +183,7 @@ export default function AddAccountStepperDialog({
     api.twitterUser.checkUserStatus.useQuery(
       { username: debouncedUsername },
       {
-        enabled: debouncedUsername.length > 0 && currentStep >= 3,
+        enabled: debouncedUsername.length > 0 && currentStep >= 2,
       },
     );
 
@@ -215,10 +207,10 @@ export default function AddAccountStepperDialog({
           budget: BigInt(scrapingCost.toFixed(0)),
         });
       } else if (action === "none") {
-        // Regular credit purchase without pending action - show success
+        // Regular balance top-up without pending action - show success
         toast({
-          title: "Credits Added",
-          description: `${formatToken(Number(data.creditsGranted))} credits added to your balance`,
+          title: "TORUS Added",
+          description: `${formatToken(Number(data.creditsGranted))} TORUS added to your balance`,
         });
         handleNext();
       }
@@ -272,10 +264,7 @@ export default function AddAccountStepperDialog({
   });
 
   const handleNext = () => {
-    if (currentStep === 1) {
-      // From intro, navigate based on selected flow
-      setCurrentStep(formData.flowType === "add-funds" ? 2 : 3);
-    } else if (currentStep < 5) {
+    if (currentStep < 4) {
       setCurrentStep(currentStep + 1);
     }
   };
@@ -294,51 +283,7 @@ export default function AddAccountStepperDialog({
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
-  // Handle Step 1 flow selection
-  const handleFlowSelection = (flowType: "add-funds" | "add-account") => {
-    updateFormData("flowType", flowType);
-    if (flowType === "add-funds") {
-      setCurrentStep(2);
-    } else {
-      setCurrentStep(3);
-    }
-  };
-
-  // Handle credit purchase with TORUS transfer
-  const handlePurchaseCredits = async () => {
-    if (!torusApi || !sendTx) {
-      toast({
-        title: "Wallet Not Connected",
-        description: "Please connect your wallet first",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    const amount = parseFloat(formData.torusAmount);
-    if (isNaN(amount) || amount <= 0) {
-      toast({
-        title: "Invalid Amount",
-        description: "Please enter a valid TORUS amount",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    // Convert TORUS to rems (18 decimals)
-    const amountInRems = toRems(makeTorAmount(formData.torusAmount));
-
-    // Create transfer transaction
-    const transfer = torusApi.tx.balances.transferKeepAlive(
-      env("NEXT_PUBLIC_PREDICTION_APP_ADDRESS"),
-      amountInRems,
-    );
-
-    // Send transaction (hook handles signing, status updates, and toasts)
-    await sendTx(transfer);
-  };
-
-  // Watch for transaction finalization to verify and grant credits
+  // Watch for transaction finalization to verify and top up balance
   useEffect(() => {
     if (
       isFinalized &&
@@ -357,7 +302,7 @@ export default function AddAccountStepperDialog({
 
       const blockHash = txStage.Submitted.event.blockHash;
 
-      // Purchase credits with the verified transaction
+      // Top up balance with the verified transaction
       purchaseCredits.mutate({
         txHash,
         blockHash,
@@ -399,7 +344,7 @@ export default function AddAccountStepperDialog({
     });
   };
 
-  // Buy credits and immediately purchase metadata
+  // Top up TORUS and immediately purchase metadata
   const handleBuyAndPurchaseMetadata = async () => {
     if (!torusApi || !sendTx) {
       toast({
@@ -410,27 +355,19 @@ export default function AddAccountStepperDialog({
       return;
     }
 
-    // Calculate shortfall: need BASELINE_METADATA_COST, buy only the difference
-    const currentBalance = BigInt(balance?.balance ?? "0");
-    const required = toRems(BASELINE_METADATA_COST);
-    const shortfall = required - currentBalance;
-
-    if (shortfall <= 0n) {
-      // User already has enough, just purchase metadata directly
-      handlePurchaseMetadata();
-      return;
-    }
+    // Use fixed 0.069 TORUS for metadata purchase
+    const topUpAmount = toRems(makeTorAmount("0.069"));
 
     const transfer = torusApi.tx.balances.transferKeepAlive(
       env("NEXT_PUBLIC_PREDICTION_APP_ADDRESS"),
-      shortfall,
+      topUpAmount,
     );
 
     setPendingAction("purchase-metadata");
     await sendTx(transfer);
   };
 
-  // Buy credits and immediately queue scraping
+  // Top up TORUS and immediately queue scraping
   const handleBuyAndQueueScraping = async () => {
     if (!torusApi || !sendTx || !userStatus?.user) {
       toast({
@@ -441,7 +378,7 @@ export default function AddAccountStepperDialog({
       return;
     }
 
-    // Calculate shortfall: only buy the difference between current and required
+    // Calculate required amount with minimum 0.1 TORUS
     const scrapingCost = calculateScrapingCost(userStatus.user.tweetCount ?? 0);
     const currentBalance = BigInt(balance?.balance ?? "0");
     const required = BigInt(scrapingCost.toFixed(0));
@@ -453,9 +390,13 @@ export default function AddAccountStepperDialog({
       return;
     }
 
+    // Use at least 0.069 TORUS for the transfer
+    const minTopUp = toRems(makeTorAmount("0.069"));
+    const topUpAmount = shortfall < minTopUp ? minTopUp : shortfall;
+
     const transfer = torusApi.tx.balances.transferKeepAlive(
       env("NEXT_PUBLIC_PREDICTION_APP_ADDRESS"),
-      shortfall,
+      topUpAmount,
     );
 
     setPendingAction("queue-scraping");
@@ -474,14 +415,6 @@ export default function AddAccountStepperDialog({
   const hasSufficientBalance = (requiredAmount: string) => {
     if (!balance) return false;
     return BigInt(balance.balance) >= BigInt(requiredAmount);
-  };
-
-  // Calculate shortfall for metadata
-  const getMetadataShortfall = () => {
-    const currentBalance = BigInt(balance?.balance ?? "0");
-    const required = toRems(BASELINE_METADATA_COST);
-    const shortfall = required - currentBalance;
-    return shortfall > 0n ? shortfall : 0n;
   };
 
   // Calculate shortfall for scraping
@@ -508,23 +441,19 @@ export default function AddAccountStepperDialog({
   const handleOpenChange = (open: boolean) => {
     setIsOpen(open);
     if (open && initialUsername) {
-      // When opening with a username, pre-fill it and skip to step 3
+      // When opening with a username, pre-fill it and skip to step 2
       setFormData({
-        flowType: "add-account",
         username: initialUsername.toLowerCase(), // Normalize to lowercase
-        torusAmount: "",
         txHash: "",
         blockHash: "",
       });
-      setCurrentStep(3);
+      setCurrentStep(2);
       setPendingAction("none");
     } else if (!open) {
       // Reset form when dialog closes
       setCurrentStep(1);
       setFormData({
-        flowType: "add-account",
         username: "",
-        torusAmount: "",
         txHash: "",
         blockHash: "",
       });
@@ -543,172 +472,32 @@ export default function AddAccountStepperDialog({
               <CardTitle>Add Account to the Swarm</CardTitle>
               <CardDescription>
                 Here you can add an 𝕏 account for the system to scrape. The
-                process happens in two steps: We check the account and estimate
-                how much scraping will cost We run the scraping once you
-                confirm. You can also add credits first if you plan to scrape
-                several accounts.
+                process happens in two steps: we check the account and estimate
+                how much scraping will cost, then we run the scraping once you
+                confirm. You&apos;ll pay in TORUS based on the account&apos;s
+                tweet history.
               </CardDescription>
               <div className="mt-2 space-y-1 text-sm">
                 <p>
                   • Account metadata check:{" "}
-                  <span className="font-semibold">~0.00003 credits</span>
+                  <span className="font-semibold">~0.069 TORUS</span>
                 </p>
                 <p>
                   • Scraping cost:{" "}
                   <span className="font-semibold">
-                    ~0.015 credits per 1,000 tweets
+                    ~0.000015 TORUS per 1,000 tweets
                   </span>
                 </p>
                 <p className="text-muted-foreground pt-1 text-xs">
-                  Example: An account with 1,729 tweets costs ~0.026 credits to
+                  Example: An account with 1,729 tweets costs ~0.026 TORUS to
                   scrape
                 </p>
               </div>
             </CardHeader>
-
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-              <Card
-                className={cn(
-                  "cursor-pointer transition-all",
-                  formData.flowType === "add-funds"
-                    ? "bg-muted border-primary ring-primary ring-2"
-                    : "hover:shadow-md",
-                )}
-                onClick={() => handleFlowSelection("add-funds")}
-              >
-                <CardContent className="flex items-start space-x-4 p-6">
-                  <div className="flex-shrink-0">
-                    <div className="bg-primary/10 flex h-12 w-12 items-center justify-center rounded-lg">
-                      <HandCoins className="text-primary h-6 w-6" />
-                    </div>
-                  </div>
-                  <div>
-                    <h3 className="text-muted-foreground mb-1 font-semibold">
-                      Add funds
-                    </h3>
-                    <p className="text-muted-foreground text-sm">
-                      Add credits to your balance before adding accounts.
-                    </p>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card
-                className={cn(
-                  "cursor-pointer transition-all",
-                  formData.flowType === "add-account"
-                    ? "bg-muted border-primary ring-primary ring-2"
-                    : "hover:shadow-md",
-                )}
-                onClick={() => handleFlowSelection("add-account")}
-              >
-                <CardContent className="flex items-start space-x-4 p-6">
-                  <div className="flex-shrink-0">
-                    <div className="bg-primary/10 flex h-12 w-12 items-center justify-center rounded-lg">
-                      <UserRoundPlus className="text-primary h-6 w-6" />
-                    </div>
-                  </div>
-                  <div>
-                    <h3 className="text-muted-foreground mb-1 font-semibold">
-                      Add account
-                    </h3>
-                    <p className="text-muted-foreground text-sm">
-                      (Recommended) Go straight to adding an 𝕏 account.
-                      We&apos;ll estimate the cost for you.
-                    </p>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
           </div>
         );
 
       case 2:
-        return (
-          <div className="space-y-6">
-            <CardHeader className="px-0 pb-2 pt-0">
-              <CardTitle>Add Funds</CardTitle>
-              <CardDescription>
-                Buy credits by sending TORUS tokens. You get 1 credit for every
-                1 TORUS you send. Your transaction is confirmed on-chain before
-                the credits appear.
-              </CardDescription>
-              <BalanceDisplay
-                creditsBalance={balance}
-                torusBalance={accountFreeBalance.data}
-                isConnected={isAccountConnected}
-              />
-              <Alert variant="destructive">
-                <AlertCircleIcon className="h-4 w-4" />
-                <AlertTitle>Warning</AlertTitle>
-                <AlertDescription>
-                  <p>
-                    Buying credits is irreversible. You will not be able to
-                    convert your credits back to TORUS.
-                  </p>
-                </AlertDescription>
-              </Alert>
-            </CardHeader>
-
-            <div className="space-y-6">
-              <div>
-                <Label htmlFor="wallet" className="text-base">
-                  Select Torus Wallet <span className="text-red-500">*</span>
-                </Label>
-                <div className="border-border mt-2 border">
-                  <WalletDropdown
-                    variant="default"
-                    torusCacheUrl={env("NEXT_PUBLIC_TORUS_CACHE_URL")}
-                  />
-                </div>
-              </div>
-
-              <div>
-                <Label htmlFor="torusAmount" className="text-base font-medium">
-                  Amount in TORUS <span className="text-red-500">*</span>
-                </Label>
-                <Input
-                  id="torusAmount"
-                  type="number"
-                  step="0.01"
-                  min="0"
-                  value={formData.torusAmount}
-                  onChange={(e) =>
-                    updateFormData("torusAmount", e.target.value)
-                  }
-                  placeholder="e.g. 500"
-                  className="mt-2"
-                  disabled={purchaseCredits.isPending}
-                />
-                <p className="text-muted-foreground mt-1 text-sm">
-                  You will receive {formData.torusAmount || "0"} credits (1:1
-                  rate)
-                </p>
-              </div>
-
-              <Button
-                onClick={handlePurchaseCredits}
-                disabled={
-                  !isAccountConnected ||
-                  !formData.torusAmount ||
-                  isAnyOperationPending
-                }
-                className="w-full"
-              >
-                {isTxPending || purchaseCredits.isPending ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    {isTxPending ? "Signing..." : "Processing..."}
-                  </>
-                ) : (
-                  "Purchase Credits"
-                )}
-              </Button>
-            </div>
-          </div>
-        );
-
-      case 3:
         return (
           <div className="space-y-6">
             <CardHeader className="px-0 pb-1 pt-0">
@@ -716,7 +505,7 @@ export default function AddAccountStepperDialog({
               <CardDescription>
                 Type the 𝕏 username you want to scrape. We&apos;ll check if we
                 already have basic information about this account. If we
-                don&apos;t, you&apos;ll need to pay ~0.00003 credits to load the
+                don&apos;t, you&apos;ll need to pay ~0.00003 TORUS to load the
                 basic info so we can calculate the scraping cost.
               </CardDescription>
               <BalanceDisplay
@@ -796,7 +585,7 @@ export default function AddAccountStepperDialog({
                                 ? formatToken(Number(userStatus.scrapingCost))
                                 : "0"
                             }{" "}
-                            credits
+                            TORUS
                           </p>
                         </>
                       )}
@@ -808,7 +597,10 @@ export default function AddAccountStepperDialog({
                       </p>
                       <p className="text-sm">
                         Cost to fetch metadata:{" "}
-                        {formatToken(Number(userStatus.metadataCost))} credits
+                        <span className="font-bold">
+                          {formatToken(Number(userStatus.metadataCost), 5)}{" "}
+                          TORUS
+                        </span>
                       </p>
                     </div>
                   )}
@@ -818,7 +610,7 @@ export default function AddAccountStepperDialog({
           </div>
         );
 
-      case 4:
+      case 3:
         return (
           <div className="space-y-6">
             <CardHeader className="px-0 pb-1 pt-0">
@@ -859,7 +651,7 @@ export default function AddAccountStepperDialog({
                           ),
                         ),
                       )}{" "}
-                      credits
+                      TORUS
                     </p>
                   </div>
                 </div>
@@ -885,7 +677,7 @@ export default function AddAccountStepperDialog({
           </div>
         );
 
-      case 5:
+      case 4:
         return (
           <div className="space-y-6">
             <CardHeader className="px-0 pb-2 pt-0">
@@ -927,18 +719,16 @@ export default function AddAccountStepperDialog({
   const canProceedToNextStep = () => {
     switch (currentStep) {
       case 1:
-        return true; // Can proceed (add-account is pre-selected)
+        return true;
       case 2:
-        return true; // Can skip adding funds (later steps have buy+spend options)
-      case 3:
         // Can proceed if wallet connected, has metadata, and not already tracked
         return (
           isAccountConnected &&
           ((userStatus?.hasMetadata && !userStatus.user?.tracked) ?? false)
         );
-      case 4:
+      case 3:
         return false; // Must queue scraping
-      case 5:
+      case 4:
         return true;
       default:
         return false;
@@ -1026,15 +816,15 @@ export default function AddAccountStepperDialog({
                 <span>Previous</span>
               </Button>
 
-              {currentStep === 5 ? (
+              {currentStep === 4 ? (
                 <Button onClick={() => handleOpenChange(false)}>
                   <span>Done</span>
                 </Button>
-              ) : currentStep === 3 &&
+              ) : currentStep === 2 &&
                 userStatus &&
                 !userStatus.user?.tracked &&
                 !userStatus.hasMetadata ? (
-                // Step 3: Show metadata purchase button instead of Continue
+                // Step 2: Show metadata purchase button instead of Continue
                 hasSufficientBalance(
                   toRems(BASELINE_METADATA_COST).toString(),
                 ) ? (
@@ -1043,7 +833,7 @@ export default function AddAccountStepperDialog({
                     disabled={
                       !isAccountConnected ||
                       !formData.username ||
-                      purchaseMetadata.isPending
+                      isAnyOperationPending
                     }
                   >
                     {purchaseMetadata.isPending ? (
@@ -1055,7 +845,7 @@ export default function AddAccountStepperDialog({
                       <>
                         <span>
                           Purchase Metadata (
-                          {formatToken(Number(BASELINE_METADATA_COST))} credits)
+                          {formatToken(Number(BASELINE_METADATA_COST))} TORUS)
                         </span>
                         <ChevronRight className="h-4 w-4" />
                       </>
@@ -1067,16 +857,14 @@ export default function AddAccountStepperDialog({
                     disabled={
                       !isAccountConnected ||
                       !formData.username ||
-                      isTxPending ||
-                      purchaseCredits.isPending ||
-                      purchaseMetadata.isPending
+                      isAnyOperationPending
                     }
                     variant="default"
                   >
                     {isTxPending || purchaseCredits.isPending ? (
                       <>
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Buying Credits...
+                        Buying TORUS...
                       </>
                     ) : purchaseMetadata.isPending ? (
                       <>
@@ -1085,19 +873,16 @@ export default function AddAccountStepperDialog({
                       </>
                     ) : (
                       <>
-                        <span>
-                          Buy {formatToken(getMetadataShortfall())} Credits &
-                          Purchase
-                        </span>
+                        <span>Buy account metadata</span>
                         <ChevronRight className="h-4 w-4" />
                       </>
                     )}
                   </Button>
                 )
-              ) : currentStep === 4 &&
+              ) : currentStep === 3 &&
                 userStatus?.user &&
                 !userStatus.user.tracked ? (
-                // Step 4: Show scraping action button instead of Continue
+                // Step 3: Show scraping action button instead of Continue
                 hasSufficientBalance(
                   calculateScrapingCost(
                     userStatus.user.tweetCount ?? 0,
@@ -1123,7 +908,7 @@ export default function AddAccountStepperDialog({
                               ),
                             ),
                           )}{" "}
-                          credits)
+                          TORUS)
                         </span>
                         <ChevronRight className="h-4 w-4" />
                       </>
@@ -1138,7 +923,7 @@ export default function AddAccountStepperDialog({
                     {isTxPending || purchaseCredits.isPending ? (
                       <>
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Buying Credits...
+                        Buying TORUS...
                       </>
                     ) : suggestUser.isPending ? (
                       <>
@@ -1148,7 +933,7 @@ export default function AddAccountStepperDialog({
                     ) : (
                       <>
                         <span>
-                          Buy {formatToken(getScrapingShortfall())} Credits &
+                          Buy {formatToken(getScrapingShortfall())} TORUS &
                           Queue
                         </span>
                         <ChevronRight className="h-4 w-4" />
@@ -1156,7 +941,7 @@ export default function AddAccountStepperDialog({
                     )}
                   </Button>
                 )
-              ) : currentStep < 5 ? (
+              ) : currentStep < 4 ? (
                 <Button onClick={handleNext} disabled={!canProceedToNextStep()}>
                   <span>Continue</span>
                   <ChevronRight className="h-4 w-4" />
