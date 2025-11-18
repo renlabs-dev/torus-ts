@@ -1,7 +1,10 @@
 "use client";
 
 import type { SS58Address } from "@torus-network/sdk/types";
-import { calculateScrapingCost } from "@torus-network/torus-utils";
+import {
+  BASELINE_METADATA_COST,
+  calculateScrapingCost,
+} from "@torus-network/torus-utils";
 import {
   formatToken,
   makeTorAmount,
@@ -405,9 +408,9 @@ export default function AddAccountStepperDialog({
       return;
     }
 
-    // Calculate shortfall: need 10 credits, buy only the difference
+    // Calculate shortfall: need BASELINE_METADATA_COST, buy only the difference
     const currentBalance = BigInt(balance?.balance ?? "0");
-    const required = toRems(makeTorAmount(10));
+    const required = toRems(BASELINE_METADATA_COST);
     const shortfall = required - currentBalance;
 
     if (shortfall <= 0n) {
@@ -471,10 +474,10 @@ export default function AddAccountStepperDialog({
     return BigInt(balance.balance) >= BigInt(requiredAmount);
   };
 
-  // Calculate shortfall for metadata (10 credits)
+  // Calculate shortfall for metadata
   const getMetadataShortfall = () => {
     const currentBalance = BigInt(balance?.balance ?? "0");
-    const required = toRems(makeTorAmount(10));
+    const required = toRems(BASELINE_METADATA_COST);
     const shortfall = required - currentBalance;
     return shortfall > 0n ? shortfall : 0n;
   };
@@ -546,13 +549,16 @@ export default function AddAccountStepperDialog({
               <div className="mt-2 space-y-1 text-sm">
                 <p>
                   • Account metadata check:{" "}
-                  <span className="font-semibold">10 credits</span>
+                  <span className="font-semibold">~0.00003 credits</span>
                 </p>
                 <p>
                   • Scraping cost:{" "}
                   <span className="font-semibold">
-                    ~60 credits per 1,000 tweets
+                    ~0.015 credits per 1,000 tweets
                   </span>
+                </p>
+                <p className="text-muted-foreground text-xs pt-1">
+                  Example: An account with 1,729 tweets costs ~0.026 credits to scrape
                 </p>
               </div>
             </CardHeader>
@@ -707,7 +713,7 @@ export default function AddAccountStepperDialog({
               <CardDescription>
                 Type the 𝕏 username you want to scrape. We&apos;ll check if we
                 already have basic information about this account. If we
-                don&apos;t, you&apos;ll need to pay 10 credits to load the basic
+                don&apos;t, you&apos;ll need to pay ~0.00003 credits to load the basic
                 info so we can calculate the scraping cost.
               </CardDescription>
               <BalanceDisplay
@@ -798,12 +804,7 @@ export default function AddAccountStepperDialog({
                       </p>
                       <p className="text-sm">
                         Cost to fetch metadata:{" "}
-                        {
-                          // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-                          userStatus.metadataCost != null
-                            ? formatToken(Number(userStatus.metadataCost))
-                            : "10"
-                        }{" "}
+                        {formatToken(Number(userStatus.metadataCost))}{" "}
                         credits
                       </p>
                     </div>
@@ -1026,7 +1027,7 @@ export default function AddAccountStepperDialog({
                 !userStatus.user?.tracked &&
                 !userStatus.hasMetadata ? (
                 // Step 3: Show metadata purchase button instead of Continue
-                hasSufficientBalance(toRems(makeTorAmount(10)).toString()) ? (
+                hasSufficientBalance(toRems(BASELINE_METADATA_COST).toString()) ? (
                   <Button
                     onClick={handlePurchaseMetadata}
                     disabled={
@@ -1042,7 +1043,7 @@ export default function AddAccountStepperDialog({
                       </>
                     ) : (
                       <>
-                        <span>Purchase Metadata (10 credits)</span>
+                        <span>Purchase Metadata ({formatToken(Number(BASELINE_METADATA_COST))} credits)</span>
                         <ChevronRight className="h-4 w-4" />
                       </>
                     )}
