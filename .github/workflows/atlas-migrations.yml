@@ -25,322 +25,89 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  check:
-    runs-on: ubicloud-standard-2
-    outputs:
-      has_pending: ${{ steps.migration-status.outputs.has_pending }}
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+  check-webapps:
+    uses: ./.github/workflows/check-migration-reusable.yml
+    with:
+      env_name: webapps
+    secrets:
+      db_url: ${{ secrets.POSTGRES_WEBAPPS_URL }}
+      vault_addr: ${{ secrets.VAULT_ADDR }}
+      vault_role_id: ${{ secrets.VAULT_ROLE_ID }}
+      vault_secret_id: ${{ secrets.VAULT_SECRET_ID }}
 
-      - name: Import Secrets
-        uses: ./.github/actions/import-db-secrets
-        with:
-          vault_addr: ${{ secrets.VAULT_ADDR }}
-          vault_role_id: ${{ secrets.VAULT_ROLE_ID }}
-          vault_secret_id: ${{ secrets.VAULT_SECRET_ID }}
+  check-prediction-swarm:
+    uses: ./.github/workflows/check-migration-reusable.yml
+    with:
+      env_name: prediction_swarm
+    secrets:
+      db_url: ${{ secrets.POSTGRES_PREDICTION_SWARM_URL }}
+      vault_addr: ${{ secrets.VAULT_ADDR }}
+      vault_role_id: ${{ secrets.VAULT_ROLE_ID }}
+      vault_secret_id: ${{ secrets.VAULT_SECRET_ID }}
 
-      - uses: ariga/setup-atlas@v0
-
-      - run: git fetch origin main:main
-        if: github.ref_name != 'main'
-
-      - name: Run lint
-        run: |
-          atlas migrate lint --env local --git-base origin/main
-
-      - name: Verify migrations hash
-        run: |
-          (cd atlas/migrations && cp atlas.sum atlas.sum.orig)
-
-          atlas migrate hash --env local
-
-          cd atlas/migrations
-          if ! cmp -s atlas.sum atlas.sum.orig; then
-            echo "❌ Migration hash mismatch detected. Please run 'atlas migrate hash' locally and commit changes."
-            exit 1
-          fi
-
-      - name: PNPM setup
-        uses: ./.github/actions/setup
-
-      - name: Verify non-generated migrations
-        run: |
-          atlas migrate diff --env local
-
-          cd atlas/migrations
-          if ! cmp -s atlas.sum atlas.sum.orig; then
-            echo "❌ Schema changes detected that require new migrations!"
-            echo "Please run 'atlas migrate diff --env local' locally to generate the required migrations,"
-            echo "review them, and include them in your PR."
-            exit 1
-          fi
-
-      - name: Check migration status
-        id: migration-status
-        run: |
-          output=$(atlas migrate status --env local --url "${POSTGRES_URL}")
-          echo "has_pending=$(echo "$output" | grep -q "PENDING" && echo "true" || echo "false")" >> $GITHUB_OUTPUT
-          echo "$output"
-
-          # Store output for summary
-          echo "$output" > migration_status.txt
-
-      - name: Generate migration check summary
-        if: always()
-        run: |
-          echo "## 🗄️ Database Migration Check" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-
-          has_pending="${{ steps.migration-status.outputs.has_pending }}"
-
-          if [ "$has_pending" == "true" ]; then
-            echo "⚠️ **Pending migrations detected**" >> $GITHUB_STEP_SUMMARY
-            echo "" >> $GITHUB_STEP_SUMMARY
-            echo "- **Status:** Migrations need to be applied" >> $GITHUB_STEP_SUMMARY
-            echo "- **Action:** Will be applied automatically on push to main/dev" >> $GITHUB_STEP_SUMMARY
-          else
-            echo "✅ **Database is up to date**" >> $GITHUB_STEP_SUMMARY
-            echo "" >> $GITHUB_STEP_SUMMARY
-            echo "- **Status:** No pending migrations" >> $GITHUB_STEP_SUMMARY
-            echo "- **Action:** No database changes needed" >> $GITHUB_STEP_SUMMARY
-          fi
-
-          echo "" >> $GITHUB_STEP_SUMMARY
-
-          echo "```" >> $GITHUB_STEP_SUMMARY
-          sed -E 's#(postgresql://)[^:@]+:[^@]+@#\1****:****@#' migration_status.txt >> $GITHUB_STEP_SUMMARY
-          echo "```" >> $GITHUB_STEP_SUMMARY
-
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "**Branch:** \`${{ github.ref_name }}\`" >> $GITHUB_STEP_SUMMARY
-
-  shadow-apply-check:
-    needs: check
+  shadow-apply-check-webapps:
+    needs: check-webapps
     if: |
       github.event_name == 'pull_request' &&
       github.base_ref == 'main' &&
-      needs.check.outputs.has_pending == 'true'
-    runs-on: ubicloud-standard-2-ubuntu-2404
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+      needs.check-webapps.outputs.pending == 'true'
+    uses: ./.github/workflows/shadow-apply-check-reusable.yml
+    with:
+      env_name: webapps
+    secrets:
+      db_url: ${{ secrets.POSTGRES_WEBAPPS_URL }}
+      vault_addr: ${{ secrets.VAULT_ADDR }}
+      vault_role_id: ${{ secrets.VAULT_ROLE_ID }}
+      vault_secret_id: ${{ secrets.VAULT_SECRET_ID }}
 
-      - name: Start db
-        run: |
-          docker compose up -d postgres
-          docker ps
-
-      - name: Import DB Secrets
-        uses: ./.github/actions/import-db-secrets
-        with:
-          vault_addr: ${{ secrets.VAULT_ADDR }}
-          vault_role_id: ${{ secrets.VAULT_ROLE_ID }}
-          vault_secret_id: ${{ secrets.VAULT_SECRET_ID }}
-
-      - name: Fetch URL and test connection
-        id: shadow-db
-        run: |
-          CONTAINER_ID="$(docker compose ps -q postgres)"
-          DB_HOST="$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' "${CONTAINER_ID}")"
-          DATABASE_URL="postgresql://postgres:postgres@${DB_HOST}:5432/torus-ts-db?sslmode=disable"
-          echo "db_url=${DATABASE_URL}" >> $GITHUB_OUTPUT
-
-          echo "Waiting for PostgreSQL to be ready..."
-          until pg_isready -d "${DATABASE_URL}"; do
-            echo "PostgreSQL is unavailable - sleeping"
-            sleep 1
-          done
-          echo "PostgreSQL is ready!"
-
-      - name: Dump target database
-        run: pg_dump -Fc -v -b "${POSTGRES_URL}" -f database.dump
-
-      - name: Load dump into shadow database
-        run: pg_restore -v --no-owner --no-acl --role=postgres -d "${{ steps.shadow-db.outputs.db_url }}" database.dump
-
-      - uses: ariga/setup-atlas@v0
-
-      - name: Apply migrations (dry-run)
-        id: dry-run
-        run: |
-          set +e  # Don't exit on command failure
-          output=$(atlas migrate apply --dry-run --env local --allow-dirty \
-                  --url "${{ steps.shadow-db.outputs.db_url }}" 2>&1)
-          exit_code=$?
-
-          set -e  # restore
-          sanitized_output=$(echo "$output" | sed -E 's#(postgresql://)[^:@]+:[^@]+@#\1****:****@#g')
-          echo "$sanitized_output"
-          echo "$sanitized_output" > dry_run_output.txt
-          echo "exit_code=$exit_code" >> $GITHUB_OUTPUT
-          exit $exit_code
-
-      - name: Apply migrations
-        id: shadow-apply
-        run: |
-          set +e  # Don't exit on command failure
-          output=$(atlas migrate apply --env local --allow-dirty \
-                  --url "${{ steps.shadow-db.outputs.db_url }}" --lock-timeout 120s 2>&1)
-          exit_code=$?
-
-          set -e  # restore
-          sanitized_output=$(echo "$output" | sed -E 's#(postgresql://)[^:@]+:[^@]+@#\1****:****@#g')
-          echo "$sanitized_output"
-          echo "$sanitized_output" > shadow_apply_output.txt
-          echo "exit_code=$exit_code" >> $GITHUB_OUTPUT
-          exit $exit_code
-
-      - name: Generate shadow apply summary
-        if: always()
-        run: |
-          echo "## 🧪 Shadow Database Test" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-
-          if [ "${{ steps.shadow-apply.outcome }}" == "success" ]; then
-            echo "✅ **Shadow database migration test passed**" >> $GITHUB_STEP_SUMMARY
-            echo "" >> $GITHUB_STEP_SUMMARY
-            echo "- **Status:** Migrations can be safely applied to production" >> $GITHUB_STEP_SUMMARY
-            echo "- **Test Environment:** Shadow database with production data" >> $GITHUB_STEP_SUMMARY
-          else
-            echo "❌ **Shadow database migration test failed**" >> $GITHUB_STEP_SUMMARY
-            echo "" >> $GITHUB_STEP_SUMMARY
-            echo "- **Status:** Migrations may have issues with production data" >> $GITHUB_STEP_SUMMARY
-            echo "- **Action:** Review migration compatibility" >> $GITHUB_STEP_SUMMARY
-          fi
-
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "### Dry-Run Output" >> $GITHUB_STEP_SUMMARY
-          echo "```" >> $GITHUB_STEP_SUMMARY
-          if [ -f dry_run_output.txt ]; then
-            cat dry_run_output.txt >> $GITHUB_STEP_SUMMARY
-          else
-            echo "No dry-run output available" >> $GITHUB_STEP_SUMMARY
-          fi
-          echo "```" >> $GITHUB_STEP_SUMMARY
-
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "### Shadow Apply Output" >> $GITHUB_STEP_SUMMARY
-          echo "```" >> $GITHUB_STEP_SUMMARY
-          if [ -f shadow_apply_output.txt ]; then
-            cat shadow_apply_output.txt >> $GITHUB_STEP_SUMMARY
-          else
-            echo "No shadow-apply output available" >> $GITHUB_STEP_SUMMARY
-          fi
-          echo "```" >> $GITHUB_STEP_SUMMARY
-
-      - name: Delete DB
-        if: always()
-        run: docker compose down -v
-
-  apply:
-    needs: check
+  shadow-apply-check-prediction-swarm:
+    needs: check-prediction-swarm
     if: |
-      needs.check.outputs.has_pending == 'true' &&
+      github.event_name == 'pull_request' &&
+      github.base_ref == 'main' &&
+      needs.check-prediction-swarm.outputs.pending == 'true'
+    uses: ./.github/workflows/shadow-apply-check-reusable.yml
+    with:
+      env_name: prediction_swarm
+    secrets:
+      db_url: ${{ secrets.POSTGRES_PREDICTION_SWARM_URL }}
+      vault_addr: ${{ secrets.VAULT_ADDR }}
+      vault_role_id: ${{ secrets.VAULT_ROLE_ID }}
+      vault_secret_id: ${{ secrets.VAULT_SECRET_ID }}
+
+  apply-webapps:
+    needs: check-webapps
+    if: |
+      needs.check-webapps.outputs.pending == 'true' &&
       github.event_name == 'push'
-    runs-on: ubicloud-standard-2
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
+    uses: ./.github/workflows/apply-migration-reusable.yml
+    with:
+      env_name: webapps
+    secrets:
+      db_url: ${{ secrets.POSTGRES_WEBAPPS_URL }}
+      vault_addr: ${{ secrets.VAULT_ADDR }}
+      vault_role_id: ${{ secrets.VAULT_ROLE_ID }}
+      vault_secret_id: ${{ secrets.VAULT_SECRET_ID }}
 
-      - name: Import Secrets
-        uses: ./.github/actions/import-db-secrets
-        with:
-          vault_addr: ${{ secrets.VAULT_ADDR }}
-          vault_role_id: ${{ secrets.VAULT_ROLE_ID }}
-          vault_secret_id: ${{ secrets.VAULT_SECRET_ID }}
-
-      - uses: ariga/setup-atlas@v0
-
-      - name: Generate migrations report
-        run: |
-          mkdir -p ./migration-artifacts
-          echo "Migration execution timestamp: $(date)" > ./migration-artifacts/migrations-report.txt
-          echo "Branch: ${{ github.ref_name }}" >> ./migration-artifacts/migrations-report.txt
-          echo "Commit: ${{ github.sha }}" >> ./migration-artifacts/migrations-report.txt
-          echo -e "\nCurrent migration status:" >> ./migration-artifacts/migrations-report.txt
-          atlas migrate status --env local --url "${POSTGRES_URL}" >> ./migration-artifacts/migrations-report.txt
-          echo -e "\nMigrations to be applied:" >> ./migration-artifacts/migrations-report.txt
-          atlas migrate apply --env local --dry-run --allow-dirty --url "${POSTGRES_URL}" >> ./migration-artifacts/migrations-report.txt 2>&1
-
-      - name: Apply migrations
-        id: apply-migrations
-        run: |
-          set +e  # Don't exit on command failure
-          output=$(atlas migrate apply --env local --allow-dirty \
-                  --url "${POSTGRES_URL}" --lock-timeout 120s 2>&1)
-          exit_code=$?
-
-          set -e  # restore
-          sanitized_output=$(echo "$output" | sed -E 's#(postgresql://)[^:@]+:[^@]+@#\1****:****@#g')
-          echo "$sanitized_output"
-          echo "$sanitized_output" > apply_output.txt
-          echo "exit_code=$exit_code" >> $GITHUB_OUTPUT
-          exit $exit_code
-
-      - name: Update migrations report with final status
-        run: |
-          echo -e "\nFinal migration status:" >> ./migration-artifacts/migrations-report.txt
-          atlas migrate status --env local --url "${POSTGRES_URL}" >> ./migration-artifacts/migrations-report.txt
-
-      - name: Generate migration apply summary
-        if: always()
-        run: |
-          # Determine environment based on branch
-          if [ "${{ github.ref_name }}" == "main" ]; then
-            ENVIRONMENT="Production"
-            ENV_EMOJI="🚀"
-          else
-            ENVIRONMENT="Development"
-            ENV_EMOJI="🧪"
-          fi
-
-          echo "## ${ENV_EMOJI} ${ENVIRONMENT} Migration Applied" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-
-          if [ "${{ steps.apply-migrations.outcome }}" == "success" ]; then
-            echo "✅ **Migrations successfully applied to ${ENVIRONMENT,,}**" >> $GITHUB_STEP_SUMMARY
-            echo "" >> $GITHUB_STEP_SUMMARY
-            echo "- **Status:** Database schema updated" >> $GITHUB_STEP_SUMMARY
-            echo "- **Environment:** ${ENVIRONMENT} database (branch: ${{ github.ref_name }})" >> $GITHUB_STEP_SUMMARY
-            echo "- **Timestamp:** $(date)" >> $GITHUB_STEP_SUMMARY
-          else
-            echo "❌ **Migration application failed**" >> $GITHUB_STEP_SUMMARY
-            echo "" >> $GITHUB_STEP_SUMMARY
-            echo "- **Status:** Database schema update failed" >> $GITHUB_STEP_SUMMARY
-            echo "- **Environment:** ${ENVIRONMENT} database (branch: ${{ github.ref_name }})" >> $GITHUB_STEP_SUMMARY
-            echo "- **Action:** Manual intervention required" >> $GITHUB_STEP_SUMMARY
-          fi
-
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "### Migration Output" >> $GITHUB_STEP_SUMMARY
-          echo "```" >> $GITHUB_STEP_SUMMARY
-          if [ -f apply_output.txt ]; then
-            cat apply_output.txt >> $GITHUB_STEP_SUMMARY
-          else
-            echo "No migration output available" >> $GITHUB_STEP_SUMMARY
-          fi
-          echo "```" >> $GITHUB_STEP_SUMMARY
-
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "**Artifacts:** Migration report uploaded for 90 days" >> $GITHUB_STEP_SUMMARY
-
-      - name: Upload migrations report
-        uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: migrations-report-${{ github.sha }}
-          path: ./migration-artifacts/
-          retention-days: 90
-          if-no-files-found: error
+  apply-prediction-swarm:
+    needs: check-prediction-swarm
+    if: |
+      needs.check-prediction-swarm.outputs.pending == 'true' &&
+      github.event_name == 'push'
+    uses: ./.github/workflows/apply-migration-reusable.yml
+    with:
+      env_name: prediction_swarm
+    secrets:
+      db_url: ${{ secrets.POSTGRES_PREDICTION_SWARM_URL }}
+      vault_addr: ${{ secrets.VAULT_ADDR }}
+      vault_role_id: ${{ secrets.VAULT_ROLE_ID }}
+      vault_secret_id: ${{ secrets.VAULT_SECRET_ID }}
 
   restart-apps:
-    needs: [check, apply]
+    needs: apply-webapps
     if: |
       github.event_name == 'push' &&
-      needs.apply.result == 'success'
+      needs.apply-webapps.outputs.applied == 'true'
     runs-on: ubicloud-standard-2
     container:
       image: ghcr.io/renlabs-dev/devops-ci:latest
@@ -380,7 +147,7 @@ jobs:
           if [ "${{ strategy.job-index }}" == "0" ]; then
             echo "## 🔄 Application Restart After Migration" >> $GITHUB_STEP_SUMMARY
             echo "" >> $GITHUB_STEP_SUMMARY
-            echo "Applications restarted to pick up database schema changes:" >> $GITHUB_STEP_SUMMARY
+            echo "Applications restarted to pick up database schema changes (webapps only):" >> $GITHUB_STEP_SUMMARY
             echo "" >> $GITHUB_STEP_SUMMARY
           fi
 
