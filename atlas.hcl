@@ -1,23 +1,48 @@
-// npx drizzle-kit export --dialect postgresql --schema packages/db/src/schema.ts
-data "external_schema" "drizzle" {
-    program = [ 
+data "external_schema" "drizzle_webapps" {
+    program = [
         "npx",
         "drizzle-kit",
         "export",
         "--dialect",
         "postgresql",
         "--schema",
-        "packages/db/src/schema/index.ts",
+        "packages/db/src/schema/webapps.ts",
     ]
 }
 
-env "local" {
-    dev = "docker://postgres/18/dev"
+data "external_schema" "drizzle_prediction_swarm" {
+    program = [
+        "npx",
+        "drizzle-kit",
+        "export",
+        "--dialect",
+        "postgresql",
+        "--schema",
+        "packages/db/src/schema/prediction-swarm.ts",
+    ]
+}
+
+env "webapps" {
+    dev = "docker://postgres/18/dev-webapps"
     schema {
-        src = data.external_schema.drizzle.url
+        src = data.external_schema.drizzle_webapps.url
     }
     migration {
-        dir = "file://atlas/migrations"
+        dir = "file://atlas/migrations/webapps"
+    }
+    vars = {
+        search_path = "public"
+    }
+    exclude = ["drizzle"]
+}
+
+env "prediction_swarm" {
+    dev = "docker://postgres/18/dev-prediction-swarm"
+    schema {
+        src = data.external_schema.drizzle_prediction_swarm.url
+    }
+    migration {
+        dir = "file://atlas/migrations/prediction_swarm"
     }
     vars = {
         search_path = "public"
