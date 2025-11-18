@@ -27,7 +27,7 @@ export function NavigationItems() {
           </button>
         </TooltipTrigger>
         <TooltipContent className="bg-background/80 text-white">
-          Search predictions and accounts
+          Search for accounts in swarm
         </TooltipContent>
       </Tooltip>
       <Tooltip>
@@ -37,7 +37,7 @@ export function NavigationItems() {
           </span>
         </TooltipTrigger>
         <TooltipContent className="bg-background/80 text-white">
-          Add an 𝕏 account or buy credits
+          Add an 𝕏 account's
         </TooltipContent>
       </Tooltip>
       <Tooltip>
@@ -47,7 +47,7 @@ export function NavigationItems() {
           </span>
         </TooltipTrigger>
         <TooltipContent className="bg-background/80 text-white">
-          Browse app sections
+          Browse sections
         </TooltipContent>
       </Tooltip>
       <Tooltip>
