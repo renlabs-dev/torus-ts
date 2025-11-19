@@ -7,6 +7,7 @@ import {
   AvatarImage,
 } from "@torus-ts/ui/components/avatar";
 import { Button } from "@torus-ts/ui/components/button";
+import { CopyButton } from "@torus-ts/ui/components/copy-button";
 import {
   Empty,
   EmptyDescription,
@@ -27,6 +28,7 @@ import {
   CheckCircle2,
   ChevronLeft,
   ChevronRight,
+  Copy,
   ExternalLink,
   MoreVertical,
   ScanSearch,
@@ -490,9 +492,15 @@ export function ProfileFeed({
                                   <span className="text-muted-foreground">
                                     Prediction ID:
                                   </span>
-                                  <p className="font-mono text-xs">
+                                  <CopyButton
+                                    className="hover:text-primary h-fit p-0 text-xs text-white/80"
+                                    variant="link"
+                                    copy={activePrediction.predictionId}
+                                    message="Prediction ID copied to clipboard."
+                                  >
                                     {activePrediction.predictionId}
-                                  </p>
+                                    <Copy className="ml-0.5 h-2 w-2" />
+                                  </CopyButton>
                                 </div>
 
                                 {activePrediction.verdictId && (
@@ -500,9 +508,15 @@ export function ProfileFeed({
                                     <span className="text-muted-foreground">
                                       Verdict ID:
                                     </span>
-                                    <p className="font-mono text-xs">
+                                    <CopyButton
+                                      className="hover:text-primary h-fit p-0 text-xs text-white/80"
+                                      variant="link"
+                                      copy={activePrediction.verdictId}
+                                      message="Verdict ID copied to clipboard."
+                                    >
                                       {activePrediction.verdictId}
-                                    </p>
+                                      <Copy className="ml-0.5 h-2 w-2" />
+                                    </CopyButton>
                                   </div>
                                 )}
                               </div>
