@@ -53,4 +53,4 @@ deployment:
       valueFrom:
         secretKeyRef:
           name: "torus-{{ .Values.environmentName }}-web-apps-secret"
-          key: torus_prediction_swarm_db_url
+          key: prediction_swarm_db_url
