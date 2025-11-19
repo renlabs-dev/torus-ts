@@ -137,17 +137,19 @@ async function main() {
       if (predictions.length > 0) {
         totalPredictionsFound += predictions.length;
         logger.info(`Extracted ${predictions.length} predictions, storing...`);
-        // COMMENTED OUT FOR TESTING PERMISSION SYSTEM
-        // await withRetry(() => api.storePredictions(predictions));
-        logger.info(`Would have stored ${predictions.length} predictions (commented out for testing)`);
+        await withRetry(() => api.storePredictions(predictions));
+        logger.info(
+          `Would have stored ${predictions.length} predictions (commented out for testing)`,
+        );
       }
 
       if (nextCursor) {
         logger.info(`Cursor advancing: ${cursor} → ${nextCursor}`);
         cursor = nextCursor;
-        // COMMENTED OUT FOR TESTING PERMISSION SYSTEM
-        // await withRetry(() => updateFilterCursor(cursor));
-        logger.info(`Would have persisted cursor: ${cursor} (commented out for testing)`);
+        await withRetry(() => updateFilterCursor(cursor));
+        logger.info(
+          `Would have persisted cursor: ${cursor} (commented out for testing)`,
+        );
       }
 
       // Calculate batch stats (before updating totals)
