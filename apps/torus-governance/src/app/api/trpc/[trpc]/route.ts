@@ -35,6 +35,7 @@ const handler = async (req: Request) => {
           authOrigin: env("NEXT_PUBLIC_AUTH_ORIGIN"),
           allocatorAddress: env("NEXT_PUBLIC_TORUS_ALLOCATOR_ADDRESS"),
           predictionAppAddress: env("PREDICTION_APP_ADDRESS"),
+          permissionGrantorAddress: env("PERMISSION_GRANTOR_ADDRESS"),
         }),
       onError({ error, path }) {
         console.error(`>>> tRPC Error on '${path}'`, error);

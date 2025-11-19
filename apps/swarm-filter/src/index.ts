@@ -10,6 +10,7 @@ import { z } from "zod";
 import { OpenRouterClient } from "./ai/openrouter-client";
 import { PromptLoader } from "./ai/prompt-loader";
 import { RefreshingAPIClient } from "./api-client";
+import { getFilterCursor, updateFilterCursor } from "./cursor-storage";
 import { PredictionExtractor } from "./services/prediction-extractor";
 import { withRetry } from "./utils/retry";
 
@@ -78,9 +79,7 @@ async function main() {
     devMode: env.DEV,
   });
 
-  const { cursor: initialCursor } = await withRetry(() =>
-    api.getFilterCursor(),
-  );
+  const { cursor: initialCursor } = await withRetry(() => getFilterCursor());
   let cursor = initialCursor;
   logger.info(`Starting from cursor: ${cursor}`);
 
@@ -139,14 +138,18 @@ async function main() {
         totalPredictionsFound += predictions.length;
         logger.info(`Extracted ${predictions.length} predictions, storing...`);
         await withRetry(() => api.storePredictions(predictions));
-        logger.info(`Stored ${predictions.length} predictions`);
+        logger.info(
+          `Would have stored ${predictions.length} predictions (commented out for testing)`,
+        );
       }
 
       if (nextCursor) {
         logger.info(`Cursor advancing: ${cursor} → ${nextCursor}`);
         cursor = nextCursor;
-        await withRetry(() => api.updateFilterCursor({ cursor }));
-        logger.info(`Cursor persisted: ${cursor}`);
+        await withRetry(() => updateFilterCursor(cursor));
+        logger.info(
+          `Would have persisted cursor: ${cursor} (commented out for testing)`,
+        );
       }
 
       // Calculate batch stats (before updating totals)

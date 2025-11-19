@@ -98,24 +98,4 @@ export class RefreshingAPIClient {
     await this.ensureValidToken();
     return this.api.prophet.storePredictions.mutate(data);
   }
-
-  /**
-   * Get current filter cursor position.
-   */
-  async getFilterCursor(): Promise<
-    RouterOutputs["swarmFilter"]["getFilterCursor"]
-  > {
-    await this.ensureValidToken();
-    return this.api.swarmFilter.getFilterCursor.query();
-  }
-
-  /**
-   * Update filter cursor position.
-   */
-  async updateFilterCursor(
-    params: RouterInputs["swarmFilter"]["updateFilterCursor"],
-  ): Promise<RouterOutputs["swarmFilter"]["updateFilterCursor"]> {
-    await this.ensureValidToken();
-    return this.api.swarmFilter.updateFilterCursor.mutate(params);
-  }
 }
