@@ -35,6 +35,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
+import { PredictionReportDialog } from "../prediction-report-dialog";
 import { FutureTimeframeBadge } from "./future-timeframe-badge";
 import { ThreadContext } from "./thread-context";
 import { TopicBadge } from "./topic-badge";
@@ -504,6 +505,12 @@ export function ProfileFeed({
                                     </p>
                                   </div>
                                 )}
+                              </div>
+
+                              <div className="border-border border-t pt-3">
+                                <PredictionReportDialog
+                                  predictionId={activePrediction.predictionId}
+                                />
                               </div>
                             </div>
                           </PopoverContent>

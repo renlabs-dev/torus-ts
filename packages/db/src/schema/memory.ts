@@ -422,3 +422,23 @@ export const creditPurchasesSchema = createTable(
   },
   (t) => [index("credit_purchases_user_key_idx").on(t.userKey)],
 );
+
+export const reportType = pgEnum("report_type", [
+  "INACCURACY",
+  "FEEDBACK",
+  "OTHER",
+]);
+
+export const predictionReport = createTable("prediction_report", {
+  id: uuidv7("id").primaryKey(),
+
+  userKey: ss58Address("user_key").notNull(),
+  predictionId: uuidv7("prediction_id").references(() => predictionSchema.id, {
+    onDelete: "cascade",
+  }),
+
+  reportType: reportType("report_type").notNull(),
+  content: text("content"),
+
+  ...timeFields(),
+});

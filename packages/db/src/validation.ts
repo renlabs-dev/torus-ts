@@ -9,6 +9,7 @@ import {
   commentReportSchema,
   commentSchema,
   penalizeAgentVotesSchema,
+  predictionReport,
   userAgentWeightSchema,
   userDiscordInfoSchema,
 } from "./schema";
@@ -129,4 +130,11 @@ export const AGENT_DEMAND_SIGNAL_INSERT_SCHEMA = createInsertSchema(
 ).omit({
   ...commonOmitFields,
   agentKey: true,
+});
+
+export const PREDICTION_REPORT_INSERT_SCHEMA = createInsertSchema(
+  predictionReport,
+).omit({
+  ...commonOmitFields,
+  userKey: true,
 });
