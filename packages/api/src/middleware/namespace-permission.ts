@@ -1,7 +1,7 @@
+import { trySync } from "@torus-network/torus-utils/try-catch";
 import { getPermissionCache } from "../services/permission-cache";
 import type { AuthenticatedTRPCContext } from "../trpc";
 import { authenticatedProcedure } from "../trpc";
-import { trySync } from "@torus-network/torus-utils/try-catch";
 
 /**
  * Creates a tRPC procedure that requires namespace permissions.
