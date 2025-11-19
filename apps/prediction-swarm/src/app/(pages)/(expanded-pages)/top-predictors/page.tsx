@@ -17,8 +17,8 @@ import Link from "next/link";
 
 export default async function TopPredictorsPage() {
   const topPredictors = await api.twitterUser.getTopPredictors({
-    limit: 30,
-    minPredictions: 2,
+    limit: 40,
+    minPredictions: 10,
   });
 
   return (
@@ -30,7 +30,7 @@ export default async function TopPredictorsPage() {
 
       <PageHeader
         title="Top Predictors"
-        description="Ranked by quality score (minimum 2 verdicted predictions)"
+        description="Ranked by quality score (minimum 10 verdicted predictions)"
         children={
           <TooltipProvider>
             <Tooltip>
