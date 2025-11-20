@@ -11,6 +11,7 @@ import type { inferProcedureOutput } from "@trpc/server";
 import { BadgeCheck } from "lucide-react";
 import { FilterDialog } from "../filter-dialog";
 import { AccuracyBadge } from "./accuracy-badge";
+import { LastScrapedBadge } from "./last-scraped-badge";
 
 type TwitterUser = NonNullable<
   inferProcedureOutput<AppRouter["twitterUser"]["getByUsername"]>
@@ -51,7 +52,10 @@ export default function ProfileHeader({ user, counts }: ProfileHeaderProps) {
             </Avatar>
           </div>
           <div className="flex-1 space-y-2">
-            <AccuracyBadge accuracy={accuracy} />
+            <div className="flex items-center gap-2">
+              <AccuracyBadge accuracy={accuracy} />
+              <LastScrapedBadge scrapedAt={user.scrapedAt} />
+            </div>
             <div className="flex flex-col gap-2 md:flex-row md:items-center">
               <h1 className="text-2xl font-bold">
                 {user.screenName ?? user.username}
