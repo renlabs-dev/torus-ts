@@ -108,7 +108,7 @@ interface SliceValidationResult {
  */
 type FilterValidationFailureCause =
   | "BROKEN_EXTRACTION"
-  | "VAGUE_GOAL"
+  | "VAGUE_TARGET"
   | "PRESENT_STATE"
   | "NEGATION"
   | "SARCASM"
@@ -235,7 +235,7 @@ const FILTER_VALIDATION_SCHEMA = {
       type: ["string", "null"],
       enum: [
         "BROKEN_EXTRACTION",
-        "VAGUE_GOAL",
+        "VAGUE_TARGET",
         "PRESENT_STATE",
         "NEGATION",
         "SARCASM",
@@ -246,7 +246,7 @@ const FILTER_VALIDATION_SCHEMA = {
         null,
       ],
       description:
-        "Category of failure (null if is_valid is true). BROKEN_EXTRACTION: slices cut through word boundaries or extract nonsensical fragments. VAGUE_GOAL: goal is subjective or unmeasurable. PRESENT_STATE: statement about current conditions, not a prediction. NEGATION: prediction is negated. SARCASM: sarcastic/joking tone. QUOTING_OTHERS: quoting someone else. HEAVY_HEDGING: heavily hedged. FUTURE_TIMEFRAME: prediction hasn't matured yet. OTHER: other disqualifying factors.",
+        "Category of failure (null if is_valid is true). BROKEN_EXTRACTION: slices cut through word boundaries or extract nonsensical fragments. VAGUE_GOAL: target is subjective or unmeasurable. PRESENT_STATE: statement about current conditions, not a prediction. NEGATION: prediction is negated. SARCASM: sarcastic/joking tone. QUOTING_OTHERS: quoting someone else. HEAVY_HEDGING: heavily hedged. FUTURE_TIMEFRAME: prediction hasn't matured yet. OTHER: other disqualifying factors.",
     },
     confidence: {
       type: "number",
@@ -346,7 +346,7 @@ export class PredictionVerifier {
         predictionId: string;
         sourceTweetId: bigint;
         conversationId: bigint | null;
-        goal: unknown;
+        target: unknown;
         timeframe: unknown;
         llmConfidence: string;
         vagueness: string | null;
@@ -362,7 +362,7 @@ export class PredictionVerifier {
         predictionId: parsedPredictionSchema.predictionId,
         sourceTweetId: scrapedTweetSchema.id,
         conversationId: scrapedTweetSchema.conversationId,
-        goal: parsedPredictionSchema.goal,
+        target: parsedPredictionSchema.target,
         timeframe: parsedPredictionSchema.timeframe,
         llmConfidence: parsedPredictionSchema.llmConfidence,
         vagueness: parsedPredictionSchema.vagueness,
@@ -635,13 +635,13 @@ export class PredictionVerifier {
    */
   private async generateVerdict(
     context: string,
-    goalText: string,
+    targetText: string,
     timeframeText: string,
     timeframeResult: TimeframeExtractionResult,
   ): Promise<VerdictResult> {
     const inputData = {
       context,
-      goal_text: goalText,
+      target_text: targetText,
       timeframe_text: timeframeText,
       timeframe_parsed: {
         start_utc: timeframeResult.start_utc,
@@ -734,9 +734,9 @@ export class PredictionVerifier {
    * Calls OpenRouter API to validate filter extraction quality.
    */
   private async validateFilterExtraction(
-    goalText: string,
+    targetText: string,
     timeframeText: string,
-    goalSlices: PostSlice[],
+    targetSlices: PostSlice[],
     timeframeSlices: PostSlice[],
     tweets: PredictionTweet[],
     timeframeResult: TimeframeExtractionResult,
@@ -748,11 +748,11 @@ export class PredictionVerifier {
       text: t.text,
     }));
 
-    const goalSlicesFormatted = goalSlices.map((slice) => ({
+    const targetSlicesFormatted = targetSlices.map((slice) => ({
       tweet_id: slice.source.tweet_id,
       start: slice.start,
       end: slice.end,
-      text: goalText,
+      text: targetText,
     }));
 
     const timeframeSlicesFormatted = timeframeSlices.map((slice) => ({
@@ -765,7 +765,7 @@ export class PredictionVerifier {
     const inputData = {
       current_date: new Date().toISOString(),
       thread_tweets: threadTweets,
-      goal_slices: goalSlicesFormatted,
+      target_slices: targetSlicesFormatted,
       timeframe_slices: timeframeSlicesFormatted,
       timeframe_parsed: {
         start_utc: timeframeResult.start_utc,
@@ -836,7 +836,7 @@ export class PredictionVerifier {
    * Calls OpenRouter API to extract structured timeframe data from prediction text.
    */
   private async extractTimeframe(
-    goalText: string,
+    targetText: string,
     timeframeText: string,
     tweetTimestamp: Date,
     tweets: PredictionTweet[],
@@ -855,7 +855,7 @@ export class PredictionVerifier {
 
     const inputData = {
       timeframe_text: timeframeText,
-      goal_text: goalText,
+      target_text: targetText,
       tweet_timestamp: tweetTimestamp.toISOString(),
       current_time: currentTime,
       thread_context: threadContext,
@@ -1094,20 +1094,20 @@ export class PredictionVerifier {
     });
 
     const tweetMap = new Map(tweets.map((t) => [t.id, t]));
-    const goal = prediction.goal as PostSlice[];
+    const target = prediction.target as PostSlice[];
     const timeframe = prediction.timeframe as PostSlice[];
 
-    const goalValidation = this.validatePostSlices(goal, tweetMap, "Goal");
-    if (!goalValidation.valid) {
-      logInfo("Goal slices validation failed", {
-        failureCause: goalValidation.failureCause,
+    const targetValidation = this.validatePostSlices(target, tweetMap, "Target");
+    if (!targetValidation.valid) {
+      logInfo("Target slices validation failed", {
+        failureCause: targetValidation.failureCause,
       });
       await this.storeFeedback(
         tx,
         prediction.id,
         "slice_validation",
-        goalValidation.message ?? "Goal slices validation failed",
-        goalValidation.failureCause,
+        targetValidation.message ?? "Target slices validation failed",
+        targetValidation.failureCause,
       );
       return true;
     }
@@ -1133,13 +1133,13 @@ export class PredictionVerifier {
 
     logInfo("PostSlices validated successfully");
 
-    const goalText = this.extractSliceText(goal, tweetMap);
+    const targetText = this.extractSliceText(target, tweetMap);
     const timeframeText = this.extractSliceText(timeframe, tweetMap);
 
     logInfo("Extracted slice text", {
-      goalLength: goalText.length,
+      targetLength: targetText.length,
       timeframeLength: timeframeText.length,
-      goal: goalText,
+      target: targetText,
       timeframe: timeframeText,
     });
 
@@ -1150,7 +1150,7 @@ export class PredictionVerifier {
     }
 
     const timeframeResult = await this.extractTimeframe(
-      goalText,
+      targetText,
       timeframeText,
       sourceTweet.date,
       tweets,
@@ -1206,9 +1206,9 @@ export class PredictionVerifier {
     }
 
     const validationResult = await this.validateFilterExtraction(
-      goalText,
+      targetText,
       timeframeText,
-      goal,
+      target,
       timeframe,
       tweets,
       timeframeResult,
@@ -1243,7 +1243,7 @@ export class PredictionVerifier {
 
     const verdictResult = await this.generateVerdict(
       validationResult.context,
-      goalText,
+      targetText,
       timeframeText,
       timeframeResult,
     );

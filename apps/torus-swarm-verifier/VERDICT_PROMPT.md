@@ -2,9 +2,9 @@
 
 ## Goal
 
-Determine if a prediction came true by searching for evidence and checking if the goal was achieved within the specified timeframe.
+Determine if a prediction came true by searching for evidence and checking if the target was achieved within the specified timeframe.
 
-**CRITICAL: This must be a PREDICTION, not NEWS reporting.** If the goal was already true or was news BEFORE the prediction was made (before start_utc), the prediction is INVALID and must return verdict: false.
+**CRITICAL: This must be a PREDICTION, not NEWS reporting.** If the target was already true or was news BEFORE the prediction was made (before start_utc), the prediction is INVALID and must return verdict: false.
 
 ## Inputs
 
@@ -13,7 +13,7 @@ You will receive:
 ```json
 {
   "context": "Author is making a confident price prediction for Bitcoin reaching 100k by end of Q1 2025.",
-  "goal_text": "BTC will hit 100k",
+  "target_text": "BTC will hit 100k",
   "timeframe_text": "by end of Q1 2025",
   "timeframe_parsed": {
     "start_utc": "2024-11-15T12:00:00Z",
@@ -25,7 +25,7 @@ You will receive:
 
 ## Task
 
-Search the web for evidence and determine if the goal was achieved within the timeframe.
+Search the web for evidence and determine if the target was achieved within the timeframe.
 
 **Critical Instructions:**
 
@@ -37,8 +37,8 @@ Search the web for evidence and determine if the goal was achieved within the ti
    - If this is a self-announcement, valid MUST be false
 
 2. **Check if this was NEWS, not a prediction:**
-   - Search for evidence that the goal was ALREADY TRUE before start_utc
-   - If the goal was achieved, announced, or reported BEFORE the prediction was made, verdict MUST be false
+   - Search for evidence that the target was ALREADY TRUE before start_utc
+   - If the target was achieved, announced, or reported BEFORE the prediction was made, verdict MUST be false
    - Example: Tweet says "BTC will hit 100k by March" on Jan 15, but BTC already hit 100k on Jan 10
    - This disqualifies the "prediction" as it's just reporting existing news
 
@@ -75,7 +75,7 @@ Return ONLY valid JSON (no markdown fences):
 **When to set valid=false:**
 
 - Author is announcing their own actions/plans (self-announcement, not a prediction)
-- Goal was already achieved/announced BEFORE start_utc (this was news, not a prediction)
+- Target was already achieved/announced BEFORE start_utc (this was news, not a prediction)
 - When valid=false, verdict should also be false
 
 ## Examples
@@ -87,7 +87,7 @@ Return ONLY valid JSON (no markdown fences):
 ```json
 {
   "context": "Price prediction for Bitcoin.",
-  "goal_text": "BTC will hit 100k",
+  "target_text": "BTC will hit 100k",
   "timeframe_text": "by end of Q1 2025",
   "timeframe_parsed": {
     "start_utc": "2024-11-15T12:00:00Z",
@@ -114,7 +114,7 @@ Return ONLY valid JSON (no markdown fences):
 ```json
 {
   "context": "Price prediction for Bitcoin.",
-  "goal_text": "BTC will hit 100k",
+  "target_text": "BTC will hit 100k",
   "timeframe_text": "by end of Q1 2025",
   "timeframe_parsed": {
     "start_utc": "2024-11-15T12:00:00Z",
@@ -141,7 +141,7 @@ Return ONLY valid JSON (no markdown fences):
 ```json
 {
   "context": "Price prediction for Bitcoin.",
-  "goal_text": "BTC will hit 100k",
+  "target_text": "BTC will hit 100k",
   "timeframe_text": "by end of Q1 2025",
   "timeframe_parsed": {
     "start_utc": "2024-11-15T12:00:00Z",
@@ -195,7 +195,7 @@ Return ONLY valid JSON (no markdown fences):
 ```json
 {
   "context": "Author claiming Bitcoin will hit 100k by end of month.",
-  "goal_text": "BTC will hit 100k",
+  "target_text": "BTC will hit 100k",
   "timeframe_text": "by end of January",
   "timeframe_parsed": {
     "start_utc": "2025-01-15T10:30:00Z",

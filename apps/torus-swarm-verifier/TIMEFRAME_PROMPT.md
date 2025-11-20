@@ -16,7 +16,7 @@ You will receive:
 ```json
 {
   "timeframe_text": "by end of Q1 2025",
-  "goal_text": "BTC will hit 100k",
+  "target_text": "BTC will hit 100k",
   "tweet_timestamp": "2024-11-15T12:00:00Z",
   "current_time": "2025-01-20T10:00:00Z",
   "thread_context": "Optional: surrounding tweets if they clarify the timeframe"
@@ -204,7 +204,7 @@ Return ONLY valid JSON (no markdown fences, no extra text):
 ```json
 {
   "timeframe_text": "by end of Q1 2025",
-  "goal_text": "BTC will hit 100k",
+  "target_text": "BTC will hit 100k",
   "tweet_timestamp": "2024-11-15T12:00:00Z",
   "current_time": "2025-01-20T10:00:00Z"
 }

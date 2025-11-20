@@ -19,7 +19,7 @@ You will receive:
       "text": "Full tweet text here"
     }
   ],
-  "goal_slices": [
+  "target_slices": [
     {
       "tweet_id": "123456789",
       "start": 0,
@@ -58,17 +58,17 @@ Before evaluating the prediction content, verify the filter didn't create broken
 
 2. **Semantic validity of extracted text**: Does the extracted text make sense in isolation?
    - Is the timeframe slice actually a temporal expression? (not just random word fragments)
-   - Is the goal slice actually a predictive statement? (not just disconnected fragments)
+   - Is the target slice actually a predictive statement? (not just disconnected fragments)
    - If extractions are nonsensical or fragments, mark as invalid with `failure_cause: "broken_extraction"`
 
 **Then check for disqualifying factors:**
 
-1. **Vague or unmeasurable goals**:
+1. **Vague or unmeasurable targets**:
    - Subjective outcomes: "will be wild", "will be grim", "will be good/bad"
    - No clear success criteria: "will have consequences", "will impact X"
    - Abstract philosophical statements: "the West in decline", "the East ascendant"
    - Cannot objectively verify if it happened
-   - Note: Conditionals with specific, measurable outcomes are VALID. Only reject if the goal itself is vague.
+   - Note: Conditionals with specific, measurable outcomes are VALID. Only reject if the target itself is vague.
 
 2. **Present-state commentary** (NOT predictions):
    - Describing current conditions: "we already face", "things are now"
@@ -93,7 +93,7 @@ Return ONLY valid JSON (no markdown fences):
 {
   "context": "Brief summary of what the thread is about and what the author was saying",
   "is_valid": true | false,
-  "failure_cause": "BROKEN_EXTRACTION" | "VAGUE_GOAL" | "PRESENT_STATE" | "NEGATION" | "SARCASM" | "QUOTING_OTHERS" | "HEAVY_HEDGING" | "FUTURE_TIMEFRAME" | "OTHER" | null,
+  "failure_cause": "BROKEN_EXTRACTION" | "VAGUE_TARGET" | "PRESENT_STATE" | "NEGATION" | "SARCASM" | "QUOTING_OTHERS" | "HEAVY_HEDGING" | "FUTURE_TIMEFRAME" | "OTHER" | null,
   "confidence": 0.95,
   "reasoning": "Explanation of why this is or isn't a valid prediction"
 }
@@ -105,7 +105,7 @@ Return ONLY valid JSON (no markdown fences):
 - `is_valid`: Boolean indicating if this is a valid prediction
 - `failure_cause`: Category of failure (null if is_valid is true). Must be one of:
   - `"BROKEN_EXTRACTION"`: Slices cut through word boundaries or extract nonsensical fragments
-  - `"VAGUE_GOAL"`: Goal is subjective, unmeasurable, or has no clear success criteria
+  - `"VAGUE_TARGET"`: Target is subjective, unmeasurable, or has no clear success criteria
   - `"PRESENT_STATE"`: Statement about current conditions, not a future prediction
   - `"NEGATION"`: Prediction is negated ("I don't think", "won't", "unlikely")
   - `"SARCASM"`: Sarcastic or joking tone ("lol", "lmao", emojis)
@@ -130,7 +130,7 @@ Return ONLY valid JSON (no markdown fences):
       "text": "I'm calling it now: BTC will hit 100k by end of Q1 2025. Screenshot this."
     }
   ],
-  "goal_slices": [{ "text": "BTC will hit 100k" }],
+  "target_slices": [{ "text": "BTC will hit 100k" }],
   "timeframe_slices": [{ "text": "by end of Q1 2025" }],
   "timeframe_parsed": {
     "start_utc": "2025-01-15T14:30:00Z",
@@ -164,7 +164,7 @@ Return ONLY valid JSON (no markdown fences):
       "text": "@vgr My critique is deeper than \"Metaverse Wikipedia will beat Metaverse Encyclopedia Britannica\". It's that we don't really know the definition of \"the metaverse\" yet, it's far too early to know what people actually want. So anything Facebook creates now will misfire."
     }
   ],
-  "goal_slices": [
+  "target_slices": [
     {
       "tweet_id": "123456789",
       "start": 180,
@@ -209,7 +209,7 @@ Return ONLY valid JSON (no markdown fences):
   "thread_tweets": [
     { "text": "I don't think BTC will hit 100k by end of Q1 tbh" }
   ],
-  "goal_slices": [{ "text": "BTC will hit 100k" }],
+  "target_slices": [{ "text": "BTC will hit 100k" }],
   "timeframe_slices": [{ "text": "by end of Q1" }],
   "timeframe_parsed": {
     "start_utc": "2025-01-15T00:00:00Z",
@@ -240,7 +240,7 @@ Return ONLY valid JSON (no markdown fences):
   "thread_tweets": [
     { "text": "Yeah BTC will totally hit 100k by next week lmaooo 🤡" }
   ],
-  "goal_slices": [{ "text": "BTC will totally hit 100k" }],
+  "target_slices": [{ "text": "BTC will totally hit 100k" }],
   "timeframe_slices": [{ "text": "by next week" }],
   "timeframe_parsed": {
     "start_utc": "2025-01-20T00:00:00Z",
@@ -261,7 +261,7 @@ Return ONLY valid JSON (no markdown fences):
 }
 ```
 
-### Example 4: Invalid - Vague Goal
+### Example 4: Invalid - Vague Target
 
 **Input:**
 
@@ -269,7 +269,7 @@ Return ONLY valid JSON (no markdown fences):
 {
   "current_date": "2025-04-15T00:00:00Z",
   "thread_tweets": [{ "text": "VR will be wild by end of Q1 2025" }],
-  "goal_slices": [{ "text": "VR will be wild" }],
+  "target_slices": [{ "text": "VR will be wild" }],
   "timeframe_slices": [{ "text": "by end of Q1 2025" }],
   "timeframe_parsed": {
     "start_utc": "2025-01-20T00:00:00Z",
@@ -284,7 +284,7 @@ Return ONLY valid JSON (no markdown fences):
 {
   "context": "Author is making a vague prediction about VR technology becoming 'wild'.",
   "is_valid": false,
-  "failure_cause": "VAGUE_GOAL",
+  "failure_cause": "VAGUE_TARGET",
   "confidence": 0.95,
   "reasoning": "'Wild' is subjective with no clear success criteria. How would we objectively verify if VR became 'wild'? There's no measurable outcome to check. This is an opinion statement, not a verifiable prediction."
 }
@@ -302,7 +302,7 @@ Return ONLY valid JSON (no markdown fences):
       "text": "We already face a combination of supply chain disruptions and soaring prices for masks"
     }
   ],
-  "goal_slices": [{ "text": "supply chain disruptions" }],
+  "target_slices": [{ "text": "supply chain disruptions" }],
   "timeframe_slices": [{ "text": "already" }],
   "timeframe_parsed": {
     "start_utc": "2020-03-22T14:30:00Z",
@@ -333,7 +333,7 @@ Return ONLY valid JSON (no markdown fences):
   "thread_tweets": [
     { "text": "If BTC breaks $95k resistance, it will hit $100k within a week" }
   ],
-  "goal_slices": [{ "text": "it will hit $100k" }],
+  "target_slices": [{ "text": "it will hit $100k" }],
   "timeframe_slices": [{ "text": "within a week" }],
   "timeframe_parsed": {
     "start_utc": "2025-01-20T00:00:00Z",
@@ -364,7 +364,7 @@ Return ONLY valid JSON (no markdown fences):
   "thread_tweets": [
     { "text": "BTC will hit 100k by end of 2026. Mark my words!" }
   ],
-  "goal_slices": [{ "text": "BTC will hit 100k" }],
+  "target_slices": [{ "text": "BTC will hit 100k" }],
   "timeframe_slices": [{ "text": "by end of 2026" }],
   "timeframe_parsed": {
     "start_utc": "2025-01-20T00:00:00Z",

@@ -36,7 +36,7 @@ export interface VerdictContext {
 interface RawPrediction {
   predictionId: string;
   parsedId: string;
-  goal: PostSlice[];
+  target: PostSlice[];
   timeframe: PostSlice[];
   llmConfidence: string;
   vagueness: string | null;
@@ -88,7 +88,7 @@ export interface GroupedTweet {
   predictions: {
     parsedId: string;
     predictionId: string;
-    goal: PostSlice[];
+    target: PostSlice[];
     timeframe: PostSlice[];
     llmConfidence: string;
     vagueness: string | null;
@@ -206,7 +206,7 @@ async function groupPredictionsByTweet(
     groupedByTweet[tweetId].predictions.push({
       parsedId: pred.parsedId,
       predictionId: pred.predictionId,
-      goal: pred.goal,
+      target: pred.target,
       timeframe: pred.timeframe,
       llmConfidence: pred.llmConfidence,
       vagueness: pred.vagueness,
@@ -272,7 +272,7 @@ export const predictionRouter = {
         .select({
           predictionId: parsedPredictionSchema.predictionId,
           parsedId: parsedPredictionSchema.id,
-          goal: parsedPredictionSchema.goal,
+          target: parsedPredictionSchema.target,
           timeframe: parsedPredictionSchema.timeframe,
           llmConfidence: parsedPredictionSchema.llmConfidence,
           vagueness: parsedPredictionSchema.vagueness,
@@ -388,7 +388,7 @@ export const predictionRouter = {
 
           // Parsed prediction data
           parsedId: parsedPredictionSchema.id,
-          goal: parsedPredictionSchema.goal,
+          target: parsedPredictionSchema.target,
           timeframe: parsedPredictionSchema.timeframe,
           llmConfidence: parsedPredictionSchema.llmConfidence,
           vagueness: parsedPredictionSchema.vagueness,
@@ -604,7 +604,7 @@ export const predictionRouter = {
         .select({
           predictionId: parsedPredictionSchema.predictionId,
           parsedId: parsedPredictionSchema.id,
-          goal: parsedPredictionSchema.goal,
+          target: parsedPredictionSchema.target,
           timeframe: parsedPredictionSchema.timeframe,
           llmConfidence: parsedPredictionSchema.llmConfidence,
           vagueness: parsedPredictionSchema.vagueness,
@@ -732,7 +732,7 @@ export const predictionRouter = {
         .select({
           predictionId: predictionSchema.id,
           parsedId: parsedPredictionSchema.id,
-          goal: parsedPredictionSchema.goal,
+          target: parsedPredictionSchema.target,
           timeframe: parsedPredictionSchema.timeframe,
           llmConfidence: parsedPredictionSchema.llmConfidence,
           vagueness: parsedPredictionSchema.vagueness,
@@ -995,7 +995,7 @@ export const predictionRouter = {
 
           // Parsed prediction data
           parsedId: parsedPredictionSchema.id,
-          goal: parsedPredictionSchema.goal,
+          target: parsedPredictionSchema.target,
           timeframe: parsedPredictionSchema.timeframe,
           llmConfidence: parsedPredictionSchema.llmConfidence,
           vagueness: parsedPredictionSchema.vagueness,

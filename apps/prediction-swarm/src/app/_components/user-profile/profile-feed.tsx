@@ -53,7 +53,7 @@ interface ProfileFeedProps {
 }
 
 /**
- * Highlights goal and timeframe portions in the tweet text for multiple predictions
+ * Highlights target and timeframe portions in the tweet text for multiple predictions
  * Only highlights slices that belong to the specified tweet
  */
 function highlightTweetText(
@@ -63,10 +63,10 @@ function highlightTweetText(
   allPredictions: GroupedTweetData["predictions"],
 ): React.ReactNode {
   const tweetIdStr = tweetId.toString();
-  const { goal, timeframe } = activePrediction;
+  const { target, timeframe } = activePrediction;
 
   // Filter slices to only those belonging to this tweet
-  const goalSlices = goal.filter((s) => s.source.tweet_id === tweetIdStr);
+  const targetSlices = target.filter((s) => s.source.tweet_id === tweetIdStr);
   const timeframeSlices = timeframe.filter(
     (s) => s.source.tweet_id === tweetIdStr,
   );
@@ -79,12 +79,12 @@ function highlightTweetText(
   const markers: {
     pos: number;
     type: "start" | "end";
-    style: "goal" | "timeframe" | "inactive";
+    style: "target" | "timeframe" | "inactive";
   }[] = [];
 
-  // Add inactive prediction goals (gray highlights) - only for this tweet
+  // Add inactive prediction targets (gray highlights) - only for this tweet
   inactivePredictions.forEach((pred) => {
-    pred.goal
+    pred.target
       .filter((s) => s.source.tweet_id === tweetIdStr)
       .forEach((s) => {
         markers.push({ pos: s.start, type: "start", style: "inactive" });
@@ -92,10 +92,10 @@ function highlightTweetText(
       });
   });
 
-  // Add active prediction goal (orange highlights)
-  goalSlices.forEach((s) => {
-    markers.push({ pos: s.start, type: "start", style: "goal" });
-    markers.push({ pos: s.end, type: "end", style: "goal" });
+  // Add active prediction target (orange highlights)
+  targetSlices.forEach((s) => {
+    markers.push({ pos: s.start, type: "start", style: "target" });
+    markers.push({ pos: s.end, type: "end", style: "target" });
   });
 
   // Only add timeframe markers if they have actual text content
@@ -167,7 +167,7 @@ function highlightTweetText(
           parts.push(
             <span
               className="bg-primary/20 text-primary"
-              key={`bracket-goal-${idx}`}
+              key={`bracket-target-${idx}`}
             >
               {bracket}
             </span>,
@@ -188,7 +188,7 @@ function highlightTweetText(
           parts.push(
             <span
               className="bg-primary/20 text-primary"
-              key={`bracket-goal-close-${idx}`}
+              key={`bracket-target-close-${idx}`}
             >
               {bracket}
             </span>,
@@ -198,7 +198,7 @@ function highlightTweetText(
         }
       }
     } else {
-      // goal marker
+      // target marker
       if (marker.type === "start") {
         inGoal = true;
       } else {

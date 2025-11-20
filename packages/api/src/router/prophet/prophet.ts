@@ -505,7 +505,7 @@ export const prophetRouter = {
               predictionId,
               topicId,
               filterAgentId: agentAddress,
-              goal: item.prediction.goal,
+              target: item.prediction.target,
               timeframe: item.prediction.timeframe,
               predictionQuality: item.prediction.predictionQuality,
               briefRationale: item.prediction.briefRationale,

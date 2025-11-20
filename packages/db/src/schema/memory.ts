@@ -164,7 +164,7 @@ export const parsedPredictionSchema = createTable(
       .references((): AnyPgColumn => predictionSchema.id, {
         onDelete: "cascade",
       }),
-    goal: jsonb("goal").$type<PostSlice[]>().notNull(),
+    target: jsonb("target").$type<PostSlice[]>().notNull(),
     timeframe: jsonb("timeframe").$type<PostSlice[]>().notNull(),
     topicId: uuidv7("topic_id")
       .notNull()
@@ -334,7 +334,7 @@ export const failureCauseEnum = pgEnum("failure_cause_enum", [
   "FUTURE_TIMEFRAME",
   "MISSING_TIMEFRAME",
   "BROKEN_EXTRACTION",
-  "VAGUE_GOAL",
+  "VAGUE_TARGET",
   "PRESENT_STATE",
   "OTHER",
   "EVENT_TRIGGER",

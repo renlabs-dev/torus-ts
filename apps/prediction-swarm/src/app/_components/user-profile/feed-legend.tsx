@@ -42,7 +42,7 @@ export function FeedLegend() {
               </p>
             </TooltipContent>
           </Tooltip>
-          {/* Prediction Goal */}
+          {/* Prediction Target */}
           <Tooltip>
             <TooltipTrigger asChild>
               <div className="flex cursor-help items-center gap-2">
@@ -54,7 +54,7 @@ export function FeedLegend() {
             </TooltipTrigger>
             <TooltipContent className="bg-background/80 text-white">
               <p className="max-w-xs text-xs">
-                Highlighted portion of the tweet containing the prediction goal.
+                Highlighted portion of the tweet containing the prediction target.
                 This is the main claim being made by the predictor.
               </p>
             </TooltipContent>

@@ -38,7 +38,7 @@ export function createPredictionDataSchema<T extends z.ZodTypeAny>(
   contextSchema: T,
 ) {
   return z.object({
-    goal: z.array(LLMPostSliceSchema).min(1),
+    target: z.array(LLMPostSliceSchema).min(1),
     timeframe: z.array(LLMPostSliceSchema).min(1),
     topicName: z.string().min(1),
     predictionQuality: z.number().int().min(0).max(100),

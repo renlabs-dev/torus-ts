@@ -271,7 +271,7 @@ export class PredictionExtractor {
     }
 
     // Transform LLM text slices to database format with character indices
-    const goal = transformToPostSliceArray(predictionData.goal, tweetTexts);
+    const target = transformToPostSliceArray(predictionData.target, tweetTexts);
     const timeframe = transformToPostSliceArray(
       predictionData.timeframe,
       tweetTexts,
@@ -288,7 +288,7 @@ export class PredictionExtractor {
     return {
       tweetId: mainTweet.id,
       prediction: {
-        goal,
+        target,
         timeframe,
         topicName: topic,
         predictionQuality: predictionData.predictionQuality,

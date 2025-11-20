@@ -21,7 +21,6 @@ import { assert } from "tsafe";
 import { z, ZodError } from "zod";
 import type { SessionData } from "./auth";
 import { decodeSessionToken } from "./auth";
-import { getPermissionCache } from "./services/permission-cache";
 
 let globalDb: ReturnType<typeof createDb> | null = null;
 let globalWsApi: ApiPromise | null = null;

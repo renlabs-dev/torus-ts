@@ -94,7 +94,7 @@ export const scraperQueueRouter = {
         sql`
           SELECT COUNT(DISTINCT pp.id)::int AS count
           FROM parsed_prediction pp
-          INNER JOIN scraped_tweet st ON CAST(CAST(pp.goal AS jsonb)->0->'source'->>'tweet_id' AS BIGINT) = st.id
+          INNER JOIN scraped_tweet st ON CAST(CAST(pp.target AS jsonb)->0->'source'->>'tweet_id' AS BIGINT) = st.id
           LEFT JOIN verdict v ON v.parsed_prediction_id = pp.id
           WHERE st.author_id = ${userId} AND v.id IS NULL
         `,
