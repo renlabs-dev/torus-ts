@@ -25,7 +25,7 @@ import { Flag, Loader2 } from "lucide-react";
 import { useState } from "react";
 
 interface PredictionReportDialogProps {
-  predictionId: string;
+  parsedPredictionId: string;
   trigger?: React.ReactNode;
 }
 
@@ -36,7 +36,7 @@ const REPORT_TYPES = [
 ] as const;
 
 export function PredictionReportDialog({
-  predictionId,
+  parsedPredictionId,
   trigger,
 }: PredictionReportDialogProps) {
   const [open, setOpen] = useState(false);
@@ -76,7 +76,7 @@ export function PredictionReportDialog({
     }
 
     createReport.mutate({
-      predictionId,
+      parsedPredictionId,
       reportType: reportType as "INACCURACY" | "FEEDBACK" | "OTHER",
       content: content || null,
     });

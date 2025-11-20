@@ -523,7 +523,7 @@ export function ProfileFeed({
 
                               <div className="border-border border-t pt-3">
                                 <PredictionReportDialog
-                                  predictionId={activePrediction.predictionId}
+                                  parsedPredictionId={activePrediction.parsedId}
                                 />
                               </div>
                             </div>

@@ -429,16 +429,29 @@ export const reportType = pgEnum("report_type", [
   "OTHER",
 ]);
 
-export const predictionReport = createTable("prediction_report", {
-  id: uuidv7("id").primaryKey(),
+export const predictionReport = createTable(
+  "prediction_report",
+  {
+    id: uuidv7("id").primaryKey(),
 
-  userKey: ss58Address("user_key").notNull(),
-  predictionId: uuidv7("prediction_id").references(() => predictionSchema.id, {
-    onDelete: "cascade",
-  }),
+    userKey: ss58Address("user_key").notNull(),
+    parsedPredictionId: uuidv7("parsed_prediction_id").references(
+      () => parsedPredictionSchema.id,
+      {
+        onDelete: "cascade",
+      },
+    ),
 
-  reportType: reportType("report_type").notNull(),
-  content: text("content"),
+    reportType: reportType("report_type").notNull(),
+    content: text("content"),
 
-  ...timeFields(),
-});
+    ...timeFields(),
+  },
+  (t) => [
+    index("prediction_report_parsed_prediction_id_idx").on(
+      t.parsedPredictionId,
+    ),
+    index("prediction_report_user_key_idx").on(t.userKey),
+    index("prediction_report_report_type_idx").on(t.reportType),
+  ],
+);
