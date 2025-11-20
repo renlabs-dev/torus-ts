@@ -38,3 +38,8 @@ deployment:
         secretKeyRef:
           name: "torus-{{ .Values.environmentName }}-web-apps-secret"
           key: TWITTERAPI_IO_KEY
+    PERMISSION_GRANTOR_ADDRESS:
+      valueFrom:
+        secretKeyRef:
+          name: "torus-{{ .Values.environmentName }}-web-apps-secret"
+          key: PERMISSION_GRANTOR_ADDRESS
