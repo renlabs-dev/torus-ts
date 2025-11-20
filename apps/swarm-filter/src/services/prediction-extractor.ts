@@ -28,7 +28,6 @@ export interface PredictionExtractorConfig {
   topicClassificationClient: LLMClient;
   extractionClient: LLMClient;
   promptLoader: PromptLoader;
-  devMode?: boolean;
 }
 
 type TweetsNextResponse = RouterOutputs["prophet"]["getTweetsNext"];
@@ -50,7 +49,6 @@ export class PredictionExtractor {
   private topicClassificationClient: LLMClient;
   private extractionClient: LLMClient;
   private promptLoader: PromptLoader;
-  private devMode: boolean;
 
   // Public stats for tracking
   public stats = {
@@ -64,7 +62,6 @@ export class PredictionExtractor {
     this.topicClassificationClient = config.topicClassificationClient;
     this.extractionClient = config.extractionClient;
     this.promptLoader = config.promptLoader;
-    this.devMode = config.devMode ?? false;
   }
 
   /**

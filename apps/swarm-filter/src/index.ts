@@ -33,7 +33,6 @@ const getEnv = validateEnvOrExit({
   AUTH_ORIGIN: z.string().default("swarm-filter"),
   BATCH_SIZE: z.coerce.number().int().positive().default(24),
   POLL_INTERVAL_MS: z.coerce.number().int().positive().default(60000), // 1 minute
-  DEV: z.coerce.boolean().default(false),
 });
 
 /**
@@ -76,7 +75,6 @@ async function main() {
     topicClassificationClient,
     extractionClient,
     promptLoader,
-    devMode: env.DEV,
   });
 
   const { cursor: initialCursor } = await withRetry(() => getFilterCursor());

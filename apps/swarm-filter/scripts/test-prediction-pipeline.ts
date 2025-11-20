@@ -370,7 +370,6 @@ async function main() {
     topicClassificationClient,
     extractionClient,
     promptLoader,
-    devMode: false,
   });
 
   // Initialize results tracking
