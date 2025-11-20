@@ -752,7 +752,7 @@ export default function AddAccountStepperDialog({
         <Card className="w-full max-w-3xl border-none bg-transparent p-0 shadow-none">
           <CardHeader className="pb-0">
             {/* Step Indicator */}
-            <div className="flex items-center justify-between">
+            <div className="flex items-start justify-between">
               {steps.map((step) => (
                 <div
                   key={step.id}
