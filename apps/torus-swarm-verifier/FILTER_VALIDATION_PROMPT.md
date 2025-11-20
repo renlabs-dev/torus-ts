@@ -382,7 +382,9 @@ Return ONLY valid JSON (no markdown fences):
       "text": "Florida will ban anyone under 14 owning a social media account from January 2025, deleting existing accounts. The bill was signed today by Governor DeSantis"
     }
   ],
-  "target_slices": [{ "text": "Florida will ban anyone under 14 owning a social media account" }],
+  "target_slices": [
+    { "text": "Florida will ban anyone under 14 owning a social media account" }
+  ],
   "timeframe_slices": [{ "text": "from January 2025" }],
   "timeframe_parsed": {
     "start_utc": "2024-03-25T13:26:00Z",
@@ -415,7 +417,9 @@ Return ONLY valid JSON (no markdown fences):
       "text": "Legendary Counter Strike player S1mple has joined FaZe Clan on a 2-event loan for his highly anticipated return. The Ukrainian champion will compete at IEM Dallas and the BLAST Austin Major 2025"
     }
   ],
-  "target_slices": [{ "text": "S1mple will compete at IEM Dallas and the BLAST Austin Major" }],
+  "target_slices": [
+    { "text": "S1mple will compete at IEM Dallas and the BLAST Austin Major" }
+  ],
   "timeframe_slices": [{ "text": "2025" }],
   "timeframe_parsed": {
     "start_utc": "2025-05-05T10:20:00Z",
@@ -659,7 +663,11 @@ Return ONLY valid JSON (no markdown fences):
       "text": "Could @DisguisedToast be the next big Twitch streamer to leave the platform? 👀"
     }
   ],
-  "target_slices": [{ "text": "@DisguisedToast be the next big Twitch streamer to leave the platform" }],
+  "target_slices": [
+    {
+      "text": "@DisguisedToast be the next big Twitch streamer to leave the platform"
+    }
+  ],
   "timeframe_slices": [{ "text": "next" }],
   "timeframe_parsed": {
     "start_utc": "2019-11-20T23:09:00Z",
@@ -731,7 +739,9 @@ Return ONLY valid JSON (no markdown fences):
       "text": "LoL shoutcaster claims that favorite team to win #Worlds2019 'will get exploited.'"
     }
   ],
-  "target_slices": [{ "text": "favorite team to win #Worlds2019 will get exploited" }],
+  "target_slices": [
+    { "text": "favorite team to win #Worlds2019 will get exploited" }
+  ],
   "timeframe_slices": [{ "text": "#Worlds2019" }],
   "timeframe_parsed": {
     "start_utc": "2019-08-28T05:40:00Z",

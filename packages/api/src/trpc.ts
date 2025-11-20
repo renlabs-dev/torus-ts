@@ -32,7 +32,10 @@ const getEnv = validateEnvOrExit({
     .nonempty("TORUS_CURATOR_MNEMONIC is required"),
   NEXT_PUBLIC_PREDICTION_APP_ADDRESS: z
     .string()
-    .min(1, "NEXT_PUBLIC_PREDICTION_APP_ADDRESS is required for credit purchases")
+    .min(
+      1,
+      "NEXT_PUBLIC_PREDICTION_APP_ADDRESS is required for credit purchases",
+    )
     .transform((val) => checkSS58(val)),
   TWITTERAPI_IO_KEY: z.string().min(1, "TWITTERAPI_IO_KEY is required"),
   PERMISSION_GRANTOR_ADDRESS: z
