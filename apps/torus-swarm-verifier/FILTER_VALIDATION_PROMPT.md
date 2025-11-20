@@ -63,27 +63,43 @@ Before evaluating the prediction content, verify the filter didn't create broken
 
 **Then check for disqualifying factors:**
 
-1. **Vague or unmeasurable targets**:
+1. **Self-announcements** (NOT predictions):
+   - Author announcing their OWN actions, plans, decisions, or products
+   - Examples: Company announcing product release, artist announcing tour, athlete announcing retirement
+   - Includes both obvious ("I'm releasing X") and subtle ("And now I get to tour America??") announcements
+   - Check if the author is the same entity that controls the outcome
+   - Company accounts (e.g., @McDonalds, @Apple, @Tesla) announcing their own products/services
+   - Support staff announcing personal actions to specific users (e.g., "you will receive an email")
+   - The author must be predicting something OUTSIDE their control
+
+2. **Personal or local actions** (NOT publicly verifiable predictions):
+   - Actions directed at specific individuals, not general public events
+   - Examples: "you will receive an email", "we'll send you a refund", "I'll reply to your DM"
+   - Customer service responses about individual cases
+   - Cannot be objectively verified by third parties
+   - If it's a private interaction or personal action, it's not a prediction
+
+3. **Vague or unmeasurable targets**:
    - Subjective outcomes: "will be wild", "will be grim", "will be good/bad"
    - No clear success criteria: "will have consequences", "will impact X"
    - Abstract philosophical statements: "the West in decline", "the East ascendant"
    - Cannot objectively verify if it happened
    - Note: Conditionals with specific, measurable outcomes are VALID. Only reject if the target itself is vague.
 
-2. **Present-state commentary** (NOT predictions):
+4. **Present-state commentary** (NOT predictions):
    - Describing current conditions: "we already face", "things are now"
    - Ongoing analysis of existing situations
    - If it's about what IS rather than what WILL BE, it's not a prediction
 
-3. **Negation**: "I don't think", "won't", "unlikely"
+5. **Negation**: "I don't think", "won't", "unlikely"
 
-4. **Sarcasm**: "lol", "lmao", emojis, "yeah right"
+6. **Sarcasm**: "lol", "lmao", emojis, "yeah right"
 
-5. **Quoting others**: Author quoting someone else's view
+7. **Quoting others**: Author quoting someone else's view
 
-6. **Heavy hedging**: "maybe", "possibly", "could"
+8. **Heavy hedging**: "maybe", "possibly", "could"
 
-7. **Future timeframe**: Prediction end_utc is AFTER current_date (not yet mature for verification)
+9. **Future timeframe**: Prediction end_utc is AFTER current_date (not yet mature for verification)
 
 ## Output Format
 
@@ -93,7 +109,7 @@ Return ONLY valid JSON (no markdown fences):
 {
   "context": "Brief summary of what the thread is about and what the author was saying",
   "is_valid": true | false,
-  "failure_cause": "BROKEN_EXTRACTION" | "VAGUE_TARGET" | "PRESENT_STATE" | "NEGATION" | "SARCASM" | "QUOTING_OTHERS" | "HEAVY_HEDGING" | "FUTURE_TIMEFRAME" | "OTHER" | null,
+  "failure_cause": "BROKEN_EXTRACTION" | "SELF_ANNOUNCEMENT" | "PERSONAL_ACTION" | "VAGUE_TARGET" | "PRESENT_STATE" | "NEGATION" | "SARCASM" | "QUOTING_OTHERS" | "HEAVY_HEDGING" | "FUTURE_TIMEFRAME" | "OTHER" | null,
   "confidence": 0.95,
   "reasoning": "Explanation of why this is or isn't a valid prediction"
 }
@@ -105,6 +121,8 @@ Return ONLY valid JSON (no markdown fences):
 - `is_valid`: Boolean indicating if this is a valid prediction
 - `failure_cause`: Category of failure (null if is_valid is true). Must be one of:
   - `"BROKEN_EXTRACTION"`: Slices cut through word boundaries or extract nonsensical fragments
+  - `"SELF_ANNOUNCEMENT"`: Author announcing their own actions/products (not a prediction)
+  - `"PERSONAL_ACTION"`: Local/personal actions directed at individuals, not publicly verifiable
   - `"VAGUE_TARGET"`: Target is subjective, unmeasurable, or has no clear success criteria
   - `"PRESENT_STATE"`: Statement about current conditions, not a future prediction
   - `"NEGATION"`: Prediction is negated ("I don't think", "won't", "unlikely")
@@ -382,5 +400,77 @@ Return ONLY valid JSON (no markdown fences):
   "failure_cause": "FUTURE_TIMEFRAME",
   "confidence": 1.0,
   "reasoning": "While this is a valid prediction, the timeframe ends on 2026-12-31 which is after the current date of 2025-01-20. Prediction has not matured yet and cannot be verified."
+}
+```
+
+### Example 8: Invalid - Self-Announcement
+
+**Input:**
+
+```json
+{
+  "current_date": "2025-04-15T00:00:00Z",
+  "thread_tweets": [
+    {
+      "tweet_id": "123456789",
+      "author": "@McDonalds",
+      "date": "2024-10-25T17:46:00Z",
+      "text": "@SoulsofMystery hey Billy! yes, surely, the Nether Sauce will be available starting April 1st, 2025."
+    }
+  ],
+  "target_slices": [{ "text": "the Nether Sauce will be available" }],
+  "timeframe_slices": [{ "text": "starting April 1st, 2025" }],
+  "timeframe_parsed": {
+    "start_utc": "2024-10-25T17:46:00Z",
+    "end_utc": "2025-04-01T23:59:59Z"
+  }
+}
+```
+
+**Output:**
+
+```json
+{
+  "context": "McDonald's official account is responding to a customer inquiry about when a new sauce product will be available.",
+  "is_valid": false,
+  "failure_cause": "SELF_ANNOUNCEMENT",
+  "confidence": 0.99,
+  "reasoning": "This is McDonald's (@McDonalds) announcing their own product release date. The company controls when they release the Nether Sauce, so this is not a prediction about an uncertain future event - it's a company announcement of their own plans. Self-announcements are not predictions."
+}
+```
+
+### Example 9: Invalid - Personal Action
+
+**Input:**
+
+```json
+{
+  "current_date": "2025-04-15T00:00:00Z",
+  "thread_tweets": [
+    {
+      "tweet_id": "987654321",
+      "author": "@McDonalds",
+      "date": "2025-03-10T14:20:00Z",
+      "text": "@JohnDoe123 We're sorry to hear that! Our team will send you an email within 24 hours to resolve this issue."
+    }
+  ],
+  "target_slices": [{ "text": "Our team will send you an email" }],
+  "timeframe_slices": [{ "text": "within 24 hours" }],
+  "timeframe_parsed": {
+    "start_utc": "2025-03-10T14:20:00Z",
+    "end_utc": "2025-03-11T14:20:00Z"
+  }
+}
+```
+
+**Output:**
+
+```json
+{
+  "context": "McDonald's customer service responding to a specific user's complaint, promising to send them an email.",
+  "is_valid": false,
+  "failure_cause": "PERSONAL_ACTION",
+  "confidence": 0.98,
+  "reasoning": "This is a customer service response about a personal action directed at a specific individual (@JohnDoe123). The statement 'will send you an email' is a private interaction between the company and one user. This is not a publicly verifiable prediction - no third party can verify whether this specific user received an email. Personal actions and individual customer service interactions are not predictions."
 }
 ```

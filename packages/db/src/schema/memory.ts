@@ -337,6 +337,8 @@ export const failureCauseEnum = pgEnum("failure_cause_enum", [
   "BROKEN_EXTRACTION",
   "VAGUE_TARGET",
   "PRESENT_STATE",
+  "SELF_ANNOUNCEMENT",
+  "PERSONAL_ACTION",
   "OTHER",
   "EVENT_TRIGGER",
   "EMPTY_SLICES",

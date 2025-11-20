@@ -115,6 +115,8 @@ type FilterValidationFailureCause =
   | "QUOTING_OTHERS"
   | "HEAVY_HEDGING"
   | "FUTURE_TIMEFRAME"
+  | "SELF_ANNOUNCEMENT"
+  | "PERSONAL_ACTION"
   | "OTHER";
 
 /**
@@ -242,11 +244,13 @@ const FILTER_VALIDATION_SCHEMA = {
         "QUOTING_OTHERS",
         "HEAVY_HEDGING",
         "FUTURE_TIMEFRAME",
+        "SELF_ANNOUNCEMENT",
+        "PERSONAL_ACTION",
         "OTHER",
         null,
       ],
       description:
-        "Category of failure (null if is_valid is true). BROKEN_EXTRACTION: slices cut through word boundaries or extract nonsensical fragments. VAGUE_GOAL: target is subjective or unmeasurable. PRESENT_STATE: statement about current conditions, not a prediction. NEGATION: prediction is negated. SARCASM: sarcastic/joking tone. QUOTING_OTHERS: quoting someone else. HEAVY_HEDGING: heavily hedged. FUTURE_TIMEFRAME: prediction hasn't matured yet. OTHER: other disqualifying factors.",
+        "Category of failure (null if is_valid is true). BROKEN_EXTRACTION: slices cut through word boundaries or extract nonsensical fragments. VAGUE_GOAL: target is subjective or unmeasurable. PRESENT_STATE: statement about current conditions, not a prediction. NEGATION: prediction is negated. SARCASM: sarcastic/joking tone. QUOTING_OTHERS: quoting someone else. HEAVY_HEDGING: heavily hedged. FUTURE_TIMEFRAME: prediction hasn't matured yet. SELF_ANNOUNCEMENT: author announcing their own actions/products. PERSONAL_ACTION: local/personal actions not publicly verifiable. OTHER: other disqualifying factors.",
     },
     confidence: {
       type: "number",
@@ -1097,7 +1101,11 @@ export class PredictionVerifier {
     const target = prediction.target as PostSlice[];
     const timeframe = prediction.timeframe as PostSlice[];
 
-    const targetValidation = this.validatePostSlices(target, tweetMap, "Target");
+    const targetValidation = this.validatePostSlices(
+      target,
+      tweetMap,
+      "Target",
+    );
     if (!targetValidation.valid) {
       logInfo("Target slices validation failed", {
         failureCause: targetValidation.failureCause,
