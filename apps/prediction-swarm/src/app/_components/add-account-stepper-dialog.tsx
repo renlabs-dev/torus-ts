@@ -422,16 +422,6 @@ export default function AddAccountStepperDialog({
     return BigInt(balance.balance) >= BigInt(requiredAmount);
   };
 
-  // Calculate shortfall for scraping
-  const getScrapingShortfall = () => {
-    if (!userStatus?.user) return 0n;
-    const currentBalance = BigInt(balance?.balance ?? "0");
-    const scrapingCost = calculateScrapingCost(userStatus.user.tweetCount ?? 0);
-    const required = BigInt(scrapingCost.toFixed(0));
-    const shortfall = required - currentBalance;
-    return shortfall > 0n ? shortfall : 0n;
-  };
-
   // Update username when initialUsername changes while dialog is open
   useEffect(() => {
     if (isOpen && initialUsername) {
@@ -812,14 +802,14 @@ export default function AddAccountStepperDialog({
 
             {/* Navigation */}
             <div className="mt-8 flex items-center justify-between border-t pt-6">
-              <Button
-                variant="outline"
-                onClick={handlePrevious}
-                disabled={currentStep === 1 || currentStep === 4}
-              >
-                <ChevronLeft className="h-4 w-4" />
-                <span>Previous</span>
-              </Button>
+              {currentStep === 2 ? (
+                <Button variant="outline" onClick={handlePrevious}>
+                  <ChevronLeft className="h-4 w-4" />
+                  <span>Previous</span>
+                </Button>
+              ) : (
+                <div />
+              )}
 
               {currentStep === 4 ? (
                 <Button onClick={() => handleOpenChange(false)}>
@@ -937,10 +927,7 @@ export default function AddAccountStepperDialog({
                       </>
                     ) : (
                       <>
-                        <span>
-                          Buy {formatToken(getScrapingShortfall())} TORUS &
-                          Queue
-                        </span>
+                        <span>Queue for Scraping</span>
                         <ChevronRight className="h-4 w-4" />
                       </>
                     )}
