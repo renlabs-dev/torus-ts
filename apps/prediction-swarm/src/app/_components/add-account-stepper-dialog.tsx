@@ -38,6 +38,7 @@ import {
   Check,
   ChevronLeft,
   ChevronRight,
+  Info,
   Loader2,
   UserRoundPlus,
 } from "lucide-react";
@@ -486,6 +487,13 @@ export default function AddAccountStepperDialog({
                 <p className="text-muted-foreground pt-1 text-xs">
                   Example: An account with 1,729 tweets costs ~0.026 TORUS to
                   scrape
+                </p>
+              </div>
+              <div className="mt-2 flex items-start justify-start gap-2 text-xs text-amber-500 md:items-center">
+                <Info className="w-8 sm:w-3" />
+                <p>
+                  Warning: Both selecting and scraping accounts may ask for
+                  multiple wallet signatures.
                 </p>
               </div>
             </CardHeader>
