@@ -27,7 +27,7 @@ export function SearchEmpty() {
         className="text-muted-foreground"
         size="sm"
       >
-        <a href="#">
+        <a href="https://blog.predictionswarm.com/" target="_blank">
           Learn More <ArrowUpRightIcon />
         </a>
       </Button>

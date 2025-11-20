@@ -8,6 +8,7 @@ import {
   CommandItem,
   CommandList,
 } from "@torus-ts/ui/components/command";
+import { useDebounce } from "@uidotdev/usehooks";
 import { useSearchStore } from "~/store/search-store";
 import { api } from "~/trpc/react";
 import Image from "next/image";
@@ -22,6 +23,7 @@ export function SearchCommand() {
   const router = useRouter();
   const { isOpen, open, close, toggle } = useSearchStore();
   const [search, setSearch] = useState("");
+  const debouncedSearch = useDebounce(search, 500);
   const [validationError, setValidationError] = useState("");
   const [addModalOpen, setAddModalOpen] = useState(false);
   const [usernameToAdd, setUsernameToAdd] = useState("");
@@ -70,13 +72,13 @@ export function SearchCommand() {
 
   const { data: searchResults, isLoading: isSearching } =
     api.twitterUser.search.useQuery(
-      { query: search, limit: 10 },
-      { enabled: search.length > 0 && !validationError },
+      { query: debouncedSearch, limit: 10 },
+      { enabled: debouncedSearch.length > 0 && !validationError },
     );
 
   const { data: scrapingStatus } = api.twitterUser.getScrapingStatus.useQuery(
-    { username: search },
-    { enabled: search.length > 0 && searchResults?.length === 0 },
+    { username: debouncedSearch },
+    { enabled: debouncedSearch.length > 0 && searchResults?.length === 0 },
   );
 
   const { data: queueData } = api.scraperQueue.getQueueStatus.useQuery(
@@ -87,7 +89,7 @@ export function SearchCommand() {
   );
 
   const queueItem = queueData?.find(
-    (item) => item.username.toLowerCase() === search.toLowerCase(),
+    (item) => item.username.toLowerCase() === debouncedSearch.toLowerCase(),
   );
 
   const handleSelectUser = (username: string | null) => {

@@ -278,6 +278,11 @@ export default function AddAccountStepperDialog({
   const updateFormData = (field: string, value: string) => {
     // Normalize username to lowercase (Twitter is case-insensitive)
     if (field === "username") {
+      // Remove @ symbol if present
+      value = value.replace(/^@/, "");
+      // Remove spaces and invalid characters (only allow letters, numbers, underscores)
+      value = value.replace(/[^a-zA-Z0-9_]/g, "");
+      // Limit to 15 characters and convert to lowercase
       value = value.slice(0, 15).toLowerCase();
     }
     setFormData((prev) => ({ ...prev, [field]: value }));
