@@ -29,6 +29,7 @@ export const scraperQueueRouter = {
         screenName: twitterUsersSchema.screenName,
         avatarUrl: twitterUsersSchema.avatarUrl,
         isTracked: twitterUsersSchema.tracked,
+        scrapedAt: twitterUsersSchema.scrapedAt,
 
         hasScrapingJob: sql<boolean>`${twitterScrapingJobsSchema.userId} IS NOT NULL`,
 
@@ -57,8 +58,8 @@ export const scraperQueueRouter = {
       } else if (item.tweetCount && item.tweetCount > 0 && !item.isTracked) {
         // 3. Processing - Has tweets, generating predictions/verdicts
         status = "processing";
-      } else if (item.isTracked) {
-        // 4. Complete - User is tracked and ready
+      } else if (item.isTracked && item.scrapedAt !== null) {
+        // 4. Complete - User is tracked and scraped
         status = "complete";
       } else {
         // 1. Suggested - In queue only
