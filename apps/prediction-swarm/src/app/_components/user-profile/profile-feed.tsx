@@ -312,7 +312,7 @@ export function ProfileFeed({
             </EmptyMedia>
             <EmptyTitle>No predictions found</EmptyTitle>
             <EmptyDescription>
-              We couldn't find any predictions for this filter / user.
+              We couldn't find any predictions for this list / filter :(
             </EmptyDescription>
           </EmptyHeader>
         </Empty>
