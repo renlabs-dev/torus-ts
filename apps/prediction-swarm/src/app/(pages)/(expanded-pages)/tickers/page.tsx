@@ -13,7 +13,11 @@ export default function TickersPage() {
   const tickers = TOP_100_TICKERS.slice(0, 50);
 
   // Fetch market data for all tickers (loads in background)
-  const { data: marketDataMap } = api.coinGecko.getMultipleMarketData.useQuery({
+  const {
+    data: marketDataMap,
+    isLoading: isLoadingMarketData,
+    isError: isMarketDataError,
+  } = api.coinGecko.getMultipleMarketData.useQuery({
     tickers,
   });
 
@@ -55,6 +59,8 @@ export default function TickersPage() {
               <tbody>
                 {tickers.map((ticker, idx) => {
                   const data = marketDataMap?.[ticker];
+                  const shouldShowPlaceholder =
+                    !isLoadingMarketData && (isMarketDataError || !data);
 
                   return (
                     <tr
@@ -95,6 +101,8 @@ export default function TickersPage() {
                       <td className="p-4 text-right font-semibold">
                         {data?.current_price != null ? (
                           `$${data.current_price.toLocaleString()}`
+                        ) : shouldShowPlaceholder ? (
+                          <span className="text-muted-foreground">-</span>
                         ) : (
                           <Skeleton className="ml-auto h-6 w-24" />
                         )}
@@ -114,6 +122,8 @@ export default function TickersPage() {
                             )}
                             %
                           </span>
+                        ) : shouldShowPlaceholder ? (
+                          <span className="text-muted-foreground">-</span>
                         ) : (
                           <Skeleton className="ml-auto h-4 w-16" />
                         )}
@@ -121,6 +131,8 @@ export default function TickersPage() {
                       <td className="p-4 text-right font-semibold">
                         {data?.total_volume != null ? (
                           `$${(data.total_volume / 1_000_000_000).toFixed(2)}B`
+                        ) : shouldShowPlaceholder ? (
+                          <span className="text-muted-foreground">-</span>
                         ) : (
                           <Skeleton className="ml-auto h-6 w-28" />
                         )}
@@ -128,6 +140,8 @@ export default function TickersPage() {
                       <td className="p-4 text-right font-semibold">
                         {data?.market_cap != null ? (
                           `$${(data.market_cap / 1_000_000_000).toFixed(2)}B`
+                        ) : shouldShowPlaceholder ? (
+                          <span className="text-muted-foreground">-</span>
                         ) : (
                           <Skeleton className="ml-auto h-6 w-32" />
                         )}
