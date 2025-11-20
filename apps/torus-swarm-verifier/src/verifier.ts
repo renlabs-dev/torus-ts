@@ -6,6 +6,7 @@ import {
   parsedPredictionSchema,
   scrapedTweetSchema,
   twitterScrapingJobsSchema,
+  twitterUsersSchema,
   verdictSchema,
 } from "@torus-ts/db/schema";
 import type {
@@ -55,7 +56,9 @@ function logError(message: string, fields?: Record<string, unknown>): void {
 type PredictionTweet = Omit<
   ScrapedTweet,
   "updatedAt" | "createdAt" | "deletedAt"
->;
+> & {
+  authorUsername: string | null;
+};
 
 /**
  * Timeframe extraction response from Gemini
@@ -435,11 +438,18 @@ export class PredictionVerifier {
         id: scrapedTweetSchema.id,
         text: scrapedTweetSchema.text,
         authorId: scrapedTweetSchema.authorId,
+        authorUsername: twitterUsersSchema.username,
         date: scrapedTweetSchema.date,
         conversationId: scrapedTweetSchema.conversationId,
         parentTweetId: scrapedTweetSchema.parentTweetId,
+        quotedId: scrapedTweetSchema.quotedId,
+        predictionId: scrapedTweetSchema.predictionId,
       })
       .from(scrapedTweetSchema)
+      .leftJoin(
+        twitterUsersSchema,
+        eq(scrapedTweetSchema.authorId, twitterUsersSchema.id),
+      )
       .where(eq(scrapedTweetSchema.id, tweetId));
   }
 
@@ -747,7 +757,7 @@ export class PredictionVerifier {
   ): Promise<FilterValidationResult> {
     const threadTweets = tweets.map((t) => ({
       tweet_id: t.id.toString(),
-      author: `@${t.authorId}`,
+      author: t.authorUsername ? `@${t.authorUsername}` : `@${t.authorId}`,
       date: t.date.toISOString(),
       text: t.text,
     }));
@@ -849,7 +859,7 @@ export class PredictionVerifier {
       .map(
         (t) =>
           `Tweet ID: ${t.id.toString()}\n` +
-          `Author: @${t.authorId}\n` +
+          `Author: ${t.authorUsername ? `@${t.authorUsername}` : `@${t.authorId}`}\n` +
           `Date: ${t.date.toISOString()}\n` +
           `Text: ${t.text}\n`,
       )
@@ -1013,11 +1023,18 @@ export class PredictionVerifier {
         id: scrapedTweetSchema.id,
         text: scrapedTweetSchema.text,
         authorId: scrapedTweetSchema.authorId,
+        authorUsername: twitterUsersSchema.username,
         date: scrapedTweetSchema.date,
         conversationId: scrapedTweetSchema.conversationId,
         parentTweetId: scrapedTweetSchema.parentTweetId,
+        quotedId: scrapedTweetSchema.quotedId,
+        predictionId: scrapedTweetSchema.predictionId,
       })
       .from(scrapedTweetSchema)
+      .leftJoin(
+        twitterUsersSchema,
+        eq(scrapedTweetSchema.authorId, twitterUsersSchema.id),
+      )
       .where(eq(scrapedTweetSchema.conversationId, conversationId));
   }
 

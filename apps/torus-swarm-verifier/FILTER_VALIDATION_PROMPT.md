@@ -68,9 +68,14 @@ Before evaluating the prediction content, verify the filter didn't create broken
    - Examples: Company announcing product release, artist announcing tour, athlete announcing retirement
    - Includes both obvious ("I'm releasing X") and subtle ("And now I get to tour America??") announcements
    - Check if the author is the same entity that controls the outcome
-   - Company accounts (e.g., @McDonalds, @Apple, @Tesla) announcing their own products/services
-   - Support staff announcing personal actions to specific users (e.g., "you will receive an email")
-   - The author must be predicting something OUTSIDE their control
+   - Look for linguistic clues of ownership/control:
+     - First-person plural: "we", "our", "us" (e.g., "our new product", "we're launching")
+     - Phrases indicating control: "Get ready for X from [Company]", "X is coming to [Company]"
+     - Responding to questions about the company's own products/services
+     - Making statements about the company's own seasonal/recurring offerings (e.g., "McRib will come around again")
+     - Announcing company-specific promotions, products, or events (e.g., "Beyblades from McDonald's next month")
+   - If the tweet discusses when a product/service will be available from that same organization, it's a self-announcement
+   - The author must be predicting something OUTSIDE their control, not their own business decisions
 
 2. **Personal or local actions** (NOT publicly verifiable predictions):
    - Actions directed at specific individuals, not general public events
@@ -472,5 +477,77 @@ Return ONLY valid JSON (no markdown fences):
   "failure_cause": "PERSONAL_ACTION",
   "confidence": 0.98,
   "reasoning": "This is a customer service response about a personal action directed at a specific individual (@JohnDoe123). The statement 'will send you an email' is a private interaction between the company and one user. This is not a publicly verifiable prediction - no third party can verify whether this specific user received an email. Personal actions and individual customer service interactions are not predictions."
+}
+```
+
+### Example 10: Invalid - Self-Announcement (Seasonal Product)
+
+**Input:**
+
+```json
+{
+  "current_date": "2021-12-01T00:00:00Z",
+  "thread_tweets": [
+    {
+      "tweet_id": "1234567890",
+      "author": "@1062894451171790848",
+      "date": "2021-02-25T11:55:00Z",
+      "text": "@MikeWasBad Mike, the McRib is Seasonal & will come around again next Winter."
+    }
+  ],
+  "target_slices": [{ "text": "the McRib is Seasonal & will come around again" }],
+  "timeframe_slices": [{ "text": "next Winter" }],
+  "timeframe_parsed": {
+    "start_utc": "2021-02-25T11:55:00Z",
+    "end_utc": "2021-12-21T23:59:59Z"
+  }
+}
+```
+
+**Output:**
+
+```json
+{
+  "context": "Company responding to a customer question about when the McRib will return, stating it's seasonal and will be back next winter.",
+  "is_valid": false,
+  "failure_cause": "SELF_ANNOUNCEMENT",
+  "confidence": 0.97,
+  "reasoning": "This is a company responding about their own seasonal product offering. The McRib is McDonald's product, and they control when it's available. Even though the author ID is numeric, the linguistic pattern is clear: they're responding to a customer question about their own product and announcing when it will return. The company controls this decision, making it a self-announcement rather than a prediction about an external event."
+}
+```
+
+### Example 11: Invalid - Self-Announcement (Product Promotion)
+
+**Input:**
+
+```json
+{
+  "current_date": "2020-04-15T00:00:00Z",
+  "thread_tweets": [
+    {
+      "tweet_id": "9876543210",
+      "author": "@1062894451171790848",
+      "date": "2020-03-24T00:23:00Z",
+      "text": "Yo who's ready for Beyblades from McDonalds next month? 😳"
+    }
+  ],
+  "target_slices": [{ "text": "Beyblades from McDonalds" }],
+  "timeframe_slices": [{ "text": "next month" }],
+  "timeframe_parsed": {
+    "start_utc": "2020-03-24T00:23:00Z",
+    "end_utc": "2020-04-30T23:59:59Z"
+  }
+}
+```
+
+**Output:**
+
+```json
+{
+  "context": "Company account asking who's ready for Beyblades promotion coming to McDonald's next month.",
+  "is_valid": false,
+  "failure_cause": "SELF_ANNOUNCEMENT",
+  "confidence": 0.98,
+  "reasoning": "The key phrase 'Beyblades from McDonalds' indicates this is McDonald's announcing their own promotional item. The phrase 'from McDonalds' shows the author controls when this happens. This is a company hyping up their own upcoming promotion, not predicting an external event. Even phrased as a question ('who's ready'), this is clearly a promotional announcement of their own business decision."
 }
 ```
