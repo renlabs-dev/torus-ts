@@ -810,7 +810,7 @@ export default function AddAccountStepperDialog({
               <Button
                 variant="outline"
                 onClick={handlePrevious}
-                disabled={currentStep === 1 || currentStep === 5}
+                disabled={currentStep === 1 || currentStep === 4}
               >
                 <ChevronLeft className="h-4 w-4" />
                 <span>Previous</span>
