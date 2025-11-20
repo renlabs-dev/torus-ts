@@ -103,15 +103,32 @@ Before evaluating the prediction content, verify the filter didn't create broken
    - **Key distinction**: If the decision/commitment/announcement already happened, it's present state
    - If it's about what IS (or what HAS BEEN decided) rather than what WILL BE, it's not a prediction
 
-5. **Negation**: "I don't think", "won't", "unlikely"
+5. **Questions** (NOT predictions):
+   - Rhetorical questions: "Could X be the next big Y?", "Will these records be broken?"
+   - Speculative questions: "Is this the end of Z?"
+   - Questions are inherently uncertain and non-committal - they're asking, not predicting
+   - Even if the answer is obviously yes/no, a question is not a statement of prediction
 
-6. **Sarcasm**: "lol", "lmao", emojis, "yeah right"
+6. **Quoting others** (NOT predictions):
+   - Author reporting someone else's prediction or claim
+   - Examples: "Expert claims X will happen", "Analyst says Y will occur", "Shoutcaster predicts Z"
+   - Look for attribution: "claims", "says", "predicts", "according to"
+   - The author is not making their own prediction, just reporting what someone else said
+   - Even if the quoted prediction comes true, the author wasn't making the prediction
 
-7. **Quoting others**: Author quoting someone else's view
+7. **Trivial/obvious outcomes**:
+   - Stating obvious consequences: "This list will change after a tournament", "Scores will be different tomorrow"
+   - No meaningful uncertainty - outcome is essentially guaranteed
+   - These are observations about obvious causality, not predictions
+   - Example: "The leaderboard will change during a $30M tournament" - obviously yes
 
-8. **Heavy hedging**: "maybe", "possibly", "could"
+8. **Negation**: "I don't think", "won't", "unlikely"
 
-9. **Future timeframe**: Prediction end_utc is AFTER current_date (not yet mature for verification)
+9. **Sarcasm**: "lol", "lmao", emojis, "yeah right"
+
+10. **Heavy hedging**: "maybe", "possibly", "could"
+
+11. **Future timeframe**: Prediction end_utc is AFTER current_date (not yet mature for verification)
 
 ## Output Format
 
@@ -139,10 +156,10 @@ Return ONLY valid JSON (no markdown fences):
   - `"PRESENT_STATE"`: Statement about current conditions, not a future prediction
   - `"NEGATION"`: Prediction is negated ("I don't think", "won't", "unlikely")
   - `"SARCASM"`: Sarcastic or joking tone ("lol", "lmao", emojis)
-  - `"QUOTING_OTHERS"`: Author is quoting someone else's view
+  - `"QUOTING_OTHERS"`: Author is quoting someone else's view (not making their own prediction)
   - `"HEAVY_HEDGING"`: Heavily hedged ("maybe", "possibly", "could")
   - `"FUTURE_TIMEFRAME"`: Prediction hasn't matured yet (end_utc > current_date)
-  - `"OTHER"`: Other disqualifying factors not covered above
+  - `"OTHER"`: Other disqualifying factors including questions, trivial/obvious outcomes, and patterns not covered above
 - `confidence`: Confidence score from 0.0 to 1.0 indicating how certain the validation is
 - `reasoning`: Human-readable explanation
 
@@ -624,5 +641,149 @@ Return ONLY valid JSON (no markdown fences):
   "failure_cause": "SELF_ANNOUNCEMENT",
   "confidence": 0.98,
   "reasoning": "The key phrase 'Beyblades from McDonalds' indicates this is McDonald's announcing their own promotional item. The phrase 'from McDonalds' shows the author controls when this happens. This is a company hyping up their own upcoming promotion, not predicting an external event. Even phrased as a question ('who's ready'), this is clearly a promotional announcement of their own business decision."
+}
+```
+
+### Example 12: Invalid - Question (Rhetorical)
+
+**Input:**
+
+```json
+{
+  "current_date": "2020-01-01T00:00:00Z",
+  "thread_tweets": [
+    {
+      "tweet_id": "123456789",
+      "author": "@Dexerto",
+      "date": "2019-11-20T23:09:00Z",
+      "text": "Could @DisguisedToast be the next big Twitch streamer to leave the platform? 👀"
+    }
+  ],
+  "target_slices": [{ "text": "@DisguisedToast be the next big Twitch streamer to leave the platform" }],
+  "timeframe_slices": [{ "text": "next" }],
+  "timeframe_parsed": {
+    "start_utc": "2019-11-20T23:09:00Z",
+    "end_utc": "2019-12-31T23:59:59Z"
+  }
+}
+```
+
+**Output:**
+
+```json
+{
+  "context": "News organization asking a speculative question about DisguisedToast potentially leaving Twitch.",
+  "is_valid": false,
+  "failure_cause": "OTHER",
+  "confidence": 0.96,
+  "reasoning": "This is phrased as a question ('Could @DisguisedToast be...?'), not a statement or prediction. Questions are inherently speculative and non-committal. The author is asking readers to speculate, not making their own prediction. Even rhetorical questions do not constitute predictions."
+}
+```
+
+### Example 13: Invalid - Question (Speculative)
+
+**Input:**
+
+```json
+{
+  "current_date": "2020-01-01T00:00:00Z",
+  "thread_tweets": [
+    {
+      "tweet_id": "987654321",
+      "author": "@Dexerto",
+      "date": "2019-01-09T09:06:00Z",
+      "text": "Updated list of all Fortnite Battle Royale world records 🏅 Will these records be broken in 2019?"
+    }
+  ],
+  "target_slices": [{ "text": "these records be broken" }],
+  "timeframe_slices": [{ "text": "in 2019" }],
+  "timeframe_parsed": {
+    "start_utc": "2019-01-09T09:06:00Z",
+    "end_utc": "2019-12-31T23:59:59Z"
+  }
+}
+```
+
+**Output:**
+
+```json
+{
+  "context": "News organization sharing Fortnite world records and asking if they'll be broken.",
+  "is_valid": false,
+  "failure_cause": "OTHER",
+  "confidence": 0.97,
+  "reasoning": "This ends with a question: 'Will these records be broken in 2019?' Questions are not predictions - they're inviting speculation, not making a statement. The author is not predicting that records will or won't be broken, they're asking the audience."
+}
+```
+
+### Example 14: Invalid - Quoting Others
+
+**Input:**
+
+```json
+{
+  "current_date": "2019-12-31T00:00:00Z",
+  "thread_tweets": [
+    {
+      "tweet_id": "111222333",
+      "author": "@Dexerto",
+      "date": "2019-08-28T05:40:00Z",
+      "text": "LoL shoutcaster claims that favorite team to win #Worlds2019 'will get exploited.'"
+    }
+  ],
+  "target_slices": [{ "text": "favorite team to win #Worlds2019 will get exploited" }],
+  "timeframe_slices": [{ "text": "#Worlds2019" }],
+  "timeframe_parsed": {
+    "start_utc": "2019-08-28T05:40:00Z",
+    "end_utc": "2019-11-10T23:59:59Z"
+  }
+}
+```
+
+**Output:**
+
+```json
+{
+  "context": "News organization reporting on a League of Legends shoutcaster's prediction about Worlds 2019.",
+  "is_valid": false,
+  "failure_cause": "QUOTING_OTHERS",
+  "confidence": 0.98,
+  "reasoning": "The text states 'LoL shoutcaster claims that...' - this is clearly attributing the prediction to someone else (the shoutcaster), not making their own prediction. Dexerto is reporting on what the shoutcaster said, not making their own prediction. Even if the shoutcaster's prediction comes true, Dexerto wasn't the one making the prediction."
+}
+```
+
+### Example 15: Invalid - Trivial/Obvious Outcome
+
+**Input:**
+
+```json
+{
+  "current_date": "2019-07-28T00:00:00Z",
+  "thread_tweets": [
+    {
+      "tweet_id": "444555666",
+      "author": "@Dexerto",
+      "date": "2019-07-25T09:43:00Z",
+      "text": "Top 20 highest earning #fortnite players ahead of the $30 million World Cup 🏆 This list will change a lot this weekend 🤑"
+    }
+  ],
+  "target_slices": [{ "text": "This list will change a lot" }],
+  "timeframe_slices": [{ "text": "this weekend" }],
+  "timeframe_parsed": {
+    "start_utc": "2019-07-25T09:43:00Z",
+    "end_utc": "2019-07-28T23:59:59Z"
+  }
+}
+```
+
+**Output:**
+
+```json
+{
+  "context": "News organization noting that the highest earning Fortnite players list will change during the World Cup tournament.",
+  "is_valid": false,
+  "failure_cause": "OTHER",
+  "confidence": 0.94,
+  "reasoning": "This is stating an obvious outcome: of course the earnings list will change during a $30 million tournament happening this weekend. There's no meaningful uncertainty here - this is virtually guaranteed. This is an observation about obvious causality ('big tournament = earnings change'), not a prediction requiring insight or analysis. Trivial outcomes are not meaningful predictions."
 }
 ```
