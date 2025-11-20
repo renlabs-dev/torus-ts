@@ -54,8 +54,8 @@ export function FeedLegend() {
             </TooltipTrigger>
             <TooltipContent className="bg-background/80 text-white">
               <p className="max-w-xs text-xs">
-                Highlighted portion of the tweet containing the prediction target.
-                This is the main claim being made by the predictor.
+                Highlighted portion of the tweet containing the prediction
+                target. This is the main claim being made by the predictor.
               </p>
             </TooltipContent>
           </Tooltip>
