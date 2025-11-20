@@ -37,10 +37,24 @@ Search the web for evidence and determine if the target was achieved within the 
    - If this is a self-announcement, valid MUST be false
 
 2. **Check if this was NEWS, not a prediction:**
-   - Search for evidence that the target was ALREADY TRUE before start_utc
-   - If the target was achieved, announced, or reported BEFORE the prediction was made, verdict MUST be false
-   - Example: Tweet says "BTC will hit 100k by March" on Jan 15, but BTC already hit 100k on Jan 10
-   - This disqualifies the "prediction" as it's just reporting existing news
+   - **CRITICAL: Check if the event was ANNOUNCED/DECIDED before the tweet, even if it hasn't HAPPENED yet**
+   - Search for evidence that the target was ALREADY ANNOUNCED, SIGNED, PASSED, or DECIDED before start_utc
+   - News organizations reporting on already-announced future events are NOT making predictions
+   - **Common patterns that indicate NEWS, not predictions:**
+     - Laws/bills that were already SIGNED/PASSED (even if enforcement is future)
+     - Products/features already ANNOUNCED by companies (even if release is future)
+     - Events already CONFIRMED by organizers (even if the event date is future)
+     - Contracts/deals already SIGNED (even if execution is future)
+     - Company statements/press releases announcing future plans
+   - **How to verify:**
+     - Search for official announcements, press releases, or news reports BEFORE start_utc
+     - Check if the decision/commitment was already public knowledge
+     - If other sources reported the same thing BEFORE this tweet, it's news, not a prediction
+   - **Examples:**
+     - "Florida will ban social media for under-14s from Jan 2025" tweeted March 2024 → INVALID if bill was signed before March 2024
+     - "Apple will use USB-C by 2024" tweeted Oct 2022 → INVALID if EU law was passed before Oct 2022
+     - "Fortnite returns to iOS this year" → INVALID if Epic already announced it
+   - If the target was already decided/announced BEFORE the prediction was made, valid MUST be false
 
 3. **Only evaluate predictions that were actually predictive:**
    - ONLY consider evidence from dates between start_utc and end_utc
@@ -320,5 +334,113 @@ Return ONLY valid JSON (no markdown fences):
   "verdict": false,
   "confidence": 0.97,
   "reasoning": "Despite the casual phrasing ('And now I get to tour'), this is the author announcing their own tour plans. The author controls their tour schedule, making this a self-announcement rather than a prediction. Even though it's phrased as an excited statement rather than a formal announcement, it's still declaring the author's own planned actions. Prediction is invalid."
+}
+```
+
+### Example 10: Invalid - News About Already-Passed Law
+
+**Input:**
+
+```json
+{
+  "context": "News organization reporting on Florida social media ban for minors.",
+  "target_text": "Florida will ban anyone under 14 owning a social media account",
+  "timeframe_text": "from January 2025",
+  "timeframe_parsed": {
+    "start_utc": "2024-03-25T13:26:00Z",
+    "end_utc": "2025-01-31T23:59:59Z"
+  }
+}
+```
+
+**Output:**
+
+```json
+{
+  "valid": false,
+  "verdict": false,
+  "confidence": 0.98,
+  "reasoning": "The tweet was made on March 25, 2024, and explicitly states 'The bill was signed today by Governor DeSantis.' This means the law was already PASSED and SIGNED before the tweet was made. While the enforcement date is January 2025 (future), the decision to ban was already made and publicly announced. This is news reporting on an already-signed law, not a prediction. A prediction would have been made BEFORE the bill was signed. Prediction is invalid."
+}
+```
+
+### Example 11: Invalid - News About Already-Announced Product Return
+
+**Input:**
+
+```json
+{
+  "context": "News organization reporting that Fortnite will return to iOS in Europe.",
+  "target_text": "Fortnite on iOS will return to Apple devices",
+  "timeframe_text": "this year in Europe",
+  "timeframe_parsed": {
+    "start_utc": "2024-01-25T10:00:00Z",
+    "end_utc": "2024-12-31T23:59:59Z"
+  }
+}
+```
+
+**Output:**
+
+```json
+{
+  "valid": false,
+  "verdict": false,
+  "confidence": 0.96,
+  "reasoning": "Search reveals that Epic Games had already announced plans to return Fortnite to iOS in Europe through the Digital Markets Act before January 25, 2024. Multiple news sources reported on Epic's official announcement in early January 2024. This tweet is reporting on Epic's already-announced plans, not making an original prediction. News organizations reporting on company announcements are not making predictions. Prediction is invalid."
+}
+```
+
+### Example 12: Invalid - News About Already-Passed EU Law
+
+**Input:**
+
+```json
+{
+  "context": "Reporting on Apple being forced to adopt USB-C due to EU law.",
+  "target_text": "Apple will be forced to get rid of their lightning port after the EU parliament passed a new law requiring the use of USB-C",
+  "timeframe_text": "by 2024",
+  "timeframe_parsed": {
+    "start_utc": "2022-10-04T12:00:00Z",
+    "end_utc": "2024-12-31T23:59:59Z"
+  }
+}
+```
+
+**Output:**
+
+```json
+{
+  "valid": false,
+  "verdict": false,
+  "confidence": 0.99,
+  "reasoning": "The tweet was made on October 4, 2022, and states 'after the EU parliament passed a new law' - meaning the law was ALREADY PASSED on the same day or before. According to European Parliament records, the vote to enforce USB-C happened on October 4, 2022. This tweet is reporting on a law that was just passed, not predicting future legislation. While the enforcement deadline (2024) is future, the legislative decision was already made. This is news reporting, not prediction. Prediction is invalid."
+}
+```
+
+### Example 13: Invalid - News About Already-Announced Player Transfer
+
+**Input:**
+
+```json
+{
+  "context": "News organization reporting on S1mple joining FaZe Clan for specific events.",
+  "target_text": "S1mple will compete at IEM Dallas and the BLAST Austin Major",
+  "timeframe_text": "2025",
+  "timeframe_parsed": {
+    "start_utc": "2025-05-05T10:20:00Z",
+    "end_utc": "2025-12-31T23:59:59Z"
+  }
+}
+```
+
+**Output:**
+
+```json
+{
+  "valid": false,
+  "verdict": false,
+  "confidence": 0.97,
+  "reasoning": "The tweet states 'Legendary Counter Strike player S1mple has joined FaZe Clan on a 2-event loan' - note the past tense 'has joined.' This indicates the deal was already announced/finalized before the tweet. The tweet is reporting on an already-confirmed roster move and the specific events were already announced as part of that deal. This is news reporting on an already-announced agreement, not a prediction about whether S1mple would join or which events he would attend. Prediction is invalid."
 }
 ```

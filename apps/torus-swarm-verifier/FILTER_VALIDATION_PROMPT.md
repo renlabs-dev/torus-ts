@@ -94,7 +94,14 @@ Before evaluating the prediction content, verify the filter didn't create broken
 4. **Present-state commentary** (NOT predictions):
    - Describing current conditions: "we already face", "things are now"
    - Ongoing analysis of existing situations
-   - If it's about what IS rather than what WILL BE, it's not a prediction
+   - **News reporting on already-decided/announced events (even if execution is future):**
+     - "The bill was signed today" - the signing IS done, execution later doesn't make it a prediction
+     - "Parliament passed a new law" - the law IS passed, enforcement later doesn't make it a prediction
+     - "Company announced" / "Company confirmed" - the announcement IS made
+     - "Player has joined" (past tense) - the signing IS complete
+     - These describe PRESENT STATE (decision exists now), not future uncertainty
+   - **Key distinction**: If the decision/commitment/announcement already happened, it's present state
+   - If it's about what IS (or what HAS BEEN decided) rather than what WILL BE, it's not a prediction
 
 5. **Negation**: "I don't think", "won't", "unlikely"
 
@@ -346,6 +353,72 @@ Return ONLY valid JSON (no markdown fences):
 }
 ```
 
+### Example 5b: Invalid - News Reporting (Already-Signed Law)
+
+**Input:**
+
+```json
+{
+  "current_date": "2025-01-31T00:00:00Z",
+  "thread_tweets": [
+    {
+      "text": "Florida will ban anyone under 14 owning a social media account from January 2025, deleting existing accounts. The bill was signed today by Governor DeSantis"
+    }
+  ],
+  "target_slices": [{ "text": "Florida will ban anyone under 14 owning a social media account" }],
+  "timeframe_slices": [{ "text": "from January 2025" }],
+  "timeframe_parsed": {
+    "start_utc": "2024-03-25T13:26:00Z",
+    "end_utc": "2025-01-31T23:59:59Z"
+  }
+}
+```
+
+**Output:**
+
+```json
+{
+  "context": "News organization reporting on Florida's social media age restriction law that was just signed into law.",
+  "is_valid": false,
+  "failure_cause": "PRESENT_STATE",
+  "confidence": 0.98,
+  "reasoning": "The text explicitly states 'The bill was signed today by Governor DeSantis.' This is present state - the bill IS signed, the decision HAS BEEN made. While the enforcement happens in January 2025 (future), the commitment/decision exists NOW. This is news reporting on a present reality (signed law), not a prediction about whether a law will pass. A prediction would have been made BEFORE the bill was signed."
+}
+```
+
+### Example 5c: Invalid - News Reporting (Past Tense Announcement)
+
+**Input:**
+
+```json
+{
+  "current_date": "2025-12-31T00:00:00Z",
+  "thread_tweets": [
+    {
+      "text": "Legendary Counter Strike player S1mple has joined FaZe Clan on a 2-event loan for his highly anticipated return. The Ukrainian champion will compete at IEM Dallas and the BLAST Austin Major 2025"
+    }
+  ],
+  "target_slices": [{ "text": "S1mple will compete at IEM Dallas and the BLAST Austin Major" }],
+  "timeframe_slices": [{ "text": "2025" }],
+  "timeframe_parsed": {
+    "start_utc": "2025-05-05T10:20:00Z",
+    "end_utc": "2025-12-31T23:59:59Z"
+  }
+}
+```
+
+**Output:**
+
+```json
+{
+  "context": "News organization reporting on S1mple's roster move and which events he will attend.",
+  "is_valid": false,
+  "failure_cause": "PRESENT_STATE",
+  "confidence": 0.97,
+  "reasoning": "The text states 'S1mple has joined' (past tense) - the deal IS done, the commitment HAS BEEN made. The specific events (IEM Dallas, BLAST Austin Major) were part of the already-announced agreement. This is present state - the contract exists NOW, the events are already scheduled NOW. This is news reporting on a completed deal and its terms, not a prediction about whether S1mple would join or which events he'd attend."
+}
+```
+
 ### Example 6: Valid - Conditional with Specific Outcome
 
 **Input:**
@@ -495,7 +568,9 @@ Return ONLY valid JSON (no markdown fences):
       "text": "@MikeWasBad Mike, the McRib is Seasonal & will come around again next Winter."
     }
   ],
-  "target_slices": [{ "text": "the McRib is Seasonal & will come around again" }],
+  "target_slices": [
+    { "text": "the McRib is Seasonal & will come around again" }
+  ],
   "timeframe_slices": [{ "text": "next Winter" }],
   "timeframe_parsed": {
     "start_utc": "2021-02-25T11:55:00Z",
