@@ -18,7 +18,17 @@ import {
   KaitoTwitterAPIError,
   KaitoValidationError,
 } from "@torus-ts/twitter-client";
-import { and, asc, eq, gte, isNotNull, isNull, sql } from "drizzle-orm";
+import {
+  and,
+  asc,
+  eq,
+  gte,
+  isNotNull,
+  isNull,
+  lt,
+  notExists,
+  sql,
+} from "drizzle-orm";
 import { decode } from "html-entities";
 import { logger } from "./index";
 import { sleep } from "./utils";
@@ -69,17 +79,13 @@ export interface AccountScraperConfig {
   apiDelay?: number;
   /** Maximum tweets to scrape per day (default: 200000) */
   dailyTweetLimit?: number;
-  /** Enable debug logging */
-  debugMode?: boolean;
 }
 
 /**
  * Twitter Account Scraper
  */
 export class TwitterAccountScraper {
-  private readonly config: Required<Omit<AccountScraperConfig, "debugMode">> & {
-    debugMode: boolean;
-  };
+  private readonly config: Required<AccountScraperConfig>;
 
   private db: DB;
 
@@ -89,7 +95,6 @@ export class TwitterAccountScraper {
       concurrency: config.concurrency ?? 3,
       apiDelay: config.apiDelay ?? 200,
       dailyTweetLimit: config.dailyTweetLimit ?? 200000,
-      debugMode: config.debugMode ?? false,
     };
 
     this.db = db;
@@ -395,7 +400,76 @@ export class TwitterAccountScraper {
       await tx
         .delete(twitterScrapingJobsSchema)
         .where(eq(twitterScrapingJobsSchema.userId, cursorSearch.userId));
+
+      await tx
+        .update(twitterUsersSchema)
+        .set({ scrapedAt: new Date() })
+        .where(eq(twitterUsersSchema.id, cursorSearch.userId));
     }
+
+    return true;
+  }
+
+  /**
+   * Processes continuous scraping for users that were fully scraped >1 day ago.
+   * Uses since_id as a lower bound and paginates with max_id until finding all new tweets.
+   */
+  async processNextContinuousScrape(tx: Transaction): Promise<boolean> {
+    const user = await this.getNextContinuousScrapeUser(tx);
+    if (!user) return false;
+
+    logInfo("Found user for continuous scraping", {
+      userId: user.userId,
+      username: user.username,
+      newestTrackedTweet: user.newestTrackedTweet.toString(),
+    });
+
+    let cursor: bigint | undefined = undefined;
+    let totalTweetsFound = 0;
+
+    while (true) {
+      let query = `from:${user.username} since_id:${user.newestTrackedTweet}`;
+      if (cursor !== undefined) {
+        query += ` max_id:${cursor - 1n}`;
+      }
+
+      const res = await this.config.twitterClient.tweets.advancedSearch({
+        query,
+        queryType: "Latest",
+      });
+
+      if (!res.tweets[0]) {
+        logInfo("Continuous scrape complete, no more tweets", {
+          userId: user.userId,
+          totalTweetsFound,
+        });
+        break;
+      }
+
+      totalTweetsFound += res.tweets.length;
+
+      await this.insertTweets(tx, res.tweets);
+      await this.createJobsForNewTweets(tx, user.userId, res.tweets);
+
+      cursor = res.tweets.reduce((min, tweet) => {
+        const id = BigInt(tweet.id);
+        return id < min ? id : min;
+      }, BigInt(res.tweets[0].id));
+
+      logInfo("Continuing to next page", {
+        userId: user.userId,
+        cursor: cursor.toString(),
+        tweetsInPage: res.tweets.length,
+        totalSoFar: totalTweetsFound,
+      });
+
+      await sleep(this.config.apiDelay);
+    }
+
+    await tx
+      .update(twitterUsersSchema)
+      .set({ scrapedAt: new Date() })
+      .where(eq(twitterUsersSchema.id, user.userId));
 
     return true;
   }
@@ -525,6 +599,56 @@ export class TwitterAccountScraper {
         query: job[0].query!,
       }
     );
+  }
+
+  /**
+   * Selects a user eligible for continuous scraping (catching up on new tweets).
+   * Returns tracked users that were fully scraped >1 day ago and have no active jobs.
+   */
+  async getNextContinuousScrapeUser(
+    tx: Transaction,
+  ): Promise<
+    { userId: bigint; username: string; newestTrackedTweet: bigint } | undefined
+  > {
+    const oneDayAgo = new Date();
+    oneDayAgo.setDate(oneDayAgo.getDate() - 1);
+
+    const users = await tx
+      .select({
+        userId: twitterUsersSchema.id,
+        username: twitterUsersSchema.username,
+        newestTrackedTweet: twitterUsersSchema.newestTrackedTweet,
+      })
+      .from(twitterUsersSchema)
+      .where(
+        and(
+          eq(twitterUsersSchema.tracked, true),
+          isNotNull(twitterUsersSchema.scrapedAt),
+          isNotNull(twitterUsersSchema.newestTrackedTweet),
+          lt(twitterUsersSchema.scrapedAt, oneDayAgo),
+          notExists(
+            tx
+              .select({ userId: twitterScrapingJobsSchema.userId })
+              .from(twitterScrapingJobsSchema)
+              .where(
+                eq(twitterScrapingJobsSchema.userId, twitterUsersSchema.id),
+              ),
+          ),
+        ),
+      )
+      .orderBy(asc(twitterUsersSchema.scrapedAt))
+      .limit(1)
+      .for("update", { skipLocked: true });
+
+    return users[0]
+      ? {
+          userId: users[0].userId,
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+          username: users[0].username!,
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+          newestTrackedTweet: users[0].newestTrackedTweet!,
+        }
+      : undefined;
   }
 
   /**
@@ -818,7 +942,8 @@ export class TwitterAccountScraper {
               (await this.processNextCursorJob(tx)) ||
               (await this.processNextThreadJobs(tx)) ||
               (await this.processNextIncompleteUsers(tx)) ||
-              (await this.processNextSuggestion(tx)),
+              (await this.processNextSuggestion(tx)) ||
+              (await this.processNextContinuousScrape(tx)),
           );
 
           consecutiveFailures = 0;

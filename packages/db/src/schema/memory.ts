@@ -51,6 +51,7 @@ export const twitterUsersSchema = createTable(
 
     oldestTrackedTweet: bigint("oldest_tracked_tweet"),
     newestTrackedTweet: bigint("newest_tracked_tweet"),
+    scrapedAt: timestampz("scraped_at"),
     tracked: boolean("tracked").notNull(),
 
     ...timeFields(),
