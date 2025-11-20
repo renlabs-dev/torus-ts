@@ -253,7 +253,7 @@ const FILTER_VALIDATION_SCHEMA = {
         null,
       ],
       description:
-        "Category of failure (null if is_valid is true). BROKEN_EXTRACTION: slices cut through word boundaries or extract nonsensical fragments. VAGUE_GOAL: target is subjective or unmeasurable. PRESENT_STATE: statement about current conditions, not a prediction. NEGATION: prediction is negated. SARCASM: sarcastic/joking tone. QUOTING_OTHERS: quoting someone else. HEAVY_HEDGING: heavily hedged. FUTURE_TIMEFRAME: prediction hasn't matured yet. SELF_ANNOUNCEMENT: author announcing their own actions/products. PERSONAL_ACTION: local/personal actions not publicly verifiable. OTHER: other disqualifying factors.",
+        "Category of failure (null if is_valid is true). BROKEN_EXTRACTION: slices cut through word boundaries or extract nonsensical fragments. VAGUE_TARGET: target is subjective or unmeasurable. PRESENT_STATE: statement about current conditions, not a prediction. NEGATION: prediction is negated. SARCASM: sarcastic/joking tone. QUOTING_OTHERS: quoting someone else. HEAVY_HEDGING: heavily hedged. FUTURE_TIMEFRAME: prediction hasn't matured yet. SELF_ANNOUNCEMENT: author announcing their own actions/products. PERSONAL_ACTION: local/personal actions not publicly verifiable. OTHER: other disqualifying factors.",
     },
     confidence: {
       type: "number",
