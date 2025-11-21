@@ -4,9 +4,13 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@torus-ts/ui/components/tooltip";
-import { Brain, Clock, Download, ShieldCheck } from "lucide-react";
+import { Brain, Clock, Download, RefreshCw, ShieldCheck } from "lucide-react";
 
-type ScraperStatus = "suggested" | "scraping" | "processing" | "complete";
+type ScraperStatus =
+  | "suggested"
+  | "scraping"
+  | "updating"
+  | "complete";
 
 interface ProgressStagesProps {
   status: ScraperStatus;
@@ -21,7 +25,7 @@ export function ProgressStages({ status }: ProgressStagesProps) {
       tooltip:
         "Account has been added to the queue and is waiting to be processed",
       active: status === "suggested",
-      complete: ["scraping", "processing", "complete"].includes(status),
+      complete: ["scraping", "complete", "updating"].includes(status),
     },
     {
       id: "scraping",
@@ -29,16 +33,7 @@ export function ProgressStages({ status }: ProgressStagesProps) {
       icon: Download,
       tooltip: "Actively downloading tweets from this account's timeline",
       active: status === "scraping",
-      complete: ["processing", "complete"].includes(status),
-    },
-    {
-      id: "processing",
-      label: "Processing",
-      icon: Brain,
-      tooltip:
-        "Tweets collected. Generating predictions and verifying them with AI",
-      active: status === "processing",
-      complete: status === "complete",
+      complete: ["complete", "updating"].includes(status),
     },
     {
       id: "complete",
@@ -47,7 +42,16 @@ export function ProgressStages({ status }: ProgressStagesProps) {
       tooltip:
         "All predictions generated and verified. Account is ready to view",
       active: status === "complete",
-      complete: status === "complete",
+      complete: ["complete", "updating"].includes(status),
+    },
+    {
+      id: "updating",
+      label: "Updating",
+      icon: RefreshCw,
+      tooltip:
+        "Account was already scraped and is being updated with new tweets (last scraping was more than one day ago)",
+      active: status === "updating",
+      complete: status === "updating",
     },
   ];
 

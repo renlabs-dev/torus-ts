@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
-import { sql } from "@torus-ts/db";
+import { and, eq, gt, isNotNull, isNull, not, or, sql } from "@torus-ts/db";
 import {
   twitterScrapingJobsSchema,
   twitterUsersSchema,
@@ -30,10 +30,27 @@ export const scraperQueueRouter = {
         avatarUrl: twitterUsersSchema.avatarUrl,
         isTracked: twitterUsersSchema.tracked,
         scrapedAt: twitterUsersSchema.scrapedAt,
+        newestTrackedTweet: twitterUsersSchema.newestTrackedTweet,
 
         hasScrapingJob: sql<boolean>`${twitterScrapingJobsSchema.userId} IS NOT NULL`,
 
-        tweetCount: twitterUsersSchema.tweetCount,
+        status: sql<string>`
+      CASE
+        WHEN ${twitterScrapingJobsSchema.userId} IS NOT NULL
+             OR ${twitterUsersSchema.scrapedAt} IS NULL
+          THEN 'scraping'
+
+        WHEN ${twitterUsersSchema.scrapedAt} < NOW() - INTERVAL '1 day'
+             AND ${twitterUsersSchema.newestTrackedTweet} IS NOT NULL
+          THEN 'updating'
+
+        WHEN ${twitterScrapingJobsSchema.userId} IS NULL
+             AND ${twitterUsersSchema.scrapedAt} IS NOT NULL
+          THEN 'complete'
+
+        ELSE 'suggested'
+      END
+    `.as("status"),
       })
       .from(twitterUserSuggestionsSchema)
       .leftJoin(
@@ -44,37 +61,28 @@ export const scraperQueueRouter = {
         twitterScrapingJobsSchema,
         sql`${twitterScrapingJobsSchema.userId} = ${twitterUsersSchema.id}`,
       )
+      .where(
+        and(
+          or(
+            isNull(twitterUserSuggestionsSchema.deletedAt),
+            eq(twitterUsersSchema.tracked, true),
+          ),
+          or(
+            isNull(twitterUsersSchema.scrapedAt),
+            and(
+              isNotNull(twitterUsersSchema.tweetCount),
+              gt(twitterUsersSchema.tweetCount, 0),
+            ),
+          ),
+        ),
+      )
       .orderBy(sql`${twitterUserSuggestionsSchema.createdAt} DESC`);
 
-    const enrichedQueue = queue.map((item) => {
-      let status: "suggested" | "scraping" | "processing" | "complete";
-
-      if (
-        item.hasScrapingJob ||
-        (item.userId && (!item.tweetCount || item.tweetCount === 0))
-      ) {
-        // 2. Scraping - Profile exists, collecting tweets
-        status = "scraping";
-      } else if (item.tweetCount && item.tweetCount > 0 && !item.isTracked) {
-        // 3. Processing - Has tweets, generating predictions/verdicts
-        status = "processing";
-      } else if (item.isTracked && item.scrapedAt !== null) {
-        // 4. Complete - User is tracked and scraped
-        status = "complete";
-      } else {
-        // 1. Suggested - In queue only
-        status = "suggested";
-      }
-
-      return {
-        ...item,
-        status,
-        predictionCount: 0,
-        verdictCount: 0,
-        needsVerdictCheck:
-          item.tweetCount && item.tweetCount > 0 && !item.isTracked,
-      };
-    });
+    const enrichedQueue = queue.map((item) => ({
+      ...item,
+      predictionCount: 0,
+      verdictCount: 0,
+    }));
 
     return enrichedQueue;
   }),

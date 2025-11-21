@@ -33,6 +33,7 @@ export default function ScraperQueuePage() {
   // Separate by status
   const suggested = queue?.filter((item) => item.status === "suggested") ?? [];
   const scraping = queue?.filter((item) => item.status === "scraping") ?? [];
+  const updating = queue?.filter((item) => item.status === "updating") ?? [];
   const processing =
     queue?.filter((item) => item.status === "processing") ?? [];
 
@@ -103,11 +104,11 @@ export default function ScraperQueuePage() {
                 <TabsTrigger value="scraping" className="w-full">
                   Scraping ({scraping.length})
                 </TabsTrigger>
-                <TabsTrigger value="processing" className="w-full">
-                  Processing ({processing.length})
-                </TabsTrigger>
                 <TabsTrigger value="complete" className="w-full">
                   Complete ({recentlyCompleted.length})
+                </TabsTrigger>
+                <TabsTrigger value="updating" className="w-full">
+                  Updating ({updating.length})
                 </TabsTrigger>
                 {hasUserAccounts && (
                   <TabsTrigger value="mine" className="w-full">
@@ -184,35 +185,6 @@ export default function ScraperQueuePage() {
               </CardContent>
             </TabsContent>
 
-            {/* Processing Tab */}
-            <TabsContent value="processing">
-              <CardContent>
-                {getUserAccounts(processing).map((item) => (
-                  <div
-                    key={`${item.username}-${item.suggestedBy}`}
-                    className="mb-3"
-                  >
-                    <QueueItem item={item} />
-                  </div>
-                ))}
-                {getOtherAccounts(processing, getUserAccounts(processing)).map(
-                  (item) => (
-                    <div
-                      key={`${item.username}-${item.suggestedBy}`}
-                      className="mb-3"
-                    >
-                      <QueueItem item={item} />
-                    </div>
-                  ),
-                )}
-                {processing.length === 0 && (
-                  <div className="text-muted-foreground py-12 text-center">
-                    No accounts being processed
-                  </div>
-                )}
-              </CardContent>
-            </TabsContent>
-
             {/* Complete Tab */}
             <TabsContent value="complete">
               <CardContent>
@@ -245,6 +217,35 @@ export default function ScraperQueuePage() {
                       </div>
                     ))}
                   </>
+                )}
+              </CardContent>
+            </TabsContent>
+
+            {/* Updating Tab */}
+            <TabsContent value="updating">
+              <CardContent>
+                {getUserAccounts(updating).map((item) => (
+                  <div
+                    key={`${item.username}-${item.suggestedBy}`}
+                    className="mb-3"
+                  >
+                    <QueueItem item={item} />
+                  </div>
+                ))}
+                {getOtherAccounts(updating, getUserAccounts(updating)).map(
+                  (item) => (
+                    <div
+                      key={`${item.username}-${item.suggestedBy}`}
+                      className="mb-3"
+                    >
+                      <QueueItem item={item} />
+                    </div>
+                  ),
+                )}
+                {updating.length === 0 && (
+                  <div className="text-muted-foreground py-12 text-center">
+                    No accounts currently updating
+                  </div>
                 )}
               </CardContent>
             </TabsContent>
