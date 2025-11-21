@@ -3,6 +3,8 @@ import {
   getContextSchemaForTopic,
   omitContextMetadata,
 } from "@torus-ts/db/schema";
+import { blake2AsHex } from "@polkadot/util-crypto";
+import canonicalize from "canonicalize";
 import he from "he";
 import { z } from "zod";
 import type { PromptLoader } from "../ai/prompt-loader";
@@ -28,6 +30,8 @@ export interface PredictionExtractorConfig {
   topicClassificationClient: LLMClient;
   extractionClient: LLMClient;
   promptLoader: PromptLoader;
+  signHash: (hash: string) => Promise<string>;
+  signerAddress: string;
 }
 
 type TweetsNextResponse = RouterOutputs["prophet"]["getTweetsNext"];
@@ -49,6 +53,8 @@ export class PredictionExtractor {
   private topicClassificationClient: LLMClient;
   private extractionClient: LLMClient;
   private promptLoader: PromptLoader;
+  private signHash: (hash: string) => Promise<string>;
+  private signerAddress: string;
 
   // Public stats for tracking
   public stats = {
@@ -62,6 +68,8 @@ export class PredictionExtractor {
     this.topicClassificationClient = config.topicClassificationClient;
     this.extractionClient = config.extractionClient;
     this.promptLoader = config.promptLoader;
+    this.signHash = config.signHash;
+    this.signerAddress = config.signerAddress;
   }
 
   /**
@@ -282,8 +290,9 @@ export class PredictionExtractor {
     }
 
     // Return extracted data in format expected by tRPC storePredictions
-    return {
+    const content = {
       tweetId: mainTweet.id,
+      sentAt: new Date().toISOString(),
       prediction: {
         target,
         timeframe,
@@ -293,6 +302,22 @@ export class PredictionExtractor {
         llmConfidence: predictionData.llmConfidence,
         vagueness: predictionData.vagueness ?? null,
         context: predictionData.context,
+      },
+    };
+
+    // Hash the content and sign it (using canonical JSON)
+    const contentCanonical = canonicalize(content);
+    if (!contentCanonical) {
+      throw new Error("Failed to canonicalize content");
+    }
+    const contentHash = blake2AsHex(contentCanonical);
+    const signature = await this.signHash(contentHash);
+
+    return {
+      content,
+      metadata: {
+        signature,
+        version: 1,
       },
     };
   }

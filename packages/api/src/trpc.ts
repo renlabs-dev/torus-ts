@@ -21,10 +21,12 @@ import { assert } from "tsafe";
 import { z, ZodError } from "zod";
 import type { SessionData } from "./auth";
 import { decodeSessionToken } from "./auth";
+import { createHashSigner } from "./auth/sign";
 
 let globalDb: ReturnType<typeof createDb> | null = null;
 let globalWsApi: ApiPromise | null = null;
 let globalTwitterClient: KaitoTwitterAPI | null = null;
+let globalServerHashSigner: ((hash: string) => string) | null = null;
 
 const getEnv = validateEnvOrExit({
   NEXT_PUBLIC_TORUS_RPC_URL: z
@@ -47,6 +49,9 @@ const getEnv = validateEnvOrExit({
     .optional()
     .default("300000")
     .transform((val) => Number.parseInt(val, 10)),
+  PREDICTION_APP_MNEMONIC: z
+    .string()
+    .min(1, "PREDICTION_APP_MNEMONIC is required for signing receipts"),
 });
 
 // TODO: better error and connection handling
@@ -74,6 +79,16 @@ function getorCreateTwitterClient() {
   return globalTwitterClient;
 }
 
+async function getOrCreateServerHashSigner() {
+  if (globalServerHashSigner === null) {
+    const env = getEnv(process.env);
+    globalServerHashSigner = await createHashSigner(
+      env.PREDICTION_APP_MNEMONIC,
+    );
+  }
+  return globalServerHashSigner;
+}
+
 /**
  * 1. CONTEXT
  *
@@ -97,6 +112,7 @@ export interface TRPCContext {
   twitterClient: KaitoTwitterAPI;
   permissionGrantorAddress: SS58Address;
   wsAPI: Promise<ApiPromise>;
+  serverSignHash: Promise<(hash: string) => string>;
   swarmMnemonic?: string;
   swarmApiUrl?: string;
 }
@@ -172,6 +188,7 @@ export const createTRPCContext = (opts: {
     twitterClient: getorCreateTwitterClient(),
     permissionGrantorAddress: opts.permissionGrantorAddress,
     wsAPI,
+    serverSignHash: getOrCreateServerHashSigner(),
     swarmMnemonic: opts.swarmMnemonic,
     swarmApiUrl: opts.swarmApiUrl,
   };

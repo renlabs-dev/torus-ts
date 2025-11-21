@@ -4,6 +4,9 @@
  * This service processes scraped tweets and filters them for predictions using LLMs.
  */
 
+import { Keyring } from "@polkadot/api";
+import { hexToU8a, u8aToHex } from "@polkadot/util";
+import { cryptoWaitReady } from "@polkadot/util-crypto";
 import { validateEnvOrExit } from "@torus-network/torus-utils/env";
 import { BasicLogger } from "@torus-network/torus-utils/logger";
 import { z } from "zod";
@@ -47,6 +50,16 @@ async function main() {
   logger.info(`Topic classification model: ${env.TOPIC_CLASSIFICATION_MODEL}`);
   logger.info(`Extraction model: ${env.PREDICTION_EXTRACTION_MODEL}`);
 
+  await cryptoWaitReady();
+  const keyring = new Keyring({ type: "sr25519" });
+  const keypair = keyring.addFromUri(env.FILTER_AGENT_MNEMONIC);
+
+  const signHash = async (hash: string): Promise<string> => {
+    const hashBytes = hexToU8a(hash);
+    const signature = keypair.sign(hashBytes);
+    return u8aToHex(signature);
+  };
+
   const api = await RefreshingAPIClient.create(
     env.API_URL,
     env.AUTH_ORIGIN,
@@ -75,6 +88,8 @@ async function main() {
     topicClassificationClient,
     extractionClient,
     promptLoader,
+    signHash,
+    signerAddress: keypair.address,
   });
 
   const { cursor: initialCursor } = await withRetry(() => getFilterCursor());
@@ -136,18 +151,14 @@ async function main() {
         totalPredictionsFound += predictions.length;
         logger.info(`Extracted ${predictions.length} predictions, storing...`);
         await withRetry(() => api.storePredictions(predictions));
-        logger.info(
-          `Would have stored ${predictions.length} predictions (commented out for testing)`,
-        );
+        logger.info(`sent ${predictions.length} predictions`);
       }
 
       if (nextCursor) {
         logger.info(`Cursor advancing: ${cursor} → ${nextCursor}`);
         cursor = nextCursor;
         await withRetry(() => updateFilterCursor(cursor));
-        logger.info(
-          `Would have persisted cursor: ${cursor} (commented out for testing)`,
-        );
+        logger.info(`persisted cursor: ${cursor}`);
       }
 
       // Calculate batch stats (before updating totals)

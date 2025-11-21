@@ -176,6 +176,8 @@ export const parsedPredictionSchema = createTable(
     vagueness: decimal("vagueness"), // Stored as basis points (0-1)
     context: jsonb("context").$type<Context>(), // Discriminated union of context schemas
     filterAgentId: ss58Address("filter_agent_id"),
+    filterAgentSignature: text("filter_agent_signature"),
+    agentAllegedTimestamp: timestampz("agent_alleged_timestamp"),
     ...timeFields(),
   },
   (t) => [

@@ -57,6 +57,7 @@ services:
     environment:
       - NEXT_PUBLIC_TORUS_RPC_URL=${NEXT_PUBLIC_TORUS_RPC_URL}
       - POSTGRES_URL=postgres://postgres:postgres@postgres:5432/torus-ts-db
+      - PREDICTION_APP_MNEMONIC=${PREDICTION_APP_MNEMONIC}
       - PORT=8000
     ports:
       - 3012:8000
@@ -73,6 +74,7 @@ services:
       - POSTGRES_URL=postgres://postgres:postgres@postgres:5432/torus-ts-db
       - JWT_SECRET=12345678
       - PINATA_JWT=${PINATA_JWT}
+      - PREDICTION_APP_MNEMONIC=${PREDICTION_APP_MNEMONIC}
     ports:
       - 3021:8000
 
@@ -97,6 +99,7 @@ services:
       - POSTGRES_URL=postgres://postgres:postgres@postgres:5432/torus-ts-db
       - JWT_SECRET=12345678
       - PINATA_JWT=${PINATA_JWT}
+      - PREDICTION_APP_MNEMONIC=${PREDICTION_APP_MNEMONIC}
     ports:
       - 3023:8000
 
@@ -128,6 +131,7 @@ services:
       - NEXT_PUBLIC_AUTH_ORIGIN=${AUTH_ORIGIN}
       - NEXT_PUBLIC_PREDICTION_APP_ADDRESS=${NEXT_PUBLIC_PREDICTION_APP_ADDRESS}
       - PERMISSION_GRANTOR_ADDRESS=${PERMISSION_GRANTOR_ADDRESS}
+      - PREDICTION_APP_MNEMONIC=${PREDICTION_APP_MNEMONIC}
       - TWITTERAPI_IO_KEY=${TWITTERAPI_IO_KEY}
       - PORT=3004
     ports:

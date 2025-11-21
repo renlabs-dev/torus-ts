@@ -1,5 +1,6 @@
-import { hexToString, stringToHex } from "@polkadot/util";
+import { hexToString, hexToU8a, stringToHex, u8aToHex } from "@polkadot/util";
 import { cryptoWaitReady, signatureVerify } from "@polkadot/util-crypto";
+import { Keyring } from "@polkadot/api";
 import { checkSS58 } from "@torus-network/sdk/types";
 import { AUTH_REQ_SCHEMA } from "@torus-network/torus-utils/auth";
 import { tryAsync, trySync } from "@torus-network/torus-utils/try-catch";
@@ -100,3 +101,23 @@ export const verifySignedData = async (signedInput: SignedPayload) => {
 
   return { payload: validated.data, address: checkedAddress };
 };
+
+/**
+ * Creates a signing function from a mnemonic for signing hashes.
+ *
+ * @param mnemonic - SR25519 mnemonic phrase
+ * @returns Function that signs a hash string and returns hex signature
+ */
+export async function createHashSigner(
+  mnemonic: string,
+): Promise<(hash: string) => string> {
+  await cryptoWaitReady();
+  const keyring = new Keyring({ type: "sr25519" });
+  const keypair = keyring.addFromUri(mnemonic);
+
+  return (hash: string): string => {
+    const hashBytes = hexToU8a(hash);
+    const signature = keypair.sign(hashBytes);
+    return u8aToHex(signature);
+  };
+}
