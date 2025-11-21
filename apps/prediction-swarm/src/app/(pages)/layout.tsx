@@ -31,7 +31,7 @@ export function generateMetadata() {
     ogSiteName: APP_NAME,
     canonical: "/",
     baseUrl: env("BASE_URL"),
-    ogImagePath: "/og.svg",
+    ogImagePath: "/og.jpg",
   });
 }
 
