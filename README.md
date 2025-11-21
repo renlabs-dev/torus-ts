@@ -156,7 +156,7 @@ The project uses a tiered testing structure:
 
 - Slower tests that submit transactions
 - Modify blockchain state, require account funding
-- ~60+ seconds to run  
+- ~60+ seconds to run
 - Single-threaded to avoid nonce conflicts
 
 **All Chain Tests (`test:chain`)**
