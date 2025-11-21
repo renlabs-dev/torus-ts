@@ -43,3 +43,9 @@ deployment:
         secretKeyRef:
           name: "torus-{{ .Values.environmentName }}-web-apps-secret"
           key: PERMISSION_GRANTOR_ADDRESS
+    PREDICTION_APP_MNEMONIC:
+      valueFrom:
+        secretKeyRef:
+          name: "torus-{{ .Values.environmentName }}-web-apps-secret"
+          key: PREDICTION_APP_MNEMONIC
+    
