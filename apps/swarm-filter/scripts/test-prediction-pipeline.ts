@@ -365,11 +365,18 @@ async function main() {
 
   const promptLoader = new PromptLoader("apps/swarm-filter/prompts");
 
+  // Mock signing function for tests
+  const signHash = async (hash: string): Promise<string> => {
+    return `test-signature-${hash.slice(0, 8)}`;
+  };
+
   const extractor = new PredictionExtractor({
     predictionCheckClient,
     topicClassificationClient,
     extractionClient,
     promptLoader,
+    signHash,
+    signerAddress: "test-address",
   });
 
   // Initialize results tracking

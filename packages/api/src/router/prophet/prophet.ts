@@ -1,3 +1,4 @@
+import { blake2AsHex, signatureVerify } from "@polkadot/util-crypto";
 import { SwarmMemory } from "@torus-network/torus-utils/swarm-memory-client";
 import { and, eq, gt, inArray, notExists, or, sql } from "@torus-ts/db";
 import {
@@ -9,6 +10,8 @@ import {
   twitterUsersSchema,
 } from "@torus-ts/db/schema";
 import type { TRPCRouterRecord } from "@trpc/server";
+import { TRPCError } from "@trpc/server";
+import canonicalize from "canonicalize";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 import { requireNamespacePermission } from "../../middleware/namespace-permission";
@@ -356,19 +359,66 @@ export const prophetRouter = {
     .input(
       z.array(
         z.object({
-          tweetId: z.string(),
-          prediction: PARSED_PREDICTION_INSERT_SCHEMA.omit({
-            predictionId: true,
-            topicId: true,
-            filterAgentId: true,
-          }).extend({
-            topicName: z.string().min(1),
+          content: z.object({
+            tweetId: z.string(),
+            sentAt: z.string().datetime(),
+            prediction: PARSED_PREDICTION_INSERT_SCHEMA.omit({
+              predictionId: true,
+              topicId: true,
+              filterAgentId: true,
+              filterAgentSignature: true,
+            }).extend({
+              topicName: z.string().min(1),
+            }),
+          }),
+          metadata: z.object({
+            signature: z.string(),
+            version: z.literal(1),
           }),
         }),
       ),
     )
     .mutation(async ({ input, ctx }) => {
       const agentAddress = ctx.sessionData.userKey;
+
+      // Verify all signatures before processing
+      const maxTimestampDiffMs = 60 * 1000; // 1 minute
+
+      for (const [index, item] of input.entries()) {
+        // Validate timestamp is within acceptable range
+        const sentAt = new Date(item.content.sentAt);
+        const now = new Date();
+        const diffMs = Math.abs(now.getTime() - sentAt.getTime());
+
+        if (diffMs > maxTimestampDiffMs) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: `Invalid timestamp for prediction ${index}: sentAt is ${Math.floor(diffMs / 1000)}s off (max ${maxTimestampDiffMs / 1000}s allowed). Sent: ${item.content.sentAt}, Server: ${now.toISOString()}`,
+          });
+        }
+
+        const contentCanonical = canonicalize(item.content);
+        if (!contentCanonical) {
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: `Failed to canonicalize content for prediction ${index}`,
+          });
+        }
+        const contentHash = blake2AsHex(contentCanonical);
+
+        const verification = signatureVerify(
+          contentHash,
+          item.metadata.signature,
+          agentAddress,
+        );
+
+        if (!verification.isValid) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: `Invalid signature for prediction ${index}: signature does not match content or was not signed by authenticated agent`,
+          });
+        }
+      }
 
       return await ctx.db.transaction(async (tx) => {
         if (input.length === 0) {
@@ -381,7 +431,7 @@ export const prophetRouter = {
           );
         }
 
-        const tweetIds = input.map((i) => BigInt(i.tweetId));
+        const tweetIds = input.map((i) => BigInt(i.content.tweetId));
 
         await tx.execute(sql`
           SELECT pg_advisory_xact_lock(id)
@@ -391,7 +441,9 @@ export const prophetRouter = {
 
         const uniqueTopicNames = [
           ...new Set(
-            input.map((i) => i.prediction.topicName.toLowerCase().trim()),
+            input.map((i) =>
+              i.content.prediction.topicName.toLowerCase().trim(),
+            ),
           ),
         ];
 
@@ -440,13 +492,13 @@ export const prophetRouter = {
 
         // Separate tweets that already have predictions from those that need them
         const tweetsNeedingPredictions = input.filter((item) => {
-          const tweet = tweetMap.get(item.tweetId);
+          const tweet = tweetMap.get(item.content.tweetId);
           if (!tweet) {
-            throw new Error(`Tweet ${item.tweetId} not found`);
+            throw new Error(`Tweet ${item.content.tweetId} not found`);
           }
 
           if (tweet.predictionId) {
-            predictionIdMap.set(item.tweetId, tweet.predictionId);
+            predictionIdMap.set(item.content.tweetId, tweet.predictionId);
             return false;
           }
           return true;
@@ -463,10 +515,10 @@ export const prophetRouter = {
             const prediction = newPredictions[i];
             if (!prediction) {
               throw new Error(
-                `Failed to create prediction for tweet ${item.tweetId}`,
+                `Failed to create prediction for tweet ${item.content.tweetId}`,
               );
             }
-            predictionIdMap.set(item.tweetId, prediction.id);
+            predictionIdMap.set(item.content.tweetId, prediction.id);
           });
 
           // Batch UPDATE all tweets with raw SQL (1 query)
@@ -478,10 +530,10 @@ export const prophetRouter = {
                 const prediction = newPredictions[i];
                 if (!prediction) {
                   throw new Error(
-                    `Failed to create prediction for tweet ${item.tweetId}`,
+                    `Failed to create prediction for tweet ${item.content.tweetId}`,
                   );
                 }
-                return sql`(${BigInt(item.tweetId)}, ${prediction.id}::uuid)`;
+                return sql`(${BigInt(item.content.tweetId)}, ${prediction.id}::uuid)`;
               }),
               sql`, `,
             )}) AS data(tweet_id, pred_id)
@@ -489,34 +541,68 @@ export const prophetRouter = {
           `);
         }
 
-        await tx.insert(parsedPredictionSchema).values(
-          input.map((item) => {
-            const topicName = item.prediction.topicName.toLowerCase().trim();
-            const predictionId = predictionIdMap.get(item.tweetId);
-            const topicId = topicMap.get(topicName);
+        const insertedParsedPredictions = await tx
+          .insert(parsedPredictionSchema)
+          .values(
+            input.map((item) => {
+              const topicName = item.content.prediction.topicName
+                .toLowerCase()
+                .trim();
+              const predictionId = predictionIdMap.get(item.content.tweetId);
+              const topicId = topicMap.get(topicName);
 
-            if (!predictionId || !topicId) {
-              throw new Error(
-                `Missing predictionId or topicId for tweet ${item.tweetId}`,
-              );
-            }
+              if (!predictionId || !topicId) {
+                throw new Error(
+                  `Missing predictionId or topicId for tweet ${item.content.tweetId}`,
+                );
+              }
 
-            return {
-              predictionId,
-              topicId,
-              filterAgentId: agentAddress,
-              target: item.prediction.target,
-              timeframe: item.prediction.timeframe,
-              predictionQuality: item.prediction.predictionQuality,
-              briefRationale: item.prediction.briefRationale,
-              llmConfidence: item.prediction.llmConfidence,
-              vagueness: item.prediction.vagueness,
-              context: item.prediction.context,
-            };
-          }),
-        );
+              return {
+                predictionId,
+                topicId,
+                filterAgentId: agentAddress,
+                filterAgentSignature: item.metadata.signature,
+                agentAllegedTimestamp: new Date(item.content.sentAt),
+                target: item.content.prediction.target,
+                timeframe: item.content.prediction.timeframe,
+                predictionQuality: item.content.prediction.predictionQuality,
+                briefRationale: item.content.prediction.briefRationale,
+                llmConfidence: item.content.prediction.llmConfidence,
+                vagueness: item.content.prediction.vagueness,
+                context: item.content.prediction.context,
+              };
+            }),
+          )
+          .returning({ id: parsedPredictionSchema.id });
 
-        return { inserted: input.length };
+        const parsedPredictionIds = insertedParsedPredictions.map((p) => p.id);
+
+        // Generate server receipt signature
+        const receiptTimestamp = new Date().toISOString();
+        const receiptData = {
+          parsedPredictionIds,
+          timestamp: receiptTimestamp,
+        };
+        const receiptCanonical = canonicalize(receiptData);
+        if (!receiptCanonical) {
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Failed to canonicalize receipt data",
+          });
+        }
+        const receiptHash = blake2AsHex(receiptCanonical);
+
+        // Sign the receipt with server keypair
+        const signHash = await ctx.serverSignHash;
+        const serverSignature = signHash(receiptHash);
+
+        return {
+          inserted: input.length,
+          receipt: {
+            signature: serverSignature,
+            timestamp: receiptTimestamp,
+          },
+        };
       });
     }),
 } satisfies TRPCRouterRecord;
