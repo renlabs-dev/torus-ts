@@ -1,9 +1,9 @@
+import { blake2AsHex } from "@polkadot/util-crypto";
 import type { RouterInputs, RouterOutputs } from "@torus-ts/api";
 import {
   getContextSchemaForTopic,
   omitContextMetadata,
 } from "@torus-ts/db/schema";
-import { blake2AsHex } from "@polkadot/util-crypto";
 import canonicalize from "canonicalize";
 import he from "he";
 import { z } from "zod";
