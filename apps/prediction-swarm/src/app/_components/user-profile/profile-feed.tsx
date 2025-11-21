@@ -1,5 +1,6 @@
 "use client";
 
+import { smallAddress } from "@torus-network/torus-utils/torus/address";
 import type { AppRouter } from "@torus-ts/api";
 import {
   Avatar,
@@ -37,6 +38,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
+import { assert } from "tsafe";
 import { PredictionReportDialog } from "../prediction-report-dialog";
 import { FutureTimeframeBadge } from "./future-timeframe-badge";
 import { ThreadContext } from "./thread-context";
@@ -487,6 +489,51 @@ export function ProfileFeed({
                                     {activePrediction.briefRationale}
                                   </p>
                                 </div>
+
+                                {activePrediction.target.length > 0 &&
+                                  (() => {
+                                    const firstTarget =
+                                      activePrediction.target[0];
+                                    assert(
+                                      firstTarget !== undefined,
+                                      "First target should exist when array length > 0",
+                                    );
+                                    return (
+                                      <div className="flex flex-col items-start gap-1">
+                                        <span className="text-muted-foreground">
+                                          Source:
+                                        </span>
+                                        <CopyButton
+                                          className="hover:text-primary h-fit p-0 text-xs text-white/80"
+                                          variant="link"
+                                          copy={firstTarget.source.tweet_id}
+                                          message="Source tweet ID copied to clipboard."
+                                        >
+                                          {firstTarget.source.tweet_id}
+                                          <Copy className="ml-0.5 h-2 w-2" />
+                                        </CopyButton>
+                                      </div>
+                                    );
+                                  })()}
+
+                                {activePrediction.filterAgentId && (
+                                  <div className="flex flex-col items-start gap-1">
+                                    <span className="text-muted-foreground">
+                                      Filter Agent ID:
+                                    </span>
+                                    <CopyButton
+                                      className="hover:text-primary h-fit p-0 text-xs text-white/80"
+                                      variant="link"
+                                      copy={activePrediction.filterAgentId}
+                                      message="Filter agent ID copied to clipboard."
+                                    >
+                                      {smallAddress(
+                                        activePrediction.filterAgentId,
+                                      )}
+                                      <Copy className="ml-0.5 h-2 w-2" />
+                                    </CopyButton>
+                                  </div>
+                                )}
 
                                 <div>
                                   <span className="text-muted-foreground">

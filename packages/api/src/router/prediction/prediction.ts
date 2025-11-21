@@ -44,6 +44,7 @@ interface RawPrediction {
   predictionQuality: number;
   briefRationale: string;
   topicId: string | null;
+  filterAgentId: string | null;
   tweetId: bigint;
   tweetText: string;
   tweetDate: Date;
@@ -96,6 +97,7 @@ export interface GroupedTweet {
     predictionQuality: number;
     briefRationale: string;
     topicId: string | null;
+    filterAgentId: string | null;
     verdictId: string | null;
     verdict: boolean | null;
     verdictContext: VerdictContext | null;
@@ -214,6 +216,7 @@ async function groupPredictionsByTweet(
       predictionQuality: pred.predictionQuality,
       briefRationale: pred.briefRationale,
       topicId: pred.topicId,
+      filterAgentId: pred.filterAgentId,
       verdictId: pred.verdictId,
       verdict: pred.verdict,
       verdictContext: pred.verdictContext,
@@ -280,6 +283,7 @@ export const predictionRouter = {
           predictionQuality: parsedPredictionSchema.predictionQuality,
           briefRationale: parsedPredictionSchema.briefRationale,
           topicId: parsedPredictionSchema.topicId,
+          filterAgentId: parsedPredictionSchema.filterAgentId,
           tweetId: scrapedTweetSchema.id,
           tweetText: scrapedTweetSchema.text,
           tweetDate: scrapedTweetSchema.date,
@@ -612,6 +616,7 @@ export const predictionRouter = {
           predictionQuality: parsedPredictionSchema.predictionQuality,
           briefRationale: parsedPredictionSchema.briefRationale,
           topicId: parsedPredictionSchema.topicId,
+          filterAgentId: parsedPredictionSchema.filterAgentId,
           tweetId: scrapedTweetSchema.id,
           tweetText: scrapedTweetSchema.text,
           tweetDate: scrapedTweetSchema.date,
