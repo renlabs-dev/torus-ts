@@ -197,13 +197,12 @@ jobs:
       inputs.skip_build ||
       contains(github.event.head_commit.message, 'skip build') ||
       (needs.turbo-check.outputs.torus-swarm-twitter == 'true' &&
-      (github.ref_name == 'main' || github.ref_name == 'dev' || github.ref_name == 'cicd')) 
+      (github.ref_name == 'main' || github.ref_name == 'dev' || github.ref_name == 'cicd'))
     uses: ./.github/workflows/app-deployment-template.yml
     secrets: inherit
     with:
       app_name: torus-swarm-twitter
       skip_build: ${{ inputs.skip_build || false }}
-      
 
   torus-swarm-verifier:
     needs: turbo-check

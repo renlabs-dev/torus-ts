@@ -1,13 +1,11 @@
 import { Keyring } from "@polkadot/keyring";
-import { if_let } from "rustie";
-import { assert, describe, expect, it } from "vitest";
-
 import { Api } from "@torus-network/sdk/chain/index.js";
 import { isErr, isOk, type Result } from "@torus-network/torus-utils/result";
-
+import { if_let } from "rustie";
+import { assert, describe, expect, it } from "vitest";
 import {
-  type ExtrinsicTracker,
   sendTxWithTracker,
+  type ExtrinsicTracker,
   type TxEvent,
   type TxInBlockEvent,
   type TxInternalErrorEvent,

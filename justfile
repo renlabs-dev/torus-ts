@@ -77,7 +77,7 @@ test-all filter="*":
 
 # Typecheck, lint, and run tests
 check-test filter="*":
-  pnpm exec turbo run typecheck lint test format-fix --continue -F "{{filter}}"
+  pnpm exec turbo run typecheck lint test format --continue -F "{{filter}}"
 
 create-package:
   pnpm turbo gen init
