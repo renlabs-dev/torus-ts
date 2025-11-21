@@ -33,7 +33,7 @@ export const twitterUsersSchema = createTable(
   {
     id: bigint("id").primaryKey(),
 
-    username: varchar("username", { length: 15 }),
+    username: varchar("username", { length: 30 }),
     screenName: varchar("screen_name", { length: 50 }),
     description: text("description"),
     avatarUrl: varchar("avatar_url", { length: 280 }),
