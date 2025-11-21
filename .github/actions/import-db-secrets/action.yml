@@ -35,4 +35,5 @@ runs:
         roleId: ${{ inputs.vault_role_id }}
         secretId: ${{ inputs.vault_secret_id }}
         secrets: |
-          torus_infra/data/${{ steps.set-env.outputs.env_name }}_web_apps torus_webapps_db_direct_url | POSTGRES_URL
+          torus_infra/data/${{ steps.set-env.outputs.env_name }}_web_apps torus_webapps_db_direct_url | POSTGRES_WEBAPPS_URL
+          torus_infra/data/${{ steps.set-env.outputs.env_name }}_prediction_swarm torus_prediction_swarm_db_direct_url | POSTGRES_PREDICTION_SWARM_URL

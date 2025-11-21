@@ -5,7 +5,7 @@ import { ChainMetadataSchema, mergeChainMetadataMap } from "@hyperlane-xyz/sdk";
 import { objFilter, objMap, promiseObjAll } from "@hyperlane-xyz/utils";
 import { tryAsync, trySync } from "@torus-network/torus-utils/try-catch";
 import { chainsTS } from "~/consts/chains";
-import chainsJson from "~/consts/chains.json";
+import chainsYaml from "~/consts/chains.yaml";
 import { config } from "~/consts/config";
 import { logger } from "~/utils/logger";
 import { z } from "zod";
@@ -18,7 +18,7 @@ export async function assembleChainMetadata(
   // Chains must include a cosmos chain or CosmosKit throws errors
   const [metadataParseError, parsedMetadata] = trySync(() =>
     z.record(z.string(), ChainMetadataSchema).safeParse({
-      ...(chainsJson as ChainMap<ChainMetadata>),
+      ...(chainsYaml as ChainMap<ChainMetadata>),
       ...chainsTS,
     }),
   );

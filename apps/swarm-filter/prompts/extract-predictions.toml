@@ -1,0 +1,267 @@
+[system]
+content = """
+You are an expert at extracting predictions from social media posts.
+
+{{validity_criteria}}
+
+Your task (only if prediction is valid):
+1. Extract the GOAL - exact text snippet(s) describing WHAT will happen
+2. Extract the TIMEFRAME - exact text snippet(s) describing WHEN it will happen
+3. Classify the TOPIC - categorize the prediction's subject matter
+4. Evaluate PREDICTION QUALITY (0-100 score) based on:
+   - Consequentiality: significance of the stakes
+   - Actionability: how useful for decisions
+   - Foresightedness: how non-obvious/insightful
+   - Resolution clarity: how specific the outcome and timeline
+   - Verifiability: how easy to verify (objective > fuzzy > ambiguous)
+   - Conviction level: confidence in prediction (higher is better, hedging reduces quality)
+   - Temporal horizon: time to resolution (shorter is better, but domain-appropriate)
+5. Rate confidence and vagueness
+6. Provide brief rationale explaining the quality score
+
+IMPORTANT RULES - READ CAREFULLY:
+- A valid prediction MUST meet ALL 4 validity criteria AND have BOTH a goal AND a timeframe
+- If prediction fails validity criteria OR you cannot identify a clear timeframe, set has_prediction to false - DO NOT return empty arrays
+- briefRationale MUST be under 300 characters - be concise
+- You will receive the main tweet AND context tweets (parent tweets, thread context, retweeted content)
+- The prediction goal CAN reference text from ANY tweet in the context, not just the main tweet
+- Extract the EXACT text verbatim - do not paraphrase or modify
+- Copy text character-for-character exactly as it appears in the tweet
+- NEVER use ellipsis (...) or skip any words - extract the complete, continuous text
+- DO NOT paraphrase or reword the text in any way
+- The goal text snippets should combine to form ONE coherent statement about the future
+- The goal text snippets should be verbatim what is on the text
+- If no valid prediction exists, return has_prediction: false and omit other fields
+- CRITICAL: Return ONLY raw JSON, NO markdown code blocks, NO ```json wrapper, JUST the JSON object
+
+EXAMPLES OF CONTEXT USAGE:
+- Parent tweet: "Some analysts say BTC will hit $90k in December"
+- Main tweet: "this will definitely happen"
+- Goal should reference the parent tweet's text with its tweet_id
+
+OUTPUT FORMAT:
+- has_prediction: boolean - whether the tweet contains a valid prediction
+- prediction_data: object or null - if has_prediction is true, contains all prediction fields; if false, set to null
+
+When has_prediction is true, prediction_data contains:
+- goal: array of {tweet_id, text} - exact text snippets forming the predicted outcome
+- timeframe: array of {tweet_id, text} - exact text snippets describing when
+- topicName: string - category (crypto, finance, sports, technology, politics, entertainment, business, science, general)
+- predictionQuality: integer 0-100 - overall quality score
+- briefRationale: string (max 300 chars) - explanation of quality score
+- llmConfidence: string decimal 0-1 - how confidently stated
+- vagueness: string decimal 0-1 - how vague/specific (1=very vague, 0=very specific)
+- context: object - structured context with relevantContext and topic-specific fields
+  * For crypto predictions: include both tickers (e.g., BTC, ETH) and tokens (e.g., Bitcoin, Ethereum)
+  * If only ticker is mentioned, infer the token name; if only token name is mentioned, infer the ticker
+  * tokens array must have at least 1 entry for crypto predictions
+"""
+
+[user]
+template = """
+Analyze this tweet and extract prediction information:
+
+MAIN TWEET (being analyzed):
+- Tweet ID: {{tweet_id}}
+- Text: {{tweet_text}}
+- Author: @{{author_username}}
+- Date: {{tweet_date}}
+
+CONTEXT TWEETS (for reference):
+{{context_tweets}}
+
+Extract:
+- goal: Array of exact (verbatim) text snippets forming ONE coherent statement about what will happen (can reference ANY tweet above)
+- timeframe: Array of exact text snippets describing when this will happen (can reference ANY tweet above)
+- topicName: Category string (e.g., "crypto", "finance", "sports", "technology", "politics", "entertainment", "business", "science", "general")
+- llmConfidence: 0-1 score of how confident the prediction is stated
+- vagueness: 0-1 score of how vague/specific the prediction is (1=very vague, 0=very specific)
+- context: Structured object with steelmanReasons and topic-specific fields
+
+IMPORTANT:
+- Copy the exact text verbatim from the tweets - do not paraphrase or modify
+- The goal/timeframe can reference text from the main tweet OR any context tweet. Each text snippet should be EXACTLY the same as the original tweet text
+- Use the correct tweet_id for each extracted text snippet
+- Return ONLY the raw JSON object - do NOT wrap it in markdown code blocks or ```json
+"""
+
+[output_schema]
+type = "object"
+required = ["has_prediction", "prediction_data"]
+properties = """
+{
+  "has_prediction": "boolean",
+  "prediction_data": {
+    "goal": [{"tweet_id": "string", "text": "string"}],
+    "timeframe": [{"tweet_id": "string", "text": "string"}],
+    "topicName": "string",
+    "predictionQuality": "integer",
+    "briefRationale": "string",
+    "llmConfidence": "string",
+    "vagueness": "string",
+    "context": "string"
+  } or null
+}
+"""
+
+[[examples]]
+tweet_id = "123"
+tweet_text = "Bitcoin will hit $100k by end of 2024"
+output = '''
+{
+  "has_prediction": true,
+  "prediction_data": {
+    "goal": [{"tweet_id": "123", "text": "Bitcoin will hit $100k"}],
+    "timeframe": [{"tweet_id": "123", "text": "by end of 2024"}],
+    "topicName": "crypto",
+    "predictionQuality": 75,
+    "briefRationale": "High-stakes crypto prediction. Specific target ($100k), clear timeline (end 2024), objective verification. Short horizon. High conviction. Consequential for investors.",
+    "llmConfidence": "0.85",
+    "vagueness": "0.2",
+    "context": {
+      "relevantContext": ["Specific numeric target makes verification objective", "Clear deadline reduces ambiguity", "High conviction statement"],
+      "tickers": ["BTC"],
+      "tokens": ["Bitcoin"],
+      "bullishness": 95
+    }
+  }
+}
+'''
+
+[[examples]]
+tweet_id = "456"
+tweet_text = "Just had coffee, great day!"
+output = '''
+{
+  "has_prediction": false,
+  "prediction_data": null
+}
+'''
+
+[[examples]]
+tweet_id = "501"
+tweet_text = "EF could easily stake ETH and use DeFi to cover most if not all of their internal budget"
+output = '''
+{
+  "has_prediction": false,
+  "prediction_data": null
+}
+'''
+
+[[examples]]
+tweet_id = "502"
+tweet_text = "Is improving profitability a key focus for the near future?"
+output = '''
+{
+  "has_prediction": false,
+  "prediction_data": null
+}
+'''
+
+[[examples]]
+tweet_id = "503"
+tweet_text = "Perhaps a good place to start would be blob-parameter-only forks! Extremely limited fork scope allows for more regular upgrades and more predictability for builders."
+output = '''
+{
+  "has_prediction": false,
+  "prediction_data": null
+}
+'''
+
+[[examples]]
+tweet_id = "504"
+tweet_text = "Wonder how the City will screw this up?"
+output = '''
+{
+  "has_prediction": false,
+  "prediction_data": null
+}
+'''
+
+[[examples]]
+tweet_id = "789"
+tweet_text = "I think AI will eventually change everything but who knows when"
+output = '''
+{
+  "has_prediction": true,
+  "prediction_data": {
+    "goal": [{"tweet_id": "789", "text": "AI will eventually change everything"}],
+    "timeframe": [{"tweet_id": "789", "text": "who knows when"}],
+    "topicName": "technology",
+    "predictionQuality": 25,
+    "briefRationale": "Extremely low quality. Completely vague outcome, no defined timeline, barely falsifiable. Only marginally valid because AI impact is genuinely consequential.",
+    "llmConfidence": "0.3",
+    "vagueness": "0.98",
+    "context": {
+      "relevantContext": ["AI impact is genuinely consequential to society", "Statement explicitly acknowledges complete uncertainty about timeframe"]
+    }
+  }
+}
+'''
+
+[[examples]]
+tweet_id = "101"
+tweet_text = "Apple will announce new iPhone in September with revolutionary features"
+output = '''
+{
+  "has_prediction": true,
+  "prediction_data": {
+    "goal": [{"tweet_id": "101", "text": "Apple will announce new iPhone"}, {"tweet_id": "101", "text": "revolutionary features"}],
+    "timeframe": [{"tweet_id": "101", "text": "in September"}],
+    "topicName": "technology",
+    "predictionQuality": 65,
+    "briefRationale": "Moderate quality. Clear timeline (September), verifiable outcome. 'Revolutionary' is subjective. Short horizon. Actionable for tech investors.",
+    "llmConfidence": "0.7",
+    "vagueness": "0.4",
+    "context": {
+      "relevantContext": ["Apple typically announces iPhones in September annually", "'Revolutionary features' is subjective but announcement itself is verifiable"]
+    }
+  }
+}
+'''
+
+[[examples]]
+tweet_id = "202"
+tweet_text = "Mark my words: Tesla stock to $500 before Q4"
+output = '''
+{
+  "has_prediction": true,
+  "prediction_data": {
+    "goal": [{"tweet_id": "202", "text": "Tesla stock to $500"}],
+    "timeframe": [{"tweet_id": "202", "text": "before Q4"}],
+    "topicName": "finance",
+    "predictionQuality": 80,
+    "briefRationale": "High quality. Specific target ($500), clear timeline (Q4), objective verification. Very short horizon. High conviction. Consequential for traders, excellent actionability.",
+    "llmConfidence": "0.9",
+    "vagueness": "0.15",
+    "context": {
+      "relevantContext": ["Specific numeric target makes verification objective", "Q4 timeline is clear and short-term", "High confidence phrase 'mark my words' indicates strong conviction"]
+    }
+  }
+}
+'''
+
+[[examples]]
+tweet_id = "303"
+tweet_text = "This will definitely happen"
+context_tweets = "Parent Tweet (ID: 302): Some analysts say BTC will hit $90k in December"
+output = '''
+{
+  "has_prediction": true,
+  "prediction_data": {
+    "goal": [{"tweet_id": "302", "text": "BTC will hit $90k"}],
+    "timeframe": [{"tweet_id": "302", "text": "in December"}],
+    "topicName": "crypto",
+    "predictionQuality": 70,
+    "briefRationale": "Solid quality. Specific target ($90k), clear timeline (December), objective verification. Short horizon. High conviction from endorsement. Reduced by analyst reliance.",
+    "llmConfidence": "0.85",
+    "vagueness": "0.2",
+    "context": {
+      "relevantContext": ["User strongly endorsing analyst prediction from parent tweet", "Specific price target and month makes verification clear", "Reliance on analyst opinion reduces independent conviction"],
+      "tickers": ["BTC"],
+      "tokens": ["Bitcoin"],
+      "bullishness": 90
+    }
+  }
+}
+'''

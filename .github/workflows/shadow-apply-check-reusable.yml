@@ -1,0 +1,133 @@
+name: Shadow Apply Check (Reusable)
+
+on:
+  workflow_call:
+    inputs:
+      env_name:
+        required: true
+        type: string
+        description: "Environment name (webapps or prediction_swarm)"
+    secrets:
+      db_url:
+        required: true
+        description: "Database connection URL"
+      vault_addr:
+        required: true
+      vault_role_id:
+        required: true
+      vault_secret_id:
+        required: true
+
+jobs:
+  shadow-apply:
+    runs-on: ubicloud-standard-2-ubuntu-2404
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Start db
+        run: |
+          docker compose up -d postgres
+          docker ps
+
+      - name: Import DB Secrets
+        uses: ./.github/actions/import-db-secrets
+        with:
+          vault_addr: ${{ secrets.vault_addr }}
+          vault_role_id: ${{ secrets.vault_role_id }}
+          vault_secret_id: ${{ secrets.vault_secret_id }}
+
+      - name: Fetch URL and test connection
+        id: shadow-db
+        run: |
+          CONTAINER_ID="$(docker compose ps -q postgres)"
+          DB_HOST="$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' "${CONTAINER_ID}")"
+          DATABASE_URL="postgresql://postgres:postgres@${DB_HOST}:5432/torus-ts-db?sslmode=disable"
+          echo "db_url=${DATABASE_URL}" >> $GITHUB_OUTPUT
+
+          echo "Waiting for PostgreSQL to be ready..."
+          until pg_isready -d "${DATABASE_URL}"; do
+            echo "PostgreSQL is unavailable - sleeping"
+            sleep 1
+          done
+          echo "PostgreSQL is ready!"
+
+      - name: Dump target database
+        run: pg_dump -Fc -v -b "${{ secrets.db_url }}" -f database.dump
+
+      - name: Load dump into shadow database
+        run: pg_restore -v --no-owner --no-acl --role=postgres -d "${{ steps.shadow-db.outputs.db_url }}" database.dump
+
+      - uses: ariga/setup-atlas@v0
+
+      - name: Apply migrations (dry-run)
+        id: dry-run
+        run: |
+          set +e  # Don't exit on command failure
+          output=$(atlas migrate apply --dry-run --env ${{ inputs.env_name }} --allow-dirty \
+                  --url "${{ steps.shadow-db.outputs.db_url }}" 2>&1)
+          exit_code=$?
+
+          set -e  # restore
+          sanitized_output=$(echo "$output" | sed -E 's#(postgresql://)[^:@]+:[^@]+@#\1****:****@#g')
+          echo "$sanitized_output"
+          echo "$sanitized_output" > dry_run_output.txt
+          echo "exit_code=$exit_code" >> $GITHUB_OUTPUT
+          exit $exit_code
+
+      - name: Apply migrations
+        id: shadow-apply
+        run: |
+          set +e  # Don't exit on command failure
+          output=$(atlas migrate apply --env ${{ inputs.env_name }} --allow-dirty \
+                  --url "${{ steps.shadow-db.outputs.db_url }}" --lock-timeout 120s 2>&1)
+          exit_code=$?
+
+          set -e  # restore
+          sanitized_output=$(echo "$output" | sed -E 's#(postgresql://)[^:@]+:[^@]+@#\1****:****@#g')
+          echo "$sanitized_output"
+          echo "$sanitized_output" > shadow_apply_output.txt
+          echo "exit_code=$exit_code" >> $GITHUB_OUTPUT
+          exit $exit_code
+
+      - name: Generate shadow apply summary
+        if: always()
+        run: |
+          echo "## 🧪 Shadow Database Test (${{ inputs.env_name }})" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          if [ "${{ steps.shadow-apply.outcome }}" == "success" ]; then
+            echo "✅ **Shadow database migration test passed**" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "- **Status:** Migrations can be safely applied to production" >> $GITHUB_STEP_SUMMARY
+            echo "- **Test Environment:** Shadow database with production data" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ **Shadow database migration test failed**" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "- **Status:** Migrations may have issues with production data" >> $GITHUB_STEP_SUMMARY
+            echo "- **Action:** Review migration compatibility" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Dry-Run Output" >> $GITHUB_STEP_SUMMARY
+          echo "```" >> $GITHUB_STEP_SUMMARY
+          if [ -f dry_run_output.txt ]; then
+            cat dry_run_output.txt >> $GITHUB_STEP_SUMMARY
+          else
+            echo "No dry-run output available" >> $GITHUB_STEP_SUMMARY
+          fi
+          echo "```" >> $GITHUB_STEP_SUMMARY
+
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Shadow Apply Output" >> $GITHUB_STEP_SUMMARY
+          echo "```" >> $GITHUB_STEP_SUMMARY
+          if [ -f shadow_apply_output.txt ]; then
+            cat shadow_apply_output.txt >> $GITHUB_STEP_SUMMARY
+          else
+            echo "No shadow-apply output available" >> $GITHUB_STEP_SUMMARY
+          fi
+          echo "```" >> $GITHUB_STEP_SUMMARY
+
+      - name: Delete DB
+        if: always()
+        run: docker compose down -v

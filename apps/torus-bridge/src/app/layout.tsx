@@ -4,10 +4,11 @@ import "@interchain-ui/react/styles";
 import "@solana/wallet-adapter-react-ui/styles.css";
 import { Layout } from "@torus-ts/ui/components/layout";
 import { createSeoMetadata } from "@torus-ts/ui/components/seo";
-import { APRBarWrapper } from "~/components/apr-bar-wrapper";
 import { AppContextProvider } from "~/context/app-context-provider";
 import { env, EnvScript } from "~/env";
 import { Fira_Mono as FiraMono } from "next/font/google";
+
+// import { WalletConflictGuard } from "./_components/wallet-conflict-guard";
 
 export function generateMetadata() {
   return createSeoMetadata({
@@ -40,12 +41,9 @@ export default function RootLayout({
 }>) {
   return (
     <Layout font={firaMono} headScripts={[EnvScript]}>
-      <AppContextProvider>
-        <div className="fixed left-0 top-0 z-50 flex w-full justify-end">
-          <APRBarWrapper />
-        </div>
-        {children}
-      </AppContextProvider>
+      {/* <WalletConflictGuard> */}
+      <AppContextProvider>{children}</AppContextProvider>
+      {/* </WalletConflictGuard> */}
     </Layout>
   );
 }

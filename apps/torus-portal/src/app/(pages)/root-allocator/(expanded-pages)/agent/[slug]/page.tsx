@@ -29,9 +29,15 @@ export async function generateMetadata({
     api.agent.byKeyLastBlock({ key: slug }),
   );
 
-  const defaultMetadata = {
-    title: "Agent Details | Torus Portal",
-    description: "View agent detailed information.",
+  if (mdlError !== undefined) {
+    return {};
+  }
+
+  const agentName = mdl?.name;
+
+  return createSeoMetadata({
+    title: `${agentName} - Agent Details | Torus Portal`,
+    description: `View ${agentName} detailed information.`,
     keywords: [
       "agent details",
       "agent profile",
@@ -42,20 +48,6 @@ export async function generateMetadata({
     ogSiteName: "Torus Portal",
     canonical: `/root-allocator/agent/${slug}`,
     baseUrl: env("BASE_URL"),
-  };
-
-  if (mdlError !== undefined || !mdl?.name) {
-    return createSeoMetadata({
-      ...defaultMetadata,
-    });
-  }
-
-  const agentName = mdl.name;
-
-  return createSeoMetadata({
-    ...defaultMetadata,
-    title: `${agentName} - Agent Details | Torus Portal`,
-    description: `View ${agentName} detailed information.`,
   });
 }
 

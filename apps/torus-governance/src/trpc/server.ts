@@ -17,6 +17,8 @@ const createContext = cache(async () => {
     jwtSecret: env("JWT_SECRET"),
     authOrigin: env("NEXT_PUBLIC_AUTH_ORIGIN"),
     allocatorAddress: env("NEXT_PUBLIC_TORUS_ALLOCATOR_ADDRESS"),
+    predictionAppAddress: env("PREDICTION_APP_ADDRESS"),
+    permissionGrantorAddress: env("PERMISSION_GRANTOR_ADDRESS"),
   });
 });
 

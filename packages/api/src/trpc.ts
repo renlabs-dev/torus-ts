@@ -9,24 +9,49 @@
 
 import type { ApiPromise } from "@polkadot/api";
 import type { SS58Address } from "@torus-network/sdk/types";
+import { checkSS58 } from "@torus-network/sdk/types";
 import { connectToChainRpc } from "@torus-network/sdk/utils";
 import { validateEnvOrExit } from "@torus-network/torus-utils/env";
 import { trySync } from "@torus-network/torus-utils/try-catch";
 import { createDb } from "@torus-ts/db/client";
+import { KaitoTwitterAPI } from "@torus-ts/twitter-client";
 import { initTRPC, TRPCError } from "@trpc/server";
 import superjson from "superjson";
 import { assert } from "tsafe";
 import { z, ZodError } from "zod";
 import type { SessionData } from "./auth";
 import { decodeSessionToken } from "./auth";
+import { createHashSigner } from "./auth/sign";
 
 let globalDb: ReturnType<typeof createDb> | null = null;
 let globalWsApi: ApiPromise | null = null;
+let globalTwitterClient: KaitoTwitterAPI | null = null;
+let globalServerHashSigner: ((hash: string) => string) | null = null;
 
 const getEnv = validateEnvOrExit({
   NEXT_PUBLIC_TORUS_RPC_URL: z
     .string()
     .nonempty("TORUS_CURATOR_MNEMONIC is required"),
+  NEXT_PUBLIC_PREDICTION_APP_ADDRESS: z
+    .string()
+    .min(
+      1,
+      "NEXT_PUBLIC_PREDICTION_APP_ADDRESS is required for credit purchases",
+    )
+    .transform((val) => checkSS58(val)),
+  TWITTERAPI_IO_KEY: z.string().min(1, "TWITTERAPI_IO_KEY is required"),
+  PERMISSION_GRANTOR_ADDRESS: z
+    .string()
+    .min(1, "PERMISSION_GRANTOR_ADDRESS is required for permission checks")
+    .transform((val) => checkSS58(val)),
+  PERMISSION_CACHE_REFRESH_INTERVAL_MS: z
+    .string()
+    .optional()
+    .default("300000")
+    .transform((val) => Number.parseInt(val, 10)),
+  PREDICTION_APP_MNEMONIC: z
+    .string()
+    .min(1, "PREDICTION_APP_MNEMONIC is required for signing receipts"),
 });
 
 // TODO: better error and connection handling
@@ -41,6 +66,27 @@ async function cacheCreateWsApi() {
     globalWsApi ??
     (await connectToChainRpc(getEnv(process.env).NEXT_PUBLIC_TORUS_RPC_URL));
   return globalWsApi;
+}
+
+// Lazy init Twitter client
+function getorCreateTwitterClient() {
+  if (globalTwitterClient === null) {
+    const env = getEnv(process.env);
+    globalTwitterClient = new KaitoTwitterAPI({
+      apiKey: env.TWITTERAPI_IO_KEY,
+    });
+  }
+  return globalTwitterClient;
+}
+
+async function getOrCreateServerHashSigner() {
+  if (globalServerHashSigner === null) {
+    const env = getEnv(process.env);
+    globalServerHashSigner = await createHashSigner(
+      env.PREDICTION_APP_MNEMONIC,
+    );
+  }
+  return globalServerHashSigner;
 }
 
 /**
@@ -62,7 +108,11 @@ export interface TRPCContext {
   jwtSecret: string;
   authOrigin: string;
   allocatorAddress: SS58Address;
+  predictionAppAddress: SS58Address;
+  twitterClient: KaitoTwitterAPI;
+  permissionGrantorAddress: SS58Address;
   wsAPI: Promise<ApiPromise>;
+  serverSignHash: Promise<(hash: string) => string>;
   swarmMnemonic?: string;
   swarmApiUrl?: string;
 }
@@ -77,6 +127,8 @@ export const createTRPCContext = (opts: {
   jwtSecret: string;
   authOrigin: string;
   allocatorAddress: SS58Address;
+  predictionAppAddress: SS58Address;
+  permissionGrantorAddress: SS58Address;
   swarmMnemonic?: string;
   swarmApiUrl?: string;
 }) => {
@@ -132,7 +184,11 @@ export const createTRPCContext = (opts: {
     jwtSecret,
     authOrigin: opts.authOrigin,
     allocatorAddress: opts.allocatorAddress,
+    predictionAppAddress: opts.predictionAppAddress,
+    twitterClient: getorCreateTwitterClient(),
+    permissionGrantorAddress: opts.permissionGrantorAddress,
     wsAPI,
+    serverSignHash: getOrCreateServerHashSigner(),
     swarmMnemonic: opts.swarmMnemonic,
     swarmApiUrl: opts.swarmApiUrl,
   };
@@ -167,6 +223,14 @@ export const createCallerFactory = t.createCallerFactory;
  * These are the pieces you use to build your tRPC API. You should import these
  * a lot in the /src/server/api/routers folder
  */
+
+export { t };
+
+/**
+ * Middleware builder for creating custom tRPC middleware
+ * @see https://trpc.io/docs/server/middlewares
+ */
+export const middleware = t.middleware;
 
 /**
  * This is how you create new routers and sub routers in your tRPC API

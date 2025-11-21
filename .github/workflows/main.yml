@@ -178,6 +178,46 @@ jobs:
       app_name: prediction-swarm-dash
       skip_build: ${{ inputs.skip_build || false }}
 
+  prediction-swarm:
+    needs: turbo-check
+    if: |
+      inputs.skip_build ||
+      contains(github.event.head_commit.message, 'skip build') ||
+      (needs.turbo-check.outputs.prediction-swarm == 'true' &&
+      (github.ref_name == 'main' || github.ref_name == 'dev' || github.ref_name == 'cicd'))
+    uses: ./.github/workflows/app-deployment-template.yml
+    secrets: inherit
+    with:
+      app_name: prediction-swarm
+      skip_build: ${{ inputs.skip_build || false }}
+
+  torus-swarm-twitter:
+    needs: turbo-check
+    if: |
+      inputs.skip_build ||
+      contains(github.event.head_commit.message, 'skip build') ||
+      (needs.turbo-check.outputs.torus-swarm-twitter == 'true' &&
+      (github.ref_name == 'main' || github.ref_name == 'dev' || github.ref_name == 'cicd')) 
+    uses: ./.github/workflows/app-deployment-template.yml
+    secrets: inherit
+    with:
+      app_name: torus-swarm-twitter
+      skip_build: ${{ inputs.skip_build || false }}
+      
+
+  torus-swarm-verifier:
+    needs: turbo-check
+    if: |
+      inputs.skip_build ||
+      contains(github.event.head_commit.message, 'skip build') ||
+      (needs.turbo-check.outputs.torus-swarm-verifier == 'true' &&
+      (github.ref_name == 'main' || github.ref_name == 'dev' || github.ref_name == 'cicd'))
+    uses: ./.github/workflows/app-deployment-template.yml
+    secrets: inherit
+    with:
+      app_name: torus-swarm-verifier
+      skip_build: ${{ inputs.skip_build || false }}
+
   ###################################
   ######## DRY RUN BUILDS  ##########
   ###################################
@@ -313,6 +353,44 @@ jobs:
     secrets: inherit
     with:
       app_name: prediction-swarm-dash
+
+  prediction-swarm-dry-run:
+    needs: [turbo-check, pr-check]
+    if: |
+      github.ref_name != 'main' &&
+      github.ref_name != 'dev' &&
+      github.ref_name != 'cicd' &&
+      needs.turbo-check.outputs.prediction-swarm == 'true' &&
+      needs.pr-check.outputs.pr_exists == 'false'
+    uses: ./.github/workflows/dry-run-build-template.yml
+    secrets: inherit
+    with:
+      app_name: prediction-swarm
+  torus-swarm-twitter-dry-run:
+    needs: [turbo-check, pr-check]
+    if: |
+      github.ref_name != 'main' &&
+      github.ref_name != 'dev' &&
+      github.ref_name != 'cicd' &&
+      needs.turbo-check.outputs.torus-swarm-twitter == 'true' &&
+      needs.pr-check.outputs.pr_exists == 'false'
+    uses: ./.github/workflows/dry-run-build-template.yml
+    secrets: inherit
+    with:
+      app_name: torus-swarm-twitter
+
+  torus-swarm-verifier-dry-run:
+    needs: [turbo-check, pr-check]
+    if: |
+      github.ref_name != 'main' &&
+      github.ref_name != 'dev' &&
+      github.ref_name != 'cicd' &&
+      needs.turbo-check.outputs.torus-swarm-verifier == 'true' &&
+      needs.pr-check.outputs.pr_exists == 'false'
+    uses: ./.github/workflows/dry-run-build-template.yml
+    secrets: inherit
+    with:
+      app_name: torus-swarm-verifier
 
   ###################################
   ########### PR PREVIEW ############
@@ -518,6 +596,28 @@ jobs:
       app_name: prediction-swarm-dash
       delete: true
 
+  prediction-swarm-pr-activate:
+    needs: turbo-check
+    if: |
+      github.event.pull_request.state == 'open' && !github.event.repository.fork
+      && !github.event.pull_request.draft
+      && github.head_ref != 'main' && github.head_ref != 'dev' &&
+      needs.turbo-check.outputs.prediction-swarm == 'true'
+    uses: ./.github/workflows/pr-preview-template.yml
+    secrets: inherit
+    with:
+      app_name: prediction-swarm
+
+  prediction-swarm-pr-delete:
+    if: |
+      github.event.pull_request.state == 'closed'
+      && github.head_ref != 'main' && github.head_ref != 'dev'
+    uses: ./.github/workflows/pr-preview-template.yml
+    secrets: inherit
+    with:
+      app_name: prediction-swarm
+      delete: true
+
   deployment-summary:
     if: always()
     needs:
@@ -533,6 +633,9 @@ jobs:
         torus-worker,
         torus-prophet-finder,
         prediction-swarm-dash,
+        prediction-swarm,
+        torus-swarm-twitter,
+        torus-swarm-verifier,
         torus-page-dry-run,
         torus-portal-dry-run,
         torus-wallet-dry-run,
@@ -543,6 +646,9 @@ jobs:
         torus-worker-dry-run,
         torus-prophet-finder-dry-run,
         prediction-swarm-dash-dry-run,
+        prediction-swarm-dry-run,
+        torus-swarm-twitter-dry-run,
+        torus-swarm-verifier-dry-run,
         torus-allocator-pr-activate,
         torus-cache-pr-activate,
         torus-governance-pr-activate,
@@ -552,6 +658,7 @@ jobs:
         torus-bridge-pr-activate,
         torus-prophet-finder-pr-activate,
         prediction-swarm-dash-pr-activate,
+        prediction-swarm-pr-activate,
         torus-allocator-pr-delete,
         torus-cache-pr-delete,
         torus-governance-pr-delete,
@@ -561,6 +668,7 @@ jobs:
         torus-bridge-pr-delete,
         torus-prophet-finder-pr-delete,
         prediction-swarm-dash-pr-delete,
+        prediction-swarm-pr-delete,
       ]
     runs-on: ubicloud-standard-2
     steps:
@@ -587,7 +695,7 @@ jobs:
           echo "" >> $GITHUB_STEP_SUMMARY
 
           # Define application list
-          apps=(torus-page torus-portal torus-wallet torus-allocator torus-bridge torus-cache torus-governance torus-worker torus-prophet-finder prediction-swarm-dash)
+          apps=(torus-page torus-portal torus-wallet torus-allocator torus-bridge torus-cache torus-governance torus-worker torus-prophet-finder prediction-swarm-dash prediction-swarm torus-swarm-twitter torus-swarm-verifier)
 
           # Production/Dev Deployments
           if [ "${{ github.ref_name }}" == "main" ] || [ "${{ github.ref_name }}" == "dev" ] || [ "${{ github.ref_name }}" == "cicd" ]; then
@@ -637,6 +745,18 @@ jobs:
                   changed="${{ needs.turbo-check.outputs.prediction-swarm-dash }}"
                   deploy_result="${{ needs.prediction-swarm-dash.result }}"
                   ;;
+                "prediction-swarm")
+                  changed="${{ needs.turbo-check.outputs.prediction-swarm }}"
+                  deploy_result="${{ needs.prediction-swarm.result }}"
+                  ;;
+                "torus-swarm-twitter")
+                  changed="${{ needs.turbo-check.outputs.torus-swarm-twitter }}"
+                  deploy_result="${{ needs.torus-swarm-twitter.result }}"
+                  ;;
+                "torus-swarm-verifier")
+                  changed="${{ needs.turbo-check.outputs.torus-swarm-verifier }}"
+                  deploy_result="${{ needs.torus-swarm-verifier.result }}"
+                  ;;
               esac
 
               if [ "$changed" == "true" ]; then change_icon="✅"; change_text="Yes"; else change_icon="⏭️"; change_text="No"; fi
@@ -658,7 +778,7 @@ jobs:
             echo "|-------------|--------|-------------|" >> $GITHUB_STEP_SUMMARY
 
             # PR preview apps (subset of all apps)
-            pr_apps=(torus-allocator torus-cache torus-governance torus-page torus-portal torus-wallet torus-bridge torus-prophet-finder prediction-swarm-dash)
+            pr_apps=(torus-allocator torus-cache torus-governance torus-page torus-portal torus-wallet torus-bridge torus-prophet-finder prediction-swarm-dash prediction-swarm)
 
             for app in "${pr_apps[@]}"; do
               case "$app" in
@@ -698,10 +818,22 @@ jobs:
                   activate_result="${{ needs.prediction-swarm-dash-pr-activate.result }}"
                   delete_result="${{ needs.prediction-swarm-dash-pr-delete.result }}"
                   ;;
+                "prediction-swarm")
+                  activate_result="${{ needs.prediction-swarm-pr-activate.result }}"
+                  delete_result="${{ needs.prediction-swarm-pr-delete.result }}"
+                  ;;
               esac
 
               if [ "$activate_result" == "success" ]; then
-                echo "| ${app} | ✅ Deployed | [Preview](https://pr-${{ github.event.number }}.${app}.torus.network) |" >> $GITHUB_STEP_SUMMARY
+                # Set custom domain for specific apps
+                if [ "$app" == "torus-prophet-finder" ]; then
+                  preview_url="https://pr-${{ github.event.number }}.prophetfinder.com"
+                elif [ "$app" == "prediction-swarm" ]; then
+                  preview_url="https://pr-${{ github.event.number }}.predictionswarm.com"
+                else
+                  preview_url="https://pr-${{ github.event.number }}.${app}.torus.network"
+                fi
+                echo "| ${app} | ✅ Deployed | [Preview](${preview_url}) |" >> $GITHUB_STEP_SUMMARY
               elif [ "$delete_result" == "success" ]; then
                 echo "| ${app} | 🗑️ Deleted | - |" >> $GITHUB_STEP_SUMMARY
               elif [ "$activate_result" == "skipped" ] && [ "$delete_result" == "skipped" ]; then
@@ -750,6 +882,15 @@ jobs:
                   ;;
                 "prediction-swarm-dash")
                   dry_run_result="${{ needs.prediction-swarm-dash-dry-run.result }}"
+                  ;;
+                "prediction-swarm")
+                  dry_run_result="${{ needs.prediction-swarm-dry-run.result }}"
+                  ;;
+                "torus-swarm-twitter")
+                  dry_run_result="${{ needs.torus-swarm-twitter-dry-run.result }}"
+                  ;;
+                "torus-swarm-verifier")
+                  dry_run_result="${{ needs.torus-swarm-verifier-dry-run.result }}"
                   ;;
               esac
 

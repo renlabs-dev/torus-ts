@@ -7,12 +7,12 @@ import { Footer } from "@torus-ts/ui/components/footer";
 import { Layout } from "@torus-ts/ui/components/layout";
 import { createSeoMetadata } from "@torus-ts/ui/components/seo";
 import { Toaster } from "@torus-ts/ui/components/toaster";
-import { APRBarWrapper } from "~/components/apr-bar-wrapper";
 import { UsdPriceProvider } from "~/context/usd-price-provider";
 import { WalletProvider } from "~/context/wallet-provider";
 import { env, EnvScript } from "~/env";
 import { firaMono } from "~/utils/fonts";
 import PlausibleProvider from "next-plausible";
+import { APRBar } from "./_components/apr-bar/apr-bar";
 import { SidebarLinks } from "./_components/sidebar-links";
 import { TransactionsSheet } from "./_components/transactions-sheet";
 import { WalletBalance } from "./_components/wallet-balance";
@@ -73,7 +73,7 @@ export default function RootLayout({
           torusCacheUrl={env("NEXT_PUBLIC_TORUS_CACHE_URL")}
         >
           <WalletHeader />
-          <APRBarWrapper />
+          <APRBar />
           <Container>
             <main className="mx-auto flex min-w-full flex-col items-center gap-3 text-white">
               <div className="flex w-full max-w-screen-xl flex-col justify-around gap-4 lg:mt-[10vh] lg:flex-row">

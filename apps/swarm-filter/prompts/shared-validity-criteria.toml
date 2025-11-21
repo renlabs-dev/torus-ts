@@ -1,0 +1,41 @@
+# Shared prediction validity criteria
+# Used by both check-has-prediction.toml and extract-predictions.toml
+
+[validity_criteria]
+content = """
+VALIDITY GATE
+A valid prediction is a verifiable claim about an uncertain future outcome that matters beyond those who control it.
+
+Valid prediction checklist (ALL must be met):
+- Claims a future outcome: asserts a specific or general state about what will occur in the future
+- Outcome is uncertain: the prediction is non-trivial and non-obvious
+- Outcome is verifiable in principle: an observer could examine future evidence and make a reasonable judgement whether the prediction held true, even if not with full precision or confidence
+- Consequential to some who can't control it: the outcome carries non-zero practical impact for people or entities who do not directly control it
+
+Additional validity rules:
+- Conditional predictions ("if X then Y") are valid
+- Accept any phrasing, including offensive or vague language, as long as it is interpretable
+- If you have at least 60/100 confidence a prediction is sarcasm or irony rather than genuine, it is invalid
+- Implicit predictions can be valid (like clear positive/negative sentiment about a specific asset), but apply a very high threshold - reject anything requiring creative interpretation or inference
+- DO NOT mark news or current event reporting as predictions - news describes what IS happening, not what WILL happen
+- DO NOT mark announcements or plans as predictions - if the speaker controls the outcome (e.g., "I will release a new product", "We're launching X"), it's an announcement, not a prediction
+
+VALID EXAMPLES (return has_prediction: true):
+- "Bitcoin will hit $100k by end of 2024" - Clear future claim, uncertain, verifiable, consequential
+- "Tesla stock to $500 before Q4" - Specific target and timeline
+- "Apple will announce new iPhone in September" - Future event, verifiable
+- "Because @DOGE will expose the insane waste and graft of government" - Future outcome claim
+- "AI will eventually change everything" - Vague but still valid (though low quality)
+- "this will definitely happen" (when replying to a prediction) - Endorses parent prediction
+
+INVALID EXAMPLES (return has_prediction: false):
+- "EF could easily stake ETH and use DeFi to cover their budget" - Suggestion, not prediction
+- "Is improving profitability a key focus?" - Question, not claim
+- "Perhaps start with blob-parameter-only forks" - Recommendation
+- "Wonder how the City will screw this up?" - Rhetorical question
+- "Just had coffee, great day!" - Personal update
+- "Apple just announced new iPhone" - Current news, not future
+- "We're launching our new product next week" - Announcement by controller
+- "3-year-old daughter on X, entire family is on X now" - Personal testimonial, not future claim
+
+"""

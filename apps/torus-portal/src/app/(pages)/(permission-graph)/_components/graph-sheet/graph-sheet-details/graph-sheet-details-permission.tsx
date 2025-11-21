@@ -45,7 +45,11 @@ export function GraphSheetDetailsPermission({
 
   // Group distribution targets by target account to avoid duplicates and show streams per target
   const distributionTargets = useMemo(() => {
-    if (!allPermissions || permissionData?.permissionType !== "stream") {
+    if (
+      !allPermissions ||
+      !permissionData ||
+      permissionData.permissionType !== "stream"
+    ) {
       return [];
     }
 

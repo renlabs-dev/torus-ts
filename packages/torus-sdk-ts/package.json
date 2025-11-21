@@ -78,7 +78,7 @@
     "@polkadot/util": "13.4.3",
     "@polkadot/util-crypto": "^13.4.3",
     "@torus-network/torus-utils": "workspace:*",
-    "@wagmi/core": "^2.22.0",
+    "@wagmi/core": "2.16.3",
     "base64url": "^3.0.1",
     "emittery": "catalog:",
     "hono": "^4.7.6",

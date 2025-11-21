@@ -47,10 +47,7 @@ export function TransferFields({
           return (
             <div className="space-y-2">
               <FormAddressField
-                field={{
-                  ...field,
-                  value: field.value || "",
-                }}
+                field={field}
                 label="From Account"
                 disabled={!isAccountConnected}
               />
@@ -82,13 +79,7 @@ export function TransferFields({
           <FormItem>
             <FormLabel>To Account</FormLabel>
             <FormControl>
-              <FormAddressField
-                field={{
-                  ...field,
-                  value: field.value || "",
-                }}
-                disabled={!isAccountConnected}
-              />
+              <FormAddressField field={field} disabled={!isAccountConnected} />
             </FormControl>
             <FormDescription>The account to transfer stake to.</FormDescription>
             <FormMessage />
@@ -104,7 +95,7 @@ export function TransferFields({
             <FormLabel>Amount</FormLabel>
             <FormControl>
               <TokenAmountInput
-                value={field.value || ""}
+                value={field.value}
                 onChange={field.onChange}
                 placeholder="Enter amount to transfer"
                 disabled={!isAccountConnected}

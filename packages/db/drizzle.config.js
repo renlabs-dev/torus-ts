@@ -7,7 +7,7 @@ const envSchema = z.object({
 const env = envSchema.parse(process.env);
 
 export default {
-  schema: "./src/schema.ts",
+  schema: "./src/schema/index.ts",
   dialect: "postgresql",
   dbCredentials: { url: env.POSTGRES_URL },
 };
