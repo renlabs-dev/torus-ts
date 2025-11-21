@@ -4,16 +4,10 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@torus-ts/ui/components/tooltip";
-import { Brain, Clock, Download, RefreshCw, ShieldCheck } from "lucide-react";
-
-type ScraperStatus =
-  | "suggested"
-  | "scraping"
-  | "updating"
-  | "complete";
+import { Clock, Download, RefreshCw, ShieldCheck } from "lucide-react";
 
 interface ProgressStagesProps {
-  status: ScraperStatus;
+  status: string;
 }
 
 export function ProgressStages({ status }: ProgressStagesProps) {

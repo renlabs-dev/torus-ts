@@ -34,8 +34,6 @@ export default function ScraperQueuePage() {
   const suggested = queue?.filter((item) => item.status === "suggested") ?? [];
   const scraping = queue?.filter((item) => item.status === "scraping") ?? [];
   const updating = queue?.filter((item) => item.status === "updating") ?? [];
-  const processing =
-    queue?.filter((item) => item.status === "processing") ?? [];
 
   // Separate user's accounts from each category
   const getUserAccounts = (items: typeof queue) =>
