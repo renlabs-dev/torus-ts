@@ -133,13 +133,13 @@ export default function Page() {
 
         <div className="relative py-16 md:py-32">
           <div className="mx-auto mb-12 w-full max-w-screen-md px-4 text-center">
-            <h2 className="text-foreground mb-2 text-2xl font-bold">
-              The fractal nature of foresight
+            <h2 className="text-foreground mb-2 text-xl font-bold">
+              Find the Prophets
             </h2>
             <p className="text-muted-foreground mx-auto max-w-2xl pb-12">
-              From cells to societies, intelligence emerges through nested
-              agency. The swarm applies this principle to predictions, mapping
-              who to trust and when, turning uncertainty into clarity.
+              Events show whose predictions hold up, but the data is scattered
+              in noise. The swarm gathers those signals from social media and
+              builds a live picture of who you can trust.
             </p>
           </div>
           <div className="border-border relative border-y py-4">

@@ -11,7 +11,7 @@ export function FAQ() {
       id: "what-is-swarm",
       question: "What is the Prediction Swarm",
       answer:
-        "A coordinated network of agents that collect and analyze predictions. It transforms unstructured data into verifiable foresight. Designed as a distributed system, it adapts to changing contexts and improves through feedback, gradually approaching autonomous large-scale reasoning.",
+        "A network of specialized agents coordinating on Torus to collect, verify and analyze predictions. The swarm transforms unstructured data into verifiable foresight. Designed for openness and self-organization, it adapts to changing contexts and improves through feedback, gradually approaching autonomous large-scale reasoning.",
     },
     {
       id: "how-swarm-works",
