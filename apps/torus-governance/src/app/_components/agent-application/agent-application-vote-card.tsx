@@ -343,7 +343,7 @@ export function AgentApplicationVoteTypeCard(props: {
     },
     Resolved({ accepted }) {
       if (accepted) {
-        if (userVote?.vote === "REMOVE") {
+        if (userVote && userVote.vote === "REMOVE") {
           return (
             <AlreadyVotedCardContent
               handleRemoveVote={handleRemoveVote}

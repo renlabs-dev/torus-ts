@@ -16,7 +16,7 @@ services:
       - ./docker/subspace-extra:/subspace/extra:ro
 
   postgres:
-    image: postgres:16-alpine
+    image: postgres:18-alpine
     ports:
       - 5432:5432
     volumes:
@@ -26,6 +26,15 @@ services:
       - POSTGRES_USER=postgres
       - POSTGRES_DB=torus-ts-db
       - POSTGRES_HOST_AUTH_METHOD=md5
+  pgadmin4:
+    image: dpage/pgadmin4
+    container_name: pgadmin4
+    restart: unless-stopped
+    environment:
+      PGADMIN_DEFAULT_EMAIL: postgres@example.org
+      PGADMIN_DEFAULT_PASSWORD: postgres
+    ports:
+      - "5050:80"
 
   # torus-cache:
   #   build:
@@ -48,6 +57,7 @@ services:
     environment:
       - NEXT_PUBLIC_TORUS_RPC_URL=${NEXT_PUBLIC_TORUS_RPC_URL}
       - POSTGRES_URL=postgres://postgres:postgres@postgres:5432/torus-ts-db
+      - PREDICTION_APP_MNEMONIC=${PREDICTION_APP_MNEMONIC}
       - PORT=8000
     ports:
       - 3012:8000
@@ -64,6 +74,7 @@ services:
       - POSTGRES_URL=postgres://postgres:postgres@postgres:5432/torus-ts-db
       - JWT_SECRET=12345678
       - PINATA_JWT=${PINATA_JWT}
+      - PREDICTION_APP_MNEMONIC=${PREDICTION_APP_MNEMONIC}
     ports:
       - 3021:8000
 
@@ -88,6 +99,7 @@ services:
       - POSTGRES_URL=postgres://postgres:postgres@postgres:5432/torus-ts-db
       - JWT_SECRET=12345678
       - PINATA_JWT=${PINATA_JWT}
+      - PREDICTION_APP_MNEMONIC=${PREDICTION_APP_MNEMONIC}
     ports:
       - 3023:8000
 
@@ -104,6 +116,45 @@ services:
       - JWT_SECRET=12345678
     ports:
       - 3024:8000
+
+  prediction-swarm:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+      args:
+        APP_NAME: prediction-swarm
+    environment:
+      - POSTGRES_URL=${POSTGRES_URL}
+      - JWT_SECRET=${JWT_SECRET}
+      - NEXT_PUBLIC_TORUS_RPC_URL=${NEXT_PUBLIC_TORUS_RPC_URL}
+      - NEXT_PUBLIC_TORUS_ALLOCATOR_ADDRESS=${NEXT_PUBLIC_TORUS_ALLOCATOR_ADDRESS}
+      - NEXT_PUBLIC_AUTH_ORIGIN=${AUTH_ORIGIN}
+      - NEXT_PUBLIC_PREDICTION_APP_ADDRESS=${NEXT_PUBLIC_PREDICTION_APP_ADDRESS}
+      - PERMISSION_GRANTOR_ADDRESS=${PERMISSION_GRANTOR_ADDRESS}
+      - PREDICTION_APP_MNEMONIC=${PREDICTION_APP_MNEMONIC}
+      - TWITTERAPI_IO_KEY=${TWITTERAPI_IO_KEY}
+      - PORT=3004
+    ports:
+      - "3004:3004"
+
+  swarm-filter:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+      args:
+        APP_NAME: swarm-filter
+    environment:
+      - POSTGRES_URL=${POSTGRES_URL}
+      - API_URL=http://prediction-swarm:3004
+      - AUTH_ORIGIN=${AUTH_ORIGIN}
+      - OPENROUTER_API_KEY=${OPENROUTER_API_KEY}
+      - PREDICTION_CHECK_MODEL=${PREDICTION_CHECK_MODEL}
+      - TOPIC_CLASSIFICATION_MODEL=${TOPIC_CLASSIFICATION_MODEL}
+      - PREDICTION_EXTRACTION_MODEL=${PREDICTION_EXTRACTION_MODEL}
+      - FILTER_AGENT_MNEMONIC=${FILTER_AGENT_MNEMONIC}
+      - BATCH_SIZE=${BATCH_SIZE:-48}
+
+    command: pnpm --filter swarm-filter dev
 
 # TODO: Traefik for local Docker services
 

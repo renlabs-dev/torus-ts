@@ -1,0 +1,128 @@
+name: Apply Migration (Reusable)
+
+on:
+  workflow_call:
+    inputs:
+      env_name:
+        required: true
+        type: string
+        description: "Environment name (webapps or prediction_swarm)"
+    secrets:
+      db_url:
+        required: true
+        description: "Database connection URL"
+      vault_addr:
+        required: true
+      vault_role_id:
+        required: true
+      vault_secret_id:
+        required: true
+    outputs:
+      applied:
+        description: "Whether migrations were successfully applied"
+        value: ${{ jobs.apply.outputs.applied }}
+
+jobs:
+  apply:
+    runs-on: ubicloud-standard-2
+    outputs:
+      applied: ${{ steps.apply-migrations.outcome == 'success' }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Import Secrets
+        uses: ./.github/actions/import-db-secrets
+        with:
+          vault_addr: ${{ secrets.vault_addr }}
+          vault_role_id: ${{ secrets.vault_role_id }}
+          vault_secret_id: ${{ secrets.vault_secret_id }}
+
+      - uses: ariga/setup-atlas@v0
+
+      - name: Generate migrations report
+        run: |
+          mkdir -p ./migration-artifacts
+          echo "Migration execution timestamp: $(date)" > ./migration-artifacts/migrations-report-${{ inputs.env_name }}.txt
+          echo "Branch: ${{ github.ref_name }}" >> ./migration-artifacts/migrations-report-${{ inputs.env_name }}.txt
+          echo "Commit: ${{ github.sha }}" >> ./migration-artifacts/migrations-report-${{ inputs.env_name }}.txt
+          echo "Environment: ${{ inputs.env_name }}" >> ./migration-artifacts/migrations-report-${{ inputs.env_name }}.txt
+          echo -e "\nCurrent migration status:" >> ./migration-artifacts/migrations-report-${{ inputs.env_name }}.txt
+          atlas migrate status --env ${{ inputs.env_name }} --url "${{ secrets.db_url }}" >> ./migration-artifacts/migrations-report-${{ inputs.env_name }}.txt
+          echo -e "\nMigrations to be applied:" >> ./migration-artifacts/migrations-report-${{ inputs.env_name }}.txt
+          atlas migrate apply --env ${{ inputs.env_name }} --dry-run --allow-dirty --url "${{ secrets.db_url }}" >> ./migration-artifacts/migrations-report-${{ inputs.env_name }}.txt 2>&1
+
+      - name: Apply migrations
+        id: apply-migrations
+        run: |
+          set +e  # Don't exit on command failure
+          output=$(atlas migrate apply --env ${{ inputs.env_name }} --allow-dirty \
+                  --url "${{ secrets.db_url }}" --lock-timeout 120s 2>&1)
+          exit_code=$?
+
+          set -e  # restore
+          sanitized_output=$(echo "$output" | sed -E 's#(postgresql://)[^:@]+:[^@]+@#\1****:****@#g')
+          echo "$sanitized_output"
+          echo "$sanitized_output" > apply_output_${{ inputs.env_name }}.txt
+          echo "exit_code=$exit_code" >> $GITHUB_OUTPUT
+          exit $exit_code
+
+      - name: Update migrations report with final status
+        run: |
+          echo -e "\nFinal migration status:" >> ./migration-artifacts/migrations-report-${{ inputs.env_name }}.txt
+          atlas migrate status --env ${{ inputs.env_name }} --url "${{ secrets.db_url }}" >> ./migration-artifacts/migrations-report-${{ inputs.env_name }}.txt
+
+      - name: Generate migration apply summary
+        if: always()
+        run: |
+          # Determine environment based on branch
+          if [ "${{ github.ref_name }}" == "main" ]; then
+            ENVIRONMENT="Production"
+            ENV_EMOJI="🚀"
+          else
+            ENVIRONMENT="Development"
+            ENV_EMOJI="🧪"
+          fi
+
+          echo "## ${ENV_EMOJI} ${ENVIRONMENT} Migration Applied (${{ inputs.env_name }})" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          if [ "${{ steps.apply-migrations.outcome }}" == "success" ]; then
+            echo "✅ **Migrations successfully applied to ${ENVIRONMENT,,}**" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "- **Status:** Database schema updated" >> $GITHUB_STEP_SUMMARY
+            echo "- **Environment:** ${ENVIRONMENT} database (branch: ${{ github.ref_name }})" >> $GITHUB_STEP_SUMMARY
+            echo "- **Database:** ${{ inputs.env_name }}" >> $GITHUB_STEP_SUMMARY
+            echo "- **Timestamp:** $(date)" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ **Migration application failed**" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "- **Status:** Database schema update failed" >> $GITHUB_STEP_SUMMARY
+            echo "- **Environment:** ${ENVIRONMENT} database (branch: ${{ github.ref_name }})" >> $GITHUB_STEP_SUMMARY
+            echo "- **Database:** ${{ inputs.env_name }}" >> $GITHUB_STEP_SUMMARY
+            echo "- **Action:** Manual intervention required" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Migration Output" >> $GITHUB_STEP_SUMMARY
+          echo "```" >> $GITHUB_STEP_SUMMARY
+          if [ -f apply_output_${{ inputs.env_name }}.txt ]; then
+            cat apply_output_${{ inputs.env_name }}.txt >> $GITHUB_STEP_SUMMARY
+          else
+            echo "No migration output available" >> $GITHUB_STEP_SUMMARY
+          fi
+          echo "```" >> $GITHUB_STEP_SUMMARY
+
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Artifacts:** Migration report uploaded for 90 days" >> $GITHUB_STEP_SUMMARY
+
+      - name: Upload migrations report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: migrations-report-${{ inputs.env_name }}-${{ github.sha }}
+          path: ./migration-artifacts/
+          retention-days: 90
+          if-no-files-found: error

@@ -21,7 +21,7 @@ export function SelectActionDialog() {
       >
         <AlertDialogTrigger>
           <Logs className="h-4 w-4" />
-          Bridge options menu
+          Easy transaction selection menu
         </AlertDialogTrigger>
       </Button>
       <AlertDialogContent>
@@ -36,7 +36,6 @@ export function SelectActionDialog() {
             description={card.description}
             iconFrom={card.iconFrom}
             iconTo={card.iconTo}
-            priority={card.priority}
           />
         ))}
       </AlertDialogContent>
@@ -50,29 +49,18 @@ interface SelectCardProps {
   description: string;
   iconFrom: string;
   iconTo: string;
-  priority?: boolean;
 }
 
 function SelectCard(props: Readonly<SelectCardProps>) {
   return (
     <AlertDialogAction
       asChild
-      className={`border px-5 py-10 ${
-        props.priority
-          ? "border-blue-500 bg-blue-500/20 hover:bg-blue-500/30"
-          : "border-border bg-accent/20 hover:bg-accent/70"
-      }`}
+      className="border-border bg-accent/20 hover:bg-accent/70 border px-5 py-10"
     >
       <Link href={props.href} className="flex w-full">
         <div className="flex h-fit w-full justify-between gap-2">
           <div className="flex flex-col gap-1">
-            <span
-              className={`text-base font-bold ${
-                props.priority ? "text-blue-100" : "text-white"
-              }`}
-            >
-              {props.text}
-            </span>
+            <span className="text-base font-bold text-white">{props.text}</span>
             <span className="text-muted-foreground text-sm">
               {props.description}
             </span>
@@ -90,39 +78,31 @@ function SelectCard(props: Readonly<SelectCardProps>) {
 
 const SelectCardList = [
   {
-    href: "/fast",
-    text: "Fast Bridge (Recommended)",
-    description: "Direct transfers: Base ⟷ Native Torus in one flow",
-    iconFrom: "/assets/icons/bridge/torus-base.svg",
-    iconTo: "/assets/icons/balance/torus.svg",
-    priority: true,
-  },
-  {
-    href: "/standard?tab=torus&mode=bridge",
+    href: "/?tab=torus&mode=bridge",
     text: "Torus to Torus EVM",
     description: "Transfer your balance from Torus to Torus EVM",
-    iconFrom: "/assets/icons/balance/torus.svg",
-    iconTo: "/assets/icons/bridge/torus-evm.svg",
+    iconFrom: "torus-balance-icon.svg",
+    iconTo: "torus-evm-balance-icon.svg",
   },
   {
-    href: "/standard?tab=torus&mode=withdraw",
+    href: "/?tab=torus&mode=withdraw",
     text: "Torus EVM to Torus",
     description: "Transfer your balance from Torus EVM to Torus",
-    iconFrom: "/assets/icons/bridge/torus-evm.svg",
-    iconTo: "/assets/icons/balance/torus.svg",
+    iconFrom: "torus-evm-balance-icon.svg",
+    iconTo: "torus-balance-icon.svg",
   },
   {
-    href: "/standard?tab=base&from=torus&to=base",
+    href: "/?tab=base&from=torus&to=base",
     text: "Torus EVM to Base",
     description: "Transfer your balance from Torus EVM to Base",
-    iconFrom: "/assets/icons/bridge/torus-evm.svg",
-    iconTo: "/assets/icons/bridge/torus-base.svg",
+    iconFrom: "torus-evm-balance-icon.svg",
+    iconTo: "torus-base-balance-icon.svg",
   },
   {
-    href: "/standard?tab=base&from=base&to=torus",
+    href: "/?tab=base&from=base&to=torus",
     text: "Base to Torus EVM",
     description: "Transfer your balance from Base to Torus EVM",
-    iconFrom: "/assets/icons/bridge/torus-base.svg",
-    iconTo: "/assets/icons/bridge/torus-evm.svg",
+    iconFrom: "torus-base-balance-icon.svg",
+    iconTo: "torus-evm-balance-icon.svg",
   },
 ];

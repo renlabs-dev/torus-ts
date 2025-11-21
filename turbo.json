@@ -2,41 +2,71 @@
   "$schema": "https://turborepo.org/schema.json",
   "tasks": {
     "topo": {
-      "dependsOn": ["^topo"]
+      "dependsOn": [
+        "^topo"
+      ]
     },
     "build": {
-      "dependsOn": ["^build"],
-      "outputs": [".cache/tsbuildinfo.json", "dist/**"]
+      "dependsOn": [
+        "^build"
+      ],
+      "outputs": [
+        ".cache/tsbuildinfo.json",
+        "dist/**"
+      ]
     },
     "dev": {
-      "dependsOn": ["^build"],
+      "dependsOn": [
+        "^build"
+      ],
       "cache": false,
       "persistent": true
     },
     "start": {
-      "dependsOn": ["build"],
+      "dependsOn": [
+        "build"
+      ],
       "cache": false,
       "persistent": true
     },
     "format": {
-      "outputs": [".cache/.prettiercache"],
+      "outputs": [
+        ".cache/.prettiercache"
+      ],
       "outputLogs": "new-only"
     },
     "format-fix": {
-      "outputs": [".cache/.prettiercache"],
+      "outputs": [
+        ".cache/.prettiercache"
+      ],
       "outputLogs": "new-only"
     },
     "lint": {
-      "dependsOn": ["^topo", "^build"],
-      "outputs": [".cache/.eslintcache"]
+      "dependsOn": [
+        "^topo",
+        "^build"
+      ],
+      "outputs": [
+        ".cache/.eslintcache"
+      ]
     },
     "lint-fix": {
-      "dependsOn": ["^topo", "^build"],
-      "outputs": [".cache/.eslintcache"]
+      "dependsOn": [
+        "^topo",
+        "^build"
+      ],
+      "outputs": [
+        ".cache/.eslintcache"
+      ]
     },
     "typecheck": {
-      "dependsOn": ["^topo", "^build"],
-      "outputs": [".cache/tsbuildinfo.json"]
+      "dependsOn": [
+        "^topo",
+        "^build"
+      ],
+      "outputs": [
+        ".cache/tsbuildinfo.json"
+      ]
     },
     "clean": {
       "cache": false
@@ -45,29 +75,45 @@
       "cache": false
     },
     "test": {
-      "dependsOn": ["^build"],
+      "dependsOn": [
+        "^build"
+      ],
       "outputs": []
     },
     "test:chain-query": {
-      "dependsOn": ["^build"],
+      "dependsOn": [
+        "^build"
+      ],
       "outputs": [],
       "cache": false
     },
     "test:chain-tx": {
-      "dependsOn": ["^build"],
+      "dependsOn": [
+        "^build"
+      ],
       "outputs": [],
       "cache": false
     },
     "test:chain": {
-      "dependsOn": ["^build", "test:chain-query", "test:chain-tx"],
+      "dependsOn": [
+        "^build",
+        "test:chain-query",
+        "test:chain-tx"
+      ],
       "outputs": [],
       "cache": false
     },
     "test:all": {
-      "dependsOn": ["test", "test:chain"]
+      "dependsOn": [
+        "test",
+        "test:chain"
+      ]
     },
     "publish": {
-      "dependsOn": ["build", "test"],
+      "dependsOn": [
+        "build",
+        "test"
+      ],
       "outputs": []
     }
   },
@@ -104,14 +150,27 @@
     "NEXT_PUBLIC_CHAIN_ENV",
     "NOTIFICATIONS_START_BLOCK",
     "TORUS_RPC_URLS",
-    "TEST_CHAIN_RPC_URL"
+    "TEST_CHAIN_RPC_URL",
+    "COINGECKO_API_KEY",
+    "PREDICTION_APP_ADDRESS",
+    "FILTER_AGENT_MNEMONIC",
+    "AUTH_ORIGIN"
   ],
   "globalPassThroughEnv": [
     "NODE_ENV",
     "CI",
+    "TWITTERAPI_IO_KEY",
+    "OPENROUTER_API_KEY",
     "VERCEL",
     "VERCEL_ENV",
     "VERCEL_URL",
-    "npm_lifecycle_event"
+    "npm_lifecycle_event",
+    "OPENROUTER_API_KEY",
+    "PREDICTION_CHECK_MODEL",
+    "TOPIC_CLASSIFICATION_MODEL",
+    "PREDICTION_EXTRACTION_MODEL",
+    "NEXT_PUBLIC_PREDICTION_APP_ADDRESS",
+    "PERMISSION_GRANTOR_ADDRESS",
+    "PERMISSION_CACHE_REFRESH_INTERVAL_MS"
   ]
 }

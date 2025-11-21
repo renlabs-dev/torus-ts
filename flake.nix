@@ -1,6 +1,6 @@
 {
   inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs/nixos-25.05";
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
     flake-utils.url = "github:numtide/flake-utils";
 
     git-hooks.url = "github:cachix/git-hooks.nix";
@@ -29,6 +29,8 @@
           pkgs.act
           # Git is our choice of source control :)
           pkgs.git
+          # The postgres package provides necessary utils
+          pkgs.postgresql_18
 
           # Atlas Community does not have some features
           # e.g. data.external_schema
@@ -38,13 +40,13 @@
       in
       {
         checks = {
-          pre-push-check = git-hooks.lib.${system}.run {
+          git-checks = git-hooks.lib.${system}.run {
             src = ./.;
             hooks = {
               push = {
                 enable = true;
-                name = "Format code";
-                entry = "just format-fix";
+                name = "Test it all";
+                entry = "just check-test";
                 pass_filenames = false;
                 stages = [ "pre-push" ];
               };
@@ -57,7 +59,7 @@
           packages = shellPkgs;
 
           shellHook = ''
-            ${self.checks.${system}.pre-push-check.shellHook}
+            ${self.checks.${system}.git-checks.shellHook}
           '';
         };
       });
