@@ -48,4 +48,3 @@ deployment:
         secretKeyRef:
           name: "torus-{{ .Values.environmentName }}-web-apps-secret"
           key: PREDICTION_APP_MNEMONIC
-    
