@@ -21,18 +21,9 @@ jobs:
         with:
           run_install: false
 
-      - name: Install Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          cache: "pnpm"
-
       - name: Install dependencies
         shell: bash
-        run: pnpm add turbo@^2.3.3 --global
-
-      # - name: PNPM setup
-      #   uses: ./.github/actions/setup
+        run: pnpm add turbo@^2.3.3 --global # Locked to package.json
 
       - name: Get apps list
         id: apps

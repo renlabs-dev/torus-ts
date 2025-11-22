@@ -189,6 +189,8 @@ jobs:
     needs: [turbo-check, check-deployments, deploy, dry-run, pr-preview-activate, pr-preview-delete]
     runs-on: ubicloud-standard-2
     steps:
+      - uses: actions/checkout@v4
+
       - name: Generate deployment summary
         run: |
           set -euo pipefail
