@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+set -e
+
+readarray -t STAGED_FILES < <(git diff --cached --name-only --diff-filter=ACMR | grep -E '\.(ts|tsx|js|jsx|json|md|yaml|yml|css|scss|html)$')
+
+if [ ${#STAGED_FILES[@]} -eq 0 ]; then
+  exit 0
+fi
+
+pnpm prettier --write --ignore-unknown "${STAGED_FILES[@]}"
+git update-index --again

@@ -2,12 +2,9 @@
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
     flake-utils.url = "github:numtide/flake-utils";
-
-    git-hooks.url = "github:cachix/git-hooks.nix";
-    git-hooks.inputs.nixpkgs.follows = "nixpkgs";
   };
 
-  outputs = { self, nixpkgs, flake-utils, git-hooks }:
+  outputs = { self, nixpkgs, flake-utils }:
     flake-utils.lib.eachDefaultSystem (system:
       let
         pkgs = nixpkgs.legacyPackages.${system};
@@ -39,27 +36,12 @@
         ];
       in
       {
-        checks = {
-          git-checks = git-hooks.lib.${system}.run {
-            src = ./.;
-            hooks = {
-              push = {
-                enable = true;
-                name = "Test it all";
-                entry = "just check-test";
-                pass_filenames = false;
-                stages = [ "pre-push" ];
-              };
-            };
-          };
-        };
-
         devShell = pkgs.mkShell {
           inherit nativeBuildInputs buildInputs;
           packages = shellPkgs;
 
           shellHook = ''
-            ${self.checks.${system}.git-checks.shellHook}
+            git config core.hooksPath scripts/git-hooks
           '';
         };
       });
