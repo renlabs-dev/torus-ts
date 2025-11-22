@@ -16,9 +16,7 @@ on:
       - closed
       - synchronize
 
-permissions:
-  contents: read
-  pull-requests: read
+permissions: write-all
 
 jobs:
   pr-check:
@@ -36,23 +34,76 @@ jobs:
           echo "PR number: ${{ steps.findPr.outputs.number }}"
           echo "Is push based: ${{ github.event_name == 'push' }}"
 
-  turbo-check:
+  find-deployments:
     needs: pr-check
     if: |
       github.event.pull_request.state != 'closed' &&
       (github.ref_name == 'main' || github.ref_name == 'dev'
       || needs.pr-check.outputs.skip == 'false')
-    uses: ./.github/workflows/turbo-check.yml
-
-  check-deployments:
-    needs: turbo-check
     runs-on: ubicloud-standard-2
     outputs:
       deploy_matrix: ${{ steps.parse.outputs.deploy_matrix }}
       pr_preview_matrix: ${{ steps.parse.outputs.pr_preview_matrix }}
       all_apps: ${{ steps.parse.outputs.all_apps }}
+      preview_domains: ${{ steps.parse.outputs.preview_domains }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: pnpm/action-setup@v4
+        name: Install pnpm
+        with:
+          run_install: false
+
+      - name: Install turbo
+        run: pnpm add turbo@^2.3.3 --global
+
+      - name: Get apps list
+        id: apps
+        run: |
+          all_apps=$(ls -d apps/* | sed 's/apps\///' | jq -R -s -c 'split("\n")[:-1]')
+          echo "all_apps=$all_apps" >> $GITHUB_OUTPUT
+          echo "All apps in workspace:"
+          echo "$all_apps" | jq '.'
+
+      - name: Get build json (PR based)
+        if: github.event_name == 'pull_request'
+        run: |
+          pnpm exec turbo run build --filter="...[origin/${{ github.base_ref }}]" --dry-run=json 2>/dev/null > build.json
+
+      - name: Get build json (Push based)
+        if: github.event_name == 'push'
+        run: |
+          if git rev-parse --quiet --verify ${{ github.event.before }}^{commit}; then
+            BASE_COMMIT="$(git merge-base ${{ github.event.before }} HEAD)"
+            pnpm exec turbo run build --filter="...[${BASE_COMMIT}]" --dry-run=json 2>/dev/null > build.json
+          else
+            pnpm exec turbo run build --dry-run=json 2>/dev/null > build.json
+          fi
+
+      - name: Get changed packages from turbo
+        id: turbo
+        run: |
+          changed_packages=$(cat build.json | jq -c '[.tasks[].package]')
+          echo "changed_packages=$changed_packages" >> $GITHUB_OUTPUT
+          echo "Changed packages from turbo:"
+          echo "$changed_packages" | jq '.'
+
+      - name: Filter changed apps
+        id: changed
+        run: |
+          set -euo pipefail
+
+          all_apps='${{ steps.apps.outputs.all_apps }}'
+          changed_packages='${{ steps.turbo.outputs.changed_packages }}'
+
+          changed_apps=$(echo "$all_apps" | jq -c --argjson changed "$changed_packages" \
+            '[.[] | select(. as $pkg | $changed | any(. == $pkg))]')
+
+          echo "changed_apps=$changed_apps" >> $GITHUB_OUTPUT
+          echo 'Changed apps:'
+          echo "$changed_apps" | jq '.'
 
       - name: Parse deployment config
         id: parse
@@ -60,29 +111,22 @@ jobs:
           set -euo pipefail
 
           config=$(cat .github/ci-config.json)
-          turbo_outputs='${{ toJson(needs.turbo-check.outputs) }}'
+          changed_apps='${{ steps.changed.outputs.changed_apps }}'
 
           declare -A apps_to_deploy
-          declare -A apps_for_pr
 
-          all_apps=()
+          all_apps=$(echo "$config" | jq -c '[.apps | keys[]]')
 
           # For each app in config, check if it was changed and mark for deploy.
           # The deploys list is used to mark what dependency apps should be deployed
           # as well.
-          for app in $(echo "$config" | jq -r '.apps | keys[]'); do
-            all_apps+=("\"$app\"")
+          for app in $(echo "$changed_apps" | jq -r '.[]'); do
+            apps_to_deploy["$app"]=1
 
-            app_changed=$(echo "$turbo_outputs" | jq -r ".[\"$app\"] // \"false\"")
-
-            if [ "$app_changed" == "true" ]; then
-              apps_to_deploy["$app"]=1
-
-              dependent_apps=$(echo "$config" | jq -r ".apps[\"$app\"].deploys[]? // empty")
-              for dep_app in $dependent_apps; do
-                apps_to_deploy["$dep_app"]=1
-              done
-            fi
+            dependent_apps=$(echo "$config" | jq -r ".apps[\"$app\"].deploys[]? // empty")
+            for dep_app in $dependent_apps; do
+              apps_to_deploy["$dep_app"]=1
+            done
           done
 
           deploy_apps=()
@@ -112,11 +156,12 @@ jobs:
             pr_json=$(IFS=,; echo "[${pr_apps[*]}]")
           fi
 
-          all_json=$(IFS=,; echo "[${all_apps[*]}]")
+          preview_domains=$(echo "$config" | jq -c '[.apps | to_entries[] | select(.value.preview_domain != null) | {key: .key, value: .value.preview_domain}] | from_entries')
 
           echo "deploy_matrix=$deploy_json" >> $GITHUB_OUTPUT
           echo "pr_preview_matrix=$pr_json" >> $GITHUB_OUTPUT
-          echo "all_apps=$all_json" >> $GITHUB_OUTPUT
+          echo "all_apps=$all_apps" >> $GITHUB_OUTPUT
+          echo "preview_domains=$preview_domains" >> $GITHUB_OUTPUT
 
           echo "Apps to deploy: $deploy_json"
           echo "Apps with PR preview: $pr_json"
@@ -125,15 +170,15 @@ jobs:
   ###### REGULAR DEPLOYMENTS  #######
   ###################################
   deploy:
-    needs: check-deployments
+    needs: find-deployments
     if: |
       inputs.skip_build ||
       contains(github.event.head_commit.message, 'skip build') ||
-      (needs.check-deployments.outputs.deploy_matrix != '[]' &&
+      (needs.find-deployments.outputs.deploy_matrix != '[]' &&
       (github.ref_name == 'main' || github.ref_name == 'dev' || github.ref_name == 'cicd'))
     strategy:
       matrix:
-        app: ${{ fromJson(needs.check-deployments.outputs.deploy_matrix) }}
+        app: ${{ fromJson(needs.find-deployments.outputs.deploy_matrix) }}
       fail-fast: false
     uses: ./.github/workflows/app-deployment-template.yml
     secrets: inherit
@@ -145,16 +190,16 @@ jobs:
   ######## DRY RUN BUILDS  ##########
   ###################################
   dry-run:
-    needs: [check-deployments, pr-check]
+    needs: [find-deployments, pr-check]
     if: |
       github.ref_name != 'main' &&
       github.ref_name != 'dev' &&
       github.ref_name != 'cicd' &&
-      needs.check-deployments.outputs.deploy_matrix != '[]' &&
+      needs.find-deployments.outputs.deploy_matrix != '[]' &&
       needs.pr-check.outputs.pr_exists == 'false'
     strategy:
       matrix:
-        app: ${{ fromJson(needs.check-deployments.outputs.deploy_matrix) }}
+        app: ${{ fromJson(needs.find-deployments.outputs.deploy_matrix) }}
       fail-fast: false
     uses: ./.github/workflows/dry-run-build-template.yml
     secrets: inherit
@@ -164,40 +209,40 @@ jobs:
   ###################################
   ########### PR PREVIEW ############
   ###################################
-  pr-preview-activate:
-    needs: check-deployments
+  pr-preview-deploy:
+    needs: find-deployments
     if: |
       github.event.pull_request.state == 'open' && !github.event.repository.fork
       && !github.event.pull_request.draft
       && github.head_ref != 'main' && github.head_ref != 'dev'
-      && needs.check-deployments.outputs.pr_preview_matrix != '[]'
+      && needs.find-deployments.outputs.pr_preview_matrix != '[]'
     strategy:
       matrix:
-        app: ${{ fromJson(needs.check-deployments.outputs.pr_preview_matrix) }}
+        app: ${{ fromJson(needs.find-deployments.outputs.pr_preview_matrix) }}
       fail-fast: false
     uses: ./.github/workflows/pr-preview-template.yml
     secrets: inherit
     with:
       app_name: ${{ matrix.app }}
 
-  pr-preview-delete:
-    needs: check-deployments
+  pr-preview-cleanup:
+    needs: find-deployments
     if: |
       github.event.pull_request.state == 'closed'
       && github.head_ref != 'main' && github.head_ref != 'dev'
     strategy:
       matrix:
-        app: ${{ fromJson(needs.check-deployments.outputs.all_apps) }}
+        app: ${{ fromJson(needs.find-deployments.outputs.all_apps) }}
       fail-fast: false
     uses: ./.github/workflows/pr-preview-template.yml
     secrets: inherit
     with:
       app_name: ${{ matrix.app }}
-      delete: true
+      cleanup: true
 
   deployment-summary:
     if: always()
-    needs: [turbo-check, check-deployments, deploy, dry-run, pr-preview-activate, pr-preview-delete]
+    needs: [find-deployments, deploy, dry-run, pr-preview-deploy, pr-preview-cleanup]
     runs-on: ubicloud-standard-2
     steps:
       - name: Generate deployment summary
@@ -222,8 +267,8 @@ jobs:
           echo "**Trigger:** ${{ github.event_name }}" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
 
-          all_apps='${{ needs.check-deployments.outputs.all_apps }}'
-          deploy_apps='${{ needs.check-deployments.outputs.deploy_matrix }}'
+          all_apps='${{ needs.find-deployments.outputs.all_apps }}'
+          deploy_apps='${{ needs.find-deployments.outputs.deploy_matrix }}'
 
           # Production/Dev Deployments
           if [ "${{ github.ref_name }}" == "main" ] || [ "${{ github.ref_name }}" == "dev" ] || [ "${{ github.ref_name }}" == "cicd" ]; then
@@ -253,24 +298,24 @@ jobs:
             echo "| Application | Status | Preview URL |" >> $GITHUB_STEP_SUMMARY
             echo "|-------------|--------|-------------|" >> $GITHUB_STEP_SUMMARY
 
-            config=$(cat .github/ci-config.json)
-            pr_apps='${{ needs.check-deployments.outputs.pr_preview_matrix }}'
-            activate_result='${{ needs.pr-preview-activate.result }}'
-            delete_result='${{ needs.pr-preview-delete.result }}'
+            preview_domains='${{ needs.find-deployments.outputs.preview_domains }}'
+            pr_apps='${{ needs.find-deployments.outputs.pr_preview_matrix }}'
+            deploy_result='${{ needs.pr-preview-deploy.result }}'
+            cleanup_result='${{ needs.pr-preview-cleanup.result }}'
 
             if [ "$pr_apps" != "[]" ]; then
               for app in $(echo "$pr_apps" | jq -r '.[]'); do
-                if [ "$activate_result" == "success" ]; then
-                  preview_domain=$(echo "$config" | jq -r ".apps[\"$app\"].preview_domain // empty")
+                if [ "$deploy_result" == "success" ]; then
+                  preview_domain=$(echo "$preview_domains" | jq -r ".[\"$app\"] // empty")
                   if [ -n "$preview_domain" ]; then
                     preview_url="https://pr-${{ github.event.number }}.${preview_domain}"
                   else
                     preview_url="https://pr-${{ github.event.number }}.${app}.torus.network"
                   fi
                   echo "| ${app} | ✅ Deployed | [Preview](${preview_url}) |" >> $GITHUB_STEP_SUMMARY
-                elif [ "$delete_result" == "success" ]; then
+                elif [ "$cleanup_result" == "success" ]; then
                   echo "| ${app} | 🗑️ Deleted | - |" >> $GITHUB_STEP_SUMMARY
-                elif [ "$activate_result" == "skipped" ] && [ "$delete_result" == "skipped" ]; then
+                elif [ "$deploy_result" == "skipped" ] && [ "$cleanup_result" == "skipped" ]; then
                   echo "| ${app} | ⏭️ No Changes | - |" >> $GITHUB_STEP_SUMMARY
                 else
                   echo "| ${app} | ❌ Failed | - |" >> $GITHUB_STEP_SUMMARY
