@@ -16,9 +16,7 @@ on:
       - closed
       - synchronize
 
-permissions:
-  contents: read
-  pull-requests: read
+permissions: write-all
 
 jobs:
   pr-check:
@@ -60,29 +58,22 @@ jobs:
           set -euo pipefail
 
           config=$(cat .github/ci-config.json)
-          turbo_outputs='${{ toJson(needs.turbo-check.outputs) }}'
+          changed_apps='${{ needs.turbo-check.outputs.changed_apps }}'
 
           declare -A apps_to_deploy
-          declare -A apps_for_pr
 
-          all_apps=()
+          all_apps=$(echo "$config" | jq -c '[.apps | keys[]]')
 
           # For each app in config, check if it was changed and mark for deploy.
           # The deploys list is used to mark what dependency apps should be deployed
           # as well.
-          for app in $(echo "$config" | jq -r '.apps | keys[]'); do
-            all_apps+=("\"$app\"")
+          for app in $(echo "$changed_apps" | jq -r '.[]'); do
+            apps_to_deploy["$app"]=1
 
-            app_changed=$(echo "$turbo_outputs" | jq -r ".[\"$app\"] // \"false\"")
-
-            if [ "$app_changed" == "true" ]; then
-              apps_to_deploy["$app"]=1
-
-              dependent_apps=$(echo "$config" | jq -r ".apps[\"$app\"].deploys[]? // empty")
-              for dep_app in $dependent_apps; do
-                apps_to_deploy["$dep_app"]=1
-              done
-            fi
+            dependent_apps=$(echo "$config" | jq -r ".apps[\"$app\"].deploys[]? // empty")
+            for dep_app in $dependent_apps; do
+              apps_to_deploy["$dep_app"]=1
+            done
           done
 
           deploy_apps=()
@@ -112,11 +103,9 @@ jobs:
             pr_json=$(IFS=,; echo "[${pr_apps[*]}]")
           fi
 
-          all_json=$(IFS=,; echo "[${all_apps[*]}]")
-
           echo "deploy_matrix=$deploy_json" >> $GITHUB_OUTPUT
           echo "pr_preview_matrix=$pr_json" >> $GITHUB_OUTPUT
-          echo "all_apps=$all_json" >> $GITHUB_OUTPUT
+          echo "all_apps=$all_apps" >> $GITHUB_OUTPUT
 
           echo "Apps to deploy: $deploy_json"
           echo "Apps with PR preview: $pr_json"
