@@ -6,7 +6,7 @@ import { SearchProphet } from "../_components/main-page/search-prophet";
 import { NavigationItems } from "../_components/navigation-items";
 
 export const jacquard = Jacquard({
-  weight: "400",
+  weight: "800",
 });
 
 export default function Page() {

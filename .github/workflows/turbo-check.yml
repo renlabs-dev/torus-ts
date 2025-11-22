@@ -2,76 +2,36 @@ name: Check Turbo Changes
 on:
   workflow_call:
     outputs:
-      torus-wallet:
-        description: "Whether torus-wallet changed"
-        value: ${{ jobs.run.outputs.torus-wallet }}
-      torus-page:
-        description: "Whether torus-page changed"
-        value: ${{ jobs.run.outputs.torus-page }}
-      torus-portal:
-        description: "Whether torus-portal changed"
-        value: ${{ jobs.run.outputs.torus-portal }}
-      torus-allocator:
-        description: "Whether torus-allocator changed"
-        value: ${{ jobs.run.outputs.torus-allocator }}
-      torus-cache:
-        description: "Whether torus-cache changed"
-        value: ${{ jobs.run.outputs.torus-cache }}
-      torus-bridge:
-        description: "Whether torus-bridge changed"
-        value: ${{ jobs.run.outputs.torus-bridge }}
-      torus-worker:
-        description: "Whether torus-worker changed"
-        value: ${{ jobs.run.outputs.torus-worker }}
-      torus-governance:
-        description: "Whether torus-governance changed"
-        value: ${{ jobs.run.outputs.torus-governance }}
-      torus-prophet-finder:
-        description: "Whether torus-prophet-finder changed"
-        value: ${{ jobs.run.outputs.torus-prophet-finder }}
-      prediction-swarm-dash:
-        description: "Whether prediction-swarm-dash changed"
-        value: ${{ jobs.run.outputs.prediction-swarm-dash }}
-      prediction-swarm:
-        description: "Whether prediction-swarm changed"
-        value: ${{ jobs.run.outputs.prediction-swarm }}
-      torus-swarm-twitter:
-        description: "Whether torus-swarm-twitter changed"
-        value: ${{ jobs.run.outputs.torus-swarm-twitter }}
-      torus-swarm-verifier:
-        description: "Whether torus-swarm-verifier changed"
-        value: ${{ jobs.run.outputs.torus-swarm-verifier }}
+      changed_apps:
+        description: "JSON object mapping app names to changed status"
+        value: ${{ jobs.run.outputs.changed_apps }}
 
 jobs:
   run:
     runs-on: ubicloud-standard-2
     outputs:
-      torus-wallet: ${{ steps.changed.outputs.torus-wallet }}
-      torus-page: ${{ steps.changed.outputs.torus-page }}
-      torus-portal: ${{ steps.changed.outputs.torus-portal }}
-      torus-allocator: ${{ steps.changed.outputs.torus-allocator }}
-      torus-cache: ${{ steps.changed.outputs.torus-cache }}
-      torus-bridge: ${{ steps.changed.outputs.torus-bridge }}
-      torus-worker: ${{ steps.changed.outputs.torus-worker }}
-      torus-governance: ${{ steps.changed.outputs.torus-governance }}
-      torus-prophet-finder: ${{ steps.changed.outputs.torus-prophet-finder }}
-      prediction-swarm-dash: ${{ steps.changed.outputs.prediction-swarm-dash }}
-      prediction-swarm: ${{ steps.changed.outputs.prediction-swarm }}
-      torus-swarm-twitter: ${{ steps.changed.outputs.torus-swarm-twitter }}
-      torus-swarm-verifier: ${{ steps.changed.outputs.torus-swarm-verifier }}
+      changed_apps: ${{ steps.changed.outputs.changed_apps }}
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: PNPM setup
-        uses: ./.github/actions/setup
+      - uses: pnpm/action-setup@v4
+        name: Install pnpm
+        with:
+          run_install: false
+
+      - name: Install dependencies
+        shell: bash
+        run: pnpm add turbo@^2.3.3 --global # Locked to package.json
 
       - name: Get apps list
+        id: apps
         run: |
-          ls -d apps/* | sed 's/apps\///' | jq -R -s -c 'split("\n")[:-1]' > packages_to_track.json
-          echo "Found packages:"
-          cat packages_to_track.json
+          all_apps=$(ls -d apps/* | sed 's/apps\///' | jq -R -s -c 'split("\n")[:-1]')
+          echo "all_apps=$all_apps" >> $GITHUB_OUTPUT
+          echo "All apps in workspace:"
+          echo "$all_apps" | jq '.'
 
       - name: Get build json (PR based)
         if: github.event_name == 'pull_request'
@@ -88,55 +48,52 @@ jobs:
             pnpm exec turbo run build --dry-run=json 2>/dev/null > build.json
           fi
 
-      - name: Get changed packages
+      - name: Get changed packages from turbo
+        id: turbo
         run: |
-          cat build.json | jq -c '[.tasks[].package]' > package_list
-          echo "Changed packages:"
-          cat package_list
+          changed_packages=$(cat build.json | jq -c '[.tasks[].package]')
+          echo "changed_packages=$changed_packages" >> $GITHUB_OUTPUT
+          echo "Changed packages from turbo:"
+          echo "$changed_packages" | jq '.'
 
-      - name: Check changed packages
+      - name: Filter changed apps
         id: changed
         run: |
           set -euo pipefail
-          CHANGED_PACKAGES="$(cat package_list)"
 
-          while read -r package; do
-            package=$(echo "$package" | tr -d '"')
-            IS_CHANGED="$(echo "${CHANGED_PACKAGES}" | jq -r "any(. == \"${package}\")")"
-            echo "$package=$IS_CHANGED" >> $GITHUB_OUTPUT
-          done < <(jq -c '.[]' packages_to_track.json)
+          all_apps='${{ steps.apps.outputs.all_apps }}'
+          changed_packages='${{ steps.turbo.outputs.changed_packages }}'
 
-      - name: Debug outputs
-        run: |
-          echo 'Changed packages status:'
-          echo '${{ toJSON(steps.changed.outputs) }}' | jq '.'
+          changed_apps=$(echo "$all_apps" | jq -c --argjson changed "$changed_packages" \
+            '[.[] | select(. as $pkg | $changed | any(. == $pkg))]')
+
+          echo "changed_apps=$changed_apps" >> $GITHUB_OUTPUT
+          echo 'Changed apps:'
+          echo "$changed_apps" | jq '.'
 
       - name: Generate job summary
         run: |
           echo "## 📦 Changed Applications" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
 
-          set -euo pipefail
-          CHANGED_PACKAGES="$(cat package_list)"
+          all_apps='${{ steps.apps.outputs.all_apps }}'
+          changed_apps='${{ steps.changed.outputs.changed_apps }}'
 
-          # Create a summary table
-          echo "| Application | Status | Changed |" >> $GITHUB_STEP_SUMMARY
-          echo "|-------------|--------|---------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Application | Status |" >> $GITHUB_STEP_SUMMARY
+          echo "|-------------|--------|" >> $GITHUB_STEP_SUMMARY
 
-          while read -r package; do
-            package=$(echo "$package" | tr -d '"')
-            IS_CHANGED="$(echo "${CHANGED_PACKAGES}" | jq -r "any(. == \"${package}\")")"
+          for app in $(echo "$all_apps" | jq -r '.[]'); do
+            is_changed=$(echo "$changed_apps" | jq -r --arg app "$app" 'any(. == $app)')
 
-            if [ "$IS_CHANGED" == "true" ]; then
-              echo "| $package | ✅ Changed | Yes |" >> $GITHUB_STEP_SUMMARY
+            if [ "$is_changed" == "true" ]; then
+              echo "| $app | ✅ Changed |" >> $GITHUB_STEP_SUMMARY
             else
-              echo "| $package | ⏭️ No Changes | No |" >> $GITHUB_STEP_SUMMARY
+              echo "| $app | ⏭️ No Changes |" >> $GITHUB_STEP_SUMMARY
             fi
-          done < <(jq -c '.[]' packages_to_track.json)
+          done
 
           echo "" >> $GITHUB_STEP_SUMMARY
 
-          # Add trigger information
           if [ "${{ github.event_name }}" == "pull_request" ]; then
             echo "**Trigger:** Pull Request #${{ github.event.number }} against \`${{ github.base_ref }}\`" >> $GITHUB_STEP_SUMMARY
           else
@@ -145,7 +102,6 @@ jobs:
 
           echo "**Commit:** ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
 
-          # Add deployment implications
-          CHANGED_COUNT="$(echo "${CHANGED_PACKAGES}" | jq 'length')"
+          changed_count=$(echo "$changed_apps" | jq 'length')
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "**Deployment Impact:** $CHANGED_COUNT applications will be rebuilt and deployed." >> $GITHUB_STEP_SUMMARY
+          echo "**Deployment Impact:** $changed_count applications will be rebuilt and deployed." >> $GITHUB_STEP_SUMMARY
