@@ -51,7 +51,7 @@ export default function Page() {
         <div className="pointer-events-auto mx-auto grid max-w-6xl gap-6 px-4 pb-6 md:pb-12">
           <ListItem
             title="Prophets"
-            description="Discover the most accurate predictors in the swarm!"
+            description="Discover the most accurate predictors in the swarm"
             linkText="Explore profiles"
             href="/top-predictors"
             className="animate-fade-up animate-delay-[500ms] duration-1000"
