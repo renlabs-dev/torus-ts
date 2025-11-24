@@ -31,7 +31,7 @@ export default function Page() {
           {/* Centered title */}
           <div className="pointer-events-none flex flex-1 items-center justify-center">
             <h3
-              className={`bg-gradient-to-b from-white to-gray-600 bg-clip-text text-center text-8xl font-normal leading-none text-transparent opacity-40 ${jacquard.className}`}
+              className={`bg-gradient-to-b from-white to-gray-600 bg-clip-text text-center text-8xl font-normal leading-none text-transparent opacity-60 ${jacquard.className}`}
             >
               <span>Prediction</span>
               <br />
@@ -75,10 +75,10 @@ export default function Page() {
 
       {/* Desktop Layout - Original */}
       <div className="relative hidden min-h-[90vh] flex-col md:flex">
-        <div className="animate-fade absolute inset-0">
+        <div className="absolute inset-0 opacity-60">
           <Dither
             pixelSize={1}
-            waveSpeed={0.02}
+            waveSpeed={0.01}
             waveFrequency={4}
             waveAmplitude={0.3}
             mouseRadius={0.2}
@@ -127,7 +127,7 @@ export default function Page() {
 
       <div
         id="faqs"
-        className="border-border relative border-t bg-[url(/background.svg)] bg-cover"
+        className="border-border relative border-t bg-[url(/home-bg.svg)] bg-cover"
       >
         <div className="border-border pointer-events-none absolute inset-y-0 left-1/2 w-full max-w-screen-md -translate-x-1/2 border-x" />
 

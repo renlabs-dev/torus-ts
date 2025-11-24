@@ -10,10 +10,10 @@ export default function RootLayout({
     <span className="animate-fade">
       <PageNavigation />
       {children}{" "}
-      <div className="fixed inset-0 -z-10 opacity-40">
+      <div className="fixed inset-0 -z-10 opacity-30">
         <Dither
           pixelSize={1}
-          waveSpeed={0.02}
+          waveSpeed={0.01}
           waveFrequency={4}
           waveAmplitude={0.3}
         />
