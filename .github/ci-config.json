@@ -31,9 +31,6 @@
       "pr_preview": true,
       "preview_domain": "prophetfinder.com"
     },
-    "prediction-swarm-dash": {
-      "pr_preview": true
-    },
     "prediction-swarm": {
       "deploys": ["torus-swarm-twitter", "torus-swarm-verifier"],
       "pr_preview": true,
