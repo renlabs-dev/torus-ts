@@ -1213,17 +1213,20 @@ export class PredictionVerifier {
     if (timeframeResult.end_utc) {
       const endDate = new Date(timeframeResult.end_utc);
       const currentDate = new Date();
+      const oneDayAfterEnd = new Date(endDate);
+      oneDayAfterEnd.setDate(oneDayAfterEnd.getDate() + 1);
 
-      if (endDate > currentDate) {
+      if (oneDayAfterEnd > currentDate) {
         logInfo("Timeframe has not matured yet", {
           endUtc: timeframeResult.end_utc,
           currentDate: currentDate.toISOString(),
+          requiresMaturityUntil: oneDayAfterEnd.toISOString(),
         });
         await this.storeFeedback(
           tx,
           prediction.id,
           "timeframe_extraction",
-          `Prediction timeframe ends on ${timeframeResult.end_utc} which is after the current date ${currentDate.toISOString()}. Prediction has not matured yet and cannot be verified.`,
+          `Prediction timeframe ends on ${timeframeResult.end_utc}. Predictions must be mature for at least one day before verification. Can be verified after ${oneDayAfterEnd.toISOString()}.`,
           "FUTURE_TIMEFRAME",
         );
         return true;
