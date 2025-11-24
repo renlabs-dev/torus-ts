@@ -37,10 +37,16 @@
       "preview_domain": "predictionswarm.com"
     },
     "torus-swarm-twitter": {
-      "pr_preview": false
+      "pr_preview": false,
+      "prod_only": true
     },
     "torus-swarm-verifier": {
-      "pr_preview": false
+      "pr_preview": false,
+      "prod_only": true
+    },
+    "swarm-filter": {
+      "pr_preview": false,
+      "prod_only": true
     }
   }
 }

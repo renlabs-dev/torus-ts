@@ -133,8 +133,15 @@ jobs:
           pr_apps=()
 
           # For all apps marked for deploy, we aggregate
-          # those that must deploy PR previews.
+          # those that must deploy PR previews and filter prod-only apps on non-main branches.
           for app in "${!apps_to_deploy[@]}"; do
+            # Check if app is prod-only and we're NOT on main branch
+            prod_only=$(echo "$config" | jq -r ".apps[\"$app\"].prod_only // false")
+            if [ "$prod_only" == "true" ] && [ "${{ github.ref_name }}" != "main" ]; then
+              echo "Skipping $app (prod-only, current branch: ${{ github.ref_name }})"
+              continue
+            fi
+
             deploy_apps+=("\"$app\"")
 
             pr_preview=$(echo "$config" | jq -r ".apps[\"$app\"].pr_preview // false")
