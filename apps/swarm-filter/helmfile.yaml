@@ -4,7 +4,7 @@ environments:
       - ../../helm/values.yaml
       - values.yaml
       - namespace: torus-dev-web-apps
-      - environmentName: dev  
+      - environmentName: dev
       - releaseName: dev-swarm-filter
       - wssApiEndpoint: wss://api.testnet.torus.network
       - chainEnv: testnet
