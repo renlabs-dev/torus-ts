@@ -128,8 +128,6 @@ Before evaluating the prediction content, verify the filter didn't create broken
 
 10. **Heavy hedging**: "maybe", "possibly", "could"
 
-11. **Future timeframe**: Prediction end_utc is AFTER current_date (not yet mature for verification)
-
 ## Output Format
 
 Return ONLY valid JSON (no markdown fences):
@@ -158,7 +156,6 @@ Return ONLY valid JSON (no markdown fences):
   - `"SARCASM"`: Sarcastic or joking tone ("lol", "lmao", emojis)
   - `"QUOTING_OTHERS"`: Author is quoting someone else's view (not making their own prediction)
   - `"HEAVY_HEDGING"`: Heavily hedged ("maybe", "possibly", "could")
-  - `"FUTURE_TIMEFRAME"`: Prediction hasn't matured yet (end_utc > current_date)
   - `"OTHER"`: Other disqualifying factors including questions, trivial/obvious outcomes, and patterns not covered above
 - `confidence`: Confidence score from 0.0 to 1.0 indicating how certain the validation is
 - `reasoning`: Human-readable explanation
@@ -194,7 +191,7 @@ Return ONLY valid JSON (no markdown fences):
   "is_valid": true,
   "failure_cause": null,
   "confidence": 0.98,
-  "reasoning": "Clear, unconditional prediction with specific target and deadline. No hedging, sarcasm, or conditions. Timeframe has passed (ended 2025-03-31), so it's mature for verification."
+  "reasoning": "Clear, unconditional prediction with specific target and deadline. No hedging, sarcasm, or conditions."
 }
 ```
 
@@ -471,38 +468,7 @@ Return ONLY valid JSON (no markdown fences):
 }
 ```
 
-### Example 7: Invalid - Future Timeframe
-
-**Input:**
-
-```json
-{
-  "current_date": "2025-01-20T00:00:00Z",
-  "thread_tweets": [
-    { "text": "BTC will hit 100k by end of 2026. Mark my words!" }
-  ],
-  "target_slices": [{ "text": "BTC will hit 100k" }],
-  "timeframe_slices": [{ "text": "by end of 2026" }],
-  "timeframe_parsed": {
-    "start_utc": "2025-01-20T00:00:00Z",
-    "end_utc": "2026-12-31T23:59:59Z"
-  }
-}
-```
-
-**Output:**
-
-```json
-{
-  "context": "Author is making a confident price prediction for Bitcoin reaching 100k by end of 2026.",
-  "is_valid": false,
-  "failure_cause": "FUTURE_TIMEFRAME",
-  "confidence": 1.0,
-  "reasoning": "While this is a valid prediction, the timeframe ends on 2026-12-31 which is after the current date of 2025-01-20. Prediction has not matured yet and cannot be verified."
-}
-```
-
-### Example 8: Invalid - Self-Announcement
+### Example 7: Invalid - Self-Announcement
 
 **Input:**
 
@@ -538,7 +504,7 @@ Return ONLY valid JSON (no markdown fences):
 }
 ```
 
-### Example 9: Invalid - Personal Action
+### Example 8: Invalid - Personal Action
 
 **Input:**
 
@@ -574,7 +540,7 @@ Return ONLY valid JSON (no markdown fences):
 }
 ```
 
-### Example 10: Invalid - Self-Announcement (Seasonal Product)
+### Example 9: Invalid - Self-Announcement (Seasonal Product)
 
 **Input:**
 
@@ -612,7 +578,7 @@ Return ONLY valid JSON (no markdown fences):
 }
 ```
 
-### Example 11: Invalid - Self-Announcement (Product Promotion)
+### Example 10: Invalid - Self-Announcement (Product Promotion)
 
 **Input:**
 
@@ -648,7 +614,7 @@ Return ONLY valid JSON (no markdown fences):
 }
 ```
 
-### Example 12: Invalid - Question (Rhetorical)
+### Example 11: Invalid - Question (Rhetorical)
 
 **Input:**
 
@@ -688,7 +654,7 @@ Return ONLY valid JSON (no markdown fences):
 }
 ```
 
-### Example 13: Invalid - Question (Speculative)
+### Example 12: Invalid - Question (Speculative)
 
 **Input:**
 
@@ -724,7 +690,7 @@ Return ONLY valid JSON (no markdown fences):
 }
 ```
 
-### Example 14: Invalid - Quoting Others
+### Example 13: Invalid - Quoting Others
 
 **Input:**
 
@@ -762,7 +728,7 @@ Return ONLY valid JSON (no markdown fences):
 }
 ```
 
-### Example 15: Invalid - Trivial/Obvious Outcome
+### Example 14: Invalid - Trivial/Obvious Outcome
 
 **Input:**
 
