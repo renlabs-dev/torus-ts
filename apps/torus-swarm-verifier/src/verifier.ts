@@ -4,6 +4,7 @@ import {
   parsedPredictionDetailsSchema,
   parsedPredictionFeedbackSchema,
   parsedPredictionSchema,
+  predictionDuplicateRelationsSchema,
   scrapedTweetSchema,
   twitterScrapingJobsSchema,
   twitterUsersSchema,
@@ -15,11 +16,152 @@ import type {
   ScrapedTweet,
   VerdictContext,
 } from "@torus-ts/db/schema";
-import { and, asc, eq, notExists } from "drizzle-orm";
-import { logger } from "./index";
+import { and, asc, eq, lt, notExists, sql } from "drizzle-orm";
+import { logger } from "./logger";
 import { sleep } from "./utils";
 
 const workerContext = new AsyncLocalStorage<{ workerId: number }>();
+
+function groupSlicesByTweet(slices: PostSlice[]): Map<string, PostSlice[]> {
+  const byTweet = new Map<string, PostSlice[]>();
+  for (const slice of slices) {
+    const group = byTweet.get(slice.source.tweet_id);
+    if (group) group.push(slice);
+    else byTweet.set(slice.source.tweet_id, [slice]);
+  }
+  return byTweet;
+}
+
+interface Range {
+  start: number;
+  end: number;
+}
+
+/** Sorts ranges by start position and merges overlapping/adjacent ones into unified spans. */
+function mergeRanges(ranges: Range[]): Range[] {
+  if (ranges.length === 0) return [];
+
+  const sorted = [...ranges].sort((a, b) => a.start - b.start);
+  const first = sorted[0];
+  if (!first) return [];
+
+  const merged: Range[] = [first];
+
+  for (let i = 1; i < sorted.length; i++) {
+    const current = sorted[i];
+    const last = merged[merged.length - 1];
+    if (!current || !last) continue;
+
+    if (current.start <= last.end + 1) {
+      last.end = Math.max(last.end, current.end);
+    } else {
+      merged.push(current);
+    }
+  }
+
+  return merged;
+}
+
+/**
+ * Calculates what fraction of slices1's character span is covered by slices2. Groups
+ * slices by tweet, merges overlapping ranges within each group, then sums intersection
+ * lengths. Handles fragmented slices that collectively cover the same content.
+ */
+function calculateCoverageAwareOverlap(
+  slices1: PostSlice[],
+  slices2: PostSlice[],
+): number {
+  if (slices1.length === 0 || slices2.length === 0) {
+    return 0;
+  }
+
+  const slicesByTweet1 = groupSlicesByTweet(slices1);
+  const slicesByTweet2 = groupSlicesByTweet(slices2);
+
+  let totalCoveredLength = 0;
+  let totalLength1 = 0;
+
+  for (const [tweetId, tweet1Slices] of slicesByTweet1) {
+    const tweet2Slices = slicesByTweet2.get(tweetId) ?? [];
+
+    const merged1 = mergeRanges(
+      tweet1Slices.map((s) => ({ start: s.start, end: s.end })),
+    );
+    const merged2 = mergeRanges(
+      tweet2Slices.map((s) => ({ start: s.start, end: s.end })),
+    );
+
+    for (const r1 of merged1) {
+      const r1Length = r1.end - r1.start;
+      totalLength1 += r1Length;
+
+      let coveredLength = 0;
+      for (const r2 of merged2) {
+        const overlapStart = Math.max(r1.start, r2.start);
+        const overlapEnd = Math.min(r1.end, r2.end);
+        coveredLength += Math.max(0, overlapEnd - overlapStart);
+      }
+
+      totalCoveredLength += coveredLength;
+    }
+  }
+
+  if (totalLength1 === 0) return 0;
+
+  return totalCoveredLength / totalLength1;
+}
+
+/**
+ * Computes coverage from both directions and returns the MINIMUM. This ensures
+ * that extra content in either prediction significantly reduces the similarity
+ * score, preventing supersets from being marked as duplicates.
+ */
+function calculateBidirectionalOverlap(
+  slices1: PostSlice[],
+  slices2: PostSlice[],
+): number {
+  const overlap1to2 = calculateCoverageAwareOverlap(slices1, slices2);
+  const overlap2to1 = calculateCoverageAwareOverlap(slices2, slices1);
+
+  return Math.min(overlap1to2, overlap2to1);
+}
+
+export interface ParsedPredictionForDedup {
+  id: string;
+  predictionId: string;
+  target: PostSlice[];
+  timeframe: PostSlice[];
+}
+
+export interface PredictionComparisonResult {
+  targetScore: number;
+  timeframeScore: number;
+  isDuplicate: boolean;
+}
+
+/**
+ * Compares two predictions using bidirectional slice overlap. Both target and
+ * timeframe must exceed their thresholds (default 0.96) for a duplicate match.
+ */
+export function comparePredictions(
+  pred1: ParsedPredictionForDedup,
+  pred2: ParsedPredictionForDedup,
+  targetThreshold = 0.96,
+  timeframeThreshold = 0.96,
+): PredictionComparisonResult {
+  const targetScore = calculateBidirectionalOverlap(pred1.target, pred2.target);
+  const timeframeScore = calculateBidirectionalOverlap(
+    pred1.timeframe,
+    pred2.timeframe,
+  );
+
+  return {
+    targetScore,
+    timeframeScore,
+    isDuplicate:
+      targetScore >= targetThreshold && timeframeScore >= timeframeThreshold,
+  };
+}
 
 function logInfo(message: string, fields?: Record<string, unknown>): void {
   const context = workerContext.getStore();
@@ -60,9 +202,6 @@ type PredictionTweet = Omit<
   authorUsername: string | null;
 };
 
-/**
- * Timeframe extraction response from Gemini
- */
 interface TimeframeExtractionResult {
   timeframe_status:
     | "explicit"
@@ -86,29 +225,20 @@ interface TimeframeExtractionResult {
   confidence: number;
 }
 
-/**
- * Slice validation failure reasons
- */
 type SliceValidationFailureCause =
-  | "EMPTY_SLICES" // No slices provided
-  | "MISSING_TWEET" // Slice references a tweet that doesn't exist
-  | "NEGATIVE_INDICES" // Start or end index is negative
-  | "INVALID_RANGE" // Start >= end (inverted or zero-length range)
-  | "SLICE_TOO_SHORT" // Slice length < 2 characters
-  | "OUT_OF_BOUNDS"; // End index exceeds tweet text length
+  | "EMPTY_SLICES"
+  | "MISSING_TWEET"
+  | "NEGATIVE_INDICES"
+  | "INVALID_RANGE"
+  | "SLICE_TOO_SHORT"
+  | "OUT_OF_BOUNDS";
 
-/**
- * Result from slice validation
- */
 interface SliceValidationResult {
   valid: boolean;
   failureCause?: SliceValidationFailureCause;
   message?: string;
 }
 
-/**
- * Filter validation failure reasons
- */
 type FilterValidationFailureCause =
   | "BROKEN_EXTRACTION"
   | "VAGUE_TARGET"
@@ -122,9 +252,6 @@ type FilterValidationFailureCause =
   | "PERSONAL_ACTION"
   | "OTHER";
 
-/**
- * Filter validation response
- */
 interface FilterValidationResult {
   context: string;
   is_valid: boolean;
@@ -133,9 +260,6 @@ interface FilterValidationResult {
   reasoning: string;
 }
 
-/**
- * URL citation from OpenRouter web search
- */
 interface UrlCitation {
   url: string;
   title?: string;
@@ -144,20 +268,14 @@ interface UrlCitation {
   end_index?: number;
 }
 
-/**
- * Verdict generation response
- */
 interface VerdictResult {
   valid: boolean;
   verdict: boolean;
   confidence: number;
   reasoning: string;
-  sources?: UrlCitation[]; // Extracted from OpenRouter annotations
+  sources?: UrlCitation[];
 }
 
-/**
- * JSON Schema for TimeframeExtractionResult
- */
 const TIMEFRAME_EXTRACTION_SCHEMA = {
   type: "object",
   properties: {
@@ -221,9 +339,6 @@ const TIMEFRAME_EXTRACTION_SCHEMA = {
   additionalProperties: false,
 } as const;
 
-/**
- * JSON Schema for FilterValidationResult
- */
 const FILTER_VALIDATION_SCHEMA = {
   type: "object",
   properties: {
@@ -271,9 +386,6 @@ const FILTER_VALIDATION_SCHEMA = {
   additionalProperties: false,
 } as const;
 
-/**
- * JSON Schema for VerdictResult
- */
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const VERDICT_SCHEMA = {
   type: "object",
@@ -304,27 +416,15 @@ const VERDICT_SCHEMA = {
   additionalProperties: false,
 } as const;
 
-/**
- * Configuration for the Prediction Verifier worker
- */
 export interface PredictionVerifierConfig {
-  /** Number of workers to run concurrently (default: 3) */
   concurrency?: number;
-  /** Enable debug logging */
   debugMode?: boolean;
-  /** OpenRouter API key for LLM calls */
   openrouterApiKey: string;
-  /** Timeframe extraction prompt template */
   timeframePrompt: string;
-  /** Filter validation prompt template */
   filterValidationPrompt: string;
-  /** Verdict generation prompt template */
   verdictPrompt: string;
 }
 
-/**
- * Prediction Verifier
- */
 export class PredictionVerifier {
   private readonly config: Required<PredictionVerifierConfig>;
 
@@ -343,10 +443,6 @@ export class PredictionVerifier {
     this.db = db;
   }
 
-  /**
-   * Fetches the next prediction that needs verification.
-   * Returns the oldest parsed prediction that does not have a verdict or feedback.
-   */
   async getNextPredictionToVerify(tx: Transaction): Promise<
     | {
         id: string;
@@ -387,6 +483,10 @@ export class PredictionVerifier {
       )
       .where(
         and(
+          lt(
+            parsedPredictionSchema.createdAt,
+            sql`NOW() - INTERVAL '5 minutes'`,
+          ),
           notExists(
             tx
               .select()
@@ -426,9 +526,6 @@ export class PredictionVerifier {
     return predictions[0];
   }
 
-  /**
-   * Fetches one tweet with the given ID.
-   */
   async fetchSinglePredictionTweet(
     tx: Transaction,
     tweetId: bigint,
@@ -453,9 +550,6 @@ export class PredictionVerifier {
       .where(eq(scrapedTweetSchema.id, tweetId));
   }
 
-  /**
-   * Extracts text from PostSlices by concatenating the referenced text ranges.
-   */
   private extractSliceText(
     slices: PostSlice[],
     tweetMap: Map<bigint, PredictionTweet>,
@@ -469,9 +563,6 @@ export class PredictionVerifier {
       .join(" ");
   }
 
-  /**
-   * Stores feedback for predictions that failed validation.
-   */
   private async storeFeedback(
     tx: Transaction,
     parsedPredictionId: string,
@@ -494,10 +585,6 @@ export class PredictionVerifier {
     });
   }
 
-  /**
-   * Stores timeframe extraction results to parsed_prediction_details.
-   * Uses upsert to handle incremental updates.
-   */
   private async storeTimeframeDetails(
     tx: Transaction,
     parsedPredictionId: string,
@@ -545,10 +632,6 @@ export class PredictionVerifier {
     });
   }
 
-  /**
-   * Stores filter validation context to parsed_prediction_details.
-   * Uses upsert to handle incremental updates.
-   */
   private async storeFilterValidationContext(
     tx: Transaction,
     parsedPredictionId: string,
@@ -579,10 +662,6 @@ export class PredictionVerifier {
     });
   }
 
-  /**
-   * Stores verdict details (confidence and sources) to parsed_prediction_details.
-   * Uses upsert to handle incremental updates.
-   */
   private async storeVerdictDetails(
     tx: Transaction,
     parsedPredictionId: string,
@@ -620,9 +699,6 @@ export class PredictionVerifier {
     });
   }
 
-  /**
-   * Stores verdict in the database.
-   */
   private async storeVerdict(
     tx: Transaction,
     parsedPredictionId: string,
@@ -644,9 +720,6 @@ export class PredictionVerifier {
     });
   }
 
-  /**
-   * Calls OpenRouter API with Grok to generate verdict using web search.
-   */
   private async generateVerdict(
     context: string,
     targetText: string,
@@ -744,9 +817,6 @@ export class PredictionVerifier {
     };
   }
 
-  /**
-   * Calls OpenRouter API to validate filter extraction quality.
-   */
   private async validateFilterExtraction(
     targetText: string,
     timeframeText: string,
@@ -846,9 +916,6 @@ export class PredictionVerifier {
     return JSON.parse(jsonText) as FilterValidationResult;
   }
 
-  /**
-   * Calls OpenRouter API to extract structured timeframe data from prediction text.
-   */
   private async extractTimeframe(
     targetText: string,
     timeframeText: string,
@@ -933,10 +1000,6 @@ export class PredictionVerifier {
     return JSON.parse(jsonText) as TimeframeExtractionResult;
   }
 
-  /**
-   * Validates that all PostSlices reference valid tweets and indices.
-   * Returns true if valid, false otherwise.
-   */
   private validatePostSlices(
     slices: PostSlice[],
     tweetMap: Map<bigint, PredictionTweet>,
@@ -1011,9 +1074,6 @@ export class PredictionVerifier {
     return { valid: true };
   }
 
-  /**
-   * Fetches all tweets in the given conversation.
-   */
   async fetchConversationTweets(
     tx: Transaction,
     conversationId: bigint,
@@ -1038,10 +1098,7 @@ export class PredictionVerifier {
       .where(eq(scrapedTweetSchema.conversationId, conversationId));
   }
 
-  /**
-   * Traverses parent reply chain starting from a tweet to build the thread.
-   * Returns tweets in order from root to the target tweet.
-   */
+  /** Walks parent pointers from tweetId to the root, returning tweets in root-to-leaf order. */
   private buildReplyChain(
     tweetId: bigint,
     allTweets: Map<bigint, PredictionTweet>,
@@ -1060,10 +1117,6 @@ export class PredictionVerifier {
     return chain;
   }
 
-  /**
-   * Fetches and organizes all tweet data needed for prediction verification.
-   * Returns sorted list of tweets from the relevant reply branch.
-   */
   async fetchPredictionTweets(
     tx: Transaction,
     sourceTweetId: bigint,
@@ -1080,9 +1133,100 @@ export class PredictionVerifier {
     return replyChain.sort((a, b) => (a.date < b.date ? -1 : 1));
   }
 
+  /** Fetches all parsed predictions associated with the given tweet IDs. */
+  private async fetchPredictionsForTweets(
+    tx: Transaction,
+    tweetIds: bigint[],
+  ): Promise<ParsedPredictionForDedup[]> {
+    if (tweetIds.length === 0) return [];
+
+    const predictions = await tx
+      .select({
+        id: parsedPredictionSchema.id,
+        predictionId: parsedPredictionSchema.predictionId,
+        target: parsedPredictionSchema.target,
+        timeframe: parsedPredictionSchema.timeframe,
+      })
+      .from(parsedPredictionSchema)
+      .innerJoin(
+        scrapedTweetSchema,
+        eq(
+          scrapedTweetSchema.predictionId,
+          parsedPredictionSchema.predictionId,
+        ),
+      )
+      .where(sql`${scrapedTweetSchema.id} IN ${tweetIds}`);
+
+    return predictions as ParsedPredictionForDedup[];
+  }
+
   /**
-   * Processes the next prediction that needs verification.
-   * This is the main entry point for verification work.
+   * Runs deduplication on predictions in the tweet tree using union-find clustering.
+   * Returns the canonical prediction ID for the given prediction, or null if it's
+   * already canonical (unique or the chosen representative of its cluster).
+   */
+  private findCanonicalPrediction(
+    predictionId: string,
+    predictions: ParsedPredictionForDedup[],
+  ): { canonicalId: string; similarityScore: number } | null {
+    if (predictions.length < 2) return null;
+
+    const parent = new Map<string, string>();
+    for (const pred of predictions) {
+      parent.set(pred.id, pred.id);
+    }
+
+    function find(id: string): string {
+      const p = parent.get(id);
+      if (p === undefined || p === id) return id;
+      const root = find(p);
+      parent.set(id, root);
+      return root;
+    }
+
+    function union(id1: string, id2: string): void {
+      const root1 = find(id1);
+      const root2 = find(id2);
+      if (root1 === root2) return;
+      if (root1 < root2) {
+        parent.set(root2, root1);
+      } else {
+        parent.set(root1, root2);
+      }
+    }
+
+    for (let i = 0; i < predictions.length; i++) {
+      for (let j = i + 1; j < predictions.length; j++) {
+        const pred1 = predictions[i];
+        const pred2 = predictions[j];
+        if (!pred1 || !pred2) continue;
+
+        if (comparePredictions(pred1, pred2).isDuplicate) {
+          union(pred1.id, pred2.id);
+        }
+      }
+    }
+
+    const root = find(predictionId);
+    if (root === predictionId) return null;
+
+    const canonical = predictions.find((p) => p.id === root);
+    if (!canonical) return null;
+
+    const currentPred = predictions.find((p) => p.id === predictionId);
+    if (!currentPred) return null;
+
+    const result = comparePredictions(currentPred, canonical);
+    return {
+      canonicalId: root,
+      similarityScore: (result.targetScore + result.timeframeScore) / 2,
+    };
+  }
+
+  /**
+   * Main verification pipeline: validates slices, extracts timeframe via LLM, checks
+   * if prediction has matured, validates extraction quality, then generates verdict
+   * using web search. Returns false if no work available, true otherwise.
    */
   async processNextPrediction(tx: Transaction): Promise<boolean> {
     const prediction = await this.getNextPredictionToVerify(tx);
@@ -1113,6 +1257,36 @@ export class PredictionVerifier {
       count: tweets.length,
       tweetIds: tweets.map((t) => t.id.toString()).join(","),
     });
+
+    const tweetIds = tweets.map((t) => t.id);
+    const predictionsInTree = await this.fetchPredictionsForTweets(
+      tx,
+      tweetIds,
+    );
+
+    const duplicateResult = this.findCanonicalPrediction(
+      prediction.id,
+      predictionsInTree,
+    );
+
+    if (duplicateResult) {
+      logInfo("Prediction is a duplicate, skipping verification", {
+        predictionId: prediction.id,
+        canonicalId: duplicateResult.canonicalId,
+        similarityScore: duplicateResult.similarityScore.toFixed(4),
+      });
+
+      await tx
+        .insert(predictionDuplicateRelationsSchema)
+        .values({
+          predictionId: prediction.id,
+          canonicalId: duplicateResult.canonicalId,
+          similarityScore: duplicateResult.similarityScore.toFixed(4),
+        })
+        .onConflictDoNothing();
+
+      return true;
+    }
 
     const tweetMap = new Map(tweets.map((t) => [t.id, t]));
     const target = prediction.target as PostSlice[];
@@ -1307,10 +1481,6 @@ export class PredictionVerifier {
     return true;
   }
 
-  /**
-   * Worker loop that polls for predictions and processes them continuously.
-   * Backs off exponentially on failures.
-   */
   private async runWorker(
     workerId: number,
     stopHook: () => boolean,
@@ -1354,9 +1524,6 @@ export class PredictionVerifier {
     });
   }
 
-  /**
-   * Starts multiple concurrent workers that process predictions in parallel.
-   */
   async runVerifier(stopHook: () => boolean): Promise<void> {
     const workers = Array.from({ length: this.config.concurrency }, (_, i) =>
       this.runWorker(i + 1, stopHook),
