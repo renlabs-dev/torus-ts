@@ -85,9 +85,6 @@ export interface FastBridgeTransactionHistoryItem {
   // For recovery
   canRetry: boolean;
 
-  // User interaction tracking
-  viewedByUser?: boolean; // True when user has viewed/interacted with this error transaction
-
   // Metadata - wallet addresses for all 3 chains involved
   baseAddress?: string; // Base chain address (EVM)
   evmAddress?: string; // Torus EVM address

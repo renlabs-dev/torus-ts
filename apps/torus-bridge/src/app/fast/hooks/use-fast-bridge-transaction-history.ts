@@ -20,8 +20,6 @@ interface FastBridgeTransactionHistoryState {
   clearHistory: () => void;
   deleteTransaction: (id: string) => void;
   markAsRetried: (id: string) => void;
-  markAsViewed: (id: string) => void;
-  getUnviewedErrorCount: () => number;
 }
 
 function generateId(): string {
@@ -58,6 +56,14 @@ export const useFastBridgeTransactionHistory =
         },
 
         updateTransaction: (id, updates) => {
+          // If updating to "completed" status, delete the transaction instead of updating
+          if (updates.status === "completed") {
+            set((state) => ({
+              transactions: state.transactions.filter((tx) => tx.id !== id),
+            }));
+            return;
+          }
+
           set((state) => ({
             transactions: state.transactions.map((tx) =>
               tx.id === id ? { ...tx, ...updates } : tx,
@@ -92,21 +98,6 @@ export const useFastBridgeTransactionHistory =
                 : tx,
             ),
           }));
-        },
-
-        markAsViewed: (id) => {
-          set((state) => ({
-            transactions: state.transactions.map((tx) =>
-              tx.id === id ? { ...tx, viewedByUser: true } : tx,
-            ),
-          }));
-        },
-
-        getUnviewedErrorCount: () => {
-          const transactions = get().transactions;
-          return transactions.filter(
-            (tx) => tx.status === "error" && !tx.viewedByUser,
-          ).length;
         },
       }),
       {

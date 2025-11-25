@@ -100,9 +100,10 @@ export function FastBridgeForm() {
     executeEvmToBase,
   } = useOrchestratedTransfer();
 
-  const { getTransactionById, getUnviewedErrorCount } =
+  const { getTransactionById, getTransactions } =
     useFastBridgeTransactionHistory();
-  const unviewedErrorCount = getUnviewedErrorCount();
+  const errorCount = getTransactions().filter((tx) => tx.status === "error")
+    .length;
 
   const {
     setTransactionInUrl,
@@ -579,12 +580,12 @@ export function FastBridgeForm() {
           >
             <History className="mr-2 h-4 w-4" />
             History
-            {unviewedErrorCount > 0 && (
+            {errorCount > 0 && (
               <Badge
                 variant="destructive"
                 className="absolute -right-1 -top-1 flex h-5 min-w-[20px] items-center justify-center rounded-full px-1 text-[10px] font-bold"
               >
-                {unviewedErrorCount}
+                {errorCount}
               </Badge>
             )}
           </Button>

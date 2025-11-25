@@ -328,7 +328,6 @@ export function useOrchestratedTransfer() {
           canRetry: false,
           errorMessage: undefined,
           errorStep: undefined,
-          viewedByUser: false, // Reset viewed status on success after retry
         });
       }
 
@@ -472,7 +471,6 @@ export function useOrchestratedTransfer() {
           canRetry: false,
           errorMessage: undefined,
           errorStep: undefined,
-          viewedByUser: false, // Reset viewed status on success after retry
         });
       }
 
@@ -551,7 +549,6 @@ export function useOrchestratedTransfer() {
           canRetry: false,
           errorMessage: undefined,
           errorStep: undefined,
-          viewedByUser: false, // Reset viewed status on success after retry
         });
       }
 
@@ -627,7 +624,6 @@ export function useOrchestratedTransfer() {
           canRetry: false,
           errorMessage: undefined,
           errorStep: undefined,
-          viewedByUser: false, // Reset viewed status on success after retry
         });
       }
 

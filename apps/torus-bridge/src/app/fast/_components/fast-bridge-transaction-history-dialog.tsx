@@ -39,7 +39,6 @@ interface TransactionListProps {
   filter: TransactionHistoryFilter;
   onContinue: (transaction: FastBridgeTransactionHistoryItem) => void;
   getExplorerUrl: (txHash: string, chainName: string) => string;
-  onMarkAsViewed: (transactionId: string) => void;
   onDelete: (transactionId: string) => void;
 }
 
@@ -48,7 +47,6 @@ function TransactionList({
   filter,
   onContinue,
   getExplorerUrl,
-  onMarkAsViewed,
   onDelete,
 }: TransactionListProps) {
   if (transactionsWithIndex.length === 0) {
@@ -70,7 +68,6 @@ function TransactionList({
           index={originalIndex}
           onContinue={onContinue}
           getExplorerUrl={getExplorerUrl}
-          onMarkAsViewed={onMarkAsViewed}
           onDelete={onDelete}
         />
       ))}
@@ -91,7 +88,7 @@ export function TransactionHistoryDialog({
   onContinue,
   getExplorerUrl,
 }: TransactionHistoryDialogProps) {
-  const { getTransactions, markAsViewed, clearHistory, deleteTransaction } =
+  const { getTransactions, clearHistory, deleteTransaction } =
     useFastBridgeTransactionHistory();
   const [filter, setFilter] = useState<TransactionHistoryFilter>("all");
   const [visibleCount, setVisibleCount] = useState(ITEMS_PER_PAGE);
@@ -247,7 +244,6 @@ export function TransactionHistoryDialog({
                 filter={filter}
                 onContinue={onContinue}
                 getExplorerUrl={getExplorerUrl}
-                onMarkAsViewed={markAsViewed}
                 onDelete={deleteTransaction}
               />
             </TabsContent>
@@ -259,7 +255,6 @@ export function TransactionHistoryDialog({
                 filter={filter}
                 onContinue={onContinue}
                 getExplorerUrl={getExplorerUrl}
-                onMarkAsViewed={markAsViewed}
                 onDelete={deleteTransaction}
               />
             </TabsContent>
@@ -271,7 +266,6 @@ export function TransactionHistoryDialog({
                 filter={filter}
                 onContinue={onContinue}
                 getExplorerUrl={getExplorerUrl}
-                onMarkAsViewed={markAsViewed}
                 onDelete={deleteTransaction}
               />
             </TabsContent>
