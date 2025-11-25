@@ -3,13 +3,21 @@
 import { Badge } from "@torus-ts/ui/components/badge";
 import { Button } from "@torus-ts/ui/components/button";
 import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@torus-ts/ui/components/dialog";
+import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from "@torus-ts/ui/components/tooltip";
 import { cn } from "@torus-ts/ui/lib/utils";
-import { ChevronDown, ChevronUp, ExternalLink, RotateCw } from "lucide-react";
+import { ChevronDown, ChevronUp, ExternalLink, RotateCw, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { formatErrorForUser } from "../hooks/fast-bridge-helpers";
 import type { FastBridgeTransactionHistoryItem } from "./fast-bridge-types";
@@ -20,6 +28,7 @@ interface TransactionHistoryItemProps {
   onContinue: (transaction: FastBridgeTransactionHistoryItem) => void;
   getExplorerUrl: (txHash: string, chainName: string) => string;
   onMarkAsViewed: (transactionId: string) => void;
+  onDelete: (transactionId: string) => void;
 }
 
 function formatTimestamp(timestamp: number): string {
@@ -80,8 +89,10 @@ export function TransactionHistoryItem({
   onContinue,
   getExplorerUrl,
   onMarkAsViewed,
+  onDelete,
 }: TransactionHistoryItemProps) {
   const [isExpanded, setIsExpanded] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
   const directionLabel =
     transaction.direction === "base-to-native"
@@ -104,6 +115,11 @@ export function TransactionHistoryItem({
       onMarkAsViewed(transaction.id);
     }
     onContinue(transaction);
+  };
+
+  const handleDelete = () => {
+    onDelete(transaction.id);
+    setShowDeleteDialog(false);
   };
 
   return (
@@ -230,6 +246,14 @@ export function TransactionHistoryItem({
           )}
           <Button
             size="sm"
+            variant="outline"
+            onClick={() => setShowDeleteDialog(true)}
+          >
+            <Trash2 className="mr-2 h-4 w-4" />
+            Delete
+          </Button>
+          <Button
+            size="sm"
             variant="ghost"
             onClick={() => setIsExpanded(!isExpanded)}
             className="h-8 w-8 p-0"
@@ -344,6 +368,75 @@ export function TransactionHistoryItem({
           )}
         </div>
       )}
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Deseja deletar esse registro?</DialogTitle>
+            <DialogDescription>
+              Esta ação não pode ser desfeita.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-3 py-4">
+            <div className="grid grid-cols-2 gap-2 text-sm">
+              <div className="text-muted-foreground">Direção:</div>
+              <div>{directionLabel}</div>
+
+              <div className="text-muted-foreground">Quantidade:</div>
+              <div>{transaction.amount} TORUS</div>
+
+              <div className="text-muted-foreground">Status:</div>
+              <div>{getStatusBadge(transaction.status)}</div>
+
+              <div className="text-muted-foreground">Data:</div>
+              <div>{formatTimestamp(transaction.timestamp)}</div>
+            </div>
+
+            {transaction.errorMessage && (
+              <div className="bg-muted/50 rounded-md p-3">
+                <div className="text-sm font-medium text-red-500">Erro:</div>
+                <div className="text-muted-foreground mt-1 text-xs">
+                  {formatErrorForUser(new Error(transaction.errorMessage))}
+                </div>
+              </div>
+            )}
+
+            {transaction.step1TxHash && (
+              <div className="bg-muted/50 rounded-md p-2 text-xs">
+                <div className="text-muted-foreground mb-1">Step 1 Hash:</div>
+                <div className="break-all font-mono">
+                  {transaction.step1TxHash.slice(0, 20)}...
+                  {transaction.step1TxHash.slice(-20)}
+                </div>
+              </div>
+            )}
+
+            {transaction.step2TxHash && (
+              <div className="bg-muted/50 rounded-md p-2 text-xs">
+                <div className="text-muted-foreground mb-1">Step 2 Hash:</div>
+                <div className="break-all font-mono">
+                  {transaction.step2TxHash.slice(0, 20)}...
+                  {transaction.step2TxHash.slice(-20)}
+                </div>
+              </div>
+            )}
+          </div>
+
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setShowDeleteDialog(false)}
+            >
+              Cancel
+            </Button>
+            <Button variant="destructive" onClick={handleDelete}>
+              Delete
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

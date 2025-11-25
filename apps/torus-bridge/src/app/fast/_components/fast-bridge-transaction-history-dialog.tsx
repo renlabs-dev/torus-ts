@@ -20,7 +20,6 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@torus-ts/ui/components/tooltip";
-import { env } from "~/env";
 import { AlertCircle, Trash2 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useFastBridgeTransactionHistory } from "../hooks/use-fast-bridge-transaction-history";
@@ -41,6 +40,7 @@ interface TransactionListProps {
   onContinue: (transaction: FastBridgeTransactionHistoryItem) => void;
   getExplorerUrl: (txHash: string, chainName: string) => string;
   onMarkAsViewed: (transactionId: string) => void;
+  onDelete: (transactionId: string) => void;
 }
 
 function TransactionList({
@@ -49,6 +49,7 @@ function TransactionList({
   onContinue,
   getExplorerUrl,
   onMarkAsViewed,
+  onDelete,
 }: TransactionListProps) {
   if (transactionsWithIndex.length === 0) {
     const message =
@@ -70,6 +71,7 @@ function TransactionList({
           onContinue={onContinue}
           getExplorerUrl={getExplorerUrl}
           onMarkAsViewed={onMarkAsViewed}
+          onDelete={onDelete}
         />
       ))}
     </div>
@@ -89,7 +91,7 @@ export function TransactionHistoryDialog({
   onContinue,
   getExplorerUrl,
 }: TransactionHistoryDialogProps) {
-  const { getTransactions, markAsViewed, clearHistory } =
+  const { getTransactions, markAsViewed, clearHistory, deleteTransaction } =
     useFastBridgeTransactionHistory();
   const [filter, setFilter] = useState<TransactionHistoryFilter>("all");
   const [visibleCount, setVisibleCount] = useState(ITEMS_PER_PAGE);
@@ -171,8 +173,6 @@ export function TransactionHistoryDialog({
     }
   }, [hasMore, handleLoadMore]);
 
-  const isDevelopment = env("NEXT_PUBLIC_NODE_ENV") === "development";
-
   const handleClearHistory = useCallback(() => {
     if (
       window.confirm(
@@ -187,39 +187,33 @@ export function TransactionHistoryDialog({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="flex max-h-[85vh] max-w-2xl flex-col p-0">
         <DialogHeader className="px-6 pt-6">
-          <div
-            className={`flex items-start justify-between gap-4 ${isDevelopment ? "py-4" : ""}`}
-          >
+          <div className="flex items-start justify-between gap-4 py-4">
             <div className="flex-1">
               <DialogTitle>Transaction History</DialogTitle>
               <DialogDescription>
                 View and manage your Fast Bridge transaction history
               </DialogDescription>
             </div>
-            {isDevelopment && (
-              <TooltipProvider delayDuration={300}>
-                <Tooltip open={tooltipEnabled ? undefined : false}>
-                  <TooltipTrigger asChild>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={handleClearHistory}
-                      className="shrink-0"
-                    >
-                      <Trash2 className="mr-2 h-4 w-4" />
-                      Clear
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent side="bottom" className="max-w-xs">
-                    <p className="text-sm">
-                      Clear all transaction history. This feature is only
-                      available in development and PR preview environments for
-                      testing purposes.
-                    </p>
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-            )}
+            <TooltipProvider delayDuration={300}>
+              <Tooltip open={tooltipEnabled ? undefined : false}>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleClearHistory}
+                    className="shrink-0"
+                  >
+                    <Trash2 className="mr-2 h-4 w-4" />
+                    Clear
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent side="bottom" className="max-w-xs">
+                  <p className="text-sm">
+                    Clear all transaction history. This action cannot be undone.
+                  </p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
           </div>
         </DialogHeader>
 
@@ -254,6 +248,7 @@ export function TransactionHistoryDialog({
                 onContinue={onContinue}
                 getExplorerUrl={getExplorerUrl}
                 onMarkAsViewed={markAsViewed}
+                onDelete={deleteTransaction}
               />
             </TabsContent>
 
@@ -265,6 +260,7 @@ export function TransactionHistoryDialog({
                 onContinue={onContinue}
                 getExplorerUrl={getExplorerUrl}
                 onMarkAsViewed={markAsViewed}
+                onDelete={deleteTransaction}
               />
             </TabsContent>
 
@@ -276,6 +272,7 @@ export function TransactionHistoryDialog({
                 onContinue={onContinue}
                 getExplorerUrl={getExplorerUrl}
                 onMarkAsViewed={markAsViewed}
+                onDelete={deleteTransaction}
               />
             </TabsContent>
           </Tabs>

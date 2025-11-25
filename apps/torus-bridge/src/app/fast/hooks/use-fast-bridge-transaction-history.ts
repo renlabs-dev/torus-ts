@@ -18,6 +18,7 @@ interface FastBridgeTransactionHistoryState {
     id: string,
   ) => FastBridgeTransactionHistoryItem | undefined;
   clearHistory: () => void;
+  deleteTransaction: (id: string) => void;
   markAsRetried: (id: string) => void;
   markAsViewed: (id: string) => void;
   getUnviewedErrorCount: () => number;
@@ -75,6 +76,12 @@ export const useFastBridgeTransactionHistory =
 
         clearHistory: () => {
           set({ transactions: [] });
+        },
+
+        deleteTransaction: (id) => {
+          set((state) => ({
+            transactions: state.transactions.filter((tx) => tx.id !== id),
+          }));
         },
 
         markAsRetried: (id) => {
