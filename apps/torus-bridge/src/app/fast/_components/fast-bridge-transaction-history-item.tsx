@@ -220,34 +220,50 @@ export function TransactionHistoryItem({
           )}
         </div>
 
-        <div className="flex gap-2">
-          {transaction.status === "error" && (
-            <Button size="sm" variant="outline" onClick={handleContinue}>
-              <RotateCw className="mr-2 h-4 w-4" />
-              Retry
-            </Button>
-          )}
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={() => setShowDeleteDialog(true)}
-          >
-            <Trash2 className="mr-2 h-4 w-4" />
-            Delete
-          </Button>
-          <Button
-            size="sm"
-            variant="ghost"
-            onClick={() => setIsExpanded(!isExpanded)}
-            className="h-8 w-8 p-0"
-          >
-            {isExpanded ? (
-              <ChevronUp className="h-4 w-4" />
-            ) : (
-              <ChevronDown className="h-4 w-4" />
+        <TooltipProvider delayDuration={5000}>
+          <div className="flex gap-2">
+            {transaction.status === "error" && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button size="sm" variant="outline" onClick={handleContinue}>
+                    <RotateCw className="mr-2 h-4 w-4" />
+                    Retry
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent side="top">
+                  <p className="text-xs">Retry this failed transaction</p>
+                </TooltipContent>
+              </Tooltip>
             )}
-          </Button>
-        </div>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => setShowDeleteDialog(true)}
+                >
+                  <Trash2 className="mr-2 h-4 w-4" />
+                  Delete
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent side="top">
+                <p className="text-xs">Delete this transaction from history</p>
+              </TooltipContent>
+            </Tooltip>
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={() => setIsExpanded(!isExpanded)}
+              className="h-8 w-8 p-0"
+            >
+              {isExpanded ? (
+                <ChevronUp className="h-4 w-4" />
+              ) : (
+                <ChevronDown className="h-4 w-4" />
+              )}
+            </Button>
+          </div>
+        </TooltipProvider>
       </div>
 
       {isExpanded && (
@@ -356,30 +372,30 @@ export function TransactionHistoryItem({
       <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle>Deseja deletar esse registro?</DialogTitle>
+            <DialogTitle>Delete this transaction?</DialogTitle>
             <DialogDescription>
-              Esta ação não pode ser desfeita.
+              This action cannot be undone.
             </DialogDescription>
           </DialogHeader>
 
           <div className="space-y-3 py-4">
             <div className="grid grid-cols-2 gap-2 text-sm">
-              <div className="text-muted-foreground">Direção:</div>
+              <div className="text-muted-foreground">Direction:</div>
               <div>{directionLabel}</div>
 
-              <div className="text-muted-foreground">Quantidade:</div>
+              <div className="text-muted-foreground">Amount:</div>
               <div>{transaction.amount} TORUS</div>
 
               <div className="text-muted-foreground">Status:</div>
               <div>{getStatusBadge(transaction.status)}</div>
 
-              <div className="text-muted-foreground">Data:</div>
+              <div className="text-muted-foreground">Date:</div>
               <div>{formatTimestamp(transaction.timestamp)}</div>
             </div>
 
             {transaction.errorMessage && (
               <div className="bg-muted/50 rounded-md p-3">
-                <div className="text-sm font-medium text-red-500">Erro:</div>
+                <div className="text-sm font-medium text-red-500">Error:</div>
                 <div className="text-muted-foreground mt-1 text-xs">
                   {formatErrorForUser(new Error(transaction.errorMessage))}
                 </div>
