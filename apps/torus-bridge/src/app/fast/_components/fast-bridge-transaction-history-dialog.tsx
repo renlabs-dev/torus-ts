@@ -5,6 +5,7 @@ import {
   Dialog,
   DialogContent,
   DialogDescription,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
 } from "@torus-ts/ui/components/dialog";
@@ -20,7 +21,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@torus-ts/ui/components/tooltip";
-import { AlertCircle, Trash2 } from "lucide-react";
+import { AlertCircle, Trash } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useFastBridgeTransactionHistory } from "../hooks/use-fast-bridge-transaction-history";
 import { TransactionHistoryItem } from "./fast-bridge-transaction-history-item";
@@ -93,6 +94,7 @@ export function TransactionHistoryDialog({
   const [filter, setFilter] = useState<TransactionHistoryFilter>("all");
   const [visibleCount, setVisibleCount] = useState(ITEMS_PER_PAGE);
   const [tooltipEnabled, setTooltipEnabled] = useState(false);
+  const [showDeleteAllDialog, setShowDeleteAllDialog] = useState(false);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   // Enable tooltip after 1 second to prevent it from showing on dialog open
@@ -170,14 +172,13 @@ export function TransactionHistoryDialog({
     }
   }, [hasMore, handleLoadMore]);
 
-  const handleClearHistory = useCallback(() => {
-    if (
-      window.confirm(
-        "Are you sure you want to clear all transaction history? This action cannot be undone.",
-      )
-    ) {
-      clearHistory();
-    }
+  const handleDeleteAllClick = useCallback(() => {
+    setShowDeleteAllDialog(true);
+  }, []);
+
+  const handleConfirmDeleteAll = useCallback(() => {
+    clearHistory();
+    setShowDeleteAllDialog(false);
   }, [clearHistory]);
 
   return (
@@ -197,16 +198,17 @@ export function TransactionHistoryDialog({
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={handleClearHistory}
+                    onClick={handleDeleteAllClick}
                     className="shrink-0"
                   >
-                    <Trash2 className="mr-2 h-4 w-4" />
-                    Clear
+                    <Trash className="mr-2 h-4 w-4" />
+                    Delete All
                   </Button>
                 </TooltipTrigger>
                 <TooltipContent side="bottom" className="max-w-xs">
                   <p className="text-sm">
-                    Clear all transaction history. This action cannot be undone.
+                    Delete all transactions from history. This action cannot be
+                    undone.
                   </p>
                 </TooltipContent>
               </Tooltip>
@@ -278,6 +280,32 @@ export function TransactionHistoryDialog({
           </Button>
         </div>
       </DialogContent>
+
+      {/* Delete All Confirmation Dialog */}
+      <Dialog open={showDeleteAllDialog} onOpenChange={setShowDeleteAllDialog}>
+        <DialogContent className="max-w-xl">
+          <DialogHeader>
+            <DialogTitle>Delete all transactions?</DialogTitle>
+            <DialogDescription>
+              You are about to delete {allTransactions.length} transaction
+              {allTransactions.length === 1 ? "" : "s"} from your history. Are
+              you sure you want to do this?
+            </DialogDescription>
+          </DialogHeader>
+
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setShowDeleteAllDialog(false)}
+            >
+              Cancel
+            </Button>
+            <Button variant="destructive" onClick={handleConfirmDeleteAll}>
+              Delete All
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </Dialog>
   );
 }
