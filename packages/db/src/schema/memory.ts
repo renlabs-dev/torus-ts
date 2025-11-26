@@ -326,6 +326,51 @@ export interface VerdictContext {
   feedback: string;
 }
 
+// ==== Duplicate Relations ====
+
+/**
+ * Stores duplicate relationships between parsed predictions.
+ * Uses additive/append-only pattern to support concurrent deduplication.
+ */
+export const predictionDuplicateRelationsSchema = createTable(
+  "prediction_duplicate_relations",
+  {
+    predictionId: uuidv7("prediction_id")
+      .notNull()
+      .references(() => parsedPredictionSchema.id, {
+        onDelete: "cascade",
+      }),
+    canonicalId: uuidv7("canonical_id")
+      .notNull()
+      .references(() => parsedPredictionSchema.id, {
+        onDelete: "cascade",
+      }),
+    similarityScore: decimal("similarity_score", { precision: 5, scale: 4 }),
+    ...timeFields(),
+  },
+  (t) => [
+    primaryKey({ columns: [t.predictionId, t.canonicalId] }),
+    index("prediction_duplicate_relations_prediction_id_idx").on(
+      t.predictionId,
+    ),
+    index("prediction_duplicate_relations_canonical_id_idx").on(t.canonicalId),
+  ],
+);
+
+/**
+ * Tracks which conversations have been processed for deduplication.
+ * Prevents redundant reprocessing of already-deduplicated conversations.
+ */
+export const deduplicationProcessedConversationsSchema = createTable(
+  "deduplication_processed_conversations",
+  {
+    conversationId: bigint("conversation_id").primaryKey(),
+    predictionsProcessed: integer("predictions_processed").notNull(),
+    duplicatesFound: integer("duplicates_found").notNull(),
+    ...timeFields(),
+  },
+);
+
 // ==== Prediction Feedback ====
 
 export const failureCauseEnum = pgEnum("failure_cause_enum", [
