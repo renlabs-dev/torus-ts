@@ -16,6 +16,7 @@
     "with-env": "dotenv -e ../../.env --"
   },
   "dependencies": {
+    "@tanstack/react-query": "catalog:",
     "@torus-ts/env-validation": "workspace:*",
     "@torus-network/sdk": "workspace:*",
     "@torus-ts/ui": "workspace:*",
