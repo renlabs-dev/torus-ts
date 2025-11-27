@@ -18,4 +18,6 @@ export function createDb() {
   const db = drizzle(conn, { schema });
   return db;
 }
+
 export type DB = ReturnType<typeof createDb>;
+export type Transaction = Parameters<Parameters<DB["transaction"]>[0]>[0];

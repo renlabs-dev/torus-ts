@@ -43,6 +43,8 @@ interface WalletDropdownProps {
   stakeOut: StakeOutData | undefined;
   shouldDisplayText?: boolean;
   torusChainEnv: string;
+  className?: string;
+  variant?: "default" | "icon";
 }
 
 export const WalletDropdown = (props: WalletDropdownProps) => {
@@ -57,6 +59,7 @@ export const WalletDropdown = (props: WalletDropdownProps) => {
     stakeOut,
     shouldDisplayText,
     torusChainEnv,
+    variant = "default",
   } = props;
 
   const handleGetAccounts = async () => {
@@ -91,20 +94,32 @@ export const WalletDropdown = (props: WalletDropdownProps) => {
     <div className="flex w-fit animate-fade-down justify-end py-1">
       <DropdownMenu onOpenChange={handleGetAccounts}>
         <DropdownMenuTrigger disabled={!isInitialized} asChild>
-          <button
-            className={cn(
-              "flex items-center gap-2 bg-transparent p-2 transition duration-200 hover:bg-background/60",
-            )}
-          >
-            <WalletCards className="!h-5 !w-5" />
-            <span className="text-sm">
-              <WalletLabel
-                isInitialized={isInitialized}
-                selectedAccount={selectedAccount}
-                shouldDisplayText={shouldDisplayText}
-              />
-            </span>
-          </button>
+          {variant === "icon" ? (
+            <button
+              className={cn(
+                props.className,
+                "flex h-8 w-8 items-center justify-center border border-border bg-background/80 text-white/80 transition duration-200 hover:bg-background/40",
+              )}
+            >
+              <WalletCards className="!h-4 !w-4" />
+            </button>
+          ) : (
+            <button
+              className={cn(
+                props.className,
+                "flex items-center gap-2 bg-transparent p-2 transition duration-200 hover:bg-background/60",
+              )}
+            >
+              <WalletCards className="!h-5 !w-5" />
+              <span className="text-sm">
+                <WalletLabel
+                  isInitialized={isInitialized}
+                  selectedAccount={selectedAccount}
+                  shouldDisplayText={shouldDisplayText}
+                />
+              </span>
+            </button>
+          )}
         </DropdownMenuTrigger>
         <DropdownMenuContent
           align="end"

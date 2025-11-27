@@ -58,7 +58,7 @@ export default function DaoApplicationsTab() {
 
       {isLoading ? (
         <div className="mt-4">Loading...</div>
-      ) : candidates?.length === 0 ? (
+      ) : candidates && candidates.length === 0 ? (
         <ContentNotFound message="No candidates matching the search criteria were found." />
       ) : (
         <ScrollArea className="h-[32.2rem] pt-4">

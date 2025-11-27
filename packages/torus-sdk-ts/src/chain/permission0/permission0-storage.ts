@@ -334,6 +334,39 @@ export async function queryAgentNamespacePermissions(
 }
 
 /**
+ * Query namespace permissions where the specified address is the delegator (grantor).
+ * Returns all namespace permissions granted by this address.
+ *
+ * @param api - The blockchain API instance
+ * @param delegatorAddress - The SS58 address of the delegator (grantor)
+ * @returns A map of PermissionId -> PermissionContract for permissions granted by the delegator
+ */
+export async function queryDelegatorNamespacePermissions(
+  api: Api,
+  delegatorAddress: SS58Address,
+): Promise<
+  Result<
+    Map<PermissionId, PermissionContract>,
+    SbQueryError | ZError<H256> | ZError<PermissionContract>
+  >
+> {
+  const [permissionsError, allPermissions] =
+    await queryNamespacePermissions(api);
+  if (permissionsError) return makeErr(permissionsError);
+
+  const delegatorPermissions = new Map<PermissionId, PermissionContract>();
+
+  for (const [permissionId, permission] of allPermissions) {
+    // Check if this namespace permission was granted by the delegator
+    if (permission.delegator === delegatorAddress) {
+      delegatorPermissions.set(permissionId, permission);
+    }
+  }
+
+  return makeOk(delegatorPermissions);
+}
+
+/**
  * Query all accumulated stream amounts from substrate
  * @returns Array of accumulated stream entries with proper Zod parsing
  */

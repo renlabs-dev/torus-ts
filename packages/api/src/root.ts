@@ -10,14 +10,20 @@ import { cadreCandidateRouter } from "./router/cadre/cadre-candidate";
 import { cadreVoteRouter } from "./router/cadre/cadre-vote";
 import { cadreVoteHistoryRouter } from "./router/cadre/cadre-vote-history";
 import { discordInfoRouter } from "./router/cadre/discord-info";
+import { coinGeckoRouter } from "./router/coingecko/coingecko";
 import { commentRouter } from "./router/comment/comment";
 import { commentInteractionRouter } from "./router/comment/comment-interaction";
 import { commentReportRouter } from "./router/comment/comment-report";
+import { creditsRouter } from "./router/credits/credits";
 import { penaltyRouter } from "./router/penalty/penalty";
 import { permissionRouter } from "./router/permission/permission";
 import { signalRouter } from "./router/permission/signal";
+import { predictionRouter } from "./router/prediction/prediction";
+import { predictionReportRouter } from "./router/prediction/prediction-report";
+import { topicRouter } from "./router/prediction/topic";
 import { prophetRouter } from "./router/prophet/prophet";
-// import { constraintRouter } from "./router/constraint/constraint";
+import { scraperQueueRouter } from "./router/scraper/scraper-queue";
+import { twitterUserRouter } from "./router/twitter/twitter-user";
 import { createTRPCRouter } from "./trpc";
 
 export const appRouter = createTRPCRouter({
@@ -39,11 +45,17 @@ export const appRouter = createTRPCRouter({
   cadreVote: cadreVoteRouter,
   cadreVoteHistory: cadreVoteHistoryRouter,
   cadreCandidate: cadreCandidateRouter,
+  // CoinGecko
+  coinGecko: coinGeckoRouter,
+
   // Comment
   comment: commentRouter,
   commentReport: commentReportRouter,
   commentInteraction: commentInteractionRouter,
   penalty: penaltyRouter,
+
+  // Credits
+  credits: creditsRouter,
 
   // Constraint Management (commented out due to schema incompatibility)
   // constraint: constraintRouter,
@@ -55,8 +67,19 @@ export const appRouter = createTRPCRouter({
   permission: permissionRouter,
   signal: signalRouter,
 
+  // Prediction
+  prediction: predictionRouter,
+  predictionReport: predictionReportRouter,
+  topic: topicRouter,
+
   // Prophet
   prophet: prophetRouter,
+
+  // Scraper Queue
+  scraperQueue: scraperQueueRouter,
+
+  // Twitter
+  twitterUser: twitterUserRouter,
 });
 
 export type AppRouter = typeof appRouter;

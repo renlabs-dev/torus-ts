@@ -1,0 +1,1 @@
+ALTER TYPE failure_cause_enum RENAME VALUE 'VAGUE_GOAL' TO 'VAGUE_TARGET';

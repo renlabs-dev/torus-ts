@@ -1,0 +1,117 @@
+name: Check Migration (Reusable)
+
+on:
+  workflow_call:
+    inputs:
+      env_name:
+        required: true
+        type: string
+        description: "Environment name (webapps or prediction_swarm)"
+    secrets:
+      db_url:
+        required: true
+        description: "Database connection URL"
+      vault_addr:
+        required: true
+      vault_role_id:
+        required: true
+      vault_secret_id:
+        required: true
+    outputs:
+      pending:
+        description: "Whether there are pending migrations"
+        value: ${{ jobs.check.outputs.pending }}
+
+jobs:
+  check:
+    runs-on: ubicloud-standard-2
+    outputs:
+      pending: ${{ steps.migration-status.outputs.has_pending }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Import Secrets
+        uses: ./.github/actions/import-db-secrets
+        with:
+          vault_addr: ${{ secrets.vault_addr }}
+          vault_role_id: ${{ secrets.vault_role_id }}
+          vault_secret_id: ${{ secrets.vault_secret_id }}
+
+      - uses: ariga/setup-atlas@v0
+
+      - run: git fetch origin main:main
+        if: github.ref_name != 'main'
+
+      - name: Run lint
+        run: |
+          atlas migrate lint --env ${{ inputs.env_name }} --git-base origin/main
+
+      - name: Verify migrations hash
+        run: |
+          (cd atlas/migrations/${{ inputs.env_name }} && cp atlas.sum atlas.sum.orig)
+
+          atlas migrate hash --env ${{ inputs.env_name }}
+
+          cd atlas/migrations/${{ inputs.env_name }}
+          if ! cmp -s atlas.sum atlas.sum.orig; then
+            echo "❌ Migration hash mismatch detected for ${{ inputs.env_name }}. Please run 'atlas migrate hash --env ${{ inputs.env_name }}' locally and commit changes."
+            exit 1
+          fi
+
+      - name: PNPM setup
+        uses: ./.github/actions/setup
+
+      - name: Verify non-generated migrations
+        run: |
+          (cd atlas/migrations/${{ inputs.env_name }} && cp atlas.sum atlas.sum.orig)
+
+          atlas migrate diff --env ${{ inputs.env_name }}
+
+          cd atlas/migrations/${{ inputs.env_name }}
+          if ! cmp -s atlas.sum atlas.sum.orig; then
+            echo "❌ Schema changes detected for ${{ inputs.env_name }} that require new migrations!"
+            echo "Please run 'atlas migrate diff --env ${{ inputs.env_name }}' locally to generate the required migrations,"
+            echo "review them, and include them in your PR."
+            exit 1
+          fi
+
+      - name: Check migration status
+        id: migration-status
+        run: |
+          output=$(atlas migrate status --env ${{ inputs.env_name }} --url "${{ secrets.db_url }}")
+          echo "has_pending=$(echo "$output" | grep -q "PENDING" && echo "true" || echo "false")" >> $GITHUB_OUTPUT
+          echo "$output"
+
+          # Store output for summary
+          echo "$output" > migration_status_${{ inputs.env_name }}.txt
+
+      - name: Generate migration check summary
+        if: always()
+        run: |
+          echo "## 🗄️ Database Migration Check (${{ inputs.env_name }})" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          has_pending="${{ steps.migration-status.outputs.has_pending }}"
+
+          if [ "$has_pending" == "true" ]; then
+            echo "⚠️ **Pending migrations detected**" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "- **Status:** Migrations need to be applied" >> $GITHUB_STEP_SUMMARY
+            echo "- **Action:** Will be applied automatically on push to main/dev" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "✅ **Database is up to date**" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "- **Status:** No pending migrations" >> $GITHUB_STEP_SUMMARY
+            echo "- **Action:** No database changes needed" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          echo "```" >> $GITHUB_STEP_SUMMARY
+          sed -E 's#(postgresql://)[^:@]+:[^@]+@#\1****:****@#' migration_status_${{ inputs.env_name }}.txt >> $GITHUB_STEP_SUMMARY
+          echo "```" >> $GITHUB_STEP_SUMMARY
+
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Branch:** \`${{ github.ref_name }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "**Environment:** \`${{ inputs.env_name }}\`" >> $GITHUB_STEP_SUMMARY

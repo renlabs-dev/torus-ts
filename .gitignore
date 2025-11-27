@@ -26,6 +26,9 @@
 # Node.js / dependencies
 **/node_modules
 
+# LLM models
+**/models/
+
 # Next.js
 **/.next
 **/.vercel/

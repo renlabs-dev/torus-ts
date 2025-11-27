@@ -1,0 +1,19 @@
+import { createEnv } from "@t3-oss/env-core";
+import { z } from "zod";
+
+// TODO: replace with validateEnvOrExit
+export const env = createEnv({
+  shared: {
+    NODE_ENV: z
+      .enum(["development", "production", "test"])
+      .default("development"),
+  },
+  clientPrefix: "NEXT_PUBLIC_",
+  server: {
+    TORUS_RPC_URL: z.string().url(),
+    PORT: z.string().default("3000"),
+    TWITTERAPI_IO_KEY: z.string(),
+  },
+  client: {},
+  runtimeEnv: process.env,
+});

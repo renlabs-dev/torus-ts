@@ -78,9 +78,7 @@ export function StreamsField({ control, disabled = false }: StreamsFieldProps) {
             control={control}
             name={`newStreams.${index}.streamId`}
             render={({ field }) => {
-              const isDuplicate = field.value
-                ? duplicateIds.has(field.value)
-                : false;
+              const isDuplicate = duplicateIds.has(field.value);
               return (
                 <FormItem className="flex-1">
                   <FormControl>
