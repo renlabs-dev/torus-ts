@@ -13,7 +13,6 @@ import { Tabs, TabsList, TabsTrigger } from "@torus-ts/ui/components/tabs";
 import {
   Tooltip,
   TooltipContent,
-  TooltipProvider,
   TooltipTrigger,
 } from "@torus-ts/ui/components/tooltip";
 import { AlertCircle, Trash } from "lucide-react";
@@ -134,28 +133,29 @@ export function TransactionHistoryDialog({
                 View and manage your Fast Bridge transaction history
               </DialogDescription>
             </div>
-            <TooltipProvider delayDuration={300}>
-              <Tooltip open={tooltipEnabled ? undefined : false}>
-                <TooltipTrigger asChild>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={handleDeleteAllClick}
-                    disabled={allTransactions.length === 0}
-                    className="shrink-0"
-                  >
-                    <Trash className="mr-2 h-4 w-4" />
-                    Delete All
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent side="bottom" className="max-w-xs">
-                  <p className="text-sm">
-                    Delete all transactions from history. This action cannot be
-                    undone.
-                  </p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
+            <Tooltip
+              delayDuration={700}
+              open={tooltipEnabled ? undefined : false}
+            >
+              <TooltipTrigger asChild>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleDeleteAllClick}
+                  disabled={allTransactions.length === 0}
+                  className="shrink-0"
+                >
+                  <Trash className="mr-2 h-4 w-4" />
+                  Delete All
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent side="bottom" className="max-w-xs">
+                <p className="text-sm">
+                  Delete all transactions from history. This action cannot be
+                  undone.
+                </p>
+              </TooltipContent>
+            </Tooltip>
           </div>
 
           <Tabs value={filter} onValueChange={handleFilterChange}>
