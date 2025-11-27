@@ -5,8 +5,8 @@ import {
 import type { SS58Address } from "@torus-network/sdk/types";
 import { toNano } from "@torus-network/torus-utils/torus/token";
 import { tryAsync } from "@torus-network/torus-utils/try-catch";
+import type { Config } from "@wagmi/core";
 import type { Chain, WalletClient } from "viem";
-import type { Config } from "wagmi";
 import type { SimpleBridgeTransaction } from "../_components/fast-bridge-types";
 import { SimpleBridgeStep } from "../_components/fast-bridge-types";
 import {
@@ -488,11 +488,15 @@ export async function executeBaseToNativeStep2(
 
   updateBridgeState({ step: SimpleBridgeStep.STEP_2_CONFIRMING });
 
+  // Cast needed due to wagmi version mismatch between app and SDK
   const [receiptError] = await tryAsync(
-    waitForTransactionReceipt(wagmiConfig, {
-      hash: txHash,
-      confirmations: CONFIRMATION_CONFIG.REQUIRED_CONFIRMATIONS,
-    }),
+    waitForTransactionReceipt(
+      wagmiConfig as Parameters<typeof waitForTransactionReceipt>[0],
+      {
+        hash: txHash,
+        confirmations: CONFIRMATION_CONFIG.REQUIRED_CONFIRMATIONS,
+      },
+    ),
   );
 
   if (receiptError !== undefined) {

@@ -14,6 +14,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@cosmjs/stargate": "^0.32.4",
     "@cosmos-kit/cosmostation": "^2.15.3",
     "@cosmos-kit/keplr": "^2.15.3",
     "@cosmos-kit/leap": "^2.15.3",
@@ -35,6 +36,7 @@
     "@torus-ts/torus-provider": "workspace:*",
     "@torus-network/torus-utils": "workspace:*",
     "@torus-ts/ui": "workspace:*",
+    "@wagmi/core": "2.16.3",
     "formik": "^2.4.6",
     "lucide-react": "catalog:",
     "next": "catalog:",

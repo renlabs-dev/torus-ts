@@ -79,20 +79,20 @@ export function CosmosWalletProvider({
           },
         },
       }}
-      signerOptions={{
-        signingCosmwasm: () => {
-          return {
+      signerOptions={
+        // Type casts needed due to @cosmjs/math version mismatch between
+        // @cosmjs/stargate and @cosmos-kit/react transitive dependencies
+        {
+          signingCosmwasm: () => ({
             // TODO cosmos get gas price from registry or RPC
             gasPrice: GasPrice.fromString("0.03token"),
-          };
-        },
-        signingStargate: () => {
-          return {
+          }),
+          signingStargate: () => ({
             // TODO cosmos get gas price from registry or RPC
             gasPrice: GasPrice.fromString("0.2tia"),
-          };
-        },
-      }}
+          }),
+        } as unknown as Parameters<typeof ChainProvider>[0]["signerOptions"]
+      }
     >
       {children}
     </ChainProvider>

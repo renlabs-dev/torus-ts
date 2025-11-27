@@ -192,7 +192,7 @@ importers:
     dependencies:
       '@next/third-parties':
         specifier: 'catalog:'
-        version: 15.5.6(next@15.5.6(@babel/core@7.28.5)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.2.0(react@19.2.0))(react@19.2.0))(react@19.2.0)
+        version: 15.5.6(next@15.5.6(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.2.0(react@19.2.0))(react@19.2.0))(react@19.2.0)
       '@react-three/fiber':
         specifier: 'catalog:'
         version: 9.4.0(@types/react@19.0.14)(immer@10.2.0)(react-dom@19.2.0(react@19.2.0))(react-native@0.82.1(@babel/core@7.28.5)(@types/react@19.0.14)(bufferutil@4.0.9)(react@19.2.0)(utf-8-validate@5.0.10))(react@19.2.0)(three@0.180.0)
@@ -389,7 +389,7 @@ importers:
     dependencies:
       '@next/third-parties':
         specifier: 'catalog:'
-        version: 15.5.6(next@15.5.6(@babel/core@7.28.5)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.2.0(react@19.2.0))(react@19.2.0))(react@19.2.0)
+        version: 15.5.6(next@15.5.6(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.2.0(react@19.2.0))(react@19.2.0))(react@19.2.0)
       '@torus-network/sdk':
         specifier: workspace:*
         version: link:../../packages/torus-sdk-ts
@@ -445,6 +445,9 @@ importers:
 
   apps/torus-bridge:
     dependencies:
+      '@cosmjs/stargate':
+        specifier: ^0.32.4
+        version: 0.32.4(bufferutil@4.0.9)(utf-8-validate@5.0.10)
       '@cosmos-kit/cosmostation':
         specifier: ^2.15.3
         version: 2.15.8(@cosmjs/amino@0.36.2)(@cosmjs/proto-signing@0.36.2)(@react-native-async-storage/async-storage@1.24.0(react-native@0.82.1(@babel/core@7.28.5)(@types/react@19.0.14)(bufferutil@4.0.9)(react@19.2.0)(utf-8-validate@5.0.10)))(@walletconnect/types@2.23.0(@react-native-async-storage/async-storage@1.24.0(react-native@0.82.1(@babel/core@7.28.5)(@types/react@19.0.14)(bufferutil@4.0.9)(react@19.2.0)(utf-8-validate@5.0.10))))(bufferutil@4.0.9)(cosmjs-types@0.10.1)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@3.25.76)
@@ -508,6 +511,9 @@ importers:
       '@torus-ts/ui':
         specifier: workspace:*
         version: link:../../packages/ui
+      '@wagmi/core':
+        specifier: 2.16.3
+        version: 2.16.3(@tanstack/query-core@5.90.11)(@types/react@19.0.14)(immer@10.2.0)(react@19.2.0)(typescript@5.9.3)(use-sync-external-store@1.4.0(react@19.2.0))(viem@2.40.3(bufferutil@4.0.9)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@3.25.76))
       formik:
         specifier: ^2.4.6
         version: 2.4.9(@types/react@19.0.14)(react@19.2.0)
@@ -626,7 +632,7 @@ importers:
         version: 3.10.0(react-hook-form@7.66.1(react@19.2.0))
       '@next/third-parties':
         specifier: 'catalog:'
-        version: 15.5.6(next@15.5.6(@babel/core@7.28.5)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.2.0(react@19.2.0))(react@19.2.0))(react@19.2.0)
+        version: 15.5.6(next@15.5.6(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.2.0(react@19.2.0))(react@19.2.0))(react@19.2.0)
       '@react-three/drei':
         specifier: 'catalog:'
         version: 10.7.7(@react-three/fiber@9.4.0(@types/react@19.0.14)(immer@10.2.0)(react-dom@19.2.0(react@19.2.0))(react-native@0.82.1(@babel/core@7.28.5)(@types/react@19.0.14)(bufferutil@4.0.9)(react@19.2.0)(utf-8-validate@5.0.10))(react@19.2.0)(three@0.180.0))(@types/react@19.0.14)(@types/three@0.180.0)(immer@10.2.0)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)(three@0.180.0)
@@ -744,7 +750,7 @@ importers:
     dependencies:
       '@next/third-parties':
         specifier: 'catalog:'
-        version: 15.5.6(next@15.5.6(@babel/core@7.28.5)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.2.0(react@19.2.0))(react@19.2.0))(react@19.2.0)
+        version: 15.5.6(next@15.5.6(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.2.0(react@19.2.0))(react@19.2.0))(react@19.2.0)
       '@react-three/drei':
         specifier: 'catalog:'
         version: 10.7.7(@react-three/fiber@9.4.0(@types/react@19.0.14)(immer@10.2.0)(react-dom@19.2.0(react@19.2.0))(react-native@0.82.1(@babel/core@7.28.5)(@types/react@19.0.14)(bufferutil@4.0.9)(react@19.2.0)(utf-8-validate@5.0.10))(react@19.2.0)(three@0.180.0))(@types/react@19.0.14)(@types/three@0.180.0)(immer@10.2.0)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)(three@0.180.0)
@@ -814,7 +820,7 @@ importers:
         version: 3.10.0(react-hook-form@7.66.1(react@19.2.0))
       '@next/third-parties':
         specifier: 'catalog:'
-        version: 15.5.6(next@15.5.6(@babel/core@7.28.5)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.2.0(react@19.2.0))(react@19.2.0))(react@19.2.0)
+        version: 15.5.6(next@15.5.6(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.2.0(react@19.2.0))(react@19.2.0))(react@19.2.0)
       '@react-three/drei':
         specifier: 'catalog:'
         version: 10.7.7(@react-three/fiber@9.4.0(@types/react@19.0.14)(immer@10.2.0)(react-dom@19.2.0(react@19.2.0))(react-native@0.82.1(@babel/core@7.28.5)(@types/react@19.0.14)(bufferutil@4.0.9)(react@19.2.0)(utf-8-validate@5.0.10))(react@19.2.0)(three@0.180.0))(@types/react@19.0.14)(@types/three@0.180.0)(immer@10.2.0)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)(three@0.180.0)
@@ -956,7 +962,7 @@ importers:
         version: 3.10.0(react-hook-form@7.66.1(react@19.2.0))
       '@next/third-parties':
         specifier: 'catalog:'
-        version: 15.5.6(next@15.5.6(@babel/core@7.28.5)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.2.0(react@19.2.0))(react@19.2.0))(react@19.2.0)
+        version: 15.5.6(next@15.5.6(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.2.0(react@19.2.0))(react@19.2.0))(react@19.2.0)
       '@react-three/drei':
         specifier: ^10.7.6
         version: 10.7.7(@react-three/fiber@9.4.0(@types/react@19.0.14)(immer@10.2.0)(react-dom@19.2.0(react@19.2.0))(react-native@0.82.1(@babel/core@7.28.5)(@types/react@19.0.14)(bufferutil@4.0.9)(react@19.2.0)(utf-8-validate@5.0.10))(react@19.2.0)(three@0.180.0))(@types/react@19.0.14)(@types/three@0.180.0)(immer@10.2.0)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)(three@0.180.0)
@@ -1196,7 +1202,7 @@ importers:
         version: 3.10.0(react-hook-form@7.66.1(react@19.2.0))
       '@next/third-parties':
         specifier: 'catalog:'
-        version: 15.5.6(next@15.5.6(@babel/core@7.28.5)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.2.0(react@19.2.0))(react@19.2.0))(react@19.2.0)
+        version: 15.5.6(next@15.5.6(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.2.0(react@19.2.0))(react@19.2.0))(react@19.2.0)
       '@polkadot/api':
         specifier: 'catalog:'
         version: 14.3.1(bufferutil@4.0.9)(utf-8-validate@5.0.10)
@@ -1799,9 +1805,15 @@ importers:
       '@radix-ui/react-tooltip':
         specifier: ^1.1.8
         version: 1.2.8(@types/react-dom@19.0.6(@types/react@19.0.14))(@types/react@19.0.14)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
+      '@torus-network/sdk':
+        specifier: workspace:*
+        version: link:../torus-sdk-ts
       '@torus-network/torus-utils':
         specifier: workspace:*
         version: link:../torus-utils
+      '@torus-ts/query-provider':
+        specifier: workspace:*
+        version: link:../query-provider
       '@uiw/react-markdown-preview':
         specifier: ^5.1.1
         version: 5.1.5(@types/react@19.0.14)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
@@ -18967,7 +18979,7 @@ snapshots:
   '@next/swc-win32-x64-msvc@15.5.6':
     optional: true
 
-  '@next/third-parties@15.5.6(next@15.5.6(@babel/core@7.28.5)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.2.0(react@19.2.0))(react@19.2.0))(react@19.2.0)':
+  '@next/third-parties@15.5.6(next@15.5.6(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.2.0(react@19.2.0))(react@19.2.0))(react@19.2.0)':
     dependencies:
       next: 15.5.6(@babel/core@7.28.5)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
       react: 19.2.0
@@ -22304,7 +22316,7 @@ snapshots:
   '@scure/bip32@1.6.2':
     dependencies:
       '@noble/curves': 1.8.1
-      '@noble/hashes': 1.7.1
+      '@noble/hashes': 1.7.2
       '@scure/base': 1.2.6
 
   '@scure/bip32@1.7.0':
@@ -22325,7 +22337,7 @@ snapshots:
 
   '@scure/bip39@1.5.4':
     dependencies:
-      '@noble/hashes': 1.7.1
+      '@noble/hashes': 1.7.2
       '@scure/base': 1.2.6
 
   '@scure/bip39@1.6.0':
@@ -25361,6 +25373,21 @@ snapshots:
       - wagmi
       - ws
       - zod
+
+  '@wagmi/core@2.16.3(@tanstack/query-core@5.90.11)(@types/react@19.0.14)(immer@10.2.0)(react@19.2.0)(typescript@5.9.3)(use-sync-external-store@1.4.0(react@19.2.0))(viem@2.40.3(bufferutil@4.0.9)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@3.25.76))':
+    dependencies:
+      eventemitter3: 5.0.1
+      mipd: 0.0.7(typescript@5.9.3)
+      viem: 2.40.3(bufferutil@4.0.9)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@3.25.76)
+      zustand: 5.0.0(@types/react@19.0.14)(immer@10.2.0)(react@19.2.0)(use-sync-external-store@1.4.0(react@19.2.0))
+    optionalDependencies:
+      '@tanstack/query-core': 5.90.11
+      typescript: 5.9.3
+    transitivePeerDependencies:
+      - '@types/react'
+      - immer
+      - react
+      - use-sync-external-store
 
   '@wagmi/core@2.16.3(@tanstack/query-core@5.90.11)(@types/react@19.0.14)(immer@10.2.0)(react@19.2.0)(typescript@5.9.3)(use-sync-external-store@1.6.0(react@19.2.0))(viem@2.40.3(bufferutil@4.0.9)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@3.25.76))':
     dependencies:
@@ -31595,7 +31622,7 @@ snapshots:
     dependencies:
       '@adraffy/ens-normalize': 1.11.1
       '@noble/curves': 1.8.1
-      '@noble/hashes': 1.7.1
+      '@noble/hashes': 1.8.0
       '@scure/bip32': 1.6.2
       '@scure/bip39': 1.5.4
       abitype: 1.0.8(typescript@5.9.3)(zod@3.25.76)
@@ -32117,7 +32144,7 @@ snapshots:
       '@protobufjs/pool': 1.1.0
       '@protobufjs/utf8': 1.1.0
       '@types/node': 22.19.1
-      long: 5.2.5
+      long: 5.3.2
 
   protobufjs@7.5.4:
     dependencies:

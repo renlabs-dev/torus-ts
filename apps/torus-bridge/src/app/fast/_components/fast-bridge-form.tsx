@@ -601,11 +601,9 @@ export function FastBridgeForm() {
             <div className="flex items-center gap-4">
               <div className="flex-1 space-y-2">
                 <Label className="text-sm font-medium">From</Label>
-                <InputReadonly
-                  label="TORUS"
-                  value={renderChainValue(fromChain, true)}
-                  className="w-full"
-                />
+                <InputReadonly label="TORUS" className="w-full">
+                  {renderChainValue(fromChain, true)}
+                </InputReadonly>
                 <div className="text-muted-foreground flex flex-col gap-1 text-xs">
                   <div>
                     Balance:{" "}
@@ -649,11 +647,9 @@ export function FastBridgeForm() {
 
               <div className="flex-1 space-y-2">
                 <Label className="text-sm font-medium">To</Label>
-                <InputReadonly
-                  label="TORUS"
-                  value={renderChainValue(toChain, true)}
-                  className="w-full"
-                />
+                <InputReadonly label="TORUS" className="w-full">
+                  {renderChainValue(toChain, true)}
+                </InputReadonly>
                 <div className="text-muted-foreground flex flex-col gap-1 text-xs">
                   <div>
                     Balance:{" "}
