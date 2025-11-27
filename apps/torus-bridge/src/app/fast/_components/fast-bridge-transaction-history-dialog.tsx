@@ -199,6 +199,7 @@ export function TransactionHistoryDialog({
                     variant="outline"
                     size="sm"
                     onClick={handleDeleteAllClick}
+                    disabled={allTransactions.length === 0}
                     className="shrink-0"
                   >
                     <Trash className="mr-2 h-4 w-4" />
