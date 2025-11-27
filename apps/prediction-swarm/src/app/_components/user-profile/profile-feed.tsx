@@ -37,7 +37,7 @@ import {
   XCircle,
 } from "lucide-react";
 import Link from "next/link";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { assert } from "tsafe";
 import { PredictionReportDialog } from "../prediction-report-dialog";
 import { FutureTimeframeBadge } from "./future-timeframe-badge";
@@ -267,13 +267,20 @@ export function ProfileFeed({
     Record<string, number>
   >({});
 
-  const handleNavigate = (tweetId: string, direction: "prev" | "next") => {
-    const tweet = predictions.find((p) => p.tweetId.toString() === tweetId);
-    if (!tweet) return;
+  const canonicalPredictionsMap = useMemo(() => {
+    const map = new Map<string, GroupedTweetData["predictions"]>();
+    predictions.forEach((tweet) => {
+      map.set(
+        tweet.tweetId.toString(),
+        tweet.predictions.filter((pred) => !pred.canonicalId),
+      );
+    });
+    return map;
+  }, [predictions]);
 
-    const canonicalPredictions = tweet.predictions.filter(
-      (pred) => !pred.canonicalId,
-    );
+  const handleNavigate = (tweetId: string, direction: "prev" | "next") => {
+    const canonicalPredictions = canonicalPredictionsMap.get(tweetId);
+    if (!canonicalPredictions) return;
 
     const currentIndex = activePredictionIndex[tweetId] ?? 0;
     let newIndex = currentIndex;
@@ -327,13 +334,15 @@ export function ProfileFeed({
           {predictions.map((tweet, idx) => {
             const tweetId = tweet.tweetId.toString();
 
-            const canonicalPredictions = tweet.predictions.filter(
-              (pred) => !pred.canonicalId,
+            const canonicalPredictions = canonicalPredictionsMap.get(tweetId);
+
+            if (!canonicalPredictions || canonicalPredictions.length === 0)
+              return null;
+
+            const activeIndex = Math.min(
+              activePredictionIndex[tweetId] ?? 0,
+              canonicalPredictions.length - 1,
             );
-
-            if (canonicalPredictions.length === 0) return null;
-
-            const activeIndex = activePredictionIndex[tweetId] ?? 0;
             const activePrediction = canonicalPredictions[activeIndex];
 
             if (!activePrediction) return null;
