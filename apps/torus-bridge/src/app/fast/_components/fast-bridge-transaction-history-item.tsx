@@ -17,7 +17,13 @@ import {
   TooltipTrigger,
 } from "@torus-ts/ui/components/tooltip";
 import { cn } from "@torus-ts/ui/lib/utils";
-import { ChevronDown, ChevronUp, ExternalLink, RotateCw, Trash2 } from "lucide-react";
+import {
+  ChevronDown,
+  ChevronUp,
+  ExternalLink,
+  RotateCw,
+  Trash2,
+} from "lucide-react";
 import { useState } from "react";
 import { formatErrorForUser } from "../hooks/fast-bridge-helpers";
 import type { FastBridgeTransactionHistoryItem } from "./fast-bridge-types";
@@ -373,9 +379,7 @@ export function TransactionHistoryItem({
         <DialogContent className="max-w-md">
           <DialogHeader>
             <DialogTitle>Delete this transaction?</DialogTitle>
-            <DialogDescription>
-              This action cannot be undone.
-            </DialogDescription>
+            <DialogDescription>This action cannot be undone.</DialogDescription>
           </DialogHeader>
 
           <div className="space-y-3 py-4">

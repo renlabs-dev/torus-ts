@@ -102,8 +102,9 @@ export function FastBridgeForm() {
 
   const { getTransactionById, getTransactions } =
     useFastBridgeTransactionHistory();
-  const errorCount = getTransactions().filter((tx) => tx.status === "error")
-    .length;
+  const errorCount = getTransactions().filter(
+    (tx) => tx.status === "error",
+  ).length;
 
   const {
     setTransactionInUrl,
