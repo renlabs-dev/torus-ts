@@ -271,15 +271,19 @@ export function ProfileFeed({
     const tweet = predictions.find((p) => p.tweetId.toString() === tweetId);
     if (!tweet) return;
 
+    const canonicalPredictions = tweet.predictions.filter(
+      (pred) => !pred.canonicalId,
+    );
+
     const currentIndex = activePredictionIndex[tweetId] ?? 0;
     let newIndex = currentIndex;
 
     if (direction === "prev") {
       newIndex =
-        currentIndex > 0 ? currentIndex - 1 : tweet.predictions.length - 1;
+        currentIndex > 0 ? currentIndex - 1 : canonicalPredictions.length - 1;
     } else {
       newIndex =
-        currentIndex < tweet.predictions.length - 1 ? currentIndex + 1 : 0;
+        currentIndex < canonicalPredictions.length - 1 ? currentIndex + 1 : 0;
     }
 
     setActivePredictionIndex((prev) => ({ ...prev, [tweetId]: newIndex }));
@@ -322,8 +326,15 @@ export function ProfileFeed({
         <div>
           {predictions.map((tweet, idx) => {
             const tweetId = tweet.tweetId.toString();
+
+            const canonicalPredictions = tweet.predictions.filter(
+              (pred) => !pred.canonicalId,
+            );
+
+            if (canonicalPredictions.length === 0) return null;
+
             const activeIndex = activePredictionIndex[tweetId] ?? 0;
-            const activePrediction = tweet.predictions[activeIndex];
+            const activePrediction = canonicalPredictions[activeIndex];
 
             if (!activePrediction) return null;
 
@@ -339,7 +350,7 @@ export function ProfileFeed({
                   <ThreadContext
                     tweet={tweet}
                     activePrediction={activePrediction}
-                    allPredictions={tweet.predictions}
+                    allPredictions={canonicalPredictions}
                     highlightFn={highlightTweetText}
                   />
                 </div>
@@ -400,7 +411,7 @@ export function ProfileFeed({
                       {/* Actions: Navigation, External Link, More Info */}
                       <div className="flex items-center gap-1">
                         {/* Navigation Arrows - only show if multiple predictions */}
-                        {tweet.predictions.length > 1 && (
+                        {canonicalPredictions.length > 1 && (
                           <>
                             <Button
                               variant="ghost"
@@ -411,7 +422,7 @@ export function ProfileFeed({
                               <ChevronLeft className="h-4 w-4" />
                             </Button>
                             <span className="text-muted-foreground text-xs">
-                              {activeIndex + 1}/{tweet.predictions.length}
+                              {activeIndex + 1}/{canonicalPredictions.length}
                             </span>
                             <Button
                               variant="ghost"
@@ -489,6 +500,23 @@ export function ProfileFeed({
                                     {activePrediction.briefRationale}
                                   </p>
                                 </div>
+
+                                {activePrediction.duplicateCount &&
+                                  activePrediction.duplicateCount > 0 && (
+                                    <div>
+                                      <span className="text-muted-foreground">
+                                        Duplicates:
+                                      </span>
+                                      <p>
+                                        {activePrediction.duplicateCount}{" "}
+                                        duplicate
+                                        {activePrediction.duplicateCount > 1
+                                          ? "s"
+                                          : ""}{" "}
+                                        found
+                                      </p>
+                                    </div>
+                                  )}
 
                                 {activePrediction.target.length > 0 &&
                                   (() => {
