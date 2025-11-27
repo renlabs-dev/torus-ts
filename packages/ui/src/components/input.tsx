@@ -29,12 +29,12 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
 );
 Input.displayName = "Input";
 
-export type InputReadonlyProps = {
+export interface InputReadonlyProps {
   label?: string;
   className?: string;
   children?: React.ReactNode;
   value?: string | number | readonly string[];
-};
+}
 
 /**
  * A readonly input-like display component.

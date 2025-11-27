@@ -488,15 +488,11 @@ export async function executeBaseToNativeStep2(
 
   updateBridgeState({ step: SimpleBridgeStep.STEP_2_CONFIRMING });
 
-  // Cast needed due to wagmi version mismatch between app and SDK
   const [receiptError] = await tryAsync(
-    waitForTransactionReceipt(
-      wagmiConfig as Parameters<typeof waitForTransactionReceipt>[0],
-      {
-        hash: txHash,
-        confirmations: CONFIRMATION_CONFIG.REQUIRED_CONFIRMATIONS,
-      },
-    ),
+    waitForTransactionReceipt(wagmiConfig, {
+      hash: txHash,
+      confirmations: CONFIRMATION_CONFIG.REQUIRED_CONFIRMATIONS,
+    }),
   );
 
   if (receiptError !== undefined) {
