@@ -49,8 +49,9 @@ COPY --from=pruner /build/out/pnpm-lock.yaml ./pnpm-lock.yaml
 COPY --from=pruner /build/out/json/ .
 RUN pnpm install --frozen-lockfile
 
-# Build the app
+# Build the app with increased memory limit for large builds
 COPY --from=pruner /build/out/full/ .
+ENV NODE_OPTIONS="--max-old-space-size=8192"
 RUN CI=1 pnpm turbo run build --filter=${APP_NAME}
 
 # ======== runner layer ======== #
