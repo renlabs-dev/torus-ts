@@ -10,12 +10,6 @@ import {
   DialogTitle,
 } from "@torus-ts/ui/components/dialog";
 import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "@torus-ts/ui/components/tabs";
-import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
@@ -25,56 +19,9 @@ import { AlertCircle, Trash } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useFastBridgeTransactionHistory } from "../hooks/use-fast-bridge-transaction-history";
 import { TransactionHistoryItem } from "./fast-bridge-transaction-history-item";
-import type {
-  FastBridgeTransactionHistoryItem,
-  TransactionHistoryFilter,
-} from "./fast-bridge-types";
+import type { FastBridgeTransactionHistoryItem } from "./fast-bridge-types";
 
 const ITEMS_PER_PAGE = 10;
-
-interface TransactionListProps {
-  transactionsWithIndex: {
-    transaction: FastBridgeTransactionHistoryItem;
-    originalIndex: number;
-  }[];
-  filter: TransactionHistoryFilter;
-  onContinue: (transaction: FastBridgeTransactionHistoryItem) => void;
-  getExplorerUrl: (txHash: string, chainName: string) => string;
-  onDelete: (transactionId: string) => void;
-}
-
-function TransactionList({
-  transactionsWithIndex,
-  filter,
-  onContinue,
-  getExplorerUrl,
-  onDelete,
-}: TransactionListProps) {
-  if (transactionsWithIndex.length === 0) {
-    const message =
-      filter === "completed"
-        ? "No completed transactions yet"
-        : filter === "error"
-          ? "No failed transactions"
-          : "No transactions yet";
-    return <EmptyState message={message} />;
-  }
-
-  return (
-    <div className="space-y-3 pb-4">
-      {transactionsWithIndex.map(({ transaction, originalIndex }) => (
-        <TransactionHistoryItem
-          key={transaction.id}
-          transaction={transaction}
-          index={originalIndex}
-          onContinue={onContinue}
-          getExplorerUrl={getExplorerUrl}
-          onDelete={onDelete}
-        />
-      ))}
-    </div>
-  );
-}
 
 interface TransactionHistoryDialogProps {
   isOpen: boolean;
@@ -91,7 +38,6 @@ export function TransactionHistoryDialog({
 }: TransactionHistoryDialogProps) {
   const { getTransactions, clearHistory, deleteTransaction } =
     useFastBridgeTransactionHistory();
-  const [filter, setFilter] = useState<TransactionHistoryFilter>("all");
   const [visibleCount, setVisibleCount] = useState(ITEMS_PER_PAGE);
   const [tooltipEnabled, setTooltipEnabled] = useState(false);
   const [showDeleteAllDialog, setShowDeleteAllDialog] = useState(false);
@@ -113,52 +59,27 @@ export function TransactionHistoryDialog({
 
   const allTransactions = getTransactions();
 
-  const filteredTransactions = useMemo(() => {
-    if (filter === "all") {
-      return allTransactions;
-    }
-    if (filter === "completed") {
-      return allTransactions.filter((tx) => tx.status === "completed");
-    }
-    // filter === "error"
-    return allTransactions.filter((tx) => tx.status === "error");
-  }, [allTransactions, filter]);
-
   const visibleTransactions = useMemo(
-    () => filteredTransactions.slice(0, visibleCount),
-    [filteredTransactions, visibleCount],
+    () => allTransactions.slice(0, visibleCount),
+    [allTransactions, visibleCount],
   );
 
-  // Map each visible transaction to its original index in filteredTransactions
   const visibleTransactionsWithIndex = useMemo(
     () =>
-      visibleTransactions.map((tx, visibleIndex) => ({
+      visibleTransactions.map((tx, index) => ({
         transaction: tx,
-        originalIndex: visibleIndex, // This is already the correct index since we're slicing from 0
+        originalIndex: index,
       })),
     [visibleTransactions],
   );
 
-  const hasMore = visibleCount < filteredTransactions.length;
-
-  const errorCount = useMemo(
-    () => allTransactions.filter((tx) => tx.status === "error").length,
-    [allTransactions],
-  );
+  const hasMore = visibleCount < allTransactions.length;
 
   const handleLoadMore = useCallback(() => {
     setVisibleCount((prev) =>
-      Math.min(prev + ITEMS_PER_PAGE, filteredTransactions.length),
+      Math.min(prev + ITEMS_PER_PAGE, allTransactions.length),
     );
-  }, [filteredTransactions.length]);
-
-  const handleFilterChange = useCallback(
-    (newFilter: TransactionHistoryFilter) => {
-      setFilter(newFilter);
-      setVisibleCount(ITEMS_PER_PAGE);
-    },
-    [],
-  );
+  }, [allTransactions.length]);
 
   const onScroll = useCallback(() => {
     if (!scrollContainerRef.current || !hasMore) return;
@@ -219,60 +140,27 @@ export function TransactionHistoryDialog({
 
         <div
           ref={scrollContainerRef}
-          className="flex-1 overflow-y-auto px-6"
+          className="flex-1 overflow-y-auto px-6 pb-4"
           onScroll={onScroll}
         >
-          <Tabs
-            value={filter}
-            onValueChange={(v) =>
-              handleFilterChange(v as TransactionHistoryFilter)
-            }
-          >
-            <div className="bg-background sticky top-0 z-10 pb-4 pt-2">
-              <TabsList>
-                <TabsTrigger value="all">
-                  All ({allTransactions.length})
-                </TabsTrigger>
-                <TabsTrigger value="completed">Completed</TabsTrigger>
-                <TabsTrigger value="error">
-                  Failed {errorCount > 0 && `(${errorCount})`}
-                </TabsTrigger>
-              </TabsList>
+          {allTransactions.length === 0 ? (
+            <EmptyState />
+          ) : (
+            <div className="space-y-3">
+              {visibleTransactionsWithIndex.map(
+                ({ transaction, originalIndex }) => (
+                  <TransactionHistoryItem
+                    key={transaction.id}
+                    transaction={transaction}
+                    index={originalIndex}
+                    onContinue={onContinue}
+                    getExplorerUrl={getExplorerUrl}
+                    onDelete={deleteTransaction}
+                  />
+                ),
+              )}
             </div>
-
-            <TabsContent value="all" className="mt-0">
-              <TransactionList
-                key={`${filter}-${isOpen}`}
-                transactionsWithIndex={visibleTransactionsWithIndex}
-                filter={filter}
-                onContinue={onContinue}
-                getExplorerUrl={getExplorerUrl}
-                onDelete={deleteTransaction}
-              />
-            </TabsContent>
-
-            <TabsContent value="completed" className="mt-0">
-              <TransactionList
-                key={`${filter}-${isOpen}`}
-                transactionsWithIndex={visibleTransactionsWithIndex}
-                filter={filter}
-                onContinue={onContinue}
-                getExplorerUrl={getExplorerUrl}
-                onDelete={deleteTransaction}
-              />
-            </TabsContent>
-
-            <TabsContent value="error" className="mt-0">
-              <TransactionList
-                key={`${filter}-${isOpen}`}
-                transactionsWithIndex={visibleTransactionsWithIndex}
-                filter={filter}
-                onContinue={onContinue}
-                getExplorerUrl={getExplorerUrl}
-                onDelete={deleteTransaction}
-              />
-            </TabsContent>
-          </Tabs>
+          )}
         </div>
 
         <div className="bg-background flex shrink-0 justify-end gap-3 border-t px-6 py-4">
@@ -311,11 +199,11 @@ export function TransactionHistoryDialog({
   );
 }
 
-function EmptyState({ message = "No transactions yet" }: { message?: string }) {
+function EmptyState() {
   return (
     <div className="flex flex-col items-center justify-center py-12 text-center">
       <AlertCircle className="text-muted-foreground mb-4 h-12 w-12" />
-      <p className="text-muted-foreground text-sm">{message}</p>
+      <p className="text-muted-foreground text-sm">No transactions yet</p>
     </div>
   );
 }
