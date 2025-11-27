@@ -12,8 +12,8 @@ export type ZodSubstrateEnumVariants = Record<string, BaseSchema>;
 export type zOut<S extends BaseSchema> = z.output<S>;
 
 export type MapZodVariantsToRaw<V extends ZodSubstrateEnumVariants> = {
-  [K in keyof V & string]: Record<K, zOut<V[K]>>;
-}[keyof V & string];
+  [K in Extract<keyof V, string>]: Record<K, zOut<V[K]>>;
+}[Extract<keyof V, string>];
 
 /**
  * Schema validator for Substrate `Enum` types.
