@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
-import { and, eq, gt, isNotNull, isNull, not, or, sql } from "@torus-ts/db";
+import { and, eq, gt, isNotNull, isNull, or, sql } from "@torus-ts/db";
 import {
   twitterScrapingJobsSchema,
   twitterUsersSchema,

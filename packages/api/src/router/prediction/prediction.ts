@@ -13,6 +13,7 @@ import {
 import {
   parsedPredictionFeedbackSchema,
   parsedPredictionSchema,
+  predictionDuplicateRelationsSchema,
   predictionSchema,
   scrapedTweetSchema,
   twitterUsersSchema,
@@ -45,6 +46,7 @@ interface RawPrediction {
   briefRationale: string;
   topicId: string | null;
   filterAgentId: string | null;
+  canonicalId: string | null;
   tweetId: bigint;
   tweetText: string;
   tweetDate: Date;
@@ -98,6 +100,8 @@ export interface GroupedTweet {
     briefRationale: string;
     topicId: string | null;
     filterAgentId: string | null;
+    canonicalId: string | null;
+    duplicateCount?: number;
     verdictId: string | null;
     verdict: boolean | null;
     verdictContext: VerdictContext | null;
@@ -153,6 +157,33 @@ async function fetchThreadContext(
   return result;
 }
 
+async function fetchDuplicateCounts(
+  ctx: TRPCContext,
+  parsedIds: string[],
+): Promise<Map<string, number>> {
+  if (parsedIds.length === 0) return new Map();
+
+  const duplicateCounts = await ctx.db
+    .select({
+      canonicalId: predictionDuplicateRelationsSchema.canonicalId,
+      count: sql<number>`count(*)::int`,
+    })
+    .from(predictionDuplicateRelationsSchema)
+    .where(
+      sql`${predictionDuplicateRelationsSchema.canonicalId} IN (${sql.join(
+        parsedIds.map((id) => sql`${id}`),
+        sql`, `,
+      )})`,
+    )
+    .groupBy(predictionDuplicateRelationsSchema.canonicalId);
+
+  const result = new Map<string, number>();
+  duplicateCounts.forEach((row) => {
+    result.set(row.canonicalId, row.count);
+  });
+  return result;
+}
+
 /**
  * Groups raw predictions by tweet ID and includes thread context
  */
@@ -180,6 +211,11 @@ async function groupPredictionsByTweet(
     `fetched ${Array.from(contextTweets.keys()).length}/${allContextIds.length} in ${total / 1_000_000n}ms`,
   );
 
+  const canonicalParsedIds = rawPredictions
+    .filter((pred) => !pred.canonicalId)
+    .map((pred) => pred.parsedId);
+  const duplicateCounts = await fetchDuplicateCounts(ctx, canonicalParsedIds);
+
   rawPredictions.forEach((pred) => {
     const tweetId = pred.tweetId.toString();
 
@@ -205,6 +241,7 @@ async function groupPredictionsByTweet(
         predictions: [],
       };
     }
+    const duplicateCount = duplicateCounts.get(pred.parsedId);
     groupedByTweet[tweetId].predictions.push({
       parsedId: pred.parsedId,
       predictionId: pred.predictionId,
@@ -217,6 +254,8 @@ async function groupPredictionsByTweet(
       briefRationale: pred.briefRationale,
       topicId: pred.topicId,
       filterAgentId: pred.filterAgentId,
+      canonicalId: pred.canonicalId,
+      duplicateCount,
       verdictId: pred.verdictId,
       verdict: pred.verdict,
       verdictContext: pred.verdictContext,
@@ -284,6 +323,7 @@ export const predictionRouter = {
           briefRationale: parsedPredictionSchema.briefRationale,
           topicId: parsedPredictionSchema.topicId,
           filterAgentId: parsedPredictionSchema.filterAgentId,
+          canonicalId: predictionDuplicateRelationsSchema.canonicalId,
           tweetId: scrapedTweetSchema.id,
           tweetText: scrapedTweetSchema.text,
           tweetDate: scrapedTweetSchema.date,
@@ -347,6 +387,13 @@ export const predictionRouter = {
         .leftJoin(
           verdictSchema,
           eq(verdictSchema.parsedPredictionId, parsedPredictionSchema.id),
+        )
+        .leftJoin(
+          predictionDuplicateRelationsSchema,
+          eq(
+            predictionDuplicateRelationsSchema.predictionId,
+            parsedPredictionSchema.id,
+          ),
         )
         .where(
           and(
@@ -617,6 +664,7 @@ export const predictionRouter = {
           briefRationale: parsedPredictionSchema.briefRationale,
           topicId: parsedPredictionSchema.topicId,
           filterAgentId: parsedPredictionSchema.filterAgentId,
+          canonicalId: predictionDuplicateRelationsSchema.canonicalId,
           tweetId: scrapedTweetSchema.id,
           tweetText: scrapedTweetSchema.text,
           tweetDate: scrapedTweetSchema.date,
@@ -680,6 +728,13 @@ export const predictionRouter = {
         .leftJoin(
           verdictSchema,
           eq(verdictSchema.parsedPredictionId, parsedPredictionSchema.id),
+        )
+        .leftJoin(
+          predictionDuplicateRelationsSchema,
+          eq(
+            predictionDuplicateRelationsSchema.predictionId,
+            parsedPredictionSchema.id,
+          ),
         )
         .where(
           and(
