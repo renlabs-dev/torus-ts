@@ -116,7 +116,7 @@ export function WalletBalance() {
     ...(shouldShowEvmBalance
       ? [
           {
-            amount: torusEvmBalance?.value ?? null,
+            amount: torusEvmBalance.value,
             asset: "EVM",
             label: "Torus EVM Balance",
             iconSrc: "/assets/icons/balance/torus-evm.svg",
