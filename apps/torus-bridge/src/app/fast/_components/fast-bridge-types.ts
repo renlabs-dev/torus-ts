@@ -90,3 +90,5 @@ export interface FastBridgeTransactionHistoryItem {
   evmAddress?: string; // Torus EVM address
   nativeAddress?: string; // Torus Native address (SS58)
 }
+
+export type TransactionHistoryFilter = "all" | "completed" | "error";

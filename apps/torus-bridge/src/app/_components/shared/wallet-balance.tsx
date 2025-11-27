@@ -87,6 +87,13 @@ export function WalletBalance() {
     console.error("Error fetching free balance:", accountFreeBalance.error);
   }
 
+  // 1 TORUS = 1e18 wei
+  const ONE_TORUS = 1_000_000_000_000_000_000n;
+
+  // Hide EVM balance if <= 1 TORUS
+  const shouldShowEvmBalance =
+    torusEvmBalance?.value != null && torusEvmBalance.value > ONE_TORUS;
+
   const balancesList = [
     {
       amount: userAccountFreeBalance(),
@@ -106,15 +113,19 @@ export function WalletBalance() {
       address: evmAddress,
       isSecondary: false,
     },
-    {
-      amount: torusEvmBalance?.value ?? null,
-      asset: "EVM",
-      label: "Torus EVM Balance",
-      iconSrc: "/assets/icons/balance/torus-evm.svg",
-      iconAlt: "Torus EVM",
-      address: evmAddress,
-      isSecondary: true,
-    },
+    ...(shouldShowEvmBalance
+      ? [
+          {
+            amount: torusEvmBalance?.value ?? null,
+            asset: "EVM",
+            label: "Torus EVM Balance",
+            iconSrc: "/assets/icons/balance/torus-evm.svg",
+            iconAlt: "Torus EVM",
+            address: evmAddress,
+            isSecondary: true,
+          },
+        ]
+      : []),
   ];
 
   return (

@@ -627,7 +627,7 @@ export function FastBridgeForm() {
                     </span>
                   </div>
                   <div>
-                    Account:{" "}
+                    Wallet:{" "}
                     <span className="font-bold">{fromChain.address}</span>
                   </div>
                 </div>
@@ -673,8 +673,7 @@ export function FastBridgeForm() {
                     </span>
                   </div>
                   <div>
-                    Account:{" "}
-                    <span className="font-bold">{toChain.address}</span>
+                    Wallet: <span className="font-bold">{toChain.address}</span>
                   </div>
                 </div>
               </div>

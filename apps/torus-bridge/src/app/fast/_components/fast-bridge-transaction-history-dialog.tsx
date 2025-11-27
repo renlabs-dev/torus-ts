@@ -9,6 +9,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@torus-ts/ui/components/dialog";
+import { Tabs, TabsList, TabsTrigger } from "@torus-ts/ui/components/tabs";
 import {
   Tooltip,
   TooltipContent,
@@ -19,7 +20,10 @@ import { AlertCircle, Trash } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useFastBridgeTransactionHistory } from "../hooks/use-fast-bridge-transaction-history";
 import { TransactionHistoryItem } from "./fast-bridge-transaction-history-item";
-import type { FastBridgeTransactionHistoryItem } from "./fast-bridge-types";
+import type {
+  FastBridgeTransactionHistoryItem,
+  TransactionHistoryFilter,
+} from "./fast-bridge-types";
 
 const ITEMS_PER_PAGE = 10;
 
@@ -38,6 +42,7 @@ export function TransactionHistoryDialog({
 }: TransactionHistoryDialogProps) {
   const { getTransactions, clearHistory, deleteTransaction } =
     useFastBridgeTransactionHistory();
+  const [filter, setFilter] = useState<TransactionHistoryFilter>("all");
   const [visibleCount, setVisibleCount] = useState(ITEMS_PER_PAGE);
   const [tooltipEnabled, setTooltipEnabled] = useState(false);
   const [showDeleteAllDialog, setShowDeleteAllDialog] = useState(false);
@@ -59,9 +64,20 @@ export function TransactionHistoryDialog({
 
   const allTransactions = getTransactions();
 
+  const filteredTransactions = useMemo(() => {
+    switch (filter) {
+      case "completed":
+        return allTransactions.filter((tx) => tx.status === "completed");
+      case "error":
+        return allTransactions.filter((tx) => tx.status === "error");
+      default:
+        return allTransactions;
+    }
+  }, [allTransactions, filter]);
+
   const visibleTransactions = useMemo(
-    () => allTransactions.slice(0, visibleCount),
-    [allTransactions, visibleCount],
+    () => filteredTransactions.slice(0, visibleCount),
+    [filteredTransactions, visibleCount],
   );
 
   const visibleTransactionsWithIndex = useMemo(
@@ -73,13 +89,13 @@ export function TransactionHistoryDialog({
     [visibleTransactions],
   );
 
-  const hasMore = visibleCount < allTransactions.length;
+  const hasMore = visibleCount < filteredTransactions.length;
 
   const handleLoadMore = useCallback(() => {
     setVisibleCount((prev) =>
-      Math.min(prev + ITEMS_PER_PAGE, allTransactions.length),
+      Math.min(prev + ITEMS_PER_PAGE, filteredTransactions.length),
     );
-  }, [allTransactions.length]);
+  }, [filteredTransactions.length]);
 
   const onScroll = useCallback(() => {
     if (!scrollContainerRef.current || !hasMore) return;
@@ -92,6 +108,11 @@ export function TransactionHistoryDialog({
       handleLoadMore();
     }
   }, [hasMore, handleLoadMore]);
+
+  const handleFilterChange = useCallback((value: string) => {
+    setFilter(value as TransactionHistoryFilter);
+    setVisibleCount(ITEMS_PER_PAGE);
+  }, []);
 
   const handleDeleteAllClick = useCallback(() => {
     setShowDeleteAllDialog(true);
@@ -136,6 +157,26 @@ export function TransactionHistoryDialog({
               </Tooltip>
             </TooltipProvider>
           </div>
+
+          <Tabs value={filter} onValueChange={handleFilterChange}>
+            <TabsList className="w-full">
+              <TabsTrigger value="all" className="flex-1">
+                All ({allTransactions.length})
+              </TabsTrigger>
+              <TabsTrigger value="completed" className="flex-1">
+                Completed (
+                {
+                  allTransactions.filter((tx) => tx.status === "completed")
+                    .length
+                }
+                )
+              </TabsTrigger>
+              <TabsTrigger value="error" className="flex-1">
+                Failed (
+                {allTransactions.filter((tx) => tx.status === "error").length})
+              </TabsTrigger>
+            </TabsList>
+          </Tabs>
         </DialogHeader>
 
         <div
@@ -143,8 +184,8 @@ export function TransactionHistoryDialog({
           className="flex-1 overflow-y-auto px-6 pb-4"
           onScroll={onScroll}
         >
-          {allTransactions.length === 0 ? (
-            <EmptyState />
+          {filteredTransactions.length === 0 ? (
+            <EmptyState filter={filter} />
           ) : (
             <div className="space-y-3">
               {visibleTransactionsWithIndex.map(
@@ -199,11 +240,22 @@ export function TransactionHistoryDialog({
   );
 }
 
-function EmptyState() {
+function EmptyState({ filter }: { filter: TransactionHistoryFilter }) {
+  const getMessage = () => {
+    switch (filter) {
+      case "completed":
+        return "No completed transactions";
+      case "error":
+        return "No failed transactions";
+      default:
+        return "No transactions yet";
+    }
+  };
+
   return (
     <div className="flex flex-col items-center justify-center py-12 text-center">
       <AlertCircle className="text-muted-foreground mb-4 h-12 w-12" />
-      <p className="text-muted-foreground text-sm">No transactions yet</p>
+      <p className="text-muted-foreground text-sm">{getMessage()}</p>
     </div>
   );
 }
