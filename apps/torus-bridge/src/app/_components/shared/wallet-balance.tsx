@@ -129,7 +129,7 @@ export function WalletBalance() {
   ];
 
   return (
-    <Card className="flex h-[253px] min-h-[253px] max-h-[253px] w-full flex-col gap-6 p-4">
+    <Card className="flex h-[253px] max-h-[253px] min-h-[253px] w-full flex-col gap-6 p-4">
       {balancesList.map((item) => (
         <div
           key={item.label}
