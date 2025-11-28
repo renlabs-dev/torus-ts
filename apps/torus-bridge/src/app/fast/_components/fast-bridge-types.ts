@@ -85,9 +85,11 @@ export interface FastBridgeTransactionHistoryItem {
   // For recovery
   canRetry: boolean;
 
-  // Metadata - wallet addresses for all 3 chains involved
+  // EVM Recover flag - when failed transactions are recovered via EVM Recover
+  recoveredViaEvmRecover?: boolean;
+
+  // Metadata - wallet addresses
   baseAddress?: string; // Base chain address (EVM)
-  evmAddress?: string; // Torus EVM address
   nativeAddress?: string; // Torus Native address (SS58)
 }
 

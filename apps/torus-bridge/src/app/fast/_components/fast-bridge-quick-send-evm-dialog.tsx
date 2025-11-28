@@ -28,6 +28,7 @@ interface QuickSendEvmDialogProps {
   formatAmount: (amount: bigint) => string;
   currentEvmBalance?: bigint;
   refetchBalances?: () => Promise<void>;
+  onRecoverySuccess?: () => void;
 }
 
 type TransferStatus = "idle" | "sending" | "success" | "error";
@@ -51,6 +52,7 @@ export function QuickSendEvmDialog({
   formatAmount,
   currentEvmBalance,
   refetchBalances,
+  onRecoverySuccess,
 }: QuickSendEvmDialogProps) {
   const [status, setStatus] = useState<TransferStatus>("idle");
   const [errorMessage, setErrorMessage] = useState<string>("");
@@ -97,12 +99,17 @@ export function QuickSendEvmDialog({
           refetchBalances().catch(console.error);
         }
 
+        // Mark failed transactions as recovered
+        if (onRecoverySuccess) {
+          onRecoverySuccess();
+        }
+
         // Show success immediately
         setStatus("success");
         initialBalanceRef.current = null;
       }
     }
-  }, [currentEvmBalance, status, refetchBalances, originalAmount]);
+  }, [currentEvmBalance, status, refetchBalances, originalAmount, onRecoverySuccess]);
 
   const handleSend = async (destination: "native" | "base") => {
     setSelectedDestination(destination);

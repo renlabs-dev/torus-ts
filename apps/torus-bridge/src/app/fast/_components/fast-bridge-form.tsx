@@ -100,8 +100,11 @@ export function FastBridgeForm() {
     executeEvmToBase,
   } = useOrchestratedTransfer();
 
-  const { getTransactionById, getTransactions } =
-    useFastBridgeTransactionHistory();
+  const {
+    getTransactionById,
+    getTransactions,
+    markFailedAsRecoveredViaEvmRecover,
+  } = useFastBridgeTransactionHistory();
   const errorCount = getTransactions().filter(
     (tx) => tx.status === "error",
   ).length;
@@ -743,6 +746,7 @@ export function FastBridgeForm() {
         onSendToBase={handleSendToBase}
         formatAmount={formatToken}
         refetchBalances={refetchAllBalances}
+        onRecoverySuccess={markFailedAsRecoveredViaEvmRecover}
       />
     </div>
   );

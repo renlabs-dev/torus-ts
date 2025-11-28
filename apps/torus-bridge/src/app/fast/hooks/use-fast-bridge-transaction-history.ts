@@ -20,6 +20,7 @@ interface FastBridgeTransactionHistoryState {
   clearHistory: () => void;
   deleteTransaction: (id: string) => void;
   markAsRetried: (id: string) => void;
+  markFailedAsRecoveredViaEvmRecover: () => void;
 }
 
 function generateId(): string {
@@ -56,8 +57,9 @@ export const useFastBridgeTransactionHistory =
         },
 
         updateTransaction: (id, updates) => {
-          // If updating to "completed" status, delete the transaction instead of updating
-          if (updates.status === "completed") {
+          // If updating to "completed" status and NOT recovered via EVM Recover,
+          // delete the transaction instead of updating
+          if (updates.status === "completed" && !updates.recoveredViaEvmRecover) {
             set((state) => ({
               transactions: state.transactions.filter((tx) => tx.id !== id),
             }));
@@ -95,6 +97,23 @@ export const useFastBridgeTransactionHistory =
             transactions: state.transactions.map((tx) =>
               tx.id === id
                 ? { ...tx, status: "pending" as const, canRetry: false }
+                : tx,
+            ),
+          }));
+        },
+
+        markFailedAsRecoveredViaEvmRecover: () => {
+          set((state) => ({
+            transactions: state.transactions.map((tx) =>
+              tx.status === "error"
+                ? {
+                    ...tx,
+                    status: "completed" as const,
+                    recoveredViaEvmRecover: true,
+                    canRetry: false,
+                    errorMessage: undefined,
+                    errorStep: undefined,
+                  }
                 : tx,
             ),
           }));

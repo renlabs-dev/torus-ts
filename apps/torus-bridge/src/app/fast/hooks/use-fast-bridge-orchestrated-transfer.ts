@@ -673,8 +673,7 @@ export function useOrchestratedTransfer() {
         status: "pending",
         currentStep: SimpleBridgeStep.STEP_1_PREPARING,
         canRetry: false,
-        baseAddress: evmAddress, // Base uses same EVM address
-        evmAddress,
+        baseAddress: evmAddress,
         nativeAddress: selectedAccount?.address,
       });
       currentTransactionIdRef.current = historyId;

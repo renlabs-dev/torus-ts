@@ -18,11 +18,13 @@ import {
 } from "@torus-ts/ui/components/tooltip";
 import { cn } from "@torus-ts/ui/lib/utils";
 import {
+  ArrowRight,
   ChevronDown,
   ChevronUp,
   ExternalLink,
   RotateCw,
   Trash2,
+  Zap,
 } from "lucide-react";
 import { useState } from "react";
 import { formatErrorForUser } from "../hooks/fast-bridge-helpers";
@@ -59,7 +61,19 @@ function formatTimestamp(timestamp: number): string {
   return "Just now";
 }
 
-function getStatusBadge(status: FastBridgeTransactionHistoryItem["status"]) {
+function getStatusBadge(
+  status: FastBridgeTransactionHistoryItem["status"],
+  recoveredViaEvmRecover?: boolean,
+) {
+  if (recoveredViaEvmRecover) {
+    return (
+      <Badge variant="outline" className="border-blue-500 text-blue-500">
+        <Zap className="mr-1 h-3 w-3" />
+        Recovered
+      </Badge>
+    );
+  }
+
   switch (status) {
     case "completed":
       return (
@@ -136,7 +150,10 @@ export function TransactionHistoryItem({
               #{index + 1}
             </Badge>
             <span className="text-sm font-medium">{directionLabel}</span>
-            {getStatusBadge(transaction.status)}
+            {getStatusBadge(
+              transaction.status,
+              transaction.recoveredViaEvmRecover,
+            )}
           </div>
           <div className="text-muted-foreground mt-1 text-sm">
             {transaction.amount} TORUS
@@ -145,82 +162,21 @@ export function TransactionHistoryItem({
             {formatTimestamp(transaction.timestamp)}
           </div>
 
-          {(transaction.step1TxHash || transaction.step2TxHash) && (
-            <div className="mt-2 flex items-center gap-2">
-              {transaction.step1TxHash && (
-                <TooltipProvider delayDuration={300}>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="h-7 gap-1 px-2 text-xs"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          if (transaction.step1TxHash) {
-                            window.open(
-                              getExplorerUrl(
-                                transaction.step1TxHash,
-                                transaction.direction === "base-to-native"
-                                  ? "Base"
-                                  : "Torus Native",
-                              ),
-                              "_blank",
-                              "noopener,noreferrer",
-                            );
-                          }
-                        }}
-                      >
-                        <ExternalLink className="h-3 w-3" />
-                        Step 1
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent side="top">
-                      <p className="text-xs">
-                        View Step 1 transaction on{" "}
-                        {transaction.direction === "base-to-native"
-                          ? "Base"
-                          : "Torus Native"}{" "}
-                        explorer
-                      </p>
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
+          {/* Address row: Base -> Native */}
+          {(transaction.baseAddress || transaction.nativeAddress) && (
+            <div className="mt-2 flex items-center gap-2 text-xs">
+              {transaction.baseAddress && (
+                <span className="text-muted-foreground font-mono">
+                  {transaction.baseAddress.slice(0, 6)}...
+                  {transaction.baseAddress.slice(-4)}
+                </span>
               )}
-
-              {transaction.step2TxHash && (
-                <TooltipProvider delayDuration={300}>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="h-7 gap-1 px-2 text-xs"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          if (transaction.step2TxHash) {
-                            window.open(
-                              getExplorerUrl(
-                                transaction.step2TxHash,
-                                "Torus EVM",
-                              ),
-                              "_blank",
-                              "noopener,noreferrer",
-                            );
-                          }
-                        }}
-                      >
-                        <ExternalLink className="h-3 w-3" />
-                        Step 2
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent side="top">
-                      <p className="text-xs">
-                        View Step 2 transaction on Torus EVM explorer
-                      </p>
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
+              <ArrowRight className="text-muted-foreground h-3 w-3" />
+              {transaction.nativeAddress && (
+                <span className="text-muted-foreground font-mono">
+                  {transaction.nativeAddress.slice(0, 6)}...
+                  {transaction.nativeAddress.slice(-4)}
+                </span>
               )}
             </div>
           )}
@@ -274,6 +230,7 @@ export function TransactionHistoryItem({
 
       {isExpanded && (
         <div className="bg-muted/50 mt-4 space-y-3 rounded-md p-3 text-sm">
+          {/* Error details */}
           {transaction.errorMessage && (
             <div className="text-red-500">
               <div className="font-medium">Error:</div>
@@ -288,86 +245,68 @@ export function TransactionHistoryItem({
             </div>
           )}
 
-          {transaction.step1TxHash && (
-            <div>
-              <div className="text-muted-foreground mb-1 text-xs">
-                Step 1 Transaction:
-              </div>
-              <a
-                href={getExplorerUrl(
-                  transaction.step1TxHash,
-                  transaction.direction === "base-to-native"
-                    ? "Base"
-                    : "Torus Native",
-                )}
-                target="_blank"
-                rel="noopener noreferrer"
-                className={cn(
-                  "text-primary flex items-center gap-1 break-all text-xs hover:underline",
-                )}
-              >
-                {transaction.step1TxHash.slice(0, 10)}...
-                {transaction.step1TxHash.slice(-8)}
-                <ExternalLink className="h-3 w-3 shrink-0" />
-              </a>
+          {/* Recovered via EVM Recover indicator */}
+          {transaction.recoveredViaEvmRecover && (
+            <div className="flex items-center gap-2 text-blue-500">
+              <Zap className="h-4 w-4" />
+              <span className="text-xs">Recovered via EVM Recover</span>
             </div>
           )}
 
-          {transaction.step2TxHash && (
-            <div>
-              <div className="text-muted-foreground mb-1 text-xs">
-                Step 2 Transaction:
+          {/* Explorer links */}
+          {(transaction.step1TxHash || transaction.step2TxHash) && (
+            <div className="space-y-2">
+              <div className="text-muted-foreground text-xs font-medium">
+                Transaction Details:
               </div>
-              <a
-                href={getExplorerUrl(
-                  transaction.step2TxHash,
-                  "Torus EVM", // Step 2 always occurs on Torus EVM regardless of direction
-                )}
-                target="_blank"
-                rel="noopener noreferrer"
-                className={cn(
-                  "text-primary flex items-center gap-1 break-all text-xs hover:underline",
-                )}
-              >
-                {transaction.step2TxHash.slice(0, 10)}...
-                {transaction.step2TxHash.slice(-8)}
-                <ExternalLink className="h-3 w-3 shrink-0" />
-              </a>
-            </div>
-          )}
-
-          {transaction.baseAddress && (
-            <div>
-              <div className="text-muted-foreground mb-1 text-xs">
-                Base Address:
-              </div>
-              <div className="break-all text-xs">
-                {transaction.baseAddress.slice(0, 10)}...
-                {transaction.baseAddress.slice(-8)}
-              </div>
-            </div>
-          )}
-
-          {transaction.evmAddress && (
-            <div>
-              <div className="text-muted-foreground mb-1 text-xs">
-                EVM Address:
-              </div>
-              <div className="break-all text-xs">
-                {transaction.evmAddress.slice(0, 10)}...
-                {transaction.evmAddress.slice(-8)}
-              </div>
-            </div>
-          )}
-
-          {transaction.nativeAddress && (
-            <div>
-              <div className="text-muted-foreground mb-1 text-xs">
-                Native Address:
-              </div>
-              <div className="break-all text-xs">
-                {transaction.nativeAddress.slice(0, 10)}...
-                {transaction.nativeAddress.slice(-8)}
+              <div className="flex flex-wrap gap-2">
+                {(() => {
+                  const step1Hash = transaction.step1TxHash;
+                  if (!step1Hash) return null;
+                  return (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="h-7 gap-1 text-xs"
+                      onClick={() => {
+                        window.open(
+                          getExplorerUrl(
+                            step1Hash,
+                            transaction.direction === "base-to-native"
+                              ? "Base"
+                              : "Torus Native",
+                          ),
+                          "_blank",
+                          "noopener,noreferrer",
+                        );
+                      }}
+                    >
+                      <ExternalLink className="h-3 w-3" />
+                      View Step 1
+                    </Button>
+                  );
+                })()}
+                {(() => {
+                  const step2Hash = transaction.step2TxHash;
+                  if (!step2Hash) return null;
+                  return (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="h-7 gap-1 text-xs"
+                      onClick={() => {
+                        window.open(
+                          getExplorerUrl(step2Hash, "Torus EVM"),
+                          "_blank",
+                          "noopener,noreferrer",
+                        );
+                      }}
+                    >
+                      <ExternalLink className="h-3 w-3" />
+                      View Step 2
+                    </Button>
+                  );
+                })()}
               </div>
             </div>
           )}
@@ -391,7 +330,12 @@ export function TransactionHistoryItem({
               <div>{transaction.amount} TORUS</div>
 
               <div className="text-muted-foreground">Status:</div>
-              <div>{getStatusBadge(transaction.status)}</div>
+              <div>
+                {getStatusBadge(
+                  transaction.status,
+                  transaction.recoveredViaEvmRecover,
+                )}
+              </div>
 
               <div className="text-muted-foreground">Date:</div>
               <div>{formatTimestamp(transaction.timestamp)}</div>
