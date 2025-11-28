@@ -140,7 +140,9 @@ export function TransactionStepItem({
 
         {status === "error" && errorDetails && (
           <div className="mt-2 rounded-md border border-red-500 bg-transparent p-3">
-            <p className="text-sm font-medium text-red-600">{errorDetails}</p>
+            <p className="whitespace-pre-line text-sm font-medium text-red-600">
+              {errorDetails}
+            </p>
           </div>
         )}
 

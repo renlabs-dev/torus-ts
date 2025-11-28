@@ -143,12 +143,63 @@ export function getExplorerUrl(txHash: string, chainName: string): string {
 }
 
 /**
+ * Extracts the "Details:" section from a viem error message.
+ * Returns the details text or null if not found.
+ */
+function extractViemDetails(errorMessage: string): string | null {
+  const detailsRegex = /Details:\s*([^\n]+)/i;
+  const detailsMatch = detailsRegex.exec(errorMessage);
+  return detailsMatch?.[1]?.trim() ?? null;
+}
+
+/**
+ * Extracts transaction info from viem error for context.
+ * Returns a formatted string with chain, value, etc.
+ */
+function extractTransactionContext(errorMessage: string): string | null {
+  const chainMatch = /chain:\s*([^(]+)\(id:\s*(\d+)\)/i.exec(errorMessage);
+  const valueMatch = /value:\s*([\d.]+)\s*(\w+)/i.exec(errorMessage);
+
+  if (chainMatch?.[1] && valueMatch?.[1]) {
+    const chain = chainMatch[1].trim();
+    const value = valueMatch[1];
+    const token = valueMatch[2] ?? "TORUS";
+    return `${value} ${token} on ${chain}`;
+  }
+
+  return null;
+}
+
+/**
  * Formats error messages from wallet/transaction errors into user-friendly text.
  * Extracts key details like hardware wallet issues, insufficient funds, etc.
+ *
+ * Handles various error formats including:
+ * - Ledger/Trezor hardware wallet errors (blind signing, locked, disconnected)
+ * - Insufficient funds with detailed balance info
+ * - Network/connection issues
+ * - viem TransactionExecutionError and InternalRpcError
  */
 export function formatErrorForUser(error: Error): string {
   const errorMessage = error.message;
   const lowerMessage = errorMessage.toLowerCase();
+
+  // Ledger Blind Signing / Contract Data requirement
+  if (
+    lowerMessage.includes("blind signing") ||
+    lowerMessage.includes("contract data")
+  ) {
+    const context = extractTransactionContext(errorMessage);
+    const baseMessage =
+      "Your Ledger requires Blind Signing to be enabled for this transaction.";
+    const instructions =
+      'Open the Ethereum app on your Ledger, go to Settings, and enable "Blind signing" or "Contract data".';
+
+    if (context) {
+      return `${baseMessage}\n\nTransaction: ${context}\n\n${instructions}`;
+    }
+    return `${baseMessage}\n\n${instructions}`;
+  }
 
   // Hardware wallet locked
   if (
@@ -190,7 +241,7 @@ export function formatErrorForUser(error: Error): string {
       const wantEth = Number(want) / 1e18;
       const missingEth = Number(missing) / 1e18;
 
-      return `Insufficient funds. You have ${haveEth.toFixed(6)} ETH but need ${wantEth.toFixed(6)} ETH (missing ${missingEth.toFixed(6)} ETH). Please add funds to your wallet.`;
+      return `Insufficient funds.\n\nYou have: ${haveEth.toFixed(6)} ETH\nRequired: ${wantEth.toFixed(6)} ETH\nMissing: ${missingEth.toFixed(6)} ETH\n\nPlease add funds to your wallet.`;
     }
 
     // Fallback to generic messages
@@ -223,27 +274,42 @@ export function formatErrorForUser(error: Error): string {
     return "Transaction was rejected. Please try again when ready.";
   }
 
+  // Internal error with Details - common viem format
+  if (lowerMessage.includes("internal error")) {
+    const details = extractViemDetails(errorMessage);
+    if (details) {
+      const context = extractTransactionContext(errorMessage);
+      if (context) {
+        return `${details}\n\nTransaction: ${context}`;
+      }
+      return details;
+    }
+  }
+
   // Generic transaction execution error - try to extract useful info
   if (lowerMessage.includes("transactionexecutionerror")) {
-    // Look for "Details:" section
-    const detailsRegex = /Details:\s*([^\n]+)/i;
-    const detailsMatch = detailsRegex.exec(errorMessage);
-    if (detailsMatch?.[1]) {
-      return `Transaction failed: ${detailsMatch[1].trim()}`;
+    const details = extractViemDetails(errorMessage);
+    if (details) {
+      return `Transaction failed: ${details}`;
     }
   }
 
   // Internal RPC error - extract details if available
   if (lowerMessage.includes("internalrpcerror")) {
-    const detailsRegex = /Details:\s*([^\n]+)/i;
-    const detailsMatch = detailsRegex.exec(errorMessage);
-    if (detailsMatch?.[1]) {
-      return detailsMatch[1].trim();
+    const details = extractViemDetails(errorMessage);
+    if (details) {
+      return details;
     }
   }
 
   // Fallback: return first meaningful line if error is too long
   if (errorMessage.length > 200) {
+    // First try to extract Details section
+    const details = extractViemDetails(errorMessage);
+    if (details) {
+      return details;
+    }
+
     const lines = errorMessage.split("\n");
     const firstMeaningfulLine = lines.find(
       (line) => line.trim() && !line.includes("at ") && !line.includes("("),

@@ -277,7 +277,7 @@ export function TransactionHistoryItem({
           {transaction.errorMessage && (
             <div className="text-red-500">
               <div className="font-medium">Error:</div>
-              <div className="text-muted-foreground mt-1 text-xs">
+              <div className="text-muted-foreground mt-1 whitespace-pre-line text-xs">
                 {formatErrorForUser(new Error(transaction.errorMessage))}
               </div>
               {transaction.errorStep && (
@@ -400,7 +400,7 @@ export function TransactionHistoryItem({
             {transaction.errorMessage && (
               <div className="bg-muted/50 rounded-md p-3">
                 <div className="text-sm font-medium text-red-500">Error:</div>
-                <div className="text-muted-foreground mt-1 text-xs">
+                <div className="text-muted-foreground mt-1 whitespace-pre-line text-xs">
                   {formatErrorForUser(new Error(transaction.errorMessage))}
                 </div>
               </div>
