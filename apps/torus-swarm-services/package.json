@@ -1,0 +1,45 @@
+{
+  "name": "torus-swarm-services",
+  "version": "0.1.0",
+  "private": true,
+  "license": "MIT",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "build": "tsc",
+    "clean": "rm -rf .turbo node_modules",
+    "dev": "pnpm with-env tsx ./src/index.ts",
+    "format": "prettier --check . --ignore-path ../../.gitignore --cache --cache-location .cache/.prettiercache",
+    "format-fix": "prettier --write . --ignore-path ../../.gitignore --cache --cache-location .cache/.prettiercache",
+    "lint": "eslint --cache --cache-location .cache/.eslintcache",
+    "lint-fix": "eslint --cache --cache-location .cache/.eslintcache --fix",
+    "start": "tsx ./src/index.ts",
+    "start:local": "pnpm with-env pnpm start",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit",
+    "with-env": "dotenv -e ../../.env --"
+  },
+  "dependencies": {
+    "@polkadot/api": "catalog:",
+    "@polkadot/keyring": "catalog:",
+    "axios": "^1.7.7",
+    "@torus-ts/db": "workspace:*",
+    "@torus-network/sdk": "workspace:*",
+    "@torus-network/torus-utils": "workspace:*",
+    "express": "^4.19.2",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@torus-ts/eslint-config": "workspace:*",
+    "@torus-ts/tsconfig": "workspace:*",
+    "@types/express": "^4.17.21",
+    "@types/node": "catalog:",
+    "dotenv-cli": "catalog:",
+    "eslint": "catalog:",
+    "prettier": "catalog:",
+    "tsx": "catalog:",
+    "typescript": "catalog:"
+  }
+}

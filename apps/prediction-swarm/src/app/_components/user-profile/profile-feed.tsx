@@ -37,7 +37,7 @@ import {
   XCircle,
 } from "lucide-react";
 import Link from "next/link";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { assert } from "tsafe";
 import { PredictionReportDialog } from "../prediction-report-dialog";
 import { FutureTimeframeBadge } from "./future-timeframe-badge";
@@ -267,19 +267,30 @@ export function ProfileFeed({
     Record<string, number>
   >({});
 
+  const canonicalPredictionsMap = useMemo(() => {
+    const map = new Map<string, GroupedTweetData["predictions"]>();
+    predictions.forEach((tweet) => {
+      map.set(
+        tweet.tweetId.toString(),
+        tweet.predictions.filter((pred) => !pred.canonicalId),
+      );
+    });
+    return map;
+  }, [predictions]);
+
   const handleNavigate = (tweetId: string, direction: "prev" | "next") => {
-    const tweet = predictions.find((p) => p.tweetId.toString() === tweetId);
-    if (!tweet) return;
+    const canonicalPredictions = canonicalPredictionsMap.get(tweetId);
+    if (!canonicalPredictions) return;
 
     const currentIndex = activePredictionIndex[tweetId] ?? 0;
     let newIndex = currentIndex;
 
     if (direction === "prev") {
       newIndex =
-        currentIndex > 0 ? currentIndex - 1 : tweet.predictions.length - 1;
+        currentIndex > 0 ? currentIndex - 1 : canonicalPredictions.length - 1;
     } else {
       newIndex =
-        currentIndex < tweet.predictions.length - 1 ? currentIndex + 1 : 0;
+        currentIndex < canonicalPredictions.length - 1 ? currentIndex + 1 : 0;
     }
 
     setActivePredictionIndex((prev) => ({ ...prev, [tweetId]: newIndex }));
@@ -322,8 +333,17 @@ export function ProfileFeed({
         <div>
           {predictions.map((tweet, idx) => {
             const tweetId = tweet.tweetId.toString();
-            const activeIndex = activePredictionIndex[tweetId] ?? 0;
-            const activePrediction = tweet.predictions[activeIndex];
+
+            const canonicalPredictions = canonicalPredictionsMap.get(tweetId);
+
+            if (!canonicalPredictions || canonicalPredictions.length === 0)
+              return null;
+
+            const activeIndex = Math.min(
+              activePredictionIndex[tweetId] ?? 0,
+              canonicalPredictions.length - 1,
+            );
+            const activePrediction = canonicalPredictions[activeIndex];
 
             if (!activePrediction) return null;
 
@@ -339,7 +359,7 @@ export function ProfileFeed({
                   <ThreadContext
                     tweet={tweet}
                     activePrediction={activePrediction}
-                    allPredictions={tweet.predictions}
+                    allPredictions={canonicalPredictions}
                     highlightFn={highlightTweetText}
                   />
                 </div>
@@ -400,7 +420,7 @@ export function ProfileFeed({
                       {/* Actions: Navigation, External Link, More Info */}
                       <div className="flex items-center gap-1">
                         {/* Navigation Arrows - only show if multiple predictions */}
-                        {tweet.predictions.length > 1 && (
+                        {canonicalPredictions.length > 1 && (
                           <>
                             <Button
                               variant="ghost"
@@ -411,7 +431,7 @@ export function ProfileFeed({
                               <ChevronLeft className="h-4 w-4" />
                             </Button>
                             <span className="text-muted-foreground text-xs">
-                              {activeIndex + 1}/{tweet.predictions.length}
+                              {activeIndex + 1}/{canonicalPredictions.length}
                             </span>
                             <Button
                               variant="ghost"
@@ -489,6 +509,23 @@ export function ProfileFeed({
                                     {activePrediction.briefRationale}
                                   </p>
                                 </div>
+
+                                {activePrediction.duplicateCount &&
+                                  activePrediction.duplicateCount > 0 && (
+                                    <div>
+                                      <span className="text-muted-foreground">
+                                        Duplicates:
+                                      </span>
+                                      <p>
+                                        {activePrediction.duplicateCount}{" "}
+                                        duplicate
+                                        {activePrediction.duplicateCount > 1
+                                          ? "s"
+                                          : ""}{" "}
+                                        found
+                                      </p>
+                                    </div>
+                                  )}
 
                                 {activePrediction.target.length > 0 &&
                                   (() => {
