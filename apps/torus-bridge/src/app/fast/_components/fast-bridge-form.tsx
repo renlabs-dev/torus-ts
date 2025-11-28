@@ -558,14 +558,14 @@ export function FastBridgeForm() {
                     }
                   >
                     <Zap className="mr-2 h-4 w-4" />
-                    Quick EVM
+                    EVM Recover
                   </Button>
                 </span>
               </TooltipTrigger>
               {!hasEvmBalance && (
                 <TooltipContent>
                   <p className="text-sm">
-                    Quick Send is only available when you have TORUS in your EVM
+                    Recover is only available when you have TORUS in your EVM
                     wallet
                   </p>
                 </TooltipContent>

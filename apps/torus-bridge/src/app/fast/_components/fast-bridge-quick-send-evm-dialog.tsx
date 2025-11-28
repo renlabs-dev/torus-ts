@@ -295,11 +295,11 @@ export function QuickSendEvmDialog({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-xl">
             <Zap className="text-primary h-5 w-5" />
-            Quick Send EVM
+            EVM Recover
           </DialogTitle>
           <DialogDescription className="text-sm">
-            Send your entire EVM balance to Native or Base in one click. Gas
-            fees are automatically reserved.
+            Recover your EVM balance by transferring it to Torus Native or Base
+            chain. Gas fees are automatically reserved.
           </DialogDescription>
         </DialogHeader>
 
