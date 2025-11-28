@@ -109,7 +109,13 @@ export function QuickSendEvmDialog({
         initialBalanceRef.current = null;
       }
     }
-  }, [currentEvmBalance, status, refetchBalances, originalAmount, onRecoverySuccess]);
+  }, [
+    currentEvmBalance,
+    status,
+    refetchBalances,
+    originalAmount,
+    onRecoverySuccess,
+  ]);
 
   const handleSend = async (destination: "native" | "base") => {
     setSelectedDestination(destination);
