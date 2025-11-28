@@ -14,6 +14,10 @@ import { cn } from "@torus-ts/ui/lib/utils";
 import { AlertCircle, Check, CheckCircle2, Loader2, Zap } from "lucide-react";
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
+import {
+  formatErrorForUser,
+  isUserRejectionError,
+} from "../hooks/fast-bridge-helpers";
 
 interface QuickSendEvmDialogProps {
   isOpen: boolean;
@@ -119,36 +123,14 @@ export function QuickSendEvmDialog({
 
     const [error, _] = await tryAsync(sendPromise);
     if (error !== undefined) {
-      const errorMsg = error.message;
+      setStatus("error");
 
-      if (
-        errorMsg.includes("User rejected") ||
-        errorMsg.includes("user rejected") ||
-        errorMsg.includes("User denied") ||
-        errorMsg.includes("user denied") ||
-        errorMsg.includes("rejected") ||
-        errorMsg.includes("cancelled") ||
-        errorMsg.includes("canceled")
-      ) {
-        setStatus("error");
+      if (isUserRejectionError(error)) {
         setErrorMessage("You cancelled the transaction");
         return;
       }
 
-      if (
-        errorMsg.includes("locked") ||
-        errorMsg.includes("Locked") ||
-        errorMsg.includes("unlock")
-      ) {
-        setStatus("error");
-        setErrorMessage(
-          "Your wallet is locked. Please unlock it and try again.",
-        );
-        return;
-      }
-
-      setStatus("error");
-      setErrorMessage(errorMsg);
+      setErrorMessage(formatErrorForUser(error));
     }
 
     // Note: The useEffect monitoring currentEvmBalance will handle completion
@@ -258,7 +240,9 @@ export function QuickSendEvmDialog({
               </p>
               {errorMessage && (
                 <div className="bg-muted/50 mt-4 rounded-md p-3">
-                  <p className="break-words text-sm">{errorMessage}</p>
+                  <p className="whitespace-pre-line break-words text-sm">
+                    {errorMessage}
+                  </p>
                 </div>
               )}
             </div>
