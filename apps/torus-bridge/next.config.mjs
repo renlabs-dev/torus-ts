@@ -9,6 +9,9 @@ const withBundleAnalyzer = bundleAnalyzer({
 const config = {
   reactStrictMode: true,
 
+  // Standalone output for optimized Docker builds (~50MB vs ~500MB)
+  output: "standalone",
+
   experimental: {
     reactCompiler: true,
     // Optimize imports for heavy packages - tree shaking
