@@ -8,13 +8,13 @@ service:
 
 deployment:
   image:
-    repository: ghcr.io/renlabs-dev/swarm-filter
+    repository: ghcr.io/renlabs-dev/torus-swarm-services
 
   additionalLabels:
-    app: swarm-filter
+    app: torus-swarm-services
 
   podLabels:
-    app: swarm-filter
+    app: torus-swarm-services
 
   resources:
     limits:
@@ -25,7 +25,7 @@ deployment:
       cpu: 0.1
 
   command: ["pnpm"]
-  args: ["tsx", "./src/index.ts"]
+  args: ["tsx", "./src/index.ts", "distribution"]
 
   startupProbe:
     enabled: false
@@ -37,33 +37,28 @@ deployment:
     enabled: false
 
   env:
-    OPENROUTER_API_KEY:
-      valueFrom:
-        secretKeyRef:
-          name: "torus-{{ .Values.environmentName }}-web-apps-secret"
-          key: OPENROUTER_API_KEY
     POSTGRES_URL:
       valueFrom:
         secretKeyRef:
           name: "torus-{{ .Values.environmentName }}-web-apps-secret"
           key: prediction_swarm_db_url
-    API_URL:
-      value: https://predictionswarm.com/
-    AUTH_ORIGIN:
-      value: validator.torus.network
-    FILTER_AGENT_MNEMONIC:
+    SWARM_PERMISSION_ID:
       valueFrom:
         secretKeyRef:
           name: "torus-{{ .Values.environmentName }}-web-apps-secret"
-          key: FILTER_AGENT_MNEMONIC
-    JWT_SECRET:
+          key: SWARM_PERMISSION_ID
+    SWARM_DISCORD_WEBHOOK_URL:
       valueFrom:
         secretKeyRef:
           name: "torus-{{ .Values.environmentName }}-web-apps-secret"
-          key: jwt_secret
-    PREDICTION_CHECK_MODEL:
-      value: mistralai/mistral-7b-instruct-v0.3:floor
-    TOPIC_CLASSIFICATION_MODEL:
-      value: google/gemini-2.5-flash
-    PREDICTION_EXTRACTION_MODEL:
-      value: google/gemini-2.5-flash
+          key: SWARM_DISCORD_WEBHOOK_URL
+    PREDICTION_APP_MNEMONIC:
+      valueFrom:
+        secretKeyRef:
+          name: "torus-{{ .Values.environmentName }}-web-apps-secret"
+          key: PREDICTION_APP_MNEMONIC
+    NEXT_PUBLIC_TORUS_RPC_URL:
+      valueFrom:
+        configMapKeyRef:
+          name: '{{ template "application.name" . }}-config'
+          key: next_public_ws_url
