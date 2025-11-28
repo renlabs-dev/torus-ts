@@ -657,7 +657,11 @@ export function useOrchestratedTransfer() {
   );
 
   const executeTransfer = useCallback(
-    async (direction: SimpleBridgeDirection, amount: string) => {
+    async (
+      direction: SimpleBridgeDirection,
+      amount: string,
+      onTransactionCreated?: (txId: string) => void,
+    ) => {
       updateBridgeState({
         step: SimpleBridgeStep.IDLE,
         direction,
@@ -677,6 +681,9 @@ export function useOrchestratedTransfer() {
         nativeAddress: selectedAccount?.address,
       });
       currentTransactionIdRef.current = historyId;
+
+      // Set URL state immediately after creating history entry (for F5 recovery)
+      onTransactionCreated?.(historyId);
 
       try {
         if (direction === "base-to-native") {

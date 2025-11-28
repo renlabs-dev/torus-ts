@@ -33,6 +33,7 @@ import { useFastBridgeTransactionHistory } from "../hooks/use-fast-bridge-transa
 import { useFastBridgeTransactionUrlState } from "../hooks/use-fast-bridge-transaction-url-state";
 import { DualWalletConnector } from "./fast-bridge-dual-wallet-connector";
 import { FractionButtons } from "./fast-bridge-fraction-buttons";
+import { PendingTransactionDialog } from "./fast-bridge-pending-transaction-dialog";
 import { QuickSendEvmDialog } from "./fast-bridge-quick-send-evm-dialog";
 import { TransactionHistoryDialog } from "./fast-bridge-transaction-history-dialog";
 import { TransactionLifecycleDialog } from "./fast-bridge-transaction-lifecycle-dialog";
@@ -83,6 +84,10 @@ export function FastBridgeForm() {
   const [showTransactionDialog, setShowTransactionDialog] = useState(false);
   const [showHistoryDialog, setShowHistoryDialog] = useState(false);
   const [showQuickSendDialog, setShowQuickSendDialog] = useState(false);
+  const [showPendingDialog, setShowPendingDialog] = useState(false);
+  const [pendingActionCallback, setPendingActionCallback] = useState<
+    (() => void) | null
+  >(null);
 
   const { areWalletsReady, connectionState, chainIds } = useDualWallet();
   const {
@@ -103,11 +108,14 @@ export function FastBridgeForm() {
   const {
     getTransactionById,
     getTransactions,
+    getPendingTransaction,
+    deleteTransaction,
     markFailedAsRecoveredViaEvmRecover,
   } = useFastBridgeTransactionHistory();
   const errorCount = getTransactions().filter(
     (tx) => tx.status === "error",
   ).length;
+  const pendingTransaction = getPendingTransaction();
 
   const {
     setTransactionInUrl,
@@ -240,16 +248,51 @@ export function FastBridgeForm() {
     [walletsReady, executeEvmToBase],
   );
 
-  const handleSubmit = useCallback(async () => {
+  const startNewTransfer = useCallback(async () => {
     if (!amountFrom || !walletsReady) return;
 
     setShowTransactionDialog(true);
-    const [error, _] = await tryAsync(executeTransfer(direction, amountFrom));
+    const [error, _] = await tryAsync(
+      executeTransfer(direction, amountFrom, setTransactionInUrl),
+    );
     if (error !== undefined) {
       console.error("Transfer failed:", error);
       // Dialog stays open to show ERROR state from hook
     }
-  }, [amountFrom, walletsReady, executeTransfer, direction]);
+  }, [
+    amountFrom,
+    walletsReady,
+    executeTransfer,
+    direction,
+    setTransactionInUrl,
+  ]);
+
+  const handleSubmit = useCallback(() => {
+    if (!amountFrom || !walletsReady) return;
+
+    // Check for pending transaction
+    if (pendingTransaction) {
+      // Store the callback to execute after user confirms deletion
+      setPendingActionCallback(() => startNewTransfer);
+      setShowPendingDialog(true);
+      return;
+    }
+
+    void startNewTransfer();
+  }, [amountFrom, walletsReady, pendingTransaction, startNewTransfer]);
+
+  const handleDeleteAndStartNew = useCallback(
+    (transactionId: string) => {
+      deleteTransaction(transactionId);
+      clearTransactionFromUrl();
+      // Execute the stored callback after deletion
+      if (pendingActionCallback) {
+        pendingActionCallback();
+        setPendingActionCallback(null);
+      }
+    },
+    [deleteTransaction, clearTransactionFromUrl, pendingActionCallback],
+  );
 
   const handleCloseDialog = useCallback(() => {
     if (
@@ -748,6 +791,19 @@ export function FastBridgeForm() {
         refetchBalances={refetchAllBalances}
         onRecoverySuccess={markFailedAsRecoveredViaEvmRecover}
       />
+
+      {pendingTransaction && (
+        <PendingTransactionDialog
+          isOpen={showPendingDialog}
+          onClose={() => {
+            setShowPendingDialog(false);
+            setPendingActionCallback(null);
+          }}
+          pendingTransaction={pendingTransaction}
+          onResume={handleRetryFromHistory}
+          onDeleteAndStartNew={handleDeleteAndStartNew}
+        />
+      )}
     </div>
   );
 }

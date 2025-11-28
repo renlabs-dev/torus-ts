@@ -17,6 +17,7 @@ interface FastBridgeTransactionHistoryState {
   getTransactionById: (
     id: string,
   ) => FastBridgeTransactionHistoryItem | undefined;
+  getPendingTransaction: () => FastBridgeTransactionHistoryItem | undefined;
   clearHistory: () => void;
   deleteTransaction: (id: string) => void;
   markAsRetried: (id: string) => void;
@@ -83,6 +84,12 @@ export const useFastBridgeTransactionHistory =
 
         getTransactionById: (id) => {
           return get().transactions.find((tx) => tx.id === id);
+        },
+
+        getPendingTransaction: () => {
+          return get().transactions.find(
+            (tx) => tx.status === "pending" || tx.status === "step1_complete",
+          );
         },
 
         clearHistory: () => {
