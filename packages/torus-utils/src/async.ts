@@ -4,6 +4,49 @@ import type { Result } from "./result/sync.js";
 import { makeErr, makeOk } from "./result/sync.js";
 
 /**
+ * Wraps an async function with exponential backoff retry logic with jitter.
+ *
+ *
+ * @param baseDelayMs - Initial delay in milliseconds (default: 1000ms)
+ * @param maxRetries - Maximum number of retries before giving up (default: 5)
+ * @returns A function that takes an async function and retries it with exponential backoff on error
+ *
+ * @example
+ * ```ts
+ * const withBackoff = withExponentialBackoff(1000, 5);
+ *
+ * while (true) {
+ *   await withBackoff(async (attempt) => {
+ *     console.log(`Attempt ${attempt}`);
+ *     await riskyOperation();
+ *   });
+ * }
+ * ```
+ */
+export function withExponentialBackoff(baseDelayMs = 1000, maxRetries = 5) {
+  let attempt = 0;
+
+  return async <T>(fn: (attempt: number) => Promise<T>): Promise<T> => {
+    try {
+      const result = await fn(attempt);
+      attempt = 0; // Reset on success
+      return result;
+    } catch (error) {
+      attempt++;
+      if (attempt >= maxRetries) {
+        attempt = 0; // Reset for next cycle
+        throw error;
+      }
+      // Full jitter: random delay between 0 and exponential backoff
+      const maxDelay = baseDelayMs * Math.pow(2, attempt - 1);
+      const delay = Math.random() * maxDelay;
+      await new Promise((resolve) => setTimeout(resolve, delay));
+      throw error;
+    }
+  };
+}
+
+/**
  * Creates a deferred promise with external resolution control.
  *
  * This function returns an object containing:
