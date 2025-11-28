@@ -189,16 +189,7 @@ export function formatErrorForUser(error: Error): string {
     lowerMessage.includes("blind signing") ||
     lowerMessage.includes("contract data")
   ) {
-    const context = extractTransactionContext(errorMessage);
-    const baseMessage =
-      "Your hardware wallet requires Blind Signing to be enabled for this transaction.";
-    const instructions =
-      'Open the Ethereum app on your device, go to Settings, and enable "Blind signing" or "Contract data".';
-
-    if (context) {
-      return `${baseMessage}\n\nTransaction: ${context}\n\n${instructions}`;
-    }
-    return `${baseMessage}\n\n${instructions}`;
+    return "Your hardware wallet requires Blind Signing to be enabled for this transaction.";
   }
 
   // Hardware wallet locked
