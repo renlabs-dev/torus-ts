@@ -1465,9 +1465,6 @@ importers:
 
   packages/db:
     dependencies:
-      '@torus-network/sdk':
-        specifier: workspace:*
-        version: link:../torus-sdk-ts
       drizzle-orm:
         specifier: ^0.40.0
         version: 0.40.1(gel@2.1.1)(postgres@3.4.7)
