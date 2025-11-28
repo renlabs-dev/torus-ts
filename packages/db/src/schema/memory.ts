@@ -528,3 +528,23 @@ export const userWatchesSchema = createTable(
     index("user_watches_watched_user_id_idx").on(t.watchedUserId),
   ],
 );
+
+// ==== Contributor Reward System ====
+
+/**
+ * Track reward distributions with scores and recipients
+ */
+export const rewardDistributionsSchema = createTable(
+  "reward_distributions",
+  {
+    id: uuidv7("id").primaryKey(),
+    distributionTime: timestampz("distribution_time").notNull(),
+    permissionId: varchar("permission_id", { length: 66 }),
+    scores: jsonb("scores").$type<Record<string, number>>().notNull(), // filter_agent_id (SS58Address) -> weight
+    ...timeFields(),
+  },
+  (t) => [
+    index("reward_distributions_distribution_time_idx").on(t.distributionTime),
+    index("reward_distributions_permission_id_idx").on(t.permissionId),
+  ],
+);
