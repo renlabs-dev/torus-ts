@@ -161,25 +161,6 @@ export function TransactionHistoryItem({
           <div className="text-muted-foreground mt-1 text-xs">
             {formatTimestamp(transaction.timestamp)}
           </div>
-
-          {/* Address row: Base -> Native */}
-          {(transaction.baseAddress || transaction.nativeAddress) && (
-            <div className="mt-2 flex items-center gap-2 text-xs">
-              {transaction.baseAddress && (
-                <span className="text-muted-foreground font-mono">
-                  {transaction.baseAddress.slice(0, 6)}...
-                  {transaction.baseAddress.slice(-4)}
-                </span>
-              )}
-              <ArrowRight className="text-muted-foreground h-3 w-3" />
-              {transaction.nativeAddress && (
-                <span className="text-muted-foreground font-mono">
-                  {transaction.nativeAddress.slice(0, 6)}...
-                  {transaction.nativeAddress.slice(-4)}
-                </span>
-              )}
-            </div>
-          )}
         </div>
 
         <TooltipProvider delayDuration={5000}>
@@ -230,6 +211,65 @@ export function TransactionHistoryItem({
 
       {isExpanded && (
         <div className="bg-muted/50 mt-4 space-y-3 rounded-md p-3 text-sm">
+          {/* Address details */}
+          {(transaction.baseAddress || transaction.nativeAddress) && (
+            <div className="flex items-center gap-3 text-xs">
+              {transaction.direction === "base-to-native" ? (
+                <>
+                  {transaction.baseAddress && (
+                    <div className="flex flex-col gap-1">
+                      <span className="text-muted-foreground font-medium">
+                        Base Address
+                      </span>
+                      <span className="font-mono">
+                        {transaction.baseAddress.slice(0, 6)}...
+                        {transaction.baseAddress.slice(-4)}
+                      </span>
+                    </div>
+                  )}
+                  <ArrowRight className="text-muted-foreground h-4 w-4" />
+                  {transaction.nativeAddress && (
+                    <div className="flex flex-col gap-1">
+                      <span className="text-muted-foreground font-medium">
+                        Native Address
+                      </span>
+                      <span className="font-mono">
+                        {transaction.nativeAddress.slice(0, 6)}...
+                        {transaction.nativeAddress.slice(-4)}
+                      </span>
+                    </div>
+                  )}
+                </>
+              ) : (
+                <>
+                  {transaction.nativeAddress && (
+                    <div className="flex flex-col gap-1">
+                      <span className="text-muted-foreground font-medium">
+                        Native Address
+                      </span>
+                      <span className="font-mono">
+                        {transaction.nativeAddress.slice(0, 6)}...
+                        {transaction.nativeAddress.slice(-4)}
+                      </span>
+                    </div>
+                  )}
+                  <ArrowRight className="text-muted-foreground h-4 w-4" />
+                  {transaction.baseAddress && (
+                    <div className="flex flex-col gap-1">
+                      <span className="text-muted-foreground font-medium">
+                        Base Address
+                      </span>
+                      <span className="font-mono">
+                        {transaction.baseAddress.slice(0, 6)}...
+                        {transaction.baseAddress.slice(-4)}
+                      </span>
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
+          )}
+
           {/* Error details */}
           {transaction.errorMessage && (
             <div className="text-red-500">
