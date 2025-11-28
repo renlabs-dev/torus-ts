@@ -184,16 +184,16 @@ export function formatErrorForUser(error: Error): string {
   const errorMessage = error.message;
   const lowerMessage = errorMessage.toLowerCase();
 
-  // Ledger Blind Signing / Contract Data requirement
+  // Hardware wallet Blind Signing / Contract Data requirement
   if (
     lowerMessage.includes("blind signing") ||
     lowerMessage.includes("contract data")
   ) {
     const context = extractTransactionContext(errorMessage);
     const baseMessage =
-      "Your Ledger requires Blind Signing to be enabled for this transaction.";
+      "Your hardware wallet requires Blind Signing to be enabled for this transaction.";
     const instructions =
-      'Open the Ethereum app on your Ledger, go to Settings, and enable "Blind signing" or "Contract data".';
+      'Open the Ethereum app on your device, go to Settings, and enable "Blind signing" or "Contract data".';
 
     if (context) {
       return `${baseMessage}\n\nTransaction: ${context}\n\n${instructions}`;
