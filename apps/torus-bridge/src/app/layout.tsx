@@ -1,5 +1,7 @@
 import "@torus-ts/ui/globals.css";
 import "@rainbow-me/rainbowkit/styles.css";
+import "@interchain-ui/react/styles";
+import "@solana/wallet-adapter-react-ui/styles.css";
 import { Layout } from "@torus-ts/ui/components/layout";
 import { createSeoMetadata } from "@torus-ts/ui/components/seo";
 import { APRBarWrapper } from "~/components/apr-bar-wrapper";

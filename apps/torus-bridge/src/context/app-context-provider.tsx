@@ -11,7 +11,10 @@ import {
   ProviderRenderer,
 } from "~/app/_components/provider-renderer";
 import { WalletHeader } from "~/app/_components/shared/wallet-header";
+import { CosmosWalletProvider } from "~/context/cosmos-wallet-provider";
 import { EvmWalletProvider } from "~/context/evm-wallet-provider";
+import { SolanaWalletProvider } from "~/context/solana-wallet-provider";
+import { StarknetWalletProvider } from "~/context/starknet-wallet-provider";
 import { WarpContextInitGateProvider } from "~/context/warp-context-init-gate-provider";
 import { env } from "~/env";
 
@@ -32,6 +35,9 @@ export function AppContextProvider({
         ReactQueryProvider,
         WarpContextInitGateProvider,
         EvmWalletProvider,
+        SolanaWalletProvider,
+        StarknetWalletProvider,
+        CosmosWalletProvider,
       ]}
     >
       <WalletHeader />
