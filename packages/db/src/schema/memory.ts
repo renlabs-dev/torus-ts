@@ -505,3 +505,26 @@ export const predictionReport = createTable(
     index("prediction_report_report_type_idx").on(t.reportType),
   ],
 );
+
+// ==== User Watches ====
+
+/**
+ * Tracks which users (by wallet address) are watching which Twitter users.
+ * Used to create personalized feeds of predictions from watched predictors.
+ */
+export const userWatchesSchema = createTable(
+  "user_watches",
+  {
+    id: uuidv7("id").primaryKey(),
+    watcherKey: ss58Address("watcher_key").notNull(),
+    watchedUserId: bigint("watched_user_id")
+      .notNull()
+      .references(() => twitterUsersSchema.id),
+    ...timeFields(),
+  },
+  (t) => [
+    unique("user_watches_unique").on(t.watcherKey, t.watchedUserId),
+    index("user_watches_watcher_key_idx").on(t.watcherKey),
+    index("user_watches_watched_user_id_idx").on(t.watchedUserId),
+  ],
+);
