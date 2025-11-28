@@ -15,8 +15,7 @@
       "pr_preview": true
     },
     "torus-bridge": {
-      "pr_preview": true,
-      "runner": "ubicloud-standard-30"
+      "pr_preview": true
     },
     "torus-governance": {
       "deploys": ["torus-cache", "torus-worker"],
