@@ -47,7 +47,7 @@ COPY --from=pruner /build/out/pnpm-lock.yaml ./pnpm-lock.yaml
 
 # Install dependencies using only package.json files to reduce changes
 COPY --from=pruner /build/out/json/ .
-RUN pnpm install --frozen-lockfile
+RUN pnpm install --frozen-lockfile --ignore-scripts
 
 # Build the app with increased memory limit for large builds
 COPY --from=pruner /build/out/full/ .
