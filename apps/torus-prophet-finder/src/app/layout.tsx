@@ -19,7 +19,7 @@ export const metadata: Metadata = {
   title: APP_NAME,
   icons: [{ rel: "icon", url: "favicon.ico" }],
   description:
-    "The Modern Information Landscape is a Storm. Become The Storm Rider.",
+    "Events show whose predictions hold up, but the data is scattered in noise. The swarm gathers those signals from social media and builds a live picture of who you can trust.",
 };
 
 const geistSans = Geist({
