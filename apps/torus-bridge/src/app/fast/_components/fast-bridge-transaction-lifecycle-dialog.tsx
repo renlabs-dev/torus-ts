@@ -142,17 +142,20 @@ export function TransactionLifecycleDialog({
     <Dialog open={isOpen} onOpenChange={handleOpenChange}>
       <DialogContent
         className="flex max-h-[85vh] max-w-2xl flex-col p-0"
+        hideCloseButton={!hasError && !isCompleted}
         onOpenAutoFocus={(e) => {
           // Prevent autofocus that causes white border after F5
           e.preventDefault();
         }}
         onEscapeKeyDown={(e) => {
-          if (hasError) {
+          // Prevent closing during active transfer (only allow when error or complete)
+          if (!hasError && !isCompleted) {
             e.preventDefault();
           }
         }}
         onPointerDownOutside={(e) => {
-          if (hasError) {
+          // Prevent closing during active transfer (only allow when error or complete)
+          if (!hasError && !isCompleted) {
             e.preventDefault();
           }
         }}

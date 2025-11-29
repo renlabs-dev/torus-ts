@@ -264,7 +264,7 @@ export function useOrchestratedTransfer() {
       const newTransactionId = addToHistory({
         direction: "base-to-native",
         amount,
-        status: "step1_complete",
+        status: "pending",
         currentStep: SimpleBridgeStep.STEP_2_PREPARING,
         step1TxHash: step1Tx?.txHash,
         baseAddress: evmAddress,
@@ -276,7 +276,7 @@ export function useOrchestratedTransfer() {
       // Notify that transaction was created (for URL update / F5 recovery)
       onTransactionCreatedRef.current?.(newTransactionId);
 
-      // Execute step 2
+      // Execute step 2 with progress tracking
       const [step2Error, __] = await tryAsync(
         executeBaseToNativeStep2({
           amount,
@@ -292,6 +292,13 @@ export function useOrchestratedTransfer() {
           updateBridgeState,
           addTransaction,
           getExplorerUrl,
+          onStepProgress: (step) => {
+            if (currentTransactionIdRef.current) {
+              updateHistoryTransaction(currentTransactionIdRef.current, {
+                currentStep: step,
+              });
+            }
+          },
         }),
       );
 
@@ -404,7 +411,7 @@ export function useOrchestratedTransfer() {
       const newTransactionId = addToHistory({
         direction: "native-to-base",
         amount,
-        status: "step1_complete",
+        status: "pending",
         currentStep: SimpleBridgeStep.STEP_2_PREPARING,
         step1TxHash: step1Tx?.txHash,
         baseAddress: evmAddress,
@@ -416,7 +423,7 @@ export function useOrchestratedTransfer() {
       // Notify that transaction was created (for URL update / F5 recovery)
       onTransactionCreatedRef.current?.(newTransactionId);
 
-      // Execute step 2
+      // Execute step 2 with progress tracking
       const [step2Error, __] = await tryAsync(
         executeNativeToBaseStep2({
           amount,
@@ -434,6 +441,13 @@ export function useOrchestratedTransfer() {
           updateBridgeState,
           addTransaction,
           getExplorerUrl,
+          onStepProgress: (step) => {
+            if (currentTransactionIdRef.current) {
+              updateHistoryTransaction(currentTransactionIdRef.current, {
+                currentStep: step,
+              });
+            }
+          },
         }),
       );
 

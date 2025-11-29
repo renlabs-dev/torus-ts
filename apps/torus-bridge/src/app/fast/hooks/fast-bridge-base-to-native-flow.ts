@@ -329,6 +329,8 @@ interface BaseToNativeStep2Params {
   addTransaction: (tx: SimpleBridgeTransaction) => void;
   /** Function to generate blockchain explorer URLs for transaction hashes */
   getExplorerUrl: (txHash: string, chainName: string) => string;
+  /** Optional callback for step progress updates (for history tracking) */
+  onStepProgress?: (step: SimpleBridgeStep) => void;
 }
 
 /**
@@ -360,11 +362,13 @@ export async function executeBaseToNativeStep2(
     updateBridgeState,
     addTransaction,
     getExplorerUrl,
+    onStepProgress,
   } = params;
 
   const amountRems = toNano(amount.trim());
 
   updateBridgeState({ step: SimpleBridgeStep.STEP_2_PREPARING });
+  onStepProgress?.(SimpleBridgeStep.STEP_2_PREPARING);
   addTransaction({
     step: 2,
     status: "STARTING",
@@ -383,6 +387,7 @@ export async function executeBaseToNativeStep2(
 
   if (actualChainId !== torusEvmChainId) {
     updateBridgeState({ step: SimpleBridgeStep.STEP_2_SWITCHING });
+    onStepProgress?.(SimpleBridgeStep.STEP_2_SWITCHING);
     addTransaction({
       step: 2,
       status: "STARTING",
@@ -428,6 +433,7 @@ export async function executeBaseToNativeStep2(
   }
 
   updateBridgeState({ step: SimpleBridgeStep.STEP_2_SIGNING });
+  onStepProgress?.(SimpleBridgeStep.STEP_2_SIGNING);
 
   const torusEvmChain = wagmiConfig.chains.find(
     (c) => c.id === torusEvmChainId,
@@ -487,6 +493,7 @@ export async function executeBaseToNativeStep2(
   }
 
   updateBridgeState({ step: SimpleBridgeStep.STEP_2_CONFIRMING });
+  onStepProgress?.(SimpleBridgeStep.STEP_2_CONFIRMING);
 
   const [receiptError] = await tryAsync(
     waitForTransactionReceipt(wagmiConfig, {
@@ -539,4 +546,5 @@ export async function executeBaseToNativeStep2(
   });
 
   updateBridgeState({ step: SimpleBridgeStep.COMPLETE });
+  onStepProgress?.(SimpleBridgeStep.COMPLETE);
 }

@@ -386,6 +386,8 @@ interface NativeToBaseStep2Params {
   addTransaction: (tx: SimpleBridgeTransaction) => void;
   /** Function to generate blockchain explorer URLs */
   getExplorerUrl: (txHash: string, chainName: string) => string;
+  /** Optional callback for step progress updates (for history tracking) */
+  onStepProgress?: (step: SimpleBridgeStep) => void;
 }
 
 /**
@@ -415,6 +417,7 @@ export async function executeNativeToBaseStep2(
     updateBridgeState,
     addTransaction,
     getExplorerUrl,
+    onStepProgress,
   } = params;
 
   // Get the correct token index for the Torus chain dynamically
@@ -426,6 +429,7 @@ export async function executeNativeToBaseStep2(
   }
 
   updateBridgeState({ step: SimpleBridgeStep.STEP_2_PREPARING });
+  onStepProgress?.(SimpleBridgeStep.STEP_2_PREPARING);
   addTransaction({
     step: 2,
     status: "STARTING",
@@ -437,6 +441,7 @@ export async function executeNativeToBaseStep2(
 
   if (actualChainId !== torusEvmChainId) {
     updateBridgeState({ step: SimpleBridgeStep.STEP_2_SWITCHING });
+    onStepProgress?.(SimpleBridgeStep.STEP_2_SWITCHING);
     addTransaction({
       step: 2,
       status: "STARTING",
@@ -481,6 +486,7 @@ export async function executeNativeToBaseStep2(
   }
 
   updateBridgeState({ step: SimpleBridgeStep.STEP_2_SIGNING });
+  onStepProgress?.(SimpleBridgeStep.STEP_2_SIGNING);
   addTransaction({
     step: 2,
     status: "SIGNING",
@@ -590,6 +596,7 @@ export async function executeNativeToBaseStep2(
   }
 
   updateBridgeState({ step: SimpleBridgeStep.STEP_2_CONFIRMING });
+  onStepProgress?.(SimpleBridgeStep.STEP_2_CONFIRMING);
 
   // Use anyChange mode because Torus EVM fees make the exact amount unpredictable
   const pollingResult = await pollEvmBalance(
@@ -624,6 +631,7 @@ export async function executeNativeToBaseStep2(
   await refetchTorusEvmBalance();
 
   updateBridgeState({ step: SimpleBridgeStep.COMPLETE });
+  onStepProgress?.(SimpleBridgeStep.COMPLETE);
 
   addTransaction({
     step: 2,
