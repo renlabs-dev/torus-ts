@@ -509,6 +509,17 @@ export class PredictionVerifier {
           notExists(
             tx
               .select()
+              .from(predictionDuplicateRelationsSchema)
+              .where(
+                eq(
+                  predictionDuplicateRelationsSchema.predictionId,
+                  parsedPredictionSchema.id,
+                ),
+              ),
+          ),
+          notExists(
+            tx
+              .select()
               .from(twitterScrapingJobsSchema)
               .where(
                 eq(
@@ -1258,6 +1269,10 @@ export class PredictionVerifier {
       tweetIds: tweets.map((t) => t.id.toString()).join(","),
     });
 
+    const tweetMap = new Map(tweets.map((t) => [t.id, t]));
+    const target = prediction.target as PostSlice[];
+    const timeframe = prediction.timeframe as PostSlice[];
+
     const tweetIds = tweets.map((t) => t.id);
     const predictionsInTree = await this.fetchPredictionsForTweets(
       tx,
@@ -1270,10 +1285,35 @@ export class PredictionVerifier {
     );
 
     if (duplicateResult) {
+      const canonical = predictionsInTree.find(
+        (p) => p.id === duplicateResult.canonicalId,
+      );
+
+      const currentTargetText = this.extractSliceText(target, tweetMap);
+      const currentTimeframeText = this.extractSliceText(timeframe, tweetMap);
+      const canonicalTargetText = canonical
+        ? this.extractSliceText(canonical.target, tweetMap)
+        : "<not found>";
+      const canonicalTimeframeText = canonical
+        ? this.extractSliceText(canonical.timeframe, tweetMap)
+        : "<not found>";
+
       logInfo("Prediction is a duplicate, skipping verification", {
         predictionId: prediction.id,
         canonicalId: duplicateResult.canonicalId,
         similarityScore: duplicateResult.similarityScore.toFixed(4),
+      });
+      logInfo("Duplicate comparison - Current target", {
+        text: currentTargetText,
+      });
+      logInfo("Duplicate comparison - Canonical target", {
+        text: canonicalTargetText,
+      });
+      logInfo("Duplicate comparison - Current timeframe", {
+        text: currentTimeframeText,
+      });
+      logInfo("Duplicate comparison - Canonical timeframe", {
+        text: canonicalTimeframeText,
       });
 
       await tx
@@ -1287,10 +1327,6 @@ export class PredictionVerifier {
 
       return true;
     }
-
-    const tweetMap = new Map(tweets.map((t) => [t.id, t]));
-    const target = prediction.target as PostSlice[];
-    const timeframe = prediction.timeframe as PostSlice[];
 
     const targetValidation = this.validatePostSlices(
       target,

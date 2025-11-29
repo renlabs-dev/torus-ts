@@ -11,7 +11,7 @@ import {
   predictionDuplicateRelationsSchema,
   scrapedTweetSchema,
 } from "@torus-ts/db/schema";
-import { eq, notExists, sql } from "drizzle-orm";
+import { and, eq, gt, isNotNull, isNull, max, or, sql } from "drizzle-orm";
 import type { ParsedPredictionForDedup } from "./verifier.js";
 import { comparePredictions } from "./verifier.js";
 
@@ -168,7 +168,14 @@ async function processConversation(
       predictionsProcessed: predictions.length,
       duplicatesFound: relations.length,
     })
-    .onConflictDoNothing();
+    .onConflictDoUpdate({
+      target: deduplicationProcessedConversationsSchema.conversationId,
+      set: {
+        predictionsProcessed: predictions.length,
+        duplicatesFound: relations.length,
+        updatedAt: new Date(),
+      },
+    });
 
   return {
     predictionsProcessed: predictions.length,
@@ -182,28 +189,72 @@ async function main() {
 
   const db = createDb();
 
-  console.log("Fetching unprocessed conversations...\n");
+  // Get the global cutoff - max updatedAt from deduplication table.
+  // Conversations with all predictions before this were already processed.
+  const cutoffResult = await db
+    .select({
+      maxUpdatedAt: max(deduplicationProcessedConversationsSchema.updatedAt),
+    })
+    .from(deduplicationProcessedConversationsSchema);
+  const globalCutoff = cutoffResult[0]?.maxUpdatedAt;
 
+  if (globalCutoff) {
+    console.log(`Global cutoff: ${globalCutoff.toISOString()}`);
+  } else {
+    console.log(
+      "No previous deduplication records found, processing all conversations",
+    );
+  }
+
+  console.log("Fetching conversations with new predictions...\n");
+
+  // Find conversations that have predictions newer than:
+  // - Their deduplication record's createdAt (if exists)
+  // - The global cutoff (if no dedup record exists)
   const conversations = await db
-    .selectDistinct({ conversationId: scrapedTweetSchema.conversationId })
+    .selectDistinct({
+      conversationId: scrapedTweetSchema.conversationId,
+    })
     .from(scrapedTweetSchema)
+    .innerJoin(
+      parsedPredictionSchema,
+      eq(scrapedTweetSchema.predictionId, parsedPredictionSchema.predictionId),
+    )
+    .leftJoin(
+      deduplicationProcessedConversationsSchema,
+      eq(
+        scrapedTweetSchema.conversationId,
+        deduplicationProcessedConversationsSchema.conversationId,
+      ),
+    )
     .where(
-      sql`${scrapedTweetSchema.predictionId} IS NOT NULL
-        AND ${notExists(
-          db
-            .select({ id: sql`1` })
-            .from(deduplicationProcessedConversationsSchema)
-            .where(
-              eq(
-                deduplicationProcessedConversationsSchema.conversationId,
-                scrapedTweetSchema.conversationId,
-              ),
+      and(
+        isNotNull(scrapedTweetSchema.predictionId),
+        isNotNull(scrapedTweetSchema.conversationId),
+        or(
+          // Conversation has dedup record but has newer predictions
+          and(
+            isNotNull(deduplicationProcessedConversationsSchema.updatedAt),
+            gt(
+              parsedPredictionSchema.createdAt,
+              deduplicationProcessedConversationsSchema.updatedAt,
             ),
-        )}`,
+          ),
+          // No dedup record and (no cutoff OR prediction is newer than cutoff)
+          and(
+            isNull(deduplicationProcessedConversationsSchema.updatedAt),
+            globalCutoff
+              ? gt(parsedPredictionSchema.createdAt, globalCutoff)
+              : sql`true`,
+          ),
+        ),
+      ),
     );
 
   globalStats.totalConversations = conversations.length;
-  console.log(`Found ${conversations.length} unprocessed conversations\n`);
+  console.log(
+    `Found ${conversations.length} conversations with new predictions\n`,
+  );
 
   if (conversations.length === 0) {
     console.log("Nothing to process!");
