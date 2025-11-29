@@ -215,10 +215,10 @@ export function RegisterCapabilityForm({
             title="Capability Creation Fee"
             isVisible={Boolean(
               isAccountConnected &&
-                selectedPrefix &&
-                fullPath.trim().length > 0 &&
-                !isPending &&
-                !isSigning,
+              selectedPrefix &&
+              fullPath.trim().length > 0 &&
+              !isPending &&
+              !isSigning,
             )}
             isLoading={namespaceFee.isLoading}
             error={namespaceFee.error}

@@ -723,11 +723,10 @@ export interface ExtrinsicTrackerEvents {
  * });
  * ```
  */
-export interface ExtrinsicTracker
-  extends Pick<
-    Emittery<ExtrinsicTrackerEvents>,
-    "on" | "off" | "once" | "events"
-  > {
+export interface ExtrinsicTracker extends Pick<
+  Emittery<ExtrinsicTrackerEvents>,
+  "on" | "off" | "once" | "events"
+> {
   /** Raw event emitter for advanced use cases */
   emitter: Emittery<ExtrinsicTrackerEvents>;
 
