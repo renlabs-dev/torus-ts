@@ -164,7 +164,7 @@ export function TransactionHistoryItem({
           </div>
         </div>
 
-        <TooltipProvider delayDuration={5000}>
+        <TooltipProvider delayDuration={500}>
           <div className="flex gap-2">
             {(transaction.status === "pending" ||
               transaction.status === "step1_complete") && (

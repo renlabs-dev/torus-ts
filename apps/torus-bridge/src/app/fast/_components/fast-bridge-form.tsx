@@ -582,7 +582,7 @@ export function FastBridgeForm() {
     <div className="mx-auto w-full space-y-6">
       <div className="-mt-[3.5rem] flex items-center justify-end">
         <div className="flex gap-2">
-          <TooltipProvider>
+          <TooltipProvider delayDuration={500}>
             <Tooltip>
               <TooltipTrigger asChild>
                 <span

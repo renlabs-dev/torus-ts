@@ -134,7 +134,7 @@ export function TransactionHistoryDialog({
               </DialogDescription>
             </div>
             <Tooltip
-              delayDuration={700}
+              delayDuration={500}
               open={tooltipEnabled ? undefined : false}
             >
               <TooltipTrigger asChild>
