@@ -22,6 +22,7 @@ import {
   ChevronDown,
   ChevronUp,
   ExternalLink,
+  Play,
   RotateCw,
   Trash2,
   Zap,
@@ -165,6 +166,20 @@ export function TransactionHistoryItem({
 
         <TooltipProvider delayDuration={5000}>
           <div className="flex gap-2">
+            {(transaction.status === "pending" ||
+              transaction.status === "step1_complete") && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button size="sm" variant="outline" onClick={handleContinue}>
+                    <Play className="mr-2 h-4 w-4" />
+                    Resume
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent side="top">
+                  <p className="text-xs">Resume this pending transaction</p>
+                </TooltipContent>
+              </Tooltip>
+            )}
             {transaction.status === "error" && (
               <Tooltip>
                 <TooltipTrigger asChild>
