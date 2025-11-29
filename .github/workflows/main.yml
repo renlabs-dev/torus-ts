@@ -249,7 +249,8 @@ jobs:
 
   deployment-summary:
     if: always()
-    needs: [find-deployments, deploy, dry-run, pr-preview-deploy, pr-preview-cleanup]
+    needs:
+      [find-deployments, deploy, dry-run, pr-preview-deploy, pr-preview-cleanup]
     runs-on: ubicloud-standard-2
     steps:
       - name: Generate deployment summary

@@ -5,7 +5,7 @@ This document defines the JSDoc documentation standards for the Torus TypeScript
 ## General Principles
 
 1. **Avoid Redundancy**: Don't document what TypeScript already makes clear
-2. **Focus on Intent**: Explain *why* and *how*, not just *what*
+2. **Focus on Intent**: Explain _why_ and _how_, not just _what_
 3. **Practical Examples**: Show real-world usage patterns
 4. **Consistency**: Follow the same patterns across all packages
 
@@ -41,34 +41,34 @@ static from(errors: Error[]): ErrorArray
  * @param syncOperation - A synchronous function that might throw
  * @returns A tuple with [error or undefined, data or undefined]
  */
-export function trySync<T>(syncOperation: () => T): Result<T, Error>
+export function trySync<T>(syncOperation: () => T): Result<T, Error>;
 ```
 
 ### Classes
 
 Focus on purpose, behavior, and usage patterns:
 
-```ts
+````ts
 /**
  * A class that aggregates multiple errors into a single error-like object.
- * 
+ *
  * Extends Array<Error> and implements the Error interface, allowing it to be
  * used both as a collection of errors and as a single error object.
- * 
+ *
  * @example
  * ```ts
  * const errors = [new Error('Field A invalid'), new Error('Field B required')];
  * const errorArray = new ErrorArray(errors);
- * 
+ *
  * // Use as Error
  * throw errorArray; // Works like any Error
- * 
+ *
  * // Use as Array
  * errorArray.forEach(err => console.log(err.message));
  * ```
  */
 export class ErrorArray extends Array<Error> implements MultiError {
-```
+````
 
 ### Types and Interfaces
 
@@ -86,7 +86,7 @@ export type MultiError = Error & Error[];
 interface ErrorArrayConfig {
   /** Override the default combined message */
   message?: string;
-  /** Override the default combined name */  
+  /** Override the default combined name */
   name?: string;
 }
 ```
@@ -95,7 +95,7 @@ interface ErrorArrayConfig {
 
 Focus on behavior and usage. Skip redundant return type documentation:
 
-```ts
+````ts
 // ✅ Good - focuses on what it does and when to use it
 /**
  * Type guard to check if a value is an instance of Error.
@@ -107,7 +107,7 @@ Focus on behavior and usage. Skip redundant return type documentation:
  * }
  * ```
  */
-export function isError(error: unknown): error is Error
+export function isError(error: unknown): error is Error;
 
 // ❌ Avoid - redundant return documentation
 /**
@@ -115,30 +115,30 @@ export function isError(error: unknown): error is Error
  * @param error - The value to check
  * @returns True if the value is an Error instance, false otherwise
  */
-export function isError(error: unknown): error is Error
-```
+export function isError(error: unknown): error is Error;
+````
 
 For complex functions, explain non-obvious behavior:
 
-```ts
+````ts
 /**
  * Ensures that the provided value is converted to an Error object.
- * 
+ *
  * If the input is already an Error, returns it unchanged. Otherwise, attempts
  * to create a new Error with a stringified version of the input.
- * 
+ *
  * @param maybeError - The value to convert to an Error
  * @example
  * ```ts
  * // Returns original error
  * ensureError(new Error('test')); // Error: test
- * 
- * // Converts object to Error  
+ *
+ * // Converts object to Error
  * ensureError({ message: 'test' }); // Error: {"message":"test"}
  * ```
  */
-export function ensureError(maybeError: unknown): Error
-```
+export function ensureError(maybeError: unknown): Error;
+````
 
 ## Best Practices
 

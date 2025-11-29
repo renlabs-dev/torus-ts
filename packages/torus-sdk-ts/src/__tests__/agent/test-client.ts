@@ -18,7 +18,10 @@ async function testHelloEndpoint() {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
 
-    const result = await response.json() as { message: string; timestamp: string };
+    const result = (await response.json()) as {
+      message: string;
+      timestamp: string;
+    };
     console.log("✅ Success:", result);
     return result;
   } catch (error) {
