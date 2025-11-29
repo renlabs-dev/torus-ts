@@ -103,6 +103,7 @@ export function FastBridgeForm() {
     setCurrentTransactionId,
     executeEvmToNative,
     executeEvmToBase,
+    resumeStep1Polling,
   } = useOrchestratedTransfer();
 
   const {
@@ -347,10 +348,18 @@ export function FastBridgeForm() {
 
       // Add step 1 if we have the hash OR if error happened at step 1
       if (transaction.step1TxHash || transaction.errorStep === 1) {
+        // Determine step 1 status based on current step
+        const isStep1Confirming =
+          transaction.currentStep === SimpleBridgeStep.STEP_1_CONFIRMING;
         restoredTransactions.push({
           step: 1,
           txHash: transaction.step1TxHash,
-          status: transaction.errorStep === 1 ? "ERROR" : "SUCCESS",
+          status:
+            transaction.errorStep === 1
+              ? "ERROR"
+              : isStep1Confirming
+                ? "CONFIRMING"
+                : "SUCCESS",
           chainName:
             transaction.direction === "base-to-native"
               ? "Base"
@@ -366,7 +375,9 @@ export function FastBridgeForm() {
           message:
             transaction.errorStep === 1
               ? transaction.errorMessage
-              : "Transaction confirmed",
+              : isStep1Confirming
+                ? "Waiting for confirmation..."
+                : "Transaction confirmed",
           errorDetails:
             transaction.errorStep === 1 ? transaction.errorMessage : undefined,
         });
@@ -407,8 +418,27 @@ export function FastBridgeForm() {
       );
       console.log("[Retry from History] Opening transaction dialog");
 
-      // Open dialog showing the error state
+      // Open dialog showing the current state
       setShowTransactionDialog(true);
+
+      // If at STEP_1_CONFIRMING, resume polling for balance confirmation
+      if (transaction.currentStep === SimpleBridgeStep.STEP_1_CONFIRMING) {
+        console.log("[F5 Recovery] Resuming step 1 polling...");
+        void resumeStep1Polling(
+          transaction,
+          () => {
+            console.log("[F5 Recovery] Step 1 polling complete");
+            // After step 1 completes, proceed to step 2 would be handled by user action (retry)
+          },
+          (error) => {
+            console.error("[F5 Recovery] Step 1 polling failed:", error);
+            updateBridgeState({
+              step: SimpleBridgeStep.ERROR,
+              errorMessage: error.message,
+            });
+          },
+        );
+      }
     },
     [
       getExplorerUrl,
@@ -416,6 +446,7 @@ export function FastBridgeForm() {
       setTransactionInUrl,
       updateBridgeState,
       setCurrentTransactionId,
+      resumeStep1Polling,
     ],
   );
 

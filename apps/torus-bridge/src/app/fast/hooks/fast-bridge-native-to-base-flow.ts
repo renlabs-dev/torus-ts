@@ -58,8 +58,6 @@ interface NativeToBaseStep1Params {
     status: string;
     data?: { value: bigint };
   }>;
-  /** Optional current Torus EVM balance with value as bigint, undefined if not loaded */
-  torusEvmBalance?: { value: bigint };
   /** Function to refetch Native balance from the network, returns status and optional balance data */
   refetchNativeBalance: () => Promise<{
     status: string;
@@ -75,7 +73,7 @@ interface NativeToBaseStep1Params {
   /** Function to generate blockchain explorer URLs */
   getExplorerUrl: (txHash: string, chainName: string) => string;
   /** Optional callback when transaction enters confirming state (for history/URL update) */
-  onTransactionConfirming?: (txHash: string) => void;
+  onTransactionConfirming?: (txHash: string, baselineBalance: bigint) => void;
 }
 
 /**
@@ -114,7 +112,7 @@ async function trackSubstrateTransaction(
   }) => void,
   addTransaction: (tx: SimpleBridgeTransaction) => void,
   getExplorerUrl: (txHash: string, chainName: string) => string,
-  onTransactionConfirming?: (txHash: string) => void,
+  onTransactionConfirming?: (txHash: string, baselineBalance: bigint) => void,
 ): Promise<void> {
   const abortController = new AbortController();
   let capturedTxHash: string | undefined;
@@ -199,7 +197,7 @@ async function trackSubstrateTransaction(
         if (hash && !capturedTxHash) {
           capturedTxHash = hash;
           // Notify that transaction is now confirming (for history/URL update)
-          onTransactionConfirming?.(hash);
+          onTransactionConfirming?.(hash, baselineBalance);
         }
       }
     };

@@ -59,8 +59,6 @@ interface BaseToNativeStep1Params {
     status: string;
     data?: { value: bigint };
   }>;
-  /** Optional current Torus EVM balance with value as bigint, undefined if not loaded */
-  torusEvmBalance?: { value: bigint };
   /** Function to refetch Base balance from the network */
   refetchBaseBalance: () => Promise<{
     status: string;
@@ -76,7 +74,7 @@ interface BaseToNativeStep1Params {
   /** Function to generate blockchain explorer URLs for transaction hashes */
   getExplorerUrl: (txHash: string, chainName: string) => string;
   /** Optional callback when transaction enters confirming state (for history/URL update) */
-  onTransactionConfirming?: (txHash: string) => void;
+  onTransactionConfirming?: (txHash: string, baselineBalance: bigint) => void;
 }
 
 /**
@@ -129,7 +127,6 @@ export async function executeBaseToNativeStep1(
     triggerHyperlaneTransfer,
     warpCore,
     refetchTorusEvmBalance,
-    torusEvmBalance,
     refetchBaseBalance,
     updateBridgeState,
     addTransaction,
@@ -189,8 +186,8 @@ export async function executeBaseToNativeStep1(
   });
 
   // Capture baseline balance BEFORE sending transaction
-  await refetchTorusEvmBalance();
-  const baselineBalance = torusEvmBalance?.value ?? 0n;
+  const refetchResult = await refetchTorusEvmBalance();
+  const baselineBalance = refetchResult.data?.value ?? 0n;
   const expectedIncrease = toNano(amount.trim());
 
   // Get the correct token index for the Base chain dynamically
@@ -244,7 +241,7 @@ export async function executeBaseToNativeStep1(
 
   // Notify that transaction is now confirming (for history/URL update)
   if (step1TxHash && typeof step1TxHash === "string") {
-    onTransactionConfirming?.(step1TxHash);
+    onTransactionConfirming?.(step1TxHash, baselineBalance);
   }
 
   const pollingResult = await pollEvmBalance(

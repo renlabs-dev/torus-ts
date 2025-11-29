@@ -2,6 +2,7 @@
 
 import { useAccounts } from "@hyperlane-xyz/widgets";
 import type { SS58Address } from "@torus-network/sdk/types";
+import { toNano } from "@torus-network/torus-utils/torus/token";
 import { tryAsync } from "@torus-network/torus-utils/try-catch";
 import { useFreeBalance } from "@torus-ts/query-provider/hooks";
 import { useTorus } from "@torus-ts/torus-provider";
@@ -35,6 +36,7 @@ import {
   executeNativeToBaseStep1,
   executeNativeToBaseStep2,
 } from "./fast-bridge-native-to-base-flow";
+import { pollEvmBalance } from "./fast-bridge-polling";
 import { useSimpleBridgeSharedState } from "./use-fast-bridge-shared-state";
 import { useFastBridgeTransactionHistory } from "./use-fast-bridge-transaction-history";
 
@@ -146,7 +148,7 @@ export function useOrchestratedTransfer() {
   );
 
   const _torusEvmClient = useClient({ chainId: torusEvmChainId });
-  const { data: torusEvmBalance, refetch: _refetchTorusEvmBalance } =
+  const { data: _torusEvmBalance, refetch: _refetchTorusEvmBalance } =
     useBalance({
       address: evmAddress,
       chainId: torusEvmChainId,
@@ -237,12 +239,11 @@ export function useOrchestratedTransfer() {
           triggerHyperlaneTransfer,
           warpCore,
           refetchTorusEvmBalance,
-          torusEvmBalance,
           refetchBaseBalance,
           updateBridgeState,
           addTransaction,
           getExplorerUrl,
-          onTransactionConfirming: (txHash) => {
+          onTransactionConfirming: (txHash, baselineBalance) => {
             // Create history entry when transaction is signed and submitted
             const newTransactionId = addToHistory({
               direction: "base-to-native",
@@ -253,6 +254,7 @@ export function useOrchestratedTransfer() {
               baseAddress: evmAddress,
               nativeAddress: selectedAccount.address,
               canRetry: true,
+              step1BaselineBalance: baselineBalance.toString(),
             });
             currentTransactionIdRef.current = newTransactionId;
 
@@ -376,7 +378,6 @@ export function useOrchestratedTransfer() {
       addTransaction,
       getExplorerUrl,
       toast,
-      torusEvmBalance,
       switchChainAsync,
       torusEvmChainId,
       transactions,
@@ -400,12 +401,11 @@ export function useOrchestratedTransfer() {
           api,
           sendTx,
           refetchTorusEvmBalance,
-          torusEvmBalance,
           refetchNativeBalance,
           updateBridgeState,
           addTransaction,
           getExplorerUrl,
-          onTransactionConfirming: (txHash) => {
+          onTransactionConfirming: (txHash, baselineBalance) => {
             // Create history entry when transaction is signed and submitted
             const newTransactionId = addToHistory({
               direction: "native-to-base",
@@ -416,6 +416,7 @@ export function useOrchestratedTransfer() {
               baseAddress: evmAddress,
               nativeAddress: selectedAccount.address,
               canRetry: true,
+              step1BaselineBalance: baselineBalance.toString(),
             });
             currentTransactionIdRef.current = newTransactionId;
 
@@ -534,7 +535,6 @@ export function useOrchestratedTransfer() {
       triggerHyperlaneTransfer,
       refetchTorusEvmBalance,
       refetchNativeBalance,
-      torusEvmBalance,
       updateBridgeState,
       addTransaction,
       toast,
@@ -853,6 +853,113 @@ export function useOrchestratedTransfer() {
     currentTransactionIdRef.current = id;
   }, []);
 
+  // Resume step 1 polling on F5 recovery when at STEP_1_CONFIRMING
+  const resumeStep1Polling = useCallback(
+    async (
+      transaction: {
+        direction: SimpleBridgeDirection;
+        amount: string;
+        step1BaselineBalance?: string;
+      },
+      onComplete: () => void,
+      onError: (error: Error) => void,
+    ) => {
+      const { direction, amount, step1BaselineBalance } = transaction;
+
+      // Parse baseline balance from history (stored as string)
+      const baselineBalance = step1BaselineBalance
+        ? BigInt(step1BaselineBalance)
+        : 0n;
+      const expectedIncrease = toNano(amount.trim());
+
+      if (direction === "base-to-native") {
+        // Polling for Torus EVM balance (destination for base-to-native step 1)
+        const pollingResult = await pollEvmBalance(
+          refetchTorusEvmBalance,
+          baselineBalance,
+          expectedIncrease,
+          "Base → Torus EVM (F5 recovery)",
+        );
+
+        if (!pollingResult.success) {
+          onError(
+            new Error(
+              pollingResult.errorMessage ?? "Transfer confirmation failed",
+            ),
+          );
+          return;
+        }
+
+        // Refetch Base balance to reflect the debit
+        await refetchBaseBalance();
+
+        updateBridgeState({ step: SimpleBridgeStep.STEP_1_COMPLETE });
+        addTransaction({
+          step: 1,
+          status: "SUCCESS",
+          chainName: "Base",
+          message: "Transfer complete (F5 recovery)",
+        });
+
+        // Update history to step1_complete
+        if (currentTransactionIdRef.current) {
+          updateHistoryTransaction(currentTransactionIdRef.current, {
+            status: "step1_complete",
+            currentStep: SimpleBridgeStep.STEP_1_COMPLETE,
+          });
+        }
+
+        onComplete();
+      } else {
+        // Polling for Torus EVM balance (destination for native-to-base step 1)
+        const pollingResult = await pollEvmBalance(
+          refetchTorusEvmBalance,
+          baselineBalance,
+          expectedIncrease,
+          "Native → Torus EVM (F5 recovery)",
+        );
+
+        if (!pollingResult.success) {
+          onError(
+            new Error(
+              pollingResult.errorMessage ?? "Transfer confirmation failed",
+            ),
+          );
+          return;
+        }
+
+        // Refetch Native balance to reflect the debit
+        await refetchNativeBalance();
+
+        updateBridgeState({ step: SimpleBridgeStep.STEP_1_COMPLETE });
+        addTransaction({
+          step: 1,
+          status: "SUCCESS",
+          chainName: "Torus Native",
+          message: "Bridge complete (F5 recovery)",
+        });
+
+        // Update history to step1_complete
+        if (currentTransactionIdRef.current) {
+          updateHistoryTransaction(currentTransactionIdRef.current, {
+            status: "step1_complete",
+            currentStep: SimpleBridgeStep.STEP_1_COMPLETE,
+          });
+        }
+
+        onComplete();
+      }
+    },
+    [
+      refetchTorusEvmBalance,
+      refetchBaseBalance,
+      refetchNativeBalance,
+      updateBridgeState,
+      addTransaction,
+      updateHistoryTransaction,
+    ],
+  );
+
   return {
     bridgeState,
     transactions,
@@ -870,5 +977,7 @@ export function useOrchestratedTransfer() {
     // Expose Step 2 functions for Quick Send from EVM
     executeEvmToNative: executeQuickSendToNative,
     executeEvmToBase: executeQuickSendToBase,
+    // Expose for F5 recovery
+    resumeStep1Polling,
   };
 }
