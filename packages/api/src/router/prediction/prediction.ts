@@ -34,7 +34,7 @@ export interface VerdictContext {
   feedback: string;
 }
 
-interface RawPrediction {
+export interface RawPrediction {
   predictionId: string;
   parsedId: string;
   target: PostSlice[];

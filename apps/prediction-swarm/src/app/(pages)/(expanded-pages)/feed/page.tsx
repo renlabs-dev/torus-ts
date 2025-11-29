@@ -1,5 +1,6 @@
 "use client";
 
+import { useTorus } from "@torus-ts/torus-provider";
 import { Card, CardContent, CardHeader } from "@torus-ts/ui/components/card";
 import {
   Pagination,
@@ -14,17 +15,28 @@ import {
   TabsList,
   TabsTrigger,
 } from "@torus-ts/ui/components/tabs";
+import { cn } from "@torus-ts/ui/lib/utils";
 import { FilterDialog } from "~/app/_components/filter-dialog";
 import { PageHeader } from "~/app/_components/page-header";
 import { FeedLegend } from "~/app/_components/user-profile/feed-legend";
 import { ProfileFeed } from "~/app/_components/user-profile/profile-feed";
 import { api } from "~/trpc/react";
+import { Eye, Globe } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
+
+type FeedView = "all" | "watched";
 
 export default function FeedPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const limit = 30;
+
+  const { selectedAccount } = useTorus();
+  const isConnected = !!selectedAccount?.address;
+
+  // Get current view from URL (default to "all")
+  const viewParam = searchParams.get("view");
+  const view: FeedView = viewParam === "watched" ? "watched" : "all";
 
   const ongoingPage = parseInt(searchParams.get("ongoing") ?? "1");
   const truePage = parseInt(searchParams.get("true") ?? "1");
@@ -36,39 +48,116 @@ export default function FeedPage() {
   const topicIds =
     searchParams.get("topics")?.split(",").filter(Boolean) ?? undefined;
 
-  // Get total counts
-  const { data: counts } = api.prediction.getFeedCounts.useQuery();
+  // Check if user has any watched users
+  const { data: watchedCount } = api.watch.getWatchedCount.useQuery(undefined, {
+    enabled: isConnected,
+  });
 
-  // Fetch predictions separately per verdict status
-  const { data: ongoingPredictions, isLoading: ongoingLoading } =
-    api.prediction.getFeedByVerdict.useQuery({
-      verdictStatus: "ongoing",
-      limit,
-      offset: (ongoingPage - 1) * limit,
-      dateFrom,
-      dateTo,
-      topicIds,
-    });
+  const canUseWatched = isConnected && (watchedCount ?? 0) > 0;
 
-  const { data: truePredictions, isLoading: trueLoading } =
-    api.prediction.getFeedByVerdict.useQuery({
-      verdictStatus: "true",
-      limit,
-      offset: (truePage - 1) * limit,
-      dateFrom,
-      dateTo,
-      topicIds,
-    });
+  // === ALL FEED QUERIES ===
+  const { data: allCounts } = api.prediction.getFeedCounts.useQuery(undefined, {
+    enabled: view === "all",
+  });
 
-  const { data: falsePredictions, isLoading: falseLoading } =
-    api.prediction.getFeedByVerdict.useQuery({
-      verdictStatus: "false",
-      limit,
-      offset: (falsePage - 1) * limit,
-      dateFrom,
-      dateTo,
-      topicIds,
-    });
+  const { data: allOngoingPredictions, isLoading: allOngoingLoading } =
+    api.prediction.getFeedByVerdict.useQuery(
+      {
+        verdictStatus: "ongoing",
+        limit,
+        offset: (ongoingPage - 1) * limit,
+        dateFrom,
+        dateTo,
+        topicIds,
+      },
+      { enabled: view === "all" },
+    );
+
+  const { data: allTruePredictions, isLoading: allTrueLoading } =
+    api.prediction.getFeedByVerdict.useQuery(
+      {
+        verdictStatus: "true",
+        limit,
+        offset: (truePage - 1) * limit,
+        dateFrom,
+        dateTo,
+        topicIds,
+      },
+      { enabled: view === "all" },
+    );
+
+  const { data: allFalsePredictions, isLoading: allFalseLoading } =
+    api.prediction.getFeedByVerdict.useQuery(
+      {
+        verdictStatus: "false",
+        limit,
+        offset: (falsePage - 1) * limit,
+        dateFrom,
+        dateTo,
+        topicIds,
+      },
+      { enabled: view === "all" },
+    );
+
+  // === WATCHED FEED QUERIES ===
+  const { data: watchedCounts } = api.watch.getWatchingFeedCounts.useQuery(
+    undefined,
+    {
+      enabled: view === "watched" && isConnected,
+    },
+  );
+
+  const { data: watchedOngoingPredictions, isLoading: watchedOngoingLoading } =
+    api.watch.getWatchingFeedByVerdict.useQuery(
+      {
+        verdictStatus: "ongoing",
+        limit,
+        offset: (ongoingPage - 1) * limit,
+        dateFrom,
+        dateTo,
+        topicIds,
+      },
+      { enabled: view === "watched" && isConnected },
+    );
+
+  const { data: watchedTruePredictions, isLoading: watchedTrueLoading } =
+    api.watch.getWatchingFeedByVerdict.useQuery(
+      {
+        verdictStatus: "true",
+        limit,
+        offset: (truePage - 1) * limit,
+        dateFrom,
+        dateTo,
+        topicIds,
+      },
+      { enabled: view === "watched" && isConnected },
+    );
+
+  const { data: watchedFalsePredictions, isLoading: watchedFalseLoading } =
+    api.watch.getWatchingFeedByVerdict.useQuery(
+      {
+        verdictStatus: "false",
+        limit,
+        offset: (falsePage - 1) * limit,
+        dateFrom,
+        dateTo,
+        topicIds,
+      },
+      { enabled: view === "watched" && isConnected },
+    );
+
+  // Select data based on current view
+  const counts = view === "all" ? allCounts : watchedCounts;
+  const ongoingPredictions =
+    view === "all" ? allOngoingPredictions : watchedOngoingPredictions;
+  const truePredictions =
+    view === "all" ? allTruePredictions : watchedTruePredictions;
+  const falsePredictions =
+    view === "all" ? allFalsePredictions : watchedFalsePredictions;
+  const ongoingLoading =
+    view === "all" ? allOngoingLoading : watchedOngoingLoading;
+  const trueLoading = view === "all" ? allTrueLoading : watchedTrueLoading;
+  const falseLoading = view === "all" ? allFalseLoading : watchedFalseLoading;
 
   // Calculate total pages from counts
   const ongoingTotalPages = Math.ceil((counts?.ongoing ?? 0) / limit);
@@ -81,6 +170,16 @@ export default function FeedPage() {
     router.push(`?${params.toString()}`);
   };
 
+  const setView = (newView: FeedView) => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("view", newView);
+    // Reset pagination when switching views
+    params.set("ongoing", "1");
+    params.set("true", "1");
+    params.set("false", "1");
+    router.push(`?${params.toString()}`);
+  };
+
   return (
     <div className="relative pt-4">
       {/* Vertical borders spanning full height */}
@@ -89,7 +188,11 @@ export default function FeedPage() {
       {/* Header section */}
       <PageHeader
         title="Prediction Feed"
-        description="View predictions from all tracked users"
+        description={
+          view === "watched"
+            ? "View predictions from users you're watching"
+            : "View predictions from all tracked users"
+        }
         children={<FilterDialog />}
       />
 
@@ -99,6 +202,46 @@ export default function FeedPage() {
       {/* Legend */}
       <div className="relative mx-auto max-w-screen-lg px-4">
         <FeedLegend />
+      </div>
+
+      <div className="border-border relative my-4 border-t" />
+
+      <div className="relative mx-auto max-w-screen-lg px-4">
+        <Card className="bg-background/80 plus-corners relative flex backdrop-blur-sm">
+          <button
+            onClick={() => setView("all")}
+            className={cn(
+              "flex w-full items-center gap-2 rounded-t-md px-4 py-2 text-sm font-medium transition-colors",
+              view === "all"
+                ? "bg-accent text-foreground"
+                : "text-muted-foreground hover:text-foreground",
+            )}
+          >
+            <Globe className="h-4 w-4" />
+            All Accounts
+          </button>
+          <button
+            onClick={() => canUseWatched && setView("watched")}
+            disabled={!canUseWatched}
+            className={cn(
+              "flex w-full items-center gap-2 rounded-t-md px-4 py-2 text-sm font-medium transition-colors",
+              !canUseWatched && "cursor-not-allowed opacity-50",
+              view === "watched"
+                ? "bg-accent text-foreground"
+                : "text-muted-foreground hover:text-foreground",
+            )}
+            title={
+              !isConnected
+                ? "Connect wallet to use watched feed"
+                : !canUseWatched
+                  ? "Watch some predictors to use this feature"
+                  : undefined
+            }
+          >
+            <Eye className="h-4 w-4" />
+            Your Watched Accounts
+          </button>
+        </Card>
       </div>
 
       {/* Full-width horizontal border */}
