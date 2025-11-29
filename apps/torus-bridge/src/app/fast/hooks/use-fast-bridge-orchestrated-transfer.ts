@@ -53,10 +53,10 @@ export function useOrchestratedTransfer() {
   const {
     addTransaction: addToHistory,
     updateTransaction: updateHistoryTransaction,
-    deleteTransaction: deleteHistoryTransaction,
   } = useFastBridgeTransactionHistory();
 
   const currentTransactionIdRef = useRef<string | null>(null);
+  const onTransactionCreatedRef = useRef<((txId: string) => void) | null>(null);
 
   const { toast } = useToast();
 
@@ -246,41 +246,35 @@ export function useOrchestratedTransfer() {
       );
 
       if (step1Error !== undefined) {
-        // If user rejected in step 1, delete the history entry (they never signed)
+        // If user rejected in step 1, nothing was signed so no history entry exists
         if (step1Error instanceof UserRejectedError) {
-          if (currentTransactionIdRef.current) {
-            deleteHistoryTransaction(currentTransactionIdRef.current);
-            currentTransactionIdRef.current = null;
-          }
           updateBridgeState({
             step: SimpleBridgeStep.ERROR,
             errorMessage: "Transaction cancelled by user",
           });
           return;
         }
-
-        // Update history on other errors (after user signed but something failed)
-        if (currentTransactionIdRef.current) {
-          updateHistoryTransaction(currentTransactionIdRef.current, {
-            status: "error",
-            currentStep: SimpleBridgeStep.ERROR,
-            errorMessage: step1Error.message,
-            errorStep: 1,
-            canRetry: true,
-          });
-        }
+        // For other step 1 errors, we don't have a history entry yet
+        // (it's created after step 1 succeeds), so just throw
         throw step1Error;
       }
 
-      // Update history after step 1 complete
-      if (currentTransactionIdRef.current) {
-        const step1Tx = transactions.find((tx) => tx.step === 1);
-        updateHistoryTransaction(currentTransactionIdRef.current, {
-          status: "step1_complete",
-          currentStep: SimpleBridgeStep.STEP_2_PREPARING,
-          step1TxHash: step1Tx?.txHash,
-        });
-      }
+      // Create history entry AFTER step 1 is signed and completes successfully
+      const step1Tx = transactions.find((tx) => tx.step === 1);
+      const newTransactionId = addToHistory({
+        direction: "base-to-native",
+        amount,
+        status: "step1_complete",
+        currentStep: SimpleBridgeStep.STEP_2_PREPARING,
+        step1TxHash: step1Tx?.txHash,
+        baseAddress: evmAddress,
+        nativeAddress: selectedAccount.address,
+        canRetry: true,
+      });
+      currentTransactionIdRef.current = newTransactionId;
+
+      // Notify that transaction was created (for URL update / F5 recovery)
+      onTransactionCreatedRef.current?.(newTransactionId);
 
       // Execute step 2
       const [step2Error, __] = await tryAsync(
@@ -364,7 +358,7 @@ export function useOrchestratedTransfer() {
       torusEvmChainId,
       transactions,
       updateHistoryTransaction,
-      deleteHistoryTransaction,
+      addToHistory,
     ],
   );
 
@@ -392,41 +386,35 @@ export function useOrchestratedTransfer() {
       );
 
       if (step1Error !== undefined) {
-        // If user rejected in step 1, delete the history entry (they never signed)
+        // If user rejected in step 1, nothing was signed so no history entry exists
         if (step1Error instanceof UserRejectedError) {
-          if (currentTransactionIdRef.current) {
-            deleteHistoryTransaction(currentTransactionIdRef.current);
-            currentTransactionIdRef.current = null;
-          }
           updateBridgeState({
             step: SimpleBridgeStep.ERROR,
             errorMessage: "Transaction cancelled by user",
           });
           return;
         }
-
-        // Update history on other errors (after user signed but something failed)
-        if (currentTransactionIdRef.current) {
-          updateHistoryTransaction(currentTransactionIdRef.current, {
-            status: "error",
-            currentStep: SimpleBridgeStep.ERROR,
-            errorMessage: step1Error.message,
-            errorStep: 1,
-            canRetry: true,
-          });
-        }
+        // For other step 1 errors, we don't have a history entry yet
+        // (it's created after step 1 succeeds), so just throw
         throw step1Error;
       }
 
-      // Update history after step 1 complete
-      if (currentTransactionIdRef.current) {
-        const step1Tx = transactions.find((tx) => tx.step === 1);
-        updateHistoryTransaction(currentTransactionIdRef.current, {
-          status: "step1_complete",
-          currentStep: SimpleBridgeStep.STEP_2_PREPARING,
-          step1TxHash: step1Tx?.txHash,
-        });
-      }
+      // Create history entry AFTER step 1 is signed and completes successfully
+      const step1Tx = transactions.find((tx) => tx.step === 1);
+      const newTransactionId = addToHistory({
+        direction: "native-to-base",
+        amount,
+        status: "step1_complete",
+        currentStep: SimpleBridgeStep.STEP_2_PREPARING,
+        step1TxHash: step1Tx?.txHash,
+        baseAddress: evmAddress,
+        nativeAddress: selectedAccount.address,
+        canRetry: true,
+      });
+      currentTransactionIdRef.current = newTransactionId;
+
+      // Notify that transaction was created (for URL update / F5 recovery)
+      onTransactionCreatedRef.current?.(newTransactionId);
 
       // Execute step 2
       const [step2Error, __] = await tryAsync(
@@ -514,7 +502,7 @@ export function useOrchestratedTransfer() {
       accounts,
       transactions,
       updateHistoryTransaction,
-      deleteHistoryTransaction,
+      addToHistory,
     ],
   );
 
@@ -681,20 +669,11 @@ export function useOrchestratedTransfer() {
       });
       setTransactions([]);
 
-      // Create history entry
-      const historyId = addToHistory({
-        direction,
-        amount,
-        status: "pending",
-        currentStep: SimpleBridgeStep.STEP_1_PREPARING,
-        canRetry: false,
-        baseAddress: evmAddress,
-        nativeAddress: selectedAccount?.address,
-      });
-      currentTransactionIdRef.current = historyId;
+      // Reset transaction ID - will be set after step 1 completes
+      currentTransactionIdRef.current = null;
 
-      // Set URL state immediately after creating history entry (for F5 recovery)
-      onTransactionCreated?.(historyId);
+      // Store callback for URL update after step 1 completes
+      onTransactionCreatedRef.current = onTransactionCreated ?? null;
 
       try {
         if (direction === "base-to-native") {
@@ -705,6 +684,9 @@ export function useOrchestratedTransfer() {
       } catch {
         // Error handling is done in individual flows
         // Just ensure we keep the transaction ID for retry
+      } finally {
+        // Clear callback reference after transfer completes or fails
+        onTransactionCreatedRef.current = null;
       }
     },
     [
@@ -712,9 +694,6 @@ export function useOrchestratedTransfer() {
       executeNativeToBase,
       updateBridgeState,
       setTransactions,
-      addToHistory,
-      evmAddress,
-      selectedAccount?.address,
     ],
   );
 
