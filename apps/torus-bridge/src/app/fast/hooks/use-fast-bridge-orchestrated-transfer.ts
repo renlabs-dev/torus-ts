@@ -53,6 +53,7 @@ export function useOrchestratedTransfer() {
   const {
     addTransaction: addToHistory,
     updateTransaction: updateHistoryTransaction,
+    deleteTransaction: deleteHistoryTransaction,
   } = useFastBridgeTransactionHistory();
 
   const currentTransactionIdRef = useRef<string | null>(null);
@@ -245,9 +246,21 @@ export function useOrchestratedTransfer() {
       );
 
       if (step1Error !== undefined) {
-        // Update history on error
+        // If user rejected in step 1, delete the history entry (they never signed)
+        if (step1Error instanceof UserRejectedError) {
+          if (currentTransactionIdRef.current) {
+            deleteHistoryTransaction(currentTransactionIdRef.current);
+            currentTransactionIdRef.current = null;
+          }
+          updateBridgeState({
+            step: SimpleBridgeStep.ERROR,
+            errorMessage: "Transaction cancelled by user",
+          });
+          return;
+        }
+
+        // Update history on other errors (after user signed but something failed)
         if (currentTransactionIdRef.current) {
-          const _step1Tx = transactions.find((tx) => tx.step === 1);
           updateHistoryTransaction(currentTransactionIdRef.current, {
             status: "error",
             currentStep: SimpleBridgeStep.ERROR,
@@ -256,24 +269,16 @@ export function useOrchestratedTransfer() {
             canRetry: true,
           });
         }
-        // Stop execution if user rejected the transaction
-        if (step1Error instanceof UserRejectedError) {
-          updateBridgeState({
-            step: SimpleBridgeStep.ERROR,
-            errorMessage: "Transaction cancelled by user",
-          });
-          return;
-        }
         throw step1Error;
       }
 
       // Update history after step 1 complete
       if (currentTransactionIdRef.current) {
-        const _step1Tx = transactions.find((tx) => tx.step === 1);
+        const step1Tx = transactions.find((tx) => tx.step === 1);
         updateHistoryTransaction(currentTransactionIdRef.current, {
           status: "step1_complete",
           currentStep: SimpleBridgeStep.STEP_2_PREPARING,
-          step1TxHash: _step1Tx?.txHash,
+          step1TxHash: step1Tx?.txHash,
         });
       }
 
@@ -359,6 +364,7 @@ export function useOrchestratedTransfer() {
       torusEvmChainId,
       transactions,
       updateHistoryTransaction,
+      deleteHistoryTransaction,
     ],
   );
 
@@ -386,9 +392,21 @@ export function useOrchestratedTransfer() {
       );
 
       if (step1Error !== undefined) {
-        // Update history on error
+        // If user rejected in step 1, delete the history entry (they never signed)
+        if (step1Error instanceof UserRejectedError) {
+          if (currentTransactionIdRef.current) {
+            deleteHistoryTransaction(currentTransactionIdRef.current);
+            currentTransactionIdRef.current = null;
+          }
+          updateBridgeState({
+            step: SimpleBridgeStep.ERROR,
+            errorMessage: "Transaction cancelled by user",
+          });
+          return;
+        }
+
+        // Update history on other errors (after user signed but something failed)
         if (currentTransactionIdRef.current) {
-          const _step1Tx = transactions.find((tx) => tx.step === 1);
           updateHistoryTransaction(currentTransactionIdRef.current, {
             status: "error",
             currentStep: SimpleBridgeStep.ERROR,
@@ -397,24 +415,16 @@ export function useOrchestratedTransfer() {
             canRetry: true,
           });
         }
-        // Stop execution if user rejected the transaction
-        if (step1Error instanceof UserRejectedError) {
-          updateBridgeState({
-            step: SimpleBridgeStep.ERROR,
-            errorMessage: "Transaction cancelled by user",
-          });
-          return;
-        }
         throw step1Error;
       }
 
       // Update history after step 1 complete
       if (currentTransactionIdRef.current) {
-        const _step1Tx = transactions.find((tx) => tx.step === 1);
+        const step1Tx = transactions.find((tx) => tx.step === 1);
         updateHistoryTransaction(currentTransactionIdRef.current, {
           status: "step1_complete",
           currentStep: SimpleBridgeStep.STEP_2_PREPARING,
-          step1TxHash: _step1Tx?.txHash,
+          step1TxHash: step1Tx?.txHash,
         });
       }
 
@@ -504,6 +514,7 @@ export function useOrchestratedTransfer() {
       accounts,
       transactions,
       updateHistoryTransaction,
+      deleteHistoryTransaction,
     ],
   );
 
