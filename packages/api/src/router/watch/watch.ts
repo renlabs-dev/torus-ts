@@ -25,62 +25,7 @@ import { z } from "zod";
 import { authenticatedProcedure, publicProcedure } from "../../trpc";
 import type { TRPCContext } from "../../trpc";
 import type { GroupedTweet, RawPrediction } from "../prediction/prediction";
-
-/**
- * Fetches parent and root tweets for thread context
- */
-async function fetchThreadContext(
-  ctx: TRPCContext,
-  tweetIds: bigint[],
-): Promise<Map<bigint, ParentTweet>> {
-  if (tweetIds.length === 0) return new Map();
-
-  const tweets = await ctx.db
-    .select({
-      tweetId: scrapedTweetSchema.id,
-      tweetText: scrapedTweetSchema.text,
-      tweetDate: scrapedTweetSchema.date,
-      authorId: scrapedTweetSchema.authorId,
-      username: twitterUsersSchema.username,
-      screenName: twitterUsersSchema.screenName,
-      avatarUrl: twitterUsersSchema.avatarUrl,
-    })
-    .from(scrapedTweetSchema)
-    .leftJoin(
-      twitterUsersSchema,
-      eq(twitterUsersSchema.id, scrapedTweetSchema.authorId),
-    )
-    .where(
-      sql`${scrapedTweetSchema.id} IN (${sql.join(
-        tweetIds.map((id) => sql`${id}`),
-        sql`, `,
-      )})`,
-    );
-
-  const result = new Map<bigint, ParentTweet>();
-  tweets.forEach((t) => {
-    result.set(t.tweetId, {
-      tweetId: t.tweetId,
-      tweetText: t.tweetText,
-      tweetDate: t.tweetDate,
-      authorId: t.authorId,
-      username: t.username,
-      screenName: t.screenName,
-      avatarUrl: t.avatarUrl,
-    });
-  });
-  return result;
-}
-
-interface ParentTweet {
-  tweetId: bigint;
-  tweetText: string;
-  tweetDate: Date;
-  authorId: bigint;
-  username: string | null;
-  screenName: string | null;
-  avatarUrl: string | null;
-}
+import { fetchThreadContext } from "../prediction/prediction";
 
 /**
  * Groups raw predictions by tweet ID and includes thread context
