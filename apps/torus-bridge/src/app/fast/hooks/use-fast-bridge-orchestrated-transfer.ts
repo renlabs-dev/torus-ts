@@ -227,7 +227,7 @@ export function useOrchestratedTransfer() {
         throw new Error("Wallets not properly connected");
       }
 
-      // Execute step 1
+      // Execute step 1 with callback for history creation when tx enters confirming state
       const [step1Error, _] = await tryAsync(
         executeBaseToNativeStep1({
           amount,
@@ -242,6 +242,23 @@ export function useOrchestratedTransfer() {
           updateBridgeState,
           addTransaction,
           getExplorerUrl,
+          onTransactionConfirming: (txHash) => {
+            // Create history entry when transaction is signed and submitted
+            const newTransactionId = addToHistory({
+              direction: "base-to-native",
+              amount,
+              status: "pending",
+              currentStep: SimpleBridgeStep.STEP_1_CONFIRMING,
+              step1TxHash: txHash,
+              baseAddress: evmAddress,
+              nativeAddress: selectedAccount.address,
+              canRetry: true,
+            });
+            currentTransactionIdRef.current = newTransactionId;
+
+            // Notify that transaction was created (for URL update / F5 recovery)
+            onTransactionCreatedRef.current?.(newTransactionId);
+          },
         }),
       );
 
@@ -254,27 +271,26 @@ export function useOrchestratedTransfer() {
           });
           return;
         }
-        // For other step 1 errors, we don't have a history entry yet
-        // (it's created after step 1 succeeds), so just throw
+        // If we have a transaction ID, update history with error
+        if (currentTransactionIdRef.current) {
+          updateHistoryTransaction(currentTransactionIdRef.current, {
+            status: "error",
+            currentStep: SimpleBridgeStep.ERROR,
+            errorMessage: step1Error.message,
+            errorStep: 1,
+            canRetry: true,
+          });
+        }
         throw step1Error;
       }
 
-      // Create history entry AFTER step 1 is signed and completes successfully
-      const step1Tx = transactions.find((tx) => tx.step === 1);
-      const newTransactionId = addToHistory({
-        direction: "base-to-native",
-        amount,
-        status: "pending",
-        currentStep: SimpleBridgeStep.STEP_2_PREPARING,
-        step1TxHash: step1Tx?.txHash,
-        baseAddress: evmAddress,
-        nativeAddress: selectedAccount.address,
-        canRetry: true,
-      });
-      currentTransactionIdRef.current = newTransactionId;
-
-      // Notify that transaction was created (for URL update / F5 recovery)
-      onTransactionCreatedRef.current?.(newTransactionId);
+      // Update history to step1_complete before starting step 2
+      if (currentTransactionIdRef.current) {
+        updateHistoryTransaction(currentTransactionIdRef.current, {
+          status: "step1_complete",
+          currentStep: SimpleBridgeStep.STEP_1_COMPLETE,
+        });
+      }
 
       // Execute step 2 with progress tracking
       const [step2Error, __] = await tryAsync(
@@ -375,7 +391,7 @@ export function useOrchestratedTransfer() {
         throw new Error("Wallets not properly connected");
       }
 
-      // Execute step 1
+      // Execute step 1 with callback for history creation when tx enters confirming state
       const [step1Error, _] = await tryAsync(
         executeNativeToBaseStep1({
           amount,
@@ -389,6 +405,23 @@ export function useOrchestratedTransfer() {
           updateBridgeState,
           addTransaction,
           getExplorerUrl,
+          onTransactionConfirming: (txHash) => {
+            // Create history entry when transaction is signed and submitted
+            const newTransactionId = addToHistory({
+              direction: "native-to-base",
+              amount,
+              status: "pending",
+              currentStep: SimpleBridgeStep.STEP_1_CONFIRMING,
+              step1TxHash: txHash,
+              baseAddress: evmAddress,
+              nativeAddress: selectedAccount.address,
+              canRetry: true,
+            });
+            currentTransactionIdRef.current = newTransactionId;
+
+            // Notify that transaction was created (for URL update / F5 recovery)
+            onTransactionCreatedRef.current?.(newTransactionId);
+          },
         }),
       );
 
@@ -401,27 +434,26 @@ export function useOrchestratedTransfer() {
           });
           return;
         }
-        // For other step 1 errors, we don't have a history entry yet
-        // (it's created after step 1 succeeds), so just throw
+        // If we have a transaction ID, update history with error
+        if (currentTransactionIdRef.current) {
+          updateHistoryTransaction(currentTransactionIdRef.current, {
+            status: "error",
+            currentStep: SimpleBridgeStep.ERROR,
+            errorMessage: step1Error.message,
+            errorStep: 1,
+            canRetry: true,
+          });
+        }
         throw step1Error;
       }
 
-      // Create history entry AFTER step 1 is signed and completes successfully
-      const step1Tx = transactions.find((tx) => tx.step === 1);
-      const newTransactionId = addToHistory({
-        direction: "native-to-base",
-        amount,
-        status: "pending",
-        currentStep: SimpleBridgeStep.STEP_2_PREPARING,
-        step1TxHash: step1Tx?.txHash,
-        baseAddress: evmAddress,
-        nativeAddress: selectedAccount.address,
-        canRetry: true,
-      });
-      currentTransactionIdRef.current = newTransactionId;
-
-      // Notify that transaction was created (for URL update / F5 recovery)
-      onTransactionCreatedRef.current?.(newTransactionId);
+      // Update history to step1_complete before starting step 2
+      if (currentTransactionIdRef.current) {
+        updateHistoryTransaction(currentTransactionIdRef.current, {
+          status: "step1_complete",
+          currentStep: SimpleBridgeStep.STEP_1_COMPLETE,
+        });
+      }
 
       // Execute step 2 with progress tracking
       const [step2Error, __] = await tryAsync(

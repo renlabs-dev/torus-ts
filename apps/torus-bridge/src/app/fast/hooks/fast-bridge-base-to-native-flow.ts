@@ -75,6 +75,8 @@ interface BaseToNativeStep1Params {
   addTransaction: (tx: SimpleBridgeTransaction) => void;
   /** Function to generate blockchain explorer URLs for transaction hashes */
   getExplorerUrl: (txHash: string, chainName: string) => string;
+  /** Optional callback when transaction enters confirming state (for history/URL update) */
+  onTransactionConfirming?: (txHash: string) => void;
 }
 
 /**
@@ -132,6 +134,7 @@ export async function executeBaseToNativeStep1(
     updateBridgeState,
     addTransaction,
     getExplorerUrl,
+    onTransactionConfirming,
   } = params;
 
   updateBridgeState({ step: SimpleBridgeStep.STEP_1_PREPARING });
@@ -238,6 +241,11 @@ export async function executeBaseToNativeStep1(
   }
 
   updateBridgeState({ step: SimpleBridgeStep.STEP_1_CONFIRMING });
+
+  // Notify that transaction is now confirming (for history/URL update)
+  if (step1TxHash && typeof step1TxHash === "string") {
+    onTransactionConfirming?.(step1TxHash);
+  }
 
   const pollingResult = await pollEvmBalance(
     refetchTorusEvmBalance,

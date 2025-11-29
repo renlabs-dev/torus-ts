@@ -74,6 +74,8 @@ interface NativeToBaseStep1Params {
   addTransaction: (tx: SimpleBridgeTransaction) => void;
   /** Function to generate blockchain explorer URLs */
   getExplorerUrl: (txHash: string, chainName: string) => string;
+  /** Optional callback when transaction enters confirming state (for history/URL update) */
+  onTransactionConfirming?: (txHash: string) => void;
 }
 
 /**
@@ -112,6 +114,7 @@ async function trackSubstrateTransaction(
   }) => void,
   addTransaction: (tx: SimpleBridgeTransaction) => void,
   getExplorerUrl: (txHash: string, chainName: string) => string,
+  onTransactionConfirming?: (txHash: string) => void,
 ): Promise<void> {
   const abortController = new AbortController();
   let capturedTxHash: string | undefined;
@@ -189,12 +192,14 @@ async function trackSubstrateTransaction(
       reject(error instanceof Error ? error : new Error(String(error)));
     };
 
-    // Capture txHash from early events
+    // Capture txHash from early events and notify for history/URL update
     const handleTxHash = (data?: unknown) => {
       if (data && typeof data === "object" && "txHash" in data) {
         const hash = (data as { txHash?: string }).txHash;
         if (hash && !capturedTxHash) {
           capturedTxHash = hash;
+          // Notify that transaction is now confirming (for history/URL update)
+          onTransactionConfirming?.(hash);
         }
       }
     };
@@ -265,6 +270,7 @@ export async function executeNativeToBaseStep1(
     updateBridgeState,
     addTransaction,
     getExplorerUrl,
+    onTransactionConfirming,
   } = params;
 
   const amountRems = toNano(amount.trim());
@@ -331,6 +337,7 @@ export async function executeNativeToBaseStep1(
     updateBridgeState,
     addTransaction,
     getExplorerUrl,
+    onTransactionConfirming,
   );
 }
 
