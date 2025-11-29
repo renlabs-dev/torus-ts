@@ -22,10 +22,11 @@ export function WatchButton({ userId }: WatchButtonProps) {
   const utils = api.useUtils();
 
   const isConnected = !!selectedAccount?.address;
+  const userKey = selectedAccount?.address ?? "";
 
   const { data: watchStatus, isLoading: isLoadingStatus } =
     api.watch.getWatchStatus.useQuery(
-      { userId },
+      { userId, userKey },
       {
         enabled: isConnected,
       },
@@ -34,15 +35,21 @@ export function WatchButton({ userId }: WatchButtonProps) {
   const watchMutation = api.watch.watch.useMutation({
     onMutate: async () => {
       // Cancel outgoing refetches
-      await utils.watch.getWatchStatus.cancel({ userId });
+      await utils.watch.getWatchStatus.cancel({ userId, userKey });
       await utils.watch.getWatcherCount.cancel({ userId });
 
       // Snapshot previous values
-      const previousStatus = utils.watch.getWatchStatus.getData({ userId });
+      const previousStatus = utils.watch.getWatchStatus.getData({
+        userId,
+        userKey,
+      });
       const previousCount = utils.watch.getWatcherCount.getData({ userId });
 
       // Optimistically update
-      utils.watch.getWatchStatus.setData({ userId }, { isWatching: true });
+      utils.watch.getWatchStatus.setData(
+        { userId, userKey },
+        { isWatching: true },
+      );
       utils.watch.getWatcherCount.setData({ userId }, (old) => (old ?? 0) + 1);
 
       return { previousStatus, previousCount };
@@ -50,7 +57,10 @@ export function WatchButton({ userId }: WatchButtonProps) {
     onError: (_err, _vars, context) => {
       // Rollback on error
       if (context?.previousStatus) {
-        utils.watch.getWatchStatus.setData({ userId }, context.previousStatus);
+        utils.watch.getWatchStatus.setData(
+          { userId, userKey },
+          context.previousStatus,
+        );
       }
       if (context?.previousCount !== undefined) {
         utils.watch.getWatcherCount.setData({ userId }, context.previousCount);
@@ -62,21 +72,27 @@ export function WatchButton({ userId }: WatchButtonProps) {
       });
     },
     onSettled: () => {
-      void utils.watch.getWatchStatus.invalidate({ userId });
+      void utils.watch.getWatchStatus.invalidate({ userId, userKey });
       void utils.watch.getWatcherCount.invalidate({ userId });
-      void utils.watch.getWatchedCount.invalidate();
+      void utils.watch.getWatchedCount.invalidate({ userKey });
     },
   });
 
   const unwatchMutation = api.watch.unwatch.useMutation({
     onMutate: async () => {
-      await utils.watch.getWatchStatus.cancel({ userId });
+      await utils.watch.getWatchStatus.cancel({ userId, userKey });
       await utils.watch.getWatcherCount.cancel({ userId });
 
-      const previousStatus = utils.watch.getWatchStatus.getData({ userId });
+      const previousStatus = utils.watch.getWatchStatus.getData({
+        userId,
+        userKey,
+      });
       const previousCount = utils.watch.getWatcherCount.getData({ userId });
 
-      utils.watch.getWatchStatus.setData({ userId }, { isWatching: false });
+      utils.watch.getWatchStatus.setData(
+        { userId, userKey },
+        { isWatching: false },
+      );
       utils.watch.getWatcherCount.setData({ userId }, (old) =>
         Math.max((old ?? 1) - 1, 0),
       );
@@ -85,7 +101,10 @@ export function WatchButton({ userId }: WatchButtonProps) {
     },
     onError: (_err, _vars, context) => {
       if (context?.previousStatus) {
-        utils.watch.getWatchStatus.setData({ userId }, context.previousStatus);
+        utils.watch.getWatchStatus.setData(
+          { userId, userKey },
+          context.previousStatus,
+        );
       }
       if (context?.previousCount !== undefined) {
         utils.watch.getWatcherCount.setData({ userId }, context.previousCount);
@@ -97,9 +116,9 @@ export function WatchButton({ userId }: WatchButtonProps) {
       });
     },
     onSettled: () => {
-      void utils.watch.getWatchStatus.invalidate({ userId });
+      void utils.watch.getWatchStatus.invalidate({ userId, userKey });
       void utils.watch.getWatcherCount.invalidate({ userId });
-      void utils.watch.getWatchedCount.invalidate();
+      void utils.watch.getWatchedCount.invalidate({ userKey });
     },
   });
 

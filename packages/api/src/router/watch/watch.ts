@@ -171,22 +171,17 @@ export const watchRouter = {
     }),
 
   /**
-   * Check if current user is watching a specific Twitter user
-   * Returns false if not authenticated
+   * Check if a user is watching a specific Twitter user
    */
   getWatchStatus: publicProcedure
-    .input(z.object({ userId: z.string() }))
+    .input(z.object({ userId: z.string(), userKey: z.string() }))
     .query(async ({ ctx, input }) => {
-      if (!ctx.sessionData?.userKey) {
-        return { isWatching: false };
-      }
-
       const result = await ctx.db
         .select({ id: userWatchesSchema.id })
         .from(userWatchesSchema)
         .where(
           and(
-            eq(userWatchesSchema.watcherKey, ctx.sessionData.userKey),
+            eq(userWatchesSchema.watcherKey, input.userKey),
             eq(userWatchesSchema.watchedUserId, BigInt(input.userId)),
           ),
         )
@@ -196,28 +191,32 @@ export const watchRouter = {
     }),
 
   /**
-   * Get count of how many users the current user is watching
+   * Get count of how many users a user is watching
    */
-  getWatchedCount: authenticatedProcedure.query(async ({ ctx }) => {
-    const result = await ctx.db
-      .select({ count: count() })
-      .from(userWatchesSchema)
-      .where(eq(userWatchesSchema.watcherKey, ctx.sessionData.userKey));
+  getWatchedCount: publicProcedure
+    .input(z.object({ userKey: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const result = await ctx.db
+        .select({ count: count() })
+        .from(userWatchesSchema)
+        .where(eq(userWatchesSchema.watcherKey, input.userKey));
 
-    return result[0]?.count ?? 0;
-  }),
+      return result[0]?.count ?? 0;
+    }),
 
   /**
-   * Get list of user IDs that current user is watching
+   * Get list of user IDs that a user is watching
    */
-  getWatchedUserIds: authenticatedProcedure.query(async ({ ctx }) => {
-    const result = await ctx.db
-      .select({ userId: userWatchesSchema.watchedUserId })
-      .from(userWatchesSchema)
-      .where(eq(userWatchesSchema.watcherKey, ctx.sessionData.userKey));
+  getWatchedUserIds: publicProcedure
+    .input(z.object({ userKey: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const result = await ctx.db
+        .select({ userId: userWatchesSchema.watchedUserId })
+        .from(userWatchesSchema)
+        .where(eq(userWatchesSchema.watcherKey, input.userKey));
 
-    return result.map((r) => r.userId.toString());
-  }),
+      return result.map((r) => r.userId.toString());
+    }),
 
   /**
    * Watch a Twitter user
@@ -257,9 +256,10 @@ export const watchRouter = {
   /**
    * Get predictions from watched users filtered by verdict status
    */
-  getWatchingFeedByVerdict: authenticatedProcedure
+  getWatchingFeedByVerdict: publicProcedure
     .input(
       z.object({
+        userKey: z.string(),
         verdictStatus: z.enum(["ongoing", "true", "false"]),
         limit: z.number().min(1).max(100).default(30),
         offset: z.number().min(0).default(0),
@@ -269,14 +269,21 @@ export const watchRouter = {
       }),
     )
     .query(async ({ ctx, input }) => {
-      const { verdictStatus, limit, offset, dateFrom, dateTo, topicIds } =
-        input;
+      const {
+        userKey,
+        verdictStatus,
+        limit,
+        offset,
+        dateFrom,
+        dateTo,
+        topicIds,
+      } = input;
 
       // Get watched user IDs
       const watchedUsers = await ctx.db
         .select({ userId: userWatchesSchema.watchedUserId })
         .from(userWatchesSchema)
-        .where(eq(userWatchesSchema.watcherKey, ctx.sessionData.userKey));
+        .where(eq(userWatchesSchema.watcherKey, userKey));
 
       if (watchedUsers.length === 0) {
         return [];
@@ -396,86 +403,88 @@ export const watchRouter = {
   /**
    * Get prediction counts for watched users by verdict status
    */
-  getWatchingFeedCounts: authenticatedProcedure.query(async ({ ctx }) => {
-    // Get watched user IDs
-    const watchedUsers = await ctx.db
-      .select({ userId: userWatchesSchema.watchedUserId })
-      .from(userWatchesSchema)
-      .where(eq(userWatchesSchema.watcherKey, ctx.sessionData.userKey));
+  getWatchingFeedCounts: publicProcedure
+    .input(z.object({ userKey: z.string() }))
+    .query(async ({ ctx, input }) => {
+      // Get watched user IDs
+      const watchedUsers = await ctx.db
+        .select({ userId: userWatchesSchema.watchedUserId })
+        .from(userWatchesSchema)
+        .where(eq(userWatchesSchema.watcherKey, input.userKey));
 
-    if (watchedUsers.length === 0) {
-      return { ongoing: 0, true: 0, false: 0 };
-    }
+      if (watchedUsers.length === 0) {
+        return { ongoing: 0, true: 0, false: 0 };
+      }
 
-    const watchedUserIds = watchedUsers.map((w) => w.userId);
+      const watchedUserIds = watchedUsers.map((w) => w.userId);
 
-    const counts = await ctx.db
-      .select({
-        verdictStatus: sql<string | null>`CASE
+      const counts = await ctx.db
+        .select({
+          verdictStatus: sql<string | null>`CASE
           WHEN ${verdictSchema.id} IS NULL AND (${parsedPredictionFeedbackSchema.parsedPredictionId} IS NULL OR ${parsedPredictionFeedbackSchema.failureCause} = 'FUTURE_TIMEFRAME') THEN 'ongoing'
           WHEN ${verdictSchema.verdict} = true THEN 'true'
           WHEN ${verdictSchema.verdict} = false THEN 'false'
         END`.as("verdict_status"),
-        count: sql<number>`COUNT(DISTINCT ${parsedPredictionSchema.id})`,
-      })
-      .from(predictionSchema)
-      .innerJoin(
-        parsedPredictionSchema,
-        and(
-          eq(parsedPredictionSchema.predictionId, predictionSchema.id),
-          notExists(
-            ctx.db
-              .select({
-                id: parsedPredictionFeedbackSchema.parsedPredictionId,
-              })
-              .from(parsedPredictionFeedbackSchema)
-              .where(
-                and(
-                  eq(
-                    parsedPredictionFeedbackSchema.parsedPredictionId,
-                    parsedPredictionSchema.id,
-                  ),
-                  or(
-                    sql`${parsedPredictionFeedbackSchema.failureCause} != 'FUTURE_TIMEFRAME'`,
-                    isNull(parsedPredictionFeedbackSchema.failureCause),
+          count: sql<number>`COUNT(DISTINCT ${parsedPredictionSchema.id})`,
+        })
+        .from(predictionSchema)
+        .innerJoin(
+          parsedPredictionSchema,
+          and(
+            eq(parsedPredictionSchema.predictionId, predictionSchema.id),
+            notExists(
+              ctx.db
+                .select({
+                  id: parsedPredictionFeedbackSchema.parsedPredictionId,
+                })
+                .from(parsedPredictionFeedbackSchema)
+                .where(
+                  and(
+                    eq(
+                      parsedPredictionFeedbackSchema.parsedPredictionId,
+                      parsedPredictionSchema.id,
+                    ),
+                    or(
+                      sql`${parsedPredictionFeedbackSchema.failureCause} != 'FUTURE_TIMEFRAME'`,
+                      isNull(parsedPredictionFeedbackSchema.failureCause),
+                    ),
                   ),
                 ),
-              ),
+            ),
           ),
-        ),
-      )
-      .innerJoin(
-        scrapedTweetSchema,
-        eq(
-          scrapedTweetSchema.predictionId,
-          parsedPredictionSchema.predictionId,
-        ),
-      )
-      .innerJoin(
-        twitterUsersSchema,
-        eq(twitterUsersSchema.id, scrapedTweetSchema.authorId),
-      )
-      .leftJoin(
-        verdictSchema,
-        eq(verdictSchema.parsedPredictionId, parsedPredictionSchema.id),
-      )
-      .leftJoin(
-        parsedPredictionFeedbackSchema,
-        eq(
-          parsedPredictionFeedbackSchema.parsedPredictionId,
-          parsedPredictionSchema.id,
-        ),
-      )
-      .where(inArray(twitterUsersSchema.id, watchedUserIds))
-      .groupBy(sql`verdict_status`);
+        )
+        .innerJoin(
+          scrapedTweetSchema,
+          eq(
+            scrapedTweetSchema.predictionId,
+            parsedPredictionSchema.predictionId,
+          ),
+        )
+        .innerJoin(
+          twitterUsersSchema,
+          eq(twitterUsersSchema.id, scrapedTweetSchema.authorId),
+        )
+        .leftJoin(
+          verdictSchema,
+          eq(verdictSchema.parsedPredictionId, parsedPredictionSchema.id),
+        )
+        .leftJoin(
+          parsedPredictionFeedbackSchema,
+          eq(
+            parsedPredictionFeedbackSchema.parsedPredictionId,
+            parsedPredictionSchema.id,
+          ),
+        )
+        .where(inArray(twitterUsersSchema.id, watchedUserIds))
+        .groupBy(sql`verdict_status`);
 
-    const result = { ongoing: 0, true: 0, false: 0 };
-    counts.forEach((row) => {
-      if (row.verdictStatus === "ongoing") result.ongoing = Number(row.count);
-      if (row.verdictStatus === "true") result.true = Number(row.count);
-      if (row.verdictStatus === "false") result.false = Number(row.count);
-    });
+      const result = { ongoing: 0, true: 0, false: 0 };
+      counts.forEach((row) => {
+        if (row.verdictStatus === "ongoing") result.ongoing = Number(row.count);
+        if (row.verdictStatus === "true") result.true = Number(row.count);
+        if (row.verdictStatus === "false") result.false = Number(row.count);
+      });
 
-    return result;
-  }),
+      return result;
+    }),
 } satisfies TRPCRouterRecord;

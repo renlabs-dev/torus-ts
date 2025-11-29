@@ -23,6 +23,7 @@ import { ProfileFeed } from "~/app/_components/user-profile/profile-feed";
 import { api } from "~/trpc/react";
 import { Eye, Globe } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { useEffect } from "react";
 
 type FeedView = "all" | "watched";
 
@@ -33,6 +34,8 @@ export default function FeedPage() {
 
   const { selectedAccount } = useTorus();
   const isConnected = !!selectedAccount?.address;
+  const walletAddress = selectedAccount?.address;
+  const utils = api.useUtils();
 
   // Get current view from URL (default to "all")
   const viewParam = searchParams.get("view");
@@ -48,12 +51,18 @@ export default function FeedPage() {
   const topicIds =
     searchParams.get("topics")?.split(",").filter(Boolean) ?? undefined;
 
-  // Check if user has any watched users
-  const { data: watchedCount } = api.watch.getWatchedCount.useQuery(undefined, {
-    enabled: isConnected,
-  });
+  // Enable watched view when connected - actual watch data loads when selected
+  const canUseWatched = isConnected;
 
-  const canUseWatched = isConnected && (watchedCount ?? 0) > 0;
+  // Invalidate watch queries when wallet changes
+  useEffect(() => {
+    void utils.watch.invalidate();
+    // Reset to "all" view when wallet changes
+    if (view === "watched") {
+      setView("all");
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- only run when wallet changes
+  }, [walletAddress]);
 
   // === ALL FEED QUERIES ===
   const { data: allCounts } = api.prediction.getFeedCounts.useQuery(undefined, {
@@ -101,7 +110,7 @@ export default function FeedPage() {
 
   // === WATCHED FEED QUERIES ===
   const { data: watchedCounts } = api.watch.getWatchingFeedCounts.useQuery(
-    undefined,
+    { userKey: walletAddress ?? "" },
     {
       enabled: view === "watched" && isConnected,
     },
@@ -110,6 +119,7 @@ export default function FeedPage() {
   const { data: watchedOngoingPredictions, isLoading: watchedOngoingLoading } =
     api.watch.getWatchingFeedByVerdict.useQuery(
       {
+        userKey: walletAddress ?? "",
         verdictStatus: "ongoing",
         limit,
         offset: (ongoingPage - 1) * limit,
@@ -123,6 +133,7 @@ export default function FeedPage() {
   const { data: watchedTruePredictions, isLoading: watchedTrueLoading } =
     api.watch.getWatchingFeedByVerdict.useQuery(
       {
+        userKey: walletAddress ?? "",
         verdictStatus: "true",
         limit,
         offset: (truePage - 1) * limit,
@@ -136,6 +147,7 @@ export default function FeedPage() {
   const { data: watchedFalsePredictions, isLoading: watchedFalseLoading } =
     api.watch.getWatchingFeedByVerdict.useQuery(
       {
+        userKey: walletAddress ?? "",
         verdictStatus: "false",
         limit,
         offset: (falsePage - 1) * limit,
@@ -231,11 +243,7 @@ export default function FeedPage() {
                 : "text-muted-foreground hover:text-foreground",
             )}
             title={
-              !isConnected
-                ? "Connect wallet to use watched feed"
-                : !canUseWatched
-                  ? "Watch some predictors to use this feature"
-                  : undefined
+              !isConnected ? "Connect wallet to use watched feed" : undefined
             }
           >
             <Eye className="h-4 w-4" />
