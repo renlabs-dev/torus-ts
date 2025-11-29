@@ -34,7 +34,7 @@ export interface VerdictContext {
   feedback: string;
 }
 
-interface RawPrediction {
+export interface RawPrediction {
   predictionId: string;
   parsedId: string;
   target: PostSlice[];
@@ -114,7 +114,7 @@ export interface GroupedTweet {
 /**
  * Fetches parent and root tweets for thread context
  */
-async function fetchThreadContext(
+export async function fetchThreadContext(
   ctx: TRPCContext,
   tweetIds: bigint[],
 ): Promise<Map<bigint, ParentTweet>> {
