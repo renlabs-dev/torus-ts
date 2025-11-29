@@ -5,6 +5,18 @@ import type {
   SimpleBridgeTransaction,
 } from "../_components/fast-bridge-types";
 import { SimpleBridgeStep } from "../_components/fast-bridge-types";
+import { formatErrorForUser } from "./fast-bridge-helpers";
+
+/**
+ * Formats error details for display in the transaction step item.
+ * Returns undefined if there are no error details.
+ */
+function getFormattedErrorDetails(
+  errorDetails: string | undefined,
+): string | undefined {
+  if (!errorDetails) return undefined;
+  return formatErrorForUser(new Error(errorDetails));
+}
 
 type StepStatus = "pending" | "active" | "completed" | "error" | "waiting";
 
@@ -186,7 +198,9 @@ export function useTransactionLifecycleSteps(
             icon: null,
             status: getStepStatus("step1-sign"),
             isSignatureRequired: true,
-            errorDetails: step1Transaction?.errorDetails,
+            errorDetails: getFormattedErrorDetails(
+              step1Transaction?.errorDetails,
+            ),
           },
           {
             id: "step1-confirm",
@@ -197,7 +211,9 @@ export function useTransactionLifecycleSteps(
             estimatedTime: "~1-2 minutes",
             txHash: step1Transaction?.txHash,
             explorerUrl: step1Transaction?.explorerUrl,
-            errorDetails: step1Transaction?.errorDetails,
+            errorDetails: getFormattedErrorDetails(
+              step1Transaction?.errorDetails,
+            ),
           },
           {
             id: "step2-sign",
@@ -207,7 +223,9 @@ export function useTransactionLifecycleSteps(
             icon: null,
             status: getStepStatus("step2-sign"),
             isSignatureRequired: true,
-            errorDetails: step2Transaction?.errorDetails,
+            errorDetails: getFormattedErrorDetails(
+              step2Transaction?.errorDetails,
+            ),
           },
           {
             id: "step2-confirm",
@@ -218,7 +236,9 @@ export function useTransactionLifecycleSteps(
             estimatedTime: "~30-60 seconds",
             txHash: step2Transaction?.txHash,
             explorerUrl: step2Transaction?.explorerUrl,
-            errorDetails: step2Transaction?.errorDetails,
+            errorDetails: getFormattedErrorDetails(
+              step2Transaction?.errorDetails,
+            ),
           },
         ]
       : [
@@ -229,7 +249,9 @@ export function useTransactionLifecycleSteps(
             icon: null,
             status: getStepStatus("step1-sign"),
             isSignatureRequired: true,
-            errorDetails: step1Transaction?.errorDetails,
+            errorDetails: getFormattedErrorDetails(
+              step1Transaction?.errorDetails,
+            ),
           },
           {
             id: "step1-confirm",
@@ -240,7 +262,9 @@ export function useTransactionLifecycleSteps(
             estimatedTime: "~30-60 seconds",
             txHash: step1Transaction?.txHash,
             explorerUrl: step1Transaction?.explorerUrl,
-            errorDetails: step1Transaction?.errorDetails,
+            errorDetails: getFormattedErrorDetails(
+              step1Transaction?.errorDetails,
+            ),
           },
           {
             id: "step2-sign",
@@ -249,7 +273,9 @@ export function useTransactionLifecycleSteps(
             icon: null,
             status: getStepStatus("step2-sign"),
             isSignatureRequired: true,
-            errorDetails: step2Transaction?.errorDetails,
+            errorDetails: getFormattedErrorDetails(
+              step2Transaction?.errorDetails,
+            ),
           },
           {
             id: "step2-confirm",
@@ -260,7 +286,9 @@ export function useTransactionLifecycleSteps(
             estimatedTime: "~1-2 minutes",
             txHash: step2Transaction?.txHash,
             explorerUrl: step2Transaction?.explorerUrl,
-            errorDetails: step2Transaction?.errorDetails,
+            errorDetails: getFormattedErrorDetails(
+              step2Transaction?.errorDetails,
+            ),
           },
         ];
 
