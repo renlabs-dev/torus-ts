@@ -186,8 +186,15 @@ export const starRouter = {
       }),
     )
     .query(async ({ ctx, input }) => {
-      const { userKey, verdictStatus, limit, offset, dateFrom, dateTo, topicIds } =
-        input;
+      const {
+        userKey,
+        verdictStatus,
+        limit,
+        offset,
+        dateFrom,
+        dateTo,
+        topicIds,
+      } = input;
 
       // Get starred tweet IDs
       const starredTweets = await ctx.db

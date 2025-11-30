@@ -15,7 +15,6 @@ import {
   TabsList,
   TabsTrigger,
 } from "@torus-ts/ui/components/tabs";
-import { cn } from "@torus-ts/ui/lib/utils";
 import { FilterDialog } from "~/app/_components/filter-dialog";
 import { PageHeader } from "~/app/_components/page-header";
 import { FeedLegend } from "~/app/_components/user-profile/feed-legend";
@@ -309,53 +308,41 @@ export default function FeedPage() {
       <div className="border-border relative my-4 border-t" />
 
       <div className="relative mx-auto max-w-screen-lg px-4">
-        <Card className="bg-background/80 plus-corners relative flex backdrop-blur-sm">
-          <button
-            onClick={() => setView("all")}
-            className={cn(
-              "flex w-full items-center gap-2 rounded-t-md px-4 py-2 text-sm font-medium transition-colors",
-              view === "all"
-                ? "bg-accent text-foreground"
-                : "text-muted-foreground hover:text-foreground",
-            )}
-          >
-            <Globe className="h-4 w-4" />
-            All Accounts
-          </button>
-          <button
-            onClick={() => canUseWatched && setView("watched")}
-            disabled={!canUseWatched}
-            className={cn(
-              "flex w-full items-center gap-2 rounded-t-md px-4 py-2 text-sm font-medium transition-colors",
-              !canUseWatched && "cursor-not-allowed opacity-50",
-              view === "watched"
-                ? "bg-accent text-foreground"
-                : "text-muted-foreground hover:text-foreground",
-            )}
-            title={
-              !isConnected ? "Connect wallet to use watched feed" : undefined
-            }
-          >
-            <Eye className="h-4 w-4" />
-            Your Watched Accounts
-          </button>
-          <button
-            onClick={() => canUseStarred && setView("starred")}
-            disabled={!canUseStarred}
-            className={cn(
-              "flex w-full items-center gap-2 rounded-t-md px-4 py-2 text-sm font-medium transition-colors",
-              !canUseStarred && "cursor-not-allowed opacity-50",
-              view === "starred"
-                ? "bg-accent text-foreground"
-                : "text-muted-foreground hover:text-foreground",
-            )}
-            title={
-              !isConnected ? "Connect wallet to use starred feed" : undefined
-            }
-          >
-            <Star className="h-4 w-4" />
-            Your Starred
-          </button>
+        <Card className="plus-corners bg-background/80 backdrop-blur-sm">
+          <Tabs value={view} onValueChange={(v) => setView(v as FeedView)}>
+            <TabsList className="bg-accent/60 flex h-full w-full flex-col sm:grid sm:grid-cols-3">
+              <TabsTrigger value="all" className="w-full gap-2">
+                <Globe className="h-4 w-4" />
+                All Accounts
+              </TabsTrigger>
+              <TabsTrigger
+                value="watched"
+                disabled={!canUseWatched}
+                className="w-full gap-2"
+                title={
+                  !isConnected
+                    ? "Connect wallet to use watched feed"
+                    : undefined
+                }
+              >
+                <Eye className="h-4 w-4" />
+                Your Watched
+              </TabsTrigger>
+              <TabsTrigger
+                value="starred"
+                disabled={!canUseStarred}
+                className="w-full gap-2"
+                title={
+                  !isConnected
+                    ? "Connect wallet to use starred feed"
+                    : undefined
+                }
+              >
+                <Star className="h-4 w-4" />
+                Your Starred
+              </TabsTrigger>
+            </TabsList>
+          </Tabs>
         </Card>
       </div>
 
