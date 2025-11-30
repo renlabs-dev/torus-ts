@@ -185,7 +185,82 @@ async function fetchDuplicateCounts(
 }
 
 /**
- * Groups raw predictions by tweet ID and includes thread context
+ * Groups raw predictions by tweet ID and includes thread context.
+ * Simple version without duplicate counts - used by watch/star routers.
+ */
+export async function groupPredictionsByTweetSimple(
+  rawPredictions: RawPrediction[],
+  ctx: TRPCContext,
+): Promise<GroupedTweet[]> {
+  const groupedByTweet: Record<string, GroupedTweet> = {};
+
+  const contextTweetIds = new Set<bigint>();
+
+  rawPredictions.forEach((pred) => {
+    if (pred.parentTweetId) contextTweetIds.add(pred.parentTweetId);
+    if (pred.conversationId && pred.conversationId !== pred.tweetId) {
+      contextTweetIds.add(pred.conversationId);
+    }
+  });
+
+  const threadContext = await fetchThreadContext(
+    ctx,
+    Array.from(contextTweetIds),
+  );
+
+  rawPredictions.forEach((pred) => {
+    const tweetId = pred.tweetId.toString();
+
+    if (!groupedByTweet[tweetId]) {
+      groupedByTweet[tweetId] = {
+        tweetId: pred.tweetId,
+        tweetText: pred.tweetText,
+        tweetDate: pred.tweetDate,
+        conversationId: pred.conversationId,
+        parentTweetId: pred.parentTweetId,
+        userId: pred.userId,
+        username: pred.username,
+        screenName: pred.screenName,
+        avatarUrl: pred.avatarUrl,
+        isVerified: pred.isVerified,
+        parentTweet: pred.parentTweetId
+          ? (threadContext.get(pred.parentTweetId) ?? null)
+          : null,
+        rootTweet:
+          pred.conversationId && pred.conversationId !== pred.tweetId
+            ? (threadContext.get(pred.conversationId) ?? null)
+            : null,
+        predictions: [],
+      };
+    }
+    groupedByTweet[tweetId].predictions.push({
+      parsedId: pred.parsedId,
+      predictionId: pred.predictionId,
+      target: pred.target,
+      timeframe: pred.timeframe,
+      llmConfidence: pred.llmConfidence,
+      vagueness: pred.vagueness,
+      context: pred.context,
+      predictionQuality: pred.predictionQuality,
+      briefRationale: pred.briefRationale,
+      topicId: pred.topicId,
+      filterAgentId: pred.filterAgentId,
+      canonicalId: pred.canonicalId,
+      verdictId: pred.verdictId,
+      verdict: pred.verdict,
+      verdictContext: pred.verdictContext,
+      verdictCreatedAt: pred.verdictCreatedAt,
+      feedbackFailureCause: pred.feedbackFailureCause,
+      feedbackReason: pred.feedbackReason,
+    });
+  });
+
+  return Object.values(groupedByTweet);
+}
+
+/**
+ * Groups raw predictions by tweet ID with duplicate counts and timing.
+ * Full version used by the main prediction router.
  */
 async function groupPredictionsByTweet(
   rawPredictions: RawPrediction[],

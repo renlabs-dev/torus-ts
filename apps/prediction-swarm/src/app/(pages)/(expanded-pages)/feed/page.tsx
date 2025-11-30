@@ -15,17 +15,16 @@ import {
   TabsList,
   TabsTrigger,
 } from "@torus-ts/ui/components/tabs";
-import { cn } from "@torus-ts/ui/lib/utils";
 import { FilterDialog } from "~/app/_components/filter-dialog";
 import { PageHeader } from "~/app/_components/page-header";
 import { FeedLegend } from "~/app/_components/user-profile/feed-legend";
 import { ProfileFeed } from "~/app/_components/user-profile/profile-feed";
 import { api } from "~/trpc/react";
-import { Eye, Globe } from "lucide-react";
+import { Eye, Globe, Star } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect } from "react";
 
-type FeedView = "all" | "watched";
+type FeedView = "all" | "watched" | "starred";
 
 export default function FeedPage() {
   const router = useRouter();
@@ -39,7 +38,12 @@ export default function FeedPage() {
 
   // Get current view from URL (default to "all")
   const viewParam = searchParams.get("view");
-  const view: FeedView = viewParam === "watched" ? "watched" : "all";
+  const view: FeedView =
+    viewParam === "watched"
+      ? "watched"
+      : viewParam === "starred"
+        ? "starred"
+        : "all";
 
   const ongoingPage = parseInt(searchParams.get("ongoing") ?? "1");
   const truePage = parseInt(searchParams.get("true") ?? "1");
@@ -51,14 +55,16 @@ export default function FeedPage() {
   const topicIds =
     searchParams.get("topics")?.split(",").filter(Boolean) ?? undefined;
 
-  // Enable watched view when connected - actual watch data loads when selected
+  // Enable watched/starred views when connected
   const canUseWatched = isConnected;
+  const canUseStarred = isConnected;
 
-  // Invalidate watch queries when wallet changes
+  // Invalidate watch/star queries when wallet changes
   useEffect(() => {
     void utils.watch.invalidate();
+    void utils.star.invalidate();
     // Reset to "all" view when wallet changes
-    if (view === "watched") {
+    if (view === "watched" || view === "starred") {
       setView("all");
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps -- only run when wallet changes
@@ -158,18 +164,99 @@ export default function FeedPage() {
       { enabled: view === "watched" && isConnected },
     );
 
+  // === STARRED FEED QUERIES ===
+  const { data: starredCounts } = api.star.getStarredFeedCounts.useQuery(
+    { userKey: walletAddress ?? "" },
+    {
+      enabled: view === "starred" && isConnected,
+    },
+  );
+
+  const { data: starredOngoingPredictions, isLoading: starredOngoingLoading } =
+    api.star.getStarredFeedByVerdict.useQuery(
+      {
+        userKey: walletAddress ?? "",
+        verdictStatus: "ongoing",
+        limit,
+        offset: (ongoingPage - 1) * limit,
+        dateFrom,
+        dateTo,
+        topicIds,
+      },
+      { enabled: view === "starred" && isConnected },
+    );
+
+  const { data: starredTruePredictions, isLoading: starredTrueLoading } =
+    api.star.getStarredFeedByVerdict.useQuery(
+      {
+        userKey: walletAddress ?? "",
+        verdictStatus: "true",
+        limit,
+        offset: (truePage - 1) * limit,
+        dateFrom,
+        dateTo,
+        topicIds,
+      },
+      { enabled: view === "starred" && isConnected },
+    );
+
+  const { data: starredFalsePredictions, isLoading: starredFalseLoading } =
+    api.star.getStarredFeedByVerdict.useQuery(
+      {
+        userKey: walletAddress ?? "",
+        verdictStatus: "false",
+        limit,
+        offset: (falsePage - 1) * limit,
+        dateFrom,
+        dateTo,
+        topicIds,
+      },
+      { enabled: view === "starred" && isConnected },
+    );
+
   // Select data based on current view
-  const counts = view === "all" ? allCounts : watchedCounts;
+  const counts =
+    view === "all"
+      ? allCounts
+      : view === "watched"
+        ? watchedCounts
+        : starredCounts;
   const ongoingPredictions =
-    view === "all" ? allOngoingPredictions : watchedOngoingPredictions;
+    view === "all"
+      ? allOngoingPredictions
+      : view === "watched"
+        ? watchedOngoingPredictions
+        : starredOngoingPredictions;
   const truePredictions =
-    view === "all" ? allTruePredictions : watchedTruePredictions;
+    view === "all"
+      ? allTruePredictions
+      : view === "watched"
+        ? watchedTruePredictions
+        : starredTruePredictions;
   const falsePredictions =
-    view === "all" ? allFalsePredictions : watchedFalsePredictions;
+    view === "all"
+      ? allFalsePredictions
+      : view === "watched"
+        ? watchedFalsePredictions
+        : starredFalsePredictions;
   const ongoingLoading =
-    view === "all" ? allOngoingLoading : watchedOngoingLoading;
-  const trueLoading = view === "all" ? allTrueLoading : watchedTrueLoading;
-  const falseLoading = view === "all" ? allFalseLoading : watchedFalseLoading;
+    view === "all"
+      ? allOngoingLoading
+      : view === "watched"
+        ? watchedOngoingLoading
+        : starredOngoingLoading;
+  const trueLoading =
+    view === "all"
+      ? allTrueLoading
+      : view === "watched"
+        ? watchedTrueLoading
+        : starredTrueLoading;
+  const falseLoading =
+    view === "all"
+      ? allFalseLoading
+      : view === "watched"
+        ? watchedFalseLoading
+        : starredFalseLoading;
 
   // Calculate total pages from counts
   const ongoingTotalPages = Math.ceil((counts?.ongoing ?? 0) / limit);
@@ -203,7 +290,9 @@ export default function FeedPage() {
         description={
           view === "watched"
             ? "View predictions from users you're watching"
-            : "View predictions from all tracked users"
+            : view === "starred"
+              ? "View your starred predictions"
+              : "View predictions from all tracked users"
         }
         children={<FilterDialog />}
       />
@@ -219,36 +308,41 @@ export default function FeedPage() {
       <div className="border-border relative my-4 border-t" />
 
       <div className="relative mx-auto max-w-screen-lg px-4">
-        <Card className="bg-background/80 plus-corners relative flex backdrop-blur-sm">
-          <button
-            onClick={() => setView("all")}
-            className={cn(
-              "flex w-full items-center gap-2 rounded-t-md px-4 py-2 text-sm font-medium transition-colors",
-              view === "all"
-                ? "bg-accent text-foreground"
-                : "text-muted-foreground hover:text-foreground",
-            )}
-          >
-            <Globe className="h-4 w-4" />
-            All Accounts
-          </button>
-          <button
-            onClick={() => canUseWatched && setView("watched")}
-            disabled={!canUseWatched}
-            className={cn(
-              "flex w-full items-center gap-2 rounded-t-md px-4 py-2 text-sm font-medium transition-colors",
-              !canUseWatched && "cursor-not-allowed opacity-50",
-              view === "watched"
-                ? "bg-accent text-foreground"
-                : "text-muted-foreground hover:text-foreground",
-            )}
-            title={
-              !isConnected ? "Connect wallet to use watched feed" : undefined
-            }
-          >
-            <Eye className="h-4 w-4" />
-            Your Watched Accounts
-          </button>
+        <Card className="plus-corners bg-background/80 backdrop-blur-sm">
+          <Tabs value={view} onValueChange={(v) => setView(v as FeedView)}>
+            <TabsList className="bg-accent/60 flex h-full w-full flex-col sm:grid sm:grid-cols-3">
+              <TabsTrigger value="all" className="w-full gap-2">
+                <Globe className="h-4 w-4" />
+                All Accounts
+              </TabsTrigger>
+              <TabsTrigger
+                value="watched"
+                disabled={!canUseWatched}
+                className="w-full gap-2"
+                title={
+                  !isConnected
+                    ? "Connect wallet to use watched feed"
+                    : undefined
+                }
+              >
+                <Eye className="h-4 w-4" />
+                Your Watched
+              </TabsTrigger>
+              <TabsTrigger
+                value="starred"
+                disabled={!canUseStarred}
+                className="w-full gap-2"
+                title={
+                  !isConnected
+                    ? "Connect wallet to use starred feed"
+                    : undefined
+                }
+              >
+                <Star className="h-4 w-4" />
+                Your Starred
+              </TabsTrigger>
+            </TabsList>
+          </Tabs>
         </Card>
       </div>
 

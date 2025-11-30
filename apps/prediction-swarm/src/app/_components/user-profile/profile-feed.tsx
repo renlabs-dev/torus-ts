@@ -41,6 +41,7 @@ import { useMemo, useState } from "react";
 import { assert } from "tsafe";
 import { PredictionReportDialog } from "../prediction-report-dialog";
 import { FutureTimeframeBadge } from "./future-timeframe-badge";
+import { StarButton } from "./star-button";
 import { ThreadContext } from "./thread-context";
 import { TopicBadge } from "./topic-badge";
 
@@ -458,6 +459,9 @@ export function ProfileFeed({
                             <ExternalLink className="h-4 w-4" />
                           </Button>
                         </Link>
+
+                        {/* Star Button */}
+                        <StarButton tweetId={tweet.tweetId.toString()} />
 
                         {/* More Info Popover */}
                         <Popover>

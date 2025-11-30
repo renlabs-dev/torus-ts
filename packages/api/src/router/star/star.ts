@@ -17,7 +17,7 @@ import {
   predictionSchema,
   scrapedTweetSchema,
   twitterUsersSchema,
-  userWatchesSchema,
+  userStarsSchema,
   verdictSchema,
 } from "@torus-ts/db/schema";
 import type { TRPCRouterRecord } from "@trpc/server";
@@ -26,80 +26,52 @@ import { authenticatedProcedure, publicProcedure } from "../../trpc";
 import type { RawPrediction } from "../prediction/prediction";
 import { groupPredictionsByTweetSimple } from "../prediction/prediction";
 
-export const watchRouter = {
+export const starRouter = {
   /**
-   * Get the count of users watching a specific Twitter user
+   * Check if a user has starred a specific tweet
    */
-  getWatcherCount: publicProcedure
-    .input(z.object({ userId: z.string() }))
+  getStarStatus: publicProcedure
+    .input(z.object({ tweetId: z.string(), userKey: z.string() }))
     .query(async ({ ctx, input }) => {
       const result = await ctx.db
-        .select({ count: count() })
-        .from(userWatchesSchema)
-        .where(eq(userWatchesSchema.watchedUserId, BigInt(input.userId)));
-
-      return result[0]?.count ?? 0;
-    }),
-
-  /**
-   * Check if a user is watching a specific Twitter user
-   */
-  getWatchStatus: publicProcedure
-    .input(z.object({ userId: z.string(), userKey: z.string() }))
-    .query(async ({ ctx, input }) => {
-      const result = await ctx.db
-        .select({ id: userWatchesSchema.id })
-        .from(userWatchesSchema)
+        .select({ id: userStarsSchema.id })
+        .from(userStarsSchema)
         .where(
           and(
-            eq(userWatchesSchema.watcherKey, input.userKey),
-            eq(userWatchesSchema.watchedUserId, BigInt(input.userId)),
+            eq(userStarsSchema.userKey, input.userKey),
+            eq(userStarsSchema.tweetId, BigInt(input.tweetId)),
           ),
         )
         .limit(1);
 
-      return { isWatching: result.length > 0 };
+      return { isStarred: result.length > 0 };
     }),
 
   /**
-   * Get count of how many users a user is watching
+   * Get count of how many tweets a user has starred
    */
-  getWatchedCount: publicProcedure
+  getStarredCount: publicProcedure
     .input(z.object({ userKey: z.string() }))
     .query(async ({ ctx, input }) => {
       const result = await ctx.db
         .select({ count: count() })
-        .from(userWatchesSchema)
-        .where(eq(userWatchesSchema.watcherKey, input.userKey));
+        .from(userStarsSchema)
+        .where(eq(userStarsSchema.userKey, input.userKey));
 
       return result[0]?.count ?? 0;
     }),
 
   /**
-   * Get list of user IDs that a user is watching
+   * Star a tweet
    */
-  getWatchedUserIds: publicProcedure
-    .input(z.object({ userKey: z.string() }))
-    .query(async ({ ctx, input }) => {
-      const result = await ctx.db
-        .select({ userId: userWatchesSchema.watchedUserId })
-        .from(userWatchesSchema)
-        .where(eq(userWatchesSchema.watcherKey, input.userKey));
-
-      return result.map((r) => r.userId.toString());
-    }),
-
-  /**
-   * Watch a Twitter user
-   */
-  watch: authenticatedProcedure
-    .input(z.object({ userId: z.string() }))
+  star: authenticatedProcedure
+    .input(z.object({ tweetId: z.string() }))
     .mutation(async ({ ctx, input }) => {
       await ctx.db
-        .insert(userWatchesSchema)
+        .insert(userStarsSchema)
         .values({
-          watcherKey: ctx.sessionData.userKey,
-          watchedUserId: BigInt(input.userId),
+          userKey: ctx.sessionData.userKey,
+          tweetId: BigInt(input.tweetId),
         })
         .onConflictDoNothing();
 
@@ -107,17 +79,17 @@ export const watchRouter = {
     }),
 
   /**
-   * Unwatch a Twitter user
+   * Unstar a tweet
    */
-  unwatch: authenticatedProcedure
-    .input(z.object({ userId: z.string() }))
+  unstar: authenticatedProcedure
+    .input(z.object({ tweetId: z.string() }))
     .mutation(async ({ ctx, input }) => {
       await ctx.db
-        .delete(userWatchesSchema)
+        .delete(userStarsSchema)
         .where(
           and(
-            eq(userWatchesSchema.watcherKey, ctx.sessionData.userKey),
-            eq(userWatchesSchema.watchedUserId, BigInt(input.userId)),
+            eq(userStarsSchema.userKey, ctx.sessionData.userKey),
+            eq(userStarsSchema.tweetId, BigInt(input.tweetId)),
           ),
         );
 
@@ -125,9 +97,9 @@ export const watchRouter = {
     }),
 
   /**
-   * Get predictions from watched users filtered by verdict status
+   * Get predictions from starred tweets filtered by verdict status
    */
-  getWatchingFeedByVerdict: publicProcedure
+  getStarredFeedByVerdict: publicProcedure
     .input(
       z.object({
         userKey: z.string(),
@@ -150,17 +122,17 @@ export const watchRouter = {
         topicIds,
       } = input;
 
-      // Get watched user IDs
-      const watchedUsers = await ctx.db
-        .select({ userId: userWatchesSchema.watchedUserId })
-        .from(userWatchesSchema)
-        .where(eq(userWatchesSchema.watcherKey, userKey));
+      // Get starred tweet IDs
+      const starredTweets = await ctx.db
+        .select({ tweetId: userStarsSchema.tweetId })
+        .from(userStarsSchema)
+        .where(eq(userStarsSchema.userKey, userKey));
 
-      if (watchedUsers.length === 0) {
+      if (starredTweets.length === 0) {
         return [];
       }
 
-      const watchedUserIds = watchedUsers.map((w) => w.userId);
+      const starredTweetIds = starredTweets.map((s) => s.tweetId);
 
       const rawPredictions = await ctx.db
         .select({
@@ -243,7 +215,7 @@ export const watchRouter = {
         )
         .where(
           and(
-            inArray(twitterUsersSchema.id, watchedUserIds),
+            inArray(scrapedTweetSchema.id, starredTweetIds),
             verdictStatus === "ongoing"
               ? isNull(verdictSchema.id)
               : verdictStatus === "true"
@@ -272,22 +244,22 @@ export const watchRouter = {
     }),
 
   /**
-   * Get prediction counts for watched users by verdict status
+   * Get prediction counts for starred tweets by verdict status
    */
-  getWatchingFeedCounts: publicProcedure
+  getStarredFeedCounts: publicProcedure
     .input(z.object({ userKey: z.string() }))
     .query(async ({ ctx, input }) => {
-      // Get watched user IDs
-      const watchedUsers = await ctx.db
-        .select({ userId: userWatchesSchema.watchedUserId })
-        .from(userWatchesSchema)
-        .where(eq(userWatchesSchema.watcherKey, input.userKey));
+      // Get starred tweet IDs
+      const starredTweets = await ctx.db
+        .select({ tweetId: userStarsSchema.tweetId })
+        .from(userStarsSchema)
+        .where(eq(userStarsSchema.userKey, input.userKey));
 
-      if (watchedUsers.length === 0) {
+      if (starredTweets.length === 0) {
         return { ongoing: 0, true: 0, false: 0 };
       }
 
-      const watchedUserIds = watchedUsers.map((w) => w.userId);
+      const starredTweetIds = starredTweets.map((s) => s.tweetId);
 
       const counts = await ctx.db
         .select({
@@ -346,7 +318,7 @@ export const watchRouter = {
             parsedPredictionSchema.id,
           ),
         )
-        .where(inArray(twitterUsersSchema.id, watchedUserIds))
+        .where(inArray(scrapedTweetSchema.id, starredTweetIds))
         .groupBy(sql`verdict_status`);
 
       const result = { ongoing: 0, true: 0, false: 0 };
