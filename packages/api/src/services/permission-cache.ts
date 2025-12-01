@@ -6,8 +6,21 @@ import {
 import type { SS58Address } from "@torus-network/sdk/types";
 import { validateNamespacePath } from "@torus-network/sdk/types";
 import { BasicLogger } from "@torus-network/torus-utils/logger";
-import { TRPCError } from "@trpc/server";
 import { assert } from "tsafe";
+
+export class PermissionDeniedError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "PermissionDeniedError";
+  }
+}
+
+export class PermissionCacheNotInitializedError extends Error {
+  constructor() {
+    super("Permission cache not initialized");
+    this.name = "PermissionCacheNotInitializedError";
+  }
+}
 
 const logger = BasicLogger.create({
   name: "torus-api.services.permission-cache",
@@ -272,30 +285,24 @@ export class PermissionCacheService {
   }
 
   /**
-   * Checks if an address has permission, throwing a TRPCError if not.
+   * Checks if an address has permission, throwing an error if not.
    *
    * @param address - SS58 address to check
    * @param namespacePath - Namespace path required
-   * @throws TRPCError FORBIDDEN if permission is missing
-   * @throws TRPCError INTERNAL_SERVER_ERROR if cache not initialized
+   * @throws PermissionDeniedError if permission is missing
+   * @throws PermissionCacheNotInitializedError if cache not initialized
    */
   checkPermission(address: SS58Address, namespacePath: string): void {
     if (!this.isInitialized) {
       logger.error("Permission check attempted before cache initialization");
-      throw new TRPCError({
-        code: "INTERNAL_SERVER_ERROR",
-        message: "Permission cache not initialized",
-      });
+      throw new PermissionCacheNotInitializedError();
     }
 
     if (!this.hasPermission(address, namespacePath)) {
       logger.warn(
         `Permission denied: ${address} does not have ${namespacePath}`,
       );
-      throw new TRPCError({
-        code: "FORBIDDEN",
-        message: `Permission denied: requires ${namespacePath}`,
-      });
+      throw new PermissionDeniedError(`Permission denied: requires ${namespacePath}`);
     }
 
     logger.debug(`Permission granted: ${address} has ${namespacePath}`);

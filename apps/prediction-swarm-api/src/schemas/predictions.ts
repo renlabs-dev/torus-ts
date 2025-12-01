@@ -1,0 +1,58 @@
+import { ContextSchema, parsedPredictionSchema } from "@torus-ts/db/schema";
+import { createInsertSchema } from "drizzle-zod";
+import { z } from "zod";
+
+const predictionSourceSchema = z.object({
+  tweet_id: z.string(),
+});
+
+const postSliceSchema = z.object({
+  source: predictionSourceSchema,
+  start: z.number(),
+  end: z.number(),
+});
+
+export const PARSED_PREDICTION_INSERT_SCHEMA = createInsertSchema(
+  parsedPredictionSchema,
+)
+  .omit({
+    id: true,
+    createdAt: true,
+    updatedAt: true,
+    deletedAt: true,
+    predictionId: true,
+    topicId: true,
+    filterAgentId: true,
+    filterAgentSignature: true,
+    target: true,
+    timeframe: true,
+    context: true,
+  })
+  .extend({
+    target: z.array(postSliceSchema),
+    timeframe: z.array(postSliceSchema),
+    context: ContextSchema.optional(),
+  });
+
+export const predictionContentSchema = z.object({
+  tweetId: z.string(),
+  sentAt: z.string().datetime(),
+  prediction: PARSED_PREDICTION_INSERT_SCHEMA.extend({
+    topicName: z.string().min(1),
+  }),
+});
+
+export const predictionMetadataSchema = z.object({
+  signature: z.string(),
+  version: z.literal(1),
+});
+
+export const storePredictionItemSchema = z.object({
+  content: predictionContentSchema,
+  metadata: predictionMetadataSchema,
+});
+
+export const storePredictionsInputSchema = z.array(storePredictionItemSchema);
+
+export type StorePredictionItem = z.infer<typeof storePredictionItemSchema>;
+export type StorePredictionsInput = z.infer<typeof storePredictionsInputSchema>;
