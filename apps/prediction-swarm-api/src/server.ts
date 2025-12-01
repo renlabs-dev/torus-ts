@@ -1,6 +1,9 @@
 import { cors } from "@elysiajs/cors";
 import { node } from "@elysiajs/node";
 import { openapi } from "@elysiajs/openapi";
+import { readFileSync } from "fs";
+import { dirname, join } from "path";
+import { fileURLToPath } from "url";
 import { Elysia } from "elysia";
 import { zodToJsonSchema } from "zod-to-json-schema";
 import { createAppContext } from "./context";
@@ -8,7 +11,10 @@ import { getEnv } from "./env";
 import { authPlugin, requirePermission } from "./middleware/auth";
 import { predictionsRouter } from "./routes/predictions";
 import { tweetsRouter } from "./routes/tweets";
-import { HttpError } from "./utils/errors";
+import { createSignedError, HttpError } from "./utils/errors";
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const apiDocs = readFileSync(join(__dirname, "../API_DOCUMENTATION.md"), "utf-8");
 
 export async function createServer() {
   const env = getEnv(process.env);
@@ -40,20 +46,29 @@ export async function createServer() {
     .state("permissionCache", context.permissionCache)
     .state("serverSignHash", context.serverSignHash)
     .state("env", context.env)
-    .onError(({ code, error, set }) => {
+    .derive(({ body, query }) => ({
+      requestInput: body ?? query,
+    }))
+    .onError(({ code, error, set, requestInput, store }) => {
+      const signHash = store.serverSignHash as (hash: string) => string;
+
       if (error instanceof HttpError) {
         set.status = error.status;
-        return { error: error.message, status: error.status };
+        return createSignedError(error.status, error.message, requestInput, signHash);
       }
 
       if (code === "VALIDATION") {
         set.status = 400;
-        return { error: "Validation error", details: error.message };
+        return createSignedError(400, error.message, requestInput, signHash);
       }
 
       console.error("Unhandled error:", error);
       set.status = 500;
-      return { error: "Internal server error" };
+      return createSignedError(500, "Internal server error", requestInput, signHash);
+    })
+    .get("/", ({ set }) => {
+      set.headers["content-type"] = "text/markdown; charset=utf-8";
+      return apiDocs;
     })
     .get("/health", () => ({ status: "ok" }))
     .use(authPlugin)
