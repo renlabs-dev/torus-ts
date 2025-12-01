@@ -458,9 +458,18 @@ export function FastBridgeForm() {
     handleRetryFromHistoryRef.current = handleRetryFromHistory;
   }, [handleRetryFromHistory]);
 
+  // Track if F5 recovery has already run to prevent re-running when URL changes during transfer
+  const f5RecoveryExecutedRef = useRef(false);
+
   // Check for transaction ID in URL on mount (F5 recovery)
-  // Uses ref to call the latest version of handleRetryFromHistory while only running once on mount
+  // Uses ref flag to ensure this only runs once on mount, not when URL changes during transfer
   useEffect(() => {
+    // Skip if F5 recovery already executed (prevents re-triggering when URL updates during transfer)
+    if (f5RecoveryExecutedRef.current) {
+      return;
+    }
+    f5RecoveryExecutedRef.current = true;
+
     const txId = getTransactionFromUrl();
     console.log("[F5 Recovery] Checking URL for txId:", txId);
 
@@ -490,12 +499,7 @@ export function FastBridgeForm() {
         }
       }
     }
-  }, [
-    getTransactionFromUrl,
-    getTransactionById,
-    clearTransactionFromUrl,
-    toast,
-  ]);
+  }, [getTransactionFromUrl, getTransactionById, clearTransactionFromUrl, toast]);
 
   const getChainInfo = (isFrom: boolean) => {
     const isBaseToNative = direction === "base-to-native";

@@ -299,6 +299,12 @@ export function useOrchestratedTransfer() {
         currentTransactionIdRef.current = newTransactionId;
 
         // Notify that transaction was created (for URL update / F5 recovery)
+        console.log(
+          "[Step 2 Start] Created transaction:",
+          newTransactionId,
+          "callback available:",
+          !!onTransactionCreatedRef.current,
+        );
         onTransactionCreatedRef.current?.(newTransactionId);
       } else {
         // Update existing history entry to step 2
@@ -474,6 +480,12 @@ export function useOrchestratedTransfer() {
         currentTransactionIdRef.current = newTransactionId;
 
         // Notify that transaction was created (for URL update / F5 recovery)
+        console.log(
+          "[Step 2 Start] Created transaction:",
+          newTransactionId,
+          "callback available:",
+          !!onTransactionCreatedRef.current,
+        );
         onTransactionCreatedRef.current?.(newTransactionId);
       } else {
         // Update existing history entry to step 2
