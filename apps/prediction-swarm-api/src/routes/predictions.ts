@@ -10,17 +10,18 @@ import canonicalize from "canonicalize";
 import type { AppContext } from "../context";
 import type { AuthApp } from "../middleware/auth";
 import { storePredictionsInputSchema } from "../schemas/predictions";
+import { HttpError } from "../utils/errors";
 
 export const predictionsRouter = (app: AuthApp) =>
   app.group("/v1", (app) =>
     app.post(
       "/storePredictions",
-      async ({ body, store, userKey, status }) => {
+      async ({ body, store, userKey }) => {
         const ctx = store as AppContext;
         const agentAddress = userKey;
         const input = body;
 
-        const maxTimestampDiffMs = 60 * 1000;
+        const maxTimestampDiffMs = 300 * 1000;
 
         for (const [index, item] of input.entries()) {
           const sentAt = new Date(item.content.sentAt);
@@ -28,7 +29,7 @@ export const predictionsRouter = (app: AuthApp) =>
           const diffMs = Math.abs(now.getTime() - sentAt.getTime());
 
           if (diffMs > maxTimestampDiffMs) {
-            return status(
+            throw new HttpError(
               400,
               `Invalid timestamp for prediction ${index}: sentAt is ${Math.floor(diffMs / 1000)}s off (max ${maxTimestampDiffMs / 1000}s allowed)`,
             );
@@ -36,7 +37,7 @@ export const predictionsRouter = (app: AuthApp) =>
 
           const contentCanonical = canonicalize(item.content);
           if (!contentCanonical) {
-            return status(
+            throw new HttpError(
               500,
               `Failed to canonicalize content for prediction ${index}`,
             );
@@ -50,7 +51,7 @@ export const predictionsRouter = (app: AuthApp) =>
           );
 
           if (!verification.isValid) {
-            return status(
+            throw new HttpError(
               400,
               `Invalid signature for prediction ${index}: signature does not match content or was not signed by authenticated agent`,
             );
@@ -63,7 +64,7 @@ export const predictionsRouter = (app: AuthApp) =>
           }
 
           if (input.length > 500) {
-            return status(
+            throw new HttpError(
               400,
               "Batch size too large. Maximum 500 predictions per request.",
             );
@@ -139,7 +140,7 @@ export const predictionsRouter = (app: AuthApp) =>
           for (const item of input) {
             const tweet = tweetMap.get(item.content.tweetId);
             if (!tweet) {
-              return status(404, `Tweet ${item.content.tweetId} not found`);
+              throw new HttpError(404, `Tweet ${item.content.tweetId} not found`);
             }
 
             if (tweet.predictionId) {
@@ -159,7 +160,7 @@ export const predictionsRouter = (app: AuthApp) =>
               const item = tweetsNeedingPredictions[i];
               const prediction = newPredictions[i];
               if (!prediction || !item) {
-                return status(
+                throw new HttpError(
                   500,
                   `Failed to create prediction for tweet ${item?.content.tweetId ?? "unknown"}`,
                 );
@@ -172,7 +173,7 @@ export const predictionsRouter = (app: AuthApp) =>
               const item = tweetsNeedingPredictions[i];
               const prediction = newPredictions[i];
               if (!prediction || !item) {
-                return status(500, "Prediction creation failed");
+                throw new HttpError(500, "Prediction creation failed");
               }
               updateValues.push(
                 sql`(${BigInt(item.content.tweetId)}, ${prediction.id}::uuid)`,
@@ -195,7 +196,7 @@ export const predictionsRouter = (app: AuthApp) =>
             const topicId = topicMap.get(topicName);
 
             if (!predictionId || !topicId) {
-              return status(
+              throw new HttpError(
                 500,
                 `Missing predictionId or topicId for tweet ${item.content.tweetId}`,
               );
@@ -247,7 +248,7 @@ export const predictionsRouter = (app: AuthApp) =>
           };
           const receiptCanonical = canonicalize(receiptData);
           if (!receiptCanonical) {
-            return status(500, "Failed to canonicalize receipt data");
+            throw new HttpError(500, "Failed to canonicalize receipt data");
           }
           const receiptHash = blake2AsHex(receiptCanonical);
 
