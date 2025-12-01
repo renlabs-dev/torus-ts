@@ -135,13 +135,14 @@ export function useTransactionLifecycleSteps(
         currentStep === SimpleBridgeStep.IDLE ||
         currentStep === SimpleBridgeStep.STEP_1_PREPARING ||
         currentStep === SimpleBridgeStep.STEP_1_SIGNING ||
-        currentStep === SimpleBridgeStep.STEP_1_CONFIRMING ||
-        currentStep === SimpleBridgeStep.STEP_1_COMPLETE
+        currentStep === SimpleBridgeStep.STEP_1_CONFIRMING
       ) {
         return "pending";
       }
 
+      // After step 1 completes, step 2 sign should be active (preparing/switching/signing)
       if (
+        currentStep === SimpleBridgeStep.STEP_1_COMPLETE ||
         currentStep === SimpleBridgeStep.STEP_2_PREPARING ||
         currentStep === SimpleBridgeStep.STEP_2_SWITCHING ||
         currentStep === SimpleBridgeStep.STEP_2_SIGNING

@@ -20,6 +20,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@torus-ts/ui/components/tooltip";
+import { useToast } from "@torus-ts/ui/hooks/use-toast";
 import { contractAddresses, getChainValuesOnEnv } from "~/config";
 import { env } from "~/env";
 import { ArrowLeftRight, History, Info, Zap } from "lucide-react";
@@ -89,6 +90,7 @@ export function FastBridgeForm() {
     (() => void) | null
   >(null);
 
+  const { toast } = useToast();
   const { areWalletsReady, connectionState, chainIds } = useDualWallet();
   const {
     bridgeState,
@@ -466,7 +468,20 @@ export function FastBridgeForm() {
       const transaction = getTransactionById(txId);
       console.log("[F5 Recovery] Found transaction:", transaction);
 
-      if (transaction && transaction.status !== "completed") {
+      if (!transaction) {
+        // Transaction not found in store - show toast and redirect
+        console.warn("[F5 Recovery] Transaction not found in store:", txId);
+        clearTransactionFromUrl();
+        toast({
+          title: "Transaction not found",
+          description:
+            "The transaction you are looking for does not exist or has been cleared from history.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      if (transaction.status !== "completed") {
         try {
           handleRetryFromHistoryRef.current(transaction);
         } catch (error) {
@@ -475,7 +490,12 @@ export function FastBridgeForm() {
         }
       }
     }
-  }, [getTransactionFromUrl, getTransactionById, clearTransactionFromUrl]);
+  }, [
+    getTransactionFromUrl,
+    getTransactionById,
+    clearTransactionFromUrl,
+    toast,
+  ]);
 
   const getChainInfo = (isFrom: boolean) => {
     const isBaseToNative = direction === "base-to-native";
