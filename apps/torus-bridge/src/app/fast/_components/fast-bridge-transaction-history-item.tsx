@@ -25,7 +25,6 @@ import {
   Play,
   RotateCw,
   Trash2,
-  Zap,
 } from "lucide-react";
 import { useState } from "react";
 import { formatErrorForUser } from "../hooks/fast-bridge-helpers";
@@ -68,8 +67,7 @@ function getStatusBadge(
 ) {
   if (recoveredViaEvmRecover) {
     return (
-      <Badge variant="outline" className="border-blue-500 text-blue-500">
-        <Zap className="mr-1 h-3 w-3" />
+      <Badge variant="outline" className="border-green-500 text-green-500">
         Recovered
       </Badge>
     );
@@ -302,8 +300,7 @@ export function TransactionHistoryItem({
 
           {/* Recovered via EVM Recover indicator */}
           {transaction.recoveredViaEvmRecover && (
-            <div className="flex items-center gap-2 text-blue-500">
-              <Zap className="h-4 w-4" />
+            <div className="flex items-center gap-2 text-green-500">
               <span className="text-xs">Recovered via EVM Recover</span>
             </div>
           )}
