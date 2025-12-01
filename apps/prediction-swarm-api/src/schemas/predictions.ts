@@ -2,8 +2,25 @@ import { ContextSchema, parsedPredictionSchema } from "@torus-ts/db/schema";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
+const PG_BIGINT_MAX = 2n ** 63n - 1n;
+
+const tweetIdSchema = z
+  .string()
+  .min(1)
+  .refine(
+    (val) => {
+      try {
+        const bigIntVal = BigInt(val);
+        return bigIntVal > 0n && bigIntVal <= PG_BIGINT_MAX;
+      } catch {
+        return false;
+      }
+    },
+    { message: "Tweet ID must be a valid positive integer within range" },
+  );
+
 const predictionSourceSchema = z.object({
-  tweet_id: z.string(),
+  tweet_id: tweetIdSchema,
 });
 
 const postSliceSchema = z.object({
@@ -35,7 +52,7 @@ export const PARSED_PREDICTION_INSERT_SCHEMA = createInsertSchema(
   });
 
 export const predictionContentSchema = z.object({
-  tweetId: z.string(),
+  tweetId: tweetIdSchema,
   sentAt: z.string().datetime(),
   prediction: PARSED_PREDICTION_INSERT_SCHEMA.extend({
     topicName: z.string().min(1),
