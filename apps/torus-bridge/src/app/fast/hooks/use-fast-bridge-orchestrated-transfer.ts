@@ -244,22 +244,35 @@ export function useOrchestratedTransfer() {
           addTransaction,
           getExplorerUrl,
           onTransactionConfirming: (txHash, baselineBalance) => {
-            // Create history entry when transaction is signed and submitted
-            const newTransactionId = addToHistory({
-              direction: "base-to-native",
-              amount,
-              status: "pending",
-              currentStep: SimpleBridgeStep.STEP_1_CONFIRMING,
-              step1TxHash: txHash,
-              baseAddress: evmAddress,
-              nativeAddress: selectedAccount.address,
-              canRetry: true,
-              step1BaselineBalance: baselineBalance.toString(),
-            });
-            currentTransactionIdRef.current = newTransactionId;
+            // Check if we're retrying an existing transaction
+            if (currentTransactionIdRef.current) {
+              // Update existing history entry (retry case)
+              updateHistoryTransaction(currentTransactionIdRef.current, {
+                status: "pending",
+                currentStep: SimpleBridgeStep.STEP_1_CONFIRMING,
+                step1TxHash: txHash,
+                step1BaselineBalance: baselineBalance.toString(),
+                errorMessage: undefined,
+                errorStep: undefined,
+              });
+            } else {
+              // Create new history entry when transaction is signed and submitted
+              const newTransactionId = addToHistory({
+                direction: "base-to-native",
+                amount,
+                status: "pending",
+                currentStep: SimpleBridgeStep.STEP_1_CONFIRMING,
+                step1TxHash: txHash,
+                baseAddress: evmAddress,
+                nativeAddress: selectedAccount.address,
+                canRetry: true,
+                step1BaselineBalance: baselineBalance.toString(),
+              });
+              currentTransactionIdRef.current = newTransactionId;
 
-            // Notify that transaction was created (for URL update / F5 recovery)
-            onTransactionCreatedRef.current?.(newTransactionId);
+              // Notify that transaction was created (for URL update / F5 recovery)
+              onTransactionCreatedRef.current?.(newTransactionId);
+            }
           },
         }),
       );
@@ -404,22 +417,35 @@ export function useOrchestratedTransfer() {
           addTransaction,
           getExplorerUrl,
           onTransactionConfirming: (txHash, baselineBalance) => {
-            // Create history entry when transaction is signed and submitted
-            const newTransactionId = addToHistory({
-              direction: "native-to-base",
-              amount,
-              status: "pending",
-              currentStep: SimpleBridgeStep.STEP_1_CONFIRMING,
-              step1TxHash: txHash,
-              baseAddress: evmAddress,
-              nativeAddress: selectedAccount.address,
-              canRetry: true,
-              step1BaselineBalance: baselineBalance.toString(),
-            });
-            currentTransactionIdRef.current = newTransactionId;
+            // Check if we're retrying an existing transaction
+            if (currentTransactionIdRef.current) {
+              // Update existing history entry (retry case)
+              updateHistoryTransaction(currentTransactionIdRef.current, {
+                status: "pending",
+                currentStep: SimpleBridgeStep.STEP_1_CONFIRMING,
+                step1TxHash: txHash,
+                step1BaselineBalance: baselineBalance.toString(),
+                errorMessage: undefined,
+                errorStep: undefined,
+              });
+            } else {
+              // Create new history entry when transaction is signed and submitted
+              const newTransactionId = addToHistory({
+                direction: "native-to-base",
+                amount,
+                status: "pending",
+                currentStep: SimpleBridgeStep.STEP_1_CONFIRMING,
+                step1TxHash: txHash,
+                baseAddress: evmAddress,
+                nativeAddress: selectedAccount.address,
+                canRetry: true,
+                step1BaselineBalance: baselineBalance.toString(),
+              });
+              currentTransactionIdRef.current = newTransactionId;
 
-            // Notify that transaction was created (for URL update / F5 recovery)
-            onTransactionCreatedRef.current?.(newTransactionId);
+              // Notify that transaction was created (for URL update / F5 recovery)
+              onTransactionCreatedRef.current?.(newTransactionId);
+            }
           },
         }),
       );
@@ -748,6 +774,15 @@ export function useOrchestratedTransfer() {
       updateBridgeState({ errorMessage: undefined });
       clearErrorDetails();
 
+      // Reset the failed transaction status to allow UI to show progress
+      setTransactions((prev) =>
+        prev.map((tx) =>
+          tx.step === failedTransaction.step
+            ? { ...tx, status: "STARTING" as const, errorDetails: undefined }
+            : tx,
+        ),
+      );
+
       if (failedTransaction.step === 1) {
         if (direction === "base-to-native") {
           await executeBaseToNative(amount);
@@ -777,6 +812,7 @@ export function useOrchestratedTransfer() {
     retryNativeToBaseStep2,
     updateBridgeState,
     clearErrorDetails,
+    setTransactions,
   ]);
 
   // Wrapper for Quick Send EVM → Native
