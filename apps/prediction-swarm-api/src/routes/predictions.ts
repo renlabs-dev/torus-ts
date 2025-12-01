@@ -213,7 +213,9 @@ export const predictionsRouter = (app: AuthApp) =>
                 const topicId = topicMap.get(topicName);
 
                 if (!predictionId || !topicId) {
-                  throw new Error(`Missing predictionId or topicId for tweet ${item.content.tweetId}`);
+                  throw new Error(
+                    `Missing predictionId or topicId for tweet ${item.content.tweetId}`,
+                  );
                 }
 
                 return {

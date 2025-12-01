@@ -44,9 +44,7 @@ export const tweetsRouter = (app: AuthApp) =>
 
         const fromTrackedUser = inArray(
           scrapedTweetSchema.authorId,
-          ctx.db
-            .select({ id: twitterUsersSchema.id })
-            .from(twitterUsersSchema),
+          ctx.db.select({ id: twitterUsersSchema.id }).from(twitterUsersSchema),
         );
 
         const notProcessedByAgent = (agentAddress: string) =>
@@ -118,7 +116,10 @@ export const tweetsRouter = (app: AuthApp) =>
             .where(inArray(scrapedTweetSchema.conversationId, conversationIds));
         }
 
-        const contextByConversation = new Map<bigint, typeof allContextTweets>();
+        const contextByConversation = new Map<
+          bigint,
+          typeof allContextTweets
+        >();
         for (const ctxTweet of allContextTweets) {
           if (ctxTweet.conversationId) {
             const existing =

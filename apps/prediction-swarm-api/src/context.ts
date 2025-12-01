@@ -42,7 +42,9 @@ export async function createAppContext(env: Env): Promise<AppContext> {
   }
 
   if (globalServerHashSigner === null) {
-    globalServerHashSigner = await createHashSigner(env.PREDICTION_APP_MNEMONIC);
+    globalServerHashSigner = await createHashSigner(
+      env.PREDICTION_APP_MNEMONIC,
+    );
   }
 
   return {

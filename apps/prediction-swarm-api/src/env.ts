@@ -8,9 +8,7 @@ export const getEnv = validateEnvOrExit({
     .default("8080")
     .transform((val) => Number.parseInt(val, 10)),
   POSTGRES_URL: z.string().min(1, "POSTGRES_URL is required"),
-  NEXT_PUBLIC_TORUS_RPC_URL: z
-    .string()
-    .nonempty("TORUS_RPC_URL is required"),
+  NEXT_PUBLIC_TORUS_RPC_URL: z.string().nonempty("TORUS_RPC_URL is required"),
   PERMISSION_GRANTOR_ADDRESS: z
     .string()
     .min(1, "PERMISSION_GRANTOR_ADDRESS is required")
