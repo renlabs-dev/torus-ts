@@ -255,6 +255,10 @@ export function FastBridgeForm() {
   const startNewTransfer = useCallback(async () => {
     if (!amountFrom || !walletsReady) return;
 
+    // Reset any previous state before starting new transfer
+    clearTransactionFromUrl();
+    setCurrentTransactionId(null);
+
     setShowTransactionDialog(true);
     const [error, _] = await tryAsync(
       executeTransfer(direction, amountFrom, setTransactionInUrl),
@@ -269,6 +273,8 @@ export function FastBridgeForm() {
     executeTransfer,
     direction,
     setTransactionInUrl,
+    clearTransactionFromUrl,
+    setCurrentTransactionId,
   ]);
 
   const handleSubmit = useCallback(() => {
@@ -299,17 +305,35 @@ export function FastBridgeForm() {
   );
 
   const handleCloseDialog = useCallback(() => {
+    // Only allow closing when completed or error
     if (
-      bridgeState.step === SimpleBridgeStep.COMPLETE ||
-      bridgeState.step === SimpleBridgeStep.ERROR
+      bridgeState.step !== SimpleBridgeStep.COMPLETE &&
+      bridgeState.step !== SimpleBridgeStep.ERROR
     ) {
-      setShowTransactionDialog(false);
-      clearTransactionFromUrl();
-      if (bridgeState.step === SimpleBridgeStep.COMPLETE) {
-        setAmountFrom("");
-      }
+      return;
     }
-  }, [bridgeState.step, clearTransactionFromUrl]);
+
+    setShowTransactionDialog(false);
+    clearTransactionFromUrl();
+    setCurrentTransactionId(null);
+
+    if (bridgeState.step === SimpleBridgeStep.COMPLETE) {
+      setAmountFrom("");
+    }
+
+    // Reset bridge state to avoid stale state when starting new transfer
+    updateBridgeState({
+      step: SimpleBridgeStep.IDLE,
+      errorMessage: undefined,
+    });
+    setTransactions([]);
+  }, [
+    bridgeState.step,
+    clearTransactionFromUrl,
+    setCurrentTransactionId,
+    updateBridgeState,
+    setTransactions,
+  ]);
 
   const handleRetryFromHistory = useCallback(
     (transaction: FastBridgeTransactionHistoryItem) => {

@@ -881,7 +881,7 @@ export function useOrchestratedTransfer() {
     [retryNativeToBaseStep2, setTransactions, updateBridgeState],
   );
 
-  const setCurrentTransactionId = useCallback((id: string) => {
+  const setCurrentTransactionId = useCallback((id: string | null) => {
     currentTransactionIdRef.current = id;
   }, []);
 
