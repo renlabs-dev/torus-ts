@@ -66,7 +66,9 @@ export function TransactionHistoryDialog({
   const filteredTransactions = useMemo(() => {
     switch (filter) {
       case "completed":
-        return allTransactions.filter((tx) => tx.status === "completed");
+        return allTransactions.filter(
+          (tx) => tx.status === "completed" || tx.recoveredViaEvmRecover,
+        );
       case "error":
         return allTransactions.filter((tx) => tx.status === "error");
       default:
@@ -166,8 +168,10 @@ export function TransactionHistoryDialog({
               <TabsTrigger value="completed" className="flex-1">
                 Completed (
                 {
-                  allTransactions.filter((tx) => tx.status === "completed")
-                    .length
+                  allTransactions.filter(
+                    (tx) =>
+                      tx.status === "completed" || tx.recoveredViaEvmRecover,
+                  ).length
                 }
                 )
               </TabsTrigger>
