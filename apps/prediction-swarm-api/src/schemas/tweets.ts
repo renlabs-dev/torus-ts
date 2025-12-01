@@ -2,7 +2,7 @@ import { z } from "zod";
 
 export const getTweetsNextQuerySchema = z.object({
   from: z.string(),
-  limit: z.coerce.number().int().positive().default(10),
+  limit: z.coerce.number().int().positive().max(100).default(10),
   excludeProcessedByAgent: z
     .string()
     .optional()
