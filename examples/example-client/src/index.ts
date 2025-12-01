@@ -1,6 +1,5 @@
-import { z } from "zod";
-
 import { Agent } from "@torus-network/sdk";
+import { z } from "zod";
 
 const agent = new Agent({
   agentKey: "5FgfC2DY4yreEWEughz46RZYQ8oBhHVqD9fVq6gV89E6z4Ea", // Your agent's SS58 address
