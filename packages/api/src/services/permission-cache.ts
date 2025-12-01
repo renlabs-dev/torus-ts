@@ -302,7 +302,9 @@ export class PermissionCacheService {
       logger.warn(
         `Permission denied: ${address} does not have ${namespacePath}`,
       );
-      throw new PermissionDeniedError(`Permission denied: requires ${namespacePath}`);
+      throw new PermissionDeniedError(
+        `Permission denied: requires ${namespacePath}`,
+      );
     }
 
     logger.debug(`Permission granted: ${address} has ${namespacePath}`);
