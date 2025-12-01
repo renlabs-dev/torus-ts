@@ -218,7 +218,7 @@ export function useOrchestratedTransfer() {
     [nativeBalanceQuery.data],
   );
 
-  const baseBalanceWrapped = useMemo(
+  const _baseBalanceWrapped = useMemo(
     () => (baseBalance !== undefined ? { value: baseBalance } : undefined),
     [baseBalance],
   );
@@ -467,7 +467,6 @@ export function useOrchestratedTransfer() {
           warpCore,
           accounts,
           refetchBaseBalance,
-          baseBalance: baseBalanceWrapped,
           refetchTorusEvmBalance,
           updateBridgeState,
           addTransaction,
@@ -536,7 +535,6 @@ export function useOrchestratedTransfer() {
       updateBridgeState,
       addTransaction,
       toast,
-      baseBalanceWrapped,
       refetchBaseBalance,
       switchChainAsync,
       chain?.id,
@@ -650,7 +648,6 @@ export function useOrchestratedTransfer() {
         warpCore,
         accounts,
         refetchBaseBalance,
-        baseBalance: baseBalanceWrapped,
         refetchTorusEvmBalance,
         updateBridgeState,
         addTransaction,
@@ -687,7 +684,6 @@ export function useOrchestratedTransfer() {
       chain?.id,
       switchChainAsync,
       refetchBaseBalance,
-      baseBalanceWrapped,
       getExplorerUrl,
       setTransactions,
       warpCore,

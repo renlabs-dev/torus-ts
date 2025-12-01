@@ -375,8 +375,6 @@ interface NativeToBaseStep2Params {
     status: string;
     data?: { value: bigint };
   }>;
-  /** Optional current Base balance */
-  baseBalance?: { value: bigint };
   /** Function to refetch Torus EVM balance from the network */
   refetchTorusEvmBalance: () => Promise<{
     status: string;
