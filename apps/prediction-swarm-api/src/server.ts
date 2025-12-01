@@ -1,9 +1,9 @@
-import { cors } from "@elysiajs/cors";
-import { node } from "@elysiajs/node";
-import { openapi } from "@elysiajs/openapi";
 import { readFileSync } from "fs";
 import { dirname, join } from "path";
 import { fileURLToPath } from "url";
+import { cors } from "@elysiajs/cors";
+import { node } from "@elysiajs/node";
+import { openapi } from "@elysiajs/openapi";
 import { Elysia } from "elysia";
 import { zodToJsonSchema } from "zod-to-json-schema";
 import { createAppContext } from "./context";
@@ -14,7 +14,10 @@ import { tweetsRouter } from "./routes/tweets";
 import { createSignedError, HttpError } from "./utils/errors";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const apiDocs = readFileSync(join(__dirname, "../API_DOCUMENTATION.md"), "utf-8");
+const apiDocs = readFileSync(
+  join(__dirname, "../API_DOCUMENTATION.md"),
+  "utf-8",
+);
 
 export async function createServer() {
   const env = getEnv(process.env);
@@ -54,7 +57,12 @@ export async function createServer() {
 
       if (error instanceof HttpError) {
         set.status = error.status;
-        return createSignedError(error.status, error.message, requestInput, signHash);
+        return createSignedError(
+          error.status,
+          error.message,
+          requestInput,
+          signHash,
+        );
       }
 
       if (code === "VALIDATION") {
@@ -64,7 +72,12 @@ export async function createServer() {
 
       console.error("Unhandled error:", error);
       set.status = 500;
-      return createSignedError(500, "Internal server error", requestInput, signHash);
+      return createSignedError(
+        500,
+        "Internal server error",
+        requestInput,
+        signHash,
+      );
     })
     .get("/", ({ set }) => {
       set.headers["content-type"] = "text/markdown; charset=utf-8";

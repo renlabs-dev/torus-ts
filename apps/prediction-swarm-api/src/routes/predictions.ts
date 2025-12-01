@@ -140,7 +140,10 @@ export const predictionsRouter = (app: AuthApp) =>
           for (const item of input) {
             const tweet = tweetMap.get(item.content.tweetId);
             if (!tweet) {
-              throw new HttpError(404, `Tweet ${item.content.tweetId} not found`);
+              throw new HttpError(
+                404,
+                `Tweet ${item.content.tweetId} not found`,
+              );
             }
 
             if (tweet.predictionId) {

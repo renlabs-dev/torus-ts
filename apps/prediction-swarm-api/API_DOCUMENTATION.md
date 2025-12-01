@@ -19,6 +19,7 @@ All endpoints require authentication via custom headers:
 ### Authentication Flow
 
 1. Create a canonical JSON payload:
+
 ```json
 {
   "address": "your-ss58-address",
@@ -50,11 +51,11 @@ Fetches a paginated batch of unprocessed tweets from tracked users for predictio
 
 #### Query Parameters
 
-| Parameter | Type | Required | Default | Description |
-|-----------|------|----------|---------|-------------|
-| `from` | string | Yes | - | Cursor for pagination (format: `microseconds_tweetId`) |
-| `limit` | number | No | 10 | Number of tweets to return (1-100, must be positive integer) |
-| `excludeProcessedByAgent` | string | No | - | If "true", excludes tweets already processed by this agent |
+| Parameter                 | Type   | Required | Default | Description                                                  |
+| ------------------------- | ------ | -------- | ------- | ------------------------------------------------------------ |
+| `from`                    | string | Yes      | -       | Cursor for pagination (format: `microseconds_tweetId`)       |
+| `limit`                   | number | No       | 10      | Number of tweets to return (1-100, must be positive integer) |
+| `excludeProcessedByAgent` | string | No       | -       | If "true", excludes tweets already processed by this agent   |
 
 #### Request Example
 
@@ -79,15 +80,18 @@ curl -X GET "http://localhost:3117/v1/getTweetsNext?from=1733068800000000_123456
       conversationId: string | null;
       parentTweetId: string | null;
     };
-    context: Record<string, {
-      id: string;
-      text: string;
-      authorId: string;
-      date: Date;
-      quotedId: string | null;
-      conversationId: string | null;
-      parentTweetId: string | null;
-    }>;
+    context: Record<
+      string,
+      {
+        id: string;
+        text: string;
+        authorId: string;
+        date: Date;
+        quotedId: string | null;
+        conversationId: string | null;
+        parentTweetId: string | null;
+      }
+    >;
   }>;
   nextCursor: string | null;
   hasMore: boolean;
@@ -180,7 +184,7 @@ Array<{
     signature: string;
     version: 1;
   };
-}>
+}>;
 ```
 
 #### Request Example
@@ -248,7 +252,7 @@ Array<{
   receipt: {
     signature: string;
     timestamp: string;
-  };
+  }
 }
 ```
 
@@ -267,6 +271,7 @@ Array<{
 #### Receipt Verification
 
 The server signs a receipt containing:
+
 ```json
 {
   "parsedPredictionIds": ["uuid-1", "uuid-2", ...],
@@ -287,11 +292,11 @@ All error responses are signed and include the request input for verification. T
 ```typescript
 {
   error: string;
-  input: object | null;  // The request body or query params
+  input: object | null; // The request body or query params
   receipt: {
     signature: string;
     timestamp: string;
-  };
+  }
 }
 ```
 
@@ -337,7 +342,12 @@ All error responses are signed and include the request input for verification. T
 ```json
 {
   "error": "Invalid timestamp for prediction 0: sentAt is 350s off (max 300s allowed)",
-  "input": [{ "content": { "tweetId": "123", "..." : "..." }, "metadata": { "..." : "..." } }],
+  "input": [
+    {
+      "content": { "tweetId": "123", "...": "..." },
+      "metadata": { "...": "..." }
+    }
+  ],
   "receipt": {
     "signature": "0x...",
     "timestamp": "2025-12-01T12:00:00.000Z"
@@ -348,7 +358,7 @@ All error responses are signed and include the request input for verification. T
 ```json
 {
   "error": "Batch size too large. Maximum 500 predictions per request.",
-  "input": [{ "..." : "..." }],
+  "input": [{ "...": "..." }],
   "receipt": {
     "signature": "0x...",
     "timestamp": "2025-12-01T12:00:00.000Z"
@@ -361,7 +371,12 @@ All error responses are signed and include the request input for verification. T
 ```json
 {
   "error": "Tweet 1234567890 not found",
-  "input": [{ "content": { "tweetId": "1234567890", "..." : "..." }, "metadata": { "..." : "..." } }],
+  "input": [
+    {
+      "content": { "tweetId": "1234567890", "...": "..." },
+      "metadata": { "...": "..." }
+    }
+  ],
   "receipt": {
     "signature": "0x...",
     "timestamp": "2025-12-01T12:00:00.000Z"
@@ -389,6 +404,7 @@ All error responses are signed and include the request input for verification. T
 ### Agent Workflow
 
 1. **Poll for new tweets**:
+
    ```
    GET /v1/getTweetsNext?from=0_0&limit=100&excludeProcessedByAgent=true
    ```
@@ -400,6 +416,7 @@ All error responses are signed and include the request input for verification. T
    - Extract relevant context
 
 3. **Submit predictions** back to the API:
+
    ```
    POST /v1/storePredictions
    ```
@@ -416,8 +433,8 @@ All error responses are signed and include the request input for verification. T
 ### Signature Generation (Node.js Example)
 
 ```javascript
-import { blake2AsHex } from "@polkadot/util-crypto";
 import { Keyring } from "@polkadot/keyring";
+import { blake2AsHex } from "@polkadot/util-crypto";
 import canonicalize from "canonicalize";
 
 // Create keyring and add account
@@ -440,7 +457,9 @@ const authSignature = account.sign(authHash);
 const content = {
   tweetId: "1234567890",
   sentAt: new Date().toISOString(),
-  prediction: { /* ... */ }
+  prediction: {
+    /* ... */
+  },
 };
 
 // Sign content payload
@@ -457,13 +476,14 @@ fetch("http://localhost:3117/v1/storePredictions", {
     "x-signature": authSignature,
     "x-timestamp": timestamp,
   },
-  body: JSON.stringify([{
-    content: content,
-    metadata: {
-      signature: contentSignature,
-      version: 1
-    }
-  }])
+  body: JSON.stringify([
+    {
+      content: content,
+      metadata: {
+        signature: contentSignature,
+        version: 1,
+      },
+    },
+  ]),
 });
 ```
-
