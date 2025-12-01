@@ -271,12 +271,6 @@ export function useOrchestratedTransfer() {
               currentTransactionIdRef.current = newTransactionId;
 
               // Notify that transaction was created (for URL update / F5 recovery)
-              console.log(
-                "[Step 1 Confirming] Created transaction:",
-                newTransactionId,
-                "callback available:",
-                !!onTransactionCreatedRef.current,
-              );
               onTransactionCreatedRef.current?.(newTransactionId);
             }
           },
@@ -452,12 +446,6 @@ export function useOrchestratedTransfer() {
               currentTransactionIdRef.current = newTransactionId;
 
               // Notify that transaction was created (for URL update / F5 recovery)
-              console.log(
-                "[Step 1 Confirming] Created transaction:",
-                newTransactionId,
-                "callback available:",
-                !!onTransactionCreatedRef.current,
-              );
               onTransactionCreatedRef.current?.(newTransactionId);
             }
           },

@@ -313,21 +313,9 @@ export function FastBridgeForm() {
 
   const handleRetryFromHistory = useCallback(
     (transaction: FastBridgeTransactionHistoryItem) => {
-      console.log(
-        "[Retry from History] Starting restore for transaction:",
-        transaction.id,
-      );
-
       setShowHistoryDialog(false);
       setDirection(transaction.direction);
       setAmountFrom(transaction.amount);
-
-      console.log(
-        "[Retry from History] Set direction:",
-        transaction.direction,
-        "amount:",
-        transaction.amount,
-      );
 
       // Set URL state for recovery
       setTransactionInUrl(transaction.id);
@@ -415,22 +403,14 @@ export function FastBridgeForm() {
       // Restore the transactions to the shared state
       setTransactions(restoredTransactions);
 
-      console.log(
-        "[Retry from History] Restored transactions:",
-        restoredTransactions,
-      );
-      console.log("[Retry from History] Opening transaction dialog");
-
       // Open dialog showing the current state
       setShowTransactionDialog(true);
 
       // If at STEP_1_CONFIRMING, resume polling for balance confirmation
       if (transaction.currentStep === SimpleBridgeStep.STEP_1_CONFIRMING) {
-        console.log("[F5 Recovery] Resuming step 1 polling...");
         void resumeStep1Polling(
           transaction,
           () => {
-            console.log("[F5 Recovery] Step 1 polling complete");
             // After step 1 completes, proceed to step 2 would be handled by user action (retry)
           },
           (error) => {
@@ -472,15 +452,12 @@ export function FastBridgeForm() {
     f5RecoveryExecutedRef.current = true;
 
     const txId = getTransactionFromUrl();
-    console.log("[F5 Recovery] Checking URL for txId:", txId);
 
     if (txId) {
       const transaction = getTransactionById(txId);
-      console.log("[F5 Recovery] Found transaction:", transaction);
 
       if (!transaction) {
         // Transaction not found in store - show toast and redirect
-        console.warn("[F5 Recovery] Transaction not found in store:", txId);
         clearTransactionFromUrl();
         toast({
           title: "Transaction not found",
@@ -500,7 +477,12 @@ export function FastBridgeForm() {
         }
       }
     }
-  }, [getTransactionFromUrl, getTransactionById, clearTransactionFromUrl, toast]);
+  }, [
+    getTransactionFromUrl,
+    getTransactionById,
+    clearTransactionFromUrl,
+    toast,
+  ]);
 
   const getChainInfo = (isFrom: boolean) => {
     const isBaseToNative = direction === "base-to-native";
