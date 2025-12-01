@@ -177,12 +177,7 @@ export function QuickSendEvmDialog({
               <p className="text-muted-foreground text-sm">
                 Transferring{" "}
                 <span className="font-semibold">
-                  {formatAmount(
-                    originalAmount > GAS_RESERVE_WEI
-                      ? originalAmount - GAS_RESERVE_WEI
-                      : 0n,
-                  )}{" "}
-                  TORUS
+                  {formatAmount(originalAmount)} TORUS
                 </span>{" "}
                 to <span className="font-semibold">{originalDestination}</span>
               </p>
@@ -212,12 +207,7 @@ export function QuickSendEvmDialog({
               <p className="text-muted-foreground text-sm">
                 Successfully sent{" "}
                 <span className="font-semibold">
-                  {formatAmount(
-                    originalAmount > GAS_RESERVE_WEI
-                      ? originalAmount - GAS_RESERVE_WEI
-                      : 0n,
-                  )}{" "}
-                  TORUS
+                  {formatAmount(originalAmount)} TORUS
                 </span>{" "}
                 to <span className="font-semibold">{originalDestination}</span>
               </p>
