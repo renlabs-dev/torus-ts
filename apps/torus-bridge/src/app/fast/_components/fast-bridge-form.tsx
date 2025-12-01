@@ -219,7 +219,8 @@ export function FastBridgeForm() {
         throw new Error("Insufficient balance for gas fees");
       }
 
-      // Subtract gas reserve from the amount to send
+      // EVM to Native: Gas is paid in TORUS (native token of Torus EVM chain)
+      // Reserve gas fees before sending
       const amountToSend = amount - TORUS_EVM_GAS_RESERVE;
       const amountStr = formatWeiToDecimalString(amountToSend);
 
