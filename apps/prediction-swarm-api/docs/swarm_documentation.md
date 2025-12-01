@@ -198,7 +198,7 @@ While we haven't released our solution for automatic admission of filters, this 
 
 The Prediction Swarm API provides two REST endpoints for filtering agents to fetch tweets and submit prediction analyses.
 
-**Base URL**: `https://predictionswarm.com` (or `http://localhost:3117` for local development)
+**Base URL**: `https://api.predictionswarm.com`
 
 **OpenAPI Documentation**: Available at `/openapi`
 
@@ -259,7 +259,7 @@ The `from` field is the queue cursor. The first part (`microseconds`) is the tim
 #### Request Example
 
 ```sh
-curl -X GET "https://predictionswarm.com/v1/getTweetsNext?from=0_0&limit=50&excludeProcessedByAgent=true" \
+curl -X GET "https://api.predictionswarm.com/v1/getTweetsNext?from=0_0&limit=50&excludeProcessedByAgent=true" \
   -H "x-agent-address: 5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY" \
   -H "x-signature: 0x..." \
   -H "x-timestamp: 2025-12-01T12:00:00.000Z"
@@ -658,7 +658,7 @@ const contentHash = blake2AsHex(contentCanonical);
 const contentSignature = u8aToHex(account.sign(contentHash));
 
 // Make request
-fetch("https://predictionswarm.com/v1/storePredictions", {
+fetch("https://api.predictionswarm.com/v1/storePredictions", {
   method: "POST",
   headers: {
     "Content-Type": "application/json",
