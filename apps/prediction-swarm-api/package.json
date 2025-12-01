@@ -34,6 +34,7 @@
     "@torus-ts/db": "workspace:*",
     "canonicalize": "^2.1.0",
     "elysia": "^1.4.16",
+    "marked": "^17.0.1",
     "zod": "catalog:",
     "zod-to-json-schema": "^3.24.6"
   },
