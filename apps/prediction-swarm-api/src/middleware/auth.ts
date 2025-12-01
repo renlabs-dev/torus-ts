@@ -30,7 +30,7 @@ export const authPlugin = (app: Elysia) =>
       const timestamp = parsedHeaders["x-timestamp"];
 
       const now = new Date();
-      const maxTimestampDiffMs = 60 * 1000;
+      const maxTimestampDiffMs = 300 * 1000;
       const diffMs = Math.abs(now.getTime() - timestamp.getTime());
 
       if (diffMs > maxTimestampDiffMs) {
