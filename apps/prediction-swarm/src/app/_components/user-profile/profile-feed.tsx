@@ -38,7 +38,6 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useMemo, useState } from "react";
-import { assert } from "tsafe";
 import { PredictionReportDialog } from "../prediction-report-dialog";
 import { FutureTimeframeBadge } from "./future-timeframe-badge";
 import { StarButton } from "./star-button";
@@ -531,32 +530,6 @@ export function ProfileFeed({
                                     </div>
                                   )}
 
-                                {activePrediction.target.length > 0 &&
-                                  (() => {
-                                    const firstTarget =
-                                      activePrediction.target[0];
-                                    assert(
-                                      firstTarget !== undefined,
-                                      "First target should exist when array length > 0",
-                                    );
-                                    return (
-                                      <div className="flex flex-col items-start gap-1">
-                                        <span className="text-muted-foreground">
-                                          Source:
-                                        </span>
-                                        <CopyButton
-                                          className="hover:text-primary h-fit p-0 text-xs text-white/80"
-                                          variant="link"
-                                          copy={firstTarget.source.tweet_id}
-                                          message="Source tweet ID copied to clipboard."
-                                        >
-                                          {firstTarget.source.tweet_id}
-                                          <Copy className="ml-0.5 h-2 w-2" />
-                                        </CopyButton>
-                                      </div>
-                                    );
-                                  })()}
-
                                 {activePrediction.filterAgentId && (
                                   <div className="flex flex-col items-start gap-1">
                                     <span className="text-muted-foreground">
@@ -607,6 +580,73 @@ export function ProfileFeed({
                                     </CopyButton>
                                   </div>
                                 )}
+
+                                {(() => {
+                                  const sources = (
+                                    activePrediction.verdictSources ?? []
+                                  )
+                                    .filter(
+                                      (s) =>
+                                        s.url &&
+                                        typeof s.url === "string" &&
+                                        s.url.trim(),
+                                    )
+                                    .map((s) => {
+                                      let displayText = s.title?.trim();
+                                      if (!displayText) {
+                                        try {
+                                          const url = new URL(s.url);
+                                          const pathParts = url.pathname
+                                            .split("/")
+                                            .filter(Boolean);
+                                          let lastPart =
+                                            pathParts[pathParts.length - 1];
+                                          if (
+                                            lastPart &&
+                                            lastPart.length > 12
+                                          ) {
+                                            lastPart = `${lastPart.slice(0, 12)}...`;
+                                          }
+                                          displayText = lastPart
+                                            ? `${url.hostname}/.../${lastPart}`
+                                            : url.hostname;
+                                        } catch {
+                                          displayText = s.url;
+                                        }
+                                      }
+                                      if (displayText.length > 34) {
+                                        displayText = `${displayText.slice(0, 34)}...`;
+                                      }
+                                      return {
+                                        url: s.url,
+                                        displayText,
+                                      };
+                                    })
+                                    .filter((s) => s.displayText);
+
+                                  if (sources.length === 0) return null;
+
+                                  return (
+                                    <div>
+                                      <span className="text-muted-foreground">
+                                        Sources:
+                                      </span>
+                                      <div className="flex flex-col text-xs">
+                                        {sources.map((source, idx) => (
+                                          <a
+                                            key={idx}
+                                            href={source.url}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="hover:text-primary text-white/80 hover:underline"
+                                          >
+                                            {source.displayText}
+                                          </a>
+                                        ))}
+                                      </div>
+                                    </div>
+                                  );
+                                })()}
                               </div>
 
                               <div className="border-border border-t pt-3">
