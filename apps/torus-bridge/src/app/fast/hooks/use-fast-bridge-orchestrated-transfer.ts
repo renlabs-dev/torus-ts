@@ -212,7 +212,7 @@ export function useOrchestratedTransfer() {
     };
   }, [nativeBalanceQuery]);
 
-  const nativeBalance = useMemo(
+  const _nativeBalance = useMemo(
     () =>
       nativeBalanceQuery.data ? { value: nativeBalanceQuery.data } : undefined,
     [nativeBalanceQuery.data],
@@ -305,7 +305,6 @@ export function useOrchestratedTransfer() {
           switchChain: switchChainAsync,
           refetchTorusEvmBalance,
           refetchNativeBalance,
-          nativeBalance,
           wagmiConfig,
           updateBridgeState,
           addTransaction,
@@ -372,7 +371,6 @@ export function useOrchestratedTransfer() {
       refetchTorusEvmBalance,
       refetchNativeBalance,
       refetchBaseBalance,
-      nativeBalance,
       wagmiConfig,
       updateBridgeState,
       addTransaction,
@@ -579,7 +577,6 @@ export function useOrchestratedTransfer() {
         switchChain: switchChainAsync,
         refetchTorusEvmBalance,
         refetchNativeBalance,
-        nativeBalance,
         wagmiConfig,
         updateBridgeState,
         addTransaction,
@@ -611,7 +608,6 @@ export function useOrchestratedTransfer() {
       chain,
       refetchTorusEvmBalance,
       refetchNativeBalance,
-      nativeBalance,
       wagmiConfig,
       updateBridgeState,
       addTransaction,

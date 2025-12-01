@@ -321,8 +321,6 @@ interface BaseToNativeStep2Params {
     status: string;
     data?: { value: bigint };
   }>;
-  /** Optional current Native balance with value as bigint, undefined if not loaded */
-  nativeBalance?: { value: bigint };
   /** WAGMI configuration for wallet operations */
   wagmiConfig: Config;
   /** Function to update the bridge UI state */
@@ -362,7 +360,6 @@ export async function executeBaseToNativeStep2(
     switchChain,
     refetchTorusEvmBalance,
     refetchNativeBalance,
-    nativeBalance,
     wagmiConfig,
     updateBridgeState,
     addTransaction,
@@ -448,8 +445,8 @@ export async function executeBaseToNativeStep2(
   }
 
   // Capture baseline balance BEFORE sending transaction
-  await refetchNativeBalance();
-  const baselineNativeBalance = nativeBalance?.value ?? 0n;
+  const nativeRefetchResult = await refetchNativeBalance();
+  const baselineNativeBalance = nativeRefetchResult.data?.value ?? 0n;
   const expectedNativeIncrease = toNano(amount.trim());
 
   console.log(
