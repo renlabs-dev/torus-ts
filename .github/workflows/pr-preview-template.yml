@@ -7,7 +7,7 @@ on:
       app_name:
         required: true
         type: string
-      delete:
+      cleanup:
         required: false
         type: boolean
         default: false
@@ -29,7 +29,7 @@ concurrency:
 
 jobs:
   docker-build:
-    if: ${{ !inputs.delete }}
+    if: ${{ !inputs.cleanup }}
     permissions: write-all
     runs-on: ubicloud-standard-16
     steps:
@@ -66,7 +66,7 @@ jobs:
             ghcr.io/renlabs-dev/${{ inputs.app_name }}:pr-${{ github.event.number }}
 
   clean-stale:
-    if: ${{ !inputs.delete }}
+    if: ${{ !inputs.cleanup }}
     runs-on: ubicloud-standard-2
     container:
       image: ghcr.io/renlabs-dev/devops-ci:latest
@@ -85,8 +85,8 @@ jobs:
           /apps/clean_stale_releases.sh torus-dev-web-apps
 
   deploy:
-    if: ${{ !inputs.delete }}
-    needs: [docker-build, clean-stale]
+    if: ${{ !inputs.cleanup }}
+    needs: [docker-build]
     runs-on: ubicloud-standard-2
     container:
       image: ghcr.io/renlabs-dev/devops-ci:latest
@@ -122,10 +122,11 @@ jobs:
       - name: Set preview domain
         id: domain
         run: |
-          if [ "${{ inputs.app_name }}" == "torus-prophet-finder" ]; then
-            echo "host=pr-${{ github.event.number }}.prophetfinder.com" >> $GITHUB_OUTPUT
-          elif [ "${{ inputs.app_name }}" == "prediction-swarm" ]; then
-            echo "host=pr-${{ github.event.number }}.predictionswarm.com" >> $GITHUB_OUTPUT
+          config=$(cat .github/ci-config.json)
+          preview_domain=$(echo "$config" | jq -r ".apps[\"${{ inputs.app_name }}\"].preview_domain // empty")
+
+          if [ -n "$preview_domain" ]; then
+            echo "host=pr-${{ github.event.number }}.${preview_domain}" >> $GITHUB_OUTPUT
           else
             echo "host=pr-${{ github.event.number }}.${{ inputs.app_name }}.torus.network" >> $GITHUB_OUTPUT
           fi
@@ -185,8 +186,8 @@ jobs:
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "**Commit:** \`${{ github.sha }}\`" >> $GITHUB_STEP_SUMMARY
 
-  destroy:
-    if: ${{ inputs.delete }}
+  cleanup:
+    if: ${{ inputs.cleanup }}
     runs-on: ubicloud-standard-2
     container:
       image: ghcr.io/renlabs-dev/devops-ci:latest
@@ -203,8 +204,8 @@ jobs:
       - name: Setup Kubernetes authentication
         run: /apps/k8s_auth_w_approle_sa.sh
 
-      - name: Destroy PR preview app deployment
-        id: destroy
+      - name: Cleanup PR preview deployment
+        id: cleanup
         working-directory: apps/${{ inputs.app_name }}
         run: |
           # Capture exit code - helmfile destroy returns non-zero when nothing exists to delete
@@ -226,10 +227,11 @@ jobs:
       - name: Set preview domain for cleanup
         id: cleanup-domain
         run: |
-          if [ "${{ inputs.app_name }}" == "torus-prophet-finder" ]; then
-            echo "host=pr-${{ github.event.number }}.prophetfinder.com" >> $GITHUB_OUTPUT
-          elif [ "${{ inputs.app_name }}" == "prediction-swarm" ]; then
-            echo "host=pr-${{ github.event.number }}.predictionswarm.com" >> $GITHUB_OUTPUT
+          config=$(cat .github/ci-config.json)
+          preview_domain=$(echo "$config" | jq -r ".apps[\"${{ inputs.app_name }}\"].preview_domain // empty")
+
+          if [ -n "$preview_domain" ]; then
+            echo "host=pr-${{ github.event.number }}.${preview_domain}" >> $GITHUB_OUTPUT
           else
             echo "host=pr-${{ github.event.number }}.${{ inputs.app_name }}.torus.network" >> $GITHUB_OUTPUT
           fi
@@ -244,7 +246,7 @@ jobs:
           echo "**Action:** Preview environment cleanup" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
 
-          if [ "${{ steps.destroy.outcome }}" == "success" ]; then
+          if [ "${{ steps.cleanup.outcome }}" == "success" ]; then
             echo "✅ **PR preview environment cleaned up successfully**" >> $GITHUB_STEP_SUMMARY
             echo "" >> $GITHUB_STEP_SUMMARY
             echo "- **Status:** Resources deleted" >> $GITHUB_STEP_SUMMARY

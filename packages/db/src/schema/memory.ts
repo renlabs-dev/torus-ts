@@ -326,6 +326,51 @@ export interface VerdictContext {
   feedback: string;
 }
 
+// ==== Duplicate Relations ====
+
+/**
+ * Stores duplicate relationships between parsed predictions.
+ * Uses additive/append-only pattern to support concurrent deduplication.
+ */
+export const predictionDuplicateRelationsSchema = createTable(
+  "prediction_duplicate_relations",
+  {
+    predictionId: uuidv7("prediction_id")
+      .notNull()
+      .references(() => parsedPredictionSchema.id, {
+        onDelete: "cascade",
+      }),
+    canonicalId: uuidv7("canonical_id")
+      .notNull()
+      .references(() => parsedPredictionSchema.id, {
+        onDelete: "cascade",
+      }),
+    similarityScore: decimal("similarity_score", { precision: 5, scale: 4 }),
+    ...timeFields(),
+  },
+  (t) => [
+    primaryKey({ columns: [t.predictionId, t.canonicalId] }),
+    index("prediction_duplicate_relations_prediction_id_idx").on(
+      t.predictionId,
+    ),
+    index("prediction_duplicate_relations_canonical_id_idx").on(t.canonicalId),
+  ],
+);
+
+/**
+ * Tracks which conversations have been processed for deduplication.
+ * Prevents redundant reprocessing of already-deduplicated conversations.
+ */
+export const deduplicationProcessedConversationsSchema = createTable(
+  "deduplication_processed_conversations",
+  {
+    conversationId: bigint("conversation_id").primaryKey(),
+    predictionsProcessed: integer("predictions_processed").notNull(),
+    duplicatesFound: integer("duplicates_found").notNull(),
+    ...timeFields(),
+  },
+);
+
 // ==== Prediction Feedback ====
 
 export const failureCauseEnum = pgEnum("failure_cause_enum", [
@@ -458,5 +503,69 @@ export const predictionReport = createTable(
     ),
     index("prediction_report_user_key_idx").on(t.userKey),
     index("prediction_report_report_type_idx").on(t.reportType),
+  ],
+);
+
+// ==== User Watches ====
+
+/**
+ * Tracks which users (by wallet address) are watching which Twitter users.
+ * Used to create personalized feeds of predictions from watched predictors.
+ */
+export const userWatchesSchema = createTable(
+  "user_watches",
+  {
+    id: uuidv7("id").primaryKey(),
+    watcherKey: ss58Address("watcher_key").notNull(),
+    watchedUserId: bigint("watched_user_id")
+      .notNull()
+      .references(() => twitterUsersSchema.id),
+    ...timeFields(),
+  },
+  (t) => [
+    unique("user_watches_unique").on(t.watcherKey, t.watchedUserId),
+    index("user_watches_watcher_key_idx").on(t.watcherKey),
+    index("user_watches_watched_user_id_idx").on(t.watchedUserId),
+  ],
+);
+
+/**
+ * Tracks which tweets (predictions) users have starred/bookmarked.
+ * Used to create personalized feeds of starred predictions.
+ */
+export const userStarsSchema = createTable(
+  "user_stars",
+  {
+    id: uuidv7("id").primaryKey(),
+    userKey: ss58Address("user_key").notNull(),
+    tweetId: bigint("tweet_id")
+      .notNull()
+      .references(() => scrapedTweetSchema.id),
+    ...timeFields(),
+  },
+  (t) => [
+    unique("user_stars_unique").on(t.userKey, t.tweetId),
+    index("user_stars_user_key_idx").on(t.userKey),
+    index("user_stars_tweet_id_idx").on(t.tweetId),
+  ],
+);
+
+// ==== Contributor Reward System ====
+
+/**
+ * Track reward distributions with scores and recipients
+ */
+export const rewardDistributionsSchema = createTable(
+  "reward_distributions",
+  {
+    id: uuidv7("id").primaryKey(),
+    distributionTime: timestampz("distribution_time").notNull(),
+    permissionId: varchar("permission_id", { length: 66 }),
+    scores: jsonb("scores").$type<Record<string, number>>().notNull(), // filter_agent_id (SS58Address) -> weight
+    ...timeFields(),
+  },
+  (t) => [
+    index("reward_distributions_distribution_time_idx").on(t.distributionTime),
+    index("reward_distributions_permission_id_idx").on(t.permissionId),
   ],
 );

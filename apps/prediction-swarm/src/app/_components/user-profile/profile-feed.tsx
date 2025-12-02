@@ -37,10 +37,10 @@ import {
   XCircle,
 } from "lucide-react";
 import Link from "next/link";
-import { useState } from "react";
-import { assert } from "tsafe";
+import { useMemo, useState } from "react";
 import { PredictionReportDialog } from "../prediction-report-dialog";
 import { FutureTimeframeBadge } from "./future-timeframe-badge";
+import { StarButton } from "./star-button";
 import { ThreadContext } from "./thread-context";
 import { TopicBadge } from "./topic-badge";
 
@@ -267,19 +267,30 @@ export function ProfileFeed({
     Record<string, number>
   >({});
 
+  const canonicalPredictionsMap = useMemo(() => {
+    const map = new Map<string, GroupedTweetData["predictions"]>();
+    predictions.forEach((tweet) => {
+      map.set(
+        tweet.tweetId.toString(),
+        tweet.predictions.filter((pred) => !pred.canonicalId),
+      );
+    });
+    return map;
+  }, [predictions]);
+
   const handleNavigate = (tweetId: string, direction: "prev" | "next") => {
-    const tweet = predictions.find((p) => p.tweetId.toString() === tweetId);
-    if (!tweet) return;
+    const canonicalPredictions = canonicalPredictionsMap.get(tweetId);
+    if (!canonicalPredictions) return;
 
     const currentIndex = activePredictionIndex[tweetId] ?? 0;
     let newIndex = currentIndex;
 
     if (direction === "prev") {
       newIndex =
-        currentIndex > 0 ? currentIndex - 1 : tweet.predictions.length - 1;
+        currentIndex > 0 ? currentIndex - 1 : canonicalPredictions.length - 1;
     } else {
       newIndex =
-        currentIndex < tweet.predictions.length - 1 ? currentIndex + 1 : 0;
+        currentIndex < canonicalPredictions.length - 1 ? currentIndex + 1 : 0;
     }
 
     setActivePredictionIndex((prev) => ({ ...prev, [tweetId]: newIndex }));
@@ -322,8 +333,17 @@ export function ProfileFeed({
         <div>
           {predictions.map((tweet, idx) => {
             const tweetId = tweet.tweetId.toString();
-            const activeIndex = activePredictionIndex[tweetId] ?? 0;
-            const activePrediction = tweet.predictions[activeIndex];
+
+            const canonicalPredictions = canonicalPredictionsMap.get(tweetId);
+
+            if (!canonicalPredictions || canonicalPredictions.length === 0)
+              return null;
+
+            const activeIndex = Math.min(
+              activePredictionIndex[tweetId] ?? 0,
+              canonicalPredictions.length - 1,
+            );
+            const activePrediction = canonicalPredictions[activeIndex];
 
             if (!activePrediction) return null;
 
@@ -339,7 +359,7 @@ export function ProfileFeed({
                   <ThreadContext
                     tweet={tweet}
                     activePrediction={activePrediction}
-                    allPredictions={tweet.predictions}
+                    allPredictions={canonicalPredictions}
                     highlightFn={highlightTweetText}
                   />
                 </div>
@@ -400,7 +420,7 @@ export function ProfileFeed({
                       {/* Actions: Navigation, External Link, More Info */}
                       <div className="flex items-center gap-1">
                         {/* Navigation Arrows - only show if multiple predictions */}
-                        {tweet.predictions.length > 1 && (
+                        {canonicalPredictions.length > 1 && (
                           <>
                             <Button
                               variant="ghost"
@@ -411,7 +431,7 @@ export function ProfileFeed({
                               <ChevronLeft className="h-4 w-4" />
                             </Button>
                             <span className="text-muted-foreground text-xs">
-                              {activeIndex + 1}/{tweet.predictions.length}
+                              {activeIndex + 1}/{canonicalPredictions.length}
                             </span>
                             <Button
                               variant="ghost"
@@ -438,6 +458,9 @@ export function ProfileFeed({
                             <ExternalLink className="h-4 w-4" />
                           </Button>
                         </Link>
+
+                        {/* Star Button */}
+                        <StarButton tweetId={tweet.tweetId.toString()} />
 
                         {/* More Info Popover */}
                         <Popover>
@@ -490,31 +513,22 @@ export function ProfileFeed({
                                   </p>
                                 </div>
 
-                                {activePrediction.target.length > 0 &&
-                                  (() => {
-                                    const firstTarget =
-                                      activePrediction.target[0];
-                                    assert(
-                                      firstTarget !== undefined,
-                                      "First target should exist when array length > 0",
-                                    );
-                                    return (
-                                      <div className="flex flex-col items-start gap-1">
-                                        <span className="text-muted-foreground">
-                                          Source:
-                                        </span>
-                                        <CopyButton
-                                          className="hover:text-primary h-fit p-0 text-xs text-white/80"
-                                          variant="link"
-                                          copy={firstTarget.source.tweet_id}
-                                          message="Source tweet ID copied to clipboard."
-                                        >
-                                          {firstTarget.source.tweet_id}
-                                          <Copy className="ml-0.5 h-2 w-2" />
-                                        </CopyButton>
-                                      </div>
-                                    );
-                                  })()}
+                                {activePrediction.duplicateCount &&
+                                  activePrediction.duplicateCount > 0 && (
+                                    <div>
+                                      <span className="text-muted-foreground">
+                                        Duplicates:
+                                      </span>
+                                      <p>
+                                        {activePrediction.duplicateCount}{" "}
+                                        duplicate
+                                        {activePrediction.duplicateCount > 1
+                                          ? "s"
+                                          : ""}{" "}
+                                        found
+                                      </p>
+                                    </div>
+                                  )}
 
                                 {activePrediction.filterAgentId && (
                                   <div className="flex flex-col items-start gap-1">
@@ -566,6 +580,73 @@ export function ProfileFeed({
                                     </CopyButton>
                                   </div>
                                 )}
+
+                                {(() => {
+                                  const sources = (
+                                    activePrediction.verdictSources ?? []
+                                  )
+                                    .filter(
+                                      (s) =>
+                                        s.url &&
+                                        typeof s.url === "string" &&
+                                        s.url.trim(),
+                                    )
+                                    .map((s) => {
+                                      let displayText = s.title?.trim();
+                                      if (!displayText) {
+                                        try {
+                                          const url = new URL(s.url);
+                                          const pathParts = url.pathname
+                                            .split("/")
+                                            .filter(Boolean);
+                                          let lastPart =
+                                            pathParts[pathParts.length - 1];
+                                          if (
+                                            lastPart &&
+                                            lastPart.length > 12
+                                          ) {
+                                            lastPart = `${lastPart.slice(0, 12)}...`;
+                                          }
+                                          displayText = lastPart
+                                            ? `${url.hostname}/.../${lastPart}`
+                                            : url.hostname;
+                                        } catch {
+                                          displayText = s.url;
+                                        }
+                                      }
+                                      if (displayText.length > 34) {
+                                        displayText = `${displayText.slice(0, 34)}...`;
+                                      }
+                                      return {
+                                        url: s.url,
+                                        displayText,
+                                      };
+                                    })
+                                    .filter((s) => s.displayText);
+
+                                  if (sources.length === 0) return null;
+
+                                  return (
+                                    <div>
+                                      <span className="text-muted-foreground">
+                                        Sources:
+                                      </span>
+                                      <div className="flex flex-col text-xs">
+                                        {sources.map((source, idx) => (
+                                          <a
+                                            key={idx}
+                                            href={source.url}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="hover:text-primary text-white/80 hover:underline"
+                                          >
+                                            {source.displayText}
+                                          </a>
+                                        ))}
+                                      </div>
+                                    </div>
+                                  );
+                                })()}
                               </div>
 
                               <div className="border-border border-t pt-3">

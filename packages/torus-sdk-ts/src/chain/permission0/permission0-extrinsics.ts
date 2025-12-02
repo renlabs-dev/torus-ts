@@ -188,6 +188,13 @@ export function revokePermission(api: ApiPromise, permissionId: PermissionId) {
   return api.tx.permission0.revokePermission(permissionId);
 }
 
+/**
+ * Execute a permission (triggers distribution for manual stream permissions).
+ */
+export function executePermission(api: ApiPromise, permissionId: PermissionId) {
+  return api.tx.permission0.executePermission(permissionId);
+}
+
 export interface DelegateWalletStakePermission {
   api: ApiPromise;
   recipient: SS58Address;
