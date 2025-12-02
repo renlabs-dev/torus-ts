@@ -190,6 +190,11 @@ export function Faucet() {
   });
 
   const submit = async (requiredRuns: number) => {
+    if (!api) {
+      toast.error("Torus API is not initialized");
+      return;
+    }
+
     const isValid = await validateForm(
       () => form.trigger(),
       (msg) => toast.error(msg),
@@ -205,7 +210,7 @@ export function Faucet() {
       const remaining = requiredRuns - (index + 1);
 
       const success = await processFaucetRun(
-        api as unknown as ApiPromise,
+        api,
         recipient,
         remaining,
         setLoadMessage,

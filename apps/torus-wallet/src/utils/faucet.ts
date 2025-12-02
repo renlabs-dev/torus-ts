@@ -281,33 +281,56 @@ export function callFaucetExtrinsic(
         return;
       }
 
-      const unsubscribe = await call.send((result) => {
-        if (result.status.isInBlock) {
+      let unsubscribe: VoidFn | undefined;
+      const [sendError, result] = await tryAsync(
+        call.send((result) => {
+          if (result.status.isInBlock) {
+            console.log(
+              "Included at block hash",
+              result.status.asInBlock.toHex(),
+            );
+            return;
+          }
+
+          if (!result.status.isFinalized) return;
+
           console.log(
-            "Included at block hash",
-            result.status.asInBlock.toHex(),
+            "Finalized block hash",
+            result.status.asFinalized.toHex(),
           );
-          return;
-        }
 
-        if (!result.status.isFinalized) return;
+          for (const {
+            event: { method, section, data },
+          } of result.events) {
+            if (section === "system" && method === "ExtrinsicFailed") {
+              assert(
+                unsubscribe !== undefined,
+                "Unsubscribe should be defined in extrinsic failed handler",
+              );
+              handleExtrinsicFailed(api, data, reject, unsubscribe);
+              break;
+            }
 
-        console.log("Finalized block hash", result.status.asFinalized.toHex());
-
-        for (const {
-          event: { method, section, data },
-        } of result.events) {
-          if (section === "system" && method === "ExtrinsicFailed") {
-            handleExtrinsicFailed(api, data, reject, unsubscribe);
-            break;
+            if (section === "system" && method === "ExtrinsicSuccess") {
+              assert(
+                unsubscribe !== undefined,
+                "Unsubscribe should be defined in extrinsic success handler",
+              );
+              handleExtrinsicSuccess(resolve, unsubscribe);
+              break;
+            }
           }
+        }),
+      );
 
-          if (section === "system" && method === "ExtrinsicSuccess") {
-            handleExtrinsicSuccess(resolve, unsubscribe);
-            break;
-          }
-        }
-      });
+      if (sendError !== undefined) {
+        reject(
+          new Error(`Failed to send faucet extrinsic: ${sendError.message}`),
+        );
+        return;
+      }
+
+      unsubscribe = result;
     })();
   });
 }
