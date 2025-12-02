@@ -1,6 +1,10 @@
 "use client";
 
+import { Icons } from "@torus-ts/ui/components/icons";
+import { Separator } from "@torus-ts/ui/components/separator";
+import { getLinks } from "@torus-ts/ui/lib/data";
 import { cn } from "@torus-ts/ui/lib/utils";
+import { env } from "~/env";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import { motion } from "motion/react";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -28,6 +32,31 @@ export function ViewMore() {
   const [isExpanded, setIsExpanded] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);
   const contentRef = useRef<HTMLDivElement>(null);
+
+  const links = getLinks(env("NEXT_PUBLIC_TORUS_CHAIN_ENV"));
+
+  const socialList = [
+    {
+      name: "Discord",
+      href: links.discord,
+      icon: <Icons.Discord className="h-5 w-5" />,
+    },
+    {
+      name: "X",
+      href: links.x,
+      icon: <Icons.X className="h-5 w-5" />,
+    },
+    {
+      name: "GitHub",
+      href: links.github,
+      icon: <Icons.Github className="h-5 w-5" />,
+    },
+    {
+      name: "Telegram",
+      href: links.telegram,
+      icon: <Icons.Telegram className="h-5 w-5" />,
+    },
+  ];
 
   const scrollToContent = useCallback(() => {
     if (isAnimating) return;
@@ -57,6 +86,19 @@ export function ViewMore() {
       setIsAnimating(false);
     }, 800);
   }, [isAnimating]);
+
+  // Listen for external trigger (from HoverHeader About button)
+  useEffect(() => {
+    const handleTriggerAbout = () => {
+      if (!isExpanded && !isAnimating) {
+        scrollToContent();
+      }
+    };
+
+    window.addEventListener("trigger-about-section", handleTriggerAbout);
+    return () =>
+      window.removeEventListener("trigger-about-section", handleTriggerAbout);
+  }, [isExpanded, isAnimating, scrollToContent]);
 
   useEffect(() => {
     let lastScrollY = window.scrollY;
@@ -102,10 +144,13 @@ export function ViewMore() {
 
   return (
     <>
-      <div className="fixed bottom-8 left-1/2 z-30 -translate-x-1/2">
+      <div className="fixed bottom-4 left-1/2 z-30 -translate-x-1/2">
         <motion.button
           onClick={handleButtonClick}
-          className={cn("flex flex-col items-center gap-2")}
+          className={cn(
+            "flex flex-col items-center gap-2",
+            isExpanded ? "flex-col-reverse" : "flex-col",
+          )}
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 1.5, duration: 0.5 }}
@@ -160,16 +205,18 @@ export function ViewMore() {
                 {CONTENT.summary}
               </motion.p>
 
-              <motion.h2
-                className="mb-6 mt-12 text-start text-base font-medium uppercase tracking-widest text-zinc-400 md:text-lg"
-                initial={{ opacity: 0, y: 20 }}
+              <motion.div
+                className="my-12"
+                initial={{ opacity: 0, scaleX: 0 }}
                 animate={
-                  isExpanded ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }
+                  isExpanded
+                    ? { opacity: 1, scaleX: 1 }
+                    : { opacity: 0, scaleX: 0 }
                 }
                 transition={{ delay: 0.4, duration: 0.5 }}
               >
-                Core Concepts
-              </motion.h2>
+                <Separator />
+              </motion.div>
 
               {CONTENT.coreConcepts.map((paragraph, index) => (
                 <motion.p
@@ -217,6 +264,40 @@ export function ViewMore() {
                   {paragraph}
                 </motion.p>
               ))}
+
+              <motion.div
+                className="my-12"
+                initial={{ opacity: 0, scaleX: 0 }}
+                animate={
+                  isExpanded
+                    ? { opacity: 1, scaleX: 1 }
+                    : { opacity: 0, scaleX: 0 }
+                }
+                transition={{ delay: 1.5, duration: 0.5 }}
+              >
+                <Separator />
+              </motion.div>
+
+              <motion.div
+                className="flex justify-center gap-8"
+                initial={{ opacity: 0, y: 20 }}
+                animate={
+                  isExpanded ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }
+                }
+                transition={{ delay: 1.6, duration: 0.5 }}
+              >
+                {socialList.map((social) => (
+                  <a
+                    key={social.name}
+                    href={social.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-zinc-500 transition-colors hover:text-zinc-300"
+                  >
+                    {social.icon}
+                  </a>
+                ))}
+              </motion.div>
             </div>
           </motion.article>
         </div>

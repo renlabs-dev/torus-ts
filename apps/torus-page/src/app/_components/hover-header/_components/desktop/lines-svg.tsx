@@ -50,18 +50,6 @@ export function LinesSVG({
         variants={ANIMATIONS.DRAW as Variants}
         custom={1}
       />
-      <motion.line
-        key={showStarter || showNetwork ? "extended" : "short"}
-        x1="500"
-        y1="50"
-        x2="500"
-        y2={showStarter || showNetwork ? "450" : "15"}
-        stroke="#27272a"
-        strokeWidth="3"
-        strokeLinecap="round"
-        variants={ANIMATIONS.DRAW as Variants}
-        custom={-1}
-      />
       {/* Left group of lines */}
       {showStarter && (
         <>
