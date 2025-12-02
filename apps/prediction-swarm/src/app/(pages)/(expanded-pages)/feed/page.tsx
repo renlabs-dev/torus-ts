@@ -1,5 +1,6 @@
 "use client";
 
+import { useTorus } from "@torus-ts/torus-provider";
 import { Card, CardContent, CardHeader } from "@torus-ts/ui/components/card";
 import {
   Pagination,
@@ -19,12 +20,30 @@ import { PageHeader } from "~/app/_components/page-header";
 import { FeedLegend } from "~/app/_components/user-profile/feed-legend";
 import { ProfileFeed } from "~/app/_components/user-profile/profile-feed";
 import { api } from "~/trpc/react";
+import { Eye, Globe, Star } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { useEffect } from "react";
+
+type FeedView = "all" | "watched" | "starred";
 
 export default function FeedPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const limit = 30;
+
+  const { selectedAccount } = useTorus();
+  const isConnected = !!selectedAccount?.address;
+  const walletAddress = selectedAccount?.address;
+  const utils = api.useUtils();
+
+  // Get current view from URL (default to "all")
+  const viewParam = searchParams.get("view");
+  const view: FeedView =
+    viewParam === "watched"
+      ? "watched"
+      : viewParam === "starred"
+        ? "starred"
+        : "all";
 
   const ongoingPage = parseInt(searchParams.get("ongoing") ?? "1");
   const truePage = parseInt(searchParams.get("true") ?? "1");
@@ -36,39 +55,208 @@ export default function FeedPage() {
   const topicIds =
     searchParams.get("topics")?.split(",").filter(Boolean) ?? undefined;
 
-  // Get total counts
-  const { data: counts } = api.prediction.getFeedCounts.useQuery();
+  // Enable watched/starred views when connected
+  const canUseWatched = isConnected;
+  const canUseStarred = isConnected;
 
-  // Fetch predictions separately per verdict status
-  const { data: ongoingPredictions, isLoading: ongoingLoading } =
-    api.prediction.getFeedByVerdict.useQuery({
-      verdictStatus: "ongoing",
-      limit,
-      offset: (ongoingPage - 1) * limit,
-      dateFrom,
-      dateTo,
-      topicIds,
-    });
+  // Invalidate watch/star queries when wallet changes
+  useEffect(() => {
+    void utils.watch.invalidate();
+    void utils.star.invalidate();
+    // Reset to "all" view when wallet changes
+    if (view === "watched" || view === "starred") {
+      setView("all");
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- only run when wallet changes
+  }, [walletAddress]);
 
-  const { data: truePredictions, isLoading: trueLoading } =
-    api.prediction.getFeedByVerdict.useQuery({
-      verdictStatus: "true",
-      limit,
-      offset: (truePage - 1) * limit,
-      dateFrom,
-      dateTo,
-      topicIds,
-    });
+  // === ALL FEED QUERIES ===
+  const { data: allCounts } = api.prediction.getFeedCounts.useQuery(undefined, {
+    enabled: view === "all",
+  });
 
-  const { data: falsePredictions, isLoading: falseLoading } =
-    api.prediction.getFeedByVerdict.useQuery({
-      verdictStatus: "false",
-      limit,
-      offset: (falsePage - 1) * limit,
-      dateFrom,
-      dateTo,
-      topicIds,
-    });
+  const { data: allOngoingPredictions, isLoading: allOngoingLoading } =
+    api.prediction.getFeedByVerdict.useQuery(
+      {
+        verdictStatus: "ongoing",
+        limit,
+        offset: (ongoingPage - 1) * limit,
+        dateFrom,
+        dateTo,
+        topicIds,
+      },
+      { enabled: view === "all" },
+    );
+
+  const { data: allTruePredictions, isLoading: allTrueLoading } =
+    api.prediction.getFeedByVerdict.useQuery(
+      {
+        verdictStatus: "true",
+        limit,
+        offset: (truePage - 1) * limit,
+        dateFrom,
+        dateTo,
+        topicIds,
+      },
+      { enabled: view === "all" },
+    );
+
+  const { data: allFalsePredictions, isLoading: allFalseLoading } =
+    api.prediction.getFeedByVerdict.useQuery(
+      {
+        verdictStatus: "false",
+        limit,
+        offset: (falsePage - 1) * limit,
+        dateFrom,
+        dateTo,
+        topicIds,
+      },
+      { enabled: view === "all" },
+    );
+
+  // === WATCHED FEED QUERIES ===
+  const { data: watchedCounts } = api.watch.getWatchingFeedCounts.useQuery(
+    { userKey: walletAddress ?? "" },
+    {
+      enabled: view === "watched" && isConnected,
+    },
+  );
+
+  const { data: watchedOngoingPredictions, isLoading: watchedOngoingLoading } =
+    api.watch.getWatchingFeedByVerdict.useQuery(
+      {
+        userKey: walletAddress ?? "",
+        verdictStatus: "ongoing",
+        limit,
+        offset: (ongoingPage - 1) * limit,
+        dateFrom,
+        dateTo,
+        topicIds,
+      },
+      { enabled: view === "watched" && isConnected },
+    );
+
+  const { data: watchedTruePredictions, isLoading: watchedTrueLoading } =
+    api.watch.getWatchingFeedByVerdict.useQuery(
+      {
+        userKey: walletAddress ?? "",
+        verdictStatus: "true",
+        limit,
+        offset: (truePage - 1) * limit,
+        dateFrom,
+        dateTo,
+        topicIds,
+      },
+      { enabled: view === "watched" && isConnected },
+    );
+
+  const { data: watchedFalsePredictions, isLoading: watchedFalseLoading } =
+    api.watch.getWatchingFeedByVerdict.useQuery(
+      {
+        userKey: walletAddress ?? "",
+        verdictStatus: "false",
+        limit,
+        offset: (falsePage - 1) * limit,
+        dateFrom,
+        dateTo,
+        topicIds,
+      },
+      { enabled: view === "watched" && isConnected },
+    );
+
+  // === STARRED FEED QUERIES ===
+  const { data: starredCounts } = api.star.getStarredFeedCounts.useQuery(
+    { userKey: walletAddress ?? "" },
+    {
+      enabled: view === "starred" && isConnected,
+    },
+  );
+
+  const { data: starredOngoingPredictions, isLoading: starredOngoingLoading } =
+    api.star.getStarredFeedByVerdict.useQuery(
+      {
+        userKey: walletAddress ?? "",
+        verdictStatus: "ongoing",
+        limit,
+        offset: (ongoingPage - 1) * limit,
+        dateFrom,
+        dateTo,
+        topicIds,
+      },
+      { enabled: view === "starred" && isConnected },
+    );
+
+  const { data: starredTruePredictions, isLoading: starredTrueLoading } =
+    api.star.getStarredFeedByVerdict.useQuery(
+      {
+        userKey: walletAddress ?? "",
+        verdictStatus: "true",
+        limit,
+        offset: (truePage - 1) * limit,
+        dateFrom,
+        dateTo,
+        topicIds,
+      },
+      { enabled: view === "starred" && isConnected },
+    );
+
+  const { data: starredFalsePredictions, isLoading: starredFalseLoading } =
+    api.star.getStarredFeedByVerdict.useQuery(
+      {
+        userKey: walletAddress ?? "",
+        verdictStatus: "false",
+        limit,
+        offset: (falsePage - 1) * limit,
+        dateFrom,
+        dateTo,
+        topicIds,
+      },
+      { enabled: view === "starred" && isConnected },
+    );
+
+  // Select data based on current view
+  const counts =
+    view === "all"
+      ? allCounts
+      : view === "watched"
+        ? watchedCounts
+        : starredCounts;
+  const ongoingPredictions =
+    view === "all"
+      ? allOngoingPredictions
+      : view === "watched"
+        ? watchedOngoingPredictions
+        : starredOngoingPredictions;
+  const truePredictions =
+    view === "all"
+      ? allTruePredictions
+      : view === "watched"
+        ? watchedTruePredictions
+        : starredTruePredictions;
+  const falsePredictions =
+    view === "all"
+      ? allFalsePredictions
+      : view === "watched"
+        ? watchedFalsePredictions
+        : starredFalsePredictions;
+  const ongoingLoading =
+    view === "all"
+      ? allOngoingLoading
+      : view === "watched"
+        ? watchedOngoingLoading
+        : starredOngoingLoading;
+  const trueLoading =
+    view === "all"
+      ? allTrueLoading
+      : view === "watched"
+        ? watchedTrueLoading
+        : starredTrueLoading;
+  const falseLoading =
+    view === "all"
+      ? allFalseLoading
+      : view === "watched"
+        ? watchedFalseLoading
+        : starredFalseLoading;
 
   // Calculate total pages from counts
   const ongoingTotalPages = Math.ceil((counts?.ongoing ?? 0) / limit);
@@ -81,6 +269,16 @@ export default function FeedPage() {
     router.push(`?${params.toString()}`);
   };
 
+  const setView = (newView: FeedView) => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("view", newView);
+    // Reset pagination when switching views
+    params.set("ongoing", "1");
+    params.set("true", "1");
+    params.set("false", "1");
+    router.push(`?${params.toString()}`);
+  };
+
   return (
     <div className="relative pt-4">
       {/* Vertical borders spanning full height */}
@@ -89,7 +287,13 @@ export default function FeedPage() {
       {/* Header section */}
       <PageHeader
         title="Prediction Feed"
-        description="View predictions from all tracked users"
+        description={
+          view === "watched"
+            ? "View predictions from users you're watching"
+            : view === "starred"
+              ? "View your starred predictions"
+              : "View predictions from all tracked users"
+        }
         children={<FilterDialog />}
       />
 
@@ -99,6 +303,47 @@ export default function FeedPage() {
       {/* Legend */}
       <div className="relative mx-auto max-w-screen-lg px-4">
         <FeedLegend />
+      </div>
+
+      <div className="border-border relative my-4 border-t" />
+
+      <div className="relative mx-auto max-w-screen-lg px-4">
+        <Card className="plus-corners bg-background/80 backdrop-blur-sm">
+          <Tabs value={view} onValueChange={(v) => setView(v as FeedView)}>
+            <TabsList className="bg-accent/60 flex h-full w-full flex-col sm:grid sm:grid-cols-3">
+              <TabsTrigger value="all" className="w-full gap-2">
+                <Globe className="h-4 w-4" />
+                All Accounts
+              </TabsTrigger>
+              <TabsTrigger
+                value="watched"
+                disabled={!canUseWatched}
+                className="w-full gap-2"
+                title={
+                  !isConnected
+                    ? "Connect wallet to use watched feed"
+                    : undefined
+                }
+              >
+                <Eye className="h-4 w-4" />
+                Your Watched
+              </TabsTrigger>
+              <TabsTrigger
+                value="starred"
+                disabled={!canUseStarred}
+                className="w-full gap-2"
+                title={
+                  !isConnected
+                    ? "Connect wallet to use starred feed"
+                    : undefined
+                }
+              >
+                <Star className="h-4 w-4" />
+                Your Starred
+              </TabsTrigger>
+            </TabsList>
+          </Tabs>
+        </Card>
       </div>
 
       {/* Full-width horizontal border */}

@@ -1,4 +1,10 @@
-/packages/subspace/src/interfaces/
+pnpm-lock.yaml
+
+atlas/
+node_modules/
+
 /packages/db/drizzle/*
-!/packages/subspace/src/interfaces/definitions.ts
-!/packages/subspace/src/interfaces/README.md
+
+/packages/torus-sdk-ts/src/interfaces/
+!/packages/torus-sdk-ts/src/interfaces/definitions.ts
+!/packages/torus-sdk-ts/src/interfaces/README.md

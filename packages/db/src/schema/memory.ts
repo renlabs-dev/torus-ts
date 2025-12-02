@@ -529,6 +529,27 @@ export const userWatchesSchema = createTable(
   ],
 );
 
+/**
+ * Tracks which tweets (predictions) users have starred/bookmarked.
+ * Used to create personalized feeds of starred predictions.
+ */
+export const userStarsSchema = createTable(
+  "user_stars",
+  {
+    id: uuidv7("id").primaryKey(),
+    userKey: ss58Address("user_key").notNull(),
+    tweetId: bigint("tweet_id")
+      .notNull()
+      .references(() => scrapedTweetSchema.id),
+    ...timeFields(),
+  },
+  (t) => [
+    unique("user_stars_unique").on(t.userKey, t.tweetId),
+    index("user_stars_user_key_idx").on(t.userKey),
+    index("user_stars_tweet_id_idx").on(t.tweetId),
+  ],
+);
+
 // ==== Contributor Reward System ====
 
 /**

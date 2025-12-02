@@ -11,6 +11,7 @@ import {
   sql,
 } from "@torus-ts/db";
 import {
+  parsedPredictionDetailsSchema,
   parsedPredictionFeedbackSchema,
   parsedPredictionSchema,
   predictionDuplicateRelationsSchema,
@@ -34,7 +35,13 @@ export interface VerdictContext {
   feedback: string;
 }
 
-interface RawPrediction {
+export interface VerdictSource {
+  url: string;
+  title?: string;
+  content?: string;
+}
+
+export interface RawPrediction {
   predictionId: string;
   parsedId: string;
   target: PostSlice[];
@@ -61,6 +68,7 @@ interface RawPrediction {
   verdict: boolean | null;
   verdictContext: VerdictContext | null;
   verdictCreatedAt: Date | null;
+  verdictSources: VerdictSource[] | null;
   feedbackFailureCause: string | null;
   feedbackReason: string | null;
 }
@@ -106,6 +114,7 @@ export interface GroupedTweet {
     verdict: boolean | null;
     verdictContext: VerdictContext | null;
     verdictCreatedAt: Date | null;
+    verdictSources: VerdictSource[] | null;
     feedbackFailureCause: string | null;
     feedbackReason: string | null;
   }[];
@@ -114,7 +123,7 @@ export interface GroupedTweet {
 /**
  * Fetches parent and root tweets for thread context
  */
-async function fetchThreadContext(
+export async function fetchThreadContext(
   ctx: TRPCContext,
   tweetIds: bigint[],
 ): Promise<Map<bigint, ParentTweet>> {
@@ -185,7 +194,83 @@ async function fetchDuplicateCounts(
 }
 
 /**
- * Groups raw predictions by tweet ID and includes thread context
+ * Groups raw predictions by tweet ID and includes thread context.
+ * Simple version without duplicate counts - used by watch/star routers.
+ */
+export async function groupPredictionsByTweetSimple(
+  rawPredictions: RawPrediction[],
+  ctx: TRPCContext,
+): Promise<GroupedTweet[]> {
+  const groupedByTweet: Record<string, GroupedTweet> = {};
+
+  const contextTweetIds = new Set<bigint>();
+
+  rawPredictions.forEach((pred) => {
+    if (pred.parentTweetId) contextTweetIds.add(pred.parentTweetId);
+    if (pred.conversationId && pred.conversationId !== pred.tweetId) {
+      contextTweetIds.add(pred.conversationId);
+    }
+  });
+
+  const threadContext = await fetchThreadContext(
+    ctx,
+    Array.from(contextTweetIds),
+  );
+
+  rawPredictions.forEach((pred) => {
+    const tweetId = pred.tweetId.toString();
+
+    if (!groupedByTweet[tweetId]) {
+      groupedByTweet[tweetId] = {
+        tweetId: pred.tweetId,
+        tweetText: pred.tweetText,
+        tweetDate: pred.tweetDate,
+        conversationId: pred.conversationId,
+        parentTweetId: pred.parentTweetId,
+        userId: pred.userId,
+        username: pred.username,
+        screenName: pred.screenName,
+        avatarUrl: pred.avatarUrl,
+        isVerified: pred.isVerified,
+        parentTweet: pred.parentTweetId
+          ? (threadContext.get(pred.parentTweetId) ?? null)
+          : null,
+        rootTweet:
+          pred.conversationId && pred.conversationId !== pred.tweetId
+            ? (threadContext.get(pred.conversationId) ?? null)
+            : null,
+        predictions: [],
+      };
+    }
+    groupedByTweet[tweetId].predictions.push({
+      parsedId: pred.parsedId,
+      predictionId: pred.predictionId,
+      target: pred.target,
+      timeframe: pred.timeframe,
+      llmConfidence: pred.llmConfidence,
+      vagueness: pred.vagueness,
+      context: pred.context,
+      predictionQuality: pred.predictionQuality,
+      briefRationale: pred.briefRationale,
+      topicId: pred.topicId,
+      filterAgentId: pred.filterAgentId,
+      canonicalId: pred.canonicalId,
+      verdictId: pred.verdictId,
+      verdict: pred.verdict,
+      verdictContext: pred.verdictContext,
+      verdictCreatedAt: pred.verdictCreatedAt,
+      verdictSources: pred.verdictSources,
+      feedbackFailureCause: pred.feedbackFailureCause,
+      feedbackReason: pred.feedbackReason,
+    });
+  });
+
+  return Object.values(groupedByTweet);
+}
+
+/**
+ * Groups raw predictions by tweet ID with duplicate counts and timing.
+ * Full version used by the main prediction router.
  */
 async function groupPredictionsByTweet(
   rawPredictions: RawPrediction[],
@@ -260,6 +345,7 @@ async function groupPredictionsByTweet(
       verdict: pred.verdict,
       verdictContext: pred.verdictContext,
       verdictCreatedAt: pred.verdictCreatedAt,
+      verdictSources: pred.verdictSources,
       feedbackFailureCause: pred.feedbackFailureCause,
       feedbackReason: pred.feedbackReason,
     });
@@ -333,6 +419,7 @@ export const predictionRouter = {
           verdict: verdictSchema.verdict,
           verdictContext: verdictSchema.context,
           verdictCreatedAt: verdictSchema.createdAt,
+          verdictSources: parsedPredictionDetailsSchema.verdictSources,
           feedbackFailureCause: parsedPredictionFeedbackSchema.failureCause,
           feedbackReason: parsedPredictionFeedbackSchema.reason,
           userId: twitterUsersSchema.id,
@@ -387,6 +474,13 @@ export const predictionRouter = {
         .leftJoin(
           verdictSchema,
           eq(verdictSchema.parsedPredictionId, parsedPredictionSchema.id),
+        )
+        .leftJoin(
+          parsedPredictionDetailsSchema,
+          eq(
+            parsedPredictionDetailsSchema.parsedPredictionId,
+            parsedPredictionSchema.id,
+          ),
         )
         .leftJoin(
           predictionDuplicateRelationsSchema,
@@ -467,6 +561,7 @@ export const predictionRouter = {
           verdict: verdictSchema.verdict,
           verdictContext: verdictSchema.context,
           verdictCreatedAt: verdictSchema.createdAt,
+          verdictSources: parsedPredictionDetailsSchema.verdictSources,
 
           // Feedback data (for FUTURE_TIMEFRAME)
           feedbackFailureCause: parsedPredictionFeedbackSchema.failureCause,
@@ -512,6 +607,13 @@ export const predictionRouter = {
         .leftJoin(
           verdictSchema,
           eq(verdictSchema.parsedPredictionId, parsedPredictionSchema.id),
+        )
+        .leftJoin(
+          parsedPredictionDetailsSchema,
+          eq(
+            parsedPredictionDetailsSchema.parsedPredictionId,
+            parsedPredictionSchema.id,
+          ),
         )
         .leftJoin(
           parsedPredictionFeedbackSchema,
@@ -674,6 +776,7 @@ export const predictionRouter = {
           verdict: verdictSchema.verdict,
           verdictContext: verdictSchema.context,
           verdictCreatedAt: verdictSchema.createdAt,
+          verdictSources: parsedPredictionDetailsSchema.verdictSources,
           feedbackFailureCause: parsedPredictionFeedbackSchema.failureCause,
           feedbackReason: parsedPredictionFeedbackSchema.reason,
           userId: twitterUsersSchema.id,
@@ -728,6 +831,13 @@ export const predictionRouter = {
         .leftJoin(
           verdictSchema,
           eq(verdictSchema.parsedPredictionId, parsedPredictionSchema.id),
+        )
+        .leftJoin(
+          parsedPredictionDetailsSchema,
+          eq(
+            parsedPredictionDetailsSchema.parsedPredictionId,
+            parsedPredictionSchema.id,
+          ),
         )
         .leftJoin(
           predictionDuplicateRelationsSchema,
@@ -814,6 +924,7 @@ export const predictionRouter = {
           verdict: verdictSchema.verdict,
           verdictContext: verdictSchema.context,
           verdictCreatedAt: verdictSchema.createdAt,
+          verdictSources: parsedPredictionDetailsSchema.verdictSources,
           feedbackFailureCause: parsedPredictionFeedbackSchema.failureCause,
           feedbackReason: parsedPredictionFeedbackSchema.reason,
         })
@@ -857,6 +968,13 @@ export const predictionRouter = {
         .leftJoin(
           verdictSchema,
           eq(verdictSchema.parsedPredictionId, parsedPredictionSchema.id),
+        )
+        .leftJoin(
+          parsedPredictionDetailsSchema,
+          eq(
+            parsedPredictionDetailsSchema.parsedPredictionId,
+            parsedPredictionSchema.id,
+          ),
         )
         .leftJoin(
           parsedPredictionFeedbackSchema,
@@ -1083,6 +1201,7 @@ export const predictionRouter = {
           verdict: verdictSchema.verdict,
           verdictContext: verdictSchema.context,
           verdictCreatedAt: verdictSchema.createdAt,
+          verdictSources: parsedPredictionDetailsSchema.verdictSources,
 
           // Feedback data (for FUTURE_TIMEFRAME)
           feedbackFailureCause: parsedPredictionFeedbackSchema.failureCause,
@@ -1128,6 +1247,13 @@ export const predictionRouter = {
         .leftJoin(
           verdictSchema,
           eq(verdictSchema.parsedPredictionId, parsedPredictionSchema.id),
+        )
+        .leftJoin(
+          parsedPredictionDetailsSchema,
+          eq(
+            parsedPredictionDetailsSchema.parsedPredictionId,
+            parsedPredictionSchema.id,
+          ),
         )
         .leftJoin(
           parsedPredictionFeedbackSchema,

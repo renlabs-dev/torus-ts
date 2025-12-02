@@ -271,16 +271,18 @@ The database uses Drizzle ORM with PostgreSQL and follows these conventions:
 **NEVER use the non-null assertion operator (`!`)** in TypeScript code. Instead, use `assert()` from `tsafe` with a descriptive message:
 
 ```ts
+import { assert } from "tsafe";
+
 // ❌ WRONG: Non-null assertion without explanation
 const value = maybeUndefined!;
 
-// ✅ CORRECT: Use assert with a message
-import { assert } from "tsafe";
 const value = maybeUndefined;
+// ✅ CORRECT: Use assert with a message
 assert(value !== undefined, "Value should be defined because...");
 ```
 
 **Rationale:**
+
 - `assert()` provides a clear error message when the assertion fails
 - Makes the assumption explicit and documentable
 - Helps with debugging by explaining why the value should exist

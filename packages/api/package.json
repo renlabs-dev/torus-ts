@@ -22,7 +22,11 @@
       "types": "./dist/auth/index.d.ts",
       "default": "./src/auth/index.ts"
     },
-    "./auth/sign": "./src/auth/sign.ts"
+    "./auth/sign": "./src/auth/sign.ts",
+    "./services/permission-cache": {
+      "types": "./dist/services/permission-cache.d.ts",
+      "default": "./src/services/permission-cache.ts"
+    }
   },
   "scripts": {
     "build": "tsc",

@@ -1,8 +1,6 @@
 import { z } from "zod";
-
-import type { SS58Address } from "../../types/index.js";
-
 import { Agent } from "../../agent/index.js";
+import type { SS58Address } from "../../types/index.js";
 
 const agent = new Agent({
   agentKey: "5D5FbRRUvQxdQnJLgNW6BdgZ86CRGreKRahzhxmdSj2REBnt" as SS58Address, // Mock agent key for testing
