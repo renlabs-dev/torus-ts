@@ -11,6 +11,7 @@ import {
   sql,
 } from "@torus-ts/db";
 import {
+  parsedPredictionDetailsSchema,
   parsedPredictionFeedbackSchema,
   parsedPredictionSchema,
   predictionDuplicateRelationsSchema,
@@ -32,6 +33,12 @@ export interface PostSlice {
 
 export interface VerdictContext {
   feedback: string;
+}
+
+export interface VerdictSource {
+  url: string;
+  title?: string;
+  content?: string;
 }
 
 export interface RawPrediction {
@@ -61,6 +68,7 @@ export interface RawPrediction {
   verdict: boolean | null;
   verdictContext: VerdictContext | null;
   verdictCreatedAt: Date | null;
+  verdictSources: VerdictSource[] | null;
   feedbackFailureCause: string | null;
   feedbackReason: string | null;
 }
@@ -106,6 +114,7 @@ export interface GroupedTweet {
     verdict: boolean | null;
     verdictContext: VerdictContext | null;
     verdictCreatedAt: Date | null;
+    verdictSources: VerdictSource[] | null;
     feedbackFailureCause: string | null;
     feedbackReason: string | null;
   }[];
@@ -250,6 +259,7 @@ export async function groupPredictionsByTweetSimple(
       verdict: pred.verdict,
       verdictContext: pred.verdictContext,
       verdictCreatedAt: pred.verdictCreatedAt,
+      verdictSources: pred.verdictSources,
       feedbackFailureCause: pred.feedbackFailureCause,
       feedbackReason: pred.feedbackReason,
     });
@@ -335,6 +345,7 @@ async function groupPredictionsByTweet(
       verdict: pred.verdict,
       verdictContext: pred.verdictContext,
       verdictCreatedAt: pred.verdictCreatedAt,
+      verdictSources: pred.verdictSources,
       feedbackFailureCause: pred.feedbackFailureCause,
       feedbackReason: pred.feedbackReason,
     });
@@ -408,6 +419,7 @@ export const predictionRouter = {
           verdict: verdictSchema.verdict,
           verdictContext: verdictSchema.context,
           verdictCreatedAt: verdictSchema.createdAt,
+          verdictSources: parsedPredictionDetailsSchema.verdictSources,
           feedbackFailureCause: parsedPredictionFeedbackSchema.failureCause,
           feedbackReason: parsedPredictionFeedbackSchema.reason,
           userId: twitterUsersSchema.id,
@@ -462,6 +474,13 @@ export const predictionRouter = {
         .leftJoin(
           verdictSchema,
           eq(verdictSchema.parsedPredictionId, parsedPredictionSchema.id),
+        )
+        .leftJoin(
+          parsedPredictionDetailsSchema,
+          eq(
+            parsedPredictionDetailsSchema.parsedPredictionId,
+            parsedPredictionSchema.id,
+          ),
         )
         .leftJoin(
           predictionDuplicateRelationsSchema,
@@ -542,6 +561,7 @@ export const predictionRouter = {
           verdict: verdictSchema.verdict,
           verdictContext: verdictSchema.context,
           verdictCreatedAt: verdictSchema.createdAt,
+          verdictSources: parsedPredictionDetailsSchema.verdictSources,
 
           // Feedback data (for FUTURE_TIMEFRAME)
           feedbackFailureCause: parsedPredictionFeedbackSchema.failureCause,
@@ -587,6 +607,13 @@ export const predictionRouter = {
         .leftJoin(
           verdictSchema,
           eq(verdictSchema.parsedPredictionId, parsedPredictionSchema.id),
+        )
+        .leftJoin(
+          parsedPredictionDetailsSchema,
+          eq(
+            parsedPredictionDetailsSchema.parsedPredictionId,
+            parsedPredictionSchema.id,
+          ),
         )
         .leftJoin(
           parsedPredictionFeedbackSchema,
@@ -749,6 +776,7 @@ export const predictionRouter = {
           verdict: verdictSchema.verdict,
           verdictContext: verdictSchema.context,
           verdictCreatedAt: verdictSchema.createdAt,
+          verdictSources: parsedPredictionDetailsSchema.verdictSources,
           feedbackFailureCause: parsedPredictionFeedbackSchema.failureCause,
           feedbackReason: parsedPredictionFeedbackSchema.reason,
           userId: twitterUsersSchema.id,
@@ -803,6 +831,13 @@ export const predictionRouter = {
         .leftJoin(
           verdictSchema,
           eq(verdictSchema.parsedPredictionId, parsedPredictionSchema.id),
+        )
+        .leftJoin(
+          parsedPredictionDetailsSchema,
+          eq(
+            parsedPredictionDetailsSchema.parsedPredictionId,
+            parsedPredictionSchema.id,
+          ),
         )
         .leftJoin(
           predictionDuplicateRelationsSchema,
@@ -889,6 +924,7 @@ export const predictionRouter = {
           verdict: verdictSchema.verdict,
           verdictContext: verdictSchema.context,
           verdictCreatedAt: verdictSchema.createdAt,
+          verdictSources: parsedPredictionDetailsSchema.verdictSources,
           feedbackFailureCause: parsedPredictionFeedbackSchema.failureCause,
           feedbackReason: parsedPredictionFeedbackSchema.reason,
         })
@@ -932,6 +968,13 @@ export const predictionRouter = {
         .leftJoin(
           verdictSchema,
           eq(verdictSchema.parsedPredictionId, parsedPredictionSchema.id),
+        )
+        .leftJoin(
+          parsedPredictionDetailsSchema,
+          eq(
+            parsedPredictionDetailsSchema.parsedPredictionId,
+            parsedPredictionSchema.id,
+          ),
         )
         .leftJoin(
           parsedPredictionFeedbackSchema,
@@ -1158,6 +1201,7 @@ export const predictionRouter = {
           verdict: verdictSchema.verdict,
           verdictContext: verdictSchema.context,
           verdictCreatedAt: verdictSchema.createdAt,
+          verdictSources: parsedPredictionDetailsSchema.verdictSources,
 
           // Feedback data (for FUTURE_TIMEFRAME)
           feedbackFailureCause: parsedPredictionFeedbackSchema.failureCause,
@@ -1203,6 +1247,13 @@ export const predictionRouter = {
         .leftJoin(
           verdictSchema,
           eq(verdictSchema.parsedPredictionId, parsedPredictionSchema.id),
+        )
+        .leftJoin(
+          parsedPredictionDetailsSchema,
+          eq(
+            parsedPredictionDetailsSchema.parsedPredictionId,
+            parsedPredictionSchema.id,
+          ),
         )
         .leftJoin(
           parsedPredictionFeedbackSchema,

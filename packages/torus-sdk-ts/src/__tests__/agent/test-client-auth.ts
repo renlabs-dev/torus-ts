@@ -1,7 +1,7 @@
-import { sr25519Sign } from "@polkadot/util-crypto";
-import { Keypair, AgentClient } from "../../agent-client/index.js";
 import { randomUUID } from "crypto";
+import { sr25519Sign } from "@polkadot/util-crypto";
 import base64url from "base64url";
+import { AgentClient, Keypair } from "../../agent-client/index.js";
 import { getCurrentProtocolVersion } from "../../agent/jwt-sr25519.js";
 
 const TEST_MNEMONIC = "";
