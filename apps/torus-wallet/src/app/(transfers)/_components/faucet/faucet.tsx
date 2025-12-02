@@ -141,6 +141,9 @@ async function executeFaucetWithRetry(
     }
   }
 
+  showError(
+    "Faucet request failed after multiple attempts. Please try again later.",
+  );
   return false;
 }
 

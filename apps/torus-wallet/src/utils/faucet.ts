@@ -87,6 +87,7 @@ class MultiWorkerManager {
 
     worker.onerror = async (err) => {
       if (!this.onError) return;
+      this.terminateAll();
       await this.onError(err);
     };
 
@@ -141,7 +142,14 @@ function createUnsubscribeHandler(unsubscribe: VoidFn | undefined): () => void {
 export function doWork(api: ApiPromise, address: string): Promise<WorkResult> {
   return new Promise((resolve, reject) => {
     let unsubscribe: VoidFn | undefined;
-    const cleanup = () => createUnsubscribeHandler(unsubscribe)();
+    let manager: MultiWorkerManager | undefined;
+
+    const cleanup = () => {
+      createUnsubscribeHandler(unsubscribe)();
+      if (manager) {
+        manager.terminateAll();
+      }
+    };
 
     void (async () => {
       const [blockError, currentBlockData] = await tryAsync(
@@ -168,7 +176,7 @@ export function doWork(api: ApiPromise, address: string): Promise<WorkResult> {
         reject(new Error(`Worker error: ${err.message}`));
       };
 
-      const manager = new MultiWorkerManager(
+      manager = new MultiWorkerManager(
         workerCount,
         decodedAddress,
         currentBlockData,
@@ -232,9 +240,11 @@ function handleExtrinsicFailed(
   api: ApiPromise,
   data: unknown,
   reject: (error: Error) => void,
+  unsubscribe: VoidFn,
 ): void {
   const [dispatchError] = data as [DispatchError];
   const error = handleDispatchError(api, dispatchError);
+  unsubscribe();
   reject(error);
 }
 
@@ -279,16 +289,19 @@ export function callFaucetExtrinsic(
 
         console.log("Finalized block hash", result.status.asFinalized.toHex());
 
-        result.events.forEach(({ event: { method, section, data } }) => {
+        for (const {
+          event: { method, section, data },
+        } of result.events) {
           if (section === "system" && method === "ExtrinsicFailed") {
-            handleExtrinsicFailed(api, data, reject);
-            return;
+            handleExtrinsicFailed(api, data, reject, unsubscribe);
+            break;
           }
 
           if (section === "system" && method === "ExtrinsicSuccess") {
             handleExtrinsicSuccess(resolve, unsubscribe);
+            break;
           }
-        });
+        }
       });
     })();
   });
