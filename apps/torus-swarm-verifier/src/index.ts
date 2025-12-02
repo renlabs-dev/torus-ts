@@ -1,19 +1,16 @@
 import { readFile } from "node:fs/promises";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { BasicLogger } from "@torus-network/torus-utils/logger";
 import { createDb } from "@torus-ts/db/client";
 import { PredictionVerifier } from "./verifier";
 
-export const logger = BasicLogger.create({ name: "torus-swarm-verifier" });
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 if (!process.env.OPENROUTER_API_KEY) {
   console.error("missing OPENROUTER_API_KEY env var");
   process.exit(1);
 }
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
 
 const timeframePrompt = await readFile(
   join(__dirname, "../TIMEFRAME_PROMPT.md"),

@@ -3,6 +3,7 @@ import { assert, AssertionError } from "tsafe";
 export * from "./typing.js";
 export * from "./zod.js";
 export * from "./scraping-cost.js";
+export { withExponentialBackoff } from "./async.js";
 
 // == Branded Types / Nominal Types ==
 

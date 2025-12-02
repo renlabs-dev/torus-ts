@@ -1,0 +1,68 @@
+{
+  "apps": {
+    "torus-page": {
+      "pr_preview": true
+    },
+    "torus-portal": {
+      "pr_preview": true
+    },
+    "torus-wallet": {
+      "deploys": [
+        "torus-cache"
+      ],
+      "pr_preview": true
+    },
+    "torus-allocator": {
+      "deploys": [
+        "torus-cache",
+        "torus-worker"
+      ],
+      "pr_preview": true
+    },
+    "torus-bridge": {
+      "pr_preview": true
+    },
+    "torus-governance": {
+      "deploys": [
+        "torus-cache",
+        "torus-worker"
+      ],
+      "pr_preview": true
+    },
+    "torus-cache": {
+      "pr_preview": true
+    },
+    "torus-worker": {
+      "pr_preview": false
+    },
+    "torus-prophet-finder": {
+      "pr_preview": true,
+      "preview_domain": "prophetfinder.com"
+    },
+    "prediction-swarm": {
+      "deploys": [
+        "torus-swarm-twitter",
+        "torus-swarm-verifier",
+        "swarm-filter"
+      ],
+      "pr_preview": true,
+      "preview_domain": "predictionswarm.com"
+    },
+    "torus-swarm-twitter": {
+      "pr_preview": false,
+      "prod_only": true
+    },
+    "torus-swarm-verifier": {
+      "pr_preview": false,
+      "prod_only": true
+    },
+    "swarm-filter": {
+      "pr_preview": false,
+      "prod_only": true
+    },
+    "torus-swarm-services": {
+      "pr_preview": false,
+      "prod_only": false
+    }
+  }
+}

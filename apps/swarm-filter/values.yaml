@@ -1,0 +1,69 @@
+cacheUrl: ""
+
+ingress:
+  enabled: false
+
+service:
+  enabled: false
+
+deployment:
+  image:
+    repository: ghcr.io/renlabs-dev/swarm-filter
+
+  additionalLabels:
+    app: swarm-filter
+
+  podLabels:
+    app: swarm-filter
+
+  resources:
+    limits:
+      memory: 512Mi
+      cpu: 1
+    requests:
+      memory: 200Mi
+      cpu: 0.1
+
+  command: ["pnpm"]
+  args: ["tsx", "./src/index.ts"]
+
+  startupProbe:
+    enabled: false
+
+  readinessProbe:
+    enabled: false
+
+  livenessProbe:
+    enabled: false
+
+  env:
+    OPENROUTER_API_KEY:
+      valueFrom:
+        secretKeyRef:
+          name: "torus-{{ .Values.environmentName }}-web-apps-secret"
+          key: OPENROUTER_API_KEY
+    POSTGRES_URL:
+      valueFrom:
+        secretKeyRef:
+          name: "torus-{{ .Values.environmentName }}-web-apps-secret"
+          key: prediction_swarm_db_url
+    API_URL:
+      value: https://predictionswarm.com/
+    AUTH_ORIGIN:
+      value: validator.torus.network
+    FILTER_AGENT_MNEMONIC:
+      valueFrom:
+        secretKeyRef:
+          name: "torus-{{ .Values.environmentName }}-web-apps-secret"
+          key: FILTER_AGENT_MNEMONIC
+    JWT_SECRET:
+      valueFrom:
+        secretKeyRef:
+          name: "torus-{{ .Values.environmentName }}-web-apps-secret"
+          key: jwt_secret
+    PREDICTION_CHECK_MODEL:
+      value: mistralai/mistral-7b-instruct-v0.3:floor
+    TOPIC_CLASSIFICATION_MODEL:
+      value: google/gemini-2.5-flash
+    PREDICTION_EXTRACTION_MODEL:
+      value: google/gemini-2.5-flash

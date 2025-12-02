@@ -27,6 +27,15 @@ export default defineConfig({
           },
         },
       },
+      {
+        extends: true,
+        test: {
+          name: "deduplication",
+          include: ["src/__tests__/**/*.test.ts"],
+          environment: "node",
+          globals: true,
+        },
+      },
     ],
   },
 });

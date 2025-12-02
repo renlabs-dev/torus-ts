@@ -8,10 +8,12 @@ import {
 } from "@torus-ts/ui/components/avatar";
 import { Card, CardContent } from "@torus-ts/ui/components/card";
 import type { inferProcedureOutput } from "@trpc/server";
-import { BadgeCheck } from "lucide-react";
+import { api } from "~/trpc/react";
+import { BadgeCheck, Eye } from "lucide-react";
 import { FilterDialog } from "../filter-dialog";
 import { AccuracyBadge } from "./accuracy-badge";
 import { LastScrapedBadge } from "./last-scraped-badge";
+import { WatchButton } from "./watch-button";
 
 type TwitterUser = NonNullable<
   inferProcedureOutput<AppRouter["twitterUser"]["getByUsername"]>
@@ -33,6 +35,11 @@ export default function ProfileHeader({ user, counts }: ProfileHeaderProps) {
 
   const accuracy =
     total > 0 ? Math.round((truePredictions / total) * 100) : null;
+
+  const userId = user.id.toString();
+  const { data: watcherCount } = api.watch.getWatcherCount.useQuery({
+    userId,
+  });
 
   return (
     <Card className="bg-background/80 plus-corners">
@@ -84,9 +91,21 @@ export default function ProfileHeader({ user, counts }: ProfileHeaderProps) {
                   Posts
                 </div>
               )}
+              {watcherCount !== undefined && watcherCount > 0 && (
+                <div className="flex items-center gap-1">
+                  <Eye className="h-4 w-4" />
+                  <span className="font-bold">
+                    {watcherCount.toLocaleString()}
+                  </span>{" "}
+                  {watcherCount === 1 ? "Watcher" : "Watchers"}
+                </div>
+              )}
             </div>
           </div>
-          <FilterDialog />
+          <div className="flex items-center gap-2">
+            <WatchButton userId={userId} />
+            <FilterDialog />
+          </div>
         </div>
       </CardContent>
     </Card>

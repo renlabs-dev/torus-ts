@@ -7,7 +7,6 @@ import {
 import { Keyring } from "@polkadot/keyring";
 import { if_let, match } from "rustie";
 import { assert, describe, expect, it } from "vitest";
-
 import { parseSubmittableResult, type TxState } from "../../extrinsics.js";
 import { getApi } from "../../testing/getApi.js";
 
@@ -53,7 +52,8 @@ describe("parseSubmittableResult - live chain", () => {
             Invalid: () => true,
             Evicted: () => true,
             InternalError: () => true,
-            Included: ({ kind }) => kind === "InBlock" || kind === "FinalityTimeout", // Stop at InBlock or FinalityTimeout
+            Included: ({ kind }) =>
+              kind === "InBlock" || kind === "FinalityTimeout", // Stop at InBlock or FinalityTimeout
             Pool: ({ kind }) => kind === "Future" && options.nonce === 999999,
             Warning: () => false,
           });

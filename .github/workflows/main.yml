@@ -16,6 +16,8 @@ on:
       - closed
       - synchronize
 
+permissions: write-all
+
 jobs:
   pr-check:
     runs-on: ubicloud-standard-2
@@ -32,644 +34,223 @@ jobs:
           echo "PR number: ${{ steps.findPr.outputs.number }}"
           echo "Is push based: ${{ github.event_name == 'push' }}"
 
-  turbo-check:
+  find-deployments:
     needs: pr-check
     if: |
       github.event.pull_request.state != 'closed' &&
       (github.ref_name == 'main' || github.ref_name == 'dev'
       || needs.pr-check.outputs.skip == 'false')
-    uses: ./.github/workflows/turbo-check.yml
+    runs-on: ubicloud-standard-2
+    outputs:
+      deploy_matrix: ${{ steps.parse.outputs.deploy_matrix }}
+      pr_preview_matrix: ${{ steps.parse.outputs.pr_preview_matrix }}
+      all_apps: ${{ steps.parse.outputs.all_apps }}
+      preview_domains: ${{ steps.parse.outputs.preview_domains }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: pnpm/action-setup@v4
+        name: Install pnpm
+        with:
+          run_install: false
+
+      - name: Install turbo
+        run: pnpm add turbo@^2.3.3 --global
+
+      - name: Get apps list
+        id: apps
+        run: |
+          all_apps=$(ls -d apps/* | sed 's/apps\///' | jq -R -s -c 'split("\n")[:-1]')
+          echo "all_apps=$all_apps" >> $GITHUB_OUTPUT
+          echo "All apps in workspace:"
+          echo "$all_apps" | jq '.'
+
+      - name: Get build json (PR based)
+        if: github.event_name == 'pull_request'
+        run: |
+          pnpm exec turbo run build --filter="...[origin/${{ github.base_ref }}]" --dry-run=json 2>/dev/null > build.json
+
+      - name: Get build json (Push based)
+        if: github.event_name == 'push'
+        run: |
+          if git rev-parse --quiet --verify ${{ github.event.before }}^{commit}; then
+            BASE_COMMIT="$(git merge-base ${{ github.event.before }} HEAD)"
+            pnpm exec turbo run build --filter="...[${BASE_COMMIT}]" --dry-run=json 2>/dev/null > build.json
+          else
+            pnpm exec turbo run build --dry-run=json 2>/dev/null > build.json
+          fi
+
+      - name: Get changed packages from turbo
+        id: turbo
+        run: |
+          changed_packages=$(cat build.json | jq -c '[.tasks[].package]')
+          echo "changed_packages=$changed_packages" >> $GITHUB_OUTPUT
+          echo "Changed packages from turbo:"
+          echo "$changed_packages" | jq '.'
+
+      - name: Filter changed apps
+        id: changed
+        run: |
+          set -euo pipefail
+
+          all_apps='${{ steps.apps.outputs.all_apps }}'
+          changed_packages='${{ steps.turbo.outputs.changed_packages }}'
+
+          changed_apps=$(echo "$all_apps" | jq -c --argjson changed "$changed_packages" \
+            '[.[] | select(. as $pkg | $changed | any(. == $pkg))]')
+
+          echo "changed_apps=$changed_apps" >> $GITHUB_OUTPUT
+          echo 'Changed apps:'
+          echo "$changed_apps" | jq '.'
+
+      - name: Parse deployment config
+        id: parse
+        run: |
+          set -euo pipefail
+
+          config=$(cat .github/ci-config.json)
+          changed_apps='${{ steps.changed.outputs.changed_apps }}'
+
+          declare -A apps_to_deploy
+
+          all_apps=$(echo "$config" | jq -c '[.apps | keys[]]')
+
+          # For each app in config, check if it was changed and mark for deploy.
+          # The deploys list is used to mark what dependency apps should be deployed
+          # as well.
+          for app in $(echo "$changed_apps" | jq -r '.[]'); do
+            apps_to_deploy["$app"]=1
+
+            dependent_apps=$(echo "$config" | jq -r ".apps[\"$app\"].deploys[]? // empty")
+            for dep_app in $dependent_apps; do
+              apps_to_deploy["$dep_app"]=1
+            done
+          done
+
+          deploy_apps=()
+          pr_apps=()
+
+          # For all apps marked for deploy, we aggregate
+          # those that must deploy PR previews and filter prod-only apps on non-main branches.
+          for app in "${!apps_to_deploy[@]}"; do
+            # Check if app is prod-only and we're NOT on main branch
+            prod_only=$(echo "$config" | jq -r ".apps[\"$app\"].prod_only // false")
+            if [ "$prod_only" == "true" ] && [ "${{ github.ref_name }}" != "main" ]; then
+              echo "Skipping $app (prod-only, current branch: ${{ github.ref_name }})"
+              continue
+            fi
+
+            deploy_apps+=("\"$app\"")
+
+            pr_preview=$(echo "$config" | jq -r ".apps[\"$app\"].pr_preview // false")
+            if [ "$pr_preview" == "true" ]; then
+              pr_apps+=("\"$app\"")
+            fi
+          done
+
+          # Github matrix shenanigans
+          if [ ${#deploy_apps[@]} -eq 0 ]; then
+            deploy_json="[]"
+          else
+            deploy_json=$(IFS=,; echo "[${deploy_apps[*]}]")
+          fi
+
+          if [ ${#pr_apps[@]} -eq 0 ]; then
+            pr_json="[]"
+          else
+            pr_json=$(IFS=,; echo "[${pr_apps[*]}]")
+          fi
+
+          preview_domains=$(echo "$config" | jq -c '[.apps | to_entries[] | select(.value.preview_domain != null) | {key: .key, value: .value.preview_domain}] | from_entries')
+
+          echo "deploy_matrix=$deploy_json" >> $GITHUB_OUTPUT
+          echo "pr_preview_matrix=$pr_json" >> $GITHUB_OUTPUT
+          echo "all_apps=$all_apps" >> $GITHUB_OUTPUT
+          echo "preview_domains=$preview_domains" >> $GITHUB_OUTPUT
+
+          echo "Apps to deploy: $deploy_json"
+          echo "Apps with PR preview: $pr_json"
 
   ###################################
   ###### REGULAR DEPLOYMENTS  #######
   ###################################
-  torus-page:
-    needs: turbo-check
+  deploy:
+    needs: find-deployments
     if: |
       inputs.skip_build ||
       contains(github.event.head_commit.message, 'skip build') ||
-      (needs.turbo-check.outputs.torus-page == 'true' &&
+      (needs.find-deployments.outputs.deploy_matrix != '[]' &&
       (github.ref_name == 'main' || github.ref_name == 'dev' || github.ref_name == 'cicd'))
+    strategy:
+      matrix:
+        app: ${{ fromJson(needs.find-deployments.outputs.deploy_matrix) }}
+      fail-fast: false
     uses: ./.github/workflows/app-deployment-template.yml
     secrets: inherit
     with:
-      app_name: torus-page
-      skip_build: ${{ inputs.skip_build || false }}
-
-  torus-portal:
-    needs: turbo-check
-    if: |
-      inputs.skip_build ||
-      contains(github.event.head_commit.message, 'skip build') ||
-      (needs.turbo-check.outputs.torus-portal == 'true' &&
-      (github.ref_name == 'main' || github.ref_name == 'dev' || github.ref_name == 'cicd'))
-    uses: ./.github/workflows/app-deployment-template.yml
-    secrets: inherit
-    with:
-      app_name: torus-portal
-      skip_build: ${{ inputs.skip_build || false }}
-
-  torus-wallet:
-    needs: turbo-check
-    if: |
-      inputs.skip_build ||
-      contains(github.event.head_commit.message, 'skip build') ||
-      (needs.turbo-check.outputs.torus-wallet == 'true' &&
-      (github.ref_name == 'main' || github.ref_name == 'dev' || github.ref_name == 'cicd'))
-    uses: ./.github/workflows/app-deployment-template.yml
-    secrets: inherit
-    with:
-      app_name: torus-wallet
-      skip_build: ${{ inputs.skip_build || false }}
-
-  torus-allocator:
-    needs: turbo-check
-    if: |
-      inputs.skip_build ||
-      contains(github.event.head_commit.message, 'skip build') ||
-      (needs.turbo-check.outputs.torus-allocator == 'true' &&
-      (github.ref_name == 'main' || github.ref_name == 'dev' || github.ref_name == 'cicd'))
-    uses: ./.github/workflows/app-deployment-template.yml
-    secrets: inherit
-    with:
-      app_name: torus-allocator
-      skip_build: ${{ inputs.skip_build || false }}
-
-  torus-bridge:
-    needs: turbo-check
-    if: |
-      inputs.skip_build ||
-      contains(github.event.head_commit.message, 'skip build') ||
-      (needs.turbo-check.outputs.torus-bridge == 'true' &&
-      (github.ref_name == 'main' || github.ref_name == 'dev' || github.ref_name == 'cicd'))
-    uses: ./.github/workflows/app-deployment-template.yml
-    secrets: inherit
-    with:
-      app_name: torus-bridge
-      skip_build: ${{ inputs.skip_build || false }}
-
-  torus-cache:
-    needs: turbo-check
-    if: |
-      inputs.skip_build ||
-      contains(github.event.head_commit.message, 'skip build') ||
-      ((needs.turbo-check.outputs.torus-cache == 'true' ||
-      needs.turbo-check.outputs.torus-governance == 'true' ||
-      needs.turbo-check.outputs.torus-allocator == 'true' ||
-      needs.turbo-check.outputs.torus-wallet == 'true') &&
-      (github.ref_name == 'main' || github.ref_name == 'dev' || github.ref_name == 'cicd'))
-    uses: ./.github/workflows/app-deployment-template.yml
-    secrets: inherit
-    with:
-      app_name: torus-cache
-      skip_build: ${{ inputs.skip_build || false }}
-
-  torus-governance:
-    needs: turbo-check
-    if: |
-      inputs.skip_build ||
-      contains(github.event.head_commit.message, 'skip build') ||
-      (needs.turbo-check.outputs.torus-governance == 'true' &&
-      (github.ref_name == 'main' || github.ref_name == 'dev' || github.ref_name == 'cicd'))
-    uses: ./.github/workflows/app-deployment-template.yml
-    secrets: inherit
-    with:
-      app_name: torus-governance
-      skip_build: ${{ inputs.skip_build || false }}
-
-  torus-worker:
-    needs: turbo-check
-    if: |
-      inputs.skip_build ||
-      contains(github.event.head_commit.message, 'skip build') ||
-      ((needs.turbo-check.outputs.torus-worker == 'true' ||
-      needs.turbo-check.outputs.torus-governance == 'true' ||
-      needs.turbo-check.outputs.torus-allocator == 'true') &&
-      (github.ref_name == 'main' || github.ref_name == 'dev' || github.ref_name == 'cicd'))
-    uses: ./.github/workflows/app-deployment-template.yml
-    secrets: inherit
-    with:
-      app_name: torus-worker
-      skip_build: ${{ inputs.skip_build || false }}
-
-  torus-prophet-finder:
-    needs: turbo-check
-    if: |
-      inputs.skip_build ||
-      contains(github.event.head_commit.message, 'skip build') ||
-      (needs.turbo-check.outputs.torus-prophet-finder == 'true' &&
-      (github.ref_name == 'main' || github.ref_name == 'dev' || github.ref_name == 'cicd'))
-    uses: ./.github/workflows/app-deployment-template.yml
-    secrets: inherit
-    with:
-      app_name: torus-prophet-finder
-      skip_build: ${{ inputs.skip_build || false }}
-
-  prediction-swarm-dash:
-    needs: turbo-check
-    if: |
-      inputs.skip_build ||
-      contains(github.event.head_commit.message, 'skip build') ||
-      (needs.turbo-check.outputs.prediction-swarm-dash == 'true' &&
-      (github.ref_name == 'main' || github.ref_name == 'dev' || github.ref_name == 'cicd'))
-    uses: ./.github/workflows/app-deployment-template.yml
-    secrets: inherit
-    with:
-      app_name: prediction-swarm-dash
-      skip_build: ${{ inputs.skip_build || false }}
-
-  prediction-swarm:
-    needs: turbo-check
-    if: |
-      inputs.skip_build ||
-      contains(github.event.head_commit.message, 'skip build') ||
-      (needs.turbo-check.outputs.prediction-swarm == 'true' &&
-      (github.ref_name == 'main' || github.ref_name == 'dev' || github.ref_name == 'cicd'))
-    uses: ./.github/workflows/app-deployment-template.yml
-    secrets: inherit
-    with:
-      app_name: prediction-swarm
-      skip_build: ${{ inputs.skip_build || false }}
-
-  torus-swarm-twitter:
-    needs: turbo-check
-    if: |
-      inputs.skip_build ||
-      contains(github.event.head_commit.message, 'skip build') ||
-      (needs.turbo-check.outputs.torus-swarm-twitter == 'true' &&
-      (github.ref_name == 'main' || github.ref_name == 'dev' || github.ref_name == 'cicd')) 
-    uses: ./.github/workflows/app-deployment-template.yml
-    secrets: inherit
-    with:
-      app_name: torus-swarm-twitter
-      skip_build: ${{ inputs.skip_build || false }}
-      
-
-  torus-swarm-verifier:
-    needs: turbo-check
-    if: |
-      inputs.skip_build ||
-      contains(github.event.head_commit.message, 'skip build') ||
-      (needs.turbo-check.outputs.torus-swarm-verifier == 'true' &&
-      (github.ref_name == 'main' || github.ref_name == 'dev' || github.ref_name == 'cicd'))
-    uses: ./.github/workflows/app-deployment-template.yml
-    secrets: inherit
-    with:
-      app_name: torus-swarm-verifier
+      app_name: ${{ matrix.app }}
       skip_build: ${{ inputs.skip_build || false }}
 
   ###################################
   ######## DRY RUN BUILDS  ##########
   ###################################
-  torus-page-dry-run:
-    needs: [turbo-check, pr-check]
+  dry-run:
+    needs: [find-deployments, pr-check]
     if: |
       github.ref_name != 'main' &&
       github.ref_name != 'dev' &&
       github.ref_name != 'cicd' &&
-      needs.turbo-check.outputs.torus-page == 'true' &&
+      needs.find-deployments.outputs.deploy_matrix != '[]' &&
       needs.pr-check.outputs.pr_exists == 'false'
+    strategy:
+      matrix:
+        app: ${{ fromJson(needs.find-deployments.outputs.deploy_matrix) }}
+      fail-fast: false
     uses: ./.github/workflows/dry-run-build-template.yml
     secrets: inherit
     with:
-      app_name: torus-page
-
-  torus-portal-dry-run:
-    needs: [turbo-check, pr-check]
-    if: |
-      github.ref_name != 'main' &&
-      github.ref_name != 'dev' &&
-      github.ref_name != 'cicd' &&
-      needs.turbo-check.outputs.torus-portal == 'true' &&
-      needs.pr-check.outputs.pr_exists == 'false'
-    uses: ./.github/workflows/dry-run-build-template.yml
-    secrets: inherit
-    with:
-      app_name: torus-portal
-
-  torus-wallet-dry-run:
-    needs: [turbo-check, pr-check]
-    if: |
-      github.ref_name != 'main' &&
-      github.ref_name != 'dev' &&
-      github.ref_name != 'cicd' &&
-      needs.turbo-check.outputs.torus-wallet == 'true' &&
-      needs.pr-check.outputs.pr_exists == 'false'
-    uses: ./.github/workflows/dry-run-build-template.yml
-    secrets: inherit
-    with:
-      app_name: torus-wallet
-
-  torus-allocator-dry-run:
-    needs: [turbo-check, pr-check]
-    if: |
-      github.ref_name != 'main' &&
-      github.ref_name != 'dev' &&
-      github.ref_name != 'cicd' &&
-      needs.turbo-check.outputs.torus-allocator == 'true' &&
-      needs.pr-check.outputs.pr_exists == 'false'
-    uses: ./.github/workflows/dry-run-build-template.yml
-    secrets: inherit
-    with:
-      app_name: torus-allocator
-
-  torus-bridge-dry-run:
-    needs: [turbo-check, pr-check]
-    if: |
-      github.ref_name != 'main' &&
-      github.ref_name != 'dev' &&
-      github.ref_name != 'cicd' &&
-      needs.turbo-check.outputs.torus-bridge == 'true'
-    uses: ./.github/workflows/dry-run-build-template.yml
-    secrets: inherit
-    with:
-      app_name: torus-bridge
-
-  torus-cache-dry-run:
-    needs: [turbo-check, pr-check]
-    if: |
-      github.ref_name != 'main' &&
-      github.ref_name != 'dev' &&
-      github.ref_name != 'cicd' &&
-      needs.pr-check.outputs.pr_exists == 'false' &&
-      (needs.turbo-check.outputs.torus-cache == 'true' ||
-      needs.turbo-check.outputs.torus-governance == 'true' ||
-      needs.turbo-check.outputs.torus-allocator == 'true' ||
-      needs.turbo-check.outputs.torus-wallet == 'true')
-    uses: ./.github/workflows/dry-run-build-template.yml
-    secrets: inherit
-    with:
-      app_name: torus-cache
-
-  torus-governance-dry-run:
-    needs: [turbo-check, pr-check]
-    if: |
-      github.ref_name != 'main' &&
-      github.ref_name != 'dev' &&
-      github.ref_name != 'cicd' &&
-      needs.turbo-check.outputs.torus-governance == 'true' &&
-      needs.pr-check.outputs.pr_exists == 'false'
-    uses: ./.github/workflows/dry-run-build-template.yml
-    secrets: inherit
-    with:
-      app_name: torus-governance
-
-  torus-worker-dry-run:
-    needs: [turbo-check, pr-check]
-    if: |
-      github.ref_name != 'main' &&
-      github.ref_name != 'dev' &&
-      github.ref_name != 'cicd' &&
-      (needs.turbo-check.outputs.torus-worker == 'true' ||
-      needs.turbo-check.outputs.torus-governance == 'true' ||
-      needs.turbo-check.outputs.torus-allocator == 'true')
-    uses: ./.github/workflows/dry-run-build-template.yml
-    secrets: inherit
-    with:
-      app_name: torus-worker
-
-  torus-prophet-finder-dry-run:
-    needs: [turbo-check, pr-check]
-    if: |
-      github.ref_name != 'main' &&
-      github.ref_name != 'dev' &&
-      github.ref_name != 'cicd' &&
-      needs.turbo-check.outputs.torus-prophet-finder == 'true' &&
-      needs.pr-check.outputs.pr_exists == 'false'
-    uses: ./.github/workflows/dry-run-build-template.yml
-    secrets: inherit
-    with:
-      app_name: torus-prophet-finder
-
-  prediction-swarm-dash-dry-run:
-    needs: [turbo-check, pr-check]
-    if: |
-      github.ref_name != 'main' &&
-      github.ref_name != 'dev' &&
-      github.ref_name != 'cicd' &&
-      needs.turbo-check.outputs.prediction-swarm-dash == 'true' &&
-      needs.pr-check.outputs.pr_exists == 'false'
-    uses: ./.github/workflows/dry-run-build-template.yml
-    secrets: inherit
-    with:
-      app_name: prediction-swarm-dash
-
-  prediction-swarm-dry-run:
-    needs: [turbo-check, pr-check]
-    if: |
-      github.ref_name != 'main' &&
-      github.ref_name != 'dev' &&
-      github.ref_name != 'cicd' &&
-      needs.turbo-check.outputs.prediction-swarm == 'true' &&
-      needs.pr-check.outputs.pr_exists == 'false'
-    uses: ./.github/workflows/dry-run-build-template.yml
-    secrets: inherit
-    with:
-      app_name: prediction-swarm
-  torus-swarm-twitter-dry-run:
-    needs: [turbo-check, pr-check]
-    if: |
-      github.ref_name != 'main' &&
-      github.ref_name != 'dev' &&
-      github.ref_name != 'cicd' &&
-      needs.turbo-check.outputs.torus-swarm-twitter == 'true' &&
-      needs.pr-check.outputs.pr_exists == 'false'
-    uses: ./.github/workflows/dry-run-build-template.yml
-    secrets: inherit
-    with:
-      app_name: torus-swarm-twitter
-
-  torus-swarm-verifier-dry-run:
-    needs: [turbo-check, pr-check]
-    if: |
-      github.ref_name != 'main' &&
-      github.ref_name != 'dev' &&
-      github.ref_name != 'cicd' &&
-      needs.turbo-check.outputs.torus-swarm-verifier == 'true' &&
-      needs.pr-check.outputs.pr_exists == 'false'
-    uses: ./.github/workflows/dry-run-build-template.yml
-    secrets: inherit
-    with:
-      app_name: torus-swarm-verifier
+      app_name: ${{ matrix.app }}
 
   ###################################
   ########### PR PREVIEW ############
   ###################################
-  torus-allocator-pr-activate:
-    needs: turbo-check
+  pr-preview-deploy:
+    needs: find-deployments
     if: |
       github.event.pull_request.state == 'open' && !github.event.repository.fork
       && !github.event.pull_request.draft
-      && github.head_ref != 'main' && github.head_ref != 'dev' &&
-      needs.turbo-check.outputs.torus-allocator == 'true'
+      && github.head_ref != 'main' && github.head_ref != 'dev'
+      && needs.find-deployments.outputs.pr_preview_matrix != '[]'
+    strategy:
+      matrix:
+        app: ${{ fromJson(needs.find-deployments.outputs.pr_preview_matrix) }}
+      fail-fast: false
     uses: ./.github/workflows/pr-preview-template.yml
     secrets: inherit
     with:
-      app_name: torus-allocator
+      app_name: ${{ matrix.app }}
 
-  torus-allocator-pr-delete:
+  pr-preview-cleanup:
+    needs: find-deployments
     if: |
       github.event.pull_request.state == 'closed'
       && github.head_ref != 'main' && github.head_ref != 'dev'
+    strategy:
+      matrix:
+        app: ${{ fromJson(needs.find-deployments.outputs.all_apps) }}
+      fail-fast: false
     uses: ./.github/workflows/pr-preview-template.yml
     secrets: inherit
     with:
-      app_name: torus-allocator
-      delete: true
-
-  torus-cache-pr-activate:
-    needs: turbo-check
-    if: |
-      github.event.pull_request.state == 'open' && !github.event.repository.fork
-      && !github.event.pull_request.draft
-      && github.head_ref != 'main' && github.head_ref != 'dev' &&
-      (needs.turbo-check.outputs.torus-cache == 'true' ||
-      needs.turbo-check.outputs.torus-governance == 'true' ||
-      needs.turbo-check.outputs.torus-allocator == 'true' ||
-      needs.turbo-check.outputs.torus-wallet == 'true')
-    uses: ./.github/workflows/pr-preview-template.yml
-    secrets: inherit
-    with:
-      app_name: torus-cache
-
-  torus-cache-pr-delete:
-    if: |
-      github.event.pull_request.state == 'closed'
-      && github.head_ref != 'main' && github.head_ref != 'dev'
-    uses: ./.github/workflows/pr-preview-template.yml
-    secrets: inherit
-    with:
-      app_name: torus-cache
-      delete: true
-
-  torus-governance-pr-activate:
-    needs: turbo-check
-    if: |
-      github.event.pull_request.state == 'open' && !github.event.repository.fork
-      && !github.event.pull_request.draft
-      && github.head_ref != 'main' && github.head_ref != 'dev' &&
-      needs.turbo-check.outputs.torus-governance == 'true'
-    uses: ./.github/workflows/pr-preview-template.yml
-    secrets: inherit
-    with:
-      app_name: torus-governance
-
-  torus-governance-pr-delete:
-    if: |
-      github.event.pull_request.state == 'closed'
-      && github.head_ref != 'main' && github.head_ref != 'dev'
-    uses: ./.github/workflows/pr-preview-template.yml
-    secrets: inherit
-    with:
-      app_name: torus-governance
-      delete: true
-
-  torus-page-pr-activate:
-    needs: turbo-check
-    if: |
-      github.event.pull_request.state == 'open' && !github.event.repository.fork
-      && !github.event.pull_request.draft
-      && github.head_ref != 'main' && github.head_ref != 'dev' &&
-      needs.turbo-check.outputs.torus-page == 'true'
-    uses: ./.github/workflows/pr-preview-template.yml
-    secrets: inherit
-    with:
-      app_name: torus-page
-
-  torus-page-pr-delete:
-    if: |
-      github.event.pull_request.state == 'closed'
-      && github.head_ref != 'main' && github.head_ref != 'dev'
-    uses: ./.github/workflows/pr-preview-template.yml
-    secrets: inherit
-    with:
-      app_name: torus-page
-      delete: true
-
-  torus-portal-pr-activate:
-    needs: turbo-check
-    if: |
-      github.event.pull_request.state == 'open' && !github.event.repository.fork
-      && !github.event.pull_request.draft
-      && github.head_ref != 'main' && github.head_ref != 'dev' &&
-      needs.turbo-check.outputs.torus-portal == 'true'
-    uses: ./.github/workflows/pr-preview-template.yml
-    secrets: inherit
-    with:
-      app_name: torus-portal
-
-  torus-portal-pr-delete:
-    if: |
-      github.event.pull_request.state == 'closed'
-      && github.head_ref != 'main' && github.head_ref != 'dev'
-    uses: ./.github/workflows/pr-preview-template.yml
-    secrets: inherit
-    with:
-      app_name: torus-portal
-      delete: true
-
-  torus-wallet-pr-activate:
-    needs: turbo-check
-    if: |
-      github.event.pull_request.state == 'open' && !github.event.repository.fork
-      && !github.event.pull_request.draft
-      && github.head_ref != 'main' && github.head_ref != 'dev' &&
-      needs.turbo-check.outputs.torus-wallet == 'true'
-    uses: ./.github/workflows/pr-preview-template.yml
-    secrets: inherit
-    with:
-      app_name: torus-wallet
-
-  torus-wallet-pr-delete:
-    if: |
-      github.event.pull_request.state == 'closed'
-      && github.head_ref != 'main' && github.head_ref != 'dev'
-    uses: ./.github/workflows/pr-preview-template.yml
-    secrets: inherit
-    with:
-      app_name: torus-wallet
-      delete: true
-
-  torus-bridge-pr-activate:
-    needs: turbo-check
-    if: |
-      github.event.pull_request.state == 'open' && !github.event.repository.fork
-      && !github.event.pull_request.draft
-      && github.head_ref != 'main' && github.head_ref != 'dev' &&
-      needs.turbo-check.outputs.torus-bridge == 'true'
-    uses: ./.github/workflows/pr-preview-template.yml
-    secrets: inherit
-    with:
-      app_name: torus-bridge
-
-  torus-bridge-pr-delete:
-    if: |
-      github.event.pull_request.state == 'closed'
-      && github.head_ref != 'main' && github.head_ref != 'dev'
-    uses: ./.github/workflows/pr-preview-template.yml
-    secrets: inherit
-    with:
-      app_name: torus-bridge
-      delete: true
-
-  torus-prophet-finder-pr-activate:
-    needs: turbo-check
-    if: |
-      github.event.pull_request.state == 'open' && !github.event.repository.fork
-      && !github.event.pull_request.draft
-      && github.head_ref != 'main' && github.head_ref != 'dev' &&
-      needs.turbo-check.outputs.torus-prophet-finder == 'true'
-    uses: ./.github/workflows/pr-preview-template.yml
-    secrets: inherit
-    with:
-      app_name: torus-prophet-finder
-
-  torus-prophet-finder-pr-delete:
-    if: |
-      github.event.pull_request.state == 'closed'
-      && github.head_ref != 'main' && github.head_ref != 'dev'
-    uses: ./.github/workflows/pr-preview-template.yml
-    secrets: inherit
-    with:
-      app_name: torus-prophet-finder
-      delete: true
-
-  prediction-swarm-dash-pr-activate:
-    needs: turbo-check
-    if: |
-      github.event.pull_request.state == 'open' && !github.event.repository.fork
-      && !github.event.pull_request.draft
-      && github.head_ref != 'main' && github.head_ref != 'dev' &&
-      needs.turbo-check.outputs.prediction-swarm-dash == 'true'
-    uses: ./.github/workflows/pr-preview-template.yml
-    secrets: inherit
-    with:
-      app_name: prediction-swarm-dash
-
-  prediction-swarm-dash-pr-delete:
-    if: |
-      github.event.pull_request.state == 'closed'
-      && github.head_ref != 'main' && github.head_ref != 'dev'
-    uses: ./.github/workflows/pr-preview-template.yml
-    secrets: inherit
-    with:
-      app_name: prediction-swarm-dash
-      delete: true
-
-  prediction-swarm-pr-activate:
-    needs: turbo-check
-    if: |
-      github.event.pull_request.state == 'open' && !github.event.repository.fork
-      && !github.event.pull_request.draft
-      && github.head_ref != 'main' && github.head_ref != 'dev' &&
-      needs.turbo-check.outputs.prediction-swarm == 'true'
-    uses: ./.github/workflows/pr-preview-template.yml
-    secrets: inherit
-    with:
-      app_name: prediction-swarm
-
-  prediction-swarm-pr-delete:
-    if: |
-      github.event.pull_request.state == 'closed'
-      && github.head_ref != 'main' && github.head_ref != 'dev'
-    uses: ./.github/workflows/pr-preview-template.yml
-    secrets: inherit
-    with:
-      app_name: prediction-swarm
-      delete: true
+      app_name: ${{ matrix.app }}
+      cleanup: true
 
   deployment-summary:
     if: always()
     needs:
-      [
-        turbo-check,
-        torus-page,
-        torus-portal,
-        torus-wallet,
-        torus-allocator,
-        torus-bridge,
-        torus-cache,
-        torus-governance,
-        torus-worker,
-        torus-prophet-finder,
-        prediction-swarm-dash,
-        prediction-swarm,
-        torus-swarm-twitter,
-        torus-swarm-verifier,
-        torus-page-dry-run,
-        torus-portal-dry-run,
-        torus-wallet-dry-run,
-        torus-allocator-dry-run,
-        torus-bridge-dry-run,
-        torus-cache-dry-run,
-        torus-governance-dry-run,
-        torus-worker-dry-run,
-        torus-prophet-finder-dry-run,
-        prediction-swarm-dash-dry-run,
-        prediction-swarm-dry-run,
-        torus-swarm-twitter-dry-run,
-        torus-swarm-verifier-dry-run,
-        torus-allocator-pr-activate,
-        torus-cache-pr-activate,
-        torus-governance-pr-activate,
-        torus-page-pr-activate,
-        torus-portal-pr-activate,
-        torus-wallet-pr-activate,
-        torus-bridge-pr-activate,
-        torus-prophet-finder-pr-activate,
-        prediction-swarm-dash-pr-activate,
-        prediction-swarm-pr-activate,
-        torus-allocator-pr-delete,
-        torus-cache-pr-delete,
-        torus-governance-pr-delete,
-        torus-page-pr-delete,
-        torus-portal-pr-delete,
-        torus-wallet-pr-delete,
-        torus-bridge-pr-delete,
-        torus-prophet-finder-pr-delete,
-        prediction-swarm-dash-pr-delete,
-        prediction-swarm-pr-delete,
-      ]
+      [find-deployments, deploy, dry-run, pr-preview-deploy, pr-preview-cleanup]
     runs-on: ubicloud-standard-2
     steps:
       - name: Generate deployment summary
@@ -694,80 +275,28 @@ jobs:
           echo "**Trigger:** ${{ github.event_name }}" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
 
-          # Define application list
-          apps=(torus-page torus-portal torus-wallet torus-allocator torus-bridge torus-cache torus-governance torus-worker torus-prophet-finder prediction-swarm-dash prediction-swarm torus-swarm-twitter torus-swarm-verifier)
+          all_apps='${{ needs.find-deployments.outputs.all_apps }}'
+          deploy_apps='${{ needs.find-deployments.outputs.deploy_matrix }}'
 
           # Production/Dev Deployments
           if [ "${{ github.ref_name }}" == "main" ] || [ "${{ github.ref_name }}" == "dev" ] || [ "${{ github.ref_name }}" == "cicd" ]; then
             echo "### 🏗️ Application Deployments" >> $GITHUB_STEP_SUMMARY
-            echo "| Application | Status | Changed | Deploy Status |" >> $GITHUB_STEP_SUMMARY
-            echo "|-------------|--------|---------|---------------|" >> $GITHUB_STEP_SUMMARY
+            echo "| Application | Changed | Status |" >> $GITHUB_STEP_SUMMARY
+            echo "|-------------|---------|--------|" >> $GITHUB_STEP_SUMMARY
 
-            for app in "${apps[@]}"; do
-              case "$app" in
-                "torus-page")
-                  changed="${{ needs.turbo-check.outputs.torus-page }}"
-                  deploy_result="${{ needs.torus-page.result }}"
-                  ;;
-                "torus-portal")
-                  changed="${{ needs.turbo-check.outputs.torus-portal }}"
-                  deploy_result="${{ needs.torus-portal.result }}"
-                  ;;
-                "torus-wallet")
-                  changed="${{ needs.turbo-check.outputs.torus-wallet }}"
-                  deploy_result="${{ needs.torus-wallet.result }}"
-                  ;;
-                "torus-allocator")
-                  changed="${{ needs.turbo-check.outputs.torus-allocator }}"
-                  deploy_result="${{ needs.torus-allocator.result }}"
-                  ;;
-                "torus-bridge")
-                  changed="${{ needs.turbo-check.outputs.torus-bridge }}"
-                  deploy_result="${{ needs.torus-bridge.result }}"
-                  ;;
-                "torus-cache")
-                  changed="${{ needs.turbo-check.outputs.torus-cache }}"
-                  deploy_result="${{ needs.torus-cache.result }}"
-                  ;;
-                "torus-governance")
-                  changed="${{ needs.turbo-check.outputs.torus-governance }}"
-                  deploy_result="${{ needs.torus-governance.result }}"
-                  ;;
-                "torus-worker")
-                  changed="${{ needs.turbo-check.outputs.torus-worker }}"
-                  deploy_result="${{ needs.torus-worker.result }}"
-                  ;;
-                "torus-prophet-finder")
-                  changed="${{ needs.turbo-check.outputs.torus-prophet-finder }}"
-                  deploy_result="${{ needs.torus-prophet-finder.result }}"
-                  ;;
-                "prediction-swarm-dash")
-                  changed="${{ needs.turbo-check.outputs.prediction-swarm-dash }}"
-                  deploy_result="${{ needs.prediction-swarm-dash.result }}"
-                  ;;
-                "prediction-swarm")
-                  changed="${{ needs.turbo-check.outputs.prediction-swarm }}"
-                  deploy_result="${{ needs.prediction-swarm.result }}"
-                  ;;
-                "torus-swarm-twitter")
-                  changed="${{ needs.turbo-check.outputs.torus-swarm-twitter }}"
-                  deploy_result="${{ needs.torus-swarm-twitter.result }}"
-                  ;;
-                "torus-swarm-verifier")
-                  changed="${{ needs.turbo-check.outputs.torus-swarm-verifier }}"
-                  deploy_result="${{ needs.torus-swarm-verifier.result }}"
-                  ;;
-              esac
+            deploy_result='${{ needs.deploy.result }}'
 
-              if [ "$changed" == "true" ]; then change_icon="✅"; change_text="Yes"; else change_icon="⏭️"; change_text="No"; fi
-              case "$deploy_result" in
-                "success") deploy_icon="✅"; deploy_text="Deployed";;
-                "failure") deploy_icon="❌"; deploy_text="Failed";;
-                "skipped") deploy_icon="⏭️"; deploy_text="Skipped";;
-                *) deploy_icon="❓"; deploy_text="Unknown";;
-              esac
-              echo "| ${app} | ${change_icon} ${change_text} | ${deploy_icon} ${deploy_text} |" >> $GITHUB_STEP_SUMMARY
-            done
+            if [ "$deploy_apps" != "[]" ]; then
+              for app in $(echo "$deploy_apps" | jq -r '.[]'); do
+                case "$deploy_result" in
+                  "success") deploy_icon="✅"; deploy_text="Deployed";;
+                  "failure") deploy_icon="❌"; deploy_text="Failed";;
+                  "skipped") deploy_icon="⏭️"; deploy_text="Skipped";;
+                  *) deploy_icon="❓"; deploy_text="Unknown";;
+                esac
+                echo "| ${app} | ✅ Yes | ${deploy_icon} ${deploy_text} |" >> $GITHUB_STEP_SUMMARY
+              done
+            fi
           fi
 
           # PR Previews
@@ -777,71 +306,30 @@ jobs:
             echo "| Application | Status | Preview URL |" >> $GITHUB_STEP_SUMMARY
             echo "|-------------|--------|-------------|" >> $GITHUB_STEP_SUMMARY
 
-            # PR preview apps (subset of all apps)
-            pr_apps=(torus-allocator torus-cache torus-governance torus-page torus-portal torus-wallet torus-bridge torus-prophet-finder prediction-swarm-dash prediction-swarm)
+            preview_domains='${{ needs.find-deployments.outputs.preview_domains }}'
+            pr_apps='${{ needs.find-deployments.outputs.pr_preview_matrix }}'
+            deploy_result='${{ needs.pr-preview-deploy.result }}'
+            cleanup_result='${{ needs.pr-preview-cleanup.result }}'
 
-            for app in "${pr_apps[@]}"; do
-              case "$app" in
-                "torus-allocator")
-                  activate_result="${{ needs.torus-allocator-pr-activate.result }}"
-                  delete_result="${{ needs.torus-allocator-pr-delete.result }}"
-                  ;;
-                "torus-cache")
-                  activate_result="${{ needs.torus-cache-pr-activate.result }}"
-                  delete_result="${{ needs.torus-cache-pr-delete.result }}"
-                  ;;
-                "torus-governance")
-                  activate_result="${{ needs.torus-governance-pr-activate.result }}"
-                  delete_result="${{ needs.torus-governance-pr-delete.result }}"
-                  ;;
-                "torus-page")
-                  activate_result="${{ needs.torus-page-pr-activate.result }}"
-                  delete_result="${{ needs.torus-page-pr-delete.result }}"
-                  ;;
-                "torus-portal")
-                  activate_result="${{ needs.torus-portal-pr-activate.result }}"
-                  delete_result="${{ needs.torus-portal-pr-delete.result }}"
-                  ;;
-                "torus-wallet")
-                  activate_result="${{ needs.torus-wallet-pr-activate.result }}"
-                  delete_result="${{ needs.torus-wallet-pr-delete.result }}"
-                  ;;
-                "torus-bridge")
-                  activate_result="${{ needs.torus-bridge-pr-activate.result }}"
-                  delete_result="${{ needs.torus-bridge-pr-delete.result }}"
-                  ;;
-                "torus-prophet-finder")
-                  activate_result="${{ needs.torus-prophet-finder-pr-activate.result }}"
-                  delete_result="${{ needs.torus-prophet-finder-pr-delete.result }}"
-                  ;;
-                "prediction-swarm-dash")
-                  activate_result="${{ needs.prediction-swarm-dash-pr-activate.result }}"
-                  delete_result="${{ needs.prediction-swarm-dash-pr-delete.result }}"
-                  ;;
-                "prediction-swarm")
-                  activate_result="${{ needs.prediction-swarm-pr-activate.result }}"
-                  delete_result="${{ needs.prediction-swarm-pr-delete.result }}"
-                  ;;
-              esac
-
-              if [ "$activate_result" == "success" ]; then
-                # Set custom domain for specific apps
-                if [ "$app" == "torus-prophet-finder" ]; then
-                  preview_url="https://pr-${{ github.event.number }}.prophetfinder.com"
-                elif [ "$app" == "prediction-swarm" ]; then
-                  preview_url="https://pr-${{ github.event.number }}.predictionswarm.com"
+            if [ "$pr_apps" != "[]" ]; then
+              for app in $(echo "$pr_apps" | jq -r '.[]'); do
+                if [ "$deploy_result" == "success" ]; then
+                  preview_domain=$(echo "$preview_domains" | jq -r ".[\"$app\"] // empty")
+                  if [ -n "$preview_domain" ]; then
+                    preview_url="https://pr-${{ github.event.number }}.${preview_domain}"
+                  else
+                    preview_url="https://pr-${{ github.event.number }}.${app}.torus.network"
+                  fi
+                  echo "| ${app} | ✅ Deployed | [Preview](${preview_url}) |" >> $GITHUB_STEP_SUMMARY
+                elif [ "$cleanup_result" == "success" ]; then
+                  echo "| ${app} | 🗑️ Deleted | - |" >> $GITHUB_STEP_SUMMARY
+                elif [ "$deploy_result" == "skipped" ] && [ "$cleanup_result" == "skipped" ]; then
+                  echo "| ${app} | ⏭️ No Changes | - |" >> $GITHUB_STEP_SUMMARY
                 else
-                  preview_url="https://pr-${{ github.event.number }}.${app}.torus.network"
+                  echo "| ${app} | ❌ Failed | - |" >> $GITHUB_STEP_SUMMARY
                 fi
-                echo "| ${app} | ✅ Deployed | [Preview](${preview_url}) |" >> $GITHUB_STEP_SUMMARY
-              elif [ "$delete_result" == "success" ]; then
-                echo "| ${app} | 🗑️ Deleted | - |" >> $GITHUB_STEP_SUMMARY
-              elif [ "$activate_result" == "skipped" ] && [ "$delete_result" == "skipped" ]; then
-                echo "| ${app} | ⏭️ No Changes | - |" >> $GITHUB_STEP_SUMMARY
-              else
-                echo "| ${app} | ❌ Failed | - |" >> $GITHUB_STEP_SUMMARY
-              fi
-            done
+              done
+            fi
           fi
 
           # Dry Run Builds
@@ -851,56 +339,18 @@ jobs:
             echo "| Application | Build Status |" >> $GITHUB_STEP_SUMMARY
             echo "|-------------|--------------|" >> $GITHUB_STEP_SUMMARY
 
-            for app in "${apps[@]}"; do
-              case "$app" in
-                "torus-page")
-                  dry_run_result="${{ needs.torus-page-dry-run.result }}"
-                  ;;
-                "torus-portal")
-                  dry_run_result="${{ needs.torus-portal-dry-run.result }}"
-                  ;;
-                "torus-wallet")
-                  dry_run_result="${{ needs.torus-wallet-dry-run.result }}"
-                  ;;
-                "torus-allocator")
-                  dry_run_result="${{ needs.torus-allocator-dry-run.result }}"
-                  ;;
-                "torus-bridge")
-                  dry_run_result="${{ needs.torus-bridge-dry-run.result }}"
-                  ;;
-                "torus-cache")
-                  dry_run_result="${{ needs.torus-cache-dry-run.result }}"
-                  ;;
-                "torus-governance")
-                  dry_run_result="${{ needs.torus-governance-dry-run.result }}"
-                  ;;
-                "torus-worker")
-                  dry_run_result="${{ needs.torus-worker-dry-run.result }}"
-                  ;;
-                "torus-prophet-finder")
-                  dry_run_result="${{ needs.torus-prophet-finder-dry-run.result }}"
-                  ;;
-                "prediction-swarm-dash")
-                  dry_run_result="${{ needs.prediction-swarm-dash-dry-run.result }}"
-                  ;;
-                "prediction-swarm")
-                  dry_run_result="${{ needs.prediction-swarm-dry-run.result }}"
-                  ;;
-                "torus-swarm-twitter")
-                  dry_run_result="${{ needs.torus-swarm-twitter-dry-run.result }}"
-                  ;;
-                "torus-swarm-verifier")
-                  dry_run_result="${{ needs.torus-swarm-verifier-dry-run.result }}"
-                  ;;
-              esac
+            dry_run_result='${{ needs.dry-run.result }}'
 
-              case "$dry_run_result" in
-                "success") echo "| ${app} | ✅ Build Successful |" >> $GITHUB_STEP_SUMMARY;;
-                "failure") echo "| ${app} | ❌ Build Failed |" >> $GITHUB_STEP_SUMMARY;;
-                "skipped") echo "| ${app} | ⏭️ Skipped (No Changes) |" >> $GITHUB_STEP_SUMMARY;;
-                *) echo "| ${app} | ❓ Unknown |" >> $GITHUB_STEP_SUMMARY;;
-              esac
-            done
+            if [ "$deploy_apps" != "[]" ]; then
+              for app in $(echo "$deploy_apps" | jq -r '.[]'); do
+                case "$dry_run_result" in
+                  "success") echo "| ${app} | ✅ Build Successful |" >> $GITHUB_STEP_SUMMARY;;
+                  "failure") echo "| ${app} | ❌ Build Failed |" >> $GITHUB_STEP_SUMMARY;;
+                  "skipped") echo "| ${app} | ⏭️ Skipped (No Changes) |" >> $GITHUB_STEP_SUMMARY;;
+                  *) echo "| ${app} | ❓ Unknown |" >> $GITHUB_STEP_SUMMARY;;
+                esac
+              done
+            fi
           fi
 
           echo "" >> $GITHUB_STEP_SUMMARY

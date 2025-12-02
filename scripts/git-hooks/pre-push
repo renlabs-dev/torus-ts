@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+set -e
+
+echo "Checking code formatting..."
+pnpm prettier --check --cache --cache-location .cache/.prettiercache --ignore-unknown .
+
+echo "Running full test suite..."
+just check-test

@@ -23,7 +23,9 @@ import { predictionReportRouter } from "./router/prediction/prediction-report";
 import { topicRouter } from "./router/prediction/topic";
 import { prophetRouter } from "./router/prophet/prophet";
 import { scraperQueueRouter } from "./router/scraper/scraper-queue";
+import { starRouter } from "./router/star/star";
 import { twitterUserRouter } from "./router/twitter/twitter-user";
+import { watchRouter } from "./router/watch/watch";
 import { createTRPCRouter } from "./trpc";
 
 export const appRouter = createTRPCRouter({
@@ -80,6 +82,12 @@ export const appRouter = createTRPCRouter({
 
   // Twitter
   twitterUser: twitterUserRouter,
+
+  // Watch
+  watch: watchRouter,
+
+  // Star
+  star: starRouter,
 });
 
 export type AppRouter = typeof appRouter;
