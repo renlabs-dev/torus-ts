@@ -5,6 +5,7 @@ import { u8aToHex } from "@polkadot/util";
 import { decodeAddress } from "@polkadot/util-crypto";
 import { queryLastBlock } from "@torus-network/sdk/chain";
 import { tryAsync } from "@torus-network/torus-utils/try-catch";
+import { assert } from "tsafe";
 
 interface WorkResult {
   hash: Uint8Array;
@@ -188,6 +189,10 @@ export function doWork(api: ApiPromise, address: string): Promise<WorkResult> {
 
       const [subscribeError, subscription] = await tryAsync(
         api.rpc.chain.subscribeNewHeads((head) => {
+          assert(
+            manager !== undefined,
+            "Manager should be defined when subscription callback is invoked",
+          );
           manager.updateBlock({
             blockHash: head.hash,
             blockNumber: head.number.toNumber(),
