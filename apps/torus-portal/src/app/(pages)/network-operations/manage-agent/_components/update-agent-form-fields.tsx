@@ -114,7 +114,7 @@ export function UpdateAgentFormFields({
                   />
                 </FormControl>
                 <p className="text-muted-foreground mt-1 text-xs">
-                  {field.value.length || 0}/
+                  {field.value?.length ?? 0}/
                   {updateAgentSchema.shape.shortDescription.maxLength}{" "}
                   characters
                 </p>
@@ -142,7 +142,7 @@ This agent specializes in providing technical support by analyzing issues and of
                   />
                 </FormControl>
                 <p className="text-muted-foreground mt-1 text-xs">
-                  {field.value.length || 0}/
+                  {field.value?.length ?? 0}/
                   {updateAgentSchema.shape.description.maxLength} characters
                 </p>
                 <FormMessage />

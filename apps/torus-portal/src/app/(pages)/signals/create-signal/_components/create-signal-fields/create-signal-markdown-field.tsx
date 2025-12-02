@@ -17,7 +17,7 @@ export function CreateSignalMarkdownField({
   field,
 }: {
   field: {
-    value: string;
+    value?: string;
   };
 }) {
   return (
@@ -35,6 +35,7 @@ export function CreateSignalMarkdownField({
               placeholder="e.g. We need a bridge between Discord and X to facilitate communication between the two platformss."
               className="min-h-[200px] resize-none"
               {...field}
+              value={field.value ?? ""}
             />
           </TabsContent>
           <TabsContent value="preview">

@@ -71,7 +71,7 @@ export function TransferStakeForm({
                 <FormLabel>From Allocator</FormLabel>
                 <FormControl>
                   <AllocatorSelector
-                    value={field.value}
+                    value={field.value ?? ""}
                     onSelect={handleSelectFromValidatorAction}
                     listType="staked"
                     placeholder="Select a staked allocator"
@@ -90,7 +90,7 @@ export function TransferStakeForm({
                 <FormLabel>To Allocator</FormLabel>
                 <FormControl>
                   <AllocatorSelector
-                    value={field.value}
+                    value={field.value ?? ""}
                     onSelect={handleSelectToValidatorAction}
                     listType="all"
                     placeholder="Select an allocator"
@@ -111,7 +111,7 @@ export function TransferStakeForm({
                 <FormLabel>Amount</FormLabel>
                 <FormControl>
                   <CurrencySwap
-                    amount={field.value}
+                    amount={field.value ?? ""}
                     usdPrice={usdPrice}
                     disabled={!selectedAccount?.address}
                     availableFunds={maxTransferStakeAmount || "0"}
