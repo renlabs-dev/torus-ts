@@ -281,8 +281,7 @@ export function callFaucetExtrinsic(
         return;
       }
 
-      let unsubscribe: VoidFn | undefined;
-      const [sendError, result] = await tryAsync(
+      const [sendError, unsubscribe] = await tryAsync(
         call.send((result) => {
           if (result.status.isInBlock) {
             console.log(
@@ -305,7 +304,7 @@ export function callFaucetExtrinsic(
             if (section === "system" && method === "ExtrinsicFailed") {
               assert(
                 unsubscribe !== undefined,
-                "Unsubscribe should be defined in extrinsic failed handler",
+                "Unsubscribe should be defined when handling extrinsic failed",
               );
               handleExtrinsicFailed(api, data, reject, unsubscribe);
               break;
@@ -314,7 +313,7 @@ export function callFaucetExtrinsic(
             if (section === "system" && method === "ExtrinsicSuccess") {
               assert(
                 unsubscribe !== undefined,
-                "Unsubscribe should be defined in extrinsic success handler",
+                "Unsubscribe should be defined when handling extrinsic success",
               );
               handleExtrinsicSuccess(resolve, unsubscribe);
               break;
@@ -329,8 +328,6 @@ export function callFaucetExtrinsic(
         );
         return;
       }
-
-      unsubscribe = result;
     })();
   });
 }
