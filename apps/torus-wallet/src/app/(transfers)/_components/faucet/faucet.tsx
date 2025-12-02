@@ -96,7 +96,12 @@ async function attemptFaucetRequest(
   remainingText: string,
 ): Promise<FaucetAttemptResult> {
   try {
-    return await executeFaucetRequest(api, recipient, setLoadMessage, remainingText);
+    return await executeFaucetRequest(
+      api,
+      recipient,
+      setLoadMessage,
+      remainingText,
+    );
   } catch (error) {
     if (error instanceof InvalidWorkBlockError) {
       return handleInvalidWorkBlock(retryCount, showError);

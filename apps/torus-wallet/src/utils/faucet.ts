@@ -1,10 +1,10 @@
 import type { ApiPromise } from "@polkadot/api";
 import type { VoidFn } from "@polkadot/api/types";
 import type { DispatchError } from "@polkadot/types/interfaces";
-import { tryAsync } from "@torus-network/torus-utils/try-catch";
 import { u8aToHex } from "@polkadot/util";
 import { decodeAddress } from "@polkadot/util-crypto";
 import { queryLastBlock } from "@torus-network/sdk/chain";
+import { tryAsync } from "@torus-network/torus-utils/try-catch";
 
 interface WorkResult {
   hash: Uint8Array;
@@ -131,9 +131,7 @@ function getWorkerCount(): number {
   return navigator.hardwareConcurrency || DEFAULT_WORKER_COUNT;
 }
 
-function createUnsubscribeHandler(
-  unsubscribe: VoidFn | undefined,
-): () => void {
+function createUnsubscribeHandler(unsubscribe: VoidFn | undefined): () => void {
   return () => {
     if (!unsubscribe) return;
     unsubscribe();
@@ -146,7 +144,9 @@ export function doWork(api: ApiPromise, address: string): Promise<WorkResult> {
     const cleanup = () => createUnsubscribeHandler(unsubscribe)();
 
     void (async () => {
-      const [blockError, currentBlockData] = await tryAsync(queryLastBlock(api));
+      const [blockError, currentBlockData] = await tryAsync(
+        queryLastBlock(api),
+      );
       if (blockError !== undefined) {
         cleanup();
         reject(new Error(`Failed to query block: ${blockError.message}`));
@@ -277,10 +277,7 @@ export function callFaucetExtrinsic(
 
         if (!result.status.isFinalized) return;
 
-        console.log(
-          "Finalized block hash",
-          result.status.asFinalized.toHex(),
-        );
+        console.log("Finalized block hash", result.status.asFinalized.toHex());
 
         result.events.forEach(({ event: { method, section, data } }) => {
           if (section === "system" && method === "ExtrinsicFailed") {
