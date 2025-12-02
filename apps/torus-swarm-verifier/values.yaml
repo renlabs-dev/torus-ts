@@ -28,20 +28,13 @@ deployment:
   args: ["tsx", "./src/index.ts"]
 
   startupProbe:
-    httpGet:
-      path: /api/stake-out
+    enabled: false
 
   readinessProbe:
-    periodSeconds: 30
-    timeoutSeconds: 3
-    httpGet:
-      path: /api/stake-out
+    enabled: false
 
   livenessProbe:
-    periodSeconds: 30
-    timeoutSeconds: 3
-    httpGet:
-      path: /api/stake-out
+    enabled: false
 
   env:
     OPENROUTER_API_KEY:
