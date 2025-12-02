@@ -62,7 +62,12 @@ jobs:
       - name: Get apps list
         id: apps
         run: |
-          all_apps=$(ls -d apps/* | sed 's/apps\///' | jq -R -s -c 'split("\n")[:-1]')
+          # List both apps and services directories
+          apps_list=$(ls -d apps/* 2>/dev/null | sed 's/apps\///' || echo "")
+          services_list=$(ls -d services/* 2>/dev/null | sed 's/services\///' || echo "")
+
+          # Combine both lists
+          all_apps=$(echo -e "${apps_list}\n${services_list}" | grep -v '^$' | jq -R -s -c 'split("\n")[:-1]')
           echo "all_apps=$all_apps" >> $GITHUB_OUTPUT
           echo "All apps in workspace:"
           echo "$all_apps" | jq '.'

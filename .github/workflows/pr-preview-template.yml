@@ -48,6 +48,13 @@ jobs:
       - id: commit
         uses: prompt/actions-commit-hash@v3
 
+      - name: Determine app path
+        id: app-path
+        run: |
+          config=$(cat .github/ci-config.json)
+          app_path=$(echo "$config" | jq -r ".apps[\"${{ inputs.app_name }}\"].path // \"apps\"")
+          echo "path=$app_path" >> $GITHUB_OUTPUT
+
       - name: Build and push
         uses: docker/build-push-action@v6
         with:
@@ -58,6 +65,7 @@ jobs:
           cache-to: type=gha,mode=max
           build-args: |
             APP_NAME=${{ inputs.app_name }}
+            APP_PATH=${{ steps.app-path.outputs.path }}
             TURBO_API=${{ vars.TURBO_API }}
             TURBO_TEAM=${{ vars.TURBO_TEAM }}
             TURBO_TOKEN=${{ secrets.TURBO_TOKEN }}
@@ -119,21 +127,23 @@ jobs:
             --set environmentName=dev \
             renlabs/utils | kubectl apply -f -
 
-      - name: Set preview domain
+      - name: Set preview domain and app path
         id: domain
         run: |
           config=$(cat .github/ci-config.json)
           preview_domain=$(echo "$config" | jq -r ".apps[\"${{ inputs.app_name }}\"].preview_domain // empty")
+          app_path=$(echo "$config" | jq -r ".apps[\"${{ inputs.app_name }}\"].path // \"apps\"")
 
           if [ -n "$preview_domain" ]; then
             echo "host=pr-${{ github.event.number }}.${preview_domain}" >> $GITHUB_OUTPUT
           else
             echo "host=pr-${{ github.event.number }}.${{ inputs.app_name }}.torus.network" >> $GITHUB_OUTPUT
           fi
+          echo "app_path=$app_path" >> $GITHUB_OUTPUT
 
       - name: Deploy application
         id: deploy
-        working-directory: apps/${{ inputs.app_name }}
+        working-directory: ${{ steps.domain.outputs.app_path }}/${{ inputs.app_name }}
         run: |
           helmfile sync -e dev \
           --set deployment.image.tag=${{ steps.commit.outputs.short }}-pr \
@@ -204,9 +214,16 @@ jobs:
       - name: Setup Kubernetes authentication
         run: /apps/k8s_auth_w_approle_sa.sh
 
+      - name: Set app path for cleanup
+        id: cleanup-path
+        run: |
+          config=$(cat .github/ci-config.json)
+          app_path=$(echo "$config" | jq -r ".apps[\"${{ inputs.app_name }}\"].path // \"apps\"")
+          echo "app_path=$app_path" >> $GITHUB_OUTPUT
+
       - name: Cleanup PR preview deployment
         id: cleanup
-        working-directory: apps/${{ inputs.app_name }}
+        working-directory: ${{ steps.cleanup-path.outputs.app_path }}/${{ inputs.app_name }}
         run: |
           # Capture exit code - helmfile destroy returns non-zero when nothing exists to delete
           set +e
