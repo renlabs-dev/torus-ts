@@ -73,7 +73,9 @@ function getAccuracyStyle(accuracy: number): {
   }
 }
 
-export function AccuracyBadge({ accuracy }: AccuracyBadgeProps) {
+export function ExpandedFeedHeaderAccuracyBadge({
+  accuracy,
+}: AccuracyBadgeProps) {
   if (accuracy === null) {
     return <Badge variant="secondary">No verdicts yet</Badge>;
   }

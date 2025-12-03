@@ -8,7 +8,7 @@ import {
 } from "@torus-ts/ui/components/empty";
 import { ArrowUpRightIcon, ScanSearch } from "lucide-react";
 
-export function SearchEmpty() {
+export function SearchPredictorCommandEmpty() {
   return (
     <Empty className="!p-0">
       <EmptyHeader>

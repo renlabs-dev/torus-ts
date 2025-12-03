@@ -1,6 +1,6 @@
-import { FeedLegend } from "~/app/_components/user-profile/feed-legend";
-import ProfileContent from "~/app/_components/user-profile/profile-content";
-import ProfileHeader from "~/app/_components/user-profile/profile-header";
+import ExpandedFeedHeaderCard from "~/app/_components/expanded-feed/expanded-feed-header/expanded-feed-header-card";
+import { FeedLegend } from "~/app/_components/expanded-feed/expanded-feed-legend-tooltip";
+import UserProfileContent from "~/app/(pages)/(expanded-pages)/user/components/user-profile-content";
 import { api } from "~/trpc/server";
 import { notFound } from "next/navigation";
 
@@ -28,7 +28,7 @@ export default async function Page({ params }: PageProps) {
     <div className="relative py-4">
       <div className="border-border pointer-events-none absolute inset-y-0 left-1/2 w-full max-w-screen-lg -translate-x-1/2 border-x" />
       <div className="relative mx-auto max-w-screen-lg px-4">
-        <ProfileHeader user={user} counts={counts} username={slug} />
+        <ExpandedFeedHeaderCard user={user} counts={counts} username={slug} />
       </div>
       <div className="border-border relative my-4 border-t" />
       <div className="relative mx-auto max-w-screen-lg px-4">
@@ -36,7 +36,7 @@ export default async function Page({ params }: PageProps) {
       </div>
       <div className="border-border relative my-4 border-t" />
       <div className="relative mx-auto max-w-screen-lg px-4">
-        <ProfileContent username={slug} counts={counts} />
+        <UserProfileContent username={slug} counts={counts} />
       </div>
       <div className="border-border relative my-4 border-t" />
     </div>

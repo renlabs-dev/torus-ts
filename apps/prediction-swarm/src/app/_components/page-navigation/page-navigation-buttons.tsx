@@ -3,11 +3,11 @@
 import { env } from "~/env";
 import { useSearchStore } from "~/store/search-store";
 import { Search } from "lucide-react";
-import AddAccountStepperDialog from "./add-account-stepper-dialog";
-import { NavigationMenuDropdown } from "./navigation-menu-dropdown";
-import { WalletDropdown } from "./wallet-dropdown";
+import AddAccountStepperDialog from "../add-account-stepper-dialog";
+import { WalletDropdown } from "../wallet-dropdown";
+import { PageNavigationDropdownMenu } from "./page-navigation-dropdown-menu";
 
-export function NavigationItems() {
+export function PageNavigationButtons() {
   const openSearch = useSearchStore((state) => state.open);
 
   return (
@@ -19,7 +19,7 @@ export function NavigationItems() {
         <Search className="!h-4 !w-4" />
       </button>
       <AddAccountStepperDialog />
-      <NavigationMenuDropdown />
+      <PageNavigationDropdownMenu />
       <WalletDropdown
         variant="icon"
         torusCacheUrl={env("NEXT_PUBLIC_TORUS_CACHE_URL")}

@@ -3,7 +3,7 @@
 import { useSearchStore } from "~/store/search-store";
 import { SearchIcon } from "lucide-react";
 
-export function SearchProphet() {
+export function SearchPredictorCommandTrigger() {
   const open = useSearchStore((state) => state.open);
 
   return (

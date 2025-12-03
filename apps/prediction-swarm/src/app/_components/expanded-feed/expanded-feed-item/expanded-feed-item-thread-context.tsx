@@ -88,7 +88,7 @@ function ContextTweet({
   );
 }
 
-export function ThreadContext({
+export function ExpandedFeedItemThreadContext({
   tweet,
   activePrediction,
   allPredictions,

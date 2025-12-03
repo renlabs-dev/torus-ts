@@ -15,7 +15,9 @@ interface LastScrapedBadgeProps {
   scrapedAt: Date | null;
 }
 
-export function LastScrapedBadge({ scrapedAt }: LastScrapedBadgeProps) {
+export function ExpandedFeedLastScrapedBadge({
+  scrapedAt,
+}: LastScrapedBadgeProps) {
   if (!scrapedAt) {
     return null;
   }

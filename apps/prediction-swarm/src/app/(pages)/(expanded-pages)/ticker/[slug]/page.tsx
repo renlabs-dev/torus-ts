@@ -9,9 +9,9 @@ import {
   TabsTrigger,
 } from "@torus-ts/ui/components/tabs";
 import { TOP_100_TICKERS } from "@torus-ts/ui/lib/tickers";
-import { PageHeader } from "~/app/_components/page-header";
-import { FeedLegend } from "~/app/_components/user-profile/feed-legend";
-import { ProfileFeed } from "~/app/_components/user-profile/profile-feed";
+import { ExpandedFeedItem } from "~/app/_components/expanded-feed/expanded-feed-item/expanded-feed-item";
+import { FeedLegend } from "~/app/_components/expanded-feed/expanded-feed-legend-tooltip";
+import { ExpandedViewPageHeader } from "~/app/_components/expanded-view-page-header";
 import { api } from "~/trpc/react";
 import Image from "next/image";
 import { notFound } from "next/navigation";
@@ -62,7 +62,7 @@ export default function TickerPage({ params }: PageProps) {
     <div className="relative py-4">
       <div className="border-border pointer-events-none absolute inset-y-0 left-1/2 w-full max-w-screen-lg -translate-x-1/2 border-x" />
 
-      <PageHeader
+      <ExpandedViewPageHeader
         title={`${marketData?.name ?? symbol} Predictions`}
         description={`View all predictions related to ${symbol}`}
         icon={
@@ -193,7 +193,7 @@ export default function TickerPage({ params }: PageProps) {
                     Loading predictions...
                   </div>
                 ) : (
-                  <ProfileFeed
+                  <ExpandedFeedItem
                     predictions={ongoingPredictions}
                     variant="feed"
                     isLoading={isLoading}
@@ -209,7 +209,7 @@ export default function TickerPage({ params }: PageProps) {
                     Loading predictions...
                   </div>
                 ) : (
-                  <ProfileFeed
+                  <ExpandedFeedItem
                     predictions={truePredictions}
                     variant="feed"
                     isLoading={isLoading}
@@ -225,7 +225,7 @@ export default function TickerPage({ params }: PageProps) {
                     Loading predictions...
                   </div>
                 ) : (
-                  <ProfileFeed
+                  <ExpandedFeedItem
                     predictions={falsePredictions}
                     variant="feed"
                     isLoading={isLoading}

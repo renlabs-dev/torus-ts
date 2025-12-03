@@ -315,7 +315,7 @@ interface DitherProps {
   mouseRadius?: number;
 }
 
-export default function Dither({
+export function DitherBackgroundAnimation({
   waveSpeed = 0.05,
   waveFrequency = 3,
   waveAmplitude = 0.3,

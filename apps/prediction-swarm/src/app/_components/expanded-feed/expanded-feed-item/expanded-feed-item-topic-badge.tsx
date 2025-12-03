@@ -9,7 +9,7 @@ interface TopicBadgeProps {
   topicId: string;
 }
 
-export function TopicBadge({ topicId }: TopicBadgeProps) {
+export function ExpandedFeedItemTopicBadge({ topicId }: TopicBadgeProps) {
   const { data: topics } = api.topic.getAll.useQuery(undefined, {
     staleTime: Infinity, // Cache forever - topics rarely change
   });

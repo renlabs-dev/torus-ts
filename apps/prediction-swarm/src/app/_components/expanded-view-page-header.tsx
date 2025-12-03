@@ -8,7 +8,7 @@ interface PageHeaderProps {
   icon?: React.ReactNode;
 }
 
-export function PageHeader({
+export function ExpandedViewPageHeader({
   title,
   description,
   children,

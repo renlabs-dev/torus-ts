@@ -10,10 +10,10 @@ import { Card, CardContent } from "@torus-ts/ui/components/card";
 import type { inferProcedureOutput } from "@trpc/server";
 import { api } from "~/trpc/react";
 import { BadgeCheck, Eye } from "lucide-react";
-import { FilterDialog } from "../filter-dialog";
-import { AccuracyBadge } from "./accuracy-badge";
-import { LastScrapedBadge } from "./last-scraped-badge";
-import { WatchButton } from "./watch-button";
+import { ContentFilterDialog } from "../../content-filter-dialog/content-filter-dialog";
+import { ExpandedFeedLastScrapedBadge } from "../expanded-feed-last-scraped-badge";
+import { ExpandedFeedHeaderAccuracyBadge } from "./expanded-feed-header-accuracy-badge";
+import { ExpandedFeedHeaderWatchButton } from "./expanded-feed-header-watch-button";
 
 type TwitterUser = NonNullable<
   inferProcedureOutput<AppRouter["twitterUser"]["getByUsername"]>
@@ -29,7 +29,10 @@ interface ProfileHeaderProps {
   username: string;
 }
 
-export default function ProfileHeader({ user, counts }: ProfileHeaderProps) {
+export default function ExpandedFeedHeaderCard({
+  user,
+  counts,
+}: ProfileHeaderProps) {
   const truePredictions = parseInt(String(counts.true));
   const total = truePredictions + parseInt(String(counts.false));
 
@@ -60,8 +63,8 @@ export default function ProfileHeader({ user, counts }: ProfileHeaderProps) {
           </div>
           <div className="flex-1 space-y-2">
             <div className="flex items-center gap-2">
-              <AccuracyBadge accuracy={accuracy} />
-              <LastScrapedBadge scrapedAt={user.scrapedAt} />
+              <ExpandedFeedHeaderAccuracyBadge accuracy={accuracy} />
+              <ExpandedFeedLastScrapedBadge scrapedAt={user.scrapedAt} />
             </div>
             <div className="flex flex-col gap-2 md:flex-row md:items-center">
               <h1 className="text-2xl font-bold">
@@ -103,8 +106,8 @@ export default function ProfileHeader({ user, counts }: ProfileHeaderProps) {
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <WatchButton userId={userId} />
-            <FilterDialog />
+            <ExpandedFeedHeaderWatchButton userId={userId} />
+            <ContentFilterDialog />
           </div>
         </div>
       </CardContent>
