@@ -63,6 +63,10 @@
     "torus-swarm-services": {
       "pr_preview": false,
       "prod_only": false
+    },
+    "prediction-swarm-api": {
+      "pr_preview": false,
+      "prod_only": false
     }
   }
 }
