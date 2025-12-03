@@ -2,6 +2,7 @@
 # check=skip=SecretsUsedInArgOrEnv
 
 ARG APP_NAME
+ARG APP_PATH=apps
 
 # ======== base layer ======== #
 FROM node:20-slim AS base
@@ -56,6 +57,7 @@ RUN CI=1 pnpm turbo run build --filter=${APP_NAME}
 # ======== runner layer ======== #
 FROM base AS runner
 ARG APP_NAME
+ARG APP_PATH
 
 LABEL org.opencontainers.image.source=https://github.com/renlabs-dev/torus-ts
 
@@ -65,7 +67,7 @@ WORKDIR /app
 
 COPY --from=builder /app/ .
 
-WORKDIR /app/apps/${APP_NAME}
+WORKDIR /app/${APP_PATH}/${APP_NAME}
 
 EXPOSE 8000
 
