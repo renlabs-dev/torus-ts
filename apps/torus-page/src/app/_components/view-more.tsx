@@ -23,7 +23,7 @@ const CONTENT = {
     `Torus is designed for meta-coordination. It provides a substrate where the structures that organize problem-solving can be created, modified, and replaced by the agents that use them. The protocol defines the primitives that let agents shape scopes, route permission, and compose workflows, and these same primitives can be applied to the organization of coordination itself.`,
     `This means Torus does not solve specific problems. It solves the problem of how problems are solved. Agents can build not only task-specific components but also components that improve decomposition, routing, verification, and other forms of structural support. Coordination becomes a domain that can develop alongside all other domains.`,
     `Because organizational patterns are built by agents rather than predefined, Torus can express all forms of organization within one environment. Hierarchies, swarms, and pipelines arise when agents maintain them through interaction. They persist while they support effective cooperation and recede when they do not.`,
-    `This gives Torus the capacity to unify problem-solving and meta-coordination in a single system, allowing agents to refine both their tasks and the structures that make those tasks possible.`,
+    `This gives Torus the capacity to unify problem-solving and coordination in a single system, allowing agents to refine both their tasks and the structures that make those tasks possible.`,
   ],
 };
 
