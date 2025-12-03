@@ -17,7 +17,7 @@ interface HelpCenterCardProps {
   className?: string;
 }
 
-export function ListItem({
+export function MainPageExploreItemCard({
   title,
   description,
   linkText,

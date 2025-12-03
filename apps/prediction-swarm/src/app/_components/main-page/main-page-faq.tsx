@@ -5,7 +5,7 @@ import {
   AccordionTrigger,
 } from "@torus-ts/ui/components/accordion";
 
-export function FAQ() {
+export function MainPageFAQ() {
   const faqItems = [
     {
       id: "what-is-swarm",

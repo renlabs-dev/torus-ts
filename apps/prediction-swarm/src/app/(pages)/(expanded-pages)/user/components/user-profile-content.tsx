@@ -19,7 +19,7 @@ import type { inferProcedureOutput } from "@trpc/server";
 import { api } from "~/trpc/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
-import { ProfileFeed } from "./profile-feed";
+import { ExpandedFeedItem } from "../../../../_components/expanded-feed/expanded-feed-item/expanded-feed-item";
 
 type UserCounts = NonNullable<
   inferProcedureOutput<AppRouter["prediction"]["getCountsByUsername"]>
@@ -32,7 +32,7 @@ interface ProfileContentProps {
 
 type VerdictTab = "ongoing" | "true" | "false";
 
-export default function ProfileContent({
+export default function UserProfileContent({
   username,
   counts,
 }: ProfileContentProps) {
@@ -136,7 +136,7 @@ export default function ProfileContent({
         {/* Ongoing Predictions */}
         <TabsContent value="ongoing">
           <CardContent>
-            <ProfileFeed
+            <ExpandedFeedItem
               predictions={ongoingPredictions ?? []}
               variant="user"
               isLoading={ongoingLoading}
@@ -184,7 +184,7 @@ export default function ProfileContent({
         {/* True Predictions */}
         <TabsContent value="true">
           <CardContent>
-            <ProfileFeed
+            <ExpandedFeedItem
               predictions={truePredictions ?? []}
               variant="user"
               isLoading={trueLoading}
@@ -231,7 +231,7 @@ export default function ProfileContent({
         {/* False Predictions */}
         <TabsContent value="false">
           <CardContent>
-            <ProfileFeed
+            <ExpandedFeedItem
               predictions={falsePredictions ?? []}
               variant="user"
               isLoading={falseLoading}

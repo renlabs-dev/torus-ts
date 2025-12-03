@@ -15,10 +15,10 @@ import { Button } from "@torus-ts/ui/components/button";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 import type { DateRange } from "react-day-picker";
-import { FilterDatePicker } from "./filter-date-picker";
-import { TopicSelect } from "./topic-select";
+import { ContentFilterDialogDatePicker } from "./content-filter-dialog-date-picker";
+import { ContentFilterDialogTopicSelect } from "./content-filter-dialog-topic-select";
 
-export function FilterDialog() {
+export function ContentFilterDialog() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -99,11 +99,11 @@ export function FilterDialog() {
           </AlertDialogDescription>
         </AlertDialogHeader>
         <div className="space-y-4">
-          <FilterDatePicker
+          <ContentFilterDialogDatePicker
             dateRange={dateRange}
             onDateRangeChange={setDateRange}
           />
-          <TopicSelect
+          <ContentFilterDialogTopicSelect
             selectedTopicIds={selectedTopicIds}
             onTopicIdsChange={setSelectedTopicIds}
           />

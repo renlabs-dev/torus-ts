@@ -12,7 +12,7 @@ import {
 import { Menu } from "lucide-react";
 import { useRouter } from "next/navigation";
 
-export function NavigationMenuDropdown() {
+export function PageNavigationDropdownMenu() {
   const router = useRouter();
 
   return (

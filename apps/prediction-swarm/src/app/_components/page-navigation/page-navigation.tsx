@@ -4,7 +4,7 @@ import { ArrowLeft, BookOpenText } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef } from "react";
-import { NavigationItems } from "./navigation-items";
+import { PageNavigationButtons } from "./page-navigation-buttons";
 
 export function PageNavigation() {
   const router = useRouter();
@@ -51,7 +51,7 @@ export function PageNavigation() {
             Home
           </Link>
         </div>
-        <NavigationItems />
+        <PageNavigationButtons />
       </div>
       {/* Bottom border */}
       <div className="border-border relative border-t" />

@@ -38,11 +38,11 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useMemo, useState } from "react";
-import { PredictionReportDialog } from "../prediction-report-dialog";
-import { FutureTimeframeBadge } from "./future-timeframe-badge";
-import { StarButton } from "./star-button";
-import { ThreadContext } from "./thread-context";
-import { TopicBadge } from "./topic-badge";
+import { PredictionReportDialog } from "../../prediction-report-dialog";
+import { FutureTimeframeBadge } from "../expanded-feed-future-timeframe-badge";
+import { ExpandedFeedItemStarButton } from "./expanded-feed-item-star-button";
+import { ExpandedFeedItemThreadContext } from "./expanded-feed-item-thread-context";
+import { ExpandedFeedItemTopicBadge } from "./expanded-feed-item-topic-badge";
 
 type GroupedTweetData = inferProcedureOutput<
   AppRouter["prediction"]["getByUsername"]
@@ -257,7 +257,7 @@ function getConfidenceLabel(confidence: string): string {
   return "Low";
 }
 
-export function ProfileFeed({
+export function ExpandedFeedItem({
   predictions,
   isLoading = false,
   // variant = "user",
@@ -356,7 +356,7 @@ export function ProfileFeed({
               >
                 {/* Thread/Reply Context */}
                 <div className="pt-4 md:pt-6">
-                  <ThreadContext
+                  <ExpandedFeedItemThreadContext
                     tweet={tweet}
                     activePrediction={activePrediction}
                     allPredictions={canonicalPredictions}
@@ -402,7 +402,9 @@ export function ProfileFeed({
                           @{tweet.username}
                         </Link>
                         {activePrediction.topicId && (
-                          <TopicBadge topicId={activePrediction.topicId} />
+                          <ExpandedFeedItemTopicBadge
+                            topicId={activePrediction.topicId}
+                          />
                         )}
                         {activePrediction.feedbackFailureCause ===
                           "FUTURE_TIMEFRAME" && (
@@ -460,7 +462,9 @@ export function ProfileFeed({
                         </Link>
 
                         {/* Star Button */}
-                        <StarButton tweetId={tweet.tweetId.toString()} />
+                        <ExpandedFeedItemStarButton
+                          tweetId={tweet.tweetId.toString()}
+                        />
 
                         {/* More Info Popover */}
                         <Popover>
