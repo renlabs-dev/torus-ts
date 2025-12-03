@@ -58,7 +58,7 @@ export function ButtonsSection({
       <motion.div
         variants={ANIMATIONS.BUTTON}
         custom={0}
-        className="flex w-full max-w-3xl justify-around gap-[4.6em]"
+        className="z-50 flex w-full max-w-3xl justify-around gap-[4.6em]"
       >
         {desktopButtons.starter.slice(0, 2).map((button, index) => (
           <CustomButton key={index} href={button.href} isHidden={!showStarter}>
@@ -76,7 +76,7 @@ export function ButtonsSection({
       <motion.div
         variants={ANIMATIONS.BUTTON}
         custom={2}
-        className="absolute mt-20 flex w-full max-w-[43rem] justify-around gap-36"
+        className="absolute z-50 mt-20 flex w-full max-w-[43rem] justify-around gap-36"
       >
         {desktopButtons.starter[2] && (
           <CustomButton
@@ -100,10 +100,10 @@ export function ButtonsSection({
       <motion.div
         variants={ANIMATIONS.BUTTON}
         custom={12}
-        className="absolute mt-[1rem] flex w-full justify-center"
+        className="absolute mt-[0.18rem] flex w-full justify-center"
       >
         <Button
-          className="bg-accent hover:bg-background rounded-full disabled:opacity-100"
+          className="bg-accent hover:bg-background z-50 rounded-full disabled:opacity-100"
           onClick={onAboutClick}
           variant="outline"
         >
