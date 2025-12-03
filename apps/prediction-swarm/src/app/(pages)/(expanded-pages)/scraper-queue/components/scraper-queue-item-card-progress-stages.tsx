@@ -6,11 +6,13 @@ import {
 } from "@torus-ts/ui/components/tooltip";
 import { Clock, Download, RefreshCw, ShieldCheck } from "lucide-react";
 
-interface ProgressStagesProps {
+interface ScraperQueueItemCardProgressStagesProps {
   status: string;
 }
 
-export function ProgressStages({ status }: ProgressStagesProps) {
+export function ScraperQueueItemCardProgressStages({
+  status,
+}: ScraperQueueItemCardProgressStagesProps) {
   const stages = [
     {
       id: "suggested",

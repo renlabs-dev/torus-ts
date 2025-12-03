@@ -16,7 +16,7 @@ interface WatchButtonProps {
   userId: string;
 }
 
-export function WatchButton({ userId }: WatchButtonProps) {
+export function ExpandedFeedHeaderWatchButton({ userId }: WatchButtonProps) {
   const { selectedAccount } = useTorus();
   const { toast } = useToast();
   const utils = api.useUtils();

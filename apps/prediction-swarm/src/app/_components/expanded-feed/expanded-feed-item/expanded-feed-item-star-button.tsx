@@ -16,7 +16,7 @@ interface StarButtonProps {
   tweetId: string;
 }
 
-export function StarButton({ tweetId }: StarButtonProps) {
+export function ExpandedFeedItemStarButton({ tweetId }: StarButtonProps) {
   const { selectedAccount } = useTorus();
   const { toast } = useToast();
   const utils = api.useUtils();

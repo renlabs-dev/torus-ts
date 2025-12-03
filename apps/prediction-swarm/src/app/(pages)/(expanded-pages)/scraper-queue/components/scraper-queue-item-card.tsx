@@ -8,17 +8,17 @@ import { Card } from "@torus-ts/ui/components/card";
 import type { inferProcedureOutput } from "@trpc/server";
 import dayjs from "dayjs";
 import Link from "next/link";
-import { ProgressStages } from "./progress-stages";
+import { ScraperQueueItemCardProgressStages } from "./scraper-queue-item-card-progress-stages";
 
 type QueueItem = inferProcedureOutput<
   AppRouter["scraperQueue"]["getQueueStatus"]
 >[number];
 
-interface QueueItemProps {
+interface ScraperQueueItemCardProps {
   item: QueueItem;
 }
 
-export function QueueItem({ item }: QueueItemProps) {
+export function ScraperQueueItemCard({ item }: ScraperQueueItemCardProps) {
   return (
     <Card className="bg-background/80 plus-corners backdrop-blur-lg">
       <div className="flex flex-col justify-between gap-4 p-6 lg:flex-row lg:items-center">
@@ -55,7 +55,7 @@ export function QueueItem({ item }: QueueItemProps) {
 
         {/* Progress Timeline */}
         <div className="overflow-x-auto">
-          <ProgressStages status={item.status} />
+          <ScraperQueueItemCardProgressStages status={item.status} />
         </div>
       </div>
     </Card>

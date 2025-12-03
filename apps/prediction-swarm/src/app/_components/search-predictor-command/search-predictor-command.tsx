@@ -15,11 +15,11 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import AddAccountStepperDialog from "./add-account-stepper-dialog";
-import { SearchEmpty } from "./main-page/search-empty";
-import { ProgressStages } from "./scraper-queue/progress-stages";
+import { ScraperQueueItemCardProgressStages } from "../../(pages)/(expanded-pages)/scraper-queue/components/scraper-queue-item-card-progress-stages";
+import AddAccountStepperDialog from "../add-account-stepper-dialog";
+import { SearchPredictorCommandEmpty } from "./search-predictor-command-empty";
 
-export function SearchCommand() {
+export function SearchPredictorCommand() {
   const router = useRouter();
   const { isOpen, open, close, toggle } = useSearchStore();
   const [search, setSearch] = useState("");
@@ -131,7 +131,7 @@ export function SearchCommand() {
             {searchResults === undefined && (
               <CommandEmpty>
                 <div className="flex flex-col gap-2">
-                  <SearchEmpty />
+                  <SearchPredictorCommandEmpty />
                 </div>
               </CommandEmpty>
             )}
@@ -146,7 +146,9 @@ export function SearchCommand() {
                         @{search} is being processed
                       </h3>
                       <div className="scale-75">
-                        <ProgressStages status={queueItem.status} />
+                        <ScraperQueueItemCardProgressStages
+                          status={queueItem.status}
+                        />
                       </div>
                       <Link
                         href="/scraper-queue"

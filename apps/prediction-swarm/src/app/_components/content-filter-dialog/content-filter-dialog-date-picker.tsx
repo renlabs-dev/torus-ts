@@ -17,7 +17,7 @@ interface FilterDatePickerProps {
   onDateRangeChange: (range: DateRange | undefined) => void;
 }
 
-export function FilterDatePicker({
+export function ContentFilterDialogDatePicker({
   dateRange,
   onDateRangeChange,
 }: FilterDatePickerProps) {

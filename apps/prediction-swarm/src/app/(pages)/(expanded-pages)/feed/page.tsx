@@ -15,10 +15,10 @@ import {
   TabsList,
   TabsTrigger,
 } from "@torus-ts/ui/components/tabs";
-import { FilterDialog } from "~/app/_components/filter-dialog";
-import { PageHeader } from "~/app/_components/page-header";
-import { FeedLegend } from "~/app/_components/user-profile/feed-legend";
-import { ProfileFeed } from "~/app/_components/user-profile/profile-feed";
+import { ContentFilterDialog } from "~/app/_components/content-filter-dialog/content-filter-dialog";
+import { ExpandedFeedItem } from "~/app/_components/expanded-feed/expanded-feed-item/expanded-feed-item";
+import { FeedLegend } from "~/app/_components/expanded-feed/expanded-feed-legend-tooltip";
+import { ExpandedViewPageHeader } from "~/app/_components/expanded-view-page-header";
 import { api } from "~/trpc/react";
 import { Eye, Globe, Star } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -285,7 +285,7 @@ export default function FeedPage() {
       <div className="border-border pointer-events-none absolute inset-y-0 left-1/2 w-full max-w-screen-lg -translate-x-1/2 border-x" />
 
       {/* Header section */}
-      <PageHeader
+      <ExpandedViewPageHeader
         title="Prediction Feed"
         description={
           view === "watched"
@@ -294,7 +294,7 @@ export default function FeedPage() {
               ? "View your starred predictions"
               : "View predictions from all tracked users"
         }
-        children={<FilterDialog />}
+        children={<ContentFilterDialog />}
       />
 
       {/* Full-width horizontal border */}
@@ -370,7 +370,7 @@ export default function FeedPage() {
             {/* Ongoing Predictions */}
             <TabsContent value="ongoing">
               <CardContent>
-                <ProfileFeed
+                <ExpandedFeedItem
                   predictions={ongoingPredictions ?? []}
                   variant="feed"
                   isLoading={ongoingLoading}
@@ -418,7 +418,7 @@ export default function FeedPage() {
             {/* True Predictions */}
             <TabsContent value="true">
               <CardContent>
-                <ProfileFeed
+                <ExpandedFeedItem
                   predictions={truePredictions ?? []}
                   variant="feed"
                   isLoading={trueLoading}
@@ -465,7 +465,7 @@ export default function FeedPage() {
             {/* False Predictions */}
             <TabsContent value="false">
               <CardContent>
-                <ProfileFeed
+                <ExpandedFeedItem
                   predictions={falsePredictions ?? []}
                   variant="feed"
                   isLoading={falseLoading}

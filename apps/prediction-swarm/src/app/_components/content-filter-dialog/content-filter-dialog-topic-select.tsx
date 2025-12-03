@@ -17,7 +17,7 @@ interface TopicSelectProps {
   onTopicIdsChange: (topicIds: string[]) => void;
 }
 
-export function TopicSelect({
+export function ContentFilterDialogTopicSelect({
   selectedTopicIds,
   onTopicIdsChange,
 }: TopicSelectProps) {
