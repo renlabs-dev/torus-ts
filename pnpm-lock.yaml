@@ -193,7 +193,7 @@ importers:
     dependencies:
       '@next/third-parties':
         specifier: 'catalog:'
-        version: 15.5.3(next@15.5.2(@babel/core@7.28.5)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(react@19.1.1)
+        version: 15.5.3(next@15.5.2(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(react@19.1.1)
       '@react-three/fiber':
         specifier: 'catalog:'
         version: 9.4.0(@types/react@19.0.14)(immer@10.1.1)(react-dom@19.1.1(react@19.1.1))(react-native@0.81.0(@babel/core@7.28.5)(@react-native/metro-config@0.81.0(@babel/core@7.28.5)(bufferutil@4.0.9)(utf-8-validate@5.0.10))(@types/react@19.0.14)(bufferutil@4.0.9)(react@19.1.1)(utf-8-validate@5.0.10))(react@19.1.1)(three@0.180.0)
@@ -292,187 +292,11 @@ importers:
         specifier: 'catalog:'
         version: 5.9.2
 
-  apps/prediction-swarm-api:
-    dependencies:
-      '@elysiajs/cors':
-        specifier: ^1.4.0
-        version: 1.4.0(elysia@1.4.16(@sinclair/typebox@0.34.41)(exact-mirror@0.2.5(@sinclair/typebox@0.34.41))(file-type@21.1.1)(openapi-types@12.1.3)(typescript@5.9.2))
-      '@elysiajs/node':
-        specifier: ^1.4.2
-        version: 1.4.2(elysia@1.4.16(@sinclair/typebox@0.34.41)(exact-mirror@0.2.5(@sinclair/typebox@0.34.41))(file-type@21.1.1)(openapi-types@12.1.3)(typescript@5.9.2))
-      '@elysiajs/openapi':
-        specifier: ^1.4.11
-        version: 1.4.11(elysia@1.4.16(@sinclair/typebox@0.34.41)(exact-mirror@0.2.5(@sinclair/typebox@0.34.41))(file-type@21.1.1)(openapi-types@12.1.3)(typescript@5.9.2))
-      '@polkadot/api':
-        specifier: 'catalog:'
-        version: 14.3.1(bufferutil@4.0.9)(utf-8-validate@5.0.10)
-      '@polkadot/keyring':
-        specifier: 'catalog:'
-        version: 13.4.3(@polkadot/util-crypto@13.5.6(@polkadot/util@13.4.3))(@polkadot/util@13.4.3)
-      '@polkadot/util':
-        specifier: 'catalog:'
-        version: 13.4.3
-      '@polkadot/util-crypto':
-        specifier: 'catalog:'
-        version: 13.5.6(@polkadot/util@13.4.3)
-      '@torus-network/sdk':
-        specifier: workspace:*
-        version: link:../../packages/torus-sdk-ts
-      '@torus-network/torus-utils':
-        specifier: workspace:*
-        version: link:../../packages/torus-utils
-      '@torus-ts/api':
-        specifier: workspace:*
-        version: link:../../packages/api
-      '@torus-ts/db':
-        specifier: workspace:*
-        version: link:../../packages/db
-      canonicalize:
-        specifier: ^2.1.0
-        version: 2.1.0
-      elysia:
-        specifier: ^1.4.16
-        version: 1.4.16(@sinclair/typebox@0.34.41)(exact-mirror@0.2.5(@sinclair/typebox@0.34.41))(file-type@21.1.1)(openapi-types@12.1.3)(typescript@5.9.2)
-      marked:
-        specifier: ^17.0.1
-        version: 17.0.1
-      zod:
-        specifier: 'catalog:'
-        version: 3.25.76
-      zod-to-json-schema:
-        specifier: ^3.24.6
-        version: 3.24.6(zod@3.25.76)
-    devDependencies:
-      '@polkadot/api-augment':
-        specifier: 'catalog:'
-        version: 14.3.1(bufferutil@4.0.9)(utf-8-validate@5.0.10)
-      '@torus-ts/eslint-config':
-        specifier: workspace:*
-        version: link:../../tooling/eslint
-      '@torus-ts/prettier-config':
-        specifier: workspace:*
-        version: link:../../tooling/prettier
-      '@torus-ts/tsconfig':
-        specifier: workspace:*
-        version: link:../../tooling/typescript
-      '@types/node':
-        specifier: 'catalog:'
-        version: 20.19.11
-      dotenv-cli:
-        specifier: 'catalog:'
-        version: 7.4.4
-      eslint:
-        specifier: 'catalog:'
-        version: 9.35.0(jiti@2.6.1)
-      prettier:
-        specifier: 'catalog:'
-        version: 3.6.2
-      tsx:
-        specifier: 'catalog:'
-        version: 4.20.5
-      typescript:
-        specifier: 'catalog:'
-        version: 5.9.2
-
-  apps/swarm-filter:
-    dependencies:
-      '@iarna/toml':
-        specifier: ^2.2.5
-        version: 2.2.5
-      '@polkadot/api':
-        specifier: 'catalog:'
-        version: 14.3.1(bufferutil@4.0.9)(utf-8-validate@5.0.10)
-      '@polkadot/keyring':
-        specifier: 'catalog:'
-        version: 13.4.3(@polkadot/util-crypto@13.5.6(@polkadot/util@13.4.3))(@polkadot/util@13.4.3)
-      '@polkadot/util':
-        specifier: 'catalog:'
-        version: 13.4.3
-      '@polkadot/util-crypto':
-        specifier: 'catalog:'
-        version: 13.5.6(@polkadot/util@13.4.3)
-      '@torus-network/sdk':
-        specifier: workspace:*
-        version: link:../../packages/torus-sdk-ts
-      '@torus-network/torus-utils':
-        specifier: workspace:*
-        version: link:../../packages/torus-utils
-      '@torus-ts/api':
-        specifier: workspace:*
-        version: link:../../packages/api
-      '@torus-ts/db':
-        specifier: workspace:*
-        version: link:../../packages/db
-      '@trpc/client':
-        specifier: 'catalog:'
-        version: 11.5.0(@trpc/server@11.5.0(typescript@5.9.2))(typescript@5.9.2)
-      canonicalize:
-        specifier: ^2.1.0
-        version: 2.1.0
-      he:
-        specifier: ^1.2.0
-        version: 1.2.0
-      node-llama-cpp:
-        specifier: ^3.14.2
-        version: 3.14.2(typescript@5.9.2)
-      openai:
-        specifier: ^4.73.1
-        version: 4.104.0(ws@8.18.3(bufferutil@4.0.9)(utf-8-validate@5.0.10))(zod@3.25.76)
-      p-limit:
-        specifier: ^7.2.0
-        version: 7.2.0
-      rustie:
-        specifier: 'catalog:'
-        version: 0.4.0
-      superjson:
-        specifier: 'catalog:'
-        version: 2.2.1
-      zod:
-        specifier: 'catalog:'
-        version: 3.25.76
-      zod-to-json-schema:
-        specifier: ^3.24.6
-        version: 3.24.6(zod@3.25.76)
-    devDependencies:
-      '@polkadot/api-augment':
-        specifier: 'catalog:'
-        version: 14.3.1(bufferutil@4.0.9)(utf-8-validate@5.0.10)
-      '@torus-ts/eslint-config':
-        specifier: workspace:*
-        version: link:../../tooling/eslint
-      '@torus-ts/tsconfig':
-        specifier: workspace:*
-        version: link:../../tooling/typescript
-      '@types/he':
-        specifier: ^1.2.3
-        version: 1.2.3
-      '@types/node':
-        specifier: 'catalog:'
-        version: 20.19.11
-      dotenv-cli:
-        specifier: 'catalog:'
-        version: 7.4.4
-      eslint:
-        specifier: 'catalog:'
-        version: 9.35.0(jiti@2.6.1)
-      prettier:
-        specifier: 'catalog:'
-        version: 3.6.2
-      tsx:
-        specifier: 'catalog:'
-        version: 4.20.5
-      typescript:
-        specifier: 'catalog:'
-        version: 5.9.2
-      vitest:
-        specifier: 'catalog:'
-        version: 3.2.4(@types/debug@4.1.12)(@types/node@20.19.11)(jiti@2.6.1)(lightningcss@1.30.1)(terser@5.44.1)(tsx@4.20.5)(yaml@2.8.2)
-
   apps/torus-allocator:
     dependencies:
       '@next/third-parties':
         specifier: 'catalog:'
-        version: 15.5.3(next@15.5.2(@babel/core@7.28.5)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(react@19.1.1)
+        version: 15.5.3(next@15.5.2(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(react@19.1.1)
       '@torus-network/sdk':
         specifier: workspace:*
         version: link:../../packages/torus-sdk-ts
@@ -644,67 +468,6 @@ importers:
         specifier: 'catalog:'
         version: 5.9.2
 
-  apps/torus-cache:
-    dependencies:
-      '@polkadot/api':
-        specifier: 'catalog:'
-        version: 14.3.1(bufferutil@4.0.9)(utf-8-validate@5.0.10)
-      '@t3-oss/env-core':
-        specifier: ^0.11.1
-        version: 0.11.1(typescript@5.9.2)(zod@3.25.76)
-      '@torus-network/sdk':
-        specifier: workspace:*
-        version: link:../../packages/torus-sdk-ts
-      '@torus-network/torus-utils':
-        specifier: workspace:*
-        version: link:../../packages/torus-utils
-      cors:
-        specifier: ^2.8.5
-        version: 2.8.5
-      express:
-        specifier: ^4.19.2
-        version: 4.21.2
-      node-fetch:
-        specifier: ^3.3.2
-        version: 3.3.2
-      superjson:
-        specifier: 'catalog:'
-        version: 2.2.1
-      zod:
-        specifier: 'catalog:'
-        version: 3.25.76
-    devDependencies:
-      '@torus-ts/eslint-config':
-        specifier: workspace:*
-        version: link:../../tooling/eslint
-      '@torus-ts/prettier-config':
-        specifier: workspace:*
-        version: link:../../tooling/prettier
-      '@torus-ts/tsconfig':
-        specifier: workspace:*
-        version: link:../../tooling/typescript
-      '@types/cors':
-        specifier: ^2.8.17
-        version: 2.8.19
-      '@types/express':
-        specifier: ^4.17.21
-        version: 4.17.23
-      '@types/node':
-        specifier: 'catalog:'
-        version: 20.19.11
-      dotenv-cli:
-        specifier: 'catalog:'
-        version: 7.4.4
-      eslint:
-        specifier: 'catalog:'
-        version: 9.35.0(jiti@2.6.1)
-      prettier:
-        specifier: 'catalog:'
-        version: 3.6.2
-      typescript:
-        specifier: 'catalog:'
-        version: 5.9.2
-
   apps/torus-governance:
     dependencies:
       '@hookform/resolvers':
@@ -712,7 +475,7 @@ importers:
         version: 3.10.0(react-hook-form@7.62.0(react@19.1.1))
       '@next/third-parties':
         specifier: 'catalog:'
-        version: 15.5.3(next@15.5.2(@babel/core@7.28.5)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(react@19.1.1)
+        version: 15.5.3(next@15.5.2(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(react@19.1.1)
       '@react-three/drei':
         specifier: 'catalog:'
         version: 10.7.6(@react-three/fiber@9.4.0(@types/react@19.0.14)(immer@10.1.1)(react-dom@19.1.1(react@19.1.1))(react-native@0.81.0(@babel/core@7.28.5)(@react-native/metro-config@0.81.0(@babel/core@7.28.5)(bufferutil@4.0.9)(utf-8-validate@5.0.10))(@types/react@19.0.14)(bufferutil@4.0.9)(react@19.1.1)(utf-8-validate@5.0.10))(react@19.1.1)(three@0.180.0))(@types/react@19.0.14)(@types/three@0.180.0)(immer@10.1.1)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)(three@0.180.0)
@@ -830,7 +593,7 @@ importers:
     dependencies:
       '@next/third-parties':
         specifier: 'catalog:'
-        version: 15.5.3(next@15.5.2(@babel/core@7.28.5)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(react@19.1.1)
+        version: 15.5.3(next@15.5.2(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(react@19.1.1)
       '@react-three/drei':
         specifier: 'catalog:'
         version: 10.7.6(@react-three/fiber@9.4.0(@types/react@19.0.14)(immer@10.1.1)(react-dom@19.1.1(react@19.1.1))(react-native@0.81.0(@babel/core@7.28.5)(@react-native/metro-config@0.81.0(@babel/core@7.28.5)(bufferutil@4.0.9)(utf-8-validate@5.0.10))(@types/react@19.0.14)(bufferutil@4.0.9)(react@19.1.1)(utf-8-validate@5.0.10))(react@19.1.1)(three@0.180.0))(@types/react@19.0.14)(@types/three@0.180.0)(immer@10.1.1)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)(three@0.180.0)
@@ -900,7 +663,7 @@ importers:
         version: 3.10.0(react-hook-form@7.62.0(react@19.1.1))
       '@next/third-parties':
         specifier: 'catalog:'
-        version: 15.5.3(next@15.5.2(@babel/core@7.28.5)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(react@19.1.1)
+        version: 15.5.3(next@15.5.2(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(react@19.1.1)
       '@react-three/drei':
         specifier: 'catalog:'
         version: 10.7.6(@react-three/fiber@9.4.0(@types/react@19.0.14)(immer@10.1.1)(react-dom@19.1.1(react@19.1.1))(react-native@0.81.0(@babel/core@7.28.5)(@react-native/metro-config@0.81.0(@babel/core@7.28.5)(bufferutil@4.0.9)(utf-8-validate@5.0.10))(@types/react@19.0.14)(bufferutil@4.0.9)(react@19.1.1)(utf-8-validate@5.0.10))(react@19.1.1)(three@0.180.0))(@types/react@19.0.14)(@types/three@0.180.0)(immer@10.1.1)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)(three@0.180.0)
@@ -1042,7 +805,7 @@ importers:
         version: 3.10.0(react-hook-form@7.62.0(react@19.1.1))
       '@next/third-parties':
         specifier: 'catalog:'
-        version: 15.5.3(next@15.5.2(@babel/core@7.28.5)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(react@19.1.1)
+        version: 15.5.3(next@15.5.2(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(react@19.1.1)
       '@react-three/drei':
         specifier: ^10.7.6
         version: 10.7.6(@react-three/fiber@9.3.0(@types/react@19.0.14)(immer@10.1.1)(react-dom@19.1.1(react@19.1.1))(react-native@0.81.0(@babel/core@7.28.5)(@react-native/metro-config@0.81.0(@babel/core@7.28.5)(bufferutil@4.0.9)(utf-8-validate@5.0.10))(@types/react@19.0.14)(bufferutil@4.0.9)(react@19.1.1)(utf-8-validate@5.0.10))(react@19.1.1)(three@0.180.0))(@types/react@19.0.14)(@types/three@0.180.0)(immer@10.1.1)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)(three@0.180.0)
@@ -1135,201 +898,6 @@ importers:
         specifier: 'catalog:'
         version: 5.9.2
 
-  apps/torus-swarm-services:
-    dependencies:
-      '@polkadot/api':
-        specifier: 'catalog:'
-        version: 14.3.1(bufferutil@4.0.9)(utf-8-validate@5.0.10)
-      '@polkadot/keyring':
-        specifier: 'catalog:'
-        version: 13.4.3(@polkadot/util-crypto@13.5.6(@polkadot/util@13.5.9))(@polkadot/util@13.5.9)
-      '@torus-network/sdk':
-        specifier: workspace:*
-        version: link:../../packages/torus-sdk-ts
-      '@torus-network/torus-utils':
-        specifier: workspace:*
-        version: link:../../packages/torus-utils
-      '@torus-ts/db':
-        specifier: workspace:*
-        version: link:../../packages/db
-      axios:
-        specifier: ^1.7.7
-        version: 1.11.0(debug@4.4.3)
-      express:
-        specifier: ^4.19.2
-        version: 4.21.2
-      zod:
-        specifier: 'catalog:'
-        version: 3.25.76
-    devDependencies:
-      '@torus-ts/eslint-config':
-        specifier: workspace:*
-        version: link:../../tooling/eslint
-      '@torus-ts/tsconfig':
-        specifier: workspace:*
-        version: link:../../tooling/typescript
-      '@types/express':
-        specifier: ^4.17.21
-        version: 4.17.23
-      '@types/node':
-        specifier: 'catalog:'
-        version: 20.19.11
-      dotenv-cli:
-        specifier: 'catalog:'
-        version: 7.4.4
-      eslint:
-        specifier: 'catalog:'
-        version: 9.35.0(jiti@2.6.1)
-      prettier:
-        specifier: 'catalog:'
-        version: 3.6.2
-      tsx:
-        specifier: 'catalog:'
-        version: 4.20.5
-      typescript:
-        specifier: 'catalog:'
-        version: 5.9.2
-
-  apps/torus-swarm-twitter:
-    dependencies:
-      '@t3-oss/env-core':
-        specifier: ^0.11.1
-        version: 0.11.1(typescript@5.9.2)(zod@3.25.76)
-      '@torus-network/sdk':
-        specifier: workspace:*
-        version: link:../../packages/torus-sdk-ts
-      '@torus-network/torus-utils':
-        specifier: workspace:*
-        version: link:../../packages/torus-utils
-      '@torus-ts/db':
-        specifier: workspace:*
-        version: link:../../packages/db
-      '@torus-ts/twitter-client':
-        specifier: workspace:*
-        version: link:../../packages/twitter-client
-      cors:
-        specifier: ^2.8.5
-        version: 2.8.5
-      express:
-        specifier: ^4.19.2
-        version: 4.21.2
-      html-entities:
-        specifier: ^2.6.0
-        version: 2.6.0
-      node-fetch:
-        specifier: ^3.3.2
-        version: 3.3.2
-      superjson:
-        specifier: 'catalog:'
-        version: 2.2.1
-      tsafe:
-        specifier: 'catalog:'
-        version: 1.8.5
-      vitest:
-        specifier: 'catalog:'
-        version: 3.2.4(@types/debug@4.1.12)(@types/node@20.19.11)(jiti@2.6.1)(lightningcss@1.30.1)(terser@5.44.1)(tsx@4.20.5)(yaml@2.8.2)
-      zod:
-        specifier: 'catalog:'
-        version: 3.25.76
-    devDependencies:
-      '@torus-ts/eslint-config':
-        specifier: workspace:*
-        version: link:../../tooling/eslint
-      '@torus-ts/prettier-config':
-        specifier: workspace:*
-        version: link:../../tooling/prettier
-      '@torus-ts/tsconfig':
-        specifier: workspace:*
-        version: link:../../tooling/typescript
-      '@types/cors':
-        specifier: ^2.8.17
-        version: 2.8.19
-      '@types/express':
-        specifier: ^4.17.21
-        version: 4.17.23
-      '@types/node':
-        specifier: 'catalog:'
-        version: 20.19.11
-      dotenv-cli:
-        specifier: 'catalog:'
-        version: 7.4.4
-      eslint:
-        specifier: 'catalog:'
-        version: 9.35.0(jiti@2.6.1)
-      prettier:
-        specifier: 'catalog:'
-        version: 3.6.2
-      typescript:
-        specifier: 'catalog:'
-        version: 5.9.2
-
-  apps/torus-swarm-verifier:
-    dependencies:
-      '@t3-oss/env-core':
-        specifier: ^0.11.1
-        version: 0.11.1(typescript@5.9.2)(zod@3.25.76)
-      '@torus-network/sdk':
-        specifier: workspace:*
-        version: link:../../packages/torus-sdk-ts
-      '@torus-network/torus-utils':
-        specifier: workspace:*
-        version: link:../../packages/torus-utils
-      '@torus-ts/db':
-        specifier: workspace:*
-        version: link:../../packages/db
-      cors:
-        specifier: ^2.8.5
-        version: 2.8.5
-      express:
-        specifier: ^4.19.2
-        version: 4.21.2
-      node-fetch:
-        specifier: ^3.3.2
-        version: 3.3.2
-      superjson:
-        specifier: 'catalog:'
-        version: 2.2.1
-      tsafe:
-        specifier: 'catalog:'
-        version: 1.8.5
-      vitest:
-        specifier: 'catalog:'
-        version: 3.2.4(@types/debug@4.1.12)(@types/node@20.19.11)(jiti@2.6.1)(lightningcss@1.30.1)(terser@5.44.1)(tsx@4.20.5)(yaml@2.8.2)
-      zod:
-        specifier: 'catalog:'
-        version: 3.25.76
-    devDependencies:
-      '@torus-ts/eslint-config':
-        specifier: workspace:*
-        version: link:../../tooling/eslint
-      '@torus-ts/prettier-config':
-        specifier: workspace:*
-        version: link:../../tooling/prettier
-      '@torus-ts/tsconfig':
-        specifier: workspace:*
-        version: link:../../tooling/typescript
-      '@types/cors':
-        specifier: ^2.8.17
-        version: 2.8.19
-      '@types/express':
-        specifier: ^4.17.21
-        version: 4.17.23
-      '@types/node':
-        specifier: 'catalog:'
-        version: 20.19.11
-      dotenv-cli:
-        specifier: 'catalog:'
-        version: 7.4.4
-      eslint:
-        specifier: 'catalog:'
-        version: 9.35.0(jiti@2.6.1)
-      prettier:
-        specifier: 'catalog:'
-        version: 3.6.2
-      typescript:
-        specifier: 'catalog:'
-        version: 5.9.2
-
   apps/torus-wallet:
     dependencies:
       '@hookform/resolvers':
@@ -1337,7 +905,7 @@ importers:
         version: 3.10.0(react-hook-form@7.62.0(react@19.1.1))
       '@next/third-parties':
         specifier: 'catalog:'
-        version: 15.5.3(next@15.5.2(@babel/core@7.28.5)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(react@19.1.1)
+        version: 15.5.3(next@15.5.2(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(react@19.1.1)
       '@polkadot/api':
         specifier: 'catalog:'
         version: 14.3.1(bufferutil@4.0.9)(utf-8-validate@5.0.10)
@@ -1426,61 +994,6 @@ importers:
       tailwindcss:
         specifier: 'catalog:'
         version: 3.4.17
-      typescript:
-        specifier: 'catalog:'
-        version: 5.9.2
-
-  apps/torus-worker:
-    dependencies:
-      '@polkadot/api':
-        specifier: 'catalog:'
-        version: 14.3.1(bufferutil@4.0.9)(utf-8-validate@5.0.10)
-      '@torus-network/sdk':
-        specifier: workspace:*
-        version: link:../../packages/torus-sdk-ts
-      '@torus-network/torus-utils':
-        specifier: workspace:*
-        version: link:../../packages/torus-utils
-      '@torus-ts/db':
-        specifier: workspace:*
-        version: link:../../packages/db
-      axios:
-        specifier: ^1.7.7
-        version: 1.11.0(debug@4.4.3)
-      express:
-        specifier: ^4.19.2
-        version: 4.21.2
-      rustie:
-        specifier: 'catalog:'
-        version: 0.4.0
-      zod:
-        specifier: 'catalog:'
-        version: 3.25.76
-    devDependencies:
-      '@polkadot/api-augment':
-        specifier: 'catalog:'
-        version: 14.3.1(bufferutil@4.0.9)(utf-8-validate@5.0.10)
-      '@torus-ts/eslint-config':
-        specifier: workspace:*
-        version: link:../../tooling/eslint
-      '@torus-ts/tsconfig':
-        specifier: workspace:*
-        version: link:../../tooling/typescript
-      '@types/express':
-        specifier: ^4.17.21
-        version: 4.17.23
-      '@types/node':
-        specifier: 'catalog:'
-        version: 20.19.11
-      dotenv-cli:
-        specifier: 'catalog:'
-        version: 7.4.4
-      eslint:
-        specifier: 'catalog:'
-        version: 9.35.0(jiti@2.6.1)
-      prettier:
-        specifier: 'catalog:'
-        version: 3.6.2
       typescript:
         specifier: 'catalog:'
         version: 5.9.2
@@ -2028,6 +1541,493 @@ importers:
       tailwindcss:
         specifier: 'catalog:'
         version: 3.4.17
+      typescript:
+        specifier: 'catalog:'
+        version: 5.9.2
+
+  services/prediction-swarm-api:
+    dependencies:
+      '@elysiajs/cors':
+        specifier: ^1.4.0
+        version: 1.4.0(elysia@1.4.16(@sinclair/typebox@0.34.41)(exact-mirror@0.2.5(@sinclair/typebox@0.34.41))(file-type@21.1.1)(openapi-types@12.1.3)(typescript@5.9.2))
+      '@elysiajs/node':
+        specifier: ^1.4.2
+        version: 1.4.2(elysia@1.4.16(@sinclair/typebox@0.34.41)(exact-mirror@0.2.5(@sinclair/typebox@0.34.41))(file-type@21.1.1)(openapi-types@12.1.3)(typescript@5.9.2))
+      '@elysiajs/openapi':
+        specifier: ^1.4.11
+        version: 1.4.11(elysia@1.4.16(@sinclair/typebox@0.34.41)(exact-mirror@0.2.5(@sinclair/typebox@0.34.41))(file-type@21.1.1)(openapi-types@12.1.3)(typescript@5.9.2))
+      '@polkadot/api':
+        specifier: 'catalog:'
+        version: 14.3.1(bufferutil@4.0.9)(utf-8-validate@5.0.10)
+      '@polkadot/keyring':
+        specifier: 'catalog:'
+        version: 13.4.3(@polkadot/util-crypto@13.5.6(@polkadot/util@13.4.3))(@polkadot/util@13.4.3)
+      '@polkadot/util':
+        specifier: 'catalog:'
+        version: 13.4.3
+      '@polkadot/util-crypto':
+        specifier: 'catalog:'
+        version: 13.5.6(@polkadot/util@13.4.3)
+      '@torus-network/sdk':
+        specifier: workspace:*
+        version: link:../../packages/torus-sdk-ts
+      '@torus-network/torus-utils':
+        specifier: workspace:*
+        version: link:../../packages/torus-utils
+      '@torus-ts/api':
+        specifier: workspace:*
+        version: link:../../packages/api
+      '@torus-ts/db':
+        specifier: workspace:*
+        version: link:../../packages/db
+      canonicalize:
+        specifier: ^2.1.0
+        version: 2.1.0
+      elysia:
+        specifier: ^1.4.16
+        version: 1.4.16(@sinclair/typebox@0.34.41)(exact-mirror@0.2.5(@sinclair/typebox@0.34.41))(file-type@21.1.1)(openapi-types@12.1.3)(typescript@5.9.2)
+      marked:
+        specifier: ^17.0.1
+        version: 17.0.1
+      zod:
+        specifier: 'catalog:'
+        version: 3.25.76
+      zod-to-json-schema:
+        specifier: ^3.24.6
+        version: 3.24.6(zod@3.25.76)
+    devDependencies:
+      '@polkadot/api-augment':
+        specifier: 'catalog:'
+        version: 14.3.1(bufferutil@4.0.9)(utf-8-validate@5.0.10)
+      '@torus-ts/eslint-config':
+        specifier: workspace:*
+        version: link:../../tooling/eslint
+      '@torus-ts/prettier-config':
+        specifier: workspace:*
+        version: link:../../tooling/prettier
+      '@torus-ts/tsconfig':
+        specifier: workspace:*
+        version: link:../../tooling/typescript
+      '@types/node':
+        specifier: 'catalog:'
+        version: 20.19.11
+      dotenv-cli:
+        specifier: 'catalog:'
+        version: 7.4.4
+      eslint:
+        specifier: 'catalog:'
+        version: 9.35.0(jiti@2.6.1)
+      prettier:
+        specifier: 'catalog:'
+        version: 3.6.2
+      tsx:
+        specifier: 'catalog:'
+        version: 4.20.5
+      typescript:
+        specifier: 'catalog:'
+        version: 5.9.2
+
+  services/swarm-filter:
+    dependencies:
+      '@iarna/toml':
+        specifier: ^2.2.5
+        version: 2.2.5
+      '@polkadot/api':
+        specifier: 'catalog:'
+        version: 14.3.1(bufferutil@4.0.9)(utf-8-validate@5.0.10)
+      '@polkadot/keyring':
+        specifier: 'catalog:'
+        version: 13.4.3(@polkadot/util-crypto@13.5.6(@polkadot/util@13.4.3))(@polkadot/util@13.4.3)
+      '@polkadot/util':
+        specifier: 'catalog:'
+        version: 13.4.3
+      '@polkadot/util-crypto':
+        specifier: 'catalog:'
+        version: 13.5.6(@polkadot/util@13.4.3)
+      '@torus-network/sdk':
+        specifier: workspace:*
+        version: link:../../packages/torus-sdk-ts
+      '@torus-network/torus-utils':
+        specifier: workspace:*
+        version: link:../../packages/torus-utils
+      '@torus-ts/api':
+        specifier: workspace:*
+        version: link:../../packages/api
+      '@torus-ts/db':
+        specifier: workspace:*
+        version: link:../../packages/db
+      '@trpc/client':
+        specifier: 'catalog:'
+        version: 11.5.0(@trpc/server@11.5.0(typescript@5.9.2))(typescript@5.9.2)
+      canonicalize:
+        specifier: ^2.1.0
+        version: 2.1.0
+      he:
+        specifier: ^1.2.0
+        version: 1.2.0
+      node-llama-cpp:
+        specifier: ^3.14.2
+        version: 3.14.2(typescript@5.9.2)
+      openai:
+        specifier: ^4.73.1
+        version: 4.104.0(ws@8.18.3(bufferutil@4.0.9)(utf-8-validate@5.0.10))(zod@3.25.76)
+      p-limit:
+        specifier: ^7.2.0
+        version: 7.2.0
+      rustie:
+        specifier: 'catalog:'
+        version: 0.4.0
+      superjson:
+        specifier: 'catalog:'
+        version: 2.2.1
+      zod:
+        specifier: 'catalog:'
+        version: 3.25.76
+      zod-to-json-schema:
+        specifier: ^3.24.6
+        version: 3.24.6(zod@3.25.76)
+    devDependencies:
+      '@polkadot/api-augment':
+        specifier: 'catalog:'
+        version: 14.3.1(bufferutil@4.0.9)(utf-8-validate@5.0.10)
+      '@torus-ts/eslint-config':
+        specifier: workspace:*
+        version: link:../../tooling/eslint
+      '@torus-ts/tsconfig':
+        specifier: workspace:*
+        version: link:../../tooling/typescript
+      '@types/he':
+        specifier: ^1.2.3
+        version: 1.2.3
+      '@types/node':
+        specifier: 'catalog:'
+        version: 20.19.11
+      dotenv-cli:
+        specifier: 'catalog:'
+        version: 7.4.4
+      eslint:
+        specifier: 'catalog:'
+        version: 9.35.0(jiti@2.6.1)
+      prettier:
+        specifier: 'catalog:'
+        version: 3.6.2
+      tsx:
+        specifier: 'catalog:'
+        version: 4.20.5
+      typescript:
+        specifier: 'catalog:'
+        version: 5.9.2
+      vitest:
+        specifier: 'catalog:'
+        version: 3.2.4(@types/debug@4.1.12)(@types/node@20.19.11)(jiti@2.6.1)(lightningcss@1.30.1)(terser@5.44.1)(tsx@4.20.5)(yaml@2.8.2)
+
+  services/torus-cache:
+    dependencies:
+      '@polkadot/api':
+        specifier: 'catalog:'
+        version: 14.3.1(bufferutil@4.0.9)(utf-8-validate@5.0.10)
+      '@t3-oss/env-core':
+        specifier: ^0.11.1
+        version: 0.11.1(typescript@5.9.2)(zod@3.25.76)
+      '@torus-network/sdk':
+        specifier: workspace:*
+        version: link:../../packages/torus-sdk-ts
+      '@torus-network/torus-utils':
+        specifier: workspace:*
+        version: link:../../packages/torus-utils
+      cors:
+        specifier: ^2.8.5
+        version: 2.8.5
+      express:
+        specifier: ^4.19.2
+        version: 4.21.2
+      node-fetch:
+        specifier: ^3.3.2
+        version: 3.3.2
+      superjson:
+        specifier: 'catalog:'
+        version: 2.2.1
+      zod:
+        specifier: 'catalog:'
+        version: 3.25.76
+    devDependencies:
+      '@torus-ts/eslint-config':
+        specifier: workspace:*
+        version: link:../../tooling/eslint
+      '@torus-ts/prettier-config':
+        specifier: workspace:*
+        version: link:../../tooling/prettier
+      '@torus-ts/tsconfig':
+        specifier: workspace:*
+        version: link:../../tooling/typescript
+      '@types/cors':
+        specifier: ^2.8.17
+        version: 2.8.19
+      '@types/express':
+        specifier: ^4.17.21
+        version: 4.17.23
+      '@types/node':
+        specifier: 'catalog:'
+        version: 20.19.11
+      dotenv-cli:
+        specifier: 'catalog:'
+        version: 7.4.4
+      eslint:
+        specifier: 'catalog:'
+        version: 9.35.0(jiti@2.6.1)
+      prettier:
+        specifier: 'catalog:'
+        version: 3.6.2
+      typescript:
+        specifier: 'catalog:'
+        version: 5.9.2
+
+  services/torus-swarm-services:
+    dependencies:
+      '@polkadot/api':
+        specifier: 'catalog:'
+        version: 14.3.1(bufferutil@4.0.9)(utf-8-validate@5.0.10)
+      '@polkadot/keyring':
+        specifier: 'catalog:'
+        version: 13.4.3(@polkadot/util-crypto@13.5.6(@polkadot/util@13.5.9))(@polkadot/util@13.5.9)
+      '@torus-network/sdk':
+        specifier: workspace:*
+        version: link:../../packages/torus-sdk-ts
+      '@torus-network/torus-utils':
+        specifier: workspace:*
+        version: link:../../packages/torus-utils
+      '@torus-ts/db':
+        specifier: workspace:*
+        version: link:../../packages/db
+      axios:
+        specifier: ^1.7.7
+        version: 1.11.0(debug@4.4.3)
+      express:
+        specifier: ^4.19.2
+        version: 4.21.2
+      zod:
+        specifier: 'catalog:'
+        version: 3.25.76
+    devDependencies:
+      '@torus-ts/eslint-config':
+        specifier: workspace:*
+        version: link:../../tooling/eslint
+      '@torus-ts/tsconfig':
+        specifier: workspace:*
+        version: link:../../tooling/typescript
+      '@types/express':
+        specifier: ^4.17.21
+        version: 4.17.23
+      '@types/node':
+        specifier: 'catalog:'
+        version: 20.19.11
+      dotenv-cli:
+        specifier: 'catalog:'
+        version: 7.4.4
+      eslint:
+        specifier: 'catalog:'
+        version: 9.35.0(jiti@2.6.1)
+      prettier:
+        specifier: 'catalog:'
+        version: 3.6.2
+      tsx:
+        specifier: 'catalog:'
+        version: 4.20.5
+      typescript:
+        specifier: 'catalog:'
+        version: 5.9.2
+
+  services/torus-swarm-twitter:
+    dependencies:
+      '@t3-oss/env-core':
+        specifier: ^0.11.1
+        version: 0.11.1(typescript@5.9.2)(zod@3.25.76)
+      '@torus-network/sdk':
+        specifier: workspace:*
+        version: link:../../packages/torus-sdk-ts
+      '@torus-network/torus-utils':
+        specifier: workspace:*
+        version: link:../../packages/torus-utils
+      '@torus-ts/db':
+        specifier: workspace:*
+        version: link:../../packages/db
+      '@torus-ts/twitter-client':
+        specifier: workspace:*
+        version: link:../../packages/twitter-client
+      cors:
+        specifier: ^2.8.5
+        version: 2.8.5
+      express:
+        specifier: ^4.19.2
+        version: 4.21.2
+      html-entities:
+        specifier: ^2.6.0
+        version: 2.6.0
+      node-fetch:
+        specifier: ^3.3.2
+        version: 3.3.2
+      superjson:
+        specifier: 'catalog:'
+        version: 2.2.1
+      tsafe:
+        specifier: 'catalog:'
+        version: 1.8.5
+      vitest:
+        specifier: 'catalog:'
+        version: 3.2.4(@types/debug@4.1.12)(@types/node@20.19.11)(jiti@2.6.1)(lightningcss@1.30.1)(terser@5.44.1)(tsx@4.20.5)(yaml@2.8.2)
+      zod:
+        specifier: 'catalog:'
+        version: 3.25.76
+    devDependencies:
+      '@torus-ts/eslint-config':
+        specifier: workspace:*
+        version: link:../../tooling/eslint
+      '@torus-ts/prettier-config':
+        specifier: workspace:*
+        version: link:../../tooling/prettier
+      '@torus-ts/tsconfig':
+        specifier: workspace:*
+        version: link:../../tooling/typescript
+      '@types/cors':
+        specifier: ^2.8.17
+        version: 2.8.19
+      '@types/express':
+        specifier: ^4.17.21
+        version: 4.17.23
+      '@types/node':
+        specifier: 'catalog:'
+        version: 20.19.11
+      dotenv-cli:
+        specifier: 'catalog:'
+        version: 7.4.4
+      eslint:
+        specifier: 'catalog:'
+        version: 9.35.0(jiti@2.6.1)
+      prettier:
+        specifier: 'catalog:'
+        version: 3.6.2
+      typescript:
+        specifier: 'catalog:'
+        version: 5.9.2
+
+  services/torus-swarm-verifier:
+    dependencies:
+      '@t3-oss/env-core':
+        specifier: ^0.11.1
+        version: 0.11.1(typescript@5.9.2)(zod@3.25.76)
+      '@torus-network/sdk':
+        specifier: workspace:*
+        version: link:../../packages/torus-sdk-ts
+      '@torus-network/torus-utils':
+        specifier: workspace:*
+        version: link:../../packages/torus-utils
+      '@torus-ts/db':
+        specifier: workspace:*
+        version: link:../../packages/db
+      cors:
+        specifier: ^2.8.5
+        version: 2.8.5
+      express:
+        specifier: ^4.19.2
+        version: 4.21.2
+      node-fetch:
+        specifier: ^3.3.2
+        version: 3.3.2
+      superjson:
+        specifier: 'catalog:'
+        version: 2.2.1
+      tsafe:
+        specifier: 'catalog:'
+        version: 1.8.5
+      vitest:
+        specifier: 'catalog:'
+        version: 3.2.4(@types/debug@4.1.12)(@types/node@20.19.11)(jiti@2.6.1)(lightningcss@1.30.1)(terser@5.44.1)(tsx@4.20.5)(yaml@2.8.2)
+      zod:
+        specifier: 'catalog:'
+        version: 3.25.76
+    devDependencies:
+      '@torus-ts/eslint-config':
+        specifier: workspace:*
+        version: link:../../tooling/eslint
+      '@torus-ts/prettier-config':
+        specifier: workspace:*
+        version: link:../../tooling/prettier
+      '@torus-ts/tsconfig':
+        specifier: workspace:*
+        version: link:../../tooling/typescript
+      '@types/cors':
+        specifier: ^2.8.17
+        version: 2.8.19
+      '@types/express':
+        specifier: ^4.17.21
+        version: 4.17.23
+      '@types/node':
+        specifier: 'catalog:'
+        version: 20.19.11
+      dotenv-cli:
+        specifier: 'catalog:'
+        version: 7.4.4
+      eslint:
+        specifier: 'catalog:'
+        version: 9.35.0(jiti@2.6.1)
+      prettier:
+        specifier: 'catalog:'
+        version: 3.6.2
+      typescript:
+        specifier: 'catalog:'
+        version: 5.9.2
+
+  services/torus-worker:
+    dependencies:
+      '@polkadot/api':
+        specifier: 'catalog:'
+        version: 14.3.1(bufferutil@4.0.9)(utf-8-validate@5.0.10)
+      '@torus-network/sdk':
+        specifier: workspace:*
+        version: link:../../packages/torus-sdk-ts
+      '@torus-network/torus-utils':
+        specifier: workspace:*
+        version: link:../../packages/torus-utils
+      '@torus-ts/db':
+        specifier: workspace:*
+        version: link:../../packages/db
+      axios:
+        specifier: ^1.7.7
+        version: 1.11.0(debug@4.4.3)
+      express:
+        specifier: ^4.19.2
+        version: 4.21.2
+      rustie:
+        specifier: 'catalog:'
+        version: 0.4.0
+      zod:
+        specifier: 'catalog:'
+        version: 3.25.76
+    devDependencies:
+      '@polkadot/api-augment':
+        specifier: 'catalog:'
+        version: 14.3.1(bufferutil@4.0.9)(utf-8-validate@5.0.10)
+      '@torus-ts/eslint-config':
+        specifier: workspace:*
+        version: link:../../tooling/eslint
+      '@torus-ts/tsconfig':
+        specifier: workspace:*
+        version: link:../../tooling/typescript
+      '@types/express':
+        specifier: ^4.17.21
+        version: 4.17.23
+      '@types/node':
+        specifier: 'catalog:'
+        version: 20.19.11
+      dotenv-cli:
+        specifier: 'catalog:'
+        version: 7.4.4
+      eslint:
+        specifier: 'catalog:'
+        version: 9.35.0(jiti@2.6.1)
+      prettier:
+        specifier: 'catalog:'
+        version: 3.6.2
       typescript:
         specifier: 'catalog:'
         version: 5.9.2
@@ -10907,7 +10907,6 @@ packages:
 
   get-starknet-core@4.0.0:
     resolution: {integrity: sha512-6pLmidQZkC3wZsrHY99grQHoGpuuXqkbSP65F8ov1/JsEI8DDLkhsAuLCKFzNOK56cJp+f1bWWfTJ57e9r5eqQ==}
-    deprecated: Package no longer supported. Please use @starknet-io/get-starknet-core
 
   get-stream@5.2.0:
     resolution: {integrity: sha512-nBF+F1rAZVCu/p7rjzgA+Yb4lfYXrpl7a6VmJrU8wF9I1CKvP/QwPNZHnOlwbTkY6dvtFIzFMSyQXbLoTQPRpA==}
@@ -14864,9 +14863,6 @@ packages:
   undici-types@6.21.0:
     resolution: {integrity: sha512-iwDZqg0QAGrg9Rav5H4n0M64c3mkR59cJ6wQp+7C4nI0gsmExaedaYLNO44eT4AtBBwjbTiGPMlt2Md0T9H9JQ==}
 
-  undici-types@7.15.0:
-    resolution: {integrity: sha512-Xyn5T99wU4kPhLZMm+ElE6M+IoSeG8Se7eG9xoZ82ZgVHJ07wb/IWcDZeXe2GOPkavcJ8ko5oSlXMDRl/QgY9Q==}
-
   undici-types@7.16.0:
     resolution: {integrity: sha512-Zz+aZWSj8LE6zoxD+xrjh4VfkIG8Ya6LvYkZqtUQGJPZjYl53ypCaUwWqo7eI0x66KBGeRo+mlBEkMSeSZ38Nw==}
 
@@ -16301,7 +16297,7 @@ snapshots:
       '@babel/traverse': 7.28.3
       '@babel/types': 7.28.2
       convert-source-map: 2.0.0
-      debug: 4.4.1
+      debug: 4.4.3(supports-color@8.1.1)
       gensync: 1.0.0-beta.2
       json5: 2.2.3
       semver: 6.3.1
@@ -16963,7 +16959,7 @@ snapshots:
       '@chain-registry/types': 0.50.198
       '@keplr-wallet/cosmos': 0.12.28
       '@keplr-wallet/crypto': 0.12.28
-      semver: 7.7.2
+      semver: 7.7.3
 
   '@chain-registry/types@0.46.15': {}
 
@@ -16980,7 +16976,7 @@ snapshots:
       '@chainlink/contracts': 1.4.0(bufferutil@4.0.9)(ethers@5.8.0(bufferutil@4.0.9)(utf-8-validate@5.0.10))(utf-8-validate@5.0.10)
       '@changesets/cli': 2.29.6(@types/node@20.19.11)
       '@changesets/get-github-info': 0.6.0
-      semver: 7.7.2
+      semver: 7.7.3
     transitivePeerDependencies:
       - '@types/node'
       - bufferutil
@@ -16998,7 +16994,7 @@ snapshots:
       '@openzeppelin/contracts-upgradeable': 4.9.6
       '@scroll-tech/contracts': 0.1.0
       '@zksync/contracts': era-contracts@https://codeload.github.com/matter-labs/era-contracts/tar.gz/446d391d34bdb48255d5f8fef8a8248925fc98b9
-      semver: 7.7.2
+      semver: 7.7.3
     transitivePeerDependencies:
       - bufferutil
       - encoding
@@ -17019,7 +17015,7 @@ snapshots:
       outdent: 0.5.0
       prettier: 2.8.8
       resolve-from: 5.0.0
-      semver: 7.7.2
+      semver: 7.7.3
 
   '@changesets/assemble-release-plan@6.0.9':
     dependencies:
@@ -17028,7 +17024,7 @@ snapshots:
       '@changesets/should-skip-package': 0.1.2
       '@changesets/types': 6.1.0
       '@manypkg/get-packages': 1.1.3
-      semver: 7.7.2
+      semver: 7.7.3
 
   '@changesets/changelog-git@0.2.1':
     dependencies:
@@ -17061,7 +17057,7 @@ snapshots:
       package-manager-detector: 0.2.11
       picocolors: 1.1.1
       resolve-from: 5.0.0
-      semver: 7.7.2
+      semver: 7.7.3
       spawndamnit: 3.0.1
       term-size: 2.2.1
 
@@ -17150,7 +17146,7 @@ snapshots:
       '@changesets/types': 6.1.0
       '@manypkg/get-packages': 1.1.3
       picocolors: 1.1.1
-      semver: 7.7.2
+      semver: 7.7.3
 
   '@changesets/get-github-info@0.6.0':
     dependencies:
@@ -19289,7 +19285,7 @@ snapshots:
       '@ledgerhq/errors': 6.24.0
       '@ledgerhq/logs': 6.13.0
       rxjs: 7.8.2
-      semver: 7.7.2
+      semver: 7.7.3
 
   '@ledgerhq/errors@6.24.0': {}
 
@@ -19341,7 +19337,7 @@ snapshots:
       fs-extra: 11.3.2
       hardhat: 2.26.3(bufferutil@4.0.9)(typescript@5.9.2)(utf-8-validate@5.0.10)
       proper-lockfile: 4.1.2
-      semver: 7.7.2
+      semver: 7.7.3
       sinon: 18.0.1
       sinon-chai: 3.7.0(chai@4.5.0)(sinon@18.0.1)
       undici: 6.21.3
@@ -19361,7 +19357,7 @@ snapshots:
       chalk: 4.1.2
       debug: 4.4.3(supports-color@8.1.1)
       hardhat: 2.26.3(bufferutil@4.0.9)(typescript@5.9.2)(utf-8-validate@5.0.10)
-      semver: 7.7.2
+      semver: 7.7.3
       sinon: 18.0.1
       sinon-chai: 3.7.0(chai@4.5.0)(sinon@18.0.1)
     transitivePeerDependencies:
@@ -19525,7 +19521,7 @@ snapshots:
       debug: 4.4.3(supports-color@8.1.1)
       lodash.memoize: 4.1.2
       pony-cause: 2.1.11
-      semver: 7.7.2
+      semver: 7.7.3
       uuid: 9.0.1
     transitivePeerDependencies:
       - supports-color
@@ -19549,7 +19545,7 @@ snapshots:
       '@types/debug': 4.1.12
       debug: 4.4.3(supports-color@8.1.1)
       pony-cause: 2.1.11
-      semver: 7.7.2
+      semver: 7.7.3
       uuid: 9.0.1
     transitivePeerDependencies:
       - supports-color
@@ -19563,7 +19559,7 @@ snapshots:
       '@types/debug': 4.1.12
       debug: 4.4.3(supports-color@8.1.1)
       pony-cause: 2.1.11
-      semver: 7.7.2
+      semver: 7.7.3
       uuid: 9.0.1
     transitivePeerDependencies:
       - supports-color
@@ -19617,7 +19613,7 @@ snapshots:
   '@next/swc-win32-x64-msvc@15.5.2':
     optional: true
 
-  '@next/third-parties@15.5.3(next@15.5.2(@babel/core@7.28.5)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(react@19.1.1)':
+  '@next/third-parties@15.5.3(next@15.5.2(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(react@19.1.1)':
     dependencies:
       next: 15.5.2(@babel/core@7.28.5)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
       react: 19.1.1
@@ -24021,7 +24017,7 @@ snapshots:
       '@solana/rpc-spec': 2.3.0(typescript@5.9.2)
       '@solana/rpc-spec-types': 2.3.0(typescript@5.9.2)
       typescript: 5.9.2
-      undici-types: 7.15.0
+      undici-types: 7.16.0
 
   '@solana/rpc-types@2.3.0(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.9.2)':
     dependencies:
@@ -25172,7 +25168,7 @@ snapshots:
 
   '@types/bn.js@5.2.0':
     dependencies:
-      '@types/node': 20.19.11
+      '@types/node': 22.18.0
 
   '@types/body-parser@1.19.6':
     dependencies:
@@ -25183,7 +25179,7 @@ snapshots:
     dependencies:
       '@types/http-cache-semantics': 4.0.4
       '@types/keyv': 3.1.4
-      '@types/node': 20.19.11
+      '@types/node': 22.18.0
       '@types/responselike': 1.0.3
 
   '@types/chai@5.2.2':
@@ -25197,7 +25193,7 @@ snapshots:
 
   '@types/connect@3.4.38':
     dependencies:
-      '@types/node': 20.19.11
+      '@types/node': 22.18.0
 
   '@types/cors@2.8.19':
     dependencies:
@@ -25398,7 +25394,7 @@ snapshots:
 
   '@types/keyv@3.1.4':
     dependencies:
-      '@types/node': 20.19.11
+      '@types/node': 22.18.0
 
   '@types/long@4.0.2': {}
 
@@ -25442,7 +25438,7 @@ snapshots:
 
   '@types/pbkdf2@3.1.2':
     dependencies:
-      '@types/node': 20.19.11
+      '@types/node': 22.18.0
 
   '@types/prismjs@1.26.5': {}
 
@@ -25468,16 +25464,16 @@ snapshots:
 
   '@types/responselike@1.0.3':
     dependencies:
-      '@types/node': 20.19.11
+      '@types/node': 22.18.0
 
   '@types/secp256k1@4.0.6':
     dependencies:
-      '@types/node': 20.19.11
+      '@types/node': 22.18.0
 
   '@types/send@0.17.5':
     dependencies:
       '@types/mime': 1.3.5
-      '@types/node': 20.19.11
+      '@types/node': 22.18.0
 
   '@types/serve-static@1.15.8':
     dependencies:
@@ -25528,11 +25524,11 @@ snapshots:
 
   '@types/ws@7.4.7':
     dependencies:
-      '@types/node': 20.19.11
+      '@types/node': 22.18.0
 
   '@types/ws@8.18.1':
     dependencies:
-      '@types/node': 20.19.11
+      '@types/node': 22.18.0
 
   '@types/yargs-parser@21.0.3': {}
 
@@ -25611,7 +25607,7 @@ snapshots:
       fast-glob: 3.3.3
       is-glob: 4.0.3
       minimatch: 9.0.5
-      semver: 7.7.2
+      semver: 7.7.3
       ts-api-utils: 2.1.0(typescript@5.9.2)
       typescript: 5.9.2
     transitivePeerDependencies:
@@ -27902,7 +27898,7 @@ snapshots:
       node-api-headers: 1.6.0
       npmlog: 6.0.2
       rc: 1.2.8
-      semver: 7.7.2
+      semver: 7.7.3
       tar: 6.2.1
       url-join: 4.0.1
       which: 2.0.2
@@ -32010,7 +32006,7 @@ snapshots:
       ora: 8.2.0
       pretty-ms: 9.3.0
       proper-lockfile: 4.1.2
-      semver: 7.7.2
+      semver: 7.7.3
       simple-git: 3.30.0
       slice-ansi: 7.1.2
       stdout-update: 4.0.1
@@ -32705,7 +32701,7 @@ snapshots:
       '@protobufjs/pool': 1.1.0
       '@protobufjs/utf8': 1.1.0
       '@types/long': 4.0.2
-      '@types/node': 20.19.11
+      '@types/node': 22.18.0
       long: 4.0.0
 
   protobufjs@7.4.0:
@@ -32720,7 +32716,7 @@ snapshots:
       '@protobufjs/path': 1.1.2
       '@protobufjs/pool': 1.1.0
       '@protobufjs/utf8': 1.1.0
-      '@types/node': 20.19.11
+      '@types/node': 22.18.0
       long: 5.3.2
 
   proxy-addr@2.0.7:
@@ -34712,10 +34708,7 @@ snapshots:
 
   undici-types@6.21.0: {}
 
-  undici-types@7.15.0: {}
-
-  undici-types@7.16.0:
-    optional: true
+  undici-types@7.16.0: {}
 
   undici@5.29.0:
     dependencies:
