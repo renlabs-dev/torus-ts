@@ -46,6 +46,7 @@ jobs:
       pr_preview_matrix: ${{ steps.parse.outputs.pr_preview_matrix }}
       all_apps: ${{ steps.parse.outputs.all_apps }}
       preview_domains: ${{ steps.parse.outputs.preview_domains }}
+      package_paths: ${{ steps.parse.outputs.package_paths }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -94,6 +95,17 @@ jobs:
           echo "changed_packages=$changed_packages" >> $GITHUB_OUTPUT
           echo "Changed packages from turbo:"
           echo "$changed_packages" | jq '.'
+
+          # Extract package directories mapping (package -> directory parent folder)
+          # e.g., {"torus-cache": "services", "torus-wallet": "apps"}
+          package_paths=$(cat build.json | jq -c '
+            [.tasks[] | {key: .package, value: (.directory | split("/")[0])}]
+            | unique_by(.key)
+            | from_entries
+          ')
+          echo "package_paths=$package_paths" >> $GITHUB_OUTPUT
+          echo "Package paths:"
+          echo "$package_paths" | jq '.'
 
       - name: Filter changed apps
         id: changed
@@ -170,13 +182,23 @@ jobs:
 
           preview_domains=$(echo "$config" | jq -c '[.apps | to_entries[] | select(.value.preview_domain != null) | {key: .key, value: .value.preview_domain}] | from_entries')
 
+          # Get package paths from turbo output, with fallback to "apps" for packages not in turbo output
+          turbo_paths='${{ steps.turbo.outputs.package_paths }}'
+          # Merge with defaults for any apps not in turbo output (e.g., dependent apps that weren't changed)
+          package_paths=$(echo "$turbo_paths" | jq -c --argjson all_apps "$all_apps" '
+            . as $paths |
+            ($all_apps | map({key: ., value: "apps"}) | from_entries) * $paths
+          ')
+
           echo "deploy_matrix=$deploy_json" >> $GITHUB_OUTPUT
           echo "pr_preview_matrix=$pr_json" >> $GITHUB_OUTPUT
           echo "all_apps=$all_apps" >> $GITHUB_OUTPUT
           echo "preview_domains=$preview_domains" >> $GITHUB_OUTPUT
+          echo "package_paths=$package_paths" >> $GITHUB_OUTPUT
 
           echo "Apps to deploy: $deploy_json"
           echo "Apps with PR preview: $pr_json"
+          echo "Package paths: $package_paths"
 
   ###################################
   ###### REGULAR DEPLOYMENTS  #######
@@ -196,6 +218,7 @@ jobs:
     secrets: inherit
     with:
       app_name: ${{ matrix.app }}
+      app_path: ${{ fromJson(needs.find-deployments.outputs.package_paths)[matrix.app] }}
       skip_build: ${{ inputs.skip_build || false }}
 
   ###################################
@@ -217,6 +240,7 @@ jobs:
     secrets: inherit
     with:
       app_name: ${{ matrix.app }}
+      app_path: ${{ fromJson(needs.find-deployments.outputs.package_paths)[matrix.app] }}
 
   ###################################
   ########### PR PREVIEW ############
@@ -236,6 +260,7 @@ jobs:
     secrets: inherit
     with:
       app_name: ${{ matrix.app }}
+      app_path: ${{ fromJson(needs.find-deployments.outputs.package_paths)[matrix.app] }}
 
   pr-preview-cleanup:
     needs: find-deployments
@@ -250,6 +275,7 @@ jobs:
     secrets: inherit
     with:
       app_name: ${{ matrix.app }}
+      app_path: ${{ fromJson(needs.find-deployments.outputs.package_paths)[matrix.app] }}
       cleanup: true
 
   deployment-summary:

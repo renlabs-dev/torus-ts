@@ -30,12 +30,10 @@
       "pr_preview": true
     },
     "torus-cache": {
-      "pr_preview": true,
-      "path": "services"
+      "pr_preview": true
     },
     "torus-worker": {
-      "pr_preview": false,
-      "path": "services"
+      "pr_preview": false
     },
     "torus-prophet-finder": {
       "pr_preview": true,
@@ -52,28 +50,23 @@
     },
     "torus-swarm-twitter": {
       "pr_preview": false,
-      "prod_only": true,
-      "path": "services"
+      "prod_only": true
     },
     "torus-swarm-verifier": {
       "pr_preview": false,
-      "prod_only": true,
-      "path": "services"
+      "prod_only": true
     },
     "swarm-filter": {
       "pr_preview": false,
-      "prod_only": true,
-      "path": "services"
+      "prod_only": true
     },
     "torus-swarm-services": {
       "pr_preview": false,
-      "prod_only": false,
-      "path": "services"
+      "prod_only": false
     },
     "prediction-swarm-api": {
       "pr_preview": false,
-      "prod_only": false,
-      "path": "services"
+      "prod_only": false
     }
   }
 }
