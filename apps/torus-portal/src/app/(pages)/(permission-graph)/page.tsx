@@ -44,7 +44,7 @@ export default function PermissionGraphPage() {
     const updateSelection = () => {
       if (nodeId && graphData) {
         const node = graphData.nodes.find((n) => n.id === nodeId);
-        if (node && (!selectedNode || selectedNode.id !== nodeId)) {
+        if (node && selectedNode?.id !== nodeId) {
           setSelectedNode(node);
           setIsSheetOpen(true); // Open sheet when node is selected from search
         }

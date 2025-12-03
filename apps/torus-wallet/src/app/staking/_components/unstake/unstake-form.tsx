@@ -65,7 +65,7 @@ export function UnstakeForm({
                 <FormLabel>Validator Address</FormLabel>
                 <FormControl>
                   <AllocatorSelector
-                    value={field.value}
+                    value={field.value ?? ""}
                     onSelect={handleSelectValidator}
                     listType="staked"
                     placeholder="Select a staked allocator"
@@ -85,7 +85,7 @@ export function UnstakeForm({
                 <FormLabel>Amount</FormLabel>
                 <FormControl>
                   <CurrencySwap
-                    amount={field.value}
+                    amount={field.value ?? ""}
                     usdPrice={usdPrice}
                     disabled={!selectedAccount?.address}
                     availableFunds={maxUnstakeAmount || "0"}

@@ -12,7 +12,6 @@ const registryProxyUrl =
   env("NEXT_PUBLIC_GITHUB_PROXY") ?? "https://proxy.hyperlane.xyz";
 const walletConnectProjectId = env("NEXT_PUBLIC_WALLET_CONNECT_ID") ?? "";
 const transferBlacklist = env("NEXT_PUBLIC_TRANSFER_BLACKLIST") ?? "";
-// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
 const chainWalletWhitelists = JSON.parse(
   env("NEXT_PUBLIC_CHAIN_WALLET_WHITELISTS") ?? "{}",
 );
@@ -33,7 +32,6 @@ interface Config {
 
 export const config: Config = Object.freeze({
   addressBlacklist: ADDRESS_BLACKLIST.map((address) => address.toLowerCase()),
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
   chainWalletWhitelists,
   enableExplorerLink: false,
   isDevMode,

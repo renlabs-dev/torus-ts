@@ -14,7 +14,7 @@ import React from "react";
 
 interface CreateSignalSliderFieldProps {
   field: {
-    value: number;
+    value?: number;
     onChange: (value: number) => void;
   };
   existingSignals: inferProcedureOutput<AppRouter["signal"]["byCreatorId"]>;

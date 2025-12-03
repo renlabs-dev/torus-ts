@@ -5,7 +5,7 @@ import { Input } from "@torus-ts/ui/components/input";
 import { useCallback, useState } from "react";
 
 interface TokenAmountInputProps {
-  value: string;
+  value: string | undefined;
   onChange: (nanoValue: string) => void;
   placeholder?: string;
   disabled?: boolean;

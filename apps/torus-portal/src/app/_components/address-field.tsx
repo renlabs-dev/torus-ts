@@ -232,7 +232,7 @@ function AddressField({
 
 interface FormAddressFieldProps extends AddressFieldProps {
   field: {
-    value: string;
+    value: string | undefined;
     onChange: (value: string) => void;
   };
 }

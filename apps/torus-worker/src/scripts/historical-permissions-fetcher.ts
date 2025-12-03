@@ -48,14 +48,18 @@ type AccumulatedStreamInsert =
   typeof accumulatedStreamAmountsSchema.$inferInsert;
 
 // Historical data types (add block context for CSV)
-interface HistoricalPermissionData
-  extends Omit<PermissionInsert, "id" | "createdAt" | "updatedAt"> {
+interface HistoricalPermissionData extends Omit<
+  PermissionInsert,
+  "id" | "createdAt" | "updatedAt"
+> {
   blockNumber: number;
   blockHash: string;
 }
 
-interface HistoricalEmissionData
-  extends Omit<EmissionPermissionInsert, "createdAt" | "updatedAt"> {
+interface HistoricalEmissionData extends Omit<
+  EmissionPermissionInsert,
+  "createdAt" | "updatedAt"
+> {
   blockNumber: number;
   blockHash: string;
 }
@@ -70,8 +74,10 @@ interface HistoricalDistributionTargetData extends DistributionTargetInsert {
   blockHash: string;
 }
 
-interface HistoricalAccumulatedStreamData
-  extends Omit<AccumulatedStreamInsert, "lastUpdated"> {
+interface HistoricalAccumulatedStreamData extends Omit<
+  AccumulatedStreamInsert,
+  "lastUpdated"
+> {
   blockNumber: number;
   blockHash: string;
 }
