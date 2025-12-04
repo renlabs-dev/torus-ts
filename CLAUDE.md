@@ -22,11 +22,11 @@ applications, services, and shared packages for the Torus Network ecosystem.
 - **Services** (`services/`): Backend services
   - `torus-cache`: Caching layer for blockchain data
   - `torus-worker`: Background processing and automation
-  - `torus-swarm-twitter`: Twitter integration for swarm
-  - `torus-swarm-verifier`: Swarm verification service
-  - `torus-swarm-services`: Swarm support services
+  - `swarm-twitter`: Twitter integration for swarm
+  - `swarm-verifier`: Swarm verification service
+  - `swarm-services`: Swarm support services
   - `swarm-filter`: Swarm filtering service
-  - `prediction-swarm-api`: Prediction swarm API
+  - `swarm-api`: Prediction swarm API
 - **Packages** (`packages/`): Shared libraries
   - `@torus-network/sdk`: Core Substrate/Polkadot.js integration
   - `@torus-ts/api`: tRPC API routes and database queries

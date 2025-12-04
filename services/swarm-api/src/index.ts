@@ -2,7 +2,7 @@ import { BasicLogger } from "@torus-network/torus-utils/logger";
 import { getEnv } from "./env";
 import { createServer } from "./server";
 
-const logger = BasicLogger.create({ name: "prediction-swarm-api" });
+const logger = BasicLogger.create({ name: "swarm-api" });
 
 async function main() {
   const env = getEnv(process.env);
