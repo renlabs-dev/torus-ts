@@ -36,7 +36,6 @@
     "@trpc/client": "catalog:",
     "canonicalize": "^2.1.0",
     "he": "^1.2.0",
-    "node-llama-cpp": "^3.14.2",
     "openai": "^4.73.1",
     "p-limit": "^7.2.0",
     "rustie": "catalog:",
