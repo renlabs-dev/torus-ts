@@ -116,24 +116,46 @@ export const tweetsRouter = (app: AuthApp) =>
             .where(inArray(scrapedTweetSchema.conversationId, conversationIds));
         }
 
-        const contextByConversation = new Map<
+        const tweetsByConversation = new Map<
           bigint,
-          typeof allContextTweets
+          Map<bigint, (typeof allContextTweets)[number]>
         >();
         for (const ctxTweet of allContextTweets) {
-          if (ctxTweet.conversationId) {
-            const existing =
-              contextByConversation.get(ctxTweet.conversationId) ?? [];
-            existing.push(ctxTweet);
-            contextByConversation.set(ctxTweet.conversationId, existing);
+          if (!ctxTweet.conversationId) continue;
+          let convMap = tweetsByConversation.get(ctxTweet.conversationId);
+          if (!convMap) {
+            convMap = new Map();
+            tweetsByConversation.set(ctxTweet.conversationId, convMap);
           }
+          convMap.set(ctxTweet.id, ctxTweet);
         }
+
+        const buildReplyChain = (
+          tweetId: bigint,
+          allTweets: Map<bigint, (typeof allContextTweets)[number]>,
+        ): (typeof allContextTweets)[number][] => {
+          const chain: (typeof allContextTweets)[number][] = [];
+          let currentId: bigint | null = tweetId;
+
+          while (currentId !== null) {
+            const tweet = allTweets.get(currentId);
+            if (!tweet) break;
+            chain.unshift(tweet);
+            currentId = tweet.parentTweetId;
+          }
+
+          return chain;
+        };
 
         const result = [];
         for (const tweet of tweets) {
           const conversationId = tweetConversationMap.get(tweet.id);
-          const conversationTweets = conversationId
-            ? (contextByConversation.get(conversationId) ?? [])
+          const convTweetsMap = conversationId
+            ? tweetsByConversation.get(conversationId)
+            : undefined;
+
+          const replyChain = convTweetsMap
+            ? buildReplyChain(tweet.id, convTweetsMap)
             : [];
 
           const contextTweets: Record<
@@ -149,7 +171,7 @@ export const tweetsRouter = (app: AuthApp) =>
             }
           > = {};
 
-          for (const ctxTweet of conversationTweets) {
+          for (const ctxTweet of replyChain) {
             if (ctxTweet.id !== tweet.id) {
               contextTweets[ctxTweet.id.toString()] = {
                 id: ctxTweet.id.toString(),
