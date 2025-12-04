@@ -1,20 +1,14 @@
 import { Button } from "@torus-ts/ui/components/button";
-import { Card } from "@torus-ts/ui/components/card";
-import { ScrollArea } from "@torus-ts/ui/components/scroll-area";
-import { cn } from "@torus-ts/ui/lib/utils";
-import { ArrowBigDown } from "lucide-react";
 import { motion } from "motion/react";
-import React from "react";
 import { CustomButton } from "../custom-button";
 import { ANIMATIONS, CONTENT } from "../data";
 
 interface ButtonsSectionProps {
-  isExpanded: boolean;
   showStarter: boolean;
   showNetwork: boolean;
   onStarterClick: () => void;
   onNetworkClick: () => void;
-  setIsExpanded: React.Dispatch<React.SetStateAction<boolean>>;
+  onAboutClick: () => void;
 }
 
 export function ButtonsSection({
@@ -22,13 +16,9 @@ export function ButtonsSection({
   showNetwork,
   onStarterClick,
   onNetworkClick,
-  isExpanded,
-  setIsExpanded,
+  onAboutClick,
 }: Readonly<ButtonsSectionProps>) {
-  const { desktopButtons, description } = CONTENT;
-
-  // Calculate card position based on props - no state needed
-  const cardPosition = showStarter || showNetwork ? 150 : 20;
+  const { desktopButtons } = CONTENT;
 
   return (
     <motion.div
@@ -68,8 +58,7 @@ export function ButtonsSection({
       <motion.div
         variants={ANIMATIONS.BUTTON}
         custom={0}
-        className="flex w-full max-w-3xl justify-around gap-[4.6em]"
-        style={{ zIndex: isExpanded ? 1 : "auto" }}
+        className="z-50 flex w-full max-w-3xl justify-around gap-[4.6em]"
       >
         {desktopButtons.starter.slice(0, 2).map((button, index) => (
           <CustomButton key={index} href={button.href} isHidden={!showStarter}>
@@ -87,8 +76,7 @@ export function ButtonsSection({
       <motion.div
         variants={ANIMATIONS.BUTTON}
         custom={2}
-        className="absolute mt-20 flex w-full max-w-[43rem] justify-around gap-36"
-        style={{ zIndex: isExpanded ? 1 : "auto" }}
+        className="absolute z-50 mt-20 flex w-full max-w-[43rem] justify-around gap-36"
       >
         {desktopButtons.starter[2] && (
           <CustomButton
@@ -108,52 +96,19 @@ export function ButtonsSection({
         )}
       </motion.div>
 
-      {/* Fourth Row with Card */}
+      {/* About Button */}
       <motion.div
         variants={ANIMATIONS.BUTTON}
-        custom={11}
-        className="absolute w-full max-w-[46.5rem]"
-        style={{ zIndex: isExpanded ? 1 : "auto" }}
-        animate={{ top: cardPosition }}
-        transition={{ duration: 0.4, delay: 0.1 }}
+        custom={12}
+        className="absolute mt-[0.18rem] flex w-full justify-center"
       >
-        <motion.div
-          layout
-          initial="collapsed"
-          animate={isExpanded ? "expanded" : "collapsed"}
-          variants={ANIMATIONS.CARD}
-          transition={{ duration: 0.5 }}
-          onClick={() => setIsExpanded(!isExpanded)}
+        <Button
+          className="bg-accent hover:bg-background z-50 rounded-full disabled:opacity-100"
+          onClick={onAboutClick}
+          variant="outline"
         >
-          <Card className="mx-5 cursor-pointer overflow-hidden pb-4 pl-6 pr-4 pt-6 md:mx-0">
-            <ScrollArea
-              className={cn(isExpanded ? "h-[calc(40vh)]" : "h-fit", "pr-2")}
-            >
-              <motion.div layout>{description[0]}</motion.div>
-              {!isExpanded && (
-                <motion.div layout className="mt-2 flex justify-center">
-                  <ArrowBigDown className="h-6 w-6 animate-pulse text-zinc-500" />
-                </motion.div>
-              )}
-              <motion.div
-                variants={ANIMATIONS.TEXT}
-                initial="collapsed"
-                animate={isExpanded ? "expanded" : "collapsed"}
-                transition={{ duration: 0.5 }}
-              >
-                {isExpanded && (
-                  <>
-                    {description.slice(1).map((paragraph, index) => (
-                      <p key={index} className="mt-3">
-                        {paragraph}
-                      </p>
-                    ))}
-                  </>
-                )}
-              </motion.div>
-            </ScrollArea>
-          </Card>
-        </motion.div>
+          About
+        </Button>
       </motion.div>
     </motion.div>
   );

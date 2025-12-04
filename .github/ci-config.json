@@ -7,26 +7,18 @@
       "pr_preview": true
     },
     "torus-wallet": {
-      "deploys": [
-        "torus-cache"
-      ],
+      "deploys": ["torus-cache"],
       "pr_preview": true
     },
     "torus-allocator": {
-      "deploys": [
-        "torus-cache",
-        "torus-worker"
-      ],
+      "deploys": ["torus-cache", "torus-worker"],
       "pr_preview": true
     },
     "torus-bridge": {
       "pr_preview": true
     },
     "torus-governance": {
-      "deploys": [
-        "torus-cache",
-        "torus-worker"
-      ],
+      "deploys": ["torus-cache", "torus-worker"],
       "pr_preview": true
     },
     "torus-cache": {
@@ -40,19 +32,15 @@
       "preview_domain": "prophetfinder.com"
     },
     "prediction-swarm": {
-      "deploys": [
-        "torus-swarm-twitter",
-        "torus-swarm-verifier",
-        "swarm-filter"
-      ],
+      "deploys": ["swarm-twitter", "swarm-verifier", "swarm-filter"],
       "pr_preview": true,
       "preview_domain": "predictionswarm.com"
     },
-    "torus-swarm-twitter": {
+    "swarm-twitter": {
       "pr_preview": false,
       "prod_only": true
     },
-    "torus-swarm-verifier": {
+    "swarm-verifier": {
       "pr_preview": false,
       "prod_only": true
     },
@@ -60,7 +48,11 @@
       "pr_preview": false,
       "prod_only": true
     },
-    "torus-swarm-services": {
+    "swarm-services": {
+      "pr_preview": false,
+      "prod_only": false
+    },
+    "swarm-api": {
       "pr_preview": false,
       "prod_only": false
     }
