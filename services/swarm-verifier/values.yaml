@@ -8,13 +8,13 @@ service:
 
 deployment:
   image:
-    repository: ghcr.io/renlabs-dev/torus-swarm-verifier
+    repository: ghcr.io/renlabs-dev/swarm-verifier
 
   additionalLabels:
-    app: torus-swarm-verifier
+    app: swarm-verifier
 
   podLabels:
-    app: torus-swarm-verifier
+    app: swarm-verifier
 
   resources:
     limits:

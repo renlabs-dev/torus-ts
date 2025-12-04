@@ -3,7 +3,7 @@ import { createDb } from "@torus-ts/db/client";
 import { KaitoTwitterAPI } from "@torus-ts/twitter-client";
 import { TwitterAccountScraper } from "./twitter-account-scraper";
 
-export const logger = BasicLogger.create({ name: "torus-swarm-twitter" });
+export const logger = BasicLogger.create({ name: "swarm-twitter" });
 
 if (!process.env.TWITTERAPI_IO_KEY) {
   console.error("missing TWITTERAPI_IO_KEY env var");

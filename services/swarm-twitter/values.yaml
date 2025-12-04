@@ -8,13 +8,13 @@ service:
 
 deployment:
   image:
-    repository: ghcr.io/renlabs-dev/torus-swarm-twitter
+    repository: ghcr.io/renlabs-dev/swarm-twitter
 
   additionalLabels:
-    app: torus-swarm-twitter
+    app: swarm-twitter
 
   podLabels:
-    app: torus-swarm-twitter
+    app: swarm-twitter
 
   resources:
     limits:
