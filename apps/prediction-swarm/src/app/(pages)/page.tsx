@@ -1,9 +1,9 @@
 import { Jacquard_12 as Jacquard } from "next/font/google";
-import Dither from "../_components/dither";
-import { FAQ } from "../_components/main-page/faq";
-import { ListItem } from "../_components/main-page/list-item";
-import { SearchProphet } from "../_components/main-page/search-prophet";
-import { NavigationItems } from "../_components/navigation-items";
+import { DitherBackgroundAnimation } from "../_components/dither-background-animation";
+import { MainPageExploreItemCard } from "../_components/main-page/main-page-explore-item-card";
+import { MainPageFAQ } from "../_components/main-page/main-page-faq";
+import { PageNavigationButtons } from "../_components/page-navigation/page-navigation-buttons";
+import { SearchPredictorCommandTrigger } from "../_components/search-predictor-command/search-predictor-command-trigger";
 
 export const jacquard = Jacquard({
   weight: "400",
@@ -13,12 +13,12 @@ export default function Page() {
   return (
     <div>
       <div className="2 absolute right-2 top-2 z-50 opacity-70">
-        <NavigationItems />
+        <PageNavigationButtons />
       </div>
       {/* Mobile Layout */}
       <div className="relative min-h-[90vh] md:hidden">
         <div className="animate-fade absolute inset-0">
-          <Dither
+          <DitherBackgroundAnimation
             pixelSize={1}
             waveSpeed={0.02}
             waveFrequency={4}
@@ -42,28 +42,28 @@ export default function Page() {
           {/* Search at bottom */}
           <div className="pointer-events-none pb-12">
             <div className="animate-fade-up animate-delay-[100ms] pointer-events-auto px-4">
-              <SearchProphet />
+              <SearchPredictorCommandTrigger />
             </div>
           </div>
         </div>
 
         {/* List items below viewport on mobile */}
         <div className="pointer-events-auto mx-auto grid max-w-6xl gap-6 px-4 pb-6 md:pb-12">
-          <ListItem
+          <MainPageExploreItemCard
             title="Prophets"
             description="Discover the most accurate predictors in the swarm"
             linkText="Explore profiles"
             href="/top-predictors"
             className="animate-fade-up animate-delay-[500ms] duration-1000"
           />
-          <ListItem
+          <MainPageExploreItemCard
             title="Tickers"
             description="View live predictions across all active tickers in the swarm"
             linkText="Explore Tickers"
             href="/tickers"
             className="animate-fade-up animate-delay-[750ms] duration-1000"
           />
-          <ListItem
+          <MainPageExploreItemCard
             title="Predictor Feed"
             description="Track the newest activity from all predictors in the swarm"
             linkText="Explore feed"
@@ -76,7 +76,7 @@ export default function Page() {
       {/* Desktop Layout - Original */}
       <div className="relative hidden min-h-[90vh] flex-col md:flex">
         <div className="absolute inset-0 opacity-60">
-          <Dither
+          <DitherBackgroundAnimation
             pixelSize={1}
             waveSpeed={0.01}
             waveFrequency={4}
@@ -97,24 +97,24 @@ export default function Page() {
         {/* Search and list items at bottom */}
         <div className="pointer-events-none relative z-10 mx-auto w-full pb-12">
           <div className="animate-fade-up animate-delay-[100ms] pointer-events-auto mb-14">
-            <SearchProphet />
+            <SearchPredictorCommandTrigger />
           </div>
           <div className="pointer-events-auto mx-auto -mb-[6.125rem] grid max-w-6xl gap-6 md:grid-cols-3">
-            <ListItem
+            <MainPageExploreItemCard
               title="Prophets"
               description="Discover the most accurate predictors in the swarm"
               linkText="Explore profiles"
               href="/top-predictors"
               className="animate-fade-up animate-delay-[500ms] duration-1000"
             />
-            <ListItem
+            <MainPageExploreItemCard
               title="Tickers"
               description="View live predictions across all active tickers in the swarm"
               linkText="Explore Tickers"
               href="/tickers"
               className="animate-fade-up animate-delay-[750ms] duration-1000"
             />
-            <ListItem
+            <MainPageExploreItemCard
               title="Predictor Feed"
               description="Track the newest activity from all predictors in the swarm"
               linkText="Explore feed"
@@ -144,7 +144,7 @@ export default function Page() {
           </div>
           <div className="border-border relative border-y py-4">
             <div className="mx-auto w-full max-w-screen-md px-4">
-              <FAQ />
+              <MainPageFAQ />
             </div>
           </div>
         </div>

@@ -20,7 +20,10 @@ export function HoverHeader() {
   const [showStarter, setShowStarter] = useState(false);
   const [showNetwork, setShowNetwork] = useState(false);
 
-  const [isExpanded, setIsExpanded] = useState(false);
+  const handleAboutClick = useCallback(() => {
+    setIsVisible(false);
+    window.dispatchEvent(new CustomEvent("trigger-about-section"));
+  }, []);
 
   const calculateDistance = useCallback(
     (x1: number, y1: number, x2: number, y2: number): number => {
@@ -122,7 +125,6 @@ export function HoverHeader() {
             setIsHovered(true);
             setShowNetwork(false);
             setShowStarter(false);
-            setIsExpanded(false);
           }}
           whileTap={{ y: 1 }}
           onHoverStart={() => setIsHovered(true)}
@@ -170,17 +172,16 @@ export function HoverHeader() {
             <>
               <div className="hidden w-full items-center justify-center md:flex">
                 <ButtonsSection
-                  isExpanded={isExpanded}
-                  setIsExpanded={setIsExpanded}
                   showStarter={showStarter}
                   showNetwork={showNetwork}
                   onStarterClick={() => setShowStarter(!showStarter)}
                   onNetworkClick={() => setShowNetwork(!showNetwork)}
+                  onAboutClick={handleAboutClick}
                 />
                 <LinesSVG showStarter={showStarter} showNetwork={showNetwork} />
               </div>
               <div className="flex w-full items-center justify-center md:hidden">
-                <ButtonsSectionMobile />
+                <ButtonsSectionMobile onAboutClick={handleAboutClick} />
                 <LinesSVGMobile />
               </div>
             </>

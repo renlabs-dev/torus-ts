@@ -3,7 +3,7 @@
 import { Card } from "@torus-ts/ui/components/card";
 import { Skeleton } from "@torus-ts/ui/components/skeleton";
 import { TOP_100_TICKERS } from "@torus-ts/ui/lib/tickers";
-import { PageHeader } from "~/app/_components/page-header";
+import { ExpandedViewPageHeader } from "~/app/_components/expanded-view-page-header";
 import { api } from "~/trpc/react";
 import Image from "next/image";
 import Link from "next/link";
@@ -32,7 +32,7 @@ export default function TickersPage() {
       <div className="border-border pointer-events-none absolute inset-y-0 left-1/2 w-full max-w-screen-lg -translate-x-1/2 border-x" />
 
       {/* Header section */}
-      <PageHeader
+      <ExpandedViewPageHeader
         title="Tickers"
         description="Browse predictions by cryptocurrency ticker"
       />
