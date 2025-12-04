@@ -29,7 +29,7 @@ async function seedTwitterUsers() {
 
   console.log("\nAll users added to twitter_user_suggestions");
   console.log("\nStart the scraper to begin fetching tweets:");
-  console.log("  pnpm --filter torus-swarm-twitter dev\n");
+  console.log("  pnpm --filter swarm-twitter dev\n");
 
   process.exit(0);
 }

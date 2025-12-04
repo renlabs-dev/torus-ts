@@ -1,6 +1,6 @@
 /**
  * Retroactive deduplication script.
- * Usage: pnpm --filter torus-swarm-verifier dev:dedup-retroactive
+ * Usage: pnpm --filter swarm-verifier dev:dedup-retroactive
  */
 
 import { createDb } from "@torus-ts/db/client";

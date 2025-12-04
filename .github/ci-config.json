@@ -32,19 +32,15 @@
       "preview_domain": "prophetfinder.com"
     },
     "prediction-swarm": {
-      "deploys": [
-        "torus-swarm-twitter",
-        "torus-swarm-verifier",
-        "swarm-filter"
-      ],
+      "deploys": ["swarm-twitter", "swarm-verifier", "swarm-filter"],
       "pr_preview": true,
       "preview_domain": "predictionswarm.com"
     },
-    "torus-swarm-twitter": {
+    "swarm-twitter": {
       "pr_preview": false,
       "prod_only": true
     },
-    "torus-swarm-verifier": {
+    "swarm-verifier": {
       "pr_preview": false,
       "prod_only": true
     },
@@ -52,11 +48,11 @@
       "pr_preview": false,
       "prod_only": true
     },
-    "torus-swarm-services": {
+    "swarm-services": {
       "pr_preview": false,
       "prod_only": false
     },
-    "prediction-swarm-api": {
+    "swarm-api": {
       "pr_preview": false,
       "prod_only": false
     }

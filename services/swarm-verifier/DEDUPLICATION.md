@@ -250,7 +250,7 @@ Test suite with 18 cases covering position-based overlap scenarios. Tests use re
 Run tests:
 
 ```sh
-pnpm --filter torus-swarm-verifier dev --test
+pnpm --filter swarm-verifier dev --test
 ```
 
 ## Integration Points

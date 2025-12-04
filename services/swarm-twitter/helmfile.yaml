@@ -5,7 +5,7 @@ environments:
       - values.yaml
       - namespace: torus-dev-web-apps
       - environmentName: dev
-      - releaseName: dev-torus-swarm-twitter
+      - releaseName: dev-swarm-twitter
       - wssApiEndpoint: wss://api.testnet.torus.network
       - chainEnv: testnet
   prod:
@@ -14,7 +14,7 @@ environments:
       - values.yaml
       - namespace: torus-prod-web-apps
       - environmentName: prod
-      - releaseName: torus-swarm-twitter
+      - releaseName: swarm-twitter
       - wssApiEndpoint: wss://api.torus.network
       - chainEnv: mainnet
 ---

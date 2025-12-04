@@ -18,7 +18,7 @@ import { saveDistribution } from "./services/reward-distribution.js";
 import { notifyDistributionComplete } from "./services/discord-webhook.js";
 import { getLastDistributionTimeForPermission } from "./db.js";
 
-const log = BasicLogger.create({ name: "torus-swarm-services" });
+const log = BasicLogger.create({ name: "swarm-services" });
 
 export const env = validateEnvOrExit({
   SWARM_EVALUATION_PERIOD_HOURS: z.coerce.number().default(168),
