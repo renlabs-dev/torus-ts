@@ -10,7 +10,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@torus-ts/ui/components/tooltip";
-import { PageHeader } from "~/app/_components/page-header";
+import { ExpandedViewPageHeader } from "~/app/_components/expanded-view-page-header";
 import { api } from "~/trpc/server";
 import { BadgeCheck, Info } from "lucide-react";
 import Link from "next/link";
@@ -28,7 +28,7 @@ export default async function TopPredictorsPage() {
 
       {/* Header section */}
 
-      <PageHeader
+      <ExpandedViewPageHeader
         title="Top Predictors"
         description="Ranked by quality score (minimum 10 verdicted predictions)"
         children={

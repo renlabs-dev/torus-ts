@@ -9,8 +9,8 @@ import {
   TabsTrigger,
 } from "@torus-ts/ui/components/tabs";
 import { cn } from "@torus-ts/ui/lib/utils";
-import { PageHeader } from "~/app/_components/page-header";
-import { QueueItem } from "~/app/_components/scraper-queue/queue-item";
+import { ExpandedViewPageHeader } from "~/app/_components/expanded-view-page-header";
+import { ScraperQueueItemCard } from "~/app/(pages)/(expanded-pages)/scraper-queue/components/scraper-queue-item-card";
 import { api } from "~/trpc/react";
 import dayjs from "dayjs";
 import { Loader2 } from "lucide-react";
@@ -58,7 +58,7 @@ export default function ScraperQueuePage() {
       <div className="border-border pointer-events-none absolute inset-y-0 left-1/2 w-full max-w-screen-lg -translate-x-1/2 border-x" />
 
       {/* Header */}
-      <PageHeader
+      <ExpandedViewPageHeader
         title="Scraper Queue"
         description="Track the progress of accounts being added to the swarm"
       />
@@ -130,7 +130,7 @@ export default function ScraperQueuePage() {
                         key={`${item.username}-${item.suggestedBy}`}
                         className="mb-3"
                       >
-                        <QueueItem item={item} />
+                        <ScraperQueueItemCard item={item} />
                       </div>
                     ))}
                     {getOtherAccounts(
@@ -141,7 +141,7 @@ export default function ScraperQueuePage() {
                         key={`${item.username}-${item.suggestedBy}`}
                         className="mb-3"
                       >
-                        <QueueItem item={item} />
+                        <ScraperQueueItemCard item={item} />
                       </div>
                     ))}
                     {suggested.length === 0 && (
@@ -162,7 +162,7 @@ export default function ScraperQueuePage() {
                     key={`${item.username}-${item.suggestedBy}`}
                     className="mb-3"
                   >
-                    <QueueItem item={item} />
+                    <ScraperQueueItemCard item={item} />
                   </div>
                 ))}
                 {getOtherAccounts(scraping, getUserAccounts(scraping)).map(
@@ -171,7 +171,7 @@ export default function ScraperQueuePage() {
                       key={`${item.username}-${item.suggestedBy}`}
                       className="mb-3"
                     >
-                      <QueueItem item={item} />
+                      <ScraperQueueItemCard item={item} />
                     </div>
                   ),
                 )}
@@ -200,7 +200,7 @@ export default function ScraperQueuePage() {
                         key={`${item.username}-${item.suggestedBy}`}
                         className="mb-3"
                       >
-                        <QueueItem item={item} />
+                        <ScraperQueueItemCard item={item} />
                       </div>
                     ))}
                     {getOtherAccounts(
@@ -211,7 +211,7 @@ export default function ScraperQueuePage() {
                         key={`${item.username}-${item.suggestedBy}`}
                         className="mb-3"
                       >
-                        <QueueItem item={item} />
+                        <ScraperQueueItemCard item={item} />
                       </div>
                     ))}
                   </>
@@ -227,7 +227,7 @@ export default function ScraperQueuePage() {
                     key={`${item.username}-${item.suggestedBy}`}
                     className="mb-3"
                   >
-                    <QueueItem item={item} />
+                    <ScraperQueueItemCard item={item} />
                   </div>
                 ))}
                 {getOtherAccounts(updating, getUserAccounts(updating)).map(
@@ -236,7 +236,7 @@ export default function ScraperQueuePage() {
                       key={`${item.username}-${item.suggestedBy}`}
                       className="mb-3"
                     >
-                      <QueueItem item={item} />
+                      <ScraperQueueItemCard item={item} />
                     </div>
                   ),
                 )}
@@ -256,7 +256,7 @@ export default function ScraperQueuePage() {
                       key={`${item.username}-${item.suggestedBy}`}
                       className="mb-3"
                     >
-                      <QueueItem item={item} />
+                      <ScraperQueueItemCard item={item} />
                     </div>
                   ))}
                 </CardContent>

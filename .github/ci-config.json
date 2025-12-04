@@ -7,26 +7,18 @@
       "pr_preview": true
     },
     "torus-wallet": {
-      "deploys": [
-        "torus-cache"
-      ],
+      "deploys": ["torus-cache"],
       "pr_preview": true
     },
     "torus-allocator": {
-      "deploys": [
-        "torus-cache",
-        "torus-worker"
-      ],
+      "deploys": ["torus-cache", "torus-worker"],
       "pr_preview": true
     },
     "torus-bridge": {
       "pr_preview": true
     },
     "torus-governance": {
-      "deploys": [
-        "torus-cache",
-        "torus-worker"
-      ],
+      "deploys": ["torus-cache", "torus-worker"],
       "pr_preview": true
     },
     "torus-cache": {
@@ -61,6 +53,10 @@
       "prod_only": true
     },
     "torus-swarm-services": {
+      "pr_preview": false,
+      "prod_only": false
+    },
+    "prediction-swarm-api": {
       "pr_preview": false,
       "prod_only": false
     }
