@@ -107,6 +107,16 @@ jobs:
           echo "Package paths:"
           echo "$package_paths" | jq '.'
 
+          # Get paths for ALL packages
+          all_package_paths=$(pnpm exec turbo run build --dry-run=json 2>/dev/null | jq -c '
+            [.tasks[] | {key: .package, value: (.directory | split("/")[0])}]
+            | unique_by(.key)
+            | from_entries
+          ')
+          echo "all_package_paths=$all_package_paths" >> $GITHUB_OUTPUT
+          echo "All package paths:"
+          echo "$all_package_paths" | jq '.'
+
       - name: Filter changed apps
         id: changed
         run: |
@@ -182,13 +192,8 @@ jobs:
 
           preview_domains=$(echo "$config" | jq -c '[.apps | to_entries[] | select(.value.preview_domain != null) | {key: .key, value: .value.preview_domain}] | from_entries')
 
-          # Get package paths from turbo output, with fallback to "services" for packages not in turbo output
-          turbo_paths='${{ steps.turbo.outputs.package_paths }}'
-          # Merge with defaults for any packages not in turbo output (e.g., dependent services that weren't changed)
-          package_paths=$(echo "$turbo_paths" | jq -c --argjson all_apps "$all_apps" '
-            . as $paths |
-            ($all_apps | map({key: ., value: "services"}) | from_entries) * $paths
-          ')
+          # Use complete package paths from turbo
+          package_paths='${{ steps.turbo.outputs.all_package_paths }}'
 
           echo "deploy_matrix=$deploy_json" >> $GITHUB_OUTPUT
           echo "pr_preview_matrix=$pr_json" >> $GITHUB_OUTPUT
