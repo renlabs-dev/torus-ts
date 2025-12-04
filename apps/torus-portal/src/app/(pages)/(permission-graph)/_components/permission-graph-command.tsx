@@ -173,11 +173,10 @@ export function PermissionGraphCommand() {
   const getFormattedAddress = useCallback(
     (address: string | undefined, length = 8) => {
       if (!address) return "Unknown";
-      const agentName = agentNamesMap?.get(address);
-      if (agentName) {
-        return `${agentName} (${smallAddress(address, length)})`;
-      }
-      return smallAddress(address, length);
+      const agentName = agentNamesMap?.[address];
+      return agentName
+        ? `${agentName} (${smallAddress(address, length)})`
+        : smallAddress(address, length);
     },
     [agentNamesMap],
   );

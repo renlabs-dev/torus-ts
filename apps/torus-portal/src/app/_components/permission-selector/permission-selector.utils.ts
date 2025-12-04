@@ -164,16 +164,19 @@ export function getPrimaryRoleBadge(
  */
 export function formatAddressWithAgentName(
   address: string | undefined,
-  agentNamesMap: Map<string, string> | undefined,
+  agentNamesMap: Map<string, string> | Record<string, string> | undefined,
   addressLength: number = 8,
 ): string {
   if (!address) return "Unknown Address";
 
-  const agentName = agentNamesMap?.get(address);
-  if (agentName) {
-    return `${agentName} (${smallAddress(address, addressLength)})`;
-  }
-  return smallAddress(address, addressLength);
+  const agentName =
+    agentNamesMap instanceof Map
+      ? agentNamesMap.get(address)
+      : agentNamesMap?.[address];
+
+  return agentName
+    ? `${agentName} (${smallAddress(address, addressLength)})`
+    : smallAddress(address, addressLength);
 }
 
 /**

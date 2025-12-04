@@ -348,7 +348,7 @@ export const agentRouter = {
     .input(z.object({ keys: z.array(z.string()) }))
     .query(async ({ ctx, input }) => {
       if (input.keys.length === 0) {
-        return new Map<string, string>();
+        return {} as Record<string, string>;
       }
 
       const lastBlock = await ctx.db
@@ -357,7 +357,7 @@ export const agentRouter = {
         .limit(1);
 
       if (!lastBlock[0]?.value) {
-        return new Map<string, string>();
+        return {} as Record<string, string>;
       }
 
       const results = await ctx.db
@@ -371,10 +371,10 @@ export const agentRouter = {
           ),
         );
 
-      const nameMap = new Map<string, string>();
+      const nameMap: Record<string, string> = {};
       results.forEach((agent) => {
         if (agent.name) {
-          nameMap.set(agent.key, agent.name);
+          nameMap[agent.key] = agent.name;
         }
       });
 
