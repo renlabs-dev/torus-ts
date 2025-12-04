@@ -58,17 +58,6 @@ async function runDistribution() {
 
   log.info("Scores calculated", { recipients: scores.size });
 
-  const [saveErr] = await tryAsync(
-    saveDistribution(scores, env.SWARM_PERMISSION_ID),
-  );
-
-  if (saveErr) {
-    log.error("Failed to save distribution", { error: saveErr });
-    throw saveErr;
-  }
-
-  log.info("Distribution saved");
-
   log.info("Connecting to blockchain", {
     rpcUrl: env.NEXT_PUBLIC_TORUS_RPC_URL,
   });
@@ -131,7 +120,18 @@ async function runDistribution() {
     log.info("Total accumulated", { amount: totalAccumulated.toString() });
 
     if (totalAccumulated === BigInt(0)) {
-      log.info("No accumulated amount, skipping");
+      log.info("No accumulated amount, skipping distribution");
+
+      const [saveErr] = await tryAsync(
+        saveDistribution(new Map(), env.SWARM_PERMISSION_ID),
+      );
+
+      if (saveErr) {
+        log.error("Failed to save skipped distribution", { error: saveErr });
+      } else {
+        log.info("Skipped distribution saved");
+      }
+
       await api.disconnect();
       return;
     }
@@ -264,6 +264,17 @@ async function runDistribution() {
     }
 
     log.info("Permission executed");
+
+    const [saveErr] = await tryAsync(
+      saveDistribution(scores, env.SWARM_PERMISSION_ID),
+    );
+
+    if (saveErr) {
+      log.error("Failed to save distribution", { error: saveErr });
+      throw saveErr;
+    }
+
+    log.info("Distribution saved");
   } finally {
     await api.disconnect();
   }
@@ -313,7 +324,7 @@ async function runDistributionService() {
         await runDistribution();
         log.info("Distribution completed");
       } else {
-        const sleepTime = nextRunTime.getTime() + intervalMs - Date.now();
+        const sleepTime = nextRunTime.getTime() - Date.now();
         const sleepMinutes = Math.round(sleepTime / 1000 / 60);
         log.info("Sleeping until next distribution", {
           minutes: sleepMinutes,
