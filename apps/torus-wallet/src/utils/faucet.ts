@@ -4,6 +4,8 @@ import type { DispatchError } from "@polkadot/types/interfaces";
 import { u8aToHex } from "@polkadot/util";
 import { decodeAddress } from "@polkadot/util-crypto";
 import { queryLastBlock } from "@torus-network/sdk/chain";
+import { tryAsync } from "@torus-network/torus-utils/try-catch";
+import { assert } from "tsafe";
 
 interface WorkResult {
   hash: Uint8Array;
@@ -11,19 +13,41 @@ interface WorkResult {
   block: number;
 }
 
+/**
+ * Error thrown when the faucet work block is too old or in the future.
+ * This is a recoverable error that should trigger a retry with a fresh block.
+ */
+export class InvalidWorkBlockError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "InvalidWorkBlockError";
+  }
+}
+
+interface BlockData {
+  blockHash: Uint8Array;
+  blockNumber: number;
+}
+
+interface WorkerMessageData {
+  nonce: Buffer;
+  hash: Buffer;
+  blockNumber: number;
+}
+
 class MultiWorkerManager {
-  private workers: Worker[] = [];
-  private workerCount: number;
-  private decodedAddress: Uint8Array;
-  private currentBlockData: { blockHash: Uint8Array; blockNumber: number };
-  private onFound: (result: WorkResult) => Promise<void> | void;
-  private onError?: (err: ErrorEvent) => Promise<void> | void;
+  private readonly workers: Worker[] = [];
+  private readonly workerCount: number;
+  private readonly decodedAddress: Uint8Array;
+  private readonly onFound: (result: WorkResult) => Promise<void> | void;
+  private readonly onError?: (err: ErrorEvent) => Promise<void> | void;
+  private currentBlockData: BlockData;
   private found = false;
 
   constructor(
     workerCount: number,
     decodedAddress: Uint8Array,
-    initialBlockData: { blockHash: Uint8Array; blockNumber: number },
+    initialBlockData: BlockData,
     onFound: (result: WorkResult) => Promise<void> | void,
     onError?: (err: ErrorEvent) => Promise<void> | void,
   ) {
@@ -36,47 +60,51 @@ class MultiWorkerManager {
 
   start() {
     this.found = false;
+
     for (let i = 0; i < this.workerCount; i++) {
-      // TODO: check if we can inject the faucet worker code from the bundler
-      // instead of using a static file
-      const worker = new window.Worker("/faucetWorker.js");
-
-      worker.onmessage = async (e) => {
-        if (this.found) return; // already found, ignore
-
-        this.found = true;
-        const { nonce, hash, blockNumber } = e.data as {
-          nonce: Buffer;
-          hash: Buffer;
-          blockNumber: number;
-        };
-
-        this.terminateAll();
-        await this.onFound({
-          nonce: new Uint8Array(nonce),
-          hash: new Uint8Array(hash),
-          block: blockNumber,
-        });
-      };
-
-      worker.onerror = async (err) => {
-        if (this.onError) await this.onError(err);
-      };
-
-      worker.postMessage({
-        type: "start",
-        blockData: {
-          blockHash: Array.from(this.currentBlockData.blockHash),
-          blockNumber: this.currentBlockData.blockNumber,
-        },
-        decodedAddress: Array.from(this.decodedAddress),
-      });
-
+      const worker = this.createWorker();
       this.workers.push(worker);
     }
   }
 
-  updateBlock(newBlockData: { blockHash: Uint8Array; blockNumber: number }) {
+  private createWorker(): Worker {
+    // TODO: check if we can inject the faucet worker code from the bundler
+    // instead of using a static file
+    const worker = new window.Worker("/faucetWorker.js");
+
+    worker.onmessage = async (e) => {
+      if (this.found) return;
+
+      this.found = true;
+      const data = e.data as WorkerMessageData;
+
+      this.terminateAll();
+      await this.onFound({
+        nonce: new Uint8Array(data.nonce),
+        hash: new Uint8Array(data.hash),
+        block: data.blockNumber,
+      });
+    };
+
+    worker.onerror = async (err) => {
+      if (!this.onError) return;
+      this.terminateAll();
+      await this.onError(err);
+    };
+
+    worker.postMessage({
+      type: "start",
+      blockData: {
+        blockHash: Array.from(this.currentBlockData.blockHash),
+        blockNumber: this.currentBlockData.blockNumber,
+      },
+      decodedAddress: Array.from(this.decodedAddress),
+    });
+
+    return worker;
+  }
+
+  updateBlock(newBlockData: BlockData) {
     this.currentBlockData = newBlockData;
     this.found = false;
 
@@ -95,52 +123,143 @@ class MultiWorkerManager {
     for (const worker of this.workers) {
       worker.terminate();
     }
-    this.workers = [];
+    this.workers.length = 0;
   }
 }
 
+const DEFAULT_WORKER_COUNT = 4;
+
+function getWorkerCount(): number {
+  return navigator.hardwareConcurrency || DEFAULT_WORKER_COUNT;
+}
+
+function createUnsubscribeHandler(unsubscribe: VoidFn | undefined): () => void {
+  return () => {
+    if (!unsubscribe) return;
+    unsubscribe();
+  };
+}
+
 export function doWork(api: ApiPromise, address: string): Promise<WorkResult> {
-  return new Promise((resolve, _reject) => {
+  return new Promise((resolve, reject) => {
     let unsubscribe: VoidFn | undefined;
+    let manager: MultiWorkerManager | undefined;
+
+    const cleanup = () => {
+      createUnsubscribeHandler(unsubscribe)();
+      if (manager) {
+        manager.terminateAll();
+      }
+    };
 
     void (async () => {
-      try {
-        const currentBlockData = await queryLastBlock(api);
-        const decodedAddress = decodeAddress(address);
+      const [blockError, currentBlockData] = await tryAsync(
+        queryLastBlock(api),
+      );
+      if (blockError !== undefined) {
+        cleanup();
+        reject(new Error(`Failed to query block: ${blockError.message}`));
+        return;
+      }
 
-        const onFound = (workResult: WorkResult) => {
-          if (unsubscribe) {
-            unsubscribe();
-          }
-          resolve(workResult);
-        };
+      const decodedAddress = decodeAddress(address);
+      const workerCount = getWorkerCount();
 
-        const workerCount = navigator.hardwareConcurrency || 4;
+      console.log(`Executing with ${workerCount} workers.`);
 
-        console.log(`Executing with ${workerCount} workers.`);
+      const onFound = (workResult: WorkResult) => {
+        cleanup();
+        resolve(workResult);
+      };
 
-        const manager = new MultiWorkerManager(
-          workerCount,
-          decodedAddress,
-          currentBlockData,
-          onFound,
-        );
+      const onError = (err: ErrorEvent) => {
+        cleanup();
+        reject(new Error(`Worker error: ${err.message}`));
+      };
 
-        manager.start();
+      manager = new MultiWorkerManager(
+        workerCount,
+        decodedAddress,
+        currentBlockData,
+        onFound,
+        onError,
+      );
 
-        unsubscribe = await api.rpc.chain.subscribeNewHeads((head) => {
+      manager.start();
+
+      const [subscribeError, subscription] = await tryAsync(
+        api.rpc.chain.subscribeNewHeads((head) => {
+          assert(
+            manager !== undefined,
+            "Manager should be defined when subscription callback is invoked",
+          );
           manager.updateBlock({
             blockHash: head.hash,
             blockNumber: head.number.toNumber(),
           });
-        });
-      } finally {
-        if (unsubscribe) {
-          unsubscribe();
-        }
+        }),
+      );
+
+      if (subscribeError !== undefined) {
+        cleanup();
+        reject(
+          new Error(`Failed to subscribe to blocks: ${subscribeError.message}`),
+        );
+        return;
       }
+
+      unsubscribe = subscription;
     })();
   });
+}
+
+function handleModuleError(
+  api: ApiPromise,
+  dispatchError: DispatchError,
+): Error {
+  const decoded = api.registry.findMetaError(dispatchError.asModule);
+  const errorMessage = `${decoded.section}.${decoded.name} - ${decoded.docs.join(" ")}`;
+
+  if (decoded.section === "faucet" && decoded.name === "InvalidWorkBlock") {
+    return new InvalidWorkBlockError(errorMessage);
+  }
+
+  console.error(`Error: ${errorMessage}`);
+  return new Error("Transaction Failed.");
+}
+
+function handleDispatchError(
+  api: ApiPromise,
+  dispatchError: DispatchError,
+): Error {
+  if (dispatchError.isModule) {
+    return handleModuleError(api, dispatchError);
+  }
+
+  const errorMessage = dispatchError.toString();
+  console.error("Error:", errorMessage);
+  return new Error("Transaction Failed.");
+}
+
+function handleExtrinsicFailed(
+  api: ApiPromise,
+  data: unknown,
+  reject: (error: Error) => void,
+  unsubscribe: VoidFn,
+): void {
+  const [dispatchError] = data as [DispatchError];
+  const error = handleDispatchError(api, dispatchError);
+  unsubscribe();
+  reject(error);
+}
+
+function handleExtrinsicSuccess(
+  resolve: () => void,
+  unsubscribe: VoidFn,
+): void {
+  console.log("Transaction succeeded");
+  unsubscribe();
+  resolve();
 }
 
 export function callFaucetExtrinsic(
@@ -150,53 +269,65 @@ export function callFaucetExtrinsic(
 ): Promise<void> {
   return new Promise((resolve, reject) => {
     void (async () => {
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      const call = api.tx.faucet!.faucet!(
+      const call = api.tx.faucet?.faucet?.(
         workResult.block,
         workResult.nonce,
-        // ! Had to send this as a hex 'cause when it was being sent as a Uint8Array the chain was getting an empty vec.
         u8aToHex(workResult.hash),
         address,
       );
 
-      const unsubscribe = await call.send((result) => {
-        if (result.status.isInBlock) {
-          console.log(
-            "Included at block hash",
-            result.status.asInBlock.toHex(),
-          );
-        } else if (result.status.isFinalized) {
+      if (!call) {
+        reject(new Error("Faucet extrinsic not available"));
+        return;
+      }
+
+      const [sendError, unsubscribe] = await tryAsync(
+        call.send((result) => {
+          if (result.status.isInBlock) {
+            console.log(
+              "Included at block hash",
+              result.status.asInBlock.toHex(),
+            );
+            return;
+          }
+
+          if (!result.status.isFinalized) return;
+
           console.log(
             "Finalized block hash",
             result.status.asFinalized.toHex(),
           );
 
-          result.events.forEach(({ event: { method, section, data } }) => {
+          for (const {
+            event: { method, section, data },
+          } of result.events) {
             if (section === "system" && method === "ExtrinsicFailed") {
-              const [dispatchError] = data as unknown as [DispatchError];
-
-              if (dispatchError.isModule) {
-                const decoded = api.registry.findMetaError(
-                  dispatchError.asModule,
-                );
-                const { section, name, docs } = decoded;
-                console.error(
-                  `❌ Error: ${section}.${name} - ${docs.join(" ")}`,
-                );
-              } else {
-                console.error("❌ Error:", dispatchError.toString());
-              }
-
-              reject(new Error("Transaction Failed."));
-            } else if (section === "system" && method === "ExtrinsicSuccess") {
-              resolve();
-              console.log("✅ Transaction succeeded");
+              assert(
+                unsubscribe !== undefined,
+                "Unsubscribe should be defined when handling extrinsic failed",
+              );
+              handleExtrinsicFailed(api, data, reject, unsubscribe);
+              break;
             }
-          });
 
-          unsubscribe();
-        }
-      });
+            if (section === "system" && method === "ExtrinsicSuccess") {
+              assert(
+                unsubscribe !== undefined,
+                "Unsubscribe should be defined when handling extrinsic success",
+              );
+              handleExtrinsicSuccess(resolve, unsubscribe);
+              break;
+            }
+          }
+        }),
+      );
+
+      if (sendError !== undefined) {
+        reject(
+          new Error(`Failed to send faucet extrinsic: ${sendError.message}`),
+        );
+        return;
+      }
     })();
   });
 }
