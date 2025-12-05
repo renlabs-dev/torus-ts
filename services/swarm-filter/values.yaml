@@ -47,10 +47,6 @@ deployment:
         secretKeyRef:
           name: "torus-{{ .Values.environmentName }}-web-apps-secret"
           key: prediction_swarm_db_url
-    API_URL:
-      value: https://predictionswarm.com/
-    AUTH_ORIGIN:
-      value: validator.torus.network
     FILTER_AGENT_MNEMONIC:
       valueFrom:
         secretKeyRef:
