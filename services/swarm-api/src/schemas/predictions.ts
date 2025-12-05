@@ -29,6 +29,14 @@ const postSliceSchema = z.object({
   end: z.number(),
 });
 
+const decimalSchema = z.string().refine(
+  (val) => {
+    const num = parseFloat(val);
+    return !isNaN(num) && num >= 0 && num <= 1;
+  },
+  { message: "Must be a decimal string between 0 and 1" },
+);
+
 export const PARSED_PREDICTION_INSERT_SCHEMA = createInsertSchema(
   parsedPredictionSchema,
 )
@@ -44,11 +52,15 @@ export const PARSED_PREDICTION_INSERT_SCHEMA = createInsertSchema(
     target: true,
     timeframe: true,
     context: true,
+    llmConfidence: true,
+    vagueness: true,
   })
   .extend({
     target: z.array(postSliceSchema),
     timeframe: z.array(postSliceSchema),
     context: ContextSchema.optional(),
+    llmConfidence: decimalSchema,
+    vagueness: decimalSchema.optional(),
   });
 
 export const predictionContentSchema = z.object({
