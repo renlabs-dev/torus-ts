@@ -1,5 +1,4 @@
 import { blake2AsHex } from "@polkadot/util-crypto";
-import type { RouterInputs, RouterOutputs } from "@torus-ts/api";
 import {
   getContextSchemaForTopic,
   omitContextMetadata,
@@ -8,6 +7,11 @@ import canonicalize from "canonicalize";
 import he from "he";
 import { z } from "zod";
 import type { PromptLoader } from "../ai/prompt-loader";
+import type {
+  GetTweetsNextResponse,
+  StorePredictionItem,
+  Tweet,
+} from "../elysia-api-client";
 import {
   createLLMPredictionResponseSchema,
   PredictionCheckSchema,
@@ -34,12 +38,9 @@ export interface PredictionExtractorConfig {
   signerAddress: string;
 }
 
-type TweetsNextResponse = RouterOutputs["prophet"]["getTweetsNext"];
-type TweetsArray = TweetsNextResponse["tweets"];
-type TweetWithContext = TweetsArray[number];
-type TweetData = TweetWithContext["main"];
-type StorePredictionsInput = RouterInputs["prophet"]["storePredictions"];
-type ExtractedPrediction = StorePredictionsInput[number];
+type TweetsArray = GetTweetsNextResponse["tweets"];
+type TweetData = Tweet;
+type ExtractedPrediction = StorePredictionItem;
 
 /**
  * Prediction Extractor Service
@@ -289,7 +290,6 @@ export class PredictionExtractor {
       );
     }
 
-    // Return extracted data in format expected by tRPC storePredictions
     const content = {
       tweetId: mainTweet.id,
       sentAt: new Date().toISOString(),
@@ -300,7 +300,7 @@ export class PredictionExtractor {
         predictionQuality: predictionData.predictionQuality,
         briefRationale: predictionData.briefRationale,
         llmConfidence: predictionData.llmConfidence,
-        vagueness: predictionData.vagueness ?? null,
+        vagueness: predictionData.vagueness ?? undefined,
         context: predictionData.context,
       },
     };
