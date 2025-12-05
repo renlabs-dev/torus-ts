@@ -11,6 +11,7 @@ import { zodToJsonSchema } from "zod-to-json-schema";
 import { createAppContext } from "./context";
 import { getEnv } from "./env";
 import { authPlugin, requirePermission } from "./middleware/auth";
+import { creditsRouter } from "./routes/credits";
 import { predictionsRouter } from "./routes/predictions";
 import { tweetsRouter } from "./routes/tweets";
 import { createSignedError, HttpError } from "./utils/errors";
@@ -129,6 +130,10 @@ export async function createServer() {
           tags: [
             { name: "tweets", description: "Tweet operations" },
             { name: "predictions", description: "Prediction operations" },
+            {
+              name: "credits",
+              description: "Credit balance and purchase operations",
+            },
           ],
         },
       }),
@@ -186,5 +191,6 @@ export async function createServer() {
     })
     .use(requirePermission(["prediction.filter"], context.permissionCache))
     .use(tweetsRouter)
-    .use(predictionsRouter);
+    .use(predictionsRouter)
+    .use(creditsRouter);
 }
