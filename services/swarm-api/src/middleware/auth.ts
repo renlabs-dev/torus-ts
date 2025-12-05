@@ -18,13 +18,15 @@ const authHeadersSchema = z.object({
   }),
 });
 
+type ParsedAuthHeaders = z.infer<typeof authHeadersSchema>;
+
 export const authPlugin = (app: Elysia) =>
   app
     .guard({
       headers: authHeadersSchema,
     })
     .resolve({ as: "scoped" }, ({ headers }) => {
-      const parsedHeaders = authHeadersSchema.parse(headers);
+      const parsedHeaders = headers as unknown as ParsedAuthHeaders;
       const agentAddress = parsedHeaders["x-agent-address"];
       const signature = parsedHeaders["x-signature"];
       const timestamp = parsedHeaders["x-timestamp"];

@@ -12,8 +12,8 @@ import { BasicLogger } from "@torus-network/torus-utils/logger";
 import { z } from "zod";
 import { OpenRouterClient } from "./ai/openrouter-client";
 import { PromptLoader } from "./ai/prompt-loader";
-import { RefreshingAPIClient } from "./api-client";
 import { getFilterCursor, updateFilterCursor } from "./cursor-storage";
+import { ElysiaAPIClient } from "./elysia-api-client";
 import { PredictionExtractor } from "./services/prediction-extractor";
 import { withRetry } from "./utils/retry";
 
@@ -32,8 +32,7 @@ const getEnv = validateEnvOrExit({
     .string()
     .default("anthropic/claude-sonnet-4.5"),
   FILTER_AGENT_MNEMONIC: z.string().min(1, "FILTER_AGENT_MNEMONIC is required"),
-  API_URL: z.string().url().default("http://localhost:3004"),
-  AUTH_ORIGIN: z.string().default("swarm-filter"),
+  API_URL: z.string().url().default("https://api.predictionswarm.com"),
   BATCH_SIZE: z.coerce.number().int().positive().default(24),
   POLL_INTERVAL_MS: z.coerce.number().int().positive().default(60000), // 1 minute
 });
@@ -60,9 +59,8 @@ async function main() {
     return u8aToHex(signature);
   };
 
-  const api = await RefreshingAPIClient.create(
+  const api = await ElysiaAPIClient.create(
     env.API_URL,
-    env.AUTH_ORIGIN,
     env.FILTER_AGENT_MNEMONIC,
   );
 
