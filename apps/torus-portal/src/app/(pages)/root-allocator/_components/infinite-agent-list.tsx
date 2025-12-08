@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from "react";
 import type { RouterOutputs } from "@torus-ts/api";
 import { AgentItemSkeleton } from "@torus-ts/ui/components/agent-card/agent-card-skeleton-loader";
 import { InfiniteList } from "@torus-ts/ui/components/infinite-list";
@@ -44,6 +45,13 @@ export function InfiniteAgentList({
     },
   );
 
+  // Log error to console and treat as empty list
+  useEffect(() => {
+    if (error) {
+      console.error("Error loading agents:", error.message);
+    }
+  }, [error]);
+
   const agents: AgentType[] =
     data?.pages.flatMap((page: InfiniteAgentData) => page.agents) ?? [];
 
@@ -69,7 +77,7 @@ export function InfiniteAgentList({
       isFetchingNextPage={isFetchingNextPage}
       isLoading={isLoading}
       fetchNextPage={() => void fetchNextPage()}
-      error={error ? new Error(error.message) : null}
+      error={null}
       gridClassName="grid-cols-1 lg:grid-cols-2 xl:grid-cols-3"
       skeletonComponent={<AgentItemSkeleton />}
       skeletonCount={9}
@@ -78,11 +86,6 @@ export function InfiniteAgentList({
           <p className="text-zinc-400">No agents found.</p>
         </div>
       }
-      errorComponent={(err) => (
-        <div className="flex w-full justify-center py-8">
-          <p className="text-red-500">Error loading agents: {err.message}</p>
-        </div>
-      )}
     />
   );
 }

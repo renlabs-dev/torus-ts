@@ -25,8 +25,11 @@ import { createHashSigner } from "./auth/sign";
 
 let globalDb: ReturnType<typeof createDb> | null = null;
 let globalWsApi: ApiPromise | null = null;
+let globalWsApiPromise: Promise<ApiPromise> | null = null;
 let globalTwitterClient: KaitoTwitterAPI | null = null;
 let globalServerHashSigner: ((hash: string) => string) | null = null;
+let globalServerHashSignerPromise: Promise<(hash: string) => string> | null =
+  null;
 
 /**
  * Environment schema for tRPC context
@@ -34,7 +37,7 @@ let globalServerHashSigner: ((hash: string) => string) | null = null;
 const envSchema = {
   NEXT_PUBLIC_TORUS_RPC_URL: z
     .string()
-    .nonempty("TORUS_CURATOR_MNEMONIC is required"),
+    .nonempty("NEXT_PUBLIC_TORUS_RPC_URL is required"),
   NEXT_PUBLIC_PREDICTION_APP_ADDRESS: z
     .string()
     .min(
@@ -92,27 +95,39 @@ function cacheCreateDb() {
 
 // TODO: better error and connection handling
 async function cacheCreateWsApi(): Promise<ApiPromise> {
+  // Return cached result if available
   if (globalWsApi !== null) {
     return globalWsApi;
   }
 
-  const env = getEnv();
-  const [error, api] = await tryAsync(
-    connectToChainRpc(env.NEXT_PUBLIC_TORUS_RPC_URL),
-  );
-
-  if (error !== undefined) {
-    console.error("Failed to connect to Chain RPC:", error.message);
-    throw new TRPCError({
-      code: "INTERNAL_SERVER_ERROR",
-      message: "Failed to initialize blockchain connection",
-      cause: error,
-    });
+  // Return in-flight promise to prevent race conditions
+  if (globalWsApiPromise !== null) {
+    return globalWsApiPromise;
   }
 
-  // After error check, api is guaranteed to be defined by Result<T,E> type
-  globalWsApi = api;
-  return globalWsApi;
+  // Create and cache the promise to prevent concurrent connection attempts
+  globalWsApiPromise = (async () => {
+    const env = getEnv();
+    const [error, api] = await tryAsync(
+      connectToChainRpc(env.NEXT_PUBLIC_TORUS_RPC_URL),
+    );
+
+    if (error !== undefined) {
+      globalWsApiPromise = null; // Clear promise on error to allow retry
+      console.error("Failed to connect to Chain RPC:", error.message);
+      throw new TRPCError({
+        code: "INTERNAL_SERVER_ERROR",
+        message: "Failed to initialize blockchain connection",
+        cause: error,
+      });
+    }
+
+    // After error check, api is guaranteed to be defined by Result<T,E> type
+    globalWsApi = api;
+    return globalWsApi;
+  })();
+
+  return globalWsApiPromise;
 }
 
 // Lazy init Twitter client
@@ -143,27 +158,39 @@ function getorCreateTwitterClient() {
 async function getOrCreateServerHashSigner(): Promise<
   (hash: string) => string
 > {
+  // Return cached result if available
   if (globalServerHashSigner !== null) {
     return globalServerHashSigner;
   }
 
-  const env = getEnv();
-  const [error, signer] = await tryAsync(
-    createHashSigner(env.PREDICTION_APP_MNEMONIC),
-  );
-
-  if (error !== undefined) {
-    console.error("Failed to create hash signer:", error.message);
-    throw new TRPCError({
-      code: "INTERNAL_SERVER_ERROR",
-      message: "Failed to initialize signature signer",
-      cause: error,
-    });
+  // Return in-flight promise to prevent race conditions
+  if (globalServerHashSignerPromise !== null) {
+    return globalServerHashSignerPromise;
   }
 
-  // After error check, signer is guaranteed to be defined by Result<T,E> type
-  globalServerHashSigner = signer;
-  return globalServerHashSigner;
+  // Create and cache the promise to prevent concurrent creation attempts
+  globalServerHashSignerPromise = (async () => {
+    const env = getEnv();
+    const [error, signer] = await tryAsync(
+      createHashSigner(env.PREDICTION_APP_MNEMONIC),
+    );
+
+    if (error !== undefined) {
+      globalServerHashSignerPromise = null; // Clear promise on error to allow retry
+      console.error("Failed to create hash signer:", error.message);
+      throw new TRPCError({
+        code: "INTERNAL_SERVER_ERROR",
+        message: "Failed to initialize signature signer",
+        cause: error,
+      });
+    }
+
+    // After error check, signer is guaranteed to be defined by Result<T,E> type
+    globalServerHashSigner = signer;
+    return globalServerHashSigner;
+  })();
+
+  return globalServerHashSignerPromise;
 }
 
 /**
