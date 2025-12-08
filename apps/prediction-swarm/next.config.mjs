@@ -20,8 +20,10 @@ const config = {
     ],
   },
 
-  /** We already do linting and typechecking as separate tasks in CI */
-  eslint: { ignoreDuringBuilds: true },
+  // Disabled: React Compiler breaks tRPC proxy-based APIs
+  // reactCompiler: true,
+
+  /** We already do typechecking as separate task in CI */
   typescript: { ignoreBuildErrors: true },
 };
 
