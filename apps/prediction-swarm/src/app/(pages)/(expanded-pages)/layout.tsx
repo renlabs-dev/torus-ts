@@ -1,5 +1,5 @@
-import Dither from "~/app/_components/dither";
-import { PageNavigation } from "~/app/_components/page-navigation";
+import { DitherBackgroundAnimation } from "~/app/_components/dither-background-animation";
+import { PageNavigation } from "~/app/_components/page-navigation/page-navigation";
 
 export default function RootLayout({
   children,
@@ -11,7 +11,7 @@ export default function RootLayout({
       <PageNavigation />
       {children}{" "}
       <div className="fixed inset-0 -z-10 opacity-30">
-        <Dither
+        <DitherBackgroundAnimation
           pixelSize={1}
           waveSpeed={0.01}
           waveFrequency={4}

@@ -7,6 +7,11 @@ on:
       app_name:
         required: true
         type: string
+      app_path:
+        required: false
+        description: "Path to app directory (apps or services)"
+        type: string
+        default: "apps"
 
 concurrency:
   group: ${{ github.workflow }}-${{ inputs.app_name }}-${{ github.ref }}
@@ -64,6 +69,7 @@ jobs:
           cache-to: type=gha,mode=max
           build-args: |
             APP_NAME=${{ inputs.app_name }}
+            APP_PATH=${{ inputs.app_path }}
             TURBO_API=${{ vars.TURBO_API }}
             TURBO_TEAM=${{ vars.TURBO_TEAM }}
             TURBO_TOKEN=${{ secrets.TURBO_TOKEN }}

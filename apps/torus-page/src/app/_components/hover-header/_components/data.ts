@@ -70,10 +70,10 @@ export const CONTENT = {
     ],
     network: [
       { text: "Docs", href: links.docs },
-      { text: "Portal", href: links.portal },
+      { text: "Join", href: links.portal },
       { text: "DAO", href: links.governance },
     ],
-    common: [{ text: "Join", href: links.discord }],
+    common: [{ text: "Portal", href: links.discord }],
   },
   mobileButtons: [
     [
@@ -86,9 +86,9 @@ export const CONTENT = {
     ],
     [
       { text: "DAO", href: links.governance },
-      { text: "Allocator", href: links.allocator },
+      { text: "Join", href: links.discord },
       { text: "Docs", href: links.docs },
     ],
-    [{ text: "Join", href: links.discord }],
+    [{ text: "Portal", href: links.portal }],
   ],
 };

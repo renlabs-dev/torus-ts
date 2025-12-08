@@ -1,13 +1,17 @@
-import { Card } from "@torus-ts/ui/components/card";
-import { ScrollArea } from "@torus-ts/ui/components/scroll-area";
-import { cn } from "@torus-ts/ui/lib/utils";
+import { Button } from "@torus-ts/ui/components/button";
 import { CircleDotDashed, Diameter } from "lucide-react";
 import { motion } from "motion/react";
 import { CustomButton } from "../custom-button";
 import { ANIMATIONS, CONTENT } from "../data";
 
-export function ButtonsSectionMobile() {
-  const { mobileButtons, description } = CONTENT;
+interface ButtonsSectionMobileProps {
+  onAboutClick: () => void;
+}
+
+export function ButtonsSectionMobile({
+  onAboutClick,
+}: Readonly<ButtonsSectionMobileProps>) {
+  const { mobileButtons } = CONTENT;
 
   const buttonRows = [
     {
@@ -66,23 +70,19 @@ export function ButtonsSectionMobile() {
         ))}
       </div>
 
-      {/* Second Row With Card */}
+      {/* About Button */}
       <motion.div
         variants={ANIMATIONS.BUTTON}
-        custom={10}
-        className="absolute mt-52 w-full max-w-[46.5rem]"
+        custom={12}
+        className="absolute mt-[14rem] flex w-full justify-center"
       >
-        <Card className="mx-5 cursor-pointer overflow-hidden pb-4 pl-6 pr-4 pt-2 md:mx-0">
-          <ScrollArea className={cn("h-[calc(33vh)]")}>
-            <motion.div layout>
-              {description.map((paragraph, index) => (
-                <p key={index} className={index > 0 ? "mt-3" : ""}>
-                  {paragraph}
-                </p>
-              ))}
-            </motion.div>
-          </ScrollArea>
-        </Card>
+        <Button
+          className="bg-accent hover:bg-background rounded-full disabled:opacity-100"
+          onClick={onAboutClick}
+          variant="outline"
+        >
+          About
+        </Button>
       </motion.div>
     </motion.div>
   );

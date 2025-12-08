@@ -90,14 +90,14 @@ madge-dependencies-graph:
   #!/usr/bin/env bash
   shopt -s globstar
   mkdir -p tmp
-  pnpm dlx madge -i tmp/dependencies.svg packages/*/src/**/*.{ts,tsx} apps/*/src/**/*.{ts,tsx}
+  pnpm dlx madge -i tmp/dependencies.svg packages/*/src/**/*.{ts,tsx} apps/*/src/**/*.{ts,tsx} services/*/src/**/*.{ts,tsx}
 
 # Detect circular dependencies in the codebase
 # Exits with error code if circular dependencies are found
 madge-circular:
   #!/usr/bin/env bash
   shopt -s globstar
-  pnpm dlx madge -c packages/*/src/*.{ts,tsx} apps/*/src/**/*.{ts,tsx}
+  pnpm dlx madge -c packages/*/src/*.{ts,tsx} apps/*/src/**/*.{ts,tsx} services/*/src/**/*.{ts,tsx}
 
 # == Publishing ==
 
