@@ -2,15 +2,12 @@
 const config = {
   reactStrictMode: true,
 
-  experimental: {
-    reactCompiler: true,
-  },
+  reactCompiler: true,
 
   /** Enables hot reloading for local packages without a build step */
   transpilePackages: ["@torus-ts/ui", "@torus-ts/env-validation"],
 
-  /** We already do linting and typechecking as separate tasks in CI */
-  eslint: { ignoreDuringBuilds: true },
+  /** We already do typechecking as separate task in CI */
   typescript: { ignoreBuildErrors: true },
 };
 

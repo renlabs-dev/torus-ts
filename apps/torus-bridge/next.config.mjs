@@ -12,8 +12,9 @@ const config = {
   // Standalone output for optimized Docker builds (~50MB vs ~500MB)
   output: "standalone",
 
+  reactCompiler: true,
+
   experimental: {
-    reactCompiler: true,
     // Optimize imports for heavy packages - tree shaking
     optimizePackageImports: [
       "@hyperlane-xyz/sdk",
@@ -43,8 +44,7 @@ const config = {
   // Disable source maps in production for smaller bundles
   productionBrowserSourceMaps: false,
 
-  /** We already do linting and typechecking as separate tasks in CI */
-  eslint: { ignoreDuringBuilds: true },
+  /** We already do typechecking as separate task in CI */
   typescript: { ignoreBuildErrors: true },
 
   webpack: (config, { isServer }) => {

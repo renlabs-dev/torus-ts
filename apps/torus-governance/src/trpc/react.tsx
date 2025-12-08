@@ -1,6 +1,5 @@
 "use client";
 
-// TODO: modularize
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import type { AppRouter } from "@torus-ts/api";
 import { createAuthLink, makeAuthenticateUserFn } from "@torus-ts/api/client";
@@ -8,6 +7,7 @@ import { useTorus } from "@torus-ts/torus-provider";
 import { httpBatchLink, loggerLink } from "@trpc/client";
 import { createTRPCReact } from "@trpc/react-query";
 import { env } from "~/env";
+import { useState } from "react";
 import SuperJSON from "superjson";
 
 const createQueryClient = () =>
@@ -15,7 +15,6 @@ const createQueryClient = () =>
     defaultOptions: {
       queries: {
         staleTime: 30 * 1000,
-        // throwOnError: true, // TODO
       },
     },
   });
@@ -32,11 +31,20 @@ const getQueryClient = () => {
 
 export const api = createTRPCReact<AppRouter>();
 
-export function TRPCReactProvider({ children }: { children: React.ReactNode }) {
-  const queryClient = getQueryClient();
+const getBaseUrl = () => {
+  if (typeof window !== "undefined") return window.location.origin;
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+  return `http://localhost:${env("PORT") ?? 3000}`;
+};
 
-  const { signHex } = useTorus();
+// Create a singleton tRPC client outside React
+let trpcClientSingleton: ReturnType<typeof api.createClient> | undefined;
 
+function createTRPCClientInstance(
+  signHex: (
+    msgHex: `0x${string}`,
+  ) => Promise<{ signature: `0x${string}`; address: string }>,
+) {
   const getStoredAuthorization = () => localStorage.getItem("authorization");
   const setStoredAuthorization = (authorization: string) =>
     localStorage.setItem("authorization", authorization);
@@ -48,7 +56,7 @@ export function TRPCReactProvider({ children }: { children: React.ReactNode }) {
     signHex,
   );
 
-  const trpcClient = api.createClient({
+  return api.createClient({
     links: [
       createAuthLink(authenticateUser, getStoredAuthorization),
       loggerLink({
@@ -71,6 +79,24 @@ export function TRPCReactProvider({ children }: { children: React.ReactNode }) {
       }),
     ],
   });
+}
+
+export function TRPCReactProvider({ children }: { children: React.ReactNode }) {
+  const queryClient = getQueryClient();
+  const { signHex } = useTorus();
+
+  // Use useState to ensure client is created only once per mount
+  const [trpcClient] = useState(() => {
+    if (typeof window === "undefined") {
+      // Server-side: create new instance each time
+      return createTRPCClientInstance(signHex);
+    }
+    // Client-side: use singleton
+    if (!trpcClientSingleton) {
+      trpcClientSingleton = createTRPCClientInstance(signHex);
+    }
+    return trpcClientSingleton;
+  });
 
   return (
     <QueryClientProvider client={queryClient}>
@@ -80,9 +106,3 @@ export function TRPCReactProvider({ children }: { children: React.ReactNode }) {
     </QueryClientProvider>
   );
 }
-
-const getBaseUrl = () => {
-  if (typeof window !== "undefined") return window.location.origin;
-  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-  return `http://localhost:${env("PORT") ?? 3000}`;
-};

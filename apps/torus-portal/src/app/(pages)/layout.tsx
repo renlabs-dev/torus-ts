@@ -13,7 +13,7 @@ import SidebarContainer from "../_components/sidebar/sidebar-container";
 
 export function generateMetadata() {
   return createSeoMetadata({
-    title: "Prediction Swarm",
+    title: "Torus Portal",
     description:
       "Manage network permissions, agent allocations, and explore the hypergraph.",
     keywords: [
