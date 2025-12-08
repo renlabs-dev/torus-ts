@@ -4,6 +4,7 @@ import { fileURLToPath } from "url";
 import { cors } from "@elysiajs/cors";
 import { node } from "@elysiajs/node";
 import { openapi } from "@elysiajs/openapi";
+import { BasicLogger } from "@torus-network/torus-utils/logger";
 import { Elysia } from "elysia";
 import { Marked } from "marked";
 import { zodToJsonSchema } from "zod-to-json-schema";
@@ -109,6 +110,7 @@ ${apiDocsContent}
 export async function createServer() {
   const env = getEnv(process.env);
   const context = await createAppContext(env);
+  const logger = BasicLogger.create({ name: "swarm-api" });
 
   return new Elysia({ adapter: node() })
     .use(cors({ origin: true, methods: ["GET", "POST"] }))
@@ -136,6 +138,7 @@ export async function createServer() {
     .state("permissionCache", context.permissionCache)
     .state("serverSignHash", context.serverSignHash)
     .state("env", context.env)
+    .state("logger", logger)
     .derive(({ body, query }) => ({
       requestInput: body ?? query,
     }))
@@ -173,6 +176,14 @@ export async function createServer() {
     })
     .get("/health", () => ({ status: "ok" }))
     .use(authPlugin)
+    .onAfterHandle(({ request, set, userKey, store }) => {
+      const method = request.method;
+      const path = new URL(request.url).pathname;
+      const status = set.status;
+      const agentKey = userKey ? ` agent=${userKey}` : "";
+
+      store.logger.info(`${method} ${path} ${status}${agentKey}`);
+    })
     .use(requirePermission(["prediction.filter"], context.permissionCache))
     .use(tweetsRouter)
     .use(predictionsRouter);
