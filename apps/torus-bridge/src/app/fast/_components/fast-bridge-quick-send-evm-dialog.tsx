@@ -33,8 +33,8 @@ interface QuickSendEvmDialogProps {
 
 type TransferStatus = "idle" | "sending" | "success" | "error";
 
-// Gas reserve for EVM transactions: 0.005 TORUS (in 12 decimals = 5 * 10^15 wei)
-const GAS_RESERVE_WEI = 5n * 10n ** 15n;
+// Gas reserve for EVM transactions: 0.01 TORUS (aligned with standard bridge)
+const GAS_RESERVE_WEI = 10n ** 16n;
 
 // Dust threshold: 0.01 TORUS - balance below this is considered "near zero"
 const DUST_THRESHOLD_WEI = 10n ** 16n;
@@ -117,18 +117,22 @@ export function QuickSendEvmDialog({
     onRecoverySuccess,
   ]);
 
+  // Calculate sendable amount (balance - gas reserve)
+  const sendableAmount =
+    evmBalance > GAS_RESERVE_WEI ? evmBalance - GAS_RESERVE_WEI : 0n;
+
   const handleSend = async (destination: "native" | "base") => {
     setSelectedDestination(destination);
     setStatus("sending");
     setErrorMessage("");
 
-    // Save original values for consistent display
-    setOriginalAmount(evmBalance);
+    // Save the sendable amount for consistent display
+    setOriginalAmount(sendableAmount);
     setOriginalDestination(
       destination === "native" ? "Torus Native" : "Base Chain",
     );
 
-    // Send the exact amount shown in the dialog (evmBalance)
+    // Send the full balance - the handler will subtract gas reserve
     const sendPromise =
       destination === "native"
         ? onSendToNative(evmBalance)
@@ -291,8 +295,8 @@ export function QuickSendEvmDialog({
         </DialogHeader>
 
         <div className="space-y-6 py-4">
-          <Card className="border-border p-6 opacity-60">
-            <div className="flex flex-col gap-3">
+          <Card className="border-border p-6">
+            <div className="flex flex-col gap-4">
               <div className="flex items-center gap-2">
                 <Image
                   src="/assets/icons/balance/torus-evm.svg"
@@ -302,16 +306,26 @@ export function QuickSendEvmDialog({
                   className="flex-shrink-0"
                 />
                 <span className="text-muted-foreground text-xs font-medium uppercase tracking-wide">
-                  Total EVM Balance
+                  Amount to Send
                 </span>
               </div>
               <div className="flex items-baseline gap-2">
                 <span className="text-4xl font-bold">
-                  {formatAmount(evmBalance)}
+                  {formatAmount(sendableAmount)}
                 </span>
                 <span className="text-muted-foreground text-lg font-medium">
                   TORUS
                 </span>
+              </div>
+              <div className="text-muted-foreground border-t pt-3 text-xs">
+                <div className="flex justify-between">
+                  <span>Total Balance:</span>
+                  <span>{formatAmount(evmBalance)} TORUS</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Gas Reserve:</span>
+                  <span>{formatAmount(GAS_RESERVE_WEI)} TORUS</span>
+                </div>
               </div>
             </div>
           </Card>

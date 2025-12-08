@@ -22,6 +22,9 @@ import {
 } from "./fast-bridge-helpers";
 import { pollEvmBalance } from "./fast-bridge-polling";
 
+// Gas reserve for EVM transactions: 0.01 TORUS (aligned with standard bridge)
+const TORUS_EVM_GAS_RESERVE = 10n ** 16n;
+
 /**
  * Parameters for executing Step 1 of the Base-to-Native bridge flow.
  *
@@ -367,8 +370,6 @@ export async function executeBaseToNativeStep2(
     onStepProgress,
   } = params;
 
-  const amountRems = toNano(amount.trim());
-
   updateBridgeState({ step: SimpleBridgeStep.STEP_2_PREPARING });
   onStepProgress?.(SimpleBridgeStep.STEP_2_PREPARING);
   addTransaction({
@@ -444,13 +445,47 @@ export async function executeBaseToNativeStep2(
     throw new Error(`Torus EVM chain ${torusEvmChainId} not found in config`);
   }
 
+  // Fetch current EVM balance to calculate max withdrawable amount
+  const evmBalanceResult = await refetchTorusEvmBalance();
+  const currentEvmBalance = evmBalanceResult.data?.value ?? 0n;
+
+  // Calculate the requested amount in nano
+  const requestedAmountRems = toNano(amount.trim());
+
+  // Calculate max withdrawable amount (balance - gas reserve)
+  const maxWithdrawable =
+    currentEvmBalance > TORUS_EVM_GAS_RESERVE
+      ? currentEvmBalance - TORUS_EVM_GAS_RESERVE
+      : 0n;
+
+  // Use the minimum of requested amount and max withdrawable
+  // This ensures we always leave enough for gas fees
+  const amountRems =
+    requestedAmountRems <= maxWithdrawable
+      ? requestedAmountRems
+      : maxWithdrawable;
+
+  if (amountRems <= 0n) {
+    throw new Error(
+      "Insufficient EVM balance for withdrawal after gas reserve",
+    );
+  }
+
+  console.log(
+    `Withdrawal calculation - EVM Balance: ${Number(currentEvmBalance) / 1e18} TORUS, ` +
+      `Requested: ${Number(requestedAmountRems) / 1e18} TORUS, ` +
+      `Max Withdrawable: ${Number(maxWithdrawable) / 1e18} TORUS, ` +
+      `Actual Withdrawal: ${Number(amountRems) / 1e18} TORUS`,
+  );
+
   // Capture baseline balance BEFORE sending transaction
   const nativeRefetchResult = await refetchNativeBalance();
   const baselineNativeBalance = nativeRefetchResult.data?.value ?? 0n;
-  const expectedNativeIncrease = toNano(amount.trim());
+  // Expected increase is the amount we're actually withdrawing
+  const expectedNativeIncrease = amountRems;
 
   console.log(
-    `Polling Native balance - Baseline: ${Number(baselineNativeBalance) / 1e18} TORUS, Expected increase: ${parseFloat(amount)} TORUS`,
+    `Polling Native balance - Baseline: ${Number(baselineNativeBalance) / 1e18} TORUS, Expected increase: ${Number(amountRems) / 1e18} TORUS`,
   );
 
   const [withdrawError, txHash] = await tryAsync(
