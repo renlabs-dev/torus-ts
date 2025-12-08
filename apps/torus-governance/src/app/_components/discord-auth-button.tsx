@@ -7,10 +7,8 @@ import { Icons } from "@torus-ts/ui/components/icons";
 import * as React from "react";
 import { useDiscordAuth } from "../../../hooks/use-discord-auth";
 
-interface DiscordAuthButtonProps extends Omit<
-  ButtonProps,
-  "onClick" | "onError"
-> {
+interface DiscordAuthButtonProps
+  extends Omit<ButtonProps, "onClick" | "onError"> {
   onSignIn?: () => void | Promise<void>;
   onSignOut?: () => void | Promise<void>;
   onError?: (error: Error) => void;
