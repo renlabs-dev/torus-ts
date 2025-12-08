@@ -10,17 +10,24 @@ applications, services, and shared packages for the Torus ecosystem.
 
 ### Architecture Components
 
-- **Apps**: User-facing web applications
+- **Apps** (`apps/`): User-facing web applications
   - `torus-allocator`: Agent weight allocation interface
   - `torus-wallet`: Token management and staking interface
   - `torus-bridge`: Cross-chain token bridge
   - `torus-governance`: DAO voting and proposals
   - `torus-portal`: Permission management and constraint creation
   - `torus-page`: Landing page
-- **Services**: Backend services
+  - `torus-prophet-finder`: Prophet finder application
+  - `prediction-swarm`: Prediction swarm interface
+- **Services** (`services/`): Backend services
   - `torus-cache`: Caching layer for blockchain data
   - `torus-worker`: Background processing and automation
-- **Packages**: Shared libraries
+  - `swarm-twitter`: Twitter integration for swarm
+  - `swarm-verifier`: Swarm verification service
+  - `swarm-services`: Swarm support services
+  - `swarm-filter`: Swarm filtering service
+  - `swarm-api`: Prediction swarm API
+- **Packages** (`packages/`): Shared libraries
   - `@torus-network/sdk`: Core Substrate/Polkadot.js integration
   - `@torus-ts/api`: tRPC API routes and database queries
   - `@torus-ts/db`: Drizzle ORM schema and database utilities
@@ -453,7 +460,7 @@ console.log("Success:", data);
 
 #### Agent-Fetcher Worker
 
-Location: `apps/torus-worker/src/workers/agent-fetcher.ts`
+Location: `services/torus-worker/src/workers/agent-fetcher.ts`
 
 The agent-fetcher worker synchronizes blockchain data to the database:
 

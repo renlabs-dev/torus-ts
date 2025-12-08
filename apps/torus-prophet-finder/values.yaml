@@ -1,6 +1,0 @@
-deployment:
-  image:
-    repository: ghcr.io/renlabs-dev/torus-prophet-finder
-
-  podLabels:
-    app: torus-prophet-finder

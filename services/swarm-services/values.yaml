@@ -1,0 +1,64 @@
+cacheUrl: ""
+
+ingress:
+  enabled: false
+
+service:
+  enabled: false
+
+deployment:
+  image:
+    repository: ghcr.io/renlabs-dev/swarm-services
+
+  additionalLabels:
+    app: swarm-services
+
+  podLabels:
+    app: swarm-services
+
+  resources:
+    limits:
+      memory: 512Mi
+      cpu: 1
+    requests:
+      memory: 200Mi
+      cpu: 0.1
+
+  command: ["pnpm"]
+  args: ["tsx", "./src/index.ts", "distribution"]
+
+  startupProbe:
+    enabled: false
+
+  readinessProbe:
+    enabled: false
+
+  livenessProbe:
+    enabled: false
+
+  env:
+    POSTGRES_URL:
+      valueFrom:
+        secretKeyRef:
+          name: "torus-{{ .Values.environmentName }}-web-apps-secret"
+          key: prediction_swarm_db_url
+    SWARM_PERMISSION_ID:
+      valueFrom:
+        secretKeyRef:
+          name: "torus-{{ .Values.environmentName }}-web-apps-secret"
+          key: SWARM_PERMISSION_ID
+    SWARM_DISCORD_WEBHOOK_URL:
+      valueFrom:
+        secretKeyRef:
+          name: "torus-{{ .Values.environmentName }}-web-apps-secret"
+          key: SWARM_DISCORD_WEBHOOK_URL
+    PREDICTION_APP_MNEMONIC:
+      valueFrom:
+        secretKeyRef:
+          name: "torus-{{ .Values.environmentName }}-web-apps-secret"
+          key: PREDICTION_APP_MNEMONIC
+    NEXT_PUBLIC_TORUS_RPC_URL:
+      valueFrom:
+        configMapKeyRef:
+          name: '{{ template "application.name" . }}-config'
+          key: next_public_ws_url

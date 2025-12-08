@@ -47,6 +47,7 @@ jobs:
       all_apps: ${{ steps.parse.outputs.all_apps }}
       preview_domains: ${{ steps.parse.outputs.preview_domains }}
       runners: ${{ steps.parse.outputs.runners }}
+      package_paths: ${{ steps.parse.outputs.package_paths }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -63,7 +64,12 @@ jobs:
       - name: Get apps list
         id: apps
         run: |
-          all_apps=$(ls -d apps/* | sed 's/apps\///' | jq -R -s -c 'split("\n")[:-1]')
+          # List both apps and services directories
+          apps_list=$(ls -d apps/* 2>/dev/null | sed 's/apps\///' || echo "")
+          services_list=$(ls -d services/* 2>/dev/null | sed 's/services\///' || echo "")
+
+          # Combine both lists
+          all_apps=$(echo -e "${apps_list}\n${services_list}" | grep -v '^$' | jq -R -s -c 'split("\n")[:-1]')
           echo "all_apps=$all_apps" >> $GITHUB_OUTPUT
           echo "All apps in workspace:"
           echo "$all_apps" | jq '.'
@@ -90,6 +96,27 @@ jobs:
           echo "changed_packages=$changed_packages" >> $GITHUB_OUTPUT
           echo "Changed packages from turbo:"
           echo "$changed_packages" | jq '.'
+
+          # Extract package directories mapping (package -> directory parent folder)
+          # e.g., {"torus-cache": "services", "torus-wallet": "apps"}
+          package_paths=$(cat build.json | jq -c '
+            [.tasks[] | {key: .package, value: (.directory | split("/")[0])}]
+            | unique_by(.key)
+            | from_entries
+          ')
+          echo "package_paths=$package_paths" >> $GITHUB_OUTPUT
+          echo "Package paths:"
+          echo "$package_paths" | jq '.'
+
+          # Get paths for ALL packages
+          all_package_paths=$(pnpm exec turbo run build --dry-run=json 2>/dev/null | jq -c '
+            [.tasks[] | {key: .package, value: (.directory | split("/")[0])}]
+            | unique_by(.key)
+            | from_entries
+          ')
+          echo "all_package_paths=$all_package_paths" >> $GITHUB_OUTPUT
+          echo "All package paths:"
+          echo "$all_package_paths" | jq '.'
 
       - name: Filter changed apps
         id: changed
@@ -169,15 +196,20 @@ jobs:
           # Build runners mapping (app -> runner, default to ubicloud-standard-16)
           runners=$(echo "$config" | jq -c '[.apps | to_entries[] | {key: .key, value: (.value.runner // "ubicloud-standard-16")}] | from_entries')
 
+          # Use complete package paths from turbo
+          package_paths='${{ steps.turbo.outputs.all_package_paths }}'
+
           echo "deploy_matrix=$deploy_json" >> $GITHUB_OUTPUT
           echo "pr_preview_matrix=$pr_json" >> $GITHUB_OUTPUT
           echo "all_apps=$all_apps" >> $GITHUB_OUTPUT
           echo "preview_domains=$preview_domains" >> $GITHUB_OUTPUT
           echo "runners=$runners" >> $GITHUB_OUTPUT
+          echo "package_paths=$package_paths" >> $GITHUB_OUTPUT
 
           echo "Apps to deploy: $deploy_json"
           echo "Apps with PR preview: $pr_json"
           echo "Runners: $runners"
+          echo "Package paths: $package_paths"
 
   ###################################
   ###### REGULAR DEPLOYMENTS  #######
@@ -197,6 +229,7 @@ jobs:
     secrets: inherit
     with:
       app_name: ${{ matrix.app }}
+      app_path: ${{ fromJson(needs.find-deployments.outputs.package_paths)[matrix.app] }}
       skip_build: ${{ inputs.skip_build || false }}
       runner: ${{ fromJson(needs.find-deployments.outputs.runners)[matrix.app] }}
 
@@ -220,6 +253,7 @@ jobs:
     with:
       app_name: ${{ matrix.app }}
       runner: ${{ fromJson(needs.find-deployments.outputs.runners)[matrix.app] }}
+      app_path: ${{ fromJson(needs.find-deployments.outputs.package_paths)[matrix.app] }}
 
   ###################################
   ########### PR PREVIEW ############
@@ -240,6 +274,7 @@ jobs:
     with:
       app_name: ${{ matrix.app }}
       runner: ${{ fromJson(needs.find-deployments.outputs.runners)[matrix.app] }}
+      app_path: ${{ fromJson(needs.find-deployments.outputs.package_paths)[matrix.app] }}
 
   pr-preview-cleanup:
     needs: find-deployments
@@ -254,6 +289,8 @@ jobs:
     secrets: inherit
     with:
       app_name: ${{ matrix.app }}
+      runner: ${{ fromJson(needs.find-deployments.outputs.runners)[matrix.app] }}
+      app_path: ${{ fromJson(needs.find-deployments.outputs.package_paths)[matrix.app] }}
       cleanup: true
 
   deployment-summary:

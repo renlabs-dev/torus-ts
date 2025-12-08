@@ -7,7 +7,6 @@ import PlausibleProvider from "next-plausible";
 import { Fira_Mono as FiraMono } from "next/font/google";
 import * as React from "react";
 import { Footer } from "./_components/footer";
-import { HoverHeader } from "./_components/hover-header";
 
 export function generateMetadata() {
   return createSeoMetadata({
@@ -43,7 +42,6 @@ export default function RootLayout({
       trackOutboundLinks
     >
       <Layout font={firaMono} headScripts={[EnvScript]}>
-        <HoverHeader />
         {children}
         <Footer />
         <GoogleAnalytics gaId="G-7YCMH64Q4J" />

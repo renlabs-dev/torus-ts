@@ -7,6 +7,11 @@ on:
       app_name:
         required: true
         type: string
+      app_path:
+        required: false
+        description: "Path to app directory (apps or services)"
+        type: string
+        default: "apps"
       cleanup:
         required: false
         type: boolean
@@ -72,6 +77,7 @@ jobs:
           cache-to: type=gha,mode=max
           build-args: |
             APP_NAME=${{ inputs.app_name }}
+            APP_PATH=${{ inputs.app_path }}
             TURBO_API=${{ vars.TURBO_API }}
             TURBO_TEAM=${{ vars.TURBO_TEAM }}
             TURBO_TOKEN=${{ secrets.TURBO_TOKEN }}
@@ -147,7 +153,7 @@ jobs:
 
       - name: Deploy application
         id: deploy
-        working-directory: apps/${{ inputs.app_name }}
+        working-directory: ${{ inputs.app_path }}/${{ inputs.app_name }}
         run: |
           helmfile sync -e dev \
           --set deployment.image.tag=${{ steps.commit.outputs.short }}-pr \
@@ -220,7 +226,7 @@ jobs:
 
       - name: Cleanup PR preview deployment
         id: cleanup
-        working-directory: apps/${{ inputs.app_name }}
+        working-directory: ${{ inputs.app_path }}/${{ inputs.app_name }}
         run: |
           # Capture exit code - helmfile destroy returns non-zero when nothing exists to delete
           set +e
