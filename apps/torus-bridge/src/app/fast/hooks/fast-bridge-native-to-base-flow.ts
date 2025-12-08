@@ -391,6 +391,8 @@ interface NativeToBaseStep2Params {
   getExplorerUrl: (txHash: string, chainName: string) => string;
   /** Optional callback for step progress updates (for history tracking) */
   onStepProgress?: (step: SimpleBridgeStep) => void;
+  /** Optional callback when step 2 enters confirming state (for F5 recovery baseline balance) */
+  onStep2Confirming?: (txHash: string, baselineBalance: bigint) => void;
 }
 
 /**
@@ -421,6 +423,7 @@ export async function executeNativeToBaseStep2(
     addTransaction,
     getExplorerUrl,
     onStepProgress,
+    onStep2Confirming,
   } = params;
 
   // Get the correct token index for the Torus chain dynamically
@@ -600,6 +603,12 @@ export async function executeNativeToBaseStep2(
 
   updateBridgeState({ step: SimpleBridgeStep.STEP_2_CONFIRMING });
   onStepProgress?.(SimpleBridgeStep.STEP_2_CONFIRMING);
+
+  // Notify that step 2 is now confirming (for F5 recovery baseline balance)
+  // baseBaselineBalance was captured before the Hyperlane transaction
+  if (txHash2) {
+    onStep2Confirming?.(txHash2, baseBaselineBalance);
+  }
 
   // Use anyChange mode because Torus EVM fees make the exact amount unpredictable
   const pollingResult = await pollEvmBalance(

@@ -147,14 +147,6 @@ export async function executeBaseToNativeStep1(
 
   validateWarpConfiguration(warpCore);
 
-  console.log(
-    "Step 1 - Current chain:",
-    chain.id,
-    "Target: Base (",
-    BASE_CHAIN_ID,
-    ")",
-  );
-
   const switchResult = await switchChainWithRetry({
     targetChainId: BASE_CHAIN_ID,
     switchChain,
@@ -177,8 +169,6 @@ export async function executeBaseToNativeStep1(
     });
     throwOnChainSwitchFailure(switchResult);
   }
-
-  console.log("Confirmed on Base chain, proceeding to sign transaction");
 
   updateBridgeState({ step: SimpleBridgeStep.STEP_1_SIGNING });
   addTransaction({
@@ -337,6 +327,8 @@ interface BaseToNativeStep2Params {
   getExplorerUrl: (txHash: string, chainName: string) => string;
   /** Optional callback for step progress updates (for history tracking) */
   onStepProgress?: (step: SimpleBridgeStep) => void;
+  /** Optional callback when step 2 enters confirming state (for F5 recovery baseline balance) */
+  onStep2Confirming?: (txHash: string, baselineBalance: bigint) => void;
 }
 
 /**
@@ -368,6 +360,7 @@ export async function executeBaseToNativeStep2(
     addTransaction,
     getExplorerUrl,
     onStepProgress,
+    onStep2Confirming,
   } = params;
 
   updateBridgeState({ step: SimpleBridgeStep.STEP_2_PREPARING });
@@ -380,13 +373,6 @@ export async function executeBaseToNativeStep2(
   });
 
   const actualChainId = await walletClient.getChainId();
-  console.log(
-    "Step 2 - Actual wallet chain:",
-    actualChainId,
-    "Target: Torus EVM (",
-    torusEvmChainId,
-    ")",
-  );
 
   if (actualChainId !== torusEvmChainId) {
     updateBridgeState({ step: SimpleBridgeStep.STEP_2_SWITCHING });
@@ -425,7 +411,6 @@ export async function executeBaseToNativeStep2(
       throwOnChainSwitchFailure(switchResult);
     }
 
-    console.log("Confirmed on Torus EVM chain, proceeding to withdrawal");
     addTransaction({
       step: 2,
       status: "SUCCESS",
@@ -471,22 +456,10 @@ export async function executeBaseToNativeStep2(
     );
   }
 
-  console.log(
-    `Withdrawal calculation - EVM Balance: ${Number(currentEvmBalance) / 1e18} TORUS, ` +
-      `Requested: ${Number(requestedAmountRems) / 1e18} TORUS, ` +
-      `Max Withdrawable: ${Number(maxWithdrawable) / 1e18} TORUS, ` +
-      `Actual Withdrawal: ${Number(amountRems) / 1e18} TORUS`,
-  );
-
   // Capture baseline balance BEFORE sending transaction
   const nativeRefetchResult = await refetchNativeBalance();
   const baselineNativeBalance = nativeRefetchResult.data?.value ?? 0n;
-  // Expected increase is the amount we're actually withdrawing
   const expectedNativeIncrease = amountRems;
-
-  console.log(
-    `Polling Native balance - Baseline: ${Number(baselineNativeBalance) / 1e18} TORUS, Expected increase: ${Number(amountRems) / 1e18} TORUS`,
-  );
 
   const [withdrawError, txHash] = await tryAsync(
     withdrawFromTorusEvm(
@@ -531,6 +504,10 @@ export async function executeBaseToNativeStep2(
 
   updateBridgeState({ step: SimpleBridgeStep.STEP_2_CONFIRMING });
   onStepProgress?.(SimpleBridgeStep.STEP_2_CONFIRMING);
+
+  // Notify that step 2 is now confirming (for F5 recovery baseline balance)
+  // baselineNativeBalance was captured before the withdrawal transaction
+  onStep2Confirming?.(txHash, baselineNativeBalance);
 
   const [receiptError] = await tryAsync(
     waitForTransactionReceipt(wagmiConfig, {

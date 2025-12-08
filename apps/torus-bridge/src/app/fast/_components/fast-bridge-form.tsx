@@ -106,6 +106,7 @@ export function FastBridgeForm() {
     executeEvmToNative,
     executeEvmToBase,
     resumeStep1Polling,
+    resumeStep2Polling,
   } = useOrchestratedTransfer();
 
   const {
@@ -347,59 +348,121 @@ export function FastBridgeForm() {
       // Set transaction ID so the orchestrator can update history when retry succeeds
       setCurrentTransactionId(transaction.id);
 
+      // Determine the appropriate step to restore based on status and currentStep
+      let stepToRestore = transaction.currentStep;
+      if (transaction.status === "error") {
+        stepToRestore = SimpleBridgeStep.ERROR;
+      }
+
       // Restore bridge state to the current step (ERROR, or whatever step it was at)
       // This allows continuing from pending/step1_complete, not just errors
       updateBridgeState({
-        step:
-          transaction.status === "error"
-            ? SimpleBridgeStep.ERROR
-            : transaction.currentStep,
+        step: stepToRestore,
         direction: transaction.direction,
         amount: transaction.amount,
+        errorMessage: transaction.errorMessage,
       });
 
       // Restore transaction state to show in lifecycle dialog
       const restoredTransactions: SimpleBridgeTransaction[] = [];
 
-      // Add step 1 if we have the hash OR if error happened at step 1
-      if (transaction.step1TxHash || transaction.errorStep === 1) {
-        // Determine step 1 status based on current step
-        const isStep1Confirming =
-          transaction.currentStep === SimpleBridgeStep.STEP_1_CONFIRMING;
-        restoredTransactions.push({
-          step: 1,
-          txHash: transaction.step1TxHash,
-          status:
-            transaction.errorStep === 1
-              ? "ERROR"
+      // Helper to determine error phase based on the currentStep at time of error
+      const getErrorPhase = (
+        errorStep: 1 | 2 | undefined,
+        currentStep: SimpleBridgeStep,
+      ): "sign" | "confirm" | undefined => {
+        if (!errorStep) return undefined;
+
+        // Map currentStep to error phase
+        if (errorStep === 1) {
+          if (
+            currentStep === SimpleBridgeStep.STEP_1_SIGNING ||
+            currentStep === SimpleBridgeStep.STEP_1_PREPARING
+          ) {
+            return "sign";
+          }
+          if (currentStep === SimpleBridgeStep.STEP_1_CONFIRMING) {
+            return "confirm";
+          }
+        }
+        if (errorStep === 2) {
+          if (
+            currentStep === SimpleBridgeStep.STEP_2_SIGNING ||
+            currentStep === SimpleBridgeStep.STEP_2_PREPARING ||
+            currentStep === SimpleBridgeStep.STEP_2_SWITCHING
+          ) {
+            return "sign";
+          }
+          if (currentStep === SimpleBridgeStep.STEP_2_CONFIRMING) {
+            return "confirm";
+          }
+        }
+
+        // Default: assume sign phase if currentStep is ERROR (most common case)
+        return "sign";
+      };
+
+      // Determine step 1 status based on current step and error state
+      const isStep1Confirming =
+        transaction.currentStep === SimpleBridgeStep.STEP_1_CONFIRMING;
+      const isStep1Complete =
+        transaction.currentStep === SimpleBridgeStep.STEP_1_COMPLETE ||
+        transaction.currentStep === SimpleBridgeStep.STEP_2_PREPARING ||
+        transaction.currentStep === SimpleBridgeStep.STEP_2_SWITCHING ||
+        transaction.currentStep === SimpleBridgeStep.STEP_2_SIGNING ||
+        transaction.currentStep === SimpleBridgeStep.STEP_2_CONFIRMING ||
+        transaction.status === "step1_complete" ||
+        transaction.errorStep === 2; // If error at step 2, step 1 was complete
+
+      // Always add step 1 transaction to show progress
+      restoredTransactions.push({
+        step: 1,
+        txHash: transaction.step1TxHash,
+        status:
+          transaction.errorStep === 1
+            ? "ERROR"
+            : isStep1Complete
+              ? "SUCCESS"
               : isStep1Confirming
                 ? "CONFIRMING"
-                : "SUCCESS",
-          chainName:
-            transaction.direction === "base-to-native"
-              ? "Base"
-              : "Torus Native",
-          explorerUrl: transaction.step1TxHash
-            ? getExplorerUrl(
-                transaction.step1TxHash,
-                transaction.direction === "base-to-native"
-                  ? "Base"
-                  : "Torus Native",
-              )
-            : undefined,
-          message:
-            transaction.errorStep === 1
-              ? transaction.errorMessage
+                : null,
+        chainName:
+          transaction.direction === "base-to-native" ? "Base" : "Torus Native",
+        explorerUrl: transaction.step1TxHash
+          ? getExplorerUrl(
+              transaction.step1TxHash,
+              transaction.direction === "base-to-native"
+                ? "Base"
+                : "Torus Native",
+            )
+          : undefined,
+        message:
+          transaction.errorStep === 1
+            ? transaction.errorMessage
+            : isStep1Complete
+              ? "Transaction confirmed"
               : isStep1Confirming
                 ? "Waiting for confirmation..."
-                : "Transaction confirmed",
-          errorDetails:
-            transaction.errorStep === 1 ? transaction.errorMessage : undefined,
-        });
-      }
+                : undefined,
+        errorDetails:
+          transaction.errorStep === 1 ? transaction.errorMessage : undefined,
+        errorPhase:
+          transaction.errorStep === 1
+            ? getErrorPhase(1, transaction.currentStep)
+            : undefined,
+      });
 
-      // Add step 2 if we have the hash or if error was at step 2
-      if (transaction.step2TxHash || transaction.errorStep === 2) {
+      // Determine step 2 status
+      const isStep2Confirming =
+        transaction.currentStep === SimpleBridgeStep.STEP_2_CONFIRMING;
+      const isStep2Signing =
+        transaction.currentStep === SimpleBridgeStep.STEP_2_SIGNING ||
+        transaction.currentStep === SimpleBridgeStep.STEP_2_PREPARING ||
+        transaction.currentStep === SimpleBridgeStep.STEP_2_SWITCHING ||
+        transaction.currentStep === SimpleBridgeStep.STEP_1_COMPLETE;
+
+      // Add step 2 transaction if we've progressed past step 1 or have error at step 2
+      if (isStep1Complete || transaction.errorStep === 2) {
         restoredTransactions.push({
           step: 2,
           txHash: transaction.step2TxHash,
@@ -408,7 +471,11 @@ export function FastBridgeForm() {
               ? "ERROR"
               : transaction.step2TxHash
                 ? "SUCCESS"
-                : null,
+                : isStep2Confirming
+                  ? "CONFIRMING"
+                  : isStep2Signing
+                    ? "SIGNING"
+                    : null,
           chainName: "Torus EVM",
           explorerUrl: transaction.step2TxHash
             ? getExplorerUrl(transaction.step2TxHash, "Torus EVM")
@@ -418,9 +485,17 @@ export function FastBridgeForm() {
               ? transaction.errorMessage
               : transaction.step2TxHash
                 ? "Transaction confirmed"
-                : undefined,
+                : isStep2Confirming
+                  ? "Waiting for confirmation..."
+                  : isStep2Signing
+                    ? "Please sign the transaction"
+                    : undefined,
           errorDetails:
             transaction.errorStep === 2 ? transaction.errorMessage : undefined,
+          errorPhase:
+            transaction.errorStep === 2
+              ? getErrorPhase(2, transaction.currentStep)
+              : undefined,
         });
       }
 
@@ -430,7 +505,8 @@ export function FastBridgeForm() {
       // Open dialog showing the current state
       setShowTransactionDialog(true);
 
-      // If at STEP_1_CONFIRMING, resume polling for balance confirmation
+      // Handle F5 recovery based on currentStep
+      // Case 1: STEP_1_CONFIRMING - resume polling for step 1 balance confirmation
       if (transaction.currentStep === SimpleBridgeStep.STEP_1_CONFIRMING) {
         void resumeStep1Polling(
           transaction,
@@ -446,6 +522,27 @@ export function FastBridgeForm() {
           },
         );
       }
+
+      // Case 2: STEP_2_SIGNING/STEP_2_PREPARING/STEP_2_SWITCHING - re-trigger wallet call
+      // User needs to click retry to initiate the signing flow again
+      // The UI will show the correct state and retry button will work
+
+      // Case 3: STEP_2_CONFIRMING - resume polling for step 2 balance confirmation
+      if (transaction.currentStep === SimpleBridgeStep.STEP_2_CONFIRMING) {
+        void resumeStep2Polling(
+          transaction,
+          () => {
+            // Transfer complete - UI will update automatically
+          },
+          (error) => {
+            console.error("[F5 Recovery] Step 2 polling failed:", error);
+            updateBridgeState({
+              step: SimpleBridgeStep.ERROR,
+              errorMessage: error.message,
+            });
+          },
+        );
+      }
     },
     [
       getExplorerUrl,
@@ -454,6 +551,7 @@ export function FastBridgeForm() {
       updateBridgeState,
       setCurrentTransactionId,
       resumeStep1Polling,
+      resumeStep2Polling,
     ],
   );
 

@@ -117,17 +117,13 @@ export function QuickSendEvmDialog({
     onRecoverySuccess,
   ]);
 
-  // Calculate sendable amount (balance - gas reserve)
-  const sendableAmount =
-    evmBalance > GAS_RESERVE_WEI ? evmBalance - GAS_RESERVE_WEI : 0n;
-
   const handleSend = async (destination: "native" | "base") => {
     setSelectedDestination(destination);
     setStatus("sending");
     setErrorMessage("");
 
-    // Save the sendable amount for consistent display
-    setOriginalAmount(sendableAmount);
+    // Save the full balance for display (user understands gas will be deducted)
+    setOriginalAmount(evmBalance);
     setOriginalDestination(
       destination === "native" ? "Torus Native" : "Base Chain",
     );
@@ -306,26 +302,16 @@ export function QuickSendEvmDialog({
                   className="flex-shrink-0"
                 />
                 <span className="text-muted-foreground text-xs font-medium uppercase tracking-wide">
-                  Amount to Send
+                  EVM Balance
                 </span>
               </div>
               <div className="flex items-baseline gap-2">
                 <span className="text-4xl font-bold">
-                  {formatAmount(sendableAmount)}
+                  {formatAmount(evmBalance)}
                 </span>
                 <span className="text-muted-foreground text-lg font-medium">
                   TORUS
                 </span>
-              </div>
-              <div className="text-muted-foreground border-t pt-3 text-xs">
-                <div className="flex justify-between">
-                  <span>Total Balance:</span>
-                  <span>{formatAmount(evmBalance)} TORUS</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Gas Reserve:</span>
-                  <span>{formatAmount(GAS_RESERVE_WEI)} TORUS</span>
-                </div>
               </div>
             </div>
           </Card>
@@ -360,7 +346,7 @@ export function QuickSendEvmDialog({
                     <Button
                       variant="outline"
                       size="sm"
-                      className="group-hover:bg-primary group-hover:text-primary-foreground w-full"
+                      className="pointer-events-none w-full"
                     >
                       <Check className="mr-2 h-4 w-4" />
                       Select
@@ -393,7 +379,7 @@ export function QuickSendEvmDialog({
                     <Button
                       variant="outline"
                       size="sm"
-                      className="group-hover:bg-primary group-hover:text-primary-foreground w-full"
+                      className="pointer-events-none w-full"
                     >
                       <Check className="mr-2 h-4 w-4" />
                       Select

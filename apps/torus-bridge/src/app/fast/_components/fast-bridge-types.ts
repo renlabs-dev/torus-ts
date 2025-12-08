@@ -94,6 +94,7 @@ export interface FastBridgeTransactionHistoryItem {
 
   // Baseline balances for F5 recovery polling (stored as string to avoid BigInt serialization issues)
   step1BaselineBalance?: string; // Balance of destination chain before step 1 started
+  step2BaselineBalance?: string; // Balance of destination chain before step 2 started
 }
 
 export type TransactionHistoryFilter = "all" | "completed" | "error";

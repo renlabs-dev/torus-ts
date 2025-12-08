@@ -48,6 +48,7 @@ export function useTransactionLifecycleSteps(
       const isStep1 = stepId.startsWith("step1");
       const isStep2 = stepId.startsWith("step2");
 
+      // Case 1: Step 2 has explicit ERROR status
       if (step2Transaction?.status === "ERROR") {
         if (isStep1) {
           return "completed";
@@ -70,29 +71,60 @@ export function useTransactionLifecycleSteps(
         }
       }
 
-      if (step1Transaction?.status === "ERROR" && isStep1) {
-        const errorPhase = step1Transaction.errorPhase;
-        if (errorPhase === "sign" && stepId === "step1-sign") return "error";
-        if (errorPhase === "confirm" && stepId === "step1-confirm")
-          return "error";
-        if (errorPhase === "confirm" && stepId === "step1-sign")
-          return "completed";
+      // Case 2: Step 1 has explicit ERROR status
+      if (step1Transaction?.status === "ERROR") {
+        if (isStep1) {
+          const errorPhase = step1Transaction.errorPhase;
+          if (errorPhase === "sign" && stepId === "step1-sign") return "error";
+          if (errorPhase === "confirm" && stepId === "step1-confirm")
+            return "error";
+          if (errorPhase === "confirm" && stepId === "step1-sign")
+            return "completed";
 
-        if (!errorPhase) {
-          if (stepId === "step1-sign") return "error";
-          if (stepId === "step1-confirm") return "pending";
+          if (!errorPhase) {
+            if (stepId === "step1-sign") return "error";
+            if (stepId === "step1-confirm") return "pending";
+          }
+
+          return "pending";
         }
 
-        return "pending";
+        if (isStep2) {
+          return "pending";
+        }
       }
 
-      if (step1Transaction?.status === "ERROR" && isStep2) {
-        return "pending";
+      // Case 3: currentStep is ERROR but no explicit ERROR status in transactions
+      // This happens when restoring from history - infer status from transaction data
+      if (currentStep === SimpleBridgeStep.ERROR) {
+        // Check if step 1 is complete based on having step 2 data or step 1 SUCCESS
+        const step1IsComplete =
+          step1Transaction?.status === "SUCCESS" ||
+          step1Transaction?.status === "CONFIRMING" ||
+          step2Transaction !== undefined;
+
+        if (isStep1) {
+          if (step1IsComplete) {
+            return "completed";
+          }
+          // Step 1 not complete - error must be at step 1
+          if (stepId === "step1-sign") return "error";
+          return "pending";
+        }
+
+        if (isStep2) {
+          if (!step1IsComplete) {
+            return "pending";
+          }
+          // Step 1 complete, error is at step 2
+          if (stepId === "step2-sign") return "error";
+          return "pending";
+        }
       }
 
       return null;
     },
-    [step1Transaction, step2Transaction],
+    [step1Transaction, step2Transaction, currentStep],
   );
 
   const getStep1Status = useCallback(

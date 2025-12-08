@@ -6,7 +6,6 @@ import { useFreeBalance } from "@torus-ts/query-provider/hooks";
 import { useTorus } from "@torus-ts/torus-provider";
 import { Card } from "@torus-ts/ui/components/card";
 import { Skeleton } from "@torus-ts/ui/components/skeleton";
-import { cn } from "@torus-ts/ui/lib/utils";
 import { contractAddresses, getChainValuesOnEnv } from "~/config";
 import { env } from "~/env";
 import Image from "next/image";
@@ -128,44 +127,55 @@ export function WalletBalance() {
       : []),
   ];
 
-  return (
-    <Card className="flex h-[253px] max-h-[253px] min-h-[253px] w-full flex-col gap-6 p-4">
-      {balancesList.map((item) => (
-        <div
-          key={item.label}
-          className={cn(
-            "flex flex-col gap-1",
-            item.isSecondary && "opacity-60",
-          )}
-        >
-          {item.amount == null ? (
-            <Skeleton
-              className={cn(item.isSecondary ? "h-4 w-20" : "h-5 w-24")}
-            />
-          ) : (
-            <div
-              className={cn(
-                "-my-0.5 font-semibold leading-5 text-white",
-                item.isSecondary ? "text-xs" : "text-sm",
-              )}
-            >
-              {formatToken(item.amount)} {item.asset}
-            </div>
-          )}
+  // Separate primary and secondary items
+  const primaryItems = balancesList.filter((item) => !item.isSecondary);
+  const secondaryItems = balancesList.filter((item) => item.isSecondary);
 
-          <div className="flex items-center gap-2">
-            <BalanceIcon src={item.iconSrc} alt={item.iconAlt} />
-            <span
-              className={cn(
-                "leading-5 text-zinc-400",
-                item.isSecondary ? "text-[10px]" : "text-xs",
-              )}
-            >
-              {item.label}
-            </span>
+  return (
+    <Card className="flex h-[253px] max-h-[253px] min-h-[253px] w-full flex-col p-4">
+      <div className="flex flex-col gap-4">
+        {primaryItems.map((item) => (
+          <div key={item.label} className="flex flex-col gap-1">
+            {item.amount == null ? (
+              <Skeleton className="h-5 w-24" />
+            ) : (
+              <div className="-my-0.5 text-sm font-semibold leading-5 text-white">
+                {formatToken(item.amount)} {item.asset}
+              </div>
+            )}
+
+            <div className="flex items-center gap-2">
+              <BalanceIcon src={item.iconSrc} alt={item.iconAlt} />
+              <span className="text-xs leading-5 text-zinc-400">
+                {item.label}
+              </span>
+            </div>
           </div>
+        ))}
+      </div>
+
+      {secondaryItems.length > 0 && (
+        <div className="mt-auto flex flex-col gap-2">
+          {secondaryItems.map((item) => (
+            <div key={item.label} className="flex flex-col gap-1 opacity-60">
+              {item.amount == null ? (
+                <Skeleton className="h-4 w-20" />
+              ) : (
+                <div className="-my-0.5 text-xs font-semibold leading-5 text-white">
+                  {formatToken(item.amount)} {item.asset}
+                </div>
+              )}
+
+              <div className="flex items-center gap-2">
+                <BalanceIcon src={item.iconSrc} alt={item.iconAlt} />
+                <span className="text-[10px] leading-5 text-zinc-400">
+                  {item.label}
+                </span>
+              </div>
+            </div>
+          ))}
         </div>
-      ))}
+      )}
     </Card>
   );
 }
