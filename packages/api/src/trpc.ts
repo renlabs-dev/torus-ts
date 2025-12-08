@@ -77,7 +77,7 @@ let cachedEnv: EnvType | null = null;
 
 /**
  * Get validated environment variables with proper error handling
- * Returns the cached result or throws an error if validation fails
+ * Returns the cached result or exits the process if validation fails
  */
 function getEnv(): EnvType {
   if (cachedEnv === null) {

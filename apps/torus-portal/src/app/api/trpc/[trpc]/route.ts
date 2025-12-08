@@ -45,30 +45,32 @@ const createErrorResponse = (error: Error): Response => {
 };
 
 const handler = async (req: Request) => {
+  // Wrap in async IIFE to catch both synchronous and asynchronous errors
   const [error, response] = await tryAsync(
-    fetchRequestHandler({
-      endpoint: "/api/trpc",
-      req,
-      router: appRouter,
-      createContext: () =>
-        createTRPCContext({
-          session: null,
-          headers: req.headers,
-          jwtSecret: env("JWT_SECRET"),
-          authOrigin: env("NEXT_PUBLIC_AUTH_ORIGIN"),
-          allocatorAddress: env("NEXT_PUBLIC_TORUS_ALLOCATOR_ADDRESS"),
-          predictionAppAddress: env("PREDICTION_APP_ADDRESS"),
-          permissionGrantorAddress: env("PERMISSION_GRANTOR_ADDRESS"),
-        }),
-      onError:
-        env("NEXT_PUBLIC_NODE_ENV") === "development"
-          ? ({ path, error }) => {
-              console.error(
-                `❌ tRPC failed on ${path ?? "<no-path>"}: ${error.message}`,
-              );
-            }
-          : undefined,
-    }),
+    (async () =>
+      fetchRequestHandler({
+        endpoint: "/api/trpc",
+        req,
+        router: appRouter,
+        createContext: () =>
+          createTRPCContext({
+            session: null,
+            headers: req.headers,
+            jwtSecret: env("JWT_SECRET"),
+            authOrigin: env("NEXT_PUBLIC_AUTH_ORIGIN"),
+            allocatorAddress: env("NEXT_PUBLIC_TORUS_ALLOCATOR_ADDRESS"),
+            predictionAppAddress: env("PREDICTION_APP_ADDRESS"),
+            permissionGrantorAddress: env("PERMISSION_GRANTOR_ADDRESS"),
+          }),
+        onError:
+          env("NEXT_PUBLIC_NODE_ENV") === "development"
+            ? ({ path, error }) => {
+                console.error(
+                  `❌ tRPC failed on ${path ?? "<no-path>"}: ${error.message}`,
+                );
+              }
+            : undefined,
+      }))(),
   );
 
   if (error !== undefined) {
