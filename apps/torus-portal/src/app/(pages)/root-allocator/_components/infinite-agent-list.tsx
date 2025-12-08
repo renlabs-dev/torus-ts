@@ -1,10 +1,10 @@
 "use client";
 
-import { useEffect } from "react";
 import type { RouterOutputs } from "@torus-ts/api";
 import { AgentItemSkeleton } from "@torus-ts/ui/components/agent-card/agent-card-skeleton-loader";
 import { InfiniteList } from "@torus-ts/ui/components/infinite-list";
 import { api } from "~/trpc/react";
+import { useEffect } from "react";
 import { AgentCard } from "./agent-card";
 
 type InfiniteAgentData = RouterOutputs["agent"]["infinite"];
