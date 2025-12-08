@@ -4,8 +4,9 @@ import { fileURLToPath } from "url";
 const config = {
   reactStrictMode: true,
 
+  reactCompiler: true,
+
   experimental: {
-    reactCompiler: true,
     // Optimize imports for heavy packages
     optimizePackageImports: [
       "@hyperlane-xyz/sdk",
@@ -16,7 +17,6 @@ const config = {
       "@starknet-react/core",
       "starknet",
     ],
-    // Build optimizations enabled
   },
 
   // Use Turbopack for faster builds
@@ -37,8 +37,7 @@ const config = {
 
   productionBrowserSourceMaps: true,
 
-  /** We already do linting and typechecking as separate tasks in CI */
-  eslint: { ignoreDuringBuilds: true },
+  /** We already do typechecking as separate task in CI */
   typescript: { ignoreBuildErrors: true },
 
   webpack: (config, { isServer, webpack }) => {

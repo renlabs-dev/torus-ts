@@ -7,8 +7,8 @@ import { useTorus } from "@torus-ts/torus-provider";
 import { httpBatchLink, loggerLink } from "@trpc/client";
 import { createTRPCReact } from "@trpc/react-query";
 import { env } from "~/env";
-import SuperJSON from "superjson";
 import { useState } from "react";
+import SuperJSON from "superjson";
 
 const createQueryClient = () =>
   new QueryClient({
