@@ -72,7 +72,7 @@ export function SendForm({
                 <FormLabel>Amount to send</FormLabel>
                 <FormControl>
                   <CurrencySwap
-                    amount={field.value ?? ""}
+                    amount={field.value}
                     usdPrice={usdPrice}
                     disabled={!selectedAccount?.address}
                     availableFunds={maxTransferableAmount}

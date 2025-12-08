@@ -56,7 +56,7 @@ export function StakeForm({
                 <FormLabel>Allocator Address</FormLabel>
                 <FormControl>
                   <AllocatorSelector
-                    value={field.value ?? ""}
+                    value={field.value}
                     onSelect={handleSelectValidator}
                     listType="all"
                     placeholder="Select an allocator"
@@ -76,7 +76,7 @@ export function StakeForm({
                 <FormLabel>Amount</FormLabel>
                 <FormControl>
                   <CurrencySwap
-                    amount={field.value ?? ""}
+                    amount={field.value}
                     usdPrice={usdPrice}
                     disabled={!selectedAccount?.address}
                     availableFunds={maxTransferableAmount}

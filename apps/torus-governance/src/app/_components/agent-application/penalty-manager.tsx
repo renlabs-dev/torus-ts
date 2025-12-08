@@ -222,7 +222,7 @@ export function PenaltyManager({
                   <FormControl>
                     <div>
                       <Slider
-                        value={[field.value ?? 1]}
+                        value={[field.value]}
                         onValueChange={([value]) => field.onChange(value)}
                         max={100}
                         min={1}
