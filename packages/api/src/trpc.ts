@@ -32,9 +32,10 @@ let globalServerHashSignerPromise: Promise<(hash: string) => string> | null =
   null;
 
 /**
- * Environment schema for tRPC context
+ * Environment validator for tRPC context
+ * Type is automatically inferred from the schema
  */
-const envSchema = {
+const validateTrpcEnv = validateEnvOrExit({
   NEXT_PUBLIC_TORUS_RPC_URL: z
     .string()
     .nonempty("NEXT_PUBLIC_TORUS_RPC_URL is required"),
@@ -58,31 +59,23 @@ const envSchema = {
   PREDICTION_APP_MNEMONIC: z
     .string()
     .min(1, "PREDICTION_APP_MNEMONIC is required for signing receipts"),
-};
+});
 
-interface EnvType {
-  NEXT_PUBLIC_TORUS_RPC_URL: string;
-  NEXT_PUBLIC_PREDICTION_APP_ADDRESS: SS58Address;
-  TWITTERAPI_IO_KEY: string;
-  PERMISSION_GRANTOR_ADDRESS: SS58Address;
-  PERMISSION_CACHE_REFRESH_INTERVAL_MS: number;
-  PREDICTION_APP_MNEMONIC: string;
-}
+type TrpcEnv = ReturnType<typeof validateTrpcEnv>;
 
 /**
  * Cached validated environment variables
  * Lazy initialization prevents process.exit(1) from validateEnvOrExit at module load time
  */
-let cachedEnv: EnvType | null = null;
+let cachedEnv: TrpcEnv | null = null;
 
 /**
- * Get validated environment variables with proper error handling
+ * Get validated environment variables with caching
  * Returns the cached result or exits the process if validation fails
  */
-function getEnv(): EnvType {
+function getEnv(): TrpcEnv {
   if (cachedEnv === null) {
-    const envValidator = validateEnvOrExit(envSchema);
-    cachedEnv = envValidator(process.env) as EnvType;
+    cachedEnv = validateTrpcEnv(process.env);
   }
   return cachedEnv;
 }
