@@ -82,9 +82,7 @@ export function QuickSendEvmDialog({
 
     // Expected decrease is the original amount minus gas reserve
     const expectedDecrease =
-      originalAmount > GAS_RESERVE_WEI
-        ? originalAmount - GAS_RESERVE_WEI
-        : 0n;
+      originalAmount > GAS_RESERVE_WEI ? originalAmount - GAS_RESERVE_WEI : 0n;
 
     // Detection logic:
     // 1. If balance is now very small (dust threshold), consider it complete

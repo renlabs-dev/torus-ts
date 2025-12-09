@@ -293,7 +293,13 @@ export function FastBridgeForm() {
     }
 
     void startNewTransfer();
-  }, [amountFrom, walletsReady, isTransferInProgress, pendingTransaction, startNewTransfer]);
+  }, [
+    amountFrom,
+    walletsReady,
+    isTransferInProgress,
+    pendingTransaction,
+    startNewTransfer,
+  ]);
 
   const handleDeleteAndStartNew = useCallback(
     (transactionId: string) => {
