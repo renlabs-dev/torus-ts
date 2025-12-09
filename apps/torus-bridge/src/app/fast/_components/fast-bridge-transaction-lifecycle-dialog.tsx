@@ -10,7 +10,7 @@ import {
 } from "@torus-ts/ui/components/dialog";
 import { env } from "~/env";
 import { logger } from "~/utils/logger";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useTransactionLifecycleSteps } from "../hooks/use-transaction-lifecycle-steps";
 import { TransactionStepItem } from "./fast-bridge-transaction-step-item";
 import type {
@@ -79,6 +79,20 @@ export function TransactionLifecycleDialog({
 }: TransactionLifecycleDialogProps) {
   const isBaseToNative = direction === "base-to-native";
   const [showSignatureWarning, setShowSignatureWarning] = useState(false);
+  const openedAtRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    if (isOpen) {
+      openedAtRef.current = Date.now();
+    } else {
+      openedAtRef.current = null;
+    }
+  }, [isOpen]);
+
+  const isJustOpened = useCallback(() => {
+    if (!openedAtRef.current) return false;
+    return Date.now() - openedAtRef.current < 500;
+  }, []);
 
   const isCurrentlySigning =
     currentStep === SimpleBridgeStep.STEP_1_SIGNING ||
@@ -132,11 +146,18 @@ export function TransactionLifecycleDialog({
     });
   }, [currentStep, hasError, transactions, direction, lifecycleSteps]);
 
-  const handleOpenChange = (open: boolean) => {
-    if (!open) {
-      onClose();
-    }
-  };
+  const canCloseNow = useCallback(() => {
+    return (hasError || isCompleted) && !isJustOpened();
+  }, [hasError, isCompleted, isJustOpened]);
+
+  const handleOpenChange = useCallback(
+    (open: boolean) => {
+      if (!open && canCloseNow()) {
+        onClose();
+      }
+    },
+    [canCloseNow, onClose],
+  );
 
   return (
     <Dialog open={isOpen} onOpenChange={handleOpenChange}>
@@ -144,18 +165,15 @@ export function TransactionLifecycleDialog({
         className="flex max-h-[85vh] max-w-2xl flex-col p-0"
         hideCloseButton={!hasError && !isCompleted}
         onOpenAutoFocus={(e) => {
-          // Prevent autofocus that causes white border after F5
           e.preventDefault();
         }}
         onEscapeKeyDown={(e) => {
-          // Prevent closing during active transfer (only allow when error or complete)
-          if (!hasError && !isCompleted) {
+          if (!canCloseNow()) {
             e.preventDefault();
           }
         }}
         onPointerDownOutside={(e) => {
-          // Prevent closing during active transfer (only allow when error or complete)
-          if (!hasError && !isCompleted) {
+          if (!canCloseNow()) {
             e.preventDefault();
           }
         }}

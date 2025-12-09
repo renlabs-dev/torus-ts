@@ -595,16 +595,19 @@ export function FastBridgeForm() {
       }
 
       if (transaction.status !== "completed") {
-        const signingSteps = [
+        const unconfirmedSigningSteps = [
           SimpleBridgeStep.STEP_1_PREPARING,
           SimpleBridgeStep.STEP_1_SIGNING,
           SimpleBridgeStep.STEP_2_PREPARING,
           SimpleBridgeStep.STEP_2_SWITCHING,
           SimpleBridgeStep.STEP_2_SIGNING,
+          SimpleBridgeStep.STEP_1_COMPLETE,
         ];
 
-        if (signingSteps.includes(transaction.currentStep)) {
-          const isStep1 = transaction.currentStep.startsWith("step_1");
+        if (unconfirmedSigningSteps.includes(transaction.currentStep)) {
+          const isStep1 =
+            transaction.currentStep === SimpleBridgeStep.STEP_1_PREPARING ||
+            transaction.currentStep === SimpleBridgeStep.STEP_1_SIGNING;
           updateTransaction(transaction.id, {
             status: "error",
             currentStep: SimpleBridgeStep.ERROR,
