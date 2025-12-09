@@ -58,18 +58,6 @@ export const useFastBridgeTransactionHistory =
         },
 
         updateTransaction: (id, updates) => {
-          // If updating to "completed" status and NOT recovered via EVM Recover,
-          // delete the transaction instead of updating
-          if (
-            updates.status === "completed" &&
-            !updates.recoveredViaEvmRecover
-          ) {
-            set((state) => ({
-              transactions: state.transactions.filter((tx) => tx.id !== id),
-            }));
-            return;
-          }
-
           set((state) => ({
             transactions: state.transactions.map((tx) =>
               tx.id === id ? { ...tx, ...updates } : tx,
