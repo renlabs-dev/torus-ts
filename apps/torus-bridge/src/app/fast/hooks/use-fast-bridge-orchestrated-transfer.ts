@@ -596,8 +596,13 @@ export function useOrchestratedTransfer() {
 
   const retryBaseToNativeStep2 = useCallback(
     async (amount: string) => {
-      if (!selectedAccount || !evmAddress || !walletClient || !chain) {
-        throw new Error("Wallets not properly connected");
+      if (!evmAddress || !walletClient || !chain) {
+        throw new Error("EVM wallet not connected");
+      }
+      if (!selectedAccount) {
+        throw new Error(
+          "Torus wallet not connected. Required for destination address.",
+        );
       }
 
       setTransactions((prev) =>

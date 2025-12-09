@@ -207,15 +207,13 @@ export function FastBridgeForm() {
   );
 
   const handleMaxClick = useCallback(() => {
-    handleFractionClick(1.0); // All = 100%
+    handleFractionClick(1.0);
   }, [handleFractionClick]);
 
-  // EVM Recover only requires EVM wallet connection (not Torus Native)
   const isEvmWalletReady = connectionState.evmWallet.isConnected;
 
   const handleSendToNative = useCallback(
     async (amount: bigint) => {
-      // EVM Recover only needs EVM wallet connected
       if (!isEvmWalletReady) {
         throw new Error("EVM wallet not connected");
       }
@@ -224,13 +222,8 @@ export function FastBridgeForm() {
         throw new Error("Insufficient balance for gas fees");
       }
 
-      // EVM to Native: Gas is paid in TORUS (native token of Torus EVM chain)
-      // Reserve gas fees before sending
       const amountToSend = amount - TORUS_EVM_GAS_RESERVE;
       const amountStr = formatWeiToDecimalString(amountToSend);
-
-      // Quick Send from EVM to Native: Execute only Step 2 of base-to-native flow
-      // This withdraws directly from Torus EVM to Native
       await executeEvmToNative(amountStr);
     },
     [isEvmWalletReady, executeEvmToNative],
@@ -238,7 +231,6 @@ export function FastBridgeForm() {
 
   const handleSendToBase = useCallback(
     async (amount: bigint) => {
-      // EVM Recover only needs EVM wallet connected
       if (!isEvmWalletReady) {
         throw new Error("EVM wallet not connected");
       }
@@ -247,33 +239,26 @@ export function FastBridgeForm() {
         throw new Error("Insufficient balance for gas fees");
       }
 
-      // Subtract gas reserve from the amount to send
       const amountToSend = amount - TORUS_EVM_GAS_RESERVE;
       const amountStr = formatWeiToDecimalString(amountToSend);
-
-      // Quick Send from EVM to Base: Execute only Step 2 of native-to-base flow
-      // This deposits from Torus EVM to Base
       await executeEvmToBase(amountStr);
     },
     [isEvmWalletReady, executeEvmToBase],
   );
 
   const startNewTransfer = useCallback(async () => {
-    // Guard against concurrent transfers - prevents double-click issues
     if (!amountFrom || !walletsReady || isTransferInProgress) return;
 
-    // Reset any previous state before starting new transfer
     clearTransactionFromUrl();
     setCurrentTransactionId(null);
+    updateBridgeState({
+      step: SimpleBridgeStep.IDLE,
+      errorMessage: undefined,
+    });
+    setTransactions([]);
 
     setShowTransactionDialog(true);
-    const [error, _] = await tryAsync(
-      executeTransfer(direction, amountFrom, setTransactionInUrl),
-    );
-    if (error !== undefined) {
-      console.error("Transfer failed:", error);
-      // Dialog stays open to show ERROR state from hook
-    }
+    await tryAsync(executeTransfer(direction, amountFrom, setTransactionInUrl));
   }, [
     amountFrom,
     walletsReady,
@@ -283,10 +268,11 @@ export function FastBridgeForm() {
     setTransactionInUrl,
     clearTransactionFromUrl,
     setCurrentTransactionId,
+    updateBridgeState,
+    setTransactions,
   ]);
 
   const handleSubmit = useCallback(() => {
-    // Guard against concurrent transfers - prevents double-click issues
     if (!amountFrom || !walletsReady || isTransferInProgress) return;
 
     // Check for pending transaction
