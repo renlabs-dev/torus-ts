@@ -945,7 +945,14 @@ export function FastBridgeForm() {
 
       <QuickSendEvmDialog
         isOpen={showQuickSendDialog}
-        onClose={() => setShowQuickSendDialog(false)}
+        onClose={() => {
+          setShowQuickSendDialog(false);
+          updateBridgeState({
+            step: SimpleBridgeStep.IDLE,
+            errorMessage: undefined,
+          });
+          setTransactions([]);
+        }}
         evmBalance={torusEvmBalance?.value ?? 0n}
         currentEvmBalance={torusEvmBalance?.value ?? 0n}
         onSendToNative={handleSendToNative}
