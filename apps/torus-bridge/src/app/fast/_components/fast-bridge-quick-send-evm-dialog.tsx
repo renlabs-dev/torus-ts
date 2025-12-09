@@ -67,47 +67,50 @@ export function QuickSendEvmDialog({
 
   // Monitor EVM balance to auto-complete when transfer is detected
   useEffect(() => {
-    if (status === "sending" && currentEvmBalance !== undefined) {
-      // Save initial balance on first check
-      if (initialBalanceRef.current === null) {
-        initialBalanceRef.current = currentEvmBalance;
-        return;
+    if (status !== "sending" || currentEvmBalance === undefined) {
+      return;
+    }
+
+    // Save initial balance on first check
+    if (initialBalanceRef.current === null) {
+      initialBalanceRef.current = currentEvmBalance;
+      return;
+    }
+
+    // Calculate how much balance has decreased
+    const balanceDecrease = initialBalanceRef.current - currentEvmBalance;
+
+    // Expected decrease is the original amount minus gas reserve
+    const expectedDecrease =
+      originalAmount > GAS_RESERVE_WEI
+        ? originalAmount - GAS_RESERVE_WEI
+        : 0n;
+
+    // Detection logic:
+    // 1. If balance is now very small (dust threshold), consider it complete
+    // 2. OR if balance decreased by at least 80% of expected amount
+    const minExpectedDecrease =
+      (expectedDecrease * BALANCE_DECREASE_THRESHOLD_NUMERATOR) /
+      BALANCE_DECREASE_THRESHOLD_DENOMINATOR;
+
+    const isBalanceNearZero = currentEvmBalance < DUST_THRESHOLD_WEI;
+    const hasDecreasedEnough = balanceDecrease >= minExpectedDecrease;
+
+    if (isBalanceNearZero || hasDecreasedEnough) {
+      // Force refresh all balances (fire and forget, don't block success)
+      if (refetchBalances) {
+        refetchBalances().catch((err) => {
+          console.warn("Failed to refetch balances after transfer:", err);
+        });
       }
 
-      // Calculate how much balance has decreased
-      const balanceDecrease = initialBalanceRef.current - currentEvmBalance;
-
-      // Expected decrease is the original amount minus gas reserve
-      const expectedDecrease =
-        originalAmount > GAS_RESERVE_WEI
-          ? originalAmount - GAS_RESERVE_WEI
-          : 0n;
-
-      // Detection logic:
-      // 1. If balance is now very small (dust threshold), consider it complete
-      // 2. OR if balance decreased by at least 80% of expected amount
-      const minExpectedDecrease =
-        (expectedDecrease * BALANCE_DECREASE_THRESHOLD_NUMERATOR) /
-        BALANCE_DECREASE_THRESHOLD_DENOMINATOR;
-
-      const isBalanceNearZero = currentEvmBalance < DUST_THRESHOLD_WEI;
-      const hasDecreasedEnough = balanceDecrease >= minExpectedDecrease;
-
-      if (isBalanceNearZero || hasDecreasedEnough) {
-        // Force refresh all balances
-        if (refetchBalances) {
-          refetchBalances().catch(console.error);
-        }
-
-        // Mark failed transactions as recovered
-        if (onRecoverySuccess) {
-          onRecoverySuccess();
-        }
-
-        // Show success immediately
-        setStatus("success");
-        initialBalanceRef.current = null;
+      // Mark failed transactions as recovered
+      if (onRecoverySuccess) {
+        onRecoverySuccess();
       }
+
+      setStatus("success");
+      initialBalanceRef.current = null;
     }
   }, [
     currentEvmBalance,

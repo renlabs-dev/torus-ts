@@ -254,7 +254,8 @@ export function FastBridgeForm() {
   );
 
   const startNewTransfer = useCallback(async () => {
-    if (!amountFrom || !walletsReady) return;
+    // Guard against concurrent transfers - prevents double-click issues
+    if (!amountFrom || !walletsReady || isTransferInProgress) return;
 
     // Reset any previous state before starting new transfer
     clearTransactionFromUrl();
@@ -271,6 +272,7 @@ export function FastBridgeForm() {
   }, [
     amountFrom,
     walletsReady,
+    isTransferInProgress,
     executeTransfer,
     direction,
     setTransactionInUrl,
@@ -279,7 +281,8 @@ export function FastBridgeForm() {
   ]);
 
   const handleSubmit = useCallback(() => {
-    if (!amountFrom || !walletsReady) return;
+    // Guard against concurrent transfers - prevents double-click issues
+    if (!amountFrom || !walletsReady || isTransferInProgress) return;
 
     // Check for pending transaction
     if (pendingTransaction) {
@@ -290,7 +293,7 @@ export function FastBridgeForm() {
     }
 
     void startNewTransfer();
-  }, [amountFrom, walletsReady, pendingTransaction, startNewTransfer]);
+  }, [amountFrom, walletsReady, isTransferInProgress, pendingTransaction, startNewTransfer]);
 
   const handleDeleteAndStartNew = useCallback(
     (transactionId: string) => {
@@ -317,6 +320,9 @@ export function FastBridgeForm() {
     setShowTransactionDialog(false);
     clearTransactionFromUrl();
     setCurrentTransactionId(null);
+
+    // Reset F5 recovery flag so next transaction can be recovered
+    f5RecoveryExecutedRef.current = false;
 
     if (bridgeState.step === SimpleBridgeStep.COMPLETE) {
       setAmountFrom("");

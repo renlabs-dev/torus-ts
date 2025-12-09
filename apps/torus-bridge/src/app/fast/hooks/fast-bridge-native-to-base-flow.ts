@@ -116,6 +116,24 @@ async function trackSubstrateTransaction(
 ): Promise<void> {
   const abortController = new AbortController();
   let capturedTxHash: string | undefined;
+  let listenersCleanedUp = false;
+
+  // Define handlers outside promise to ensure they can be cleaned up
+  let onFinalized: ((data?: unknown) => void) | null = null;
+  let onError: ((error: unknown) => void) | null = null;
+  let onSubmitted: ((data?: unknown) => void) | null = null;
+  let onInBlock: ((data?: unknown) => void) | null = null;
+
+  // Cleanup function to remove all event listeners
+  const cleanupListeners = () => {
+    if (listenersCleanedUp) return;
+    listenersCleanedUp = true;
+
+    if (onFinalized) tracker.off("finalized", onFinalized);
+    if (onError) tracker.off("error", onError);
+    if (onSubmitted) tracker.off("submitted", onSubmitted);
+    if (onInBlock) tracker.off("inBlock", onInBlock);
+  };
 
   const trackerPromise = new Promise<void>((resolve, reject) => {
     const handleFinalized = async () => {
@@ -123,8 +141,7 @@ async function trackSubstrateTransaction(
         return;
       }
 
-      tracker.off("finalized", onFinalized);
-      tracker.off("error", onError);
+      cleanupListeners();
 
       const pollingResult = await pollEvmBalance(
         refetchTorusEvmBalance,
@@ -174,8 +191,7 @@ async function trackSubstrateTransaction(
         return;
       }
 
-      tracker.off("finalized", onFinalized);
-      tracker.off("error", onError);
+      cleanupListeners();
 
       updateBridgeState({
         step: SimpleBridgeStep.ERROR,
@@ -202,13 +218,13 @@ async function trackSubstrateTransaction(
       }
     };
 
-    const onFinalized = (data?: unknown) => {
+    onFinalized = (data?: unknown) => {
       handleTxHash(data);
       void handleFinalized();
     };
-    const onError = (error: unknown) => void handleError(error);
-    const onSubmitted = (data?: unknown) => handleTxHash(data);
-    const onInBlock = (data?: unknown) => handleTxHash(data);
+    onError = (error: unknown) => void handleError(error);
+    onSubmitted = (data?: unknown) => handleTxHash(data);
+    onInBlock = (data?: unknown) => handleTxHash(data);
 
     tracker.on("finalized", onFinalized);
     tracker.on("error", onError);
@@ -224,7 +240,9 @@ async function trackSubstrateTransaction(
     ),
   );
 
+  // Always cleanup listeners and abort on exit (timeout or success)
   abortController.abort();
+  cleanupListeners();
 
   if (timeoutError !== undefined) {
     const errorMessage = timeoutError.message.includes("timeout")

@@ -63,8 +63,34 @@ export async function pollBalanceUntilTarget<T>(
   const abortController = new AbortController();
 
   const pollPromise = new Promise<PollingResult>((resolve, reject) => {
-    const intervalId = setInterval(() => {
+    let intervalId: ReturnType<typeof setInterval> | null = null;
+    let isResolved = false;
+
+    const cleanup = () => {
+      if (intervalId !== null) {
+        clearInterval(intervalId);
+        intervalId = null;
+      }
+    };
+
+    // Listen for external abort signal to clean up interval
+    abortController.signal.addEventListener(
+      "abort",
+      () => {
+        cleanup();
+      },
+      { once: true },
+    );
+
+    intervalId = setInterval(() => {
+      // Guard against execution after abort or resolution
+      if (abortController.signal.aborted || isResolved) {
+        cleanup();
+        return;
+      }
+
       void (async () => {
+        // Check abort state at start of async context
         if (abortController.signal.aborted) {
           return;
         }
@@ -94,14 +120,16 @@ export async function pollBalanceUntilTarget<T>(
           : currentBalance >= targetBalance;
 
         if (isSuccess) {
-          clearInterval(intervalId);
+          isResolved = true;
+          cleanup();
           abortController.abort();
           resolve({ success: true });
           return;
         }
 
         if (pollCount >= POLLING_CONFIG.MAX_POLLS) {
-          clearInterval(intervalId);
+          isResolved = true;
+          cleanup();
           abortController.abort();
           reject(
             new Error(
