@@ -1,5 +1,4 @@
 import "@torus-ts/ui/globals.css";
-import { GoogleAnalytics } from "@next/third-parties/google";
 import { ReactQueryProvider } from "@torus-ts/query-provider";
 import { TorusProvider } from "@torus-ts/torus-provider";
 import { Layout } from "@torus-ts/ui/components/layout";
@@ -9,21 +8,20 @@ import { env, EnvScript } from "~/env";
 import { TRPCReactProvider } from "~/trpc/react";
 import PlausibleProvider from "next-plausible";
 import { Geist_Mono as GeistMono } from "next/font/google";
-import SidebarContainer from "../_components/sidebar/sidebar-container";
+import * as React from "react";
 
 export function generateMetadata() {
   return createSeoMetadata({
-    title: "Torus Portal",
-    description:
-      "Manage network permissions, agent allocations, and explore the hypergraph.",
+    title: "Torus",
+    description: "The thermodynamic god's favorite child.",
     keywords: [
-      "torus portal",
-      "permission management",
-      "agent allocation",
-      "network governance",
+      "torus",
+      "decentralized infrastructure",
+      "substrate blockchain",
       "web3 platform",
+      "blockchain technology",
     ],
-    ogSiteName: "Torus Portal",
+    ogSiteName: "Torus",
     canonical: "/",
     baseUrl: env("BASE_URL"),
   });
@@ -42,23 +40,22 @@ export default function RootLayout({
 }>) {
   return (
     <PlausibleProvider
-      domain="portal.torus.network,rollup.torus.network"
+      domain="torus.network,rollup.torus.network"
       trackOutboundLinks
     >
-      <Layout font={geistMono} headScripts={[EnvScript]}>
-        <ReactQueryProvider>
-          <TorusProvider
-            wsEndpoint={env("NEXT_PUBLIC_TORUS_RPC_URL")}
-            torusCacheUrl={env("NEXT_PUBLIC_TORUS_CACHE_URL")}
-          >
-            <TRPCReactProvider>
-              <SidebarContainer>{children}</SidebarContainer>
-              <Toaster />
-              <GoogleAnalytics gaId="G-7YCMH64Q4J" />
-            </TRPCReactProvider>
-          </TorusProvider>
-        </ReactQueryProvider>
-      </Layout>
+      <ReactQueryProvider>
+        <TorusProvider
+          wsEndpoint={env("NEXT_PUBLIC_TORUS_RPC_URL")}
+          torusCacheUrl={env("NEXT_PUBLIC_TORUS_CACHE_URL")}
+        >
+          <TRPCReactProvider>
+            <Layout font={geistMono} headScripts={[EnvScript]}>
+              {children}
+            </Layout>
+            <Toaster />
+          </TRPCReactProvider>
+        </TorusProvider>
+      </ReactQueryProvider>
     </PlausibleProvider>
   );
 }

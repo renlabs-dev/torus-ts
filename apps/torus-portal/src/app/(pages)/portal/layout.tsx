@@ -1,23 +1,29 @@
 import { createSeoMetadata } from "@torus-ts/ui/components/seo";
 import { env } from "~/env";
+import SidebarContainer from "../../_components/sidebar/sidebar-container";
 
 export function generateMetadata() {
   return createSeoMetadata({
     title: "Torus Portal",
-    description: "The thermodynamic god's favorite portal.",
+    description:
+      "Manage network permissions, agent allocations, and explore the hypergraph.",
     keywords: [
-      "permission graph",
-      "network visualization",
-      "agent relationships",
-      "permission mapping",
-      "network explorer",
+      "torus portal",
+      "permission management",
+      "agent allocation",
+      "network governance",
+      "web3 platform",
     ],
     ogSiteName: "Torus Portal",
-    canonical: "/permission-graph",
+    canonical: "/",
     baseUrl: env("BASE_URL"),
   });
 }
 
-export default function Layout({ children }: { children: React.ReactNode }) {
-  return children;
+export default function RootLayout({
+  children,
+}: Readonly<{
+  children: React.ReactNode;
+}>) {
+  return <SidebarContainer>{children}</SidebarContainer>;
 }
