@@ -160,6 +160,8 @@ Key packages use different naming patterns:
 - **Blockchain**: Polkadot.js API, custom Substrate integration
 - **Development**: Turborepo, pnpm workspaces, Just task runner
 
+See [tRPC Client Pattern](./docs/TRPC_CLIENT_PATTERN.md) for tRPC configuration requirements with Next.js 16.
+
 ## Documentation
 
 ### JSDoc Standards
@@ -266,6 +268,8 @@ assert(value !== undefined, "Value should be defined because...");
   - `const db = drizzle(conn, { schema })` at top level
 - Instead use functions that lazily initialize on first call
   - `const getEnv = () => envSchema.parse(process.env)` at top level
+
+**Exception**: tRPC clients use a controlled singleton pattern initialized via `useState` to prevent recreation on re-renders. See [tRPC Client Pattern](./docs/TRPC_CLIENT_PATTERN.md).
 
 ### Field Naming Convention
 
