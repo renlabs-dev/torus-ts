@@ -210,10 +210,14 @@ export function FastBridgeForm() {
     handleFractionClick(1.0); // All = 100%
   }, [handleFractionClick]);
 
+  // EVM Recover only requires EVM wallet connection (not Torus Native)
+  const isEvmWalletReady = connectionState.evmWallet.isConnected;
+
   const handleSendToNative = useCallback(
     async (amount: bigint) => {
-      if (!walletsReady) {
-        throw new Error("Wallets not ready");
+      // EVM Recover only needs EVM wallet connected
+      if (!isEvmWalletReady) {
+        throw new Error("EVM wallet not connected");
       }
 
       if (amount <= TORUS_EVM_GAS_RESERVE) {
@@ -229,13 +233,14 @@ export function FastBridgeForm() {
       // This withdraws directly from Torus EVM to Native
       await executeEvmToNative(amountStr);
     },
-    [walletsReady, executeEvmToNative],
+    [isEvmWalletReady, executeEvmToNative],
   );
 
   const handleSendToBase = useCallback(
     async (amount: bigint) => {
-      if (!walletsReady) {
-        throw new Error("Wallets not ready");
+      // EVM Recover only needs EVM wallet connected
+      if (!isEvmWalletReady) {
+        throw new Error("EVM wallet not connected");
       }
 
       if (amount <= TORUS_EVM_GAS_RESERVE) {
@@ -250,7 +255,7 @@ export function FastBridgeForm() {
       // This deposits from Torus EVM to Base
       await executeEvmToBase(amountStr);
     },
-    [walletsReady, executeEvmToBase],
+    [isEvmWalletReady, executeEvmToBase],
   );
 
   const startNewTransfer = useCallback(async () => {
