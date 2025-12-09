@@ -86,9 +86,6 @@ export function FastBridgeForm() {
   const [showHistoryDialog, setShowHistoryDialog] = useState(false);
   const [showQuickSendDialog, setShowQuickSendDialog] = useState(false);
   const [showPendingDialog, setShowPendingDialog] = useState(false);
-  const [pendingActionCallback, setPendingActionCallback] = useState<
-    (() => void) | null
-  >(null);
 
   const { toast } = useToast();
   const { areWalletsReady, connectionState, chainIds } = useDualWallet();
@@ -276,10 +273,7 @@ export function FastBridgeForm() {
   const handleSubmit = useCallback(() => {
     if (!amountFrom || !walletsReady || isTransferInProgress) return;
 
-    // Check for pending transaction
     if (pendingTransaction) {
-      // Store the callback to execute after user confirms deletion
-      setPendingActionCallback(() => startNewTransfer);
       setShowPendingDialog(true);
       return;
     }
@@ -297,48 +291,73 @@ export function FastBridgeForm() {
     (transactionId: string) => {
       deleteTransaction(transactionId);
       clearTransactionFromUrl();
-      // Execute the stored callback after deletion
-      if (pendingActionCallback) {
-        pendingActionCallback();
-        setPendingActionCallback(null);
-      }
+      setCurrentTransactionId(null);
+      updateBridgeState({
+        step: SimpleBridgeStep.IDLE,
+        errorMessage: undefined,
+      });
+      setTransactions([]);
+
+      if (!amountFrom || !walletsReady) return;
+
+      setShowTransactionDialog(true);
+      void tryAsync(
+        executeTransfer(direction, amountFrom, setTransactionInUrl),
+      );
     },
-    [deleteTransaction, clearTransactionFromUrl, pendingActionCallback],
+    [
+      deleteTransaction,
+      clearTransactionFromUrl,
+      setCurrentTransactionId,
+      updateBridgeState,
+      setTransactions,
+      amountFrom,
+      walletsReady,
+      executeTransfer,
+      direction,
+      setTransactionInUrl,
+    ],
   );
 
-  const handleCloseDialog = useCallback(() => {
-    // Only allow closing when completed or error
-    if (
-      bridgeState.step !== SimpleBridgeStep.COMPLETE &&
-      bridgeState.step !== SimpleBridgeStep.ERROR
-    ) {
-      return;
-    }
-
+  const forceCloseDialog = useCallback(() => {
     setShowTransactionDialog(false);
     clearTransactionFromUrl();
     setCurrentTransactionId(null);
-
-    // Reset F5 recovery flag so next transaction can be recovered
     f5RecoveryExecutedRef.current = false;
-
-    if (bridgeState.step === SimpleBridgeStep.COMPLETE) {
-      setAmountFrom("");
-    }
-
-    // Reset bridge state to avoid stale state when starting new transfer
     updateBridgeState({
       step: SimpleBridgeStep.IDLE,
       errorMessage: undefined,
     });
     setTransactions([]);
   }, [
-    bridgeState.step,
     clearTransactionFromUrl,
     setCurrentTransactionId,
     updateBridgeState,
     setTransactions,
   ]);
+
+  const handleCloseDialog = useCallback(
+    (force?: boolean) => {
+      if (force) {
+        forceCloseDialog();
+        return;
+      }
+
+      if (
+        bridgeState.step !== SimpleBridgeStep.COMPLETE &&
+        bridgeState.step !== SimpleBridgeStep.ERROR
+      ) {
+        return;
+      }
+
+      if (bridgeState.step === SimpleBridgeStep.COMPLETE) {
+        setAmountFrom("");
+      }
+
+      forceCloseDialog();
+    },
+    [bridgeState.step, forceCloseDialog],
+  );
 
   const handleRetryFromHistory = useCallback(
     (transaction: FastBridgeTransactionHistoryItem) => {
@@ -1004,10 +1023,7 @@ export function FastBridgeForm() {
       {pendingTransaction && (
         <PendingTransactionDialog
           isOpen={showPendingDialog}
-          onClose={() => {
-            setShowPendingDialog(false);
-            setPendingActionCallback(null);
-          }}
+          onClose={() => setShowPendingDialog(false)}
           pendingTransaction={pendingTransaction}
           onResume={handleRetryFromHistory}
           onDeleteAndStartNew={handleDeleteAndStartNew}

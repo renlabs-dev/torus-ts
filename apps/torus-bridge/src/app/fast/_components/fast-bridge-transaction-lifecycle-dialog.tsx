@@ -1,5 +1,15 @@
 "use client";
 
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@torus-ts/ui/components/alert-dialog";
 import { Button } from "@torus-ts/ui/components/button";
 import {
   Dialog,
@@ -21,7 +31,7 @@ import { SimpleBridgeStep } from "./fast-bridge-types";
 
 interface TransactionLifecycleDialogProps {
   isOpen: boolean;
-  onClose: () => void;
+  onClose: (force?: boolean) => void;
   direction: SimpleBridgeDirection;
   currentStep: SimpleBridgeStep;
   transactions: SimpleBridgeTransaction[];
@@ -79,6 +89,7 @@ export function TransactionLifecycleDialog({
 }: TransactionLifecycleDialogProps) {
   const isBaseToNative = direction === "base-to-native";
   const [showSignatureWarning, setShowSignatureWarning] = useState(false);
+  const [showCloseConfirm, setShowCloseConfirm] = useState(false);
   const openedAtRef = useRef<number | null>(null);
 
   useEffect(() => {
@@ -146,36 +157,46 @@ export function TransactionLifecycleDialog({
     });
   }, [currentStep, hasError, transactions, direction, lifecycleSteps]);
 
-  const canCloseNow = useCallback(() => {
-    return (hasError || isCompleted) && !isJustOpened();
-  }, [hasError, isCompleted, isJustOpened]);
+  const isInProgress = !hasError && !isCompleted;
+
+  const handleCloseAttempt = useCallback(() => {
+    if (isJustOpened()) return;
+
+    if (isInProgress) {
+      setShowCloseConfirm(true);
+    } else {
+      onClose();
+    }
+  }, [isInProgress, isJustOpened, onClose]);
+
+  const handleConfirmClose = useCallback(() => {
+    setShowCloseConfirm(false);
+    onClose(true);
+  }, [onClose]);
 
   const handleOpenChange = useCallback(
     (open: boolean) => {
-      if (!open && canCloseNow()) {
-        onClose();
+      if (!open) {
+        handleCloseAttempt();
       }
     },
-    [canCloseNow, onClose],
+    [handleCloseAttempt],
   );
 
   return (
     <Dialog open={isOpen} onOpenChange={handleOpenChange}>
       <DialogContent
         className="flex max-h-[85vh] max-w-2xl flex-col p-0"
-        hideCloseButton={!hasError && !isCompleted}
         onOpenAutoFocus={(e) => {
           e.preventDefault();
         }}
         onEscapeKeyDown={(e) => {
-          if (!canCloseNow()) {
-            e.preventDefault();
-          }
+          e.preventDefault();
+          handleCloseAttempt();
         }}
         onPointerDownOutside={(e) => {
-          if (!canCloseNow()) {
-            e.preventDefault();
-          }
+          e.preventDefault();
+          handleCloseAttempt();
         }}
       >
         <DialogHeader className="px-6 pt-6">
@@ -220,13 +241,31 @@ export function TransactionLifecycleDialog({
             )}
 
             {isCompleted && (
-              <Button onClick={onClose} variant="outline">
+              <Button onClick={() => onClose()} variant="outline">
                 Close
               </Button>
             )}
           </div>
         )}
       </DialogContent>
+
+      <AlertDialog open={showCloseConfirm} onOpenChange={setShowCloseConfirm}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Cancel transaction?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Your transaction is still in progress. If you close now, you may
+              need to retry or recover the transaction later from the history.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Continue Transaction</AlertDialogCancel>
+            <AlertDialogAction onClick={handleConfirmClose}>
+              Close Anyway
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </Dialog>
   );
 }
