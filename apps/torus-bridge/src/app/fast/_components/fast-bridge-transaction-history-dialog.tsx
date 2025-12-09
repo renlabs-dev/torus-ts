@@ -39,8 +39,15 @@ export function TransactionHistoryDialog({
   onContinue,
   getExplorerUrl,
 }: TransactionHistoryDialogProps) {
-  const { getTransactions, clearHistory, deleteTransaction } =
-    useFastBridgeTransactionHistory();
+  const transactions = useFastBridgeTransactionHistory(
+    (state) => state.transactions,
+  );
+  const clearHistory = useFastBridgeTransactionHistory(
+    (state) => state.clearHistory,
+  );
+  const deleteTransaction = useFastBridgeTransactionHistory(
+    (state) => state.deleteTransaction,
+  );
   const [filter, setFilter] = useState<TransactionHistoryFilter>("all");
   const [visibleCount, setVisibleCount] = useState(ITEMS_PER_PAGE);
   const [tooltipEnabled, setTooltipEnabled] = useState(false);
@@ -61,7 +68,10 @@ export function TransactionHistoryDialog({
     return undefined;
   }, [isOpen]);
 
-  const allTransactions = getTransactions();
+  const allTransactions = useMemo(
+    () => [...transactions].sort((a, b) => b.timestamp - a.timestamp),
+    [transactions],
+  );
 
   const filteredTransactions = useMemo(() => {
     switch (filter) {
