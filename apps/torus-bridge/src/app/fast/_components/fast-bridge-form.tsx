@@ -115,6 +115,7 @@ export function FastBridgeForm() {
     getPendingTransaction,
     deleteTransaction,
     markFailedAsRecoveredViaEvmRecover,
+    updateTransaction,
   } = useFastBridgeTransactionHistory();
   const errorCount = getTransactions().filter(
     (tx) => tx.status === "error",
@@ -594,6 +595,40 @@ export function FastBridgeForm() {
       }
 
       if (transaction.status !== "completed") {
+        const signingSteps = [
+          SimpleBridgeStep.STEP_1_PREPARING,
+          SimpleBridgeStep.STEP_1_SIGNING,
+          SimpleBridgeStep.STEP_2_PREPARING,
+          SimpleBridgeStep.STEP_2_SWITCHING,
+          SimpleBridgeStep.STEP_2_SIGNING,
+        ];
+
+        if (signingSteps.includes(transaction.currentStep)) {
+          const isStep1 = transaction.currentStep.startsWith("step_1");
+          updateTransaction(transaction.id, {
+            status: "error",
+            currentStep: SimpleBridgeStep.ERROR,
+            errorMessage:
+              "Page was refreshed before signing was completed. Your transaction was not submitted. Please retry to continue.",
+            errorStep: isStep1 ? 1 : 2,
+            canRetry: true,
+          });
+
+          const updatedTransaction = getTransactionById(txId);
+          if (updatedTransaction) {
+            try {
+              handleRetryFromHistoryRef.current(updatedTransaction);
+            } catch (error) {
+              console.error(
+                "[F5 Recovery] Failed to restore transaction:",
+                error,
+              );
+              clearTransactionFromUrl();
+            }
+          }
+          return;
+        }
+
         try {
           handleRetryFromHistoryRef.current(transaction);
         } catch (error) {
@@ -607,6 +642,7 @@ export function FastBridgeForm() {
     getTransactionById,
     clearTransactionFromUrl,
     toast,
+    updateTransaction,
   ]);
 
   const getChainInfo = (isFrom: boolean) => {
