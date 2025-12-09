@@ -132,14 +132,14 @@ export function WalletBalance() {
   const secondaryItems = balancesList.filter((item) => item.isSecondary);
 
   return (
-    <Card className="flex h-[253px] max-h-[253px] min-h-[253px] w-full flex-col p-4">
-      <div className="flex flex-col gap-4">
+    <Card className="flex h-[253px] max-h-[253px] min-h-[253px] w-full flex-col px-4 pt-10 pb-2">
+      <div className="flex flex-col gap-10">
         {primaryItems.map((item) => (
           <div key={item.label} className="flex flex-col gap-1">
             {item.amount == null ? (
               <Skeleton className="h-5 w-24" />
             ) : (
-              <div className="-my-0.5 text-sm font-semibold leading-5 text-white">
+              <div className="-my-0.5 text-[16px] font-semibold leading-5 text-white">
                 {formatToken(item.amount)} {item.asset}
               </div>
             )}
