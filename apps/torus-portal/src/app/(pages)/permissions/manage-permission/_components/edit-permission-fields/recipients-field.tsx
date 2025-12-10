@@ -99,7 +99,7 @@ export function RecipientsField({
                 return (
                   <div className="flex-1">
                     <FormAddressField
-                      field={{ ...field, value: fieldValue }}
+                      field={{ ...field, value: field.value }}
                       className={cn(isDuplicate && "border-destructive")}
                       disabled={!canEditRecipients || isWeightsOnly}
                     />

@@ -85,7 +85,7 @@ export function StreamsField({ control, disabled = false }: StreamsFieldProps) {
                     <div className="relative">
                       <Input
                         {...field}
-                        value={fieldValue}
+                        value={field.value}
                         placeholder="Stream ID (H256)"
                         disabled={disabled}
                         className={cn(isDuplicate && "border-destructive")}

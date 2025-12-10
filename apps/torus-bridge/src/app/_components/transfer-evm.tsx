@@ -288,14 +288,10 @@ export function TransferEVM() {
 
     // Wait for transaction receipt
     const [receiptError] = await tryAsync(
-      // Cast needed due to version mismatch between SDK's wagmi and app's wagmi Config types
-      waitForTransactionReceipt(
-        wagmiConfig as Parameters<typeof waitForTransactionReceipt>[0],
-        {
-          hash: txHash,
-          confirmations: 2,
-        },
-      ),
+      waitForTransactionReceipt(wagmiConfig, {
+        hash: txHash,
+        confirmations: 2,
+      }),
     );
 
     if (receiptError !== undefined) {
