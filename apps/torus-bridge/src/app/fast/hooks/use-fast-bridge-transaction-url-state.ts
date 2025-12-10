@@ -1,19 +1,19 @@
 "use client";
 
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { useCallback } from "react";
 
 export function useFastBridgeTransactionUrlState() {
-  const router = useRouter();
   const searchParams = useSearchParams();
 
   const setTransactionInUrl = useCallback(
     (txId: string) => {
       const params = new URLSearchParams(searchParams.toString());
       params.set("txId", txId);
-      router.push(`/fast?${params.toString()}`, { scroll: false });
+      const newUrl = `/fast?${params.toString()}`;
+      window.history.replaceState(null, "", newUrl);
     },
-    [router, searchParams],
+    [searchParams],
   );
 
   const getTransactionFromUrl = useCallback(() => {
@@ -24,8 +24,9 @@ export function useFastBridgeTransactionUrlState() {
     const params = new URLSearchParams(searchParams.toString());
     params.delete("txId");
     const newSearch = params.toString();
-    router.push(`/fast${newSearch ? `?${newSearch}` : ""}`, { scroll: false });
-  }, [router, searchParams]);
+    const newUrl = `/fast${newSearch ? `?${newSearch}` : ""}`;
+    window.history.replaceState(null, "", newUrl);
+  }, [searchParams]);
 
   return {
     setTransactionInUrl,
