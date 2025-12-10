@@ -8,9 +8,6 @@ on:
         type: string
         description: "Environment name (webapps or prediction_swarm)"
     secrets:
-      db_url:
-        required: true
-        description: "Database connection URL"
       vault_addr:
         required: true
       vault_role_id:
@@ -42,6 +39,15 @@ jobs:
 
       - uses: ariga/setup-atlas@v0
 
+      - name: Resolve Database URL
+        id: resolve-db-url
+        run: |
+          if [ "${{ inputs.env_name }}" = "webapps" ]; then
+            echo "db_url=$POSTGRES_WEBAPPS_URL" >> $GITHUB_OUTPUT
+          else
+            echo "db_url=$POSTGRES_PREDICTION_SWARM_URL" >> $GITHUB_OUTPUT
+          fi
+
       - name: Generate migrations report
         run: |
           mkdir -p ./migration-artifacts
@@ -50,16 +56,16 @@ jobs:
           echo "Commit: ${{ github.sha }}" >> ./migration-artifacts/migrations-report-${{ inputs.env_name }}.txt
           echo "Environment: ${{ inputs.env_name }}" >> ./migration-artifacts/migrations-report-${{ inputs.env_name }}.txt
           echo -e "\nCurrent migration status:" >> ./migration-artifacts/migrations-report-${{ inputs.env_name }}.txt
-          atlas migrate status --env ${{ inputs.env_name }} --url "${{ secrets.db_url }}" >> ./migration-artifacts/migrations-report-${{ inputs.env_name }}.txt
+          atlas migrate status --env ${{ inputs.env_name }} --url "${{ steps.resolve-db-url.outputs.db_url }}" >> ./migration-artifacts/migrations-report-${{ inputs.env_name }}.txt
           echo -e "\nMigrations to be applied:" >> ./migration-artifacts/migrations-report-${{ inputs.env_name }}.txt
-          atlas migrate apply --env ${{ inputs.env_name }} --dry-run --allow-dirty --url "${{ secrets.db_url }}" >> ./migration-artifacts/migrations-report-${{ inputs.env_name }}.txt 2>&1
+          atlas migrate apply --env ${{ inputs.env_name }} --dry-run --allow-dirty --url "${{ steps.resolve-db-url.outputs.db_url }}" >> ./migration-artifacts/migrations-report-${{ inputs.env_name }}.txt 2>&1
 
       - name: Apply migrations
         id: apply-migrations
         run: |
           set +e  # Don't exit on command failure
           output=$(atlas migrate apply --env ${{ inputs.env_name }} --allow-dirty \
-                  --url "${{ secrets.db_url }}" --lock-timeout 120s 2>&1)
+                  --url "${{ steps.resolve-db-url.outputs.db_url }}" --lock-timeout 120s 2>&1)
           exit_code=$?
 
           set -e  # restore
@@ -72,7 +78,7 @@ jobs:
       - name: Update migrations report with final status
         run: |
           echo -e "\nFinal migration status:" >> ./migration-artifacts/migrations-report-${{ inputs.env_name }}.txt
-          atlas migrate status --env ${{ inputs.env_name }} --url "${{ secrets.db_url }}" >> ./migration-artifacts/migrations-report-${{ inputs.env_name }}.txt
+          atlas migrate status --env ${{ inputs.env_name }} --url "${{ steps.resolve-db-url.outputs.db_url }}" >> ./migration-artifacts/migrations-report-${{ inputs.env_name }}.txt
 
       - name: Generate migration apply summary
         if: always()
