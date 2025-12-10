@@ -101,7 +101,7 @@ export function TransactionLifecycleDialog({
   }, [isOpen]);
 
   const isJustOpened = useCallback(() => {
-    if (!openedAtRef.current) return false;
+    if (!openedAtRef.current) return true;
     return Date.now() - openedAtRef.current < 500;
   }, []);
 

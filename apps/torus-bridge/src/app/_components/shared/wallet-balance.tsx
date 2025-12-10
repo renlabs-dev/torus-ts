@@ -132,7 +132,7 @@ export function WalletBalance() {
   const secondaryItems = balancesList.filter((item) => item.isSecondary);
 
   return (
-    <Card className="flex h-[253px] max-h-[253px] min-h-[253px] w-full flex-col px-4 pb-2 pt-10">
+    <Card className="flex h-[253px] max-h-[253px] min-h-[253px] w-full flex-col px-4 py-5">
       <div className="flex flex-col gap-10">
         {primaryItems.map((item) => (
           <div key={item.label} className="flex flex-col gap-1">
