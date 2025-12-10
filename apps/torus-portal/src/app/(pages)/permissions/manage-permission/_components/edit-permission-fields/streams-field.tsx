@@ -78,13 +78,15 @@ export function StreamsField({ control, disabled = false }: StreamsFieldProps) {
             control={control}
             name={`newStreams.${index}.streamId`}
             render={({ field }) => {
-              const isDuplicate = duplicateIds.has(field.value);
+              const fieldValue = field.value ?? "";
+              const isDuplicate = duplicateIds.has(fieldValue);
               return (
                 <FormItem className="flex-1">
                   <FormControl>
                     <div className="relative">
                       <Input
                         {...field}
+                        value={fieldValue}
                         placeholder="Stream ID (H256)"
                         disabled={disabled}
                         className={cn(isDuplicate && "border-destructive")}

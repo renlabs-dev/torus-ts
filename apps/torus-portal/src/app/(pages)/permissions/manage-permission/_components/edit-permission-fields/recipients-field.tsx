@@ -95,11 +95,12 @@ export function RecipientsField({
               control={control}
               name={`newTargets.${index}.address`}
               render={({ field }) => {
-                const isDuplicate = duplicateAddresses.has(field.value);
+                const fieldValue = field.value ?? "";
+                const isDuplicate = duplicateAddresses.has(fieldValue);
                 return (
                   <div className="flex-1">
                     <FormAddressField
-                      field={field}
+                      field={{ ...field, value: fieldValue }}
                       className={cn(isDuplicate && "border-destructive")}
                       disabled={!canEditRecipients || isWeightsOnly}
                     />

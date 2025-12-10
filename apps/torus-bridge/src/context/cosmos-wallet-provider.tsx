@@ -80,12 +80,14 @@ export function CosmosWalletProvider({
         },
       }}
       signerOptions={{
+        // @ts-expect-error - Version mismatch between @cosmjs/stargate and @cosmos-kit GasPrice types
         signingCosmwasm: () => {
           return {
             // TODO cosmos get gas price from registry or RPC
             gasPrice: GasPrice.fromString("0.03token"),
           };
         },
+        // @ts-expect-error - Version mismatch between @cosmjs/stargate and @cosmos-kit GasPrice types
         signingStargate: () => {
           return {
             // TODO cosmos get gas price from registry or RPC
