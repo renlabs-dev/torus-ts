@@ -9,6 +9,7 @@
     "@changesets/cli": "^2.29.5",
     "@torus-ts/prettier-config": "workspace:*",
     "babel-plugin-react-compiler": "^1.0.0",
+    "patch-package": "^8.0.1",
     "prettier": "catalog:",
     "turbo": "^2.3.3",
     "typescript": "catalog:"
@@ -33,6 +34,9 @@
       "ignoreMissing": [
         "next"
       ]
+    },
+    "patchedDependencies": {
+      "@hyperlane-xyz/widgets@17.0.0": "patches/@hyperlane-xyz__widgets@17.0.0.patch"
     }
   }
 }

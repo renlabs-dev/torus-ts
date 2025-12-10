@@ -1,31 +1,37 @@
 import { fileURLToPath } from "url";
+import bundleAnalyzer from "@next/bundle-analyzer";
+
+const withBundleAnalyzer = bundleAnalyzer({
+  enabled: process.env.ANALYZE === "true",
+});
 
 /** @type {import("next").NextConfig} */
 const config = {
   reactStrictMode: true,
 
+  // Standalone output for optimized Docker builds (~50MB vs ~500MB)
+  output: "standalone",
+
   reactCompiler: true,
 
   experimental: {
-    // Optimize imports for heavy packages
+    // Optimize imports for heavy packages - tree shaking
     optimizePackageImports: [
       "@hyperlane-xyz/sdk",
       "@hyperlane-xyz/widgets",
-      "@solana/web3.js",
-      "@solana/wallet-adapter-react",
-      "@cosmos-kit/react",
-      "@starknet-react/core",
-      "starknet",
+      "@hyperlane-xyz/utils",
+      "@hyperlane-xyz/registry",
+      "viem",
+      "@wagmi/core",
+      "lucide-react",
+      "@polkadot/api",
+      "@polkadot/util",
+      "@polkadot/util-crypto",
     ],
   },
 
   // Use Turbopack for faster builds
-  turbopack: {
-    rules: {
-      "*.yaml": ["yaml-loader"],
-      "*.yml": ["yaml-loader"],
-    },
-  },
+  turbopack: {},
 
   transpilePackages: [
     "@torus-ts/api",
@@ -35,48 +41,47 @@ const config = {
     "@torus-ts/env-validation",
   ],
 
-  productionBrowserSourceMaps: true,
+  // Disable source maps in production for smaller bundles
+  productionBrowserSourceMaps: false,
 
   /** We already do typechecking as separate task in CI */
   typescript: { ignoreBuildErrors: true },
 
-  webpack: (config, { isServer, webpack }) => {
+  webpack: (config, { isServer }) => {
+    // Optimize bundle splitting
     if (!isServer) {
-      // Replace node: protocol imports with their browser versions
-      config.plugins.push(
-        new webpack.NormalModuleReplacementPlugin(/^node:/, (resource) => {
-          resource.request = resource.request.replace(/^node:/, "");
-        }),
-      );
-
-      config.resolve.fallback = {
-        ...config.resolve.fallback,
-        fs: false,
-        net: false,
-        tls: false,
-        child_process: false,
-        util: fileURLToPath(new URL("util/", import.meta.url)),
-        crypto: fileURLToPath(new URL("crypto-browserify", import.meta.url)),
-        stream: fileURLToPath(new URL("stream-browserify", import.meta.url)),
-        events: fileURLToPath(new URL("events/", import.meta.url)),
-        process: fileURLToPath(new URL("process/browser", import.meta.url)),
-      };
-
-      // Optimize bundle splitting
       config.optimization.splitChunks = {
         chunks: "all",
+        maxInitialRequests: 25,
+        minSize: 20000,
         cacheGroups: {
+          // Hyperlane SDK in its own chunk
+          hyperlane: {
+            test: /[\\/]node_modules[\\/]@hyperlane-xyz[\\/]/,
+            name: "hyperlane",
+            chunks: "all",
+            priority: 30,
+          },
+          // Polkadot/Substrate packages
+          polkadot: {
+            test: /[\\/]node_modules[\\/]@polkadot[\\/]/,
+            name: "polkadot",
+            chunks: "all",
+            priority: 25,
+          },
+          // EVM packages (viem, wagmi)
+          evm: {
+            test: /[\\/]node_modules[\\/](viem|@wagmi)[\\/]/,
+            name: "evm",
+            chunks: "all",
+            priority: 20,
+          },
+          // Default vendor chunk for remaining packages
           vendor: {
             test: /[\\/]node_modules[\\/]/,
             name: "vendors",
             chunks: "all",
             priority: 10,
-          },
-          wallet: {
-            test: /[\\/]node_modules[\\/](@solana|@cosmos-kit|@starknet|@hyperlane)[\\/]/,
-            name: "wallet-vendors",
-            chunks: "all",
-            priority: 20,
           },
         },
       };
@@ -92,4 +97,4 @@ const config = {
   },
 };
 
-export default config;
+export default withBundleAnalyzer(config);
