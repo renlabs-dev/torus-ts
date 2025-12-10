@@ -30,7 +30,6 @@ jobs:
     with:
       env_name: webapps
     secrets:
-      db_url: ${{ secrets.POSTGRES_WEBAPPS_URL }}
       vault_addr: ${{ secrets.VAULT_ADDR }}
       vault_role_id: ${{ secrets.VAULT_ROLE_ID }}
       vault_secret_id: ${{ secrets.VAULT_SECRET_ID }}
@@ -40,7 +39,6 @@ jobs:
     with:
       env_name: prediction_swarm
     secrets:
-      db_url: ${{ secrets.POSTGRES_PREDICTION_SWARM_URL }}
       vault_addr: ${{ secrets.VAULT_ADDR }}
       vault_role_id: ${{ secrets.VAULT_ROLE_ID }}
       vault_secret_id: ${{ secrets.VAULT_SECRET_ID }}
@@ -55,7 +53,6 @@ jobs:
     with:
       env_name: webapps
     secrets:
-      db_url: ${{ secrets.POSTGRES_WEBAPPS_URL }}
       vault_addr: ${{ secrets.VAULT_ADDR }}
       vault_role_id: ${{ secrets.VAULT_ROLE_ID }}
       vault_secret_id: ${{ secrets.VAULT_SECRET_ID }}
@@ -70,7 +67,6 @@ jobs:
     with:
       env_name: prediction_swarm
     secrets:
-      db_url: ${{ secrets.POSTGRES_PREDICTION_SWARM_URL }}
       vault_addr: ${{ secrets.VAULT_ADDR }}
       vault_role_id: ${{ secrets.VAULT_ROLE_ID }}
       vault_secret_id: ${{ secrets.VAULT_SECRET_ID }}
@@ -84,7 +80,6 @@ jobs:
     with:
       env_name: webapps
     secrets:
-      db_url: ${{ secrets.POSTGRES_WEBAPPS_URL }}
       vault_addr: ${{ secrets.VAULT_ADDR }}
       vault_role_id: ${{ secrets.VAULT_ROLE_ID }}
       vault_secret_id: ${{ secrets.VAULT_SECRET_ID }}
@@ -98,7 +93,6 @@ jobs:
     with:
       env_name: prediction_swarm
     secrets:
-      db_url: ${{ secrets.POSTGRES_PREDICTION_SWARM_URL }}
       vault_addr: ${{ secrets.VAULT_ADDR }}
       vault_role_id: ${{ secrets.VAULT_ROLE_ID }}
       vault_secret_id: ${{ secrets.VAULT_SECRET_ID }}

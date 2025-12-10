@@ -8,9 +8,6 @@ on:
         type: string
         description: "Environment name (webapps or prediction_swarm)"
     secrets:
-      db_url:
-        required: true
-        description: "Database connection URL"
       vault_addr:
         required: true
       vault_role_id:
@@ -79,7 +76,13 @@ jobs:
       - name: Check migration status
         id: migration-status
         run: |
-          output=$(atlas migrate status --env ${{ inputs.env_name }} --url "${{ secrets.db_url }}")
+          if [ "${{ inputs.env_name }}" = "webapps" ]; then
+            DB_URL="$POSTGRES_WEBAPPS_URL"
+          else
+            DB_URL="$POSTGRES_PREDICTION_SWARM_URL"
+          fi
+
+          output=$(atlas migrate status --env ${{ inputs.env_name }} --url "$DB_URL")
           echo "has_pending=$(echo "$output" | grep -q "PENDING" && echo "true" || echo "false")" >> $GITHUB_OUTPUT
           echo "$output"
 
