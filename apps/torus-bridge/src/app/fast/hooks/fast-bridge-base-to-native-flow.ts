@@ -524,15 +524,15 @@ export async function executeBaseToNativeStep2(
     refetchNativeBalance,
     baselineNativeBalance,
     expectedNativeIncrease,
-    "Torus Native",
+    "Torus",
   );
 
   if (!pollingResult.success) {
-    const explorerUrl = getExplorerUrl(txHash, "Torus Native");
+    const explorerUrl = getExplorerUrl(txHash, "Torus");
     addTransaction({
       step: 2,
       status: "ERROR",
-      chainName: "Torus Native",
+      chainName: "Torus",
       message: pollingResult.errorMessage ?? "Withdrawal confirmation failed",
       txHash,
       explorerUrl: explorerUrl || undefined,
@@ -553,10 +553,10 @@ export async function executeBaseToNativeStep2(
   addTransaction({
     step: 2,
     status: "SUCCESS",
-    chainName: "Torus Native",
+    chainName: "Torus",
     message: "Withdrawal complete",
     txHash,
-    explorerUrl: getExplorerUrl(txHash, "Torus Native"),
+    explorerUrl: getExplorerUrl(txHash, "Torus"),
   });
 
   updateBridgeState({ step: SimpleBridgeStep.COMPLETE });

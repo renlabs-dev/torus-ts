@@ -450,13 +450,11 @@ export function FastBridgeForm() {
                 ? "CONFIRMING"
                 : null,
         chainName:
-          transaction.direction === "base-to-native" ? "Base" : "Torus Native",
+          transaction.direction === "base-to-native" ? "Base" : "Torus",
         explorerUrl: transaction.step1TxHash
           ? getExplorerUrl(
               transaction.step1TxHash,
-              transaction.direction === "base-to-native"
-                ? "Base"
-                : "Torus Native",
+              transaction.direction === "base-to-native" ? "Base" : "Torus",
             )
           : undefined,
         message:
@@ -694,7 +692,7 @@ export function FastBridgeForm() {
     }
 
     return {
-      name: "Torus Native",
+      name: "Torus",
       icon: "/assets/icons/bridge/torus-native-simple.svg",
       balance: formatBalance(nativeBalance.data),
       address: formatAddress(torusWalletAddress),
@@ -790,7 +788,7 @@ export function FastBridgeForm() {
         <Image src={chain.icon} alt={chain.name} width={20} height={20} />
         <span className="text-foreground font-medium">
           <span className="font-bold">$TORUS</span>{" "}
-          {chain.name.replace("Torus Native", "Native")}
+          {chain.name}
         </span>
       </div>
     );

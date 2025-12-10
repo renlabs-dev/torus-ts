@@ -70,7 +70,7 @@ function getStepConnectorColor(status: StepStatus) {
 function getNetworkName(title: string, description?: string) {
   const context = `${title} ${description ?? ""}`;
   if (context.includes("Base")) return "Base";
-  if (context.includes("Native")) return "Torus Native";
+  if (context.includes("Torus")) return "Torus";
   return "Torus EVM";
 }
 

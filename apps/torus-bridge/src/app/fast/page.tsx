@@ -4,9 +4,9 @@ import { FastBridge } from "./_components/fast-bridge";
 
 export function generateMetadata() {
   return {
-    title: "Fast Bridge - Torus Network",
+    title: "Fast Bridge - Torus",
     description:
-      "Transfer TORUS tokens between Base and Native chains in one seamless flow",
+      "Transfer TORUS tokens between Base and Torus chains in one seamless flow",
   };
 }
 

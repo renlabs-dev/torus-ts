@@ -57,8 +57,8 @@ export function PendingTransactionDialog({
 }: PendingTransactionDialogProps) {
   const directionLabel =
     pendingTransaction.direction === "base-to-native"
-      ? "Base → Native"
-      : "Native → Base";
+      ? "Base → Torus"
+      : "Torus → Base";
 
   const handleResume = () => {
     onResume(pendingTransaction);

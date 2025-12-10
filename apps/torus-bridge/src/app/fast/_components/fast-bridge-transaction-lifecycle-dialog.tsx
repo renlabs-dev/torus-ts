@@ -213,7 +213,7 @@ export function TransactionLifecycleDialog({
             Transfer Progress
             <span className="text-muted-foreground text-sm font-normal">
               ({amount} TORUS -{" "}
-              {isBaseToNative ? "Base → Native" : "Native → Base"})
+              {isBaseToNative ? "Base → Torus" : "Torus → Base"})
             </span>
           </DialogTitle>
           <DialogDescription className="sr-only">

@@ -381,7 +381,7 @@ export function useOrchestratedTransfer() {
 
       toast({
         title: "Transfer Complete!",
-        description: "Successfully transferred Base TORUS to Native TORUS",
+        description: "Successfully transferred Base TORUS to Torus",
       });
     },
     [
@@ -566,7 +566,7 @@ export function useOrchestratedTransfer() {
 
       toast({
         title: "Transfer Complete!",
-        description: "Successfully transferred Native TORUS to Base TORUS",
+        description: "Successfully transferred Torus to Base TORUS",
       });
     },
     [
@@ -647,7 +647,7 @@ export function useOrchestratedTransfer() {
 
       toast({
         title: "Transfer Complete!",
-        description: "Successfully transferred Base TORUS to Native TORUS",
+        description: "Successfully transferred Base TORUS to Torus",
       });
     },
     [
@@ -720,7 +720,7 @@ export function useOrchestratedTransfer() {
 
       toast({
         title: "Transfer Complete!",
-        description: "Successfully transferred Native TORUS to Base TORUS",
+        description: "Successfully transferred Torus to Base TORUS",
       });
     },
     [
@@ -784,7 +784,7 @@ export function useOrchestratedTransfer() {
           addTransaction({
             step: 1,
             status: "ERROR",
-            chainName: direction === "base-to-native" ? "Base" : "Torus Native",
+            chainName: direction === "base-to-native" ? "Base" : "Torus",
             message: errorMessage,
           });
         }
@@ -897,7 +897,7 @@ export function useOrchestratedTransfer() {
         {
           step: 1 as const,
           status: "SUCCESS" as const,
-          chainName: "Torus Native",
+          chainName: "Torus",
           message: "Already on Torus EVM",
         },
         {
@@ -1005,7 +1005,7 @@ export function useOrchestratedTransfer() {
         addTransaction({
           step: 1,
           status: "SUCCESS",
-          chainName: "Torus Native",
+          chainName: "Torus",
           message: "Bridge complete (F5 recovery)",
         });
 
@@ -1077,11 +1077,11 @@ export function useOrchestratedTransfer() {
         addTransaction({
           step: 2,
           status: "SUCCESS",
-          chainName: "Torus Native",
+          chainName: "Torus",
           message: "Withdrawal complete (F5 recovery)",
           txHash: step2TxHash,
           explorerUrl: step2TxHash
-            ? getExplorerUrl(step2TxHash, "Torus Native")
+            ? getExplorerUrl(step2TxHash, "Torus")
             : undefined,
         });
 
@@ -1097,7 +1097,7 @@ export function useOrchestratedTransfer() {
         toast({
           title: "Transfer Complete!",
           description:
-            "Successfully transferred Base TORUS to Native TORUS (recovered)",
+            "Successfully transferred Base TORUS to Torus (recovered)",
         });
 
         onComplete();
@@ -1149,7 +1149,7 @@ export function useOrchestratedTransfer() {
         toast({
           title: "Transfer Complete!",
           description:
-            "Successfully transferred Native TORUS to Base TORUS (recovered)",
+            "Successfully transferred Torus to Base TORUS (recovered)",
         });
 
         onComplete();

@@ -130,12 +130,12 @@ export function getExplorerUrl(txHash: string, chainName: string): string {
     return `https://basescan.org/tx/${txHash}`;
   }
 
-  if (lowerChainName === "torus evm" || lowerChainName === "torus") {
+  if (lowerChainName === "torus evm") {
     return `https://blockscout.torus.network/tx/${txHash}`;
   }
 
-  if (lowerChainName === "torus native") {
-    // Torus Native (Substrate) doesn't have a public block explorer yet
+  if (lowerChainName === "torus" || lowerChainName === "torus native") {
+    // Torus (Substrate) doesn't have a public block explorer yet
     return "";
   }
 

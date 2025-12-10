@@ -92,7 +92,7 @@ const SelectCardList = [
   {
     href: "/fast",
     text: "Bridge",
-    description: "Direct transfers: Base ⟷ Native Torus in one flow",
+    description: "Direct transfers: Base ⟷ Torus in one flow",
     iconFrom: "/assets/icons/bridge/torus-base.svg",
     iconTo: "/assets/icons/balance/torus.svg",
     priority: true,
