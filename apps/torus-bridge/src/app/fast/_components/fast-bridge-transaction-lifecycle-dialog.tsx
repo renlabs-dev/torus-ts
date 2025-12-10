@@ -190,6 +190,9 @@ export function TransactionLifecycleDialog({
         onOpenAutoFocus={(e) => {
           e.preventDefault();
         }}
+        onCloseAutoFocus={(e) => {
+          e.preventDefault();
+        }}
         onEscapeKeyDown={(e) => {
           e.preventDefault();
           handleCloseAttempt();
@@ -197,6 +200,12 @@ export function TransactionLifecycleDialog({
         onPointerDownOutside={(e) => {
           e.preventDefault();
           handleCloseAttempt();
+        }}
+        onInteractOutside={(e) => {
+          e.preventDefault();
+        }}
+        onFocusOutside={(e) => {
+          e.preventDefault();
         }}
       >
         <DialogHeader className="px-6 pt-6">
@@ -259,8 +268,13 @@ export function TransactionLifecycleDialog({
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Continue Transaction</AlertDialogCancel>
-            <AlertDialogAction onClick={handleConfirmClose}>
+            <AlertDialogCancel className="bg-primary text-primary-foreground hover:bg-primary/90">
+              Continue Transaction
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleConfirmClose}
+              className="bg-secondary text-secondary-foreground hover:bg-secondary/80"
+            >
               Close Anyway
             </AlertDialogAction>
           </AlertDialogFooter>

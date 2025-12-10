@@ -770,9 +770,24 @@ export function useOrchestratedTransfer() {
         } else {
           await executeNativeToBase(amount);
         }
-      } catch {
-        // Error handling is done in individual flows
-        // Just ensure we keep the transaction ID for retry
+      } catch (error) {
+        // If the error wasn't already handled by the individual flows, handle it here
+        // This catches errors like "Wallets not properly connected" that happen before
+        // the transaction flow can update the bridge state
+        if (bridgeState.step === SimpleBridgeStep.IDLE) {
+          const errorMessage =
+            error instanceof Error ? error.message : "Transfer failed";
+          updateBridgeState({
+            step: SimpleBridgeStep.ERROR,
+            errorMessage,
+          });
+          addTransaction({
+            step: 1,
+            status: "ERROR",
+            chainName: direction === "base-to-native" ? "Base" : "Torus Native",
+            message: errorMessage,
+          });
+        }
       } finally {
         // Clear callback reference after transfer completes or fails
         onTransactionCreatedRef.current = null;
@@ -783,6 +798,8 @@ export function useOrchestratedTransfer() {
       executeNativeToBase,
       updateBridgeState,
       setTransactions,
+      bridgeState.step,
+      addTransaction,
     ],
   );
 
