@@ -787,8 +787,7 @@ export function FastBridgeForm() {
       <div className="flex items-center gap-2">
         <Image src={chain.icon} alt={chain.name} width={20} height={20} />
         <span className="text-foreground font-medium">
-          <span className="font-bold">$TORUS</span>{" "}
-          {chain.name}
+          <span className="font-bold">$TORUS</span> {chain.name}
         </span>
       </div>
     );
