@@ -4,6 +4,7 @@ import { TorusProvider } from "@torus-ts/torus-provider";
 import { Layout } from "@torus-ts/ui/components/layout";
 import { createSeoMetadata } from "@torus-ts/ui/components/seo";
 import { Toaster } from "@torus-ts/ui/components/toaster";
+import { ConditionalSidebar } from "~/app/_components/sidebar/conditional-sidebar";
 import { env, EnvScript } from "~/env";
 import { TRPCReactProvider } from "~/trpc/react";
 import PlausibleProvider from "next-plausible";
@@ -50,7 +51,7 @@ export default function RootLayout({
         >
           <TRPCReactProvider>
             <Layout font={geistMono} headScripts={[EnvScript]}>
-              {children}
+              <ConditionalSidebar>{children}</ConditionalSidebar>
             </Layout>
             <Toaster />
           </TRPCReactProvider>

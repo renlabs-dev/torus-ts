@@ -7,7 +7,8 @@ import { cn } from "@torus-ts/ui/lib/utils";
 import { env } from "~/env";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import { motion } from "motion/react";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef } from "react";
+import { useLandingSidebar } from "./landing-sidebar-context";
 
 const CONTENT = {
   summary: `Torus is a decentralized protocol that lets agents form swarms to reach complex goals. At scale, Torus enables swarms to unify into one coherent cyber-organism.`,
@@ -28,8 +29,8 @@ const CONTENT = {
 };
 
 export function ViewMore() {
-  const [isExpanded, setIsExpanded] = useState(false);
-  const [isAnimating, setIsAnimating] = useState(false);
+  const { isExpanded, setIsExpanded } = useLandingSidebar();
+  const isAnimatingRef = useRef(false);
   const contentRef = useRef<HTMLDivElement>(null);
 
   const links = getLinks(env("NEXT_PUBLIC_TORUS_CHAIN_ENV"));
@@ -58,8 +59,8 @@ export function ViewMore() {
   ];
 
   const scrollToContent = useCallback(() => {
-    if (isAnimating) return;
-    setIsAnimating(true);
+    if (isAnimatingRef.current) return;
+    isAnimatingRef.current = true;
     setIsExpanded(true);
 
     requestAnimationFrame(() => {
@@ -67,13 +68,15 @@ export function ViewMore() {
         behavior: "smooth",
         block: "start",
       });
-      setTimeout(() => setIsAnimating(false), 800);
+      setTimeout(() => {
+        isAnimatingRef.current = false;
+      }, 800);
     });
-  }, [isAnimating]);
+  }, [setIsExpanded]);
 
   const scrollToHero = useCallback(() => {
-    if (isAnimating) return;
-    setIsAnimating(true);
+    if (isAnimatingRef.current) return;
+    isAnimatingRef.current = true;
     setIsExpanded(false);
 
     window.scrollTo({
@@ -82,14 +85,14 @@ export function ViewMore() {
     });
 
     setTimeout(() => {
-      setIsAnimating(false);
+      isAnimatingRef.current = false;
     }, 800);
-  }, [isAnimating]);
+  }, [setIsExpanded]);
 
   // Listen for external trigger (from HoverHeader About button)
   useEffect(() => {
     const handleTriggerAbout = () => {
-      if (!isExpanded && !isAnimating) {
+      if (!isExpanded && !isAnimatingRef.current) {
         scrollToContent();
       }
     };
@@ -97,13 +100,13 @@ export function ViewMore() {
     window.addEventListener("trigger-about-section", handleTriggerAbout);
     return () =>
       window.removeEventListener("trigger-about-section", handleTriggerAbout);
-  }, [isExpanded, isAnimating, scrollToContent]);
+  }, [isExpanded, scrollToContent]);
 
   useEffect(() => {
     let lastScrollY = window.scrollY;
 
     const handleScroll = () => {
-      if (isAnimating) return;
+      if (isAnimatingRef.current) return;
 
       const currentScrollY = window.scrollY;
       const viewportHeight = window.innerHeight;
@@ -131,7 +134,7 @@ export function ViewMore() {
 
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
-  }, [isExpanded, isAnimating, scrollToContent, scrollToHero]);
+  }, [isExpanded, scrollToContent, scrollToHero]);
 
   const handleButtonClick = useCallback(() => {
     if (isExpanded) {

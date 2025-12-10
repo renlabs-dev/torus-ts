@@ -1,6 +1,6 @@
 import { createSeoMetadata } from "@torus-ts/ui/components/seo";
 import { env } from "~/env";
-import SidebarContainer from "../../_components/sidebar/sidebar-container";
+import type { ReactNode } from "react";
 
 export function generateMetadata() {
   return createSeoMetadata({
@@ -20,10 +20,6 @@ export function generateMetadata() {
   });
 }
 
-export default function RootLayout({
-  children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
-  return <SidebarContainer>{children}</SidebarContainer>;
+export default function PortalLayout({ children }: { children: ReactNode }) {
+  return <>{children}</>;
 }
