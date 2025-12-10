@@ -135,8 +135,7 @@ export function SearchPredictorCommand() {
                 </div>
               </CommandEmpty>
             )}
-            {searchResults !== undefined &&
-              searchResults.length === 0 &&
+            {searchResults?.length === 0 &&
               scrapingStatus?.status === "scraping" &&
               queueItem && (
                 <CommandEmpty>
@@ -161,8 +160,7 @@ export function SearchPredictorCommand() {
                   </div>
                 </CommandEmpty>
               )}
-            {searchResults !== undefined &&
-              searchResults.length === 0 &&
+            {searchResults?.length === 0 &&
               scrapingStatus?.status === "scraping" &&
               !queueItem && (
                 <CommandEmpty>
@@ -190,8 +188,7 @@ export function SearchPredictorCommand() {
               )}
 
             {/* Show "Add" option as regular CommandItem when no results and not scraping */}
-            {searchResults !== undefined &&
-              searchResults.length === 0 &&
+            {searchResults?.length === 0 &&
               scrapingStatus?.status !== "scraping" &&
               search.length > 0 && (
                 <CommandGroup>

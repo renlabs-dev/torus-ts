@@ -37,15 +37,17 @@ export function UnstakeFields({
           // eslint-disable-next-line react-hooks/rules-of-hooks
           const accountStakedBy = useKeyStakingTo(api, delegatorAddress);
 
+          const fieldValue = field.value ?? "";
+
           // Find the stake amount for the selected staked account
           const stakeToSelected = accountStakedBy.data?.find(
-            (stake) => stake.address === field.value,
+            (stake) => stake.address === fieldValue,
           );
 
           return (
             <div className="space-y-2">
               <FormAddressField
-                field={field}
+                field={{ ...field, value: fieldValue }}
                 label="Staked Account"
                 disabled={!isAccountConnected}
               />
@@ -54,7 +56,7 @@ export function UnstakeFields({
                 <FormDescription>
                   The account from which to unstake tokens.
                 </FormDescription>
-                {field.value && (
+                {fieldValue && (
                   <div className="text-muted-foreground text-xs">
                     {accountStakedBy.isLoading ? (
                       <Skeleton className="h-4 w-24" />
@@ -79,7 +81,7 @@ export function UnstakeFields({
             <FormLabel>Amount</FormLabel>
             <FormControl>
               <TokenAmountInput
-                value={field.value}
+                value={field.value ?? ""}
                 onChange={field.onChange}
                 placeholder="Enter amount to unstake"
                 disabled={!isAccountConnected}
