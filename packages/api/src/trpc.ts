@@ -12,7 +12,7 @@ import type { SS58Address } from "@torus-network/sdk/types";
 import { checkSS58 } from "@torus-network/sdk/types";
 import { connectToChainRpc } from "@torus-network/sdk/utils";
 import { validateEnvOrExit } from "@torus-network/torus-utils/env";
-import { trySync } from "@torus-network/torus-utils/try-catch";
+import { tryAsync, trySync } from "@torus-network/torus-utils/try-catch";
 import { createDb } from "@torus-ts/db/client";
 import { KaitoTwitterAPI } from "@torus-ts/twitter-client";
 import { initTRPC, TRPCError } from "@trpc/server";
@@ -25,13 +25,20 @@ import { createHashSigner } from "./auth/sign";
 
 let globalDb: ReturnType<typeof createDb> | null = null;
 let globalWsApi: ApiPromise | null = null;
+let globalWsApiPromise: Promise<ApiPromise> | null = null;
 let globalTwitterClient: KaitoTwitterAPI | null = null;
 let globalServerHashSigner: ((hash: string) => string) | null = null;
+let globalServerHashSignerPromise: Promise<(hash: string) => string> | null =
+  null;
 
-const getEnv = validateEnvOrExit({
+/**
+ * Environment validator for tRPC context
+ * Type is automatically inferred from the schema
+ */
+const validateTrpcEnv = validateEnvOrExit({
   NEXT_PUBLIC_TORUS_RPC_URL: z
     .string()
-    .nonempty("TORUS_CURATOR_MNEMONIC is required"),
+    .nonempty("NEXT_PUBLIC_TORUS_RPC_URL is required"),
   NEXT_PUBLIC_PREDICTION_APP_ADDRESS: z
     .string()
     .min(
@@ -54,6 +61,25 @@ const getEnv = validateEnvOrExit({
     .min(1, "PREDICTION_APP_MNEMONIC is required for signing receipts"),
 });
 
+type TrpcEnv = ReturnType<typeof validateTrpcEnv>;
+
+/**
+ * Cached validated environment variables
+ * Lazy initialization prevents process.exit(1) from validateEnvOrExit at module load time
+ */
+let cachedEnv: TrpcEnv | null = null;
+
+/**
+ * Get validated environment variables with caching
+ * Returns the cached result or exits the process if validation fails
+ */
+function getEnv(): TrpcEnv {
+  if (cachedEnv === null) {
+    cachedEnv = validateTrpcEnv(process.env);
+  }
+  return cachedEnv;
+}
+
 // TODO: better error and connection handling
 function cacheCreateDb() {
   globalDb = globalDb ?? createDb();
@@ -61,32 +87,103 @@ function cacheCreateDb() {
 }
 
 // TODO: better error and connection handling
-async function cacheCreateWsApi() {
-  globalWsApi =
-    globalWsApi ??
-    (await connectToChainRpc(getEnv(process.env).NEXT_PUBLIC_TORUS_RPC_URL));
-  return globalWsApi;
+async function cacheCreateWsApi(): Promise<ApiPromise> {
+  // Return cached result if available
+  if (globalWsApi !== null) {
+    return globalWsApi;
+  }
+
+  // Return in-flight promise to prevent race conditions
+  if (globalWsApiPromise !== null) {
+    return globalWsApiPromise;
+  }
+
+  // Create and cache the promise to prevent concurrent connection attempts
+  globalWsApiPromise = (async () => {
+    const env = getEnv();
+    const [error, api] = await tryAsync(
+      connectToChainRpc(env.NEXT_PUBLIC_TORUS_RPC_URL),
+    );
+
+    if (error !== undefined) {
+      globalWsApiPromise = null; // Clear promise on error to allow retry
+      console.error("Failed to connect to Chain RPC:", error.message);
+      throw new TRPCError({
+        code: "INTERNAL_SERVER_ERROR",
+        message: "Failed to initialize blockchain connection",
+        cause: error,
+      });
+    }
+
+    // After error check, api is guaranteed to be defined by Result<T,E> type
+    globalWsApi = api;
+    return globalWsApi;
+  })();
+
+  return globalWsApiPromise;
 }
 
 // Lazy init Twitter client
 function getorCreateTwitterClient() {
   if (globalTwitterClient === null) {
-    const env = getEnv(process.env);
-    globalTwitterClient = new KaitoTwitterAPI({
-      apiKey: env.TWITTERAPI_IO_KEY,
+    const [error, client] = trySync(() => {
+      const env = getEnv();
+      return new KaitoTwitterAPI({
+        apiKey: env.TWITTERAPI_IO_KEY,
+      });
     });
+
+    if (error !== undefined) {
+      console.error("Failed to initialize Twitter client:", error.message);
+      throw new TRPCError({
+        code: "INTERNAL_SERVER_ERROR",
+        message: "Failed to initialize Twitter API client",
+        cause: error,
+      });
+    }
+
+    // After error check, client is guaranteed to be defined by Result<T,E> type
+    globalTwitterClient = client;
   }
   return globalTwitterClient;
 }
 
-async function getOrCreateServerHashSigner() {
-  if (globalServerHashSigner === null) {
-    const env = getEnv(process.env);
-    globalServerHashSigner = await createHashSigner(
-      env.PREDICTION_APP_MNEMONIC,
-    );
+async function getOrCreateServerHashSigner(): Promise<
+  (hash: string) => string
+> {
+  // Return cached result if available
+  if (globalServerHashSigner !== null) {
+    return globalServerHashSigner;
   }
-  return globalServerHashSigner;
+
+  // Return in-flight promise to prevent race conditions
+  if (globalServerHashSignerPromise !== null) {
+    return globalServerHashSignerPromise;
+  }
+
+  // Create and cache the promise to prevent concurrent creation attempts
+  globalServerHashSignerPromise = (async () => {
+    const env = getEnv();
+    const [error, signer] = await tryAsync(
+      createHashSigner(env.PREDICTION_APP_MNEMONIC),
+    );
+
+    if (error !== undefined) {
+      globalServerHashSignerPromise = null; // Clear promise on error to allow retry
+      console.error("Failed to create hash signer:", error.message);
+      throw new TRPCError({
+        code: "INTERNAL_SERVER_ERROR",
+        message: "Failed to initialize signature signer",
+        cause: error,
+      });
+    }
+
+    // After error check, signer is guaranteed to be defined by Result<T,E> type
+    globalServerHashSigner = signer;
+    return globalServerHashSigner;
+  })();
+
+  return globalServerHashSignerPromise;
 }
 
 /**

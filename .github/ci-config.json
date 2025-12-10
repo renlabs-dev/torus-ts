@@ -1,25 +1,25 @@
 {
   "apps": {
     "torus-page": {
-      "pr_preview": true
+      "pr_preview": false
     },
     "torus-portal": {
-      "pr_preview": true
+      "pr_preview": false
     },
     "torus-wallet": {
       "deploys": ["torus-cache"],
-      "pr_preview": true
+      "pr_preview": false
     },
     "torus-allocator": {
       "deploys": ["torus-cache", "torus-worker"],
-      "pr_preview": true
+      "pr_preview": false
     },
     "torus-bridge": {
-      "pr_preview": true
+      "pr_preview": false
     },
     "torus-governance": {
       "deploys": ["torus-cache", "torus-worker"],
-      "pr_preview": true
+      "pr_preview": false
     },
     "torus-cache": {
       "pr_preview": true
@@ -27,13 +27,9 @@
     "torus-worker": {
       "pr_preview": false
     },
-    "torus-prophet-finder": {
-      "pr_preview": true,
-      "preview_domain": "prophetfinder.com"
-    },
     "prediction-swarm": {
       "deploys": ["swarm-twitter", "swarm-verifier", "swarm-filter"],
-      "pr_preview": true,
+      "pr_preview": false,
       "preview_domain": "predictionswarm.com"
     },
     "swarm-twitter": {
