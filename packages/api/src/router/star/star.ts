@@ -344,13 +344,17 @@ export const starRouter = {
         )
         .groupBy(sql`verdict_status`);
 
-      const result = { ongoing: 0, true: 0, false: 0 };
-      counts.forEach((row) => {
-        if (row.verdictStatus === "ongoing") result.ongoing = Number(row.count);
-        if (row.verdictStatus === "true") result.true = Number(row.count);
-        if (row.verdictStatus === "false") result.false = Number(row.count);
-      });
-
-      return result;
+      return counts.reduce(
+        (acc, row) => {
+          if (row.verdictStatus === "ongoing")
+            return { ...acc, ongoing: Number(row.count) };
+          if (row.verdictStatus === "true")
+            return { ...acc, true: Number(row.count) };
+          if (row.verdictStatus === "false")
+            return { ...acc, false: Number(row.count) };
+          return acc;
+        },
+        { ongoing: 0, true: 0, false: 0 },
+      );
     }),
 } satisfies TRPCRouterRecord;

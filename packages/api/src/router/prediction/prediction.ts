@@ -722,19 +722,17 @@ export const predictionRouter = {
         )
         .groupBy(sql`verdict_status`);
 
-      const result = {
-        ongoing: 0,
-        true: 0,
-        false: 0,
-      };
-
-      counts.forEach((row) => {
-        if (row.verdictStatus === "ongoing") result.ongoing = row.count;
-        if (row.verdictStatus === "true") result.true = row.count;
-        if (row.verdictStatus === "false") result.false = row.count;
-      });
-
-      return result;
+      return counts.reduce(
+        (acc, row) => {
+          if (row.verdictStatus === "ongoing")
+            return { ...acc, ongoing: row.count };
+          if (row.verdictStatus === "true") return { ...acc, true: row.count };
+          if (row.verdictStatus === "false")
+            return { ...acc, false: row.count };
+          return acc;
+        },
+        { ongoing: 0, true: 0, false: 0 },
+      );
     }),
 
   /**
@@ -1119,19 +1117,17 @@ export const predictionRouter = {
         )
         .groupBy(sql`verdict_status`);
 
-      const result = {
-        ongoing: 0,
-        true: 0,
-        false: 0,
-      };
-
-      counts.forEach((row) => {
-        if (row.verdictStatus === "ongoing") result.ongoing = row.count;
-        if (row.verdictStatus === "true") result.true = row.count;
-        if (row.verdictStatus === "false") result.false = row.count;
-      });
-
-      return result;
+      return counts.reduce(
+        (acc, row) => {
+          if (row.verdictStatus === "ongoing")
+            return { ...acc, ongoing: row.count };
+          if (row.verdictStatus === "true") return { ...acc, true: row.count };
+          if (row.verdictStatus === "false")
+            return { ...acc, false: row.count };
+          return acc;
+        },
+        { ongoing: 0, true: 0, false: 0 },
+      );
     }),
   /**
    * Get prediction counts for multiple tickers
