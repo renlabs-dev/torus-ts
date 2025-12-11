@@ -20,6 +20,7 @@ import { ExpandedFeedItem } from "~/app/_components/expanded-feed/expanded-feed-
 import { FeedLegend } from "~/app/_components/expanded-feed/expanded-feed-legend-tooltip";
 import { ExpandedViewPageHeader } from "~/app/_components/expanded-view-page-header";
 import { api } from "~/trpc/react";
+import dayjs from "dayjs";
 import { Eye, Globe, Star } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect } from "react";
@@ -56,8 +57,12 @@ export default function FeedPage() {
   const falsePage = parseInt(searchParams.get("false") ?? "1");
 
   // Read filter params from URL
-  const dateFrom = searchParams.get("dateFrom") ?? undefined;
-  const dateTo = searchParams.get("dateTo") ?? undefined;
+  const rawDateFrom = searchParams.get("dateFrom") ?? undefined;
+  const rawDateTo = searchParams.get("dateTo") ?? undefined;
+  const dateFrom =
+    rawDateFrom && dayjs(rawDateFrom).isValid() ? rawDateFrom : undefined;
+  const dateTo =
+    rawDateTo && dayjs(rawDateTo).isValid() ? rawDateTo : undefined;
   const topicIds =
     searchParams.get("topics")?.split(",").filter(Boolean) ?? undefined;
 
@@ -77,14 +82,15 @@ export default function FeedPage() {
   }, [walletAddress]);
 
   // === ALL FEED QUERIES ===
+  const filters =
+    dateFrom || dateTo || (topicIds?.length ?? 0) > 0
+      ? { dateFrom, dateTo, topicIds }
+      : { dateFrom: undefined, dateTo: undefined, topicIds: undefined };
+
   const { data: allCounts = defaultCounts } =
-    api.prediction.getFeedCounts.useQuery(
-      { dateFrom, dateTo, topicIds },
-      {
-        enabled: view === "all",
-        initialData: defaultCounts,
-      },
-    );
+    api.prediction.getFeedCounts.useQuery(filters, {
+      enabled: view === "all",
+    });
 
   const { data: allOngoingPredictions, isLoading: allOngoingLoading } =
     api.prediction.getFeedByVerdict.useQuery(

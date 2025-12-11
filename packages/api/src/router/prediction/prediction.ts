@@ -1031,14 +1031,19 @@ export const predictionRouter = {
    */
   getFeedCounts: publicProcedure
     .input(
-      z.object({
-        dateFrom: z.string().datetime().optional(),
-        dateTo: z.string().datetime().optional(),
-        topicIds: z.array(z.string()).optional(),
-      }),
+      z
+        .object({
+          dateFrom: z.string().datetime().optional(),
+          dateTo: z.string().datetime().optional(),
+          topicIds: z.array(z.string()).optional(),
+        })
+        .partial()
+        .optional(),
     )
     .query(async ({ ctx, input }) => {
-      const { dateFrom, dateTo, topicIds } = input;
+      const dateFrom = input?.dateFrom;
+      const dateTo = input?.dateTo;
+      const topicIds = input?.topicIds;
 
       const counts = await ctx.db
         .select({
