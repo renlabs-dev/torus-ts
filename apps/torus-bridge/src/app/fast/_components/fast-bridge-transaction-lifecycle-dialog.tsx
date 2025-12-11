@@ -190,6 +190,9 @@ export function TransactionLifecycleDialog({
         onOpenAutoFocus={(e) => {
           e.preventDefault();
         }}
+        onCloseAutoFocus={(e) => {
+          e.preventDefault();
+        }}
         onEscapeKeyDown={(e) => {
           e.preventDefault();
           handleCloseAttempt();
@@ -198,13 +201,19 @@ export function TransactionLifecycleDialog({
           e.preventDefault();
           handleCloseAttempt();
         }}
+        onInteractOutside={(e) => {
+          e.preventDefault();
+        }}
+        onFocusOutside={(e) => {
+          e.preventDefault();
+        }}
       >
         <DialogHeader className="px-6 pt-6">
           <DialogTitle className="flex items-center gap-2">
             Transfer Progress
             <span className="text-muted-foreground text-sm font-normal">
               ({amount} TORUS -{" "}
-              {isBaseToNative ? "Base → Native" : "Native → Base"})
+              {isBaseToNative ? "Base → Torus" : "Torus → Base"})
             </span>
           </DialogTitle>
           <DialogDescription className="sr-only">
@@ -259,8 +268,13 @@ export function TransactionLifecycleDialog({
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Continue Transaction</AlertDialogCancel>
-            <AlertDialogAction onClick={handleConfirmClose}>
+            <AlertDialogCancel className="bg-primary text-primary-foreground hover:bg-primary/80 hover:text-primary-foreground transition-colors">
+              Continue Transaction
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleConfirmClose}
+              className="bg-secondary text-secondary-foreground hover:bg-secondary/80"
+            >
               Close Anyway
             </AlertDialogAction>
           </AlertDialogFooter>

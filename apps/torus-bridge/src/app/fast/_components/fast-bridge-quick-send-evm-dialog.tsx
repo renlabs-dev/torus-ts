@@ -125,9 +125,7 @@ export function QuickSendEvmDialog({
 
     // Save the full balance for display (user understands gas will be deducted)
     setOriginalAmount(evmBalance);
-    setOriginalDestination(
-      destination === "native" ? "Torus Native" : "Base Chain",
-    );
+    setOriginalDestination(destination === "native" ? "Torus" : "Base Chain");
 
     // Send the full balance - the handler will subtract gas reserve
     const sendPromise =
@@ -237,9 +235,7 @@ export function QuickSendEvmDialog({
               <p className="text-muted-foreground text-sm">
                 Failed to send to{" "}
                 <span className="font-semibold">
-                  {selectedDestination === "native"
-                    ? "Torus Native"
-                    : "Base Chain"}
+                  {selectedDestination === "native" ? "Torus" : "Base Chain"}
                 </span>
               </p>
               {errorMessage && (
@@ -286,8 +282,8 @@ export function QuickSendEvmDialog({
             EVM Recover
           </DialogTitle>
           <DialogDescription className="text-sm">
-            Recover your EVM balance by transferring it to Torus Native or Base
-            chain. Gas fees are automatically reserved.
+            Recover your EVM balance by transferring it to Torus or Base chain.
+            Gas fees are automatically reserved.
           </DialogDescription>
         </DialogHeader>
 
@@ -331,17 +327,15 @@ export function QuickSendEvmDialog({
                   <div className="flex flex-col items-center gap-4 text-center">
                     <Image
                       src="/assets/icons/balance/torus-native.svg"
-                      alt="Torus Native"
+                      alt="Torus"
                       width={64}
                       height={64}
                       className="flex-shrink-0"
                     />
                     <div>
-                      <h4 className="mb-1 text-lg font-semibold">
-                        Torus Native
-                      </h4>
+                      <h4 className="mb-1 text-lg font-semibold">Torus</h4>
                       <p className="text-muted-foreground text-xs">
-                        Send to Torus Native chain
+                        Send to Torus chain
                       </p>
                     </div>
                     <Button

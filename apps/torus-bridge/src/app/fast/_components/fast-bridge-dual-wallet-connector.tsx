@@ -36,10 +36,10 @@ export function DualWalletConnector({ direction }: DualWalletConnectorProps) {
 
   const getDirectionDescription = () => {
     if (direction === "base-to-native") {
-      return "Transfer Base TORUS → Native TORUS";
+      return "Transfer Base TORUS → Torus";
     }
 
-    return "Transfer Native TORUS → Base TORUS";
+    return "Transfer Torus → Base TORUS";
   };
 
   const getStatusIndicatorColor = () => {
@@ -88,7 +88,7 @@ export function DualWalletConnector({ direction }: DualWalletConnectorProps) {
               className={`h-3 w-3 rounded-full ${getStatusIndicatorColor()}`}
             />
             <div>
-              <p className="font-medium">Torus Native Wallet</p>
+              <p className="font-medium">Torus Wallet</p>
               <p className="text-muted-foreground text-sm">
                 {connectionState.torusWallet.isConnected
                   ? `Connected: ${smallAddress(connectionState.torusWallet.address || "")}`

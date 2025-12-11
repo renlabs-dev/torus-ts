@@ -30,7 +30,8 @@ export function useTokenTransfer(onDone?: () => void, throwOnError = false) {
   const addTransfer = useStore((s) => s.addTransfer);
   const updateTransferStatus = useStore((s) => s.updateTransferStatus);
 
-  const transferIndex = transfers.length;
+  // Use a function that reads the current length to avoid stale closure issues
+  const getTransferIndex = useCallback(() => transfers.length, [transfers]);
 
   const multiProvider = useMultiProvider();
   const warpCore = useWarpCore();
@@ -46,6 +47,8 @@ export function useTokenTransfer(onDone?: () => void, throwOnError = false) {
   // TODO implement cancel callback for when modal is closed?
   const triggerTransactions = useCallback(
     async (values: TransferFormValues): Promise<string | undefined> => {
+      // Calculate transferIndex at execution time, not at hook initialization
+      const transferIndex = getTransferIndex();
       const result = await executeTransfer({
         warpCore,
         values,
@@ -65,7 +68,7 @@ export function useTokenTransfer(onDone?: () => void, throwOnError = false) {
     },
     [
       warpCore,
-      transferIndex,
+      getTransferIndex,
       activeAccounts,
       activeChains,
       transactionFns,

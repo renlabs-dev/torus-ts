@@ -162,7 +162,7 @@ async function trackSubstrateTransaction(
         addTransaction({
           step: 1,
           status: "ERROR",
-          chainName: "Torus Native",
+          chainName: "Torus",
           message: errorMessage,
         });
         reject(new Error(errorMessage));
@@ -176,7 +176,7 @@ async function trackSubstrateTransaction(
       addTransaction({
         step: 1,
         status: "SUCCESS",
-        chainName: "Torus Native",
+        chainName: "Torus",
         message: "Bridge complete - tokens arrived in Torus EVM",
         txHash: capturedTxHash,
         explorerUrl: capturedTxHash
@@ -200,7 +200,7 @@ async function trackSubstrateTransaction(
       addTransaction({
         step: 1,
         status: "ERROR",
-        chainName: "Torus Native",
+        chainName: "Torus",
         message: "Transaction failed",
       });
       reject(error instanceof Error ? error : new Error(String(error)));
@@ -256,7 +256,7 @@ async function trackSubstrateTransaction(
     addTransaction({
       step: 1,
       status: "ERROR",
-      chainName: "Torus Native",
+      chainName: "Torus",
       message: errorMessage,
     });
     throw timeoutError;
@@ -296,7 +296,7 @@ export async function executeNativeToBaseStep1(
   addTransaction({
     step: 1,
     status: "STARTING",
-    chainName: "Torus Native",
+    chainName: "Torus",
     message: "Preparing Native → Torus EVM bridge",
   });
 
@@ -320,7 +320,7 @@ export async function executeNativeToBaseStep1(
     addTransaction({
       step: 1,
       status: "ERROR",
-      chainName: "Torus Native",
+      chainName: "Torus",
       message: errorMessage,
       errorDetails,
       txHash: undefined,

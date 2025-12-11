@@ -86,6 +86,8 @@ export function FastBridgeForm() {
   const [showHistoryDialog, setShowHistoryDialog] = useState(false);
   const [showQuickSendDialog, setShowQuickSendDialog] = useState(false);
   const [showPendingDialog, setShowPendingDialog] = useState(false);
+  // Key to force dialog remount on new transaction, ensuring clean state
+  const [dialogKey, setDialogKey] = useState(0);
 
   const { toast } = useToast();
   const { areWalletsReady, connectionState, chainIds } = useDualWallet();
@@ -255,7 +257,12 @@ export function FastBridgeForm() {
     });
     setTransactions([]);
 
+    // Increment dialog key to force remount with clean state
+    setDialogKey((k) => k + 1);
     setShowTransactionDialog(true);
+
+    // Wait for React to process state updates before starting transfer
+    await new Promise((resolve) => setTimeout(resolve, 0));
     await tryAsync(executeTransfer(direction, amountFrom, setTransactionInUrl));
   }, [
     amountFrom,
@@ -288,7 +295,7 @@ export function FastBridgeForm() {
   ]);
 
   const handleDeleteAndStartNew = useCallback(
-    (transactionId: string) => {
+    async (transactionId: string) => {
       deleteTransaction(transactionId);
       clearTransactionFromUrl();
       setCurrentTransactionId(null);
@@ -300,8 +307,13 @@ export function FastBridgeForm() {
 
       if (!amountFrom || !walletsReady) return;
 
+      // Increment dialog key to force remount with clean state
+      setDialogKey((k) => k + 1);
       setShowTransactionDialog(true);
-      void tryAsync(
+
+      // Wait for React to process state updates before starting transfer
+      await new Promise((resolve) => setTimeout(resolve, 0));
+      await tryAsync(
         executeTransfer(direction, amountFrom, setTransactionInUrl),
       );
     },
@@ -450,13 +462,11 @@ export function FastBridgeForm() {
                 ? "CONFIRMING"
                 : null,
         chainName:
-          transaction.direction === "base-to-native" ? "Base" : "Torus Native",
+          transaction.direction === "base-to-native" ? "Base" : "Torus",
         explorerUrl: transaction.step1TxHash
           ? getExplorerUrl(
               transaction.step1TxHash,
-              transaction.direction === "base-to-native"
-                ? "Base"
-                : "Torus Native",
+              transaction.direction === "base-to-native" ? "Base" : "Torus",
             )
           : undefined,
         message:
@@ -694,7 +704,7 @@ export function FastBridgeForm() {
     }
 
     return {
-      name: "Torus Native",
+      name: "Torus",
       icon: "/assets/icons/bridge/torus-native-simple.svg",
       balance: formatBalance(nativeBalance.data),
       address: formatAddress(torusWalletAddress),
@@ -789,8 +799,7 @@ export function FastBridgeForm() {
       <div className="flex items-center gap-2">
         <Image src={chain.icon} alt={chain.name} width={20} height={20} />
         <span className="text-foreground font-medium">
-          <span className="font-bold">$TORUS</span>{" "}
-          {chain.name.replace("Torus Native", "Native")}
+          <span className="font-bold">$TORUS</span> {chain.name}
         </span>
       </div>
     );
@@ -985,6 +994,7 @@ export function FastBridgeForm() {
       )}
 
       <TransactionLifecycleDialog
+        key={dialogKey}
         isOpen={showTransactionDialog}
         onClose={handleCloseDialog}
         direction={direction}

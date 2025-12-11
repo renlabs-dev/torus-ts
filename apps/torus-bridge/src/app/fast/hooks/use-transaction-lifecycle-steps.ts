@@ -263,7 +263,7 @@ export function useTransactionLifecycleSteps(
           {
             id: "step2-confirm",
             title: "Withdrawal Confirming",
-            description: "Waiting for Native Torus confirmation",
+            description: "Waiting for Torus confirmation",
             icon: null,
             status: getStepStatus("step2-confirm"),
             estimatedTime: "~30-60 seconds",
@@ -277,7 +277,7 @@ export function useTransactionLifecycleSteps(
       : [
           {
             id: "step1-sign",
-            title: "Sign Native Transaction",
+            title: "Sign Torus Transaction",
             description: "Please sign the transaction in your Torus wallet",
             icon: null,
             status: getStepStatus("step1-sign"),
@@ -288,8 +288,8 @@ export function useTransactionLifecycleSteps(
           },
           {
             id: "step1-confirm",
-            title: "Native Transaction Confirming",
-            description: "Waiting for Native Torus confirmation",
+            title: "Torus Transaction Confirming",
+            description: "Waiting for Torus confirmation",
             icon: null,
             status: getStepStatus("step1-confirm"),
             estimatedTime: "~30-60 seconds",
@@ -329,7 +329,7 @@ export function useTransactionLifecycleSteps(
       baseSteps.push({
         id: "success",
         title: "Transfer Successful",
-        description: `Congratulations! Your ${amount} TORUS tokens have been successfully bridged from ${isBaseToNative ? "Base to Native" : "Native to Base"}. Check your wallet balances.`,
+        description: `Congratulations! Your ${amount} TORUS tokens have been successfully bridged from ${isBaseToNative ? "Base to Torus" : "Torus to Base"}. Check your wallet balances.`,
         icon: null,
         status: "completed" as StepStatus,
         isSignatureRequired: false,

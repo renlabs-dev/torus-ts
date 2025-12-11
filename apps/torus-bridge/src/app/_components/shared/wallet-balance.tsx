@@ -99,7 +99,7 @@ export function WalletBalance() {
       asset: "TORUS",
       label: "Torus Balance",
       iconSrc: "/assets/icons/balance/torus-native.svg",
-      iconAlt: "Torus Native",
+      iconAlt: "Torus",
       address: selectedAccount?.address,
       isSecondary: false,
     },

@@ -113,8 +113,8 @@ export function TransactionHistoryItem({
 
   const directionLabel =
     transaction.direction === "base-to-native"
-      ? "Base → Native"
-      : "Native → Base";
+      ? "Base → Torus"
+      : "Torus → Base";
 
   const handleCardClick = () => {
     if (transaction.status === "error") {
@@ -244,7 +244,7 @@ export function TransactionHistoryItem({
                   {transaction.nativeAddress && (
                     <div className="flex flex-col gap-1">
                       <span className="text-muted-foreground font-medium">
-                        Native Address
+                        Torus Address
                       </span>
                       <span className="font-mono">
                         {transaction.nativeAddress.slice(0, 6)}...
@@ -258,7 +258,7 @@ export function TransactionHistoryItem({
                   {transaction.nativeAddress && (
                     <div className="flex flex-col gap-1">
                       <span className="text-muted-foreground font-medium">
-                        Native Address
+                        Torus Address
                       </span>
                       <span className="font-mono">
                         {transaction.nativeAddress.slice(0, 6)}...
@@ -326,7 +326,7 @@ export function TransactionHistoryItem({
                             step1Hash,
                             transaction.direction === "base-to-native"
                               ? "Base"
-                              : "Torus Native",
+                              : "Torus",
                           ),
                           "_blank",
                           "noopener,noreferrer",

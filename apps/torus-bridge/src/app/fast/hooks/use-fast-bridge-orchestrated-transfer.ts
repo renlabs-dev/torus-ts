@@ -381,7 +381,7 @@ export function useOrchestratedTransfer() {
 
       toast({
         title: "Transfer Complete!",
-        description: "Successfully transferred Base TORUS to Native TORUS",
+        description: "Successfully transferred Base TORUS to Torus",
       });
     },
     [
@@ -566,7 +566,7 @@ export function useOrchestratedTransfer() {
 
       toast({
         title: "Transfer Complete!",
-        description: "Successfully transferred Native TORUS to Base TORUS",
+        description: "Successfully transferred Torus to Base TORUS",
       });
     },
     [
@@ -647,7 +647,7 @@ export function useOrchestratedTransfer() {
 
       toast({
         title: "Transfer Complete!",
-        description: "Successfully transferred Base TORUS to Native TORUS",
+        description: "Successfully transferred Base TORUS to Torus",
       });
     },
     [
@@ -720,7 +720,7 @@ export function useOrchestratedTransfer() {
 
       toast({
         title: "Transfer Complete!",
-        description: "Successfully transferred Native TORUS to Base TORUS",
+        description: "Successfully transferred Torus to Base TORUS",
       });
     },
     [
@@ -770,9 +770,31 @@ export function useOrchestratedTransfer() {
         } else {
           await executeNativeToBase(amount);
         }
-      } catch {
-        // Error handling is done in individual flows
-        // Just ensure we keep the transaction ID for retry
+      } catch (error) {
+        // Check if the error was already handled by the individual flow
+        // by seeing if a transaction entry exists (meaning the flow progressed).
+        // The ref is modified by onTransactionConfirming callback during the await above.
+        const transactionId = currentTransactionIdRef.current as string | null;
+        const hasTransactionEntry = transactionId !== null;
+
+        if (!hasTransactionEntry) {
+          // Error happened before any transaction was created
+          // (e.g., wallet not connected, validation failed)
+          const errorMessage =
+            error instanceof Error ? error.message : "Transfer failed";
+          updateBridgeState({
+            step: SimpleBridgeStep.ERROR,
+            errorMessage,
+          });
+          addTransaction({
+            step: 1,
+            status: "ERROR",
+            chainName: direction === "base-to-native" ? "Base" : "Torus",
+            message: errorMessage,
+          });
+        }
+        // If hasTransactionEntry is true, the error was already handled by the flow
+        // and the history was already updated with the error details
       } finally {
         // Clear callback reference after transfer completes or fails
         onTransactionCreatedRef.current = null;
@@ -783,6 +805,7 @@ export function useOrchestratedTransfer() {
       executeNativeToBase,
       updateBridgeState,
       setTransactions,
+      addTransaction,
     ],
   );
 
@@ -880,7 +903,7 @@ export function useOrchestratedTransfer() {
         {
           step: 1 as const,
           status: "SUCCESS" as const,
-          chainName: "Torus Native",
+          chainName: "Torus",
           message: "Already on Torus EVM",
         },
         {
@@ -988,7 +1011,7 @@ export function useOrchestratedTransfer() {
         addTransaction({
           step: 1,
           status: "SUCCESS",
-          chainName: "Torus Native",
+          chainName: "Torus",
           message: "Bridge complete (F5 recovery)",
         });
 
@@ -1060,11 +1083,11 @@ export function useOrchestratedTransfer() {
         addTransaction({
           step: 2,
           status: "SUCCESS",
-          chainName: "Torus Native",
+          chainName: "Torus",
           message: "Withdrawal complete (F5 recovery)",
           txHash: step2TxHash,
           explorerUrl: step2TxHash
-            ? getExplorerUrl(step2TxHash, "Torus Native")
+            ? getExplorerUrl(step2TxHash, "Torus")
             : undefined,
         });
 
@@ -1080,7 +1103,7 @@ export function useOrchestratedTransfer() {
         toast({
           title: "Transfer Complete!",
           description:
-            "Successfully transferred Base TORUS to Native TORUS (recovered)",
+            "Successfully transferred Base TORUS to Torus (recovered)",
         });
 
         onComplete();
@@ -1132,7 +1155,7 @@ export function useOrchestratedTransfer() {
         toast({
           title: "Transfer Complete!",
           description:
-            "Successfully transferred Native TORUS to Base TORUS (recovered)",
+            "Successfully transferred Torus to Base TORUS (recovered)",
         });
 
         onComplete();
