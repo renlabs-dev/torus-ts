@@ -771,10 +771,15 @@ export function useOrchestratedTransfer() {
           await executeNativeToBase(amount);
         }
       } catch (error) {
-        // If the error wasn't already handled by the individual flows, handle it here
-        // This catches errors like "Wallets not properly connected" that happen before
-        // the transaction flow can update the bridge state
-        if (bridgeState.step === SimpleBridgeStep.IDLE) {
+        // Check if the error was already handled by the individual flow
+        // by seeing if a transaction entry exists (meaning the flow progressed).
+        // The ref is modified by onTransactionConfirming callback during the await above.
+        const transactionId = currentTransactionIdRef.current as string | null;
+        const hasTransactionEntry = transactionId !== null;
+
+        if (!hasTransactionEntry) {
+          // Error happened before any transaction was created
+          // (e.g., wallet not connected, validation failed)
           const errorMessage =
             error instanceof Error ? error.message : "Transfer failed";
           updateBridgeState({
@@ -788,6 +793,8 @@ export function useOrchestratedTransfer() {
             message: errorMessage,
           });
         }
+        // If hasTransactionEntry is true, the error was already handled by the flow
+        // and the history was already updated with the error details
       } finally {
         // Clear callback reference after transfer completes or fails
         onTransactionCreatedRef.current = null;
@@ -798,7 +805,6 @@ export function useOrchestratedTransfer() {
       executeNativeToBase,
       updateBridgeState,
       setTransactions,
-      bridgeState.step,
       addTransaction,
     ],
   );
