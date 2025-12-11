@@ -268,7 +268,7 @@ export function TransactionLifecycleDialog({
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel className="bg-primary text-primary-foreground hover:bg-primary/90">
+            <AlertDialogCancel className="bg-primary text-primary-foreground hover:bg-primary/80 hover:text-primary-foreground transition-colors">
               Continue Transaction
             </AlertDialogCancel>
             <AlertDialogAction
