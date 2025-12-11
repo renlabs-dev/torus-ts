@@ -12,20 +12,15 @@ import { getLinks } from "@torus-ts/ui/lib/data";
 import { cn } from "@torus-ts/ui/lib/utils";
 import { env } from "~/env";
 import {
-  CircleArrowOutUpRight,
-  CircleFadingPlus,
-  Currency,
-  FilePen,
+  ArrowLeftRight,
+  BookOpen,
+  BookText,
   Home,
+  Landmark,
   Network,
-  PackagePlus,
-  PackageX,
   PanelLeftIcon,
-  Radio,
-  RadioTower,
-  Settings,
+  UserPlus,
   Wallet,
-  Zap,
 } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import Link from "next/link";
@@ -33,75 +28,33 @@ import { useLandingSidebar } from "./landing-sidebar-context";
 
 const links = getLinks(env("NEXT_PUBLIC_TORUS_CHAIN_ENV"));
 
-const navMain = [
+// Top-level navigation items (no group title)
+const navTop = [
+  { title: "Home", url: "/", icon: Home, external: false },
+  { title: "Portal", url: "/portal", icon: Network, external: false },
+];
+
+// Grouped navigation matching hover header structure
+const navGroups = [
   {
-    title: "Overview",
+    title: "Starter",
     items: [
-      { title: "Home", url: "/", icon: Home },
-      { title: "Hypergraph", url: "/portal", icon: Network },
-      { title: "Root Allocator", url: "/root-allocator", icon: Currency },
-    ],
-  },
-  {
-    title: "Permissions",
-    items: [
+      { title: "Blog", url: links.blog, icon: BookText, external: true },
+      { title: "Wallet", url: links.wallet, icon: Wallet, external: true },
       {
-        title: "Capability Permission",
-        url: "/permissions/create-permission/capability",
-        icon: CircleArrowOutUpRight,
-      },
-      {
-        title: "Stream Permission",
-        url: "/permissions/create-permission/stream",
-        icon: Zap,
-      },
-      {
-        title: "Wallet Stake Permission",
-        url: "/permissions/create-permission/wallet",
-        icon: Wallet,
-      },
-      {
-        title: "Manage Permissions",
-        url: "/permissions/manage-permission",
-        icon: FilePen,
+        title: "Bridge",
+        url: links.bridge,
+        icon: ArrowLeftRight,
+        external: true,
       },
     ],
   },
   {
-    title: "Capabilities",
+    title: "Network",
     items: [
-      {
-        title: "Register Capability",
-        url: "/capabilities/register-capability",
-        icon: PackagePlus,
-      },
-      {
-        title: "Delete Capability",
-        url: "/capabilities/delete-capability",
-        icon: PackageX,
-      },
-    ],
-  },
-  {
-    title: "Signals",
-    items: [
-      { title: "Create Signal", url: "/signals/create-signal", icon: Radio },
-      { title: "View Signals", url: "/signals/signal-list", icon: RadioTower },
-    ],
-  },
-  {
-    title: "Network Operations",
-    items: [
-      {
-        title: "Register Agent",
-        url: "/network-operations/register-agent",
-        icon: CircleFadingPlus,
-      },
-      {
-        title: "Manage Agent",
-        url: "/network-operations/manage-agent",
-        icon: Settings,
-      },
+      { title: "Join", url: links.discord, icon: UserPlus, external: true },
+      { title: "Docs", url: links.docs, icon: BookOpen, external: true },
+      { title: "DAO", url: links.governance, icon: Landmark, external: true },
     ],
   },
 ];
@@ -111,8 +64,6 @@ const navSocials = [
   { title: "Twitter", url: links.x, icon: Icons.X },
   { title: "Discord", url: links.discord, icon: Icons.Discord },
   { title: "Telegram", url: links.telegram, icon: Icons.Telegram },
-  { title: "Ren Labs", url: links.ren_labs, icon: Icons.LogoRenLabs },
-  { title: "Torus", url: links.landing_page, icon: Icons.Logo },
 ];
 
 const SIDEBAR_WIDTH = "16rem";
@@ -153,7 +104,7 @@ export function LandingSidebar() {
               <div className="flex flex-col gap-2 p-2">
                 <div className="flex h-8 items-center">
                   <Link
-                    href="/portal"
+                    href="/"
                     className={cn(
                       "hover:bg-sidebar-accent relative z-10 flex items-center gap-2 rounded-md p-2",
                       !isSidebarOpen && "justify-center",
@@ -161,7 +112,7 @@ export function LandingSidebar() {
                   >
                     <Icons.Logo className="size-5 shrink-0" />
                     {isSidebarOpen && (
-                      <span className="truncate font-medium">Torus Portal</span>
+                      <span className="truncate font-medium">Torus</span>
                     )}
                   </Link>
                 </div>
@@ -169,7 +120,39 @@ export function LandingSidebar() {
 
               {/* Content */}
               <div className="flex min-h-0 flex-1 flex-col gap-2 overflow-auto">
-                {navMain.map((group) => (
+                {/* Top-level items (Home, Portal) */}
+                <div className="flex w-full flex-col p-2">
+                  <ul className="flex w-full flex-col gap-1">
+                    {navTop.map((item) => (
+                      <li key={item.title}>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Link
+                              href={item.url}
+                              className={cn(
+                                "hover:bg-sidebar-accent hover:text-sidebar-accent-foreground relative z-10 flex items-center gap-2 rounded-md p-2 text-sm",
+                                !isSidebarOpen && "justify-center",
+                              )}
+                            >
+                              <item.icon className="size-4 shrink-0" />
+                              {isSidebarOpen && (
+                                <span className="truncate">{item.title}</span>
+                              )}
+                            </Link>
+                          </TooltipTrigger>
+                          {!isSidebarOpen && (
+                            <TooltipContent side="right">
+                              {item.title}
+                            </TooltipContent>
+                          )}
+                        </Tooltip>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+
+                {/* Grouped navigation (Starter, Network) */}
+                {navGroups.map((group) => (
                   <div key={group.title} className="flex w-full flex-col p-2">
                     {isSidebarOpen && (
                       <div className="text-sidebar-foreground/70 flex h-8 items-center px-2 text-xs font-medium">
@@ -181,18 +164,39 @@ export function LandingSidebar() {
                         <li key={item.title}>
                           <Tooltip>
                             <TooltipTrigger asChild>
-                              <Link
-                                href={item.url}
-                                className={cn(
-                                  "hover:bg-sidebar-accent hover:text-sidebar-accent-foreground relative z-10 flex items-center gap-2 rounded-md p-2 text-sm",
-                                  !isSidebarOpen && "justify-center",
-                                )}
-                              >
-                                <item.icon className="size-4 shrink-0" />
-                                {isSidebarOpen && (
-                                  <span className="truncate">{item.title}</span>
-                                )}
-                              </Link>
+                              {item.external ? (
+                                <a
+                                  href={item.url}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className={cn(
+                                    "hover:bg-sidebar-accent hover:text-sidebar-accent-foreground relative z-10 flex items-center gap-2 rounded-md p-2 text-sm",
+                                    !isSidebarOpen && "justify-center",
+                                  )}
+                                >
+                                  <item.icon className="size-4 shrink-0" />
+                                  {isSidebarOpen && (
+                                    <span className="truncate">
+                                      {item.title}
+                                    </span>
+                                  )}
+                                </a>
+                              ) : (
+                                <Link
+                                  href={item.url}
+                                  className={cn(
+                                    "hover:bg-sidebar-accent hover:text-sidebar-accent-foreground relative z-10 flex items-center gap-2 rounded-md p-2 text-sm",
+                                    !isSidebarOpen && "justify-center",
+                                  )}
+                                >
+                                  <item.icon className="size-4 shrink-0" />
+                                  {isSidebarOpen && (
+                                    <span className="truncate">
+                                      {item.title}
+                                    </span>
+                                  )}
+                                </Link>
+                              )}
                             </TooltipTrigger>
                             {!isSidebarOpen && (
                               <TooltipContent side="right">
