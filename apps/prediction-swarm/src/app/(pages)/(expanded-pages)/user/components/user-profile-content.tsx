@@ -1,6 +1,5 @@
 "use client";
 
-import type { AppRouter } from "@torus-ts/api";
 import { Card, CardContent, CardHeader } from "@torus-ts/ui/components/card";
 import {
   Pagination,
@@ -15,27 +14,24 @@ import {
   TabsList,
   TabsTrigger,
 } from "@torus-ts/ui/components/tabs";
-import type { inferProcedureOutput } from "@trpc/server";
 import { api } from "~/trpc/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
+import dayjs from "dayjs";
 import { ExpandedFeedItem } from "../../../../_components/expanded-feed/expanded-feed-item/expanded-feed-item";
-
-type UserCounts = NonNullable<
-  inferProcedureOutput<AppRouter["prediction"]["getCountsByUsername"]>
->;
 
 interface ProfileContentProps {
   username: string;
-  counts: UserCounts;
 }
 
 type VerdictTab = "ongoing" | "true" | "false";
 
 export default function UserProfileContent({
   username,
-  counts,
 }: ProfileContentProps) {
+  const { data: counts } = api.prediction.getCountsByUsername.useQuery({
+    username,
+  });
   const router = useRouter();
   const searchParams = useSearchParams();
   const limit = 30;
@@ -47,21 +43,21 @@ export default function UserProfileContent({
   const falsePage = parseInt(searchParams.get("false") ?? "1");
 
   // Read filter params from URL
-  const dateFrom = searchParams.get("dateFrom") ?? undefined;
-  const dateTo = searchParams.get("dateTo") ?? undefined;
+  const rawDateFrom = searchParams.get("dateFrom") ?? undefined;
+  const rawDateTo = searchParams.get("dateTo") ?? undefined;
+  const dateFrom =
+    rawDateFrom && dayjs(rawDateFrom).isValid() ? rawDateFrom : undefined;
+  const dateTo = rawDateTo && dayjs(rawDateTo).isValid() ? rawDateTo : undefined;
   const topicIds =
     searchParams.get("topics")?.split(",").filter(Boolean) ?? undefined;
 
-  const { data: filteredCounts = counts } =
+  const { data: filteredCounts = counts ?? { ongoing: 0, true: 0, false: 0 } } =
     api.prediction.getCountsByUsername.useQuery(
       {
         username,
         dateFrom,
         dateTo,
         topicIds,
-      },
-      {
-        initialData: counts,
       },
     );
 
