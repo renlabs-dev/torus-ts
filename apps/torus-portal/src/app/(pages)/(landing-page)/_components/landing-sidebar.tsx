@@ -15,7 +15,6 @@ import {
   ArrowLeftRight,
   BookOpen,
   BookText,
-  Home,
   Landmark,
   Network,
   PanelLeftIcon,
@@ -30,7 +29,6 @@ const links = getLinks(env("NEXT_PUBLIC_TORUS_CHAIN_ENV"));
 
 // Top-level navigation items (no group title)
 const navTop = [
-  { title: "Home", url: "/", icon: Home, external: false },
   { title: "Portal", url: "/portal", icon: Network, external: false },
 ];
 
@@ -120,9 +118,34 @@ export function LandingSidebar() {
 
               {/* Content */}
               <div className="flex min-h-0 flex-1 flex-col gap-2 overflow-auto">
-                {/* Top-level items (Home, Portal) */}
+                {/* Toggle button and top-level items */}
                 <div className="flex w-full flex-col p-2">
                   <ul className="flex w-full flex-col gap-1">
+                    {/* Toggle/Unfold button */}
+                    <li>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className={cn(
+                              "hover:bg-sidebar-accent hover:text-sidebar-accent-foreground relative z-10 flex w-full items-center justify-start gap-2 rounded-md p-2 text-sm font-normal",
+                              !isSidebarOpen && "justify-center",
+                            )}
+                            onClick={toggleSidebar}
+                          >
+                            <PanelLeftIcon className="size-4 shrink-0" />
+                            {isSidebarOpen && (
+                              <span className="truncate">Collapse</span>
+                            )}
+                          </Button>
+                        </TooltipTrigger>
+                        {!isSidebarOpen && (
+                          <TooltipContent side="right">Expand</TooltipContent>
+                        )}
+                      </Tooltip>
+                    </li>
+                    {/* Portal link */}
                     {navTop.map((item) => (
                       <li key={item.title}>
                         <Tooltip>
@@ -245,22 +268,6 @@ export function LandingSidebar() {
                     ))}
                   </ul>
                 </div>
-              </div>
-
-              {/* Footer with toggle button */}
-              <div className="flex flex-col gap-2 p-2">
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className={cn(
-                    "relative z-10 size-7",
-                    !isSidebarOpen && "mx-auto",
-                  )}
-                  onClick={toggleSidebar}
-                >
-                  <PanelLeftIcon className="size-4" />
-                  <span className="sr-only">Toggle Sidebar</span>
-                </Button>
               </div>
             </motion.div>
           </motion.div>
