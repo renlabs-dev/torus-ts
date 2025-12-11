@@ -95,6 +95,7 @@ export function RecipientsField({
               control={control}
               name={`newTargets.${index}.address`}
               render={({ field }) => {
+                // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
                 const isDuplicate = duplicateAddresses.has(field.value ?? "");
                 return (
                   <div className="flex-1">
