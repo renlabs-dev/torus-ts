@@ -247,7 +247,14 @@ export const starRouter = {
    * Get prediction counts for starred tweets by verdict status
    */
   getStarredFeedCounts: publicProcedure
-    .input(z.object({ userKey: z.string() }))
+    .input(
+      z.object({
+        userKey: z.string(),
+        dateFrom: z.string().datetime().optional(),
+        dateTo: z.string().datetime().optional(),
+        topicIds: z.array(z.string()).optional(),
+      }),
+    )
     .query(async ({ ctx, input }) => {
       // Get starred tweet IDs
       const starredTweets = await ctx.db
@@ -318,7 +325,23 @@ export const starRouter = {
             parsedPredictionSchema.id,
           ),
         )
-        .where(inArray(scrapedTweetSchema.id, starredTweetIds))
+        .where(
+          and(
+            inArray(scrapedTweetSchema.id, starredTweetIds),
+            input.dateFrom
+              ? gte(scrapedTweetSchema.date, new Date(input.dateFrom))
+              : undefined,
+            input.dateTo
+              ? lte(scrapedTweetSchema.date, new Date(input.dateTo))
+              : undefined,
+            input.topicIds && input.topicIds.length > 0
+              ? sql`${parsedPredictionSchema.topicId} IN (${sql.join(
+                  input.topicIds.map((id) => sql`${id}`),
+                  sql`, `,
+                )})`
+              : undefined,
+          ),
+        )
         .groupBy(sql`verdict_status`);
 
       const result = { ongoing: 0, true: 0, false: 0 };

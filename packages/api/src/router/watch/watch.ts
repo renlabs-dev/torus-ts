@@ -275,7 +275,14 @@ export const watchRouter = {
    * Get prediction counts for watched users by verdict status
    */
   getWatchingFeedCounts: publicProcedure
-    .input(z.object({ userKey: z.string() }))
+    .input(
+      z.object({
+        userKey: z.string(),
+        dateFrom: z.string().datetime().optional(),
+        dateTo: z.string().datetime().optional(),
+        topicIds: z.array(z.string()).optional(),
+      }),
+    )
     .query(async ({ ctx, input }) => {
       // Get watched user IDs
       const watchedUsers = await ctx.db
@@ -346,7 +353,23 @@ export const watchRouter = {
             parsedPredictionSchema.id,
           ),
         )
-        .where(inArray(twitterUsersSchema.id, watchedUserIds))
+        .where(
+          and(
+            inArray(twitterUsersSchema.id, watchedUserIds),
+            input.dateFrom
+              ? gte(scrapedTweetSchema.date, new Date(input.dateFrom))
+              : undefined,
+            input.dateTo
+              ? lte(scrapedTweetSchema.date, new Date(input.dateTo))
+              : undefined,
+            input.topicIds && input.topicIds.length > 0
+              ? sql`${parsedPredictionSchema.topicId} IN (${sql.join(
+                  input.topicIds.map((id) => sql`${id}`),
+                  sql`, `,
+                )})`
+              : undefined,
+          ),
+        )
         .groupBy(sql`verdict_status`);
 
       const result = { ongoing: 0, true: 0, false: 0 };
