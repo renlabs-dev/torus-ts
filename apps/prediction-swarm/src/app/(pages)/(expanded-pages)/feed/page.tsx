@@ -82,10 +82,8 @@ export default function FeedPage() {
   }, [walletAddress]);
 
   // === ALL FEED QUERIES ===
-  const filters =
-    dateFrom || dateTo || (topicIds?.length ?? 0) > 0
-      ? { dateFrom, dateTo, topicIds }
-      : { dateFrom: undefined, dateTo: undefined, topicIds: undefined };
+  const hasFilters = dateFrom || dateTo || (topicIds?.length ?? 0) > 0;
+  const filters = hasFilters ? { dateFrom, dateTo, topicIds } : undefined;
 
   const { data: allCounts = defaultCounts } =
     api.prediction.getFeedCounts.useQuery(filters, {
