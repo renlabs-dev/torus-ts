@@ -643,10 +643,13 @@ export const predictionRouter = {
           .string()
           .min(1)
           .transform((val) => (val.startsWith("@") ? val.slice(1) : val)),
+        dateFrom: z.string().datetime().optional(),
+        dateTo: z.string().datetime().optional(),
+        topicIds: z.array(z.string()).optional(),
       }),
     )
     .query(async ({ ctx, input }) => {
-      const { username } = input;
+      const { username, dateFrom, dateTo, topicIds } = input;
 
       // Start from twitter_users to leverage indexes for username filtering
       const counts = await ctx.db
@@ -705,6 +708,16 @@ export const predictionRouter = {
               username.toLowerCase(),
             ),
             eq(twitterUsersSchema.tracked, true),
+            dateFrom
+              ? gte(scrapedTweetSchema.date, new Date(dateFrom))
+              : undefined,
+            dateTo ? lte(scrapedTweetSchema.date, new Date(dateTo)) : undefined,
+            topicIds && topicIds.length > 0
+              ? sql`${parsedPredictionSchema.topicId} IN (${sql.join(
+                  topicIds.map((id) => sql`${id}`),
+                  sql`, `,
+                )})`
+              : undefined,
           ),
         )
         .groupBy(sql`verdict_status`);

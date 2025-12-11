@@ -52,6 +52,19 @@ export default function UserProfileContent({
   const topicIds =
     searchParams.get("topics")?.split(",").filter(Boolean) ?? undefined;
 
+  const { data: filteredCounts = counts } =
+    api.prediction.getCountsByUsername.useQuery(
+      {
+        username,
+        dateFrom,
+        dateTo,
+        topicIds,
+      },
+      {
+        initialData: counts,
+      },
+    );
+
   // Fetch predictions separately per verdict status - only fetch active tab
   const { data: ongoingPredictions, isLoading: ongoingLoading } =
     api.prediction.getByUsernameAndVerdict.useQuery(
@@ -102,9 +115,9 @@ export default function UserProfileContent({
     );
 
   // Pagination logic per tab using actual counts
-  const ongoingTotalPages = Math.ceil(counts.ongoing / limit);
-  const trueTotalPages = Math.ceil(counts.true / limit);
-  const falseTotalPages = Math.ceil(counts.false / limit);
+  const ongoingTotalPages = Math.ceil(filteredCounts.ongoing / limit);
+  const trueTotalPages = Math.ceil(filteredCounts.true / limit);
+  const falseTotalPages = Math.ceil(filteredCounts.false / limit);
 
   const updatePage = (tab: string, newPage: number) => {
     const params = new URLSearchParams(searchParams.toString());
@@ -122,13 +135,13 @@ export default function UserProfileContent({
         <CardHeader className="pb-0">
           <TabsList className="bg-accent/60 flex h-full w-full flex-col sm:grid sm:grid-cols-3">
             <TabsTrigger value="ongoing" className="w-full">
-              Ongoing predictions ({counts.ongoing})
+              Ongoing predictions ({filteredCounts.ongoing})
             </TabsTrigger>
             <TabsTrigger value="true" className="w-full">
-              True predictions ({counts.true})
+              True predictions ({filteredCounts.true})
             </TabsTrigger>
             <TabsTrigger value="false" className="w-full">
-              False predictions ({counts.false})
+              False predictions ({filteredCounts.false})
             </TabsTrigger>
           </TabsList>
         </CardHeader>
