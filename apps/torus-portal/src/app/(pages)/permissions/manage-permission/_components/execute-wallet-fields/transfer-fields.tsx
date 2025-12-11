@@ -39,15 +39,17 @@ export function TransferFields({
           // eslint-disable-next-line react-hooks/rules-of-hooks
           const accountStakedBy = useKeyStakingTo(api, delegatorAddress);
 
+          const fieldValue = field.value ?? "";
+
           // Find the stake amount for the selected from account
           const stakeToSelected = accountStakedBy.data?.find(
-            (stake) => stake.address === field.value,
+            (stake) => stake.address === fieldValue,
           );
 
           return (
             <div className="space-y-2">
               <FormAddressField
-                field={field}
+                field={{ ...field, value: fieldValue }}
                 label="From Account"
                 disabled={!isAccountConnected}
               />
@@ -55,7 +57,7 @@ export function TransferFields({
                 <FormDescription>
                   The account to transfer stake from.
                 </FormDescription>
-                {field.value && (
+                {fieldValue && (
                   <div className="text-muted-foreground text-xs">
                     {accountStakedBy.isLoading ? (
                       <Skeleton className="h-4 w-24" />
@@ -75,16 +77,24 @@ export function TransferFields({
       <FormField
         control={control}
         name="transferData.to"
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel>To Account</FormLabel>
-            <FormControl>
-              <FormAddressField field={field} disabled={!isAccountConnected} />
-            </FormControl>
-            <FormDescription>The account to transfer stake to.</FormDescription>
-            <FormMessage />
-          </FormItem>
-        )}
+        render={({ field }) => {
+          const fieldValue = field.value ?? "";
+          return (
+            <FormItem>
+              <FormLabel>To Account</FormLabel>
+              <FormControl>
+                <FormAddressField
+                  field={{ ...field, value: fieldValue }}
+                  disabled={!isAccountConnected}
+                />
+              </FormControl>
+              <FormDescription>
+                The account to transfer stake to.
+              </FormDescription>
+              <FormMessage />
+            </FormItem>
+          );
+        }}
       />
 
       <FormField
@@ -95,7 +105,7 @@ export function TransferFields({
             <FormLabel>Amount</FormLabel>
             <FormControl>
               <TokenAmountInput
-                value={field.value}
+                value={field.value ?? ""}
                 onChange={field.onChange}
                 placeholder="Enter amount to transfer"
                 disabled={!isAccountConnected}

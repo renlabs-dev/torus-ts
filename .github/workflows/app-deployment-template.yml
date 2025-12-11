@@ -16,6 +16,10 @@ on:
         description: "Skip Docker Build"
         type: boolean
         default: false
+      runner:
+        required: false
+        type: string
+        default: "ubicloud-standard-16"
     secrets:
       VAULT_ADDR:
         required: true
@@ -34,7 +38,7 @@ jobs:
       !inputs.skip_build &&
       !contains(github.event.head_commit.message, 'skip build')
     permissions: write-all
-    runs-on: ubicloud-standard-16
+    runs-on: ${{ inputs.runner }}
     steps:
       - uses: actions/checkout@v4
 
@@ -56,12 +60,22 @@ jobs:
       - id: commit
         uses: prompt/actions-commit-hash@v3
 
+      - name: Determine Dockerfile
+        id: dockerfile
+        run: |
+          # Use app-specific Dockerfile if it exists (optimized builds)
+          if [ -f "apps/${{ inputs.app_name }}/Dockerfile" ]; then
+            echo "path=apps/${{ inputs.app_name }}/Dockerfile" >> $GITHUB_OUTPUT
+          else
+            echo "path=docker/Dockerfile" >> $GITHUB_OUTPUT
+          fi
+
       - name: Build and push
         uses: docker/build-push-action@v6
         with:
           context: .
           push: true
-          file: docker/Dockerfile
+          file: ${{ steps.dockerfile.outputs.path }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
           build-args: |

@@ -119,7 +119,7 @@ export const buildTaggedBigNumberClass = <Tag extends string>(
    * @param value - The numeric value (number, string, or bigint) to wrap
    * @returns A branded BigNumber instance with the specified tag
    */
-  const make = (value: BigNumber.Value | bigint): BigNumberBrand<Tag> => {
+  const make = (value: BigNumber.Value): BigNumberBrand<Tag> => {
     return CustomBigNumberBrand.from<Tag>(value, bigNumberCtr);
   };
 
@@ -136,9 +136,9 @@ export const buildTaggedBigNumberClass = <Tag extends string>(
  *
  * @template Tag - A string literal type used to tag the BigNumber instance.
  */
-export class BigNumberBrand<Tag extends string>
-  implements TransformBigNumberMethods<BigNumber, BigNumberBrand<Tag>>
-{
+export class BigNumberBrand<
+  Tag extends string,
+> implements TransformBigNumberMethods<BigNumber, BigNumberBrand<Tag>> {
   static readonly _tag: string;
 
   // Using a phantom property ensures nominal typing at the TypeScript level
@@ -156,7 +156,7 @@ export class BigNumberBrand<Tag extends string>
    * @param bigNumberCtr - The BigNumber constructor to use for creating the BigNumber instance.
    */
   static from<Tag extends string>(
-    value: BigNumber.Value | bigint,
+    value: BigNumber.Value,
     bigNumberCtr: BigNumberCtr,
   ): BigNumberBrand<Tag> {
     if (typeof value === "bigint") {

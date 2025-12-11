@@ -25,6 +25,7 @@ import { Input } from "@torus-ts/ui/components/input";
 import { Label } from "@torus-ts/ui/components/label";
 import { TransactionStatus } from "@torus-ts/ui/components/transaction-status";
 import { useToast } from "@torus-ts/ui/hooks/use-toast";
+import type { Config } from "@wagmi/core";
 import { getChainValuesOnEnv } from "~/config";
 import { initWagmi } from "~/context/evm-wallet-provider";
 import { env } from "~/env";
@@ -35,7 +36,6 @@ import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
 import type { CSSProperties } from "react";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import type { Config } from "wagmi";
 import {
   useAccount,
   useBalance,
@@ -127,7 +127,8 @@ export function TransferEVM() {
         console.error("Failed to initialise wagmi:", wagmiErr);
         toast.error("Wallet initialisation failed, please refresh.");
       } else {
-        setWagmiConfig(wagmiInit.wagmiConfig);
+        // Cast needed due to wagmi version mismatch between app and SDK
+        setWagmiConfig(wagmiInit.wagmiConfig as Config);
       }
     }
   }, [multiProvider, searchParams, toast]);
@@ -359,7 +360,7 @@ export function TransferEVM() {
       to: null,
       mode: mode === "bridge" ? "withdraw" : "bridge",
     });
-    router.push(`/?${newQuery}`);
+    router.push(`/standard?${newQuery}`);
   }, [mode, router, searchParams]);
 
   const fromChain = mode === "bridge" ? "Torus" : "Torus EVM";
@@ -524,8 +525,8 @@ function ChainField({ label, chainName }: ChainFieldProps) {
           <Image
             src={
               isTorusEVM
-                ? "/torus-evm-balance-icon.svg"
-                : "/torus-balance-icon.svg"
+                ? "/assets/icons/bridge/torus-evm.svg"
+                : "/assets/icons/balance/torus.svg"
             }
             alt={label}
             width={28}

@@ -5,8 +5,8 @@ repository.
 
 ## Project Overview
 
-Torus Network TypeScript monorepo built with Turborepo and pnpm. Contains web
-applications, services, and shared packages for the Torus Network ecosystem.
+Torus TypeScript monorepo built with Turborepo and pnpm. Contains web
+applications, services, and shared packages for the Torus ecosystem.
 
 ### Architecture Components
 
@@ -38,7 +38,7 @@ applications, services, and shared packages for the Torus Network ecosystem.
   - ESLint, Prettier, TypeScript, Tailwind
 
 The SDK (`@torus-network/sdk`) is the core library for interacting with the
-Torus Network blockchain, providing Substrate/Polkadot.js abstractions.
+Torus blockchain, providing Substrate/Polkadot.js abstractions.
 
 ## Essential Commands
 
@@ -113,6 +113,28 @@ just db-dump
 ```
 
 ## Development Guidelines
+
+### Git Push Pre-Flight Check
+
+**IMPORTANT**: Before executing `git push`, ALWAYS run `just format-fix` to ensure code formatting is correct and prevent CI/CD failures.
+
+**Workflow when user requests git push:**
+1. Run `just format-fix` to auto-fix all formatting issues
+2. Stage any formatting changes if they exist
+3. Proceed with `git push`
+
+**Rationale:**
+- Prevents CI/CD failures due to formatting errors
+- Saves time by catching formatting issues before push
+- Only needed before push, not during active development
+
+**Example:**
+```sh
+# User asks to push code
+just format-fix                    # Fix all formatting
+git add .                          # Stage formatting fixes if any
+git push origin feature-branch     # Push to remote
+```
 
 ### Package Targeting
 
@@ -235,6 +257,24 @@ The database uses Drizzle ORM with PostgreSQL and follows these conventions:
 
 ## Code Quality & Patterns
 
+### Never Use eslint-disable
+
+**Rule**: Never use `// eslint-disable` or `// eslint-disable-next-line` to suppress linting errors.
+
+**Reason**: These directives hide problems instead of solving them. Always fix the root cause by refactoring the code to follow best practices. If a rule genuinely needs to be changed project-wide, update the ESLint configuration file instead.
+
+### Avoid "Torus Network" Terminology
+
+**Rule**: Do not use the term "Torus Network" in the codebase, documentation, or UI.
+
+**Reason**: According to project guidance, "Torus Network" is considered poor terminology. Use "Torus" or more specific terms like "Torus blockchain", "Torus ecosystem", or context-appropriate alternatives instead.
+
+### UI/UX Emoji Usage
+
+**Rule**: Never use emojis in UI/UX components unless explicitly requested by the engineer in the prompt.
+
+**Reason**: Emojis can clutter the interface and may not align with the project's design system. Keep UI text clean and professional by default. Only add emojis when specifically asked.
+
 ### Non-Null Assertions
 
 **NEVER use the non-null assertion operator (`!`)** in TypeScript code. Instead, use `assert()` from `tsafe` with a descriptive message:
@@ -311,6 +351,87 @@ type casts.
 
 Reference: <https://github.com/steinerkelvin/rustie-ts>
 
+### Error Handling with tryAsync and trySync
+
+**Rule**: NEVER use raw `try-catch` blocks in application code. Instead, use the error handling abstractions from `@torus-network/torus-utils/try-catch`.
+
+**Available Functions:**
+
+- `trySync<T>(fn: () => T): Result<T, Error>` - For synchronous operations
+- `tryAsync<T>(promise: PromiseLike<T>): AsyncResultObj<T, Error>` - For async operations
+- `trySyncStr<T>(fn: () => T): Result<T, string>` - Sync with string error
+- `tryAsyncStr<T>(promise: PromiseLike<T>): AsyncResultObj<T, string>` - Async with string error
+
+**Examples:**
+
+```ts
+// ✅ CORRECT: Using trySync for synchronous operations
+import { trySync } from "@torus-network/torus-utils/try-catch";
+
+const [error, result] = trySync(() => JSON.parse(jsonString));
+if (error !== undefined) {
+  console.error("Failed to parse JSON:", error.message);
+  return;
+}
+// Use result safely here
+console.log("Parsed:", result);
+```
+
+```ts
+// ✅ CORRECT: Using tryAsync for promises
+import { tryAsync } from "@torus-network/torus-utils/try-catch";
+
+const [error, data] = await tryAsync(fetch("/api/data"));
+if (error !== undefined) {
+  console.error("API request failed:", error.message);
+  return;
+}
+// Use data safely here
+console.log("API data:", data);
+```
+
+```ts
+// ✅ CORRECT: Using AsyncResultObj.match for cleaner code
+const result = await tryAsync(fetchUserData(userId));
+await result.match({
+  Ok: (user) => console.log("User:", user.name),
+  Err: (error) => console.error("Failed to fetch user:", error),
+});
+```
+
+```ts
+// ❌ WRONG: Raw try-catch block
+try {
+  const result = JSON.parse(jsonString);
+  console.log(result);
+} catch (error) {
+  console.error("Failed:", error);
+}
+
+// ❌ WRONG: Raw try-catch with async
+try {
+  const data = await fetch("/api/data");
+  console.log(data);
+} catch (error) {
+  console.error("Failed:", error);
+}
+```
+
+**Rationale:**
+
+- **Consistent Error Handling**: All errors follow the same Result<T, E> pattern throughout the codebase
+- **Type Safety**: TypeScript knows exactly when errors are handled vs. when data is available
+- **Go-style Error Handling**: Explicit error checking makes error paths visible in the code flow
+- **No Hidden Control Flow**: Unlike try-catch, error handling is explicit and doesn't use exceptions
+- **Composability**: Result types can be chained, mapped, and transformed functionally
+- **Testing**: Result-based code is easier to test than exception-based code
+
+**When raw try-catch IS allowed:**
+
+- Inside the `trySync`/`tryAsync` implementation itself (already done in `@torus-network/torus-utils`)
+- In very low-level infrastructure code where you're building the abstraction
+- Never in application/business logic code
+
 ### Result<T,E> Error Handling
 
 Use the canonical pattern for handling `Result<T,E>` types from `@torus-network/torus-utils/result`:
@@ -331,7 +452,7 @@ console.log("Success:", data);
 
 - `isOk()` helper functions
 - `.success` or `.data` property access
-- try/catch wrapping
+- Raw try/catch wrapping (use `tryAsync`/`trySync` instead)
 
 ### Substrate Integration
 

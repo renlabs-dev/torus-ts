@@ -1,0 +1,291 @@
+diff --git a/dist/walletIntegrations/multiProtocol.js b/dist/walletIntegrations/multiProtocol.js
+index 7b957f980f608a2991c4851ff6374cb9c5048832..ff827184bcdfb02d300c2ec29ff43bf16d8e1b5e 100644
+--- a/dist/walletIntegrations/multiProtocol.js
++++ b/dist/walletIntegrations/multiProtocol.js
+@@ -1,26 +1,32 @@
+ import { useMemo } from 'react';
+-import { cosmoshub } from '@hyperlane-xyz/registry';
+ import { ProtocolType } from '@hyperlane-xyz/utils';
+ import { widgetLogger } from '../logger.js';
+-import { useCosmosAccount, useCosmosActiveChain, useCosmosConnectFn, useCosmosDisconnectFn, useCosmosTransactionFns, useCosmosWalletDetails, useCosmosWatchAsset, } from './cosmos.js';
++// PATCHED: Removed imports for cosmos, solana, starknet to reduce bundle size
++// Only Ethereum is used in torus-bridge
+ import { useEthereumAccount, useEthereumActiveChain, useEthereumConnectFn, useEthereumDisconnectFn, useEthereumTransactionFns, useEthereumWalletDetails, useEthereumWatchAsset, } from './ethereum.js';
+-import { useSolanaAccount, useSolanaActiveChain, useSolanaConnectFn, useSolanaDisconnectFn, useSolanaTransactionFns, useSolanaWalletDetails, useSolanaWatchAsset, } from './solana.js';
+-import { useStarknetAccount, useStarknetActiveChain, useStarknetConnectFn, useStarknetDisconnectFn, useStarknetTransactionFns, useStarknetWalletDetails, useStarknetWatchAsset, } from './starknet.js';
++
+ const logger = widgetLogger.child({
+     module: 'walletIntegrations/multiProtocol',
+ });
++
++// Stub account info for unused protocols
++const stubAccountInfo = {
++    protocol: null,
++    isReady: false,
++    addresses: [],
++    publicKey: undefined,
++};
++
+ export function useAccounts(multiProvider, blacklistedAddresses = []) {
+     const evmAccountInfo = useEthereumAccount(multiProvider);
+-    const solAccountInfo = useSolanaAccount(multiProvider);
+-    const cosmAccountInfo = useCosmosAccount(multiProvider);
+-    const starknetAccountInfo = useStarknetAccount(multiProvider);
++    // PATCHED: Use stubs instead of actual hooks for unused chains
++    const solAccountInfo = stubAccountInfo;
++    const cosmAccountInfo = stubAccountInfo;
++    const starknetAccountInfo = stubAccountInfo;
+     // Filtered ready accounts
+     const readyAccounts = useMemo(() => [
+         evmAccountInfo,
+-        solAccountInfo,
+-        cosmAccountInfo,
+-        starknetAccountInfo,
+-    ].filter((a) => a.isReady), [evmAccountInfo, solAccountInfo, cosmAccountInfo, starknetAccountInfo]);
++    ].filter((a) => a.isReady), [evmAccountInfo]);
+     // Check if any of the ready accounts are blacklisted
+     const readyAddresses = readyAccounts
+         .map((a) => a.addresses)
+@@ -36,14 +42,11 @@ export function useAccounts(multiProvider, blacklistedAddresses = []) {
+             [ProtocolType.Cosmos]: cosmAccountInfo,
+             [ProtocolType.CosmosNative]: cosmAccountInfo,
+             [ProtocolType.Starknet]: starknetAccountInfo,
+-            [ProtocolType.Radix]: evmAccountInfo, // TODO: implement this once we have a radix wallet connection
++            [ProtocolType.Radix]: evmAccountInfo,
+         },
+         readyAccounts,
+     }), [
+         evmAccountInfo,
+-        solAccountInfo,
+-        cosmAccountInfo,
+-        starknetAccountInfo,
+         readyAccounts,
+     ]);
+ }
+@@ -68,7 +71,6 @@ export function getAccountAddressForChain(multiProvider, chainName, accounts) {
+         return account?.addresses.find((a) => a.chainName === chainName)?.address;
+     }
+     else {
+-        // Use first because only cosmos has the notion of per-chain addresses
+         return account?.addresses[0]?.address;
+     }
+ }
+@@ -76,23 +78,10 @@ export function getAddressFromAccountAndChain(account, chainName) {
+     if (!account) {
+         return 'Unknown';
+     }
+-    // only in cosmos there are multiple addresses per account, in this
+-    // case we display the cosmos hub address by default. If the user
+-    // selects a cosmos based origin chain in the swap form that cosmos
+-    // address is displayed instead
+     if (account.protocol === ProtocolType.Cosmos) {
+-        // chainName can be an EVM chain here, therefore if no
+-        // cosmos address was found we search for the cosmos hub
+-        // address below
+         const cosmosAddress = account?.addresses?.find((a) => a.chainName === chainName)?.address;
+-        // if no cosmos address was found for the chain name we search
+-        // for the cosmos hub address as fallback
+-        return (cosmosAddress ??
+-            account?.addresses?.find((a) => a.chainName === cosmoshub.name)
+-                ?.address ??
+-            'Unknown');
++        return (cosmosAddress ?? 'Unknown');
+     }
+-    // by default display the first address of the account
+     return account.addresses[0]?.address ?? 'Unknown';
+ }
+ export function getAccountAddressAndPubKey(multiProvider, chainName, accounts) {
+@@ -105,37 +94,31 @@ export function getAccountAddressAndPubKey(multiProvider, chainName, accounts) {
+ }
+ export function useWalletDetails() {
+     const evmWallet = useEthereumWalletDetails();
+-    const solWallet = useSolanaWalletDetails();
+-    const cosmosWallet = useCosmosWalletDetails();
+-    const starknetWallet = useStarknetWalletDetails();
++    // PATCHED: Use null for unused wallets
+     return useMemo(() => ({
+         [ProtocolType.Ethereum]: evmWallet,
+-        [ProtocolType.Sealevel]: solWallet,
+-        [ProtocolType.Cosmos]: cosmosWallet,
+-        [ProtocolType.CosmosNative]: cosmosWallet,
+-        [ProtocolType.Starknet]: starknetWallet,
+-        [ProtocolType.Radix]: evmWallet, // TODO: implement this once we have a radix wallet connection
+-    }), [evmWallet, solWallet, cosmosWallet, starknetWallet]);
++        [ProtocolType.Sealevel]: null,
++        [ProtocolType.Cosmos]: null,
++        [ProtocolType.CosmosNative]: null,
++        [ProtocolType.Starknet]: null,
++        [ProtocolType.Radix]: evmWallet,
++    }), [evmWallet]);
+ }
+ export function useConnectFns() {
+     const onConnectEthereum = useEthereumConnectFn();
+-    const onConnectSolana = useSolanaConnectFn();
+-    const onConnectCosmos = useCosmosConnectFn();
+-    const onConnectStarknet = useStarknetConnectFn();
++    // PATCHED: Use noops for unused chains
++    const noop = () => {};
+     return useMemo(() => ({
+         [ProtocolType.Ethereum]: onConnectEthereum,
+-        [ProtocolType.Sealevel]: onConnectSolana,
+-        [ProtocolType.Cosmos]: onConnectCosmos,
+-        [ProtocolType.CosmosNative]: onConnectCosmos,
+-        [ProtocolType.Starknet]: onConnectStarknet,
+-        [ProtocolType.Radix]: () => { }, // TODO: implement this once we have a radix wallet connection
+-    }), [onConnectEthereum, onConnectSolana, onConnectCosmos, onConnectStarknet]);
++        [ProtocolType.Sealevel]: noop,
++        [ProtocolType.Cosmos]: noop,
++        [ProtocolType.CosmosNative]: noop,
++        [ProtocolType.Starknet]: noop,
++        [ProtocolType.Radix]: noop,
++    }), [onConnectEthereum]);
+ }
+ export function useDisconnectFns() {
+     const disconnectEvm = useEthereumDisconnectFn();
+-    const disconnectSol = useSolanaDisconnectFn();
+-    const disconnectCosmos = useCosmosDisconnectFn();
+-    const disconnectStarknet = useStarknetDisconnectFn();
+     const onClickDisconnect = (env, disconnectFn) => async () => {
+         try {
+             if (!disconnectFn)
+@@ -146,105 +129,70 @@ export function useDisconnectFns() {
+             logger.error(`Error disconnecting from ${env} wallet`, error);
+         }
+     };
++    const noop = async () => {};
+     return useMemo(() => ({
+         [ProtocolType.Ethereum]: onClickDisconnect(ProtocolType.Ethereum, disconnectEvm),
+-        [ProtocolType.Sealevel]: onClickDisconnect(ProtocolType.Sealevel, disconnectSol),
+-        [ProtocolType.Cosmos]: onClickDisconnect(ProtocolType.Cosmos, disconnectCosmos),
+-        [ProtocolType.CosmosNative]: onClickDisconnect(ProtocolType.CosmosNative, disconnectCosmos),
+-        [ProtocolType.Starknet]: onClickDisconnect(ProtocolType.Starknet, disconnectStarknet),
+-        [ProtocolType.Radix]: onClickDisconnect(ProtocolType.Radix, () => { }), // TODO: implement once we have radix wallet connection
+-    }), [disconnectEvm, disconnectSol, disconnectCosmos, disconnectStarknet]);
++        [ProtocolType.Sealevel]: noop,
++        [ProtocolType.Cosmos]: noop,
++        [ProtocolType.CosmosNative]: noop,
++        [ProtocolType.Starknet]: noop,
++        [ProtocolType.Radix]: noop,
++    }), [disconnectEvm]);
+ }
+ export function useActiveChains(multiProvider) {
+     const evmChain = useEthereumActiveChain(multiProvider);
+-    const solChain = useSolanaActiveChain(multiProvider);
+-    const cosmChain = useCosmosActiveChain(multiProvider);
+-    const starknetChain = useStarknetActiveChain(multiProvider);
+-    const readyChains = useMemo(() => [evmChain, solChain, cosmChain, starknetChain].filter((c) => !!c.chainDisplayName), [evmChain, solChain, cosmChain, starknetChain]);
++    // PATCHED: Use empty chain info for unused chains
++    const emptyChain = { chainDisplayName: null };
++    const readyChains = useMemo(() => [evmChain].filter((c) => !!c.chainDisplayName), [evmChain]);
+     return useMemo(() => ({
+         chains: {
+             [ProtocolType.Ethereum]: evmChain,
+-            [ProtocolType.Sealevel]: solChain,
+-            [ProtocolType.Cosmos]: cosmChain,
+-            [ProtocolType.CosmosNative]: cosmChain,
+-            [ProtocolType.Starknet]: starknetChain,
+-            [ProtocolType.Radix]: evmChain, // TODO: replace this once we have a radix implementation
++            [ProtocolType.Sealevel]: emptyChain,
++            [ProtocolType.Cosmos]: emptyChain,
++            [ProtocolType.CosmosNative]: emptyChain,
++            [ProtocolType.Starknet]: emptyChain,
++            [ProtocolType.Radix]: evmChain,
+         },
+         readyChains,
+-    }), [evmChain, solChain, cosmChain, readyChains, starknetChain]);
++    }), [evmChain, readyChains]);
+ }
+ export function useTransactionFns(multiProvider) {
+     const { switchNetwork: onSwitchEvmNetwork, sendTransaction: onSendEvmTx, sendMultiTransaction: onSendMultiEvmTx, } = useEthereumTransactionFns(multiProvider);
+-    const { switchNetwork: onSwitchSolNetwork, sendTransaction: onSendSolTx, sendMultiTransaction: onSendMultiSolTx, } = useSolanaTransactionFns(multiProvider);
+-    const { switchNetwork: onSwitchCosmNetwork, sendTransaction: onSendCosmTx, sendMultiTransaction: onSendMultiCosmTx, } = useCosmosTransactionFns(multiProvider);
+-    const { switchNetwork: onSwitchStarknetNetwork, sendTransaction: onSendStarknetTx, sendMultiTransaction: onSendMultiStarknetTx, } = useStarknetTransactionFns(multiProvider);
++    // PATCHED: Use noops for unused chains
++    const noopTxFns = {
++        sendTransaction: () => {},
++        sendMultiTransaction: () => {},
++        switchNetwork: () => {},
++    };
+     return useMemo(() => ({
+         [ProtocolType.Ethereum]: {
+             sendTransaction: onSendEvmTx,
+             sendMultiTransaction: onSendMultiEvmTx,
+             switchNetwork: onSwitchEvmNetwork,
+         },
+-        [ProtocolType.Sealevel]: {
+-            sendTransaction: onSendSolTx,
+-            sendMultiTransaction: onSendMultiSolTx,
+-            switchNetwork: onSwitchSolNetwork,
+-        },
+-        [ProtocolType.Cosmos]: {
+-            sendTransaction: onSendCosmTx,
+-            sendMultiTransaction: onSendMultiCosmTx,
+-            switchNetwork: onSwitchCosmNetwork,
+-        },
+-        [ProtocolType.CosmosNative]: {
+-            sendTransaction: onSendCosmTx,
+-            sendMultiTransaction: onSendMultiCosmTx,
+-            switchNetwork: onSwitchCosmNetwork,
+-        },
+-        [ProtocolType.Starknet]: {
+-            sendTransaction: onSendStarknetTx,
+-            sendMultiTransaction: onSendMultiStarknetTx,
+-            switchNetwork: onSwitchStarknetNetwork,
+-        },
+-        [ProtocolType.Radix]: {
+-            // TODO: implement once we have radix wallet connection
+-            sendTransaction: () => { },
+-            sendMultiTransaction: () => { },
+-            switchNetwork: () => { },
+-        },
++        [ProtocolType.Sealevel]: noopTxFns,
++        [ProtocolType.Cosmos]: noopTxFns,
++        [ProtocolType.CosmosNative]: noopTxFns,
++        [ProtocolType.Starknet]: noopTxFns,
++        [ProtocolType.Radix]: noopTxFns,
+     }), [
+         onSendEvmTx,
+-        onSendSolTx,
+         onSwitchEvmNetwork,
+-        onSwitchSolNetwork,
+-        onSendCosmTx,
+-        onSwitchCosmNetwork,
+-        onSendStarknetTx,
+-        onSwitchStarknetNetwork,
+     ]);
+ }
+ export function useWatchAsset(multiProvider) {
+     const { addAsset: evmAddAsset } = useEthereumWatchAsset(multiProvider);
+-    const { addAsset: solanaAddAsset } = useSolanaWatchAsset(multiProvider);
+-    const { addAsset: cosmosAddAsset } = useCosmosWatchAsset(multiProvider);
+-    const { addAsset: starknetAddAsset } = useStarknetWatchAsset(multiProvider);
++    // PATCHED: Use noops for unused chains
++    const noopAddAsset = { addAsset: () => {} };
+     return useMemo(() => ({
+         [ProtocolType.Ethereum]: {
+             addAsset: evmAddAsset,
+         },
+-        [ProtocolType.Sealevel]: {
+-            addAsset: solanaAddAsset,
+-        },
+-        [ProtocolType.Cosmos]: {
+-            addAsset: cosmosAddAsset,
+-        },
+-        [ProtocolType.CosmosNative]: {
+-            addAsset: cosmosAddAsset,
+-        },
+-        [ProtocolType.Starknet]: {
+-            addAsset: starknetAddAsset,
+-        },
+-        [ProtocolType.Radix]: {
+-            addAsset: () => { }, // TODO: implement once we have radix wallet connection
+-        },
+-    }), [evmAddAsset, solanaAddAsset, cosmosAddAsset, starknetAddAsset]);
++        [ProtocolType.Sealevel]: noopAddAsset,
++        [ProtocolType.Cosmos]: noopAddAsset,
++        [ProtocolType.CosmosNative]: noopAddAsset,
++        [ProtocolType.Starknet]: noopAddAsset,
++        [ProtocolType.Radix]: noopAddAsset,
++    }), [evmAddAsset]);
+ }
+ //# sourceMappingURL=multiProtocol.js.map
