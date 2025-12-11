@@ -15,9 +15,9 @@ import {
   TabsTrigger,
 } from "@torus-ts/ui/components/tabs";
 import { api } from "~/trpc/react";
+import dayjs from "dayjs";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
-import dayjs from "dayjs";
 import { ExpandedFeedItem } from "../../../../_components/expanded-feed/expanded-feed-item/expanded-feed-item";
 
 interface ProfileContentProps {
@@ -26,9 +26,7 @@ interface ProfileContentProps {
 
 type VerdictTab = "ongoing" | "true" | "false";
 
-export default function UserProfileContent({
-  username,
-}: ProfileContentProps) {
+export default function UserProfileContent({ username }: ProfileContentProps) {
   const { data: counts } = api.prediction.getCountsByUsername.useQuery({
     username,
   });
@@ -47,19 +45,18 @@ export default function UserProfileContent({
   const rawDateTo = searchParams.get("dateTo") ?? undefined;
   const dateFrom =
     rawDateFrom && dayjs(rawDateFrom).isValid() ? rawDateFrom : undefined;
-  const dateTo = rawDateTo && dayjs(rawDateTo).isValid() ? rawDateTo : undefined;
+  const dateTo =
+    rawDateTo && dayjs(rawDateTo).isValid() ? rawDateTo : undefined;
   const topicIds =
     searchParams.get("topics")?.split(",").filter(Boolean) ?? undefined;
 
   const { data: filteredCounts = counts ?? { ongoing: 0, true: 0, false: 0 } } =
-    api.prediction.getCountsByUsername.useQuery(
-      {
-        username,
-        dateFrom,
-        dateTo,
-        topicIds,
-      },
-    );
+    api.prediction.getCountsByUsername.useQuery({
+      username,
+      dateFrom,
+      dateTo,
+      topicIds,
+    });
 
   // Fetch predictions separately per verdict status - only fetch active tab
   const { data: ongoingPredictions, isLoading: ongoingLoading } =
