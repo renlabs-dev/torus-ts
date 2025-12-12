@@ -59,7 +59,14 @@ export function ContentFilterDialogTopicSelect({
             <ChevronDownIcon />
           </Button>
         </PopoverTrigger>
-        <PopoverContent className="w-80 p-4" align="start">
+        <PopoverContent
+          className="w-80 p-4"
+          align="start"
+          onOpenAutoFocus={(event) => {
+            // Prevent auto focus to avoid interfering with scroll
+            event.preventDefault();
+          }}
+        >
           <div className="space-y-3">
             {isLoading ? (
               <p className="text-muted-foreground text-sm">Loading topics...</p>
@@ -68,9 +75,15 @@ export function ContentFilterDialogTopicSelect({
                 No topics available
               </p>
             ) : (
-              <div className="max-h-60 space-y-2 overflow-y-auto">
+              <div
+                className="max-h-64 space-y-2 overflow-y-auto"
+                onWheel={(e) => e.stopPropagation()}
+              >
                 {topics.map((topic) => (
-                  <div key={topic.id} className="flex items-center space-x-2">
+                  <div
+                    key={topic.id}
+                    className="hover:bg-muted/30 flex items-center space-x-2 rounded px-2 py-1"
+                  >
                     <Checkbox
                       id={topic.id}
                       checked={selectedTopicIds.includes(topic.id)}
