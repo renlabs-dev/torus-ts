@@ -29,6 +29,7 @@ export function ContentFilterDialogDatePicker({
     return `${dateRange.from.toLocaleDateString()} - ${dateRange.to.toLocaleDateString()}`;
   };
 
+
   return (
     <div className="flex flex-col gap-3">
       <Label htmlFor="date" className="px-1">
@@ -46,17 +47,37 @@ export function ContentFilterDialogDatePicker({
           </Button>
         </PopoverTrigger>
         <PopoverContent className="w-auto overflow-hidden p-0" align="start">
-          <Calendar
-            mode="range"
-            selected={dateRange}
-            captionLayout="dropdown"
-            onSelect={(range) => {
-              onDateRangeChange(range);
-              if (range?.from && range.to) {
-                setOpen(false);
-              }
-            }}
-          />
+          <div className="p-3">
+            <Calendar
+              mode="range"
+              selected={dateRange}
+              captionLayout="dropdown"
+              numberOfMonths={2}
+              onSelect={(range) => {
+                onDateRangeChange(range);
+              }}
+              disabled={(date) => date > new Date() || date < new Date("1900-01-01")}
+            />
+            <div className="flex justify-between gap-2 mt-4 pt-3 border-t">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => {
+                  onDateRangeChange(undefined);
+                  setOpen(false);
+                }}
+              >
+                Clear
+              </Button>
+              <Button
+                size="sm"
+                onClick={() => setOpen(false)}
+                disabled={!dateRange?.from}
+              >
+                Done
+              </Button>
+            </div>
+          </div>
         </PopoverContent>
       </Popover>
     </div>
