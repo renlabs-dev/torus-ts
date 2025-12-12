@@ -527,7 +527,7 @@ export default function AddAccountStepperDialog({
                   <WalletDropdown
                     variant="default"
                     torusCacheUrl={env("NEXT_PUBLIC_TORUS_CACHE_URL")}
-                    dropdownClassName="left-[126px] md:left-[100px] lg:left-[80px]"
+                    align="start"
                   />
                 </div>
               </div>

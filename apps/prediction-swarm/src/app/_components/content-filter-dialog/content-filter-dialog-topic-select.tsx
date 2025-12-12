@@ -68,48 +68,26 @@ export function ContentFilterDialogTopicSelect({
                 No topics available
               </p>
             ) : (
-              <>
-                {topics.length > 5 && (
-                  <div className="mb-3 flex gap-2">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => onTopicIdsChange(topics.map((t) => t.id))}
-                      className="h-7 text-xs"
+              <div className="max-h-64 space-y-2 overflow-y-auto">
+                {topics.map((topic) => (
+                  <div
+                    key={topic.id}
+                    className="hover:bg-muted/30 flex items-center space-x-2 rounded px-2 py-1"
+                  >
+                    <Checkbox
+                      id={topic.id}
+                      checked={selectedTopicIds.includes(topic.id)}
+                      onCheckedChange={() => handleToggle(topic.id)}
+                    />
+                    <label
+                      htmlFor={topic.id}
+                      className="flex-1 cursor-pointer text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
                     >
-                      Select All
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => onTopicIdsChange([])}
-                      className="h-7 text-xs"
-                    >
-                      Clear All
-                    </Button>
+                      {topic.name}
+                    </label>
                   </div>
-                )}
-                <div className="scrollbar-thin scrollbar-thumb-muted-foreground/20 scrollbar-track-transparent hover:scrollbar-thumb-muted-foreground/40 max-h-64 space-y-2 overflow-y-auto">
-                  {topics.map((topic) => (
-                    <div
-                      key={topic.id}
-                      className="hover:bg-muted/30 -mx-1 flex items-center space-x-2 rounded px-1 py-1 transition-colors"
-                    >
-                      <Checkbox
-                        id={topic.id}
-                        checked={selectedTopicIds.includes(topic.id)}
-                        onCheckedChange={() => handleToggle(topic.id)}
-                      />
-                      <label
-                        htmlFor={topic.id}
-                        className="flex-1 cursor-pointer text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                      >
-                        {topic.name}
-                      </label>
-                    </div>
-                  ))}
-                </div>
-              </>
+                ))}
+              </div>
             )}
           </div>
         </PopoverContent>
