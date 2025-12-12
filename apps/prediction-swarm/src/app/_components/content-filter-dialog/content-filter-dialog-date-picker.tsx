@@ -12,6 +12,10 @@ import { ChevronDownIcon } from "lucide-react";
 import * as React from "react";
 import type { DateRange } from "react-day-picker";
 
+// Constants for date validation to avoid creating new Date objects on every render
+const TODAY = new Date();
+const MIN_DATE = new Date("1900-01-01");
+
 interface FilterDatePickerProps {
   dateRange: DateRange | undefined;
   onDateRangeChange: (range: DateRange | undefined) => void;
@@ -55,9 +59,7 @@ export function ContentFilterDialogDatePicker({
               onSelect={(range) => {
                 onDateRangeChange(range);
               }}
-              disabled={(date) =>
-                date > new Date() || date < new Date("1900-01-01")
-              }
+              disabled={(date) => date > TODAY || date < MIN_DATE}
             />
             <div className="mt-4 flex justify-between gap-2 border-t pt-3">
               <Button
