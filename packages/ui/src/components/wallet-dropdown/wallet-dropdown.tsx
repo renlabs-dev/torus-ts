@@ -46,7 +46,6 @@ interface WalletDropdownProps {
   className?: string;
   variant?: "default" | "icon";
   dropdownClassName?: string;
-  align?: "start" | "end" | "center";
 }
 
 export const WalletDropdown = (props: WalletDropdownProps) => {
@@ -63,7 +62,6 @@ export const WalletDropdown = (props: WalletDropdownProps) => {
     torusChainEnv,
     variant = "default",
     dropdownClassName,
-    align = "end",
   } = props;
 
   const handleGetAccounts = async () => {
@@ -126,7 +124,7 @@ export const WalletDropdown = (props: WalletDropdownProps) => {
           )}
         </DropdownMenuTrigger>
         <DropdownMenuContent
-          align={align}
+          align="end"
           className={cn("mt-0.5 w-72 border border-muted", dropdownClassName)}
         >
           {selectedAccount && (
