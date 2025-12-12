@@ -29,7 +29,6 @@ export function ContentFilterDialogDatePicker({
     return `${dateRange.from.toLocaleDateString()} - ${dateRange.to.toLocaleDateString()}`;
   };
 
-
   return (
     <div className="flex flex-col gap-3">
       <Label htmlFor="date" className="px-1">
@@ -56,9 +55,11 @@ export function ContentFilterDialogDatePicker({
               onSelect={(range) => {
                 onDateRangeChange(range);
               }}
-              disabled={(date) => date > new Date() || date < new Date("1900-01-01")}
+              disabled={(date) =>
+                date > new Date() || date < new Date("1900-01-01")
+              }
             />
-            <div className="flex justify-between gap-2 mt-4 pt-3 border-t">
+            <div className="mt-4 flex justify-between gap-2 border-t pt-3">
               <Button
                 variant="ghost"
                 size="sm"

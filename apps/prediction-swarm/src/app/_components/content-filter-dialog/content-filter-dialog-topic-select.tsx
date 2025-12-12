@@ -70,12 +70,12 @@ export function ContentFilterDialogTopicSelect({
             ) : (
               <>
                 {topics.length > 5 && (
-                  <div className="flex gap-2 mb-3">
+                  <div className="mb-3 flex gap-2">
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={() => onTopicIdsChange(topics.map(t => t.id))}
-                      className="text-xs h-7"
+                      onClick={() => onTopicIdsChange(topics.map((t) => t.id))}
+                      className="h-7 text-xs"
                     >
                       Select All
                     </Button>
@@ -83,15 +83,18 @@ export function ContentFilterDialogTopicSelect({
                       variant="ghost"
                       size="sm"
                       onClick={() => onTopicIdsChange([])}
-                      className="text-xs h-7"
+                      className="h-7 text-xs"
                     >
                       Clear All
                     </Button>
                   </div>
                 )}
-                <div className="max-h-64 space-y-2 overflow-y-auto scrollbar-thin scrollbar-thumb-muted-foreground/20 scrollbar-track-transparent hover:scrollbar-thumb-muted-foreground/40">
+                <div className="scrollbar-thin scrollbar-thumb-muted-foreground/20 scrollbar-track-transparent hover:scrollbar-thumb-muted-foreground/40 max-h-64 space-y-2 overflow-y-auto">
                   {topics.map((topic) => (
-                    <div key={topic.id} className="flex items-center space-x-2 py-1 hover:bg-muted/30 rounded px-1 -mx-1 transition-colors">
+                    <div
+                      key={topic.id}
+                      className="hover:bg-muted/30 -mx-1 flex items-center space-x-2 rounded px-1 py-1 transition-colors"
+                    >
                       <Checkbox
                         id={topic.id}
                         checked={selectedTopicIds.includes(topic.id)}
