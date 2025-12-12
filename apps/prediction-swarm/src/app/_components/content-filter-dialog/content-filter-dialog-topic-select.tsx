@@ -75,7 +75,10 @@ export function ContentFilterDialogTopicSelect({
                 No topics available
               </p>
             ) : (
-              <div className="max-h-64 space-y-2 overflow-y-auto pointer-events-auto">
+              <div
+                className="max-h-64 space-y-2 overflow-y-auto"
+                onWheel={(e) => e.stopPropagation()}
+              >
                 {topics.map((topic) => (
                   <div
                     key={topic.id}
