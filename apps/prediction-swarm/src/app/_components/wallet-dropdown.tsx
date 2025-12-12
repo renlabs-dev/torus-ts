@@ -12,7 +12,14 @@ import { env } from "~/env";
 export function WalletDropdown({
   torusCacheUrl,
   variant = "default",
-}: Readonly<{ torusCacheUrl: string; variant?: "default" | "icon" }>) {
+  align,
+  dropdownClassName,
+}: Readonly<{
+  torusCacheUrl: string;
+  variant?: "default" | "icon";
+  align?: "start" | "end" | "center";
+  dropdownClassName?: string;
+}>) {
   const {
     accounts,
     api,
@@ -42,6 +49,8 @@ export function WalletDropdown({
       handleGetWallets={handleGetWallets}
       handleSelectWallet={handleSelectWallet}
       torusChainEnv={env("NEXT_PUBLIC_TORUS_CHAIN_ENV")}
+      align={align}
+      dropdownClassName={dropdownClassName}
     />
   );
 }
