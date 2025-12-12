@@ -82,13 +82,13 @@ export default function FeedPage() {
   }, [walletAddress]);
 
   // === ALL FEED QUERIES ===
-  const hasFilters = dateFrom || dateTo || (topicIds?.length ?? 0) > 0;
-  const filters = hasFilters ? { dateFrom, dateTo, topicIds } : undefined;
-
   const { data: allCounts = defaultCounts } =
-    api.prediction.getFeedCounts.useQuery(filters, {
-      enabled: view === "all",
-    });
+    api.prediction.getFeedCounts.useQuery(
+      { dateFrom, dateTo, topicIds },
+      {
+        enabled: view === "all",
+      },
+    );
 
   const { data: allOngoingPredictions, isLoading: allOngoingLoading } =
     api.prediction.getFeedByVerdict.useQuery(
@@ -135,7 +135,6 @@ export default function FeedPage() {
       { userKey: walletAddress ?? "", dateFrom, dateTo, topicIds },
       {
         enabled: view === "watched" && isConnected,
-        initialData: defaultCounts,
       },
     );
 
@@ -187,7 +186,6 @@ export default function FeedPage() {
       { userKey: walletAddress ?? "", dateFrom, dateTo, topicIds },
       {
         enabled: view === "starred" && isConnected,
-        initialData: defaultCounts,
       },
     );
 

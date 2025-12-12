@@ -50,13 +50,17 @@ export default function UserProfileContent({ username }: ProfileContentProps) {
   const topicIds =
     searchParams.get("topics")?.split(",").filter(Boolean) ?? undefined;
 
-  const { data: filteredCounts = counts ?? { ongoing: 0, true: 0, false: 0 } } =
-    api.prediction.getCountsByUsername.useQuery({
-      username,
-      dateFrom,
-      dateTo,
-      topicIds,
-    });
+  const hasFilters = !!(dateFrom || dateTo || (topicIds?.length ?? 0) > 0);
+  const {
+    data: filteredCounts = hasFilters
+      ? { ongoing: 0, true: 0, false: 0 }
+      : (counts ?? { ongoing: 0, true: 0, false: 0 }),
+  } = api.prediction.getCountsByUsername.useQuery({
+    username,
+    dateFrom,
+    dateTo,
+    topicIds,
+  });
 
   // Fetch predictions separately per verdict status - only fetch active tab
   const { data: ongoingPredictions, isLoading: ongoingLoading } =
