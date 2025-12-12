@@ -1,6 +1,5 @@
 "use client";
 
-import type { AppRouter } from "@torus-ts/api";
 import { Card, CardContent, CardHeader } from "@torus-ts/ui/components/card";
 import {
   Pagination,
@@ -15,27 +14,22 @@ import {
   TabsList,
   TabsTrigger,
 } from "@torus-ts/ui/components/tabs";
-import type { inferProcedureOutput } from "@trpc/server";
 import { api } from "~/trpc/react";
+import dayjs from "dayjs";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { ExpandedFeedItem } from "../../../../_components/expanded-feed/expanded-feed-item/expanded-feed-item";
 
-type UserCounts = NonNullable<
-  inferProcedureOutput<AppRouter["prediction"]["getCountsByUsername"]>
->;
-
 interface ProfileContentProps {
   username: string;
-  counts: UserCounts;
 }
 
 type VerdictTab = "ongoing" | "true" | "false";
 
-export default function UserProfileContent({
-  username,
-  counts,
-}: ProfileContentProps) {
+export default function UserProfileContent({ username }: ProfileContentProps) {
+  const { data: counts } = api.prediction.getCountsByUsername.useQuery({
+    username,
+  });
   const router = useRouter();
   const searchParams = useSearchParams();
   const limit = 30;
@@ -47,10 +41,26 @@ export default function UserProfileContent({
   const falsePage = parseInt(searchParams.get("false") ?? "1");
 
   // Read filter params from URL
-  const dateFrom = searchParams.get("dateFrom") ?? undefined;
-  const dateTo = searchParams.get("dateTo") ?? undefined;
+  const rawDateFrom = searchParams.get("dateFrom") ?? undefined;
+  const rawDateTo = searchParams.get("dateTo") ?? undefined;
+  const dateFrom =
+    rawDateFrom && dayjs(rawDateFrom).isValid() ? rawDateFrom : undefined;
+  const dateTo =
+    rawDateTo && dayjs(rawDateTo).isValid() ? rawDateTo : undefined;
   const topicIds =
     searchParams.get("topics")?.split(",").filter(Boolean) ?? undefined;
+
+  const hasFilters = !!(dateFrom || dateTo || (topicIds?.length ?? 0) > 0);
+  const {
+    data: filteredCounts = hasFilters
+      ? { ongoing: 0, true: 0, false: 0 }
+      : (counts ?? { ongoing: 0, true: 0, false: 0 }),
+  } = api.prediction.getCountsByUsername.useQuery({
+    username,
+    dateFrom,
+    dateTo,
+    topicIds,
+  });
 
   // Fetch predictions separately per verdict status - only fetch active tab
   const { data: ongoingPredictions, isLoading: ongoingLoading } =
@@ -102,9 +112,9 @@ export default function UserProfileContent({
     );
 
   // Pagination logic per tab using actual counts
-  const ongoingTotalPages = Math.ceil(counts.ongoing / limit);
-  const trueTotalPages = Math.ceil(counts.true / limit);
-  const falseTotalPages = Math.ceil(counts.false / limit);
+  const ongoingTotalPages = Math.ceil(filteredCounts.ongoing / limit);
+  const trueTotalPages = Math.ceil(filteredCounts.true / limit);
+  const falseTotalPages = Math.ceil(filteredCounts.false / limit);
 
   const updatePage = (tab: string, newPage: number) => {
     const params = new URLSearchParams(searchParams.toString());
@@ -122,13 +132,13 @@ export default function UserProfileContent({
         <CardHeader className="pb-0">
           <TabsList className="bg-accent/60 flex h-full w-full flex-col sm:grid sm:grid-cols-3">
             <TabsTrigger value="ongoing" className="w-full">
-              Ongoing predictions ({counts.ongoing})
+              Ongoing predictions ({filteredCounts.ongoing})
             </TabsTrigger>
             <TabsTrigger value="true" className="w-full">
-              True predictions ({counts.true})
+              True predictions ({filteredCounts.true})
             </TabsTrigger>
             <TabsTrigger value="false" className="w-full">
-              False predictions ({counts.false})
+              False predictions ({filteredCounts.false})
             </TabsTrigger>
           </TabsList>
         </CardHeader>

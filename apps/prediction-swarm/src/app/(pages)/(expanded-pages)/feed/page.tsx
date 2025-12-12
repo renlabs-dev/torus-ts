@@ -20,16 +20,23 @@ import { ExpandedFeedItem } from "~/app/_components/expanded-feed/expanded-feed-
 import { FeedLegend } from "~/app/_components/expanded-feed/expanded-feed-legend-tooltip";
 import { ExpandedViewPageHeader } from "~/app/_components/expanded-view-page-header";
 import { api } from "~/trpc/react";
+import dayjs from "dayjs";
 import { Eye, Globe, Star } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect } from "react";
 
 type FeedView = "all" | "watched" | "starred";
+interface FeedCounts {
+  ongoing: number;
+  true: number;
+  false: number;
+}
 
 export default function FeedPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const limit = 30;
+  const defaultCounts: FeedCounts = { ongoing: 0, true: 0, false: 0 };
 
   const { selectedAccount } = useTorus();
   const isConnected = !!selectedAccount?.address;
@@ -50,8 +57,12 @@ export default function FeedPage() {
   const falsePage = parseInt(searchParams.get("false") ?? "1");
 
   // Read filter params from URL
-  const dateFrom = searchParams.get("dateFrom") ?? undefined;
-  const dateTo = searchParams.get("dateTo") ?? undefined;
+  const rawDateFrom = searchParams.get("dateFrom") ?? undefined;
+  const rawDateTo = searchParams.get("dateTo") ?? undefined;
+  const dateFrom =
+    rawDateFrom && dayjs(rawDateFrom).isValid() ? rawDateFrom : undefined;
+  const dateTo =
+    rawDateTo && dayjs(rawDateTo).isValid() ? rawDateTo : undefined;
   const topicIds =
     searchParams.get("topics")?.split(",").filter(Boolean) ?? undefined;
 
@@ -71,9 +82,13 @@ export default function FeedPage() {
   }, [walletAddress]);
 
   // === ALL FEED QUERIES ===
-  const { data: allCounts } = api.prediction.getFeedCounts.useQuery(undefined, {
-    enabled: view === "all",
-  });
+  const { data: allCounts = defaultCounts } =
+    api.prediction.getFeedCounts.useQuery(
+      { dateFrom, dateTo, topicIds },
+      {
+        enabled: view === "all",
+      },
+    );
 
   const { data: allOngoingPredictions, isLoading: allOngoingLoading } =
     api.prediction.getFeedByVerdict.useQuery(
@@ -115,12 +130,13 @@ export default function FeedPage() {
     );
 
   // === WATCHED FEED QUERIES ===
-  const { data: watchedCounts } = api.watch.getWatchingFeedCounts.useQuery(
-    { userKey: walletAddress ?? "" },
-    {
-      enabled: view === "watched" && isConnected,
-    },
-  );
+  const { data: watchedCounts = defaultCounts } =
+    api.watch.getWatchingFeedCounts.useQuery(
+      { userKey: walletAddress ?? "", dateFrom, dateTo, topicIds },
+      {
+        enabled: view === "watched" && isConnected,
+      },
+    );
 
   const { data: watchedOngoingPredictions, isLoading: watchedOngoingLoading } =
     api.watch.getWatchingFeedByVerdict.useQuery(
@@ -165,12 +181,13 @@ export default function FeedPage() {
     );
 
   // === STARRED FEED QUERIES ===
-  const { data: starredCounts } = api.star.getStarredFeedCounts.useQuery(
-    { userKey: walletAddress ?? "" },
-    {
-      enabled: view === "starred" && isConnected,
-    },
-  );
+  const { data: starredCounts = defaultCounts } =
+    api.star.getStarredFeedCounts.useQuery(
+      { userKey: walletAddress ?? "", dateFrom, dateTo, topicIds },
+      {
+        enabled: view === "starred" && isConnected,
+      },
+    );
 
   const { data: starredOngoingPredictions, isLoading: starredOngoingLoading } =
     api.star.getStarredFeedByVerdict.useQuery(
@@ -215,7 +232,7 @@ export default function FeedPage() {
     );
 
   // Select data based on current view
-  const counts =
+  const counts: FeedCounts =
     view === "all"
       ? allCounts
       : view === "watched"
@@ -259,9 +276,16 @@ export default function FeedPage() {
         : starredFalseLoading;
 
   // Calculate total pages from counts
-  const ongoingTotalPages = Math.ceil((counts?.ongoing ?? 0) / limit);
-  const trueTotalPages = Math.ceil((counts?.true ?? 0) / limit);
-  const falseTotalPages = Math.ceil((counts?.false ?? 0) / limit);
+  const ongoingTotalPages = Math.ceil(counts.ongoing / limit);
+  const trueTotalPages = Math.ceil(counts.true / limit);
+  const falseTotalPages = Math.ceil(counts.false / limit);
+
+  const shouldShowOngoingPagination =
+    ongoingTotalPages > 1 && (ongoingPredictions?.length ?? 0) > 0;
+  const shouldShowTruePagination =
+    trueTotalPages > 1 && (truePredictions?.length ?? 0) > 0;
+  const shouldShowFalsePagination =
+    falseTotalPages > 1 && (falsePredictions?.length ?? 0) > 0;
 
   const updatePage = (tab: string, newPage: number) => {
     const params = new URLSearchParams(searchParams.toString());
@@ -356,13 +380,13 @@ export default function FeedPage() {
             <CardHeader className="pb-0">
               <TabsList className="bg-accent/60 flex h-full w-full flex-col sm:grid sm:grid-cols-3">
                 <TabsTrigger value="ongoing" className="w-full">
-                  Ongoing predictions ({counts?.ongoing ?? 0})
+                  Ongoing predictions ({counts.ongoing})
                 </TabsTrigger>
                 <TabsTrigger value="true" className="w-full">
-                  True predictions ({counts?.true ?? 0})
+                  True predictions ({counts.true})
                 </TabsTrigger>
                 <TabsTrigger value="false" className="w-full">
-                  False predictions ({counts?.false ?? 0})
+                  False predictions ({counts.false})
                 </TabsTrigger>
               </TabsList>
             </CardHeader>
@@ -375,7 +399,7 @@ export default function FeedPage() {
                   variant="feed"
                   isLoading={ongoingLoading}
                 />
-                {ongoingTotalPages > 1 && (
+                {shouldShowOngoingPagination && (
                   <Pagination className="mt-6">
                     <PaginationContent>
                       <PaginationItem>
@@ -423,7 +447,7 @@ export default function FeedPage() {
                   variant="feed"
                   isLoading={trueLoading}
                 />
-                {trueTotalPages > 1 && (
+                {shouldShowTruePagination && (
                   <Pagination className="mt-6">
                     <PaginationContent>
                       <PaginationItem>
@@ -470,7 +494,7 @@ export default function FeedPage() {
                   variant="feed"
                   isLoading={falseLoading}
                 />
-                {falseTotalPages > 1 && (
+                {shouldShowFalsePagination && (
                   <Pagination className="mt-6">
                     <PaginationContent>
                       <PaginationItem>

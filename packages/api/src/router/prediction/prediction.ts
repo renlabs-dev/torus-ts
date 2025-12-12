@@ -643,10 +643,13 @@ export const predictionRouter = {
           .string()
           .min(1)
           .transform((val) => (val.startsWith("@") ? val.slice(1) : val)),
+        dateFrom: z.string().datetime().optional(),
+        dateTo: z.string().datetime().optional(),
+        topicIds: z.array(z.string()).optional(),
       }),
     )
     .query(async ({ ctx, input }) => {
-      const { username } = input;
+      const { username, dateFrom, dateTo, topicIds } = input;
 
       // Start from twitter_users to leverage indexes for username filtering
       const counts = await ctx.db
@@ -705,23 +708,31 @@ export const predictionRouter = {
               username.toLowerCase(),
             ),
             eq(twitterUsersSchema.tracked, true),
+            dateFrom
+              ? gte(scrapedTweetSchema.date, new Date(dateFrom))
+              : undefined,
+            dateTo ? lte(scrapedTweetSchema.date, new Date(dateTo)) : undefined,
+            topicIds && topicIds.length > 0
+              ? sql`${parsedPredictionSchema.topicId} IN (${sql.join(
+                  topicIds.map((id) => sql`${id}`),
+                  sql`, `,
+                )})`
+              : undefined,
           ),
         )
         .groupBy(sql`verdict_status`);
 
-      const result = {
-        ongoing: 0,
-        true: 0,
-        false: 0,
-      };
-
-      counts.forEach((row) => {
-        if (row.verdictStatus === "ongoing") result.ongoing = row.count;
-        if (row.verdictStatus === "true") result.true = row.count;
-        if (row.verdictStatus === "false") result.false = row.count;
-      });
-
-      return result;
+      return counts.reduce(
+        (acc, row) => {
+          if (row.verdictStatus === "ongoing")
+            return { ...acc, ongoing: row.count };
+          if (row.verdictStatus === "true") return { ...acc, true: row.count };
+          if (row.verdictStatus === "false")
+            return { ...acc, false: row.count };
+          return acc;
+        },
+        { ongoing: 0, true: 0, false: 0 },
+      );
     }),
 
   /**
@@ -1016,81 +1027,103 @@ export const predictionRouter = {
   /**
    * Get feed prediction counts
    */
-  getFeedCounts: publicProcedure.query(async ({ ctx }) => {
-    const counts = await ctx.db
-      .select({
-        verdictStatus: sql<string | null>`CASE
-          WHEN ${verdictSchema.id} IS NULL AND (${parsedPredictionFeedbackSchema.parsedPredictionId} IS NULL OR ${parsedPredictionFeedbackSchema.failureCause} = 'FUTURE_TIMEFRAME') THEN 'ongoing'
-          WHEN ${verdictSchema.verdict} = true THEN 'true'
-          WHEN ${verdictSchema.verdict} = false THEN 'false'
-        END`.as("verdict_status"),
-        count: sql<number>`COUNT(DISTINCT ${parsedPredictionSchema.id})`,
-      })
-      .from(predictionSchema)
-      .innerJoin(
-        parsedPredictionSchema,
-        and(
-          eq(parsedPredictionSchema.predictionId, predictionSchema.id),
-          notExists(
-            ctx.db
-              .select({
-                id: parsedPredictionFeedbackSchema.parsedPredictionId,
-              })
-              .from(parsedPredictionFeedbackSchema)
-              .where(
-                and(
-                  eq(
-                    parsedPredictionFeedbackSchema.parsedPredictionId,
-                    parsedPredictionSchema.id,
-                  ),
-                  or(
-                    sql`${parsedPredictionFeedbackSchema.failureCause} != 'FUTURE_TIMEFRAME'`,
-                    isNull(parsedPredictionFeedbackSchema.failureCause),
+  getFeedCounts: publicProcedure
+    .input(
+      z.object({
+        dateFrom: z.string().datetime().optional(),
+        dateTo: z.string().datetime().optional(),
+        topicIds: z.array(z.string()).optional(),
+      }),
+    )
+    .query(async ({ ctx, input }) => {
+      const { dateFrom, dateTo, topicIds } = input;
+
+      const counts = await ctx.db
+        .select({
+          verdictStatus: sql<string | null>`CASE
+            WHEN ${verdictSchema.id} IS NULL AND (${parsedPredictionFeedbackSchema.parsedPredictionId} IS NULL OR ${parsedPredictionFeedbackSchema.failureCause} = 'FUTURE_TIMEFRAME') THEN 'ongoing'
+            WHEN ${verdictSchema.verdict} = true THEN 'true'
+            WHEN ${verdictSchema.verdict} = false THEN 'false'
+          END`.as("verdict_status"),
+          count: sql<number>`COUNT(DISTINCT ${parsedPredictionSchema.id})`,
+        })
+        .from(predictionSchema)
+        .innerJoin(
+          parsedPredictionSchema,
+          and(
+            eq(parsedPredictionSchema.predictionId, predictionSchema.id),
+            notExists(
+              ctx.db
+                .select({
+                  id: parsedPredictionFeedbackSchema.parsedPredictionId,
+                })
+                .from(parsedPredictionFeedbackSchema)
+                .where(
+                  and(
+                    eq(
+                      parsedPredictionFeedbackSchema.parsedPredictionId,
+                      parsedPredictionSchema.id,
+                    ),
+                    or(
+                      sql`${parsedPredictionFeedbackSchema.failureCause} != 'FUTURE_TIMEFRAME'`,
+                      isNull(parsedPredictionFeedbackSchema.failureCause),
+                    ),
                   ),
                 ),
-              ),
+            ),
           ),
-        ),
-      )
-      .innerJoin(
-        scrapedTweetSchema,
-        eq(
-          scrapedTweetSchema.predictionId,
-          parsedPredictionSchema.predictionId,
-        ),
-      )
-      .innerJoin(
-        twitterUsersSchema,
-        eq(twitterUsersSchema.id, scrapedTweetSchema.authorId),
-      )
-      .leftJoin(
-        verdictSchema,
-        eq(verdictSchema.parsedPredictionId, parsedPredictionSchema.id),
-      )
-      .leftJoin(
-        parsedPredictionFeedbackSchema,
-        eq(
-          parsedPredictionFeedbackSchema.parsedPredictionId,
-          parsedPredictionSchema.id,
-        ),
-      )
-      .where(and(eq(twitterUsersSchema.tracked, true)))
-      .groupBy(sql`verdict_status`);
+        )
+        .innerJoin(
+          scrapedTweetSchema,
+          eq(
+            scrapedTweetSchema.predictionId,
+            parsedPredictionSchema.predictionId,
+          ),
+        )
+        .innerJoin(
+          twitterUsersSchema,
+          eq(twitterUsersSchema.id, scrapedTweetSchema.authorId),
+        )
+        .leftJoin(
+          verdictSchema,
+          eq(verdictSchema.parsedPredictionId, parsedPredictionSchema.id),
+        )
+        .leftJoin(
+          parsedPredictionFeedbackSchema,
+          eq(
+            parsedPredictionFeedbackSchema.parsedPredictionId,
+            parsedPredictionSchema.id,
+          ),
+        )
+        .where(
+          and(
+            eq(twitterUsersSchema.tracked, true),
+            dateFrom
+              ? gte(scrapedTweetSchema.date, new Date(dateFrom))
+              : undefined,
+            dateTo ? lte(scrapedTweetSchema.date, new Date(dateTo)) : undefined,
+            topicIds && topicIds.length > 0
+              ? sql`${parsedPredictionSchema.topicId} IN (${sql.join(
+                  topicIds.map((id) => sql`${id}`),
+                  sql`, `,
+                )})`
+              : undefined,
+          ),
+        )
+        .groupBy(sql`verdict_status`);
 
-    const result = {
-      ongoing: 0,
-      true: 0,
-      false: 0,
-    };
-
-    counts.forEach((row) => {
-      if (row.verdictStatus === "ongoing") result.ongoing = row.count;
-      if (row.verdictStatus === "true") result.true = row.count;
-      if (row.verdictStatus === "false") result.false = row.count;
-    });
-
-    return result;
-  }),
+      return counts.reduce(
+        (acc, row) => {
+          if (row.verdictStatus === "ongoing")
+            return { ...acc, ongoing: row.count };
+          if (row.verdictStatus === "true") return { ...acc, true: row.count };
+          if (row.verdictStatus === "false")
+            return { ...acc, false: row.count };
+          return acc;
+        },
+        { ongoing: 0, true: 0, false: 0 },
+      );
+    }),
   /**
    * Get prediction counts for multiple tickers
    */
