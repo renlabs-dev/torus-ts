@@ -44,21 +44,11 @@ deployment:
         configMapKeyRef:
           name: '{{ template "application.name" . }}-config'
           key: next_public_ws_url
-    NEXT_PUBLIC_PREDICTION_APP_ADDRESS:
-      valueFrom:
-        secretKeyRef:
-          name: "torus-{{ .Values.environmentName }}-web-apps-secret"
-          key: NEXT_PUBLIC_PREDICTION_APP_ADDRESS
     PERMISSION_GRANTOR_ADDRESS:
       valueFrom:
         secretKeyRef:
           name: "torus-{{ .Values.environmentName }}-web-apps-secret"
           key: PERMISSION_GRANTOR_ADDRESS
-    PERMISSION_CACHE_REFRESH_INTERVAL_MS:
-      valueFrom:
-        configMapKeyRef:
-          name: '{{ template "application.name" . }}-config'
-          key: permission_cache_refresh_interval_ms
     PREDICTION_APP_MNEMONIC:
       valueFrom:
         secretKeyRef:
