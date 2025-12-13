@@ -1,13 +1,4 @@
 environments:
-  dev:
-    values:
-      - ../../helm/values.yaml
-      - values.yaml
-      - namespace: torus-dev-web-apps
-      - environmentName: dev
-      - releaseName: dev-swarm-api
-      - wssApiEndpoint: wss://api.testnet.torus.network
-      - chainEnv: testnet
   prod:
     values:
       - ../../helm/values.yaml
@@ -17,6 +8,8 @@ environments:
       - releaseName: swarm-api
       - wssApiEndpoint: wss://api.torus.network
       - chainEnv: mainnet
+      - ingressHost: api.predictionswarm.com
+      - ingressClassName: nginx
 ---
 helmDefaults:
   wait: true

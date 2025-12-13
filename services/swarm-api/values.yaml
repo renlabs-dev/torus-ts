@@ -1,10 +1,22 @@
 cacheUrl: ""
 
 ingress:
-  enabled: false
+  enabled: true
+  ingressClassName: "{{ .Values.ingressClassName }}"
+  hosts:
+    - host: "{{ .Values.ingressHost }}"
+      paths:
+        - path: /
+          pathType: Prefix
+  tls:
+    - hosts:
+        - "{{ .Values.ingressHost }}"
+      secretName: "{{ include \"application.fullname\" . }}-tls"
 
 service:
-  enabled: false
+  enabled: true
+  type: ClusterIP
+  port: 8080
 
 deployment:
   image:
@@ -15,6 +27,8 @@ deployment:
 
   podLabels:
     app: swarm-api
+
+  containerPort: 8080
 
   resources:
     requests:
