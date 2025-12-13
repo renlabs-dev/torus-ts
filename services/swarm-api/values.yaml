@@ -1,0 +1,66 @@
+cacheUrl: ""
+
+ingress:
+  enabled: false
+
+service:
+  enabled: false
+
+deployment:
+  image:
+    repository: ghcr.io/renlabs-dev/swarm-api
+
+  additionalLabels:
+    app: swarm-api
+
+  podLabels:
+    app: swarm-api
+
+  resources:
+    requests:
+      memory: 200Mi
+      cpu: 0.1
+
+  command: ["pnpm"]
+  args: ["tsx", "./src/index.ts"]
+
+  startupProbe:
+    enabled: false
+
+  readinessProbe:
+    enabled: false
+
+  livenessProbe:
+    enabled: false
+
+  env:
+    POSTGRES_URL:
+      valueFrom:
+        secretKeyRef:
+          name: "torus-{{ .Values.environmentName }}-web-apps-secret"
+          key: prediction_swarm_db_url
+    NEXT_PUBLIC_TORUS_RPC_URL:
+      valueFrom:
+        configMapKeyRef:
+          name: '{{ template "application.name" . }}-config'
+          key: next_public_ws_url
+    NEXT_PUBLIC_PREDICTION_APP_ADDRESS:
+      valueFrom:
+        secretKeyRef:
+          name: "torus-{{ .Values.environmentName }}-web-apps-secret"
+          key: NEXT_PUBLIC_PREDICTION_APP_ADDRESS
+    PERMISSION_GRANTOR_ADDRESS:
+      valueFrom:
+        secretKeyRef:
+          name: "torus-{{ .Values.environmentName }}-web-apps-secret"
+          key: PERMISSION_GRANTOR_ADDRESS
+    PERMISSION_CACHE_REFRESH_INTERVAL_MS:
+      valueFrom:
+        configMapKeyRef:
+          name: '{{ template "application.name" . }}-config'
+          key: permission_cache_refresh_interval_ms
+    PREDICTION_APP_MNEMONIC:
+      valueFrom:
+        secretKeyRef:
+          name: "torus-{{ .Values.environmentName }}-web-apps-secret"
+          key: PREDICTION_APP_MNEMONIC
