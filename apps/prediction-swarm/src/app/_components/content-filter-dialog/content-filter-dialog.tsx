@@ -26,10 +26,20 @@ export function ContentFilterDialog() {
   const [dateRange, setDateRange] = useState<DateRange | undefined>(() => {
     const from = searchParams.get("dateFrom");
     const to = searchParams.get("dateTo");
-    if (from || to) {
+    if (from && to) {
       return {
-        from: from ? new Date(from) : undefined,
-        to: to ? new Date(to) : undefined,
+        from: new Date(from),
+        to: new Date(to),
+      };
+    } else if (from) {
+      return {
+        from: new Date(from),
+        to: undefined,
+      };
+    } else if (to) {
+      return {
+        from: undefined,
+        to: new Date(to),
       };
     }
     return undefined;

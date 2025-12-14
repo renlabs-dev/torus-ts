@@ -70,10 +70,10 @@ export const CONTENT = {
     ],
     network: [
       { text: "Docs", href: links.docs },
-      { text: "Join", href: links.portal },
+      { text: "Join", href: links.discord },
       { text: "DAO", href: links.governance },
     ],
-    common: [{ text: "Portal", href: links.discord }],
+    common: [{ text: "Portal", href: links.portal }],
   },
   mobileButtons: [
     [

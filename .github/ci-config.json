@@ -50,7 +50,7 @@
     },
     "swarm-api": {
       "pr_preview": false,
-      "prod_only": false
+      "prod_only": true
     }
   }
 }

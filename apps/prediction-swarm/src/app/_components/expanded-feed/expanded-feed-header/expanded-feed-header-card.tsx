@@ -19,22 +19,21 @@ type TwitterUser = NonNullable<
   inferProcedureOutput<AppRouter["twitterUser"]["getByUsername"]>
 >;
 
-type UserCounts = NonNullable<
-  inferProcedureOutput<AppRouter["prediction"]["getCountsByUsername"]>
->;
-
 interface ProfileHeaderProps {
   user: TwitterUser;
-  counts: UserCounts;
   username: string;
 }
 
 export default function ExpandedFeedHeaderCard({
   user,
-  counts,
+  username,
 }: ProfileHeaderProps) {
-  const truePredictions = parseInt(String(counts.true));
-  const total = truePredictions + parseInt(String(counts.false));
+  const { data: counts } = api.prediction.getCountsByUsername.useQuery({
+    username,
+  });
+
+  const truePredictions = parseInt(String(counts?.true ?? 0));
+  const total = truePredictions + parseInt(String(counts?.false ?? 0));
 
   const accuracy =
     total > 0 ? Math.round((truePredictions / total) * 100) : null;
