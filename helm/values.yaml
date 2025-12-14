@@ -51,11 +51,8 @@ deployment:
     failureThreshold: 30
     periodSeconds: 10
     timeoutSeconds: 5
-    exec:
-      command:
-        - sh
-        - -c
-        - "ss -ltn | grep -q :8000"
+    tcpSocket:
+      port: 8000
 
   readinessProbe:
     enabled: true
@@ -64,11 +61,8 @@ deployment:
     successThreshold: 1
     timeoutSeconds: 2
     initialDelaySeconds: 10
-    exec:
-      command:
-        - sh
-        - -c
-        - "ss -ltn | grep -q :8000"
+    tcpSocket:
+      port: 8000
 
   livenessProbe:
     enabled: true
@@ -77,11 +71,8 @@ deployment:
     successThreshold: 1
     timeoutSeconds: 2
     initialDelaySeconds: 10
-    exec:
-      command:
-        - sh
-        - -c
-        - "ss -ltn | grep -q :8000"
+    tcpSocket:
+      port: 8000
 
   # resources:
   #   limits:

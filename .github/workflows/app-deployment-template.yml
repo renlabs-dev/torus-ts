@@ -152,7 +152,7 @@ jobs:
             -f helm/values-utils.yaml \
             -n ${NAMESPACE} \
             --set environmentName=${ENV_NAME} \
-            renlabs/utils | kubectl apply -f -
+            renlabs/utils | kubectl apply --server-side -f -
 
       - name: Deploy application (new tag)
         id: deploy-new
