@@ -137,7 +137,7 @@ jobs:
             -f helm/values-utils.yaml \
             -n torus-dev-web-apps \
             --set environmentName=dev \
-            renlabs/utils | kubectl apply -f -
+            renlabs/utils | kubectl apply --server-side -f -
 
       - name: Set preview domain
         id: domain
@@ -157,7 +157,7 @@ jobs:
         run: |
           helmfile sync -e dev \
           --set deployment.image.tag=${{ steps.commit.outputs.short }}-pr \
-          --state-values-set cacheUrl="https://pr-${{ github.event.number }}.torus-cache.torus.network" \
+          --state-values-set cacheUrl="https://cache.testnet.torus.network" \
           --state-values-set ingressHost=${{ steps.domain.outputs.host }} \
           --state-values-set releaseName=pr-${{ github.event.number }}-${{ inputs.app_name }} \
           --state-values-set releasePrefix=pr-${{ github.event.number }}-${{ inputs.app_name }}
