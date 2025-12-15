@@ -52,6 +52,9 @@ deployment:
     periodSeconds: 10
     timeoutSeconds: 5
     initialDelaySeconds: 10
+    httpGet: null
+    exec: null
+    grpc: null
     tcpSocket:
       port: 8000
 
@@ -62,6 +65,9 @@ deployment:
     successThreshold: 1
     timeoutSeconds: 2
     initialDelaySeconds: 10
+    httpGet: null
+    exec: null
+    grpc: null
     tcpSocket:
       port: 8000
 
@@ -72,6 +78,9 @@ deployment:
     successThreshold: 1
     timeoutSeconds: 2
     initialDelaySeconds: 10
+    httpGet: null
+    exec: null
+    grpc: null
     tcpSocket:
       port: 8000
 
