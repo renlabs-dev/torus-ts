@@ -12,7 +12,7 @@ async function main() {
   const RPC_URL = "wss://api.testnet.torus.network";
   const SENDER_MNEMONIC = "";
   const RECIPIENT_ADDRESS = "5DJBFtDLxZ3cahV2zdUzbe5xJiZRqbJdRCdU3WL6txZNqBBj";
-  const AMOUNT = 1n * 10n ** 18n;
+  const AMOUNT = 100n * 10n ** 18n;
 
   const api = await connectToChainRpc(RPC_URL);
   const keyring = new Keyring({ type: "sr25519" });

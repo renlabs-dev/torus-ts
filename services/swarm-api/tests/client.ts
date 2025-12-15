@@ -138,18 +138,12 @@ program
     console.log("║     Gain Filter Permission             ║");
     console.log("╚════════════════════════════════════════╝");
 
-    const body: { txData?: { txHash: string; blockInfo: number | string } } =
-      {};
+    const body: { txData?: { txHash: string; blockHash: string } } = {};
 
     if (options.txHash && options.block) {
-      // Try to parse block as number, otherwise use as string (block hash)
-      const blockInfo = /^\d+$/.test(options.block)
-        ? parseInt(options.block, 10)
-        : options.block;
-
       body.txData = {
         txHash: options.txHash,
-        blockInfo,
+        blockHash: options.block,
       };
       console.log("Mode: Purchase credits + gain permission");
     } else if (options.txHash || options.block) {
