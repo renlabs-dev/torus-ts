@@ -24,9 +24,6 @@ deployment:
     periodSeconds: 10
     timeoutSeconds: 5
     initialDelaySeconds: 10
-    tcpSocket: null
-    exec: null
-    grpc: null
     httpGet:
       path: /api/health
       port: 8000
