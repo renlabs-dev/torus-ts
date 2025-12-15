@@ -8,10 +8,6 @@ ingress:
       paths:
         - path: /
           pathType: Prefix
-  tls:
-    - hosts:
-        - "{{ .Values.ingressHost }}"
-      secretName: '{{ include "application.fullname" . }}-tls'
 
 service:
   enabled: true
