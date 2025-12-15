@@ -51,6 +51,7 @@ deployment:
     failureThreshold: 30
     periodSeconds: 10
     timeoutSeconds: 5
+    initialDelaySeconds: 10
     tcpSocket:
       port: 8000
 
