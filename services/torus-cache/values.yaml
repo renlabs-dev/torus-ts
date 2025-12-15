@@ -22,17 +22,42 @@ deployment:
   args: ["tsx", "./src/index.ts"]
 
   startupProbe:
+    enabled: true
+    failureThreshold: 30
+    periodSeconds: 10
+    timeoutSeconds: 5
+    initialDelaySeconds: 10
+    tcpSocket: null
+    exec: null
+    grpc: null
     httpGet:
       path: /api/stake-out
+      port: 8000
 
   readinessProbe:
+    enabled: true
+    failureThreshold: 3
     periodSeconds: 30
+    successThreshold: 1
     timeoutSeconds: 3
+    initialDelaySeconds: 10
+    tcpSocket: null
+    exec: null
+    grpc: null
     httpGet:
       path: /api/stake-out
+      port: 8000
 
   livenessProbe:
+    enabled: true
+    failureThreshold: 3
     periodSeconds: 30
+    successThreshold: 1
     timeoutSeconds: 3
+    initialDelaySeconds: 10
+    tcpSocket: null
+    exec: null
+    grpc: null
     httpGet:
       path: /api/stake-out
+      port: 8000
