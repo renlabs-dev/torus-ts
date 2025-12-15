@@ -1,8 +1,5 @@
 {
   "apps": {
-    "torus-page": {
-      "pr_preview": false
-    },
     "torus-portal": {
       "pr_preview": false
     },

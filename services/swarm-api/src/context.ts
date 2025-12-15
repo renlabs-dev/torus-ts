@@ -1,6 +1,10 @@
 import type { ApiPromise } from "@polkadot/api";
+import { Keyring } from "@polkadot/keyring";
+import { queryAgents } from "@torus-network/sdk/chain";
+import { checkSS58 } from "@torus-network/sdk/types";
 import type { SS58Address } from "@torus-network/sdk/types";
 import { connectToChainRpc } from "@torus-network/sdk/utils";
+import { BasicLogger } from "@torus-network/torus-utils/logger";
 import { createHashSigner } from "@torus-ts/api/auth/sign";
 import { PermissionCacheService } from "@torus-ts/api/services/permission-cache";
 import { createDb } from "@torus-ts/db/client";
@@ -11,47 +15,54 @@ export interface AppContext {
   wsAPI: Promise<ApiPromise>;
   permissionCache: PermissionCacheService;
   serverSignHash: (hash: string) => string;
+  logger: ReturnType<typeof BasicLogger.create>;
   env: Env;
+  appAgentName: string;
 }
 
 export interface AuthenticatedContext extends AppContext {
   userKey: SS58Address;
 }
 
-let globalDb: ReturnType<typeof createDb> | null = null;
-let globalWsApi: Promise<ApiPromise> | null = null;
-let globalPermissionCache: PermissionCacheService | null = null;
-let globalServerHashSigner: ((hash: string) => string) | null = null;
-
 export async function createAppContext(env: Env): Promise<AppContext> {
-  if (globalDb === null) {
-    globalDb = createDb();
-  }
+  const logger = BasicLogger.create({ name: "swarm-api" });
 
-  if (globalWsApi === null) {
-    globalWsApi = connectToChainRpc(env.NEXT_PUBLIC_TORUS_RPC_URL);
-  }
+  logger.info("Initializing application context...");
 
-  if (globalPermissionCache === null) {
-    globalPermissionCache = new PermissionCacheService(
-      globalWsApi,
-      env.PERMISSION_GRANTOR_ADDRESS,
-      env.PERMISSION_CACHE_REFRESH_INTERVAL_MS,
+  const db = createDb();
+  const wsAPI = connectToChainRpc(env.NEXT_PUBLIC_TORUS_RPC_URL);
+
+  const serverSignHash = await createHashSigner(env.PREDICTION_APP_MNEMONIC);
+
+  const keyring = new Keyring({ type: "sr25519" });
+  const appAccount = keyring.addFromMnemonic(env.PREDICTION_APP_MNEMONIC);
+  const appAddress = checkSS58(appAccount.address);
+
+  const permissionCache = new PermissionCacheService(
+    wsAPI,
+    appAddress,
+    env.PERMISSION_CACHE_REFRESH_INTERVAL_MS,
+  );
+  await permissionCache.initialize();
+  const api = await wsAPI;
+  const agents = await queryAgents(api);
+  const appAgent = agents.get(appAddress);
+
+  if (!appAgent) {
+    throw new Error(
+      `App agent not found on blockchain: ${appAccount.address}. Please register the agent first.`,
     );
-    await globalPermissionCache.initialize();
   }
 
-  if (globalServerHashSigner === null) {
-    globalServerHashSigner = await createHashSigner(
-      env.PREDICTION_APP_MNEMONIC,
-    );
-  }
+  logger.info(`Resolved app agent name: ${appAgent.name}`);
 
   return {
-    db: globalDb,
-    wsAPI: globalWsApi,
-    permissionCache: globalPermissionCache,
-    serverSignHash: globalServerHashSigner,
+    db,
+    wsAPI,
+    permissionCache,
+    serverSignHash,
+    logger,
     env,
+    appAgentName: appAgent.name,
   };
 }

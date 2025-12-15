@@ -136,9 +136,9 @@ export const buildTaggedBigNumberClass = <Tag extends string>(
  *
  * @template Tag - A string literal type used to tag the BigNumber instance.
  */
-export class BigNumberBrand<
-  Tag extends string,
-> implements TransformBigNumberMethods<BigNumber, BigNumberBrand<Tag>> {
+export class BigNumberBrand<Tag extends string>
+  implements TransformBigNumberMethods<BigNumber, BigNumberBrand<Tag>>
+{
   static readonly _tag: string;
 
   // Using a phantom property ensures nominal typing at the TypeScript level

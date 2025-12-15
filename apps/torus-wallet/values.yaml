@@ -7,3 +7,32 @@ deployment:
 
   podLabels:
     app: torus-wallet
+
+  startupProbe:
+    enabled: true
+    failureThreshold: 30
+    periodSeconds: 10
+    timeoutSeconds: 5
+    initialDelaySeconds: 10
+    tcpSocket:
+      port: 8000
+
+  readinessProbe:
+    enabled: true
+    failureThreshold: 3
+    periodSeconds: 10
+    successThreshold: 1
+    timeoutSeconds: 2
+    initialDelaySeconds: 10
+    tcpSocket:
+      port: 8000
+
+  livenessProbe:
+    enabled: true
+    failureThreshold: 3
+    periodSeconds: 10
+    successThreshold: 1
+    timeoutSeconds: 2
+    initialDelaySeconds: 10
+    tcpSocket:
+      port: 8000
