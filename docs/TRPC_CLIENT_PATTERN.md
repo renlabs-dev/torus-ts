@@ -25,6 +25,7 @@ TypeError: client[procedureType] is not a function
 ```
 
 Additional symptoms:
+
 - Client-side navigation stops working
 - Page appears to load but links don't respond
 - React DevTools shows semver-related errors
@@ -40,8 +41,8 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import type { AppRouter } from "@torus-ts/api";
 import { httpBatchLink } from "@trpc/client";
 import { createTRPCReact } from "@trpc/react-query";
-import SuperJSON from "superjson";
 import { useState } from "react";
+import SuperJSON from "superjson";
 
 // 1. Create QueryClient with singleton pattern
 const createQueryClient = () =>
@@ -114,12 +115,12 @@ export function TRPCReactProvider({ children }: { children: React.ReactNode }) {
 
 ### Key Points
 
-| Pattern | Purpose |
-|---------|---------|
-| `let trpcClientSingleton` | Prevents client recreation across re-renders |
-| `useState(() => ...)` | Lazy initialization, runs only once per mount |
-| `typeof window === "undefined"` check | Different behavior for SSR vs client |
-| Helper functions outside component | Prevents recreation and closure issues |
+| Pattern                               | Purpose                                       |
+| ------------------------------------- | --------------------------------------------- |
+| `let trpcClientSingleton`             | Prevents client recreation across re-renders  |
+| `useState(() => ...)`                 | Lazy initialization, runs only once per mount |
+| `typeof window === "undefined"` check | Different behavior for SSR vs client          |
+| Helper functions outside component    | Prevents recreation and closure issues        |
 
 ## Required Configuration
 
@@ -159,7 +160,6 @@ Disable React Compiler for apps using tRPC:
 const config = {
   // Disabled: React Compiler breaks tRPC proxy-based APIs
   // reactCompiler: true,
-
   // ... other config
 };
 ```
@@ -172,10 +172,13 @@ When the tRPC client requires dynamic dependencies (like wallet signing), pass t
 let trpcClientSingleton: ReturnType<typeof api.createClient> | undefined;
 
 function createTRPCClientInstance(
-  signHex: (msgHex: `0x${string}`) => Promise<{ signature: `0x${string}`; address: string }>,
+  signHex: (
+    msgHex: `0x${string}`,
+  ) => Promise<{ signature: `0x${string}`; address: string }>,
 ) {
   const getStoredAuthorization = () => localStorage.getItem("authorization");
-  const setStoredAuthorization = (auth: string) => localStorage.setItem("authorization", auth);
+  const setStoredAuthorization = (auth: string) =>
+    localStorage.setItem("authorization", auth);
 
   const authenticateUser = makeAuthenticateUserFn(
     getBaseUrl(),

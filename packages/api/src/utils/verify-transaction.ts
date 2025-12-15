@@ -21,6 +21,7 @@ export interface VerifiedTransfer {
  * Verifies a TORUS token transfer transaction on-chain.
  *
  * Checks:
+ * - Block is finalized (prevents accepting transactions on forks)
  * - Transaction exists in the specified block
  * - Transaction succeeded (ExtrinsicSuccess event)
  * - It's a balances.transfer call
@@ -60,9 +61,19 @@ export async function verifyTorusTransfer(
     });
   }
 
-  // Get the block
   const signedBlock = await api.rpc.chain.getBlock(blockHash);
   const blockNumber = signedBlock.block.header.number.toNumber();
+
+  const finalizedHash = await api.rpc.chain.getFinalizedHead();
+  const finalizedBlock = await api.rpc.chain.getBlock(finalizedHash);
+  const finalizedBlockNumber = finalizedBlock.block.header.number.toNumber();
+
+  if (blockNumber > finalizedBlockNumber) {
+    throw new TRPCError({
+      code: "BAD_REQUEST",
+      message: `Block not finalized yet. Current finalized block: ${finalizedBlockNumber}, provided block: ${blockNumber}`,
+    });
+  }
 
   // Get events for this block
   const apiAt = await api.at(signedBlock.block.header.hash);

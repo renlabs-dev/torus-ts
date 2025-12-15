@@ -26,6 +26,10 @@
     "./services/permission-cache": {
       "types": "./dist/services/permission-cache.d.ts",
       "default": "./src/services/permission-cache.ts"
+    },
+    "./services/credits": {
+      "types": "./dist/services/credits/index.d.ts",
+      "default": "./src/services/credits/index.ts"
     }
   },
   "scripts": {

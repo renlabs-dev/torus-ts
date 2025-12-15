@@ -19,8 +19,14 @@ deployment:
   command: ["pnpm", "tsx", "./src/index.ts"]
 
   startupProbe:
+    enabled: true
+    failureThreshold: 30
+    periodSeconds: 10
+    timeoutSeconds: 5
+    initialDelaySeconds: 10
     httpGet:
       path: /api/health
+      port: 8000
 
   readinessProbe:
     enabled: false

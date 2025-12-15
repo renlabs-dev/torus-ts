@@ -7,17 +7,16 @@ import {
   scrapedTweetSchema,
 } from "@torus-ts/db/schema";
 import canonicalize from "canonicalize";
-import type { AppContext } from "../context";
-import type { AuthApp } from "../middleware/auth";
+import { authPlugin } from "../middleware/auth";
+import type { ContextApp } from "../middleware/context";
 import { storePredictionsInputSchema } from "../schemas/predictions";
 import { HttpError } from "../utils/errors";
 
-export const predictionsRouter = (app: AuthApp) =>
-  app.group("/v1", (app) =>
+export const predictionsRouter = (app: ContextApp) =>
+  app.use(authPlugin).group("/v1", (app) =>
     app.post(
       "/storePredictions",
-      async ({ body, store, userKey }) => {
-        const ctx = store as AppContext;
+      async ({ body, db, serverSignHash, userKey }) => {
         const agentAddress = userKey;
         const input = body;
 
@@ -58,7 +57,7 @@ export const predictionsRouter = (app: AuthApp) =>
           }
         }
 
-        return await ctx.db.transaction(async (tx) => {
+        return await db.transaction(async (tx) => {
           if (input.length === 0) {
             return { inserted: 0 };
           }
@@ -255,7 +254,7 @@ export const predictionsRouter = (app: AuthApp) =>
           }
           const receiptHash = blake2AsHex(receiptCanonical);
 
-          const serverSignature = ctx.serverSignHash(receiptHash);
+          const serverSignature = serverSignHash(receiptHash);
 
           return {
             inserted: input.length,

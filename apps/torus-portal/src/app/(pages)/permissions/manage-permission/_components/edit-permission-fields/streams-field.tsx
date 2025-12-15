@@ -78,8 +78,7 @@ export function StreamsField({ control, disabled = false }: StreamsFieldProps) {
             control={control}
             name={`newStreams.${index}.streamId`}
             render={({ field }) => {
-              // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-              const isDuplicate = duplicateIds.has(field.value ?? "");
+              const isDuplicate = duplicateIds.has(field.value || "");
               return (
                 <FormItem className="flex-1">
                   <FormControl>

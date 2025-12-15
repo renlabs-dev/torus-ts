@@ -22,7 +22,7 @@
       "pr_preview": false
     },
     "torus-cache": {
-      "pr_preview": true
+      "pr_preview": false
     },
     "torus-worker": {
       "pr_preview": false
