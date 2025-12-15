@@ -1,18 +1,9 @@
-cacheUrl: ""
-
-ingress:
-  enabled: true
-  ingressClassName: "{{ .Values.ingressClassName }}"
-  hosts:
-    - host: "{{ .Values.ingressHost }}"
-      paths:
-        - path: /
-          pathType: Prefix
-
 service:
-  enabled: true
-  type: ClusterIP
-  port: 8080
+  ports:
+    - port: 8080
+      name: http
+      protocol: TCP
+      targetPort: 8080
 
 deployment:
   image:
@@ -24,8 +15,6 @@ deployment:
   podLabels:
     app: swarm-api
 
-  containerPort: 8080
-
   resources:
     requests:
       memory: 200Mi
@@ -34,14 +23,39 @@ deployment:
   command: ["pnpm"]
   args: ["tsx", "./src/index.ts"]
 
+  ports:
+    - containerPort: 8080
+      name: http
+      protocol: TCP
+
   startupProbe:
-    enabled: false
+    enabled: true
+    failureThreshold: 30
+    periodSeconds: 10
+    timeoutSeconds: 5
+    initialDelaySeconds: 10
+    tcpSocket:
+      port: 8080
 
   readinessProbe:
-    enabled: false
+    enabled: true
+    failureThreshold: 3
+    periodSeconds: 10
+    successThreshold: 1
+    timeoutSeconds: 2
+    initialDelaySeconds: 10
+    tcpSocket:
+      port: 8080
 
   livenessProbe:
-    enabled: false
+    enabled: true
+    failureThreshold: 3
+    periodSeconds: 10
+    successThreshold: 1
+    timeoutSeconds: 2
+    initialDelaySeconds: 10
+    tcpSocket:
+      port: 8080
 
   env:
     POSTGRES_URL:
@@ -54,6 +68,11 @@ deployment:
         configMapKeyRef:
           name: '{{ template "application.name" . }}-config'
           key: next_public_ws_url
+    NEXT_PUBLIC_PREDICTION_APP_ADDRESS:
+      valueFrom:
+        secretKeyRef:
+          name: "torus-{{ .Values.environmentName }}-web-apps-secret"
+          key: NEXT_PUBLIC_PREDICTION_APP_ADDRESS
     PERMISSION_GRANTOR_ADDRESS:
       valueFrom:
         secretKeyRef:
