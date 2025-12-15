@@ -95,7 +95,7 @@ export function RecipientsField({
               control={control}
               name={`newTargets.${index}.address`}
               render={({ field }) => {
-                const isDuplicate = duplicateAddresses.has(field.value ?? "");
+                const isDuplicate = duplicateAddresses.has(field.value || "");
                 return (
                   <div className="flex-1">
                     <FormAddressField

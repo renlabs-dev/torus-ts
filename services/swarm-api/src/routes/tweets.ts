@@ -5,17 +5,16 @@ import {
   twitterScrapingJobsSchema,
   twitterUsersSchema,
 } from "@torus-ts/db/schema";
-import type { AppContext } from "../context";
-import type { AuthApp } from "../middleware/auth";
+import { authPlugin } from "../middleware/auth";
+import type { ContextApp } from "../middleware/context";
 import { getTweetsNextQuerySchema } from "../schemas/tweets";
 import { cursorSchema, encodeCursor } from "../utils/cursor";
 
-export const tweetsRouter = (app: AuthApp) =>
-  app.group("/v1", (app) =>
+export const tweetsRouter = (app: ContextApp) =>
+  app.use(authPlugin).group("/v1", (app) =>
     app.get(
       "/getTweetsNext",
-      async ({ query, store, userKey }) => {
-        const ctx = store as AppContext;
+      async ({ query, db, userKey }) => {
         const fromData = cursorSchema.parse(query.from);
         const limit = query.limit;
         const excludeProcessedByAgent = query.excludeProcessedByAgent;
@@ -31,7 +30,7 @@ export const tweetsRouter = (app: AuthApp) =>
         );
 
         const conversationScraped = notExists(
-          ctx.db
+          db
             .select()
             .from(twitterScrapingJobsSchema)
             .where(
@@ -44,12 +43,12 @@ export const tweetsRouter = (app: AuthApp) =>
 
         const fromTrackedUser = inArray(
           scrapedTweetSchema.authorId,
-          ctx.db.select({ id: twitterUsersSchema.id }).from(twitterUsersSchema),
+          db.select({ id: twitterUsersSchema.id }).from(twitterUsersSchema),
         );
 
         const notProcessedByAgent = (agentAddress: string) =>
           notExists(
-            ctx.db
+            db
               .select()
               .from(parsedPredictionSchema)
               .where(
@@ -73,7 +72,7 @@ export const tweetsRouter = (app: AuthApp) =>
           conditions.push(notProcessedByAgent(userKey));
         }
 
-        const tweets = await ctx.db
+        const tweets = await db
           .select({
             id: scrapedTweetSchema.id,
             text: scrapedTweetSchema.text,
@@ -101,7 +100,7 @@ export const tweetsRouter = (app: AuthApp) =>
 
         let allContextTweets: typeof tweets = [];
         if (conversationIds.length > 0) {
-          allContextTweets = await ctx.db
+          allContextTweets = await db
             .select({
               id: scrapedTweetSchema.id,
               text: scrapedTweetSchema.text,

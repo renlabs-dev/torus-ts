@@ -1,13 +1,14 @@
-import { torusToCredits } from "@torus-network/torus-utils";
-import { makeTorAmount } from "@torus-network/torus-utils/torus/token";
-import { tryAsync } from "@torus-network/torus-utils/try-catch";
-import { eq, sql } from "@torus-ts/db";
-import { creditPurchasesSchema, userCreditsSchema } from "@torus-ts/db/schema";
 import type { TRPCRouterRecord } from "@trpc/server";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
+import {
+  CreditsError,
+  CreditsErrorCode,
+  getBalance,
+  getPurchaseHistory,
+  purchaseCredits,
+} from "../../services/credits";
 import { authenticatedProcedure, publicProcedure } from "../../trpc";
-import { verifyTorusTransfer } from "../../utils/verify-transaction";
 
 /**
  * Credits router - manage user credit balances and purchases.
@@ -30,25 +31,7 @@ export const creditsRouter = {
         .optional(),
     )
     .query(async ({ ctx, input }) => {
-      const userKey = input?.userKey;
-
-      if (!userKey) {
-        return {
-          balance: "0",
-          totalPurchased: "0",
-          totalSpent: "0",
-        };
-      }
-
-      const record = await ctx.db.query.userCreditsSchema.findFirst({
-        where: eq(userCreditsSchema.userKey, userKey),
-      });
-
-      return {
-        balance: record?.balance ?? "0",
-        totalPurchased: record?.totalPurchased ?? "0",
-        totalSpent: record?.totalSpent ?? "0",
-      };
+      return getBalance(ctx.db, input?.userKey);
     }),
 
   /**
@@ -65,97 +48,40 @@ export const creditsRouter = {
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      return await ctx.db.transaction(async (tx) => {
-        // 1. Insert payment record with nulls (unique constraint prevents double-spend)
-        // Catch duplicate key error and return friendly message
-        const [insertErr] = await tryAsync(
-          tx.insert(creditPurchasesSchema).values({
-            userKey: ctx.sessionData.userKey,
+      try {
+        return await purchaseCredits(
+          {
+            db: ctx.db,
+            wsAPI: ctx.wsAPI,
+            predictionAppAddress: ctx.predictionAppAddress,
+          },
+          {
             txHash: input.txHash,
-            torusAmount: null,
-            creditsGranted: null,
-            blockNumber: null,
-          }),
+            blockHash: input.blockHash,
+            userKey: ctx.sessionData.userKey,
+          },
         );
-
-        if (insertErr !== undefined) {
-          // Check if it's a duplicate key error (code 23505)
-          if ("code" in insertErr && insertErr.code === "23505") {
+      } catch (error) {
+        if (error instanceof CreditsError) {
+          if (error.code === CreditsErrorCode.DUPLICATE_TRANSACTION) {
             throw new TRPCError({
               code: "BAD_REQUEST",
-              message:
-                "Transaction already used. Each transaction can only be used once to purchase credits.",
+              message: error.message,
             });
           }
-          // Re-throw other errors
-          throw insertErr;
-        }
-
-        // 2. Verify transaction on-chain
-        const verified = await verifyTorusTransfer(
-          ctx.wsAPI,
-          input.txHash,
-          input.blockHash,
-          ctx.sessionData.userKey,
-          ctx.predictionAppAddress,
-        );
-
-        const credits = torusToCredits(makeTorAmount(verified.amount));
-        console.log("credits bought: ", credits);
-
-        // 4. Update payment record with verified data
-        await tx
-          .update(creditPurchasesSchema)
-          .set({
-            torusAmount: verified.amount.toString(),
-            creditsGranted: credits.toString(),
-            blockNumber: BigInt(verified.blockNumber),
-          })
-          .where(eq(creditPurchasesSchema.txHash, input.txHash));
-
-        // 5. Lock user's credit row to prevent race conditions
-        await tx.execute(sql`
-          SELECT balance FROM user_credits
-          WHERE user_key = ${ctx.sessionData.userKey}
-          FOR UPDATE
-        `);
-
-        // 6. Grant credits with Drizzle upsert
-        await tx
-          .insert(userCreditsSchema)
-          .values({
-            userKey: ctx.sessionData.userKey,
-            balance: credits.toString(),
-            totalPurchased: credits.toString(),
-            totalSpent: "0",
-          })
-          .onConflictDoUpdate({
-            target: userCreditsSchema.userKey,
-            set: {
-              balance: sql`${userCreditsSchema.balance} + ${credits}`,
-              totalPurchased: sql`${userCreditsSchema.totalPurchased} + ${credits}`,
-              updatedAt: new Date(),
-            },
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: error.message,
           });
-
-        return {
-          creditsGranted: credits,
-          torusAmount: verified.amount.toString(),
-        };
-      });
+        }
+        throw error;
+      }
     }),
 
   /**
    * Get credit purchase history for the authenticated user.
    */
   getPurchaseHistory: authenticatedProcedure.query(async ({ ctx }) => {
-    const purchases = await ctx.db
-      .select()
-      .from(creditPurchasesSchema)
-      .where(eq(creditPurchasesSchema.userKey, ctx.sessionData.userKey))
-      .orderBy(sql`${creditPurchasesSchema.createdAt} DESC`)
-      .limit(50);
-
-    return purchases;
+    return getPurchaseHistory(ctx.db, ctx.sessionData.userKey);
   }),
 } satisfies TRPCRouterRecord;
