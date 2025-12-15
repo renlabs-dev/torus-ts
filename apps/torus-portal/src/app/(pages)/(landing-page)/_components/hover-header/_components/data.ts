@@ -47,7 +47,6 @@ export const ANIMATIONS = {
     }),
   },
 };
-
 export const CONTENT = {
   description: [
     "Torus is an open-ended experiment to encode biology's principles of autonomy and self-organization into a L1 stake-anchored agentic protocol, perpetually producing novelty.",
