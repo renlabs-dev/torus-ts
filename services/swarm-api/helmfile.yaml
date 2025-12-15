@@ -26,3 +26,9 @@ releases:
     values:
       - ../../helm/values.yaml.gotmpl
       - values.yaml
+      - ingress:
+          hosts:
+            - host: "{{ .Values.ingressHost }}"
+              paths:
+                - path: /
+                  pathType: Prefix
