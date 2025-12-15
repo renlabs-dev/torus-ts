@@ -72,7 +72,7 @@ export const CONTENT = {
       { text: "Join", href: links.discord },
       { text: "DAO", href: links.governance },
     ],
-    common: [{ text: "Portal", href: links.portal }],
+    common: [{ text: "Portal", href: "/portal" }],
   },
   mobileButtons: [
     [
@@ -88,6 +88,6 @@ export const CONTENT = {
       { text: "Join", href: links.discord },
       { text: "Docs", href: links.docs },
     ],
-    [{ text: "Portal", href: links.portal }],
+    [{ text: "Portal", href: "/portal" }],
   ],
 };
