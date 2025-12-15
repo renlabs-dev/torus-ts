@@ -19,9 +19,8 @@ function TooltipProvider({
   );
 }
 
-interface TooltipProps extends React.ComponentProps<
-  typeof TooltipPrimitive.Root
-> {
+interface TooltipProps
+  extends React.ComponentProps<typeof TooltipPrimitive.Root> {
   delayDuration?: number;
 }
 

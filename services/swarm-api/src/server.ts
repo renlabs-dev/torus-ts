@@ -179,9 +179,7 @@ export async function createServer() {
         const method = request.method;
         const path = new URL(request.url).pathname;
         const errorMessage =
-          error instanceof Error
-            ? error.message
-            : String(JSON.stringify(error));
+          error instanceof Error ? error.message : JSON.stringify(error);
         logger.error(`${method} ${path} 500 - ${errorMessage}`);
         return createSignedError(
           500,
