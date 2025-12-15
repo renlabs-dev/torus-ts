@@ -58,6 +58,8 @@ deployment:
       port: 8080
 
   env:
+    PORT:
+      value: "8080"
     POSTGRES_URL:
       valueFrom:
         secretKeyRef:
