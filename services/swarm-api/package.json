@@ -44,6 +44,7 @@
     "@torus-ts/prettier-config": "workspace:*",
     "@torus-ts/tsconfig": "workspace:*",
     "@types/node": "catalog:",
+    "commander": "^14.0.2",
     "dotenv-cli": "catalog:",
     "eslint": "catalog:",
     "prettier": "catalog:",

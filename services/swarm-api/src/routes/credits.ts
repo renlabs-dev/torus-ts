@@ -6,49 +6,35 @@ import {
   purchaseCredits,
 } from "@torus-ts/api/services/credits";
 import { z } from "zod";
-import type { AppContext } from "../context";
-import type { AuthApp } from "../middleware/auth";
+import { authPlugin } from "../middleware/auth";
+import type { ContextApp } from "../middleware/context";
 import { HttpError } from "../utils/errors";
-
-const getBalanceQuerySchema = z.object({
-  userKey: z.string().optional(),
-});
 
 const purchaseCreditsBodySchema = z.object({
   txHash: z.string().length(66, "Transaction hash must be 66 characters"),
   blockHash: z.string().length(66, "Block hash must be 66 characters"),
 });
 
-export const creditsRouter = (app: AuthApp) =>
-  app.group("/v1/credits", (app) =>
+export const creditsRouter = (app: ContextApp) =>
+  app.use(authPlugin).group("/v1/credits", (app) =>
     app
       .get(
         "/balance",
-        async ({ query, store }) => {
-          const ctx = store as AppContext;
-          const parsed = getBalanceQuerySchema.safeParse(query);
-
-          if (!parsed.success) {
-            throw new HttpError(400, parsed.error.message);
-          }
-
-          return getBalance(ctx.db, parsed.data.userKey);
+        async ({ db, userKey }) => {
+          return getBalance(db, userKey);
         },
         {
-          query: getBalanceQuerySchema,
           detail: {
             tags: ["credits"],
             summary: "Get credit balance",
-            description:
-              "Get credit balance for a wallet address. Returns zero balances if address not provided or not found.",
+            description: "Get credit balance for the authenticated user.",
           },
         },
       )
       .get(
         "/history",
-        async ({ store, userKey }) => {
-          const ctx = store as AppContext;
-          return getPurchaseHistory(ctx.db, userKey);
+        async ({ db, userKey }) => {
+          return getPurchaseHistory(db, userKey);
         },
         {
           detail: {
@@ -61,8 +47,7 @@ export const creditsRouter = (app: AuthApp) =>
       )
       .post(
         "/purchase",
-        async ({ body, store, userKey }) => {
-          const ctx = store as AppContext;
+        async ({ body, db, wsAPI, env, userKey }) => {
           const parsed = purchaseCreditsBodySchema.safeParse(body);
 
           if (!parsed.success) {
@@ -72,10 +57,9 @@ export const creditsRouter = (app: AuthApp) =>
           try {
             const result = await purchaseCredits(
               {
-                db: ctx.db,
-                wsAPI: ctx.wsAPI,
-                predictionAppAddress:
-                  ctx.env.NEXT_PUBLIC_PREDICTION_APP_ADDRESS,
+                db,
+                wsAPI,
+                predictionAppAddress: env.NEXT_PUBLIC_PREDICTION_APP_ADDRESS,
               },
               {
                 txHash: parsed.data.txHash,
