@@ -40,5 +40,5 @@ releases:
           hosts:
             - host: "{{ .Values.ingressHost }}"
               paths:
-                - path: /portal
+                - path: /
                   pathType: Prefix
