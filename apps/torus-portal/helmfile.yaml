@@ -37,10 +37,8 @@ releases:
     values:
       - ../../helm/values.yaml.gotmpl
       - ingress:
-          annotations:
-            nginx.ingress.kubernetes.io/rewrite-target: /$2
           hosts:
             - host: "{{ .Values.ingressHost }}"
               paths:
-                - path: /portal(/|$)(.*)
-                  pathType: ImplementationSpecific
+                - path: /portal
+                  pathType: Prefix
