@@ -275,7 +275,7 @@ async function trackSubstrateTransaction(
  */
 export async function executeNativeToBaseStep1(
   params: NativeToBaseStep1Params,
-) {
+): Promise<{ success: boolean; txHash?: string; error?: Error }> {
   const {
     amount,
     evmAddress,
@@ -343,18 +343,35 @@ export async function executeNativeToBaseStep1(
 
   updateBridgeState({ step: SimpleBridgeStep.STEP_1_CONFIRMING });
 
-  await trackSubstrateTransaction(
-    tracker,
-    refetchTorusEvmBalance,
-    refetchNativeBalance,
-    baselineBalance,
-    expectedIncrease,
-    amount,
-    updateBridgeState,
-    addTransaction,
-    getExplorerUrl,
-    onTransactionConfirming,
+  let capturedTxHash: string | undefined;
+
+  const [trackError] = await tryAsync(
+    trackSubstrateTransaction(
+      tracker,
+      refetchTorusEvmBalance,
+      refetchNativeBalance,
+      baselineBalance,
+      expectedIncrease,
+      amount,
+      updateBridgeState,
+      addTransaction,
+      getExplorerUrl,
+      (txHash, baselineBalance) => {
+        capturedTxHash = txHash;
+        onTransactionConfirming?.(txHash, baselineBalance);
+      },
+    ),
   );
+
+  if (trackError !== undefined) {
+    return {
+      success: false,
+      txHash: capturedTxHash,
+      error: trackError,
+    };
+  }
+
+  return { success: true, txHash: capturedTxHash };
 }
 
 /**

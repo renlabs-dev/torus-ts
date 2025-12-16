@@ -15,7 +15,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@torus-ts/ui/components/tooltip";
-import { AlertCircle, Trash } from "lucide-react";
+import { AlertCircle, CheckSquare, Square, Trash } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useFastBridgeTransactionHistory } from "../hooks/use-fast-bridge-transaction-history";
 import { TransactionHistoryItem } from "./fast-bridge-transaction-history-item";
@@ -52,6 +52,11 @@ export function TransactionHistoryDialog({
   const [visibleCount, setVisibleCount] = useState(ITEMS_PER_PAGE);
   const [tooltipEnabled, setTooltipEnabled] = useState(false);
   const [showDeleteAllDialog, setShowDeleteAllDialog] = useState(false);
+  const [isMultiSelectMode, setIsMultiSelectMode] = useState(false);
+  const [selectedTransactionIds, setSelectedTransactionIds] = useState<
+    Set<string>
+  >(new Set());
+  const [showBulkDeleteDialog, setShowBulkDeleteDialog] = useState(false);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   // Enable tooltip after 1 second to prevent it from showing on dialog open
@@ -134,40 +139,175 @@ export function TransactionHistoryDialog({
     setShowDeleteAllDialog(false);
   }, [clearHistory]);
 
+  const handleToggleMultiSelect = useCallback(() => {
+    setIsMultiSelectMode((prev) => !prev);
+    setSelectedTransactionIds(new Set());
+  }, []);
+
+  const handleSelectTransaction = useCallback(
+    (transactionId: string, selected: boolean) => {
+      setSelectedTransactionIds((prev) => {
+        const newSet = new Set(prev);
+        if (selected) {
+          newSet.add(transactionId);
+        } else {
+          newSet.delete(transactionId);
+        }
+        return newSet;
+      });
+    },
+    [],
+  );
+
+  const handleSelectAll = useCallback(() => {
+    if (selectedTransactionIds.size === visibleTransactions.length) {
+      setSelectedTransactionIds(new Set());
+    } else {
+      setSelectedTransactionIds(
+        new Set(visibleTransactions.map((tx) => tx.id)),
+      );
+    }
+  }, [selectedTransactionIds.size, visibleTransactions]);
+
+  const handleBulkDeleteClick = useCallback(() => {
+    if (selectedTransactionIds.size > 0) {
+      setShowBulkDeleteDialog(true);
+    }
+  }, [selectedTransactionIds.size]);
+
+  const handleConfirmBulkDelete = useCallback(() => {
+    selectedTransactionIds.forEach((id) => {
+      deleteTransaction(id);
+    });
+    setSelectedTransactionIds(new Set());
+    setIsMultiSelectMode(false);
+    setShowBulkDeleteDialog(false);
+  }, [selectedTransactionIds, deleteTransaction]);
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="flex max-h-[85vh] max-w-2xl flex-col p-0">
         <DialogHeader className="px-6 pt-6">
-          <div className="flex items-start justify-between gap-4 py-4">
-            <div className="flex-1">
+          <div className="space-y-4 py-4">
+            <div>
               <DialogTitle>Transaction History</DialogTitle>
               <DialogDescription>
                 View and manage your Fast Bridge transaction history
               </DialogDescription>
             </div>
-            <Tooltip
-              delayDuration={500}
-              open={tooltipEnabled ? undefined : false}
-            >
-              <TooltipTrigger asChild>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleDeleteAllClick}
-                  disabled={allTransactions.length === 0}
-                  className="shrink-0"
-                >
-                  <Trash className="mr-2 h-4 w-4" />
-                  Delete All
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent side="bottom" className="max-w-xs">
-                <p className="text-sm">
-                  Delete all transactions from history. This action cannot be
-                  undone.
-                </p>
-              </TooltipContent>
-            </Tooltip>
+            <div className="flex justify-end gap-2">
+              {isMultiSelectMode ? (
+                <>
+                  <Tooltip
+                    delayDuration={500}
+                    open={tooltipEnabled ? undefined : false}
+                  >
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={handleSelectAll}
+                        disabled={visibleTransactions.length === 0}
+                      >
+                        {selectedTransactionIds.size ===
+                          visibleTransactions.length &&
+                        visibleTransactions.length > 0 ? (
+                          <CheckSquare className="mr-2 h-4 w-4" />
+                        ) : (
+                          <Square className="mr-2 h-4 w-4" />
+                        )}
+                        Select All
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent side="bottom" className="max-w-xs">
+                      <p className="text-sm">
+                        {selectedTransactionIds.size ===
+                        visibleTransactions.length
+                          ? "Deselect all transactions"
+                          : "Select all visible transactions"}
+                      </p>
+                    </TooltipContent>
+                  </Tooltip>
+                  <Tooltip
+                    delayDuration={500}
+                    open={tooltipEnabled ? undefined : false}
+                  >
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="destructive"
+                        size="sm"
+                        onClick={handleBulkDeleteClick}
+                        disabled={selectedTransactionIds.size === 0}
+                      >
+                        <Trash className="mr-2 h-4 w-4" />
+                        Delete ({selectedTransactionIds.size})
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent side="bottom" className="max-w-xs">
+                      <p className="text-sm">
+                        Delete {selectedTransactionIds.size} selected
+                        transaction
+                        {selectedTransactionIds.size !== 1 ? "s" : ""}. This
+                        action cannot be undone.
+                      </p>
+                    </TooltipContent>
+                  </Tooltip>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={handleToggleMultiSelect}
+                  >
+                    Cancel
+                  </Button>
+                </>
+              ) : (
+                <>
+                  <Tooltip
+                    delayDuration={500}
+                    open={tooltipEnabled ? undefined : false}
+                  >
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={handleToggleMultiSelect}
+                        disabled={allTransactions.length === 0}
+                      >
+                        <CheckSquare className="mr-2 h-4 w-4" />
+                        Select
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent side="bottom" className="max-w-xs">
+                      <p className="text-sm">
+                        Enter multi-select mode to delete multiple transactions
+                      </p>
+                    </TooltipContent>
+                  </Tooltip>
+                  <Tooltip
+                    delayDuration={500}
+                    open={tooltipEnabled ? undefined : false}
+                  >
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={handleDeleteAllClick}
+                        disabled={allTransactions.length === 0}
+                      >
+                        <Trash className="mr-2 h-4 w-4" />
+                        Delete All
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent side="bottom" className="max-w-xs">
+                      <p className="text-sm">
+                        Delete all transactions from history. This action cannot
+                        be undone.
+                      </p>
+                    </TooltipContent>
+                  </Tooltip>
+                </>
+              )}
+            </div>
           </div>
 
           <Tabs value={filter} onValueChange={handleFilterChange}>
@@ -210,7 +350,9 @@ export function TransactionHistoryDialog({
                     index={originalIndex}
                     onContinue={onContinue}
                     getExplorerUrl={getExplorerUrl}
-                    onDelete={deleteTransaction}
+                    isMultiSelectMode={isMultiSelectMode}
+                    isSelected={selectedTransactionIds.has(transaction.id)}
+                    onSelectionChange={handleSelectTransaction}
                   />
                 ),
               )}
@@ -246,6 +388,36 @@ export function TransactionHistoryDialog({
             </Button>
             <Button variant="destructive" onClick={handleConfirmDeleteAll}>
               Delete All
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Bulk Delete Confirmation Dialog */}
+      <Dialog
+        open={showBulkDeleteDialog}
+        onOpenChange={setShowBulkDeleteDialog}
+      >
+        <DialogContent className="max-w-xl">
+          <DialogHeader>
+            <DialogTitle>Delete selected transactions?</DialogTitle>
+            <DialogDescription>
+              You are about to delete {selectedTransactionIds.size} selected
+              transaction
+              {selectedTransactionIds.size === 1 ? "" : "s"} from your history.
+              Are you sure you want to do this?
+            </DialogDescription>
+          </DialogHeader>
+
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setShowBulkDeleteDialog(false)}
+            >
+              Cancel
+            </Button>
+            <Button variant="destructive" onClick={handleConfirmBulkDelete}>
+              Delete Selected
             </Button>
           </DialogFooter>
         </DialogContent>
