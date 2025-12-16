@@ -1,5 +1,6 @@
-import { createSeoMetadata } from "@torus-ts/ui/components/seo";
-import { env } from "~/env";
+import { createSeoMetadata } from '@torus-ts/ui/components/seo';
+
+import { env } from '~/env';
 
 export function generateMetadata() {
   return createSeoMetadata({
@@ -14,7 +15,7 @@ export function generateMetadata() {
       "network exploration",
     ],
     ogSiteName: "Torus Portal",
-    canonical: "/2d-hypergraph",
+    canonical: "portal/2d-hypergraph",
     baseUrl: env("BASE_URL"),
   });
 }
