@@ -111,7 +111,9 @@ export default function PermissionGraphPage() {
 
       const params = new URLSearchParams(searchParams.toString());
       params.delete("id");
-      const newUrl = params.toString() ? `${PAGE_URL}?${params.toString()}` : PAGE_URL;
+      const newUrl = params.toString()
+        ? `${PAGE_URL}?${params.toString()}`
+        : PAGE_URL;
       router.replace(newUrl, { scroll: false });
 
       setTimeout(() => {
