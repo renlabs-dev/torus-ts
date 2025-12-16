@@ -15,6 +15,8 @@ import type {
 } from "./_components/permission-graph-types";
 import { AgentLRUCache } from "./_components/permission-graph-utils";
 
+const PAGE_URL = "/portal";
+
 export default function PermissionGraphPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -72,7 +74,7 @@ export default function PermissionGraphPage() {
       // Update query parameter instead of navigation
       const params = new URLSearchParams(searchParams.toString());
       params.set("id", node.id);
-      router.replace(`/?${params.toString()}`, { scroll: false });
+      router.replace(`${PAGE_URL}?${params.toString()}`, { scroll: false });
     },
     [router, searchParams],
   );
@@ -109,7 +111,7 @@ export default function PermissionGraphPage() {
 
       const params = new URLSearchParams(searchParams.toString());
       params.delete("id");
-      const newUrl = params.toString() ? `/?${params.toString()}` : "/";
+      const newUrl = params.toString() ? `${PAGE_URL}?${params.toString()}` : PAGE_URL;
       router.replace(newUrl, { scroll: false });
 
       setTimeout(() => {

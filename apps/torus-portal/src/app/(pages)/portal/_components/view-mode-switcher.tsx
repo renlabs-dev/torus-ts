@@ -17,7 +17,7 @@ export function ViewModeSwitcher() {
   const handleModeChange = (mode: string) => {
     if (!mode) return; // Prevent deselecting all options
 
-    const newPath = mode === "2d" ? "/2d-hypergraph" : "/";
+    const newPath = mode === "2d" ? "/portal/2d-hypergraph" : "/portal";
     router.push(newPath);
   };
 

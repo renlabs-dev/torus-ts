@@ -17,6 +17,8 @@ import type {
 import { AgentLRUCache } from "../_components/permission-graph-utils";
 import { SwarmSelectionCommand } from "../_components/swarm-selection-command";
 
+const PAGE_URL = "/portal/2d-hypergraph";
+
 export default function PermissionGraph2DPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -114,7 +116,7 @@ export default function PermissionGraph2DPage() {
       const currentUrl = new URL(window.location.href);
       const params = new URLSearchParams(currentUrl.search);
       params.set("agent", node.id);
-      router.replace(`/2d-hypergraph?${params.toString()}`, {
+      router.replace(`${PAGE_URL}?${params.toString()}`, {
         scroll: false,
       });
     },
@@ -151,8 +153,8 @@ export default function PermissionGraph2DPage() {
       const params = new URLSearchParams(searchParams.toString());
       params.delete("agent");
       const newUrl = params.toString()
-        ? `/2d-hypergraph?${params.toString()}`
-        : "/2d-hypergraph";
+        ? `${PAGE_URL}?${params.toString()}`
+        : PAGE_URL;
       router.replace(newUrl, { scroll: false });
 
       setTimeout(() => {
@@ -175,7 +177,7 @@ export default function PermissionGraph2DPage() {
       params.set("swarm", rootAgentNode.name.toLowerCase());
       // Remove agent param when switching to swarm view
       params.delete("agent");
-      router.replace(`/2d-hypergraph?${params.toString()}`, {
+      router.replace(`${PAGE_URL}?${params.toString()}`, {
         scroll: false,
       });
     },
@@ -190,8 +192,8 @@ export default function PermissionGraph2DPage() {
     params.delete("swarm");
     // Keep agent param if there's a selected node
     const newUrl = params.toString()
-      ? `/2d-hypergraph?${params.toString()}`
-      : "/2d-hypergraph";
+      ? `${PAGE_URL}?${params.toString()}`
+      : PAGE_URL;
     router.replace(newUrl, { scroll: false });
   }, [router, searchParams]);
 
