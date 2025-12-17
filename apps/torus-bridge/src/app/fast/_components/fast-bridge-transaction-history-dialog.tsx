@@ -160,14 +160,29 @@ export function TransactionHistoryDialog({
   );
 
   const handleSelectAll = useCallback(() => {
-    if (selectedTransactionIds.size === visibleTransactions.length) {
-      setSelectedTransactionIds(new Set());
+    const visibleTransactionIds = new Set(
+      visibleTransactions.map((tx) => tx.id),
+    );
+    const allVisibleSelected = visibleTransactions.every((tx) =>
+      selectedTransactionIds.has(tx.id),
+    );
+
+    if (allVisibleSelected) {
+      // Deselect all visible transactions
+      setSelectedTransactionIds((prev) => {
+        const newSet = new Set(prev);
+        visibleTransactionIds.forEach((id) => newSet.delete(id));
+        return newSet;
+      });
     } else {
-      setSelectedTransactionIds(
-        new Set(visibleTransactions.map((tx) => tx.id)),
-      );
+      // Select all visible transactions
+      setSelectedTransactionIds((prev) => {
+        const newSet = new Set(prev);
+        visibleTransactionIds.forEach((id) => newSet.add(id));
+        return newSet;
+      });
     }
-  }, [selectedTransactionIds.size, visibleTransactions]);
+  }, [selectedTransactionIds, visibleTransactions]);
 
   const handleBulkDeleteClick = useCallback(() => {
     if (selectedTransactionIds.size > 0) {

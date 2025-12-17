@@ -442,7 +442,7 @@ interface NativeToBaseStep2Params {
  */
 export async function executeNativeToBaseStep2(
   params: NativeToBaseStep2Params,
-) {
+): Promise<{ success: boolean; txHash?: string; error?: Error }> {
   const {
     amount,
     evmAddress,
@@ -466,7 +466,18 @@ export async function executeNativeToBaseStep2(
     (t) => t.chainName === "torus" && t.symbol === "TORUS",
   );
   if (torusTokenIndex < 0) {
-    throw new Error("Torus token not found in warp configuration");
+    const error = new Error("Torus token not found in warp configuration");
+    addTransaction({
+      step: 2,
+      status: "ERROR",
+      chainName: "Torus EVM",
+      message: error.message,
+    });
+    updateBridgeState({
+      step: SimpleBridgeStep.ERROR,
+      errorMessage: error.message,
+    });
+    return { success: false, error };
   }
 
   updateBridgeState({ step: SimpleBridgeStep.STEP_2_PREPARING });
@@ -540,7 +551,20 @@ export async function executeNativeToBaseStep2(
     getTokenByIndex(warpCore, torusTokenIndex),
   );
   if (tokenError || !torusToken) {
-    throw new Error("Failed to get Torus token from warp configuration");
+    const error = new Error(
+      "Failed to get Torus token from warp configuration",
+    );
+    addTransaction({
+      step: 2,
+      status: "ERROR",
+      chainName: "Torus EVM",
+      message: error.message,
+    });
+    updateBridgeState({
+      step: SimpleBridgeStep.ERROR,
+      errorMessage: error.message,
+    });
+    return { success: false, error };
   }
 
   // Convert the user's requested amount to wei
@@ -548,7 +572,18 @@ export async function executeNativeToBaseStep2(
     toWei(amount.trim(), torusToken.decimals),
   );
   if (amountWeiError) {
-    throw new Error("Failed to convert amount to wei");
+    const error = new Error("Failed to convert amount to wei");
+    addTransaction({
+      step: 2,
+      status: "ERROR",
+      chainName: "Torus EVM",
+      message: error.message,
+    });
+    updateBridgeState({
+      step: SimpleBridgeStep.ERROR,
+      errorMessage: error.message,
+    });
+    return { success: false, error };
   }
 
   // Create TokenAmount with the REQUESTED amount (not total balance)
@@ -560,7 +595,18 @@ export async function executeNativeToBaseStep2(
     getAccountAddressAndPubKey(multiProvider, "torus", accounts),
   );
   if (addressError || !address) {
-    throw new Error("Failed to get account address for Torus chain");
+    const error = new Error("Failed to get account address for Torus chain");
+    addTransaction({
+      step: 2,
+      status: "ERROR",
+      chainName: "Torus EVM",
+      message: error.message,
+    });
+    updateBridgeState({
+      step: SimpleBridgeStep.ERROR,
+      errorMessage: error.message,
+    });
+    return { success: false, error };
   }
 
   // Get public key (may be async)
@@ -578,9 +624,20 @@ export async function executeNativeToBaseStep2(
   );
 
   if (maxAmountError !== undefined) {
-    throw new Error(
+    const error = new Error(
       `Failed to calculate max transfer amount: ${maxAmountError.message}`,
     );
+    addTransaction({
+      step: 2,
+      status: "ERROR",
+      chainName: "Torus EVM",
+      message: error.message,
+    });
+    updateBridgeState({
+      step: SimpleBridgeStep.ERROR,
+      errorMessage: error.message,
+    });
+    return { success: false, error };
   }
 
   // Convert maxTransferAmount to decimal string
@@ -669,9 +726,13 @@ export async function executeNativeToBaseStep2(
       errorMessage:
         pollingResult.errorMessage ?? "Transfer confirmation failed",
     });
-    throw new Error(
-      pollingResult.errorMessage ?? "Transfer confirmation failed",
-    );
+    return {
+      success: false,
+      txHash: txHash2,
+      error: new Error(
+        pollingResult.errorMessage ?? "Transfer confirmation failed",
+      ),
+    };
   }
 
   // Refetch Torus EVM balance to reflect the debit from the transfer
@@ -688,4 +749,6 @@ export async function executeNativeToBaseStep2(
     txHash: txHash2,
     explorerUrl: txHash2 ? getExplorerUrl(txHash2, "Base") : undefined,
   });
+
+  return { success: true, txHash: txHash2 };
 }

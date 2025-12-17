@@ -50,8 +50,6 @@ export const useFastBridgeTransactionHistory =
             timestamp: Date.now(),
           };
 
-          console.log("Adding transaction:", newTransaction);
-
           set((state) => ({
             transactions: [newTransaction, ...state.transactions],
           }));
@@ -60,16 +58,10 @@ export const useFastBridgeTransactionHistory =
         },
 
         updateTransaction: (id, updates) => {
-          console.log("Updating transaction", id, "with", updates);
           set((state) => ({
-            transactions: state.transactions.map((tx) => {
-              if (tx.id === id) {
-                const updated = { ...tx, ...updates };
-                console.log("Updated transaction:", updated);
-                return updated;
-              }
-              return tx;
-            }),
+            transactions: state.transactions.map((tx) =>
+              tx.id === id ? { ...tx, ...updates } : tx,
+            ),
           }));
         },
 

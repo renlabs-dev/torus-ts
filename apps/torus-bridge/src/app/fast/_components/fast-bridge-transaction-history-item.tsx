@@ -114,6 +114,9 @@ export function TransactionHistoryItem({
   const canExpand =
     transaction.status === "completed" ||
     transaction.status === "error" ||
+    transaction.status === "pending" ||
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+    transaction.status === "step1_complete" ||
     transaction.recoveredViaEvmRecover;
 
   const handleCardClick = () => {
@@ -154,6 +157,7 @@ export function TransactionHistoryItem({
               onCheckedChange={(checked) => {
                 handleSelectionChange(!!checked);
               }}
+              onClick={(e) => e.stopPropagation()}
               className="shrink-0"
             />
           )}
