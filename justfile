@@ -71,6 +71,22 @@ check filter="*":
 test filter="*":
   pnpm exec turbo run test --continue -F "{{filter}}"
 
+# Run tests in watch mode
+test-watch filter="*":
+  pnpm exec turbo run test:watch -F "{{filter}}"
+
+# Run tests with interactive UI
+test-ui filter="*":
+  pnpm exec turbo run test:ui -F "{{filter}}"
+
+# Run specific test file (pass relative path from project root)
+test-file project relative_path:
+  pnpm exec turbo run test -F "{{project}}" -- --run "{{relative_path}}"
+
+# Run specific test file and save output to file (pass relative path from project root)
+test-file-output project relative_path:
+  pnpm exec turbo run test -F "{{project}}" -- --run "{{relative_path}}" 2>&1 > output.test.txt || true
+
 # Run all tests
 test-all filter="*":
   pnpm exec ./scripts/dev-helper with-env turbo run test:all --continue -F "{{filter}}"

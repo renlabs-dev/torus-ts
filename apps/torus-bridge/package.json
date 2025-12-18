@@ -11,6 +11,9 @@
     "lint": "eslint --cache --cache-location .cache/.eslintcache",
     "lint-fix": "eslint --cache --cache-location .cache/.eslintcache --fix",
     "start": "next start",
+    "test": "vitest",
+    "test:watch": "vitest --watch",
+    "test:ui": "vitest --ui",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
@@ -35,12 +38,22 @@
   },
   "devDependencies": {
     "@next/bundle-analyzer": "^16.0.5",
+    "@testing-library/dom": "catalog:",
+    "@testing-library/jest-dom": "catalog:",
+    "@testing-library/react": "catalog:",
+    "@testing-library/user-event": "catalog:",
     "@torus-ts/eslint-config": "workspace:*",
     "@torus-ts/tsconfig": "workspace:*",
     "@types/node": "catalog:",
     "@types/react": "catalog:react19",
     "@types/react-dom": "catalog:react19",
-    "pino-pretty": "^13.1.1",
+    "@vitejs/plugin-react": "^4.2.1",
+    "@vitest/ui": "catalog:",
+    "jsdom": "catalog:",
+    "vite": "catalog:",
+    "vite-tsconfig-paths": "catalog:",
+    "vitest": "catalog:",
+    "pino-pretty": "catalog:",
     "postcss": "catalog:",
     "tailwindcss": "catalog:",
     "typescript": "catalog:"
