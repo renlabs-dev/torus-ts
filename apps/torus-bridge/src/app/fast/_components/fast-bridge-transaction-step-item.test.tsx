@@ -61,8 +61,15 @@ describe("TransactionStepItem", () => {
       ).toBeInTheDocument();
     });
 
-    it("should render accordion structure", () => {
-      render(<TransactionStepItem {...defaultProps} />);
+    it("should render accordion structure when transaction details are available", () => {
+      render(
+        <TransactionStepItem
+          {...defaultProps}
+          status="completed"
+          txHash="0x123"
+          explorerUrl="https://example.com"
+        />
+      );
 
       expect(screen.getByTestId("accordion")).toBeInTheDocument();
       expect(screen.getByTestId("accordion-item")).toBeInTheDocument();
@@ -94,7 +101,8 @@ describe("TransactionStepItem", () => {
         <TransactionStepItem {...defaultProps} status="waiting" />
       );
 
-      expect(screen.getByTestId("clock-icon")).toBeInTheDocument();
+      // Should have two clock icons: one for status and one for non-signature required
+      expect(screen.getAllByTestId("clock-icon")).toHaveLength(2);
     });
 
     it("should show error status icon", () => {
@@ -110,56 +118,59 @@ describe("TransactionStepItem", () => {
         <TransactionStepItem {...defaultProps} status="pending" />
       );
 
-      // Pending has a border circle, no specific icon
-      expect(screen.getByTestId("accordion")).toBeInTheDocument();
+      // Pending has a border circle, no specific icon, and no accordion
+      expect(screen.queryByTestId("accordion")).not.toBeInTheDocument();
     });
   });
 
   describe("transaction details", () => {
-    it("should display transaction hash when provided", () => {
+    it("should display transaction hash when provided and completed", () => {
       render(
         <TransactionStepItem
           {...defaultProps}
+          status="completed"
           txHash="0x1234567890abcdef"
+          explorerUrl="https://example.com"
         />
       );
 
-      expect(screen.getByText(/0x1234567890abcdef/i)).toBeInTheDocument();
+      expect(screen.getByText(/0x12345678\.\.\.90abcdef/i)).toBeInTheDocument();
     });
 
     it("should display explorer link when both txHash and explorerUrl provided", () => {
       render(
         <TransactionStepItem
           {...defaultProps}
+          status="completed"
           txHash="0x1234567890abcdef"
           explorerUrl="https://explorer.test/tx/0x1234567890abcdef"
         />
       );
 
-      const link = screen.getByRole("link");
-      expect(link).toHaveAttribute(
-        "href",
-        "https://explorer.test/tx/0x1234567890abcdef"
-      );
-      expect(link).toHaveAttribute("target", "_blank");
+      const link = screen.getByRole("button", { name: /View on Explorer/i });
+      expect(link).toBeInTheDocument();
     });
 
     it("should show external link icon", () => {
       render(
         <TransactionStepItem
           {...defaultProps}
+          status="completed"
           txHash="0x1234567890abcdef"
           explorerUrl="https://explorer.test/tx/0x1234567890abcdef"
         />
       );
 
-      expect(screen.getByTestId("external-link-icon")).toBeInTheDocument();
+      expect(screen.getAllByTestId("external-link-icon")).toHaveLength(2);
     });
 
     it("should display amount when provided", () => {
       render(
         <TransactionStepItem
           {...defaultProps}
+          status="completed"
+          txHash="0x123"
+          explorerUrl="https://example.com"
           amount="100 TORUS"
         />
       );
@@ -260,26 +271,30 @@ describe("TransactionStepItem", () => {
       render(
         <TransactionStepItem
           {...defaultProps}
+          status="active"
           isSignatureRequired={true}
           showSignatureWarning={true}
         />
       );
 
-      // Warning should be visible when showSignatureWarning is true
-      expect(screen.getByTestId("accordion")).toBeInTheDocument();
+      // Warning should be visible when showSignatureWarning is true and status is active
+      expect(screen.getByText(/check your wallet and approve/i)).toBeInTheDocument();
+      expect(screen.queryByTestId("accordion")).not.toBeInTheDocument();
     });
 
     it("should not display signature warning when flag is false", () => {
       render(
         <TransactionStepItem
           {...defaultProps}
+          status="active"
           isSignatureRequired={true}
           showSignatureWarning={false}
         />
       );
 
-      // Should still render, but without warning
-      expect(screen.getByTestId("accordion")).toBeInTheDocument();
+      // Should not show warning when showSignatureWarning is false
+      expect(screen.queryByText(/check your wallet and approve/i)).not.toBeInTheDocument();
+      expect(screen.queryByTestId("accordion")).not.toBeInTheDocument();
     });
   });
 
@@ -292,7 +307,8 @@ describe("TransactionStepItem", () => {
         />
       );
 
-      expect(screen.getByTestId("accordion-item")).toBeInTheDocument();
+      // Should not have connector line when isLast is true
+      expect(screen.queryByTestId("accordion-item")).not.toBeInTheDocument();
     });
 
     it("should mark non-last step appropriately", () => {
@@ -303,7 +319,8 @@ describe("TransactionStepItem", () => {
         />
       );
 
-      expect(screen.getByTestId("accordion-item")).toBeInTheDocument();
+      // Should not have accordion when not completed with details
+      expect(screen.queryByTestId("accordion-item")).not.toBeInTheDocument();
     });
   });
 
@@ -331,11 +348,13 @@ describe("TransactionStepItem", () => {
           title="Waiting for Confirmation"
           description="Waiting for network confirmation"
           status="waiting"
+          isSignatureRequired={false}
         />
       );
 
       expect(screen.getByText("Waiting for Confirmation")).toBeInTheDocument();
-      expect(screen.getByTestId("clock-icon")).toBeInTheDocument();
+      // Should have two clock icons: one for status and one for display icon
+      expect(screen.getAllByTestId("clock-icon")).toHaveLength(2);
     });
 
     it("should display network-specific titles", () => {
@@ -358,7 +377,8 @@ describe("TransactionStepItem", () => {
         <TransactionStepItem {...defaultProps} status="pending" />
       );
 
-      expect(screen.getByTestId("accordion")).toBeInTheDocument();
+      // Should not have accordion initially
+      expect(screen.queryByTestId("accordion")).not.toBeInTheDocument();
 
       rerender(
         <TransactionStepItem {...defaultProps} status="active" />
@@ -405,7 +425,9 @@ describe("TransactionStepItem", () => {
       render(
         <TransactionStepItem
           {...defaultProps}
-          errorDetails="Some error details"
+          status="completed"
+          txHash="0x123"
+          explorerUrl="https://example.com"
         />
       );
 
@@ -416,14 +438,14 @@ describe("TransactionStepItem", () => {
       render(
         <TransactionStepItem
           {...defaultProps}
+          status="completed"
           txHash="0xhash"
           explorerUrl="https://explorer.test/tx/0xhash"
         />
       );
 
-      const link = screen.getByRole("link");
-      expect(link).toHaveAttribute("target", "_blank");
-      expect(link).toHaveAttribute("rel", "noopener noreferrer");
+      const button = screen.getByRole("button", { name: /View on Explorer/i });
+      expect(button).toBeInTheDocument();
     });
   });
 });

@@ -10,3 +10,22 @@
  * Add project-specific mocks below as needed.
  */
 import "@torus-ts/vitest-config/setup";
+import { vi } from "vitest";
+
+// Mock config module globally for all tests
+vi.mock("~/config", () => ({
+  getChainValuesOnEnv: () => () => ({ chainId: 8453 }),
+  contractAddresses: {
+    base: {
+      mainnet: { torusErc20: "0x78EC15C5FD8EfC5e924e9EEBb9e549e29C785867" },
+      testnet: { torusErc20: "0x78EC15C5FD8EfC5e924e9EEBb9e549e29C785867" },
+    },
+  },
+}));
+
+vi.mock("~/env", () => ({
+  env: (key: string) => {
+    if (key === "NEXT_PUBLIC_TORUS_CHAIN_ENV") return "testnet";
+    return "";
+  },
+}));

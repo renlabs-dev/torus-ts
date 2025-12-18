@@ -68,7 +68,6 @@ describe("DualWalletConnector", () => {
       render(<DualWalletConnector direction="base-to-native" />);
 
       expect(screen.getByText("Torus Wallet")).toBeInTheDocument();
-      expect(screen.getByText("Not connected")).toBeInTheDocument();
       expect(screen.getAllByText("Not connected")).toHaveLength(2);
     });
 
@@ -322,7 +321,7 @@ describe("DualWalletConnector", () => {
       expect(screen.getByText("Torus EVM Wallet")).toBeInTheDocument();
     });
 
-    it("should display EVM Wallet when connected to unknown chain", () => {
+    it("should display Unknown Wallet when connected to unknown chain", () => {
       mockUseDualWallet.mockReturnValue(
         createMockHookReturn({
           connectionState: {
@@ -347,7 +346,7 @@ describe("DualWalletConnector", () => {
 
       render(<DualWalletConnector direction="base-to-native" />);
 
-      expect(screen.getByText("EVM Wallet")).toBeInTheDocument();
+      expect(screen.getByText("Unknown Wallet")).toBeInTheDocument();
     });
   });
 
