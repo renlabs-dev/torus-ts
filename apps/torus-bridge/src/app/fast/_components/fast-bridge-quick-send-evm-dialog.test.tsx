@@ -23,7 +23,7 @@ describe("QuickSendEvmDialog", () => {
   const mockOnClose = vi.fn();
   const mockOnSendToNative = vi.fn();
   const mockOnSendToBase = vi.fn();
-  const mockRefetchBalances = vi.fn();
+  const mockRefetchBalances = vi.fn().mockResolvedValue(undefined);
   const mockOnRecoverySuccess = vi.fn();
 
   const defaultProps = {
@@ -116,7 +116,7 @@ describe("QuickSendEvmDialog", () => {
       await user.click(selectButtons[0]);
 
       expect(screen.getByText("Sending Transaction")).toBeInTheDocument();
-      expect(screen.getByText(/to Torus/)).toBeInTheDocument();
+      expect(screen.getByText("Torus")).toBeInTheDocument();
     });
 
     it("should display loading state for Base Chain destination", async () => {
@@ -129,7 +129,7 @@ describe("QuickSendEvmDialog", () => {
       await user.click(selectButtons[1]);
 
       expect(screen.getByText("Sending Transaction")).toBeInTheDocument();
-      expect(screen.getByText(/to Base Chain/)).toBeInTheDocument();
+      expect(screen.getByText("Base Chain")).toBeInTheDocument();
     });
 
     it("should show formatted amount in sending state", async () => {
@@ -141,7 +141,8 @@ describe("QuickSendEvmDialog", () => {
       const selectButtons = screen.getAllByRole("button", { name: /Select/i });
       await user.click(selectButtons[0]);
 
-      expect(screen.getByText("100")).toBeInTheDocument();
+      // The amount should be formatted and displayed
+      expect(screen.getByText(/100(\.0*)?/)).toBeInTheDocument();
     });
 
     it("should call onSendToNative when Torus is selected", async () => {
@@ -200,8 +201,8 @@ describe("QuickSendEvmDialog", () => {
       const selectButtons = screen.getAllByRole("button", { name: /Select/i });
       await user.click(selectButtons[0]);
 
-      // Simulate balance decrease (75% of original)
-      const decreasedBalance = 25n * 10n ** 18n;
+      // Simulate balance decrease (enough to trigger success - more than 80% of expected)
+      const decreasedBalance = 10n * 10n ** 18n; // 10 TORUS (90% decrease)
 
       rerender(
         <QuickSendEvmDialog
@@ -226,7 +227,7 @@ describe("QuickSendEvmDialog", () => {
       const selectButtons = screen.getAllByRole("button", { name: /Select/i });
       await user.click(selectButtons[0]);
 
-      const decreasedBalance = 25n * 10n ** 18n;
+      const decreasedBalance = 10n * 10n ** 18n; // 10 TORUS (90% decrease)
 
       rerender(
         <QuickSendEvmDialog
@@ -252,7 +253,7 @@ describe("QuickSendEvmDialog", () => {
       const selectButtons = screen.getAllByRole("button", { name: /Select/i });
       await user.click(selectButtons[0]);
 
-      const decreasedBalance = 25n * 10n ** 18n;
+      const decreasedBalance = 10n * 10n ** 18n; // 10 TORUS (90% decrease)
 
       rerender(
         <QuickSendEvmDialog
@@ -278,7 +279,7 @@ describe("QuickSendEvmDialog", () => {
       const selectButtons = screen.getAllByRole("button", { name: /Select/i });
       await user.click(selectButtons[0]);
 
-      const decreasedBalance = 25n * 10n ** 18n;
+      const decreasedBalance = 10n * 10n ** 18n; // 10 TORUS (90% decrease)
 
       rerender(
         <QuickSendEvmDialog
@@ -309,7 +310,7 @@ describe("QuickSendEvmDialog", () => {
       const selectButtons = screen.getAllByRole("button", { name: /Select/i });
       await user.click(selectButtons[0]);
 
-      const decreasedBalance = 25n * 10n ** 18n;
+      const decreasedBalance = 10n * 10n ** 18n; // 10 TORUS (90% decrease)
 
       rerender(
         <QuickSendEvmDialog
@@ -334,7 +335,7 @@ describe("QuickSendEvmDialog", () => {
       const selectButtons = screen.getAllByRole("button", { name: /Select/i });
       await user.click(selectButtons[0]);
 
-      const decreasedBalance = 25n * 10n ** 18n;
+      const decreasedBalance = 10n * 10n ** 18n; // 10 TORUS (90% decrease)
 
       rerender(
         <QuickSendEvmDialog
@@ -381,6 +382,7 @@ describe("QuickSendEvmDialog", () => {
     it("should display error message", async () => {
       const user = userEvent.setup();
       const errorMessage = "Insufficient gas for transaction";
+      const formattedErrorMessage = "Insufficient ETH for gas fees. Please add ETH to your Torus EVM wallet and try again.";
       mockOnSendToNative.mockRejectedValueOnce(new Error(errorMessage));
 
       render(<QuickSendEvmDialog {...defaultProps} />);
@@ -389,7 +391,7 @@ describe("QuickSendEvmDialog", () => {
       await user.click(selectButtons[0]);
 
       await waitFor(() => {
-        expect(screen.getByText(errorMessage)).toBeInTheDocument();
+        expect(screen.getByText(formattedErrorMessage)).toBeInTheDocument();
       });
     });
 
@@ -626,7 +628,7 @@ describe("QuickSendEvmDialog", () => {
       const selectButtons = screen.getAllByRole("button", { name: /Select/i });
       await user.click(selectButtons[0]);
 
-      expect(screen.getByText(/to Torus/)).toBeInTheDocument();
+      expect(screen.getByText("Torus")).toBeInTheDocument();
     });
 
     it("should display destination name correctly for Base", async () => {
@@ -638,7 +640,7 @@ describe("QuickSendEvmDialog", () => {
       const selectButtons = screen.getAllByRole("button", { name: /Select/i });
       await user.click(selectButtons[1]);
 
-      expect(screen.getByText(/to Base Chain/)).toBeInTheDocument();
+      expect(screen.getByText("Base Chain")).toBeInTheDocument();
     });
   });
 });

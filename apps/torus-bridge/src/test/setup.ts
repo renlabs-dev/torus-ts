@@ -12,6 +12,18 @@
 import "@torus-ts/vitest-config/setup";
 import { vi } from "vitest";
 
+// Configure Testing Library to show cleaner error messages
+import { configure } from "@testing-library/react";
+
+configure({
+  getElementError: (message, _container) => {
+    const error = new Error(message ?? "");
+    error.name = "TestingLibraryElementError";
+    error.stack = error.stack?.split("\n").slice(0, 10).join("\n");
+    return error;
+  },
+});
+
 // Mock config module globally for all tests
 vi.mock("~/config", () => ({
   getChainValuesOnEnv: () => () => ({ chainId: 8453 }),

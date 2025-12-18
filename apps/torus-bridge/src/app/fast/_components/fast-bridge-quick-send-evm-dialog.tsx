@@ -97,7 +97,7 @@ export function QuickSendEvmDialog({
     if (isBalanceNearZero || hasDecreasedEnough) {
       // Force refresh all balances (fire and forget, don't block success)
       if (refetchBalances) {
-        refetchBalances().catch((err) => {
+        void refetchBalances().catch((err) => {
           console.warn("Failed to refetch balances after transfer:", err);
         });
       }
