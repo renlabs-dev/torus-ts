@@ -61,7 +61,7 @@ function getStatusBadge(
 ) {
   if (recoveredViaEvmRecover) {
     return (
-      <Badge variant="outline" className="border-green-500 text-green-500">
+      <Badge variant="outline" className="border-green-500 text-green-500" data-testid="status-recovered">
         Recovered
       </Badge>
     );
@@ -70,25 +70,25 @@ function getStatusBadge(
   switch (status) {
     case "completed":
       return (
-        <Badge variant="outline" className="border-green-500 text-green-500">
+        <Badge variant="outline" className="border-green-500 text-green-500" data-testid="status-success">
           Success
         </Badge>
       );
     case "error":
       return (
-        <Badge variant="outline" className="border-red-500 text-red-500">
+        <Badge variant="outline" className="border-red-500 text-red-500" data-testid="status-error">
           Error
         </Badge>
       );
     case "step1_complete":
       return (
-        <Badge variant="outline" className="border-yellow-500 text-yellow-500">
+        <Badge variant="outline" className="border-yellow-500 text-yellow-500" data-testid="status-step1-complete">
           Step 1 Complete
         </Badge>
       );
     case "pending":
       return (
-        <Badge variant="outline" className="border-yellow-500 text-yellow-500">
+        <Badge variant="outline" className="border-yellow-500 text-yellow-500" data-testid="status-pending">
           Pending
         </Badge>
       );
@@ -164,21 +164,24 @@ export function TransactionHistoryItem({
           <Badge
             variant="secondary"
             className="text-muted-foreground shrink-0 font-mono text-xs"
+            data-testid={`transaction-index-${index + 1}`}
           >
             #{index + 1}
           </Badge>
           <div className="flex-1">
             <div className="flex items-center gap-3">
-              <span className="text-sm font-medium">{directionLabel}</span>
-              {getStatusBadge(
-                transaction.status,
-                transaction.recoveredViaEvmRecover,
-              )}
+              <span className="text-sm font-medium" data-testid="transaction-direction">{directionLabel}</span>
+              <span data-testid="transaction-status">
+                {getStatusBadge(
+                  transaction.status,
+                  transaction.recoveredViaEvmRecover,
+                )}
+              </span>
             </div>
-            <div className="text-muted-foreground mt-1 text-sm">
+            <div className="text-muted-foreground mt-1 text-sm" data-testid="transaction-amount">
               {transaction.amount} TORUS
             </div>
-            <div className="text-muted-foreground mt-1 text-xs">
+            <div className="text-muted-foreground mt-1 text-xs" data-testid="transaction-timestamp">
               {formatTimestamp(transaction.timestamp)}
             </div>
           </div>
@@ -245,7 +248,7 @@ export function TransactionHistoryItem({
           {/* Address details */}
           {(transaction.baseAddress || transaction.nativeAddress) && (
             <div className="space-y-3">
-              <div className="text-muted-foreground text-xs font-medium">
+              <div className="text-muted-foreground text-xs font-medium" data-testid="transaction-flow-title">
                 Transaction Flow
               </div>
               <div className="flex items-center gap-4">
@@ -253,11 +256,11 @@ export function TransactionHistoryItem({
                   <>
                     {transaction.baseAddress && (
                       <div className="bg-background border-border flex flex-1 flex-col gap-2 rounded-lg border p-3">
-                        <div className="text-muted-foreground text-xs font-medium">
+                        <div className="text-muted-foreground text-xs font-medium" data-testid="from-chain-label">
                           From: Base Chain
                         </div>
                         <div className="bg-muted/50 border-border flex items-center justify-between rounded border px-2 py-1.5">
-                          <span className="font-mono text-xs">
+                          <span className="font-mono text-xs" data-testid="from-chain-address">
                             {transaction.baseAddress.slice(0, 8)}...
                             {transaction.baseAddress.slice(-6)}
                           </span>
@@ -288,11 +291,11 @@ export function TransactionHistoryItem({
                     <ArrowRight className="text-muted-foreground h-5 w-5 shrink-0" />
                     {transaction.nativeAddress && (
                       <div className="bg-background border-border flex flex-1 flex-col gap-2 rounded-lg border p-3">
-                        <div className="text-muted-foreground text-xs font-medium">
+                        <div className="text-muted-foreground text-xs font-medium" data-testid="to-chain-label">
                           To: Torus Chain
                         </div>
                         <div className="bg-muted/50 border-border flex items-center justify-between rounded border px-2 py-1.5">
-                          <span className="font-mono text-xs">
+                          <span className="font-mono text-xs" data-testid="to-chain-address">
                             {transaction.nativeAddress.slice(0, 8)}...
                             {transaction.nativeAddress.slice(-6)}
                           </span>
@@ -325,11 +328,11 @@ export function TransactionHistoryItem({
                   <>
                     {transaction.nativeAddress && (
                       <div className="bg-background border-border flex flex-1 flex-col gap-2 rounded-lg border p-3">
-                        <div className="text-muted-foreground text-xs font-medium">
+                        <div className="text-muted-foreground text-xs font-medium" data-testid="from-chain-label">
                           From: Torus Chain
                         </div>
                         <div className="bg-muted/50 border-border flex items-center justify-between rounded border px-2 py-1.5">
-                          <span className="font-mono text-xs">
+                          <span className="font-mono text-xs" data-testid="from-chain-address">
                             {transaction.nativeAddress.slice(0, 8)}...
                             {transaction.nativeAddress.slice(-6)}
                           </span>
@@ -360,11 +363,11 @@ export function TransactionHistoryItem({
                     <ArrowRight className="text-muted-foreground h-5 w-5 shrink-0" />
                     {transaction.baseAddress && (
                       <div className="bg-background border-border flex flex-1 flex-col gap-2 rounded-lg border p-3">
-                        <div className="text-muted-foreground text-xs font-medium">
+                        <div className="text-muted-foreground text-xs font-medium" data-testid="to-chain-label">
                           To: Base Chain
                         </div>
                         <div className="bg-muted/50 border-border flex items-center justify-between rounded border px-2 py-1.5">
-                          <span className="font-mono text-xs">
+                          <span className="font-mono text-xs" data-testid="to-chain-address">
                             {transaction.baseAddress.slice(0, 8)}...
                             {transaction.baseAddress.slice(-6)}
                           </span>
@@ -400,13 +403,13 @@ export function TransactionHistoryItem({
 
           {/* Error details */}
           {transaction.errorMessage && (
-            <div className="text-red-500">
-              <div className="font-medium">Error:</div>
-              <div className="text-muted-foreground mt-1 whitespace-pre-line text-xs">
+            <div className="text-red-500" data-testid="error-message">
+              <div className="font-medium" data-testid="error-title">Error:</div>
+              <div className="text-muted-foreground mt-1 whitespace-pre-line text-xs" data-testid="error-details">
                 {formatErrorForUser(new Error(transaction.errorMessage))}
               </div>
               {transaction.errorStep && (
-                <div className="text-muted-foreground mt-1 text-xs">
+                <div className="text-muted-foreground mt-1 text-xs" data-testid="error-step">
                   Failed at step {transaction.errorStep}
                 </div>
               )}
@@ -415,7 +418,7 @@ export function TransactionHistoryItem({
 
           {/* Recovered via EVM Recover indicator */}
           {transaction.recoveredViaEvmRecover && (
-            <div className="flex items-center gap-2 text-green-500">
+            <div className="flex items-center gap-2 text-green-500" data-testid="recovered-message">
               <span className="text-xs">Recovered via EVM Recover</span>
             </div>
           )}

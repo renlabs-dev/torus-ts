@@ -3,7 +3,7 @@ import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { QuickSendEvmDialog } from "./fast-bridge-quick-send-evm-dialog";
 
-// Mock lucide-react icons
+// Mock lucide-react icons with specific test IDs
 vi.mock("lucide-react", () => ({
   AlertCircle: () => <div data-testid="alert-icon" />,
   Check: () => <div data-testid="check-icon" />,
@@ -47,7 +47,7 @@ describe("QuickSendEvmDialog", () => {
     it("should render dialog title with Zap icon", () => {
       render(<QuickSendEvmDialog {...defaultProps} />);
 
-      expect(screen.getByText("EVM Recover")).toBeInTheDocument();
+      expect(screen.getByTestId("quick-send-title")).toHaveTextContent("EVM Recover");
       expect(screen.getByTestId("zap-icon")).toBeInTheDocument();
     });
 
@@ -70,17 +70,17 @@ describe("QuickSendEvmDialog", () => {
     it("should display EVM balance", () => {
       render(<QuickSendEvmDialog {...defaultProps} />);
 
-      expect(screen.getByText("100")).toBeInTheDocument();
-      expect(screen.getByText("TORUS")).toBeInTheDocument();
+      expect(screen.getByTestId("evm-balance-amount")).toHaveTextContent("100");
+      expect(screen.getByTestId("evm-balance-currency")).toHaveTextContent("TORUS");
     });
 
     it("should render Torus and Base Chain destination cards", () => {
       render(<QuickSendEvmDialog {...defaultProps} />);
 
-      expect(screen.getByText("Torus")).toBeInTheDocument();
-      expect(screen.getByText("Send to Torus chain")).toBeInTheDocument();
-      expect(screen.getByText("Base Chain")).toBeInTheDocument();
-      expect(screen.getByText("Send to Base mainnet")).toBeInTheDocument();
+      expect(screen.getByTestId("destination-torus-title")).toHaveTextContent("Torus");
+      expect(screen.getByTestId("destination-torus-description")).toHaveTextContent("Send to Torus chain");
+      expect(screen.getByTestId("destination-base-title")).toHaveTextContent("Base Chain");
+      expect(screen.getByTestId("destination-base-description")).toHaveTextContent("Send to Base mainnet");
     });
 
     it("should show Select buttons for both destinations", () => {
@@ -102,7 +102,7 @@ describe("QuickSendEvmDialog", () => {
       await user.click(selectButtons[0]);
 
       // Should show sending state
-      expect(screen.getByText("Sending Transaction")).toBeInTheDocument();
+      expect(screen.getByTestId("sending-title")).toHaveTextContent("Sending Transaction");
       expect(screen.getByTestId("loader-icon")).toBeInTheDocument();
     });
 
@@ -115,8 +115,7 @@ describe("QuickSendEvmDialog", () => {
       const selectButtons = screen.getAllByRole("button", { name: /Select/i });
       await user.click(selectButtons[0]);
 
-      expect(screen.getByText("Sending Transaction")).toBeInTheDocument();
-      expect(screen.getByText("Torus")).toBeInTheDocument();
+      expect(screen.getByTestId("sending-title")).toHaveTextContent("Sending Transaction");
     });
 
     it("should display loading state for Base Chain destination", async () => {
@@ -128,8 +127,7 @@ describe("QuickSendEvmDialog", () => {
       const selectButtons = screen.getAllByRole("button", { name: /Select/i });
       await user.click(selectButtons[1]);
 
-      expect(screen.getByText("Sending Transaction")).toBeInTheDocument();
-      expect(screen.getByText("Base Chain")).toBeInTheDocument();
+      expect(screen.getByTestId("sending-title")).toHaveTextContent("Sending Transaction");
     });
 
     it("should show formatted amount in sending state", async () => {
@@ -185,7 +183,7 @@ describe("QuickSendEvmDialog", () => {
 
       // Try to close dialog (click would normally trigger onClose if allowed)
       // Dialog should still show sending state
-      expect(screen.getByText("Sending Transaction")).toBeInTheDocument();
+      expect(screen.getByTestId("sending-title")).toHaveTextContent("Sending Transaction");
     });
   });
 
@@ -212,7 +210,7 @@ describe("QuickSendEvmDialog", () => {
       );
 
       await waitFor(() => {
-        expect(screen.getByText("Transfer Complete!")).toBeInTheDocument();
+        expect(screen.getByTestId("success-title")).toHaveTextContent("Transfer Complete!");
       });
     });
 
@@ -238,7 +236,7 @@ describe("QuickSendEvmDialog", () => {
 
       await waitFor(() => {
         expect(screen.getByTestId("check-circle-icon")).toBeInTheDocument();
-        expect(screen.getByText(/Successfully sent/i)).toBeInTheDocument();
+        expect(screen.getByText(/Successfully sent/i)).toBeInTheDocument(); // Keep regex for dynamic content
       });
     });
 
@@ -361,7 +359,7 @@ describe("QuickSendEvmDialog", () => {
       await user.click(selectButtons[0]);
 
       await waitFor(() => {
-        expect(screen.getByText("Transfer Failed")).toBeInTheDocument();
+        expect(screen.getByTestId("error-title")).toHaveTextContent("Transfer Failed");
       });
     });
 
@@ -463,7 +461,7 @@ describe("QuickSendEvmDialog", () => {
       await user.click(selectButtons[0]);
 
       await waitFor(() => {
-        expect(screen.getByText("Transfer Failed")).toBeInTheDocument();
+        expect(screen.getByTestId("error-title")).toHaveTextContent("Transfer Failed");
       });
     });
   });
@@ -491,7 +489,7 @@ describe("QuickSendEvmDialog", () => {
       );
 
       await waitFor(() => {
-        expect(screen.getByText("Transfer Complete!")).toBeInTheDocument();
+        expect(screen.getByTestId("success-title")).toHaveTextContent("Transfer Complete!");
       });
     });
 
@@ -517,7 +515,7 @@ describe("QuickSendEvmDialog", () => {
       );
 
       await waitFor(() => {
-        expect(screen.getByText("Transfer Complete!")).toBeInTheDocument();
+        expect(screen.getByTestId("success-title")).toHaveTextContent("Transfer Complete!");
       });
     });
 
@@ -543,7 +541,7 @@ describe("QuickSendEvmDialog", () => {
       );
 
       // Should still be in sending state
-      expect(screen.getByText("Sending Transaction")).toBeInTheDocument();
+      expect(screen.getByTestId("sending-title")).toHaveTextContent("Sending Transaction");
     });
   });
 
@@ -582,7 +580,7 @@ describe("QuickSendEvmDialog", () => {
       );
 
       // First cycle
-      expect(screen.getByText("EVM Recover")).toBeInTheDocument();
+      expect(screen.getByTestId("quick-send-title")).toHaveTextContent("EVM Recover");
 
       rerender(
         <QuickSendEvmDialog
@@ -597,7 +595,7 @@ describe("QuickSendEvmDialog", () => {
       // Second cycle
       rerender(<QuickSendEvmDialog {...defaultProps} isOpen={true} />);
 
-      expect(screen.getByText("EVM Recover")).toBeInTheDocument();
+      expect(screen.getByTestId("quick-send-title")).toHaveTextContent("EVM Recover");
     });
   });
 
@@ -616,10 +614,10 @@ describe("QuickSendEvmDialog", () => {
         />
       );
 
-      expect(screen.getByText("1000")).toBeInTheDocument();
+      expect(screen.getByTestId("evm-balance-amount")).toHaveTextContent("1000");
     });
 
-    it("should display destination name correctly for Torus", async () => {
+    it("should transition to sending state for Torus destination", async () => {
       const user = userEvent.setup();
       mockOnSendToNative.mockResolvedValueOnce(undefined);
 
@@ -628,10 +626,10 @@ describe("QuickSendEvmDialog", () => {
       const selectButtons = screen.getAllByRole("button", { name: /Select/i });
       await user.click(selectButtons[0]);
 
-      expect(screen.getByText("Torus")).toBeInTheDocument();
+      expect(screen.getByTestId("sending-title")).toHaveTextContent("Sending Transaction");
     });
 
-    it("should display destination name correctly for Base", async () => {
+    it("should transition to sending state for Base Chain destination", async () => {
       const user = userEvent.setup();
       mockOnSendToBase.mockResolvedValueOnce(undefined);
 
@@ -640,7 +638,7 @@ describe("QuickSendEvmDialog", () => {
       const selectButtons = screen.getAllByRole("button", { name: /Select/i });
       await user.click(selectButtons[1]);
 
-      expect(screen.getByText("Base Chain")).toBeInTheDocument();
+      expect(screen.getByTestId("sending-title")).toHaveTextContent("Sending Transaction");
     });
   });
 });

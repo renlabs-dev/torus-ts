@@ -809,7 +809,7 @@ export function FastBridgeForm() {
     torusEvmBalance && torusEvmBalance.value > TORUS_EVM_MIN_BALANCE;
 
   return (
-    <div className="mx-auto w-full space-y-6">
+    <div className="mx-auto w-full space-y-6" data-testid="fast-bridge-form">
       <div className="-mt-[3.5rem] flex items-center justify-end">
         <div className="flex gap-2">
           <TooltipProvider delayDuration={500}>
@@ -832,6 +832,7 @@ export function FastBridgeForm() {
                         ? "pointer-events-none"
                         : ""
                     }
+                    data-testid="quick-send-button"
                   >
                     <Zap className="mr-2 h-4 w-4" />
                     EVM Recover
@@ -854,6 +855,7 @@ export function FastBridgeForm() {
             size="sm"
             onClick={() => setShowHistoryDialog(true)}
             className="relative"
+            data-testid="history-button"
           >
             <History className="mr-2 h-4 w-4" />
             History
@@ -869,13 +871,18 @@ export function FastBridgeForm() {
         </div>
       </div>
 
-      {!walletsReady && <DualWalletConnector direction={direction} />}
+      {!walletsReady && (
+        <DualWalletConnector 
+          direction={direction} 
+          data-testid="wallet-connector"
+        />
+      )}
 
       {walletsReady && (
         <Card className="w-full">
           <CardContent className="space-y-6 pt-6">
             <div className="flex items-center gap-4">
-              <div className="flex-1 space-y-2">
+              <div className="flex-1 space-y-2" data-testid="from-chain-section">
                 <Label className="text-sm font-medium">From</Label>
                 <InputReadonly label="TORUS" className="w-full">
                   {renderChainValue(fromChain, true)}
@@ -916,12 +923,13 @@ export function FastBridgeForm() {
                   onClick={toggleDirection}
                   disabled={isTransferInProgress}
                   className="rounded-full"
+                  data-testid="direction-toggle"
                 >
                   <ArrowLeftRight className="h-4 w-4" />
                 </Button>
               </div>
 
-              <div className="flex-1 space-y-2">
+              <div className="flex-1 space-y-2" data-testid="to-chain-section">
                 <Label className="text-sm font-medium">To</Label>
                 <InputReadonly label="TORUS" className="w-full">
                   {renderChainValue(toChain, true)}
@@ -964,12 +972,14 @@ export function FastBridgeForm() {
                 placeholder="0.00"
                 disabled={isTransferInProgress}
                 className="w-full"
+                data-testid="amount-input"
               />
               <FractionButtons
                 handleFractionClick={handleFractionClick}
                 walletsReady={walletsReady}
                 isTransferInProgress={isTransferInProgress}
                 handleMaxClick={handleMaxClick}
+                data-testid="fraction-buttons"
               />
             </div>
 
@@ -979,6 +989,7 @@ export function FastBridgeForm() {
                 disabled={!isFormValid || isTransferInProgress}
                 className={`w-full ${hasInsufficientBalance() ? "bg-red-600 text-white hover:bg-red-700" : ""}`}
                 size="lg"
+                data-testid="transfer-button"
               >
                 {getButtonText()}
               </Button>
@@ -1002,6 +1013,7 @@ export function FastBridgeForm() {
         transactions={transactions}
         amount={amountFrom}
         onRetry={retryFromFailedStep}
+        data-testid="transaction-lifecycle-dialog"
       />
 
       <TransactionHistoryDialog
@@ -1009,6 +1021,7 @@ export function FastBridgeForm() {
         onClose={() => setShowHistoryDialog(false)}
         onContinue={handleRetryFromHistory}
         getExplorerUrl={getExplorerUrl}
+        data-testid="transaction-history-dialog"
       />
 
       <QuickSendEvmDialog
@@ -1028,6 +1041,7 @@ export function FastBridgeForm() {
         formatAmount={formatToken}
         refetchBalances={refetchAllBalances}
         onRecoverySuccess={markFailedAsRecoveredViaEvmRecover}
+        data-testid="quick-send-dialog"
       />
 
       {pendingTransaction && (
@@ -1037,6 +1051,7 @@ export function FastBridgeForm() {
           pendingTransaction={pendingTransaction}
           onResume={handleRetryFromHistory}
           onDeleteAndStartNew={handleDeleteAndStartNew}
+          data-testid="pending-dialog"
         />
       )}
     </div>

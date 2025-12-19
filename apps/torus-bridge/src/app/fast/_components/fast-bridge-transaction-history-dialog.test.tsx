@@ -79,7 +79,7 @@ describe("TransactionHistoryDialog", () => {
     it("should render transaction history dialog when open", () => {
       render(<TransactionHistoryDialog {...defaultProps} />);
 
-      expect(screen.getByText("Transaction History")).toBeInTheDocument();
+      expect(screen.getByTestId("dialog-title")).toHaveTextContent("Transaction History");
       expect(
         screen.getByText("View and manage your Fast Bridge transaction history")
       ).toBeInTheDocument();
@@ -184,7 +184,7 @@ describe("TransactionHistoryDialog", () => {
       setupMockHook([]);
       render(<TransactionHistoryDialog {...defaultProps} />);
 
-      expect(screen.getByText("No transactions yet")).toBeInTheDocument();
+      expect(screen.getByTestId("empty-state-message")).toHaveTextContent("No transactions yet");
     });
 
     it("should show empty state for completed filter when no completed transactions", async () => {
@@ -195,7 +195,7 @@ describe("TransactionHistoryDialog", () => {
       const completedTab = screen.getByRole("tab", { name: /Completed/ });
       await user.click(completedTab);
 
-      expect(screen.getByText("No completed transactions")).toBeInTheDocument();
+      expect(screen.getByTestId("empty-state-message")).toHaveTextContent("No completed transactions");
     });
 
     it("should show empty state for failed filter when no failed transactions", async () => {
@@ -206,7 +206,7 @@ describe("TransactionHistoryDialog", () => {
       const failedTab = screen.getByRole("tab", { name: /Failed/ });
       await user.click(failedTab);
 
-      expect(screen.getByText("No failed transactions")).toBeInTheDocument();
+      expect(screen.getByTestId("empty-state-message")).toHaveTextContent("No failed transactions");
     });
   });
 
@@ -248,7 +248,7 @@ describe("TransactionHistoryDialog", () => {
 
       await waitFor(() => {
         expect(
-          screen.getByText("Delete all transactions?")
+          screen.getByTestId("delete-all-dialog-title")
         ).toBeInTheDocument();
       });
     });
@@ -277,7 +277,7 @@ describe("TransactionHistoryDialog", () => {
       await user.click(cancelButton);
 
       expect(mockClearHistory).not.toHaveBeenCalled();
-      expect(screen.queryByText("Delete all transactions?")).not.toBeInTheDocument();
+      expect(screen.queryByTestId("delete-all-dialog-title")).not.toBeInTheDocument();
     });
   });
 
@@ -379,7 +379,7 @@ describe("TransactionHistoryDialog", () => {
 
       await waitFor(() => {
         expect(
-          screen.getByText("Delete selected transactions?")
+          screen.getByTestId("bulk-delete-dialog-title")
         ).toBeInTheDocument();
       });
     });

@@ -4,16 +4,6 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { TransactionHistoryItem } from "./fast-bridge-transaction-history-item";
 import type { FastBridgeTransactionHistoryItem } from "./fast-bridge-types";
 
-// Mock lucide-react icons
-vi.mock("lucide-react", () => ({
-  ArrowRight: () => <div data-testid="arrow-right" />,
-  ChevronDown: () => <div data-testid="chevron-down" />,
-  ChevronUp: () => <div data-testid="chevron-up" />,
-  ExternalLink: () => <div data-testid="external-link" />,
-  Play: () => <div data-testid="play-icon" />,
-  RotateCw: () => <div data-testid="rotate-icon" />,
-}));
-
 // Mock the helper function
 vi.mock("../hooks/fast-bridge-helpers", () => ({
   formatErrorForUser: (error: Error) => error.message,
@@ -58,26 +48,26 @@ describe("TransactionHistoryItem", () => {
     it("should display transaction direction", () => {
       render(<TransactionHistoryItem {...defaultProps} />);
 
-      expect(screen.getByText("Base → Torus")).toBeInTheDocument();
+      expect(screen.getByTestId("transaction-direction")).toHaveTextContent("Base → Torus");
     });
 
     it("should display transaction direction for native-to-base", () => {
       const transaction = createMockTransaction({ direction: "native-to-base" });
       render(<TransactionHistoryItem {...defaultProps} transaction={transaction} />);
 
-      expect(screen.getByText("Torus → Base")).toBeInTheDocument();
+      expect(screen.getByTestId("transaction-direction")).toHaveTextContent("Torus → Base");
     });
 
     it("should display transaction amount", () => {
       render(<TransactionHistoryItem {...defaultProps} />);
 
-      expect(screen.getByText("100 TORUS")).toBeInTheDocument();
+      expect(screen.getByTestId("transaction-amount")).toHaveTextContent("100 TORUS");
     });
 
     it("should display transaction index", () => {
       render(<TransactionHistoryItem {...defaultProps} index={4} />);
 
-      expect(screen.getByText("#5")).toBeInTheDocument();
+      expect(screen.getByTestId("transaction-index-5")).toHaveTextContent("#5");
     });
   });
 
@@ -86,28 +76,28 @@ describe("TransactionHistoryItem", () => {
       const transaction = createMockTransaction({ status: "completed" });
       render(<TransactionHistoryItem {...defaultProps} transaction={transaction} />);
 
-      expect(screen.getByText("Success")).toBeInTheDocument();
+      expect(screen.getByTestId("status-success")).toHaveTextContent("Success");
     });
 
     it("should show error badge for error transaction", () => {
       const transaction = createMockTransaction({ status: "error" });
       render(<TransactionHistoryItem {...defaultProps} transaction={transaction} />);
 
-      expect(screen.getByText("Error")).toBeInTheDocument();
+      expect(screen.getByTestId("status-error")).toHaveTextContent("Error");
     });
 
     it("should show step 1 complete badge", () => {
       const transaction = createMockTransaction({ status: "step1_complete" });
       render(<TransactionHistoryItem {...defaultProps} transaction={transaction} />);
 
-      expect(screen.getByText("Step 1 Complete")).toBeInTheDocument();
+      expect(screen.getByTestId("status-step1-complete")).toHaveTextContent("Step 1 Complete");
     });
 
     it("should show pending badge", () => {
       const transaction = createMockTransaction({ status: "pending" });
       render(<TransactionHistoryItem {...defaultProps} transaction={transaction} />);
 
-      expect(screen.getByText("Pending")).toBeInTheDocument();
+      expect(screen.getByTestId("status-pending")).toHaveTextContent("Pending");
     });
 
     it("should show recovered badge when recoveredViaEvmRecover is true", () => {
@@ -117,7 +107,7 @@ describe("TransactionHistoryItem", () => {
       });
       render(<TransactionHistoryItem {...defaultProps} transaction={transaction} />);
 
-      expect(screen.getByText("Recovered")).toBeInTheDocument();
+      expect(screen.getByTestId("status-recovered")).toHaveTextContent("Recovered");
     });
   });
 
@@ -128,7 +118,7 @@ describe("TransactionHistoryItem", () => {
       });
       render(<TransactionHistoryItem {...defaultProps} transaction={transaction} />);
 
-      expect(screen.getByText("Just now")).toBeInTheDocument();
+      expect(screen.getByTestId("transaction-timestamp")).toHaveTextContent("Just now");
     });
 
     it("should display minutes ago", () => {
@@ -137,7 +127,7 @@ describe("TransactionHistoryItem", () => {
       });
       render(<TransactionHistoryItem {...defaultProps} transaction={transaction} />);
 
-      expect(screen.getByText("5m ago")).toBeInTheDocument();
+      expect(screen.getByTestId("transaction-timestamp")).toHaveTextContent("5m ago");
     });
 
     it("should display hours ago", () => {
@@ -146,7 +136,7 @@ describe("TransactionHistoryItem", () => {
       });
       render(<TransactionHistoryItem {...defaultProps} transaction={transaction} />);
 
-      expect(screen.getByText("3h ago")).toBeInTheDocument();
+      expect(screen.getByTestId("transaction-timestamp")).toHaveTextContent("3h ago");
     });
 
     it("should display 'Yesterday' for transactions from yesterday", () => {
@@ -155,7 +145,7 @@ describe("TransactionHistoryItem", () => {
       });
       render(<TransactionHistoryItem {...defaultProps} transaction={transaction} />);
 
-      expect(screen.getByText("Yesterday")).toBeInTheDocument();
+      expect(screen.getByTestId("transaction-timestamp")).toHaveTextContent("Yesterday");
     });
 
     it("should display full date for old transactions", () => {
@@ -271,7 +261,7 @@ describe("TransactionHistoryItem", () => {
         await user.click(expandButton);
 
         // Should show transaction flow details
-        expect(screen.getByText("Transaction Flow")).toBeInTheDocument();
+        expect(screen.getByTestId("transaction-flow-title")).toHaveTextContent("Transaction Flow");
       }
     });
 
@@ -289,7 +279,7 @@ describe("TransactionHistoryItem", () => {
         await user.click(expandButton);
 
         // Details are now expanded
-        expect(screen.getByText("Transaction Flow")).toBeInTheDocument();
+        expect(screen.getByTestId("transaction-flow-title")).toHaveTextContent("Transaction Flow");
       }
     });
 
@@ -310,8 +300,8 @@ describe("TransactionHistoryItem", () => {
       if (expandButton) {
         await user.click(expandButton);
 
-        expect(screen.getByText("From: Base Chain")).toBeInTheDocument();
-        expect(screen.getByText("To: Torus Chain")).toBeInTheDocument();
+        expect(screen.getByTestId("from-chain-label")).toHaveTextContent("From: Base Chain");
+        expect(screen.getByTestId("to-chain-label")).toHaveTextContent("To: Torus Chain");
 
         // Check for truncated addresses
         expect(screen.getByText(/0xbase12.*345678/)).toBeInTheDocument();
@@ -336,8 +326,8 @@ describe("TransactionHistoryItem", () => {
       if (expandButton) {
         await user.click(expandButton);
 
-        expect(screen.getByText("From: Torus Chain")).toBeInTheDocument();
-        expect(screen.getByText("To: Base Chain")).toBeInTheDocument();
+        expect(screen.getByTestId("from-chain-label")).toHaveTextContent("From: Torus Chain");
+        expect(screen.getByTestId("to-chain-label")).toHaveTextContent("To: Base Chain");
       }
     });
   });
@@ -464,8 +454,8 @@ describe("TransactionHistoryItem", () => {
       if (expandButton) {
         await user.click(expandButton);
 
-        expect(screen.getByText("Error:")).toBeInTheDocument();
-        expect(screen.getByText("Bridge failed: insufficient balance")).toBeInTheDocument();
+        expect(screen.getByTestId("error-title")).toHaveTextContent("Error:");
+        expect(screen.getByTestId("error-details")).toHaveTextContent("Bridge failed: insufficient balance");
       }
     });
 
@@ -485,7 +475,7 @@ describe("TransactionHistoryItem", () => {
       if (expandButton) {
         await user.click(expandButton);
 
-        expect(screen.getByText("Failed at step 2")).toBeInTheDocument();
+        expect(screen.getByTestId("error-step")).toHaveTextContent("Failed at step 2");
       }
     });
   });
@@ -505,7 +495,7 @@ describe("TransactionHistoryItem", () => {
       if (expandButton) {
         await user.click(expandButton);
 
-        expect(screen.getByText("Recovered via EVM Recover")).toBeInTheDocument();
+        expect(screen.getByTestId("recovered-message")).toHaveTextContent("Recovered via EVM Recover");
       }
     });
   });

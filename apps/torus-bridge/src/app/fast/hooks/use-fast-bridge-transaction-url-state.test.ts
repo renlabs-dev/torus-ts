@@ -137,8 +137,12 @@ describe("useFastBridgeTransactionUrlState", () => {
     });
 
     it.skip("should not throw if window is undefined", () => {
-      // This test is skipped because mocking window in SSR context is complex
-      // The hook already handles window === undefined gracefully in production
+      // This test is skipped because testing SSR context with window undefined
+      // is complex in vitest environment which always provides a window object.
+      // The hook already implements proper checks for typeof window !== 'undefined'
+      // and handles SSR scenarios gracefully in production code.
+      // To test this properly, it would require running in a true Node.js environment
+      // without jsdom, which is outside the scope of component unit tests.
       expect(true).toBe(true);
     });
 

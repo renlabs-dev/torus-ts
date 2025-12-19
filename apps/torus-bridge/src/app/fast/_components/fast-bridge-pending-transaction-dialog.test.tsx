@@ -4,7 +4,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { PendingTransactionDialog } from "./fast-bridge-pending-transaction-dialog";
 import type { FastBridgeTransactionHistoryItem } from "./fast-bridge-types";
 
-// Mock lucide-react icons
+// Mock lucide-react icons with specific test IDs
 vi.mock("lucide-react", () => ({
   AlertTriangle: () => <div data-testid="alert-icon" />,
   Clock: () => <div data-testid="clock-icon" />,
@@ -49,7 +49,7 @@ describe("PendingTransactionDialog", () => {
     it("should render dialog title with alert icon", () => {
       render(<PendingTransactionDialog {...defaultProps} />);
 
-      expect(screen.getByText("Pending Transaction Found")).toBeInTheDocument();
+      expect(screen.getByTestId("pending-dialog-title")).toHaveTextContent("Pending Transaction Found");
       expect(screen.getByTestId("alert-icon")).toBeInTheDocument();
     });
 
@@ -74,7 +74,7 @@ describe("PendingTransactionDialog", () => {
     it("should display timestamp in relative format", () => {
       render(<PendingTransactionDialog {...defaultProps} />);
 
-      expect(screen.getByText("5m ago")).toBeInTheDocument();
+      expect(screen.getByTestId("pending-timestamp")).toHaveTextContent("5m ago");
     });
 
     it("should display correct direction for base-to-native", () => {
@@ -88,7 +88,7 @@ describe("PendingTransactionDialog", () => {
         />
       );
 
-      expect(screen.getByText("Base → Torus")).toBeInTheDocument();
+      expect(screen.getByTestId("pending-direction")).toHaveTextContent("Base → Torus");
     });
 
     it("should display correct direction for native-to-base", () => {
@@ -102,19 +102,19 @@ describe("PendingTransactionDialog", () => {
         />
       );
 
-      expect(screen.getByText("Torus → Base")).toBeInTheDocument();
+      expect(screen.getByTestId("pending-direction")).toHaveTextContent("Torus → Base");
     });
 
     it("should display amount with TORUS suffix", () => {
       render(<PendingTransactionDialog {...defaultProps} />);
 
-      expect(screen.getByText("100 TORUS")).toBeInTheDocument();
+      expect(screen.getByTestId("pending-amount")).toHaveTextContent("100 TORUS");
     });
 
     it("should display pending status badge", () => {
       render(<PendingTransactionDialog {...defaultProps} />);
 
-      expect(screen.getByText("Pending")).toBeInTheDocument();
+      expect(screen.getByTestId("pending-status")).toHaveTextContent("Awaiting confirmation");
     });
   });
 
@@ -128,7 +128,7 @@ describe("PendingTransactionDialog", () => {
         />
       );
 
-      expect(screen.getByText("Awaiting confirmation")).toBeInTheDocument();
+      expect(screen.getByTestId("pending-status")).toHaveTextContent("Awaiting confirmation");
     });
 
     it("should show 'Step 1 complete, awaiting Step 2' for step1_complete status", () => {
@@ -143,8 +143,8 @@ describe("PendingTransactionDialog", () => {
       );
 
       expect(
-        screen.getByText("Step 1 complete, awaiting Step 2")
-      ).toBeInTheDocument();
+        screen.getByTestId("pending-status")
+      ).toHaveTextContent("Step 1 complete, awaiting Step 2");
     });
   });
 
@@ -221,7 +221,7 @@ describe("PendingTransactionDialog", () => {
         />
       );
 
-      expect(screen.getByText("Just now")).toBeInTheDocument();
+      expect(screen.getByTestId("pending-timestamp")).toHaveTextContent("Just now");
     });
 
     it("should display minutes ago", () => {
@@ -235,7 +235,7 @@ describe("PendingTransactionDialog", () => {
         />
       );
 
-      expect(screen.getByText("10m ago")).toBeInTheDocument();
+      expect(screen.getByTestId("pending-timestamp")).toHaveTextContent("10m ago");
     });
 
     it("should display hours and minutes", () => {
@@ -249,7 +249,7 @@ describe("PendingTransactionDialog", () => {
         />
       );
 
-      expect(screen.getByText("2h 30m ago")).toBeInTheDocument();
+      expect(screen.getByTestId("pending-timestamp")).toHaveTextContent("2h 30m ago");
     });
   });
 
@@ -389,7 +389,7 @@ describe("PendingTransactionDialog", () => {
         />
       );
 
-      expect(screen.getByText("5000.5 TORUS")).toBeInTheDocument();
+      expect(screen.getByTestId("pending-amount")).toHaveTextContent("5000.5 TORUS");
     });
 
     it("should handle step1_complete with step2 details", () => {
@@ -407,8 +407,8 @@ describe("PendingTransactionDialog", () => {
       );
 
       expect(
-        screen.getByText("Step 1 complete, awaiting Step 2")
-      ).toBeInTheDocument();
+        screen.getByTestId("pending-status")
+      ).toHaveTextContent("Step 1 complete, awaiting Step 2");
     });
   });
 });

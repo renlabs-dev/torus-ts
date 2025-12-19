@@ -131,7 +131,7 @@ export function TransactionStepItem({
         <p className="text-muted-foreground mt-1 text-sm">{description}</p>
 
         {showSignatureWarning && isSignatureRequired && status === "active" && (
-          <div className="mt-2 flex items-start gap-2 rounded-md border border-amber-200 bg-transparent p-3">
+          <div className="mt-2 flex items-start gap-2 rounded-md border border-amber-200 bg-transparent p-3" data-testid="signature-warning">
             <AlertTriangle className="mt-0.5 h-4 w-4 flex-shrink-0 text-amber-600" />
             <div className="flex-1">
               <p className="text-sm text-amber-700">

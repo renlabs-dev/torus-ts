@@ -3,38 +3,72 @@ import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { TransactionLifecycleDialog } from "./fast-bridge-transaction-lifecycle-dialog";
 import { SimpleBridgeStep } from "./fast-bridge-types";
-
-// Import the mocked hook
 import { useTransactionLifecycleSteps } from "../hooks/use-transaction-lifecycle-steps";
 
-// Cast to mocked function
-const mockedUseTransactionLifecycleSteps = vi.mocked(useTransactionLifecycleSteps);
-
-// Mock dependencies
+// Mock the hook
 vi.mock("../hooks/use-transaction-lifecycle-steps", () => ({
   useTransactionLifecycleSteps: vi.fn(),
 }));
 
-vi.mock("./fast-bridge-transaction-step-item", () => ({
-  TransactionStepItem: ({ title, status }: { title: string; status: string }) => (
-    <div data-testid={`step-${title}`} data-status={status}>
-      {title}
-    </div>
-  ),
-}));
+describe("TransactionLifecycleDialog", () => {
+  const mockOnClose = vi.fn();
+  const mockOnRetry = vi.fn();
 
-vi.mock("~/utils/logger", () => ({
-  logger: {
-    debug: vi.fn(),
-  },
-}));
+  const defaultProps = {
+    isOpen: true,
+    onClose: mockOnClose,
+    direction: "base-to-native" as const,
+    currentStep: SimpleBridgeStep.STEP_1_SIGNING,
+    transactions: [
+      {
+        step: 1 as const,
+        hash: "0x123",
+        status: "SIGNING" as const,
+      },
+    ],
+    baseChainId: 8453,
+    nativeChainId: 8443,
+    onRetry: mockOnRetry,
+    showFinishButton: false,
+  };
 
-vi.mock("~/env", () => ({
-  env: (key: string) => {
-    if (key === "NEXT_PUBLIC_TORUS_CHAIN_ENV") return "testnet";
-    return "";
-  },
-}));
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  // Mock the hook
+  vi.mocked(useTransactionLifecycleSteps).mockReturnValue([
+    {
+      title: "Signing",
+      status: "pending",
+      description: "Please sign the transaction in your wallet",
+    },
+    {
+      title: "Confirming",
+      status: "pending",
+      description: "Transaction is being confirmed",
+    },
+    {
+      title: "Completed",
+      status: "pending",
+      description: "Transaction completed successfully",
+    },
+  ]);
+
+  // Mock step item
+  vi.mock("./fast-bridge-transaction-step-item", () => ({
+    TransactionStepItem: ({ title, status }: { title: string; status: string }) => (
+      <div data-testid={`step-${title}`} data-status={status}>
+        {title}
+      </div>
+    ),
+  }));
+
+  vi.mock("~/utils/logger", () => ({
+    logger: {
+      debug: vi.fn(),
+    },
+  }));
 
 describe("TransactionLifecycleDialog", () => {
   const mockOnClose = vi.fn();
@@ -62,7 +96,7 @@ describe("TransactionLifecycleDialog", () => {
     vi.useFakeTimers();
 
     // Default mock implementation
-    mockedUseTransactionLifecycleSteps.mockReturnValue([
+    vi.mocked(useTransactionLifecycleSteps).mockReturnValue([
       {
         id: "step1-sign",
         title: "Step 1: Sign",
@@ -99,11 +133,12 @@ describe("TransactionLifecycleDialog", () => {
 
   describe("rendering", () => {
     it("should not render when isOpen is false", () => {
-      let container: HTMLElement;
+      let container: Element;
       act(() => {
-        ({ container } = render(
+        const result = render(
           <TransactionLifecycleDialog {...defaultProps} isOpen={false} />
-        ));
+        );
+        container = result.container;
       });
 
       expect(container!.querySelector("[role='dialog']")).not.toBeInTheDocument();
@@ -115,7 +150,7 @@ describe("TransactionLifecycleDialog", () => {
       });
 
       expect(
-        screen.getByText(/Check your wallet and sign/i)
+        screen.getByText("Transfer Progress")
       ).toBeInTheDocument();
     });
 
@@ -140,8 +175,8 @@ describe("TransactionLifecycleDialog", () => {
       });
 
       expect(
-        screen.getByText(/Check your wallet and sign/i)
-      ).toBeInTheDocument();
+        screen.getByTestId("transfer-status-message")
+      ).toHaveTextContent("Please check your wallet and sign the transaction");
     });
 
     it("should show message for confirming state", () => {
@@ -155,8 +190,8 @@ describe("TransactionLifecycleDialog", () => {
       });
 
       expect(
-        screen.getByText(/Transaction submitted!.*Waiting for network confirmation/i)
-      ).toBeInTheDocument();
+        screen.getByTestId("transfer-status-message")
+      ).toHaveTextContent(/Transaction submitted!.*Waiting for network confirmation/i);
     });
 
     it("should show message for step 1 complete state", () => {
@@ -170,8 +205,8 @@ describe("TransactionLifecycleDialog", () => {
       });
 
       expect(
-        screen.getByText(/First step complete!.*Preparing second transaction/i)
-      ).toBeInTheDocument();
+        screen.getByTestId("transfer-status-message")
+      ).toHaveTextContent(/First step complete!.*Preparing second transaction/i);
     });
 
     it("should show message for step 2 signing state", () => {
@@ -185,8 +220,8 @@ describe("TransactionLifecycleDialog", () => {
       });
 
       expect(
-        screen.getByText(/Check your wallet and sign the second transaction/i)
-      ).toBeInTheDocument();
+        screen.getByTestId("transfer-status-message")
+      ).toHaveTextContent("Please check your wallet and sign the second transaction");
     });
 
     it("should show message for step 2 confirming state", () => {
@@ -200,8 +235,8 @@ describe("TransactionLifecycleDialog", () => {
       });
 
       expect(
-        screen.getByText(/Final transaction submitted!.*Almost done/i)
-      ).toBeInTheDocument();
+        screen.getByTestId("transfer-status-message")
+      ).toHaveTextContent(/Final transaction submitted!.*Almost done/i);
     });
 
     it("should show message for complete state", () => {
@@ -215,8 +250,8 @@ describe("TransactionLifecycleDialog", () => {
       });
 
       expect(
-        screen.getByText(/Transfer complete!.*All transactions successful/i)
-      ).toBeInTheDocument();
+        screen.getByTestId("transfer-status-message")
+      ).toHaveTextContent(/Transfer complete!.*All transactions successful/i);
     });
 
     it("should show message for error state", () => {
@@ -229,42 +264,37 @@ describe("TransactionLifecycleDialog", () => {
         );
       });
 
-      expect(screen.getByText(/Transaction failed.*Please try again/i)).toBeInTheDocument();
+      expect(screen.getByTestId("transfer-status-message")).toHaveTextContent(/Transaction failed.*Please try again/i);
     });
   });
 
   describe("signature warning", () => {
     it("should not show warning if transfer completes quickly", async () => {
-      let rerender: any;
-      act(() => {
-        ({ rerender } = render(
-          <TransactionLifecycleDialog
-            {...defaultProps}
-            currentStep={SimpleBridgeStep.STEP_1_SIGNING}
-          />
-        ));
-      });
+      const { rerender } = render(
+        <TransactionLifecycleDialog
+          {...defaultProps}
+          currentStep={SimpleBridgeStep.STEP_1_SIGNING}
+        />
+      );
 
       // Complete transfer before timeout
       vi.advanceTimersByTime(10000);
 
-      act(() => {
-        rerender(
-          <TransactionLifecycleDialog
-            {...defaultProps}
-            currentStep={SimpleBridgeStep.COMPLETE}
-          />
-        );
-      });
+      rerender(
+        <TransactionLifecycleDialog
+          {...defaultProps}
+          currentStep={SimpleBridgeStep.COMPLETE}
+        />
+      );
 
-      expect(screen.queryByText(/Please check your wallet and approve the transaction signature/i)).not.toBeInTheDocument();
+      expect(screen.queryByTestId("signature-warning")).not.toBeInTheDocument();
     });
   });
 
   describe("error handling", () => {
     it("should mark step as error when transaction fails", () => {
       // Configure mock to return error status for step 1
-      mockedUseTransactionLifecycleSteps.mockReturnValue([
+      vi.mocked(useTransactionLifecycleSteps).mockReturnValue([
         {
           id: "step1-sign",
           title: "Step 1: Sign",
@@ -280,23 +310,21 @@ describe("TransactionLifecycleDialog", () => {
         },
       ]);
 
-      act(() => {
-        render(
-          <TransactionLifecycleDialog
-            {...defaultProps}
-            currentStep={SimpleBridgeStep.ERROR}
-            transactions={[
-              {
-                step: 1 as const,
-                status: "ERROR" as const,
-                chainName: "Base",
-                message: "Failed to sign",
-                errorPhase: "sign",
-              },
-            ]}
-          />
-        );
-      });
+      render(
+        <TransactionLifecycleDialog
+          {...defaultProps}
+          currentStep={SimpleBridgeStep.ERROR}
+          transactions={[
+            {
+              step: 1 as const,
+              status: "ERROR" as const,
+              chainName: "Base",
+              message: "Failed to sign",
+              errorPhase: "sign",
+            },
+          ]}
+        />
+      );
 
       expect(screen.getByTestId("step-Step 1: Sign")).toHaveAttribute(
         "data-status",
@@ -305,15 +333,13 @@ describe("TransactionLifecycleDialog", () => {
     });
 
     it("should show retry button on error", () => {
-      act(() => {
-        render(
-          <TransactionLifecycleDialog
-            {...defaultProps}
-            currentStep={SimpleBridgeStep.ERROR}
-            onRetry={mockOnRetry}
-          />
-        );
-      });
+      render(
+        <TransactionLifecycleDialog
+          {...defaultProps}
+          currentStep={SimpleBridgeStep.ERROR}
+          onRetry={mockOnRetry}
+        />
+      );
 
       const retryButton = screen.queryByRole("button", { name: /retry/i });
       expect(retryButton).toBeDefined();
@@ -322,14 +348,12 @@ describe("TransactionLifecycleDialog", () => {
 
   describe("completion state", () => {
     it("should disable close button during transfer", () => {
-      act(() => {
-        render(
-          <TransactionLifecycleDialog
-            {...defaultProps}
-            currentStep={SimpleBridgeStep.STEP_1_SIGNING}
-          />
-        );
-      });
+      render(
+        <TransactionLifecycleDialog
+          {...defaultProps}
+          currentStep={SimpleBridgeStep.STEP_1_SIGNING}
+        />
+      );
 
       // Dialog should not close during signing
       expect(mockOnClose).not.toHaveBeenCalled();
@@ -337,14 +361,12 @@ describe("TransactionLifecycleDialog", () => {
 
     it("should enable close button on completion", async () => {
       const user = userEvent.setup();
-      act(() => {
-        render(
-          <TransactionLifecycleDialog
-            {...defaultProps}
-            currentStep={SimpleBridgeStep.COMPLETE}
-          />
-        );
-      });
+      render(
+        <TransactionLifecycleDialog
+          {...defaultProps}
+          currentStep={SimpleBridgeStep.COMPLETE}
+        />
+      );
 
       // Should be able to close after completion
       // Implementation depends on close button visibility
@@ -352,44 +374,49 @@ describe("TransactionLifecycleDialog", () => {
     });
 
     it("should show success message on completion", () => {
-      act(() => {
-        render(
-          <TransactionLifecycleDialog
-            {...defaultProps}
-            currentStep={SimpleBridgeStep.COMPLETE}
-          />
-        );
-      });
+      render(
+        <TransactionLifecycleDialog
+          {...defaultProps}
+          currentStep={SimpleBridgeStep.COMPLETE}
+        />
+      );
 
       expect(
-        screen.getByText(/Transfer complete!.*All transactions successful/i)
-      ).toBeInTheDocument();
+        screen.getByTestId("transfer-status-message")
+      ).toHaveTextContent(/Transfer complete!.*All transactions successful/i);
     });
   });
 
   describe("direction handling", () => {
     it("should work for base-to-native direction", () => {
-      act(() => {
-        render(
-          <TransactionLifecycleDialog
-            {...defaultProps}
-            direction="base-to-native"
-          />
-        );
-      });
+      render(
+        <TransactionLifecycleDialog
+          {...defaultProps}
+          direction="base-to-native"
+        />
+      );
 
       expect(screen.getByTestId("step-Step 1: Sign")).toBeInTheDocument();
     });
 
     it("should work for native-to-base direction", () => {
-      act(() => {
-        render(
-          <TransactionLifecycleDialog
-            {...defaultProps}
-            direction="native-to-base"
-          />
-        );
-      });
+      render(
+        <TransactionLifecycleDialog
+          {...defaultProps}
+          direction="native-to-base"
+        />
+      );
+
+      expect(screen.getByTestId("step-Step 1: Sign")).toBeInTheDocument();
+    });
+  });
+    it("should work for native-to-base direction", () => {
+      render(
+        <TransactionLifecycleDialog
+          {...defaultProps}
+          direction="native-to-base"
+        />
+      );
 
       expect(screen.getByTestId("step-Step 1: Sign")).toBeInTheDocument();
     });
