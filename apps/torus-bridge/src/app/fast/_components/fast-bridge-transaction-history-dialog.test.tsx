@@ -96,14 +96,18 @@ describe("TransactionHistoryDialog", () => {
     it("should render close button", () => {
       render(<TransactionHistoryDialog {...defaultProps} />);
 
-      expect(screen.getByRole("button", { name: "Close" })).toBeInTheDocument();
+      // Get all Close buttons and check that at least one exists (the main dialog close button)
+      const closeButtons = screen.getAllByRole("button", { name: "Close" });
+      expect(closeButtons.length).toBeGreaterThan(0);
     });
 
     it("should call onClose when close button is clicked", async () => {
       const user = userEvent.setup();
       render(<TransactionHistoryDialog {...defaultProps} />);
 
-      await user.click(screen.getByRole("button", { name: "Close" }));
+      // Click the first Close button (main dialog close button)
+      const closeButtons = screen.getAllByRole("button", { name: "Close" });
+      await user.click(closeButtons[0]);
 
       expect(mockOnClose).toHaveBeenCalledTimes(1);
     });

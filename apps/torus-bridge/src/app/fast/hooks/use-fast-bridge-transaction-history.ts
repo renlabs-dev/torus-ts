@@ -48,6 +48,7 @@ export const useFastBridgeTransactionHistory =
             ...transaction,
             id,
             timestamp: Date.now(),
+            recoveredViaEvmRecover: transaction.recoveredViaEvmRecover ?? false,
           };
 
           set((state) => ({

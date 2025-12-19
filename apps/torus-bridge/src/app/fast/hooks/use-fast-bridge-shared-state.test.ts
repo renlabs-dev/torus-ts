@@ -137,20 +137,20 @@ describe("useSimpleBridgeSharedState", () => {
 
       act(() => {
         result.current.addTransaction({
-          step: SimpleBridgeStep.STEP_1,
+          step: SimpleBridgeStep.STEP_1_SIGNING,
           status: "CONFIRMING",
           txHash: "0x111",
         });
         result.current.addTransaction({
-          step: SimpleBridgeStep.STEP_2,
+          step: SimpleBridgeStep.STEP_2_SIGNING,
           status: "CONFIRMING",
           txHash: "0x222",
         });
       });
 
       expect(result.current.transactions).toHaveLength(2);
-      expect(result.current.transactions[0]?.step).toBe(SimpleBridgeStep.STEP_1);
-      expect(result.current.transactions[1]?.step).toBe(SimpleBridgeStep.STEP_2);
+      expect(result.current.transactions[0]?.step).toBe(SimpleBridgeStep.STEP_1_SIGNING);
+      expect(result.current.transactions[1]?.step).toBe(SimpleBridgeStep.STEP_2_SIGNING);
     });
 
     it("should not create duplicate transactions", () => {
@@ -223,13 +223,13 @@ describe("useSimpleBridgeSharedState", () => {
 
       act(() => {
         result.current.addTransaction({
-          step: SimpleBridgeStep.STEP_1,
+          step: SimpleBridgeStep.STEP_1_SIGNING,
           status: "ERROR",
           txHash: "0x123",
           errorDetails: { message: "Step 1 failed", step: 1 },
         });
         result.current.addTransaction({
-          step: SimpleBridgeStep.STEP_2,
+          step: SimpleBridgeStep.STEP_2_SIGNING,
           status: "ERROR",
           txHash: "0x456",
           errorDetails: { message: "Step 2 failed", step: 2 },

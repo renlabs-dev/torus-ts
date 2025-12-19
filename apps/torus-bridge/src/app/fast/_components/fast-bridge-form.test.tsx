@@ -134,12 +134,12 @@ vi.mock("./fast-bridge-dual-wallet-connector", () => ({
 }));
 
 vi.mock("./fast-bridge-fraction-buttons", () => ({
-  FractionButtons: ({ onClick }: { onClick: (fraction: number) => void }) => (
+  FractionButtons: ({ onClick }: { onClick?: (fraction: number) => void }) => (
     <div data-testid="fraction-buttons">
-      <button onClick={() => onClick(0.25)}>25%</button>
-      <button onClick={() => onClick(0.5)}>50%</button>
-      <button onClick={() => onClick(0.75)}>75%</button>
-      <button onClick={() => onClick(1.0)}>Max</button>
+      <button onClick={() => onClick?.(0.25)}>25%</button>
+      <button onClick={() => onClick?.(0.5)}>50%</button>
+      <button onClick={() => onClick?.(0.75)}>75%</button>
+      <button onClick={() => onClick?.(1.0)}>Max</button>
     </div>
   ),
 }));
@@ -571,8 +571,8 @@ describe("FastBridgeForm", () => {
     it("should prevent transfer with insufficient balance for gas", () => {
       render(<FastBridgeForm />);
 
-      // Component should handle validation
-      expect(screen.getByTestId("dual-wallet-connector")).toBeInTheDocument();
+      // Component should render main form when wallets are ready
+      expect(screen.getByText("Bridge TORUS")).toBeInTheDocument();
     });
   });
 
@@ -580,23 +580,23 @@ describe("FastBridgeForm", () => {
     it("should handle multiple transfers sequentially", () => {
       const { rerender } = render(<FastBridgeForm />);
 
-      expect(screen.getByTestId("dual-wallet-connector")).toBeInTheDocument();
+      expect(screen.getByText("Bridge TORUS")).toBeInTheDocument();
 
       // Simulate second transfer
       rerender(<FastBridgeForm />);
 
-      expect(screen.getByTestId("dual-wallet-connector")).toBeInTheDocument();
+      expect(screen.getByText("Bridge TORUS")).toBeInTheDocument();
     });
 
     it("should cleanup on unmount", () => {
       const { unmount } = render(<FastBridgeForm />);
 
-      expect(screen.getByTestId("dual-wallet-connector")).toBeInTheDocument();
+      expect(screen.getByText("Bridge TORUS")).toBeInTheDocument();
 
       unmount();
 
       // Component should unmount without errors
-      expect(screen.queryByTestId("dual-wallet-connector")).not.toBeInTheDocument();
+      expect(screen.queryByText("Bridge TORUS")).not.toBeInTheDocument();
     });
   });
 });

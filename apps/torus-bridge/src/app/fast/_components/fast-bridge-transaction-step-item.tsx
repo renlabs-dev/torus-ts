@@ -98,7 +98,7 @@ export function TransactionStepItem({
   );
 
   return (
-    <div key={id} className="flex gap-4">
+    <div key={id} className="flex gap-4" data-testid={`step-${title}`} data-status={status}>
       <div className="flex flex-col items-center">
         <div className="flex-shrink-0">{getStatusIcon(status)}</div>
         {!isLast && (

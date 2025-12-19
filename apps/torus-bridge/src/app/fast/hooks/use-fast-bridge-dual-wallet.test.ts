@@ -1,25 +1,33 @@
 import { renderHook } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import { useDualWallet } from "./use-fast-bridge-dual-wallet";
+import { useTorus } from "@torus-ts/torus-provider";
+
+// Import the mocked wagmi function
+import { useAccount } from "wagmi";
+
+const mockedUseAccount = vi.mocked(useAccount);
 
 // Mock dependencies
 vi.mock("@torus-ts/torus-provider", () => ({
-  useTorus: () => ({
+  useTorus: vi.fn(() => ({
     selectedAccount: {
       address: "1AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
     },
     isAccountConnected: true,
     isInitialized: true,
-  }),
+  })),
 }));
 
+const mockedUseTorus = vi.mocked(useTorus);
+
 vi.mock("wagmi", () => ({
-  useAccount: () => ({
+  useAccount: vi.fn(() => ({
     address: "0x1234567890abcdef1234567890abcdef12345678",
     isConnected: true,
     chainId: 8453,
     status: "connected",
-  }),
+  })),
 }));
 
 vi.mock("~/config", () => ({
@@ -84,7 +92,7 @@ describe("useDualWallet", () => {
     });
 
     it("should return false if EVM wallet not connected", () => {
-      vi.mocked(require("wagmi").useAccount).mockReturnValueOnce({
+      mockedUseAccount.mockReturnValueOnce({
         address: undefined,
         isConnected: false,
         chainId: undefined,
@@ -116,7 +124,7 @@ describe("useDualWallet", () => {
     });
 
     it("should return false if EVM wallet not connected", () => {
-      vi.mocked(require("wagmi").useAccount).mockReturnValueOnce({
+      mockedUseAccount.mockReturnValueOnce({
         address: undefined,
         isConnected: false,
         chainId: undefined,
@@ -169,7 +177,7 @@ describe("useDualWallet", () => {
     });
 
     it("should indicate wallets not ready when torus disconnected", () => {
-      vi.mocked(require("@torus-ts/torus-provider").useTorus).mockReturnValueOnce({
+      mockedUseTorus.mockReturnValueOnce({
         selectedAccount: undefined,
         isAccountConnected: false,
         isInitialized: true,
@@ -182,7 +190,7 @@ describe("useDualWallet", () => {
     });
 
     it("should indicate wallets not ready when EVM disconnected", () => {
-      vi.mocked(require("wagmi").useAccount).mockReturnValueOnce({
+      mockedUseAccount.mockReturnValueOnce({
         address: undefined,
         isConnected: false,
         chainId: undefined,
@@ -231,7 +239,7 @@ describe("useDualWallet", () => {
     });
 
     it("should handle partial connection (only torus)", () => {
-      vi.mocked(require("wagmi").useAccount).mockReturnValueOnce({
+      mockedUseAccount.mockReturnValueOnce({
         address: undefined,
         isConnected: false,
         chainId: undefined,
@@ -246,7 +254,7 @@ describe("useDualWallet", () => {
     });
 
     it("should handle partial connection (only EVM)", () => {
-      vi.mocked(require("@torus-ts/torus-provider").useTorus).mockReturnValueOnce({
+      mockedUseTorus.mockReturnValueOnce({
         selectedAccount: undefined,
         isAccountConnected: false,
         isInitialized: true,
@@ -260,13 +268,13 @@ describe("useDualWallet", () => {
     });
 
     it("should handle both wallets disconnected", () => {
-      vi.mocked(require("@torus-ts/torus-provider").useTorus).mockReturnValueOnce({
+      mockedUseTorus.mockReturnValueOnce({
         selectedAccount: undefined,
         isAccountConnected: false,
         isInitialized: true,
       });
 
-      vi.mocked(require("wagmi").useAccount).mockReturnValueOnce({
+      mockedUseAccount.mockReturnValueOnce({
         address: undefined,
         isConnected: false,
         chainId: undefined,
@@ -282,7 +290,7 @@ describe("useDualWallet", () => {
 
   describe("chain validation scenarios", () => {
     it("should validate chain for base-to-native when connected correctly", () => {
-      vi.mocked(require("wagmi").useAccount).mockReturnValueOnce({
+      mockedUseAccount.mockReturnValueOnce({
         address: "0x1234567890abcdef1234567890abcdef12345678",
         isConnected: true,
         chainId: 8453,
@@ -298,7 +306,7 @@ describe("useDualWallet", () => {
     });
 
     it("should fail chain validation for base-to-native on wrong chain", () => {
-      vi.mocked(require("wagmi").useAccount).mockReturnValueOnce({
+      mockedUseAccount.mockReturnValueOnce({
         address: "0x1234567890abcdef1234567890abcdef12345678",
         isConnected: true,
         chainId: 1,
