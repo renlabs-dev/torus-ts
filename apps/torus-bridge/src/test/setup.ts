@@ -1,34 +1,34 @@
+import "@torus-ts/vitest-config/setup";
+import { configure } from "@testing-library/react";
+import { createElement } from "react";
+import { vi } from "vitest";
+
 // Mock @hyperlane-xyz/sdk FIRST before any other imports
-vi.mock('@hyperlane-xyz/sdk', async (importOriginal) => {
+vi.mock("@hyperlane-xyz/sdk", async (importOriginal) => {
   const actual = await importOriginal();
   return {
     ...actual,
     ExplorerFamily: {
-      Blockscout: 'blockscout',
-      Etherscan: 'etherscan',
+      Blockscout: "blockscout",
+      Etherscan: "etherscan",
     },
   };
 });
 
-import "@torus-ts/vitest-config/setup";
-import { vi } from "vitest";
-import {createElement} from "react";
-import { configure } from "@testing-library/react";
-
 // Create a shim for the vanilla-extract CommonJS module
 const mockCreateMapValueFn = vi.fn(() => ({}));
-Object.defineProperty(globalThis, 'createMapValueFn', {
+Object.defineProperty(globalThis, "createMapValueFn", {
   value: mockCreateMapValueFn,
   writable: true,
 });
 
 // Try to mock the module at the global level
 try {
-  require.cache[require.resolve('@vanilla-extract/sprinkles/createUtils')] = {
+  require.cache[require.resolve("@vanilla-extract/sprinkles/createUtils")] = {
     exports: {
       default: { createMapValueFn: mockCreateMapValueFn },
       createMapValueFn: mockCreateMapValueFn,
-    }
+    },
   };
 } catch (e) {
   // Ignore if module not found
@@ -68,34 +68,41 @@ global.ResizeObserver = vi.fn().mockImplementation(() => ({
 }));
 
 vi.mock("lucide-react", () => ({
-  AlertCircle: () => createElement('div', { 'data-testid': 'alert-circle-icon' }),
-  AlertTriangle: () => createElement('div', { 'data-testid': 'alert-icon' }),
-  ArrowRight: () => createElement('div', { 'data-testid': 'arrow-right' }),
-  ArrowLeftRight: () => createElement('div', { 'data-testid': 'arrow-left-right-icon' }),
-  Check: () => createElement('div', { 'data-testid': 'check-icon' }),
-  CheckCircle: () => createElement('div', { 'data-testid': 'check-circle-icon' }),
-  CheckCircle2: () => createElement('div', { 'data-testid': 'check-circle-icon' }),
-  CheckSquare: () => createElement('div', { 'data-testid': 'check-square-icon' }),
-  ChevronDown: () => createElement('div', { 'data-testid': 'chevron-down' }),
-  ChevronUp: () => createElement('div', { 'data-testid': 'chevron-up' }),
-  Clock: () => createElement('div', { 'data-testid': 'clock-icon' }),
-  ExternalLink: () => createElement('div', { 'data-testid': 'external-link' }),
-  History: () => createElement('div', { 'data-testid': 'history-icon' }),
-  Info: () => createElement('div', { 'data-testid': 'info-icon' }),
-  Loader2: () => createElement('div', { 'data-testid': 'loader-icon' }),
-  Play: () => createElement('div', { 'data-testid': 'play-icon' }),
-  RotateCw: () => createElement('div', { 'data-testid': 'rotate-icon' }),
-  Square: () => createElement('div', { 'data-testid': 'square-icon' }),
-  Trash: () => createElement('div', { 'data-testid': 'trash-icon' }),
-  Trash2: () => createElement('div', { 'data-testid': 'trash-icon' }),
-  Wallet: () => createElement('div', { 'data-testid': 'wallet-icon' }),
-  Zap: () => createElement('div', { 'data-testid': 'zap-icon' }),
+  AlertCircle: () =>
+    createElement("div", { "data-testid": "alert-circle-icon" }),
+  AlertTriangle: () => createElement("div", { "data-testid": "alert-icon" }),
+  ArrowRight: () => createElement("div", { "data-testid": "arrow-right" }),
+  ArrowLeftRight: () =>
+    createElement("div", { "data-testid": "arrow-left-right-icon" }),
+  Check: () => createElement("div", { "data-testid": "check-icon" }),
+  CheckCircle: () =>
+    createElement("div", { "data-testid": "check-circle-icon" }),
+  CheckCircle2: () =>
+    createElement("div", { "data-testid": "check-circle-icon" }),
+  CheckSquare: () =>
+    createElement("div", { "data-testid": "check-square-icon" }),
+  ChevronDown: () => createElement("div", { "data-testid": "chevron-down" }),
+  ChevronUp: () => createElement("div", { "data-testid": "chevron-up" }),
+  Clock: () => createElement("div", { "data-testid": "clock-icon" }),
+  ExternalLink: () => createElement("div", { "data-testid": "external-link" }),
+  History: () => createElement("div", { "data-testid": "history-icon" }),
+  Info: () => createElement("div", { "data-testid": "info-icon" }),
+  Loader2: () => createElement("div", { "data-testid": "loader-icon" }),
+  Play: () => createElement("div", { "data-testid": "play-icon" }),
+  RotateCw: () => createElement("div", { "data-testid": "rotate-icon" }),
+  Square: () => createElement("div", { "data-testid": "square-icon" }),
+  Trash: () => createElement("div", { "data-testid": "trash-icon" }),
+  Trash2: () => createElement("div", { "data-testid": "trash-icon" }),
+  Wallet: () => createElement("div", { "data-testid": "wallet-icon" }),
+  Zap: () => createElement("div", { "data-testid": "zap-icon" }),
 }));
 
 vi.mock("@torus-ts/query-provider/hooks", () => ({
   useFreeBalance: () => ({
     data: 1000n * 10n ** 18n,
-    refetch: vi.fn().mockResolvedValue({ status: "success", data: 1000n * 10n ** 18n }),
+    refetch: vi
+      .fn()
+      .mockResolvedValue({ status: "success", data: 1000n * 10n ** 18n }),
   }),
   useGetTorusPrice: () => ({ data: 1.0 }),
 }));
@@ -136,13 +143,20 @@ vi.mock("wagmi", () => ({
   }),
   useBalance: () => ({
     data: { value: 5n * 10n ** 18n },
-    refetch: vi.fn().mockResolvedValue({ status: "success", data: { value: 5n * 10n ** 18n } }),
+    refetch: vi
+      .fn()
+      .mockResolvedValue({
+        status: "success",
+        data: { value: 5n * 10n ** 18n },
+      }),
   }),
   useClient: () => ({}),
   useConfig: () => ({}),
   useReadContract: () => ({
     data: 10n * 10n ** 18n,
-    refetch: vi.fn().mockResolvedValue({ status: "success", data: 10n * 10n ** 18n }),
+    refetch: vi
+      .fn()
+      .mockResolvedValue({ status: "success", data: 10n * 10n ** 18n }),
   }),
   useSwitchChain: () => ({
     switchChainAsync: vi.fn(),
@@ -153,9 +167,6 @@ vi.mock("wagmi", () => ({
 }));
 
 vi.mock("next/image", () => ({
-  default: ({ src, alt }: { src: string; alt: string }) => (
-    createElement('img', { src, alt, 'data-testid': `image-${alt}` })
-  ),
+  default: ({ src, alt }: { src: string; alt: string }) =>
+    createElement("img", { src, alt, "data-testid": `image-${alt}` }),
 }));
-
-

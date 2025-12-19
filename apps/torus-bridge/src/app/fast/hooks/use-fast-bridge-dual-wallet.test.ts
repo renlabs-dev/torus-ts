@@ -1,10 +1,9 @@
 import { renderHook } from "@testing-library/react";
-import { describe, expect, it, vi } from "vitest";
-import { useDualWallet } from "./use-fast-bridge-dual-wallet";
 import { useTorus } from "@torus-ts/torus-provider";
-
+import { describe, expect, it, vi } from "vitest";
 // Import the mocked wagmi function
 import { useAccount } from "wagmi";
+import { useDualWallet } from "./use-fast-bridge-dual-wallet";
 
 const mockedUseAccount = vi.mocked(useAccount);
 
@@ -55,12 +54,10 @@ describe("useDualWallet", () => {
       const { result } = renderHook(() => useDualWallet());
 
       expect(result.current.connectionState.torusWallet.isConnected).toBe(true);
-      expect(
-        result.current.connectionState.torusWallet.address
-      ).toBeDefined();
-      expect(
-        result.current.connectionState.torusWallet.isConnecting
-      ).toBe(false);
+      expect(result.current.connectionState.torusWallet.address).toBeDefined();
+      expect(result.current.connectionState.torusWallet.isConnecting).toBe(
+        false,
+      );
     });
 
     it("should return evm wallet connection info", () => {
@@ -76,18 +73,16 @@ describe("useDualWallet", () => {
     it("should check if required chain is connected for base-to-native", () => {
       const { result } = renderHook(() => useDualWallet());
 
-      const isRequired = result.current.isRequiredChainConnected(
-        "base-to-native"
-      );
+      const isRequired =
+        result.current.isRequiredChainConnected("base-to-native");
       expect(typeof isRequired).toBe("boolean");
     });
 
     it("should check if required chain is connected for native-to-base", () => {
       const { result } = renderHook(() => useDualWallet());
 
-      const isRequired = result.current.isRequiredChainConnected(
-        "native-to-base"
-      );
+      const isRequired =
+        result.current.isRequiredChainConnected("native-to-base");
       expect(typeof isRequired).toBe("boolean");
     });
 
@@ -101,9 +96,8 @@ describe("useDualWallet", () => {
 
       const { result } = renderHook(() => useDualWallet());
 
-      const isRequired = result.current.isRequiredChainConnected(
-        "base-to-native"
-      );
+      const isRequired =
+        result.current.isRequiredChainConnected("base-to-native");
       expect(isRequired).toBe(false);
     });
   });
@@ -262,7 +256,9 @@ describe("useDualWallet", () => {
 
       const { result } = renderHook(() => useDualWallet());
 
-      expect(result.current.connectionState.torusWallet.isConnected).toBe(false);
+      expect(result.current.connectionState.torusWallet.isConnected).toBe(
+        false,
+      );
       expect(result.current.connectionState.evmWallet.isConnected).toBe(true);
       expect(result.current.areWalletsReady("base-to-native")).toBe(false);
     });
@@ -299,9 +295,8 @@ describe("useDualWallet", () => {
 
       const { result } = renderHook(() => useDualWallet());
 
-      const isRequired = result.current.isRequiredChainConnected(
-        "base-to-native"
-      );
+      const isRequired =
+        result.current.isRequiredChainConnected("base-to-native");
       expect(isRequired).toBe(true);
     });
 
@@ -315,9 +310,8 @@ describe("useDualWallet", () => {
 
       const { result } = renderHook(() => useDualWallet());
 
-      const isRequired = result.current.isRequiredChainConnected(
-        "base-to-native"
-      );
+      const isRequired =
+        result.current.isRequiredChainConnected("base-to-native");
       expect(isRequired).toBe(false);
     });
   });

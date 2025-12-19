@@ -205,7 +205,9 @@ export function TransactionHistoryDialog({
         <DialogHeader className="px-6 pt-6">
           <div className="space-y-4 py-4">
             <div>
-              <DialogTitle data-testid="dialog-title">Transaction History</DialogTitle>
+              <DialogTitle data-testid="dialog-title">
+                Transaction History
+              </DialogTitle>
               <DialogDescription data-testid="dialog-description">
                 View and manage your Fast Bridge transaction history
               </DialogDescription>
@@ -388,7 +390,9 @@ export function TransactionHistoryDialog({
       <Dialog open={showDeleteAllDialog} onOpenChange={setShowDeleteAllDialog}>
         <DialogContent className="max-w-xl">
           <DialogHeader>
-            <DialogTitle data-testid="delete-all-dialog-title">Delete all transactions?</DialogTitle>
+            <DialogTitle data-testid="delete-all-dialog-title">
+              Delete all transactions?
+            </DialogTitle>
             <DialogDescription>
               You are about to delete {allTransactions.length} transaction
               {allTransactions.length === 1 ? "" : "s"} from your history. Are
@@ -417,7 +421,9 @@ export function TransactionHistoryDialog({
       >
         <DialogContent className="max-w-xl">
           <DialogHeader>
-            <DialogTitle data-testid="bulk-delete-dialog-title">Delete selected transactions?</DialogTitle>
+            <DialogTitle data-testid="bulk-delete-dialog-title">
+              Delete selected transactions?
+            </DialogTitle>
             <DialogDescription>
               You are about to delete {selectedTransactionIds.size} selected
               transaction
@@ -456,9 +462,17 @@ function EmptyState({ filter }: { filter: TransactionHistoryFilter }) {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center py-12 text-center" data-testid="empty-state">
+    <div
+      className="flex flex-col items-center justify-center py-12 text-center"
+      data-testid="empty-state"
+    >
       <AlertCircle className="text-muted-foreground mb-4 h-12 w-12" />
-      <p className="text-muted-foreground text-sm" data-testid="empty-state-message">{getMessage()}</p>
+      <p
+        className="text-muted-foreground text-sm"
+        data-testid="empty-state-message"
+      >
+        {getMessage()}
+      </p>
     </div>
   );
 }

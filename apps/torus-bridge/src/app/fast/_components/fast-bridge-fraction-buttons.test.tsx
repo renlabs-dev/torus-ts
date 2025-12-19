@@ -121,7 +121,7 @@ describe("FractionButtons", () => {
           {...defaultProps}
           walletsReady={false}
           isTransferInProgress={true}
-        />
+        />,
       );
 
       const buttons = screen.getAllByRole("button");
@@ -212,7 +212,7 @@ describe("FractionButtons", () => {
     it("should transition from disabled to enabled state", async () => {
       const user = userEvent.setup();
       const { rerender } = render(
-        <FractionButtons {...defaultProps} walletsReady={false} />
+        <FractionButtons {...defaultProps} walletsReady={false} />,
       );
 
       const button = screen.getByRole("button", { name: "1/4" });

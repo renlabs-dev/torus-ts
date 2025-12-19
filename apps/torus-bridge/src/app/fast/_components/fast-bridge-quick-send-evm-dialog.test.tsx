@@ -47,7 +47,9 @@ describe("QuickSendEvmDialog", () => {
     it("should render dialog title with Zap icon", () => {
       render(<QuickSendEvmDialog {...defaultProps} />);
 
-      expect(screen.getByTestId("quick-send-title")).toHaveTextContent("EVM Recover");
+      expect(screen.getByTestId("quick-send-title")).toHaveTextContent(
+        "EVM Recover",
+      );
       expect(screen.getByTestId("zap-icon")).toBeInTheDocument();
     });
 
@@ -55,32 +57,44 @@ describe("QuickSendEvmDialog", () => {
       render(<QuickSendEvmDialog {...defaultProps} />);
 
       expect(
-        screen.getByText(/Recover your EVM balance by transferring/i)
+        screen.getByText(/Recover your EVM balance by transferring/i),
       ).toBeInTheDocument();
     });
 
     it("should not render when isOpen is false", () => {
       const { container } = render(
-        <QuickSendEvmDialog {...defaultProps} isOpen={false} />
+        <QuickSendEvmDialog {...defaultProps} isOpen={false} />,
       );
 
-      expect(container.querySelector("[role='dialog']")).not.toBeInTheDocument();
+      expect(
+        container.querySelector("[role='dialog']"),
+      ).not.toBeInTheDocument();
     });
 
     it("should display EVM balance", () => {
       render(<QuickSendEvmDialog {...defaultProps} />);
 
       expect(screen.getByTestId("evm-balance-amount")).toHaveTextContent("100");
-      expect(screen.getByTestId("evm-balance-currency")).toHaveTextContent("TORUS");
+      expect(screen.getByTestId("evm-balance-currency")).toHaveTextContent(
+        "TORUS",
+      );
     });
 
     it("should render Torus and Base Chain destination cards", () => {
       render(<QuickSendEvmDialog {...defaultProps} />);
 
-      expect(screen.getByTestId("destination-torus-title")).toHaveTextContent("Torus");
-      expect(screen.getByTestId("destination-torus-description")).toHaveTextContent("Send to Torus chain");
-      expect(screen.getByTestId("destination-base-title")).toHaveTextContent("Base Chain");
-      expect(screen.getByTestId("destination-base-description")).toHaveTextContent("Send to Base mainnet");
+      expect(screen.getByTestId("destination-torus-title")).toHaveTextContent(
+        "Torus",
+      );
+      expect(
+        screen.getByTestId("destination-torus-description"),
+      ).toHaveTextContent("Send to Torus chain");
+      expect(screen.getByTestId("destination-base-title")).toHaveTextContent(
+        "Base Chain",
+      );
+      expect(
+        screen.getByTestId("destination-base-description"),
+      ).toHaveTextContent("Send to Base mainnet");
     });
 
     it("should show Select buttons for both destinations", () => {
@@ -102,7 +116,9 @@ describe("QuickSendEvmDialog", () => {
       await user.click(selectButtons[0]);
 
       // Should show sending state
-      expect(screen.getByTestId("sending-title")).toHaveTextContent("Sending Transaction");
+      expect(screen.getByTestId("sending-title")).toHaveTextContent(
+        "Sending Transaction",
+      );
       expect(screen.getByTestId("loader-icon")).toBeInTheDocument();
     });
 
@@ -115,7 +131,9 @@ describe("QuickSendEvmDialog", () => {
       const selectButtons = screen.getAllByRole("button", { name: /Select/i });
       await user.click(selectButtons[0]);
 
-      expect(screen.getByTestId("sending-title")).toHaveTextContent("Sending Transaction");
+      expect(screen.getByTestId("sending-title")).toHaveTextContent(
+        "Sending Transaction",
+      );
     });
 
     it("should display loading state for Base Chain destination", async () => {
@@ -127,7 +145,9 @@ describe("QuickSendEvmDialog", () => {
       const selectButtons = screen.getAllByRole("button", { name: /Select/i });
       await user.click(selectButtons[1]);
 
-      expect(screen.getByTestId("sending-title")).toHaveTextContent("Sending Transaction");
+      expect(screen.getByTestId("sending-title")).toHaveTextContent(
+        "Sending Transaction",
+      );
     });
 
     it("should show formatted amount in sending state", async () => {
@@ -173,7 +193,7 @@ describe("QuickSendEvmDialog", () => {
         () =>
           new Promise((resolve) => {
             setTimeout(resolve, 1000);
-          })
+          }),
       );
 
       render(<QuickSendEvmDialog {...defaultProps} />);
@@ -183,7 +203,9 @@ describe("QuickSendEvmDialog", () => {
 
       // Try to close dialog (click would normally trigger onClose if allowed)
       // Dialog should still show sending state
-      expect(screen.getByTestId("sending-title")).toHaveTextContent("Sending Transaction");
+      expect(screen.getByTestId("sending-title")).toHaveTextContent(
+        "Sending Transaction",
+      );
     });
   });
 
@@ -192,9 +214,7 @@ describe("QuickSendEvmDialog", () => {
       const user = userEvent.setup();
       mockOnSendToNative.mockResolvedValueOnce(undefined);
 
-      const { rerender } = render(
-        <QuickSendEvmDialog {...defaultProps} />
-      );
+      const { rerender } = render(<QuickSendEvmDialog {...defaultProps} />);
 
       const selectButtons = screen.getAllByRole("button", { name: /Select/i });
       await user.click(selectButtons[0]);
@@ -206,11 +226,13 @@ describe("QuickSendEvmDialog", () => {
         <QuickSendEvmDialog
           {...defaultProps}
           currentEvmBalance={decreasedBalance}
-        />
+        />,
       );
 
       await waitFor(() => {
-        expect(screen.getByTestId("success-title")).toHaveTextContent("Transfer Complete!");
+        expect(screen.getByTestId("success-title")).toHaveTextContent(
+          "Transfer Complete!",
+        );
       });
     });
 
@@ -218,9 +240,7 @@ describe("QuickSendEvmDialog", () => {
       const user = userEvent.setup();
       mockOnSendToNative.mockResolvedValueOnce(undefined);
 
-      const { rerender } = render(
-        <QuickSendEvmDialog {...defaultProps} />
-      );
+      const { rerender } = render(<QuickSendEvmDialog {...defaultProps} />);
 
       const selectButtons = screen.getAllByRole("button", { name: /Select/i });
       await user.click(selectButtons[0]);
@@ -231,7 +251,7 @@ describe("QuickSendEvmDialog", () => {
         <QuickSendEvmDialog
           {...defaultProps}
           currentEvmBalance={decreasedBalance}
-        />
+        />,
       );
 
       await waitFor(() => {
@@ -244,9 +264,7 @@ describe("QuickSendEvmDialog", () => {
       const user = userEvent.setup();
       mockOnSendToNative.mockResolvedValueOnce(undefined);
 
-      const { rerender } = render(
-        <QuickSendEvmDialog {...defaultProps} />
-      );
+      const { rerender } = render(<QuickSendEvmDialog {...defaultProps} />);
 
       const selectButtons = screen.getAllByRole("button", { name: /Select/i });
       await user.click(selectButtons[0]);
@@ -257,7 +275,7 @@ describe("QuickSendEvmDialog", () => {
         <QuickSendEvmDialog
           {...defaultProps}
           currentEvmBalance={decreasedBalance}
-        />
+        />,
       );
 
       await waitFor(() => {
@@ -270,9 +288,7 @@ describe("QuickSendEvmDialog", () => {
       const user = userEvent.setup();
       mockOnSendToNative.mockResolvedValueOnce(undefined);
 
-      const { rerender } = render(
-        <QuickSendEvmDialog {...defaultProps} />
-      );
+      const { rerender } = render(<QuickSendEvmDialog {...defaultProps} />);
 
       const selectButtons = screen.getAllByRole("button", { name: /Select/i });
       await user.click(selectButtons[0]);
@@ -283,7 +299,7 @@ describe("QuickSendEvmDialog", () => {
         <QuickSendEvmDialog
           {...defaultProps}
           currentEvmBalance={decreasedBalance}
-        />
+        />,
       );
 
       await waitFor(() => {
@@ -301,9 +317,7 @@ describe("QuickSendEvmDialog", () => {
       const user = userEvent.setup();
       mockOnSendToNative.mockResolvedValueOnce(undefined);
 
-      const { rerender } = render(
-        <QuickSendEvmDialog {...defaultProps} />
-      );
+      const { rerender } = render(<QuickSendEvmDialog {...defaultProps} />);
 
       const selectButtons = screen.getAllByRole("button", { name: /Select/i });
       await user.click(selectButtons[0]);
@@ -314,7 +328,7 @@ describe("QuickSendEvmDialog", () => {
         <QuickSendEvmDialog
           {...defaultProps}
           currentEvmBalance={decreasedBalance}
-        />
+        />,
       );
 
       await waitFor(() => {
@@ -326,9 +340,7 @@ describe("QuickSendEvmDialog", () => {
       const user = userEvent.setup();
       mockOnSendToNative.mockResolvedValueOnce(undefined);
 
-      const { rerender } = render(
-        <QuickSendEvmDialog {...defaultProps} />
-      );
+      const { rerender } = render(<QuickSendEvmDialog {...defaultProps} />);
 
       const selectButtons = screen.getAllByRole("button", { name: /Select/i });
       await user.click(selectButtons[0]);
@@ -339,7 +351,7 @@ describe("QuickSendEvmDialog", () => {
         <QuickSendEvmDialog
           {...defaultProps}
           currentEvmBalance={decreasedBalance}
-        />
+        />,
       );
 
       await waitFor(() => {
@@ -359,7 +371,9 @@ describe("QuickSendEvmDialog", () => {
       await user.click(selectButtons[0]);
 
       await waitFor(() => {
-        expect(screen.getByTestId("error-title")).toHaveTextContent("Transfer Failed");
+        expect(screen.getByTestId("error-title")).toHaveTextContent(
+          "Transfer Failed",
+        );
       });
     });
 
@@ -380,7 +394,8 @@ describe("QuickSendEvmDialog", () => {
     it("should display error message", async () => {
       const user = userEvent.setup();
       const errorMessage = "Insufficient gas for transaction";
-      const formattedErrorMessage = "Insufficient ETH for gas fees. Please add ETH to your Torus EVM wallet and try again.";
+      const formattedErrorMessage =
+        "Insufficient ETH for gas fees. Please add ETH to your Torus EVM wallet and try again.";
       mockOnSendToNative.mockRejectedValueOnce(new Error(errorMessage));
 
       render(<QuickSendEvmDialog {...defaultProps} />);
@@ -403,8 +418,12 @@ describe("QuickSendEvmDialog", () => {
       await user.click(selectButtons[0]);
 
       await waitFor(() => {
-        expect(screen.getByRole("button", { name: /Cancel/i })).toBeInTheDocument();
-        expect(screen.getByRole("button", { name: /Retry/i })).toBeInTheDocument();
+        expect(
+          screen.getByRole("button", { name: /Cancel/i }),
+        ).toBeInTheDocument();
+        expect(
+          screen.getByRole("button", { name: /Retry/i }),
+        ).toBeInTheDocument();
       });
     });
 
@@ -461,7 +480,9 @@ describe("QuickSendEvmDialog", () => {
       await user.click(selectButtons[0]);
 
       await waitFor(() => {
-        expect(screen.getByTestId("error-title")).toHaveTextContent("Transfer Failed");
+        expect(screen.getByTestId("error-title")).toHaveTextContent(
+          "Transfer Failed",
+        );
       });
     });
   });
@@ -471,9 +492,7 @@ describe("QuickSendEvmDialog", () => {
       const user = userEvent.setup();
       mockOnSendToNative.mockResolvedValueOnce(undefined);
 
-      const { rerender } = render(
-        <QuickSendEvmDialog {...defaultProps} />
-      );
+      const { rerender } = render(<QuickSendEvmDialog {...defaultProps} />);
 
       const selectButtons = screen.getAllByRole("button", { name: /Select/i });
       await user.click(selectButtons[0]);
@@ -485,11 +504,13 @@ describe("QuickSendEvmDialog", () => {
         <QuickSendEvmDialog
           {...defaultProps}
           currentEvmBalance={dustBalance}
-        />
+        />,
       );
 
       await waitFor(() => {
-        expect(screen.getByTestId("success-title")).toHaveTextContent("Transfer Complete!");
+        expect(screen.getByTestId("success-title")).toHaveTextContent(
+          "Transfer Complete!",
+        );
       });
     });
 
@@ -497,9 +518,7 @@ describe("QuickSendEvmDialog", () => {
       const user = userEvent.setup();
       mockOnSendToNative.mockResolvedValueOnce(undefined);
 
-      const { rerender } = render(
-        <QuickSendEvmDialog {...defaultProps} />
-      );
+      const { rerender } = render(<QuickSendEvmDialog {...defaultProps} />);
 
       const selectButtons = screen.getAllByRole("button", { name: /Select/i });
       await user.click(selectButtons[0]);
@@ -511,11 +530,13 @@ describe("QuickSendEvmDialog", () => {
         <QuickSendEvmDialog
           {...defaultProps}
           currentEvmBalance={balanceAfterDecrease}
-        />
+        />,
       );
 
       await waitFor(() => {
-        expect(screen.getByTestId("success-title")).toHaveTextContent("Transfer Complete!");
+        expect(screen.getByTestId("success-title")).toHaveTextContent(
+          "Transfer Complete!",
+        );
       });
     });
 
@@ -523,9 +544,7 @@ describe("QuickSendEvmDialog", () => {
       const user = userEvent.setup();
       mockOnSendToNative.mockResolvedValueOnce(undefined);
 
-      const { rerender } = render(
-        <QuickSendEvmDialog {...defaultProps} />
-      );
+      const { rerender } = render(<QuickSendEvmDialog {...defaultProps} />);
 
       const selectButtons = screen.getAllByRole("button", { name: /Select/i });
       await user.click(selectButtons[0]);
@@ -537,11 +556,13 @@ describe("QuickSendEvmDialog", () => {
         <QuickSendEvmDialog
           {...defaultProps}
           currentEvmBalance={smallDecrease}
-        />
+        />,
       );
 
       // Should still be in sending state
-      expect(screen.getByTestId("sending-title")).toHaveTextContent("Sending Transaction");
+      expect(screen.getByTestId("sending-title")).toHaveTextContent(
+        "Sending Transaction",
+      );
     });
   });
 
@@ -550,9 +571,7 @@ describe("QuickSendEvmDialog", () => {
       const user = userEvent.setup();
       mockOnSendToNative.mockResolvedValueOnce(undefined);
 
-      const { rerender } = render(
-        <QuickSendEvmDialog {...defaultProps} />
-      );
+      const { rerender } = render(<QuickSendEvmDialog {...defaultProps} />);
 
       const selectButtons = screen.getAllByRole("button", { name: /Select/i });
       await user.click(selectButtons[0]);
@@ -565,7 +584,7 @@ describe("QuickSendEvmDialog", () => {
           onClose={() => {
             vi.fn();
           }}
-        />
+        />,
       );
 
       // Dialog should be closed
@@ -575,19 +594,19 @@ describe("QuickSendEvmDialog", () => {
     it("should handle multiple open/close cycles", async () => {
       const user = userEvent.setup();
 
-      const { rerender } = render(
-        <QuickSendEvmDialog {...defaultProps} />
-      );
+      const { rerender } = render(<QuickSendEvmDialog {...defaultProps} />);
 
       // First cycle
-      expect(screen.getByTestId("quick-send-title")).toHaveTextContent("EVM Recover");
+      expect(screen.getByTestId("quick-send-title")).toHaveTextContent(
+        "EVM Recover",
+      );
 
       rerender(
         <QuickSendEvmDialog
           {...defaultProps}
           isOpen={false}
           onClose={() => mockOnClose()}
-        />
+        />,
       );
 
       expect(screen.queryByText("EVM Recover")).not.toBeInTheDocument();
@@ -595,7 +614,9 @@ describe("QuickSendEvmDialog", () => {
       // Second cycle
       rerender(<QuickSendEvmDialog {...defaultProps} isOpen={true} />);
 
-      expect(screen.getByTestId("quick-send-title")).toHaveTextContent("EVM Recover");
+      expect(screen.getByTestId("quick-send-title")).toHaveTextContent(
+        "EVM Recover",
+      );
     });
   });
 
@@ -611,10 +632,12 @@ describe("QuickSendEvmDialog", () => {
           formatAmount={(amount: bigint) =>
             (Number(amount) / 1e18).toFixed(2).replace(/\.?0+$/, "")
           }
-        />
+        />,
       );
 
-      expect(screen.getByTestId("evm-balance-amount")).toHaveTextContent("1000");
+      expect(screen.getByTestId("evm-balance-amount")).toHaveTextContent(
+        "1000",
+      );
     });
 
     it("should transition to sending state for Torus destination", async () => {
@@ -626,7 +649,9 @@ describe("QuickSendEvmDialog", () => {
       const selectButtons = screen.getAllByRole("button", { name: /Select/i });
       await user.click(selectButtons[0]);
 
-      expect(screen.getByTestId("sending-title")).toHaveTextContent("Sending Transaction");
+      expect(screen.getByTestId("sending-title")).toHaveTextContent(
+        "Sending Transaction",
+      );
     });
 
     it("should transition to sending state for Base Chain destination", async () => {
@@ -638,7 +663,9 @@ describe("QuickSendEvmDialog", () => {
       const selectButtons = screen.getAllByRole("button", { name: /Select/i });
       await user.click(selectButtons[1]);
 
-      expect(screen.getByTestId("sending-title")).toHaveTextContent("Sending Transaction");
+      expect(screen.getByTestId("sending-title")).toHaveTextContent(
+        "Sending Transaction",
+      );
     });
   });
 });

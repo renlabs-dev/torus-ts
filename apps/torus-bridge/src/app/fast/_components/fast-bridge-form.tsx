@@ -872,8 +872,8 @@ export function FastBridgeForm() {
       </div>
 
       {!walletsReady && (
-        <DualWalletConnector 
-          direction={direction} 
+        <DualWalletConnector
+          direction={direction}
           data-testid="wallet-connector"
         />
       )}
@@ -882,7 +882,10 @@ export function FastBridgeForm() {
         <Card className="w-full">
           <CardContent className="space-y-6 pt-6">
             <div className="flex items-center gap-4">
-              <div className="flex-1 space-y-2" data-testid="from-chain-section">
+              <div
+                className="flex-1 space-y-2"
+                data-testid="from-chain-section"
+              >
                 <Label className="text-sm font-medium">From</Label>
                 <InputReadonly label="TORUS" className="w-full">
                   {renderChainValue(fromChain, true)}

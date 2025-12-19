@@ -123,7 +123,7 @@ describe("useFastBridgeTransactionHistory - Zustand Store", () => {
               direction: "base-to-native",
               amount: "100",
               status: "completed",
-            })
+            }),
           );
         }
       });
@@ -221,7 +221,7 @@ describe("useFastBridgeTransactionHistory - Zustand Store", () => {
             direction: "base-to-native",
             amount: "100",
             status: "completed",
-          })
+          }),
         );
       });
 
@@ -232,7 +232,7 @@ describe("useFastBridgeTransactionHistory - Zustand Store", () => {
             direction: "native-to-base",
             amount: "200",
             status: "pending",
-          })
+          }),
         );
       });
 
@@ -493,7 +493,9 @@ describe("useFastBridgeTransactionHistory - Zustand Store", () => {
 
   describe("store persistence", () => {
     it("should maintain store state across multiple renders", () => {
-      const { result, rerender } = renderHook(() => useFastBridgeTransactionHistory());
+      const { result, rerender } = renderHook(() =>
+        useFastBridgeTransactionHistory(),
+      );
 
       let transactionId: string;
       act(() => {

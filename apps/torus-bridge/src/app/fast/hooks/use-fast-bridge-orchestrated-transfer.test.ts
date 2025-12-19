@@ -1,4 +1,4 @@
-import { renderHook, act } from "@testing-library/react";
+import { act, renderHook } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { SimpleBridgeDirection } from "../_components/fast-bridge-types";
 import { SimpleBridgeStep } from "../_components/fast-bridge-types";
@@ -246,7 +246,9 @@ describe("useOrchestratedTransfer", () => {
     it("should set current transaction ID without throwing error", () => {
       const { result } = renderHook(() => useOrchestratedTransfer());
 
-      expect(() => result.current.setCurrentTransactionId("tx-123")).not.toThrow();
+      expect(() =>
+        result.current.setCurrentTransactionId("tx-123"),
+      ).not.toThrow();
     });
 
     it("should allow clearing transaction ID without throwing error", () => {

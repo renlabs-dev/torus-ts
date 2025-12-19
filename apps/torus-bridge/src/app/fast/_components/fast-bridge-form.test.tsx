@@ -16,7 +16,12 @@ vi.mock("../hooks/use-fast-bridge-dual-wallet", () => ({
 
 vi.mock("../hooks/use-fast-bridge-orchestrated-transfer", () => ({
   useOrchestratedTransfer: () => ({
-    bridgeState: { step: 0, direction: null, amount: "", errorMessage: undefined },
+    bridgeState: {
+      step: 0,
+      direction: null,
+      amount: "",
+      errorMessage: undefined,
+    },
     transactions: [],
     executeTransfer: vi.fn(),
     resetTransfer: vi.fn(),
@@ -59,7 +64,11 @@ vi.mock("./fast-bridge-dual-wallet-connector", () => ({
 }));
 
 vi.mock("./fast-bridge-fraction-buttons", () => ({
-  FractionButtons: ({ handleFractionClick }: { handleFractionClick: (fraction: number) => void }) => (
+  FractionButtons: ({
+    handleFractionClick,
+  }: {
+    handleFractionClick: (fraction: number) => void;
+  }) => (
     <div data-testid="fraction-buttons">
       <button onClick={() => handleFractionClick(0.25)}>25%</button>
       <button onClick={() => handleFractionClick(0.5)}>50%</button>

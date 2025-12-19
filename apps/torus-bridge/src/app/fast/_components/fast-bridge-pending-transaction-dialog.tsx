@@ -74,7 +74,10 @@ export function PendingTransactionDialog({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-md">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2" data-testid="pending-dialog-title">
+          <DialogTitle
+            className="flex items-center gap-2"
+            data-testid="pending-dialog-title"
+          >
             <AlertTriangle className="h-5 w-5 text-yellow-500" />
             Pending Transaction Found
           </DialogTitle>
@@ -89,7 +92,10 @@ export function PendingTransactionDialog({
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Clock className="text-muted-foreground h-4 w-4" />
-                <span className="text-sm font-medium" data-testid="pending-timestamp">
+                <span
+                  className="text-sm font-medium"
+                  data-testid="pending-timestamp"
+                >
                   {formatTimestamp(pendingTransaction.timestamp)}
                 </span>
               </div>
@@ -104,7 +110,9 @@ export function PendingTransactionDialog({
             <div className="mt-3 space-y-2">
               <div className="flex items-center justify-between text-sm">
                 <span className="text-muted-foreground">Direction:</span>
-                <span className="font-medium" data-testid="pending-direction">{directionLabel}</span>
+                <span className="font-medium" data-testid="pending-direction">
+                  {directionLabel}
+                </span>
               </div>
 
               <div className="flex items-center justify-between text-sm">

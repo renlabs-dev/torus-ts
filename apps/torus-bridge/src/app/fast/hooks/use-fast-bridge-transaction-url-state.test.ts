@@ -1,5 +1,5 @@
-import { renderHook, act } from "@testing-library/react";
-import { describe, expect, it, beforeEach, vi } from "vitest";
+import { act, renderHook } from "@testing-library/react";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { useFastBridgeTransactionUrlState } from "./use-fast-bridge-transaction-url-state";
 
 // Mock window.location
@@ -345,7 +345,7 @@ describe("useFastBridgeTransactionUrlState", () => {
 
     it("should have stable callbacks across re-renders", () => {
       const { result, rerender } = renderHook(() =>
-        useFastBridgeTransactionUrlState()
+        useFastBridgeTransactionUrlState(),
       );
 
       const firstCallbacks = {

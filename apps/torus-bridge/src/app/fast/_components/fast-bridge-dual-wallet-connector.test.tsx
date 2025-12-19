@@ -44,21 +44,27 @@ describe("DualWalletConnector", () => {
       mockUseDualWallet.mockReturnValue(createMockHookReturn());
       render(<DualWalletConnector direction="base-to-native" />);
 
-      expect(screen.getByTestId("wallet-connector-title")).toHaveTextContent("Connect Wallets");
+      expect(screen.getByTestId("wallet-connector-title")).toHaveTextContent(
+        "Connect Wallets",
+      );
     });
 
     it("should render direction description for base-to-native", () => {
       mockUseDualWallet.mockReturnValue(createMockHookReturn());
       render(<DualWalletConnector direction="base-to-native" />);
 
-      expect(screen.getByTestId("direction-description")).toHaveTextContent("Transfer Base TORUS → Torus");
+      expect(screen.getByTestId("direction-description")).toHaveTextContent(
+        "Transfer Base TORUS → Torus",
+      );
     });
 
     it("should render direction description for native-to-base", () => {
       mockUseDualWallet.mockReturnValue(createMockHookReturn());
       render(<DualWalletConnector direction="native-to-base" />);
 
-      expect(screen.getByTestId("direction-description")).toHaveTextContent("Transfer Torus → Base TORUS");
+      expect(screen.getByTestId("direction-description")).toHaveTextContent(
+        "Transfer Torus → Base TORUS",
+      );
     });
   });
 
@@ -67,22 +73,30 @@ describe("DualWalletConnector", () => {
       mockUseDualWallet.mockReturnValue(createMockHookReturn());
       render(<DualWalletConnector direction="base-to-native" />);
 
-      expect(screen.getByTestId("torus-wallet-name")).toHaveTextContent("Torus Wallet");
-      expect(screen.getByTestId("torus-wallet-status")).toHaveTextContent("Not connected");
-      expect(screen.getByTestId("evm-wallet-status")).toHaveTextContent("Not connected");
+      expect(screen.getByTestId("torus-wallet-name")).toHaveTextContent(
+        "Torus Wallet",
+      );
+      expect(screen.getByTestId("torus-wallet-status")).toHaveTextContent(
+        "Not connected",
+      );
+      expect(screen.getByTestId("evm-wallet-status")).toHaveTextContent(
+        "Not connected",
+      );
     });
 
     it("should display connecting status message when both disconnected", () => {
       mockUseDualWallet.mockReturnValue(createMockHookReturn());
       render(<DualWalletConnector direction="base-to-native" />);
 
-      expect(screen.getByTestId("connection-status-message")).toHaveTextContent("Connect both wallets to continue");
+      expect(screen.getByTestId("connection-status-message")).toHaveTextContent(
+        "Connect both wallets to continue",
+      );
     });
 
     it("should show pulsing animation indicator when not connected", () => {
       mockUseDualWallet.mockReturnValue(createMockHookReturn());
       const { container } = render(
-        <DualWalletConnector direction="base-to-native" />
+        <DualWalletConnector direction="base-to-native" />,
       );
 
       // Check for animated pulse element
@@ -110,13 +124,17 @@ describe("DualWalletConnector", () => {
           },
           areWalletsReady: vi.fn(() => true),
           getConnectionStatus: vi.fn(() => "connected"),
-        })
+        }),
       );
 
       render(<DualWalletConnector direction="base-to-native" />);
 
-      expect(screen.getByTestId("torus-wallet-name")).toHaveTextContent("Torus Wallet");
-      expect(screen.getByTestId("evm-wallet-name")).toHaveTextContent("Base Wallet");
+      expect(screen.getByTestId("torus-wallet-name")).toHaveTextContent(
+        "Torus Wallet",
+      );
+      expect(screen.getByTestId("evm-wallet-name")).toHaveTextContent(
+        "Base Wallet",
+      );
 
       // Check for "Connected:" prefix in both wallet status texts
       const torusConnectedText = screen.getByTestId("torus-wallet-status");
@@ -143,12 +161,14 @@ describe("DualWalletConnector", () => {
           },
           areWalletsReady: vi.fn(() => true),
           getConnectionStatus: vi.fn(() => "connected"),
-        })
+        }),
       );
 
       render(<DualWalletConnector direction="base-to-native" />);
 
-      expect(screen.getByTestId("ready-status")).toHaveTextContent("Ready to proceed with transfer");
+      expect(screen.getByTestId("ready-status")).toHaveTextContent(
+        "Ready to proceed with transfer",
+      );
     });
 
     it("should show green check circle icons when both connected", () => {
@@ -169,15 +189,17 @@ describe("DualWalletConnector", () => {
           },
           areWalletsReady: vi.fn(() => true),
           getConnectionStatus: vi.fn(() => "connected"),
-        })
+        }),
       );
 
       const { container } = render(
-        <DualWalletConnector direction="base-to-native" />
+        <DualWalletConnector direction="base-to-native" />,
       );
 
       // Check for green text color (text-green-500 or text-green-600)
-      const greenElements = container.querySelectorAll(".text-green-500, .text-green-600");
+      const greenElements = container.querySelectorAll(
+        ".text-green-500, .text-green-600",
+      );
       expect(greenElements.length).toBeGreaterThan(0);
     });
   });
@@ -201,7 +223,7 @@ describe("DualWalletConnector", () => {
           },
           areWalletsReady: vi.fn(() => false),
           getConnectionStatus: vi.fn(() => "partially_connected"),
-        })
+        }),
       );
 
       render(<DualWalletConnector direction="base-to-native" />);
@@ -209,7 +231,9 @@ describe("DualWalletConnector", () => {
       const connectedText = screen.getByTestId("torus-wallet-status");
       expect(connectedText).toBeInTheDocument();
 
-      expect(screen.getByTestId("evm-wallet-status")).toHaveTextContent("Not connected");
+      expect(screen.getByTestId("evm-wallet-status")).toHaveTextContent(
+        "Not connected",
+      );
     });
 
     it("should display partial connection message", () => {
@@ -230,12 +254,14 @@ describe("DualWalletConnector", () => {
           },
           areWalletsReady: vi.fn(() => false),
           getConnectionStatus: vi.fn(() => "partially_connected"),
-        })
+        }),
       );
 
       render(<DualWalletConnector direction="base-to-native" />);
 
-      expect(screen.getByTestId("connection-status-message")).toHaveTextContent("Connect remaining wallet to continue");
+      expect(screen.getByTestId("connection-status-message")).toHaveTextContent(
+        "Connect remaining wallet to continue",
+      );
     });
   });
 
@@ -258,12 +284,14 @@ describe("DualWalletConnector", () => {
           },
           areWalletsReady: vi.fn(() => false),
           getConnectionStatus: vi.fn(() => "connecting"),
-        })
+        }),
       );
 
       render(<DualWalletConnector direction="base-to-native" />);
 
-      expect(screen.getByTestId("connection-status-message")).toHaveTextContent("Connecting wallets...");
+      expect(screen.getByTestId("connection-status-message")).toHaveTextContent(
+        "Connecting wallets...",
+      );
     });
   });
 
@@ -288,12 +316,14 @@ describe("DualWalletConnector", () => {
             base: 8453,
             torusEvm: 42,
           },
-        })
+        }),
       );
 
       render(<DualWalletConnector direction="base-to-native" />);
 
-      expect(screen.getByTestId("evm-wallet-name")).toHaveTextContent("Base Wallet");
+      expect(screen.getByTestId("evm-wallet-name")).toHaveTextContent(
+        "Base Wallet",
+      );
     });
 
     it("should display Torus EVM Wallet when connected to Torus EVM chain", () => {
@@ -316,12 +346,14 @@ describe("DualWalletConnector", () => {
             base: 8453,
             torusEvm: 42,
           },
-        })
+        }),
       );
 
       render(<DualWalletConnector direction="native-to-base" />);
 
-      expect(screen.getByTestId("evm-wallet-name")).toHaveTextContent("Torus EVM Wallet");
+      expect(screen.getByTestId("evm-wallet-name")).toHaveTextContent(
+        "Torus EVM Wallet",
+      );
     });
 
     it("should display Unknown Wallet when connected to unknown chain", () => {
@@ -344,12 +376,14 @@ describe("DualWalletConnector", () => {
             base: 8453,
             torusEvm: 42,
           },
-        })
+        }),
       );
 
       render(<DualWalletConnector direction="base-to-native" />);
 
-      expect(screen.getByTestId("evm-wallet-name")).toHaveTextContent("Unknown Wallet");
+      expect(screen.getByTestId("evm-wallet-name")).toHaveTextContent(
+        "Unknown Wallet",
+      );
     });
   });
 
@@ -370,11 +404,11 @@ describe("DualWalletConnector", () => {
               isConnecting: false,
             },
           },
-        })
+        }),
       );
 
       const { container } = render(
-        <DualWalletConnector direction="base-to-native" />
+        <DualWalletConnector direction="base-to-native" />,
       );
 
       const greenIndicators = container.querySelectorAll(".bg-green-500");
@@ -384,7 +418,7 @@ describe("DualWalletConnector", () => {
     it("should show gray status indicator when wallet disconnected", () => {
       mockUseDualWallet.mockReturnValue(createMockHookReturn());
       const { container } = render(
-        <DualWalletConnector direction="base-to-native" />
+        <DualWalletConnector direction="base-to-native" />,
       );
 
       const grayIndicators = container.querySelectorAll(".bg-gray-300");

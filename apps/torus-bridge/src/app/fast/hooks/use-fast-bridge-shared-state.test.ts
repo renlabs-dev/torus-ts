@@ -1,4 +1,4 @@
-import { renderHook, act } from "@testing-library/react";
+import { act, renderHook } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 import { SimpleBridgeStep } from "../_components/fast-bridge-types";
 import { useSimpleBridgeSharedState } from "./use-fast-bridge-shared-state";
@@ -27,7 +27,9 @@ describe("useSimpleBridgeSharedState", () => {
         });
       });
 
-      expect(result.current.bridgeState.step).toBe(SimpleBridgeStep.STEP_1_SIGNING);
+      expect(result.current.bridgeState.step).toBe(
+        SimpleBridgeStep.STEP_1_SIGNING,
+      );
       expect(result.current.bridgeState.direction).toBe("base-to-native");
       expect(result.current.bridgeState.amount).toBe("100");
     });
@@ -48,7 +50,9 @@ describe("useSimpleBridgeSharedState", () => {
         result.current.updateBridgeState({ amount: "50" });
       });
 
-      expect(result.current.bridgeState.step).toBe(SimpleBridgeStep.STEP_1_SIGNING);
+      expect(result.current.bridgeState.step).toBe(
+        SimpleBridgeStep.STEP_1_SIGNING,
+      );
       expect(result.current.bridgeState.direction).toBe("base-to-native");
       expect(result.current.bridgeState.amount).toBe("50");
     });
@@ -62,7 +66,9 @@ describe("useSimpleBridgeSharedState", () => {
         });
       });
 
-      expect(result.current.bridgeState.step).toBe(SimpleBridgeStep.STEP_1_CONFIRMING);
+      expect(result.current.bridgeState.step).toBe(
+        SimpleBridgeStep.STEP_1_CONFIRMING,
+      );
       expect(result.current.bridgeState.direction).toBeNull();
       expect(result.current.bridgeState.amount).toBe("");
     });
@@ -76,7 +82,9 @@ describe("useSimpleBridgeSharedState", () => {
         });
       });
 
-      expect(result.current.bridgeState.errorDetails).toBe("Some error occurred");
+      expect(result.current.bridgeState.errorDetails).toBe(
+        "Some error occurred",
+      );
 
       act(() => {
         result.current.updateBridgeState({
@@ -149,8 +157,12 @@ describe("useSimpleBridgeSharedState", () => {
       });
 
       expect(result.current.transactions).toHaveLength(2);
-      expect(result.current.transactions[0]?.step).toBe(SimpleBridgeStep.STEP_1_SIGNING);
-      expect(result.current.transactions[1]?.step).toBe(SimpleBridgeStep.STEP_2_SIGNING);
+      expect(result.current.transactions[0]?.step).toBe(
+        SimpleBridgeStep.STEP_1_SIGNING,
+      );
+      expect(result.current.transactions[1]?.step).toBe(
+        SimpleBridgeStep.STEP_2_SIGNING,
+      );
     });
 
     it("should not create duplicate transactions", () => {
@@ -189,7 +201,9 @@ describe("useSimpleBridgeSharedState", () => {
         });
       });
 
-      expect(result.current.bridgeState.step).toBe(SimpleBridgeStep.STEP_2_CONFIRMING);
+      expect(result.current.bridgeState.step).toBe(
+        SimpleBridgeStep.STEP_2_CONFIRMING,
+      );
       expect(result.current.transactions).toHaveLength(1);
 
       act(() => {
@@ -206,7 +220,9 @@ describe("useSimpleBridgeSharedState", () => {
       const { result } = renderHook(() => useSimpleBridgeSharedState());
 
       act(() => {
-        result.current.updateBridgeState({ step: SimpleBridgeStep.STEP_1_SIGNING });
+        result.current.updateBridgeState({
+          step: SimpleBridgeStep.STEP_1_SIGNING,
+        });
         result.current.resetTransfer();
         result.current.resetTransfer();
         result.current.resetTransfer();
@@ -383,7 +399,9 @@ describe("useSimpleBridgeSharedState", () => {
       // Verify full state is consistent
       expect(result.current.bridgeState.direction).toBe("base-to-native");
       expect(result.current.bridgeState.amount).toBe("100");
-      expect(result.current.bridgeState.step).toBe(SimpleBridgeStep.STEP_1_CONFIRMING);
+      expect(result.current.bridgeState.step).toBe(
+        SimpleBridgeStep.STEP_1_CONFIRMING,
+      );
       expect(result.current.transactions[0]?.txHash).toBe("0x123");
     });
   });

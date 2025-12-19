@@ -30,7 +30,13 @@ vi.mock("@torus-ts/ui/components/accordion", () => ({
 }));
 
 vi.mock("@torus-ts/ui/components/button", () => ({
-  Button: ({ children, onClick }: { children: React.ReactNode; onClick?: () => void }) => (
+  Button: ({
+    children,
+    onClick,
+  }: {
+    children: React.ReactNode;
+    onClick?: () => void;
+  }) => (
     <button onClick={onClick} data-testid="button">
       {children}
     </button>
@@ -57,7 +63,7 @@ describe("TransactionStepItem", () => {
       render(<TransactionStepItem {...defaultProps} />);
 
       expect(
-        screen.getByText("Approve the transfer on Base Chain")
+        screen.getByText("Approve the transfer on Base Chain"),
       ).toBeInTheDocument();
     });
 
@@ -68,7 +74,7 @@ describe("TransactionStepItem", () => {
           status="completed"
           txHash="0x123"
           explorerUrl="https://example.com"
-        />
+        />,
       );
 
       expect(screen.getByTestId("accordion")).toBeInTheDocument();
@@ -78,45 +84,32 @@ describe("TransactionStepItem", () => {
 
   describe("status icons", () => {
     it("should show completed status icon", () => {
-      render(
-        <TransactionStepItem
-          {...defaultProps}
-          status="completed"
-        />
-      );
+      render(<TransactionStepItem {...defaultProps} status="completed" />);
 
       expect(screen.getByTestId("check-circle-icon")).toBeInTheDocument();
     });
 
     it("should show active status icon (spinning loader)", () => {
-      render(
-        <TransactionStepItem {...defaultProps} status="active" />
-      );
+      render(<TransactionStepItem {...defaultProps} status="active" />);
 
       expect(screen.getByTestId("loader-icon")).toBeInTheDocument();
     });
 
     it("should show waiting status icon (clock)", () => {
-      render(
-        <TransactionStepItem {...defaultProps} status="waiting" />
-      );
+      render(<TransactionStepItem {...defaultProps} status="waiting" />);
 
       // Should have two clock icons: one for status and one for non-signature required
       expect(screen.getAllByTestId("clock-icon")).toHaveLength(2);
     });
 
     it("should show error status icon", () => {
-      render(
-        <TransactionStepItem {...defaultProps} status="error" />
-      );
+      render(<TransactionStepItem {...defaultProps} status="error" />);
 
       expect(screen.getByTestId("alert-icon")).toBeInTheDocument();
     });
 
     it("should show pending status icon (empty circle)", () => {
-      render(
-        <TransactionStepItem {...defaultProps} status="pending" />
-      );
+      render(<TransactionStepItem {...defaultProps} status="pending" />);
 
       // Pending has a border circle, no specific icon, and no accordion
       expect(screen.queryByTestId("accordion")).not.toBeInTheDocument();
@@ -131,7 +124,7 @@ describe("TransactionStepItem", () => {
           status="completed"
           txHash="0x1234567890abcdef"
           explorerUrl="https://example.com"
-        />
+        />,
       );
 
       expect(screen.getByText(/0x12345678\.\.\.90abcdef/i)).toBeInTheDocument();
@@ -144,7 +137,7 @@ describe("TransactionStepItem", () => {
           status="completed"
           txHash="0x1234567890abcdef"
           explorerUrl="https://explorer.test/tx/0x1234567890abcdef"
-        />
+        />,
       );
 
       const link = screen.getByRole("button", { name: /View on Explorer/i });
@@ -158,7 +151,7 @@ describe("TransactionStepItem", () => {
           status="completed"
           txHash="0x1234567890abcdef"
           explorerUrl="https://explorer.test/tx/0x1234567890abcdef"
-        />
+        />,
       );
 
       expect(screen.getAllByTestId("external-link-icon")).toHaveLength(2);
@@ -172,7 +165,7 @@ describe("TransactionStepItem", () => {
           txHash="0x123"
           explorerUrl="https://example.com"
           amount="100 TORUS"
-        />
+        />,
       );
 
       expect(screen.getByText(/100 TORUS/i)).toBeInTheDocument();
@@ -180,10 +173,7 @@ describe("TransactionStepItem", () => {
 
     it("should display estimated time when provided", () => {
       render(
-        <TransactionStepItem
-          {...defaultProps}
-          estimatedTime="2 minutes"
-        />
+        <TransactionStepItem {...defaultProps} estimatedTime="2 minutes" />,
       );
 
       expect(screen.getByText(/2 minutes/i)).toBeInTheDocument();
@@ -193,10 +183,7 @@ describe("TransactionStepItem", () => {
   describe("signature requirement indicator", () => {
     it("should show wallet icon when signature is required", () => {
       render(
-        <TransactionStepItem
-          {...defaultProps}
-          isSignatureRequired={true}
-        />
+        <TransactionStepItem {...defaultProps} isSignatureRequired={true} />,
       );
 
       expect(screen.getByTestId("wallet-icon")).toBeInTheDocument();
@@ -204,10 +191,7 @@ describe("TransactionStepItem", () => {
 
     it("should show clock icon when signature is not required", () => {
       render(
-        <TransactionStepItem
-          {...defaultProps}
-          isSignatureRequired={false}
-        />
+        <TransactionStepItem {...defaultProps} isSignatureRequired={false} />,
       );
 
       expect(screen.getByTestId("clock-icon")).toBeInTheDocument();
@@ -219,7 +203,7 @@ describe("TransactionStepItem", () => {
           {...defaultProps}
           isSignatureRequired={true}
           title="Step 1: Sign and Submit"
-        />
+        />,
       );
 
       expect(screen.getByText("Step 1: Sign and Submit")).toBeInTheDocument();
@@ -234,7 +218,7 @@ describe("TransactionStepItem", () => {
           {...defaultProps}
           status="error"
           errorDetails="Network connection failed"
-        />
+        />,
       );
 
       expect(screen.getByText("Network connection failed")).toBeInTheDocument();
@@ -246,7 +230,7 @@ describe("TransactionStepItem", () => {
           {...defaultProps}
           status="error"
           errorDetails="Network connection failed"
-        />
+        />,
       );
 
       expect(screen.getByTestId("alert-icon")).toBeInTheDocument();
@@ -259,7 +243,7 @@ describe("TransactionStepItem", () => {
           {...defaultProps}
           status="error"
           errorDetails={errorMsg}
-        />
+        />,
       );
 
       expect(screen.getByText(errorMsg)).toBeInTheDocument();
@@ -274,11 +258,13 @@ describe("TransactionStepItem", () => {
           status="active"
           isSignatureRequired={true}
           showSignatureWarning={true}
-        />
+        />,
       );
 
       // Warning should be visible when showSignatureWarning is true and status is active
-      expect(screen.getByText(/check your wallet and approve/i)).toBeInTheDocument();
+      expect(
+        screen.getByText(/check your wallet and approve/i),
+      ).toBeInTheDocument();
       expect(screen.queryByTestId("accordion")).not.toBeInTheDocument();
     });
 
@@ -289,35 +275,27 @@ describe("TransactionStepItem", () => {
           status="active"
           isSignatureRequired={true}
           showSignatureWarning={false}
-        />
+        />,
       );
 
       // Should not show warning when showSignatureWarning is false
-      expect(screen.queryByText(/check your wallet and approve/i)).not.toBeInTheDocument();
+      expect(
+        screen.queryByText(/check your wallet and approve/i),
+      ).not.toBeInTheDocument();
       expect(screen.queryByTestId("accordion")).not.toBeInTheDocument();
     });
   });
 
   describe("step connector styling", () => {
     it("should mark last step appropriately", () => {
-      render(
-        <TransactionStepItem
-          {...defaultProps}
-          isLast={true}
-        />
-      );
+      render(<TransactionStepItem {...defaultProps} isLast={true} />);
 
       // Should not have connector line when isLast is true
       expect(screen.queryByTestId("accordion-item")).not.toBeInTheDocument();
     });
 
     it("should mark non-last step appropriately", () => {
-      render(
-        <TransactionStepItem
-          {...defaultProps}
-          isLast={false}
-        />
-      );
+      render(<TransactionStepItem {...defaultProps} isLast={false} />);
 
       // Should not have accordion when not completed with details
       expect(screen.queryByTestId("accordion-item")).not.toBeInTheDocument();
@@ -333,7 +311,7 @@ describe("TransactionStepItem", () => {
           title="Sign Transaction"
           description="Waiting for your signature"
           isSignatureRequired={true}
-        />
+        />,
       );
 
       expect(screen.getByText("Sign Transaction")).toBeInTheDocument();
@@ -349,7 +327,7 @@ describe("TransactionStepItem", () => {
           description="Waiting for network confirmation"
           status="waiting"
           isSignatureRequired={false}
-        />
+        />,
       );
 
       expect(screen.getByText("Waiting for Confirmation")).toBeInTheDocument();
@@ -363,10 +341,12 @@ describe("TransactionStepItem", () => {
           {...defaultProps}
           title="Step 1: Transfer from Base"
           description="Sign on Base Chain"
-        />
+        />,
       );
 
-      expect(screen.getByText("Step 1: Transfer from Base")).toBeInTheDocument();
+      expect(
+        screen.getByText("Step 1: Transfer from Base"),
+      ).toBeInTheDocument();
       expect(screen.getByText("Sign on Base Chain")).toBeInTheDocument();
     });
   });
@@ -374,36 +354,32 @@ describe("TransactionStepItem", () => {
   describe("status flow", () => {
     it("should handle status transitions from pending to active", () => {
       const { rerender } = render(
-        <TransactionStepItem {...defaultProps} status="pending" />
+        <TransactionStepItem {...defaultProps} status="pending" />,
       );
 
       // Should not have accordion initially
       expect(screen.queryByTestId("accordion")).not.toBeInTheDocument();
 
-      rerender(
-        <TransactionStepItem {...defaultProps} status="active" />
-      );
+      rerender(<TransactionStepItem {...defaultProps} status="active" />);
 
       expect(screen.getByTestId("loader-icon")).toBeInTheDocument();
     });
 
     it("should handle status transitions from active to completed", () => {
       const { rerender } = render(
-        <TransactionStepItem {...defaultProps} status="active" />
+        <TransactionStepItem {...defaultProps} status="active" />,
       );
 
       expect(screen.getByTestId("loader-icon")).toBeInTheDocument();
 
-      rerender(
-        <TransactionStepItem {...defaultProps} status="completed" />
-      );
+      rerender(<TransactionStepItem {...defaultProps} status="completed" />);
 
       expect(screen.getByTestId("check-circle-icon")).toBeInTheDocument();
     });
 
     it("should handle status transitions from active to error", () => {
       const { rerender } = render(
-        <TransactionStepItem {...defaultProps} status="active" />
+        <TransactionStepItem {...defaultProps} status="active" />,
       );
 
       expect(screen.getByTestId("loader-icon")).toBeInTheDocument();
@@ -413,7 +389,7 @@ describe("TransactionStepItem", () => {
           {...defaultProps}
           status="error"
           errorDetails="Transaction failed"
-        />
+        />,
       );
 
       expect(screen.getByTestId("alert-icon")).toBeInTheDocument();
@@ -428,7 +404,7 @@ describe("TransactionStepItem", () => {
           status="completed"
           txHash="0x123"
           explorerUrl="https://example.com"
-        />
+        />,
       );
 
       expect(screen.getByTestId("accordion-trigger")).toBeInTheDocument();
@@ -441,7 +417,7 @@ describe("TransactionStepItem", () => {
           status="completed"
           txHash="0xhash"
           explorerUrl="https://explorer.test/tx/0xhash"
-        />
+        />,
       );
 
       const button = screen.getByRole("button", { name: /View on Explorer/i });

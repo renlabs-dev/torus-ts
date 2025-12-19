@@ -8,13 +8,21 @@ import { TransactionHistoryDialog } from "./fast-bridge-transaction-history-dial
 vi.mock("../hooks/use-fast-bridge-transaction-history");
 
 const mockUseFastBridgeTransactionHistory = vi.mocked(
-  useFastBridgeTransactionHistory
+  useFastBridgeTransactionHistory,
 );
 
 // Mock the transaction history item component
 vi.mock("./fast-bridge-transaction-history-item", () => ({
-  TransactionHistoryItem: ({ transaction, isMultiSelectMode, onSelectionChange, isSelected }: any) => (
-    <div data-testid={`transaction-item-${transaction.id}`} data-selected={isSelected}>
+  TransactionHistoryItem: ({
+    transaction,
+    isMultiSelectMode,
+    onSelectionChange,
+    isSelected,
+  }: any) => (
+    <div
+      data-testid={`transaction-item-${transaction.id}`}
+      data-selected={isSelected}
+    >
       <span>{transaction.id}</span>
       {isMultiSelectMode && (
         <input
@@ -33,7 +41,9 @@ describe("TransactionHistoryDialog", () => {
   const mockDeleteTransaction = vi.fn();
   const mockOnClose = vi.fn();
   const mockOnContinue = vi.fn();
-  const mockGetExplorerUrl = vi.fn((hash, chain) => `https://explorer.com/${chain}/${hash}`);
+  const mockGetExplorerUrl = vi.fn(
+    (hash, chain) => `https://explorer.com/${chain}/${hash}`,
+  );
 
   const createMockTransactions = (count: number = 1) => {
     return Array.from({ length: count }, (_, i) => ({
@@ -51,16 +61,14 @@ describe("TransactionHistoryDialog", () => {
   };
 
   const setupMockHook = (transactions: any[]) => {
-    mockUseFastBridgeTransactionHistory.mockImplementation(
-      (selector: any) => {
-        const state = {
-          transactions,
-          clearHistory: mockClearHistory,
-          deleteTransaction: mockDeleteTransaction,
-        };
-        return selector(state);
-      }
-    );
+    mockUseFastBridgeTransactionHistory.mockImplementation((selector: any) => {
+      const state = {
+        transactions,
+        clearHistory: mockClearHistory,
+        deleteTransaction: mockDeleteTransaction,
+      };
+      return selector(state);
+    });
   };
 
   const defaultProps = {
@@ -79,9 +87,13 @@ describe("TransactionHistoryDialog", () => {
     it("should render transaction history dialog when open", () => {
       render(<TransactionHistoryDialog {...defaultProps} />);
 
-      expect(screen.getByTestId("dialog-title")).toHaveTextContent("Transaction History");
+      expect(screen.getByTestId("dialog-title")).toHaveTextContent(
+        "Transaction History",
+      );
       expect(
-        screen.getByText("View and manage your Fast Bridge transaction history")
+        screen.getByText(
+          "View and manage your Fast Bridge transaction history",
+        ),
       ).toBeInTheDocument();
     });
 
@@ -117,14 +129,16 @@ describe("TransactionHistoryDialog", () => {
     it("should render all filter tab showing transaction count", () => {
       render(<TransactionHistoryDialog {...defaultProps} />);
 
-      expect(screen.getByRole("tab", { name: /All \(3\)/ })).toBeInTheDocument();
+      expect(
+        screen.getByRole("tab", { name: /All \(3\)/ }),
+      ).toBeInTheDocument();
     });
 
     it("should render completed filter tab with count", () => {
       render(<TransactionHistoryDialog {...defaultProps} />);
 
       expect(
-        screen.getByRole("tab", { name: /Completed \(2\)/ })
+        screen.getByRole("tab", { name: /Completed \(2\)/ }),
       ).toBeInTheDocument();
     });
 
@@ -132,7 +146,7 @@ describe("TransactionHistoryDialog", () => {
       render(<TransactionHistoryDialog {...defaultProps} />);
 
       expect(
-        screen.getByRole("tab", { name: /Failed \(1\)/ })
+        screen.getByRole("tab", { name: /Failed \(1\)/ }),
       ).toBeInTheDocument();
     });
 
@@ -146,7 +160,9 @@ describe("TransactionHistoryDialog", () => {
       // Should show only completed transactions (tx-1 and tx-2)
       expect(screen.getByTestId("transaction-item-tx-1")).toBeInTheDocument();
       expect(screen.getByTestId("transaction-item-tx-2")).toBeInTheDocument();
-      expect(screen.queryByTestId("transaction-item-tx-0")).not.toBeInTheDocument();
+      expect(
+        screen.queryByTestId("transaction-item-tx-0"),
+      ).not.toBeInTheDocument();
     });
 
     it("should filter to failed transactions when clicking failed tab", async () => {
@@ -158,8 +174,12 @@ describe("TransactionHistoryDialog", () => {
 
       // Should show only failed transaction (tx-0)
       expect(screen.getByTestId("transaction-item-tx-0")).toBeInTheDocument();
-      expect(screen.queryByTestId("transaction-item-tx-1")).not.toBeInTheDocument();
-      expect(screen.queryByTestId("transaction-item-tx-2")).not.toBeInTheDocument();
+      expect(
+        screen.queryByTestId("transaction-item-tx-1"),
+      ).not.toBeInTheDocument();
+      expect(
+        screen.queryByTestId("transaction-item-tx-2"),
+      ).not.toBeInTheDocument();
     });
 
     it("should show all transactions again when clicking all tab", async () => {
@@ -184,7 +204,9 @@ describe("TransactionHistoryDialog", () => {
       setupMockHook([]);
       render(<TransactionHistoryDialog {...defaultProps} />);
 
-      expect(screen.getByTestId("empty-state-message")).toHaveTextContent("No transactions yet");
+      expect(screen.getByTestId("empty-state-message")).toHaveTextContent(
+        "No transactions yet",
+      );
     });
 
     it("should show empty state for completed filter when no completed transactions", async () => {
@@ -195,7 +217,9 @@ describe("TransactionHistoryDialog", () => {
       const completedTab = screen.getByRole("tab", { name: /Completed/ });
       await user.click(completedTab);
 
-      expect(screen.getByTestId("empty-state-message")).toHaveTextContent("No completed transactions");
+      expect(screen.getByTestId("empty-state-message")).toHaveTextContent(
+        "No completed transactions",
+      );
     });
 
     it("should show empty state for failed filter when no failed transactions", async () => {
@@ -206,7 +230,9 @@ describe("TransactionHistoryDialog", () => {
       const failedTab = screen.getByRole("tab", { name: /Failed/ });
       await user.click(failedTab);
 
-      expect(screen.getByTestId("empty-state-message")).toHaveTextContent("No failed transactions");
+      expect(screen.getByTestId("empty-state-message")).toHaveTextContent(
+        "No failed transactions",
+      );
     });
   });
 
@@ -215,7 +241,7 @@ describe("TransactionHistoryDialog", () => {
       render(<TransactionHistoryDialog {...defaultProps} />);
 
       expect(
-        screen.getByRole("button", { name: /Select/i })
+        screen.getByRole("button", { name: /Select/i }),
       ).toBeInTheDocument();
     });
 
@@ -223,7 +249,7 @@ describe("TransactionHistoryDialog", () => {
       render(<TransactionHistoryDialog {...defaultProps} />);
 
       expect(
-        screen.getByRole("button", { name: /Delete All/i })
+        screen.getByRole("button", { name: /Delete All/i }),
       ).toBeInTheDocument();
     });
 
@@ -231,11 +257,9 @@ describe("TransactionHistoryDialog", () => {
       setupMockHook([]);
       render(<TransactionHistoryDialog {...defaultProps} />);
 
+      expect(screen.getByRole("button", { name: /Select/i })).toBeDisabled();
       expect(
-        screen.getByRole("button", { name: /Select/i })
-      ).toBeDisabled();
-      expect(
-        screen.getByRole("button", { name: /Delete All/i })
+        screen.getByRole("button", { name: /Delete All/i }),
       ).toBeDisabled();
     });
 
@@ -243,12 +267,14 @@ describe("TransactionHistoryDialog", () => {
       const user = userEvent.setup();
       render(<TransactionHistoryDialog {...defaultProps} />);
 
-      const deleteAllButton = screen.getByRole("button", { name: /Delete All/i });
+      const deleteAllButton = screen.getByRole("button", {
+        name: /Delete All/i,
+      });
       await user.click(deleteAllButton);
 
       await waitFor(() => {
         expect(
-          screen.getByTestId("delete-all-dialog-title")
+          screen.getByTestId("delete-all-dialog-title"),
         ).toBeInTheDocument();
       });
     });
@@ -257,10 +283,14 @@ describe("TransactionHistoryDialog", () => {
       const user = userEvent.setup();
       render(<TransactionHistoryDialog {...defaultProps} />);
 
-      const deleteAllButton = screen.getByRole("button", { name: /Delete All/i });
+      const deleteAllButton = screen.getByRole("button", {
+        name: /Delete All/i,
+      });
       await user.click(deleteAllButton);
 
-      const confirmButton = await screen.findByRole("button", { name: /Delete All/i });
+      const confirmButton = await screen.findByRole("button", {
+        name: /Delete All/i,
+      });
       await user.click(confirmButton);
 
       expect(mockClearHistory).toHaveBeenCalledTimes(1);
@@ -270,14 +300,18 @@ describe("TransactionHistoryDialog", () => {
       const user = userEvent.setup();
       render(<TransactionHistoryDialog {...defaultProps} />);
 
-      const deleteAllButton = screen.getByRole("button", { name: /Delete All/i });
+      const deleteAllButton = screen.getByRole("button", {
+        name: /Delete All/i,
+      });
       await user.click(deleteAllButton);
 
       const cancelButton = screen.getByRole("button", { name: /Cancel/i });
       await user.click(cancelButton);
 
       expect(mockClearHistory).not.toHaveBeenCalled();
-      expect(screen.queryByTestId("delete-all-dialog-title")).not.toBeInTheDocument();
+      expect(
+        screen.queryByTestId("delete-all-dialog-title"),
+      ).not.toBeInTheDocument();
     });
   });
 
@@ -303,10 +337,10 @@ describe("TransactionHistoryDialog", () => {
       await user.click(selectButton);
 
       expect(
-        screen.getByRole("button", { name: /Select All/i })
+        screen.getByRole("button", { name: /Select All/i }),
       ).toBeInTheDocument();
       expect(
-        screen.getByRole("button", { name: /Delete \(0\)/i })
+        screen.getByRole("button", { name: /Delete \(0\)/i }),
       ).toBeInTheDocument();
     });
 
@@ -321,7 +355,7 @@ describe("TransactionHistoryDialog", () => {
       await user.click(checkbox);
 
       expect(
-        screen.getByRole("button", { name: /Delete \(1\)/i })
+        screen.getByRole("button", { name: /Delete \(1\)/i }),
       ).toBeInTheDocument();
     });
 
@@ -332,7 +366,9 @@ describe("TransactionHistoryDialog", () => {
       const selectButton = screen.getByRole("button", { name: /Select/i });
       await user.click(selectButton);
 
-      const selectAllButton = screen.getByRole("button", { name: /Select All/i });
+      const selectAllButton = screen.getByRole("button", {
+        name: /Select All/i,
+      });
       await user.click(selectAllButton);
 
       // All 3 transactions should be selected
@@ -350,17 +386,17 @@ describe("TransactionHistoryDialog", () => {
 
       await user.click(screen.getByTestId("checkbox-tx-0"));
       expect(
-        screen.getByRole("button", { name: /Delete \(1\)/i })
+        screen.getByRole("button", { name: /Delete \(1\)/i }),
       ).toBeInTheDocument();
 
       await user.click(screen.getByTestId("checkbox-tx-1"));
       expect(
-        screen.getByRole("button", { name: /Delete \(2\)/i })
+        screen.getByRole("button", { name: /Delete \(2\)/i }),
       ).toBeInTheDocument();
 
       await user.click(screen.getByTestId("checkbox-tx-0"));
       expect(
-        screen.getByRole("button", { name: /Delete \(1\)/i })
+        screen.getByRole("button", { name: /Delete \(1\)/i }),
       ).toBeInTheDocument();
     });
 
@@ -374,12 +410,14 @@ describe("TransactionHistoryDialog", () => {
       await user.click(screen.getByTestId("checkbox-tx-0"));
       await user.click(screen.getByTestId("checkbox-tx-1"));
 
-      const deleteButton = screen.getByRole("button", { name: /Delete \(2\)/i });
+      const deleteButton = screen.getByRole("button", {
+        name: /Delete \(2\)/i,
+      });
       await user.click(deleteButton);
 
       await waitFor(() => {
         expect(
-          screen.getByTestId("bulk-delete-dialog-title")
+          screen.getByTestId("bulk-delete-dialog-title"),
         ).toBeInTheDocument();
       });
     });
@@ -394,10 +432,14 @@ describe("TransactionHistoryDialog", () => {
       await user.click(screen.getByTestId("checkbox-tx-0"));
       await user.click(screen.getByTestId("checkbox-tx-1"));
 
-      const deleteButton = screen.getByRole("button", { name: /Delete \(2\)/i });
+      const deleteButton = screen.getByRole("button", {
+        name: /Delete \(2\)/i,
+      });
       await user.click(deleteButton);
 
-      const confirmButton = await screen.findByRole("button", { name: /Delete Selected/i });
+      const confirmButton = await screen.findByRole("button", {
+        name: /Delete Selected/i,
+      });
       await user.click(confirmButton);
 
       expect(mockDeleteTransaction).toHaveBeenCalledWith("tx-0");
@@ -421,7 +463,7 @@ describe("TransactionHistoryDialog", () => {
       expect(screen.queryByTestId("checkbox-tx-0")).not.toBeInTheDocument();
       // Back to normal mode
       expect(
-        screen.getByRole("button", { name: /Select/i })
+        screen.getByRole("button", { name: /Select/i }),
       ).toBeInTheDocument();
     });
 
@@ -434,7 +476,7 @@ describe("TransactionHistoryDialog", () => {
 
       await user.click(screen.getByTestId("checkbox-tx-0"));
       expect(
-        screen.getByRole("button", { name: /Delete \(1\)/i })
+        screen.getByRole("button", { name: /Delete \(1\)/i }),
       ).toBeInTheDocument();
 
       const cancelButton = screen.getByRole("button", { name: /Cancel/i });
@@ -445,7 +487,7 @@ describe("TransactionHistoryDialog", () => {
 
       // Delete count should be 0 (selection was cleared)
       expect(
-        screen.getByRole("button", { name: /Delete \(0\)/i })
+        screen.getByRole("button", { name: /Delete \(0\)/i }),
       ).toBeInTheDocument();
     });
   });
@@ -457,11 +499,15 @@ describe("TransactionHistoryDialog", () => {
 
       // First 10 should be visible
       for (let i = 0; i < 10; i++) {
-        expect(screen.getByTestId(`transaction-item-tx-${i}`)).toBeInTheDocument();
+        expect(
+          screen.getByTestId(`transaction-item-tx-${i}`),
+        ).toBeInTheDocument();
       }
 
       // 11-25 should not be visible yet
-      expect(screen.queryByTestId("transaction-item-tx-10")).not.toBeInTheDocument();
+      expect(
+        screen.queryByTestId("transaction-item-tx-10"),
+      ).not.toBeInTheDocument();
     });
 
     it("should reset pagination when changing filters", async () => {
@@ -480,7 +526,9 @@ describe("TransactionHistoryDialog", () => {
 
       // Should show first 10 failed transactions
       expect(screen.getByTestId("transaction-item-tx-10")).toBeInTheDocument();
-      expect(screen.queryByTestId("transaction-item-tx-20")).not.toBeInTheDocument();
+      expect(
+        screen.queryByTestId("transaction-item-tx-20"),
+      ).not.toBeInTheDocument();
     });
   });
 });

@@ -170,7 +170,10 @@ export function QuickSendEvmDialog({
               <Loader2 className="text-primary h-12 w-12 animate-spin" />
             </div>
             <div className="text-center">
-              <h3 className="mb-2 text-xl font-semibold" data-testid="sending-title">
+              <h3
+                className="mb-2 text-xl font-semibold"
+                data-testid="sending-title"
+              >
                 Sending Transaction
               </h3>
               <p className="text-muted-foreground text-sm">
@@ -200,7 +203,10 @@ export function QuickSendEvmDialog({
               <CheckCircle2 className="h-12 w-12 text-green-500" />
             </div>
             <div className="text-center">
-              <h3 className="mb-2 text-xl font-semibold text-green-500" data-testid="success-title">
+              <h3
+                className="mb-2 text-xl font-semibold text-green-500"
+                data-testid="success-title"
+              >
                 Transfer Complete!
               </h3>
               <p className="text-muted-foreground text-sm">
@@ -229,7 +235,10 @@ export function QuickSendEvmDialog({
               <AlertCircle className="h-12 w-12 text-red-500" />
             </div>
             <div className="text-center">
-              <h3 className="mb-2 text-xl font-semibold text-red-500" data-testid="error-title">
+              <h3
+                className="mb-2 text-xl font-semibold text-red-500"
+                data-testid="error-title"
+              >
                 Transfer Failed
               </h3>
               <p className="text-muted-foreground text-sm">
@@ -277,7 +286,10 @@ export function QuickSendEvmDialog({
     <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent className="max-w-2xl">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2 text-xl" data-testid="quick-send-title">
+          <DialogTitle
+            className="flex items-center gap-2 text-xl"
+            data-testid="quick-send-title"
+          >
             <Zap className="text-primary h-5 w-5" />
             EVM Recover
           </DialogTitle>
@@ -303,10 +315,16 @@ export function QuickSendEvmDialog({
                 </span>
               </div>
               <div className="flex items-baseline gap-2">
-                <span className="text-4xl font-bold" data-testid="evm-balance-amount">
+                <span
+                  className="text-4xl font-bold"
+                  data-testid="evm-balance-amount"
+                >
                   {formatAmount(evmBalance)}
                 </span>
-                <span className="text-muted-foreground text-lg font-medium" data-testid="evm-balance-currency">
+                <span
+                  className="text-muted-foreground text-lg font-medium"
+                  data-testid="evm-balance-currency"
+                >
                   TORUS
                 </span>
               </div>
@@ -334,8 +352,16 @@ export function QuickSendEvmDialog({
                       className="flex-shrink-0"
                     />
                     <div>
-                      <h4 className="mb-1 text-lg font-semibold" data-testid="destination-torus-title">Torus</h4>
-                      <p className="text-muted-foreground text-xs" data-testid="destination-torus-description">
+                      <h4
+                        className="mb-1 text-lg font-semibold"
+                        data-testid="destination-torus-title"
+                      >
+                        Torus
+                      </h4>
+                      <p
+                        className="text-muted-foreground text-xs"
+                        data-testid="destination-torus-description"
+                      >
                         Send to Torus chain
                       </p>
                     </div>
@@ -368,8 +394,16 @@ export function QuickSendEvmDialog({
                       className="flex-shrink-0"
                     />
                     <div>
-                      <h4 className="mb-1 text-lg font-semibold" data-testid="destination-base-title">Base Chain</h4>
-                      <p className="text-muted-foreground text-xs" data-testid="destination-base-description">
+                      <h4
+                        className="mb-1 text-lg font-semibold"
+                        data-testid="destination-base-title"
+                      >
+                        Base Chain
+                      </h4>
+                      <p
+                        className="text-muted-foreground text-xs"
+                        data-testid="destination-base-description"
+                      >
                         Send to Base mainnet
                       </p>
                     </div>

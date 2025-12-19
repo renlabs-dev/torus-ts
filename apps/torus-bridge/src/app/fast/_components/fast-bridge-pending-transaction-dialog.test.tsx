@@ -18,7 +18,7 @@ describe("PendingTransactionDialog", () => {
   const mockOnDeleteAndStartNew = vi.fn();
 
   const createMockTransaction = (
-    overrides: Partial<FastBridgeTransactionHistoryItem> = {}
+    overrides: Partial<FastBridgeTransactionHistoryItem> = {},
   ): FastBridgeTransactionHistoryItem => ({
     id: "tx-pending-123",
     direction: "base-to-native",
@@ -49,7 +49,9 @@ describe("PendingTransactionDialog", () => {
     it("should render dialog title with alert icon", () => {
       render(<PendingTransactionDialog {...defaultProps} />);
 
-      expect(screen.getByTestId("pending-dialog-title")).toHaveTextContent("Pending Transaction Found");
+      expect(screen.getByTestId("pending-dialog-title")).toHaveTextContent(
+        "Pending Transaction Found",
+      );
       expect(screen.getByTestId("alert-icon")).toBeInTheDocument();
     });
 
@@ -57,16 +59,18 @@ describe("PendingTransactionDialog", () => {
       render(<PendingTransactionDialog {...defaultProps} />);
 
       expect(
-        screen.getByText(/You have a pending transaction/i)
+        screen.getByText(/You have a pending transaction/i),
       ).toBeInTheDocument();
     });
 
     it("should not render when isOpen is false", () => {
       const { container } = render(
-        <PendingTransactionDialog {...defaultProps} isOpen={false} />
+        <PendingTransactionDialog {...defaultProps} isOpen={false} />,
       );
 
-      expect(container.querySelector("[role='dialog']")).not.toBeInTheDocument();
+      expect(
+        container.querySelector("[role='dialog']"),
+      ).not.toBeInTheDocument();
     });
   });
 
@@ -74,7 +78,9 @@ describe("PendingTransactionDialog", () => {
     it("should display timestamp in relative format", () => {
       render(<PendingTransactionDialog {...defaultProps} />);
 
-      expect(screen.getByTestId("pending-timestamp")).toHaveTextContent("5m ago");
+      expect(screen.getByTestId("pending-timestamp")).toHaveTextContent(
+        "5m ago",
+      );
     });
 
     it("should display correct direction for base-to-native", () => {
@@ -85,10 +91,12 @@ describe("PendingTransactionDialog", () => {
         <PendingTransactionDialog
           {...defaultProps}
           pendingTransaction={transaction}
-        />
+        />,
       );
 
-      expect(screen.getByTestId("pending-direction")).toHaveTextContent("Base → Torus");
+      expect(screen.getByTestId("pending-direction")).toHaveTextContent(
+        "Base → Torus",
+      );
     });
 
     it("should display correct direction for native-to-base", () => {
@@ -99,22 +107,28 @@ describe("PendingTransactionDialog", () => {
         <PendingTransactionDialog
           {...defaultProps}
           pendingTransaction={transaction}
-        />
+        />,
       );
 
-      expect(screen.getByTestId("pending-direction")).toHaveTextContent("Torus → Base");
+      expect(screen.getByTestId("pending-direction")).toHaveTextContent(
+        "Torus → Base",
+      );
     });
 
     it("should display amount with TORUS suffix", () => {
       render(<PendingTransactionDialog {...defaultProps} />);
 
-      expect(screen.getByTestId("pending-amount")).toHaveTextContent("100 TORUS");
+      expect(screen.getByTestId("pending-amount")).toHaveTextContent(
+        "100 TORUS",
+      );
     });
 
     it("should display pending status badge", () => {
       render(<PendingTransactionDialog {...defaultProps} />);
 
-      expect(screen.getByTestId("pending-status")).toHaveTextContent("Awaiting confirmation");
+      expect(screen.getByTestId("pending-status")).toHaveTextContent(
+        "Awaiting confirmation",
+      );
     });
   });
 
@@ -125,10 +139,12 @@ describe("PendingTransactionDialog", () => {
         <PendingTransactionDialog
           {...defaultProps}
           pendingTransaction={transaction}
-        />
+        />,
       );
 
-      expect(screen.getByTestId("pending-status")).toHaveTextContent("Awaiting confirmation");
+      expect(screen.getByTestId("pending-status")).toHaveTextContent(
+        "Awaiting confirmation",
+      );
     });
 
     it("should show 'Step 1 complete, awaiting Step 2' for step1_complete status", () => {
@@ -139,12 +155,12 @@ describe("PendingTransactionDialog", () => {
         <PendingTransactionDialog
           {...defaultProps}
           pendingTransaction={transaction}
-        />
+        />,
       );
 
-      expect(
-        screen.getByTestId("pending-status")
-      ).toHaveTextContent("Step 1 complete, awaiting Step 2");
+      expect(screen.getByTestId("pending-status")).toHaveTextContent(
+        "Step 1 complete, awaiting Step 2",
+      );
     });
   });
 
@@ -159,7 +175,7 @@ describe("PendingTransactionDialog", () => {
         <PendingTransactionDialog
           {...defaultProps}
           pendingTransaction={transaction}
-        />
+        />,
       );
 
       // Should truncate addresses and show them with arrow
@@ -167,7 +183,7 @@ describe("PendingTransactionDialog", () => {
       expect(screen.getByTestId("arrow-icon")).toBeInTheDocument();
 
       // Check that we have spans with font-mono class (address elements)
-      const addressElements = document.querySelectorAll('.font-mono');
+      const addressElements = document.querySelectorAll(".font-mono");
       expect(addressElements.length).toBe(2); // base and native addresses
     });
 
@@ -181,14 +197,14 @@ describe("PendingTransactionDialog", () => {
         <PendingTransactionDialog
           {...defaultProps}
           pendingTransaction={transaction}
-        />
+        />,
       );
 
       // Should show native first, then arrow, then base
       expect(screen.getByTestId("arrow-icon")).toBeInTheDocument();
 
       // Check that we have spans with font-mono class (address elements)
-      const addressElements = document.querySelectorAll('.font-mono');
+      const addressElements = document.querySelectorAll(".font-mono");
       expect(addressElements.length).toBe(2); // native and base addresses
     });
 
@@ -201,7 +217,7 @@ describe("PendingTransactionDialog", () => {
         <PendingTransactionDialog
           {...defaultProps}
           pendingTransaction={transaction}
-        />
+        />,
       );
 
       // Arrow should not be displayed if no addresses
@@ -218,10 +234,12 @@ describe("PendingTransactionDialog", () => {
         <PendingTransactionDialog
           {...defaultProps}
           pendingTransaction={transaction}
-        />
+        />,
       );
 
-      expect(screen.getByTestId("pending-timestamp")).toHaveTextContent("Just now");
+      expect(screen.getByTestId("pending-timestamp")).toHaveTextContent(
+        "Just now",
+      );
     });
 
     it("should display minutes ago", () => {
@@ -232,10 +250,12 @@ describe("PendingTransactionDialog", () => {
         <PendingTransactionDialog
           {...defaultProps}
           pendingTransaction={transaction}
-        />
+        />,
       );
 
-      expect(screen.getByTestId("pending-timestamp")).toHaveTextContent("10m ago");
+      expect(screen.getByTestId("pending-timestamp")).toHaveTextContent(
+        "10m ago",
+      );
     });
 
     it("should display hours and minutes", () => {
@@ -246,10 +266,12 @@ describe("PendingTransactionDialog", () => {
         <PendingTransactionDialog
           {...defaultProps}
           pendingTransaction={transaction}
-        />
+        />,
       );
 
-      expect(screen.getByTestId("pending-timestamp")).toHaveTextContent("2h 30m ago");
+      expect(screen.getByTestId("pending-timestamp")).toHaveTextContent(
+        "2h 30m ago",
+      );
     });
   });
 
@@ -258,7 +280,7 @@ describe("PendingTransactionDialog", () => {
       render(<PendingTransactionDialog {...defaultProps} />);
 
       expect(
-        screen.getByRole("button", { name: /Resume Transaction/i })
+        screen.getByRole("button", { name: /Resume Transaction/i }),
       ).toBeInTheDocument();
     });
 
@@ -266,7 +288,7 @@ describe("PendingTransactionDialog", () => {
       render(<PendingTransactionDialog {...defaultProps} />);
 
       expect(
-        screen.getByRole("button", { name: /Delete & Start New/i })
+        screen.getByRole("button", { name: /Delete & Start New/i }),
       ).toBeInTheDocument();
     });
 
@@ -278,7 +300,7 @@ describe("PendingTransactionDialog", () => {
         <PendingTransactionDialog
           {...defaultProps}
           pendingTransaction={transaction}
-        />
+        />,
       );
 
       const resumeButton = screen.getByRole("button", {
@@ -297,7 +319,7 @@ describe("PendingTransactionDialog", () => {
         <PendingTransactionDialog
           {...defaultProps}
           pendingTransaction={transaction}
-        />
+        />,
       );
 
       const deleteButton = screen.getByRole("button", {
@@ -368,14 +390,14 @@ describe("PendingTransactionDialog", () => {
         <PendingTransactionDialog
           {...defaultProps}
           pendingTransaction={transaction}
-        />
+        />,
       );
 
       // Should truncate correctly
       expect(screen.getByTestId("arrow-icon")).toBeInTheDocument();
 
       // Check that we have spans with font-mono class (address element)
-      const addressElements = document.querySelectorAll('.font-mono');
+      const addressElements = document.querySelectorAll(".font-mono");
       expect(addressElements.length).toBe(1); // single base address
     });
 
@@ -386,10 +408,12 @@ describe("PendingTransactionDialog", () => {
         <PendingTransactionDialog
           {...defaultProps}
           pendingTransaction={transaction}
-        />
+        />,
       );
 
-      expect(screen.getByTestId("pending-amount")).toHaveTextContent("5000.5 TORUS");
+      expect(screen.getByTestId("pending-amount")).toHaveTextContent(
+        "5000.5 TORUS",
+      );
     });
 
     it("should handle step1_complete with step2 details", () => {
@@ -403,12 +427,12 @@ describe("PendingTransactionDialog", () => {
         <PendingTransactionDialog
           {...defaultProps}
           pendingTransaction={transaction}
-        />
+        />,
       );
 
-      expect(
-        screen.getByTestId("pending-status")
-      ).toHaveTextContent("Step 1 complete, awaiting Step 2");
+      expect(screen.getByTestId("pending-status")).toHaveTextContent(
+        "Step 1 complete, awaiting Step 2",
+      );
     });
   });
 });
