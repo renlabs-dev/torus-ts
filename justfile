@@ -87,6 +87,12 @@ test-file project relative_path:
 test-file-output project relative_path:
   pnpm exec turbo run test -F "{{project}}" -- --run "{{relative_path}}" 2>&1 > output.test.txt || true
 
+# Show only failed test files (useful for CI/CD and quick debugging)
+# Usage: just test-failed [package-name]
+# Example: just test-failed "torus-bridge"
+test-failed filter="*":
+  pnpm exec turbo run test --continue -F "{{filter}}" -- --reporter=basic 2>&1 | grep -E "FAIL.*\.test\." | awk -F'FAIL ' '{print $2}' | awk -F'[\[>]' '{print $1}' | sed 's/[[:space:]]*$//' | sort -u
+
 # Run all tests
 test-all filter="*":
   pnpm exec ./scripts/dev-helper with-env turbo run test:all --continue -F "{{filter}}"
