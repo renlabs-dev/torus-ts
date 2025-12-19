@@ -4,13 +4,15 @@ import { fileURLToPath } from "url";
 import { cors } from "@elysiajs/cors";
 import { node } from "@elysiajs/node";
 import { openapi } from "@elysiajs/openapi";
-import { BasicLogger } from "@torus-network/torus-utils/logger";
 import { Elysia } from "elysia";
 import { Marked } from "marked";
 import { zodToJsonSchema } from "zod-to-json-schema";
 import { createAppContext } from "./context";
 import { getEnv } from "./env";
-import { authPlugin, requirePermission } from "./middleware/auth";
+import { requirePermission } from "./middleware/auth";
+import { contextPlugin } from "./middleware/context";
+import { creditsRouter } from "./routes/credits";
+import { permissionRouter } from "./routes/permission";
 import { predictionsRouter } from "./routes/predictions";
 import { tweetsRouter } from "./routes/tweets";
 import { createSignedError, HttpError } from "./utils/errors";
@@ -110,7 +112,6 @@ ${apiDocsContent}
 export async function createServer() {
   const env = getEnv(process.env);
   const context = await createAppContext(env);
-  const logger = BasicLogger.create({ name: "swarm-api" });
 
   return new Elysia({ adapter: node() })
     .use(cors({ origin: true, methods: ["GET", "POST"] }))
@@ -129,62 +130,74 @@ export async function createServer() {
           tags: [
             { name: "tweets", description: "Tweet operations" },
             { name: "predictions", description: "Prediction operations" },
+            {
+              name: "credits",
+              description: "Credit balance and purchase operations",
+            },
+            {
+              name: "permissions",
+              description: "Permission management operations",
+            },
           ],
         },
       }),
     )
-    .state("db", context.db)
-    .state("wsAPI", context.wsAPI)
-    .state("permissionCache", context.permissionCache)
-    .state("serverSignHash", context.serverSignHash)
-    .state("env", context.env)
-    .state("logger", logger)
+    .use(contextPlugin(context))
     .derive(({ body, query }) => ({
       requestInput: body ?? query,
     }))
-    .onError(({ code, error, set, requestInput, store }) => {
-      const signHash = store.serverSignHash as (hash: string) => string;
+    .onError(
+      ({ code, error, set, requestInput, serverSignHash, logger, request }) => {
+        if (error instanceof HttpError) {
+          set.status = error.status;
+          const method = request.method;
+          const path = new URL(request.url).pathname;
+          logger.info(`${method} ${path} ${error.status}`);
+          return createSignedError(
+            error.status,
+            error.message,
+            requestInput,
+            serverSignHash,
+          );
+        }
 
-      if (error instanceof HttpError) {
-        set.status = error.status;
+        if (code === "VALIDATION") {
+          set.status = 400;
+          const method = request.method;
+          const path = new URL(request.url).pathname;
+          logger.info(`${method} ${path} 400`);
+          return createSignedError(
+            400,
+            error.message,
+            requestInput,
+            serverSignHash,
+          );
+        }
+
+        console.error("Unhandled error:", error);
+        set.status = 500;
+        const method = request.method;
+        const path = new URL(request.url).pathname;
+        const errorMessage =
+          error instanceof Error ? error.message : JSON.stringify(error);
+        logger.error(`${method} ${path} 500 - ${errorMessage}`);
         return createSignedError(
-          error.status,
-          error.message,
+          500,
+          "Internal server error",
           requestInput,
-          signHash,
+          serverSignHash,
         );
-      }
-
-      if (code === "VALIDATION") {
-        set.status = 400;
-        return createSignedError(400, error.message, requestInput, signHash);
-      }
-
-      console.error("Unhandled error:", error);
-      set.status = 500;
-      return createSignedError(
-        500,
-        "Internal server error",
-        requestInput,
-        signHash,
-      );
-    })
+      },
+    )
     .get("/", () => {
       return new Response(apiDocsHtml, {
         headers: { "content-type": "text/html; charset=utf-8" },
       });
     })
     .get("/health", () => ({ status: "ok" }))
-    .use(authPlugin)
-    .onAfterHandle(({ request, set, userKey, store }) => {
-      const method = request.method;
-      const path = new URL(request.url).pathname;
-      const status = set.status;
-      const agentKey = userKey ? ` agent=${userKey}` : "";
-
-      store.logger.info(`${method} ${path} ${status}${agentKey}`);
-    })
-    .use(requirePermission(["prediction.filter"], context.permissionCache))
+    .use(permissionRouter)
+    .use(creditsRouter)
+    .use(requirePermission(["prediction.filter"]))
     .use(tweetsRouter)
     .use(predictionsRouter);
 }

@@ -26,11 +26,12 @@ export function SidebarBreadcrumb() {
 
   const segments = pathname.split("/").filter(Boolean);
 
-  if (
-    pathname === "/" ||
-    pathname === "/2d-hypergraph" ||
-    segments.length === 0
-  ) {
+  const isHypergraphRoute =
+    pathname === "/portal" ||
+    pathname === "/portal/2d-hypergraph" ||
+    pathname === "/2d-hypergraph";
+
+  if (isHypergraphRoute || segments.length === 0) {
     return (
       <Breadcrumb>
         <BreadcrumbList>
@@ -40,7 +41,9 @@ export function SidebarBreadcrumb() {
           <BreadcrumbSeparator className="hidden md:block" />
           <BreadcrumbItem>
             <BreadcrumbPage>
-              {pathname === "/2d-hypergraph" ? "2D Hypergraph" : "Hypergraph"}
+              {pathname.includes("2d-hypergraph")
+                ? "2D Hypergraph"
+                : "Hypergraph"}
             </BreadcrumbPage>
           </BreadcrumbItem>
         </BreadcrumbList>

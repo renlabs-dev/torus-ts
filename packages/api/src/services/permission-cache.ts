@@ -311,6 +311,34 @@ export class PermissionCacheService {
   }
 
   /**
+   * Manually adds a permission to the cache.
+   * Useful for immediately caching newly granted permissions without waiting for refresh.
+   *
+   * @param address - Address that was granted the permission
+   * @param namespacePath - Namespace path that was granted (without agent prefix)
+   */
+  addPermission(address: SS58Address, namespacePath: string): void {
+    if (!this.isInitialized || !this.grantorAgentName) {
+      logger.warn("Cannot add permission: cache not initialized");
+      return;
+    }
+
+    const fullPath =
+      `agent.${this.grantorAgentName}.${namespacePath}`.toLowerCase();
+
+    const existing = this.cache.get(fullPath);
+    if (existing) {
+      if (!existing.includes(address)) {
+        existing.push(address);
+        logger.info(`Added permission: ${address} → ${fullPath}`);
+      }
+    } else {
+      this.cache.set(fullPath, [address]);
+      logger.info(`Created permission entry: ${address} → ${fullPath}`);
+    }
+  }
+
+  /**
    * Stops the periodic refresh and cleans up resources.
    */
   stop(): void {

@@ -120,7 +120,7 @@ export function PermissionGraphCommand() {
       const paramName = is2DView ? "agent" : "id";
       params.set(paramName, nodeId);
 
-      const basePath = is2DView ? "/2d-hypergraph" : "/";
+      const basePath = is2DView ? "/portal/2d-hypergraph" : "/portal";
       router.replace(`${basePath}?${params.toString()}`, { scroll: false });
       setOpen(false);
     },

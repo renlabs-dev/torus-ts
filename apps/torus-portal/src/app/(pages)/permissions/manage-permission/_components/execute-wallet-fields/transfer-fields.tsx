@@ -39,7 +39,7 @@ export function TransferFields({
           // eslint-disable-next-line react-hooks/rules-of-hooks
           const accountStakedBy = useKeyStakingTo(api, delegatorAddress);
 
-          const fieldValue = field.value ?? "";
+          const fieldValue = field.value || "";
 
           // Find the stake amount for the selected from account
           const stakeToSelected = accountStakedBy.data?.find(
@@ -78,7 +78,7 @@ export function TransferFields({
         control={control}
         name="transferData.to"
         render={({ field }) => {
-          const fieldValue = field.value ?? "";
+          const fieldValue = field.value || "";
           return (
             <FormItem>
               <FormLabel>To Account</FormLabel>
@@ -105,7 +105,7 @@ export function TransferFields({
             <FormLabel>Amount</FormLabel>
             <FormControl>
               <TokenAmountInput
-                value={field.value ?? ""}
+                value={field.value || ""}
                 onChange={field.onChange}
                 placeholder="Enter amount to transfer"
                 disabled={!isAccountConnected}

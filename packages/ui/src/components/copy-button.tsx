@@ -10,7 +10,8 @@ import { Button } from "./button";
 
 type ButtonVariantProps = VariantProps<typeof buttonVariants>;
 
-interface CopyButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+interface CopyButtonProps
+  extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   copy: string;
   children: React.ReactNode;
   className?: string;

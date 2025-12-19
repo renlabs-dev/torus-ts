@@ -39,6 +39,7 @@
     "d3-hierarchy": "^3.1.2",
     "lucide-react": "catalog:",
     "next": "catalog:",
+    "motion": "catalog:",
     "next-plausible": "catalog:",
     "pixi-viewport": "^6.0.3",
     "pixi.js": "^8.12.0",

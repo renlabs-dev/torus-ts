@@ -9,9 +9,12 @@ export const getEnv = validateEnvOrExit({
     .transform((val) => Number.parseInt(val, 10)),
   POSTGRES_URL: z.string().min(1, "POSTGRES_URL is required"),
   NEXT_PUBLIC_TORUS_RPC_URL: z.string().nonempty("TORUS_RPC_URL is required"),
-  PERMISSION_GRANTOR_ADDRESS: z
+  NEXT_PUBLIC_PREDICTION_APP_ADDRESS: z
     .string()
-    .min(1, "PERMISSION_GRANTOR_ADDRESS is required")
+    .min(
+      1,
+      "NEXT_PUBLIC_PREDICTION_APP_ADDRESS is required for credit purchases",
+    )
     .transform((val) => checkSS58(val)),
   PERMISSION_CACHE_REFRESH_INTERVAL_MS: z
     .string()
@@ -21,6 +24,10 @@ export const getEnv = validateEnvOrExit({
   PREDICTION_APP_MNEMONIC: z
     .string()
     .min(1, "PREDICTION_APP_MNEMONIC is required for signing receipts"),
+  FILTER_PERMISSION_COST: z
+    .string()
+    .default((100n * 10n ** 18n).toString())
+    .transform((val) => BigInt(val)),
 });
 
 export type Env = ReturnType<typeof getEnv>;

@@ -1,8 +1,5 @@
 {
   "apps": {
-    "torus-page": {
-      "pr_preview": false
-    },
     "torus-portal": {
       "pr_preview": false
     },
@@ -22,7 +19,7 @@
       "pr_preview": false
     },
     "torus-cache": {
-      "pr_preview": true
+      "pr_preview": false
     },
     "torus-worker": {
       "pr_preview": false
@@ -50,7 +47,7 @@
     },
     "swarm-api": {
       "pr_preview": false,
-      "prod_only": false
+      "prod_only": true
     }
   }
 }

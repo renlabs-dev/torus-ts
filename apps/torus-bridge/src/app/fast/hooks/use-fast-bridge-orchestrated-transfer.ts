@@ -7,6 +7,7 @@ import { useFreeBalance } from "@torus-ts/query-provider/hooks";
 import { useTorus } from "@torus-ts/torus-provider";
 import { useSendTransaction } from "@torus-ts/torus-provider/use-send-transaction";
 import { useToast } from "@torus-ts/ui/hooks/use-toast";
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import type { Config } from "@wagmi/core";
 import { contractAddresses, getChainValuesOnEnv } from "~/config";
 import { env } from "~/env";
@@ -102,7 +103,7 @@ export function useOrchestratedTransfer() {
   );
 
   // Cast needed due to wagmi version mismatch between app and SDK
-  const wagmiConfig = useConfig() as Config;
+  const wagmiConfig = useConfig();
   const { data: walletClient } = useWalletClient();
   const { address: evmAddress, chain } = useAccount();
   const { switchChainAsync } = useSwitchChain();

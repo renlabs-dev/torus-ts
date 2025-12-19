@@ -75,8 +75,9 @@ export function TorusProvider({
     useState<InjectedAccountWithMeta | null>(null);
 
   async function loadTorusApi(): Promise<void> {
-    const { web3Accounts, web3Enable, web3FromAddress } =
-      await import("@polkadot/extension-dapp");
+    const { web3Accounts, web3Enable, web3FromAddress } = await import(
+      "@polkadot/extension-dapp"
+    );
 
     setTorusApi({
       web3Enable,

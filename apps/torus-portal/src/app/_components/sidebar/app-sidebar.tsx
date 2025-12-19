@@ -17,6 +17,7 @@ import {
   CircleFadingPlus,
   Currency,
   FilePen,
+  Home,
   Network,
   PackagePlus,
   PackageX,
@@ -39,8 +40,13 @@ const data = {
       title: "Overview",
       items: [
         {
-          title: "Hypergraph",
+          title: "Home",
           url: "/",
+          icon: Home,
+        },
+        {
+          title: "Hypergraph",
+          url: "/portal",
           icon: Network,
         },
         {
@@ -162,7 +168,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton size="lg" asChild>
-              <Link href="/">
+              <Link href="/portal">
                 <div className="text-sidebar-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg">
                   <Icons.Logo className="size-5" />
                 </div>

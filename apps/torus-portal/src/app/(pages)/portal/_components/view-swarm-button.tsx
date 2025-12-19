@@ -52,7 +52,9 @@ export function ViewSwarmButton({
       (n) => n.id === nodeSwarm.rootAgentId,
     );
     if (rootAgent) {
-      router.push(`/2d-hypergraph?swarm=${rootAgent.name.toLowerCase()}`);
+      router.push(
+        `/portal/2d-hypergraph?swarm=${rootAgent.name.toLowerCase()}`,
+      );
     }
   };
 

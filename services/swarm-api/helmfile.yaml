@@ -1,0 +1,34 @@
+environments:
+  prod:
+    values:
+      - ../../helm/values.yaml
+      - values.yaml
+      - namespace: torus-prod-web-apps
+      - environmentName: prod
+      - releaseName: swarm-api
+      - wssApiEndpoint: wss://api.torus.network
+      - chainEnv: mainnet
+      - ingressHost: api.predictionswarm.com
+      - ingressClassName: nginx
+---
+helmDefaults:
+  wait: true
+  createNamespace: false
+
+repositories:
+  - name: renlabs
+    url: https://charts.renlabs.dev/
+
+releases:
+  - name: "{{ .Values.releaseName }}"
+    namespace: "{{ .Values.namespace }}"
+    chart: renlabs/application
+    values:
+      - ../../helm/values.yaml.gotmpl
+      - values.yaml
+      - ingress:
+          hosts:
+            - host: "{{ .Values.ingressHost }}"
+              paths:
+                - path: /
+                  pathType: Prefix

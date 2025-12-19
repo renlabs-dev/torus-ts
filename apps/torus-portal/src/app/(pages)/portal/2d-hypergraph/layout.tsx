@@ -14,7 +14,7 @@ export function generateMetadata() {
       "network exploration",
     ],
     ogSiteName: "Torus Portal",
-    canonical: "/2d-hypergraph",
+    canonical: "portal/2d-hypergraph",
     baseUrl: env("BASE_URL"),
   });
 }

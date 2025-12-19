@@ -1,0 +1,87 @@
+service:
+  ports:
+    - port: 8080
+      name: http
+      protocol: TCP
+      targetPort: 8080
+
+deployment:
+  image:
+    repository: ghcr.io/renlabs-dev/swarm-api
+
+  additionalLabels:
+    app: swarm-api
+
+  podLabels:
+    app: swarm-api
+
+  resources:
+    requests:
+      memory: 200Mi
+      cpu: 0.1
+
+  command: ["pnpm"]
+  args: ["tsx", "./src/index.ts"]
+
+  ports:
+    - containerPort: 8080
+      name: http
+      protocol: TCP
+
+  startupProbe:
+    enabled: true
+    failureThreshold: 30
+    periodSeconds: 10
+    timeoutSeconds: 5
+    initialDelaySeconds: 10
+    tcpSocket:
+      port: 8080
+
+  readinessProbe:
+    enabled: true
+    failureThreshold: 3
+    periodSeconds: 10
+    successThreshold: 1
+    timeoutSeconds: 2
+    initialDelaySeconds: 10
+    tcpSocket:
+      port: 8080
+
+  livenessProbe:
+    enabled: true
+    failureThreshold: 3
+    periodSeconds: 10
+    successThreshold: 1
+    timeoutSeconds: 2
+    initialDelaySeconds: 10
+    tcpSocket:
+      port: 8080
+
+  env:
+    PORT:
+      value: "8080"
+    POSTGRES_URL:
+      valueFrom:
+        secretKeyRef:
+          name: "torus-{{ .Values.environmentName }}-web-apps-secret"
+          key: prediction_swarm_db_url
+    NEXT_PUBLIC_TORUS_RPC_URL:
+      valueFrom:
+        configMapKeyRef:
+          name: '{{ template "application.name" . }}-config'
+          key: next_public_ws_url
+    NEXT_PUBLIC_PREDICTION_APP_ADDRESS:
+      valueFrom:
+        secretKeyRef:
+          name: "torus-{{ .Values.environmentName }}-web-apps-secret"
+          key: NEXT_PUBLIC_PREDICTION_APP_ADDRESS
+    PERMISSION_GRANTOR_ADDRESS:
+      valueFrom:
+        secretKeyRef:
+          name: "torus-{{ .Values.environmentName }}-web-apps-secret"
+          key: PERMISSION_GRANTOR_ADDRESS
+    PREDICTION_APP_MNEMONIC:
+      valueFrom:
+        secretKeyRef:
+          name: "torus-{{ .Values.environmentName }}-web-apps-secret"
+          key: PREDICTION_APP_MNEMONIC
