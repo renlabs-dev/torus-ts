@@ -1,0 +1,36 @@
+{
+  "name": "apostle-swarm",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "tsc",
+    "clean": "rm -rf .turbo node_modules dist",
+    "dev": "pnpm with-env tsx ./src/index.ts",
+    "format": "prettier --check . --ignore-path ../../.gitignore --cache --cache-location .cache/.prettiercache",
+    "format-fix": "prettier --write . --ignore-path ../../.gitignore --cache --cache-location .cache/.prettiercache",
+    "lint": "eslint --cache --cache-location .cache/.eslintcache",
+    "lint-fix": "eslint --cache --cache-location .cache/.eslintcache --fix",
+    "typecheck": "tsc --noEmit",
+    "with-env": "dotenv -e ../../.env --"
+  },
+  "dependencies": {
+    "@torus-network/torus-utils": "workspace:*",
+    "@torus-ts/db": "workspace:*",
+    "drizzle-orm": "^0.40.0",
+    "postgres": "^3.4.4",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@torus-ts/eslint-config": "workspace:*",
+    "@torus-ts/prettier-config": "workspace:*",
+    "@torus-ts/tsconfig": "workspace:*",
+    "@types/node": "catalog:",
+    "dotenv-cli": "catalog:",
+    "eslint": "catalog:",
+    "prettier": "catalog:",
+    "tsx": "catalog:",
+    "typescript": "catalog:"
+  },
+  "prettier": "@torus-ts/prettier-config"
+}

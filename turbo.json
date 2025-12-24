@@ -74,6 +74,7 @@
   "globalEnv": [
     "DEBUG",
     "POSTGRES_URL",
+    "APOSTLE_SWARM_POSTGRES_URL",
     "DISCORD_API_TOKEN",
     "DISCORD_API_ENDPOINT",
     "PINATA_JWT",
