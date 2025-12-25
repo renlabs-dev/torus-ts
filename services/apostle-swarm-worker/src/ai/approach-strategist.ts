@@ -1,10 +1,6 @@
 import { z } from "zod";
 import type { CompletionOptions, OpenRouterClient } from "./openrouter-client";
-import {
-  buildSystemPrompt,
-  buildUserPrompt,
-  FIELD_LIMITS,
-} from "./prompts/approach-strategist";
+import { FIELD_LIMITS, getPromptLoader } from "./prompt-loader";
 import type { EvaluationProfile } from "./resonance-evaluator";
 
 /**
@@ -60,8 +56,9 @@ export class ApproachStrategist {
     evaluationProfile: EvaluationProfile,
     options?: CompletionOptions,
   ): Promise<ApproachStrategy> {
-    const systemPrompt = buildSystemPrompt();
-    const userPrompt = buildUserPrompt(xHandle, evaluationProfile);
+    const promptLoader = getPromptLoader();
+    const { system: systemPrompt, user: userPrompt } =
+      promptLoader.buildApproachStrategistPrompts(xHandle, evaluationProfile);
 
     const strategy = await this.client.completeJSON(
       systemPrompt,

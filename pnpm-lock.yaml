@@ -1428,6 +1428,9 @@ importers:
 
   services/apostle-swarm-worker:
     dependencies:
+      '@iarna/toml':
+        specifier: ^2.2.5
+        version: 2.2.5
       '@torus-network/torus-utils':
         specifier: workspace:*
         version: link:../../packages/torus-utils

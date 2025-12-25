@@ -1,10 +1,6 @@
 import { z } from "zod";
 import type { CompletionOptions, OpenRouterClient } from "./openrouter-client";
-import {
-  buildSystemPrompt,
-  buildUserPrompt,
-  FIELD_LIMITS,
-} from "./prompts/resonance-evaluator";
+import { FIELD_LIMITS, getPromptLoader } from "./prompt-loader";
 
 /**
  * Zod schema for a relevant Torus concept identified in the profile.
@@ -208,8 +204,9 @@ export class ResonanceEvaluator {
       .filter((t): t is TweetData & { text: string } => Boolean(t.text))
       .map((t) => t.text);
 
-    const systemPrompt = buildSystemPrompt();
-    const userPrompt = buildUserPrompt(xHandle, xBio, tweetTexts);
+    const promptLoader = getPromptLoader();
+    const { system: systemPrompt, user: userPrompt } =
+      promptLoader.buildResonanceEvaluatorPrompts(xHandle, xBio, tweetTexts);
 
     // Call LLM with JSON mode
     const evaluationProfile = await this.client.completeJSON(

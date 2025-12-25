@@ -1,5 +1,5 @@
-# Resonance Evaluator Prompts
-# These prompts guide the LLM in evaluating Twitter profiles for Torus resonance.
+# Shared Context for Apostle Swarm
+# Torus concepts and evaluation criteria used across multiple prompts.
 
 [torus_context]
 description = """
@@ -18,6 +18,12 @@ key_concepts = [
   "Emergent organization through feedback loops",
   "Cybernetic principles applied to social systems",
 ]
+
+[apostle_swarm]
+description = """
+The Apostle Swarm is a coordination surface for targeted outreach to recruit \
+individuals whose worldview resonates with Torus. Apostles are vetted participants \
+who engage with high-potential prospects identified through resonance evaluation."""
 
 [resonance_dimensions]
 description = "Five dimensions for evaluating conceptual resonance with Torus"
@@ -52,26 +58,30 @@ negative = [
 ]
 core_principle = "Resonance = alignment with Torus' view of intelligence as distributed, adaptive coordination under constraint."
 
-[output_constraints]
-data_integrity = [
-  "Do not fabricate quotes or examples; if none are available, leave the examples array empty.",
-  "Prefer information density over adjectives; do not restate Torus context in your output.",
-]
-brevity = [
-  "Output MUST be valid JSON only (no prose or headers).",
-  "Obey hard limits from the user prompt; if needed, drop low-salience items rather than exceed limits.",
-]
+[strategy_principles]
+description = "Core principles for generating approach strategies"
 
-[field_limits]
-mainTopics = { max_items = 5, max_words = 3 }
-communicationStyle = { max_chars = 140 }
-overallScore = { min = 0, max = 10 }
-relevantConcepts = { max_items = 3 }
-concept = { max_words = 3 }
-examples = { max_items = 2, max_chars = 120 }
-alignment = { max_chars = 120 }
-summary = { max_chars = 240 }
-keyThemes = { max_items = 3 }
-themeDescription = { max_chars = 120 }
-notablePatterns = { max_items = 5, max_words = 6 }
-overallAssessment = { max_chars = 280 }
+[[strategy_principles.principles]]
+name = "Leverage resonance points"
+guidance = "Use the concepts and themes that already resonate with this person's worldview."
+
+[[strategy_principles.principles]]
+name = "Match communication style"
+guidance = "Adapt the approach to their tone and aesthetic preferences."
+
+[[strategy_principles.principles]]
+name = "Provide concrete hooks"
+guidance = "Give specific opening messages or topics that would naturally lead into a Torus conversation."
+
+[[strategy_principles.principles]]
+name = "Identify risks"
+guidance = "Note potential pitfalls based on their patterns (e.g., if they dislike hype, avoid promotional language)."
+
+[strategy_rules]
+guidelines = [
+  "Be specific and actionable, not generic.",
+  "Ground recommendations in the evaluation data provided.",
+  "Keep hooks conversational and authentic, not salesy.",
+  "The goal is genuine connection, not manipulation.",
+  "Output MUST be valid JSON only, respecting all length limits.",
+]

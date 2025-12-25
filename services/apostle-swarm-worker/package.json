@@ -22,6 +22,7 @@
   },
   "prettier": "@torus-ts/prettier-config",
   "dependencies": {
+    "@iarna/toml": "^2.2.5",
     "@torus-network/torus-utils": "workspace:*",
     "@torus-ts/db": "workspace:*",
     "@torus-ts/twitter-client": "workspace:*",
