@@ -4,8 +4,9 @@ import type { SS58Address } from "@torus-network/sdk/types";
 import { tryAsync } from "@torus-network/torus-utils/try-catch";
 import { and, eq, isNull } from "@torus-ts/db";
 import type { DB } from "@torus-ts/db/client";
-import { apostlesSchema } from "@torus-ts/db/schema";
-import type { Apostle } from "@torus-ts/db/schema";
+import { apostlesSchema, prospectsSchema } from "@torus-ts/db/schema";
+import type { Apostle, Prospect } from "@torus-ts/db/schema";
+import { TRPCError } from "@trpc/server";
 
 /**
  * Stake threshold for community prospect submissions.
@@ -104,4 +105,35 @@ export async function hasProposalStake(
     hasEnough: stake >= PROPOSAL_STAKE_THRESHOLD,
     stake,
   };
+}
+
+/**
+ * Get a prospect by ID or throw NOT_FOUND.
+ */
+export async function getProspectOrThrow(
+  db: DB,
+  prospectId: string,
+): Promise<Prospect> {
+  const prospect = await db.query.prospectsSchema.findFirst({
+    where: and(
+      eq(prospectsSchema.id, prospectId),
+      isNull(prospectsSchema.deletedAt),
+    ),
+  });
+  if (prospect === undefined) {
+    throw new TRPCError({ code: "NOT_FOUND", message: "Prospect not found" });
+  }
+  return prospect;
+}
+
+/**
+ * Require caller to be an apostle or throw FORBIDDEN.
+ */
+export async function requireApostle(db: DB, walletAddress: string) {
+  if (!(await isApostle(db, walletAddress))) {
+    throw new TRPCError({
+      code: "FORBIDDEN",
+      message: "Only apostles can perform this action",
+    });
+  }
 }

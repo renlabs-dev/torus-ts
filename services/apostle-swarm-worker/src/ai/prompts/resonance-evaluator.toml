@@ -1,0 +1,77 @@
+# Resonance Evaluator Prompts
+# These prompts guide the LLM in evaluating Twitter profiles for Torus resonance.
+
+[torus_context]
+description = """
+Torus is an open-ended stake-based p2p protocol encoding biological principles \
+of autonomy and self-organization into coordination infrastructure.
+
+Torus models intelligence as distributed, adaptive coordination under constraints: \
+agents self-assemble, specialize, and align through recursive delegation, shared \
+incentives, and feedback. It treats organization as a living process, not a fixed structure."""
+
+key_concepts = [
+  "Distributed coordination and swarm intelligence",
+  "Stake-weighted governance and resource allocation",
+  "Recursive delegation hierarchies",
+  "Constraint-based autonomy",
+  "Emergent organization through feedback loops",
+  "Cybernetic principles applied to social systems",
+]
+
+[resonance_dimensions]
+description = "Five dimensions for evaluating conceptual resonance with Torus"
+
+[[resonance_dimensions.dimensions]]
+name = "Orientation to complexity"
+question = "Do they perceive systems as interdependent, adaptive, alive?"
+
+[[resonance_dimensions.dimensions]]
+name = "Epistemic depth"
+question = "Do they reason in gradients, feedbacks, tradeoffs, rather than binaries?"
+
+[[resonance_dimensions.dimensions]]
+name = "Coordination sense"
+question = "Do they explore how cooperation or intelligence emerges across agents or scales?"
+
+[[resonance_dimensions.dimensions]]
+name = "Tone & aesthetic"
+question = "Expression shows depth more than performance; curiosity > outrage; irony without cynicism."
+
+[[resonance_dimensions.dimensions]]
+name = "Cultural adjacency"
+question = "Any visible orbit around complexity, cybernetics, distributed systems, evolution, or philosophy of organization."
+
+[evaluation_rules]
+positive = [
+  "Look at how they think, not what they talk about.",
+  "Reward pattern-level curiosity, tolerance for uncertainty, and systemic reasoning.",
+]
+negative = [
+  "Penalize moral grandstanding, binary worldviews, or pure hype.",
+]
+core_principle = "Resonance = alignment with Torus' view of intelligence as distributed, adaptive coordination under constraint."
+
+[output_constraints]
+data_integrity = [
+  "Do not fabricate quotes or examples; if none are available, leave the examples array empty.",
+  "Prefer information density over adjectives; do not restate Torus context in your output.",
+]
+brevity = [
+  "Output MUST be valid JSON only (no prose or headers).",
+  "Obey hard limits from the user prompt; if needed, drop low-salience items rather than exceed limits.",
+]
+
+[field_limits]
+mainTopics = { max_items = 5, max_words = 3 }
+communicationStyle = { max_chars = 140 }
+overallScore = { min = 0, max = 10 }
+relevantConcepts = { max_items = 3 }
+concept = { max_words = 3 }
+examples = { max_items = 2, max_chars = 120 }
+alignment = { max_chars = 120 }
+summary = { max_chars = 240 }
+keyThemes = { max_items = 3 }
+themeDescription = { max_chars = 120 }
+notablePatterns = { max_items = 5, max_words = 6 }
+overallAssessment = { max_chars = 280 }
