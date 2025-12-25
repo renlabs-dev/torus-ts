@@ -1,6 +1,6 @@
 {
   "name": "apostle-swarm-worker",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "private": true,
   "license": "MIT",
   "type": "module",
@@ -22,7 +22,6 @@
   },
   "prettier": "@torus-ts/prettier-config",
   "dependencies": {
-    "@t3-oss/env-core": "^0.11.1",
     "@torus-network/torus-utils": "workspace:*",
     "@torus-ts/db": "workspace:*",
     "@torus-ts/twitter-client": "workspace:*",

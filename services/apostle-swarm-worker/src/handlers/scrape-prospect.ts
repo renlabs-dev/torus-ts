@@ -9,7 +9,6 @@ import type { KaitoTwitterAPI } from "@torus-ts/twitter-client";
 import { eq } from "drizzle-orm";
 import { assert } from "tsafe";
 import type { ApostleSwarmDB } from "../db";
-import { env } from "../env";
 import { ScrapeProspectPayloadSchema } from "../types";
 
 const log = BasicLogger.create({ name: "scrape-prospect" });
@@ -17,6 +16,7 @@ const log = BasicLogger.create({ name: "scrape-prospect" });
 export interface ScrapeProspectContext {
   db: ApostleSwarmDB;
   twitterClient: KaitoTwitterAPI;
+  scrapeTweetLimit: number;
 }
 
 /**
@@ -104,7 +104,7 @@ export async function handleScrapeProspect(
   }
 
   // Limit tweets to configured amount (API returns up to 20 per page)
-  const tweets = tweetsResult.data.slice(0, env.SCRAPE_TWEET_LIMIT);
+  const tweets = tweetsResult.data.slice(0, ctx.scrapeTweetLimit);
   log.info(`Fetched ${tweets.length} tweets for @${xHandle}`);
 
   // Upsert memory_store record and update prospect in a transaction

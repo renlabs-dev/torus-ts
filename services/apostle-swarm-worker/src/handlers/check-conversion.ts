@@ -4,7 +4,6 @@ import { conversionLogsSchema, prospectsSchema } from "@torus-ts/db/schema";
 import type { KaitoTwitterAPI } from "@torus-ts/twitter-client";
 import { eq } from "drizzle-orm";
 import type { ApostleSwarmDB } from "../db";
-import { env } from "../env";
 import { CheckConversionPayloadSchema } from "../types";
 
 const log = BasicLogger.create({ name: "check-conversion" });
@@ -12,6 +11,7 @@ const log = BasicLogger.create({ name: "check-conversion" });
 export interface CheckConversionContext {
   db: ApostleSwarmDB;
   twitterClient: KaitoTwitterAPI;
+  torusHandle: string;
 }
 
 /**
@@ -66,7 +66,7 @@ export async function handleCheckConversion(
   }
 
   const xHandle = prospect.xHandle;
-  const targetHandle = env.TORUS_HANDLE;
+  const targetHandle = ctx.torusHandle;
 
   log.info(`Checking if @${xHandle} follows @${targetHandle}`);
 

@@ -7,7 +7,7 @@ import { and, asc, eq, lte } from "drizzle-orm";
 import express from "express";
 import { ApproachStrategist, OpenRouterClient, ResonanceEvaluator } from "./ai";
 import { createApostleSwarmDb } from "./db";
-import { env } from "./env";
+import { getEnv } from "./env";
 import {
   handleCheckConversion,
   handleEvaluateProspect,
@@ -19,10 +19,15 @@ import { sleep } from "./utils";
 const log = BasicLogger.create({ name: "apostle-swarm-worker" });
 
 /**
+ * Env type inferred from getEnv
+ */
+type Env = ReturnType<typeof getEnv>;
+
+/**
  * Start health check HTTP server.
  * Provides /api/health endpoint for k8s probes.
  */
-function startHealthCheckServer(): void {
+function startHealthCheckServer(env: Env): void {
   const app = express();
   app.get("/api/health", (_, res) => {
     res.send("apostle-swarm-worker OK");
@@ -109,13 +114,20 @@ async function markJobFailed(
 }
 
 /**
- * Context for job processing, containing all required clients.
+ * Context for job processing, containing all required clients and config.
  */
 interface JobProcessingContext {
   db: ReturnType<typeof createApostleSwarmDb>;
   twitterClient: KaitoTwitterAPI;
   evaluator: ResonanceEvaluator;
   strategist: ApproachStrategist;
+  // Config values from env
+  scrapeTweetLimit: number;
+  qualityThresholdHigh: number;
+  qualityThresholdMid: number;
+  qualityThresholdLow: number;
+  evaluatorCooldownHours: number;
+  torusHandle: string;
 }
 
 /**
@@ -128,13 +140,24 @@ async function processJob(
   switch (job.jobType) {
     case "SCRAPE_PROSPECT":
       await handleScrapeProspect(
-        { db: ctx.db, twitterClient: ctx.twitterClient },
+        {
+          db: ctx.db,
+          twitterClient: ctx.twitterClient,
+          scrapeTweetLimit: ctx.scrapeTweetLimit,
+        },
         job.payload,
       );
       break;
     case "EVALUATE_PROSPECT":
       await handleEvaluateProspect(
-        { db: ctx.db, evaluator: ctx.evaluator },
+        {
+          db: ctx.db,
+          evaluator: ctx.evaluator,
+          qualityThresholdHigh: ctx.qualityThresholdHigh,
+          qualityThresholdMid: ctx.qualityThresholdMid,
+          qualityThresholdLow: ctx.qualityThresholdLow,
+          evaluatorCooldownHours: ctx.evaluatorCooldownHours,
+        },
         job.payload,
       );
       break;
@@ -146,7 +169,11 @@ async function processJob(
       break;
     case "CHECK_CONVERSION":
       await handleCheckConversion(
-        { db: ctx.db, twitterClient: ctx.twitterClient },
+        {
+          db: ctx.db,
+          twitterClient: ctx.twitterClient,
+          torusHandle: ctx.torusHandle,
+        },
         job.payload,
       );
       break;
@@ -161,8 +188,8 @@ async function processJob(
  * Main worker loop.
  * Polls for pending jobs and processes them.
  */
-async function runWorker(): Promise<void> {
-  const db = createApostleSwarmDb();
+async function runWorker(env: Env): Promise<void> {
+  const db = createApostleSwarmDb(env);
   const twitterClient = new KaitoTwitterAPI({
     apiKey: env.TWITTERAPI_IO_KEY,
   });
@@ -186,11 +213,16 @@ async function runWorker(): Promise<void> {
     twitterClient,
     evaluator,
     strategist,
+    // Config values from env
+    scrapeTweetLimit: env.SCRAPE_TWEET_LIMIT,
+    qualityThresholdHigh: env.QUALITY_THRESHOLD_HIGH,
+    qualityThresholdMid: env.QUALITY_THRESHOLD_MID,
+    qualityThresholdLow: env.QUALITY_THRESHOLD_LOW,
+    evaluatorCooldownHours: env.EVALUATOR_COOLDOWN_HOURS,
+    torusHandle: env.TORUS_HANDLE,
   };
 
   log.info("Worker started, polling for jobs...");
-  log.info(`Evaluation model: ${env.EVALUATION_MODEL}`);
-  log.info(`Strategy model: ${env.STRATEGY_MODEL}`);
 
   let consecutiveFailures = 0;
   const maxBackoff = 1000 * 60 * 5; // 5 minutes max backoff
@@ -270,11 +302,16 @@ async function runWorker(): Promise<void> {
 async function main(): Promise<void> {
   log.info("Apostle Swarm Worker starting...");
 
+  const env = getEnv(process.env);
+  log.info("Environment validated");
+  log.info(`Evaluation model: ${env.EVALUATION_MODEL}`);
+  log.info(`Strategy model: ${env.STRATEGY_MODEL}`);
+
   // Start health check server
-  startHealthCheckServer();
+  startHealthCheckServer(env);
 
   // Run the worker loop
-  await runWorker();
+  await runWorker(env);
 }
 
 main().catch((err) => {

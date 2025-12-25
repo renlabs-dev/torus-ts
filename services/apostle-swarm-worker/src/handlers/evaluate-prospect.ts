@@ -10,7 +10,6 @@ import { eq } from "drizzle-orm";
 import { assert } from "tsafe";
 import type { ResonanceEvaluator, TweetData } from "../ai";
 import type { ApostleSwarmDB } from "../db";
-import { env } from "../env";
 import { EvaluateProspectPayloadSchema } from "../types";
 
 type QualityTag = keyof typeof qualityTagValues;
@@ -20,19 +19,26 @@ const log = BasicLogger.create({ name: "evaluate-prospect" });
 export interface EvaluateProspectContext {
   db: ApostleSwarmDB;
   evaluator: ResonanceEvaluator;
+  qualityThresholdHigh: number;
+  qualityThresholdMid: number;
+  qualityThresholdLow: number;
+  evaluatorCooldownHours: number;
 }
 
 /**
  * Map resonance score (0-10) to a quality tag using configurable thresholds.
  */
-function mapScoreToQualityTag(score: number): QualityTag {
-  if (score >= env.QUALITY_THRESHOLD_HIGH) {
+function mapScoreToQualityTag(
+  score: number,
+  ctx: EvaluateProspectContext,
+): QualityTag {
+  if (score >= ctx.qualityThresholdHigh) {
     return "HIGH_POTENTIAL";
   }
-  if (score >= env.QUALITY_THRESHOLD_MID) {
+  if (score >= ctx.qualityThresholdMid) {
     return "MID_POTENTIAL";
   }
-  if (score >= env.QUALITY_THRESHOLD_LOW) {
+  if (score >= ctx.qualityThresholdLow) {
     return "LOW_POTENTIAL";
   }
   return "BAD_PROSPECT";
@@ -42,12 +48,15 @@ function mapScoreToQualityTag(score: number): QualityTag {
  * Check if the prospect is still in cooldown period.
  * Returns true if evaluation should be skipped.
  */
-function isInCooldown(lastEvaluatedAt: Date | null): boolean {
+function isInCooldown(
+  lastEvaluatedAt: Date | null,
+  cooldownHours: number,
+): boolean {
   if (lastEvaluatedAt === null) {
     return false;
   }
 
-  const cooldownMs = env.EVALUATOR_COOLDOWN_HOURS * 60 * 60 * 1000;
+  const cooldownMs = cooldownHours * 60 * 60 * 1000;
   const cooldownEnd = new Date(lastEvaluatedAt.getTime() + cooldownMs);
   return new Date() < cooldownEnd;
 }
@@ -114,7 +123,7 @@ export async function handleEvaluateProspect(
   }
 
   // Check cooldown
-  if (isInCooldown(memory.lastEvaluatedAt)) {
+  if (isInCooldown(memory.lastEvaluatedAt, ctx.evaluatorCooldownHours)) {
     log.info(
       `Prospect ${prospect_id} is in cooldown (last evaluated: ${memory.lastEvaluatedAt?.toISOString()}), skipping`,
     );
@@ -144,7 +153,7 @@ export async function handleEvaluateProspect(
   log.info(`Evaluation complete: resonance score = ${resonanceScore}/10`);
 
   // Map score to quality tag
-  const qualityTag = mapScoreToQualityTag(resonanceScore);
+  const qualityTag = mapScoreToQualityTag(resonanceScore, ctx);
   log.info(`Quality tag mapped to: ${qualityTag}`);
 
   // Store results in a transaction
