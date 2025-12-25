@@ -45,6 +45,11 @@ const QUALITY_TAG_UPDATE_SCHEMA = z.object({
   ),
 });
 
+const CONVERSION_MARK_SCHEMA = z.object({
+  prospectId: z.string().uuid("Invalid prospect ID"),
+  details: z.record(z.unknown()).optional(),
+});
+
 const FAILURE_MARK_SCHEMA = z.object({
   prospectId: z.string().uuid("Invalid prospect ID"),
   details: z.record(z.unknown()).optional(),
@@ -565,7 +570,77 @@ export const apostleSwarmRouter = {
       return { success: true, prospectId: input.prospectId };
     }),
 
-  // ==== Command 8: Manual failure mark ====
+  // ==== Command 8: Manual conversion mark ====
+
+  /**
+   * Claiming apostle or admin marks a claimed prospect as converted.
+   */
+  markConverted: authenticatedProcedure
+    .input(CONVERSION_MARK_SCHEMA)
+    .mutation(async ({ ctx, input }) => {
+      const walletAddress = ctx.sessionData.userKey;
+
+      // Get apostle record for caller
+      const callerApostle = await getApostle(ctx.db, walletAddress);
+      const callerIsAdmin = await isAdmin(ctx.db, walletAddress);
+
+      // Get prospect
+      const prospect = await ctx.db.query.prospectsSchema.findFirst({
+        where: and(
+          eq(prospectsSchema.id, input.prospectId),
+          isNull(prospectsSchema.deletedAt),
+        ),
+      });
+
+      if (prospect === undefined) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Prospect not found",
+        });
+      }
+
+      if (prospect.claimStatus !== "CLAIMED") {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: `Can only mark claimed prospects as converted (current status: ${prospect.claimStatus})`,
+        });
+      }
+
+      // Check authorization: must be claiming apostle or admin
+      const isClaimingApostle =
+        callerApostle !== null &&
+        prospect.claimedByApostleId === callerApostle.id;
+
+      if (!isClaimingApostle && !callerIsAdmin) {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message:
+            "Only the claiming apostle or an admin can mark this prospect as converted",
+        });
+      }
+
+      // Update claim status to CONVERTED
+      await ctx.db
+        .update(prospectsSchema)
+        .set({
+          claimStatus: "CONVERTED",
+          updatedAt: new Date(),
+        })
+        .where(eq(prospectsSchema.id, input.prospectId));
+
+      // Insert conversion log
+      await ctx.db.insert(conversionLogsSchema).values({
+        prospectId: input.prospectId,
+        apostleId: prospect.claimedByApostleId,
+        eventType: "CONVERTED",
+        source: "MANUAL_MARK",
+        details: input.details ?? null,
+      });
+
+      return { success: true, prospectId: input.prospectId };
+    }),
+
+  // ==== Command 9: Manual failure mark ====
 
   /**
    * Claiming apostle or admin marks the prospect as failed.

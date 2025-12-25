@@ -145,7 +145,10 @@ async function processJob(
       );
       break;
     case "CHECK_CONVERSION":
-      await handleCheckConversion({ db: ctx.db }, job.payload);
+      await handleCheckConversion(
+        { db: ctx.db, twitterClient: ctx.twitterClient },
+        job.payload,
+      );
       break;
     default: {
       const _exhaustiveCheck: never = job.jobType;

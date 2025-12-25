@@ -67,6 +67,12 @@ export const env = createEnv({
       .transform(Number)
       .pipe(z.number().min(0).max(10))
       .default("3"),
+
+    /**
+     * Target Twitter handle to check if prospects follow (without @).
+     * Used by CHECK_CONVERSION job to detect conversions.
+     */
+    TORUS_HANDLE: z.string().default("torus_network"),
   },
   runtimeEnv: process.env,
   emptyStringAsUndefined: true,
