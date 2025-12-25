@@ -5,6 +5,7 @@ import { jobsQueueSchema } from "@torus-ts/db/schema";
 import { KaitoTwitterAPI } from "@torus-ts/twitter-client";
 import { and, asc, eq, lte } from "drizzle-orm";
 import express from "express";
+import { ApproachStrategist, OpenRouterClient, ResonanceEvaluator } from "./ai";
 import { createApostleSwarmDb } from "./db";
 import { env } from "./env";
 import {
@@ -108,27 +109,43 @@ async function markJobFailed(
 }
 
 /**
+ * Context for job processing, containing all required clients.
+ */
+interface JobProcessingContext {
+  db: ReturnType<typeof createApostleSwarmDb>;
+  twitterClient: KaitoTwitterAPI;
+  evaluator: ResonanceEvaluator;
+  strategist: ApproachStrategist;
+}
+
+/**
  * Process a single job by dispatching to the appropriate handler.
  */
 async function processJob(
-  db: ReturnType<typeof createApostleSwarmDb>,
-  twitterClient: KaitoTwitterAPI,
+  ctx: JobProcessingContext,
   job: JobsQueue,
 ): Promise<void> {
-  const ctx = { db, twitterClient };
-
   switch (job.jobType) {
     case "SCRAPE_PROSPECT":
-      await handleScrapeProspect(ctx, job.payload);
+      await handleScrapeProspect(
+        { db: ctx.db, twitterClient: ctx.twitterClient },
+        job.payload,
+      );
       break;
     case "EVALUATE_PROSPECT":
-      await handleEvaluateProspect(ctx, job.payload);
+      await handleEvaluateProspect(
+        { db: ctx.db, evaluator: ctx.evaluator },
+        job.payload,
+      );
       break;
     case "GENERATE_STRATEGY":
-      await handleGenerateStrategy(ctx, job.payload);
+      await handleGenerateStrategy(
+        { db: ctx.db, strategist: ctx.strategist },
+        job.payload,
+      );
       break;
     case "CHECK_CONVERSION":
-      await handleCheckConversion(ctx, job.payload);
+      await handleCheckConversion({ db: ctx.db }, job.payload);
       break;
     default: {
       const _exhaustiveCheck: never = job.jobType;
@@ -147,7 +164,30 @@ async function runWorker(): Promise<void> {
     apiKey: env.TWITTERAPI_IO_KEY,
   });
 
+  // Create OpenRouter clients for each task
+  const evaluationClient = new OpenRouterClient({
+    apiKey: env.OPENROUTER_API_KEY,
+    model: env.EVALUATION_MODEL,
+  });
+  const strategyClient = new OpenRouterClient({
+    apiKey: env.OPENROUTER_API_KEY,
+    model: env.STRATEGY_MODEL,
+  });
+
+  // Create AI service clients
+  const evaluator = new ResonanceEvaluator({ client: evaluationClient });
+  const strategist = new ApproachStrategist({ client: strategyClient });
+
+  const ctx: JobProcessingContext = {
+    db,
+    twitterClient,
+    evaluator,
+    strategist,
+  };
+
   log.info("Worker started, polling for jobs...");
+  log.info(`Evaluation model: ${env.EVALUATION_MODEL}`);
+  log.info(`Strategy model: ${env.STRATEGY_MODEL}`);
 
   let consecutiveFailures = 0;
   const maxBackoff = 1000 * 60 * 5; // 5 minutes max backoff
@@ -191,7 +231,7 @@ async function runWorker(): Promise<void> {
     }
 
     // Process the job
-    const [processErr] = await tryAsync(processJob(db, twitterClient, job));
+    const [processErr] = await tryAsync(processJob(ctx, job));
 
     if (processErr !== undefined) {
       log.error(`Job ${job.id} failed: ${processErr.message}`);
