@@ -30,7 +30,7 @@
     "openai": "^4.77.0",
     "tsafe": "catalog:",
     "zod": "catalog:",
-    "zod-to-json-schema": "^3.24.1"
+    "zod-to-json-schema": "^3.24.6"
   },
   "devDependencies": {
     "@torus-ts/eslint-config": "workspace:*",
