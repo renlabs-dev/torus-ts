@@ -1,0 +1,44 @@
+deployment:
+  image:
+    repository: ghcr.io/renlabs-dev/apostle-swarm
+
+  additionalLabels:
+    app: apostle-swarm
+  podLabels:
+    app: apostle-swarm
+
+  startupProbe:
+    enabled: true
+    failureThreshold: 30
+    periodSeconds: 10
+    timeoutSeconds: 5
+    initialDelaySeconds: 10
+    tcpSocket:
+      port: 8000
+
+  readinessProbe:
+    enabled: true
+    failureThreshold: 3
+    periodSeconds: 10
+    successThreshold: 1
+    timeoutSeconds: 2
+    initialDelaySeconds: 10
+    tcpSocket:
+      port: 8000
+
+  livenessProbe:
+    enabled: true
+    failureThreshold: 3
+    periodSeconds: 10
+    successThreshold: 1
+    timeoutSeconds: 2
+    initialDelaySeconds: 10
+    tcpSocket:
+      port: 8000
+
+  env:
+    NEXT_PUBLIC_TORUS_ALLOCATOR_ADDRESS:
+      valueFrom:
+        configMapKeyRef:
+          name: '{{ template "application.name" . }}-config'
+          key: torus_allocator_address
