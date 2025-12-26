@@ -5,6 +5,7 @@ import { TorusProvider } from "@torus-ts/torus-provider";
 import { Layout } from "@torus-ts/ui/components/layout";
 import { Toaster } from "@torus-ts/ui/components/toaster";
 import { env, EnvScript } from "~/env";
+import { TRPCReactProvider } from "~/trpc/react";
 import type { Metadata } from "next";
 import { Fira_Mono as FiraMono } from "next/font/google";
 import { ProphetFinderHeader } from "./_components/prophet-finder-header";
@@ -36,11 +37,13 @@ export default function RootLayout({
           wsEndpoint={env("NEXT_PUBLIC_TORUS_RPC_URL")}
           torusCacheUrl={env("NEXT_PUBLIC_TORUS_CACHE_URL")}
         >
-          <ProphetFinderHeader
-            torusCacheUrl={env("NEXT_PUBLIC_TORUS_CACHE_URL")}
-          />
-          {children}
-          <Toaster />
+          <TRPCReactProvider>
+            <ProphetFinderHeader
+              torusCacheUrl={env("NEXT_PUBLIC_TORUS_CACHE_URL")}
+            />
+            {children}
+            <Toaster />
+          </TRPCReactProvider>
         </TorusProvider>
         <GoogleAnalytics gaId="G-7YCMH64Q4J" />
       </ReactQueryProvider>
