@@ -36,6 +36,7 @@ export function ProphetFinderHeader({
       appName="Torus Prophet Finder"
       wallet={
         <WalletDropdown
+          className="z-50"
           balance={accountFreeBalance.data}
           stakeOut={stakeOut.data}
           accounts={accounts}
