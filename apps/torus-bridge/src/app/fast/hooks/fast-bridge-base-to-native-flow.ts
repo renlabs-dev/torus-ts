@@ -121,7 +121,7 @@ function validateWarpConfiguration(
  */
 export async function executeBaseToNativeStep1(
   params: BaseToNativeStep1Params,
-) {
+): Promise<{ success: boolean; txHash?: string; error?: Error }> {
   const {
     amount,
     evmAddress,
@@ -201,6 +201,8 @@ export async function executeBaseToNativeStep1(
     }),
   );
 
+  const txHash = typeof step1TxHash === "string" ? step1TxHash : undefined;
+
   if (hyperlaneError !== undefined) {
     const isUserRejected = isUserRejectionError(hyperlaneError);
     const errorMessage = isUserRejected
@@ -232,9 +234,8 @@ export async function executeBaseToNativeStep1(
 
   updateBridgeState({ step: SimpleBridgeStep.STEP_1_CONFIRMING });
 
-  // Notify that transaction is now confirming (for history/URL update)
-  if (step1TxHash && typeof step1TxHash === "string") {
-    onTransactionConfirming?.(step1TxHash, baselineBalance);
+  if (txHash) {
+    onTransactionConfirming?.(txHash, baselineBalance);
   }
 
   const pollingResult = await pollEvmBalance(
@@ -250,17 +251,22 @@ export async function executeBaseToNativeStep1(
       status: "ERROR",
       chainName: "Base",
       message: pollingResult.errorMessage ?? "Transfer confirmation failed",
-      txHash: undefined,
-      explorerUrl: undefined,
+      txHash: txHash,
+      explorerUrl:
+        txHash !== undefined ? getExplorerUrl(txHash, "Base") : undefined,
     });
     updateBridgeState({
       step: SimpleBridgeStep.ERROR,
       errorMessage:
         pollingResult.errorMessage ?? "Transfer confirmation failed",
     });
-    throw new Error(
-      pollingResult.errorMessage ?? "Transfer confirmation failed",
-    );
+    return {
+      success: false,
+      txHash: txHash,
+      error: new Error(
+        pollingResult.errorMessage ?? "Transfer confirmation failed",
+      ),
+    };
   }
 
   // Refetch Base balance to reflect the debit from the transfer
@@ -272,17 +278,17 @@ export async function executeBaseToNativeStep1(
     status: "SUCCESS",
     chainName: "Base",
     message: "Transfer complete",
-    txHash: step1TxHash as string | undefined,
+    txHash,
     explorerUrl:
-      step1TxHash !== undefined
-        ? getExplorerUrl(step1TxHash as string, "Base")
-        : undefined,
+      txHash !== undefined ? getExplorerUrl(txHash, "Base") : undefined,
   });
 
   const [returnError] = await tryAsync(switchChain({ chainId: BASE_CHAIN_ID }));
   if (returnError !== undefined) {
     console.warn("Auto-return to Base failed:", returnError.message);
   }
+
+  return { success: true, txHash };
 }
 
 /**
@@ -346,7 +352,7 @@ interface BaseToNativeStep2Params {
  */
 export async function executeBaseToNativeStep2(
   params: BaseToNativeStep2Params,
-) {
+): Promise<{ success: boolean; txHash?: string; error?: Error }> {
   const {
     amount,
     selectedAccount,
@@ -427,7 +433,20 @@ export async function executeBaseToNativeStep2(
     (c) => c.id === torusEvmChainId,
   );
   if (!torusEvmChain) {
-    throw new Error(`Torus EVM chain ${torusEvmChainId} not found in config`);
+    const error = new Error(
+      `Torus EVM chain ${torusEvmChainId} not found in config`,
+    );
+    addTransaction({
+      step: 2,
+      status: "ERROR",
+      chainName: "Torus EVM",
+      message: error.message,
+    });
+    updateBridgeState({
+      step: SimpleBridgeStep.ERROR,
+      errorMessage: error.message,
+    });
+    return { success: false, error };
   }
 
   // Fetch current EVM balance to calculate max withdrawable amount
@@ -451,9 +470,20 @@ export async function executeBaseToNativeStep2(
       : maxWithdrawable;
 
   if (amountRems <= 0n) {
-    throw new Error(
+    const error = new Error(
       "Insufficient EVM balance for withdrawal after gas reserve",
     );
+    addTransaction({
+      step: 2,
+      status: "ERROR",
+      chainName: "Torus EVM",
+      message: error.message,
+    });
+    updateBridgeState({
+      step: SimpleBridgeStep.ERROR,
+      errorMessage: error.message,
+    });
+    return { success: false, error };
   }
 
   // Capture baseline balance BEFORE sending transaction
@@ -542,9 +572,13 @@ export async function executeBaseToNativeStep2(
       errorMessage:
         pollingResult.errorMessage ?? "Withdrawal confirmation failed",
     });
-    throw new Error(
-      pollingResult.errorMessage ?? "Withdrawal confirmation failed",
-    );
+    return {
+      success: false,
+      txHash,
+      error: new Error(
+        pollingResult.errorMessage ?? "Withdrawal confirmation failed",
+      ),
+    };
   }
 
   // Refetch Torus EVM balance to reflect the debit from the withdrawal
@@ -561,4 +595,6 @@ export async function executeBaseToNativeStep2(
 
   updateBridgeState({ step: SimpleBridgeStep.COMPLETE });
   onStepProgress?.(SimpleBridgeStep.COMPLETE);
+
+  return { success: true, txHash };
 }

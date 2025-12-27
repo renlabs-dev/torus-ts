@@ -67,13 +67,14 @@ export function FractionButtons({
   ];
 
   return (
-    <div className="flex gap-2">
+    <div className="flex gap-2" data-testid="fraction-buttons-container">
       {fractions.map(({ value, label }) => (
         <FractionButton
           key={value}
           selected={selected === value}
           onClick={() => handleClick(value)}
           disabled={isDisabled}
+          data-testid={`fraction-button-${value}`}
         >
           {label}
         </FractionButton>

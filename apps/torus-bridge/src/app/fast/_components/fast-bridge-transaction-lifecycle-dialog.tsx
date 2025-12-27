@@ -223,7 +223,7 @@ export function TransactionLifecycleDialog({
 
         <div className="flex-1 space-y-6 overflow-y-auto px-6 pb-6">
           <div className="bg-muted/50 rounded-lg p-4 text-center">
-            <p className="text-sm font-medium">
+            <p className="text-sm font-medium" data-testid="transfer-status-message">
               {getCurrentMessage(currentStep)}
             </p>
           </div>
