@@ -13,7 +13,13 @@ import {
 import type { Equals } from "tsafe";
 import { assert } from "tsafe";
 import { extract_pgenum_values } from "../utils";
-import { createTable, timeFields, timestampz, uuidv7 } from "./utils";
+import {
+  createTable,
+  ss58Address,
+  timeFields,
+  timestampz,
+  uuidv7,
+} from "./utils";
 
 // ==== Enums ====
 
@@ -134,9 +140,7 @@ export const apostlesSchema = createTable(
   "apostles",
   {
     id: uuidv7("id").primaryKey(),
-    walletAddress: varchar("wallet_address", { length: 256 })
-      .notNull()
-      .unique(),
+    walletAddress: ss58Address("wallet_address").notNull().unique(),
     xHandle: text("x_handle"),
     displayName: text("display_name"),
     isAdmin: boolean("is_admin").notNull().default(false),
@@ -175,7 +179,7 @@ export const prospectsSchema = createTable(
 
     // Origin & proposal
     origin: apostleOriginEnum("origin").notNull(),
-    proposerWalletAddress: varchar("proposer_wallet_address", { length: 256 }),
+    proposerWalletAddress: ss58Address("proposer_wallet_address"),
     proposerStakeSnapshot: numeric("proposer_stake_snapshot"),
     approvalStatus: approvalStatusEnum("approval_status")
       .notNull()
@@ -222,7 +226,7 @@ export const conversionLogsSchema = createTable(
   "conversion_logs",
   {
     id: uuidv7("id").primaryKey(),
-    prospectId: uuidv7("prospect_id")
+    prospectId: uuid("prospect_id")
       .notNull()
       .references(() => prospectsSchema.id, { onDelete: "cascade" }),
     apostleId: uuid("apostle_id").references(() => apostlesSchema.id, {
@@ -253,7 +257,7 @@ export const memoryStoreSchema = createTable(
   "memory_store",
   {
     id: uuidv7("id").primaryKey(),
-    prospectId: uuidv7("prospect_id")
+    prospectId: uuid("prospect_id")
       .notNull()
       .unique()
       .references(() => prospectsSchema.id, { onDelete: "cascade" }),
