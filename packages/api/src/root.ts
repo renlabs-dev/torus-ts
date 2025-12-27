@@ -3,6 +3,7 @@ import { agentApplicationVoteRouter } from "./router/agent/agent-application-vot
 import { agentReportRouter } from "./router/agent/agent-report";
 import { computedAgentWeightRouter } from "./router/agent/computed-agent-weight";
 import { userAgentWeightRouter } from "./router/agent/user-agent-weight";
+import { apostleSwarmRouter } from "./router/apostle-swarm/apostle-swarm";
 import { askTorusRouter } from "./router/ask-torus/ask-torus";
 import { authRouter } from "./router/auth";
 import { cadreRouter } from "./router/cadre/cadre";
@@ -38,6 +39,9 @@ export const appRouter = createTRPCRouter({
   computedAgentWeight: computedAgentWeightRouter,
   // Agent Application
   agentApplicationVote: agentApplicationVoteRouter,
+
+  // Apostle Swarm
+  apostleSwarm: apostleSwarmRouter,
 
   // Ask Torus Usage
   askTorus: askTorusRouter,

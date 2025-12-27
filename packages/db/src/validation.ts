@@ -1,15 +1,22 @@
 import { createInsertSchema } from "drizzle-zod";
+import { z } from "zod";
 import {
   agentApplicationVoteSchema,
   agentDemandSignalSchema,
   agentReportSchema,
+  apostlesSchema,
   cadreCandidateSchema,
   cadreVoteSchema,
   commentInteractionSchema,
   commentReportSchema,
   commentSchema,
+  conversionLogsSchema,
+  jobsQueueSchema,
+  memoryStoreSchema,
   penalizeAgentVotesSchema,
   predictionReport,
+  prospectsSchema,
+  qualityTagValues,
   userAgentWeightSchema,
   userDiscordInfoSchema,
 } from "./schema";
@@ -137,4 +144,55 @@ export const PREDICTION_REPORT_INSERT_SCHEMA = createInsertSchema(
 ).omit({
   ...commonOmitFields,
   userKey: true,
+});
+
+// ==== Apostle Swarm Schemas ====
+
+export const APOSTLE_INSERT_SCHEMA =
+  createInsertSchema(apostlesSchema).omit(commonOmitFields);
+
+export const PROSPECT_INSERT_SCHEMA =
+  createInsertSchema(prospectsSchema).omit(commonOmitFields);
+
+export const MEMORY_STORE_INSERT_SCHEMA =
+  createInsertSchema(memoryStoreSchema).omit(commonOmitFields);
+
+export const JOBS_QUEUE_INSERT_SCHEMA =
+  createInsertSchema(jobsQueueSchema).omit(commonOmitFields);
+
+export const CONVERSION_LOG_INSERT_SCHEMA = createInsertSchema(
+  conversionLogsSchema,
+).omit({
+  id: true,
+  createdAt: true,
+});
+
+// Input schemas for router mutations (minimal required fields)
+
+export const PROSPECT_SUBMIT_SCHEMA = z.object({
+  xHandle: z
+    .string()
+    .min(1, "X handle is required")
+    .max(256, "X handle cannot exceed 256 characters")
+    .regex(/^[a-zA-Z0-9_]+$/, "Invalid X handle format"),
+});
+
+export const PROSPECT_ID_SCHEMA = z.object({
+  prospectId: z.string().uuid("Invalid prospect ID"),
+});
+
+export const QUALITY_TAG_UPDATE_SCHEMA = z.object({
+  prospectId: z.string().uuid("Invalid prospect ID"),
+  qualityTag: z.enum(
+    Object.keys(qualityTagValues) as [
+      keyof typeof qualityTagValues,
+      ...(keyof typeof qualityTagValues)[],
+    ],
+    { errorMap: () => ({ message: "Invalid quality tag" }) },
+  ),
+});
+
+export const FAILURE_MARK_SCHEMA = z.object({
+  prospectId: z.string().uuid("Invalid prospect ID"),
+  details: z.record(z.unknown()).optional(),
 });
