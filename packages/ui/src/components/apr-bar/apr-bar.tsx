@@ -33,8 +33,8 @@ export function APRBar({
 }: APRBarProps) {
   const stakedPercentage = useMemo(() => {
     if (!totalStake || !totalIssuance) return "0.00";
-    const totalSupply = (totalStake || 0n) + (totalIssuance || 0n);
-    const percentage = (totalStake * 10000n) / totalSupply;
+    // totalIssuance already includes totalStake
+    const percentage = (totalStake * 10000n) / totalIssuance;
     return (Number(percentage) / 100).toFixed(2);
   }, [totalStake, totalIssuance]);
 
