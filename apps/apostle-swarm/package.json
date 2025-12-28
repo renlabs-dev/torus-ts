@@ -18,9 +18,11 @@
   "dependencies": {
     "@next/third-parties": "catalog:",
     "@tanstack/react-query": "catalog:",
+    "@tanstack/react-table": "^8.21.3",
     "@torus-network/sdk": "workspace:*",
     "@torus-network/torus-utils": "workspace:*",
     "@torus-ts/api": "workspace:*",
+    "@torus-ts/db": "workspace:*",
     "@torus-ts/env-validation": "workspace:*",
     "@torus-ts/query-provider": "workspace:*",
     "@torus-ts/torus-provider": "workspace:*",
