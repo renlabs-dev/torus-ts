@@ -11,13 +11,13 @@ import { Fira_Mono as FiraMono } from "next/font/google";
 import { ProphetFinderHeader } from "./_components/prophet-finder-header";
 import { UserRoleBadge } from "./_components/user-role-badge";
 
-const APP_NAME = "Prophet Finder";
+const APP_NAME = "Apostle Swarm";
 
 export const metadata: Metadata = {
   robots: "all",
   title: APP_NAME,
   icons: [{ rel: "icon", url: "favicon.ico" }],
-  description: "The thermodynamic god's favorite Prophet Finder.",
+  description: "The thermodynamic god's favorite Apostle Swarm.",
 };
 
 export const firaMono = FiraMono({
