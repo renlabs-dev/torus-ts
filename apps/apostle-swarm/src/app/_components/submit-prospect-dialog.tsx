@@ -17,6 +17,7 @@ import {
 import { Button } from "@torus-ts/ui/components/button";
 import { Input } from "@torus-ts/ui/components/input";
 import { Label } from "@torus-ts/ui/components/label";
+import { useIsApostle } from "~/hooks/use-is-apostle";
 import { api } from "~/trpc/react";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -28,6 +29,8 @@ export function SubmitProspectDialog() {
   const [xHandle, setXHandle] = useState("");
 
   const { api: torusApi, selectedAccount, isAccountConnected } = useTorus();
+  const { isApostle, isLoading: isApostleLoading } = useIsApostle();
+
   const balanceQuery = useBalance(
     torusApi,
     selectedAccount?.address as SS58Address,
@@ -36,9 +39,22 @@ export function SubmitProspectDialog() {
   const userStake = balanceQuery.data?.staked ?? 0n;
   const hasEnoughStake = userStake >= STAKE_THRESHOLD;
 
-  const submitMutation = api.apostleSwarm.submitCommunityProspect.useMutation({
+  // Apostles use addManualProspect (auto-approved), community uses submitCommunityProspect (pending)
+  const communityMutation =
+    api.apostleSwarm.submitCommunityProspect.useMutation({
+      onSuccess: (data) => {
+        toast.success(`Prospect @${data.xHandle} submitted for review`);
+        setOpen(false);
+        setXHandle("");
+      },
+      onError: (error) => {
+        toast.error(error.message);
+      },
+    });
+
+  const apostleMutation = api.apostleSwarm.addManualProspect.useMutation({
     onSuccess: (data) => {
-      toast.success(`Prospect @${data.xHandle} submitted successfully`);
+      toast.success(`Prospect @${data.xHandle} added and approved`);
       setOpen(false);
       setXHandle("");
     },
@@ -46,6 +62,8 @@ export function SubmitProspectDialog() {
       toast.error(error.message);
     },
   });
+
+  const isPending = communityMutation.isPending || apostleMutation.isPending;
 
   const handleSubmit = () => {
     const trimmedHandle = xHandle.trim().replace(/^@/, "");
@@ -62,30 +80,44 @@ export function SubmitProspectDialog() {
       return;
     }
 
-    submitMutation.mutate({ xHandle: trimmedHandle });
+    if (isApostle) {
+      apostleMutation.mutate({ xHandle: trimmedHandle });
+    } else {
+      communityMutation.mutate({ xHandle: trimmedHandle });
+    }
   };
 
   const handleOpenChange = (newOpen: boolean) => {
-    if (!newOpen && !submitMutation.isPending) {
+    if (!newOpen && !isPending) {
       setXHandle("");
     }
     setOpen(newOpen);
   };
 
+  // Apostles don't need stake, community members do
+  const canSubmit = isApostle || hasEnoughStake;
+
   const isSubmitDisabled =
     !isAccountConnected ||
-    !hasEnoughStake ||
+    !canSubmit ||
     !xHandle.trim() ||
-    submitMutation.isPending;
+    isPending ||
+    isApostleLoading;
 
   const getStatusMessage = () => {
     if (!isAccountConnected) {
       return "Connect your wallet to submit a prospect";
     }
+    if (isApostleLoading) {
+      return "Checking apostle status...";
+    }
+    if (isApostle) {
+      return "As an apostle, your prospects are automatically approved.";
+    }
     if (!hasEnoughStake) {
       return `You need at least ${formatToken(STAKE_THRESHOLD)} TORUS staked to submit prospects. Current stake: ${formatToken(userStake)} TORUS`;
     }
-    return null;
+    return "Your submission will be reviewed by an apostle before approval.";
   };
 
   const statusMessage = getStatusMessage();
@@ -97,17 +129,18 @@ export function SubmitProspectDialog() {
       </AlertDialogTrigger>
       <AlertDialogContent className="max-w-md">
         <AlertDialogHeader>
-          <AlertDialogTitle>Submit a Prospect</AlertDialogTitle>
+          <AlertDialogTitle>
+            {isApostle ? "Add Prospect" : "Submit a Prospect"}
+          </AlertDialogTitle>
           <AlertDialogDescription>
-            Submit an X handle as a potential prospect for the swarm to
-            evaluate.
+            {isApostle
+              ? "Add an X handle directly as an approved prospect."
+              : "Submit an X handle as a potential prospect for the swarm to evaluate."}
           </AlertDialogDescription>
         </AlertDialogHeader>
 
         <div className="space-y-4 py-4">
-          {statusMessage !== null && (
-            <p className="text-muted-foreground text-sm">{statusMessage}</p>
-          )}
+          <p className="text-muted-foreground text-sm">{statusMessage}</p>
 
           <div className="space-y-2">
             <Label htmlFor="x-handle">X Handle</Label>
@@ -116,11 +149,7 @@ export function SubmitProspectDialog() {
               placeholder="username"
               value={xHandle}
               onChange={(e) => setXHandle(e.target.value)}
-              disabled={
-                !isAccountConnected ||
-                !hasEnoughStake ||
-                submitMutation.isPending
-              }
+              disabled={!isAccountConnected || !canSubmit || isPending}
             />
             <p className="text-muted-foreground text-xs">
               Enter the X handle without the @ symbol
@@ -129,11 +158,13 @@ export function SubmitProspectDialog() {
         </div>
 
         <AlertDialogFooter>
-          <AlertDialogCancel disabled={submitMutation.isPending}>
-            Cancel
-          </AlertDialogCancel>
+          <AlertDialogCancel disabled={isPending}>Cancel</AlertDialogCancel>
           <Button onClick={handleSubmit} disabled={isSubmitDisabled}>
-            {submitMutation.isPending ? "Submitting..." : "Submit"}
+            {isPending
+              ? "Submitting..."
+              : isApostle
+                ? "Add Prospect"
+                : "Submit"}
           </Button>
         </AlertDialogFooter>
       </AlertDialogContent>

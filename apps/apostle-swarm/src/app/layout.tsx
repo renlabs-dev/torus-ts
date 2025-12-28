@@ -9,6 +9,7 @@ import { TRPCReactProvider } from "~/trpc/react";
 import type { Metadata } from "next";
 import { Fira_Mono as FiraMono } from "next/font/google";
 import { ProphetFinderHeader } from "./_components/prophet-finder-header";
+import { UserRoleBadge } from "./_components/user-role-badge";
 
 const APP_NAME = "Prophet Finder";
 
@@ -42,6 +43,7 @@ export default function RootLayout({
               torusCacheUrl={env("NEXT_PUBLIC_TORUS_CACHE_URL")}
             />
             {children}
+            <UserRoleBadge />
             <Toaster />
           </TRPCReactProvider>
         </TorusProvider>

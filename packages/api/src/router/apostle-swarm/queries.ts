@@ -1,3 +1,4 @@
+import { SS58_SCHEMA } from "@torus-network/sdk/types";
 import { and, desc, eq, isNull } from "@torus-ts/db";
 import {
   apostlesSchema,
@@ -6,10 +7,23 @@ import {
 } from "@torus-ts/db/schema";
 import type { TRPCRouterRecord } from "@trpc/server";
 import { TRPCError } from "@trpc/server";
+import { z } from "zod";
 import { publicProcedure } from "../../trpc";
+import { getApostle } from "./helpers";
 import { LIST_PROSPECTS_SCHEMA, PROSPECT_ID_SCHEMA } from "./schemas";
 
 export const apostleSwarmQueries = {
+  checkIsApostle: publicProcedure
+    .input(z.object({ walletAddress: SS58_SCHEMA }))
+    .query(async ({ ctx, input }) => {
+      const apostle = await getApostle(ctx.db, input.walletAddress);
+      return {
+        isApostle: apostle !== null,
+        isAdmin: apostle?.isAdmin ?? false,
+        apostle,
+      };
+    }),
+
   listApostles: publicProcedure.query(async ({ ctx }) => {
     return ctx.db.query.apostlesSchema.findMany({
       where: isNull(apostlesSchema.deletedAt),
