@@ -8,6 +8,7 @@ import {
   getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
+import { keepPreviousData } from "@tanstack/react-query";
 import type { Apostle, Prospect } from "@torus-ts/db/schema";
 import { Badge } from "@torus-ts/ui/components/badge";
 import { Button } from "@torus-ts/ui/components/button";
@@ -173,11 +174,16 @@ export function ProspectsTable() {
   );
 
   const { data: prospects, isLoading } =
-    api.apostleSwarm.listProspects.useQuery({
-      approvalStatus: "APPROVED",
-      claimStatus: statusFilter === "all" ? undefined : statusFilter,
-      limit: 100,
-    });
+    api.apostleSwarm.listProspects.useQuery(
+      {
+        approvalStatus: "APPROVED",
+        claimStatus: statusFilter === "all" ? undefined : statusFilter,
+        limit: 100,
+      },
+      {
+        placeholderData: keepPreviousData,
+      },
+    );
 
   const table = useReactTable({
     data: prospects ?? [],

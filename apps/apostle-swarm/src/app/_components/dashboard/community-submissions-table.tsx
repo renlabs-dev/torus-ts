@@ -8,6 +8,7 @@ import {
   getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
+import { keepPreviousData } from "@tanstack/react-query";
 import { formatToken } from "@torus-network/torus-utils/torus";
 import type { Prospect } from "@torus-ts/db/schema";
 import { Badge } from "@torus-ts/ui/components/badge";
@@ -153,10 +154,15 @@ export function CommunitySubmissionsTable() {
   const columns = useMemo(() => createColumns(isApostle), [isApostle]);
 
   const { data: prospects, isLoading } =
-    api.apostleSwarm.listProspects.useQuery({
-      approvalStatus: statusFilter === "all" ? undefined : statusFilter,
-      limit: 100,
-    });
+    api.apostleSwarm.listProspects.useQuery(
+      {
+        approvalStatus: statusFilter === "all" ? undefined : statusFilter,
+        limit: 100,
+      },
+      {
+        placeholderData: keepPreviousData,
+      },
+    );
 
   // Filter to only show community submissions (origin: COMMUNITY)
   const communitySubmissions = useMemo(
