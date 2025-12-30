@@ -1,5 +1,6 @@
 "use client";
 
+import { keepPreviousData } from "@tanstack/react-query";
 import type { ColumnDef, SortingState } from "@tanstack/react-table";
 import {
   flexRender,
@@ -8,7 +9,6 @@ import {
   getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import { keepPreviousData } from "@tanstack/react-query";
 import { formatToken } from "@torus-network/torus-utils/torus";
 import type { Prospect } from "@torus-ts/db/schema";
 import { Badge } from "@torus-ts/ui/components/badge";

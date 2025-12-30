@@ -125,7 +125,7 @@ export function SubmitProspectDialog() {
   return (
     <AlertDialog open={open} onOpenChange={handleOpenChange}>
       <AlertDialogTrigger asChild>
-        <Button>Submit Prospect</Button>
+        <Button size="lg">Submit Prospect</Button>
       </AlertDialogTrigger>
       <AlertDialogContent className="max-w-md">
         <AlertDialogHeader>

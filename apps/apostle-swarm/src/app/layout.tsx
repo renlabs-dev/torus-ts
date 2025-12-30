@@ -7,9 +7,9 @@ import { Toaster } from "@torus-ts/ui/components/toaster";
 import { env, EnvScript } from "~/env";
 import { TRPCReactProvider } from "~/trpc/react";
 import type { Metadata } from "next";
-import { Fira_Mono as FiraMono } from "next/font/google";
 import { ProphetFinderHeader } from "./_components/prophet-finder-header";
 import { UserRoleBadge } from "./_components/user-role-badge";
+import { merriweather } from "./fonts";
 
 const APP_NAME = "Apostle Swarm";
 
@@ -20,19 +20,13 @@ export const metadata: Metadata = {
   description: "The thermodynamic god's favorite Apostle Swarm.",
 };
 
-export const firaMono = FiraMono({
-  subsets: ["latin"],
-  display: "swap",
-  weight: "400",
-});
-
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
   return (
-    <Layout font={firaMono} headScripts={[EnvScript]}>
+    <Layout font={merriweather} headScripts={[EnvScript]}>
       <ReactQueryProvider>
         <TorusProvider
           wsEndpoint={env("NEXT_PUBLIC_TORUS_RPC_URL")}
