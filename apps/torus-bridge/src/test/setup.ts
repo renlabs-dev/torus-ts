@@ -1,4 +1,4 @@
-import "@torus-ts/vitest-config/setup";
+import "@testing-library/jest-dom";
 import { configure } from "@testing-library/react";
 import { createElement } from "react";
 import { vi } from "vitest";
@@ -143,12 +143,10 @@ vi.mock("wagmi", () => ({
   }),
   useBalance: () => ({
     data: { value: 5n * 10n ** 18n },
-    refetch: vi
-      .fn()
-      .mockResolvedValue({
-        status: "success",
-        data: { value: 5n * 10n ** 18n },
-      }),
+    refetch: vi.fn().mockResolvedValue({
+      status: "success",
+      data: { value: 5n * 10n ** 18n },
+    }),
   }),
   useClient: () => ({}),
   useConfig: () => ({}),
