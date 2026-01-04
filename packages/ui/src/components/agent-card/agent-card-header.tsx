@@ -88,11 +88,13 @@ export function AgentCardHeader({
           <div className="flex w-full items-center justify-between gap-1 md:absolute md:inset-x-0 md:top-0">
             <div className="flex items-center gap-1">
               <AgentCardSocialsInfo socials={socialsList} />
-              {isWhitelisted && subagentCount !== undefined && subagentCount > 0 && (
-                <Badge variant="secondary" className="whitespace-nowrap">
-                  {subagentCount} Subagent{subagentCount !== 1 ? "s" : ""}
-                </Badge>
-              )}
+              {isWhitelisted &&
+                subagentCount !== undefined &&
+                subagentCount > 0 && (
+                  <Badge variant="secondary" className="whitespace-nowrap">
+                    {subagentCount} Subagent{subagentCount !== 1 ? "s" : ""}
+                  </Badge>
+                )}
             </div>
             <AgentBadge
               isAgentSelected={isAgentSelected}
