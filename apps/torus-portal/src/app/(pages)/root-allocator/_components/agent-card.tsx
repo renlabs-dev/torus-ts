@@ -18,6 +18,8 @@ interface AgentCardProps {
   percComputedWeight: number | null;
   weightFactor: number | null;
   isWhitelisted: boolean;
+  /** For root agents: count of all connected agents in their swarm */
+  subagentCount?: number;
 }
 
 export function AgentCard(props: Readonly<AgentCardProps>) {
@@ -118,6 +120,7 @@ export function AgentCard(props: Readonly<AgentCardProps>) {
       isMetadataLoading={isMetadataLoading}
       userWeightPower={userWeightPower}
       isWhitelisted={props.isWhitelisted}
+      subagentCount={props.subagentCount}
     />
   );
 }

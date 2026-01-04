@@ -17,6 +17,8 @@ export interface AgentCardHeaderProps {
   isAgentSelected?: boolean;
   isWhitelisted?: boolean;
   isMetadataLoading?: boolean;
+  /** For root agents: count of all connected agents in their swarm */
+  subagentCount?: number;
 }
 
 function AgentBadge({
@@ -64,6 +66,7 @@ export function AgentCardHeader({
   isAgentSelected,
   isWhitelisted,
   isMetadataLoading = false,
+  subagentCount,
 }: AgentCardHeaderProps) {
   const socialsList = buildSocials(socials, website);
 
@@ -83,7 +86,14 @@ export function AgentCardHeader({
             {name}
           </h2>
           <div className="flex w-full items-center justify-between gap-1 md:absolute md:inset-x-0 md:top-0">
-            <AgentCardSocialsInfo socials={socialsList} />
+            <div className="flex items-center gap-1">
+              <AgentCardSocialsInfo socials={socialsList} />
+              {isWhitelisted && subagentCount !== undefined && subagentCount > 0 && (
+                <Badge variant="secondary" className="whitespace-nowrap">
+                  {subagentCount} Subagent{subagentCount !== 1 ? "s" : ""}
+                </Badge>
+              )}
+            </div>
             <AgentBadge
               isAgentSelected={isAgentSelected}
               isAgentDelegated={isAgentDelegated}
