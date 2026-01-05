@@ -1,0 +1,33 @@
+name: Torus Bridge Tests
+
+on:
+  pull_request:
+    paths:
+      - "apps/torus-bridge/**"
+      - "packages/torus-sdk-ts/**"
+      - "packages/torus-utils/**"
+      - "packages/ui/**"
+      - "packages/query-provider/**"
+      - "packages/torus-provider/**"
+      - "pnpm-lock.yaml"
+      - "patches/@wagmi__connectors.patch"
+
+permissions:
+  contents: read
+
+jobs:
+  test-torus-bridge:
+    permissions:
+      contents: read
+    runs-on: ubicloud-standard-2
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: PNPM setup
+        uses: ./.github/actions/setup
+
+      - name: Copy env
+        run: cp .env.example .env
+
+      - name: Run torus-bridge tests
+        run: pnpm exec turbo run test --continue -F "torus-bridge"
