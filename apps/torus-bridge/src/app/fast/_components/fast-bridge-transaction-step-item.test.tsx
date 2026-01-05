@@ -1,4 +1,5 @@
 import { render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 import { TransactionStepItem } from "./fast-bridge-transaction-step-item";
 
@@ -422,6 +423,87 @@ describe("TransactionStepItem", () => {
 
       const button = screen.getByRole("button", { name: /View on Explorer/i });
       expect(button).toBeInTheDocument();
+    });
+
+    it("should open explorer URL in new tab when clicked", async () => {
+      const user = userEvent.setup();
+      const mockWindowOpen = vi
+        .spyOn(window, "open")
+        .mockImplementation(() => null);
+
+      render(
+        <TransactionStepItem
+          {...defaultProps}
+          status="completed"
+          txHash="0x1234567890abcdef"
+          explorerUrl="https://basescan.org/tx/0x1234567890abcdef"
+        />,
+      );
+
+      const button = screen.getByRole("button", { name: /View on Explorer/i });
+      await user.click(button);
+
+      expect(mockWindowOpen).toHaveBeenCalledWith(
+        "https://basescan.org/tx/0x1234567890abcdef",
+        "_blank",
+        "noopener,noreferrer",
+      );
+
+      mockWindowOpen.mockRestore();
+    });
+
+    it("should open Blockscout explorer URL for Torus EVM transactions", async () => {
+      const user = userEvent.setup();
+      const mockWindowOpen = vi
+        .spyOn(window, "open")
+        .mockImplementation(() => null);
+
+      render(
+        <TransactionStepItem
+          {...defaultProps}
+          status="completed"
+          txHash="0xfedcba0987654321"
+          explorerUrl="https://blockscout.torus.network/tx/0xfedcba0987654321"
+        />,
+      );
+
+      const button = screen.getByRole("button", { name: /View on Explorer/i });
+      await user.click(button);
+
+      expect(mockWindowOpen).toHaveBeenCalledWith(
+        "https://blockscout.torus.network/tx/0xfedcba0987654321",
+        "_blank",
+        "noopener,noreferrer",
+      );
+
+      mockWindowOpen.mockRestore();
+    });
+
+    it("should handle click event without errors", async () => {
+      const user = userEvent.setup();
+
+      render(
+        <TransactionStepItem
+          {...defaultProps}
+          status="completed"
+          txHash="0x1234567890abcdef"
+          explorerUrl="https://basescan.org/tx/0x1234567890abcdef"
+        />,
+      );
+
+      // Expand the accordion first to make the explorer button visible
+      const accordionTrigger = screen.getByRole("button", {
+        name: /View Transaction Details/i,
+      });
+      await user.click(accordionTrigger);
+
+      // Now the explorer button should be visible
+      const button = screen.getByRole("button", { name: /View on Explorer/i });
+
+      // Should not throw any errors when clicked
+      expect(async () => {
+        await user.click(button);
+      }).not.toThrow();
     });
   });
 });

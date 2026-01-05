@@ -1,6 +1,6 @@
 import { act, renderHook } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import type { SimpleBridgeDirection } from "../_components/fast-bridge-types";
+import { createTestTransactionStep } from "../__tests__/test-utils";
 import { SimpleBridgeStep } from "../_components/fast-bridge-types";
 import { useOrchestratedTransfer } from "./use-fast-bridge-orchestrated-transfer";
 
@@ -171,7 +171,7 @@ describe("useOrchestratedTransfer", () => {
     });
 
     it("should accept onTransactionCreated callback", async () => {
-      const { result } = renderHook(() => useOrchestratedTransfer());
+      renderHook(() => useOrchestratedTransfer());
       const onTransactionCreated = vi.fn();
 
       expect(onTransactionCreated).toBeDefined();
@@ -297,8 +297,8 @@ describe("useOrchestratedTransfer", () => {
       const { result } = renderHook(() => useOrchestratedTransfer());
 
       const mockTransactions = [
-        { step: 1 as const, status: "SUCCESS" as const },
-        { step: 2 as const, status: "CONFIRMING" as const },
+        createTestTransactionStep(1, "SUCCESS"),
+        createTestTransactionStep(2, "CONFIRMING"),
       ];
 
       expect(() => {
@@ -437,12 +437,7 @@ describe("useOrchestratedTransfer", () => {
           direction: "base-to-native",
           amount: "100",
         });
-        result.current.setTransactions([
-          {
-            step: 2 as const,
-            status: "ERROR" as const,
-          },
-        ]);
+        result.current.setTransactions([createTestTransactionStep(2, "ERROR")]);
       });
 
       await act(async () => {
@@ -458,7 +453,7 @@ describe("useOrchestratedTransfer", () => {
       const { result } = renderHook(() => useOrchestratedTransfer());
 
       expect(() => {
-        result.current.executeTransfer("base-to-native", "100");
+        void result.current.executeTransfer("base-to-native", "100");
       }).toBeDefined();
 
       expect(() => {
@@ -466,7 +461,7 @@ describe("useOrchestratedTransfer", () => {
       }).not.toThrow();
 
       expect(() => {
-        result.current.executeTransfer("native-to-base", "50");
+        void result.current.executeTransfer("native-to-base", "50");
       }).toBeDefined();
     });
 
@@ -475,7 +470,7 @@ describe("useOrchestratedTransfer", () => {
 
       expect(() => {
         result.current.setTransactions([
-          { step: 1 as const, status: "SUCCESS" as const },
+          createTestTransactionStep(1, "SUCCESS"),
         ]);
       }).not.toThrow();
 

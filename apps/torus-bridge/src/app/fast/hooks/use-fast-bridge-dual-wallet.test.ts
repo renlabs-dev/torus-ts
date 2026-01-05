@@ -2,6 +2,7 @@ import { renderHook } from "@testing-library/react";
 import { useTorus } from "@torus-ts/torus-provider";
 import { describe, expect, it, vi } from "vitest";
 // Import the mocked wagmi function
+import type { Connector } from "wagmi";
 import { useAccount } from "wagmi";
 import { useDualWallet } from "./use-fast-bridge-dual-wallet";
 
@@ -15,17 +16,69 @@ vi.mock("@torus-ts/torus-provider", () => ({
     },
     isAccountConnected: true,
     isInitialized: true,
+    api: null,
+    torusApi: {
+      web3Accounts: null,
+      web3Enable: null,
+      web3FromAddress: null,
+    },
+    wsEndpoint: "",
+    torusCacheUrl: "",
+    accounts: undefined,
+    handleLogout: vi.fn(),
+    handleSelectWallet: vi.fn(),
+    handleGetWallets: vi.fn(),
+    signHex: vi.fn(),
   })),
 }));
 
 const mockedUseTorus = vi.mocked(useTorus);
 
+// Create a mock connector
+const mockConnector = {
+  id: "mock" as const,
+  name: "Mock Connector",
+  type: "mock" as const,
+  icon: undefined,
+  supportsSimulation: false,
+  connect: vi.fn(),
+  disconnect: vi.fn(),
+  getAccounts: vi.fn(),
+  getChainId: vi.fn(),
+  getProvider: vi.fn(),
+  isAuthorized: vi.fn(),
+  switchChain: vi.fn(),
+  onAccountsChanged: vi.fn(),
+  onChainChanged: vi.fn(),
+  onConnect: vi.fn(),
+  onDisconnect: vi.fn(),
+  onMessage: vi.fn(),
+  setup: vi.fn(),
+  getClient: vi.fn(),
+  emitter: {
+    on: vi.fn(),
+    off: vi.fn(),
+    emit: vi.fn(),
+    once: vi.fn(),
+    uid: "emitter-uid",
+    _emitter: { events: {} as Record<string, unknown> },
+    listenerCount: vi.fn(() => 0),
+  },
+  uid: "mock-uid",
+} as unknown as Connector;
+
 vi.mock("wagmi", () => ({
   useAccount: vi.fn(() => ({
     address: "0x1234567890abcdef1234567890abcdef12345678",
+    addresses: ["0x1234567890abcdef1234567890abcdef12345678"],
     isConnected: true,
     chainId: 8453,
     status: "connected",
+    chain: undefined,
+    connector: mockConnector,
+    isConnecting: false,
+    isDisconnected: false,
+    isReconnecting: false,
   })),
 }));
 
@@ -89,9 +142,15 @@ describe("useDualWallet", () => {
     it("should return false if EVM wallet not connected", () => {
       mockedUseAccount.mockReturnValueOnce({
         address: undefined,
+        addresses: undefined,
         isConnected: false,
         chainId: undefined,
         status: "disconnected",
+        chain: undefined,
+        connector: undefined,
+        isConnecting: false,
+        isDisconnected: true,
+        isReconnecting: false,
       });
 
       const { result } = renderHook(() => useDualWallet());
@@ -120,9 +179,15 @@ describe("useDualWallet", () => {
     it("should return false if EVM wallet not connected", () => {
       mockedUseAccount.mockReturnValueOnce({
         address: undefined,
+        addresses: undefined,
         isConnected: false,
         chainId: undefined,
         status: "disconnected",
+        chain: undefined,
+        connector: undefined,
+        isConnecting: false,
+        isDisconnected: true,
+        isReconnecting: false,
       });
 
       const { result } = renderHook(() => useDualWallet());
@@ -172,9 +237,22 @@ describe("useDualWallet", () => {
 
     it("should indicate wallets not ready when torus disconnected", () => {
       mockedUseTorus.mockReturnValueOnce({
-        selectedAccount: undefined,
+        selectedAccount: null,
         isAccountConnected: false,
         isInitialized: true,
+        api: null,
+        torusApi: {
+          web3Accounts: null,
+          web3Enable: null,
+          web3FromAddress: null,
+        },
+        wsEndpoint: "",
+        torusCacheUrl: "",
+        accounts: undefined,
+        handleLogout: vi.fn(),
+        handleSelectWallet: vi.fn(),
+        handleGetWallets: vi.fn(),
+        signHex: vi.fn(),
       });
 
       const { result } = renderHook(() => useDualWallet());
@@ -186,9 +264,15 @@ describe("useDualWallet", () => {
     it("should indicate wallets not ready when EVM disconnected", () => {
       mockedUseAccount.mockReturnValueOnce({
         address: undefined,
+        addresses: undefined,
         isConnected: false,
         chainId: undefined,
         status: "disconnected",
+        chain: undefined,
+        connector: undefined,
+        isConnecting: false,
+        isDisconnected: true,
+        isReconnecting: false,
       });
 
       const { result } = renderHook(() => useDualWallet());
@@ -235,9 +319,15 @@ describe("useDualWallet", () => {
     it("should handle partial connection (only torus)", () => {
       mockedUseAccount.mockReturnValueOnce({
         address: undefined,
+        addresses: undefined,
         isConnected: false,
         chainId: undefined,
         status: "disconnected",
+        chain: undefined,
+        connector: undefined,
+        isConnecting: false,
+        isDisconnected: true,
+        isReconnecting: false,
       });
 
       const { result } = renderHook(() => useDualWallet());
@@ -249,9 +339,22 @@ describe("useDualWallet", () => {
 
     it("should handle partial connection (only EVM)", () => {
       mockedUseTorus.mockReturnValueOnce({
-        selectedAccount: undefined,
+        selectedAccount: null,
         isAccountConnected: false,
         isInitialized: true,
+        api: null,
+        torusApi: {
+          web3Accounts: null,
+          web3Enable: null,
+          web3FromAddress: null,
+        },
+        wsEndpoint: "",
+        torusCacheUrl: "",
+        accounts: undefined,
+        handleLogout: vi.fn(),
+        handleSelectWallet: vi.fn(),
+        handleGetWallets: vi.fn(),
+        signHex: vi.fn(),
       });
 
       const { result } = renderHook(() => useDualWallet());
@@ -265,16 +368,35 @@ describe("useDualWallet", () => {
 
     it("should handle both wallets disconnected", () => {
       mockedUseTorus.mockReturnValueOnce({
-        selectedAccount: undefined,
+        selectedAccount: null,
         isAccountConnected: false,
         isInitialized: true,
+        api: null,
+        torusApi: {
+          web3Accounts: null,
+          web3Enable: null,
+          web3FromAddress: null,
+        },
+        wsEndpoint: "",
+        torusCacheUrl: "",
+        accounts: undefined,
+        handleLogout: vi.fn(),
+        handleSelectWallet: vi.fn(),
+        handleGetWallets: vi.fn(),
+        signHex: vi.fn(),
       });
 
       mockedUseAccount.mockReturnValueOnce({
         address: undefined,
+        addresses: undefined,
         isConnected: false,
         chainId: undefined,
         status: "disconnected",
+        chain: undefined,
+        connector: undefined,
+        isConnecting: false,
+        isDisconnected: true,
+        isReconnecting: false,
       });
 
       const { result } = renderHook(() => useDualWallet());
@@ -288,9 +410,15 @@ describe("useDualWallet", () => {
     it("should validate chain for base-to-native when connected correctly", () => {
       mockedUseAccount.mockReturnValueOnce({
         address: "0x1234567890abcdef1234567890abcdef12345678",
+        addresses: ["0x1234567890abcdef1234567890abcdef12345678"],
         isConnected: true,
         chainId: 8453,
         status: "connected",
+        chain: undefined,
+        connector: mockConnector,
+        isConnecting: false,
+        isDisconnected: false,
+        isReconnecting: false,
       });
 
       const { result } = renderHook(() => useDualWallet());
@@ -303,9 +431,15 @@ describe("useDualWallet", () => {
     it("should fail chain validation for base-to-native on wrong chain", () => {
       mockedUseAccount.mockReturnValueOnce({
         address: "0x1234567890abcdef1234567890abcdef12345678",
+        addresses: ["0x1234567890abcdef1234567890abcdef12345678"],
         isConnected: true,
         chainId: 1,
         status: "connected",
+        chain: undefined,
+        connector: mockConnector,
+        isConnecting: false,
+        isDisconnected: false,
+        isReconnecting: false,
       });
 
       const { result } = renderHook(() => useDualWallet());

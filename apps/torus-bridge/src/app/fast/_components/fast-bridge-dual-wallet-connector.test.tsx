@@ -1,5 +1,9 @@
 import { render, screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import {
+  createConnectionStatus,
+  createTestSS58Address,
+} from "../__tests__/test-utils";
 import { useDualWallet } from "../hooks/use-fast-bridge-dual-wallet";
 import { DualWalletConnector } from "./fast-bridge-dual-wallet-connector";
 
@@ -13,7 +17,9 @@ describe("DualWalletConnector", () => {
     vi.clearAllMocks();
   });
 
-  const createMockHookReturn = (overrides: any = {}) => ({
+  const createMockHookReturn = (
+    overrides: Partial<ReturnType<typeof useDualWallet>> = {},
+  ) => ({
     connectionState: {
       torusWallet: {
         isConnected: false,
@@ -28,7 +34,7 @@ describe("DualWalletConnector", () => {
       },
     },
     areWalletsReady: vi.fn(() => false),
-    getConnectionStatus: vi.fn(() => "disconnected"),
+    getConnectionStatus: vi.fn(() => createConnectionStatus("disconnected")),
     isRequiredChainConnected: vi.fn(() => false),
     isOnOptimalChain: vi.fn(() => false),
     getRequiredChainId: vi.fn(() => 8453),
@@ -112,7 +118,9 @@ describe("DualWalletConnector", () => {
           connectionState: {
             torusWallet: {
               isConnected: true,
-              address: "1AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA" as any,
+              address: createTestSS58Address(
+                "1AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+              ),
               isConnecting: false,
             },
             evmWallet: {
@@ -123,7 +131,7 @@ describe("DualWalletConnector", () => {
             },
           },
           areWalletsReady: vi.fn(() => true),
-          getConnectionStatus: vi.fn(() => "connected"),
+          getConnectionStatus: vi.fn(() => createConnectionStatus("connected")),
         }),
       );
 
@@ -149,7 +157,9 @@ describe("DualWalletConnector", () => {
           connectionState: {
             torusWallet: {
               isConnected: true,
-              address: "1AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA" as any,
+              address: createTestSS58Address(
+                "1AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+              ),
               isConnecting: false,
             },
             evmWallet: {
@@ -160,7 +170,7 @@ describe("DualWalletConnector", () => {
             },
           },
           areWalletsReady: vi.fn(() => true),
-          getConnectionStatus: vi.fn(() => "connected"),
+          getConnectionStatus: vi.fn(() => createConnectionStatus("connected")),
         }),
       );
 
@@ -177,7 +187,9 @@ describe("DualWalletConnector", () => {
           connectionState: {
             torusWallet: {
               isConnected: true,
-              address: "1AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA" as any,
+              address: createTestSS58Address(
+                "1AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+              ),
               isConnecting: false,
             },
             evmWallet: {
@@ -188,7 +200,7 @@ describe("DualWalletConnector", () => {
             },
           },
           areWalletsReady: vi.fn(() => true),
-          getConnectionStatus: vi.fn(() => "connected"),
+          getConnectionStatus: vi.fn(() => createConnectionStatus("connected")),
         }),
       );
 
@@ -211,7 +223,9 @@ describe("DualWalletConnector", () => {
           connectionState: {
             torusWallet: {
               isConnected: true,
-              address: "1AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA" as any,
+              address: createTestSS58Address(
+                "1AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+              ),
               isConnecting: false,
             },
             evmWallet: {
@@ -222,7 +236,9 @@ describe("DualWalletConnector", () => {
             },
           },
           areWalletsReady: vi.fn(() => false),
-          getConnectionStatus: vi.fn(() => "partially_connected"),
+          getConnectionStatus: vi.fn(() =>
+            createConnectionStatus("partially_connected"),
+          ),
         }),
       );
 
@@ -242,7 +258,9 @@ describe("DualWalletConnector", () => {
           connectionState: {
             torusWallet: {
               isConnected: true,
-              address: "1AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA" as any,
+              address: createTestSS58Address(
+                "1AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+              ),
               isConnecting: false,
             },
             evmWallet: {
@@ -253,7 +271,9 @@ describe("DualWalletConnector", () => {
             },
           },
           areWalletsReady: vi.fn(() => false),
-          getConnectionStatus: vi.fn(() => "partially_connected"),
+          getConnectionStatus: vi.fn(() =>
+            createConnectionStatus("partially_connected"),
+          ),
         }),
       );
 
@@ -283,7 +303,9 @@ describe("DualWalletConnector", () => {
             },
           },
           areWalletsReady: vi.fn(() => false),
-          getConnectionStatus: vi.fn(() => "connecting"),
+          getConnectionStatus: vi.fn(() =>
+            createConnectionStatus("connecting"),
+          ),
         }),
       );
 
@@ -394,7 +416,9 @@ describe("DualWalletConnector", () => {
           connectionState: {
             torusWallet: {
               isConnected: true,
-              address: "1AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA" as any,
+              address: createTestSS58Address(
+                "1AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+              ),
               isConnecting: false,
             },
             evmWallet: {

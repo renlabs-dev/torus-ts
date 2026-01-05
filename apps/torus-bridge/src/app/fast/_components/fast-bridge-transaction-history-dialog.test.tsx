@@ -1,8 +1,15 @@
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { assert } from "tsafe";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import {
+  createDirection,
+  createTestTransactionHistoryItem,
+} from "../__tests__/test-utils";
 import { useFastBridgeTransactionHistory } from "../hooks/use-fast-bridge-transaction-history";
 import { TransactionHistoryDialog } from "./fast-bridge-transaction-history-dialog";
+import { SimpleBridgeStep } from "./fast-bridge-types";
+import type { FastBridgeTransactionHistoryItem } from "./fast-bridge-types";
 
 // Mock the hook
 vi.mock("../hooks/use-fast-bridge-transaction-history");
@@ -18,7 +25,12 @@ vi.mock("./fast-bridge-transaction-history-item", () => ({
     isMultiSelectMode,
     onSelectionChange,
     isSelected,
-  }: any) => (
+  }: {
+    transaction: { id: string };
+    isMultiSelectMode: boolean;
+    onSelectionChange: (id: string, selected: boolean) => void;
+    isSelected: boolean;
+  }) => (
     <div
       data-testid={`transaction-item-${transaction.id}`}
       data-selected={isSelected}
@@ -45,27 +57,42 @@ describe("TransactionHistoryDialog", () => {
     (hash, chain) => `https://explorer.com/${chain}/${hash}`,
   );
 
-  const createMockTransactions = (count: number = 1) => {
+  const createMockTransactions = (
+    count: number = 1,
+  ): FastBridgeTransactionHistoryItem[] => {
     return Array.from({ length: count }, (_, i) => ({
       id: `tx-${i}`,
-      direction: i % 2 === 0 ? "base-to-native" : "native-to-base",
-      amount: `${100 + i}`,
-      status: i % 3 === 0 ? "error" : "completed",
-      step1TxHash: `0x${"1".repeat(64)}`,
-      step2TxHash: `0x${"2".repeat(64)}`,
-      baseAddress: "0xbase",
-      nativeAddress: "native",
+      ...createTestTransactionHistoryItem({
+        direction: createDirection(
+          i % 2 === 0 ? "base-to-native" : "native-to-base",
+        ),
+        amount: `${100 + i}`,
+        status: i % 3 === 0 ? "error" : "completed",
+        step1TxHash: `0x${"1".repeat(64)}`,
+        step2TxHash: `0x${"2".repeat(64)}`,
+        baseAddress: "0xbase",
+        nativeAddress: "native",
+        currentStep:
+          i % 3 === 0 ? SimpleBridgeStep.ERROR : SimpleBridgeStep.COMPLETE,
+        canRetry: i % 3 === 0,
+      }),
       timestamp: Date.now() - i * 1000,
-      recoveredViaEvmRecover: false,
     }));
   };
 
-  const setupMockHook = (transactions: any[]) => {
-    mockUseFastBridgeTransactionHistory.mockImplementation((selector: any) => {
+  const setupMockHook = (transactions: FastBridgeTransactionHistoryItem[]) => {
+    mockUseFastBridgeTransactionHistory.mockImplementation((selector) => {
       const state = {
         transactions,
         clearHistory: mockClearHistory,
         deleteTransaction: mockDeleteTransaction,
+        addTransaction: vi.fn(),
+        updateTransaction: vi.fn(),
+        getTransactions: vi.fn(() => transactions),
+        getTransactionById: vi.fn(),
+        getPendingTransaction: vi.fn(),
+        markAsRetried: vi.fn(),
+        markFailedAsRecoveredViaEvmRecover: vi.fn(),
       };
       return selector(state);
     });
@@ -111,6 +138,7 @@ describe("TransactionHistoryDialog", () => {
       // Get all Close buttons and check that at least one exists (the main dialog close button)
       const closeButtons = screen.getAllByRole("button", { name: "Close" });
       expect(closeButtons.length).toBeGreaterThan(0);
+      assert(closeButtons[0] !== undefined, "Close button should exist");
     });
 
     it("should call onClose when close button is clicked", async () => {
@@ -119,7 +147,9 @@ describe("TransactionHistoryDialog", () => {
 
       // Click the first Close button (main dialog close button)
       const closeButtons = screen.getAllByRole("button", { name: "Close" });
-      await user.click(closeButtons[0]);
+      const firstCloseButton = closeButtons[0];
+      assert(firstCloseButton !== undefined, "Close button should exist");
+      await user.click(firstCloseButton);
 
       expect(mockOnClose).toHaveBeenCalledTimes(1);
     });
@@ -211,7 +241,9 @@ describe("TransactionHistoryDialog", () => {
 
     it("should show empty state for completed filter when no completed transactions", async () => {
       const user = userEvent.setup();
-      setupMockHook([{ ...createMockTransactions(1)[0], status: "error" }]);
+      const errorTransaction = createMockTransactions(1)[0];
+      assert(errorTransaction !== undefined, "Mock transaction should exist");
+      setupMockHook([{ ...errorTransaction, status: "error" }]);
       render(<TransactionHistoryDialog {...defaultProps} />);
 
       const completedTab = screen.getByRole("tab", { name: /Completed/ });
@@ -224,7 +256,12 @@ describe("TransactionHistoryDialog", () => {
 
     it("should show empty state for failed filter when no failed transactions", async () => {
       const user = userEvent.setup();
-      setupMockHook([{ ...createMockTransactions(1)[0], status: "completed" }]);
+      const completedTransaction = createMockTransactions(1)[0];
+      assert(
+        completedTransaction !== undefined,
+        "Mock transaction should exist",
+      );
+      setupMockHook([{ ...completedTransaction, status: "completed" }]);
       render(<TransactionHistoryDialog {...defaultProps} />);
 
       const failedTab = screen.getByRole("tab", { name: /Failed/ });
@@ -512,11 +549,20 @@ describe("TransactionHistoryDialog", () => {
 
     it("should reset pagination when changing filters", async () => {
       const user = userEvent.setup();
-      const transactions = Array.from({ length: 20 }, (_, i) => ({
-        ...createMockTransactions(1)[0],
-        id: `tx-${i}`,
-        status: i < 10 ? "completed" : "error",
-      }));
+      const baseTx = createMockTransactions(1)[0];
+      assert(baseTx !== undefined, "Base transaction should exist");
+      const transactions: FastBridgeTransactionHistoryItem[] = Array.from(
+        { length: 20 },
+        (_, i) => ({
+          ...baseTx,
+          id: `tx-${i}`,
+          status: i < 10 ? ("completed" as const) : ("error" as const),
+          currentStep:
+            i < 10 ? SimpleBridgeStep.COMPLETE : SimpleBridgeStep.ERROR,
+          canRetry: i >= 10,
+          timestamp: Date.now() - i * 1000,
+        }),
+      );
       setupMockHook(transactions);
 
       render(<TransactionHistoryDialog {...defaultProps} />);

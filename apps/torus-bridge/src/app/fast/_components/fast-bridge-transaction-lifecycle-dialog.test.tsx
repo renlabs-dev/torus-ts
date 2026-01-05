@@ -1,5 +1,5 @@
-import { act, render, screen, waitFor } from "@testing-library/react";
-import userEvent from "@testing-library/user-event";
+import { act, render, screen } from "@testing-library/react";
+import { assert } from "tsafe";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { useTransactionLifecycleSteps } from "../hooks/use-transaction-lifecycle-steps";
 import { TransactionLifecycleDialog } from "./fast-bridge-transaction-lifecycle-dialog";
@@ -11,44 +11,25 @@ vi.mock("../hooks/use-transaction-lifecycle-steps", () => ({
 }));
 
 describe("TransactionLifecycleDialog", () => {
-  const mockOnClose = vi.fn();
-  const mockOnRetry = vi.fn();
-
-  const defaultProps = {
-    isOpen: true,
-    onClose: mockOnClose,
-    direction: "base-to-native" as const,
-    currentStep: SimpleBridgeStep.STEP_1_SIGNING,
-    transactions: [
-      {
-        step: 1 as const,
-        hash: "0x123",
-        status: "SIGNING" as const,
-      },
-    ],
-    baseChainId: 8453,
-    nativeChainId: 8443,
-    onRetry: mockOnRetry,
-    showFinishButton: false,
-  };
-
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
-
   // Mock the hook
   vi.mocked(useTransactionLifecycleSteps).mockReturnValue([
     {
+      id: "signing",
+      icon: "✓",
       title: "Signing",
       status: "pending",
       description: "Please sign the transaction in your wallet",
     },
     {
+      id: "confirming",
+      icon: "⧖",
       title: "Confirming",
       status: "pending",
       description: "Transaction is being confirmed",
     },
     {
+      id: "completed",
+      icon: "✓",
       title: "Completed",
       status: "pending",
       description: "Transaction completed successfully",
@@ -105,6 +86,7 @@ describe("TransactionLifecycleDialog", () => {
       vi.mocked(useTransactionLifecycleSteps).mockReturnValue([
         {
           id: "step1-sign",
+          icon: "✎",
           title: "Step 1: Sign",
           description: "Sign on Base",
           status: "active",
@@ -112,12 +94,14 @@ describe("TransactionLifecycleDialog", () => {
         },
         {
           id: "step1-confirm",
+          icon: "⧖",
           title: "Step 1: Confirm",
           description: "Waiting for confirmation",
           status: "pending",
         },
         {
           id: "step2-sign",
+          icon: "✎",
           title: "Step 2: Sign",
           description: "Sign on Torus EVM",
           status: "pending",
@@ -125,6 +109,7 @@ describe("TransactionLifecycleDialog", () => {
         },
         {
           id: "step2-confirm",
+          icon: "⧖",
           title: "Step 2: Confirm",
           description: "Waiting for confirmation",
           status: "pending",
@@ -139,7 +124,7 @@ describe("TransactionLifecycleDialog", () => {
 
     describe("rendering", () => {
       it("should not render when isOpen is false", () => {
-        let container: Element;
+        let container: Element | undefined;
         act(() => {
           const result = render(
             <TransactionLifecycleDialog {...defaultProps} isOpen={false} />,
@@ -147,8 +132,12 @@ describe("TransactionLifecycleDialog", () => {
           container = result.container;
         });
 
+        assert(
+          container !== undefined,
+          "Container should be defined after render",
+        );
         expect(
-          container!.querySelector("[role='dialog']"),
+          container.querySelector("[role='dialog']"),
         ).not.toBeInTheDocument();
       });
 
@@ -307,6 +296,7 @@ describe("TransactionLifecycleDialog", () => {
         vi.mocked(useTransactionLifecycleSteps).mockReturnValue([
           {
             id: "step1-sign",
+            icon: "✎",
             title: "Step 1: Sign",
             description: "Sign on Base",
             status: "error",
@@ -314,6 +304,7 @@ describe("TransactionLifecycleDialog", () => {
           },
           {
             id: "step1-confirm",
+            icon: "⧖",
             title: "Step 1: Confirm",
             description: "Waiting for confirmation",
             status: "pending",
@@ -370,7 +361,6 @@ describe("TransactionLifecycleDialog", () => {
       });
 
       it("should enable close button on completion", async () => {
-        const user = userEvent.setup();
         render(
           <TransactionLifecycleDialog
             {...defaultProps}

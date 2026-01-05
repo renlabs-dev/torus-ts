@@ -1,5 +1,6 @@
 import { act, renderHook } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
+import { createTestTransactionStep } from "../__tests__/test-utils";
 import { SimpleBridgeStep } from "../_components/fast-bridge-types";
 import { useSimpleBridgeSharedState } from "./use-fast-bridge-shared-state";
 
@@ -78,21 +79,21 @@ describe("useSimpleBridgeSharedState", () => {
 
       act(() => {
         result.current.updateBridgeState({
-          errorDetails: "Some error occurred",
+          errorMessage: "Some error occurred",
         });
       });
 
-      expect(result.current.bridgeState.errorDetails).toBe(
+      expect(result.current.bridgeState.errorMessage).toBe(
         "Some error occurred",
       );
 
       act(() => {
         result.current.updateBridgeState({
-          errorDetails: undefined,
+          errorMessage: undefined,
         });
       });
 
-      expect(result.current.bridgeState.errorDetails).toBeUndefined();
+      expect(result.current.bridgeState.errorMessage).toBeUndefined();
     });
   });
 
@@ -100,11 +101,9 @@ describe("useSimpleBridgeSharedState", () => {
     it("should add a new transaction", () => {
       const { result } = renderHook(() => useSimpleBridgeSharedState());
 
-      const mockTransaction = {
-        step: SimpleBridgeStep.STEP_1,
-        status: "CONFIRMING",
+      const mockTransaction = createTestTransactionStep(1, "CONFIRMING", {
         txHash: "0x123",
-      };
+      });
 
       act(() => {
         result.current.addTransaction(mockTransaction);
@@ -118,61 +117,47 @@ describe("useSimpleBridgeSharedState", () => {
       const { result } = renderHook(() => useSimpleBridgeSharedState());
 
       act(() => {
-        result.current.addTransaction({
-          step: SimpleBridgeStep.STEP_1,
-          status: "CONFIRMING",
-          txHash: "0x111",
-        });
+        result.current.addTransaction(
+          createTestTransactionStep(1, "CONFIRMING", { txHash: "0x111" }),
+        );
       });
 
       expect(result.current.transactions).toHaveLength(1);
 
       act(() => {
-        result.current.addTransaction({
-          step: SimpleBridgeStep.STEP_1,
-          status: "CONFIRMED",
-          txHash: "0x222",
-        });
+        result.current.addTransaction(
+          createTestTransactionStep(1, "SUCCESS", { txHash: "0x222" }),
+        );
       });
 
       expect(result.current.transactions).toHaveLength(1);
       expect(result.current.transactions[0]?.txHash).toBe("0x222");
-      expect(result.current.transactions[0]?.status).toBe("CONFIRMED");
+      expect(result.current.transactions[0]?.status).toBe("SUCCESS");
     });
 
     it("should add multiple transactions for different steps", () => {
       const { result } = renderHook(() => useSimpleBridgeSharedState());
 
       act(() => {
-        result.current.addTransaction({
-          step: SimpleBridgeStep.STEP_1_SIGNING,
-          status: "CONFIRMING",
-          txHash: "0x111",
-        });
-        result.current.addTransaction({
-          step: SimpleBridgeStep.STEP_2_SIGNING,
-          status: "CONFIRMING",
-          txHash: "0x222",
-        });
+        result.current.addTransaction(
+          createTestTransactionStep(1, "CONFIRMING", { txHash: "0x111" }),
+        );
+        result.current.addTransaction(
+          createTestTransactionStep(2, "CONFIRMING", { txHash: "0x222" }),
+        );
       });
 
       expect(result.current.transactions).toHaveLength(2);
-      expect(result.current.transactions[0]?.step).toBe(
-        SimpleBridgeStep.STEP_1_SIGNING,
-      );
-      expect(result.current.transactions[1]?.step).toBe(
-        SimpleBridgeStep.STEP_2_SIGNING,
-      );
+      expect(result.current.transactions[0]?.step).toBe(1);
+      expect(result.current.transactions[1]?.step).toBe(2);
     });
 
     it("should not create duplicate transactions", () => {
       const { result } = renderHook(() => useSimpleBridgeSharedState());
 
-      const transaction = {
-        step: SimpleBridgeStep.STEP_1,
-        status: "CONFIRMING",
+      const transaction = createTestTransactionStep(1, "CONFIRMING", {
         txHash: "0x123",
-      };
+      });
 
       act(() => {
         result.current.addTransaction(transaction);
@@ -192,13 +177,11 @@ describe("useSimpleBridgeSharedState", () => {
           step: SimpleBridgeStep.STEP_2_CONFIRMING,
           direction: "native-to-base",
           amount: "200",
-          errorDetails: "Some error",
+          errorMessage: "Some error",
         });
-        result.current.addTransaction({
-          step: SimpleBridgeStep.STEP_1,
-          status: "SUCCESS",
-          txHash: "0x123",
-        });
+        result.current.addTransaction(
+          createTestTransactionStep(1, "SUCCESS", { txHash: "0x123" }),
+        );
       });
 
       expect(result.current.bridgeState.step).toBe(
@@ -238,18 +221,18 @@ describe("useSimpleBridgeSharedState", () => {
       const { result } = renderHook(() => useSimpleBridgeSharedState());
 
       act(() => {
-        result.current.addTransaction({
-          step: SimpleBridgeStep.STEP_1_SIGNING,
-          status: "ERROR",
-          txHash: "0x123",
-          errorDetails: { message: "Step 1 failed", step: 1 },
-        });
-        result.current.addTransaction({
-          step: SimpleBridgeStep.STEP_2_SIGNING,
-          status: "ERROR",
-          txHash: "0x456",
-          errorDetails: { message: "Step 2 failed", step: 2 },
-        });
+        result.current.addTransaction(
+          createTestTransactionStep(1, "ERROR", {
+            txHash: "0x123",
+            errorDetails: "Step 1 failed",
+          }),
+        );
+        result.current.addTransaction(
+          createTestTransactionStep(2, "ERROR", {
+            txHash: "0x456",
+            errorDetails: "Step 2 failed",
+          }),
+        );
       });
 
       expect(result.current.transactions[0]?.errorDetails).toBeDefined();
@@ -271,13 +254,13 @@ describe("useSimpleBridgeSharedState", () => {
 
       act(() => {
         result.current.updateBridgeState({
-          errorDetails: "Bridge error",
+          errorMessage: "Bridge error",
         });
-        result.current.addTransaction({
-          step: SimpleBridgeStep.STEP_1,
-          status: "ERROR",
-          errorDetails: { message: "Transaction error", step: 1 },
-        });
+        result.current.addTransaction(
+          createTestTransactionStep(1, "ERROR", {
+            errorDetails: "Transaction error",
+          }),
+        );
       });
 
       act(() => {
@@ -286,18 +269,16 @@ describe("useSimpleBridgeSharedState", () => {
 
       // clearErrorDetails only clears transaction error details, not bridge state
       expect(result.current.transactions[0]?.errorDetails).toBeUndefined();
-      expect(result.current.bridgeState.errorDetails).toBe("Bridge error");
+      expect(result.current.bridgeState.errorMessage).toBe("Bridge error");
     });
 
     it("should handle clearing when no error details exist", () => {
       const { result } = renderHook(() => useSimpleBridgeSharedState());
 
       act(() => {
-        result.current.addTransaction({
-          step: SimpleBridgeStep.STEP_1,
-          status: "SUCCESS",
-          txHash: "0x123",
-        });
+        result.current.addTransaction(
+          createTestTransactionStep(1, "SUCCESS", { txHash: "0x123" }),
+        );
       });
 
       expect(() => {
@@ -315,8 +296,8 @@ describe("useSimpleBridgeSharedState", () => {
       const { result } = renderHook(() => useSimpleBridgeSharedState());
 
       const newTransactions = [
-        { step: SimpleBridgeStep.STEP_1, status: "SUCCESS", txHash: "0x111" },
-        { step: SimpleBridgeStep.STEP_2, status: "SUCCESS", txHash: "0x222" },
+        createTestTransactionStep(1, "SUCCESS", { txHash: "0x111" }),
+        createTestTransactionStep(2, "SUCCESS", { txHash: "0x222" }),
       ];
 
       act(() => {
@@ -330,17 +311,15 @@ describe("useSimpleBridgeSharedState", () => {
       const { result } = renderHook(() => useSimpleBridgeSharedState());
 
       act(() => {
-        result.current.addTransaction({
-          step: SimpleBridgeStep.STEP_1,
-          status: "CONFIRMING",
-          txHash: "0x123",
-        });
+        result.current.addTransaction(
+          createTestTransactionStep(1, "CONFIRMING", { txHash: "0x123" }),
+        );
       });
 
       expect(result.current.transactions).toHaveLength(1);
 
       const newTransactions = [
-        { step: SimpleBridgeStep.STEP_1, status: "SUCCESS", txHash: "0x456" },
+        createTestTransactionStep(1, "SUCCESS", { txHash: "0x456" }),
       ];
 
       act(() => {
@@ -378,10 +357,7 @@ describe("useSimpleBridgeSharedState", () => {
         result.current.updateBridgeState({
           step: SimpleBridgeStep.STEP_1_SIGNING,
         });
-        result.current.addTransaction({
-          step: SimpleBridgeStep.STEP_1,
-          status: "SIGNING",
-        });
+        result.current.addTransaction(createTestTransactionStep(1, "SIGNING"));
       });
 
       // Step 3: Transfer confirms
@@ -389,11 +365,9 @@ describe("useSimpleBridgeSharedState", () => {
         result.current.updateBridgeState({
           step: SimpleBridgeStep.STEP_1_CONFIRMING,
         });
-        result.current.addTransaction({
-          step: SimpleBridgeStep.STEP_1,
-          status: "CONFIRMING",
-          txHash: "0x123",
-        });
+        result.current.addTransaction(
+          createTestTransactionStep(1, "CONFIRMING", { txHash: "0x123" }),
+        );
       });
 
       // Verify full state is consistent

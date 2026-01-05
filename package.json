@@ -15,7 +15,7 @@
     "typescript": "catalog:",
     "vite-node": "^1.0.4"
   },
-  "packageManager": "pnpm@9.7.1",
+  "packageManager": "pnpm@10.27.0",
   "engines": {
     "node": ">=20.16.0"
   },
@@ -33,7 +33,8 @@
       ]
     },
     "patchedDependencies": {
-      "@hyperlane-xyz/widgets@17.0.0": "patches/@hyperlane-xyz__widgets@17.0.0.patch"
+      "@hyperlane-xyz/widgets@17.0.0": "patches/@hyperlane-xyz__widgets@17.0.0.patch",
+      "@wagmi/connectors": "patches/@wagmi__connectors.patch"
     }
   }
 }

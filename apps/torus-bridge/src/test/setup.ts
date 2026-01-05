@@ -7,7 +7,7 @@ import { vi } from "vitest";
 vi.mock("@hyperlane-xyz/sdk", async (importOriginal) => {
   const actual = await importOriginal();
   return {
-    ...actual,
+    ...(typeof actual === "object" && actual !== null ? actual : {}),
     ExplorerFamily: {
       Blockscout: "blockscout",
       Etherscan: "etherscan",
@@ -29,8 +29,8 @@ try {
       default: { createMapValueFn: mockCreateMapValueFn },
       createMapValueFn: mockCreateMapValueFn,
     },
-  };
-} catch (e) {
+  } as never;
+} catch {
   // Ignore if module not found
 }
 

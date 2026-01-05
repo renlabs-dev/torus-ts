@@ -1,5 +1,6 @@
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { assert } from "tsafe";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { QuickSendEvmDialog } from "./fast-bridge-quick-send-evm-dialog";
 
@@ -14,8 +15,8 @@ vi.mock("lucide-react", () => ({
 
 // Mock next/image
 vi.mock("next/image", () => ({
-  default: ({ src, alt }: { src: string; alt: string }) => (
-    <img src={src} alt={alt} data-testid={`image-${alt}`} />
+  default: ({ src: _src, alt }: { src: string; alt: string }) => (
+    <div data-testid={`image-${alt}`} />
   ),
 }));
 
@@ -101,6 +102,7 @@ describe("QuickSendEvmDialog", () => {
       render(<QuickSendEvmDialog {...defaultProps} />);
 
       const selectButtons = screen.getAllByRole("button", { name: /Select/i });
+      assert(selectButtons.length > 0, "Select buttons should exist");
       expect(selectButtons).toHaveLength(2);
     });
   });
@@ -113,7 +115,10 @@ describe("QuickSendEvmDialog", () => {
       render(<QuickSendEvmDialog {...defaultProps} />);
 
       const selectButtons = screen.getAllByRole("button", { name: /Select/i });
-      await user.click(selectButtons[0]);
+      assert(selectButtons.length > 0, "Select buttons should exist");
+      const firstButton = selectButtons[0];
+      assert(firstButton !== undefined, "First button should exist");
+      await user.click(firstButton);
 
       // Should show sending state
       expect(screen.getByTestId("sending-title")).toHaveTextContent(
@@ -129,7 +134,10 @@ describe("QuickSendEvmDialog", () => {
       render(<QuickSendEvmDialog {...defaultProps} />);
 
       const selectButtons = screen.getAllByRole("button", { name: /Select/i });
-      await user.click(selectButtons[0]);
+      assert(selectButtons.length > 0, "Select buttons should exist");
+      const firstButton = selectButtons[0];
+      assert(firstButton !== undefined, "First button should exist");
+      await user.click(firstButton);
 
       expect(screen.getByTestId("sending-title")).toHaveTextContent(
         "Sending Transaction",
@@ -143,7 +151,10 @@ describe("QuickSendEvmDialog", () => {
       render(<QuickSendEvmDialog {...defaultProps} />);
 
       const selectButtons = screen.getAllByRole("button", { name: /Select/i });
-      await user.click(selectButtons[1]);
+      assert(selectButtons.length > 0, "Select buttons should exist");
+      const secondButton = selectButtons[1];
+      assert(secondButton !== undefined, "Second button should exist");
+      await user.click(secondButton);
 
       expect(screen.getByTestId("sending-title")).toHaveTextContent(
         "Sending Transaction",
@@ -157,7 +168,10 @@ describe("QuickSendEvmDialog", () => {
       render(<QuickSendEvmDialog {...defaultProps} />);
 
       const selectButtons = screen.getAllByRole("button", { name: /Select/i });
-      await user.click(selectButtons[0]);
+      assert(selectButtons.length > 0, "Select buttons should exist");
+      const firstButton = selectButtons[0];
+      assert(firstButton !== undefined, "First button should exist");
+      await user.click(firstButton);
 
       // The amount should be formatted and displayed
       expect(screen.getByText(/100(\.0*)?/)).toBeInTheDocument();
@@ -170,7 +184,10 @@ describe("QuickSendEvmDialog", () => {
       render(<QuickSendEvmDialog {...defaultProps} />);
 
       const selectButtons = screen.getAllByRole("button", { name: /Select/i });
-      await user.click(selectButtons[0]);
+      assert(selectButtons.length > 0, "Select buttons should exist");
+      const firstButton = selectButtons[0];
+      assert(firstButton !== undefined, "First button should exist");
+      await user.click(firstButton);
 
       expect(mockOnSendToNative).toHaveBeenCalledWith(100n * 10n ** 18n);
     });
@@ -182,7 +199,10 @@ describe("QuickSendEvmDialog", () => {
       render(<QuickSendEvmDialog {...defaultProps} />);
 
       const selectButtons = screen.getAllByRole("button", { name: /Select/i });
-      await user.click(selectButtons[1]);
+      assert(selectButtons.length > 0, "Select buttons should exist");
+      const secondButton = selectButtons[1];
+      assert(secondButton !== undefined, "Second button should exist");
+      await user.click(secondButton);
 
       expect(mockOnSendToBase).toHaveBeenCalledWith(100n * 10n ** 18n);
     });
@@ -199,7 +219,10 @@ describe("QuickSendEvmDialog", () => {
       render(<QuickSendEvmDialog {...defaultProps} />);
 
       const selectButtons = screen.getAllByRole("button", { name: /Select/i });
-      await user.click(selectButtons[0]);
+      assert(selectButtons.length > 0, "Select buttons should exist");
+      const firstButton = selectButtons[0];
+      assert(firstButton !== undefined, "First button should exist");
+      await user.click(firstButton);
 
       // Try to close dialog (click would normally trigger onClose if allowed)
       // Dialog should still show sending state
@@ -217,7 +240,10 @@ describe("QuickSendEvmDialog", () => {
       const { rerender } = render(<QuickSendEvmDialog {...defaultProps} />);
 
       const selectButtons = screen.getAllByRole("button", { name: /Select/i });
-      await user.click(selectButtons[0]);
+      assert(selectButtons.length > 0, "Select buttons should exist");
+      const firstButton = selectButtons[0];
+      assert(firstButton !== undefined, "First button should exist");
+      await user.click(firstButton);
 
       // Simulate balance decrease (enough to trigger success - more than 80% of expected)
       const decreasedBalance = 10n * 10n ** 18n; // 10 TORUS (90% decrease)
@@ -243,7 +269,10 @@ describe("QuickSendEvmDialog", () => {
       const { rerender } = render(<QuickSendEvmDialog {...defaultProps} />);
 
       const selectButtons = screen.getAllByRole("button", { name: /Select/i });
-      await user.click(selectButtons[0]);
+      assert(selectButtons.length > 0, "Select buttons should exist");
+      const firstButton = selectButtons[0];
+      assert(firstButton !== undefined, "First button should exist");
+      await user.click(firstButton);
 
       const decreasedBalance = 10n * 10n ** 18n; // 10 TORUS (90% decrease)
 
@@ -267,7 +296,10 @@ describe("QuickSendEvmDialog", () => {
       const { rerender } = render(<QuickSendEvmDialog {...defaultProps} />);
 
       const selectButtons = screen.getAllByRole("button", { name: /Select/i });
-      await user.click(selectButtons[0]);
+      assert(selectButtons.length > 0, "Select buttons should exist");
+      const firstButton = selectButtons[0];
+      assert(firstButton !== undefined, "First button should exist");
+      await user.click(firstButton);
 
       const decreasedBalance = 10n * 10n ** 18n; // 10 TORUS (90% decrease)
 
@@ -291,7 +323,10 @@ describe("QuickSendEvmDialog", () => {
       const { rerender } = render(<QuickSendEvmDialog {...defaultProps} />);
 
       const selectButtons = screen.getAllByRole("button", { name: /Select/i });
-      await user.click(selectButtons[0]);
+      assert(selectButtons.length > 0, "Select buttons should exist");
+      const firstButton = selectButtons[0];
+      assert(firstButton !== undefined, "First button should exist");
+      await user.click(firstButton);
 
       const decreasedBalance = 10n * 10n ** 18n; // 10 TORUS (90% decrease)
 
@@ -320,7 +355,10 @@ describe("QuickSendEvmDialog", () => {
       const { rerender } = render(<QuickSendEvmDialog {...defaultProps} />);
 
       const selectButtons = screen.getAllByRole("button", { name: /Select/i });
-      await user.click(selectButtons[0]);
+      assert(selectButtons.length > 0, "Select buttons should exist");
+      const firstButton = selectButtons[0];
+      assert(firstButton !== undefined, "First button should exist");
+      await user.click(firstButton);
 
       const decreasedBalance = 10n * 10n ** 18n; // 10 TORUS (90% decrease)
 
@@ -343,7 +381,10 @@ describe("QuickSendEvmDialog", () => {
       const { rerender } = render(<QuickSendEvmDialog {...defaultProps} />);
 
       const selectButtons = screen.getAllByRole("button", { name: /Select/i });
-      await user.click(selectButtons[0]);
+      assert(selectButtons.length > 0, "Select buttons should exist");
+      const firstButton = selectButtons[0];
+      assert(firstButton !== undefined, "First button should exist");
+      await user.click(firstButton);
 
       const decreasedBalance = 10n * 10n ** 18n; // 10 TORUS (90% decrease)
 
@@ -368,7 +409,10 @@ describe("QuickSendEvmDialog", () => {
       render(<QuickSendEvmDialog {...defaultProps} />);
 
       const selectButtons = screen.getAllByRole("button", { name: /Select/i });
-      await user.click(selectButtons[0]);
+      assert(selectButtons.length > 0, "Select buttons should exist");
+      const firstButton = selectButtons[0];
+      assert(firstButton !== undefined, "First button should exist");
+      await user.click(firstButton);
 
       await waitFor(() => {
         expect(screen.getByTestId("error-title")).toHaveTextContent(
@@ -384,7 +428,10 @@ describe("QuickSendEvmDialog", () => {
       render(<QuickSendEvmDialog {...defaultProps} />);
 
       const selectButtons = screen.getAllByRole("button", { name: /Select/i });
-      await user.click(selectButtons[0]);
+      assert(selectButtons.length > 0, "Select buttons should exist");
+      const firstButton = selectButtons[0];
+      assert(firstButton !== undefined, "First button should exist");
+      await user.click(firstButton);
 
       await waitFor(() => {
         expect(screen.getByTestId("alert-icon")).toBeInTheDocument();
@@ -401,7 +448,10 @@ describe("QuickSendEvmDialog", () => {
       render(<QuickSendEvmDialog {...defaultProps} />);
 
       const selectButtons = screen.getAllByRole("button", { name: /Select/i });
-      await user.click(selectButtons[0]);
+      assert(selectButtons.length > 0, "Select buttons should exist");
+      const firstButton = selectButtons[0];
+      assert(firstButton !== undefined, "First button should exist");
+      await user.click(firstButton);
 
       await waitFor(() => {
         expect(screen.getByText(formattedErrorMessage)).toBeInTheDocument();
@@ -415,7 +465,10 @@ describe("QuickSendEvmDialog", () => {
       render(<QuickSendEvmDialog {...defaultProps} />);
 
       const selectButtons = screen.getAllByRole("button", { name: /Select/i });
-      await user.click(selectButtons[0]);
+      assert(selectButtons.length > 0, "Select buttons should exist");
+      const firstButton = selectButtons[0];
+      assert(firstButton !== undefined, "First button should exist");
+      await user.click(firstButton);
 
       await waitFor(() => {
         expect(
@@ -434,7 +487,10 @@ describe("QuickSendEvmDialog", () => {
       render(<QuickSendEvmDialog {...defaultProps} />);
 
       const selectButtons = screen.getAllByRole("button", { name: /Select/i });
-      await user.click(selectButtons[0]);
+      assert(selectButtons.length > 0, "Select buttons should exist");
+      const firstButton = selectButtons[0];
+      assert(firstButton !== undefined, "First button should exist");
+      await user.click(firstButton);
 
       await waitFor(() => {
         const cancelButton = screen.getByRole("button", { name: /Cancel/i });
@@ -455,7 +511,10 @@ describe("QuickSendEvmDialog", () => {
       render(<QuickSendEvmDialog {...defaultProps} />);
 
       const selectButtons = screen.getAllByRole("button", { name: /Select/i });
-      await user.click(selectButtons[0]);
+      assert(selectButtons.length > 0, "Select buttons should exist");
+      const firstButton = selectButtons[0];
+      assert(firstButton !== undefined, "First button should exist");
+      await user.click(firstButton);
 
       await waitFor(() => {
         const retryButton = screen.getByRole("button", { name: /Retry/i });
@@ -477,7 +536,10 @@ describe("QuickSendEvmDialog", () => {
       render(<QuickSendEvmDialog {...defaultProps} />);
 
       const selectButtons = screen.getAllByRole("button", { name: /Select/i });
-      await user.click(selectButtons[0]);
+      assert(selectButtons.length > 0, "Select buttons should exist");
+      const firstButton = selectButtons[0];
+      assert(firstButton !== undefined, "First button should exist");
+      await user.click(firstButton);
 
       await waitFor(() => {
         expect(screen.getByTestId("error-title")).toHaveTextContent(
@@ -495,7 +557,10 @@ describe("QuickSendEvmDialog", () => {
       const { rerender } = render(<QuickSendEvmDialog {...defaultProps} />);
 
       const selectButtons = screen.getAllByRole("button", { name: /Select/i });
-      await user.click(selectButtons[0]);
+      assert(selectButtons.length > 0, "Select buttons should exist");
+      const firstButton = selectButtons[0];
+      assert(firstButton !== undefined, "First button should exist");
+      await user.click(firstButton);
 
       // Simulate balance becoming dust (0.001 TORUS)
       const dustBalance = 1n * 10n ** 15n;
@@ -521,7 +586,10 @@ describe("QuickSendEvmDialog", () => {
       const { rerender } = render(<QuickSendEvmDialog {...defaultProps} />);
 
       const selectButtons = screen.getAllByRole("button", { name: /Select/i });
-      await user.click(selectButtons[0]);
+      assert(selectButtons.length > 0, "Select buttons should exist");
+      const firstButton = selectButtons[0];
+      assert(firstButton !== undefined, "First button should exist");
+      await user.click(firstButton);
 
       // Simulate 80% decrease (20% remaining)
       const balanceAfterDecrease = 20n * 10n ** 18n;
@@ -547,7 +615,10 @@ describe("QuickSendEvmDialog", () => {
       const { rerender } = render(<QuickSendEvmDialog {...defaultProps} />);
 
       const selectButtons = screen.getAllByRole("button", { name: /Select/i });
-      await user.click(selectButtons[0]);
+      assert(selectButtons.length > 0, "Select buttons should exist");
+      const firstButton = selectButtons[0];
+      assert(firstButton !== undefined, "First button should exist");
+      await user.click(firstButton);
 
       // Simulate small decrease (not enough yet)
       const smallDecrease = 95n * 10n ** 18n;
@@ -574,7 +645,10 @@ describe("QuickSendEvmDialog", () => {
       const { rerender } = render(<QuickSendEvmDialog {...defaultProps} />);
 
       const selectButtons = screen.getAllByRole("button", { name: /Select/i });
-      await user.click(selectButtons[0]);
+      assert(selectButtons.length > 0, "Select buttons should exist");
+      const firstButton = selectButtons[0];
+      assert(firstButton !== undefined, "First button should exist");
+      await user.click(firstButton);
 
       // Reopen dialog
       rerender(
@@ -592,8 +666,6 @@ describe("QuickSendEvmDialog", () => {
     });
 
     it("should handle multiple open/close cycles", async () => {
-      const user = userEvent.setup();
-
       const { rerender } = render(<QuickSendEvmDialog {...defaultProps} />);
 
       // First cycle
@@ -647,7 +719,10 @@ describe("QuickSendEvmDialog", () => {
       render(<QuickSendEvmDialog {...defaultProps} />);
 
       const selectButtons = screen.getAllByRole("button", { name: /Select/i });
-      await user.click(selectButtons[0]);
+      assert(selectButtons.length > 0, "Select buttons should exist");
+      const firstButton = selectButtons[0];
+      assert(firstButton !== undefined, "First button should exist");
+      await user.click(firstButton);
 
       expect(screen.getByTestId("sending-title")).toHaveTextContent(
         "Sending Transaction",
@@ -661,7 +736,10 @@ describe("QuickSendEvmDialog", () => {
       render(<QuickSendEvmDialog {...defaultProps} />);
 
       const selectButtons = screen.getAllByRole("button", { name: /Select/i });
-      await user.click(selectButtons[1]);
+      assert(selectButtons.length > 0, "Select buttons should exist");
+      const secondButton = selectButtons[1];
+      assert(secondButton !== undefined, "Second button should exist");
+      await user.click(secondButton);
 
       expect(screen.getByTestId("sending-title")).toHaveTextContent(
         "Sending Transaction",

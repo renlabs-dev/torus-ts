@@ -1,5 +1,7 @@
 import { act, renderHook } from "@testing-library/react";
+import { assert } from "tsafe";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { createMockLocation } from "../__tests__/test-utils";
 import { useFastBridgeTransactionUrlState } from "./use-fast-bridge-transaction-url-state";
 
 // Mock window.location
@@ -8,20 +10,15 @@ const mockReplaceState = vi.fn();
 describe("useFastBridgeTransactionUrlState", () => {
   beforeEach(() => {
     // Setup window.location mock
-    delete (window as Partial<typeof window>).location;
-    window.location = {
-      search: "",
-      href: "http://localhost/fast",
-      origin: "http://localhost",
-      protocol: "http:",
-      host: "localhost",
-      hostname: "localhost",
-      port: "",
-      pathname: "/fast",
-      reload: vi.fn(),
-      replace: vi.fn(),
-      toString: vi.fn(() => "http://localhost/fast"),
-    } as unknown as Location;
+    Object.defineProperty(window, "location", {
+      value: createMockLocation({
+        search: "",
+        pathname: "/fast",
+        href: "http://localhost/fast",
+      }),
+      writable: true,
+      configurable: true,
+    });
 
     window.history.replaceState = mockReplaceState;
     mockReplaceState.mockClear();
@@ -37,6 +34,7 @@ describe("useFastBridgeTransactionUrlState", () => {
 
       expect(mockReplaceState).toHaveBeenCalled();
       const call = mockReplaceState.mock.calls[0];
+      assert(call !== undefined, "Call should be defined");
       expect(call[2]).toContain("txId=tx-123");
     });
 
@@ -51,6 +49,7 @@ describe("useFastBridgeTransactionUrlState", () => {
 
       expect(mockReplaceState).toHaveBeenCalled();
       const call = mockReplaceState.mock.calls[0];
+      assert(call !== undefined, "Call should be defined");
       expect(call[2]).toContain("txId=tx-123");
       expect(call[2]).toContain("param1=value1");
     });
@@ -66,6 +65,7 @@ describe("useFastBridgeTransactionUrlState", () => {
 
       expect(mockReplaceState).toHaveBeenCalled();
       const call = mockReplaceState.mock.calls[0];
+      assert(call !== undefined, "Call should be defined");
       expect(call[2]).toContain("txId=new-tx");
       expect(call[2]).not.toContain("txId=old-tx");
     });
@@ -79,6 +79,7 @@ describe("useFastBridgeTransactionUrlState", () => {
 
       expect(mockReplaceState).toHaveBeenCalled();
       const call = mockReplaceState.mock.calls[0];
+      assert(call !== undefined, "Call should be defined");
       expect(call[2]).toContain("txId=tx-123-abc_def");
     });
 
@@ -91,6 +92,7 @@ describe("useFastBridgeTransactionUrlState", () => {
 
       expect(mockReplaceState).toHaveBeenCalled();
       const call = mockReplaceState.mock.calls[0];
+      assert(call !== undefined, "Call should be defined");
       expect(call[2]).toMatch(/^\/fast/);
     });
   });
@@ -170,6 +172,7 @@ describe("useFastBridgeTransactionUrlState", () => {
 
       expect(mockReplaceState).toHaveBeenCalled();
       const call = mockReplaceState.mock.calls[0];
+      assert(call !== undefined, "Call should be defined");
       expect(call[2]).not.toContain("txId");
     });
 
@@ -184,6 +187,7 @@ describe("useFastBridgeTransactionUrlState", () => {
 
       expect(mockReplaceState).toHaveBeenCalled();
       const call = mockReplaceState.mock.calls[0];
+      assert(call !== undefined, "Call should be defined");
       expect(call[2]).toContain("param1=value1");
       expect(call[2]).toContain("param2=value2");
       expect(call[2]).not.toContain("txId");
@@ -200,6 +204,7 @@ describe("useFastBridgeTransactionUrlState", () => {
 
       expect(mockReplaceState).toHaveBeenCalled();
       const call = mockReplaceState.mock.calls[0];
+      assert(call !== undefined, "Call should be defined");
       expect(call[2]).toBe("/fast");
     });
 
@@ -214,6 +219,7 @@ describe("useFastBridgeTransactionUrlState", () => {
 
       expect(mockReplaceState).toHaveBeenCalled();
       const call = mockReplaceState.mock.calls[0];
+      assert(call !== undefined, "Call should be defined");
       expect(call[2]).toContain("param1=value1");
     });
 
@@ -228,6 +234,7 @@ describe("useFastBridgeTransactionUrlState", () => {
 
       expect(mockReplaceState).toHaveBeenCalled();
       const call = mockReplaceState.mock.calls[0];
+      assert(call !== undefined, "Call should be defined");
       expect(call[2]).toMatch(/^\/fast/);
     });
   });

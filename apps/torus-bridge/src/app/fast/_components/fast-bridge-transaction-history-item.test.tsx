@@ -1,7 +1,9 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { assert } from "tsafe";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { TransactionHistoryItem } from "./fast-bridge-transaction-history-item";
+import { SimpleBridgeStep } from "./fast-bridge-types";
 import type { FastBridgeTransactionHistoryItem } from "./fast-bridge-types";
 
 // Mock the helper function
@@ -23,12 +25,14 @@ describe("TransactionHistoryItem", () => {
     direction: "base-to-native",
     amount: "100",
     status: "completed",
+    currentStep: SimpleBridgeStep.COMPLETE,
     step1TxHash: "0x" + "1".repeat(64),
     step2TxHash: "0x" + "2".repeat(64),
     baseAddress: "0xbase1234567890abcdef1234567890abcdef12345678",
     nativeAddress: "1AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
     timestamp: Date.now(),
     recoveredViaEvmRecover: false,
+    canRetry: false,
     ...overrides,
   });
 
@@ -259,7 +263,9 @@ describe("TransactionHistoryItem", () => {
       );
 
       const card = screen.getByText("Base → Torus");
-      await user.click(card.closest("div")!);
+      const cardDiv = card.closest("div");
+      assert(cardDiv !== null, "Card div should exist");
+      await user.click(cardDiv);
 
       expect(mockOnSelectionChange).toHaveBeenCalledWith("tx-123", true);
     });
@@ -319,7 +325,7 @@ describe("TransactionHistoryItem", () => {
 
     it("should collapse transaction details when clicking chevron again", async () => {
       const user = userEvent.setup();
-      const { rerender } = render(<TransactionHistoryItem {...defaultProps} />);
+      render(<TransactionHistoryItem {...defaultProps} />);
 
       const expandButton = screen
         .getAllByRole("button")
@@ -603,6 +609,156 @@ describe("TransactionHistoryItem", () => {
           "Recovered via EVM Recover",
         );
       }
+    });
+
+    it("should open explorer URL in new tab when step explorer link is clicked", async () => {
+      const user = userEvent.setup();
+      const mockWindowOpen = vi
+        .spyOn(window, "open")
+        .mockImplementation(() => null);
+      const transaction = createMockTransaction();
+      render(
+        <TransactionHistoryItem {...defaultProps} transaction={transaction} />,
+      );
+
+      const expandButton = screen
+        .getAllByRole("button")
+        .find((btn) => btn.querySelector("[data-testid='chevron-down']"));
+
+      if (expandButton) {
+        await user.click(expandButton);
+
+        // Find explorer buttons in the expanded details
+        const explorerButtons = screen
+          .getAllByRole("button")
+          .filter(
+            (btn) =>
+              btn.textContent.includes("View on Explorer") ||
+              !!btn.querySelector("[data-testid='external-link-icon']"),
+          );
+
+        if (explorerButtons.length > 0) {
+          const firstExplorerButton = explorerButtons[0];
+          if (firstExplorerButton) {
+            // Click the first explorer button
+            await user.click(firstExplorerButton);
+
+            // Verify window.open was called with correct parameters (mock returns explorer.com)
+            expect(mockWindowOpen).toHaveBeenCalledWith(
+              "https://explorer.com/Base/0x1111111111111111111111111111111111111111",
+              "_blank",
+              "noopener,noreferrer",
+            );
+          }
+        }
+      }
+
+      mockWindowOpen.mockRestore();
+    });
+
+    it("should open Blockscout explorer URL for native-to-base step2 (Torus EVM)", async () => {
+      const user = userEvent.setup();
+      const mockWindowOpen = vi
+        .spyOn(window, "open")
+        .mockImplementation(() => null);
+
+      // Create native-to-base transaction with step2 tx hash to test Torus EVM explorer
+      const transaction = createMockTransaction({
+        direction: "native-to-base",
+        step2TxHash: "0x2222222222222222222222222222222222222222",
+      });
+
+      render(
+        <TransactionHistoryItem {...defaultProps} transaction={transaction} />,
+      );
+
+      const expandButton = screen
+        .getAllByRole("button")
+        .find((btn) => btn.querySelector("[data-testid='chevron-down']"));
+
+      if (expandButton) {
+        await user.click(expandButton);
+
+        // Find explorer buttons in the expanded details
+        const explorerButtons = screen
+          .getAllByRole("button")
+          .filter(
+            (btn) =>
+              btn.textContent.includes("View on Explorer") ||
+              !!btn.querySelector("[data-testid='external-link-icon']"),
+          );
+
+        if (explorerButtons.length >= 1) {
+          const step2ExplorerButton = explorerButtons[0]; // Only step2 button for native-to-base (step1 has no explorer)
+          if (step2ExplorerButton) {
+            // Click the step2 explorer button (Torus EVM)
+            await user.click(step2ExplorerButton);
+
+            // Verify window.open was called with correct parameters (mock returns explorer.com)
+            expect(mockWindowOpen).toHaveBeenCalledWith(
+              "https://explorer.com/Torus EVM/0x2222222222222222222222222222222222222222",
+              "_blank",
+              "noopener,noreferrer",
+            );
+          }
+        }
+      }
+
+      mockWindowOpen.mockRestore();
+    });
+
+    it("should show Polkadot.js explorer link for native-to-base step1 (Torus Substrate)", async () => {
+      const user = userEvent.setup();
+      const mockWindowOpen = vi
+        .spyOn(window, "open")
+        .mockImplementation(() => null);
+
+      // Create native-to-base transaction with step1 tx hash
+      const transaction = createMockTransaction({
+        direction: "native-to-base",
+        step1TxHash: "0x1111111111111111111111111111111111111111",
+        step2TxHash: undefined, // No step2 to avoid interference
+      });
+
+      render(
+        <TransactionHistoryItem {...defaultProps} transaction={transaction} />,
+      );
+
+      const expandButton = screen
+        .getAllByRole("button")
+        .find((btn) => btn.querySelector("[data-testid='chevron-down']"));
+
+      if (expandButton) {
+        await user.click(expandButton);
+
+        // Find explorer buttons in the expanded details
+        const explorerButtons = screen
+          .getAllByRole("button")
+          .filter(
+            (btn) =>
+              btn.textContent.includes("View on Explorer") ||
+              !!btn.querySelector("[data-testid='external-link-icon']") ||
+              btn.textContent.includes("Step 1: Torus Chain"),
+          );
+
+        // Should have 1 explorer button for Torus Substrate (Polkadot.js)
+        expect(explorerButtons).toHaveLength(1);
+
+        const step1Button = explorerButtons[0];
+        if (step1Button) {
+          // Click the step1 explorer button
+          await user.click(step1Button);
+
+          // Verify window.open was called with correct explorer URL (mock returns explorer.com)
+          expect(mockWindowOpen).toHaveBeenCalledWith(
+            "https://explorer.com/Torus/0x1111111111111111111111111111111111111111",
+            "_blank",
+            "noopener,noreferrer",
+          );
+        }
+      }
+
+      mockWindowOpen.mockRestore();
     });
   });
 });

@@ -1,5 +1,4 @@
 import { render } from "@testing-library/react";
-import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { FastBridgeForm } from "./fast-bridge-form";
 
@@ -129,7 +128,6 @@ describe("FastBridgeForm", () => {
 
   describe("amount input", () => {
     it("should allow amount input handling", async () => {
-      const user = userEvent.setup();
       expect(() => {
         render(<FastBridgeForm />);
       }).not.toThrow();

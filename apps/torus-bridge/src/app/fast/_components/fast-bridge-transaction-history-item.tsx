@@ -566,14 +566,14 @@ export function TransactionHistoryItem({
                       </>
                     );
                   } else {
-                    // native-to-base: step1 = Torus (Polkadot/Substrate), step2 = Base (EVM)
+                    // native-to-base: step1 = Torus (Polkadot/Substrate), step2 = Torus EVM → Base
                     const step1Hash = transaction.step1TxHash;
                     const step2Hash = transaction.step2TxHash;
                     const step1Url = step1Hash
                       ? getExplorerUrl(step1Hash, "Torus")
                       : "";
                     const step2Url = step2Hash
-                      ? getExplorerUrl(step2Hash, "Base")
+                      ? getExplorerUrl(step2Hash, "Torus EVM")
                       : "";
 
                     return (

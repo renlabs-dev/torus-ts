@@ -135,8 +135,8 @@ export function getExplorerUrl(txHash: string, chainName: string): string {
   }
 
   if (lowerChainName === "torus" || lowerChainName === "torus native") {
-    // Torus (Substrate) doesn't have a public block explorer yet
-    return "";
+    // Torus (Substrate) uses Polkadot.js explorer
+    return `https://polkadot.js.org/apps/?rpc=wss://api.torus.network#/explorer/query/${txHash}`;
   }
 
   return "";

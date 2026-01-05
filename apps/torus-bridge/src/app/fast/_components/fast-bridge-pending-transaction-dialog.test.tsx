@@ -2,6 +2,7 @@ import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { PendingTransactionDialog } from "./fast-bridge-pending-transaction-dialog";
+import { SimpleBridgeStep } from "./fast-bridge-types";
 import type { FastBridgeTransactionHistoryItem } from "./fast-bridge-types";
 
 // Mock lucide-react icons with specific test IDs
@@ -24,12 +25,14 @@ describe("PendingTransactionDialog", () => {
     direction: "base-to-native",
     amount: "100",
     status: "pending",
+    currentStep: SimpleBridgeStep.STEP_1_COMPLETE,
     step1TxHash: "0x" + "1".repeat(64),
     step2TxHash: undefined,
     baseAddress: "0xbase1234567890abcdef1234567890abcdef12345678",
     nativeAddress: "1AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
     timestamp: Date.now() - 5 * 60 * 1000, // 5 minutes ago
     recoveredViaEvmRecover: false,
+    canRetry: true,
     ...overrides,
   });
 
