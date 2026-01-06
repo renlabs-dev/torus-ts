@@ -47,11 +47,15 @@ jobs:
       - name: Setup
         uses: ./.github/actions/setup
       - name: Test
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          ISSUE_COMMENT_BODY: ${{ github.event.comment.body }}
+          INPUT_SCOPE: ${{ inputs.scope }}
         run: |
-          if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
-            SCOPE="${{ inputs.scope }}"
+          if [ "$EVENT_NAME" == "workflow_dispatch" ]; then
+            SCOPE="$INPUT_SCOPE"
           else
-            COMMENT="${{ github.event.comment.body }}"
+            COMMENT="$ISSUE_COMMENT_BODY"
             if [[ "$COMMENT" == *"unit"* ]]; then
               SCOPE="unit"
             elif [[ "$COMMENT" == *"integration"* ]]; then
