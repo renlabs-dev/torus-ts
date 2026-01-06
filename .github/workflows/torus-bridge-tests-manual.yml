@@ -1,74 +1,60 @@
-name: Torus Bridge Tests - Manual
+name: Torus Bridge Tests
 
 on:
   workflow_dispatch:
-    inputs:
-      scope:
-        description: Test scope
-        default: full
-        type: choice
-        options: [full, unit, integration]
   issue_comment:
     types: [created]
 
 permissions:
   contents: read
   issues: write
+  pull-requests: write
 
 jobs:
-  test-torus-bridge:
+  test:
     if: >
       github.event_name == 'workflow_dispatch' ||
-      (github.event_name == 'issue_comment' &&
-       github.event.issue.pull_request &&
+      (github.event.issue.pull_request && 
        (contains(github.event.comment.body, '/test-bridge') ||
         contains(github.event.comment.body, '@test-bridge')))
     runs-on: ubicloud-standard-2
     steps:
-      - name: React to comment
+      - name: React
         if: github.event_name == 'issue_comment'
         uses: actions/github-script@v7
         with:
           script: |
-            await github.rest.reactions.createForIssueComment({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
+            github.rest.reactions.createForIssueComment({
+              ...context.repo,
               comment_id: context.payload.comment.id,
-              content: 'eyes'
-            });
-            await github.rest.reactions.createForIssueComment({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              comment_id: context.payload.comment.id,
-              content: '+1'
+              content: 'rocket'
             });
 
-      - uses: actions/checkout@v4
+      - name: Checkout PR
+        if: github.event_name == 'issue_comment'
+        run: |
+          gh pr checkout ${{ github.event.issue.number }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+
+      - name: Checkout
+        if: github.event_name == 'workflow_dispatch'
+        uses: actions/checkout@v4
+
       - name: Setup
         uses: ./.github/actions/setup
-      - name: Test
-        env:
-          EVENT_NAME: ${{ github.event_name }}
-          ISSUE_COMMENT_BODY: ${{ github.event.comment.body }}
-          INPUT_SCOPE: ${{ inputs.scope }}
-        run: |
-          if [ "$EVENT_NAME" == "workflow_dispatch" ]; then
-            SCOPE="$INPUT_SCOPE"
-          else
-            COMMENT="$ISSUE_COMMENT_BODY"
-            if [[ "$COMMENT" == *"unit"* ]]; then
-              SCOPE="unit"
-            elif [[ "$COMMENT" == *"integration"* ]]; then
-              SCOPE="integration"
-            else
-              SCOPE="full"
-            fi
-          fi
 
-          if [ "$SCOPE" == "unit" ]; then
-            pnpm exec turbo run test -F torus-bridge -- --testPathPattern="\.unit\.|\.spec\."
-          elif [ "$SCOPE" == "integration" ]; then
-            pnpm exec turbo run test -F torus-bridge -- --testPathPattern="\.integration\.|\.e2e\."
-          else
-            pnpm exec turbo run test -F torus-bridge
-          fi
+      - name: Test
+        run: pnpm exec turbo run test -F torus-bridge
+
+      - name: Comment
+        if: always() && github.event_name == 'issue_comment'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const emoji = '${{ job.status }}' === 'success' ? '✅' : '❌';
+            github.rest.issues.createComment({
+              ...context.repo,
+              issue_number: context.issue.number,
+              body: `${emoji} Tests ${job.status}`
+            });
