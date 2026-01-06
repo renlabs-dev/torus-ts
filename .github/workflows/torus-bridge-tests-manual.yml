@@ -17,27 +17,60 @@ permissions:
 
 jobs:
   test-torus-bridge:
+    # Debug: always run for now to test
     if: >
       github.event_name == 'workflow_dispatch' ||
-      (github.event_name == 'issue_comment' &&
-       github.event.issue.pull_request &&
-       (contains(github.event.comment.body, '/test-bridge') ||
-        contains(github.event.comment.body, '@test-bridge')))
+      github.event_name == 'issue_comment'
     permissions:
       contents: read
       issues: write
     runs-on: ubicloud-standard-2
     steps:
-      - uses: actions/checkout@v4
+      - name: Debug event info
+        run: |
+          echo "Event name: ${{ github.event_name }}"
+          echo "Comment body: ${{ github.event.comment.body }}"
+          echo "Is PR: ${{ github.event.issue.pull_request }}"
+          echo "Issue number: ${{ github.event.issue.number }}"
 
+      - name: Check if should run tests
+        id: check
+        run: |
+          if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+            echo "should_run=true" >> $GITHUB_OUTPUT
+            echo "reason=manual_dispatch" >> $GITHUB_OUTPUT
+          elif [ "${{ github.event_name }}" == "issue_comment" ]; then
+            COMMENT="${{ github.event.comment.body }}"
+            IS_PR="${{ github.event.issue.pull_request }}"
+            echo "Comment content: '$COMMENT'"
+            echo "Is PR: '$IS_PR'"
+            if [[ "$IS_PR" != "null" ]] && [[ "$IS_PR" != "" ]]; then
+              if [[ "$COMMENT" == *"/test-bridge"* ]] || [[ "$COMMENT" == *"@test-bridge"* ]]; then
+                echo "should_run=true" >> $GITHUB_OUTPUT
+                echo "reason=comment_trigger" >> $GITHUB_OUTPUT
+              else
+                echo "should_run=false" >> $GITHUB_OUTPUT
+                echo "reason=wrong_comment" >> $GITHUB_OUTPUT
+              fi
+            else
+              echo "should_run=false" >> $GITHUB_OUTPUT
+              echo "reason=not_pr" >> $GITHUB_OUTPUT
+            fi
+          else
+            echo "should_run=false" >> $GITHUB_OUTPUT
+            echo "reason=unknown_event" >> $GITHUB_OUTPUT
+          fi
+      - uses: actions/checkout@v4
       - name: PNPM setup
+        if: steps.check.outputs.should_run == 'true'
         uses: ./.github/actions/setup
 
       - name: Copy env
+        if: steps.check.outputs.should_run == 'true'
         run: cp .env.example .env
 
-      - name: React to comment trigger
-        if: github.event_name == 'issue_comment'
+      - name: React to valid comment
+        if: steps.check.outputs.should_run == 'true' && steps.check.outputs.reason == 'comment_trigger'
         uses: actions/github-script@v7
         with:
           script: |
@@ -58,6 +91,7 @@ jobs:
             });
 
       - name: Determine test scope
+        if: steps.check.outputs.should_run == 'true'
         id: scope
         env:
           COMMENT: ${{ github.event.comment.body }}
@@ -76,6 +110,7 @@ jobs:
           fi
 
       - name: Run torus-bridge tests
+        if: steps.check.outputs.should_run == 'true'
         run: |
           if [ "${{ steps.scope.outputs.scope }}" == "unit" ]; then
             echo "Running unit tests..."
