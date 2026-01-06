@@ -46,7 +46,7 @@
     "@types/node": "catalog:",
     "@types/react": "catalog:react19",
     "@types/react-dom": "catalog:react19",
-    "@vitejs/plugin-react": "^4.2.1",
+    "@vitejs/plugin-react": "catalog:",
     "@vitest/ui": "catalog:",
     "jsdom": "catalog:",
     "vite": "catalog:",

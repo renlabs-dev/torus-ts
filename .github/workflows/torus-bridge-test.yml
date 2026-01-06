@@ -1,7 +1,8 @@
 name: Torus Bridge Tests
 
 on:
-  pull_request:
+  push:
+    branches: [dev, main]
     paths:
       - "apps/torus-bridge/**"
       - "packages/torus-sdk-ts/**"

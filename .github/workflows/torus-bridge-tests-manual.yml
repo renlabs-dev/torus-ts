@@ -1,0 +1,79 @@
+name: Torus Bridge Tests - Manual
+
+on:
+  workflow_dispatch:
+    inputs:
+      scope:
+        description: Test scope
+        default: full
+        type: choice
+        options: [full, unit, integration]
+  issue_comment:
+    types: [created]
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  test-torus-bridge:
+    if: >
+      github.event_name == 'workflow_dispatch' ||
+      (github.event_name == 'issue_comment' &&
+       github.event.issue.pull_request &&
+       (contains(github.event.comment.body, '/test-bridge') ||
+        contains(github.event.comment.body, '@test-bridge')))
+    permissions:
+      contents: read
+      issues: write
+    runs-on: ubicloud-standard-2
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: PNPM setup
+        uses: ./.github/actions/setup
+
+      - name: Copy env
+        run: cp .env.example .env
+
+      - name: Comment triggered execution
+        if: github.event_name == 'issue_comment'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `🤖 **Bridge tests triggered via comment**\n\n- **Comment:** "${{ github.event.comment.body }}"\n- **By:** @${{ github.event.comment.user.login }}\n- **PR:** #${{ github.event.issue.number }}\n\nTests are running...`
+            })
+
+      - name: Determine test scope
+        id: scope
+        run: |
+          if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+            echo "scope=${{ inputs.scope }}" >> $GITHUB_OUTPUT
+          else
+            # For PR comments, detect scope in the comment
+            COMMENT="${{ github.event.comment.body }}"
+            if [[ "$COMMENT" == *"unit"* ]]; then
+              echo "scope=unit" >> $GITHUB_OUTPUT
+            elif [[ "$COMMENT" == *"integration"* ]]; then
+              echo "scope=integration" >> $GITHUB_OUTPUT
+            else
+              echo "scope=full" >> $GITHUB_OUTPUT
+            fi
+          fi
+
+      - name: Run torus-bridge tests
+        run: |
+          if [ "${{ steps.scope.outputs.scope }}" == "unit" ]; then
+            echo "Running unit tests..."
+            pnpm exec turbo run test --continue -F "torus-bridge" -- --testPathPattern="\.unit\.|\.spec\."
+          elif [ "${{ steps.scope.outputs.scope }}" == "integration" ]; then
+            echo "Running integration tests..."
+            pnpm exec turbo run test --continue -F "torus-bridge" -- --testPathPattern="\.integration\.|\.e2e\."
+          else
+            echo "Running full test suite..."
+            pnpm exec turbo run test --continue -F "torus-bridge"
+          fi
