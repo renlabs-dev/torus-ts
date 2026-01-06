@@ -289,11 +289,77 @@ export const predictionTopicSchema = createTable(
   ],
 );
 
-// ==== Verdicts ====
+// ==== Verification Claims ====
 
-// TODO: I don't think the JSON for the conclusion works
-// Some of our queries are more complicated than this allows
-// We shall see
+/**
+ * Source evidence for verification claims
+ */
+export interface ClaimSource {
+  url: string;
+  title?: string;
+  snippet?: string;
+  retrievedAt: string;
+  archiveUrl?: string;
+}
+
+/**
+ * Claims submitted by open verifiers asserting a prediction's outcome.
+ * Each verifier can submit one claim per prediction.
+ * The verdict system evaluates claims to produce final verdicts.
+ */
+export const verificationClaimSchema = createTable(
+  "verification_claim",
+  {
+    id: uuidv7("id").primaryKey(),
+    parsedPredictionId: uuidv7("parsed_prediction_id")
+      .notNull()
+      .references(() => parsedPredictionSchema.id, { onDelete: "cascade" }),
+    verifierAgentId: ss58Address("verifier_agent_id").notNull(),
+    verifierAgentSignature: text("verifier_agent_signature").notNull(),
+    claimOutcome: boolean("claim_outcome").notNull(),
+    confidence: decimal("confidence").notNull(),
+    reasoning: text("reasoning").notNull(),
+    sources: jsonb("sources").$type<ClaimSource[]>(),
+    timeframeStartUtc: timestampz("timeframe_start_utc"),
+    timeframeEndUtc: timestampz("timeframe_end_utc"),
+    timeframePrecision: varchar("timeframe_precision", { length: 32 }),
+    ...timeFields(),
+  },
+  (t) => [
+    unique("verification_claim_unique_verifier").on(
+      t.parsedPredictionId,
+      t.verifierAgentId,
+    ),
+    index("verification_claim_parsed_prediction_id_idx").on(
+      t.parsedPredictionId,
+    ),
+    index("verification_claim_verifier_agent_id_idx").on(t.verifierAgentId),
+    index("verification_claim_created_at_idx").on(t.createdAt),
+  ],
+);
+
+/**
+ * Tracks which topics a verifier has registered to verify.
+ * Used for weighting claims from topic specialists.
+ */
+export const verifierTopicRegistrationSchema = createTable(
+  "verifier_topic_registration",
+  {
+    id: uuidv7("id").primaryKey(),
+    verifierAgentId: ss58Address("verifier_agent_id").notNull(),
+    topicId: uuidv7("topic_id")
+      .notNull()
+      .references(() => predictionTopicSchema.id),
+    ...timeFields(),
+  },
+  (t) => [
+    unique("verifier_topic_unique").on(t.verifierAgentId, t.topicId),
+    index("verifier_topic_agent_idx").on(t.verifierAgentId),
+    index("verifier_topic_topic_idx").on(t.topicId),
+  ],
+);
+
+// ==== Verdicts ====
 
 /**
  * Stores verdicts for predictions
@@ -307,6 +373,9 @@ export const verdictSchema = createTable(
       .references(() => parsedPredictionSchema.id),
     verdict: boolean("verdict").notNull(), // True if prediction came true, false otherwise
     context: jsonb("context").notNull().$type<VerdictContext>(), // Context explaining the verdict
+    acceptedClaimId: uuidv7("accepted_claim_id").references(
+      () => verificationClaimSchema.id,
+    ),
     ...timeFields(),
   },
   (t) => [
@@ -324,6 +393,10 @@ export const verdictSchema = createTable(
  */
 export interface VerdictContext {
   feedback: string;
+  /** The tier of the source that corroborated the claim (3=major news, 2=trade pub, 1=specialty, 0=unknown) */
+  sourceTier?: number;
+  /** The URL of the corroborating source */
+  corroboratingSource?: string;
 }
 
 // ==== Duplicate Relations ====
@@ -400,7 +473,8 @@ export const failureCauseValues = extract_pgenum_values(failureCauseEnum);
 export type FailureCause = keyof typeof failureCauseValues;
 
 /**
- * Stores feedback for predictions that failed validation
+ * @deprecated Use claimValidationFeedbackSchema for claim-level feedback
+ * Stores feedback for predictions that failed validation (legacy)
  */
 export const parsedPredictionFeedbackSchema = createTable(
   "parsed_prediction_feedback",
@@ -410,9 +484,9 @@ export const parsedPredictionFeedbackSchema = createTable(
       .references(() => parsedPredictionSchema.id, {
         onDelete: "cascade",
       }),
-    validationStep: varchar("validation_step", { length: 64 }).notNull(), // Which step failed: "slice_validation", "timeframe_extraction", "filter_validation", "verdict_validation"
-    failureCause: failureCauseEnum("failure_cause"), // Structured failure reason (for filter_validation and verdict_validation)
-    reason: text("reason").notNull(), // Human-readable explanation of why it failed validation
+    validationStep: varchar("validation_step", { length: 64 }).notNull(),
+    failureCause: failureCauseEnum("failure_cause"),
+    reason: text("reason").notNull(),
     ...timeFields(),
   },
   (t) => [
@@ -426,6 +500,77 @@ export const parsedPredictionFeedbackSchema = createTable(
     index("parsed_prediction_feedback_future_timeframe_idx")
       .on(t.parsedPredictionId)
       .where(sql`failure_cause != 'FUTURE_TIMEFRAME'`),
+  ],
+);
+
+/**
+ * Claim validation result enum
+ */
+export const claimValidationResultEnum = pgEnum("claim_validation_result", [
+  "rejected", // Trusted source contradicted the claim (verifier bug)
+  "no_corroboration", // Sources fetched but none supported the claim
+  "no_sources", // Claim had no valid source URLs
+  "fetch_failed", // All sources failed to fetch (temporary, retry later)
+]);
+
+export const claimValidationResultValues = extract_pgenum_values(
+  claimValidationResultEnum,
+);
+export type ClaimValidationResult = keyof typeof claimValidationResultValues;
+
+/**
+ * Stores per-claim feedback from the judge's validation process.
+ * One row per claim. Soft-deleted when claim results in successful verdict.
+ *
+ * Query logic:
+ * - No row OR deletedAt set = claim not yet evaluated or succeeded
+ * - Row exists with deletedAt null = claim failed validation
+ * - fetch_failed results are eligible for retry after 1 hour (check updatedAt)
+ */
+export const claimValidationFeedbackSchema = createTable(
+  "claim_validation_feedback",
+  {
+    claimId: uuidv7("claim_id")
+      .primaryKey()
+      .references(() => verificationClaimSchema.id, { onDelete: "cascade" }),
+    result: claimValidationResultEnum("result").notNull(),
+    reason: text("reason").notNull(),
+    ...timeFields(),
+  },
+  (t) => [
+    index("claim_validation_feedback_result_idx").on(t.result),
+    index("claim_validation_feedback_updated_at_idx").on(t.updatedAt),
+    index("claim_validation_feedback_active_idx")
+      .on(t.claimId)
+      .where(sql`deleted_at IS NULL`),
+  ],
+);
+
+/**
+ * Stores per-verifier feedback on predictions.
+ * When a verifier submits feedback, that prediction is excluded from their claimable list.
+ */
+export const verifierFeedbackSchema = createTable(
+  "verifier_feedback",
+  {
+    id: uuidv7("id").primaryKey(),
+    parsedPredictionId: uuidv7("parsed_prediction_id")
+      .notNull()
+      .references(() => parsedPredictionSchema.id, { onDelete: "cascade" }),
+    verifierAgentId: ss58Address("verifier_agent_id").notNull(),
+    verifierAgentSignature: text("verifier_agent_signature").notNull(),
+    failureCause: failureCauseEnum("failure_cause").notNull(),
+    reason: text("reason").notNull(),
+    ...timeFields(),
+  },
+  (t) => [
+    unique("verifier_feedback_unique").on(
+      t.parsedPredictionId,
+      t.verifierAgentId,
+    ),
+    index("verifier_feedback_prediction_idx").on(t.parsedPredictionId),
+    index("verifier_feedback_agent_idx").on(t.verifierAgentId),
+    index("verifier_feedback_failure_cause_idx").on(t.failureCause),
   ],
 );
 
@@ -547,6 +692,36 @@ export const userStarsSchema = createTable(
     unique("user_stars_unique").on(t.userKey, t.tweetId),
     index("user_stars_user_key_idx").on(t.userKey),
     index("user_stars_tweet_id_idx").on(t.tweetId),
+  ],
+);
+
+// ==== Scraped Sources Cache ====
+
+/**
+ * Caches web page scrapes from Firecrawl to avoid redundant API calls.
+ * Shared across workers and persists across restarts.
+ */
+export const scrapedSourcesSchema = createTable(
+  "scraped_sources",
+  {
+    normalizedUrl: varchar("normalized_url", { length: 2048 }).primaryKey(),
+    originalUrl: varchar("original_url", { length: 2048 }).notNull(),
+    success: boolean("success").notNull(),
+
+    // Success fields (null if success=false)
+    content: text("content"),
+    title: varchar("title", { length: 512 }),
+    description: text("description"),
+
+    // Error fields (null if success=true)
+    error: text("error"),
+    statusCode: integer("status_code"), // HTTP status code for smarter cache invalidation
+
+    ...timeFields(),
+  },
+  (t) => [
+    index("scraped_sources_created_at_idx").on(t.createdAt),
+    index("scraped_sources_success_idx").on(t.success),
   ],
 );
 

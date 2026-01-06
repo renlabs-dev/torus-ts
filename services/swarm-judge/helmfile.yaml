@@ -5,7 +5,7 @@ environments:
       - values.yaml
       - namespace: torus-dev-web-apps
       - environmentName: dev
-      - releaseName: dev-swarm-verifier
+      - releaseName: dev-swarm-judge
       - wssApiEndpoint: wss://api.testnet.torus.network
       - chainEnv: testnet
   prod:
@@ -14,7 +14,7 @@ environments:
       - values.yaml
       - namespace: torus-prod-web-apps
       - environmentName: prod
-      - releaseName: swarm-verifier
+      - releaseName: swarm-judge
       - wssApiEndpoint: wss://api.torus.network
       - chainEnv: mainnet
 ---

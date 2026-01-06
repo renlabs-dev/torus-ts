@@ -1,7 +1,8 @@
 import { blake2AsHex, signatureVerify } from "@polkadot/util-crypto";
-import { inArray, sql } from "@torus-ts/db";
+import { eq, inArray, sql } from "@torus-ts/db";
 import {
   parsedPredictionSchema,
+  predictionDuplicateRelationsSchema,
   predictionSchema,
   predictionTopicSchema,
   scrapedTweetSchema,
@@ -10,6 +11,8 @@ import canonicalize from "canonicalize";
 import { authPlugin } from "../middleware/auth";
 import type { ContextApp } from "../middleware/context";
 import { storePredictionsInputSchema } from "../schemas/predictions";
+import { findCanonicalPrediction } from "../utils/dedup";
+import type { ParsedPredictionForDedup } from "../utils/dedup";
 import { HttpError } from "../utils/errors";
 
 export const predictionsRouter = (app: ContextApp) =>
@@ -242,6 +245,59 @@ export const predictionsRouter = (app: ContextApp) =>
           const parsedPredictionIds = insertedParsedPredictions.map(
             (p) => p.id,
           );
+
+          // Deduplication: find predictions associated with the same tweets
+          const relatedPredictions = await tx
+            .select({
+              id: parsedPredictionSchema.id,
+              predictionId: parsedPredictionSchema.predictionId,
+              target: parsedPredictionSchema.target,
+              timeframe: parsedPredictionSchema.timeframe,
+            })
+            .from(parsedPredictionSchema)
+            .innerJoin(
+              scrapedTweetSchema,
+              eq(
+                scrapedTweetSchema.predictionId,
+                parsedPredictionSchema.predictionId,
+              ),
+            )
+            .where(inArray(scrapedTweetSchema.id, tweetIds));
+
+          const predictionsForDedup: ParsedPredictionForDedup[] =
+            relatedPredictions.map((p) => ({
+              id: p.id,
+              predictionId: p.predictionId,
+              target: p.target,
+              timeframe: p.timeframe,
+            }));
+
+          const duplicateRelations: {
+            predictionId: string;
+            canonicalId: string;
+            similarityScore: string;
+          }[] = [];
+
+          for (const insertedId of parsedPredictionIds) {
+            const result = findCanonicalPrediction(
+              insertedId,
+              predictionsForDedup,
+            );
+            if (result) {
+              duplicateRelations.push({
+                predictionId: insertedId,
+                canonicalId: result.canonicalId,
+                similarityScore: result.similarityScore.toFixed(4),
+              });
+            }
+          }
+
+          if (duplicateRelations.length > 0) {
+            await tx
+              .insert(predictionDuplicateRelationsSchema)
+              .values(duplicateRelations)
+              .onConflictDoNothing();
+          }
 
           const receiptTimestamp = new Date().toISOString();
           const receiptData = {

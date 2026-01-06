@@ -8,13 +8,13 @@ service:
 
 deployment:
   image:
-    repository: ghcr.io/renlabs-dev/swarm-verifier
+    repository: ghcr.io/renlabs-dev/swarm-judge
 
   additionalLabels:
-    app: swarm-verifier
+    app: swarm-judge
 
   podLabels:
-    app: swarm-verifier
+    app: swarm-judge
 
   resources:
     limits:

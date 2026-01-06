@@ -14,6 +14,7 @@ export const env = createEnv({
     PORT: z.string().default("3000"),
     TWITTERAPI_IO_KEY: z.string(),
     OPENROUTER_API_KEY: z.string(),
+    FIRECRAWL_API_KEY: z.string(),
   },
   client: {},
   runtimeEnv: process.env,

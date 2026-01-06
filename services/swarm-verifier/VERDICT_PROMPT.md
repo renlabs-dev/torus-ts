@@ -75,7 +75,14 @@ Return ONLY valid JSON (no markdown fences):
   "valid": true,
   "verdict": true,
   "confidence": 0.95,
-  "reasoning": "Brief explanation of why the prediction came true or false, citing specific sources and dates"
+  "reasoning": "Brief explanation of why the prediction came true or false, citing specific sources and dates",
+  "sources": [
+    {
+      "url": "https://example.com/article",
+      "title": "Article Title",
+      "snippet": "Relevant quote or summary from the source"
+    }
+  ]
 }
 ```
 
@@ -85,6 +92,12 @@ Return ONLY valid JSON (no markdown fences):
 - `verdict`: Boolean indicating if the prediction came true (true) or false (false). Only meaningful when valid=true.
 - `confidence`: Confidence score from 0.0 to 1.0 indicating certainty in the verdict determination
 - `reasoning`: Explanation with sources and dates
+- `sources`: Array of sources used to verify the prediction. Each source must include:
+  - `url`: Full URL of the source (must be a valid, accessible URL)
+  - `title`: Title of the article or page
+  - `snippet`: Relevant quote or summary that supports your verdict
+
+**CRITICAL: You MUST include at least one source with a valid URL.** The sources array cannot be empty. If you cannot find any sources, set valid=false and explain why in the reasoning.
 
 **When to set valid=false:**
 
@@ -117,7 +130,14 @@ Return ONLY valid JSON (no markdown fences):
   "valid": true,
   "verdict": true,
   "confidence": 0.98,
-  "reasoning": "According to CoinGecko, Bitcoin reached $102,450 on March 28, 2025, which is within the timeframe and exceeds the $100k target."
+  "reasoning": "According to CoinGecko, Bitcoin reached $102,450 on March 28, 2025, which is within the timeframe and exceeds the $100k target.",
+  "sources": [
+    {
+      "url": "https://www.coingecko.com/en/coins/bitcoin/historical_data",
+      "title": "Bitcoin Historical Data - CoinGecko",
+      "snippet": "Bitcoin reached an all-time high of $102,450 on March 28, 2025"
+    }
+  ]
 }
 ```
 
@@ -144,7 +164,14 @@ Return ONLY valid JSON (no markdown fences):
   "valid": true,
   "verdict": false,
   "confidence": 0.95,
-  "reasoning": "Bitcoin peaked at $87,300 on March 31, 2025 according to market data, falling short of the $100k target."
+  "reasoning": "Bitcoin peaked at $87,300 on March 31, 2025 according to market data, falling short of the $100k target.",
+  "sources": [
+    {
+      "url": "https://www.coingecko.com/en/coins/bitcoin/historical_data",
+      "title": "Bitcoin Historical Data - CoinGecko",
+      "snippet": "Bitcoin's highest price in Q1 2025 was $87,300 on March 31, 2025"
+    }
+  ]
 }
 ```
 
@@ -225,7 +252,14 @@ Return ONLY valid JSON (no markdown fences):
   "valid": false,
   "verdict": false,
   "confidence": 0.99,
-  "reasoning": "Bitcoin reached $100,000 on January 12, 2025 according to CoinGecko, which is BEFORE the prediction was made on January 15, 2025. This is not a prediction but rather news reporting or commentary on an event that already happened. Prediction is invalid."
+  "reasoning": "Bitcoin reached $100,000 on January 12, 2025 according to CoinGecko, which is BEFORE the prediction was made on January 15, 2025. This is not a prediction but rather news reporting or commentary on an event that already happened. Prediction is invalid.",
+  "sources": [
+    {
+      "url": "https://www.coingecko.com/en/coins/bitcoin/historical_data",
+      "title": "Bitcoin Historical Data - CoinGecko",
+      "snippet": "Bitcoin first reached $100,000 on January 12, 2025"
+    }
+  ]
 }
 ```
 

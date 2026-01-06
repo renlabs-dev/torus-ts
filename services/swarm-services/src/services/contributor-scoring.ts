@@ -1,10 +1,12 @@
 import type { SS58Address } from "@torus-network/sdk/types";
 import { BasicLogger } from "@torus-network/torus-utils/logger";
 import { tryAsync } from "@torus-network/torus-utils/try-catch";
-import type { PredictionSubmission } from "../db.js";
+import type { ClaimSubmission, PredictionSubmission } from "../db.js";
 import {
   queryAgentPrecisionMetrics,
+  queryClaimSubmissionsInPeriod,
   queryPredictionSubmissionsInPeriod,
+  queryVerifierPrecisionMetrics,
 } from "../db.js";
 
 const log = BasicLogger.create({ name: "contributor-scoring" });
@@ -101,12 +103,14 @@ const calculateFreeRiderPenalty = (zScore: number): number => {
  * Returns a map of agent addresses to their basis point weights for distribution.
  *
  * @param periodStart - Start of evaluation period
+ * @param trustedVerifierAgentId - SS58 address of the trusted verifier whose feedback determines false positives
  * @param minPrecision - Minimum precision threshold (default 0.70 = 70%)
  * @param redundancyThreshold - Rank at which penalty applies (default 4 = 4th+ submitter)
  * @returns Map of SS58Address to basis point weight (0-10000)
  */
 export async function calculateContributorScores(
   periodStart: Date,
+  trustedVerifierAgentId: string,
   minPrecision: number = 0.7,
   redundancyThreshold: number = 4,
 ): Promise<Map<SS58Address, number>> {
@@ -115,13 +119,14 @@ export async function calculateContributorScores(
   log.info("Starting contributor score calculation", {
     periodStart,
     periodEnd,
+    trustedVerifierAgentId,
     minPrecision,
     redundancyThreshold,
   });
 
-  // Query precision metrics
+  // Query precision metrics using feedback from trusted verifier
   const [precisionErr, precisionMetrics] = await tryAsync(
-    queryAgentPrecisionMetrics(periodStart),
+    queryAgentPrecisionMetrics(periodStart, trustedVerifierAgentId),
   );
 
   if (precisionErr) {
@@ -227,6 +232,223 @@ export async function calculateContributorScores(
 
   log.info("Score calculation complete", {
     qualifiedAgents: weights.size,
+    totalWork,
+  });
+
+  return weights;
+}
+
+/**
+ * Group claim submissions by prediction ID and sort by submission date
+ */
+function groupClaimsByPrediction(
+  submissions: ClaimSubmission[],
+): Map<string, ClaimSubmission[]> {
+  const groups = new Map<string, ClaimSubmission[]>();
+
+  for (const sub of submissions) {
+    const group = groups.get(sub.parsedPredictionId) ?? [];
+    group.push(sub);
+    groups.set(sub.parsedPredictionId, group);
+  }
+
+  for (const group of groups.values()) {
+    group.sort(
+      (a, b) => a.submissionDate.getTime() - b.submissionDate.getTime(),
+    );
+  }
+
+  return groups;
+}
+
+/**
+ * Calculate quality score for a verifier considering speed bonus, topic registration, and redundancy penalty.
+ */
+function calculateVerifierQualityScore(
+  verifierId: string,
+  submissions: ClaimSubmission[],
+  predictionGroups: Map<string, ClaimSubmission[]>,
+  redundancyThreshold: number,
+): number {
+  let modifierSum = 0;
+  let count = 0;
+
+  for (const sub of submissions) {
+    if (sub.verifierAgentId !== verifierId) continue;
+    if (!sub.isAccepted) continue; // Only count accepted claims
+
+    const group = predictionGroups.get(sub.parsedPredictionId);
+    if (!group) continue;
+
+    let modifier = 1.0;
+
+    // Topic registration bonus: 1.1x for registered verifiers
+    if (sub.isTopicRegistered) {
+      modifier *= 1.1;
+    }
+
+    // Speed bonus: first verifier to submit accepted claim
+    const isFirst = group[0]?.claimId === sub.claimId;
+    if (isFirst) {
+      modifier *= 1.2; // 20% bonus for being first
+    }
+
+    // Redundancy penalty: exponential decay (1/3)^n for 4th+ submitter
+    const rank = group.findIndex((s) => s.claimId === sub.claimId) + 1;
+
+    if (rank >= redundancyThreshold) {
+      const excessRank = rank - redundancyThreshold + 1;
+      modifier *= Math.pow(1 / 3, excessRank);
+    }
+
+    modifierSum += modifier;
+    count++;
+  }
+
+  return count > 0 ? modifierSum / count : 0;
+}
+
+/**
+ * Calculate verifier contributor scores for a given evaluation period.
+ * Returns a map of verifier addresses to their basis point weights for distribution.
+ *
+ * @param periodStart - Start of evaluation period
+ * @param minPrecision - Minimum precision threshold (default 0.70 = 70%)
+ * @param redundancyThreshold - Rank at which penalty applies (default 4 = 4th+ submitter)
+ * @returns Map of SS58Address to basis point weight (0-10000)
+ */
+export async function calculateVerifierContributorScores(
+  periodStart: Date,
+  minPrecision: number = 0.7,
+  redundancyThreshold: number = 4,
+): Promise<Map<SS58Address, number>> {
+  const periodEnd = new Date();
+
+  log.info("Starting verifier contributor score calculation", {
+    periodStart,
+    periodEnd,
+    minPrecision,
+    redundancyThreshold,
+  });
+
+  // Query precision metrics
+  const [precisionErr, precisionMetrics] = await tryAsync(
+    queryVerifierPrecisionMetrics(periodStart),
+  );
+
+  if (precisionErr) {
+    log.error("Failed to query verifier precision metrics", {
+      error: precisionErr,
+    });
+    throw precisionErr;
+  }
+
+  // Filter by precision threshold
+  const qualifiedVerifiers = precisionMetrics.filter((m) => {
+    if (m.precision < minPrecision) {
+      log.info(
+        `Verifier ${m.verifierAgentId} disqualified: precision ${m.precision.toFixed(2)} < ${minPrecision}`,
+      );
+      return false;
+    }
+    return true;
+  });
+
+  log.info(
+    `${qualifiedVerifiers.length} verifiers qualified with precision >= ${minPrecision}`,
+  );
+
+  if (qualifiedVerifiers.length === 0) {
+    log.info("No qualified verifiers, returning empty weights");
+    return new Map();
+  }
+
+  // Query submissions for quality calculations
+  const [submissionsErr, submissions] = await tryAsync(
+    queryClaimSubmissionsInPeriod(periodStart),
+  );
+
+  if (submissionsErr) {
+    log.error("Failed to query claim submissions", { error: submissionsErr });
+    throw submissionsErr;
+  }
+
+  log.info(`Found ${submissions.length} claim submissions in period`);
+
+  const predictionGroups = groupClaimsByPrediction(submissions);
+
+  // Calculate first-finder ratios for free-rider detection
+  const firstFinderRatios = new Map<string, number>();
+  for (const verifier of qualifiedVerifiers) {
+    const verifierSubmissions = submissions.filter(
+      (s) => s.verifierAgentId === verifier.verifierAgentId && s.isAccepted,
+    );
+
+    const firstCount = verifierSubmissions.filter((s) => {
+      const group = predictionGroups.get(s.parsedPredictionId);
+      return group && group[0]?.claimId === s.claimId;
+    }).length;
+
+    const ratio =
+      verifierSubmissions.length > 0
+        ? firstCount / verifierSubmissions.length
+        : 0;
+    firstFinderRatios.set(verifier.verifierAgentId, ratio);
+  }
+
+  const ratios = Array.from(firstFinderRatios.values());
+  const meanRatio =
+    ratios.length > 0
+      ? ratios.reduce((sum, r) => sum + r, 0) / ratios.length
+      : 0;
+  const variance =
+    ratios.length > 0
+      ? ratios.reduce((sum, r) => sum + Math.pow(r - meanRatio, 2), 0) /
+        ratios.length
+      : 0;
+  const stddevRatio = Math.sqrt(variance);
+
+  const workScores = new Map<string, number>();
+
+  for (const verifier of qualifiedVerifiers) {
+    const averageModifier = calculateVerifierQualityScore(
+      verifier.verifierAgentId,
+      submissions,
+      predictionGroups,
+      redundancyThreshold,
+    );
+
+    const qualityScore = verifier.precision * averageModifier;
+    let workScore = qualityScore * verifier.acceptedClaims;
+
+    // Apply free-rider penalty
+    const ratio = firstFinderRatios.get(verifier.verifierAgentId) ?? 0;
+    const zScore = stddevRatio > 0 ? (ratio - meanRatio) / stddevRatio : 0;
+    const freeRiderPenalty = calculateFreeRiderPenalty(zScore);
+
+    workScore *= freeRiderPenalty;
+
+    workScores.set(verifier.verifierAgentId, workScore);
+  }
+
+  // Normalize to basis points
+  const totalWork = Array.from(workScores.values()).reduce(
+    (sum, score) => sum + score,
+    0,
+  );
+
+  const weights = new Map<SS58Address, number>();
+
+  if (totalWork > 0) {
+    for (const [verifierId, workScore] of workScores) {
+      const normalizedScore = workScore / totalWork;
+      const basisPoints = Math.round(normalizedScore * 10000);
+      weights.set(verifierId as SS58Address, basisPoints);
+    }
+  }
+
+  log.info("Verifier score calculation complete", {
+    qualifiedVerifiers: weights.size,
     totalWork,
   });
 

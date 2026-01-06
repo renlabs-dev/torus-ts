@@ -13,7 +13,10 @@ import {
   queryAccumulatedStreamAmount,
 } from "@torus-network/sdk/chain";
 import type { SS58Address } from "@torus-network/sdk/types";
-import { calculateContributorScores } from "./services/contributor-scoring.js";
+import {
+  calculateContributorScores,
+  calculateVerifierContributorScores,
+} from "./services/contributor-scoring.js";
 import { saveDistribution } from "./services/reward-distribution.js";
 import { notifyDistributionComplete } from "./services/discord-webhook.js";
 import { getLastDistributionTimeForPermission } from "./db.js";
@@ -30,6 +33,10 @@ export const env = validateEnvOrExit({
     (val) =>
       typeof val === "string" && val.length === 66 && val.startsWith("0x"),
   ),
+  SWARM_VERIFIER_PERMISSION_ID: z
+    .custom<`0x${string}`>((val) => typeof val === "string" && val.length === 66 && val.startsWith("0x"))
+    .optional(),
+  SWARM_TRUSTED_VERIFIER_AGENT_ID: z.string(),
   NEXT_PUBLIC_TORUS_RPC_URL: z.string().url(),
   PREDICTION_APP_MNEMONIC: z.string(),
 })(process.env);
@@ -46,6 +53,7 @@ async function runDistribution() {
   const [scoresErr, scores] = await tryAsync(
     calculateContributorScores(
       periodStart,
+      env.SWARM_TRUSTED_VERIFIER_AGENT_ID,
       env.SWARM_MIN_PRECISION_THRESHOLD / 100,
       env.SWARM_REDUNDANCY_PENALTY_THRESHOLD,
     ),
@@ -338,12 +346,335 @@ async function runDistributionService() {
   }
 }
 
+async function runVerifierDistribution() {
+  if (!env.SWARM_VERIFIER_PERMISSION_ID) {
+    throw new Error("SWARM_VERIFIER_PERMISSION_ID is not set");
+  }
+
+  const verifierPermissionId = env.SWARM_VERIFIER_PERMISSION_ID;
+
+  const lastDistribution =
+    await getLastDistributionTimeForPermission(verifierPermissionId);
+
+  const periodStart = lastDistribution ?? new Date("2025-01-18T00:00:00Z");
+
+  log.info("Running verifier distribution", { periodStart, lastDistribution });
+
+  const [scoresErr, scores] = await tryAsync(
+    calculateVerifierContributorScores(
+      periodStart,
+      env.SWARM_MIN_PRECISION_THRESHOLD / 100,
+      env.SWARM_REDUNDANCY_PENALTY_THRESHOLD,
+    ),
+  );
+
+  if (scoresErr) {
+    log.error("Failed to calculate verifier scores", { error: scoresErr });
+    throw scoresErr;
+  }
+
+  log.info("Verifier scores calculated", { recipients: scores.size });
+
+  log.info("Connecting to blockchain", {
+    rpcUrl: env.NEXT_PUBLIC_TORUS_RPC_URL,
+  });
+
+  const provider = new WsProvider(env.NEXT_PUBLIC_TORUS_RPC_URL);
+  const [apiErr, api] = await tryAsync(ApiPromise.create({ provider }));
+
+  if (apiErr) {
+    log.error("Failed to connect to blockchain", { error: apiErr });
+    throw apiErr;
+  }
+
+  try {
+    const [permErr, permission] = await queryPermission(
+      api,
+      verifierPermissionId,
+    );
+
+    if (permErr !== undefined) {
+      log.error("Failed to query permission", { error: permErr });
+      throw permErr;
+    }
+
+    if (permission === null) {
+      throw new Error(`Permission ${verifierPermissionId} not found`);
+    }
+
+    if (!("Stream" in permission.scope)) {
+      throw new Error("Permission is not a Stream permission");
+    }
+
+    const streamScope = permission.scope.Stream;
+    if (!("Streams" in streamScope.allocation)) {
+      throw new Error("Permission does not have Streams allocation");
+    }
+
+    const streams = streamScope.allocation.Streams;
+    log.info("Found streams", { count: streams.size });
+
+    let totalAccumulated = BigInt(0);
+    for (const [streamId] of streams) {
+      const [accErr, accumulated] = await queryAccumulatedStreamAmount(
+        api,
+        permission.delegator,
+        streamId,
+        verifierPermissionId,
+      );
+
+      if (accErr !== undefined) {
+        log.error("Failed to query accumulated amount", {
+          streamId,
+          error: accErr,
+        });
+        throw accErr;
+      }
+
+      totalAccumulated += accumulated;
+    }
+
+    log.info("Total accumulated for verifiers", {
+      amount: totalAccumulated.toString(),
+    });
+
+    if (totalAccumulated === BigInt(0)) {
+      log.info("No accumulated amount, skipping verifier distribution");
+
+      const [saveErr] = await tryAsync(
+        saveDistribution(new Map(), verifierPermissionId),
+      );
+
+      if (saveErr) {
+        log.error("Failed to save skipped distribution", { error: saveErr });
+      } else {
+        log.info("Skipped distribution saved");
+      }
+
+      await api.disconnect();
+      return;
+    }
+
+    const currentRecipients = new Set(streamScope.recipients.keys());
+    const recipients: [SS58Address, number][] = Array.from(
+      scores.entries(),
+    ).filter(([address]) => currentRecipients.has(address));
+
+    if (recipients.length === 0) {
+      log.info("No valid verifier recipients after filtering, skipping");
+      await api.disconnect();
+      return;
+    }
+
+    const keyring = new Keyring({ type: "sr25519" });
+    const signer = keyring.addFromMnemonic(env.PREDICTION_APP_MNEMONIC);
+
+    log.info("Updating verifier recipients", { count: recipients.length });
+    const updateTx = updateStreamPermission({
+      api,
+      permissionId: verifierPermissionId,
+      newRecipients: recipients,
+    });
+
+    const [updateErr] = await tryAsync(
+      new Promise<void>((resolve, reject) => {
+        updateTx
+          .signAndSend(
+            signer,
+            ({ status, dispatchError }: ISubmittableResult) => {
+              if (status.isInBlock) {
+                log.info("Verifier update included in block", {
+                  blockHash: status.asInBlock.toString(),
+                });
+              }
+
+              if (status.isFinalized) {
+                if (dispatchError) {
+                  if (dispatchError.isModule) {
+                    const decoded = api.registry.findMetaError(
+                      dispatchError.asModule,
+                    );
+                    const docs = Array.isArray(decoded.docs)
+                      ? decoded.docs.join(" ")
+                      : decoded.docs;
+                    reject(
+                      new Error(`${decoded.section}.${decoded.name}: ${docs}`),
+                    );
+                  } else {
+                    reject(new Error(dispatchError.toString()));
+                  }
+                } else {
+                  log.info("Verifier update finalized", {
+                    blockHash: status.asFinalized.toString(),
+                  });
+                  resolve();
+                }
+              }
+            },
+          )
+          .catch(reject);
+      }),
+    );
+
+    if (updateErr) {
+      log.error("Failed to update verifier permission", { error: updateErr });
+      throw updateErr;
+    }
+
+    log.info("Verifier recipients updated");
+
+    const [webhookErr] = await tryAsync(
+      notifyDistributionComplete(env.SWARM_DISCORD_WEBHOOK_URL, scores),
+    );
+
+    if (webhookErr) {
+      log.error("Discord notification failed", { error: webhookErr });
+    } else {
+      log.info("Discord notification sent for verifier distribution");
+    }
+
+    log.info("Executing verifier permission");
+
+    const executeTx = executePermission(api, verifierPermissionId);
+
+    const [executeErr] = await tryAsync(
+      new Promise<void>((resolve, reject) => {
+        executeTx
+          .signAndSend(
+            signer,
+            ({ status, dispatchError }: ISubmittableResult) => {
+              if (status.isInBlock) {
+                log.info("Verifier execution included in block", {
+                  blockHash: status.asInBlock.toString(),
+                });
+              }
+
+              if (status.isFinalized) {
+                if (dispatchError) {
+                  if (dispatchError.isModule) {
+                    const decoded = api.registry.findMetaError(
+                      dispatchError.asModule,
+                    );
+                    const docs = Array.isArray(decoded.docs)
+                      ? decoded.docs.join(" ")
+                      : decoded.docs;
+                    reject(
+                      new Error(`${decoded.section}.${decoded.name}: ${docs}`),
+                    );
+                  } else {
+                    reject(new Error(dispatchError.toString()));
+                  }
+                } else {
+                  log.info("Verifier execution finalized", {
+                    blockHash: status.asFinalized.toString(),
+                  });
+                  resolve();
+                }
+              }
+            },
+          )
+          .catch(reject);
+      }),
+    );
+
+    if (executeErr) {
+      log.error("Failed to execute verifier permission", { error: executeErr });
+      throw executeErr;
+    }
+
+    log.info("Verifier permission executed");
+
+    const [saveErr] = await tryAsync(
+      saveDistribution(scores, verifierPermissionId),
+    );
+
+    if (saveErr) {
+      log.error("Failed to save verifier distribution", { error: saveErr });
+      throw saveErr;
+    }
+
+    log.info("Verifier distribution saved");
+  } finally {
+    await api.disconnect();
+  }
+}
+
+async function runVerifierDistributionService() {
+  const intervalMs = env.SWARM_DISTRIBUTION_INTERVAL_HOURS * 60 * 60 * 1000;
+  const withBackoff = withExponentialBackoff(1000, 5);
+
+  if (!env.SWARM_VERIFIER_PERMISSION_ID) {
+    throw new Error(
+      "SWARM_VERIFIER_PERMISSION_ID is required for verifier distribution",
+    );
+  }
+
+  const verifierPermissionId = env.SWARM_VERIFIER_PERMISSION_ID;
+
+  log.info("Starting verifier distribution service", {
+    intervalHours: env.SWARM_DISTRIBUTION_INTERVAL_HOURS,
+  });
+
+  while (true) {
+    await withBackoff(async (attempt) => {
+      if (attempt > 0) {
+        log.info("Retrying verifier distribution", { attempt });
+      }
+
+      const lastDistribution =
+        await getLastDistributionTimeForPermission(verifierPermissionId);
+
+      const now = new Date();
+      let shouldRun = false;
+      let nextRunTime: Date;
+
+      if (lastDistribution === null) {
+        log.info("No previous verifier distribution, running now");
+        shouldRun = true;
+        nextRunTime = now;
+      } else {
+        nextRunTime = new Date(lastDistribution.getTime() + intervalMs);
+
+        if (now >= nextRunTime) {
+          log.info("Interval elapsed for verifier distribution, running now");
+          shouldRun = true;
+        } else {
+          const waitMinutes = Math.round(
+            (nextRunTime.getTime() - now.getTime()) / 1000 / 60,
+          );
+          log.info("Verifier distribution not yet due", {
+            waitMinutes,
+            nextRunTime,
+          });
+        }
+      }
+
+      if (shouldRun) {
+        await runVerifierDistribution();
+        log.info("Verifier distribution completed");
+      } else {
+        const sleepTime = nextRunTime.getTime() - Date.now();
+        const sleepMinutes = Math.round(sleepTime / 1000 / 60);
+        log.info("Sleeping until next verifier distribution", {
+          minutes: sleepMinutes,
+          nextRun: new Date(Date.now() + sleepTime),
+        });
+        await new Promise((resolve) => setTimeout(resolve, sleepTime));
+      }
+    }).catch((error: unknown) => {
+      log.error("Error in verifier distribution loop, retrying with backoff", {
+        error,
+      });
+    });
+  }
+}
+
 async function main() {
   const serviceType = process.argv[2];
 
   if (!serviceType) {
     console.error("ERROR: You must provide the service type as an argument.");
-    console.error("Available services: distribution");
+    console.error("Available services: distribution, verifier-distribution");
     process.exit(1);
   }
 
@@ -351,9 +682,12 @@ async function main() {
     case "distribution":
       await runDistributionService();
       break;
+    case "verifier-distribution":
+      await runVerifierDistributionService();
+      break;
     default:
       console.error(`ERROR: Unknown service type '${serviceType}'.`);
-      console.error("Available services: distribution");
+      console.error("Available services: distribution, verifier-distribution");
       process.exit(1);
   }
 }

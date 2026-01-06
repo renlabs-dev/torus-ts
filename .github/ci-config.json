@@ -25,11 +25,20 @@
       "pr_preview": false
     },
     "prediction-swarm": {
-      "deploys": ["swarm-twitter", "swarm-verifier", "swarm-filter"],
+      "deploys": [
+        "swarm-twitter",
+        "swarm-judge",
+        "swarm-verifier",
+        "swarm-filter"
+      ],
       "pr_preview": false,
       "preview_domain": "predictionswarm.com"
     },
     "swarm-twitter": {
+      "pr_preview": false,
+      "prod_only": true
+    },
+    "swarm-judge": {
       "pr_preview": false,
       "prod_only": true
     },
