@@ -48,6 +48,14 @@
     "swarm-api": {
       "pr_preview": false,
       "prod_only": true
+    },
+    "apostle-swarm": {
+      "pr_preview": false,
+      "prod_only": true
+    },
+    "apostle-swarm-worker": {
+      "pr_preview": false,
+      "prod_only": false
     }
   }
 }
