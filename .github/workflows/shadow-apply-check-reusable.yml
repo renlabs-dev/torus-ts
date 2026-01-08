@@ -37,11 +37,13 @@ jobs:
       - name: Resolve Database URL
         id: resolve-db-url
         run: |
-          if [ "${{ inputs.env_name }}" = "webapps" ]; then
-            echo "db_url=$POSTGRES_WEBAPPS_URL" >> $GITHUB_OUTPUT
-          else
-            echo "db_url=$POSTGRES_PREDICTION_SWARM_URL" >> $GITHUB_OUTPUT
-          fi
+          case "${{ inputs.env_name }}" in
+            webapps)           DB_URL="$POSTGRES_WEBAPPS_URL" ;;
+            prediction_swarm)  DB_URL="$POSTGRES_PREDICTION_SWARM_URL" ;;
+            apostle_swarm)     DB_URL="$POSTGRES_APOSTLE_SWARM_URL" ;;
+            *) echo "Unknown environment: ${{ inputs.env_name }}" && exit 1 ;;
+          esac
+          echo "db_url=$DB_URL" >> $GITHUB_OUTPUT
 
       - name: Fetch URL and test connection
         id: shadow-db

@@ -25,6 +25,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  # Check jobs - run in parallel for all environments
   check-webapps:
     uses: ./.github/workflows/check-migration-reusable.yml
     with:
@@ -43,12 +44,19 @@ jobs:
       vault_role_id: ${{ secrets.VAULT_ROLE_ID }}
       vault_secret_id: ${{ secrets.VAULT_SECRET_ID }}
 
+  check-apostle-swarm:
+    uses: ./.github/workflows/check-migration-reusable.yml
+    with:
+      env_name: apostle_swarm
+    secrets:
+      vault_addr: ${{ secrets.VAULT_ADDR }}
+      vault_role_id: ${{ secrets.VAULT_ROLE_ID }}
+      vault_secret_id: ${{ secrets.VAULT_SECRET_ID }}
+
+  # Shadow apply checks - only on PRs to main with pending migrations
   shadow-apply-check-webapps:
     needs: check-webapps
-    if: |
-      github.event_name == 'pull_request' &&
-      github.base_ref == 'main' &&
-      needs.check-webapps.outputs.pending == 'true'
+    if: github.event_name == 'pull_request' && github.base_ref == 'main' && needs.check-webapps.outputs.pending == 'true'
     uses: ./.github/workflows/shadow-apply-check-reusable.yml
     with:
       env_name: webapps
@@ -59,10 +67,7 @@ jobs:
 
   shadow-apply-check-prediction-swarm:
     needs: check-prediction-swarm
-    if: |
-      github.event_name == 'pull_request' &&
-      github.base_ref == 'main' &&
-      needs.check-prediction-swarm.outputs.pending == 'true'
+    if: github.event_name == 'pull_request' && github.base_ref == 'main' && needs.check-prediction-swarm.outputs.pending == 'true'
     uses: ./.github/workflows/shadow-apply-check-reusable.yml
     with:
       env_name: prediction_swarm
@@ -71,11 +76,21 @@ jobs:
       vault_role_id: ${{ secrets.VAULT_ROLE_ID }}
       vault_secret_id: ${{ secrets.VAULT_SECRET_ID }}
 
+  shadow-apply-check-apostle-swarm:
+    needs: check-apostle-swarm
+    if: github.event_name == 'pull_request' && github.base_ref == 'main' && needs.check-apostle-swarm.outputs.pending == 'true'
+    uses: ./.github/workflows/shadow-apply-check-reusable.yml
+    with:
+      env_name: apostle_swarm
+    secrets:
+      vault_addr: ${{ secrets.VAULT_ADDR }}
+      vault_role_id: ${{ secrets.VAULT_ROLE_ID }}
+      vault_secret_id: ${{ secrets.VAULT_SECRET_ID }}
+
+  # Apply jobs - only on push with pending migrations
   apply-webapps:
     needs: check-webapps
-    if: |
-      needs.check-webapps.outputs.pending == 'true' &&
-      github.event_name == 'push'
+    if: github.event_name == 'push' && needs.check-webapps.outputs.pending == 'true'
     uses: ./.github/workflows/apply-migration-reusable.yml
     with:
       env_name: webapps
@@ -86,9 +101,7 @@ jobs:
 
   apply-prediction-swarm:
     needs: check-prediction-swarm
-    if: |
-      needs.check-prediction-swarm.outputs.pending == 'true' &&
-      github.event_name == 'push'
+    if: github.event_name == 'push' && needs.check-prediction-swarm.outputs.pending == 'true'
     uses: ./.github/workflows/apply-migration-reusable.yml
     with:
       env_name: prediction_swarm
@@ -97,11 +110,21 @@ jobs:
       vault_role_id: ${{ secrets.VAULT_ROLE_ID }}
       vault_secret_id: ${{ secrets.VAULT_SECRET_ID }}
 
-  restart-apps:
+  apply-apostle-swarm:
+    needs: check-apostle-swarm
+    if: github.event_name == 'push' && needs.check-apostle-swarm.outputs.pending == 'true'
+    uses: ./.github/workflows/apply-migration-reusable.yml
+    with:
+      env_name: apostle_swarm
+    secrets:
+      vault_addr: ${{ secrets.VAULT_ADDR }}
+      vault_role_id: ${{ secrets.VAULT_ROLE_ID }}
+      vault_secret_id: ${{ secrets.VAULT_SECRET_ID }}
+
+  # Restart webapps after their migrations are applied
+  restart-webapps:
     needs: apply-webapps
-    if: |
-      github.event_name == 'push' &&
-      needs.apply-webapps.outputs.applied == 'true'
+    if: github.event_name == 'push' && needs.apply-webapps.outputs.applied == 'true'
     runs-on: ubicloud-standard-2
     container:
       image: ghcr.io/renlabs-dev/devops-ci:latest
@@ -133,20 +156,20 @@ jobs:
         run: |
           set -euo pipefail
           kubectl rollout restart -n ${NAMESPACE} deployment -l app=${{ matrix.app }}
-          kubectl rollout status -n ${NAMESPACE} deployment -l app=${{ matrix.app }}  --timeout=300s
+          kubectl rollout status -n ${NAMESPACE} deployment -l app=${{ matrix.app }} --timeout=300s
 
       - name: Generate restart summary
         if: always()
         run: |
           if [ "${{ strategy.job-index }}" == "0" ]; then
-            echo "## 🔄 Application Restart After Migration" >> $GITHUB_STEP_SUMMARY
+            echo "## Application Restart After Migration" >> $GITHUB_STEP_SUMMARY
             echo "" >> $GITHUB_STEP_SUMMARY
             echo "Applications restarted to pick up database schema changes (webapps only):" >> $GITHUB_STEP_SUMMARY
             echo "" >> $GITHUB_STEP_SUMMARY
           fi
 
           if [ "${{ steps.restart-app.outcome }}" == "success" ]; then
-            echo "- ✅ **${{ matrix.app }}**: Successfully restarted" >> $GITHUB_STEP_SUMMARY
+            echo "- **${{ matrix.app }}**: Successfully restarted" >> $GITHUB_STEP_SUMMARY
           else
-            echo "- ❌ **${{ matrix.app }}**: Restart failed" >> $GITHUB_STEP_SUMMARY
+            echo "- **${{ matrix.app }}**: Restart failed" >> $GITHUB_STEP_SUMMARY
           fi

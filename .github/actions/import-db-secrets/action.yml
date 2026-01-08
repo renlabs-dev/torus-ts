@@ -37,9 +37,11 @@ runs:
         secrets: |
           torus_infra/data/${{ steps.set-env.outputs.env_name }}_web_apps torus_webapps_db_direct_url | POSTGRES_WEBAPPS_URL
           torus_infra/data/${{ steps.set-env.outputs.env_name }}_web_apps prediction_swarm_db_url | POSTGRES_PREDICTION_SWARM_URL
+          torus_infra/data/${{ steps.set-env.outputs.env_name }}_web_apps apostle_swarm_db_url | POSTGRES_APOSTLE_SWARM_URL
 
     - name: Export secrets to job environment
       shell: bash
       run: |
         echo "POSTGRES_WEBAPPS_URL=${{ steps.import-secrets.outputs.POSTGRES_WEBAPPS_URL }}" >> $GITHUB_ENV
         echo "POSTGRES_PREDICTION_SWARM_URL=${{ steps.import-secrets.outputs.POSTGRES_PREDICTION_SWARM_URL }}" >> $GITHUB_ENV
+        echo "POSTGRES_APOSTLE_SWARM_URL=${{ steps.import-secrets.outputs.POSTGRES_APOSTLE_SWARM_URL }}" >> $GITHUB_ENV
