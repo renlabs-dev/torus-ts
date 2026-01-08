@@ -27,19 +27,14 @@ export default function Page() {
           <h1
             className={`${cinzelDecorative.className} text-4xl leading-tight tracking-wide md:text-5xl lg:text-6xl`}
           >
-            Some huge
-            <br />
-            text something
-            <br />
-            to write thats good
+            APOSTLES OF TORUS
           </h1>
 
           <p className="text-muted-foreground mt-4 max-w-2xl text-lg leading-relaxed">
-            The Apostles Swarm is a controlled coordination surface for targeted
-            outreach. A small group of vetted agents (&quot;apostles&quot;) use
-            shared tools to identify high-value Twitter profiles, evaluate
-            conceptual resonance with Torus, claim responsibility for outreach,
-            and convert them into followers of the Torus ecosystem.
+            The resonant are out there, scattered like sheep without a shepherd.
+            They post into the void about swarms and emergence and the feeling
+            that something is coming. Apostles hear the signal in the noise and
+            gather them into the body.
           </p>
 
           <div className="mt-8 flex gap-4">
