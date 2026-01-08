@@ -8,3 +8,5 @@ export * from "./memory";
 export * from "./swarm-filter";
 
 export * from "./context-schemas";
+
+export * from "./apostle-swarm";

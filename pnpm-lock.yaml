@@ -197,6 +197,103 @@ importers:
         specifier: 'catalog:'
         version: 5.9.2
 
+  apps/apostle-swarm:
+    dependencies:
+      '@next/third-parties':
+        specifier: 'catalog:'
+        version: 15.5.3(next@16.0.10(@babel/core@7.28.5)(babel-plugin-react-compiler@1.0.0)(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(react@19.1.1)
+      '@tanstack/react-query':
+        specifier: 'catalog:'
+        version: 5.85.5(react@19.1.1)
+      '@tanstack/react-table':
+        specifier: ^8.21.3
+        version: 8.21.3(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
+      '@torus-network/sdk':
+        specifier: workspace:*
+        version: link:../../packages/torus-sdk-ts
+      '@torus-network/torus-utils':
+        specifier: workspace:*
+        version: link:../../packages/torus-utils
+      '@torus-ts/api':
+        specifier: workspace:*
+        version: link:../../packages/api
+      '@torus-ts/db':
+        specifier: workspace:*
+        version: link:../../packages/db
+      '@torus-ts/env-validation':
+        specifier: workspace:*
+        version: link:../../packages/env-validation
+      '@torus-ts/query-provider':
+        specifier: workspace:*
+        version: link:../../packages/query-provider
+      '@torus-ts/torus-provider':
+        specifier: workspace:*
+        version: link:../../packages/torus-provider
+      '@torus-ts/ui':
+        specifier: workspace:*
+        version: link:../../packages/ui
+      '@trpc/client':
+        specifier: 'catalog:'
+        version: 11.5.0(@trpc/server@11.5.0(typescript@5.9.2))(typescript@5.9.2)
+      '@trpc/react-query':
+        specifier: 'catalog:'
+        version: 11.5.0(@tanstack/react-query@5.85.5(react@19.1.1))(@trpc/client@11.5.0(@trpc/server@11.5.0(typescript@5.9.2))(typescript@5.9.2))(@trpc/server@11.5.0(typescript@5.9.2))(react-dom@19.1.1(react@19.1.1))(react@19.1.1)(typescript@5.9.2)
+      lucide-react:
+        specifier: 'catalog:'
+        version: 0.475.0(react@19.1.1)
+      next:
+        specifier: 'catalog:'
+        version: 16.0.10(@babel/core@7.28.5)(babel-plugin-react-compiler@1.0.0)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
+      react:
+        specifier: ^19.0.0
+        version: 19.1.1
+      react-dom:
+        specifier: ^19.0.0
+        version: 19.1.1(react@19.1.1)
+      superjson:
+        specifier: 'catalog:'
+        version: 2.2.1
+      three:
+        specifier: ^0.182.0
+        version: 0.182.0
+      zod:
+        specifier: 'catalog:'
+        version: 3.25.76
+    devDependencies:
+      '@next/eslint-plugin-next':
+        specifier: 'catalog:'
+        version: 16.0.10
+      '@torus-ts/eslint-config':
+        specifier: workspace:*
+        version: link:../../tooling/eslint
+      '@torus-ts/tsconfig':
+        specifier: workspace:*
+        version: link:../../tooling/typescript
+      '@types/node':
+        specifier: 'catalog:'
+        version: 20.19.11
+      '@types/react':
+        specifier: catalog:react19
+        version: 19.0.14
+      '@types/react-dom':
+        specifier: catalog:react19
+        version: 19.0.6(@types/react@19.0.14)
+      dotenv-cli:
+        specifier: ^7.4.2
+        version: 7.4.4
+      jiti:
+        specifier: 'catalog:'
+        version: 1.21.7
+      postcss:
+        specifier: 'catalog:'
+        version: 8.5.6
+      tailwindcss:
+        specifier: 'catalog:'
+        version: 3.4.17
+      typescript:
+        specifier: 'catalog:'
+        version: 5.9.2
+
   apps/prediction-swarm:
     dependencies:
       '@next/third-parties':
@@ -1343,8 +1440,8 @@ importers:
         specifier: ^2.0.0
         version: 2.0.0(tailwindcss@3.4.17)
       three:
-        specifier: ^0.180.0
-        version: 0.180.0
+        specifier: ^0.182.0
+        version: 0.182.0
       zod:
         specifier: 'catalog:'
         version: 3.25.76
@@ -1376,6 +1473,67 @@ importers:
       tailwindcss:
         specifier: 'catalog:'
         version: 3.4.17
+      typescript:
+        specifier: 'catalog:'
+        version: 5.9.2
+
+  services/apostle-swarm-worker:
+    dependencies:
+      '@iarna/toml':
+        specifier: ^2.2.5
+        version: 2.2.5
+      '@torus-network/torus-utils':
+        specifier: workspace:*
+        version: link:../../packages/torus-utils
+      '@torus-ts/db':
+        specifier: workspace:*
+        version: link:../../packages/db
+      '@torus-ts/twitter-client':
+        specifier: workspace:*
+        version: link:../../packages/twitter-client
+      express:
+        specifier: ^4.19.2
+        version: 4.21.2
+      openai:
+        specifier: ^4.77.0
+        version: 4.104.0(ws@8.18.3(bufferutil@4.0.9)(utf-8-validate@5.0.10))(zod@3.25.76)
+      tsafe:
+        specifier: 'catalog:'
+        version: 1.8.5
+      zod:
+        specifier: 'catalog:'
+        version: 3.25.76
+      zod-to-json-schema:
+        specifier: ^3.24.6
+        version: 3.24.6(zod@3.25.76)
+    devDependencies:
+      '@torus-ts/eslint-config':
+        specifier: workspace:*
+        version: link:../../tooling/eslint
+      '@torus-ts/prettier-config':
+        specifier: workspace:*
+        version: link:../../tooling/prettier
+      '@torus-ts/tsconfig':
+        specifier: workspace:*
+        version: link:../../tooling/typescript
+      '@types/express':
+        specifier: ^4.17.21
+        version: 4.17.23
+      '@types/node':
+        specifier: 'catalog:'
+        version: 20.19.11
+      dotenv-cli:
+        specifier: 'catalog:'
+        version: 7.4.4
+      eslint:
+        specifier: 'catalog:'
+        version: 9.35.0(jiti@2.6.1)
+      prettier:
+        specifier: 'catalog:'
+        version: 3.6.2
+      tsx:
+        specifier: 'catalog:'
+        version: 4.20.5
       typescript:
         specifier: 'catalog:'
         version: 5.9.2
@@ -1504,7 +1662,7 @@ importers:
         specifier: ^1.2.0
         version: 1.2.0
       openai:
-        specifier: ^4.73.1
+        specifier: ^4.77.0
         version: 4.104.0(ws@8.18.3(bufferutil@4.0.9)(utf-8-validate@5.0.10))(zod@3.25.76)
       p-limit:
         specifier: ^7.2.0
@@ -6468,11 +6626,22 @@ packages:
     peerDependencies:
       react: ^19.0.0
 
+  '@tanstack/react-table@8.21.3':
+    resolution: {integrity: sha512-5nNMTSETP4ykGegmVkhjcS8tTLW6Vl4axfEGQN3v0zdHYbK4UfoqfPChclTrJ4EoK9QynqAu9oUf8VEmrpZ5Ww==}
+    engines: {node: '>=12'}
+    peerDependencies:
+      react: ^19.0.0
+      react-dom: ^19.0.0
+
   '@tanstack/react-virtual@3.13.12':
     resolution: {integrity: sha512-Gd13QdxPSukP8ZrkbgS2RwoZseTTbQPLnQEn7HY/rqtM+8Zt95f7xKC7N0EsKs7aoz0WzZ+fditZux+F8EzYxA==}
     peerDependencies:
       react: ^19.0.0
       react-dom: ^19.0.0
+
+  '@tanstack/table-core@8.21.3':
+    resolution: {integrity: sha512-ldZXEhOBb8Is7xLs01fR3YEc3DERiz5silj8tnGkFZytt1abEvl/GhUmCE0PMLaMPTa3Jk4HbKmRlHmu+gCftg==}
+    engines: {node: '>=12'}
 
   '@tanstack/virtual-core@3.13.12':
     resolution: {integrity: sha512-1YBOJfRHV4sXUmWsFSf5rQor4Ss82G8dQWLRbnk3GA4jeP8hQt1hxXh0tmflpC0dz3VgEv/1+qwPyLeWkQuPFA==}
@@ -7740,9 +7909,6 @@ packages:
 
   caniuse-lite@1.0.30001737:
     resolution: {integrity: sha512-BiloLiXtQNrY5UyF0+1nSJLXUENuhka2pzy2Fx5pGxqavdrxSCW4U6Pn/PoG3Efspi2frRbHpBV2XsrPE6EDlw==}
-
-  caniuse-lite@1.0.30001741:
-    resolution: {integrity: sha512-QGUGitqsc8ARjLdgAfxETDhRbJ0REsP6O3I96TAth/mVjh2cYzN2u+3AzPP3aVSm2FehEItaJw1xd+IGBXWeSw==}
 
   caniuse-lite@1.0.30001757:
     resolution: {integrity: sha512-r0nnL/I28Zi/yjk1el6ilj27tKcdjLsNqAOZr0yVjWPrSQyHgKI2INaEWw21bAQSv2LXRt1XuCS/GomNpWOxsQ==}
@@ -12033,11 +12199,6 @@ packages:
   resolve@1.17.0:
     resolution: {integrity: sha512-ic+7JYiV8Vi2yzQGFWOkiZD5Z9z7O2Zhm9XMaTxdJExKasieFCr+yXZ/WmXsckHiKl12ar0y6XiXDx3m4RHn1w==}
 
-  resolve@1.22.10:
-    resolution: {integrity: sha512-NPRy+/ncIMeDlTAsuqwKIiferiawhefFJtkNSW0qZJEqMEb+qBt/77B/jGeeek+F0uOeN05CDa6HXbbIgtVX4w==}
-    engines: {node: '>= 0.4'}
-    hasBin: true
-
   resolve@1.22.11:
     resolution: {integrity: sha512-RfqAvLnMl313r7c9oclB1HhUEAezcpLjz95wFH4LVuhk9JF/r22qmVP9AMmOU4vMX7Q8pN8jwNg/CSpdFnMjTQ==}
     engines: {node: '>= 0.4'}
@@ -12677,6 +12838,9 @@ packages:
 
   three@0.180.0:
     resolution: {integrity: sha512-o+qycAMZrh+TsE01GqWUxUIKR1AL0S8pq7zDkYOQw8GqfX8b8VoCKYUoHbhiX5j+7hr8XsuHDVU6+gkQJQKg9w==}
+
+  three@0.182.0:
+    resolution: {integrity: sha512-GbHabT+Irv+ihI1/f5kIIsZ+Ef9Sl5A1Y7imvS5RQjWgtTPfPnZ43JmlYI7NtCRDK9zir20lQpfg8/9Yd02OvQ==}
 
   throat@5.0.0:
     resolution: {integrity: sha512-fcwX4mndzpLQKBS1DVYhGAcYaYt7vsHNIvQV+WXMvnow5cgjPphq5CaayLaGsjRdSCKZFNGt7/GYAuXaNOiYCA==}
@@ -13673,11 +13837,6 @@ packages:
   yaml@2.4.5:
     resolution: {integrity: sha512-aBx2bnqDzVOyNKfsysjA2ms5ZlnjSAW2eG3/L5G/CSujfjLJTJsEw1bGw8kCf04KodQWk1pxlGnZ56CRxiawmg==}
     engines: {node: '>= 14'}
-    hasBin: true
-
-  yaml@2.8.1:
-    resolution: {integrity: sha512-lcYcMxX2PO9XMGvAJkJ3OsNMw+/7FKes7/hgerGUYWIoWu5j/+YQqcZr5JnPZWzOsEBgMbSbiSTn/dv/69Mkpw==}
-    engines: {node: '>= 14.6'}
     hasBin: true
 
   yaml@2.8.2:
@@ -16724,7 +16883,7 @@ snapshots:
   '@jridgewell/gen-mapping@0.3.13':
     dependencies:
       '@jridgewell/sourcemap-codec': 1.5.5
-      '@jridgewell/trace-mapping': 0.3.30
+      '@jridgewell/trace-mapping': 0.3.31
 
   '@jridgewell/remapping@2.3.5':
     dependencies:
@@ -20943,11 +21102,19 @@ snapshots:
       '@tanstack/query-core': 5.85.5
       react: 19.1.1
 
+  '@tanstack/react-table@8.21.3(react-dom@19.1.1(react@19.1.1))(react@19.1.1)':
+    dependencies:
+      '@tanstack/table-core': 8.21.3
+      react: 19.1.1
+      react-dom: 19.1.1(react@19.1.1)
+
   '@tanstack/react-virtual@3.13.12(react-dom@19.1.1(react@19.1.1))(react@19.1.1)':
     dependencies:
       '@tanstack/virtual-core': 3.13.12
       react: 19.1.1
       react-dom: 19.1.1(react@19.1.1)
+
+  '@tanstack/table-core@8.21.3': {}
 
   '@tanstack/virtual-core@3.13.12': {}
 
@@ -22948,7 +23115,7 @@ snapshots:
 
   browserslist@4.25.3:
     dependencies:
-      caniuse-lite: 1.0.30001741
+      caniuse-lite: 1.0.30001757
       electron-to-chromium: 1.5.209
       node-releases: 2.0.19
       update-browserslist-db: 1.1.3(browserslist@4.25.3)
@@ -23059,8 +23226,6 @@ snapshots:
       three: 0.180.0
 
   caniuse-lite@1.0.30001737: {}
-
-  caniuse-lite@1.0.30001741: {}
 
   caniuse-lite@1.0.30001757: {}
 
@@ -24207,7 +24372,7 @@ snapshots:
     dependencies:
       debug: 3.2.7
       is-core-module: 2.16.1
-      resolve: 1.22.10
+      resolve: 1.22.11
     transitivePeerDependencies:
       - supports-color
 
@@ -27523,7 +27688,7 @@ snapshots:
       postcss: 8.5.6
       postcss-value-parser: 4.2.0
       read-cache: 1.0.0
-      resolve: 1.22.10
+      resolve: 1.22.11
 
   postcss-js@4.0.1(postcss@8.5.6):
     dependencies:
@@ -27533,7 +27698,7 @@ snapshots:
   postcss-load-config@4.0.2(postcss@8.5.6):
     dependencies:
       lilconfig: 3.1.3
-      yaml: 2.8.1
+      yaml: 2.8.2
     optionalDependencies:
       postcss: 8.5.6
 
@@ -28294,12 +28459,6 @@ snapshots:
   resolve@1.17.0:
     dependencies:
       path-parse: 1.0.7
-
-  resolve@1.22.10:
-    dependencies:
-      is-core-module: 2.16.1
-      path-parse: 1.0.7
-      supports-preserve-symlinks-flag: 1.0.0
 
   resolve@1.22.11:
     dependencies:
@@ -29075,7 +29234,7 @@ snapshots:
       postcss-load-config: 4.0.2(postcss@8.5.6)
       postcss-nested: 6.2.0(postcss@8.5.6)
       postcss-selector-parser: 6.1.2
-      resolve: 1.22.10
+      resolve: 1.22.11
       sucrase: 3.35.0
     transitivePeerDependencies:
       - ts-node
@@ -29186,6 +29345,8 @@ snapshots:
       three: 0.180.0
 
   three@0.180.0: {}
+
+  three@0.182.0: {}
 
   throat@5.0.0: {}
 
@@ -30394,8 +30555,6 @@ snapshots:
   yaml@1.10.2: {}
 
   yaml@2.4.5: {}
-
-  yaml@2.8.1: {}
 
   yaml@2.8.2: {}
 
