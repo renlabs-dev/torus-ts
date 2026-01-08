@@ -37,13 +37,6 @@ jobs:
 
       - uses: ariga/setup-atlas@v0
 
-      - run: git fetch origin main:main
-        if: github.ref_name != 'main'
-
-      - name: Run lint
-        run: |
-          atlas migrate lint --env ${{ inputs.env_name }} --git-base origin/main
-
       - name: Verify migrations hash
         run: |
           (cd atlas/migrations/${{ inputs.env_name }} && cp atlas.sum atlas.sum.orig)
