@@ -1,6 +1,7 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import React from "react";
+import { assert } from "tsafe";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { TransactionHistoryItem } from "../fast-bridge-transaction-history-item";
 import { SimpleBridgeStep } from "../fast-bridge-types";
@@ -287,7 +288,9 @@ describe("TransactionHistoryItem", () => {
 
       const expandButton = screen
         .getAllByRole("button")
-        .find((btn) => btn.querySelector("[data-testid='chevron-down']"));
+        .find(
+          (btn) => btn.querySelector("[data-testid='chevron-down']") !== null,
+        );
 
       if (expandButton) {
         await user.click(expandButton);
@@ -310,7 +313,9 @@ describe("TransactionHistoryItem", () => {
 
       const expandButton = screen
         .getAllByRole("button")
-        .find((btn) => btn.querySelector("[data-testid='chevron-down']"));
+        .find(
+          (btn) => btn.querySelector("[data-testid='chevron-down']") !== null,
+        );
 
       if (expandButton) {
         await user.click(expandButton);
@@ -340,7 +345,9 @@ describe("TransactionHistoryItem", () => {
 
       const expandButton = screen
         .getAllByRole("button")
-        .find((btn) => btn.querySelector("[data-testid='chevron-down']"));
+        .find(
+          (btn) => btn.querySelector("[data-testid='chevron-down']") !== null,
+        );
 
       if (expandButton) {
         await user.click(expandButton);
@@ -445,7 +452,9 @@ describe("TransactionHistoryItem", () => {
 
       const expandButton = screen
         .getAllByRole("button")
-        .find((btn) => btn.querySelector("[data-testid='chevron-down']"));
+        .find(
+          (btn) => btn.querySelector("[data-testid='chevron-down']") !== null,
+        );
 
       if (expandButton) {
         await user.click(expandButton);
@@ -470,7 +479,9 @@ describe("TransactionHistoryItem", () => {
 
       const expandButton = screen
         .getAllByRole("button")
-        .find((btn) => btn.querySelector("[data-testid='chevron-down']"));
+        .find(
+          (btn) => btn.querySelector("[data-testid='chevron-down']") !== null,
+        );
 
       if (expandButton) {
         await user.click(expandButton);
@@ -494,7 +505,9 @@ describe("TransactionHistoryItem", () => {
 
       const expandButton = screen
         .getAllByRole("button")
-        .find((btn) => btn.querySelector("[data-testid='chevron-down']"));
+        .find(
+          (btn) => btn.querySelector("[data-testid='chevron-down']") !== null,
+        );
 
       if (expandButton) {
         await user.click(expandButton);
@@ -519,7 +532,9 @@ describe("TransactionHistoryItem", () => {
 
       const expandButton = screen
         .getAllByRole("button")
-        .find((btn) => btn.querySelector("[data-testid='chevron-down']"));
+        .find(
+          (btn) => btn.querySelector("[data-testid='chevron-down']") !== null,
+        );
 
       if (expandButton) {
         await user.click(expandButton);
@@ -540,7 +555,9 @@ describe("TransactionHistoryItem", () => {
 
       const expandButton = screen
         .getAllByRole("button")
-        .find((btn) => btn.querySelector("[data-testid='chevron-down']"));
+        .find(
+          (btn) => btn.querySelector("[data-testid='chevron-down']") !== null,
+        );
 
       if (expandButton) {
         await user.click(expandButton);
@@ -557,7 +574,9 @@ describe("TransactionHistoryItem", () => {
 
     it("should open Basescan explorer for base-to-native Step 1", async () => {
       const user = userEvent.setup();
-      const windowOpenSpy = vi.spyOn(window, "open").mockImplementation();
+      const windowOpenSpy = vi
+        .spyOn(window, "open")
+        .mockImplementation(() => null);
       const step1TxHash = "0x" + "1".repeat(64);
       const transaction = createMockTransaction({
         direction: "base-to-native",
@@ -569,13 +588,21 @@ describe("TransactionHistoryItem", () => {
 
       const expandButton = screen
         .getAllByRole("button")
-        .find((btn) => btn.querySelector("[data-testid='chevron-down']"));
+        .find(
+          (btn) => btn.querySelector("[data-testid='chevron-down']") !== null,
+        );
 
       if (expandButton) {
         await user.click(expandButton);
 
         const externalLinkButtons = screen.getAllByTestId("external-link-icon");
-        await user.click(externalLinkButtons[0]);
+        assert(
+          externalLinkButtons.length > 0,
+          "at least one external link button should exist",
+        );
+        const firstButton = externalLinkButtons[0];
+        assert(firstButton !== undefined, "first button should be defined");
+        await user.click(firstButton);
 
         expect(windowOpenSpy).toHaveBeenCalledWith(
           expect.stringContaining("basescan.org/tx"),
@@ -589,7 +616,9 @@ describe("TransactionHistoryItem", () => {
 
     it("should open Hyperlane explorer for base-to-native Step 2", async () => {
       const user = userEvent.setup();
-      const windowOpenSpy = vi.spyOn(window, "open").mockImplementation();
+      const windowOpenSpy = vi
+        .spyOn(window, "open")
+        .mockImplementation(() => null);
       const step1TxHash = "0x" + "1".repeat(64);
       const transaction = createMockTransaction({
         direction: "base-to-native",
@@ -601,13 +630,21 @@ describe("TransactionHistoryItem", () => {
 
       const expandButton = screen
         .getAllByRole("button")
-        .find((btn) => btn.querySelector("[data-testid='chevron-down']"));
+        .find(
+          (btn) => btn.querySelector("[data-testid='chevron-down']") !== null,
+        );
 
       if (expandButton) {
         await user.click(expandButton);
 
         const externalLinkButtons = screen.getAllByTestId("external-link-icon");
-        await user.click(externalLinkButtons[1]);
+        assert(
+          externalLinkButtons.length > 1,
+          "at least two external link buttons should exist",
+        );
+        const secondButton = externalLinkButtons[1];
+        assert(secondButton !== undefined, "second button should be defined");
+        await user.click(secondButton);
 
         expect(windowOpenSpy).toHaveBeenCalledWith(
           expect.stringContaining("explorer.hyperlane.xyz/message"),
@@ -621,7 +658,9 @@ describe("TransactionHistoryItem", () => {
 
     it("should open Polkadot.js explorer for native-to-base Step 1", async () => {
       const user = userEvent.setup();
-      const windowOpenSpy = vi.spyOn(window, "open").mockImplementation();
+      const windowOpenSpy = vi
+        .spyOn(window, "open")
+        .mockImplementation(() => null);
       const step1TxHash = "0x" + "1".repeat(64);
       const step1BlockHash = "0x" + "b".repeat(64);
       const transaction = createMockTransaction({
@@ -635,13 +674,21 @@ describe("TransactionHistoryItem", () => {
 
       const expandButton = screen
         .getAllByRole("button")
-        .find((btn) => btn.querySelector("[data-testid='chevron-down']"));
+        .find(
+          (btn) => btn.querySelector("[data-testid='chevron-down']") !== null,
+        );
 
       if (expandButton) {
         await user.click(expandButton);
 
         const externalLinkButtons = screen.getAllByTestId("external-link-icon");
-        await user.click(externalLinkButtons[0]);
+        assert(
+          externalLinkButtons.length > 0,
+          "at least one external link button should exist",
+        );
+        const firstButton = externalLinkButtons[0];
+        assert(firstButton !== undefined, "first button should be defined");
+        await user.click(firstButton);
 
         // Should use blockHash for Polkadot.js explorer (if available)
         expect(windowOpenSpy).toHaveBeenCalledWith(
@@ -656,7 +703,9 @@ describe("TransactionHistoryItem", () => {
 
     it("should fallback to txHash for Polkadot.js explorer when blockHash is missing", async () => {
       const user = userEvent.setup();
-      const windowOpenSpy = vi.spyOn(window, "open").mockImplementation();
+      const windowOpenSpy = vi
+        .spyOn(window, "open")
+        .mockImplementation(() => null);
       const step1TxHash = "0x" + "1".repeat(64);
       const transaction = createMockTransaction({
         direction: "native-to-base",
@@ -669,13 +718,21 @@ describe("TransactionHistoryItem", () => {
 
       const expandButton = screen
         .getAllByRole("button")
-        .find((btn) => btn.querySelector("[data-testid='chevron-down']"));
+        .find(
+          (btn) => btn.querySelector("[data-testid='chevron-down']") !== null,
+        );
 
       if (expandButton) {
         await user.click(expandButton);
 
         const externalLinkButtons = screen.getAllByTestId("external-link-icon");
-        await user.click(externalLinkButtons[0]);
+        assert(
+          externalLinkButtons.length > 0,
+          "at least one external link button should exist",
+        );
+        const firstButton = externalLinkButtons[0];
+        assert(firstButton !== undefined, "first button should be defined");
+        await user.click(firstButton);
 
         // Should fallback to txHash when blockHash is not available
         expect(windowOpenSpy).toHaveBeenCalledWith(
@@ -690,7 +747,9 @@ describe("TransactionHistoryItem", () => {
 
     it("should open Hyperlane explorer for native-to-base Step 2", async () => {
       const user = userEvent.setup();
-      const windowOpenSpy = vi.spyOn(window, "open").mockImplementation();
+      const windowOpenSpy = vi
+        .spyOn(window, "open")
+        .mockImplementation(() => null);
       const step1TxHash = "0x" + "1".repeat(64);
       const step2TxHash = "0x" + "2".repeat(64);
       const transaction = createMockTransaction({
@@ -704,13 +763,21 @@ describe("TransactionHistoryItem", () => {
 
       const expandButton = screen
         .getAllByRole("button")
-        .find((btn) => btn.querySelector("[data-testid='chevron-down']"));
+        .find(
+          (btn) => btn.querySelector("[data-testid='chevron-down']") !== null,
+        );
 
       if (expandButton) {
         await user.click(expandButton);
 
         const externalLinkButtons = screen.getAllByTestId("external-link-icon");
-        await user.click(externalLinkButtons[1]);
+        assert(
+          externalLinkButtons.length > 1,
+          "at least two external link buttons should exist",
+        );
+        const secondButton = externalLinkButtons[1];
+        assert(secondButton !== undefined, "second button should be defined");
+        await user.click(secondButton);
 
         expect(windowOpenSpy).toHaveBeenCalledWith(
           expect.stringContaining("explorer.hyperlane.xyz/message"),

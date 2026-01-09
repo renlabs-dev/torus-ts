@@ -2,7 +2,7 @@ import { act, renderHook } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 import { createTestTransactionStep } from "../../__tests__/test-utils";
 import { SimpleBridgeStep } from "../../_components/fast-bridge-types";
-import { useSimpleBridgeSharedState } from "./use-fast-bridge-shared-state";
+import { useSimpleBridgeSharedState } from "../use-fast-bridge-shared-state";
 
 describe("useSimpleBridgeSharedState", () => {
   describe("initial state", () => {

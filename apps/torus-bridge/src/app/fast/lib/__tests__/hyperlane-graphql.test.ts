@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { EXPLORER_URLS } from "../hooks/fast-bridge-helpers";
-import { fetchHyperlaneExplorerUrl } from "./hyperlane-graphql";
+import { EXPLORER_URLS } from "../../hooks/fast-bridge-helpers";
+import { fetchHyperlaneExplorerUrl } from "../hyperlane-graphql";
 
 // Mock fetch globally
 global.fetch = vi.fn();
@@ -184,6 +184,9 @@ describe("fetchHyperlaneExplorerUrl", () => {
     await fetchHyperlaneExplorerUrl(txHash);
 
     const fetchCall = vi.mocked(fetch).mock.calls[0];
+    if (!fetchCall) {
+      throw new Error("fetch was not called");
+    }
     const body = JSON.parse(fetchCall[1]?.body as string);
 
     expect(body.variables.destinationChains).toEqual([8453, 21000]);

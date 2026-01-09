@@ -4,7 +4,7 @@ import { describe, expect, it, vi } from "vitest";
 // Import the mocked wagmi function
 import type { Connector } from "wagmi";
 import { useAccount } from "wagmi";
-import { useDualWallet } from "./use-fast-bridge-dual-wallet";
+import { useDualWallet } from "../use-fast-bridge-dual-wallet";
 
 const mockedUseAccount = vi.mocked(useAccount);
 

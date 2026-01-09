@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { EXPLORER_URLS, getExplorerUrl } from "./fast-bridge-helpers";
+import { EXPLORER_URLS, getExplorerUrl } from "../fast-bridge-helpers";
 
 describe("getExplorerUrl", () => {
   it("should return correct Basescan URL for Base chain", () => {
