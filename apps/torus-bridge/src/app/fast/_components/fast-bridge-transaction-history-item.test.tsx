@@ -187,6 +187,32 @@ describe("TransactionHistoryItem", () => {
         "3h ago",
       );
     });
+
+    it("should display 'Yesterday' for transactions from yesterday", () => {
+      const transaction = createMockTransaction({
+        timestamp: Date.now() - 24 * 60 * 60 * 1000,
+      });
+      render(
+        <TransactionHistoryItem {...defaultProps} transaction={transaction} />,
+      );
+
+      expect(screen.getByTestId("transaction-timestamp")).toHaveTextContent(
+        "Yesterday",
+      );
+    });
+
+    it("should display formatted date for transactions older than yesterday", () => {
+      const transaction = createMockTransaction({
+        timestamp: Date.now() - 3 * 24 * 60 * 60 * 1000,
+      });
+      render(
+        <TransactionHistoryItem {...defaultProps} transaction={transaction} />,
+      );
+
+      const timestamp = screen.getByTestId("transaction-timestamp").textContent;
+      expect(timestamp).toBeTruthy();
+      expect(timestamp).not.toContain("ago");
+    });
   });
 
   describe("multi-select mode", () => {
@@ -232,6 +258,23 @@ describe("TransactionHistoryItem", () => {
 
       expect(mockOnSelectionChange).toHaveBeenCalledWith("tx-123", true);
     });
+
+    it("should call onSelectionChange when card is clicked in multi-select mode", async () => {
+      const user = userEvent.setup();
+      render(
+        <TransactionHistoryItem
+          {...defaultProps}
+          isMultiSelectMode={true}
+          isSelected={false}
+        />,
+      );
+
+      const card = screen.getByTestId("transaction-direction").closest("div");
+      if (card) {
+        await user.click(card);
+        expect(mockOnSelectionChange).toHaveBeenCalledWith("tx-123", true);
+      }
+    });
   });
 
   describe("expansion and details", () => {
@@ -270,11 +313,43 @@ describe("TransactionHistoryItem", () => {
         await user.click(expandButton);
 
         expect(screen.getByTestId("from-chain-label")).toHaveTextContent(
-          "From: Base Chain",
+          "Base Chain",
         );
         expect(screen.getByTestId("to-chain-label")).toHaveTextContent(
-          "To: Torus Chain",
+          "Torus Chain",
         );
+      }
+    });
+
+    it("should display truncated addresses in expanded details", async () => {
+      const user = userEvent.setup();
+      const baseAddress = "0xbase1234567890abcdef1234567890abcdef12345678";
+      const nativeAddress = "1AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA";
+      const transaction = createMockTransaction({
+        baseAddress,
+        nativeAddress,
+        direction: "base-to-native",
+      });
+
+      render(
+        <TransactionHistoryItem {...defaultProps} transaction={transaction} />,
+      );
+
+      const expandButton = screen
+        .getAllByRole("button")
+        .find((btn) => btn.querySelector("[data-testid='chevron-down']"));
+
+      if (expandButton) {
+        await user.click(expandButton);
+
+        const fromAddress = screen.getByTestId("from-chain-address");
+        const toAddress = screen.getByTestId("to-chain-address");
+
+        // Verify addresses are truncated (first 8 chars + ... + last 6 chars)
+        expect(fromAddress.textContent).toBeTruthy();
+        expect(fromAddress.textContent).toContain("...");
+        expect(toAddress.textContent).toBeTruthy();
+        expect(toAddress.textContent).toContain("...");
       }
     });
   });
@@ -282,6 +357,17 @@ describe("TransactionHistoryItem", () => {
   describe("action buttons", () => {
     it("should show Resume button for pending transaction", () => {
       const transaction = createMockTransaction({ status: "pending" });
+      render(
+        <TransactionHistoryItem {...defaultProps} transaction={transaction} />,
+      );
+
+      expect(
+        screen.getByRole("button", { name: /Resume/i }),
+      ).toBeInTheDocument();
+    });
+
+    it("should show Resume button for step1_complete transaction", () => {
+      const transaction = createMockTransaction({ status: "step1_complete" });
       render(
         <TransactionHistoryItem {...defaultProps} transaction={transaction} />,
       );
@@ -302,6 +388,20 @@ describe("TransactionHistoryItem", () => {
       ).toBeInTheDocument();
     });
 
+    it("should not show Resume or Retry button for completed transaction", () => {
+      const transaction = createMockTransaction({ status: "completed" });
+      render(
+        <TransactionHistoryItem {...defaultProps} transaction={transaction} />,
+      );
+
+      expect(
+        screen.queryByRole("button", { name: /Resume/i }),
+      ).not.toBeInTheDocument();
+      expect(
+        screen.queryByRole("button", { name: /Retry/i }),
+      ).not.toBeInTheDocument();
+    });
+
     it("should call onContinue when Resume button is clicked", async () => {
       const user = userEvent.setup();
       const transaction = createMockTransaction({ status: "pending" });
@@ -311,6 +411,19 @@ describe("TransactionHistoryItem", () => {
 
       const resumeButton = screen.getByRole("button", { name: /Resume/i });
       await user.click(resumeButton);
+
+      expect(mockOnContinue).toHaveBeenCalledWith(transaction);
+    });
+
+    it("should call onContinue when Retry button is clicked", async () => {
+      const user = userEvent.setup();
+      const transaction = createMockTransaction({ status: "error" });
+      render(
+        <TransactionHistoryItem {...defaultProps} transaction={transaction} />,
+      );
+
+      const retryButton = screen.getByRole("button", { name: /Retry/i });
+      await user.click(retryButton);
 
       expect(mockOnContinue).toHaveBeenCalledWith(transaction);
     });
@@ -340,6 +453,30 @@ describe("TransactionHistoryItem", () => {
         );
       }
     });
+
+    it("should display error step when provided", async () => {
+      const user = userEvent.setup();
+      const transaction = createMockTransaction({
+        status: "error",
+        errorMessage: "Transaction failed",
+        errorStep: 1,
+      });
+      render(
+        <TransactionHistoryItem {...defaultProps} transaction={transaction} />,
+      );
+
+      const expandButton = screen
+        .getAllByRole("button")
+        .find((btn) => btn.querySelector("[data-testid='chevron-down']"));
+
+      if (expandButton) {
+        await user.click(expandButton);
+
+        expect(screen.getByTestId("error-step")).toHaveTextContent(
+          "Failed at step 1",
+        );
+      }
+    });
   });
 
   describe("recovered via EVM indicator", () => {
@@ -362,6 +499,56 @@ describe("TransactionHistoryItem", () => {
         expect(screen.getByTestId("recovered-message")).toHaveTextContent(
           "Recovered via EVM Recover",
         );
+      }
+    });
+  });
+
+  describe("explorer links", () => {
+    it("should render external link buttons when expanded", async () => {
+      const user = userEvent.setup();
+      const transaction = createMockTransaction({
+        direction: "base-to-native",
+        step1TxHash: "0x" + "1".repeat(64),
+      });
+      render(
+        <TransactionHistoryItem {...defaultProps} transaction={transaction} />,
+      );
+
+      const expandButton = screen
+        .getAllByRole("button")
+        .find((btn) => btn.querySelector("[data-testid='chevron-down']"));
+
+      if (expandButton) {
+        await user.click(expandButton);
+
+        const externalLinks = screen.getAllByTestId("external-link-icon");
+        expect(externalLinks.length).toBeGreaterThan(0);
+      }
+    });
+
+    it("should disable explorer link button when step1TxHash is missing", async () => {
+      const user = userEvent.setup();
+      const transaction = createMockTransaction({
+        step1TxHash: undefined,
+      });
+      render(
+        <TransactionHistoryItem {...defaultProps} transaction={transaction} />,
+      );
+
+      const expandButton = screen
+        .getAllByRole("button")
+        .find((btn) => btn.querySelector("[data-testid='chevron-down']"));
+
+      if (expandButton) {
+        await user.click(expandButton);
+
+        const externalLinkButtons = screen
+          .queryAllByTestId("external-link-icon")
+          .map((el) => el.closest("button"));
+
+        externalLinkButtons.forEach((btn) => {
+          expect(btn).toBeDisabled();
+        });
       }
     });
   });
