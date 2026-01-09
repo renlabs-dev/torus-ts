@@ -171,7 +171,7 @@ export function TransactionHistoryItem({
       return `${EXPLORER_URLS.BASE}/${txHash}`;
     }
     if (chain === "torus") {
-      return `${EXPLORER_URLS.TORUS}/${txHash}`;
+      return `${EXPLORER_URLS.TORUS}${txHash}`;
     }
     return "";
   };

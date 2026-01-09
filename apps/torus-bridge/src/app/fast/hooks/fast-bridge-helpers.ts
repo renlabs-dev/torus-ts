@@ -24,7 +24,7 @@ export const EXPLORER_URLS = {
   // TORUS_EVM_BLOCKSCOUT: "https://blockscout.torus.network/tx",
   TORUS_EVM_HYPERLANE: "https://explorer.hyperlane.xyz/message",
   TORUS:
-    "https://polkadot.js.org/apps/?rpc=wss://api.torus.network#/explorer/query",
+    "https://polkadot.js.org/apps/?rpc=wss://api.torus.network#/explorer/query/",
 } as const;
 
 /**
@@ -158,7 +158,7 @@ export function getExplorerUrl(txHash: string, chainName: string): string {
   }
 
   if (lowerChainName === "torus") {
-    return `${EXPLORER_URLS.TORUS}/${txHash}`;
+    return `${EXPLORER_URLS.TORUS}${txHash}`;
   }
 
   return "";
