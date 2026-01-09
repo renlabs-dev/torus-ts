@@ -233,13 +233,13 @@ importers:
     dependencies:
       '@next/third-parties':
         specifier: 'catalog:'
-        version: 15.5.3(next@16.0.10(@babel/core@7.28.5)(babel-plugin-react-compiler@1.0.0)(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(react@19.1.1)
+        version: 15.5.9(next@16.1.0(@babel/core@7.28.5)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.3(react@19.2.3))(react@19.2.3))(react@19.2.3)
       '@tanstack/react-query':
         specifier: 'catalog:'
-        version: 5.85.5(react@19.1.1)
+        version: 5.90.12(react@19.2.3)
       '@tanstack/react-table':
         specifier: ^8.21.3
-        version: 8.21.3(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
+        version: 8.21.3(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
       '@torus-network/sdk':
         specifier: workspace:*
         version: link:../../packages/torus-sdk-ts
@@ -266,25 +266,25 @@ importers:
         version: link:../../packages/ui
       '@trpc/client':
         specifier: 'catalog:'
-        version: 11.5.0(@trpc/server@11.5.0(typescript@5.9.2))(typescript@5.9.2)
+        version: 11.8.0(@trpc/server@11.8.0(typescript@5.9.3))(typescript@5.9.3)
       '@trpc/react-query':
         specifier: 'catalog:'
-        version: 11.5.0(@tanstack/react-query@5.85.5(react@19.1.1))(@trpc/client@11.5.0(@trpc/server@11.5.0(typescript@5.9.2))(typescript@5.9.2))(@trpc/server@11.5.0(typescript@5.9.2))(react-dom@19.1.1(react@19.1.1))(react@19.1.1)(typescript@5.9.2)
+        version: 11.8.0(@tanstack/react-query@5.90.12(react@19.2.3))(@trpc/client@11.8.0(@trpc/server@11.8.0(typescript@5.9.3))(typescript@5.9.3))(@trpc/server@11.8.0(typescript@5.9.3))(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(typescript@5.9.3)
       lucide-react:
         specifier: 'catalog:'
-        version: 0.475.0(react@19.1.1)
+        version: 0.475.0(react@19.2.3)
       next:
         specifier: 'catalog:'
-        version: 16.0.10(@babel/core@7.28.5)(babel-plugin-react-compiler@1.0.0)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
+        version: 16.1.0(@babel/core@7.28.5)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
       react:
         specifier: ^19.0.0
-        version: 19.1.1
+        version: 19.2.3
       react-dom:
         specifier: ^19.0.0
-        version: 19.1.1(react@19.1.1)
+        version: 19.2.3(react@19.2.3)
       superjson:
         specifier: 'catalog:'
-        version: 2.2.1
+        version: 2.2.6
       three:
         specifier: ^0.182.0
         version: 0.182.0
@@ -294,7 +294,7 @@ importers:
     devDependencies:
       '@next/eslint-plugin-next':
         specifier: 'catalog:'
-        version: 16.0.10
+        version: 16.1.0
       '@torus-ts/eslint-config':
         specifier: workspace:*
         version: link:../../tooling/eslint
@@ -303,7 +303,7 @@ importers:
         version: link:../../tooling/typescript
       '@types/node':
         specifier: 'catalog:'
-        version: 20.19.11
+        version: 20.19.27
       '@types/react':
         specifier: catalog:react19
         version: 19.0.14
@@ -321,10 +321,10 @@ importers:
         version: 8.5.6
       tailwindcss:
         specifier: 'catalog:'
-        version: 3.4.17
+        version: 3.4.19(tsx@4.21.0)(yaml@2.8.2)
       typescript:
         specifier: 'catalog:'
-        version: 5.9.2
+        version: 5.9.3
 
   apps/prediction-swarm:
     dependencies:
@@ -1549,19 +1549,19 @@ importers:
         version: link:../../packages/twitter-client
       express:
         specifier: ^4.19.2
-        version: 4.21.2
+        version: 4.22.1
       openai:
         specifier: ^4.77.0
-        version: 4.104.0(ws@8.18.3(bufferutil@4.0.9)(utf-8-validate@5.0.10))(zod@3.25.76)
+        version: 4.104.0(ws@8.18.3(bufferutil@4.1.0)(utf-8-validate@5.0.10))(zod@3.25.76)
       tsafe:
         specifier: 'catalog:'
-        version: 1.8.5
+        version: 1.8.12
       zod:
         specifier: 'catalog:'
         version: 3.25.76
       zod-to-json-schema:
         specifier: ^3.24.6
-        version: 3.24.6(zod@3.25.76)
+        version: 3.25.0(zod@3.25.76)
     devDependencies:
       '@torus-ts/eslint-config':
         specifier: workspace:*
@@ -1574,25 +1574,25 @@ importers:
         version: link:../../tooling/typescript
       '@types/express':
         specifier: ^4.17.21
-        version: 4.17.23
+        version: 4.17.25
       '@types/node':
         specifier: 'catalog:'
-        version: 20.19.11
+        version: 20.19.27
       dotenv-cli:
         specifier: 'catalog:'
         version: 7.4.4
       eslint:
         specifier: 'catalog:'
-        version: 9.35.0(jiti@2.6.1)
+        version: 9.39.2(jiti@1.21.7)
       prettier:
         specifier: 'catalog:'
-        version: 3.6.2
+        version: 3.7.4
       tsx:
         specifier: 'catalog:'
-        version: 4.20.5
+        version: 4.21.0
       typescript:
         specifier: 'catalog:'
-        version: 5.9.2
+        version: 5.9.3
 
   services/swarm-api:
     dependencies:
@@ -1718,13 +1718,8 @@ importers:
         specifier: ^1.2.0
         version: 1.2.0
       openai:
-<<<<<<< HEAD
-        specifier: ^4.73.1
-        version: 4.104.0(ws@8.18.3(bufferutil@4.1.0)(utf-8-validate@5.0.10))(zod@3.25.76)
-=======
         specifier: ^4.77.0
-        version: 4.104.0(ws@8.18.3(bufferutil@4.0.9)(utf-8-validate@5.0.10))(zod@3.25.76)
->>>>>>> origin/dev
+        version: 4.104.0(ws@8.18.3(bufferutil@4.1.0)(utf-8-validate@5.0.10))(zod@3.25.76)
       p-limit:
         specifier: ^7.2.0
         version: 7.2.0
@@ -6642,10 +6637,6 @@ packages:
     peerDependencies:
       react: ^19.0.0
 
-<<<<<<< HEAD
-  '@tanstack/react-virtual@3.13.13':
-    resolution: {integrity: sha512-4o6oPMDvQv+9gMi8rE6gWmsOjtUZUYIJHv7EB+GblyYdi8U6OqLl8rhHWIUZSL1dUU2dPwTdTgybCKf9EjIrQg==}
-=======
   '@tanstack/react-table@8.21.3':
     resolution: {integrity: sha512-5nNMTSETP4ykGegmVkhjcS8tTLW6Vl4axfEGQN3v0zdHYbK4UfoqfPChclTrJ4EoK9QynqAu9oUf8VEmrpZ5Ww==}
     engines: {node: '>=12'}
@@ -6653,14 +6644,16 @@ packages:
       react: ^19.0.0
       react-dom: ^19.0.0
 
-  '@tanstack/react-virtual@3.13.12':
-    resolution: {integrity: sha512-Gd13QdxPSukP8ZrkbgS2RwoZseTTbQPLnQEn7HY/rqtM+8Zt95f7xKC7N0EsKs7aoz0WzZ+fditZux+F8EzYxA==}
->>>>>>> origin/dev
+  '@tanstack/react-virtual@3.13.13':
+    resolution: {integrity: sha512-4o6oPMDvQv+9gMi8rE6gWmsOjtUZUYIJHv7EB+GblyYdi8U6OqLl8rhHWIUZSL1dUU2dPwTdTgybCKf9EjIrQg==}
     peerDependencies:
       react: ^19.0.0
       react-dom: ^19.0.0
 
-<<<<<<< HEAD
+  '@tanstack/table-core@8.21.3':
+    resolution: {integrity: sha512-ldZXEhOBb8Is7xLs01fR3YEc3DERiz5silj8tnGkFZytt1abEvl/GhUmCE0PMLaMPTa3Jk4HbKmRlHmu+gCftg==}
+    engines: {node: '>=12'}
+
   '@tanstack/virtual-core@3.13.13':
     resolution: {integrity: sha512-uQFoSdKKf5S8k51W5t7b2qpfkyIbdHMzAn+AMQvHPxKUPeo1SsGaA4JRISQT87jm28b7z8OEqPcg1IOZagQHcA==}
 
@@ -6684,14 +6677,6 @@ packages:
     engines: {node: '>=12', npm: '>=6'}
     peerDependencies:
       '@testing-library/dom': '>=7.21.4'
-=======
-  '@tanstack/table-core@8.21.3':
-    resolution: {integrity: sha512-ldZXEhOBb8Is7xLs01fR3YEc3DERiz5silj8tnGkFZytt1abEvl/GhUmCE0PMLaMPTa3Jk4HbKmRlHmu+gCftg==}
-    engines: {node: '>=12'}
-
-  '@tanstack/virtual-core@3.13.12':
-    resolution: {integrity: sha512-1YBOJfRHV4sXUmWsFSf5rQor4Ss82G8dQWLRbnk3GA4jeP8hQt1hxXh0tmflpC0dz3VgEv/1+qwPyLeWkQuPFA==}
->>>>>>> origin/dev
 
   '@tokenizer/inflate@0.4.1':
     resolution: {integrity: sha512-2mAv+8pkG6GIZiF1kNg1jAjh27IDxEPKwdGul3snfztFerfPGI1LjDezZp3i7BElXompqEtPmoPx6c2wgtWsOA==}
@@ -7939,16 +7924,8 @@ packages:
     peerDependencies:
       three: '>=0.126.1'
 
-<<<<<<< HEAD
   caniuse-lite@1.0.30001761:
     resolution: {integrity: sha512-JF9ptu1vP2coz98+5051jZ4PwQgd2ni8A+gYSN7EA7dPKIMf0pDlSUxhdmVOaV3/fYK5uWBkgSXJaRLr4+3A6g==}
-=======
-  caniuse-lite@1.0.30001737:
-    resolution: {integrity: sha512-BiloLiXtQNrY5UyF0+1nSJLXUENuhka2pzy2Fx5pGxqavdrxSCW4U6Pn/PoG3Efspi2frRbHpBV2XsrPE6EDlw==}
-
-  caniuse-lite@1.0.30001757:
-    resolution: {integrity: sha512-r0nnL/I28Zi/yjk1el6ilj27tKcdjLsNqAOZr0yVjWPrSQyHgKI2INaEWw21bAQSv2LXRt1XuCS/GomNpWOxsQ==}
->>>>>>> origin/dev
 
   canonicalize@2.1.0:
     resolution: {integrity: sha512-F705O3xrsUtgt98j7leetNhTWPe+5S72rlL5O4jA1pKqBVQ/dT1O1D6PFxmSXvc0SUOinWS57DKx0I3CHrXJHQ==}
@@ -19942,7 +19919,7 @@ snapshots:
 
   '@scure/bip32@1.7.0':
     dependencies:
-      '@noble/curves': 1.9.1
+      '@noble/curves': 1.9.7
       '@noble/hashes': 1.8.0
       '@scure/base': 1.2.6
 
@@ -20821,23 +20798,20 @@ snapshots:
       '@tanstack/query-core': 5.90.12
       react: 19.2.3
 
-<<<<<<< HEAD
-  '@tanstack/react-virtual@3.13.13(react-dom@19.2.3(react@19.2.3))(react@19.2.3)':
-=======
-  '@tanstack/react-table@8.21.3(react-dom@19.1.1(react@19.1.1))(react@19.1.1)':
+  '@tanstack/react-table@8.21.3(react-dom@19.2.3(react@19.2.3))(react@19.2.3)':
     dependencies:
       '@tanstack/table-core': 8.21.3
-      react: 19.1.1
-      react-dom: 19.1.1(react@19.1.1)
+      react: 19.2.3
+      react-dom: 19.2.3(react@19.2.3)
 
-  '@tanstack/react-virtual@3.13.12(react-dom@19.1.1(react@19.1.1))(react@19.1.1)':
->>>>>>> origin/dev
+  '@tanstack/react-virtual@3.13.13(react-dom@19.2.3(react@19.2.3))(react@19.2.3)':
     dependencies:
       '@tanstack/virtual-core': 3.13.13
       react: 19.2.3
       react-dom: 19.2.3(react@19.2.3)
 
-<<<<<<< HEAD
+  '@tanstack/table-core@8.21.3': {}
+
   '@tanstack/virtual-core@3.13.13': {}
 
   '@testing-library/dom@9.3.4':
@@ -20873,11 +20847,6 @@ snapshots:
   '@testing-library/user-event@14.6.1(@testing-library/dom@9.3.4)':
     dependencies:
       '@testing-library/dom': 9.3.4
-=======
-  '@tanstack/table-core@8.21.3': {}
-
-  '@tanstack/virtual-core@3.13.12': {}
->>>>>>> origin/dev
 
   '@tokenizer/inflate@0.4.1':
     dependencies:
@@ -22903,22 +22872,9 @@ snapshots:
 
   browserslist@4.28.1:
     dependencies:
-<<<<<<< HEAD
       baseline-browser-mapping: 2.9.11
       caniuse-lite: 1.0.30001761
       electron-to-chromium: 1.5.267
-=======
-      caniuse-lite: 1.0.30001757
-      electron-to-chromium: 1.5.209
-      node-releases: 2.0.19
-      update-browserslist-db: 1.1.3(browserslist@4.25.3)
-
-  browserslist@4.28.0:
-    dependencies:
-      baseline-browser-mapping: 2.8.32
-      caniuse-lite: 1.0.30001757
-      electron-to-chromium: 1.5.262
->>>>>>> origin/dev
       node-releases: 2.0.27
       update-browserslist-db: 1.2.3(browserslist@4.28.1)
 
@@ -23019,13 +22975,7 @@ snapshots:
     dependencies:
       three: 0.180.0
 
-<<<<<<< HEAD
   caniuse-lite@1.0.30001761: {}
-=======
-  caniuse-lite@1.0.30001737: {}
-
-  caniuse-lite@1.0.30001757: {}
->>>>>>> origin/dev
 
   canonicalize@2.1.0: {}
 
@@ -27505,10 +27455,6 @@ snapshots:
   postcss-load-config@6.0.1(jiti@1.21.7)(postcss@8.5.6)(tsx@4.21.0)(yaml@2.8.2):
     dependencies:
       lilconfig: 3.1.3
-<<<<<<< HEAD
-=======
-      yaml: 2.8.2
->>>>>>> origin/dev
     optionalDependencies:
       jiti: 1.21.7
       postcss: 8.5.6
@@ -29036,11 +28982,7 @@ snapshots:
       postcss-nested: 6.2.0(postcss@8.5.6)
       postcss-selector-parser: 6.1.2
       resolve: 1.22.11
-<<<<<<< HEAD
       sucrase: 3.35.1
-=======
-      sucrase: 3.35.0
->>>>>>> origin/dev
     transitivePeerDependencies:
       - tsx
       - yaml
