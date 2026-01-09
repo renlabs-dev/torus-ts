@@ -180,7 +180,7 @@ async function trackSubstrateTransaction(
         message: "Bridge complete - tokens arrived in Torus EVM",
         txHash: capturedTxHash,
         explorerUrl: capturedTxHash
-          ? getExplorerUrl(capturedTxHash, "Torus EVM")
+          ? getExplorerUrl(capturedTxHash, "Torus")
           : undefined,
       });
       resolve();
