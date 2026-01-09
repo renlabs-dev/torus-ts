@@ -1,6 +1,6 @@
-import React from "react";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import React from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { TransactionHistoryItem } from "../fast-bridge-transaction-history-item";
 import { SimpleBridgeStep } from "../fast-bridge-types";
@@ -12,7 +12,8 @@ vi.mock("../../hooks/fast-bridge-helpers", () => ({
   EXPLORER_URLS: {
     BASE: "https://basescan.org/tx",
     TORUS_EVM_HYPERLANE: "https://explorer.hyperlane.xyz/message",
-    TORUS: "https://polkadot.js.org/apps/?rpc=wss://api.torus.network#/explorer/query",
+    TORUS:
+      "https://polkadot.js.org/apps/?rpc=wss://api.torus.network#/explorer/query",
   },
 }));
 
@@ -36,6 +37,7 @@ describe("TransactionHistoryItem", () => {
     status: "completed",
     currentStep: SimpleBridgeStep.COMPLETE,
     step1TxHash: "0x" + "1".repeat(64),
+    step1BlockHash: "0x" + "a".repeat(64), // Substrate block hash for Polkadot explorer
     step2TxHash: "0x" + "2".repeat(64),
     baseAddress: "0xbase1234567890abcdef1234567890abcdef12345678",
     nativeAddress: "1AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
@@ -621,9 +623,11 @@ describe("TransactionHistoryItem", () => {
       const user = userEvent.setup();
       const windowOpenSpy = vi.spyOn(window, "open").mockImplementation();
       const step1TxHash = "0x" + "1".repeat(64);
+      const step1BlockHash = "0x" + "b".repeat(64);
       const transaction = createMockTransaction({
         direction: "native-to-base",
         step1TxHash,
+        step1BlockHash,
       });
       render(
         <TransactionHistoryItem {...defaultProps} transaction={transaction} />,
@@ -639,8 +643,43 @@ describe("TransactionHistoryItem", () => {
         const externalLinkButtons = screen.getAllByTestId("external-link-icon");
         await user.click(externalLinkButtons[0]);
 
+        // Should use blockHash for Polkadot.js explorer (if available)
         expect(windowOpenSpy).toHaveBeenCalledWith(
-          expect.stringContaining("polkadot.js.org/apps"),
+          expect.stringContaining(step1BlockHash),
+          "_blank",
+          "noopener,noreferrer",
+        );
+      }
+
+      windowOpenSpy.mockRestore();
+    });
+
+    it("should fallback to txHash for Polkadot.js explorer when blockHash is missing", async () => {
+      const user = userEvent.setup();
+      const windowOpenSpy = vi.spyOn(window, "open").mockImplementation();
+      const step1TxHash = "0x" + "1".repeat(64);
+      const transaction = createMockTransaction({
+        direction: "native-to-base",
+        step1TxHash,
+        step1BlockHash: undefined, // No blockHash available
+      });
+      render(
+        <TransactionHistoryItem {...defaultProps} transaction={transaction} />,
+      );
+
+      const expandButton = screen
+        .getAllByRole("button")
+        .find((btn) => btn.querySelector("[data-testid='chevron-down']"));
+
+      if (expandButton) {
+        await user.click(expandButton);
+
+        const externalLinkButtons = screen.getAllByTestId("external-link-icon");
+        await user.click(externalLinkButtons[0]);
+
+        // Should fallback to txHash when blockHash is not available
+        expect(windowOpenSpy).toHaveBeenCalledWith(
+          expect.stringContaining(step1TxHash),
           "_blank",
           "noopener,noreferrer",
         );

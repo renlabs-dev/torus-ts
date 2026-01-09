@@ -60,6 +60,9 @@ export function createTestTransactionHistoryItem(
     canRetry: false,
     baseAddress: createTestEvmAddress("0xbase1234567890abcdef"),
     nativeAddress: createTestSS58Address("1AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"),
+    step1TxHash: "0x" + "1".repeat(64),
+    step1BlockHash: "0x" + "a".repeat(64), // Substrate block hash for Polkadot explorer
+    step2TxHash: "0x" + "2".repeat(64),
     ...overrides,
   };
 }

@@ -27,6 +27,7 @@ describe("PendingTransactionDialog", () => {
     status: "pending",
     currentStep: SimpleBridgeStep.STEP_1_COMPLETE,
     step1TxHash: "0x" + "1".repeat(64),
+    step1BlockHash: "0x" + "a".repeat(64), // Substrate block hash for Polkadot explorer
     step2TxHash: undefined,
     baseAddress: "0xbase1234567890abcdef1234567890abcdef12345678",
     nativeAddress: "1AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
