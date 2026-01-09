@@ -413,12 +413,18 @@ export function TransactionHistoryItem({
                         onClick={(e) => {
                           e.stopPropagation();
                           void handleOpenExplorer(
-                            transaction.step1TxHash,
+                            isBaseToNative
+                              ? transaction.step1TxHash
+                              : transaction.step2TxHash,
                             step2Chain,
                             2,
                           );
                         }}
-                        disabled={!transaction.step1TxHash || isLoadingMsgId}
+                        disabled={
+                          (isBaseToNative
+                            ? !transaction.step1TxHash
+                            : !transaction.step2TxHash) || isLoadingMsgId
+                        }
                         data-testid="external-link-icon"
                       >
                         {isLoadingMsgId ? (

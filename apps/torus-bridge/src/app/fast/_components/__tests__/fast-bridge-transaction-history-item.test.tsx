@@ -653,9 +653,11 @@ describe("TransactionHistoryItem", () => {
       const user = userEvent.setup();
       const windowOpenSpy = vi.spyOn(window, "open").mockImplementation();
       const step1TxHash = "0x" + "1".repeat(64);
+      const step2TxHash = "0x" + "2".repeat(64);
       const transaction = createMockTransaction({
         direction: "native-to-base",
         step1TxHash,
+        step2TxHash,
       });
       render(
         <TransactionHistoryItem {...defaultProps} transaction={transaction} />,
