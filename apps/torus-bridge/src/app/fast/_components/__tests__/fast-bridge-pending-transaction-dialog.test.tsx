@@ -1,9 +1,9 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { PendingTransactionDialog } from "./fast-bridge-pending-transaction-dialog";
-import { SimpleBridgeStep } from "./fast-bridge-types";
-import type { FastBridgeTransactionHistoryItem } from "./fast-bridge-types";
+import { PendingTransactionDialog } from "../fast-bridge-pending-transaction-dialog";
+import { SimpleBridgeStep } from "../fast-bridge-types";
+import type { FastBridgeTransactionHistoryItem } from "../fast-bridge-types";
 
 // Mock lucide-react icons with specific test IDs
 vi.mock("lucide-react", () => ({

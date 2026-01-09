@@ -2,7 +2,7 @@ import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { assert } from "tsafe";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { QuickSendEvmDialog } from "./fast-bridge-quick-send-evm-dialog";
+import { QuickSendEvmDialog } from "../fast-bridge-quick-send-evm-dialog";
 
 // Mock lucide-react icons with specific test IDs
 vi.mock("lucide-react", () => ({

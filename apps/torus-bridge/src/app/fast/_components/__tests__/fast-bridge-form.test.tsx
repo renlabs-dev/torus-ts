@@ -1,6 +1,6 @@
 import { render } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { FastBridgeForm } from "./fast-bridge-form";
+import { FastBridgeForm } from "../fast-bridge-form";
 
 vi.mock("../hooks/use-fast-bridge-dual-wallet", () => ({
   useDualWallet: () => ({

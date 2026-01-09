@@ -1,7 +1,7 @@
 import { act, renderHook } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { createTestTransactionStep } from "../__tests__/test-utils";
-import { SimpleBridgeStep } from "../_components/fast-bridge-types";
+import { createTestTransactionStep } from "../../__tests__/test-utils";
+import { SimpleBridgeStep } from "../../_components/fast-bridge-types";
 import { useOrchestratedTransfer } from "./use-fast-bridge-orchestrated-transfer";
 
 // Mock dependencies specific to this file

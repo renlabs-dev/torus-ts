@@ -1,7 +1,7 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
-import { TransactionStepItem } from "./fast-bridge-transaction-step-item";
+import { TransactionStepItem } from "../fast-bridge-transaction-step-item";
 
 // Mock lucide-react icons
 vi.mock("lucide-react", () => ({

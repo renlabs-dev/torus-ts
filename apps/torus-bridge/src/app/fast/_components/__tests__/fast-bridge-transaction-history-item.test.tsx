@@ -1,12 +1,12 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { TransactionHistoryItem } from "./fast-bridge-transaction-history-item";
-import { SimpleBridgeStep } from "./fast-bridge-types";
-import type { FastBridgeTransactionHistoryItem } from "./fast-bridge-types";
+import { TransactionHistoryItem } from "../fast-bridge-transaction-history-item";
+import { SimpleBridgeStep } from "../fast-bridge-types";
+import type { FastBridgeTransactionHistoryItem } from "../fast-bridge-types";
 
 // Mock the helper function and EXPLORER_URLS
-vi.mock("../hooks/fast-bridge-helpers", () => ({
+vi.mock("../../hooks/fast-bridge-helpers", () => ({
   formatErrorForUser: (error: Error) => error.message,
   EXPLORER_URLS: {
     BASE: "https://basescan.org/tx",
@@ -16,7 +16,7 @@ vi.mock("../hooks/fast-bridge-helpers", () => ({
 }));
 
 // Mock the Hyperlane GraphQL function
-vi.mock("../lib/hyperlane-graphql", () => ({
+vi.mock("../../lib/hyperlane-graphql", () => ({
   fetchHyperlaneExplorerUrl: vi.fn(
     async () => "https://explorer.hyperlane.xyz/message/0xabcd1234",
   ),

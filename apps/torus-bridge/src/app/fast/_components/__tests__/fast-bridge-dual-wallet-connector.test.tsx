@@ -3,9 +3,9 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
   createConnectionStatus,
   createTestSS58Address,
-} from "../__tests__/test-utils";
-import { useDualWallet } from "../hooks/use-fast-bridge-dual-wallet";
-import { DualWalletConnector } from "./fast-bridge-dual-wallet-connector";
+} from "../../__tests__/test-utils";
+import { useDualWallet } from "../../hooks/use-fast-bridge-dual-wallet";
+import { DualWalletConnector } from "../fast-bridge-dual-wallet-connector";
 
 // Mock the hook
 vi.mock("../hooks/use-fast-bridge-dual-wallet");

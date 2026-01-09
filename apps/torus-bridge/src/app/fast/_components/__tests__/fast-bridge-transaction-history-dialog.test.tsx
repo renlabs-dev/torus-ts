@@ -5,11 +5,11 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
   createDirection,
   createTestTransactionHistoryItem,
-} from "../__tests__/test-utils";
-import { useFastBridgeTransactionHistory } from "../hooks/use-fast-bridge-transaction-history";
-import { TransactionHistoryDialog } from "./fast-bridge-transaction-history-dialog";
-import { SimpleBridgeStep } from "./fast-bridge-types";
-import type { FastBridgeTransactionHistoryItem } from "./fast-bridge-types";
+} from "../../__tests__/test-utils";
+import { useFastBridgeTransactionHistory } from "../../hooks/use-fast-bridge-transaction-history";
+import { TransactionHistoryDialog } from "../fast-bridge-transaction-history-dialog";
+import { SimpleBridgeStep } from "../fast-bridge-types";
+import type { FastBridgeTransactionHistoryItem } from "../fast-bridge-types";
 
 // Mock the hook
 vi.mock("../hooks/use-fast-bridge-transaction-history");

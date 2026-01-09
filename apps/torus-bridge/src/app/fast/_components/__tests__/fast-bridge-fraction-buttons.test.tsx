@@ -1,7 +1,7 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { FractionButtons } from "./fast-bridge-fraction-buttons";
+import { FractionButtons } from "../fast-bridge-fraction-buttons";
 
 describe("FractionButtons", () => {
   const mockHandleFractionClick = vi.fn();

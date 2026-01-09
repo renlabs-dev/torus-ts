@@ -1,7 +1,7 @@
 import { act, renderHook } from "@testing-library/react";
 import { assert } from "tsafe";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { createMockLocation } from "../__tests__/test-utils";
+import { createMockLocation } from "../../__tests__/test-utils";
 import { useFastBridgeTransactionUrlState } from "./use-fast-bridge-transaction-url-state";
 
 // Mock window.location

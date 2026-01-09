@@ -1,6 +1,6 @@
 import { act, renderHook } from "@testing-library/react";
 import { beforeEach, describe, expect, it } from "vitest";
-import { SimpleBridgeStep } from "../_components/fast-bridge-types";
+import { SimpleBridgeStep } from "../../_components/fast-bridge-types";
 import { useFastBridgeTransactionHistory } from "./use-fast-bridge-transaction-history";
 
 describe("useFastBridgeTransactionHistory - Zustand Store", () => {

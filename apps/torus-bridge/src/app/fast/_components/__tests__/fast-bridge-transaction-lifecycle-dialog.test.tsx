@@ -1,9 +1,9 @@
 import { act, render, screen } from "@testing-library/react";
 import { assert } from "tsafe";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { useTransactionLifecycleSteps } from "../hooks/use-transaction-lifecycle-steps";
-import { TransactionLifecycleDialog } from "./fast-bridge-transaction-lifecycle-dialog";
-import { SimpleBridgeStep } from "./fast-bridge-types";
+import { useTransactionLifecycleSteps } from "../../hooks/use-transaction-lifecycle-steps";
+import { TransactionLifecycleDialog } from "../fast-bridge-transaction-lifecycle-dialog";
+import { SimpleBridgeStep } from "../fast-bridge-types";
 
 // Mock the hook
 vi.mock("../hooks/use-transaction-lifecycle-steps", () => ({
