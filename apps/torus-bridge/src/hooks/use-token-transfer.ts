@@ -7,7 +7,7 @@ import {
   useActiveChains,
   useTransactionFns,
 } from "@hyperlane-xyz/widgets";
-import { tryAsync, trySync } from "@torus-network/torus-utils/try-catch";
+import { tryAsync } from "@torus-network/torus-utils/try-catch";
 import { useToast } from "@torus-ts/ui/hooks/use-toast";
 import { useTxSuccessToast } from "~/app/_components/toast/tx-success-toast";
 import { useCallback, useState } from "react";
@@ -15,7 +15,6 @@ import { getChainDisplayName } from "../utils/chain";
 import { logger } from "../utils/logger";
 import type { AppState } from "../utils/store";
 import { useStore } from "../utils/store";
-import { tryGetMsgIdFromTransferReceipt } from "../utils/transfer";
 import type { TransferContext, TransferFormValues } from "../utils/types";
 import { TransferStatus } from "../utils/types";
 import { getTokenByIndex, useWarpCore } from "./token";
@@ -428,23 +427,11 @@ async function executeTransfer({
     hashes.push(hash);
   }
 
-  // Step 9: Get message ID
-  const [msgIdError, msgId] = txReceipt
-    ? trySync(() =>
-        tryGetMsgIdFromTransferReceipt(multiProvider, origin, txReceipt),
-      )
-    : [undefined, undefined];
-
-  if (msgIdError !== undefined) {
-    logger.warn("Failed to get message ID from receipt", msgIdError);
-  }
-
   updateTransferStatus(
     transferIndex,
     (transferStatus = TransferStatus.ConfirmedTransfer),
     {
       originTxHash: hashes.at(-1),
-      msgId,
     },
   );
 
