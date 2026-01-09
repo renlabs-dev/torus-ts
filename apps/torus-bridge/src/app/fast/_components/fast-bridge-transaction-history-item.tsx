@@ -220,7 +220,7 @@ export function TransactionHistoryItem({
   const fromChain = isBaseToNative ? "Base Chain" : "Torus Chain";
   const toChain = isBaseToNative ? "Torus Chain" : "Base Chain";
   const step1Chain = isBaseToNative ? "Base" : "Torus";
-  const step2Chain = isBaseToNative ? "Torus EVM" : "Torus";
+  const step2Chain = isBaseToNative ? "Torus EVM" : "Base";
 
   return (
     <div
@@ -389,12 +389,7 @@ export function TransactionHistoryItem({
                     </div>
                   </div>
                 )}
-                <ArrowRight
-                  className="text-muted-foreground h-5 w-5 shrink-0"
-                  style={{
-                    transform: !isBaseToNative ? "rotate(180deg)" : undefined,
-                  }}
-                />
+                <ArrowRight className="text-muted-foreground h-5 w-5 shrink-0" />
                 {toAddress && (
                   <div className="bg-background border-border flex flex-1 flex-col gap-2 rounded-lg border p-3">
                     <div
