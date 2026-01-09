@@ -55,7 +55,7 @@
     "tailwind-merge": "^2.6.0",
     "tailwindcss-animate": "^1.0.7",
     "tailwindcss-animated": "^2.0.0",
-    "three": "^0.180.0",
+    "three": "^0.182.0",
     "zod": "catalog:"
   },
   "devDependencies": {

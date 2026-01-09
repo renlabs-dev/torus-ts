@@ -12,7 +12,7 @@ import { WalletProvider } from "~/context/wallet-provider";
 import { env, EnvScript } from "~/env";
 import { firaMono } from "~/utils/fonts";
 import PlausibleProvider from "next-plausible";
-import { APRBar } from "./_components/apr-bar/apr-bar";
+import { APRBarWrapper } from "./_components/apr-bar-wrapper";
 import { SidebarLinks } from "./_components/sidebar-links";
 import { TransactionsSheet } from "./_components/transactions-sheet";
 import { WalletBalance } from "./_components/wallet-balance";
@@ -73,7 +73,7 @@ export default function RootLayout({
           torusCacheUrl={env("NEXT_PUBLIC_TORUS_CACHE_URL")}
         >
           <WalletHeader />
-          <APRBar />
+          <APRBarWrapper />
           <Container>
             <main className="mx-auto flex min-w-full flex-col items-center gap-3 text-white">
               <div className="flex w-full max-w-screen-xl flex-col justify-around gap-4 lg:mt-[10vh] lg:flex-row">

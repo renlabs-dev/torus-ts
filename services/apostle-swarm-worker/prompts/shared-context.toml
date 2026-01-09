@@ -1,0 +1,87 @@
+# Shared Context for Apostle Swarm
+# Torus concepts and evaluation criteria used across multiple prompts.
+
+[torus_context]
+description = """
+Torus is an open-ended stake-based p2p protocol encoding biological principles \
+of autonomy and self-organization into coordination infrastructure.
+
+Torus models intelligence as distributed, adaptive coordination under constraints: \
+agents self-assemble, specialize, and align through recursive delegation, shared \
+incentives, and feedback. It treats organization as a living process, not a fixed structure."""
+
+key_concepts = [
+  "Distributed coordination and swarm intelligence",
+  "Stake-weighted governance and resource allocation",
+  "Recursive delegation hierarchies",
+  "Constraint-based autonomy",
+  "Emergent organization through feedback loops",
+  "Cybernetic principles applied to social systems",
+]
+
+[apostle_swarm]
+description = """
+The Apostle Swarm is a coordination surface for targeted outreach to recruit \
+individuals whose worldview resonates with Torus. Apostles are vetted participants \
+who engage with high-potential prospects identified through resonance evaluation."""
+
+[resonance_dimensions]
+description = "Five dimensions for evaluating conceptual resonance with Torus"
+
+[[resonance_dimensions.dimensions]]
+name = "Orientation to complexity"
+question = "Do they perceive systems as interdependent, adaptive, alive?"
+
+[[resonance_dimensions.dimensions]]
+name = "Epistemic depth"
+question = "Do they reason in gradients, feedbacks, tradeoffs, rather than binaries?"
+
+[[resonance_dimensions.dimensions]]
+name = "Coordination sense"
+question = "Do they explore how cooperation or intelligence emerges across agents or scales?"
+
+[[resonance_dimensions.dimensions]]
+name = "Tone & aesthetic"
+question = "Expression shows depth more than performance; curiosity > outrage; irony without cynicism."
+
+[[resonance_dimensions.dimensions]]
+name = "Cultural adjacency"
+question = "Any visible orbit around complexity, cybernetics, distributed systems, evolution, or philosophy of organization."
+
+[evaluation_rules]
+positive = [
+  "Look at how they think, not what they talk about.",
+  "Reward pattern-level curiosity, tolerance for uncertainty, and systemic reasoning.",
+]
+negative = [
+  "Penalize moral grandstanding, binary worldviews, or pure hype.",
+]
+core_principle = "Resonance = alignment with Torus' view of intelligence as distributed, adaptive coordination under constraint."
+
+[strategy_principles]
+description = "Core principles for generating approach strategies"
+
+[[strategy_principles.principles]]
+name = "Leverage resonance points"
+guidance = "Use the concepts and themes that already resonate with this person's worldview."
+
+[[strategy_principles.principles]]
+name = "Match communication style"
+guidance = "Adapt the approach to their tone and aesthetic preferences."
+
+[[strategy_principles.principles]]
+name = "Provide concrete hooks"
+guidance = "Give specific opening messages or topics that would naturally lead into a Torus conversation."
+
+[[strategy_principles.principles]]
+name = "Identify risks"
+guidance = "Note potential pitfalls based on their patterns (e.g., if they dislike hype, avoid promotional language)."
+
+[strategy_rules]
+guidelines = [
+  "Be specific and actionable, not generic.",
+  "Ground recommendations in the evaluation data provided.",
+  "Keep hooks conversational and authentic, not salesy.",
+  "The goal is genuine connection, not manipulation.",
+  "Output MUST be valid JSON only, respecting all length limits.",
+]

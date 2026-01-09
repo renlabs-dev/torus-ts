@@ -26,20 +26,39 @@ runs:
         fi
         echo "env_name=$ENV_NAME" >> $GITHUB_OUTPUT
 
-    - name: Import Secrets
-      id: import-secrets
+    - name: Import Webapps DB Secret
+      id: import-webapps
       uses: hashicorp/vault-action@v3
       with:
         method: approle
         url: ${{ inputs.vault_addr }}
         roleId: ${{ inputs.vault_role_id }}
         secretId: ${{ inputs.vault_secret_id }}
-        secrets: |
-          torus_infra/data/${{ steps.set-env.outputs.env_name }}_web_apps torus_webapps_db_direct_url | POSTGRES_WEBAPPS_URL
-          torus_infra/data/${{ steps.set-env.outputs.env_name }}_web_apps prediction_swarm_db_url | POSTGRES_PREDICTION_SWARM_URL
+        secrets: torus_infra/data/${{ steps.set-env.outputs.env_name }}_web_apps torus_webapps_db_direct_url | POSTGRES_WEBAPPS_URL
+
+    - name: Import Prediction Swarm DB Secret
+      id: import-prediction-swarm
+      uses: hashicorp/vault-action@v3
+      with:
+        method: approle
+        url: ${{ inputs.vault_addr }}
+        roleId: ${{ inputs.vault_role_id }}
+        secretId: ${{ inputs.vault_secret_id }}
+        secrets: torus_infra/data/${{ steps.set-env.outputs.env_name }}_web_apps prediction_swarm_db_url | POSTGRES_PREDICTION_SWARM_URL
+
+    - name: Import Apostle Swarm DB Secret
+      id: import-apostle-swarm
+      uses: hashicorp/vault-action@v3
+      with:
+        method: approle
+        url: ${{ inputs.vault_addr }}
+        roleId: ${{ inputs.vault_role_id }}
+        secretId: ${{ inputs.vault_secret_id }}
+        secrets: torus_infra/data/${{ steps.set-env.outputs.env_name }}_web_apps apostle_swarm_db_url | POSTGRES_APOSTLE_SWARM_URL
 
     - name: Export secrets to job environment
       shell: bash
       run: |
-        echo "POSTGRES_WEBAPPS_URL=${{ steps.import-secrets.outputs.POSTGRES_WEBAPPS_URL }}" >> $GITHUB_ENV
-        echo "POSTGRES_PREDICTION_SWARM_URL=${{ steps.import-secrets.outputs.POSTGRES_PREDICTION_SWARM_URL }}" >> $GITHUB_ENV
+        echo "POSTGRES_WEBAPPS_URL=${{ steps.import-webapps.outputs.POSTGRES_WEBAPPS_URL }}" >> $GITHUB_ENV
+        echo "POSTGRES_PREDICTION_SWARM_URL=${{ steps.import-prediction-swarm.outputs.POSTGRES_PREDICTION_SWARM_URL }}" >> $GITHUB_ENV
+        echo "POSTGRES_APOSTLE_SWARM_URL=${{ steps.import-apostle-swarm.outputs.POSTGRES_APOSTLE_SWARM_URL }}" >> $GITHUB_ENV

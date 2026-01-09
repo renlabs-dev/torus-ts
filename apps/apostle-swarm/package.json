@@ -1,0 +1,53 @@
+{
+  "name": "apostle-swarm",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "next build --turbopack",
+    "build:turbo": "pnpm with-env turbo run build --turbopack",
+    "dev": "next dev --port 3004 --turbopack",
+    "format": "prettier --check . --ignore-path ../../.gitignore --cache --cache-location .cache/.prettiercache",
+    "format-fix": "prettier --write . --ignore-path ../../.gitignore --cache --cache-location .cache/.prettiercache",
+    "lint": "eslint --cache --cache-location .cache/.eslintcache",
+    "lint-fix": "eslint --cache --cache-location .cache/.eslintcache --fix",
+    "start": "next start",
+    "typecheck": "tsc --noEmit",
+    "with-env": "dotenv -e ../../.env --"
+  },
+  "dependencies": {
+    "@next/third-parties": "catalog:",
+    "@tanstack/react-query": "catalog:",
+    "@tanstack/react-table": "^8.21.3",
+    "@torus-network/sdk": "workspace:*",
+    "@torus-network/torus-utils": "workspace:*",
+    "@torus-ts/api": "workspace:*",
+    "@torus-ts/db": "workspace:*",
+    "@torus-ts/env-validation": "workspace:*",
+    "@torus-ts/query-provider": "workspace:*",
+    "@torus-ts/torus-provider": "workspace:*",
+    "@torus-ts/ui": "workspace:*",
+    "@trpc/client": "catalog:",
+    "@trpc/react-query": "catalog:",
+    "lucide-react": "catalog:",
+    "next": "catalog:",
+    "react": "catalog:react19",
+    "react-dom": "catalog:react19",
+    "superjson": "catalog:",
+    "three": "^0.182.0",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@next/eslint-plugin-next": "catalog:",
+    "@torus-ts/eslint-config": "workspace:*",
+    "@torus-ts/tsconfig": "workspace:*",
+    "@types/node": "catalog:",
+    "@types/react": "catalog:react19",
+    "@types/react-dom": "catalog:react19",
+    "dotenv-cli": "^7.4.2",
+    "jiti": "catalog:",
+    "postcss": "catalog:",
+    "tailwindcss": "catalog:",
+    "typescript": "catalog:"
+  }
+}
