@@ -551,5 +551,133 @@ describe("TransactionHistoryItem", () => {
         });
       }
     });
+
+    it("should open Basescan explorer for base-to-native Step 1", async () => {
+      const user = userEvent.setup();
+      const windowOpenSpy = vi.spyOn(window, "open").mockImplementation();
+      const step1TxHash = "0x" + "1".repeat(64);
+      const transaction = createMockTransaction({
+        direction: "base-to-native",
+        step1TxHash,
+      });
+      render(
+        <TransactionHistoryItem {...defaultProps} transaction={transaction} />,
+      );
+
+      const expandButton = screen
+        .getAllByRole("button")
+        .find((btn) => btn.querySelector("[data-testid='chevron-down']"));
+
+      if (expandButton) {
+        await user.click(expandButton);
+
+        const externalLinkButtons = screen.getAllByTestId("external-link-icon");
+        await user.click(externalLinkButtons[0]);
+
+        expect(windowOpenSpy).toHaveBeenCalledWith(
+          expect.stringContaining("basescan.org/tx"),
+          "_blank",
+          "noopener,noreferrer",
+        );
+      }
+
+      windowOpenSpy.mockRestore();
+    });
+
+    it("should open Hyperlane explorer for base-to-native Step 2", async () => {
+      const user = userEvent.setup();
+      const windowOpenSpy = vi.spyOn(window, "open").mockImplementation();
+      const step1TxHash = "0x" + "1".repeat(64);
+      const transaction = createMockTransaction({
+        direction: "base-to-native",
+        step1TxHash,
+      });
+      render(
+        <TransactionHistoryItem {...defaultProps} transaction={transaction} />,
+      );
+
+      const expandButton = screen
+        .getAllByRole("button")
+        .find((btn) => btn.querySelector("[data-testid='chevron-down']"));
+
+      if (expandButton) {
+        await user.click(expandButton);
+
+        const externalLinkButtons = screen.getAllByTestId("external-link-icon");
+        await user.click(externalLinkButtons[1]);
+
+        expect(windowOpenSpy).toHaveBeenCalledWith(
+          expect.stringContaining("explorer.hyperlane.xyz/message"),
+          "_blank",
+          "noopener,noreferrer",
+        );
+      }
+
+      windowOpenSpy.mockRestore();
+    });
+
+    it("should open Polkadot.js explorer for native-to-base Step 1", async () => {
+      const user = userEvent.setup();
+      const windowOpenSpy = vi.spyOn(window, "open").mockImplementation();
+      const step1TxHash = "0x" + "1".repeat(64);
+      const transaction = createMockTransaction({
+        direction: "native-to-base",
+        step1TxHash,
+      });
+      render(
+        <TransactionHistoryItem {...defaultProps} transaction={transaction} />,
+      );
+
+      const expandButton = screen
+        .getAllByRole("button")
+        .find((btn) => btn.querySelector("[data-testid='chevron-down']"));
+
+      if (expandButton) {
+        await user.click(expandButton);
+
+        const externalLinkButtons = screen.getAllByTestId("external-link-icon");
+        await user.click(externalLinkButtons[0]);
+
+        expect(windowOpenSpy).toHaveBeenCalledWith(
+          expect.stringContaining("polkadot.js.org/apps"),
+          "_blank",
+          "noopener,noreferrer",
+        );
+      }
+
+      windowOpenSpy.mockRestore();
+    });
+
+    it("should open Hyperlane explorer for native-to-base Step 2", async () => {
+      const user = userEvent.setup();
+      const windowOpenSpy = vi.spyOn(window, "open").mockImplementation();
+      const step1TxHash = "0x" + "1".repeat(64);
+      const transaction = createMockTransaction({
+        direction: "native-to-base",
+        step1TxHash,
+      });
+      render(
+        <TransactionHistoryItem {...defaultProps} transaction={transaction} />,
+      );
+
+      const expandButton = screen
+        .getAllByRole("button")
+        .find((btn) => btn.querySelector("[data-testid='chevron-down']"));
+
+      if (expandButton) {
+        await user.click(expandButton);
+
+        const externalLinkButtons = screen.getAllByTestId("external-link-icon");
+        await user.click(externalLinkButtons[1]);
+
+        expect(windowOpenSpy).toHaveBeenCalledWith(
+          expect.stringContaining("explorer.hyperlane.xyz/message"),
+          "_blank",
+          "noopener,noreferrer",
+        );
+      }
+
+      windowOpenSpy.mockRestore();
+    });
   });
 });

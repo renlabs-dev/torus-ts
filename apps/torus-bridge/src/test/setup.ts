@@ -87,6 +87,7 @@ vi.mock("lucide-react", () => ({
   ExternalLink: () => createElement("div", { "data-testid": "external-link" }),
   History: () => createElement("div", { "data-testid": "history-icon" }),
   Info: () => createElement("div", { "data-testid": "info-icon" }),
+  Loader: () => createElement("div", { "data-testid": "loader-icon" }),
   Loader2: () => createElement("div", { "data-testid": "loader-icon" }),
   Play: () => createElement("div", { "data-testid": "play-icon" }),
   RotateCw: () => createElement("div", { "data-testid": "rotate-icon" }),

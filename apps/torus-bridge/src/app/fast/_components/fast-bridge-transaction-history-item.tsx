@@ -220,7 +220,7 @@ export function TransactionHistoryItem({
   const fromChain = isBaseToNative ? "Base Chain" : "Torus Chain";
   const toChain = isBaseToNative ? "Torus Chain" : "Base Chain";
   const step1Chain = isBaseToNative ? "Base" : "Torus";
-  const step2Chain = isBaseToNative ? "Torus EVM" : "Base";
+  const step2Chain = isBaseToNative ? "Torus EVM" : "Torus";
 
   return (
     <div
