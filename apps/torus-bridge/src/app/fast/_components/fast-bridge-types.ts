@@ -78,6 +78,7 @@ export interface FastBridgeTransactionHistoryItem {
 
   // Transaction details
   step1TxHash?: string;
+  step1BlockHash?: string; // Substrate block hash for explorer (native-to-base only)
   step2TxHash?: string;
   errorMessage?: string;
   errorStep?: 1 | 2;

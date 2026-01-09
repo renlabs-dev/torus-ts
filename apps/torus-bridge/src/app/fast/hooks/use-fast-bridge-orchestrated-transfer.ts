@@ -443,11 +443,20 @@ export function useOrchestratedTransfer() {
               nativeAddress: selectedAccount.address,
               canRetry: true,
               step1BaselineBalance: baselineBalance.toString(),
+              // Note: step1BlockHash will be captured when inBlock event occurs
             });
             currentTransactionIdRef.current = newTransactionId;
 
             // Notify that transaction was created (for URL update / F5 recovery)
             onTransactionCreatedRef.current?.(newTransactionId);
+          }
+        },
+        onTransactionInBlock: (blockHash) => {
+          // Capture blockHash when transaction is included in a block
+          if (currentTransactionIdRef.current) {
+            updateHistoryTransaction(currentTransactionIdRef.current, {
+              step1BlockHash: blockHash,
+            });
           }
         },
       });

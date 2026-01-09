@@ -375,11 +375,12 @@ export function TransactionHistoryItem({
                         className="h-6 w-6 p-0"
                         onClick={(e) => {
                           e.stopPropagation();
-                          void handleOpenExplorer(
-                            transaction.step1TxHash,
-                            step1Chain,
-                            1,
-                          );
+                          // Use blockHash for Polkadot explorer (if available), otherwise fallback to txHash
+                          const hashForExplorer =
+                            step1Chain === "Torus"
+                              ? transaction.step1BlockHash || transaction.step1TxHash
+                              : transaction.step1TxHash;
+                          void handleOpenExplorer(hashForExplorer, step1Chain, 1);
                         }}
                         disabled={!transaction.step1TxHash}
                         data-testid="external-link-icon"
