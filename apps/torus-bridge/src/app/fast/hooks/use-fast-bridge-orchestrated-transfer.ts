@@ -130,7 +130,7 @@ export function useOrchestratedTransfer() {
       amount: string;
       recipient: string;
     }): Promise<string> => {
-      const hash = await _triggerTransactions({
+      const result = await _triggerTransactions({
         origin: params.origin,
         destination: params.destination,
         tokenIndex: params.tokenIndex,
@@ -138,11 +138,12 @@ export function useOrchestratedTransfer() {
         recipient: params.recipient,
       });
 
-      if (!hash) {
-        throw new Error("Transaction hash not found after transfer");
+      if (!result) {
+        throw new Error("Transaction result not found after transfer");
       }
 
-      return hash;
+      // Return transaction hash as string
+      return result;
     },
     [_triggerTransactions],
   );
@@ -300,11 +301,10 @@ export function useOrchestratedTransfer() {
 
       // Update history to step 2 preparing
       if (currentTransactionIdRef.current) {
-        const step1Tx = transactions.find((tx) => tx.step === 1);
         updateHistoryTransaction(currentTransactionIdRef.current, {
           status: "pending",
           currentStep: SimpleBridgeStep.STEP_2_PREPARING,
-          step1TxHash: step1Tx?.txHash,
+          step1TxHash: step1Result.txHash,
         });
       }
 
@@ -363,12 +363,11 @@ export function useOrchestratedTransfer() {
       }
 
       // Update history after step 2 complete
+      // Note: step2TxHash is already set by the onStep2Confirming callback above
       if (currentTransactionIdRef.current) {
-        const step2Tx = transactions.find((tx) => tx.step === 2);
         updateHistoryTransaction(currentTransactionIdRef.current, {
           status: "completed",
           currentStep: SimpleBridgeStep.COMPLETE,
-          step2TxHash: step2Tx?.txHash,
           canRetry: false,
           errorMessage: undefined,
           errorStep: undefined,
@@ -397,7 +396,6 @@ export function useOrchestratedTransfer() {
       toast,
       switchChainAsync,
       torusEvmChainId,
-      transactions,
       updateHistoryTransaction,
       addToHistory,
     ],
@@ -478,12 +476,11 @@ export function useOrchestratedTransfer() {
       }
 
       // Update history to step 2 preparing
+      // Note: step1TxHash is already set by the onTransactionConfirming callback above
       if (currentTransactionIdRef.current) {
-        const step1Tx = transactions.find((tx) => tx.step === 1);
         updateHistoryTransaction(currentTransactionIdRef.current, {
           status: "pending",
           currentStep: SimpleBridgeStep.STEP_2_PREPARING,
-          step1TxHash: step1Tx?.txHash,
         });
       }
 
@@ -544,12 +541,11 @@ export function useOrchestratedTransfer() {
       }
 
       // Update history after step 2 complete
+      // Note: step2TxHash is already set by the onStep2Confirming callback above
       if (currentTransactionIdRef.current) {
-        const step2Tx = transactions.find((tx) => tx.step === 2);
         updateHistoryTransaction(currentTransactionIdRef.current, {
           status: "completed",
           currentStep: SimpleBridgeStep.COMPLETE,
-          step2TxHash: step2Tx?.txHash,
           canRetry: false,
           errorMessage: undefined,
           errorStep: undefined,
@@ -580,7 +576,6 @@ export function useOrchestratedTransfer() {
       torusEvmChainId,
       warpCore,
       accounts,
-      transactions,
       updateHistoryTransaction,
       addToHistory,
     ],
@@ -766,33 +761,7 @@ export function useOrchestratedTransfer() {
         } else {
           await executeNativeToBase(amount);
         }
-      } catch (error) {
-        // Check if the error was already handled by the individual flow
-        // by seeing if a transaction entry exists (meaning the flow progressed).
-        // The ref is modified by onTransactionConfirming callback during the await above.
-        const transactionId = currentTransactionIdRef.current as string | null;
-        const hasTransactionEntry = transactionId !== null;
-
-        if (!hasTransactionEntry) {
-          // Error happened before any transaction was created
-          // (e.g., wallet not connected, validation failed)
-          const errorMessage =
-            error instanceof Error ? error.message : "Transfer failed";
-          updateBridgeState({
-            step: SimpleBridgeStep.ERROR,
-            errorMessage,
-          });
-          addTransaction({
-            step: 1,
-            status: "ERROR",
-            chainName: direction === "base-to-native" ? "Base" : "Torus",
-            message: errorMessage,
-          });
-        }
-        // If hasTransactionEntry is true, the error was already handled by the flow
-        // and the history was already updated with the error details
       } finally {
-        // Clear callback reference after transfer completes or fails
         onTransactionCreatedRef.current = null;
       }
     },
@@ -801,7 +770,6 @@ export function useOrchestratedTransfer() {
       executeNativeToBase,
       updateBridgeState,
       setTransactions,
-      addTransaction,
     ],
   );
 

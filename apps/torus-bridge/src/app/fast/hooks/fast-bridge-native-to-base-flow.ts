@@ -653,7 +653,7 @@ export async function executeNativeToBaseStep2(
   const expectedIncreaseAfterFees = toNano(maxTransferAmountDecimal);
 
   // Use the max transfer amount instead of the original amount
-  const [hyperlaneError, txHash2] = await tryAsync(
+  const [hyperlaneError, result] = await tryAsync(
     triggerHyperlaneTransfer({
       origin: "torus",
       destination: "base",
@@ -695,6 +695,9 @@ export async function executeNativeToBaseStep2(
 
   updateBridgeState({ step: SimpleBridgeStep.STEP_2_CONFIRMING });
   onStepProgress?.(SimpleBridgeStep.STEP_2_CONFIRMING);
+
+  // The result is the transaction hash from Hyperlane transfer
+  const txHash2 = result;
 
   // Notify that step 2 is now confirming (for F5 recovery baseline balance)
   // baseBaselineBalance was captured before the Hyperlane transaction

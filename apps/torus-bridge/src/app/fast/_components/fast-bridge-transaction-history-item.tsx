@@ -1,5 +1,6 @@
 "use client";
 
+import { tryAsync } from "@torus-network/torus-utils/try-catch";
 import { Badge } from "@torus-ts/ui/components/badge";
 import { Button } from "@torus-ts/ui/components/button";
 import { Checkbox } from "@torus-ts/ui/components/checkbox";
@@ -15,18 +16,22 @@ import {
   ChevronDown,
   ChevronUp,
   ExternalLink,
+  Loader,
   Play,
   RotateCw,
 } from "lucide-react";
 import { useState } from "react";
-import { formatErrorForUser } from "../hooks/fast-bridge-helpers";
+import {
+  EXPLORER_URLS,
+  formatErrorForUser,
+} from "../hooks/fast-bridge-helpers";
+import { fetchHyperlaneExplorerUrl } from "../lib/hyperlane-graphql";
 import type { FastBridgeTransactionHistoryItem } from "./fast-bridge-types";
 
 interface TransactionHistoryItemProps {
   transaction: FastBridgeTransactionHistoryItem;
   index: number;
   onContinue: (transaction: FastBridgeTransactionHistoryItem) => void;
-  getExplorerUrl: (txHash: string, chainName: string) => string;
   isMultiSelectMode?: boolean;
   isSelected?: boolean;
   onSelectionChange?: (transactionId: string, selected: boolean) => void;
@@ -119,12 +124,13 @@ export function TransactionHistoryItem({
   transaction,
   index,
   onContinue,
-  getExplorerUrl,
   isMultiSelectMode = false,
   isSelected = false,
   onSelectionChange,
 }: TransactionHistoryItemProps) {
   const [isExpanded, setIsExpanded] = useState(false);
+  const [isLoadingMsgId, setIsLoadingMsgId] = useState(false);
+  const [cachedExplorerUrl, setCachedExplorerUrl] = useState<string | null>(null);
 
   const directionLabel =
     transaction.direction === "base-to-native"
@@ -154,6 +160,67 @@ export function TransactionHistoryItem({
   const handleSelectionChange = (checked: boolean) => {
     onSelectionChange?.(transaction.id, checked);
   };
+
+  const openExplorerUrl = (url: string) => {
+    window.open(url, "_blank", "noopener,noreferrer");
+  };
+
+  const getStep1ExplorerUrl = (txHash: string, chainName: string): string => {
+    const chain = chainName.toLowerCase();
+    if (chain === "base") {
+      return `${EXPLORER_URLS.BASE}/${txHash}`;
+    }
+    if (chain === "torus") {
+      return `${EXPLORER_URLS.TORUS}/${txHash}`;
+    }
+    return "";
+  };
+
+  const handleOpenExplorer = async (
+    txHash: string | undefined,
+    chainName: string,
+    step: 1 | 2,
+  ) => {
+    if (!txHash) return;
+
+    // Step 1: Direct explorer links
+    if (step === 1) {
+      const explorerUrl = getStep1ExplorerUrl(txHash, chainName);
+      if (explorerUrl) {
+        openExplorerUrl(explorerUrl);
+      }
+      return;
+    }
+
+    // Step 2: Hyperlane explorer with msg_id lookup
+    if (cachedExplorerUrl) {
+      openExplorerUrl(cachedExplorerUrl);
+      return;
+    }
+
+    setIsLoadingMsgId(true);
+    const [error, explorerUrl] = await tryAsync(
+      fetchHyperlaneExplorerUrl(txHash),
+    );
+    setIsLoadingMsgId(false);
+
+    if (error === undefined && explorerUrl) {
+      setCachedExplorerUrl(explorerUrl);
+      openExplorerUrl(explorerUrl);
+    }
+  };
+
+  const isBaseToNative = transaction.direction === "base-to-native";
+  const fromAddress = isBaseToNative
+    ? transaction.baseAddress
+    : transaction.nativeAddress;
+  const toAddress = isBaseToNative
+    ? transaction.nativeAddress
+    : transaction.baseAddress;
+  const fromChain = isBaseToNative ? "Base Chain" : "Torus Chain";
+  const toChain = isBaseToNative ? "Torus Chain" : "Base Chain";
+  const step1Chain = isBaseToNative ? "Base" : "Torus";
+  const step2Chain = isBaseToNative ? "Torus EVM" : "Base";
 
   return (
     <div
@@ -286,174 +353,87 @@ export function TransactionHistoryItem({
                 Transaction Flow
               </div>
               <div className="flex items-center gap-4">
-                {transaction.direction === "base-to-native" ? (
-                  <>
-                    {transaction.baseAddress && (
-                      <div className="bg-background border-border flex flex-1 flex-col gap-2 rounded-lg border p-3">
-                        <div
-                          className="text-muted-foreground text-xs font-medium"
-                          data-testid="from-chain-label"
-                        >
-                          From: Base Chain
-                        </div>
-                        <div className="bg-muted/50 border-border flex items-center justify-between rounded border px-2 py-1.5">
-                          <span
-                            className="font-mono text-xs"
-                            data-testid="from-chain-address"
-                          >
-                            {transaction.baseAddress.slice(0, 8)}...
-                            {transaction.baseAddress.slice(-6)}
-                          </span>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="h-6 w-6 p-0"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              if (transaction.step1TxHash) {
-                                window.open(
-                                  getExplorerUrl(
-                                    transaction.step1TxHash,
-                                    "Base",
-                                  ),
-                                  "_blank",
-                                  "noopener,noreferrer",
-                                );
-                              }
-                            }}
-                            disabled={!transaction.step1TxHash}
-                          >
-                            <ExternalLink className="h-3 w-3" />
-                          </Button>
-                        </div>
-                      </div>
-                    )}
-                    <ArrowRight className="text-muted-foreground h-5 w-5 shrink-0" />
-                    {transaction.nativeAddress && (
-                      <div className="bg-background border-border flex flex-1 flex-col gap-2 rounded-lg border p-3">
-                        <div
-                          className="text-muted-foreground text-xs font-medium"
-                          data-testid="to-chain-label"
-                        >
-                          To: Torus Chain
-                        </div>
-                        <div className="bg-muted/50 border-border flex items-center justify-between rounded border px-2 py-1.5">
-                          <span
-                            className="font-mono text-xs"
-                            data-testid="to-chain-address"
-                          >
-                            {transaction.nativeAddress.slice(0, 8)}...
-                            {transaction.nativeAddress.slice(-6)}
-                          </span>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="h-6 w-6 p-0"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              if (transaction.step2TxHash) {
-                                window.open(
-                                  getExplorerUrl(
-                                    transaction.step2TxHash,
-                                    "Torus EVM",
-                                  ),
-                                  "_blank",
-                                  "noopener,noreferrer",
-                                );
-                              }
-                            }}
-                            disabled={!transaction.step2TxHash}
-                          >
-                            <ExternalLink className="h-3 w-3" />
-                          </Button>
-                        </div>
-                      </div>
-                    )}
-                  </>
-                ) : (
-                  <>
-                    {transaction.nativeAddress && (
-                      <div className="bg-background border-border flex flex-1 flex-col gap-2 rounded-lg border p-3">
-                        <div
-                          className="text-muted-foreground text-xs font-medium"
-                          data-testid="from-chain-label"
-                        >
-                          From: Torus Chain
-                        </div>
-                        <div className="bg-muted/50 border-border flex items-center justify-between rounded border px-2 py-1.5">
-                          <span
-                            className="font-mono text-xs"
-                            data-testid="from-chain-address"
-                          >
-                            {transaction.nativeAddress.slice(0, 8)}...
-                            {transaction.nativeAddress.slice(-6)}
-                          </span>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="h-6 w-6 p-0"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              if (transaction.step1TxHash) {
-                                window.open(
-                                  getExplorerUrl(
-                                    transaction.step1TxHash,
-                                    "Torus",
-                                  ),
-                                  "_blank",
-                                  "noopener,noreferrer",
-                                );
-                              }
-                            }}
-                            disabled={!transaction.step1TxHash}
-                          >
-                            <ExternalLink className="h-3 w-3" />
-                          </Button>
-                        </div>
-                      </div>
-                    )}
-                    <ArrowRight className="text-muted-foreground h-5 w-5 shrink-0" />
-                    {transaction.baseAddress && (
-                      <div className="bg-background border-border flex flex-1 flex-col gap-2 rounded-lg border p-3">
-                        <div
-                          className="text-muted-foreground text-xs font-medium"
-                          data-testid="to-chain-label"
-                        >
-                          To: Base Chain
-                        </div>
-                        <div className="bg-muted/50 border-border flex items-center justify-between rounded border px-2 py-1.5">
-                          <span
-                            className="font-mono text-xs"
-                            data-testid="to-chain-address"
-                          >
-                            {transaction.baseAddress.slice(0, 8)}...
-                            {transaction.baseAddress.slice(-6)}
-                          </span>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="h-6 w-6 p-0"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              if (transaction.step2TxHash) {
-                                window.open(
-                                  getExplorerUrl(
-                                    transaction.step2TxHash,
-                                    "Base",
-                                  ),
-                                  "_blank",
-                                  "noopener,noreferrer",
-                                );
-                              }
-                            }}
-                            disabled={!transaction.step2TxHash}
-                          >
-                            <ExternalLink className="h-3 w-3" />
-                          </Button>
-                        </div>
-                      </div>
-                    )}
-                  </>
+                {fromAddress && (
+                  <div className="bg-background border-border flex flex-1 flex-col gap-2 rounded-lg border p-3">
+                    <div
+                      className="text-muted-foreground text-xs font-medium"
+                      data-testid="from-chain-label"
+                    >
+                      {fromChain}
+                    </div>
+                    <div className="bg-muted/50 border-border flex items-center justify-between rounded border px-2 py-1.5">
+                      <span
+                        className="font-mono text-xs"
+                        data-testid="from-chain-address"
+                      >
+                        {fromAddress.slice(0, 8)}...
+                        {fromAddress.slice(-6)}
+                      </span>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-6 w-6 p-0"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          void handleOpenExplorer(
+                            transaction.step1TxHash,
+                            step1Chain,
+                            1,
+                          );
+                        }}
+                        disabled={!transaction.step1TxHash}
+                        data-testid="external-link-icon"
+                      >
+                        <ExternalLink className="h-3 w-3" />
+                      </Button>
+                    </div>
+                  </div>
+                )}
+                <ArrowRight
+                  className="text-muted-foreground h-5 w-5 shrink-0"
+                  style={{
+                    transform: !isBaseToNative ? "rotate(180deg)" : undefined,
+                  }}
+                />
+                {toAddress && (
+                  <div className="bg-background border-border flex flex-1 flex-col gap-2 rounded-lg border p-3">
+                    <div
+                      className="text-muted-foreground text-xs font-medium"
+                      data-testid="to-chain-label"
+                    >
+                      {toChain}
+                    </div>
+                    <div className="bg-muted/50 border-border flex items-center justify-between rounded border px-2 py-1.5">
+                      <span
+                        className="font-mono text-xs"
+                        data-testid="to-chain-address"
+                      >
+                        {toAddress.slice(0, 8)}...
+                        {toAddress.slice(-6)}
+                      </span>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-6 w-6 p-0"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          void handleOpenExplorer(
+                            transaction.step1TxHash,
+                            step2Chain,
+                            2,
+                          );
+                        }}
+                        disabled={!transaction.step1TxHash || isLoadingMsgId}
+                        data-testid="external-link-icon"
+                      >
+                        {isLoadingMsgId ? (
+                          <Loader className="h-3 w-3 animate-spin" />
+                        ) : (
+                          <ExternalLink className="h-3 w-3" />
+                        )}
+                      </Button>
+                    </div>
+                  </div>
                 )}
               </div>
             </div>
@@ -489,150 +469,6 @@ export function TransactionHistoryItem({
               data-testid="recovered-message"
             >
               <span className="text-xs">Recovered via EVM Recover</span>
-            </div>
-          )}
-
-          {/* Explorer links */}
-          {(transaction.step1TxHash || transaction.step2TxHash) && (
-            <div className="space-y-3">
-              <div className="text-muted-foreground text-xs font-medium">
-                Transaction Details
-              </div>
-              <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-                {(() => {
-                  if (transaction.direction === "base-to-native") {
-                    // base-to-native: step1 = Base (EVM), step2 = Torus EVM
-                    const step1Hash = transaction.step1TxHash;
-                    const step2Hash = transaction.step2TxHash;
-                    const step1Url = step1Hash
-                      ? getExplorerUrl(step1Hash, "Base")
-                      : "";
-                    const step2Url = step2Hash
-                      ? getExplorerUrl(step2Hash, "Torus EVM")
-                      : "";
-
-                    return (
-                      <>
-                        {step1Hash && step1Url && (
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            className="bg-background hover:bg-accent h-auto flex-col items-start gap-1.5 p-3"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              window.open(
-                                step1Url,
-                                "_blank",
-                                "noopener,noreferrer",
-                              );
-                            }}
-                          >
-                            <div className="flex w-full items-center justify-between">
-                              <span className="text-xs font-medium">
-                                Step 1: Base Chain
-                              </span>
-                              <ExternalLink className="h-3.5 w-3.5 shrink-0" />
-                            </div>
-                            <span className="text-muted-foreground break-all text-left font-mono text-[10px]">
-                              {step1Hash.slice(0, 12)}...{step1Hash.slice(-8)}
-                            </span>
-                          </Button>
-                        )}
-                        {step2Hash && step2Url && (
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            className="bg-background hover:bg-accent h-auto flex-col items-start gap-1.5 p-3"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              window.open(
-                                step2Url,
-                                "_blank",
-                                "noopener,noreferrer",
-                              );
-                            }}
-                          >
-                            <div className="flex w-full items-center justify-between">
-                              <span className="text-xs font-medium">
-                                Step 2: Torus EVM
-                              </span>
-                              <ExternalLink className="h-3.5 w-3.5 shrink-0" />
-                            </div>
-                            <span className="text-muted-foreground break-all text-left font-mono text-[10px]">
-                              {step2Hash.slice(0, 12)}...{step2Hash.slice(-8)}
-                            </span>
-                          </Button>
-                        )}
-                      </>
-                    );
-                  } else {
-                    // native-to-base: step1 = Torus (Polkadot/Substrate), step2 = Torus EVM → Base
-                    const step1Hash = transaction.step1TxHash;
-                    const step2Hash = transaction.step2TxHash;
-                    const step1Url = step1Hash
-                      ? getExplorerUrl(step1Hash, "Torus")
-                      : "";
-                    const step2Url = step2Hash
-                      ? getExplorerUrl(step2Hash, "Torus EVM")
-                      : "";
-
-                    return (
-                      <>
-                        {step1Hash && step1Url && (
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            className="bg-background hover:bg-accent h-auto flex-col items-start gap-1.5 p-3"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              window.open(
-                                step1Url,
-                                "_blank",
-                                "noopener,noreferrer",
-                              );
-                            }}
-                          >
-                            <div className="flex w-full items-center justify-between">
-                              <span className="text-xs font-medium">
-                                Step 1: Torus Chain
-                              </span>
-                              <ExternalLink className="h-3.5 w-3.5 shrink-0" />
-                            </div>
-                            <span className="text-muted-foreground break-all text-left font-mono text-[10px]">
-                              {step1Hash.slice(0, 12)}...{step1Hash.slice(-8)}
-                            </span>
-                          </Button>
-                        )}
-                        {step2Hash && step2Url && (
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            className="bg-background hover:bg-accent h-auto flex-col items-start gap-1.5 p-3"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              window.open(
-                                step2Url,
-                                "_blank",
-                                "noopener,noreferrer",
-                              );
-                            }}
-                          >
-                            <div className="flex w-full items-center justify-between">
-                              <span className="text-xs font-medium">
-                                Step 2: Base Chain
-                              </span>
-                              <ExternalLink className="h-3.5 w-3.5 shrink-0" />
-                            </div>
-                            <span className="text-muted-foreground break-all text-left font-mono text-[10px]">
-                              {step2Hash.slice(0, 12)}...{step2Hash.slice(-8)}
-                            </span>
-                          </Button>
-                        )}
-                      </>
-                    );
-                  }
-                })()}
-              </div>
             </div>
           )}
         </div>

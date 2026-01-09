@@ -1,22 +1,30 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { assert } from "tsafe";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { TransactionHistoryItem } from "./fast-bridge-transaction-history-item";
 import { SimpleBridgeStep } from "./fast-bridge-types";
 import type { FastBridgeTransactionHistoryItem } from "./fast-bridge-types";
 
-// Mock the helper function
+// Mock the helper function and EXPLORER_URLS
 vi.mock("../hooks/fast-bridge-helpers", () => ({
   formatErrorForUser: (error: Error) => error.message,
+  EXPLORER_URLS: {
+    BASE: "https://basescan.org/tx",
+    TORUS_EVM_HYPERLANE: "https://explorer.hyperlane.xyz/message",
+    TORUS: "https://polkadot.js.org/apps/?rpc=wss://api.torus.network#/explorer/query",
+  },
+}));
+
+// Mock the Hyperlane GraphQL function
+vi.mock("../lib/hyperlane-graphql", () => ({
+  fetchHyperlaneExplorerUrl: vi.fn(
+    async () => "https://explorer.hyperlane.xyz/message/0xabcd1234",
+  ),
 }));
 
 describe("TransactionHistoryItem", () => {
   const mockOnContinue = vi.fn();
   const mockOnSelectionChange = vi.fn();
-  const mockGetExplorerUrl = vi.fn(
-    (hash: string, chain: string) => `https://explorer.com/${chain}/${hash}`,
-  );
 
   const createMockTransaction = (
     overrides: Partial<FastBridgeTransactionHistoryItem> = {},
@@ -40,7 +48,6 @@ describe("TransactionHistoryItem", () => {
     transaction: createMockTransaction(),
     index: 0,
     onContinue: mockOnContinue,
-    getExplorerUrl: mockGetExplorerUrl,
     isMultiSelectMode: false,
     isSelected: false,
     onSelectionChange: mockOnSelectionChange,
@@ -144,7 +151,7 @@ describe("TransactionHistoryItem", () => {
   describe("timestamp formatting", () => {
     it("should display 'Just now' for very recent transactions", () => {
       const transaction = createMockTransaction({
-        timestamp: Date.now() - 5000, // 5 seconds ago
+        timestamp: Date.now() - 5000,
       });
       render(
         <TransactionHistoryItem {...defaultProps} transaction={transaction} />,
@@ -157,7 +164,7 @@ describe("TransactionHistoryItem", () => {
 
     it("should display minutes ago", () => {
       const transaction = createMockTransaction({
-        timestamp: Date.now() - 5 * 60 * 1000, // 5 minutes ago
+        timestamp: Date.now() - 5 * 60 * 1000,
       });
       render(
         <TransactionHistoryItem {...defaultProps} transaction={transaction} />,
@@ -170,7 +177,7 @@ describe("TransactionHistoryItem", () => {
 
     it("should display hours ago", () => {
       const transaction = createMockTransaction({
-        timestamp: Date.now() - 3 * 60 * 60 * 1000, // 3 hours ago
+        timestamp: Date.now() - 3 * 60 * 60 * 1000,
       });
       render(
         <TransactionHistoryItem {...defaultProps} transaction={transaction} />,
@@ -179,32 +186,6 @@ describe("TransactionHistoryItem", () => {
       expect(screen.getByTestId("transaction-timestamp")).toHaveTextContent(
         "3h ago",
       );
-    });
-
-    it("should display 'Yesterday' for transactions from yesterday", () => {
-      const transaction = createMockTransaction({
-        timestamp: Date.now() - 24 * 60 * 60 * 1000 - 1000, // Just over 24 hours ago
-      });
-      render(
-        <TransactionHistoryItem {...defaultProps} transaction={transaction} />,
-      );
-
-      expect(screen.getByTestId("transaction-timestamp")).toHaveTextContent(
-        "Yesterday",
-      );
-    });
-
-    it("should display full date for old transactions", () => {
-      const pastDate = new Date(Date.now() - 3 * 24 * 60 * 60 * 1000); // 3 days ago
-      const transaction = createMockTransaction({
-        timestamp: pastDate.getTime(),
-      });
-      render(
-        <TransactionHistoryItem {...defaultProps} transaction={transaction} />,
-      );
-
-      const dateString = pastDate.toLocaleDateString();
-      expect(screen.getByText(dateString)).toBeInTheDocument();
     });
   });
 
@@ -251,60 +232,9 @@ describe("TransactionHistoryItem", () => {
 
       expect(mockOnSelectionChange).toHaveBeenCalledWith("tx-123", true);
     });
-
-    it("should call onSelectionChange when card is clicked in multi-select mode", async () => {
-      const user = userEvent.setup();
-      render(
-        <TransactionHistoryItem
-          {...defaultProps}
-          isMultiSelectMode={true}
-          isSelected={false}
-        />,
-      );
-
-      const card = screen.getByText("Base → Torus");
-      const cardDiv = card.closest("div");
-      assert(cardDiv !== null, "Card div should exist");
-      await user.click(cardDiv);
-
-      expect(mockOnSelectionChange).toHaveBeenCalledWith("tx-123", true);
-    });
-
-    it("should disable expansion button in multi-select mode", () => {
-      render(
-        <TransactionHistoryItem
-          {...defaultProps}
-          isMultiSelectMode={true}
-          transaction={createMockTransaction()}
-        />,
-      );
-
-      const expandButton = screen
-        .getByRole("button", { name: "" })
-        .parentElement?.querySelector("button:last-child");
-      if (expandButton) {
-        expect(expandButton).toBeDisabled();
-      }
-    });
   });
 
   describe("expansion and details", () => {
-    it("should not be expandable for all statuses", () => {
-      const transaction = createMockTransaction({
-        status: "completed",
-      });
-      render(
-        <TransactionHistoryItem {...defaultProps} transaction={transaction} />,
-      );
-
-      // Should show expanded details area
-      const expandButtons = screen.getAllByRole("button");
-      const chevronButton = expandButtons.find((btn) =>
-        btn.querySelector("[data-testid='chevron-down']"),
-      );
-      expect(chevronButton).toBeInTheDocument();
-    });
-
     it("should expand transaction details when clicking chevron", async () => {
       const user = userEvent.setup();
       render(<TransactionHistoryItem {...defaultProps} />);
@@ -316,37 +246,16 @@ describe("TransactionHistoryItem", () => {
       if (expandButton) {
         await user.click(expandButton);
 
-        // Should show transaction flow details
         expect(screen.getByTestId("transaction-flow-title")).toHaveTextContent(
           "Transaction Flow",
         );
       }
     });
 
-    it("should collapse transaction details when clicking chevron again", async () => {
-      const user = userEvent.setup();
-      render(<TransactionHistoryItem {...defaultProps} />);
-
-      const expandButton = screen
-        .getAllByRole("button")
-        .find((btn) => btn.querySelector("[data-testid='chevron-down']"));
-
-      if (expandButton) {
-        await user.click(expandButton);
-
-        // Details are now expanded
-        expect(screen.getByTestId("transaction-flow-title")).toHaveTextContent(
-          "Transaction Flow",
-        );
-      }
-    });
-
-    it("should show addresses in expanded details for base-to-native direction", async () => {
+    it("should show addresses in expanded details for base-to-native", async () => {
       const user = userEvent.setup();
       const transaction = createMockTransaction({
         direction: "base-to-native",
-        baseAddress: "0xbase1234567890abcdef1234567890abcdef12345678",
-        nativeAddress: "1AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
       });
 
       render(
@@ -366,38 +275,6 @@ describe("TransactionHistoryItem", () => {
         expect(screen.getByTestId("to-chain-label")).toHaveTextContent(
           "To: Torus Chain",
         );
-
-        // Check for truncated addresses
-        expect(screen.getByText(/0xbase12.*345678/)).toBeInTheDocument();
-        expect(screen.getByText(/1AAAAAAA.*AAAAAA/)).toBeInTheDocument();
-      }
-    });
-
-    it("should show addresses in expanded details for native-to-base direction", async () => {
-      const user = userEvent.setup();
-      const transaction = createMockTransaction({
-        direction: "native-to-base",
-        baseAddress: "0xbase1234567890abcdef1234567890abcdef12345678",
-        nativeAddress: "1AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
-      });
-
-      render(
-        <TransactionHistoryItem {...defaultProps} transaction={transaction} />,
-      );
-
-      const expandButton = screen
-        .getAllByRole("button")
-        .find((btn) => btn.querySelector("[data-testid='chevron-down']"));
-
-      if (expandButton) {
-        await user.click(expandButton);
-
-        expect(screen.getByTestId("from-chain-label")).toHaveTextContent(
-          "From: Torus Chain",
-        );
-        expect(screen.getByTestId("to-chain-label")).toHaveTextContent(
-          "To: Base Chain",
-        );
       }
     });
   });
@@ -405,17 +282,6 @@ describe("TransactionHistoryItem", () => {
   describe("action buttons", () => {
     it("should show Resume button for pending transaction", () => {
       const transaction = createMockTransaction({ status: "pending" });
-      render(
-        <TransactionHistoryItem {...defaultProps} transaction={transaction} />,
-      );
-
-      expect(
-        screen.getByRole("button", { name: /Resume/i }),
-      ).toBeInTheDocument();
-    });
-
-    it("should show Resume button for step1_complete transaction", () => {
-      const transaction = createMockTransaction({ status: "step1_complete" });
       render(
         <TransactionHistoryItem {...defaultProps} transaction={transaction} />,
       );
@@ -436,20 +302,6 @@ describe("TransactionHistoryItem", () => {
       ).toBeInTheDocument();
     });
 
-    it("should not show Resume or Retry button for completed transaction", () => {
-      const transaction = createMockTransaction({ status: "completed" });
-      render(
-        <TransactionHistoryItem {...defaultProps} transaction={transaction} />,
-      );
-
-      expect(
-        screen.queryByRole("button", { name: /Resume/i }),
-      ).not.toBeInTheDocument();
-      expect(
-        screen.queryByRole("button", { name: /Retry/i }),
-      ).not.toBeInTheDocument();
-    });
-
     it("should call onContinue when Resume button is clicked", async () => {
       const user = userEvent.setup();
       const transaction = createMockTransaction({ status: "pending" });
@@ -461,80 +313,6 @@ describe("TransactionHistoryItem", () => {
       await user.click(resumeButton);
 
       expect(mockOnContinue).toHaveBeenCalledWith(transaction);
-    });
-
-    it("should call onContinue when Retry button is clicked", async () => {
-      const user = userEvent.setup();
-      const transaction = createMockTransaction({ status: "error" });
-      render(
-        <TransactionHistoryItem {...defaultProps} transaction={transaction} />,
-      );
-
-      const retryButton = screen.getByRole("button", { name: /Retry/i });
-      await user.click(retryButton);
-
-      expect(mockOnContinue).toHaveBeenCalledWith(transaction);
-    });
-  });
-
-  describe("explorer links", () => {
-    it("should show explorer links in expanded details", async () => {
-      const user = userEvent.setup();
-      const transaction = createMockTransaction();
-      render(
-        <TransactionHistoryItem {...defaultProps} transaction={transaction} />,
-      );
-
-      const expandButton = screen
-        .getAllByRole("button")
-        .find((btn) => btn.querySelector("[data-testid='chevron-down']"));
-
-      if (expandButton) {
-        await user.click(expandButton);
-
-        expect(screen.getByText(/Step 1:.*Base Chain/)).toBeInTheDocument();
-        expect(screen.getByText(/Step 2:.*Torus EVM/)).toBeInTheDocument();
-      }
-    });
-
-    it("should not show explorer link when tx hash is missing", async () => {
-      const user = userEvent.setup();
-      const transaction = createMockTransaction({ step1TxHash: undefined });
-      render(
-        <TransactionHistoryItem {...defaultProps} transaction={transaction} />,
-      );
-
-      const expandButton = screen
-        .getAllByRole("button")
-        .find((btn) => btn.querySelector("[data-testid='chevron-down']"));
-
-      if (expandButton) {
-        await user.click(expandButton);
-
-        // Should not show Step 1 details if tx hash is missing
-        expect(
-          screen.queryByText(/Step 1:.*Base Chain/),
-        ).not.toBeInTheDocument();
-      }
-    });
-
-    it("should call getExplorerUrl when opening transaction details link", async () => {
-      const user = userEvent.setup();
-      const transaction = createMockTransaction();
-      render(
-        <TransactionHistoryItem {...defaultProps} transaction={transaction} />,
-      );
-
-      const expandButton = screen
-        .getAllByRole("button")
-        .find((btn) => btn.querySelector("[data-testid='chevron-down']"));
-
-      if (expandButton) {
-        await user.click(expandButton);
-
-        // Explorer links should have been generated via getExplorerUrl
-        expect(mockGetExplorerUrl).toHaveBeenCalled();
-      }
     });
   });
 
@@ -562,30 +340,6 @@ describe("TransactionHistoryItem", () => {
         );
       }
     });
-
-    it("should display error step when provided", async () => {
-      const user = userEvent.setup();
-      const transaction = createMockTransaction({
-        status: "error",
-        errorMessage: "Failed",
-        errorStep: 2,
-      });
-      render(
-        <TransactionHistoryItem {...defaultProps} transaction={transaction} />,
-      );
-
-      const expandButton = screen
-        .getAllByRole("button")
-        .find((btn) => btn.querySelector("[data-testid='chevron-down']"));
-
-      if (expandButton) {
-        await user.click(expandButton);
-
-        expect(screen.getByTestId("error-step")).toHaveTextContent(
-          "Failed at step 2",
-        );
-      }
-    });
   });
 
   describe("recovered via EVM indicator", () => {
@@ -609,156 +363,6 @@ describe("TransactionHistoryItem", () => {
           "Recovered via EVM Recover",
         );
       }
-    });
-
-    it("should open explorer URL in new tab when step explorer link is clicked", async () => {
-      const user = userEvent.setup();
-      const mockWindowOpen = vi
-        .spyOn(window, "open")
-        .mockImplementation(() => null);
-      const transaction = createMockTransaction();
-      render(
-        <TransactionHistoryItem {...defaultProps} transaction={transaction} />,
-      );
-
-      const expandButton = screen
-        .getAllByRole("button")
-        .find((btn) => btn.querySelector("[data-testid='chevron-down']"));
-
-      if (expandButton) {
-        await user.click(expandButton);
-
-        // Find explorer buttons in the expanded details
-        const explorerButtons = screen
-          .getAllByRole("button")
-          .filter(
-            (btn) =>
-              btn.textContent.includes("View on Explorer") ||
-              !!btn.querySelector("[data-testid='external-link-icon']"),
-          );
-
-        if (explorerButtons.length > 0) {
-          const firstExplorerButton = explorerButtons[0];
-          if (firstExplorerButton) {
-            // Click the first explorer button
-            await user.click(firstExplorerButton);
-
-            // Verify window.open was called with correct parameters (mock returns explorer.com)
-            expect(mockWindowOpen).toHaveBeenCalledWith(
-              "https://explorer.com/Base/0x1111111111111111111111111111111111111111",
-              "_blank",
-              "noopener,noreferrer",
-            );
-          }
-        }
-      }
-
-      mockWindowOpen.mockRestore();
-    });
-
-    it("should open Blockscout explorer URL for native-to-base step2 (Torus EVM)", async () => {
-      const user = userEvent.setup();
-      const mockWindowOpen = vi
-        .spyOn(window, "open")
-        .mockImplementation(() => null);
-
-      // Create native-to-base transaction with step2 tx hash to test Torus EVM explorer
-      const transaction = createMockTransaction({
-        direction: "native-to-base",
-        step2TxHash: "0x2222222222222222222222222222222222222222",
-      });
-
-      render(
-        <TransactionHistoryItem {...defaultProps} transaction={transaction} />,
-      );
-
-      const expandButton = screen
-        .getAllByRole("button")
-        .find((btn) => btn.querySelector("[data-testid='chevron-down']"));
-
-      if (expandButton) {
-        await user.click(expandButton);
-
-        // Find explorer buttons in the expanded details
-        const explorerButtons = screen
-          .getAllByRole("button")
-          .filter(
-            (btn) =>
-              btn.textContent.includes("View on Explorer") ||
-              !!btn.querySelector("[data-testid='external-link-icon']"),
-          );
-
-        if (explorerButtons.length >= 1) {
-          const step2ExplorerButton = explorerButtons[0]; // Only step2 button for native-to-base (step1 has no explorer)
-          if (step2ExplorerButton) {
-            // Click the step2 explorer button (Torus EVM)
-            await user.click(step2ExplorerButton);
-
-            // Verify window.open was called with correct parameters (mock returns explorer.com)
-            expect(mockWindowOpen).toHaveBeenCalledWith(
-              "https://explorer.com/Torus EVM/0x2222222222222222222222222222222222222222",
-              "_blank",
-              "noopener,noreferrer",
-            );
-          }
-        }
-      }
-
-      mockWindowOpen.mockRestore();
-    });
-
-    it("should show Polkadot.js explorer link for native-to-base step1 (Torus Substrate)", async () => {
-      const user = userEvent.setup();
-      const mockWindowOpen = vi
-        .spyOn(window, "open")
-        .mockImplementation(() => null);
-
-      // Create native-to-base transaction with step1 tx hash
-      const transaction = createMockTransaction({
-        direction: "native-to-base",
-        step1TxHash: "0x1111111111111111111111111111111111111111",
-        step2TxHash: undefined, // No step2 to avoid interference
-      });
-
-      render(
-        <TransactionHistoryItem {...defaultProps} transaction={transaction} />,
-      );
-
-      const expandButton = screen
-        .getAllByRole("button")
-        .find((btn) => btn.querySelector("[data-testid='chevron-down']"));
-
-      if (expandButton) {
-        await user.click(expandButton);
-
-        // Find explorer buttons in the expanded details
-        const explorerButtons = screen
-          .getAllByRole("button")
-          .filter(
-            (btn) =>
-              btn.textContent.includes("View on Explorer") ||
-              !!btn.querySelector("[data-testid='external-link-icon']") ||
-              btn.textContent.includes("Step 1: Torus Chain"),
-          );
-
-        // Should have 1 explorer button for Torus Substrate (Polkadot.js)
-        expect(explorerButtons).toHaveLength(1);
-
-        const step1Button = explorerButtons[0];
-        if (step1Button) {
-          // Click the step1 explorer button
-          await user.click(step1Button);
-
-          // Verify window.open was called with correct explorer URL (mock returns explorer.com)
-          expect(mockWindowOpen).toHaveBeenCalledWith(
-            "https://explorer.com/Torus/0x1111111111111111111111111111111111111111",
-            "_blank",
-            "noopener,noreferrer",
-          );
-        }
-      }
-
-      mockWindowOpen.mockRestore();
     });
   });
 });

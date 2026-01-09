@@ -26,6 +26,7 @@ import { Label } from "@torus-ts/ui/components/label";
 import { TransactionStatus } from "@torus-ts/ui/components/transaction-status";
 import { useToast } from "@torus-ts/ui/hooks/use-toast";
 import type { Config } from "@wagmi/core";
+import { EXPLORER_URLS } from "~/app/fast/hooks/fast-bridge-helpers";
 import { getChainValuesOnEnv } from "~/config";
 import { initWagmi } from "~/context/evm-wallet-provider";
 import { env } from "~/env";
@@ -568,7 +569,7 @@ const renderWaitingForValidation = (hash: string) => (
     <a
       style={linkStyle}
       target="_blank"
-      href={`https://blockscout.torus.network/tx/${hash}`}
+      href={`${EXPLORER_URLS.TORUS_EVM_HYPERLANE}/${hash}`}
       rel="noreferrer"
     >
       View on block explorer
@@ -582,7 +583,7 @@ const renderSuccessfulyFinalized = (hash: string) => (
     <a
       style={linkStyle}
       target="_blank"
-      href={`https://blockscout.torus.network/tx/${hash}`}
+      href={`${EXPLORER_URLS.TORUS_EVM_HYPERLANE}/${hash}`}
       rel="noreferrer"
     >
       View on block explorer

@@ -452,7 +452,7 @@ describe("TransactionStepItem", () => {
       mockWindowOpen.mockRestore();
     });
 
-    it("should open Blockscout explorer URL for Torus EVM transactions", async () => {
+    it("should open Hyperlane explorer URL for Torus EVM transactions", async () => {
       const user = userEvent.setup();
       const mockWindowOpen = vi
         .spyOn(window, "open")
@@ -463,7 +463,7 @@ describe("TransactionStepItem", () => {
           {...defaultProps}
           status="completed"
           txHash="0xfedcba0987654321"
-          explorerUrl="https://blockscout.torus.network/tx/0xfedcba0987654321"
+          explorerUrl="https://explorer.hyperlane.xyz/message/0xfedcba0987654321"
         />,
       );
 
@@ -471,7 +471,7 @@ describe("TransactionStepItem", () => {
       await user.click(button);
 
       expect(mockWindowOpen).toHaveBeenCalledWith(
-        "https://blockscout.torus.network/tx/0xfedcba0987654321",
+        "https://explorer.hyperlane.xyz/message/0xfedcba0987654321",
         "_blank",
         "noopener,noreferrer",
       );

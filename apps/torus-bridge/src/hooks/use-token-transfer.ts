@@ -451,7 +451,7 @@ async function executeTransfer({
   setIsLoading(false);
   if (onDone) onDone();
 
-  // Return the last transaction hash
+  // Return transaction hash for explorer lookup
   return hashes.at(-1);
 }
 

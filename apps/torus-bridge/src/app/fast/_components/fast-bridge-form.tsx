@@ -1023,7 +1023,6 @@ export function FastBridgeForm() {
         isOpen={showHistoryDialog}
         onClose={() => setShowHistoryDialog(false)}
         onContinue={handleRetryFromHistory}
-        getExplorerUrl={getExplorerUrl}
         data-testid="transaction-history-dialog"
       />
 

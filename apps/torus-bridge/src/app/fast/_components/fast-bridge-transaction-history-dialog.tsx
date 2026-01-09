@@ -30,14 +30,12 @@ interface TransactionHistoryDialogProps {
   isOpen: boolean;
   onClose: () => void;
   onContinue: (transaction: FastBridgeTransactionHistoryItem) => void;
-  getExplorerUrl: (txHash: string, chainName: string) => string;
 }
 
 export function TransactionHistoryDialog({
   isOpen,
   onClose,
   onContinue,
-  getExplorerUrl,
 }: TransactionHistoryDialogProps) {
   const transactions = useFastBridgeTransactionHistory(
     (state) => state.transactions,
@@ -368,7 +366,6 @@ export function TransactionHistoryDialog({
                     transaction={transaction}
                     index={originalIndex}
                     onContinue={onContinue}
-                    getExplorerUrl={getExplorerUrl}
                     isMultiSelectMode={isMultiSelectMode}
                     isSelected={selectedTransactionIds.has(transaction.id)}
                     onSelectionChange={handleSelectTransaction}

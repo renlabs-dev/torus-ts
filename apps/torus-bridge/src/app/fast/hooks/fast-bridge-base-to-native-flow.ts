@@ -41,14 +41,14 @@ interface BaseToNativeStep1Params {
   chain: Chain;
   /** Function to switch wallet to target chain, returns the new chain ID */
   switchChain: (params: { chainId: number }) => Promise<{ id: number }>;
-  /** Function to initiate Hyperlane cross-chain transfer with origin/destination routing */
+  /** Function to initiate Hyperlane cross-chain transfer and return transaction hash */
   triggerHyperlaneTransfer: (params: {
     origin: string;
     destination: string;
     tokenIndex: number;
     amount: string;
     recipient: string;
-  }) => Promise<unknown>;
+  }) => Promise<string>;
   /** Warp Core configuration for token connections and routing */
   warpCore: {
     tokens: {
@@ -191,7 +191,7 @@ export async function executeBaseToNativeStep1(
     throw new Error("Base token not found in warp configuration");
   }
 
-  const [hyperlaneError, step1TxHash] = await tryAsync(
+  const [hyperlaneError, result] = await tryAsync(
     triggerHyperlaneTransfer({
       origin: "base",
       destination: "torus",
@@ -201,7 +201,7 @@ export async function executeBaseToNativeStep1(
     }),
   );
 
-  const txHash = typeof step1TxHash === "string" ? step1TxHash : undefined;
+  const txHash = result;
 
   if (hyperlaneError !== undefined) {
     const isUserRejected = isUserRejectionError(hyperlaneError);
@@ -218,6 +218,7 @@ export async function executeBaseToNativeStep1(
       errorDetails,
       txHash: undefined,
       explorerUrl: undefined,
+      errorPhase: "sign",
     });
 
     updateBridgeState({
@@ -254,6 +255,7 @@ export async function executeBaseToNativeStep1(
       txHash: txHash,
       explorerUrl:
         txHash !== undefined ? getExplorerUrl(txHash, "Base") : undefined,
+      errorPhase: "confirm",
     });
     updateBridgeState({
       step: SimpleBridgeStep.ERROR,
@@ -518,6 +520,7 @@ export async function executeBaseToNativeStep2(
       errorDetails,
       txHash: undefined,
       explorerUrl: undefined,
+      errorPhase: "sign",
     });
 
     updateBridgeState({
@@ -566,6 +569,7 @@ export async function executeBaseToNativeStep2(
       message: pollingResult.errorMessage ?? "Withdrawal confirmation failed",
       txHash,
       explorerUrl: explorerUrl || undefined,
+      errorPhase: "confirm",
     });
     updateBridgeState({
       step: SimpleBridgeStep.ERROR,
