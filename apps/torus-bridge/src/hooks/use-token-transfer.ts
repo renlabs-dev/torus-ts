@@ -482,15 +482,25 @@ interface SendTransactionResult {
   confirm: () => Promise<TypedTransactionReceipt>;
 }
 
+/**
+ * Type guard to validate SendTransactionResult objects.
+ *
+ * Checks that the value is an object with `hash` (string) and `confirm` (function)
+ * properties, which indicate a valid transaction result from the sendTransaction call.
+ *
+ * @param value - The value to check
+ * @returns True if value is a valid SendTransactionResult
+ */
 function isSendTransactionResult(
   value: unknown,
 ): value is SendTransactionResult {
+  // Check all properties in one condition for clarity
   return (
     typeof value === "object" &&
     value !== null &&
     "hash" in value &&
-    typeof (value as Record<string, unknown>).hash === "string" &&
     "confirm" in value &&
+    typeof (value as Record<string, unknown>).hash === "string" &&
     typeof (value as Record<string, unknown>).confirm === "function"
   );
 }
