@@ -1,6 +1,6 @@
-import { describe, expect, it, vi, beforeEach, afterEach } from "vitest";
-import { fetchHyperlaneExplorerUrl } from "./hyperlane-graphql";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { EXPLORER_URLS } from "../hooks/fast-bridge-helpers";
+import { fetchHyperlaneExplorerUrl } from "./hyperlane-graphql";
 
 // Mock fetch globally
 global.fetch = vi.fn();
@@ -16,7 +16,8 @@ describe("fetchHyperlaneExplorerUrl", () => {
 
   it("should return explorer URL when message is found", async () => {
     const txHash = "0x1234567890abcdef1234567890abcdef12345678";
-    const msgId = "0xabcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890";
+    const msgId =
+      "0xabcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890";
 
     vi.mocked(fetch).mockResolvedValueOnce(
       new Response(
@@ -126,9 +127,7 @@ describe("fetchHyperlaneExplorerUrl", () => {
   it("should return null when fetch fails", async () => {
     const txHash = "0x1234567890abcdef";
 
-    vi.mocked(fetch).mockRejectedValueOnce(
-      new Error("Network error"),
-    );
+    vi.mocked(fetch).mockRejectedValueOnce(new Error("Network error"));
 
     const result = await fetchHyperlaneExplorerUrl(txHash);
 
@@ -139,10 +138,9 @@ describe("fetchHyperlaneExplorerUrl", () => {
     const txHash = "0x1234567890abcdef";
 
     vi.mocked(fetch).mockResolvedValueOnce(
-      new Response(
-        JSON.stringify({ error: "Internal server error" }),
-        { status: 500 },
-      ),
+      new Response(JSON.stringify({ error: "Internal server error" }), {
+        status: 500,
+      }),
     );
 
     const result = await fetchHyperlaneExplorerUrl(txHash);

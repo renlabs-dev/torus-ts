@@ -2,8 +2,8 @@
  * Hyperlane GraphQL utilities for fetching message IDs and explorer URLs
  */
 
-import { assert } from "tsafe";
 import { tryAsync } from "@torus-network/torus-utils/try-catch";
+import { assert } from "tsafe";
 import { EXPLORER_URLS } from "../hooks/fast-bridge-helpers";
 
 const HYPERLANE_GRAPHQL_ENDPOINT = "https://explorer4.hasura.app/v1/graphql";
