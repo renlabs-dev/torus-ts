@@ -42,7 +42,7 @@ export interface AppState {
   updateTransferStatus: (
     i: number,
     s: TransferStatus,
-    options?: { msgId?: string; originTxHash?: string },
+    options?: { originTxHash?: string },
   ) => void;
   failUnconfirmedTransfers: () => void;
 
@@ -105,8 +105,6 @@ export const useStore = create<AppState>()(
           const txs = [...state.transfers];
           // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
           txs[i]!.status = s;
-          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-          txs[i]!.msgId ??= options?.msgId;
           // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
           txs[i]!.originTxHash ??= options?.originTxHash;
           return {
