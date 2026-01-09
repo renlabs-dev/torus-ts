@@ -130,7 +130,9 @@ export function TransactionHistoryItem({
 }: TransactionHistoryItemProps) {
   const [isExpanded, setIsExpanded] = useState(false);
   const [isLoadingMsgId, setIsLoadingMsgId] = useState(false);
-  const [cachedExplorerUrl, setCachedExplorerUrl] = useState<string | null>(null);
+  const [cachedExplorerUrl, setCachedExplorerUrl] = useState<string | null>(
+    null,
+  );
 
   const directionLabel =
     transaction.direction === "base-to-native"
@@ -378,9 +380,14 @@ export function TransactionHistoryItem({
                           // Use blockHash for Polkadot explorer (if available), otherwise fallback to txHash
                           const hashForExplorer =
                             step1Chain === "Torus"
-                              ? transaction.step1BlockHash || transaction.step1TxHash
+                              ? transaction.step1BlockHash ||
+                                transaction.step1TxHash
                               : transaction.step1TxHash;
-                          void handleOpenExplorer(hashForExplorer, step1Chain, 1);
+                          void handleOpenExplorer(
+                            hashForExplorer,
+                            step1Chain,
+                            1,
+                          );
                         }}
                         disabled={!transaction.step1TxHash}
                         data-testid="external-link-icon"
