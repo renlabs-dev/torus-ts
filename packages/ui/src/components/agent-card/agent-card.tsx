@@ -77,6 +77,8 @@ export interface AgentCardProps {
   isMetadataLoading?: boolean;
   footerContent?: React.ReactNode;
   userWeightPower?: string | bigint | null;
+  /** For root agents: count of all connected agents in their swarm */
+  subagentCount?: number;
 }
 
 export function AgentCard(props: Readonly<AgentCardProps>) {
@@ -103,6 +105,7 @@ export function AgentCard(props: Readonly<AgentCardProps>) {
     isMetadataLoading = false,
     footerContent,
     userWeightPower,
+    subagentCount,
   } = props;
 
   const cardContent = (
@@ -117,6 +120,7 @@ export function AgentCard(props: Readonly<AgentCardProps>) {
         isAgentSelected={isAgentSelected}
         isWhitelisted={isWhitelisted}
         isMetadataLoading={isMetadataLoading}
+        subagentCount={subagentCount}
       />
 
       <AgentCardContent

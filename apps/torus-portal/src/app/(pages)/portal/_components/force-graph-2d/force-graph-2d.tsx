@@ -41,6 +41,8 @@ interface ForceGraph2DProps {
   onSelectionChange?: (nodeId: string | null) => void;
   selectedSwarmId?: string | null;
   swarmCenterNodeId?: string | null;
+  /** When true, the graph fits within its parent container instead of being full-screen */
+  contained?: boolean;
 }
 
 export function ForceGraphCanvas2D(props: ForceGraph2DProps) {
@@ -166,7 +168,7 @@ export function ForceGraphCanvas2D(props: ForceGraph2DProps) {
       height,
       resolution: 1,
       antialias: true,
-      resizeTo: window,
+      resizeTo: props.contained ? container : window,
       backgroundColor: 0x111111,
     });
 
@@ -487,7 +489,11 @@ export function ForceGraphCanvas2D(props: ForceGraph2DProps) {
   return (
     <div
       ref={containerRef}
-      className="bg-background animate-fade animate-delay-1000 fixed inset-0 z-0"
+      className={
+        props.contained
+          ? "bg-background h-full w-full"
+          : "bg-background animate-fade animate-delay-1000 fixed inset-0 z-0"
+      }
     />
   );
 }
