@@ -348,10 +348,18 @@ export async function executeNativeToBaseStep1(
     });
 
     if (isUserRejectionError(sendErr)) {
-      throw new UserRejectedError(errorMessage);
+      return {
+        success: false,
+        txHash: undefined,
+        error: new UserRejectedError(errorMessage),
+      };
     }
 
-    throw sendErr;
+    return {
+      success: false,
+      txHash: undefined,
+      error: sendErr,
+    };
   }
 
   const { tracker } = sendRes;
@@ -703,10 +711,18 @@ export async function executeNativeToBaseStep2(
     });
 
     if (isUserRejected) {
-      throw new UserRejectedError(errorMessage);
+      return {
+        success: false,
+        txHash: undefined,
+        error: new UserRejectedError(errorMessage),
+      };
     }
 
-    throw hyperlaneError;
+    return {
+      success: false,
+      txHash: undefined,
+      error: hyperlaneError,
+    };
   }
 
   updateBridgeState({ step: SimpleBridgeStep.STEP_2_CONFIRMING });

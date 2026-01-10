@@ -260,86 +260,80 @@ class HistoricalPermissionsFetcher {
 
     const blockHashHex = blockHash.toHex();
 
-    try {
-      // Query permissions at this block
-      const permissionsResult = await queryPermissions(apiAtBlock);
-      const [permissionsErr, permissionsMap] = permissionsResult;
-      if (permissionsErr) {
-        log.error(
-          `Failed to query permissions at block ${blockNumber}: ${permissionsErr.message}`,
-        );
-        return;
-      }
-
-      // Filter to only stream permissions
-      const streamPermissions = new Map<PermissionId, PermissionContract>();
-      for (const [permissionId, contract] of permissionsMap.entries()) {
-        if ("Stream" in contract.scope) {
-          streamPermissions.set(permissionId, contract);
-        }
-      }
-
-      if (streamPermissions.size === 0) {
-        log.info(
-          `Block ${blockNumber}: no emission permissions found, skipping`,
-        );
-        return;
-      }
-
-      // Query accumulated stream amounts at this block
-      const streamAccumulationsResult =
-        await queryAllAccumulatedStreamAmounts(apiAtBlock);
-      const [streamAccumulationsErr, streamAccumulations] =
-        streamAccumulationsResult;
-      if (streamAccumulationsErr) {
-        log.error(
-          `Failed to query stream accumulations at block ${blockNumber}: ${streamAccumulationsErr.message}`,
-        );
-        return;
-      }
-
-      log.info(
-        `Block ${blockNumber}: found ${streamPermissions.size} stream permissions and ${streamAccumulations.length} stream accumulations`,
+    // Query permissions at this block
+    const permissionsResult = await queryPermissions(apiAtBlock);
+    const [permissionsErr, permissionsMap] = permissionsResult;
+    if (permissionsErr) {
+      log.error(
+        `Failed to query permissions at block ${blockNumber}: ${permissionsErr.message}`,
       );
+      return;
+    }
 
-      // Process stream permissions
-      for (const [permissionId, contract] of streamPermissions.entries()) {
-        this.processStreamPermission(
+    // Filter to only stream permissions
+    const streamPermissions = new Map<PermissionId, PermissionContract>();
+    for (const [permissionId, contract] of permissionsMap.entries()) {
+      if ("Stream" in contract.scope) {
+        streamPermissions.set(permissionId, contract);
+      }
+    }
+
+    if (streamPermissions.size === 0) {
+      log.info(`Block ${blockNumber}: no emission permissions found, skipping`);
+      return;
+    }
+
+    // Query accumulated stream amounts at this block
+    const streamAccumulationsResult =
+      await queryAllAccumulatedStreamAmounts(apiAtBlock);
+    const [streamAccumulationsErr, streamAccumulations] =
+      streamAccumulationsResult;
+    if (streamAccumulationsErr) {
+      log.error(
+        `Failed to query stream accumulations at block ${blockNumber}: ${streamAccumulationsErr.message}`,
+      );
+      return;
+    }
+
+    log.info(
+      `Block ${blockNumber}: found ${streamPermissions.size} stream permissions and ${streamAccumulations.length} stream accumulations`,
+    );
+
+    // Process stream permissions
+    for (const [permissionId, contract] of streamPermissions.entries()) {
+      this.processStreamPermission(
+        blockNumber,
+        blockHashHex,
+        permissionId,
+        contract,
+        streamAccumulations,
+      );
+    }
+
+    // Process accumulated streams (only for stream permissions)
+    for (const accumulation of streamAccumulations) {
+      const permission = streamPermissions.get(accumulation.permissionId);
+      if (permission) {
+        this.accumulatedStreamsBatch.push({
           blockNumber,
-          blockHashHex,
-          permissionId,
-          contract,
-          streamAccumulations,
-        );
+          blockHash: blockHashHex,
+          grantorAccountId: accumulation.delegator,
+          streamId: accumulation.streamId,
+          permissionId: accumulation.permissionId,
+          accumulatedAmount: accumulation.amount.toString(),
+          lastExecutedBlock: match(permission.lastExecution)({
+            Some: (block) => Number(block.toString()),
+            None: () => null,
+          }),
+          atBlock: blockNumber,
+          executionCount: Number(permission.executionCount.toString()),
+        });
       }
+    }
 
-      // Process accumulated streams (only for stream permissions)
-      for (const accumulation of streamAccumulations) {
-        const permission = streamPermissions.get(accumulation.permissionId);
-        if (permission) {
-          this.accumulatedStreamsBatch.push({
-            blockNumber,
-            blockHash: blockHashHex,
-            grantorAccountId: accumulation.delegator,
-            streamId: accumulation.streamId,
-            permissionId: accumulation.permissionId,
-            accumulatedAmount: accumulation.amount.toString(),
-            lastExecutedBlock: match(permission.lastExecution)({
-              Some: (block) => Number(block.toString()),
-              None: () => null,
-            }),
-            atBlock: blockNumber,
-            executionCount: Number(permission.executionCount.toString()),
-          });
-        }
-      }
-
-      // Check if we need to flush batches
-      if (this.permissionsBatch.length >= CSV_BATCH_SIZE) {
-        await this.flushBatches();
-      }
-    } catch (error) {
-      log.error(`Failed to process block ${blockNumber}:`, error);
+    // Check if we need to flush batches
+    if (this.permissionsBatch.length >= CSV_BATCH_SIZE) {
+      await this.flushBatches();
     }
   }
 
@@ -399,7 +393,9 @@ class HistoricalPermissionsFetcher {
       blockHash,
       permissionId: permissionId,
       grantorAccountId: contract.delegator,
-      granteeAccountId: null, // TODO: jairo please fix me
+      // granteeAccountId is currently not available from blockchain state
+      // and needs to be populated from external data sources
+      granteeAccountId: null,
       durationType,
       durationBlockNumber,
       revocationType,
@@ -439,58 +435,6 @@ class HistoricalPermissionsFetcher {
     delegator: SS58Address,
     streamAccumulations: AccumulatedStreamEntry[],
   ): void {
-    // const allocationType = match(stream.allocation)({
-    //   Streams: () => "streams" as const,
-    //   FixedAmount: () => "fixed_amount" as const,
-    // });
-
-    // const distributionType = match(stream.distribution)({
-    //   Manual: () => "manual" as const,
-    //   Automatic: () => "automatic" as const,
-    //   AtBlock: () => "at_block" as const,
-    //   Interval: () => "interval" as const,
-    // });
-
-    // const distributionThreshold = match(stream.distribution)({
-    //   Automatic: (auto) => auto.toString(),
-    //   Manual: () => null,
-    //   AtBlock: () => null,
-    //   Interval: () => null,
-    // });
-
-    // const distributionTargetBlock = match(stream.distribution)({
-    //   AtBlock: (atBlock) => BigInt(atBlock.toString()),
-    //   Manual: () => null,
-    //   Automatic: () => null,
-    //   Interval: () => null,
-    // });
-
-    // const distributionIntervalBlocks = match(stream.distribution)({
-    //   Interval: (interval) => BigInt(interval.toString()),
-    //   Manual: () => null,
-    //   Automatic: () => null,
-    //   AtBlock: () => null,
-    // });
-
-    // const fixedAmount = match(stream.allocation)({
-    //   FixedAmount: (amount) => amount.toString(),
-    //   Streams: () => null,
-    // });
-
-    // Add emission permission record
-    // this.emissionsBatch.push({
-    //   blockNumber,
-    //   blockHash,
-    //   permissionId: permissionId,
-    //   allocationType,
-    //   fixedAmount,
-    //   distributionType,
-    //   distributionThreshold,
-    //   distributionTargetBlock,
-    //   distributionIntervalBlocks,
-    //   accumulating: stream.accumulating,
-    // });
-
     // Process stream allocations
     const streamAllocations = match(stream.allocation)({
       Streams: (streams: Map<string, number>) =>

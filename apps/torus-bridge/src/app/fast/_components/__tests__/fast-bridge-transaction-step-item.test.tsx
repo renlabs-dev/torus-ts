@@ -1,5 +1,6 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import type { ReactNode } from "react";
 import { describe, expect, it, vi } from "vitest";
 import { TransactionStepItem } from "../fast-bridge-transaction-step-item";
 
@@ -16,16 +17,16 @@ vi.mock("lucide-react", () => ({
 
 // Mock Accordion component
 vi.mock("@torus-ts/ui/components/accordion", () => ({
-  Accordion: ({ children }: { children: React.ReactNode }) => (
+  Accordion: ({ children }: { children: ReactNode }) => (
     <div data-testid="accordion">{children}</div>
   ),
-  AccordionItem: ({ children }: { children: React.ReactNode }) => (
+  AccordionItem: ({ children }: { children: ReactNode }) => (
     <div data-testid="accordion-item">{children}</div>
   ),
-  AccordionTrigger: ({ children }: { children: React.ReactNode }) => (
+  AccordionTrigger: ({ children }: { children: ReactNode }) => (
     <button data-testid="accordion-trigger">{children}</button>
   ),
-  AccordionContent: ({ children }: { children: React.ReactNode }) => (
+  AccordionContent: ({ children }: { children: ReactNode }) => (
     <div data-testid="accordion-content">{children}</div>
   ),
 }));
@@ -35,7 +36,7 @@ vi.mock("@torus-ts/ui/components/button", () => ({
     children,
     onClick,
   }: {
-    children: React.ReactNode;
+    children: ReactNode;
     onClick?: () => void;
   }) => (
     <button onClick={onClick} data-testid="button">

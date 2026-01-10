@@ -74,26 +74,49 @@ export function TorusProvider({
   const [selectedAccount, setSelectedAccount] =
     useState<InjectedAccountWithMeta | null>(null);
 
-  async function loadTorusApi(): Promise<void> {
-    const { web3Accounts, web3Enable, web3FromAddress } =
-      await import("@polkadot/extension-dapp");
-
-    setTorusApi({
-      web3Enable,
-      web3Accounts,
-      web3FromAddress,
-    });
-    const provider = new WsProvider(wsEndpoint);
-    const newApi = await ApiPromise.create({ provider });
-    setApi(newApi);
-    setIsInitialized(true);
-  }
-
   useEffect(() => {
-    void loadTorusApi();
+    let isMounted = true;
+    let apiToDisconnect: ApiPromise | null = null;
+
+    const init = async () => {
+      // Load polkadot extension
+      const [importError, ext] = await tryAsync(
+        import("@polkadot/extension-dapp"),
+      );
+      if (importError !== undefined) {
+        console.error(
+          `Failed to load polkadot extension-dapp: ${importError.message}`,
+        );
+        return;
+      }
+
+      if (!isMounted) return;
+
+      const { web3Accounts, web3Enable, web3FromAddress } = ext;
+      setTorusApi({ web3Enable, web3Accounts, web3FromAddress });
+
+      // Create API promise
+      const provider = new WsProvider(wsEndpoint);
+      const [apiError, newApi] = await tryAsync(
+        ApiPromise.create({ provider }),
+      );
+      if (apiError !== undefined) {
+        console.error(`Failed to create ApiPromise: ${apiError.message}`);
+        return;
+      }
+
+      // Store the API so we can disconnect it in cleanup
+      apiToDisconnect = newApi;
+
+      setApi(newApi);
+      setIsInitialized(true);
+    };
+
+    void init();
 
     return () => {
-      void api?.disconnect();
+      isMounted = false;
+      void apiToDisconnect?.disconnect();
     };
   }, [wsEndpoint]);
 

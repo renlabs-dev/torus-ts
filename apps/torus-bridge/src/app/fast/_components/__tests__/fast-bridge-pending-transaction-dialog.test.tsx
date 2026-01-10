@@ -1,6 +1,6 @@
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { beforeEach, describe, expect, it, vi } from "vitest";
 import { PendingTransactionDialog } from "../fast-bridge-pending-transaction-dialog";
 import { SimpleBridgeStep } from "../fast-bridge-types";
 import type { FastBridgeTransactionHistoryItem } from "../fast-bridge-types";
@@ -14,6 +14,9 @@ vi.mock("lucide-react", () => ({
 }));
 
 describe("PendingTransactionDialog", () => {
+  // Fixed timestamp for stable time-based tests
+  const FIXED_TIMESTAMP = new Date("2025-01-12T12:00:00Z").getTime();
+
   const mockOnClose = vi.fn();
   const mockOnResume = vi.fn();
   const mockOnDeleteAndStartNew = vi.fn();
@@ -31,7 +34,7 @@ describe("PendingTransactionDialog", () => {
     step2TxHash: undefined,
     baseAddress: "0xbase1234567890abcdef1234567890abcdef12345678",
     nativeAddress: "1AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
-    timestamp: Date.now() - 5 * 60 * 1000, // 5 minutes ago
+    timestamp: FIXED_TIMESTAMP - 5 * 60 * 1000, // 5 minutes ago
     recoveredViaEvmRecover: false,
     canRetry: true,
     ...overrides,
@@ -47,6 +50,12 @@ describe("PendingTransactionDialog", () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.useFakeTimers();
+    vi.setSystemTime(FIXED_TIMESTAMP);
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
   });
 
   describe("rendering", () => {
@@ -232,7 +241,7 @@ describe("PendingTransactionDialog", () => {
   describe("timestamp formatting", () => {
     it("should display 'Just now' for very recent transactions", () => {
       const transaction = createMockTransaction({
-        timestamp: Date.now() - 1000, // 1 second ago
+        timestamp: FIXED_TIMESTAMP - 1000, // 1 second ago
       });
       render(
         <PendingTransactionDialog
@@ -248,7 +257,7 @@ describe("PendingTransactionDialog", () => {
 
     it("should display minutes ago", () => {
       const transaction = createMockTransaction({
-        timestamp: Date.now() - 10 * 60 * 1000, // 10 minutes ago
+        timestamp: FIXED_TIMESTAMP - 10 * 60 * 1000, // 10 minutes ago
       });
       render(
         <PendingTransactionDialog
@@ -264,7 +273,7 @@ describe("PendingTransactionDialog", () => {
 
     it("should display hours and minutes", () => {
       const transaction = createMockTransaction({
-        timestamp: Date.now() - (2 * 60 * 60 * 1000 + 30 * 60 * 1000), // 2h 30m ago
+        timestamp: FIXED_TIMESTAMP - (2 * 60 * 60 * 1000 + 30 * 60 * 1000), // 2h 30m ago
       });
       render(
         <PendingTransactionDialog

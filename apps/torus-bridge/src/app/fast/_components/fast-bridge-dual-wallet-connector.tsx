@@ -104,9 +104,12 @@ export function DualWalletConnector({ direction }: DualWalletConnectorProps) {
                 className="text-muted-foreground text-sm"
                 data-testid="torus-wallet-status"
               >
-                {connectionState.torusWallet.isConnected
-                  ? `Connected: ${smallAddress(connectionState.torusWallet.address || "")}`
-                  : "Not connected"}
+                {connectionState.torusWallet.isConnected &&
+                connectionState.torusWallet.address
+                  ? `Connected: ${smallAddress(connectionState.torusWallet.address)}`
+                  : connectionState.torusWallet.isConnected
+                    ? "Connected"
+                    : "Not connected"}
               </p>
             </div>
           </div>
@@ -137,9 +140,12 @@ export function DualWalletConnector({ direction }: DualWalletConnectorProps) {
                 className="text-muted-foreground text-sm"
                 data-testid="evm-wallet-status"
               >
-                {connectionState.evmWallet.isConnected
-                  ? `Connected: ${smallAddress(connectionState.evmWallet.address || "")}`
-                  : "Not connected"}
+                {connectionState.evmWallet.isConnected &&
+                connectionState.evmWallet.address
+                  ? `Connected: ${smallAddress(connectionState.evmWallet.address)}`
+                  : connectionState.evmWallet.isConnected
+                    ? "Connected"
+                    : "Not connected"}
               </p>
             </div>
           </div>

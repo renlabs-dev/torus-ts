@@ -15,24 +15,15 @@ vi.mock("@hyperlane-xyz/sdk", async (importOriginal) => {
   };
 });
 
-// Create a shim for the vanilla-extract CommonJS module
+// Mock vanilla-extract sprinkles
 const mockCreateMapValueFn = vi.fn(() => ({}));
-Object.defineProperty(globalThis, "createMapValueFn", {
-  value: mockCreateMapValueFn,
-  writable: true,
-});
 
-// Try to mock the module at the global level
-try {
-  require.cache[require.resolve("@vanilla-extract/sprinkles/createUtils")] = {
-    exports: {
-      default: { createMapValueFn: mockCreateMapValueFn },
-      createMapValueFn: mockCreateMapValueFn,
-    },
-  } as never;
-} catch {
-  // Ignore if module not found
-}
+vi.mock("@vanilla-extract/sprinkles/createUtils", () => ({
+  default: {
+    createMapValueFn: mockCreateMapValueFn,
+  },
+  createMapValueFn: mockCreateMapValueFn,
+}));
 
 configure({
   getElementError: (message, _container) => {

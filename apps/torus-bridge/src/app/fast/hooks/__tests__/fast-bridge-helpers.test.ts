@@ -21,14 +21,14 @@ describe("getExplorerUrl", () => {
       "0x32054b7ad2125bf26c4d28b09a056ac0e4ee89af51cfbbf7e2c96fa583638c91";
     const result = getExplorerUrl(txHash, "torus");
 
-    expect(result).toBe(`${EXPLORER_URLS.TORUS}/${txHash}`);
+    expect(result).toBe(`${EXPLORER_URLS.TORUS}${txHash}`);
   });
 
   it("should return correct Polkadot.js URL for Torus Native chain", () => {
     const txHash = "0x9876543210fedcba9876543210fedcba98765432";
     const result = getExplorerUrl(txHash, "torus");
 
-    expect(result).toBe(`${EXPLORER_URLS.TORUS}/${txHash}`);
+    expect(result).toBe(`${EXPLORER_URLS.TORUS}${txHash}`);
   });
 
   it("should handle case insensitive chain names", () => {

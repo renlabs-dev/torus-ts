@@ -3,12 +3,11 @@
 import { useAccounts } from "@hyperlane-xyz/widgets";
 import type { SS58Address } from "@torus-network/sdk/types";
 import { toNano } from "@torus-network/torus-utils/torus/token";
+import { tryAsync } from "@torus-network/torus-utils/try-catch";
 import { useFreeBalance } from "@torus-ts/query-provider/hooks";
 import { useTorus } from "@torus-ts/torus-provider";
 import { useSendTransaction } from "@torus-ts/torus-provider/use-send-transaction";
 import { useToast } from "@torus-ts/ui/hooks/use-toast";
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-import type { Config } from "@wagmi/core";
 import { contractAddresses, getChainValuesOnEnv } from "~/config";
 import { env } from "~/env";
 import { useWarpCore } from "~/hooks/token";
@@ -764,14 +763,22 @@ export function useOrchestratedTransfer() {
       // Store callback for URL update after step 1 completes
       onTransactionCreatedRef.current = onTransactionCreated ?? null;
 
-      try {
-        if (direction === "base-to-native") {
-          await executeBaseToNative(amount);
-        } else {
-          await executeNativeToBase(amount);
-        }
-      } finally {
-        onTransactionCreatedRef.current = null;
+      // Execute transfer with error handling
+      const transferPromise =
+        direction === "base-to-native"
+          ? executeBaseToNative(amount)
+          : executeNativeToBase(amount);
+
+      const [error] = await tryAsync(transferPromise);
+
+      // Always cleanup callback reference even if transfer fails
+      onTransactionCreatedRef.current = null;
+
+      if (error !== undefined) {
+        // Log error for debugging but let the bridge state handle error display
+        console.error(
+          `Transfer execution failed for direction ${direction}: ${error instanceof Error ? error.message : String(error)}`,
+        );
       }
     },
     [
@@ -790,20 +797,20 @@ export function useOrchestratedTransfer() {
 
     const { direction, amount } = bridgeState;
 
-    try {
-      // Clear error message and error details on retry start
-      updateBridgeState({ errorMessage: undefined });
-      clearErrorDetails();
+    // Clear error message and error details on retry start
+    updateBridgeState({ errorMessage: undefined });
+    clearErrorDetails();
 
-      // Reset the failed transaction status to allow UI to show progress
-      setTransactions((prev) =>
-        prev.map((tx) =>
-          tx.step === failedTransaction.step
-            ? { ...tx, status: "STARTING" as const, errorDetails: undefined }
-            : tx,
-        ),
-      );
+    // Reset the failed transaction status to allow UI to show progress
+    setTransactions((prev) =>
+      prev.map((tx) =>
+        tx.step === failedTransaction.step
+          ? { ...tx, status: "STARTING" as const, errorDetails: undefined }
+          : tx,
+      ),
+    );
 
+    const executeRetry = async () => {
       if (failedTransaction.step === 1) {
         if (direction === "base-to-native") {
           await executeBaseToNative(amount);
@@ -817,7 +824,10 @@ export function useOrchestratedTransfer() {
           await retryNativeToBaseStep2(amount);
         }
       }
-    } catch (error) {
+    };
+
+    const [error] = await tryAsync(executeRetry());
+    if (error !== undefined) {
       console.error("Retry failed:", error);
       updateBridgeState({
         step: SimpleBridgeStep.ERROR,

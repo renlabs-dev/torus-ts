@@ -2,16 +2,14 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { EXPLORER_URLS } from "../../hooks/fast-bridge-helpers";
 import { fetchHyperlaneExplorerUrl } from "../hyperlane-graphql";
 
-// Mock fetch globally
-global.fetch = vi.fn();
-
 describe("fetchHyperlaneExplorerUrl", () => {
   beforeEach(() => {
-    vi.clearAllMocks();
+    vi.stubGlobal("fetch", vi.fn());
   });
 
   afterEach(() => {
-    vi.restoreAllMocks();
+    vi.clearAllMocks();
+    vi.unstubAllGlobals();
   });
 
   it("should return explorer URL when message is found", async () => {

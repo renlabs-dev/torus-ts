@@ -5,7 +5,6 @@ import {
 import type { SS58Address } from "@torus-network/sdk/types";
 import { toNano } from "@torus-network/torus-utils/torus/token";
 import { tryAsync } from "@torus-network/torus-utils/try-catch";
-import type { Config } from "@wagmi/core";
 import type { Chain, WalletClient } from "viem";
 import type { SimpleBridgeTransaction } from "../_components/fast-bridge-types";
 import { SimpleBridgeStep } from "../_components/fast-bridge-types";
@@ -323,7 +322,7 @@ interface BaseToNativeStep2Params {
     data?: { value: bigint };
   }>;
   /** WAGMI configuration for wallet operations */
-  wagmiConfig: Config;
+  wagmiConfig: unknown;
   /** Function to update the bridge UI state */
   updateBridgeState: (updates: {
     step: SimpleBridgeStep;
@@ -431,8 +430,11 @@ export async function executeBaseToNativeStep2(
   updateBridgeState({ step: SimpleBridgeStep.STEP_2_SIGNING });
   onStepProgress?.(SimpleBridgeStep.STEP_2_SIGNING);
 
-  const torusEvmChain = wagmiConfig.chains.find(
-    (c) => c.id === torusEvmChainId,
+  const wagmiConfigTyped = wagmiConfig as {
+    chains: { id: number }[];
+  };
+  const torusEvmChain = wagmiConfigTyped.chains.find(
+    (c: { id: number }) => c.id === torusEvmChainId,
   );
   if (!torusEvmChain) {
     const error = new Error(
@@ -496,7 +498,7 @@ export async function executeBaseToNativeStep2(
   const [withdrawError, txHash] = await tryAsync(
     withdrawFromTorusEvm(
       walletClient,
-      torusEvmChain,
+      torusEvmChain as never,
       selectedAccount.address,
       amountRems,
       async () => {
@@ -543,7 +545,7 @@ export async function executeBaseToNativeStep2(
   onStep2Confirming?.(txHash, baselineNativeBalance);
 
   const [receiptError] = await tryAsync(
-    waitForTransactionReceipt(wagmiConfig, {
+    waitForTransactionReceipt(wagmiConfigTyped as never, {
       hash: txHash,
       confirmations: CONFIRMATION_CONFIG.REQUIRED_CONFIRMATIONS,
     }),

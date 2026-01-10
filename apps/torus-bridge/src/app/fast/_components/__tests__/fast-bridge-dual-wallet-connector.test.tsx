@@ -8,7 +8,7 @@ import { useDualWallet } from "../../hooks/use-fast-bridge-dual-wallet";
 import { DualWalletConnector } from "../fast-bridge-dual-wallet-connector";
 
 // Mock the hook
-vi.mock("../hooks/use-fast-bridge-dual-wallet");
+vi.mock("../../hooks/use-fast-bridge-dual-wallet");
 
 const mockUseDualWallet = vi.mocked(useDualWallet);
 

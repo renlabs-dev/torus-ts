@@ -6,7 +6,7 @@ import { TransactionLifecycleDialog } from "../fast-bridge-transaction-lifecycle
 import { SimpleBridgeStep } from "../fast-bridge-types";
 
 // Mock the hook
-vi.mock("../hooks/use-transaction-lifecycle-steps", () => ({
+vi.mock("../../hooks/use-transaction-lifecycle-steps", () => ({
   useTransactionLifecycleSteps: vi.fn(),
 }));
 
@@ -37,7 +37,7 @@ describe("TransactionLifecycleDialog", () => {
   ]);
 
   // Mock step item
-  vi.mock("./fast-bridge-transaction-step-item", () => ({
+  vi.mock("../fast-bridge-transaction-step-item", () => ({
     TransactionStepItem: ({
       title,
       status,

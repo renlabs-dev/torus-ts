@@ -24,9 +24,9 @@ vi.mock("zustand", () => ({
   persist: vi.fn((config) => config),
 }));
 
-// Mock for wagmi (if needed in tests)
-vi.mock("@wagmi/core", () => ({
-  useAccount: () => ({ address: "0x123", isConnected: true }),
+// Mock for wagmi - useAccount hook for testing wallet connections
+vi.mock("wagmi", () => ({
+  useAccount: vi.fn(() => ({ address: "0x123", isConnected: true })),
 }));
 
 // Mock for Hyperlane if used

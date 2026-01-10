@@ -25,7 +25,6 @@ import { Input } from "@torus-ts/ui/components/input";
 import { Label } from "@torus-ts/ui/components/label";
 import { TransactionStatus } from "@torus-ts/ui/components/transaction-status";
 import { useToast } from "@torus-ts/ui/hooks/use-toast";
-import type { Config } from "@wagmi/core";
 import { EXPLORER_URLS } from "~/app/fast/hooks/fast-bridge-helpers";
 import { getChainValuesOnEnv } from "~/config";
 import { initWagmi } from "~/context/evm-wallet-provider";
@@ -110,7 +109,7 @@ export function TransferEVM() {
   const [mode, setMode] = useState<"bridge" | "withdraw">(DEFAULT_MODE);
 
   // Initialize wagmiConfig after component mount - explicitly define the type
-  const [wagmiConfig, setWagmiConfig] = useState<Config | null>(null);
+  const [wagmiConfig, setWagmiConfig] = useState<unknown>(null);
 
   // This effect runs only once on client-side after mounting
   useEffect(() => {
@@ -128,8 +127,7 @@ export function TransferEVM() {
         console.error("Failed to initialise wagmi:", wagmiErr);
         toast.error("Wallet initialisation failed, please refresh.");
       } else {
-        // Cast needed due to wagmi version mismatch between app and SDK
-        setWagmiConfig(wagmiInit.wagmiConfig as Config);
+        setWagmiConfig(wagmiInit.wagmiConfig);
       }
     }
   }, [multiProvider, searchParams, toast]);
@@ -289,7 +287,7 @@ export function TransferEVM() {
 
     // Wait for transaction receipt
     const [receiptError] = await tryAsync(
-      waitForTransactionReceipt(wagmiConfig, {
+      waitForTransactionReceipt(wagmiConfig as never, {
         hash: txHash,
         confirmations: 2,
       }),

@@ -5,6 +5,7 @@ import { MultiProtocolProvider, WarpCore } from "@hyperlane-xyz/sdk";
 import { objFilter } from "@hyperlane-xyz/utils";
 import { tryAsync, trySync } from "@torus-network/torus-utils/try-catch";
 import { assembleChainMetadata } from "~/app/_components/chains/chain-metadata";
+import { assert } from "tsafe";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { assembleWarpCoreConfig } from "../app/_components/warp-core-config";
@@ -103,10 +104,13 @@ export const useStore = create<AppState>()(
         set((state) => {
           if (i >= state.transfers.length) return state;
           const txs = [...state.transfers];
-          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-          txs[i]!.status = s;
-          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-          txs[i]!.originTxHash ??= options?.originTxHash;
+          const transfer = txs[i];
+          assert(
+            transfer !== undefined,
+            "Transfer at index should exist after length check",
+          );
+          transfer.status = s;
+          transfer.originTxHash ??= options?.originTxHash;
           return {
             transfers: txs,
           };

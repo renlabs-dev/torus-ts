@@ -157,7 +157,7 @@ export function getExplorerUrl(txHash: string, chainName: string): string {
     return `${EXPLORER_URLS.TORUS_EVM_HYPERLANE}/${txHash}`;
   }
 
-  if (lowerChainName === "torus") {
+  if (lowerChainName === "torus" || lowerChainName === "torus native") {
     return `${EXPLORER_URLS.TORUS}${txHash}`;
   }
 
