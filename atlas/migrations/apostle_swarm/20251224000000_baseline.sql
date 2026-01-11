@@ -52,14 +52,10 @@ CREATE TABLE "public"."apostles" (
   "weight" numeric NOT NULL DEFAULT '1',
   "created_at" timestamptz NOT NULL DEFAULT now(),
   "updated_at" timestamptz NOT NULL DEFAULT now(),
-  "deleted_at" timestamptz NULL,
+  "deleted_at" timestamptz NULL DEFAULT null,
   PRIMARY KEY ("id"),
   CONSTRAINT "apostles_wallet_address_unique" UNIQUE ("wallet_address")
 );
-
--- Create indexes for "apostles" table
-CREATE INDEX "apostles_wallet_address_idx" ON "public"."apostles" ("wallet_address");
-CREATE INDEX "apostles_is_admin_idx" ON "public"."apostles" ("is_admin");
 
 -- Create "prospects" table
 CREATE TABLE "public"."prospects" (
@@ -79,20 +75,11 @@ CREATE TABLE "public"."prospects" (
   "last_conversion_check_at" timestamptz NULL,
   "created_at" timestamptz NOT NULL DEFAULT now(),
   "updated_at" timestamptz NOT NULL DEFAULT now(),
-  "deleted_at" timestamptz NULL,
+  "deleted_at" timestamptz NULL DEFAULT null,
   PRIMARY KEY ("id"),
   CONSTRAINT "prospects_x_handle_unique" UNIQUE ("x_handle"),
-  CONSTRAINT "resonance_score_range" CHECK (resonance_score IS NULL OR (resonance_score >= 0 AND resonance_score <= 10)),
-  CONSTRAINT "prospects_claimed_by_apostle_id_fkey" FOREIGN KEY ("claimed_by_apostle_id") REFERENCES "public"."apostles" ("id") ON DELETE SET NULL
+  CONSTRAINT "resonance_score_range" CHECK ("prospects"."resonance_score" IS NULL OR ("prospects"."resonance_score" >= 0 AND "prospects"."resonance_score" <= 10))
 );
-
--- Create indexes for "prospects" table
-CREATE INDEX "prospects_x_handle_idx" ON "public"."prospects" ("x_handle");
-CREATE INDEX "prospects_claim_status_idx" ON "public"."prospects" ("claim_status");
-CREATE INDEX "prospects_approval_status_idx" ON "public"."prospects" ("approval_status");
-CREATE INDEX "prospects_claimed_by_apostle_id_idx" ON "public"."prospects" ("claimed_by_apostle_id");
-CREATE INDEX "prospects_quality_tag_idx" ON "public"."prospects" ("quality_tag");
-CREATE INDEX "prospects_resonance_score_idx" ON "public"."prospects" ("resonance_score");
 
 -- Create "conversion_logs" table
 CREATE TABLE "public"."conversion_logs" (
@@ -103,16 +90,8 @@ CREATE TABLE "public"."conversion_logs" (
   "source" "public"."conversion_source" NOT NULL,
   "details" jsonb NULL,
   "created_at" timestamptz NOT NULL DEFAULT now(),
-  PRIMARY KEY ("id"),
-  CONSTRAINT "conversion_logs_prospect_id_fkey" FOREIGN KEY ("prospect_id") REFERENCES "public"."prospects" ("id") ON DELETE CASCADE,
-  CONSTRAINT "conversion_logs_apostle_id_fkey" FOREIGN KEY ("apostle_id") REFERENCES "public"."apostles" ("id") ON DELETE SET NULL
+  PRIMARY KEY ("id")
 );
-
--- Create indexes for "conversion_logs" table
-CREATE INDEX "conversion_logs_prospect_id_idx" ON "public"."conversion_logs" ("prospect_id");
-CREATE INDEX "conversion_logs_apostle_id_idx" ON "public"."conversion_logs" ("apostle_id");
-CREATE INDEX "conversion_logs_event_type_idx" ON "public"."conversion_logs" ("event_type");
-CREATE INDEX "conversion_logs_created_at_idx" ON "public"."conversion_logs" ("created_at");
 
 -- Create "memory_store" table
 CREATE TABLE "public"."memory_store" (
@@ -127,16 +106,10 @@ CREATE TABLE "public"."memory_store" (
   "last_strategy_at" timestamptz NULL,
   "created_at" timestamptz NOT NULL DEFAULT now(),
   "updated_at" timestamptz NOT NULL DEFAULT now(),
-  "deleted_at" timestamptz NULL,
+  "deleted_at" timestamptz NULL DEFAULT null,
   PRIMARY KEY ("id"),
-  CONSTRAINT "memory_store_prospect_id_unique" UNIQUE ("prospect_id"),
-  CONSTRAINT "memory_store_prospect_id_fkey" FOREIGN KEY ("prospect_id") REFERENCES "public"."prospects" ("id") ON DELETE CASCADE
+  CONSTRAINT "memory_store_prospect_id_unique" UNIQUE ("prospect_id")
 );
-
--- Create indexes for "memory_store" table
-CREATE INDEX "memory_store_prospect_id_idx" ON "public"."memory_store" ("prospect_id");
-CREATE INDEX "memory_store_last_scraped_at_idx" ON "public"."memory_store" ("last_scraped_at");
-CREATE INDEX "memory_store_last_evaluated_at_idx" ON "public"."memory_store" ("last_evaluated_at");
 
 -- Create "jobs_queue" table
 CREATE TABLE "public"."jobs_queue" (
@@ -148,12 +121,41 @@ CREATE TABLE "public"."jobs_queue" (
   "last_error" text NULL,
   "created_at" timestamptz NOT NULL DEFAULT now(),
   "updated_at" timestamptz NOT NULL DEFAULT now(),
-  "deleted_at" timestamptz NULL,
+  "deleted_at" timestamptz NULL DEFAULT null,
   PRIMARY KEY ("id")
 );
 
+-- Add foreign key constraints
+ALTER TABLE "public"."conversion_logs" ADD CONSTRAINT "conversion_logs_prospect_id_prospects_id_fk" FOREIGN KEY ("prospect_id") REFERENCES "public"."prospects" ("id") ON DELETE CASCADE ON UPDATE NO ACTION;
+ALTER TABLE "public"."conversion_logs" ADD CONSTRAINT "conversion_logs_apostle_id_apostles_id_fk" FOREIGN KEY ("apostle_id") REFERENCES "public"."apostles" ("id") ON DELETE SET NULL ON UPDATE NO ACTION;
+ALTER TABLE "public"."memory_store" ADD CONSTRAINT "memory_store_prospect_id_prospects_id_fk" FOREIGN KEY ("prospect_id") REFERENCES "public"."prospects" ("id") ON DELETE CASCADE ON UPDATE NO ACTION;
+ALTER TABLE "public"."prospects" ADD CONSTRAINT "prospects_claimed_by_apostle_id_apostles_id_fk" FOREIGN KEY ("claimed_by_apostle_id") REFERENCES "public"."apostles" ("id") ON DELETE SET NULL ON UPDATE NO ACTION;
+
+-- Create indexes for "apostles" table
+CREATE INDEX "apostles_wallet_address_idx" ON "public"."apostles" USING btree ("wallet_address");
+CREATE INDEX "apostles_is_admin_idx" ON "public"."apostles" USING btree ("is_admin");
+
+-- Create indexes for "prospects" table
+CREATE INDEX "prospects_x_handle_idx" ON "public"."prospects" USING btree ("x_handle");
+CREATE INDEX "prospects_claim_status_idx" ON "public"."prospects" USING btree ("claim_status");
+CREATE INDEX "prospects_approval_status_idx" ON "public"."prospects" USING btree ("approval_status");
+CREATE INDEX "prospects_claimed_by_apostle_id_idx" ON "public"."prospects" USING btree ("claimed_by_apostle_id");
+CREATE INDEX "prospects_quality_tag_idx" ON "public"."prospects" USING btree ("quality_tag");
+CREATE INDEX "prospects_resonance_score_idx" ON "public"."prospects" USING btree ("resonance_score");
+
+-- Create indexes for "conversion_logs" table
+CREATE INDEX "conversion_logs_prospect_id_idx" ON "public"."conversion_logs" USING btree ("prospect_id");
+CREATE INDEX "conversion_logs_apostle_id_idx" ON "public"."conversion_logs" USING btree ("apostle_id");
+CREATE INDEX "conversion_logs_event_type_idx" ON "public"."conversion_logs" USING btree ("event_type");
+CREATE INDEX "conversion_logs_created_at_idx" ON "public"."conversion_logs" USING btree ("created_at");
+
+-- Create indexes for "memory_store" table
+CREATE INDEX "memory_store_prospect_id_idx" ON "public"."memory_store" USING btree ("prospect_id");
+CREATE INDEX "memory_store_last_scraped_at_idx" ON "public"."memory_store" USING btree ("last_scraped_at");
+CREATE INDEX "memory_store_last_evaluated_at_idx" ON "public"."memory_store" USING btree ("last_evaluated_at");
+
 -- Create indexes for "jobs_queue" table
-CREATE INDEX "jobs_queue_status_idx" ON "public"."jobs_queue" ("status");
-CREATE INDEX "jobs_queue_job_type_idx" ON "public"."jobs_queue" ("job_type");
-CREATE INDEX "jobs_queue_run_at_idx" ON "public"."jobs_queue" ("run_at");
-CREATE INDEX "jobs_queue_status_run_at_idx" ON "public"."jobs_queue" ("status", "run_at");
+CREATE INDEX "jobs_queue_status_idx" ON "public"."jobs_queue" USING btree ("status");
+CREATE INDEX "jobs_queue_job_type_idx" ON "public"."jobs_queue" USING btree ("job_type");
+CREATE INDEX "jobs_queue_run_at_idx" ON "public"."jobs_queue" USING btree ("run_at");
+CREATE INDEX "jobs_queue_status_run_at_idx" ON "public"."jobs_queue" USING btree ("status", "run_at");
