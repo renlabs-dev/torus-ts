@@ -18,12 +18,16 @@ vi.mock("@hyperlane-xyz/sdk", async (importOriginal) => {
 // Mock vanilla-extract sprinkles
 const mockCreateMapValueFn = vi.fn(() => ({}));
 
-vi.mock("@vanilla-extract/sprinkles/createUtils", () => ({
-  default: {
+vi.mock("@vanilla-extract/sprinkles/createUtils", () => {
+  const mockModule = {
     createMapValueFn: mockCreateMapValueFn,
-  },
-  createMapValueFn: mockCreateMapValueFn,
-}));
+  };
+  return {
+    __esModule: true,
+    default: mockModule,
+    createMapValueFn: mockCreateMapValueFn,
+  };
+});
 
 configure({
   getElementError: (message, _container) => {

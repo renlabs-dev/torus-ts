@@ -23,7 +23,7 @@ vi.mock("@torus-ts/torus-provider/use-send-transaction", () => ({
   }),
 }));
 
-vi.mock("./use-fast-bridge-shared-state", () => ({
+vi.mock("../use-fast-bridge-shared-state", () => ({
   useSimpleBridgeSharedState: () => ({
     bridgeState: {
       step: SimpleBridgeStep.IDLE,
@@ -41,7 +41,7 @@ vi.mock("./use-fast-bridge-shared-state", () => ({
   }),
 }));
 
-vi.mock("./use-fast-bridge-transaction-history", () => ({
+vi.mock("../use-fast-bridge-transaction-history", () => ({
   useFastBridgeTransactionHistory: () => ({
     addTransaction: vi.fn().mockReturnValue("tx-id-123"),
     updateTransaction: vi.fn(),
@@ -55,7 +55,7 @@ vi.mock("./use-fast-bridge-transaction-history", () => ({
   }),
 }));
 
-vi.mock("./fast-bridge-base-to-native-flow", () => ({
+vi.mock("../fast-bridge-base-to-native-flow", () => ({
   executeBaseToNativeStep1: vi.fn().mockResolvedValue({
     success: true,
     txHash: "0xstep1tx",
@@ -66,7 +66,7 @@ vi.mock("./fast-bridge-base-to-native-flow", () => ({
   }),
 }));
 
-vi.mock("./fast-bridge-native-to-base-flow", () => ({
+vi.mock("../fast-bridge-native-to-base-flow", () => ({
   executeNativeToBaseStep1: vi.fn().mockResolvedValue({
     success: true,
     txHash: "0xstep1tx",
@@ -77,14 +77,14 @@ vi.mock("./fast-bridge-native-to-base-flow", () => ({
   }),
 }));
 
-vi.mock("./fast-bridge-polling", () => ({
+vi.mock("../fast-bridge-polling", () => ({
   pollEvmBalance: vi.fn().mockResolvedValue({
     success: true,
     finalBalance: 100n,
   }),
 }));
 
-vi.mock("./fast-bridge-helpers", () => ({
+vi.mock("../fast-bridge-helpers", () => ({
   BASE_CHAIN_ID: 8453,
   UserRejectedError: class UserRejectedError extends Error {
     constructor(message: string) {

@@ -50,12 +50,6 @@ describe("PendingTransactionDialog", () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.useFakeTimers();
-    vi.setSystemTime(FIXED_TIMESTAMP);
-  });
-
-  afterEach(() => {
-    vi.useRealTimers();
   });
 
   describe("rendering", () => {
@@ -89,11 +83,15 @@ describe("PendingTransactionDialog", () => {
 
   describe("transaction info display", () => {
     it("should display timestamp in relative format", () => {
+      vi.useFakeTimers();
+      vi.setSystemTime(FIXED_TIMESTAMP);
+
       render(<PendingTransactionDialog {...defaultProps} />);
 
       expect(screen.getByTestId("pending-timestamp")).toHaveTextContent(
         "5m ago",
       );
+      vi.useRealTimers();
     });
 
     it("should display correct direction for base-to-native", () => {
@@ -240,6 +238,9 @@ describe("PendingTransactionDialog", () => {
 
   describe("timestamp formatting", () => {
     it("should display 'Just now' for very recent transactions", () => {
+      vi.useFakeTimers();
+      vi.setSystemTime(FIXED_TIMESTAMP);
+
       const transaction = createMockTransaction({
         timestamp: FIXED_TIMESTAMP - 1000, // 1 second ago
       });
@@ -253,9 +254,13 @@ describe("PendingTransactionDialog", () => {
       expect(screen.getByTestId("pending-timestamp")).toHaveTextContent(
         "Just now",
       );
+      vi.useRealTimers();
     });
 
     it("should display minutes ago", () => {
+      vi.useFakeTimers();
+      vi.setSystemTime(FIXED_TIMESTAMP);
+
       const transaction = createMockTransaction({
         timestamp: FIXED_TIMESTAMP - 10 * 60 * 1000, // 10 minutes ago
       });
@@ -269,9 +274,13 @@ describe("PendingTransactionDialog", () => {
       expect(screen.getByTestId("pending-timestamp")).toHaveTextContent(
         "10m ago",
       );
+      vi.useRealTimers();
     });
 
     it("should display hours and minutes", () => {
+      vi.useFakeTimers();
+      vi.setSystemTime(FIXED_TIMESTAMP);
+
       const transaction = createMockTransaction({
         timestamp: FIXED_TIMESTAMP - (2 * 60 * 60 * 1000 + 30 * 60 * 1000), // 2h 30m ago
       });
@@ -285,6 +294,7 @@ describe("PendingTransactionDialog", () => {
       expect(screen.getByTestId("pending-timestamp")).toHaveTextContent(
         "2h 30m ago",
       );
+      vi.useRealTimers();
     });
   });
 

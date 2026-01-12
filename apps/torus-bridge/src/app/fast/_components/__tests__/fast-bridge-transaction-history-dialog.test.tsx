@@ -12,14 +12,16 @@ import { SimpleBridgeStep } from "../fast-bridge-types";
 import type { FastBridgeTransactionHistoryItem } from "../fast-bridge-types";
 
 // Mock the hook
-vi.mock("../hooks/use-fast-bridge-transaction-history");
+vi.mock("../../hooks/use-fast-bridge-transaction-history", () => ({
+  useFastBridgeTransactionHistory: vi.fn(),
+}));
 
 const mockUseFastBridgeTransactionHistory = vi.mocked(
   useFastBridgeTransactionHistory,
 );
 
 // Mock the transaction history item component
-vi.mock("./fast-bridge-transaction-history-item", () => ({
+vi.mock("../fast-bridge-transaction-history-item", () => ({
   TransactionHistoryItem: ({
     transaction,
     isMultiSelectMode,

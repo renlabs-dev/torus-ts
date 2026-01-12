@@ -41,7 +41,7 @@ describe("getExplorerUrl", () => {
       `${EXPLORER_URLS.TORUS_EVM_HYPERLANE}/${txHash}`,
     );
     expect(getExplorerUrl(txHash, "TORUS")).toBe(
-      `${EXPLORER_URLS.TORUS}/${txHash}`,
+      `${EXPLORER_URLS.TORUS}${txHash}`,
     );
   });
 
@@ -61,7 +61,7 @@ describe("getExplorerUrl", () => {
     expect(baseResult).toBe(`${EXPLORER_URLS.BASE}/${txHash}`);
 
     const torusResult = getExplorerUrl(txHash, "torus");
-    expect(torusResult).toBe(`${EXPLORER_URLS.TORUS}/${txHash}`);
+    expect(torusResult).toBe(`${EXPLORER_URLS.TORUS}${txHash}`);
 
     const hyperlaneResult = getExplorerUrl(txHash, "torus evm");
     expect(hyperlaneResult).toBe(
