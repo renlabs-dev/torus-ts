@@ -9,7 +9,7 @@ import type {
 import { Viewport } from "pixi-viewport";
 import * as PIXI from "pixi.js";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { graphConstants } from "../force-graph/force-graph-constants";
+import { graph2DConstants } from "./force-graph-2d-constants";
 import type {
   CustomGraphData,
   CustomGraphLink,
@@ -19,7 +19,10 @@ import {
   createTooltipElement,
   getAvailableSwarms,
   getConnectedNodesSwarm,
+  getLinkColor,
+  getNodeBorderColor,
   getNodeColor,
+  getNodeGlowColor,
   getNodeRadius,
   getNodeTooltipText,
   hexToPixi,
@@ -250,7 +253,9 @@ export function ForceGraphCanvas2D(props: ForceGraph2DProps) {
     // Create nodes
     nodes.forEach((node) => {
       const radius = getNodeRadius(node.nodeType);
-      const color = getNodeColor(node, props.userAddress);
+      const fillColor = getNodeColor(node, props.userAddress);
+      const borderColor = getNodeBorderColor(node, props.userAddress);
+      const glowColor = getNodeGlowColor(node, props.userAddress);
 
       const nodeGraphics = new PIXI.Graphics();
       node.gfx = nodeGraphics;
@@ -260,9 +265,9 @@ export function ForceGraphCanvas2D(props: ForceGraph2DProps) {
 
       nodeGraphics.alpha = 1.0;
 
-      // Different shapes for different node types
+      // Different shapes for different node types with glow effect
       if (node.nodeType === "permission") {
-        // Draw diamond shape for permissions
+        // Draw diamond shape for permissions (like rectangular nodes in reference)
         const points = [
           0,
           -radius, // top
@@ -273,10 +278,42 @@ export function ForceGraphCanvas2D(props: ForceGraph2DProps) {
           -radius,
           0, // left
         ];
+
+        // Subtle outer glow (larger, more transparent)
+        const outerGlowPoints = [
+          0,
+          -(radius + 4),
+          radius + 4,
+          0,
+          0,
+          radius + 4,
+          -(radius + 4),
+          0,
+        ];
+        nodeGraphics
+          .poly(outerGlowPoints)
+          .fill({ color: hexToPixi(glowColor), alpha: 0.15 });
+
+        // Inner glow (smaller, slightly more visible)
+        const innerGlowPoints = [
+          0,
+          -(radius + 2),
+          radius + 2,
+          0,
+          0,
+          radius + 2,
+          -(radius + 2),
+          0,
+        ];
+        nodeGraphics
+          .poly(innerGlowPoints)
+          .fill({ color: hexToPixi(glowColor), alpha: 0.3 });
+
+        // Main fill
         nodeGraphics
           .poly(points)
-          .fill({ color: hexToPixi(color) })
-          .stroke({ width: 1, color: 0xd3d3d3 });
+          .fill({ color: hexToPixi(fillColor) })
+          .stroke({ width: 1.5, color: hexToPixi(borderColor) });
       } else if (node.nodeType === "signal") {
         // Draw triangle for signals
         const points = [
@@ -287,16 +324,72 @@ export function ForceGraphCanvas2D(props: ForceGraph2DProps) {
           radius,
           radius, // bottom right
         ];
+
+        // Subtle outer glow
+        const outerGlowPoints = [
+          0,
+          -(radius + 4),
+          -(radius + 4),
+          radius + 4,
+          radius + 4,
+          radius + 4,
+        ];
+        nodeGraphics
+          .poly(outerGlowPoints)
+          .fill({ color: hexToPixi(glowColor), alpha: 0.15 });
+
+        // Inner glow
+        const innerGlowPoints = [
+          0,
+          -(radius + 2),
+          -(radius + 2),
+          radius + 2,
+          radius + 2,
+          radius + 2,
+        ];
+        nodeGraphics
+          .poly(innerGlowPoints)
+          .fill({ color: hexToPixi(glowColor), alpha: 0.3 });
+
+        // Main fill
         nodeGraphics
           .poly(points)
-          .fill({ color: hexToPixi(color) })
-          .stroke({ width: 1, color: 0xd3d3d3 });
+          .fill({ color: hexToPixi(fillColor) })
+          .stroke({ width: 1.5, color: hexToPixi(borderColor) });
       } else {
-        // Draw circle for other node types
+        // Draw circle for other node types (allocator, root_agent, target_agent)
+
+        // Subtle outer glow (larger, more transparent)
+        nodeGraphics
+          .circle(0, 0, radius + 5)
+          .fill({ color: hexToPixi(glowColor), alpha: 0.1 });
+
+        // Inner glow
+        nodeGraphics
+          .circle(0, 0, radius + 2)
+          .fill({ color: hexToPixi(glowColor), alpha: 0.25 });
+
+        // Main fill with border
         nodeGraphics
           .circle(0, 0, radius)
-          .fill({ color: hexToPixi(color) })
-          .stroke({ width: 1, color: 0xd3d3d3 });
+          .fill({ color: hexToPixi(fillColor) })
+          .stroke({ width: 2, color: hexToPixi(borderColor) });
+
+        // Inner detail - small circle or dot for tech look
+        if (node.nodeType === "allocator") {
+          // Allocator gets concentric rings
+          nodeGraphics
+            .circle(0, 0, radius * 0.6)
+            .stroke({ width: 1, color: hexToPixi(borderColor), alpha: 0.7 });
+          nodeGraphics
+            .circle(0, 0, radius * 0.3)
+            .fill({ color: hexToPixi(borderColor) });
+        } else {
+          // Other nodes get a simple inner dot
+          nodeGraphics
+            .circle(0, 0, radius * 0.25)
+            .fill({ color: hexToPixi(borderColor) });
+        }
       }
 
       nodeGraphics.eventMode = "static";
@@ -386,29 +479,97 @@ export function ForceGraphCanvas2D(props: ForceGraph2DProps) {
           target.x !== undefined &&
           target.y !== undefined
         ) {
-          const linkColor = graphConstants.linkConfig.linkColors.defaultLink;
-          const linkWidth = graphConstants.linkConfig.linkWidth;
+          // Get dynamic link color based on link type
+          const linkColor = getLinkColor(link, nodes);
+          const linkWidth = graph2DConstants.linkConfig.linkWidth;
 
           // Calculate link alpha based on current highlighting state
           const sourceHighlighted = highlightedNodesRef.current.has(source.id);
           const targetHighlighted = highlightedNodesRef.current.has(target.id);
           const hasSelection = selectedNodeIdRef.current !== null;
 
-          let alpha = 0.7;
+          let alpha = 0.8;
           if (hasSelection) {
             if (sourceHighlighted && targetHighlighted) {
-              alpha = 0.4;
+              alpha = 0.6;
             } else if (sourceHighlighted || targetHighlighted) {
-              alpha = 0.5;
+              alpha = 0.4;
             } else {
-              alpha = 0.2;
+              alpha = 0.15;
             }
           }
 
-          visualLinks
-            .moveTo(source.x, source.y)
-            .lineTo(target.x, target.y)
-            .stroke({ width: linkWidth, color: hexToPixi(linkColor), alpha });
+          const isPermissionLink =
+            link.linkType === "permission_grant" ||
+            link.linkType === "permission_receive" ||
+            link.linkType === "permission_ownership" ||
+            link.linkType === "permission_target";
+
+          if (isPermissionLink) {
+            // Draw curved lines for permission-related links (like multiway branches in the reference)
+            const dx = target.x - source.x;
+            const dy = target.y - source.y;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+
+            // Control point offset perpendicular to the line
+            const curveOffset = Math.min(dist * 0.2, 30);
+            const midX = (source.x + target.x) / 2;
+            const midY = (source.y + target.y) / 2;
+
+            // Perpendicular direction
+            const perpX = -dy / dist;
+            const perpY = dx / dist;
+
+            const ctrlX = midX + perpX * curveOffset;
+            const ctrlY = midY + perpY * curveOffset;
+
+            visualLinks
+              .moveTo(source.x, source.y)
+              .quadraticCurveTo(ctrlX, ctrlY, target.x, target.y)
+              .stroke({ width: linkWidth, color: hexToPixi(linkColor), alpha });
+          } else {
+            // Draw straight lines for causal/hierarchy links with arrow
+            visualLinks
+              .moveTo(source.x, source.y)
+              .lineTo(target.x, target.y)
+              .stroke({ width: linkWidth, color: hexToPixi(linkColor), alpha });
+
+            // Draw arrow head
+            const arrowLength = graph2DConstants.linkConfig.arrowConfig.defaultArrowLength;
+            const arrowPos = graph2DConstants.linkConfig.arrowConfig.defaultArrowRelPos;
+
+            const dx = target.x - source.x;
+            const dy = target.y - source.y;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+
+            if (dist > 0) {
+              // Arrow position along the line
+              const arrowX = source.x + dx * arrowPos;
+              const arrowY = source.y + dy * arrowPos;
+
+              // Unit vector
+              const ux = dx / dist;
+              const uy = dy / dist;
+
+              // Perpendicular vector
+              const px = -uy;
+              const py = ux;
+
+              // Arrow points
+              const arrowPoints = [
+                arrowX,
+                arrowY,
+                arrowX - ux * arrowLength + px * arrowLength * 0.5,
+                arrowY - uy * arrowLength + py * arrowLength * 0.5,
+                arrowX - ux * arrowLength - px * arrowLength * 0.5,
+                arrowY - uy * arrowLength - py * arrowLength * 0.5,
+              ];
+
+              visualLinks
+                .poly(arrowPoints)
+                .fill({ color: hexToPixi(linkColor) });
+            }
+          }
         }
       });
     };
