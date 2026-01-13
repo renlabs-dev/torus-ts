@@ -4,6 +4,7 @@ import { useCallback } from "react";
 
 export function useFastBridgeTransactionUrlState() {
   const setTransactionInUrl = useCallback((txId: string) => {
+    if (typeof window === "undefined") return;
     const params = new URLSearchParams(window.location.search);
     params.set("txId", txId);
     const newUrl = `/fast?${params.toString()}`;
@@ -19,6 +20,7 @@ export function useFastBridgeTransactionUrlState() {
   }, []);
 
   const clearTransactionFromUrl = useCallback(() => {
+    if (typeof window === "undefined") return;
     const params = new URLSearchParams(window.location.search);
     params.delete("txId");
     const newSearch = params.toString();

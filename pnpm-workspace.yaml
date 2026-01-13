@@ -45,6 +45,18 @@ catalog:
   "luxon": ^3.5.0
   "lucide-react": ^0.475.0
   "vitest": ^3.2.4
+  # Testing libraries
+  "@vitest/ui": ^3.2.4
+  "@testing-library/dom": ^9.3.4
+  "@testing-library/jest-dom": ^6.1.5
+  "@testing-library/react": ^14.1.2
+  "@testing-library/user-event": ^14.5.1
+  "jsdom": ^23.0.0
+  "pino-pretty": ^13.1.1
+  "vite": ^5.0.0
+  "vite-tsconfig-paths": ^4.2.0
+  "@vitejs/plugin-react": ^4.7.0
+  # End
   "emittery": ^1.2.0
   "@uidotdev/usehooks": ^2.4.1
   "superjson": ^2.2.1
@@ -61,12 +73,12 @@ catalog:
 
 catalogs:
   react18:
-    "react": "~18.2.0"
-    "react-dom": "~18.2.0"
-    "@types/react": "~18.2.0"
-    "@types/react-dom": "~18.2.0"
+   "react": "~18.2.0"
+   "react-dom": "~18.2.0"
+   "@types/react": "~18.2.0"
+   "@types/react-dom": "~18.2.0"
   react19:
-    "react": "^19.0.0"
-    "react-dom": "^19.0.0"
-    "@types/react": "~19.0.12"
-    "@types/react-dom": "~19.0.4"
+   "react": "^19.0.0"
+   "react-dom": "^19.0.0"
+   "@types/react": "~19.0.12"
+   "@types/react-dom": "~19.0.4"

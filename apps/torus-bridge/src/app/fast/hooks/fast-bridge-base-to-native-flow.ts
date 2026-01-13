@@ -5,7 +5,6 @@ import {
 import type { SS58Address } from "@torus-network/sdk/types";
 import { toNano } from "@torus-network/torus-utils/torus/token";
 import { tryAsync } from "@torus-network/torus-utils/try-catch";
-import type { Config } from "@wagmi/core";
 import type { Chain, WalletClient } from "viem";
 import type { SimpleBridgeTransaction } from "../_components/fast-bridge-types";
 import { SimpleBridgeStep } from "../_components/fast-bridge-types";
@@ -41,14 +40,14 @@ interface BaseToNativeStep1Params {
   chain: Chain;
   /** Function to switch wallet to target chain, returns the new chain ID */
   switchChain: (params: { chainId: number }) => Promise<{ id: number }>;
-  /** Function to initiate Hyperlane cross-chain transfer with origin/destination routing */
+  /** Function to initiate Hyperlane cross-chain transfer and return transaction hash */
   triggerHyperlaneTransfer: (params: {
     origin: string;
     destination: string;
     tokenIndex: number;
     amount: string;
     recipient: string;
-  }) => Promise<unknown>;
+  }) => Promise<string>;
   /** Warp Core configuration for token connections and routing */
   warpCore: {
     tokens: {
@@ -121,7 +120,7 @@ function validateWarpConfiguration(
  */
 export async function executeBaseToNativeStep1(
   params: BaseToNativeStep1Params,
-) {
+): Promise<{ success: boolean; txHash?: string; error?: Error }> {
   const {
     amount,
     evmAddress,
@@ -191,7 +190,7 @@ export async function executeBaseToNativeStep1(
     throw new Error("Base token not found in warp configuration");
   }
 
-  const [hyperlaneError, step1TxHash] = await tryAsync(
+  const [hyperlaneError, result] = await tryAsync(
     triggerHyperlaneTransfer({
       origin: "base",
       destination: "torus",
@@ -200,6 +199,8 @@ export async function executeBaseToNativeStep1(
       recipient: evmAddress,
     }),
   );
+
+  const txHash = result;
 
   if (hyperlaneError !== undefined) {
     const isUserRejected = isUserRejectionError(hyperlaneError);
@@ -216,6 +217,7 @@ export async function executeBaseToNativeStep1(
       errorDetails,
       txHash: undefined,
       explorerUrl: undefined,
+      errorPhase: "sign",
     });
 
     updateBridgeState({
@@ -232,9 +234,8 @@ export async function executeBaseToNativeStep1(
 
   updateBridgeState({ step: SimpleBridgeStep.STEP_1_CONFIRMING });
 
-  // Notify that transaction is now confirming (for history/URL update)
-  if (step1TxHash && typeof step1TxHash === "string") {
-    onTransactionConfirming?.(step1TxHash, baselineBalance);
+  if (txHash) {
+    onTransactionConfirming?.(txHash, baselineBalance);
   }
 
   const pollingResult = await pollEvmBalance(
@@ -250,17 +251,23 @@ export async function executeBaseToNativeStep1(
       status: "ERROR",
       chainName: "Base",
       message: pollingResult.errorMessage ?? "Transfer confirmation failed",
-      txHash: undefined,
-      explorerUrl: undefined,
+      txHash: txHash,
+      explorerUrl:
+        txHash !== undefined ? getExplorerUrl(txHash, "Base") : undefined,
+      errorPhase: "confirm",
     });
     updateBridgeState({
       step: SimpleBridgeStep.ERROR,
       errorMessage:
         pollingResult.errorMessage ?? "Transfer confirmation failed",
     });
-    throw new Error(
-      pollingResult.errorMessage ?? "Transfer confirmation failed",
-    );
+    return {
+      success: false,
+      txHash: txHash,
+      error: new Error(
+        pollingResult.errorMessage ?? "Transfer confirmation failed",
+      ),
+    };
   }
 
   // Refetch Base balance to reflect the debit from the transfer
@@ -272,17 +279,17 @@ export async function executeBaseToNativeStep1(
     status: "SUCCESS",
     chainName: "Base",
     message: "Transfer complete",
-    txHash: step1TxHash as string | undefined,
+    txHash,
     explorerUrl:
-      step1TxHash !== undefined
-        ? getExplorerUrl(step1TxHash as string, "Base")
-        : undefined,
+      txHash !== undefined ? getExplorerUrl(txHash, "Base") : undefined,
   });
 
   const [returnError] = await tryAsync(switchChain({ chainId: BASE_CHAIN_ID }));
   if (returnError !== undefined) {
     console.warn("Auto-return to Base failed:", returnError.message);
   }
+
+  return { success: true, txHash };
 }
 
 /**
@@ -315,7 +322,7 @@ interface BaseToNativeStep2Params {
     data?: { value: bigint };
   }>;
   /** WAGMI configuration for wallet operations */
-  wagmiConfig: Config;
+  wagmiConfig: unknown;
   /** Function to update the bridge UI state */
   updateBridgeState: (updates: {
     step: SimpleBridgeStep;
@@ -346,7 +353,7 @@ interface BaseToNativeStep2Params {
  */
 export async function executeBaseToNativeStep2(
   params: BaseToNativeStep2Params,
-) {
+): Promise<{ success: boolean; txHash?: string; error?: Error }> {
   const {
     amount,
     selectedAccount,
@@ -423,11 +430,27 @@ export async function executeBaseToNativeStep2(
   updateBridgeState({ step: SimpleBridgeStep.STEP_2_SIGNING });
   onStepProgress?.(SimpleBridgeStep.STEP_2_SIGNING);
 
-  const torusEvmChain = wagmiConfig.chains.find(
-    (c) => c.id === torusEvmChainId,
+  const wagmiConfigTyped = wagmiConfig as {
+    chains: { id: number }[];
+  };
+  const torusEvmChain = wagmiConfigTyped.chains.find(
+    (c: { id: number }) => c.id === torusEvmChainId,
   );
   if (!torusEvmChain) {
-    throw new Error(`Torus EVM chain ${torusEvmChainId} not found in config`);
+    const error = new Error(
+      `Torus EVM chain ${torusEvmChainId} not found in config`,
+    );
+    addTransaction({
+      step: 2,
+      status: "ERROR",
+      chainName: "Torus EVM",
+      message: error.message,
+    });
+    updateBridgeState({
+      step: SimpleBridgeStep.ERROR,
+      errorMessage: error.message,
+    });
+    return { success: false, error };
   }
 
   // Fetch current EVM balance to calculate max withdrawable amount
@@ -451,9 +474,20 @@ export async function executeBaseToNativeStep2(
       : maxWithdrawable;
 
   if (amountRems <= 0n) {
-    throw new Error(
+    const error = new Error(
       "Insufficient EVM balance for withdrawal after gas reserve",
     );
+    addTransaction({
+      step: 2,
+      status: "ERROR",
+      chainName: "Torus EVM",
+      message: error.message,
+    });
+    updateBridgeState({
+      step: SimpleBridgeStep.ERROR,
+      errorMessage: error.message,
+    });
+    return { success: false, error };
   }
 
   // Capture baseline balance BEFORE sending transaction
@@ -464,7 +498,7 @@ export async function executeBaseToNativeStep2(
   const [withdrawError, txHash] = await tryAsync(
     withdrawFromTorusEvm(
       walletClient,
-      torusEvmChain,
+      torusEvmChain as never,
       selectedAccount.address,
       amountRems,
       async () => {
@@ -488,6 +522,7 @@ export async function executeBaseToNativeStep2(
       errorDetails,
       txHash: undefined,
       explorerUrl: undefined,
+      errorPhase: "sign",
     });
 
     updateBridgeState({
@@ -510,7 +545,7 @@ export async function executeBaseToNativeStep2(
   onStep2Confirming?.(txHash, baselineNativeBalance);
 
   const [receiptError] = await tryAsync(
-    waitForTransactionReceipt(wagmiConfig, {
+    waitForTransactionReceipt(wagmiConfigTyped as never, {
       hash: txHash,
       confirmations: CONFIRMATION_CONFIG.REQUIRED_CONFIRMATIONS,
     }),
@@ -536,15 +571,20 @@ export async function executeBaseToNativeStep2(
       message: pollingResult.errorMessage ?? "Withdrawal confirmation failed",
       txHash,
       explorerUrl: explorerUrl || undefined,
+      errorPhase: "confirm",
     });
     updateBridgeState({
       step: SimpleBridgeStep.ERROR,
       errorMessage:
         pollingResult.errorMessage ?? "Withdrawal confirmation failed",
     });
-    throw new Error(
-      pollingResult.errorMessage ?? "Withdrawal confirmation failed",
-    );
+    return {
+      success: false,
+      txHash,
+      error: new Error(
+        pollingResult.errorMessage ?? "Withdrawal confirmation failed",
+      ),
+    };
   }
 
   // Refetch Torus EVM balance to reflect the debit from the withdrawal
@@ -561,4 +601,6 @@ export async function executeBaseToNativeStep2(
 
   updateBridgeState({ step: SimpleBridgeStep.COMPLETE });
   onStepProgress?.(SimpleBridgeStep.COMPLETE);
+
+  return { success: true, txHash };
 }

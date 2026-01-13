@@ -53,3 +53,6 @@
 # Crush
 .crush
 CRUSH.md
+
+# Tests
+**/output.test.txt

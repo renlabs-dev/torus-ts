@@ -5,6 +5,29 @@
 export const BASE_CHAIN_ID = 8453;
 
 /**
+ * Block explorer URLs for different chains.
+ * Centralized configuration to avoid duplicate explorer URLs across the codebase.
+ *
+ * NOTE: Blockscout endpoint for Torus EVM was permanently deprecated by the infrastructure team.
+ * Hyperlane explorer is used as the primary transaction tracking solution.
+ * If Blockscout service is restored, uncomment the TORUS_EVM_BLOCKSCOUT property
+ * and switch the TORUS_EVM_HYPERLANE reference back to it.
+ *
+ * @constant {object}
+ * @property {string} BASE - Basescan explorer for Base chain transactions
+ * @property {string} TORUS_EVM_HYPERLANE - Hyperlane explorer for Torus EVM cross-chain message tracking
+ * @property {string} TORUS - Polkadot.js explorer for Torus (Substrate) chain
+ */
+export const EXPLORER_URLS = {
+  BASE: "https://basescan.org/tx",
+  // DEPRECATED: Blockscout endpoint was permanently shut down by infrastructure team
+  // TORUS_EVM_BLOCKSCOUT: "https://blockscout.torus.network/tx",
+  TORUS_EVM_HYPERLANE: "https://explorer.hyperlane.xyz/message",
+  TORUS:
+    "https://polkadot.js.org/apps/?rpc=wss://api.torus.network#/explorer/query/",
+} as const;
+
+/**
  * Gas estimation configuration for bridge operations.
  * @constant {object}
  * @property {bigint} BASE_GAS - Base gas cost for simple transfers (21,000 gas)
@@ -127,16 +150,15 @@ export function getExplorerUrl(txHash: string, chainName: string): string {
   const lowerChainName = chainName.toLowerCase();
 
   if (lowerChainName === "base") {
-    return `https://basescan.org/tx/${txHash}`;
+    return `${EXPLORER_URLS.BASE}/${txHash}`;
   }
 
   if (lowerChainName === "torus evm") {
-    return `https://blockscout.torus.network/tx/${txHash}`;
+    return `${EXPLORER_URLS.TORUS_EVM_HYPERLANE}/${txHash}`;
   }
 
   if (lowerChainName === "torus" || lowerChainName === "torus native") {
-    // Torus (Substrate) doesn't have a public block explorer yet
-    return "";
+    return `${EXPLORER_URLS.TORUS}${txHash}`;
   }
 
   return "";

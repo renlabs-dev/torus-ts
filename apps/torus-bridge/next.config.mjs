@@ -22,7 +22,6 @@ const config = {
       "@hyperlane-xyz/utils",
       "@hyperlane-xyz/registry",
       "viem",
-      "@wagmi/core",
       "lucide-react",
       "@polkadot/api",
       "@polkadot/util",
@@ -69,9 +68,9 @@ const config = {
             chunks: "all",
             priority: 25,
           },
-          // EVM packages (viem, wagmi)
+          // EVM packages (viem)
           evm: {
-            test: /[\\/]node_modules[\\/](viem|@wagmi)[\\/]/,
+            test: /[\\/]node_modules[\\/]viem[\\/]/,
             name: "evm",
             chunks: "all",
             priority: 20,

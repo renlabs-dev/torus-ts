@@ -8,8 +8,6 @@ import { useFreeBalance } from "@torus-ts/query-provider/hooks";
 import { useTorus } from "@torus-ts/torus-provider";
 import { useSendTransaction } from "@torus-ts/torus-provider/use-send-transaction";
 import { useToast } from "@torus-ts/ui/hooks/use-toast";
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-import type { Config } from "@wagmi/core";
 import { contractAddresses, getChainValuesOnEnv } from "~/config";
 import { env } from "~/env";
 import { useWarpCore } from "~/hooks/token";
@@ -131,7 +129,7 @@ export function useOrchestratedTransfer() {
       amount: string;
       recipient: string;
     }): Promise<string> => {
-      const hash = await _triggerTransactions({
+      const result = await _triggerTransactions({
         origin: params.origin,
         destination: params.destination,
         tokenIndex: params.tokenIndex,
@@ -139,11 +137,12 @@ export function useOrchestratedTransfer() {
         recipient: params.recipient,
       });
 
-      if (!hash) {
-        throw new Error("Transaction hash not found after transfer");
+      if (!result) {
+        throw new Error("Transaction result not found after transfer");
       }
 
-      return hash;
+      // Return transaction hash as string
+      return result;
     },
     [_triggerTransactions],
   );
@@ -231,149 +230,143 @@ export function useOrchestratedTransfer() {
       }
 
       // Execute step 1 - create history entry when transaction enters confirming state
-      const [step1Error, _] = await tryAsync(
-        executeBaseToNativeStep1({
-          amount,
-          evmAddress,
-          chain,
-          switchChain: switchChainAsync,
-          triggerHyperlaneTransfer,
-          warpCore,
-          refetchTorusEvmBalance,
-          refetchBaseBalance,
-          updateBridgeState,
-          addTransaction,
-          getExplorerUrl,
-          onTransactionConfirming: (txHash, baselineBalance) => {
-            // Check if we're retrying an existing transaction
-            if (currentTransactionIdRef.current) {
-              // Update existing history entry (retry case)
-              updateHistoryTransaction(currentTransactionIdRef.current, {
-                status: "pending",
-                currentStep: SimpleBridgeStep.STEP_1_CONFIRMING,
-                step1TxHash: txHash,
-                step1BaselineBalance: baselineBalance.toString(),
-                errorMessage: undefined,
-                errorStep: undefined,
-              });
-            } else {
-              // Create new history entry when transaction is signed and submitted
-              const newTransactionId = addToHistory({
-                direction: "base-to-native",
-                amount,
-                status: "pending",
-                currentStep: SimpleBridgeStep.STEP_1_CONFIRMING,
-                step1TxHash: txHash,
-                baseAddress: evmAddress,
-                nativeAddress: selectedAccount.address,
-                canRetry: true,
-                step1BaselineBalance: baselineBalance.toString(),
-              });
-              currentTransactionIdRef.current = newTransactionId;
+      const step1Result = await executeBaseToNativeStep1({
+        amount,
+        evmAddress,
+        chain,
+        switchChain: switchChainAsync,
+        triggerHyperlaneTransfer,
+        warpCore,
+        refetchTorusEvmBalance,
+        refetchBaseBalance,
+        updateBridgeState,
+        addTransaction,
+        getExplorerUrl,
+        onTransactionConfirming: (txHash, baselineBalance) => {
+          // Check if we're retrying an existing transaction
+          if (currentTransactionIdRef.current) {
+            // Update existing history entry (retry case)
+            updateHistoryTransaction(currentTransactionIdRef.current, {
+              status: "pending",
+              currentStep: SimpleBridgeStep.STEP_1_CONFIRMING,
+              step1TxHash: txHash,
+              step1BaselineBalance: baselineBalance.toString(),
+              errorMessage: undefined,
+              errorStep: undefined,
+            });
+          } else {
+            // Create new history entry when transaction is signed and submitted
+            const newTransactionId = addToHistory({
+              direction: "base-to-native",
+              amount,
+              status: "pending",
+              currentStep: SimpleBridgeStep.STEP_1_CONFIRMING,
+              step1TxHash: txHash,
+              baseAddress: evmAddress,
+              nativeAddress: selectedAccount.address,
+              canRetry: true,
+              step1BaselineBalance: baselineBalance.toString(),
+            });
+            currentTransactionIdRef.current = newTransactionId;
 
-              // Notify that transaction was created (for URL update / F5 recovery)
-              onTransactionCreatedRef.current?.(newTransactionId);
-            }
-          },
-        }),
-      );
+            // Notify that transaction was created (for URL update / F5 recovery)
+            onTransactionCreatedRef.current?.(newTransactionId);
+          }
+        },
+      });
 
-      if (step1Error !== undefined) {
+      if (!step1Result.success) {
         // If user rejected in step 1, nothing was signed so no history entry exists
-        if (step1Error instanceof UserRejectedError) {
+        if (step1Result.error instanceof UserRejectedError) {
           updateBridgeState({
             step: SimpleBridgeStep.ERROR,
             errorMessage: "Transaction cancelled by user",
           });
           return;
         }
-        // If we have a transaction ID, update history with error
+        // If we have a transaction ID, update history with error (preserving txHash if available)
         if (currentTransactionIdRef.current) {
           updateHistoryTransaction(currentTransactionIdRef.current, {
             status: "error",
             currentStep: SimpleBridgeStep.ERROR,
-            errorMessage: step1Error.message,
+            errorMessage: step1Result.error?.message ?? "Step 1 failed",
             errorStep: 1,
             canRetry: true,
+            ...(step1Result.txHash && { step1TxHash: step1Result.txHash }),
           });
         }
-        throw step1Error;
+        throw step1Result.error ?? new Error("Step 1 failed");
       }
 
       // Update history to step 2 preparing
       if (currentTransactionIdRef.current) {
-        const step1Tx = transactions.find((tx) => tx.step === 1);
         updateHistoryTransaction(currentTransactionIdRef.current, {
           status: "pending",
           currentStep: SimpleBridgeStep.STEP_2_PREPARING,
-          step1TxHash: step1Tx?.txHash,
+          step1TxHash: step1Result.txHash,
         });
       }
 
       // Execute step 2 with progress tracking
-      const [step2Error, __] = await tryAsync(
-        executeBaseToNativeStep2({
-          amount,
-          selectedAccount: { address: selectedAccount.address as SS58Address },
-          walletClient,
-          chain,
-          torusEvmChainId,
-          switchChain: switchChainAsync,
-          refetchTorusEvmBalance,
-          refetchNativeBalance,
-          wagmiConfig,
-          updateBridgeState,
-          addTransaction,
-          getExplorerUrl,
-          onStepProgress: (step) => {
-            if (currentTransactionIdRef.current) {
-              updateHistoryTransaction(currentTransactionIdRef.current, {
-                currentStep: step,
-              });
-            }
-          },
-          onStep2Confirming: (txHash, baselineBalance) => {
-            if (currentTransactionIdRef.current) {
-              updateHistoryTransaction(currentTransactionIdRef.current, {
-                step2TxHash: txHash,
-                step2BaselineBalance: baselineBalance.toString(),
-              });
-            }
-          },
-        }),
-      );
+      const step2Result = await executeBaseToNativeStep2({
+        amount,
+        selectedAccount: { address: selectedAccount.address as SS58Address },
+        walletClient,
+        chain,
+        torusEvmChainId,
+        switchChain: switchChainAsync,
+        refetchTorusEvmBalance,
+        refetchNativeBalance,
+        wagmiConfig,
+        updateBridgeState,
+        addTransaction,
+        getExplorerUrl,
+        onStepProgress: (step) => {
+          if (currentTransactionIdRef.current) {
+            updateHistoryTransaction(currentTransactionIdRef.current, {
+              currentStep: step,
+            });
+          }
+        },
+        onStep2Confirming: (txHash, baselineBalance) => {
+          if (currentTransactionIdRef.current) {
+            updateHistoryTransaction(currentTransactionIdRef.current, {
+              step2TxHash: txHash,
+              step2BaselineBalance: baselineBalance.toString(),
+            });
+          }
+        },
+      });
 
-      if (step2Error !== undefined) {
-        // Update history on error
+      if (!step2Result.success) {
+        // Update history on error (preserving txHash if available)
         if (currentTransactionIdRef.current) {
-          const step2Tx = transactions.find((tx) => tx.step === 2);
           updateHistoryTransaction(currentTransactionIdRef.current, {
             status: "error",
             currentStep: SimpleBridgeStep.ERROR,
-            errorMessage: step2Error.message,
+            errorMessage: step2Result.error?.message ?? "Step 2 failed",
             errorStep: 2,
-            step2TxHash: step2Tx?.txHash,
             canRetry: true,
+            ...(step2Result.txHash && { step2TxHash: step2Result.txHash }),
           });
         }
         // Stop execution if user rejected the transaction
-        if (step2Error instanceof UserRejectedError) {
+        if (step2Result.error instanceof UserRejectedError) {
           updateBridgeState({
             step: SimpleBridgeStep.ERROR,
             errorMessage: "Transaction cancelled by user",
           });
           return;
         }
-        throw step2Error;
+        throw step2Result.error ?? new Error("Step 2 failed");
       }
 
       // Update history after step 2 complete
+      // Note: step2TxHash is already set by the onStep2Confirming callback above
       if (currentTransactionIdRef.current) {
-        const step2Tx = transactions.find((tx) => tx.step === 2);
         updateHistoryTransaction(currentTransactionIdRef.current, {
           status: "completed",
           currentStep: SimpleBridgeStep.COMPLETE,
-          step2TxHash: step2Tx?.txHash,
           canRetry: false,
           errorMessage: undefined,
           errorStep: undefined,
@@ -402,7 +395,6 @@ export function useOrchestratedTransfer() {
       toast,
       switchChainAsync,
       torusEvmChainId,
-      transactions,
       updateHistoryTransaction,
       addToHistory,
     ],
@@ -415,150 +407,153 @@ export function useOrchestratedTransfer() {
       }
 
       // Execute step 1 - create history entry when transaction enters confirming state
-      const [step1Error, _] = await tryAsync(
-        executeNativeToBaseStep1({
-          amount,
-          evmAddress,
-          selectedAccount: { address: selectedAccount.address as SS58Address },
-          api,
-          sendTx,
-          refetchTorusEvmBalance,
-          refetchNativeBalance,
-          updateBridgeState,
-          addTransaction,
-          getExplorerUrl,
-          onTransactionConfirming: (txHash, baselineBalance) => {
-            // Check if we're retrying an existing transaction
-            if (currentTransactionIdRef.current) {
-              // Update existing history entry (retry case)
-              updateHistoryTransaction(currentTransactionIdRef.current, {
-                status: "pending",
-                currentStep: SimpleBridgeStep.STEP_1_CONFIRMING,
-                step1TxHash: txHash,
-                step1BaselineBalance: baselineBalance.toString(),
-                errorMessage: undefined,
-                errorStep: undefined,
-              });
-            } else {
-              // Create new history entry when transaction is signed and submitted
-              const newTransactionId = addToHistory({
-                direction: "native-to-base",
-                amount,
-                status: "pending",
-                currentStep: SimpleBridgeStep.STEP_1_CONFIRMING,
-                step1TxHash: txHash,
-                baseAddress: evmAddress,
-                nativeAddress: selectedAccount.address,
-                canRetry: true,
-                step1BaselineBalance: baselineBalance.toString(),
-              });
-              currentTransactionIdRef.current = newTransactionId;
+      const step1Result = await executeNativeToBaseStep1({
+        amount,
+        evmAddress,
+        selectedAccount: { address: selectedAccount.address as SS58Address },
+        api,
+        sendTx,
+        refetchTorusEvmBalance,
+        refetchNativeBalance,
+        updateBridgeState,
+        addTransaction,
+        getExplorerUrl,
+        onTransactionConfirming: (txHash, baselineBalance) => {
+          // Check if we're retrying an existing transaction
+          if (currentTransactionIdRef.current) {
+            // Update existing history entry (retry case)
+            updateHistoryTransaction(currentTransactionIdRef.current, {
+              status: "pending",
+              currentStep: SimpleBridgeStep.STEP_1_CONFIRMING,
+              step1TxHash: txHash,
+              step1BaselineBalance: baselineBalance.toString(),
+              errorMessage: undefined,
+              errorStep: undefined,
+            });
+          } else {
+            // Create new history entry when transaction is signed and submitted
+            const newTransactionId = addToHistory({
+              direction: "native-to-base",
+              amount,
+              status: "pending",
+              currentStep: SimpleBridgeStep.STEP_1_CONFIRMING,
+              step1TxHash: txHash,
+              baseAddress: evmAddress,
+              nativeAddress: selectedAccount.address,
+              canRetry: true,
+              step1BaselineBalance: baselineBalance.toString(),
+              // Note: step1BlockHash will be captured when inBlock event occurs
+            });
+            currentTransactionIdRef.current = newTransactionId;
 
-              // Notify that transaction was created (for URL update / F5 recovery)
-              onTransactionCreatedRef.current?.(newTransactionId);
-            }
-          },
-        }),
-      );
+            // Notify that transaction was created (for URL update / F5 recovery)
+            onTransactionCreatedRef.current?.(newTransactionId);
+          }
+        },
+        onTransactionInBlock: (blockHash) => {
+          // Capture blockHash when transaction is included in a block
+          if (currentTransactionIdRef.current) {
+            updateHistoryTransaction(currentTransactionIdRef.current, {
+              step1BlockHash: blockHash,
+            });
+          }
+        },
+      });
 
-      if (step1Error !== undefined) {
+      if (!step1Result.success) {
         // If user rejected in step 1, nothing was signed so no history entry exists
-        if (step1Error instanceof UserRejectedError) {
+        if (step1Result.error instanceof UserRejectedError) {
           updateBridgeState({
             step: SimpleBridgeStep.ERROR,
             errorMessage: "Transaction cancelled by user",
           });
           return;
         }
-        // If we have a transaction ID, update history with error
+        // If we have a transaction ID, update history with error (preserving txHash if available)
         if (currentTransactionIdRef.current) {
           updateHistoryTransaction(currentTransactionIdRef.current, {
             status: "error",
             currentStep: SimpleBridgeStep.ERROR,
-            errorMessage: step1Error.message,
+            errorMessage: step1Result.error?.message ?? "Step 1 failed",
             errorStep: 1,
             canRetry: true,
+            ...(step1Result.txHash && { step1TxHash: step1Result.txHash }),
           });
         }
-        throw step1Error;
+        throw step1Result.error ?? new Error("Step 1 failed");
       }
 
       // Update history to step 2 preparing
+      // Note: step1TxHash is already set by the onTransactionConfirming callback above
       if (currentTransactionIdRef.current) {
-        const step1Tx = transactions.find((tx) => tx.step === 1);
         updateHistoryTransaction(currentTransactionIdRef.current, {
           status: "pending",
           currentStep: SimpleBridgeStep.STEP_2_PREPARING,
-          step1TxHash: step1Tx?.txHash,
         });
       }
 
       // Execute step 2 with progress tracking
-      const [step2Error, __] = await tryAsync(
-        executeNativeToBaseStep2({
-          amount,
-          evmAddress,
-          torusEvmChainId,
-          chainId: chain?.id,
-          walletClient,
-          switchChain: switchChainAsync,
-          triggerHyperlaneTransfer,
-          warpCore,
-          accounts,
-          refetchBaseBalance,
-          refetchTorusEvmBalance,
-          updateBridgeState,
-          addTransaction,
-          getExplorerUrl,
-          onStepProgress: (step) => {
-            if (currentTransactionIdRef.current) {
-              updateHistoryTransaction(currentTransactionIdRef.current, {
-                currentStep: step,
-              });
-            }
-          },
-          onStep2Confirming: (txHash, baselineBalance) => {
-            if (currentTransactionIdRef.current) {
-              updateHistoryTransaction(currentTransactionIdRef.current, {
-                step2TxHash: txHash,
-                step2BaselineBalance: baselineBalance.toString(),
-              });
-            }
-          },
-        }),
-      );
+      const step2Result = await executeNativeToBaseStep2({
+        amount,
+        evmAddress,
+        torusEvmChainId,
+        chainId: chain?.id,
+        walletClient,
+        switchChain: switchChainAsync,
+        triggerHyperlaneTransfer,
+        warpCore,
+        accounts,
+        refetchBaseBalance,
+        refetchTorusEvmBalance,
+        updateBridgeState,
+        addTransaction,
+        getExplorerUrl,
+        onStepProgress: (step) => {
+          if (currentTransactionIdRef.current) {
+            updateHistoryTransaction(currentTransactionIdRef.current, {
+              currentStep: step,
+            });
+          }
+        },
+        onStep2Confirming: (txHash, baselineBalance) => {
+          if (currentTransactionIdRef.current) {
+            updateHistoryTransaction(currentTransactionIdRef.current, {
+              step2TxHash: txHash,
+              step2BaselineBalance: baselineBalance.toString(),
+            });
+          }
+        },
+      });
 
-      if (step2Error !== undefined) {
-        // Update history on error
+      if (!step2Result.success) {
+        // Update history on error (preserving txHash if available)
         if (currentTransactionIdRef.current) {
-          const step2Tx = transactions.find((tx) => tx.step === 2);
           updateHistoryTransaction(currentTransactionIdRef.current, {
             status: "error",
             currentStep: SimpleBridgeStep.ERROR,
-            errorMessage: step2Error.message,
+            errorMessage: step2Result.error?.message ?? "Step 2 failed",
             errorStep: 2,
-            step2TxHash: step2Tx?.txHash,
             canRetry: true,
+            ...(step2Result.txHash && { step2TxHash: step2Result.txHash }),
           });
         }
         // Stop execution if user rejected the transaction
-        if (step2Error instanceof UserRejectedError) {
+        if (step2Result.error instanceof UserRejectedError) {
           updateBridgeState({
             step: SimpleBridgeStep.ERROR,
             errorMessage: "Transaction cancelled by user",
           });
           return;
         }
-        throw step2Error;
+        throw step2Result.error ?? new Error("Step 2 failed");
       }
 
       // Update history after step 2 complete
+      // Note: step2TxHash is already set by the onStep2Confirming callback above
       if (currentTransactionIdRef.current) {
-        const step2Tx = transactions.find((tx) => tx.step === 2);
         updateHistoryTransaction(currentTransactionIdRef.current, {
           status: "completed",
           currentStep: SimpleBridgeStep.COMPLETE,
-          step2TxHash: step2Tx?.txHash,
           canRetry: false,
           errorMessage: undefined,
           errorStep: undefined,
@@ -589,7 +584,6 @@ export function useOrchestratedTransfer() {
       torusEvmChainId,
       warpCore,
       accounts,
-      transactions,
       updateHistoryTransaction,
       addToHistory,
     ],
@@ -618,7 +612,7 @@ export function useOrchestratedTransfer() {
         ),
       );
 
-      await executeBaseToNativeStep2({
+      const step2Result = await executeBaseToNativeStep2({
         amount,
         selectedAccount: { address: selectedAccount.address as SS58Address },
         walletClient,
@@ -633,13 +627,16 @@ export function useOrchestratedTransfer() {
         getExplorerUrl,
       });
 
+      if (!step2Result.success) {
+        throw step2Result.error ?? new Error("Step 2 retry failed");
+      }
+
       // Update history after step 2 complete (for retry)
       if (currentTransactionIdRef.current) {
-        const step2Tx = transactions.find((tx) => tx.step === 2);
         updateHistoryTransaction(currentTransactionIdRef.current, {
           status: "completed",
           currentStep: SimpleBridgeStep.COMPLETE,
-          step2TxHash: step2Tx?.txHash,
+          step2TxHash: step2Result.txHash,
           canRetry: false,
           errorMessage: undefined,
           errorStep: undefined,
@@ -666,7 +663,6 @@ export function useOrchestratedTransfer() {
       torusEvmChainId,
       switchChainAsync,
       setTransactions,
-      transactions,
       updateHistoryTransaction,
     ],
   );
@@ -689,7 +685,7 @@ export function useOrchestratedTransfer() {
         ),
       );
 
-      await executeNativeToBaseStep2({
+      const step2Result = await executeNativeToBaseStep2({
         amount,
         evmAddress,
         torusEvmChainId,
@@ -706,13 +702,16 @@ export function useOrchestratedTransfer() {
         getExplorerUrl,
       });
 
+      if (!step2Result.success) {
+        throw step2Result.error ?? new Error("Step 2 retry failed");
+      }
+
       // Update history after step 2 complete (for retry)
       if (currentTransactionIdRef.current) {
-        const step2Tx = transactions.find((tx) => tx.step === 2);
         updateHistoryTransaction(currentTransactionIdRef.current, {
           status: "completed",
           currentStep: SimpleBridgeStep.COMPLETE,
-          step2TxHash: step2Tx?.txHash,
+          step2TxHash: step2Result.txHash,
           canRetry: false,
           errorMessage: undefined,
           errorStep: undefined,
@@ -740,7 +739,6 @@ export function useOrchestratedTransfer() {
       setTransactions,
       warpCore,
       accounts,
-      transactions,
       updateHistoryTransaction,
     ],
   );
@@ -765,40 +763,22 @@ export function useOrchestratedTransfer() {
       // Store callback for URL update after step 1 completes
       onTransactionCreatedRef.current = onTransactionCreated ?? null;
 
-      try {
-        if (direction === "base-to-native") {
-          await executeBaseToNative(amount);
-        } else {
-          await executeNativeToBase(amount);
-        }
-      } catch (error) {
-        // Check if the error was already handled by the individual flow
-        // by seeing if a transaction entry exists (meaning the flow progressed).
-        // The ref is modified by onTransactionConfirming callback during the await above.
-        const transactionId = currentTransactionIdRef.current as string | null;
-        const hasTransactionEntry = transactionId !== null;
+      // Execute transfer with error handling
+      const transferPromise =
+        direction === "base-to-native"
+          ? executeBaseToNative(amount)
+          : executeNativeToBase(amount);
 
-        if (!hasTransactionEntry) {
-          // Error happened before any transaction was created
-          // (e.g., wallet not connected, validation failed)
-          const errorMessage =
-            error instanceof Error ? error.message : "Transfer failed";
-          updateBridgeState({
-            step: SimpleBridgeStep.ERROR,
-            errorMessage,
-          });
-          addTransaction({
-            step: 1,
-            status: "ERROR",
-            chainName: direction === "base-to-native" ? "Base" : "Torus",
-            message: errorMessage,
-          });
-        }
-        // If hasTransactionEntry is true, the error was already handled by the flow
-        // and the history was already updated with the error details
-      } finally {
-        // Clear callback reference after transfer completes or fails
-        onTransactionCreatedRef.current = null;
+      const [error] = await tryAsync(transferPromise);
+
+      // Always cleanup callback reference even if transfer fails
+      onTransactionCreatedRef.current = null;
+
+      if (error !== undefined) {
+        // Log error for debugging but let the bridge state handle error display
+        console.error(
+          `Transfer execution failed for direction ${direction}: ${error instanceof Error ? error.message : String(error)}`,
+        );
       }
     },
     [
@@ -806,7 +786,6 @@ export function useOrchestratedTransfer() {
       executeNativeToBase,
       updateBridgeState,
       setTransactions,
-      addTransaction,
     ],
   );
 
@@ -818,20 +797,20 @@ export function useOrchestratedTransfer() {
 
     const { direction, amount } = bridgeState;
 
-    try {
-      // Clear error message and error details on retry start
-      updateBridgeState({ errorMessage: undefined });
-      clearErrorDetails();
+    // Clear error message and error details on retry start
+    updateBridgeState({ errorMessage: undefined });
+    clearErrorDetails();
 
-      // Reset the failed transaction status to allow UI to show progress
-      setTransactions((prev) =>
-        prev.map((tx) =>
-          tx.step === failedTransaction.step
-            ? { ...tx, status: "STARTING" as const, errorDetails: undefined }
-            : tx,
-        ),
-      );
+    // Reset the failed transaction status to allow UI to show progress
+    setTransactions((prev) =>
+      prev.map((tx) =>
+        tx.step === failedTransaction.step
+          ? { ...tx, status: "STARTING" as const, errorDetails: undefined }
+          : tx,
+      ),
+    );
 
+    const executeRetry = async () => {
       if (failedTransaction.step === 1) {
         if (direction === "base-to-native") {
           await executeBaseToNative(amount);
@@ -845,7 +824,10 @@ export function useOrchestratedTransfer() {
           await retryNativeToBaseStep2(amount);
         }
       }
-    } catch (error) {
+    };
+
+    const [error] = await tryAsync(executeRetry());
+    if (error !== undefined) {
       console.error("Retry failed:", error);
       updateBridgeState({
         step: SimpleBridgeStep.ERROR,

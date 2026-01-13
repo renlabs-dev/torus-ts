@@ -42,6 +42,5 @@ export interface TransferContext {
   sender: Address;
   recipient: Address;
   originTxHash?: string;
-  msgId?: string;
   timestamp: number;
 }
