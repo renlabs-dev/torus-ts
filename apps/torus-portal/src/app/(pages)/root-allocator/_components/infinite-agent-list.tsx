@@ -4,7 +4,7 @@ import type { RouterOutputs } from "@torus-ts/api";
 import { AgentItemSkeleton } from "@torus-ts/ui/components/agent-card/agent-card-skeleton-loader";
 import { InfiniteList } from "@torus-ts/ui/components/infinite-list";
 import { api } from "~/trpc/react";
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import { AgentCard } from "./agent-card";
 
 type InfiniteAgentData = RouterOutputs["agent"]["infinite"];
@@ -45,6 +45,9 @@ export function InfiniteAgentList({
     },
   );
 
+  // Fetch agent connection counts for displaying subagent/parent counts
+  const { data: connectionCounts } = api.agent.agentConnectionCounts.useQuery();
+
   // Log error to console and treat as empty list
   useEffect(() => {
     if (error) {
@@ -54,6 +57,12 @@ export function InfiniteAgentList({
 
   const agents: AgentType[] =
     data?.pages.flatMap((page: InfiniteAgentData) => page.agents) ?? [];
+
+  // Create lookup function for subagent counts
+  const getSubagentCount = useMemo(() => {
+    if (!connectionCounts) return (_key: string) => undefined;
+    return (agentKey: string) => connectionCounts.subagentCounts[agentKey];
+  }, [connectionCounts]);
 
   return (
     <InfiniteList
@@ -68,6 +77,7 @@ export function InfiniteAgentList({
           registrationBlock={agent.registrationBlock}
           percComputedWeight={agent.percComputedWeight}
           isWhitelisted={agent.isWhitelisted ?? false}
+          subagentCount={getSubagentCount(agent.key)}
         />
       )}
       getItemKey={(agent: AgentType, index: number) =>

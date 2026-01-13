@@ -16,6 +16,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { PenaltyList } from "../../../_components/penalties-list";
+import { AgentConnectionsGraph } from "./components/agent-connections-graph";
 import { AgentInfoCard } from "./components/agent-info-card";
 import { ExpandedViewSocials } from "./components/expanded-view-socials";
 
@@ -160,6 +161,11 @@ export default async function AgentPage({ params }: Readonly<AgentPageProps>) {
             </Card>
 
             <MarkdownView source={metadata.description} />
+
+            <div className="mt-6">
+              <h3 className="mb-4 text-lg font-semibold">Sub-Agents Graph</h3>
+              <AgentConnectionsGraph agentKey={agentKey} />
+            </div>
           </div>
 
           <div className="flex flex-col gap-6 md:w-1/3">
