@@ -174,9 +174,9 @@ export function RegisterAgentForm({
             title="Agent Registration Fee"
             isVisible={Boolean(
               isAccountConnected &&
-              formValues.name &&
-              formValues.name.trim().length > 0 &&
-              !isPending,
+                formValues.name &&
+                formValues.name.trim().length > 0 &&
+                !isPending,
             )}
             isLoading={agentRegistrationFee.isLoading}
             error={agentRegistrationFee.error}

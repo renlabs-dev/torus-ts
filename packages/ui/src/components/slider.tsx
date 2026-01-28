@@ -86,8 +86,7 @@ const thumbVariants = cva(
 );
 
 export interface SliderProps
-  extends
-    React.ComponentPropsWithoutRef<typeof SliderPrimitive.Root>,
+  extends React.ComponentPropsWithoutRef<typeof SliderPrimitive.Root>,
     VariantProps<typeof sliderVariants> {
   thumbClassName?: string;
   trackClassName?: string;

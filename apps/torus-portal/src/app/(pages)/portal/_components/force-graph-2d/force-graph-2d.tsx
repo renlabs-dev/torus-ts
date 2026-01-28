@@ -9,12 +9,12 @@ import type {
 import { Viewport } from "pixi-viewport";
 import * as PIXI from "pixi.js";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { graph2DConstants } from "./force-graph-2d-constants";
 import type {
   CustomGraphData,
   CustomGraphLink,
   CustomGraphNode,
 } from "../permission-graph-types";
+import { graph2DConstants } from "./force-graph-2d-constants";
 import {
   createTooltipElement,
   getAvailableSwarms,
@@ -535,8 +535,10 @@ export function ForceGraphCanvas2D(props: ForceGraph2DProps) {
               .stroke({ width: linkWidth, color: hexToPixi(linkColor), alpha });
 
             // Draw arrow head
-            const arrowLength = graph2DConstants.linkConfig.arrowConfig.defaultArrowLength;
-            const arrowPos = graph2DConstants.linkConfig.arrowConfig.defaultArrowRelPos;
+            const arrowLength =
+              graph2DConstants.linkConfig.arrowConfig.defaultArrowLength;
+            const arrowPos =
+              graph2DConstants.linkConfig.arrowConfig.defaultArrowRelPos;
 
             const dx = target.x - source.x;
             const dy = target.y - source.y;

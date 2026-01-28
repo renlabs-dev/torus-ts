@@ -4,9 +4,8 @@ import { cn } from "../lib/utils";
 import * as TabsPrimitive from "@radix-ui/react-tabs";
 import * as React from "react";
 
-interface TabsProps extends React.ComponentPropsWithoutRef<
-  typeof TabsPrimitive.Root
-> {
+interface TabsProps
+  extends React.ComponentPropsWithoutRef<typeof TabsPrimitive.Root> {
   variant?: "default" | "underline";
 }
 
@@ -24,9 +23,8 @@ const Tabs = React.forwardRef<
 ));
 Tabs.displayName = TabsPrimitive.Root.displayName;
 
-interface TabsListProps extends React.ComponentPropsWithoutRef<
-  typeof TabsPrimitive.List
-> {
+interface TabsListProps
+  extends React.ComponentPropsWithoutRef<typeof TabsPrimitive.List> {
   variant?: "default" | "underline";
 }
 
@@ -48,9 +46,8 @@ const TabsList = React.forwardRef<
 ));
 TabsList.displayName = TabsPrimitive.List.displayName;
 
-interface TabsTriggerProps extends React.ComponentPropsWithoutRef<
-  typeof TabsPrimitive.Trigger
-> {
+interface TabsTriggerProps
+  extends React.ComponentPropsWithoutRef<typeof TabsPrimitive.Trigger> {
   variant?: "default" | "underline";
 }
 

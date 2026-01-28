@@ -1,8 +1,8 @@
-import { graph2DConstants } from "./force-graph-2d-constants";
 import type {
   CustomGraphLink,
   CustomGraphNode,
 } from "../permission-graph-types";
+import { graph2DConstants } from "./force-graph-2d-constants";
 
 export function hexToPixi(hex: string): number {
   return parseInt(hex.replace("#", ""), 16);
@@ -80,9 +80,11 @@ export function getNodeBorderColor(
         node.permissionData.namespacePaths &&
         node.permissionData.namespacePaths.length > 0
       ) {
-        return graph2DConstants.nodeConfig.nodeBorderColors.namespacePermissionNode;
+        return graph2DConstants.nodeConfig.nodeBorderColors
+          .namespacePermissionNode;
       }
-      return graph2DConstants.nodeConfig.nodeBorderColors.emissionPermissionNode;
+      return graph2DConstants.nodeConfig.nodeBorderColors
+        .emissionPermissionNode;
     case "signal":
       return graph2DConstants.nodeConfig.nodeBorderColors.signalNode;
     default:
@@ -112,7 +114,8 @@ export function getNodeGlowColor(
         node.permissionData.namespacePaths &&
         node.permissionData.namespacePaths.length > 0
       ) {
-        return graph2DConstants.nodeConfig.nodeGlowColors.namespacePermissionNode;
+        return graph2DConstants.nodeConfig.nodeGlowColors
+          .namespacePermissionNode;
       }
       return graph2DConstants.nodeConfig.nodeGlowColors.emissionPermissionNode;
     case "signal":
