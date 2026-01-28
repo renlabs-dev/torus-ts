@@ -1,0 +1,12 @@
+{
+  "name": "@torus-ts/vitest-config",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./setup": "./setup.ts"
+  },
+  "files": [
+    "setup.ts"
+  ]
+}

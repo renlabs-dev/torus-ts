@@ -68,8 +68,7 @@ export interface AddDaoTreasuryTransferProposal {
 }
 
 export interface AddEmissionProposal
-  extends Omit<EmissionProposal, "api">,
-    TransactionHelpers {}
+  extends Omit<EmissionProposal, "api">, TransactionHelpers {}
 
 export interface AddAgentApplication extends TransactionHelpers {
   IpfsHash: string;

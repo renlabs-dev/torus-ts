@@ -7,6 +7,7 @@ interface FractionButtonProps {
   onClick: () => void;
   disabled: boolean;
   selected: boolean;
+  "data-testid"?: string;
 }
 
 export function FractionButton({
@@ -14,6 +15,7 @@ export function FractionButton({
   onClick,
   disabled,
   selected,
+  "data-testid": dataTestId,
 }: FractionButtonProps) {
   return (
     <Button
@@ -21,6 +23,7 @@ export function FractionButton({
       onClick={onClick}
       variant="outline"
       disabled={disabled}
+      data-testid={dataTestId}
       className={cn(
         "flex h-6 w-[35px] items-center justify-center rounded-none border border-[#262631] bg-[#19191A] text-xs hover:bg-[#262631]",
         selected && "bg-[#262631]",
@@ -67,13 +70,14 @@ export function FractionButtons({
   ];
 
   return (
-    <div className="flex gap-2">
+    <div className="flex gap-2" data-testid="fraction-buttons-container">
       {fractions.map(({ value, label }) => (
         <FractionButton
           key={value}
           selected={selected === value}
           onClick={() => handleClick(value)}
           disabled={isDisabled}
+          data-testid={`fraction-button-${value}`}
         >
           {label}
         </FractionButton>

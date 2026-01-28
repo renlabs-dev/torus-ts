@@ -48,6 +48,16 @@
       "dependsOn": ["^build"],
       "outputs": []
     },
+    "test:watch": {
+      "dependsOn": ["^build"],
+      "outputs": [],
+      "cache": false
+    },
+    "test:ui": {
+      "dependsOn": ["^build"],
+      "outputs": [],
+      "cache": false
+    },
     "test:chain-query": {
       "dependsOn": ["^build"],
       "outputs": [],

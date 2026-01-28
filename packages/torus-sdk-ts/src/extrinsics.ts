@@ -4,8 +4,6 @@
 
 import type { ApiPromise, SubmittableResult } from "@polkadot/api";
 import type { SubmittableExtrinsic } from "@polkadot/api-base/types";
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { DispatchError, ExtrinsicStatus } from "@polkadot/types/interfaces";
 import { chainErr, ParseError } from "@torus-network/torus-utils/error";
 import type { Result } from "@torus-network/torus-utils/result";
 import { makeErr, makeOk } from "@torus-network/torus-utils/result";
@@ -723,11 +721,10 @@ export interface ExtrinsicTrackerEvents {
  * });
  * ```
  */
-export interface ExtrinsicTracker
-  extends Pick<
-    Emittery<ExtrinsicTrackerEvents>,
-    "on" | "off" | "once" | "events"
-  > {
+export interface ExtrinsicTracker extends Pick<
+  Emittery<ExtrinsicTrackerEvents>,
+  "on" | "off" | "once" | "events"
+> {
   /** Raw event emitter for advanced use cases */
   emitter: Emittery<ExtrinsicTrackerEvents>;
 
@@ -911,7 +908,6 @@ export async function sendTxWithTracker(
             doEmit("inBlock", event);
             return { terminal: false };
         }
-        throw new Error("Unreachable");
       },
       Warning: ({ txHash, kind }) => {
         const event: TxWarningEvent = makeEvent({

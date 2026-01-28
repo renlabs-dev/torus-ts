@@ -53,7 +53,6 @@ export function TransfersDetailsDialog({
     recipient,
     originTokenAddressOrDenom,
     originTxHash,
-    msgId,
     timestamp,
   } = transfer;
 
@@ -208,7 +207,6 @@ export function TransfersDetailsDialog({
                 url={originTxUrl}
               />
             )}
-            {msgId && <TransferProperty name="Message ID" value={msgId} />}
           </div>
         ) : (
           <div className="flex flex-col items-center justify-center py-4">

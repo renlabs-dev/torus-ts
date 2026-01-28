@@ -74,6 +74,8 @@ interface NativeToBaseStep1Params {
   getExplorerUrl: (txHash: string, chainName: string) => string;
   /** Optional callback when transaction enters confirming state (for history/URL update) */
   onTransactionConfirming?: (txHash: string, baselineBalance: bigint) => void;
+  /** Optional callback when transaction is included in a block (for blockHash capture) */
+  onTransactionInBlock?: (blockHash: string) => void;
 }
 
 /**
@@ -113,9 +115,11 @@ async function trackSubstrateTransaction(
   addTransaction: (tx: SimpleBridgeTransaction) => void,
   getExplorerUrl: (txHash: string, chainName: string) => string,
   onTransactionConfirming?: (txHash: string, baselineBalance: bigint) => void,
+  onTransactionInBlock?: (blockHash: string) => void,
 ): Promise<void> {
   const abortController = new AbortController();
   let capturedTxHash: string | undefined;
+  let capturedBlockHash: string | undefined;
   let listenersCleanedUp = false;
 
   // Define handlers outside promise to ensure they can be cleaned up
@@ -179,8 +183,8 @@ async function trackSubstrateTransaction(
         chainName: "Torus",
         message: "Bridge complete - tokens arrived in Torus EVM",
         txHash: capturedTxHash,
-        explorerUrl: capturedTxHash
-          ? getExplorerUrl(capturedTxHash, "Torus EVM")
+        explorerUrl: capturedBlockHash
+          ? getExplorerUrl(capturedBlockHash, "Torus")
           : undefined,
       });
       resolve();
@@ -206,14 +210,25 @@ async function trackSubstrateTransaction(
       reject(error instanceof Error ? error : new Error(String(error)));
     };
 
-    // Capture txHash from early events and notify for history/URL update
+    // Capture txHash and blockHash from events
+    // Note: blockHash is used for Polkadot.js explorer (when finalized/inBlock)
+    // txHash is used as transaction identifier
     const handleTxHash = (data?: unknown) => {
       if (data && typeof data === "object" && "txHash" in data) {
-        const hash = (data as { txHash?: string }).txHash;
-        if (hash && !capturedTxHash) {
-          capturedTxHash = hash;
+        const txHashValue = (data as { txHash?: string }).txHash;
+        const blockHashValue = (data as { blockHash?: string }).blockHash;
+
+        if (txHashValue && !capturedTxHash) {
+          capturedTxHash = txHashValue;
           // Notify that transaction is now confirming (for history/URL update)
-          onTransactionConfirming?.(hash, baselineBalance);
+          onTransactionConfirming?.(txHashValue, baselineBalance);
+        }
+
+        // Capture blockHash when available (inBlock or Finalized events)
+        if (blockHashValue && !capturedBlockHash) {
+          capturedBlockHash = blockHashValue;
+          // Notify that transaction is now in a block (for blockHash capture)
+          onTransactionInBlock?.(blockHashValue);
         }
       }
     };
@@ -275,7 +290,7 @@ async function trackSubstrateTransaction(
  */
 export async function executeNativeToBaseStep1(
   params: NativeToBaseStep1Params,
-) {
+): Promise<{ success: boolean; txHash?: string; error?: Error }> {
   const {
     amount,
     evmAddress,
@@ -333,28 +348,54 @@ export async function executeNativeToBaseStep1(
     });
 
     if (isUserRejectionError(sendErr)) {
-      throw new UserRejectedError(errorMessage);
+      return {
+        success: false,
+        txHash: undefined,
+        error: new UserRejectedError(errorMessage),
+      };
     }
 
-    throw sendErr;
+    return {
+      success: false,
+      txHash: undefined,
+      error: sendErr,
+    };
   }
 
   const { tracker } = sendRes;
 
   updateBridgeState({ step: SimpleBridgeStep.STEP_1_CONFIRMING });
 
-  await trackSubstrateTransaction(
-    tracker,
-    refetchTorusEvmBalance,
-    refetchNativeBalance,
-    baselineBalance,
-    expectedIncrease,
-    amount,
-    updateBridgeState,
-    addTransaction,
-    getExplorerUrl,
-    onTransactionConfirming,
+  let capturedTxHash: string | undefined;
+
+  const [trackError] = await tryAsync(
+    trackSubstrateTransaction(
+      tracker,
+      refetchTorusEvmBalance,
+      refetchNativeBalance,
+      baselineBalance,
+      expectedIncrease,
+      amount,
+      updateBridgeState,
+      addTransaction,
+      getExplorerUrl,
+      (txHash, baselineBalance) => {
+        capturedTxHash = txHash;
+        onTransactionConfirming?.(txHash, baselineBalance);
+      },
+      params.onTransactionInBlock,
+    ),
   );
+
+  if (trackError !== undefined) {
+    return {
+      success: false,
+      txHash: capturedTxHash,
+      error: trackError,
+    };
+  }
+
+  return { success: true, txHash: capturedTxHash };
 }
 
 /**
@@ -425,7 +466,7 @@ interface NativeToBaseStep2Params {
  */
 export async function executeNativeToBaseStep2(
   params: NativeToBaseStep2Params,
-) {
+): Promise<{ success: boolean; txHash?: string; error?: Error }> {
   const {
     amount,
     evmAddress,
@@ -449,7 +490,18 @@ export async function executeNativeToBaseStep2(
     (t) => t.chainName === "torus" && t.symbol === "TORUS",
   );
   if (torusTokenIndex < 0) {
-    throw new Error("Torus token not found in warp configuration");
+    const error = new Error("Torus token not found in warp configuration");
+    addTransaction({
+      step: 2,
+      status: "ERROR",
+      chainName: "Torus EVM",
+      message: error.message,
+    });
+    updateBridgeState({
+      step: SimpleBridgeStep.ERROR,
+      errorMessage: error.message,
+    });
+    return { success: false, error };
   }
 
   updateBridgeState({ step: SimpleBridgeStep.STEP_2_PREPARING });
@@ -523,7 +575,20 @@ export async function executeNativeToBaseStep2(
     getTokenByIndex(warpCore, torusTokenIndex),
   );
   if (tokenError || !torusToken) {
-    throw new Error("Failed to get Torus token from warp configuration");
+    const error = new Error(
+      "Failed to get Torus token from warp configuration",
+    );
+    addTransaction({
+      step: 2,
+      status: "ERROR",
+      chainName: "Torus EVM",
+      message: error.message,
+    });
+    updateBridgeState({
+      step: SimpleBridgeStep.ERROR,
+      errorMessage: error.message,
+    });
+    return { success: false, error };
   }
 
   // Convert the user's requested amount to wei
@@ -531,7 +596,18 @@ export async function executeNativeToBaseStep2(
     toWei(amount.trim(), torusToken.decimals),
   );
   if (amountWeiError) {
-    throw new Error("Failed to convert amount to wei");
+    const error = new Error("Failed to convert amount to wei");
+    addTransaction({
+      step: 2,
+      status: "ERROR",
+      chainName: "Torus EVM",
+      message: error.message,
+    });
+    updateBridgeState({
+      step: SimpleBridgeStep.ERROR,
+      errorMessage: error.message,
+    });
+    return { success: false, error };
   }
 
   // Create TokenAmount with the REQUESTED amount (not total balance)
@@ -543,7 +619,18 @@ export async function executeNativeToBaseStep2(
     getAccountAddressAndPubKey(multiProvider, "torus", accounts),
   );
   if (addressError || !address) {
-    throw new Error("Failed to get account address for Torus chain");
+    const error = new Error("Failed to get account address for Torus chain");
+    addTransaction({
+      step: 2,
+      status: "ERROR",
+      chainName: "Torus EVM",
+      message: error.message,
+    });
+    updateBridgeState({
+      step: SimpleBridgeStep.ERROR,
+      errorMessage: error.message,
+    });
+    return { success: false, error };
   }
 
   // Get public key (may be async)
@@ -561,9 +648,20 @@ export async function executeNativeToBaseStep2(
   );
 
   if (maxAmountError !== undefined) {
-    throw new Error(
+    const error = new Error(
       `Failed to calculate max transfer amount: ${maxAmountError.message}`,
     );
+    addTransaction({
+      step: 2,
+      status: "ERROR",
+      chainName: "Torus EVM",
+      message: error.message,
+    });
+    updateBridgeState({
+      step: SimpleBridgeStep.ERROR,
+      errorMessage: error.message,
+    });
+    return { success: false, error };
   }
 
   // Convert maxTransferAmount to decimal string
@@ -579,7 +677,7 @@ export async function executeNativeToBaseStep2(
   const expectedIncreaseAfterFees = toNano(maxTransferAmountDecimal);
 
   // Use the max transfer amount instead of the original amount
-  const [hyperlaneError, txHash2] = await tryAsync(
+  const [hyperlaneError, result] = await tryAsync(
     triggerHyperlaneTransfer({
       origin: "torus",
       destination: "base",
@@ -613,14 +711,25 @@ export async function executeNativeToBaseStep2(
     });
 
     if (isUserRejected) {
-      throw new UserRejectedError(errorMessage);
+      return {
+        success: false,
+        txHash: undefined,
+        error: new UserRejectedError(errorMessage),
+      };
     }
 
-    throw hyperlaneError;
+    return {
+      success: false,
+      txHash: undefined,
+      error: hyperlaneError,
+    };
   }
 
   updateBridgeState({ step: SimpleBridgeStep.STEP_2_CONFIRMING });
   onStepProgress?.(SimpleBridgeStep.STEP_2_CONFIRMING);
+
+  // The result is the transaction hash from Hyperlane transfer
+  const txHash2 = result;
 
   // Notify that step 2 is now confirming (for F5 recovery baseline balance)
   // baseBaselineBalance was captured before the Hyperlane transaction
@@ -652,9 +761,13 @@ export async function executeNativeToBaseStep2(
       errorMessage:
         pollingResult.errorMessage ?? "Transfer confirmation failed",
     });
-    throw new Error(
-      pollingResult.errorMessage ?? "Transfer confirmation failed",
-    );
+    return {
+      success: false,
+      txHash: txHash2,
+      error: new Error(
+        pollingResult.errorMessage ?? "Transfer confirmation failed",
+      ),
+    };
   }
 
   // Refetch Torus EVM balance to reflect the debit from the transfer
@@ -671,4 +784,6 @@ export async function executeNativeToBaseStep2(
     txHash: txHash2,
     explorerUrl: txHash2 ? getExplorerUrl(txHash2, "Base") : undefined,
   });
+
+  return { success: true, txHash: txHash2 };
 }

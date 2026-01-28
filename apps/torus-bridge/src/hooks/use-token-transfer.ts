@@ -11,11 +11,11 @@ import { tryAsync, trySync } from "@torus-network/torus-utils/try-catch";
 import { useToast } from "@torus-ts/ui/hooks/use-toast";
 import { useTxSuccessToast } from "~/app/_components/toast/tx-success-toast";
 import { useCallback, useState } from "react";
+import { assert } from "tsafe";
 import { getChainDisplayName } from "../utils/chain";
 import { logger } from "../utils/logger";
 import type { AppState } from "../utils/store";
 import { useStore } from "../utils/store";
-import { tryGetMsgIdFromTransferReceipt } from "../utils/transfer";
 import type { TransferContext, TransferFormValues } from "../utils/types";
 import { TransferStatus } from "../utils/types";
 import { getTokenByIndex, useWarpCore } from "./token";
@@ -329,7 +329,6 @@ async function executeTransfer({
   }
 
   const hashes: string[] = [];
-  let txReceipt: TypedTransactionReceipt | undefined = undefined;
 
   // Step 8: Process transactions
   for (const tx of txs) {
@@ -396,6 +395,11 @@ async function executeTransfer({
       return;
     }
 
+    assert(
+      isSendTransactionResult(txResult),
+      "txResult should have hash and confirm properties",
+    );
+
     const { hash, confirm } = txResult;
 
     updateTransferStatus(
@@ -404,7 +408,7 @@ async function executeTransfer({
     );
 
     // Confirm transaction
-    const [confirmError, receipt] = await tryAsync(confirm());
+    const [confirmError] = await tryAsync(confirm());
 
     if (confirmError !== undefined) {
       const errorMsg = "Failed to confirm transaction";
@@ -421,22 +425,10 @@ async function executeTransfer({
       return;
     }
 
-    txReceipt = receipt;
     const description = toTitleCase(tx.category);
     logger.debug(`${description} transaction confirmed, hash:`, hash);
     txSuccessToast(`${description} transaction sent!`, hash, origin);
     hashes.push(hash);
-  }
-
-  // Step 9: Get message ID
-  const [msgIdError, msgId] = txReceipt
-    ? trySync(() =>
-        tryGetMsgIdFromTransferReceipt(multiProvider, origin, txReceipt),
-      )
-    : [undefined, undefined];
-
-  if (msgIdError !== undefined) {
-    logger.warn("Failed to get message ID from receipt", msgIdError);
   }
 
   updateTransferStatus(
@@ -444,14 +436,13 @@ async function executeTransfer({
     (transferStatus = TransferStatus.ConfirmedTransfer),
     {
       originTxHash: hashes.at(-1),
-      msgId,
     },
   );
 
   setIsLoading(false);
   if (onDone) onDone();
 
-  // Return the last transaction hash
+  // Return transaction hash for explorer lookup
   return hashes.at(-1);
 }
 
@@ -485,3 +476,31 @@ const txCategoryToStatuses: Record<
     TransferStatus.ConfirmingApprove,
   ],
 };
+
+interface SendTransactionResult {
+  hash: string;
+  confirm: () => Promise<TypedTransactionReceipt>;
+}
+
+/**
+ * Type guard to validate SendTransactionResult objects.
+ *
+ * Checks that the value is an object with `hash` (string) and `confirm` (function)
+ * properties, which indicate a valid transaction result from the sendTransaction call.
+ *
+ * @param value - The value to check
+ * @returns True if value is a valid SendTransactionResult
+ */
+function isSendTransactionResult(
+  value: unknown,
+): value is SendTransactionResult {
+  // Check all properties in one condition for clarity
+  return (
+    typeof value === "object" &&
+    value !== null &&
+    "hash" in value &&
+    "confirm" in value &&
+    typeof (value as Record<string, unknown>).hash === "string" &&
+    typeof (value as Record<string, unknown>).confirm === "function"
+  );
+}
