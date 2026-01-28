@@ -8,6 +8,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { ForceGraphCanvas } from "./_components/force-graph/force-graph-canvas";
 import { useGraphData } from "./_components/force-graph/use-graph-data";
 import { GraphSheet } from "./_components/graph-sheet/graph-sheet";
+import Noise from "./_components/noise-effect";
 import { PermissionGraphFooter } from "./_components/permission-graph-footer";
 import type {
   CachedAgentData,
@@ -162,6 +163,7 @@ export default function PermissionGraphPage() {
         selectedNodeId={selectedNode?.id}
         allocatorAddress={allocatorAddress}
       />
+      <Noise />
       <PermissionGraphFooter handleNodeSelect={handleNodeSelect} />
     </main>
   );
