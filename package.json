@@ -34,7 +34,7 @@
     },
     "patchedDependencies": {
       "@hyperlane-xyz/widgets@17.0.0": "patches/@hyperlane-xyz__widgets@17.0.0.patch",
-      "@wagmi/connectors": "patches/@wagmi__connectors.patch"
+      "@wagmi/connectors@5.9.8": "patches/@wagmi__connectors.patch"
     }
   }
 }
