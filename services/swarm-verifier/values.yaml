@@ -42,6 +42,11 @@ deployment:
         secretKeyRef:
           name: "torus-{{ .Values.environmentName }}-web-apps-secret"
           key: OPENROUTER_API_KEY
+    FIRECRAWL_API_KEY:
+      valueFrom:
+        secretKeyRef:
+          name: "torus-{{ .Values.environmentName }}-web-apps-secret"
+          key: FIRECRAWL_API_KEY
     VERIFIER_AGENT_MNEMONIC:
       valueFrom:
         secretKeyRef:
