@@ -1,0 +1,101 @@
+cacheUrl: ""
+
+ingress:
+  enabled: false
+
+service:
+  enabled: false
+
+deployment:
+  image:
+    repository: ghcr.io/renlabs-dev/swarm-verifier
+
+  additionalLabels:
+    app: swarm-verifier
+
+  podLabels:
+    app: swarm-verifier
+
+  resources:
+    limits:
+      memory: 512Mi
+      cpu: 1
+    requests:
+      memory: 200Mi
+      cpu: 0.1
+
+  command: ["pnpm"]
+  args: ["tsx", "./src/index.ts"]
+
+  startupProbe:
+    enabled: false
+
+  readinessProbe:
+    enabled: false
+
+  livenessProbe:
+    enabled: false
+
+  env:
+    OPENROUTER_API_KEY:
+      valueFrom:
+        secretKeyRef:
+          name: "torus-{{ .Values.environmentName }}-web-apps-secret"
+          key: OPENROUTER_API_KEY
+    VERIFIER_AGENT_MNEMONIC:
+      valueFrom:
+        secretKeyRef:
+          name: "torus-{{ .Values.environmentName }}-web-apps-secret"
+          key: VERIFIER_AGENT_MNEMONIC
+    POSTGRES_URL:
+      valueFrom:
+        secretKeyRef:
+          name: "torus-{{ .Values.environmentName }}-web-apps-secret"
+          key: prediction_swarm_db_url
+    PINATA_JWT:
+      valueFrom:
+        secretKeyRef:
+          name: "torus-{{ .Values.environmentName }}-web-apps-secret"
+          key: pinata_jwt
+    SWARM_VERIFIER_PERMISSION_ID:
+      valueFrom:
+        secretKeyRef:
+          name: "torus-{{ .Values.environmentName }}-web-apps-secret"
+          key: SWARM_VERIFIER_PERMISSION_ID
+    SWARM_TRUSTED_VERIFIER_AGENT_ID:
+      valueFrom:
+        secretKeyRef:
+          name: "torus-{{ .Values.environmentName }}-web-apps-secret"
+          key: SWARM_TRUSTED_VERIFIER_AGENT_ID
+    NEXT_PUBLIC_API_BASE_URL:
+      valueFrom:
+        configMapKeyRef:
+          name: swarm-verifier-config
+          key: next_public_api_base_url
+    NEXT_PUBLIC_TORUS_CACHE_URL:
+      valueFrom:
+        configMapKeyRef:
+          name: swarm-verifier-config
+          key: next_public_cache_provider_url
+    NEXT_PUBLIC_TORUS_CHAIN_ENV:
+      valueFrom:
+        configMapKeyRef:
+          name: swarm-verifier-config
+          key: next_public_chain_env
+    NEXT_PUBLIC_TORUS_RPC_HTTPS_URL:
+      valueFrom:
+        configMapKeyRef:
+          name: swarm-verifier-config
+          key: next_public_rpc_https_url
+    NEXT_PUBLIC_TORUS_RPC_URL:
+      valueFrom:
+        configMapKeyRef:
+          name: swarm-verifier-config
+          key: next_public_ws_url
+    TORUS_RPC_URL:
+      valueFrom:
+        configMapKeyRef:
+          name: swarm-verifier-config
+          key: next_public_ws_url
+    POLL_INTERVAL_MS:
+      value: "60000"
