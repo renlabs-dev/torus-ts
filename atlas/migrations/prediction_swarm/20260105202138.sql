@@ -25,7 +25,7 @@ CREATE INDEX "verification_claim_parsed_prediction_id_idx" ON "public"."verifica
 -- Create index "verification_claim_verifier_agent_id_idx" to table: "verification_claim"
 CREATE INDEX "verification_claim_verifier_agent_id_idx" ON "public"."verification_claim" ("verifier_agent_id");
 -- Modify "verdict" table
-ALTER TABLE "public"."verdict" ADD COLUMN "accepted_claim_id" uuid NULL DEFAULT uuidv7(), ADD CONSTRAINT "verdict_accepted_claim_id_verification_claim_id_fk" FOREIGN KEY ("accepted_claim_id") REFERENCES "public"."verification_claim" ("id") ON UPDATE NO ACTION ON DELETE NO ACTION;
+ALTER TABLE "public"."verdict" ADD COLUMN "accepted_claim_id" uuid NULL, ADD CONSTRAINT "verdict_accepted_claim_id_verification_claim_id_fk" FOREIGN KEY ("accepted_claim_id") REFERENCES "public"."verification_claim" ("id") ON UPDATE NO ACTION ON DELETE NO ACTION;
 -- Create "verifier_feedback" table
 CREATE TABLE "public"."verifier_feedback" (
   "id" uuid NOT NULL DEFAULT uuidv7(),

@@ -10,6 +10,7 @@ import {
   primaryKey,
   text,
   unique,
+  uuid,
   varchar,
 } from "drizzle-orm/pg-core";
 import { extract_pgenum_values } from "../utils";
@@ -373,7 +374,7 @@ export const verdictSchema = createTable(
       .references(() => parsedPredictionSchema.id),
     verdict: boolean("verdict").notNull(), // True if prediction came true, false otherwise
     context: jsonb("context").notNull().$type<VerdictContext>(), // Context explaining the verdict
-    acceptedClaimId: uuidv7("accepted_claim_id").references(
+    acceptedClaimId: uuid("accepted_claim_id").references(
       () => verificationClaimSchema.id,
     ),
     ...timeFields(),
@@ -530,7 +531,7 @@ export type ClaimValidationResult = keyof typeof claimValidationResultValues;
 export const claimValidationFeedbackSchema = createTable(
   "claim_validation_feedback",
   {
-    claimId: uuidv7("claim_id")
+    claimId: uuid("claim_id")
       .primaryKey()
       .references(() => verificationClaimSchema.id, { onDelete: "cascade" }),
     result: claimValidationResultEnum("result").notNull(),
