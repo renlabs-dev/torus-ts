@@ -1,3 +1,0 @@
-{
-  "extends": "@torus-ts/tsconfig/app-node.json"
-}

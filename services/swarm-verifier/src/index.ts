@@ -19,8 +19,10 @@ const logger = BasicLogger.create({ name: "swarm-verifier" });
 const getEnv = validateEnvOrExit({
   SWARM_API_URL: z.string().url().default("https://api.predictionswarm.com"),
   OPENROUTER_API_KEY: z.string().min(1, "OPENROUTER_API_KEY is required"),
-  AGENT_MNEMONIC: z.string().min(1, "AGENT_MNEMONIC is required"),
-  VERIFICATION_MODEL: z.string().default("anthropic/claude-sonnet-4"),
+  VERIFIER_AGENT_MNEMONIC: z
+    .string()
+    .min(1, "VERIFIER_AGENT_MNEMONIC is required"),
+  VERIFICATION_MODEL: z.string().default("google/gemini-2.5-flash"),
   CONCURRENCY: z.coerce.number().int().positive().default(3),
   POLL_INTERVAL_MS: z.coerce.number().int().positive().default(60000),
   TOPICS: z
@@ -49,7 +51,7 @@ async function main() {
 
   const apiClient = await SwarmApiClient.create(
     env.SWARM_API_URL,
-    env.AGENT_MNEMONIC,
+    env.VERIFIER_AGENT_MNEMONIC,
   );
 
   const llmClient = new OpenRouterClient({

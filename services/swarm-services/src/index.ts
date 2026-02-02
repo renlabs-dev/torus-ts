@@ -1,3 +1,6 @@
+import { readFile } from "node:fs/promises";
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
 import { BasicLogger } from "@torus-network/torus-utils/logger";
 import { tryAsync } from "@torus-network/torus-utils/try-catch";
 import { validateEnvOrExit } from "@torus-network/torus-utils/env";
@@ -13,6 +16,7 @@ import {
   queryAccumulatedStreamAmount,
 } from "@torus-network/sdk/chain";
 import type { SS58Address } from "@torus-network/sdk/types";
+import { createDb } from "@torus-ts/db/client";
 import {
   calculateContributorScores,
   calculateVerifierContributorScores,
@@ -20,6 +24,10 @@ import {
 import { saveDistribution } from "./services/reward-distribution.js";
 import { notifyDistributionComplete } from "./services/discord-webhook.js";
 import { getLastDistributionTimeForPermission } from "./db.js";
+import { PredictionJudge } from "./services/prediction-judge.js";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 const log = BasicLogger.create({ name: "swarm-services" });
 
@@ -28,23 +36,48 @@ export const env = validateEnvOrExit({
   SWARM_MIN_PRECISION_THRESHOLD: z.coerce.number().default(5),
   SWARM_REDUNDANCY_PENALTY_THRESHOLD: z.coerce.number().default(4),
   SWARM_DISTRIBUTION_INTERVAL_HOURS: z.coerce.number().default(24),
-  SWARM_DISCORD_WEBHOOK_URL: z.string(),
-  SWARM_PERMISSION_ID: z.custom<`0x${string}`>(
-    (val) =>
-      typeof val === "string" && val.length === 66 && val.startsWith("0x"),
-  ),
+  SWARM_DISCORD_WEBHOOK_URL: z.string().optional(),
+  SWARM_PERMISSION_ID: z
+    .custom<`0x${string}`>((val) => typeof val === "string" && val.length === 66 && val.startsWith("0x"))
+    .optional(),
   SWARM_VERIFIER_PERMISSION_ID: z
     .custom<`0x${string}`>((val) => typeof val === "string" && val.length === 66 && val.startsWith("0x"))
     .optional(),
-  SWARM_TRUSTED_VERIFIER_AGENT_ID: z.string(),
-  NEXT_PUBLIC_TORUS_RPC_URL: z.string().url(),
-  PREDICTION_APP_MNEMONIC: z.string(),
+  SWARM_TRUSTED_VERIFIER_AGENT_ID: z.string().optional(),
+  NEXT_PUBLIC_TORUS_RPC_URL: z.string().url().optional(),
+  PREDICTION_APP_MNEMONIC: z.string().optional(),
+  OPENROUTER_API_KEY: z.string().optional(),
+  FIRECRAWL_API_KEY: z.string().optional(),
+  JUDGE_CONCURRENCY: z.coerce.number().default(8),
 })(process.env);
 
 async function runDistribution() {
-  const lastDistribution = await getLastDistributionTimeForPermission(
-    env.SWARM_PERMISSION_ID,
-  );
+  if (!env.SWARM_PERMISSION_ID) {
+    throw new Error("SWARM_PERMISSION_ID is required for distribution");
+  }
+  if (!env.SWARM_TRUSTED_VERIFIER_AGENT_ID) {
+    throw new Error(
+      "SWARM_TRUSTED_VERIFIER_AGENT_ID is required for distribution",
+    );
+  }
+  if (!env.NEXT_PUBLIC_TORUS_RPC_URL) {
+    throw new Error("NEXT_PUBLIC_TORUS_RPC_URL is required for distribution");
+  }
+  if (!env.PREDICTION_APP_MNEMONIC) {
+    throw new Error("PREDICTION_APP_MNEMONIC is required for distribution");
+  }
+  if (!env.SWARM_DISCORD_WEBHOOK_URL) {
+    throw new Error("SWARM_DISCORD_WEBHOOK_URL is required for distribution");
+  }
+
+  const permissionId = env.SWARM_PERMISSION_ID;
+  const trustedVerifierAgentId = env.SWARM_TRUSTED_VERIFIER_AGENT_ID;
+  const rpcUrl = env.NEXT_PUBLIC_TORUS_RPC_URL;
+  const mnemonic = env.PREDICTION_APP_MNEMONIC;
+  const webhookUrl = env.SWARM_DISCORD_WEBHOOK_URL;
+
+  const lastDistribution =
+    await getLastDistributionTimeForPermission(permissionId);
 
   const periodStart = lastDistribution ?? new Date("2025-01-18T00:00:00Z");
 
@@ -53,7 +86,7 @@ async function runDistribution() {
   const [scoresErr, scores] = await tryAsync(
     calculateContributorScores(
       periodStart,
-      env.SWARM_TRUSTED_VERIFIER_AGENT_ID,
+      trustedVerifierAgentId,
       env.SWARM_MIN_PRECISION_THRESHOLD / 100,
       env.SWARM_REDUNDANCY_PENALTY_THRESHOLD,
     ),
@@ -66,11 +99,9 @@ async function runDistribution() {
 
   log.info("Scores calculated", { recipients: scores.size });
 
-  log.info("Connecting to blockchain", {
-    rpcUrl: env.NEXT_PUBLIC_TORUS_RPC_URL,
-  });
+  log.info("Connecting to blockchain", { rpcUrl });
 
-  const provider = new WsProvider(env.NEXT_PUBLIC_TORUS_RPC_URL);
+  const provider = new WsProvider(rpcUrl);
   const [apiErr, api] = await tryAsync(ApiPromise.create({ provider }));
 
   if (apiErr) {
@@ -79,10 +110,7 @@ async function runDistribution() {
   }
 
   try {
-    const [permErr, permission] = await queryPermission(
-      api,
-      env.SWARM_PERMISSION_ID,
-    );
+    const [permErr, permission] = await queryPermission(api, permissionId);
 
     if (permErr !== undefined) {
       log.error("Failed to query permission", { error: permErr });
@@ -90,7 +118,7 @@ async function runDistribution() {
     }
 
     if (permission === null) {
-      throw new Error(`Permission ${env.SWARM_PERMISSION_ID} not found`);
+      throw new Error(`Permission ${permissionId} not found`);
     }
 
     if (!("Stream" in permission.scope)) {
@@ -111,7 +139,7 @@ async function runDistribution() {
         api,
         permission.delegator,
         streamId,
-        env.SWARM_PERMISSION_ID,
+        permissionId,
       );
 
       if (accErr !== undefined) {
@@ -131,7 +159,7 @@ async function runDistribution() {
       log.info("No accumulated amount, skipping distribution");
 
       const [saveErr] = await tryAsync(
-        saveDistribution(new Map(), env.SWARM_PERMISSION_ID),
+        saveDistribution(new Map(), permissionId),
       );
 
       if (saveErr) {
@@ -156,12 +184,12 @@ async function runDistribution() {
     }
 
     const keyring = new Keyring({ type: "sr25519" });
-    const signer = keyring.addFromMnemonic(env.PREDICTION_APP_MNEMONIC);
+    const signer = keyring.addFromMnemonic(mnemonic);
 
     log.info("Updating recipients", { count: recipients.length });
     const updateTx = updateStreamPermission({
       api,
-      permissionId: env.SWARM_PERMISSION_ID,
+      permissionId,
       newRecipients: recipients,
     });
 
@@ -213,7 +241,7 @@ async function runDistribution() {
     log.info("Recipients updated");
 
     const [webhookErr] = await tryAsync(
-      notifyDistributionComplete(env.SWARM_DISCORD_WEBHOOK_URL, scores),
+      notifyDistributionComplete(webhookUrl, scores),
     );
 
     if (webhookErr) {
@@ -224,7 +252,7 @@ async function runDistribution() {
 
     log.info("Executing permission");
 
-    const executeTx = executePermission(api, env.SWARM_PERMISSION_ID);
+    const executeTx = executePermission(api, permissionId);
 
     const [executeErr] = await tryAsync(
       new Promise<void>((resolve, reject) => {
@@ -273,9 +301,7 @@ async function runDistribution() {
 
     log.info("Permission executed");
 
-    const [saveErr] = await tryAsync(
-      saveDistribution(scores, env.SWARM_PERMISSION_ID),
-    );
+    const [saveErr] = await tryAsync(saveDistribution(scores, permissionId));
 
     if (saveErr) {
       log.error("Failed to save distribution", { error: saveErr });
@@ -289,6 +315,11 @@ async function runDistribution() {
 }
 
 async function runDistributionService() {
+  if (!env.SWARM_PERMISSION_ID) {
+    throw new Error("SWARM_PERMISSION_ID is required for distribution");
+  }
+  const permissionId = env.SWARM_PERMISSION_ID;
+
   const intervalMs = env.SWARM_DISTRIBUTION_INTERVAL_HOURS * 60 * 60 * 1000;
   const withBackoff = withExponentialBackoff(1000, 5);
 
@@ -302,9 +333,8 @@ async function runDistributionService() {
         log.info("Retrying", { attempt });
       }
 
-      const lastDistribution = await getLastDistributionTimeForPermission(
-        env.SWARM_PERMISSION_ID,
-      );
+      const lastDistribution =
+        await getLastDistributionTimeForPermission(permissionId);
 
       const now = new Date();
       let shouldRun = false;
@@ -350,8 +380,20 @@ async function runVerifierDistribution() {
   if (!env.SWARM_VERIFIER_PERMISSION_ID) {
     throw new Error("SWARM_VERIFIER_PERMISSION_ID is not set");
   }
+  if (!env.NEXT_PUBLIC_TORUS_RPC_URL) {
+    throw new Error("NEXT_PUBLIC_TORUS_RPC_URL is required");
+  }
+  if (!env.PREDICTION_APP_MNEMONIC) {
+    throw new Error("PREDICTION_APP_MNEMONIC is required");
+  }
+  if (!env.SWARM_DISCORD_WEBHOOK_URL) {
+    throw new Error("SWARM_DISCORD_WEBHOOK_URL is required");
+  }
 
   const verifierPermissionId = env.SWARM_VERIFIER_PERMISSION_ID;
+  const rpcUrl = env.NEXT_PUBLIC_TORUS_RPC_URL;
+  const mnemonic = env.PREDICTION_APP_MNEMONIC;
+  const webhookUrl = env.SWARM_DISCORD_WEBHOOK_URL;
 
   const lastDistribution =
     await getLastDistributionTimeForPermission(verifierPermissionId);
@@ -375,11 +417,9 @@ async function runVerifierDistribution() {
 
   log.info("Verifier scores calculated", { recipients: scores.size });
 
-  log.info("Connecting to blockchain", {
-    rpcUrl: env.NEXT_PUBLIC_TORUS_RPC_URL,
-  });
+  log.info("Connecting to blockchain", { rpcUrl });
 
-  const provider = new WsProvider(env.NEXT_PUBLIC_TORUS_RPC_URL);
+  const provider = new WsProvider(rpcUrl);
   const [apiErr, api] = await tryAsync(ApiPromise.create({ provider }));
 
   if (apiErr) {
@@ -467,7 +507,7 @@ async function runVerifierDistribution() {
     }
 
     const keyring = new Keyring({ type: "sr25519" });
-    const signer = keyring.addFromMnemonic(env.PREDICTION_APP_MNEMONIC);
+    const signer = keyring.addFromMnemonic(mnemonic);
 
     log.info("Updating verifier recipients", { count: recipients.length });
     const updateTx = updateStreamPermission({
@@ -524,7 +564,7 @@ async function runVerifierDistribution() {
     log.info("Verifier recipients updated");
 
     const [webhookErr] = await tryAsync(
-      notifyDistributionComplete(env.SWARM_DISCORD_WEBHOOK_URL, scores),
+      notifyDistributionComplete(webhookUrl, scores),
     );
 
     if (webhookErr) {
@@ -669,12 +709,41 @@ async function runVerifierDistributionService() {
   }
 }
 
+async function runJudgeService() {
+  if (!env.OPENROUTER_API_KEY) {
+    throw new Error("OPENROUTER_API_KEY is required for judge service");
+  }
+  if (!env.FIRECRAWL_API_KEY) {
+    throw new Error("FIRECRAWL_API_KEY is required for judge service");
+  }
+
+  const sourceValidationPrompt = await readFile(
+    join(__dirname, "../SOURCE_VALIDATION_PROMPT.md"),
+    "utf-8",
+  );
+
+  const judge = new PredictionJudge(
+    {
+      openrouterApiKey: env.OPENROUTER_API_KEY,
+      firecrawlApiKey: env.FIRECRAWL_API_KEY,
+      concurrency: env.JUDGE_CONCURRENCY,
+      sourceValidationPrompt,
+    },
+    createDb(),
+  );
+
+  log.info("Starting judge service", { concurrency: env.JUDGE_CONCURRENCY });
+  await judge.runJudge(() => false);
+}
+
 async function main() {
   const serviceType = process.argv[2];
 
   if (!serviceType) {
     console.error("ERROR: You must provide the service type as an argument.");
-    console.error("Available services: distribution, verifier-distribution");
+    console.error(
+      "Available services: distribution, verifier-distribution, judge",
+    );
     process.exit(1);
   }
 
@@ -685,9 +754,14 @@ async function main() {
     case "verifier-distribution":
       await runVerifierDistributionService();
       break;
+    case "judge":
+      await runJudgeService();
+      break;
     default:
       console.error(`ERROR: Unknown service type '${serviceType}'.`);
-      console.error("Available services: distribution, verifier-distribution");
+      console.error(
+        "Available services: distribution, verifier-distribution, judge",
+      );
       process.exit(1);
   }
 }

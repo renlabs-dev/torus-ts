@@ -1,4 +1,5 @@
 import { AsyncLocalStorage } from "node:async_hooks";
+import { BasicLogger } from "@torus-network/torus-utils/logger";
 import type { DB, Transaction } from "@torus-ts/db/client";
 import {
   claimValidationFeedbackSchema,
@@ -15,11 +16,15 @@ import type {
   VerdictContext,
 } from "@torus-ts/db/schema";
 import { and, asc, eq, isNull, notExists, sql } from "drizzle-orm";
-import { getDomainTier, normalizeUrl, scrapePage } from "./firecrawl";
-import { logger } from "./logger";
-import { sleep } from "./utils";
+import { getDomainTier, normalizeUrl, scrapePage } from "./firecrawl.js";
+
+const logger = BasicLogger.create({ name: "prediction-judge" });
 
 const workerContext = new AsyncLocalStorage<{ workerId: number }>();
+
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
 
 function logInfo(message: string, fields?: Record<string, unknown>): void {
   const context = workerContext.getStore();
@@ -116,8 +121,8 @@ interface ValidatedClaim {
 
 export interface PredictionJudgeConfig {
   concurrency?: number;
-  debugMode?: boolean;
   openrouterApiKey: string;
+  firecrawlApiKey: string;
   sourceValidationPrompt: string;
 }
 
@@ -128,17 +133,13 @@ export class PredictionJudge {
   constructor(config: PredictionJudgeConfig, db: DB) {
     this.config = {
       concurrency: config.concurrency ?? 3,
-      debugMode: config.debugMode ?? false,
       openrouterApiKey: config.openrouterApiKey,
+      firecrawlApiKey: config.firecrawlApiKey,
       sourceValidationPrompt: config.sourceValidationPrompt,
     };
     this.db = db;
   }
 
-  /**
-   * Fetches the next prediction with mature claims (oldest claim >= 1 hour old)
-   * that has no verdict yet.
-   */
   async getNextPredictionWithClaims(tx: Transaction): Promise<
     | {
         prediction: {
@@ -166,14 +167,6 @@ export class PredictionJudge {
       }
     | undefined
   > {
-    // Find predictions that:
-    // 1. Have no verdict
-    // 2. Have at least one mature claim (≥1hr) that is eligible for evaluation
-    //
-    // A claim is eligible if:
-    // - No feedback row exists, OR
-    // - Feedback is soft-deleted (deletedAt IS NOT NULL), OR
-    // - Feedback has result='fetch_failed' AND updatedAt < 1 hour ago
     const predictions = await tx
       .select({
         id: parsedPredictionSchema.id,
@@ -195,7 +188,6 @@ export class PredictionJudge {
       )
       .where(
         and(
-          // No verdict exists
           notExists(
             tx
               .select()
@@ -204,23 +196,19 @@ export class PredictionJudge {
                 eq(verdictSchema.parsedPredictionId, parsedPredictionSchema.id),
               ),
           ),
-          // Has at least one eligible mature claim
           sql`EXISTS (
             SELECT 1 FROM verification_claim c
             WHERE c.parsed_prediction_id = ${parsedPredictionSchema.id}
               AND c.created_at < NOW() - INTERVAL '1 hour'
               AND (
-                -- No feedback exists
                 NOT EXISTS (
                   SELECT 1 FROM claim_validation_feedback f
                   WHERE f.claim_id = c.id
                 )
-                -- OR feedback is soft-deleted
                 OR EXISTS (
                   SELECT 1 FROM claim_validation_feedback f
                   WHERE f.claim_id = c.id AND f.deleted_at IS NOT NULL
                 )
-                -- OR feedback is fetch_failed and stale (>1hr)
                 OR EXISTS (
                   SELECT 1 FROM claim_validation_feedback f
                   WHERE f.claim_id = c.id
@@ -241,7 +229,6 @@ export class PredictionJudge {
       return undefined;
     }
 
-    // Only fetch claims that are eligible for evaluation
     const claims = await tx
       .select({
         id: verificationClaimSchema.id,
@@ -256,7 +243,6 @@ export class PredictionJudge {
       .where(
         and(
           eq(verificationClaimSchema.parsedPredictionId, prediction.id),
-          // Claim is eligible if no active feedback or stale fetch_failed
           sql`(
             NOT EXISTS (
               SELECT 1 FROM claim_validation_feedback f
@@ -279,8 +265,6 @@ export class PredictionJudge {
       )
       .orderBy(asc(verificationClaimSchema.createdAt));
 
-    // Fetch all tweets in the conversation thread for proper slice extraction
-    // This handles predictions that span multiple tweets in a thread
     const conversationTweets = prediction.conversationId
       ? await tx
           .select({
@@ -293,13 +277,11 @@ export class PredictionJudge {
           )
       : [{ id: prediction.sourceTweetId, text: prediction.tweetText }];
 
-    // Build tweet map for slice extraction (keyed by string ID to match PostSlice.source.tweet_id)
     const tweetMap = new Map<string, string>();
     for (const tweet of conversationTweets) {
       tweetMap.set(String(tweet.id), tweet.text);
     }
 
-    // Extract text from slices using the correct tweet for each slice
     const extractSliceText = (slices: PostSlice[]): string => {
       return slices
         .map((slice) => {
@@ -328,9 +310,6 @@ export class PredictionJudge {
     };
   }
 
-  /**
-   * Validates a single source against a claim using LLM.
-   */
   private async validateSourceContent(
     source: { url: string; content: string; title: string | null },
     claim: { outcome: boolean; reasoning: string },
@@ -348,7 +327,7 @@ export class PredictionJudge {
       source: {
         url: source.url,
         title: source.title,
-        content: source.content.substring(0, 8000), // Limit content size
+        content: source.content.substring(0, 8000),
       },
     };
 
@@ -404,11 +383,6 @@ export class PredictionJudge {
     return JSON.parse(jsonText) as SourceValidationResult;
   }
 
-  /**
-   * Ranks a claim by its source domain quality without fetching.
-   * Returns tier counts and best tier for sorting.
-   * Tier 0 (unknown) domains are included but ranked lowest.
-   */
   private rankClaimByDomains(claim: {
     id: string;
     verifierAgentId: string;
@@ -418,7 +392,6 @@ export class PredictionJudge {
     createdAt: Date;
   }): ClaimEvaluation {
     const sources = claim.sources ?? [];
-    // Include tier 0 (unknown) but exclude tier -1 (social media, prediction markets)
     const validSources = sources.filter((s) => getDomainTier(s.url) >= 0);
 
     const tier3Count = validSources.filter(
@@ -434,8 +407,7 @@ export class PredictionJudge {
       (s) => getDomainTier(s.url) === 0,
     ).length;
 
-    // Best tier is the highest tier present (0 = unknown, still valid)
-    let bestTier = -1; // -1 means no valid sources at all
+    let bestTier = -1;
     if (tier3Count > 0) bestTier = 3;
     else if (tier2Count > 0) bestTier = 2;
     else if (tier1Count > 0) bestTier = 1;
@@ -454,19 +426,6 @@ export class PredictionJudge {
     };
   }
 
-  /**
-   * Validates a claim by fetching and checking sources lazily.
-   * Fetches highest-tier sources first, stops on first corroboration.
-   * If a trusted source (tier 1-3) contradicts, the entire claim is rejected (verifier bug).
-   * Unknown domains (tier 0) are validated but given benefit of doubt on contradiction.
-   *
-   * Returns:
-   * - ValidatedClaim: source corroborated the claim
-   * - "rejected": trusted source contradicted (verifier bug)
-   * - "no_sources": claim had no valid source URLs
-   * - "fetch_failed": all sources failed to fetch (temporary, should retry later)
-   * - "no_corroboration": sources fetched but none corroborated (permanent failure)
-   */
   private async validateClaimSources(
     claim: {
       id: string;
@@ -487,8 +446,6 @@ export class PredictionJudge {
   > {
     const sources = claim.sources ?? [];
 
-    // Filter and deduplicate sources, sort by tier (highest first)
-    // Include tier 0 (unknown) but exclude tier -1 (social media, prediction markets)
     const seenUrls = new Set<string>();
     const rankedSources: {
       url: string;
@@ -498,7 +455,7 @@ export class PredictionJudge {
 
     for (const source of sources) {
       const tier = getDomainTier(source.url);
-      if (tier < 0) continue; // Only skip excluded domains (tier -1)
+      if (tier < 0) continue;
 
       let normalizedUrl: string;
       try {
@@ -513,29 +470,28 @@ export class PredictionJudge {
       rankedSources.push({ url: source.url, tier, normalizedUrl });
     }
 
-    // Sort by tier descending (tier 3 first, tier 0 last)
     rankedSources.sort((a, b) => b.tier - a.tier);
 
     if (rankedSources.length === 0) {
       return "no_sources";
     }
 
-    // Track whether we successfully validated at least one source
     let validatedAtLeastOne = false;
 
-    // Process sources in tier order, fetch lazily
     for (const source of rankedSources) {
       logInfo("Fetching source", { url: source.url, tier: source.tier });
 
-      // Fetch this single source
-      const outcome = await scrapePage(this.db, source.url);
+      const outcome = await scrapePage(
+        this.db,
+        source.url,
+        this.config.firecrawlApiKey,
+      );
 
       if (!outcome.ok || !outcome.result.content) {
         logInfo("Source fetch failed, trying next", { url: source.url });
         continue;
       }
 
-      // Validate with LLM
       try {
         const validation = await this.validateSourceContent(
           {
@@ -550,13 +506,11 @@ export class PredictionJudge {
           prediction,
         );
 
-        // Require minimum relevance score to accept corroboration
         const MIN_RELEVANCE_SCORE = 0.3;
         if (
           validation.corroborates &&
           validation.relevance_score >= MIN_RELEVANCE_SCORE
         ) {
-          // Success! This claim is validated
           return {
             claimId: claim.id,
             verifierAgentId: claim.verifierAgentId,
@@ -574,8 +528,6 @@ export class PredictionJudge {
           validation.corroborates &&
           validation.relevance_score < MIN_RELEVANCE_SCORE
         ) {
-          // LLM said corroborates but relevance too low - not strong enough evidence
-          // Count as validated (blocks claim permanently) since we did check it
           logInfo("Source corroborates but relevance too low, skipping", {
             url: source.url,
             relevanceScore: validation.relevance_score,
@@ -584,11 +536,8 @@ export class PredictionJudge {
           continue;
         }
 
-        // Source doesn't corroborate - this is a real validation
         validatedAtLeastOne = true;
         if (source.tier >= 1) {
-          // Trusted source contradiction (tier 1, 2, or 3) = reject entire claim
-          // A verifier shipping a claim with a contradicting curated source is a bug
           logInfo("Trusted source contradicts claim, rejecting entire claim", {
             url: source.url,
             tier: source.tier,
@@ -597,7 +546,6 @@ export class PredictionJudge {
           return "rejected";
         }
 
-        // Tier 0 (unknown domain) contradiction, try next source
         logInfo("Unknown domain doesn't corroborate, trying next", {
           url: source.url,
         });
@@ -606,69 +554,47 @@ export class PredictionJudge {
           url: source.url,
           error: String(e),
         });
-        // Continue to next source on error
       }
     }
 
-    // Distinguish between fetch failures and actual validation failures
     if (validatedAtLeastOne) {
-      return "no_corroboration"; // We checked sources, none corroborated
+      return "no_corroboration";
     } else {
-      return "fetch_failed"; // All fetches failed, should retry later
+      return "fetch_failed";
     }
   }
 
-  /**
-   * Sorts claims by domain quality for processing order.
-   * Higher tier sources = higher priority.
-   */
   private sortClaimsByDomainQuality(
     evaluations: ClaimEvaluation[],
     registeredVerifiers: Set<string>,
   ): ClaimEvaluation[] {
     return [...evaluations].sort((a, b) => {
-      // Best tier first (3 > 2 > 1 > 0)
       if (a.bestTier !== b.bestTier) {
         return b.bestTier - a.bestTier;
       }
 
-      // More tier 3 sources first
       if (a.tier3Count !== b.tier3Count) {
         return b.tier3Count - a.tier3Count;
       }
 
-      // Registered verifiers first
       const aRegistered = registeredVerifiers.has(a.verifierAgentId);
       const bRegistered = registeredVerifiers.has(b.verifierAgentId);
       if (aRegistered !== bRegistered) {
         return aRegistered ? -1 : 1;
       }
 
-      // More tier 2 sources first
       if (a.tier2Count !== b.tier2Count) {
         return b.tier2Count - a.tier2Count;
       }
 
-      // Higher confidence first
       if (a.confidence !== b.confidence) {
         return b.confidence - a.confidence;
       }
 
-      // Oldest claim first (deterministic fallback)
       return a.createdAt.getTime() - b.createdAt.getTime();
     });
   }
 
-  /**
-   * Processes a prediction by validating claim sources lazily.
-   *
-   * Strategy:
-   * 1. Rank claims by domain quality (without fetching)
-   * 2. Process claims in order, fetching sources lazily (highest tier first)
-   * 3. If a trusted source (tier 1-3) contradicts → reject entire claim (verifier bug)
-   * 4. First claim with a corroborating source wins
-   * 5. Stop immediately on success (no need to check other claims)
-   */
   private async processClaimBasedVerdict(
     tx: Transaction,
     data: NonNullable<
@@ -682,7 +608,6 @@ export class PredictionJudge {
       claimCount: claims.length,
     });
 
-    // Get registered verifiers for the topic (needed for ranking)
     const registeredVerifiers = new Set<string>();
     if (prediction.topicId) {
       const registrations = await tx
@@ -696,19 +621,16 @@ export class PredictionJudge {
       }
     }
 
-    // Rank claims by domain quality (no fetching yet)
     const rankedClaims = claims.map((claim) => ({
       claim,
       evaluation: this.rankClaimByDomains(claim),
     }));
 
-    // Sort by domain quality
     const sortedClaims = this.sortClaimsByDomainQuality(
       rankedClaims.map((r) => r.evaluation),
       registeredVerifiers,
     );
 
-    // Create a map for quick lookup
     const claimMap = new Map(claims.map((c) => [c.id, c]));
 
     logInfo("Claims ranked by domain quality", {
@@ -719,12 +641,10 @@ export class PredictionJudge {
       })),
     });
 
-    // Process claims in order, validate lazily
     for (const evaluation of sortedClaims) {
       const claim = claimMap.get(evaluation.claimId);
       if (!claim) continue;
 
-      // Skip claims with no valid sources (bestTier === -1 means all sources excluded)
       if (evaluation.bestTier < 0) {
         logInfo("Skipping claim with no valid sources", { claimId: claim.id });
         await this.storeClaimFeedback(
@@ -797,8 +717,6 @@ export class PredictionJudge {
         continue;
       }
 
-      // Success! We have a validated claim
-      // Soft-delete any existing feedback for this claim
       await tx
         .update(claimValidationFeedbackSchema)
         .set({ deletedAt: new Date() })
@@ -842,10 +760,6 @@ export class PredictionJudge {
     return false;
   }
 
-  /**
-   * Stores or updates claim validation feedback.
-   * Uses upsert to handle retries.
-   */
   private async storeClaimFeedback(
     tx: Transaction,
     claimId: string,
@@ -860,7 +774,7 @@ export class PredictionJudge {
         set: {
           result,
           reason,
-          deletedAt: null, // Un-soft-delete if previously deleted
+          deletedAt: null,
           updatedAt: new Date(),
         },
       });
