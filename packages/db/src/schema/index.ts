@@ -7,6 +7,8 @@ export * from "./memory";
 
 export * from "./swarm-filter";
 
+export * from "./swarm-verifier";
+
 export * from "./context-schemas";
 
 export * from "./apostle-swarm";

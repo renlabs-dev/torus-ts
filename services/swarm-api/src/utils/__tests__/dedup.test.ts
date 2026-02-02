@@ -1,7 +1,7 @@
 import type { PostSlice } from "@torus-ts/db/schema";
 import { describe, expect, it } from "vitest";
-import type { ParsedPredictionForDedup } from "../verifier.js";
-import { comparePredictions } from "../verifier.js";
+import type { ParsedPredictionForDedup } from "../dedup";
+import { comparePredictions } from "../dedup";
 
 /**
  * Represents a tweet with its text content.

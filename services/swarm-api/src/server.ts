@@ -11,6 +11,7 @@ import { createAppContext } from "./context";
 import { getEnv } from "./env";
 import { requirePermission } from "./middleware/auth";
 import { contextPlugin } from "./middleware/context";
+import { claimsRouter } from "./routes/claims";
 import { creditsRouter } from "./routes/credits";
 import { permissionRouter } from "./routes/permission";
 import { predictionsRouter } from "./routes/predictions";
@@ -197,6 +198,7 @@ export async function createServer() {
     .get("/health", () => ({ status: "ok" }))
     .use(permissionRouter)
     .use(creditsRouter)
+    .use(claimsRouter)
     .use(requirePermission(["prediction.filter"]))
     .use(tweetsRouter)
     .use(predictionsRouter);

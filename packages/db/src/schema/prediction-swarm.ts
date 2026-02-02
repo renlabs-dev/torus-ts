@@ -3,3 +3,4 @@ export * from "./utils";
 export * from "./memory";
 export * from "./context-schemas";
 export * from "./swarm-filter";
+export * from "./swarm-verifier";
