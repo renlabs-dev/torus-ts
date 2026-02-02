@@ -28,7 +28,7 @@
     "@torus-network/torus-utils": "workspace:*",
     "@torus-ts/db": "workspace:*",
     "canonicalize": "^2.1.0",
-    "openai": "^4.73.1",
+    "openai": "^4.77.0",
     "tsafe": "catalog:",
     "zod": "catalog:",
     "zod-to-json-schema": "^3.24.6"
