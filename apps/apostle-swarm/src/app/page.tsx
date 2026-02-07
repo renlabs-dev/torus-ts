@@ -2,7 +2,7 @@
 
 import { Button } from "@torus-ts/ui/components/button";
 import Link from "next/link";
-import LightPillar from "./_components/bg";
+import VideoBackground from "./_components/bg";
 import { SubmitProspectDialog } from "./_components/submit-prospect-dialog";
 import { cinzelDecorative } from "./fonts";
 
@@ -10,16 +10,7 @@ export default function Page() {
   return (
     <main className="relative flex min-h-screen w-full items-center overflow-hidden">
       {/* Background */}
-      <LightPillar
-        topColor="#9f29ff"
-        bottomColor="#ffc800"
-        intensity={0.9}
-        rotationSpeed={0.4}
-        pillarWidth={1.5}
-        pillarHeight={0.5}
-        noiseIntensity={0.7}
-        pillarRotation={296}
-      />
+      <VideoBackground />
 
       {/* Content */}
       <div className="container relative z-10 mx-auto flex max-w-screen-2xl flex-col justify-center px-8 py-16">
