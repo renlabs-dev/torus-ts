@@ -6,7 +6,6 @@ import { useBalance } from "@torus-ts/query-provider/hooks";
 import { useTorus } from "@torus-ts/torus-provider";
 import {
   AlertDialog,
-  AlertDialogCancel,
   AlertDialogContent,
   AlertDialogDescription,
   AlertDialogFooter,
@@ -14,9 +13,9 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@torus-ts/ui/components/alert-dialog";
-import { Button } from "@torus-ts/ui/components/button";
 import { Input } from "@torus-ts/ui/components/input";
 import { Label } from "@torus-ts/ui/components/label";
+import { RenaissanceButton } from "./renaissance-button";
 import { useIsApostle } from "~/hooks/use-is-apostle";
 import { api } from "~/trpc/react";
 import { useState } from "react";
@@ -125,7 +124,9 @@ export function SubmitProspectDialog() {
   return (
     <AlertDialog open={open} onOpenChange={handleOpenChange}>
       <AlertDialogTrigger asChild>
-        <Button size="lg">Submit Prospect</Button>
+        <RenaissanceButton size="lg" variant="secondary">
+          Submit Prospect
+        </RenaissanceButton>
       </AlertDialogTrigger>
       <AlertDialogContent className="max-w-md">
         <AlertDialogHeader>
@@ -158,14 +159,20 @@ export function SubmitProspectDialog() {
         </div>
 
         <AlertDialogFooter>
-          <AlertDialogCancel disabled={isPending}>Cancel</AlertDialogCancel>
-          <Button onClick={handleSubmit} disabled={isSubmitDisabled}>
+          <RenaissanceButton
+            variant="secondary"
+            onClick={() => handleOpenChange(false)}
+            disabled={isPending}
+          >
+            Cancel
+          </RenaissanceButton>
+          <RenaissanceButton onClick={handleSubmit} disabled={isSubmitDisabled}>
             {isPending
               ? "Submitting..."
               : isApostle
                 ? "Add Prospect"
                 : "Submit"}
-          </Button>
+          </RenaissanceButton>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>

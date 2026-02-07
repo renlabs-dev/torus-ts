@@ -172,3 +172,206 @@
 body {
   letter-spacing: var(--tracking-normal);
 }
+
+/* ── Renaissance Button Ornaments ── */
+
+.renaissance-btn {
+  position: relative;
+  border: 1.5px solid hsl(34 40% 35%);
+  background: linear-gradient(
+    180deg,
+    hsl(34 30% 22%) 0%,
+    hsl(34 25% 16%) 50%,
+    hsl(34 30% 20%) 100%
+  );
+  color: hsl(38 50% 82%);
+  font-family: var(--font-serif);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  font-size: 0.8rem;
+  transition: all 0.3s ease;
+  box-shadow:
+    inset 0 1px 0 hsl(38 35% 32% / 0.5),
+    inset 0 -1px 0 hsl(34 30% 10% / 0.5),
+    0 2px 8px hsl(0 0% 0% / 0.4);
+  overflow: visible;
+  cursor: pointer;
+}
+
+.renaissance-btn:hover {
+  border-color: hsl(38 55% 48%);
+  background: linear-gradient(
+    180deg,
+    hsl(34 35% 26%) 0%,
+    hsl(34 28% 19%) 50%,
+    hsl(34 35% 24%) 100%
+  );
+  color: hsl(40 60% 90%);
+  box-shadow:
+    inset 0 1px 0 hsl(38 40% 38% / 0.6),
+    inset 0 -1px 0 hsl(34 30% 10% / 0.5),
+    0 2px 12px hsl(34 40% 20% / 0.5),
+    0 0 20px hsl(34 40% 30% / 0.15);
+}
+
+.renaissance-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  border-color: hsl(34 15% 25%);
+}
+
+/* Corner ornaments — gilded frame corners */
+.renaissance-btn::before,
+.renaissance-btn::after {
+  content: "";
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.renaissance-btn::before {
+  top: -2px;
+  left: -2px;
+  border-top: 2px solid hsl(38 50% 50%);
+  border-left: 2px solid hsl(38 50% 50%);
+}
+
+.renaissance-btn::after {
+  top: -2px;
+  right: -2px;
+  border-top: 2px solid hsl(38 50% 50%);
+  border-right: 2px solid hsl(38 50% 50%);
+}
+
+.renaissance-btn:hover::before,
+.renaissance-btn:hover::after {
+  border-color: hsl(40 65% 60%);
+}
+
+/* Text wrapper */
+.renaissance-btn-inner {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 3;
+}
+
+/* Bottom corners — absolutely positioned to the button, not the text */
+.renaissance-btn-corners-bottom {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.renaissance-btn-corners-bottom::before,
+.renaissance-btn-corners-bottom::after {
+  content: "";
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  pointer-events: none;
+}
+
+.renaissance-btn-corners-bottom::before {
+  bottom: -2px;
+  left: -2px;
+  border-bottom: 2px solid hsl(38 50% 50%);
+  border-left: 2px solid hsl(38 50% 50%);
+}
+
+.renaissance-btn-corners-bottom::after {
+  bottom: -2px;
+  right: -2px;
+  border-bottom: 2px solid hsl(38 50% 50%);
+  border-right: 2px solid hsl(38 50% 50%);
+}
+
+.renaissance-btn:hover .renaissance-btn-corners-bottom::before,
+.renaissance-btn:hover .renaissance-btn-corners-bottom::after {
+  border-color: hsl(40 65% 60%);
+}
+
+/* Top/bottom ruled lines — subtle filigree */
+.renaissance-btn-frame {
+  position: absolute;
+  inset: 3px 12px;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.renaissance-btn-frame::before,
+.renaissance-btn-frame::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    hsl(38 40% 42% / 0.6) 20%,
+    hsl(38 45% 50% / 0.8) 50%,
+    hsl(38 40% 42% / 0.6) 80%,
+    transparent 100%
+  );
+}
+
+.renaissance-btn-frame::before {
+  top: 0;
+}
+
+.renaissance-btn-frame::after {
+  bottom: 0;
+}
+
+/* Variant: outline/secondary — muted frame */
+.renaissance-btn-secondary {
+  background: transparent;
+  border: 1.5px solid hsl(34 20% 28%);
+  color: hsl(38 35% 70%);
+  box-shadow:
+    inset 0 1px 0 hsl(38 20% 25% / 0.3),
+    0 2px 6px hsl(0 0% 0% / 0.3);
+}
+
+.renaissance-btn-secondary::before,
+.renaissance-btn-secondary::after {
+  border-color: hsl(38 30% 38%);
+}
+
+.renaissance-btn-secondary .renaissance-btn-corners-bottom::before,
+.renaissance-btn-secondary .renaissance-btn-corners-bottom::after {
+  border-color: hsl(38 30% 38%);
+}
+
+.renaissance-btn-secondary .renaissance-btn-frame::before,
+.renaissance-btn-secondary .renaissance-btn-frame::after {
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    hsl(38 25% 32% / 0.4) 20%,
+    hsl(38 30% 40% / 0.6) 50%,
+    hsl(38 25% 32% / 0.4) 80%,
+    transparent 100%
+  );
+}
+
+.renaissance-btn-secondary:hover {
+  border-color: hsl(38 40% 40%);
+  background: hsl(34 20% 16% / 0.5);
+  color: hsl(40 50% 82%);
+}
+
+.renaissance-btn-secondary:hover::before,
+.renaissance-btn-secondary:hover::after {
+  border-color: hsl(40 50% 50%);
+}
+
+.renaissance-btn-secondary:hover .renaissance-btn-corners-bottom::before,
+.renaissance-btn-secondary:hover .renaissance-btn-corners-bottom::after {
+  border-color: hsl(40 50% 50%);
+}

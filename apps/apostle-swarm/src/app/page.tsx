@@ -1,7 +1,7 @@
 "use client";
 
-import { Button } from "@torus-ts/ui/components/button";
 import Link from "next/link";
+import { RenaissanceButton } from "./_components/renaissance-button";
 import { SubmitProspectDialog } from "./_components/submit-prospect-dialog";
 import { cinzelDecorative } from "./fonts";
 
@@ -25,9 +25,9 @@ export default function Page() {
           </p>
 
           <div className="mt-8 flex gap-4">
-            <Button asChild size="lg">
-              <Link href="/dashboard">View Dashboard</Link>
-            </Button>
+            <Link href="/dashboard">
+              <RenaissanceButton size="lg">View Dashboard</RenaissanceButton>
+            </Link>
             <SubmitProspectDialog />
           </div>
         </div>
