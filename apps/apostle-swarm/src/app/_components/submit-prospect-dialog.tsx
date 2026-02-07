@@ -128,12 +128,15 @@ export function SubmitProspectDialog() {
           Submit Prospect
         </RenaissanceButton>
       </AlertDialogTrigger>
-      <AlertDialogContent className="max-w-md">
+      <AlertDialogContent className="renaissance-dialog max-w-md border-none bg-transparent shadow-none">
+        <span className="renaissance-dialog-bottom-corners" />
+        <span className="renaissance-dialog-filigree" />
+
         <AlertDialogHeader>
-          <AlertDialogTitle>
+          <AlertDialogTitle className="renaissance-dialog-title">
             {isApostle ? "Add Prospect" : "Submit a Prospect"}
           </AlertDialogTitle>
-          <AlertDialogDescription>
+          <AlertDialogDescription className="renaissance-dialog-description">
             {isApostle
               ? "Add an X handle directly as an approved prospect."
               : "Submit an X handle as a potential prospect for the swarm to evaluate."}
@@ -141,24 +144,31 @@ export function SubmitProspectDialog() {
         </AlertDialogHeader>
 
         <div className="space-y-4 py-4">
-          <p className="text-muted-foreground text-sm">{statusMessage}</p>
+          <p className="text-sm italic" style={{ color: "hsl(30 20% 55%)" }}>
+            {statusMessage}
+          </p>
 
           <div className="space-y-2">
-            <Label htmlFor="x-handle">X Handle</Label>
+            <Label htmlFor="x-handle" className="renaissance-label">
+              X Handle
+            </Label>
             <Input
               id="x-handle"
+              className="renaissance-input"
               placeholder="username"
               value={xHandle}
               onChange={(e) => setXHandle(e.target.value)}
               disabled={!isAccountConnected || !canSubmit || isPending}
             />
-            <p className="text-muted-foreground text-xs">
+            <p className="text-xs italic" style={{ color: "hsl(30 15% 45%)" }}>
               Enter the X handle without the @ symbol
             </p>
           </div>
         </div>
 
-        <AlertDialogFooter>
+        <div className="renaissance-separator" />
+
+        <AlertDialogFooter className="pt-4">
           <RenaissanceButton
             variant="secondary"
             onClick={() => handleOpenChange(false)}

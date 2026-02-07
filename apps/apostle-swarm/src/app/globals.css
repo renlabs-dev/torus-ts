@@ -375,3 +375,169 @@ body {
 .renaissance-btn-secondary:hover .renaissance-btn-corners-bottom::after {
   border-color: hsl(40 50% 50%);
 }
+
+/* ── Renaissance Dialog Panel ── */
+
+.renaissance-dialog {
+  border: 1.5px solid hsl(34 40% 30%);
+  background:
+    linear-gradient(
+      180deg,
+      hsl(34 20% 15%) 0%,
+      hsl(330 12% 14%) 40%,
+      hsl(34 18% 13%) 100%
+    );
+  box-shadow:
+    inset 0 1px 0 hsl(38 30% 28% / 0.4),
+    inset 0 -1px 0 hsl(34 25% 8% / 0.5),
+    0 4px 30px hsl(0 0% 0% / 0.6),
+    0 0 60px hsl(0 0% 0% / 0.3);
+  overflow: visible;
+}
+
+/* Gilded frame corners — top */
+.renaissance-dialog::before,
+.renaissance-dialog::after {
+  content: "";
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.renaissance-dialog::before {
+  top: -2px;
+  left: -2px;
+  border-top: 2px solid hsl(38 50% 45%);
+  border-left: 2px solid hsl(38 50% 45%);
+}
+
+.renaissance-dialog::after {
+  top: -2px;
+  right: -2px;
+  border-top: 2px solid hsl(38 50% 45%);
+  border-right: 2px solid hsl(38 50% 45%);
+}
+
+/* Bottom corners */
+.renaissance-dialog-bottom-corners {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.renaissance-dialog-bottom-corners::before,
+.renaissance-dialog-bottom-corners::after {
+  content: "";
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  pointer-events: none;
+}
+
+.renaissance-dialog-bottom-corners::before {
+  bottom: -2px;
+  left: -2px;
+  border-bottom: 2px solid hsl(38 50% 45%);
+  border-left: 2px solid hsl(38 50% 45%);
+}
+
+.renaissance-dialog-bottom-corners::after {
+  bottom: -2px;
+  right: -2px;
+  border-bottom: 2px solid hsl(38 50% 45%);
+  border-right: 2px solid hsl(38 50% 45%);
+}
+
+/* Inner filigree border */
+.renaissance-dialog-filigree {
+  position: absolute;
+  inset: 6px;
+  border: 1px solid hsl(38 35% 30% / 0.4);
+  pointer-events: none;
+  z-index: 1;
+}
+
+.renaissance-dialog-filigree::before,
+.renaissance-dialog-filigree::after {
+  content: "";
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    hsl(38 40% 40% / 0.5) 15%,
+    hsl(38 45% 50% / 0.7) 50%,
+    hsl(38 40% 40% / 0.5) 85%,
+    transparent 100%
+  );
+}
+
+.renaissance-dialog-filigree::before {
+  top: -1px;
+}
+
+.renaissance-dialog-filigree::after {
+  bottom: -1px;
+}
+
+/* Dialog title */
+.renaissance-dialog-title {
+  font-family: var(--font-serif);
+  color: hsl(38 50% 78%);
+  letter-spacing: 0.08em;
+}
+
+/* Dialog description */
+.renaissance-dialog-description {
+  color: hsl(30 20% 60%);
+  font-style: italic;
+}
+
+/* Renaissance styled input */
+.renaissance-input {
+  border: 1px solid hsl(34 30% 28%);
+  background: hsl(330 12% 11%);
+  color: hsl(38 40% 80%);
+  font-family: var(--font-serif);
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+  box-shadow: inset 0 1px 3px hsl(0 0% 0% / 0.3);
+}
+
+.renaissance-input::placeholder {
+  color: hsl(30 15% 40%);
+  font-style: italic;
+}
+
+.renaissance-input:focus {
+  border-color: hsl(38 50% 42%);
+  box-shadow:
+    inset 0 1px 3px hsl(0 0% 0% / 0.3),
+    0 0 8px hsl(38 40% 30% / 0.3);
+}
+
+/* Renaissance label */
+.renaissance-label {
+  font-family: var(--font-serif);
+  color: hsl(38 40% 68%);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  font-size: 0.7rem;
+}
+
+/* Separator line between content and footer */
+.renaissance-separator {
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    hsl(38 35% 32% / 0.5) 15%,
+    hsl(38 40% 42% / 0.7) 50%,
+    hsl(38 35% 32% / 0.5) 85%,
+    transparent 100%
+  );
+}
