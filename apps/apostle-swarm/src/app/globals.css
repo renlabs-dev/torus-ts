@@ -541,3 +541,245 @@ body {
     transparent 100%
   );
 }
+
+/* ── Renaissance Dashboard ── */
+
+/* Panel — reusable framed container */
+.renaissance-panel {
+  position: relative;
+  border: 1.5px solid hsl(34 40% 30%);
+  background: linear-gradient(
+    180deg,
+    hsl(34 18% 14%) 0%,
+    hsl(330 12% 13%) 50%,
+    hsl(34 16% 12%) 100%
+  );
+  box-shadow:
+    inset 0 1px 0 hsl(38 30% 28% / 0.3),
+    inset 0 -1px 0 hsl(34 25% 8% / 0.4),
+    0 4px 20px hsl(0 0% 0% / 0.4);
+  overflow: visible;
+}
+
+.renaissance-panel::before,
+.renaissance-panel::after {
+  content: "";
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.renaissance-panel::before {
+  top: -2px;
+  left: -2px;
+  border-top: 2px solid hsl(38 50% 45%);
+  border-left: 2px solid hsl(38 50% 45%);
+}
+
+.renaissance-panel::after {
+  top: -2px;
+  right: -2px;
+  border-top: 2px solid hsl(38 50% 45%);
+  border-right: 2px solid hsl(38 50% 45%);
+}
+
+.renaissance-panel-bottom-corners {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.renaissance-panel-bottom-corners::before,
+.renaissance-panel-bottom-corners::after {
+  content: "";
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  pointer-events: none;
+}
+
+.renaissance-panel-bottom-corners::before {
+  bottom: -2px;
+  left: -2px;
+  border-bottom: 2px solid hsl(38 50% 45%);
+  border-left: 2px solid hsl(38 50% 45%);
+}
+
+.renaissance-panel-bottom-corners::after {
+  bottom: -2px;
+  right: -2px;
+  border-bottom: 2px solid hsl(38 50% 45%);
+  border-right: 2px solid hsl(38 50% 45%);
+}
+
+/* Tabs — Renaissance styled */
+.renaissance-tabs-list {
+  background: transparent;
+  border: none;
+  gap: 2px;
+}
+
+.renaissance-tab-trigger {
+  font-family: var(--font-serif);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  color: hsl(38 25% 55%);
+  background: transparent;
+  border: 1px solid hsl(34 20% 22%);
+  transition: all 0.3s ease;
+}
+
+.renaissance-tab-trigger:hover {
+  color: hsl(38 40% 72%);
+  border-color: hsl(34 30% 32%);
+  background: hsl(34 20% 16% / 0.4);
+}
+
+.renaissance-tab-trigger[data-state="active"] {
+  color: hsl(38 55% 82%);
+  background: linear-gradient(
+    180deg,
+    hsl(34 30% 22%) 0%,
+    hsl(34 25% 16%) 100%
+  );
+  border-color: hsl(38 40% 38%);
+  box-shadow:
+    inset 0 1px 0 hsl(38 35% 32% / 0.4),
+    0 1px 4px hsl(0 0% 0% / 0.3);
+}
+
+/* Table — Renaissance styled */
+.renaissance-table-wrapper {
+  border: 1.5px solid hsl(34 35% 28%);
+  background: hsl(330 12% 12% / 0.8);
+}
+
+.renaissance-table-header {
+  border-bottom: 1px solid hsl(38 35% 30% / 0.5);
+}
+
+.renaissance-table-header th {
+  color: hsl(38 40% 65%);
+  font-family: var(--font-serif);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  font-size: 0.7rem;
+  font-weight: 500;
+}
+
+.renaissance-table-row {
+  border-color: hsl(34 20% 20% / 0.5);
+}
+
+.renaissance-table-row:hover {
+  background: hsl(34 20% 16% / 0.4);
+}
+
+.renaissance-table-cell {
+  color: hsl(30 20% 75%);
+  font-size: 0.85rem;
+}
+
+/* Select — Renaissance styled */
+.renaissance-select-trigger {
+  border: 1px solid hsl(34 30% 28%);
+  background: hsl(330 12% 11%);
+  color: hsl(38 40% 75%);
+  font-family: var(--font-serif);
+  font-size: 0.8rem;
+  letter-spacing: 0.04em;
+  transition: border-color 0.3s ease;
+}
+
+.renaissance-select-trigger:hover {
+  border-color: hsl(38 40% 38%);
+}
+
+.renaissance-select-content {
+  border: 1px solid hsl(34 35% 28%);
+  background: hsl(330 12% 13%);
+  box-shadow: 0 4px 16px hsl(0 0% 0% / 0.5);
+}
+
+.renaissance-select-content [data-slot="select-item"] {
+  color: hsl(30 20% 70%);
+  font-family: var(--font-serif);
+  font-size: 0.8rem;
+}
+
+.renaissance-select-content [data-slot="select-item"]:focus {
+  background: hsl(34 25% 18%);
+  color: hsl(38 50% 82%);
+}
+
+/* Dropdown — Renaissance styled */
+.renaissance-dropdown {
+  border: 1px solid hsl(34 35% 28%);
+  background: hsl(330 12% 13%);
+  box-shadow: 0 4px 16px hsl(0 0% 0% / 0.5);
+}
+
+.renaissance-dropdown [role="menuitem"] {
+  color: hsl(30 20% 70%);
+  font-family: var(--font-serif);
+  font-size: 0.8rem;
+  transition: background 0.2s ease;
+}
+
+.renaissance-dropdown [role="menuitem"]:focus {
+  background: hsl(34 25% 18%);
+  color: hsl(38 50% 82%);
+}
+
+.renaissance-dropdown [data-slot="dropdown-menu-label"] {
+  color: hsl(38 40% 60%);
+  font-family: var(--font-serif);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  font-size: 0.7rem;
+}
+
+.renaissance-dropdown [data-slot="dropdown-menu-separator"] {
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    hsl(38 30% 30% / 0.5) 20%,
+    hsl(38 35% 38% / 0.6) 50%,
+    hsl(38 30% 30% / 0.5) 80%,
+    transparent 100%
+  );
+}
+
+/* Ghost button override for table headers */
+.renaissance-ghost-btn {
+  color: hsl(38 35% 60%);
+  font-family: var(--font-serif);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  font-size: 0.7rem;
+  font-weight: 500;
+}
+
+.renaissance-ghost-btn:hover {
+  color: hsl(38 50% 78%);
+  background: hsl(34 20% 18% / 0.5);
+}
+
+/* Badge override */
+.renaissance-badge {
+  font-family: var(--font-serif);
+  letter-spacing: 0.04em;
+  font-size: 0.7rem;
+}
+
+/* Count text */
+.renaissance-count {
+  color: hsl(30 20% 55%);
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 0.8rem;
+}

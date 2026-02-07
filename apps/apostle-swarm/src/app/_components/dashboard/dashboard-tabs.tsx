@@ -18,10 +18,16 @@ function DashboardTabsContent() {
 
   return (
     <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as TabValue)}>
-      <TabsList>
-        <TabsTrigger value="prospects">Prospects</TabsTrigger>
-        <TabsTrigger value="submissions">Community Submissions</TabsTrigger>
-        <TabsTrigger value="apostles">Apostles</TabsTrigger>
+      <TabsList className="renaissance-tabs-list">
+        <TabsTrigger value="prospects" className="renaissance-tab-trigger">
+          Prospects
+        </TabsTrigger>
+        <TabsTrigger value="submissions" className="renaissance-tab-trigger">
+          Community Submissions
+        </TabsTrigger>
+        <TabsTrigger value="apostles" className="renaissance-tab-trigger">
+          Apostles
+        </TabsTrigger>
       </TabsList>
 
       <TabsContent value="prospects">

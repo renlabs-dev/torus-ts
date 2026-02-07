@@ -126,7 +126,7 @@ export function ProspectActionsDropdown({
           <MoreHorizontal className="h-4 w-4" />
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
+      <DropdownMenuContent align="end" className="renaissance-dropdown">
         <DropdownMenuLabel>Actions</DropdownMenuLabel>
         <DropdownMenuSeparator />
 
@@ -146,7 +146,7 @@ export function ProspectActionsDropdown({
               <Tag className="mr-2 h-4 w-4" />
               Set Quality Tag
             </DropdownMenuSubTrigger>
-            <DropdownMenuSubContent>
+            <DropdownMenuSubContent className="renaissance-dropdown">
               {QUALITY_TAGS.map((tag) => (
                 <DropdownMenuItem
                   key={tag.value}

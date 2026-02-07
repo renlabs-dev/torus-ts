@@ -19,6 +19,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@torus-ts/ui/components/select";
+import { RenaissanceButton } from "../renaissance-button";
 import {
   Table,
   TableBody,
@@ -76,6 +77,7 @@ function createColumns(apostleInfo: ApostleInfo): ColumnDef<Prospect>[] {
       header: ({ column }) => (
         <Button
           variant="ghost"
+          className="renaissance-ghost-btn"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
           X Handle
@@ -99,7 +101,7 @@ function createColumns(apostleInfo: ApostleInfo): ColumnDef<Prospect>[] {
       cell: ({ row }) => {
         const tag = row.original.qualityTag;
         const colorClass = qualityTagColors[tag] ?? qualityTagColors.UNRATED;
-        return <Badge className={colorClass}>{tag.replace("_", " ")}</Badge>;
+        return <Badge className={`renaissance-badge ${colorClass}`}>{tag.replace("_", " ")}</Badge>;
       },
     },
     {
@@ -109,7 +111,7 @@ function createColumns(apostleInfo: ApostleInfo): ColumnDef<Prospect>[] {
         const status = row.original.claimStatus;
         const colorClass =
           claimStatusColors[status] ?? claimStatusColors.UNCLAIMED;
-        return <Badge className={colorClass}>{status}</Badge>;
+        return <Badge className={`renaissance-badge ${colorClass}`}>{status}</Badge>;
       },
     },
     {
@@ -117,6 +119,7 @@ function createColumns(apostleInfo: ApostleInfo): ColumnDef<Prospect>[] {
       header: ({ column }) => (
         <Button
           variant="ghost"
+          className="renaissance-ghost-btn"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
           Score
@@ -137,6 +140,7 @@ function createColumns(apostleInfo: ApostleInfo): ColumnDef<Prospect>[] {
       header: ({ column }) => (
         <Button
           variant="ghost"
+          className="renaissance-ghost-btn"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
           Created
@@ -204,10 +208,10 @@ export function ProspectsTable() {
           value={statusFilter}
           onValueChange={(value) => setStatusFilter(value as ClaimStatusFilter)}
         >
-          <SelectTrigger className="w-[180px]">
+          <SelectTrigger className="renaissance-select-trigger w-[180px]">
             <SelectValue placeholder="Filter by status" />
           </SelectTrigger>
-          <SelectContent>
+          <SelectContent className="renaissance-select-content">
             {CLAIM_STATUS_OPTIONS.map((option) => (
               <SelectItem key={option.value} value={option.value}>
                 {option.label}
@@ -217,11 +221,12 @@ export function ProspectsTable() {
         </Select>
       </div>
 
-      <div className="rounded-md border">
+      <div className="renaissance-panel">
+        <span className="renaissance-panel-bottom-corners" />
         <Table>
-          <TableHeader>
+          <TableHeader className="renaissance-table-header">
             {table.getHeaderGroups().map((headerGroup) => (
-              <TableRow key={headerGroup.id}>
+              <TableRow key={headerGroup.id} className="renaissance-table-row">
                 {headerGroup.headers.map((header) => (
                   <TableHead key={header.id}>
                     {header.isPlaceholder
@@ -237,19 +242,19 @@ export function ProspectsTable() {
           </TableHeader>
           <TableBody>
             {isLoading ? (
-              <TableRow>
+              <TableRow className="renaissance-table-row">
                 <TableCell
                   colSpan={columns.length}
-                  className="h-24 text-center"
+                  className="renaissance-table-cell h-24 text-center"
                 >
                   Loading...
                 </TableCell>
               </TableRow>
             ) : table.getRowModel().rows.length ? (
               table.getRowModel().rows.map((row) => (
-                <TableRow key={row.id}>
+                <TableRow key={row.id} className="renaissance-table-row">
                   {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id}>
+                    <TableCell key={cell.id} className="renaissance-table-cell">
                       {flexRender(
                         cell.column.columnDef.cell,
                         cell.getContext(),
@@ -259,10 +264,10 @@ export function ProspectsTable() {
                 </TableRow>
               ))
             ) : (
-              <TableRow>
+              <TableRow className="renaissance-table-row">
                 <TableCell
                   colSpan={columns.length}
-                  className="h-24 text-center"
+                  className="renaissance-table-cell h-24 text-center"
                 >
                   No prospects found.
                 </TableCell>
@@ -273,25 +278,25 @@ export function ProspectsTable() {
       </div>
 
       <div className="flex items-center justify-end space-x-2">
-        <div className="text-muted-foreground flex-1 text-sm">
+        <div className="renaissance-count flex-1">
           {table.getFilteredRowModel().rows.length} prospect(s)
         </div>
-        <Button
-          variant="outline"
-          size="sm"
+        <RenaissanceButton
+          variant="secondary"
+          size="default"
           onClick={() => table.previousPage()}
           disabled={!table.getCanPreviousPage()}
         >
           Previous
-        </Button>
-        <Button
-          variant="outline"
-          size="sm"
+        </RenaissanceButton>
+        <RenaissanceButton
+          variant="secondary"
+          size="default"
           onClick={() => table.nextPage()}
           disabled={!table.getCanNextPage()}
         >
           Next
-        </Button>
+        </RenaissanceButton>
       </div>
     </div>
   );

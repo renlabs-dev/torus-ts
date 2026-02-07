@@ -13,6 +13,7 @@ import { formatToken } from "@torus-network/torus-utils/torus";
 import type { Prospect } from "@torus-ts/db/schema";
 import { Badge } from "@torus-ts/ui/components/badge";
 import { Button } from "@torus-ts/ui/components/button";
+import { RenaissanceButton } from "../renaissance-button";
 import {
   Select,
   SelectContent,
@@ -64,6 +65,7 @@ function createColumns(isApostle: boolean): ColumnDef<Prospect>[] {
       header: ({ column }) => (
         <Button
           variant="ghost"
+          className="renaissance-ghost-btn"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
           X Handle
@@ -113,7 +115,7 @@ function createColumns(isApostle: boolean): ColumnDef<Prospect>[] {
         const status = row.original.approvalStatus;
         const colorClass =
           approvalStatusColors[status] ?? approvalStatusColors.PENDING;
-        return <Badge className={colorClass}>{status}</Badge>;
+        return <Badge className={`renaissance-badge ${colorClass}`}>{status}</Badge>;
       },
     },
     {
@@ -121,6 +123,7 @@ function createColumns(isApostle: boolean): ColumnDef<Prospect>[] {
       header: ({ column }) => (
         <Button
           variant="ghost"
+          className="renaissance-ghost-btn"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
           Submitted
@@ -191,10 +194,10 @@ export function CommunitySubmissionsTable() {
             setStatusFilter(value as ApprovalStatusFilter)
           }
         >
-          <SelectTrigger className="w-[180px]">
+          <SelectTrigger className="renaissance-select-trigger w-[180px]">
             <SelectValue placeholder="Filter by status" />
           </SelectTrigger>
-          <SelectContent>
+          <SelectContent className="renaissance-select-content">
             {APPROVAL_STATUS_OPTIONS.map((option) => (
               <SelectItem key={option.value} value={option.value}>
                 {option.label}
@@ -204,11 +207,12 @@ export function CommunitySubmissionsTable() {
         </Select>
       </div>
 
-      <div className="rounded-md border">
+      <div className="renaissance-panel">
+        <span className="renaissance-panel-bottom-corners" />
         <Table>
-          <TableHeader>
+          <TableHeader className="renaissance-table-header">
             {table.getHeaderGroups().map((headerGroup) => (
-              <TableRow key={headerGroup.id}>
+              <TableRow key={headerGroup.id} className="renaissance-table-row">
                 {headerGroup.headers.map((header) => (
                   <TableHead key={header.id}>
                     {header.isPlaceholder
@@ -224,19 +228,19 @@ export function CommunitySubmissionsTable() {
           </TableHeader>
           <TableBody>
             {isLoading ? (
-              <TableRow>
+              <TableRow className="renaissance-table-row">
                 <TableCell
                   colSpan={columns.length}
-                  className="h-24 text-center"
+                  className="renaissance-table-cell h-24 text-center"
                 >
                   Loading...
                 </TableCell>
               </TableRow>
             ) : table.getRowModel().rows.length ? (
               table.getRowModel().rows.map((row) => (
-                <TableRow key={row.id}>
+                <TableRow key={row.id} className="renaissance-table-row">
                   {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id}>
+                    <TableCell key={cell.id} className="renaissance-table-cell">
                       {flexRender(
                         cell.column.columnDef.cell,
                         cell.getContext(),
@@ -246,10 +250,10 @@ export function CommunitySubmissionsTable() {
                 </TableRow>
               ))
             ) : (
-              <TableRow>
+              <TableRow className="renaissance-table-row">
                 <TableCell
                   colSpan={columns.length}
-                  className="h-24 text-center"
+                  className="renaissance-table-cell h-24 text-center"
                 >
                   No community submissions found.
                 </TableCell>
@@ -260,25 +264,25 @@ export function CommunitySubmissionsTable() {
       </div>
 
       <div className="flex items-center justify-end space-x-2">
-        <div className="text-muted-foreground flex-1 text-sm">
+        <div className="renaissance-count flex-1">
           {table.getFilteredRowModel().rows.length} submission(s)
         </div>
-        <Button
-          variant="outline"
-          size="sm"
+        <RenaissanceButton
+          variant="secondary"
+          size="default"
           onClick={() => table.previousPage()}
           disabled={!table.getCanPreviousPage()}
         >
           Previous
-        </Button>
-        <Button
-          variant="outline"
-          size="sm"
+        </RenaissanceButton>
+        <RenaissanceButton
+          variant="secondary"
+          size="default"
           onClick={() => table.nextPage()}
           disabled={!table.getCanNextPage()}
         >
           Next
-        </Button>
+        </RenaissanceButton>
       </div>
     </div>
   );
