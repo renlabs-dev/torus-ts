@@ -10,6 +10,7 @@ import type { Metadata } from "next";
 import { ProphetFinderHeader } from "./_components/prophet-finder-header";
 import { UserRoleBadge } from "./_components/user-role-badge";
 import { merriweather } from "./fonts";
+import VideoBackground from "./_components/bg";
 
 const APP_NAME = "Apostle Swarm";
 
@@ -33,6 +34,7 @@ export default function RootLayout({
           torusCacheUrl={env("NEXT_PUBLIC_TORUS_CACHE_URL")}
         >
           <TRPCReactProvider>
+            <VideoBackground />
             <ProphetFinderHeader
               torusCacheUrl={env("NEXT_PUBLIC_TORUS_CACHE_URL")}
             />

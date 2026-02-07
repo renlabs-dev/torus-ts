@@ -8,7 +8,7 @@ export default function VideoBackground({
   className = "",
 }: VideoBackgroundProps) {
   return (
-    <div className={`absolute inset-0 overflow-hidden ${className}`}>
+    <div className={`fixed inset-0 -z-10 overflow-hidden ${className}`}>
       <video
         autoPlay
         loop

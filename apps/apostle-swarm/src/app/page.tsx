@@ -2,16 +2,12 @@
 
 import { Button } from "@torus-ts/ui/components/button";
 import Link from "next/link";
-import VideoBackground from "./_components/bg";
 import { SubmitProspectDialog } from "./_components/submit-prospect-dialog";
 import { cinzelDecorative } from "./fonts";
 
 export default function Page() {
   return (
     <main className="relative flex min-h-screen w-full items-center overflow-hidden">
-      {/* Background */}
-      <VideoBackground />
-
       {/* Content */}
       <div className="container relative z-10 mx-auto flex max-w-screen-2xl flex-col justify-center px-8 py-16">
         <div className="max-w-3xl">
