@@ -21,7 +21,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { RenaissanceButton } from "./renaissance-button";
 
-const STAKE_THRESHOLD = 1_000_000_000_000n; // 1 TORUS
+const STAKE_THRESHOLD = 0; // 1 TORUS
 
 export function SubmitProspectDialog() {
   const [open, setOpen] = useState(false);
