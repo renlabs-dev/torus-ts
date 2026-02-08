@@ -58,103 +58,107 @@ function truncateAddress(address: string | null): string {
   return `${address.slice(0, 6)}...${address.slice(-4)}`;
 }
 
-function createColumns(isApostle: boolean): ColumnDef<Prospect>[] {
-  return [
-    {
-      accessorKey: "xHandle",
-      header: ({ column }) => (
-        <Button
-          variant="ghost"
-          className="renaissance-ghost-btn"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        >
-          X Handle
-          <ArrowUpDown className="ml-2 h-4 w-4" />
-        </Button>
-      ),
-      cell: ({ row }) => (
-        <a
-          href={`https://x.com/${row.original.xHandle}`}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="text-blue-400 hover:underline"
-        >
-          @{row.original.xHandle}
-        </a>
-      ),
+interface SubmissionsTableMeta {
+  isApostle: boolean;
+}
+
+const submissionColumns: ColumnDef<Prospect>[] = [
+  {
+    accessorKey: "xHandle",
+    header: ({ column }) => (
+      <Button
+        variant="ghost"
+        className="renaissance-ghost-btn"
+        onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+      >
+        X Handle
+        <ArrowUpDown className="ml-2 h-4 w-4" />
+      </Button>
+    ),
+    cell: ({ row }) => (
+      <a
+        href={`https://x.com/${row.original.xHandle}`}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="text-blue-400 hover:underline"
+      >
+        @{row.original.xHandle}
+      </a>
+    ),
+  },
+  {
+    accessorKey: "proposerWalletAddress",
+    header: "Proposer",
+    cell: ({ row }) => {
+      const address = row.original.proposerWalletAddress;
+      return (
+        <span className="font-mono text-sm" title={address ?? undefined}>
+          {truncateAddress(address)}
+        </span>
+      );
     },
-    {
-      accessorKey: "proposerWalletAddress",
-      header: "Proposer",
-      cell: ({ row }) => {
-        const address = row.original.proposerWalletAddress;
-        return (
-          <span className="font-mono text-sm" title={address ?? undefined}>
-            {truncateAddress(address)}
-          </span>
-        );
-      },
+  },
+  {
+    accessorKey: "proposerStakeSnapshot",
+    header: "Stake",
+    cell: ({ row }) => {
+      const stake = row.original.proposerStakeSnapshot;
+      if (!stake) return <span className="text-muted-foreground">-</span>;
+      return (
+        <span className="font-mono text-sm">
+          {formatToken(BigInt(stake))} TORUS
+        </span>
+      );
     },
-    {
-      accessorKey: "proposerStakeSnapshot",
-      header: "Stake",
-      cell: ({ row }) => {
-        const stake = row.original.proposerStakeSnapshot;
-        if (!stake) return <span className="text-muted-foreground">-</span>;
-        return (
-          <span className="font-mono text-sm">
-            {formatToken(BigInt(stake))} TORUS
-          </span>
-        );
-      },
+  },
+  {
+    accessorKey: "approvalStatus",
+    header: "Status",
+    cell: ({ row }) => {
+      const status = row.original.approvalStatus;
+      const colorClass =
+        approvalStatusColors[status] ?? approvalStatusColors.PENDING;
+      return <Badge className={`renaissance-badge ${colorClass}`}>{status}</Badge>;
     },
-    {
-      accessorKey: "approvalStatus",
-      header: "Status",
-      cell: ({ row }) => {
-        const status = row.original.approvalStatus;
-        const colorClass =
-          approvalStatusColors[status] ?? approvalStatusColors.PENDING;
-        return <Badge className={`renaissance-badge ${colorClass}`}>{status}</Badge>;
-      },
+  },
+  {
+    accessorKey: "createdAt",
+    header: ({ column }) => (
+      <Button
+        variant="ghost"
+        className="renaissance-ghost-btn"
+        onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+      >
+        Submitted
+        <ArrowUpDown className="ml-2 h-4 w-4" />
+      </Button>
+    ),
+    cell: ({ row }) => {
+      const date = row.original.createdAt;
+      return <span>{new Date(date).toLocaleDateString()}</span>;
     },
-    {
-      accessorKey: "createdAt",
-      header: ({ column }) => (
-        <Button
-          variant="ghost"
-          className="renaissance-ghost-btn"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        >
-          Submitted
-          <ArrowUpDown className="ml-2 h-4 w-4" />
-        </Button>
-      ),
-      cell: ({ row }) => {
-        const date = row.original.createdAt;
-        return <span>{new Date(date).toLocaleDateString()}</span>;
-      },
-    },
-    {
-      id: "actions",
-      enableHiding: false,
-      cell: ({ row }) => (
+  },
+  {
+    id: "actions",
+    enableHiding: false,
+    cell: ({ row, table }) => {
+      const meta = table.options.meta as SubmissionsTableMeta | undefined;
+      if (!meta?.isApostle) return null;
+      return (
         <SubmissionActionsDropdown
           prospect={row.original}
-          isApostle={isApostle}
+          isApostle={meta.isApostle}
         />
-      ),
+      );
     },
-  ];
-}
+  },
+];
 
 export function CommunitySubmissionsTable() {
   const [statusFilter, setStatusFilter] =
     useState<ApprovalStatusFilter>("PENDING");
   const [sorting, setSorting] = useState<SortingState>([]);
   const { isApostle } = useIsApostle();
-
-  const columns = useMemo(() => createColumns(isApostle), [isApostle]);
 
   const { data: prospects, isLoading } =
     api.apostleSwarm.listProspects.useQuery(
@@ -175,7 +179,8 @@ export function CommunitySubmissionsTable() {
 
   const table = useReactTable({
     data: communitySubmissions,
-    columns,
+    columns: submissionColumns,
+    meta: { isApostle } as SubmissionsTableMeta,
     onSortingChange: setSorting,
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
@@ -230,7 +235,7 @@ export function CommunitySubmissionsTable() {
             {isLoading ? (
               <TableRow className="renaissance-table-row">
                 <TableCell
-                  colSpan={columns.length}
+                  colSpan={submissionColumns.length}
                   className="renaissance-table-cell h-24 text-center"
                 >
                   Loading...
@@ -252,7 +257,7 @@ export function CommunitySubmissionsTable() {
             ) : (
               <TableRow className="renaissance-table-row">
                 <TableCell
-                  colSpan={columns.length}
+                  colSpan={submissionColumns.length}
                   className="renaissance-table-cell h-24 text-center"
                 >
                   No community submissions found.

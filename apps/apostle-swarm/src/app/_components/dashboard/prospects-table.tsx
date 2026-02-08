@@ -31,7 +31,7 @@ import {
 import { useIsApostle } from "~/hooks/use-is-apostle";
 import { api } from "~/trpc/react";
 import { ArrowUpDown } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { ProspectActionsDropdown } from "./prospect-actions-dropdown";
 
 type ClaimStatusFilter =
@@ -64,118 +64,115 @@ const claimStatusColors: Record<string, string> = {
   FAILED: "bg-red-500/20 text-red-400 border-red-500/30",
 };
 
-interface ApostleInfo {
+interface ProspectsTableMeta {
   isApostle: boolean;
   isAdmin: boolean;
   apostle: Apostle | null;
 }
 
-function createColumns(apostleInfo: ApostleInfo): ColumnDef<Prospect>[] {
-  return [
-    {
-      accessorKey: "xHandle",
-      header: ({ column }) => (
-        <Button
-          variant="ghost"
-          className="renaissance-ghost-btn"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        >
-          X Handle
-          <ArrowUpDown className="ml-2 h-4 w-4" />
-        </Button>
-      ),
-      cell: ({ row }) => (
-        <a
-          href={`https://x.com/${row.original.xHandle}`}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="text-blue-400 hover:underline"
-        >
-          @{row.original.xHandle}
-        </a>
-      ),
+const prospectColumns: ColumnDef<Prospect>[] = [
+  {
+    accessorKey: "xHandle",
+    header: ({ column }) => (
+      <Button
+        variant="ghost"
+        className="renaissance-ghost-btn"
+        onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+      >
+        X Handle
+        <ArrowUpDown className="ml-2 h-4 w-4" />
+      </Button>
+    ),
+    cell: ({ row }) => (
+      <a
+        href={`https://x.com/${row.original.xHandle}`}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="text-blue-400 hover:underline"
+      >
+        @{row.original.xHandle}
+      </a>
+    ),
+  },
+  {
+    accessorKey: "qualityTag",
+    header: "Quality",
+    cell: ({ row }) => {
+      const tag = row.original.qualityTag;
+      const colorClass = qualityTagColors[tag] ?? qualityTagColors.UNRATED;
+      return <Badge className={`renaissance-badge ${colorClass}`}>{tag.replace("_", " ")}</Badge>;
     },
-    {
-      accessorKey: "qualityTag",
-      header: "Quality",
-      cell: ({ row }) => {
-        const tag = row.original.qualityTag;
-        const colorClass = qualityTagColors[tag] ?? qualityTagColors.UNRATED;
-        return <Badge className={`renaissance-badge ${colorClass}`}>{tag.replace("_", " ")}</Badge>;
-      },
+  },
+  {
+    accessorKey: "claimStatus",
+    header: "Status",
+    cell: ({ row }) => {
+      const status = row.original.claimStatus;
+      const colorClass =
+        claimStatusColors[status] ?? claimStatusColors.UNCLAIMED;
+      return <Badge className={`renaissance-badge ${colorClass}`}>{status}</Badge>;
     },
-    {
-      accessorKey: "claimStatus",
-      header: "Status",
-      cell: ({ row }) => {
-        const status = row.original.claimStatus;
-        const colorClass =
-          claimStatusColors[status] ?? claimStatusColors.UNCLAIMED;
-        return <Badge className={`renaissance-badge ${colorClass}`}>{status}</Badge>;
-      },
+  },
+  {
+    accessorKey: "resonanceScore",
+    header: ({ column }) => (
+      <Button
+        variant="ghost"
+        className="renaissance-ghost-btn"
+        onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+      >
+        Score
+        <ArrowUpDown className="ml-2 h-4 w-4" />
+      </Button>
+    ),
+    cell: ({ row }) => {
+      const score = row.original.resonanceScore;
+      return score !== null ? (
+        <span className="font-mono">{parseFloat(score).toFixed(1)}/10</span>
+      ) : (
+        <span className="text-muted-foreground">-</span>
+      );
     },
-    {
-      accessorKey: "resonanceScore",
-      header: ({ column }) => (
-        <Button
-          variant="ghost"
-          className="renaissance-ghost-btn"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        >
-          Score
-          <ArrowUpDown className="ml-2 h-4 w-4" />
-        </Button>
-      ),
-      cell: ({ row }) => {
-        const score = row.original.resonanceScore;
-        return score !== null ? (
-          <span className="font-mono">{parseFloat(score).toFixed(1)}/10</span>
-        ) : (
-          <span className="text-muted-foreground">-</span>
-        );
-      },
+  },
+  {
+    accessorKey: "createdAt",
+    header: ({ column }) => (
+      <Button
+        variant="ghost"
+        className="renaissance-ghost-btn"
+        onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+      >
+        Created
+        <ArrowUpDown className="ml-2 h-4 w-4" />
+      </Button>
+    ),
+    cell: ({ row }) => {
+      const date = row.original.createdAt;
+      return <span>{new Date(date).toLocaleDateString()}</span>;
     },
-    {
-      accessorKey: "createdAt",
-      header: ({ column }) => (
-        <Button
-          variant="ghost"
-          className="renaissance-ghost-btn"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        >
-          Created
-          <ArrowUpDown className="ml-2 h-4 w-4" />
-        </Button>
-      ),
-      cell: ({ row }) => {
-        const date = row.original.createdAt;
-        return <span>{new Date(date).toLocaleDateString()}</span>;
-      },
-    },
-    {
-      id: "actions",
-      enableHiding: false,
-      cell: ({ row }) => (
+  },
+  {
+    id: "actions",
+    enableHiding: false,
+    cell: ({ row, table }) => {
+      const meta = table.options.meta as ProspectsTableMeta | undefined;
+      if (!meta?.isApostle) return null;
+      return (
         <ProspectActionsDropdown
           prospect={row.original}
-          isApostle={apostleInfo.isApostle}
-          isAdmin={apostleInfo.isAdmin}
-          apostle={apostleInfo.apostle}
+          isApostle={meta.isApostle}
+          isAdmin={meta.isAdmin}
+          apostle={meta.apostle}
         />
-      ),
+      );
     },
-  ];
-}
+  },
+];
 
 export function ProspectsTable() {
   const [statusFilter, setStatusFilter] = useState<ClaimStatusFilter>("all");
   const [sorting, setSorting] = useState<SortingState>([]);
   const { isApostle, isAdmin, apostle } = useIsApostle();
-
-  const columns = useMemo(
-    () => createColumns({ isApostle, isAdmin, apostle }),
-    [isApostle, isAdmin, apostle],
-  );
 
   const { data: prospects, isLoading } =
     api.apostleSwarm.listProspects.useQuery(
@@ -191,7 +188,8 @@ export function ProspectsTable() {
 
   const table = useReactTable({
     data: prospects ?? [],
-    columns,
+    columns: prospectColumns,
+    meta: { isApostle, isAdmin, apostle } as ProspectsTableMeta,
     onSortingChange: setSorting,
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
@@ -244,7 +242,7 @@ export function ProspectsTable() {
             {isLoading ? (
               <TableRow className="renaissance-table-row">
                 <TableCell
-                  colSpan={columns.length}
+                  colSpan={prospectColumns.length}
                   className="renaissance-table-cell h-24 text-center"
                 >
                   Loading...
@@ -266,7 +264,7 @@ export function ProspectsTable() {
             ) : (
               <TableRow className="renaissance-table-row">
                 <TableCell
-                  colSpan={columns.length}
+                  colSpan={prospectColumns.length}
                   className="renaissance-table-cell h-24 text-center"
                 >
                   No prospects found.
