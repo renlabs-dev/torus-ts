@@ -34,7 +34,6 @@
     "react": "catalog:react19",
     "react-dom": "catalog:react19",
     "superjson": "catalog:",
-    "three": "^0.182.0",
     "zod": "catalog:"
   },
   "devDependencies": {

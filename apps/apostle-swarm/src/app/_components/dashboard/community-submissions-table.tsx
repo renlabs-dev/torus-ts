@@ -32,6 +32,7 @@ import { useIsApostle } from "~/hooks/use-is-apostle";
 import { api } from "~/trpc/react";
 import { ArrowUpDown } from "lucide-react";
 import { useMemo, useState } from "react";
+import { RenaissanceButton } from "../renaissance-button";
 import { SubmissionActionsDropdown } from "./submission-actions-dropdown";
 
 type ApprovalStatusFilter = "all" | "PENDING" | "APPROVED" | "REJECTED";
@@ -57,101 +58,109 @@ function truncateAddress(address: string | null): string {
   return `${address.slice(0, 6)}...${address.slice(-4)}`;
 }
 
-function createColumns(isApostle: boolean): ColumnDef<Prospect>[] {
-  return [
-    {
-      accessorKey: "xHandle",
-      header: ({ column }) => (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        >
-          X Handle
-          <ArrowUpDown className="ml-2 h-4 w-4" />
-        </Button>
-      ),
-      cell: ({ row }) => (
-        <a
-          href={`https://x.com/${row.original.xHandle}`}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="text-blue-400 hover:underline"
-        >
-          @{row.original.xHandle}
-        </a>
-      ),
+interface SubmissionsTableMeta {
+  isApostle: boolean;
+}
+
+const submissionColumns: ColumnDef<Prospect>[] = [
+  {
+    accessorKey: "xHandle",
+    header: ({ column }) => (
+      <Button
+        variant="ghost"
+        className="renaissance-ghost-btn"
+        onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+      >
+        X Handle
+        <ArrowUpDown className="ml-2 h-4 w-4" />
+      </Button>
+    ),
+    cell: ({ row }) => (
+      <a
+        href={`https://x.com/${row.original.xHandle}`}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="text-blue-400 hover:underline"
+      >
+        @{row.original.xHandle}
+      </a>
+    ),
+  },
+  {
+    accessorKey: "proposerWalletAddress",
+    header: "Proposer",
+    cell: ({ row }) => {
+      const address = row.original.proposerWalletAddress;
+      return (
+        <span className="font-mono text-sm" title={address ?? undefined}>
+          {truncateAddress(address)}
+        </span>
+      );
     },
-    {
-      accessorKey: "proposerWalletAddress",
-      header: "Proposer",
-      cell: ({ row }) => {
-        const address = row.original.proposerWalletAddress;
-        return (
-          <span className="font-mono text-sm" title={address ?? undefined}>
-            {truncateAddress(address)}
-          </span>
-        );
-      },
+  },
+  {
+    accessorKey: "proposerStakeSnapshot",
+    header: "Stake",
+    cell: ({ row }) => {
+      const stake = row.original.proposerStakeSnapshot;
+      if (!stake) return <span className="text-muted-foreground">-</span>;
+      return (
+        <span className="font-mono text-sm">
+          {formatToken(BigInt(stake))} TORUS
+        </span>
+      );
     },
-    {
-      accessorKey: "proposerStakeSnapshot",
-      header: "Stake",
-      cell: ({ row }) => {
-        const stake = row.original.proposerStakeSnapshot;
-        if (!stake) return <span className="text-muted-foreground">-</span>;
-        return (
-          <span className="font-mono text-sm">
-            {formatToken(BigInt(stake))} TORUS
-          </span>
-        );
-      },
+  },
+  {
+    accessorKey: "approvalStatus",
+    header: "Status",
+    cell: ({ row }) => {
+      const status = row.original.approvalStatus;
+      const colorClass =
+        approvalStatusColors[status] ?? approvalStatusColors.PENDING;
+      return (
+        <Badge className={`renaissance-badge ${colorClass}`}>{status}</Badge>
+      );
     },
-    {
-      accessorKey: "approvalStatus",
-      header: "Status",
-      cell: ({ row }) => {
-        const status = row.original.approvalStatus;
-        const colorClass =
-          approvalStatusColors[status] ?? approvalStatusColors.PENDING;
-        return <Badge className={colorClass}>{status}</Badge>;
-      },
+  },
+  {
+    accessorKey: "createdAt",
+    header: ({ column }) => (
+      <Button
+        variant="ghost"
+        className="renaissance-ghost-btn"
+        onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+      >
+        Submitted
+        <ArrowUpDown className="ml-2 h-4 w-4" />
+      </Button>
+    ),
+    cell: ({ row }) => {
+      const date = row.original.createdAt;
+      return <span>{new Date(date).toLocaleDateString()}</span>;
     },
-    {
-      accessorKey: "createdAt",
-      header: ({ column }) => (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        >
-          Submitted
-          <ArrowUpDown className="ml-2 h-4 w-4" />
-        </Button>
-      ),
-      cell: ({ row }) => {
-        const date = row.original.createdAt;
-        return <span>{new Date(date).toLocaleDateString()}</span>;
-      },
-    },
-    {
-      id: "actions",
-      enableHiding: false,
-      cell: ({ row }) => (
+  },
+  {
+    id: "actions",
+    enableHiding: false,
+    cell: ({ row, table }) => {
+      const meta = table.options.meta as SubmissionsTableMeta | undefined;
+      if (!meta?.isApostle) return null;
+      return (
         <SubmissionActionsDropdown
           prospect={row.original}
-          isApostle={isApostle}
+          isApostle={meta.isApostle}
         />
-      ),
+      );
     },
-  ];
-}
+  },
+];
 
 export function CommunitySubmissionsTable() {
   const [statusFilter, setStatusFilter] =
     useState<ApprovalStatusFilter>("PENDING");
   const [sorting, setSorting] = useState<SortingState>([]);
   const { isApostle } = useIsApostle();
-
-  const columns = useMemo(() => createColumns(isApostle), [isApostle]);
 
   const { data: prospects, isLoading } =
     api.apostleSwarm.listProspects.useQuery(
@@ -172,7 +181,8 @@ export function CommunitySubmissionsTable() {
 
   const table = useReactTable({
     data: communitySubmissions,
-    columns,
+    columns: submissionColumns,
+    meta: { isApostle } as SubmissionsTableMeta,
     onSortingChange: setSorting,
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
@@ -191,10 +201,10 @@ export function CommunitySubmissionsTable() {
             setStatusFilter(value as ApprovalStatusFilter)
           }
         >
-          <SelectTrigger className="w-[180px]">
+          <SelectTrigger className="renaissance-select-trigger w-[180px]">
             <SelectValue placeholder="Filter by status" />
           </SelectTrigger>
-          <SelectContent>
+          <SelectContent className="renaissance-select-content">
             {APPROVAL_STATUS_OPTIONS.map((option) => (
               <SelectItem key={option.value} value={option.value}>
                 {option.label}
@@ -204,11 +214,12 @@ export function CommunitySubmissionsTable() {
         </Select>
       </div>
 
-      <div className="rounded-md border">
+      <div className="renaissance-panel">
+        <span className="renaissance-panel-bottom-corners" />
         <Table>
-          <TableHeader>
+          <TableHeader className="renaissance-table-header">
             {table.getHeaderGroups().map((headerGroup) => (
-              <TableRow key={headerGroup.id}>
+              <TableRow key={headerGroup.id} className="renaissance-table-row">
                 {headerGroup.headers.map((header) => (
                   <TableHead key={header.id}>
                     {header.isPlaceholder
@@ -224,19 +235,19 @@ export function CommunitySubmissionsTable() {
           </TableHeader>
           <TableBody>
             {isLoading ? (
-              <TableRow>
+              <TableRow className="renaissance-table-row">
                 <TableCell
-                  colSpan={columns.length}
-                  className="h-24 text-center"
+                  colSpan={submissionColumns.length}
+                  className="renaissance-table-cell h-24 text-center"
                 >
                   Loading...
                 </TableCell>
               </TableRow>
             ) : table.getRowModel().rows.length ? (
               table.getRowModel().rows.map((row) => (
-                <TableRow key={row.id}>
+                <TableRow key={row.id} className="renaissance-table-row">
                   {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id}>
+                    <TableCell key={cell.id} className="renaissance-table-cell">
                       {flexRender(
                         cell.column.columnDef.cell,
                         cell.getContext(),
@@ -246,10 +257,10 @@ export function CommunitySubmissionsTable() {
                 </TableRow>
               ))
             ) : (
-              <TableRow>
+              <TableRow className="renaissance-table-row">
                 <TableCell
-                  colSpan={columns.length}
-                  className="h-24 text-center"
+                  colSpan={submissionColumns.length}
+                  className="renaissance-table-cell h-24 text-center"
                 >
                   No community submissions found.
                 </TableCell>
@@ -260,25 +271,25 @@ export function CommunitySubmissionsTable() {
       </div>
 
       <div className="flex items-center justify-end space-x-2">
-        <div className="text-muted-foreground flex-1 text-sm">
+        <div className="renaissance-count flex-1">
           {table.getFilteredRowModel().rows.length} submission(s)
         </div>
-        <Button
-          variant="outline"
-          size="sm"
+        <RenaissanceButton
+          variant="secondary"
+          size="default"
           onClick={() => table.previousPage()}
           disabled={!table.getCanPreviousPage()}
         >
           Previous
-        </Button>
-        <Button
-          variant="outline"
-          size="sm"
+        </RenaissanceButton>
+        <RenaissanceButton
+          variant="secondary"
+          size="default"
           onClick={() => table.nextPage()}
           disabled={!table.getCanNextPage()}
         >
           Next
-        </Button>
+        </RenaissanceButton>
       </div>
     </div>
   );

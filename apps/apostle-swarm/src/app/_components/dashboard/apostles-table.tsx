@@ -22,6 +22,7 @@ import {
 import { api } from "~/trpc/react";
 import { ArrowUpDown } from "lucide-react";
 import { useState } from "react";
+import { RenaissanceButton } from "../renaissance-button";
 
 function truncateAddress(address: string): string {
   return `${address.slice(0, 6)}...${address.slice(-4)}`;
@@ -33,6 +34,7 @@ const columns: ColumnDef<Apostle>[] = [
     header: ({ column }) => (
       <Button
         variant="ghost"
+        className="renaissance-ghost-btn"
         onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
       >
         Wallet
@@ -80,11 +82,11 @@ const columns: ColumnDef<Apostle>[] = [
     cell: ({ row }) => {
       const isAdmin = row.original.isAdmin;
       return isAdmin ? (
-        <Badge className="border-red-500/30 bg-red-500/20 text-red-400">
+        <Badge className="renaissance-badge border-red-500/30 bg-red-500/20 text-red-400">
           Admin
         </Badge>
       ) : (
-        <Badge className="border-purple-500/30 bg-purple-500/20 text-purple-400">
+        <Badge className="renaissance-badge border-purple-500/30 bg-purple-500/20 text-purple-400">
           Apostle
         </Badge>
       );
@@ -95,6 +97,7 @@ const columns: ColumnDef<Apostle>[] = [
     header: ({ column }) => (
       <Button
         variant="ghost"
+        className="renaissance-ghost-btn"
         onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
       >
         Weight
@@ -111,6 +114,7 @@ const columns: ColumnDef<Apostle>[] = [
     header: ({ column }) => (
       <Button
         variant="ghost"
+        className="renaissance-ghost-btn"
         onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
       >
         Joined
@@ -144,11 +148,12 @@ export function ApostlesTable() {
 
   return (
     <div className="space-y-4">
-      <div className="rounded-md border">
+      <div className="renaissance-panel">
+        <span className="renaissance-panel-bottom-corners" />
         <Table>
-          <TableHeader>
+          <TableHeader className="renaissance-table-header">
             {table.getHeaderGroups().map((headerGroup) => (
-              <TableRow key={headerGroup.id}>
+              <TableRow key={headerGroup.id} className="renaissance-table-row">
                 {headerGroup.headers.map((header) => (
                   <TableHead key={header.id}>
                     {header.isPlaceholder
@@ -164,19 +169,19 @@ export function ApostlesTable() {
           </TableHeader>
           <TableBody>
             {isLoading ? (
-              <TableRow>
+              <TableRow className="renaissance-table-row">
                 <TableCell
                   colSpan={columns.length}
-                  className="h-24 text-center"
+                  className="renaissance-table-cell h-24 text-center"
                 >
                   Loading...
                 </TableCell>
               </TableRow>
             ) : table.getRowModel().rows.length ? (
               table.getRowModel().rows.map((row) => (
-                <TableRow key={row.id}>
+                <TableRow key={row.id} className="renaissance-table-row">
                   {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id}>
+                    <TableCell key={cell.id} className="renaissance-table-cell">
                       {flexRender(
                         cell.column.columnDef.cell,
                         cell.getContext(),
@@ -186,10 +191,10 @@ export function ApostlesTable() {
                 </TableRow>
               ))
             ) : (
-              <TableRow>
+              <TableRow className="renaissance-table-row">
                 <TableCell
                   colSpan={columns.length}
-                  className="h-24 text-center"
+                  className="renaissance-table-cell h-24 text-center"
                 >
                   No apostles found.
                 </TableCell>
@@ -200,25 +205,25 @@ export function ApostlesTable() {
       </div>
 
       <div className="flex items-center justify-end space-x-2">
-        <div className="text-muted-foreground flex-1 text-sm">
+        <div className="renaissance-count flex-1">
           {table.getFilteredRowModel().rows.length} apostle(s)
         </div>
-        <Button
-          variant="outline"
-          size="sm"
+        <RenaissanceButton
+          variant="secondary"
+          size="default"
           onClick={() => table.previousPage()}
           disabled={!table.getCanPreviousPage()}
         >
           Previous
-        </Button>
-        <Button
-          variant="outline"
-          size="sm"
+        </RenaissanceButton>
+        <RenaissanceButton
+          variant="secondary"
+          size="default"
           onClick={() => table.nextPage()}
           disabled={!table.getCanNextPage()}
         >
           Next
-        </Button>
+        </RenaissanceButton>
       </div>
     </div>
   );

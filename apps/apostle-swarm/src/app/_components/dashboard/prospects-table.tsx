@@ -30,7 +30,8 @@ import {
 import { useIsApostle } from "~/hooks/use-is-apostle";
 import { api } from "~/trpc/react";
 import { ArrowUpDown } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useState } from "react";
+import { RenaissanceButton } from "../renaissance-button";
 import { ProspectActionsDropdown } from "./prospect-actions-dropdown";
 
 type ClaimStatusFilter =
@@ -63,115 +64,121 @@ const claimStatusColors: Record<string, string> = {
   FAILED: "bg-red-500/20 text-red-400 border-red-500/30",
 };
 
-interface ApostleInfo {
+interface ProspectsTableMeta {
   isApostle: boolean;
   isAdmin: boolean;
   apostle: Apostle | null;
 }
 
-function createColumns(apostleInfo: ApostleInfo): ColumnDef<Prospect>[] {
-  return [
-    {
-      accessorKey: "xHandle",
-      header: ({ column }) => (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        >
-          X Handle
-          <ArrowUpDown className="ml-2 h-4 w-4" />
-        </Button>
-      ),
-      cell: ({ row }) => (
-        <a
-          href={`https://x.com/${row.original.xHandle}`}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="text-blue-400 hover:underline"
-        >
-          @{row.original.xHandle}
-        </a>
-      ),
+const prospectColumns: ColumnDef<Prospect>[] = [
+  {
+    accessorKey: "xHandle",
+    header: ({ column }) => (
+      <Button
+        variant="ghost"
+        className="renaissance-ghost-btn"
+        onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+      >
+        X Handle
+        <ArrowUpDown className="ml-2 h-4 w-4" />
+      </Button>
+    ),
+    cell: ({ row }) => (
+      <a
+        href={`https://x.com/${row.original.xHandle}`}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="text-blue-400 hover:underline"
+      >
+        @{row.original.xHandle}
+      </a>
+    ),
+  },
+  {
+    accessorKey: "qualityTag",
+    header: "Quality",
+    cell: ({ row }) => {
+      const tag = row.original.qualityTag;
+      const colorClass = qualityTagColors[tag] ?? qualityTagColors.UNRATED;
+      return (
+        <Badge className={`renaissance-badge ${colorClass}`}>
+          {tag.replace("_", " ")}
+        </Badge>
+      );
     },
-    {
-      accessorKey: "qualityTag",
-      header: "Quality",
-      cell: ({ row }) => {
-        const tag = row.original.qualityTag;
-        const colorClass = qualityTagColors[tag] ?? qualityTagColors.UNRATED;
-        return <Badge className={colorClass}>{tag.replace("_", " ")}</Badge>;
-      },
+  },
+  {
+    accessorKey: "claimStatus",
+    header: "Status",
+    cell: ({ row }) => {
+      const status = row.original.claimStatus;
+      const colorClass =
+        claimStatusColors[status] ?? claimStatusColors.UNCLAIMED;
+      return (
+        <Badge className={`renaissance-badge ${colorClass}`}>{status}</Badge>
+      );
     },
-    {
-      accessorKey: "claimStatus",
-      header: "Status",
-      cell: ({ row }) => {
-        const status = row.original.claimStatus;
-        const colorClass =
-          claimStatusColors[status] ?? claimStatusColors.UNCLAIMED;
-        return <Badge className={colorClass}>{status}</Badge>;
-      },
+  },
+  {
+    accessorKey: "resonanceScore",
+    header: ({ column }) => (
+      <Button
+        variant="ghost"
+        className="renaissance-ghost-btn"
+        onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+      >
+        Score
+        <ArrowUpDown className="ml-2 h-4 w-4" />
+      </Button>
+    ),
+    cell: ({ row }) => {
+      const score = row.original.resonanceScore;
+      return score !== null ? (
+        <span className="font-mono">{parseFloat(score).toFixed(1)}/10</span>
+      ) : (
+        <span className="text-muted-foreground">-</span>
+      );
     },
-    {
-      accessorKey: "resonanceScore",
-      header: ({ column }) => (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        >
-          Score
-          <ArrowUpDown className="ml-2 h-4 w-4" />
-        </Button>
-      ),
-      cell: ({ row }) => {
-        const score = row.original.resonanceScore;
-        return score !== null ? (
-          <span className="font-mono">{parseFloat(score).toFixed(1)}/10</span>
-        ) : (
-          <span className="text-muted-foreground">-</span>
-        );
-      },
+  },
+  {
+    accessorKey: "createdAt",
+    header: ({ column }) => (
+      <Button
+        variant="ghost"
+        className="renaissance-ghost-btn"
+        onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+      >
+        Created
+        <ArrowUpDown className="ml-2 h-4 w-4" />
+      </Button>
+    ),
+    cell: ({ row }) => {
+      const date = row.original.createdAt;
+      return <span>{new Date(date).toLocaleDateString()}</span>;
     },
-    {
-      accessorKey: "createdAt",
-      header: ({ column }) => (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        >
-          Created
-          <ArrowUpDown className="ml-2 h-4 w-4" />
-        </Button>
-      ),
-      cell: ({ row }) => {
-        const date = row.original.createdAt;
-        return <span>{new Date(date).toLocaleDateString()}</span>;
-      },
-    },
-    {
-      id: "actions",
-      enableHiding: false,
-      cell: ({ row }) => (
+  },
+  {
+    id: "actions",
+    enableHiding: false,
+    cell: ({ row, table }) => {
+      const meta = table.options.meta as ProspectsTableMeta | undefined;
+      if (!meta?.isApostle) return null;
+      return (
         <ProspectActionsDropdown
           prospect={row.original}
-          isApostle={apostleInfo.isApostle}
-          isAdmin={apostleInfo.isAdmin}
-          apostle={apostleInfo.apostle}
+          isApostle={meta.isApostle}
+          isAdmin={meta.isAdmin}
+          apostle={meta.apostle}
         />
-      ),
+      );
     },
-  ];
-}
+  },
+];
 
 export function ProspectsTable() {
   const [statusFilter, setStatusFilter] = useState<ClaimStatusFilter>("all");
   const [sorting, setSorting] = useState<SortingState>([]);
   const { isApostle, isAdmin, apostle } = useIsApostle();
-
-  const columns = useMemo(
-    () => createColumns({ isApostle, isAdmin, apostle }),
-    [isApostle, isAdmin, apostle],
-  );
 
   const { data: prospects, isLoading } =
     api.apostleSwarm.listProspects.useQuery(
@@ -187,7 +194,8 @@ export function ProspectsTable() {
 
   const table = useReactTable({
     data: prospects ?? [],
-    columns,
+    columns: prospectColumns,
+    meta: { isApostle, isAdmin, apostle } as ProspectsTableMeta,
     onSortingChange: setSorting,
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
@@ -204,10 +212,10 @@ export function ProspectsTable() {
           value={statusFilter}
           onValueChange={(value) => setStatusFilter(value as ClaimStatusFilter)}
         >
-          <SelectTrigger className="w-[180px]">
+          <SelectTrigger className="renaissance-select-trigger w-[180px]">
             <SelectValue placeholder="Filter by status" />
           </SelectTrigger>
-          <SelectContent>
+          <SelectContent className="renaissance-select-content">
             {CLAIM_STATUS_OPTIONS.map((option) => (
               <SelectItem key={option.value} value={option.value}>
                 {option.label}
@@ -217,11 +225,12 @@ export function ProspectsTable() {
         </Select>
       </div>
 
-      <div className="rounded-md border">
+      <div className="renaissance-panel">
+        <span className="renaissance-panel-bottom-corners" />
         <Table>
-          <TableHeader>
+          <TableHeader className="renaissance-table-header">
             {table.getHeaderGroups().map((headerGroup) => (
-              <TableRow key={headerGroup.id}>
+              <TableRow key={headerGroup.id} className="renaissance-table-row">
                 {headerGroup.headers.map((header) => (
                   <TableHead key={header.id}>
                     {header.isPlaceholder
@@ -237,19 +246,19 @@ export function ProspectsTable() {
           </TableHeader>
           <TableBody>
             {isLoading ? (
-              <TableRow>
+              <TableRow className="renaissance-table-row">
                 <TableCell
-                  colSpan={columns.length}
-                  className="h-24 text-center"
+                  colSpan={prospectColumns.length}
+                  className="renaissance-table-cell h-24 text-center"
                 >
                   Loading...
                 </TableCell>
               </TableRow>
             ) : table.getRowModel().rows.length ? (
               table.getRowModel().rows.map((row) => (
-                <TableRow key={row.id}>
+                <TableRow key={row.id} className="renaissance-table-row">
                   {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id}>
+                    <TableCell key={cell.id} className="renaissance-table-cell">
                       {flexRender(
                         cell.column.columnDef.cell,
                         cell.getContext(),
@@ -259,10 +268,10 @@ export function ProspectsTable() {
                 </TableRow>
               ))
             ) : (
-              <TableRow>
+              <TableRow className="renaissance-table-row">
                 <TableCell
-                  colSpan={columns.length}
-                  className="h-24 text-center"
+                  colSpan={prospectColumns.length}
+                  className="renaissance-table-cell h-24 text-center"
                 >
                   No prospects found.
                 </TableCell>
@@ -273,25 +282,25 @@ export function ProspectsTable() {
       </div>
 
       <div className="flex items-center justify-end space-x-2">
-        <div className="text-muted-foreground flex-1 text-sm">
+        <div className="renaissance-count flex-1">
           {table.getFilteredRowModel().rows.length} prospect(s)
         </div>
-        <Button
-          variant="outline"
-          size="sm"
+        <RenaissanceButton
+          variant="secondary"
+          size="default"
           onClick={() => table.previousPage()}
           disabled={!table.getCanPreviousPage()}
         >
           Previous
-        </Button>
-        <Button
-          variant="outline"
-          size="sm"
+        </RenaissanceButton>
+        <RenaissanceButton
+          variant="secondary"
+          size="default"
           onClick={() => table.nextPage()}
           disabled={!table.getCanNextPage()}
         >
           Next
-        </Button>
+        </RenaissanceButton>
       </div>
     </div>
   );

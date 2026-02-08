@@ -172,3 +172,618 @@
 body {
   letter-spacing: var(--tracking-normal);
 }
+
+/* ── Renaissance Button Ornaments ── */
+
+.renaissance-btn {
+  position: relative;
+  border: 1.5px solid hsl(34 40% 35%);
+  background: linear-gradient(
+    180deg,
+    hsl(34 30% 22%) 0%,
+    hsl(34 25% 16%) 50%,
+    hsl(34 30% 20%) 100%
+  );
+  color: hsl(38 50% 82%);
+  font-family: var(--font-serif);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  font-size: 0.8rem;
+  transition: all 0.3s ease;
+  box-shadow:
+    inset 0 1px 0 hsl(38 35% 32% / 0.5),
+    inset 0 -1px 0 hsl(34 30% 10% / 0.5),
+    0 2px 8px hsl(0 0% 0% / 0.4);
+  overflow: visible;
+  cursor: pointer;
+}
+
+.renaissance-btn:hover {
+  border-color: hsl(38 55% 48%);
+  background: linear-gradient(
+    180deg,
+    hsl(34 35% 26%) 0%,
+    hsl(34 28% 19%) 50%,
+    hsl(34 35% 24%) 100%
+  );
+  color: hsl(40 60% 90%);
+  box-shadow:
+    inset 0 1px 0 hsl(38 40% 38% / 0.6),
+    inset 0 -1px 0 hsl(34 30% 10% / 0.5),
+    0 2px 12px hsl(34 40% 20% / 0.5),
+    0 0 20px hsl(34 40% 30% / 0.15);
+}
+
+.renaissance-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  border-color: hsl(34 15% 25%);
+}
+
+/* Corner ornaments — gilded frame corners */
+.renaissance-btn::before,
+.renaissance-btn::after {
+  content: "";
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.renaissance-btn::before {
+  top: -2px;
+  left: -2px;
+  border-top: 2px solid hsl(38 50% 50%);
+  border-left: 2px solid hsl(38 50% 50%);
+}
+
+.renaissance-btn::after {
+  top: -2px;
+  right: -2px;
+  border-top: 2px solid hsl(38 50% 50%);
+  border-right: 2px solid hsl(38 50% 50%);
+}
+
+.renaissance-btn:hover::before,
+.renaissance-btn:hover::after {
+  border-color: hsl(40 65% 60%);
+}
+
+/* Text wrapper */
+.renaissance-btn-inner {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 3;
+}
+
+/* Bottom corners — absolutely positioned to the button, not the text */
+.renaissance-btn-corners-bottom {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.renaissance-btn-corners-bottom::before,
+.renaissance-btn-corners-bottom::after {
+  content: "";
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  pointer-events: none;
+}
+
+.renaissance-btn-corners-bottom::before {
+  bottom: -2px;
+  left: -2px;
+  border-bottom: 2px solid hsl(38 50% 50%);
+  border-left: 2px solid hsl(38 50% 50%);
+}
+
+.renaissance-btn-corners-bottom::after {
+  bottom: -2px;
+  right: -2px;
+  border-bottom: 2px solid hsl(38 50% 50%);
+  border-right: 2px solid hsl(38 50% 50%);
+}
+
+.renaissance-btn:hover .renaissance-btn-corners-bottom::before,
+.renaissance-btn:hover .renaissance-btn-corners-bottom::after {
+  border-color: hsl(40 65% 60%);
+}
+
+/* Top/bottom ruled lines — subtle filigree */
+.renaissance-btn-frame {
+  position: absolute;
+  inset: 3px 12px;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.renaissance-btn-frame::before,
+.renaissance-btn-frame::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    hsl(38 40% 42% / 0.6) 20%,
+    hsl(38 45% 50% / 0.8) 50%,
+    hsl(38 40% 42% / 0.6) 80%,
+    transparent 100%
+  );
+}
+
+.renaissance-btn-frame::before {
+  top: 0;
+}
+
+.renaissance-btn-frame::after {
+  bottom: 0;
+}
+
+/* Variant: outline/secondary — muted frame */
+.renaissance-btn-secondary {
+  background: transparent;
+  border: 1.5px solid hsl(34 20% 28%);
+  color: hsl(38 35% 70%);
+  box-shadow:
+    inset 0 1px 0 hsl(38 20% 25% / 0.3),
+    0 2px 6px hsl(0 0% 0% / 0.3);
+}
+
+.renaissance-btn-secondary::before,
+.renaissance-btn-secondary::after {
+  border-color: hsl(38 30% 38%);
+}
+
+.renaissance-btn-secondary .renaissance-btn-corners-bottom::before,
+.renaissance-btn-secondary .renaissance-btn-corners-bottom::after {
+  border-color: hsl(38 30% 38%);
+}
+
+.renaissance-btn-secondary .renaissance-btn-frame::before,
+.renaissance-btn-secondary .renaissance-btn-frame::after {
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    hsl(38 25% 32% / 0.4) 20%,
+    hsl(38 30% 40% / 0.6) 50%,
+    hsl(38 25% 32% / 0.4) 80%,
+    transparent 100%
+  );
+}
+
+.renaissance-btn-secondary:hover {
+  border-color: hsl(38 40% 40%);
+  background: hsl(34 20% 16% / 0.5);
+  color: hsl(40 50% 82%);
+}
+
+.renaissance-btn-secondary:hover::before,
+.renaissance-btn-secondary:hover::after {
+  border-color: hsl(40 50% 50%);
+}
+
+.renaissance-btn-secondary:hover .renaissance-btn-corners-bottom::before,
+.renaissance-btn-secondary:hover .renaissance-btn-corners-bottom::after {
+  border-color: hsl(40 50% 50%);
+}
+
+/* ── Renaissance Dialog Panel ── */
+
+.renaissance-dialog {
+  border: 1.5px solid hsl(34 40% 30%);
+  background: linear-gradient(
+    180deg,
+    hsl(34 20% 15%) 0%,
+    hsl(330 12% 14%) 40%,
+    hsl(34 18% 13%) 100%
+  );
+  box-shadow:
+    inset 0 1px 0 hsl(38 30% 28% / 0.4),
+    inset 0 -1px 0 hsl(34 25% 8% / 0.5),
+    0 4px 30px hsl(0 0% 0% / 0.6),
+    0 0 60px hsl(0 0% 0% / 0.3);
+  overflow: visible;
+}
+
+/* Gilded frame corners — top */
+.renaissance-dialog::before,
+.renaissance-dialog::after {
+  content: "";
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.renaissance-dialog::before {
+  top: -2px;
+  left: -2px;
+  border-top: 2px solid hsl(38 50% 45%);
+  border-left: 2px solid hsl(38 50% 45%);
+}
+
+.renaissance-dialog::after {
+  top: -2px;
+  right: -2px;
+  border-top: 2px solid hsl(38 50% 45%);
+  border-right: 2px solid hsl(38 50% 45%);
+}
+
+/* Bottom corners */
+.renaissance-dialog-bottom-corners {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.renaissance-dialog-bottom-corners::before,
+.renaissance-dialog-bottom-corners::after {
+  content: "";
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  pointer-events: none;
+}
+
+.renaissance-dialog-bottom-corners::before {
+  bottom: -2px;
+  left: -2px;
+  border-bottom: 2px solid hsl(38 50% 45%);
+  border-left: 2px solid hsl(38 50% 45%);
+}
+
+.renaissance-dialog-bottom-corners::after {
+  bottom: -2px;
+  right: -2px;
+  border-bottom: 2px solid hsl(38 50% 45%);
+  border-right: 2px solid hsl(38 50% 45%);
+}
+
+/* Inner filigree border */
+.renaissance-dialog-filigree {
+  position: absolute;
+  inset: 6px;
+  border: 1px solid hsl(38 35% 30% / 0.4);
+  pointer-events: none;
+  z-index: 1;
+}
+
+.renaissance-dialog-filigree::before,
+.renaissance-dialog-filigree::after {
+  content: "";
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    hsl(38 40% 40% / 0.5) 15%,
+    hsl(38 45% 50% / 0.7) 50%,
+    hsl(38 40% 40% / 0.5) 85%,
+    transparent 100%
+  );
+}
+
+.renaissance-dialog-filigree::before {
+  top: -1px;
+}
+
+.renaissance-dialog-filigree::after {
+  bottom: -1px;
+}
+
+/* Dialog title */
+.renaissance-dialog-title {
+  font-family: var(--font-serif);
+  color: hsl(38 50% 78%);
+  letter-spacing: 0.08em;
+}
+
+/* Dialog description */
+.renaissance-dialog-description {
+  color: hsl(30 20% 60%);
+  font-style: italic;
+}
+
+/* Renaissance styled input */
+.renaissance-input {
+  border: 1px solid hsl(34 30% 28%);
+  background: hsl(330 12% 11%);
+  color: hsl(38 40% 80%);
+  font-family: var(--font-serif);
+  transition:
+    border-color 0.3s ease,
+    box-shadow 0.3s ease;
+  box-shadow: inset 0 1px 3px hsl(0 0% 0% / 0.3);
+}
+
+.renaissance-input::placeholder {
+  color: hsl(30 15% 40%);
+  font-style: italic;
+}
+
+.renaissance-input:focus {
+  border-color: hsl(38 50% 42%);
+  box-shadow:
+    inset 0 1px 3px hsl(0 0% 0% / 0.3),
+    0 0 8px hsl(38 40% 30% / 0.3);
+}
+
+/* Renaissance label */
+.renaissance-label {
+  font-family: var(--font-serif);
+  color: hsl(38 40% 68%);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  font-size: 0.7rem;
+}
+
+/* Separator line between content and footer */
+.renaissance-separator {
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    hsl(38 35% 32% / 0.5) 15%,
+    hsl(38 40% 42% / 0.7) 50%,
+    hsl(38 35% 32% / 0.5) 85%,
+    transparent 100%
+  );
+}
+
+/* ── Renaissance Dashboard ── */
+
+/* Panel — reusable framed container */
+.renaissance-panel {
+  position: relative;
+  border: 1.5px solid hsl(34 40% 30%);
+  background: linear-gradient(
+    180deg,
+    hsl(34 18% 14%) 0%,
+    hsl(330 12% 13%) 50%,
+    hsl(34 16% 12%) 100%
+  );
+  box-shadow:
+    inset 0 1px 0 hsl(38 30% 28% / 0.3),
+    inset 0 -1px 0 hsl(34 25% 8% / 0.4),
+    0 4px 20px hsl(0 0% 0% / 0.4);
+  overflow: visible;
+}
+
+.renaissance-panel::before,
+.renaissance-panel::after {
+  content: "";
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.renaissance-panel::before {
+  top: -2px;
+  left: -2px;
+  border-top: 2px solid hsl(38 50% 45%);
+  border-left: 2px solid hsl(38 50% 45%);
+}
+
+.renaissance-panel::after {
+  top: -2px;
+  right: -2px;
+  border-top: 2px solid hsl(38 50% 45%);
+  border-right: 2px solid hsl(38 50% 45%);
+}
+
+.renaissance-panel-bottom-corners {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.renaissance-panel-bottom-corners::before,
+.renaissance-panel-bottom-corners::after {
+  content: "";
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  pointer-events: none;
+}
+
+.renaissance-panel-bottom-corners::before {
+  bottom: -2px;
+  left: -2px;
+  border-bottom: 2px solid hsl(38 50% 45%);
+  border-left: 2px solid hsl(38 50% 45%);
+}
+
+.renaissance-panel-bottom-corners::after {
+  bottom: -2px;
+  right: -2px;
+  border-bottom: 2px solid hsl(38 50% 45%);
+  border-right: 2px solid hsl(38 50% 45%);
+}
+
+/* Tabs — Renaissance styled */
+.renaissance-tabs-list {
+  background: transparent !important;
+  border: none !important;
+  gap: 12px;
+  height: auto !important;
+  padding: 0 !important;
+}
+
+.renaissance-tab-trigger {
+  font-family: var(--font-serif);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-size: 0.8rem;
+  color: hsl(38 25% 55%);
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 10px 18px;
+  position: relative;
+  z-index: 1;
+  transition:
+    color 0.3s ease,
+    font-size 0.3s ease;
+}
+
+.renaissance-tab-trigger:hover {
+  color: hsl(38 40% 72%);
+  background: transparent !important;
+}
+
+.renaissance-tab-trigger[data-state="active"] {
+  color: hsl(38 55% 82%);
+  background: transparent !important;
+  font-size: 0.95rem;
+  font-weight: 700;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+/* Table — Renaissance styled */
+.renaissance-table-wrapper {
+  border: 1.5px solid hsl(34 35% 28%);
+  background: hsl(330 12% 12% / 0.8);
+}
+
+.renaissance-table-header {
+  border-bottom: 1px solid hsl(38 35% 30% / 0.5);
+}
+
+.renaissance-table-header th {
+  color: hsl(38 40% 65%);
+  font-family: var(--font-serif);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  font-size: 0.7rem;
+  font-weight: 500;
+}
+
+.renaissance-table-row {
+  border-color: hsl(34 20% 20% / 0.5);
+}
+
+.renaissance-table-row:hover {
+  background: hsl(34 20% 16% / 0.4);
+}
+
+.renaissance-table-cell {
+  color: hsl(30 20% 75%);
+  font-size: 0.85rem;
+}
+
+/* Select — Renaissance styled */
+.renaissance-select-trigger {
+  border: 1px solid hsl(34 30% 28%);
+  background: hsl(330 12% 11%);
+  color: hsl(38 40% 75%);
+  font-family: var(--font-serif);
+  font-size: 0.8rem;
+  letter-spacing: 0.04em;
+  transition: border-color 0.3s ease;
+}
+
+.renaissance-select-trigger:hover {
+  border-color: hsl(38 40% 38%);
+}
+
+.renaissance-select-content {
+  border: 1px solid hsl(34 35% 28%);
+  background: hsl(330 12% 13%);
+  box-shadow: 0 4px 16px hsl(0 0% 0% / 0.5);
+}
+
+.renaissance-select-content [data-slot="select-item"] {
+  color: hsl(30 20% 70%);
+  font-family: var(--font-serif);
+  font-size: 0.8rem;
+}
+
+.renaissance-select-content [data-slot="select-item"]:focus {
+  background: hsl(34 25% 18%);
+  color: hsl(38 50% 82%);
+}
+
+/* Dropdown — Renaissance styled */
+.renaissance-dropdown {
+  border: 1px solid hsl(34 35% 28%);
+  background: hsl(330 12% 13%);
+  box-shadow: 0 4px 16px hsl(0 0% 0% / 0.5);
+}
+
+.renaissance-dropdown [role="menuitem"] {
+  color: hsl(30 20% 70%);
+  font-family: var(--font-serif);
+  font-size: 0.8rem;
+  transition: background 0.2s ease;
+}
+
+.renaissance-dropdown [role="menuitem"]:focus {
+  background: hsl(34 25% 18%);
+  color: hsl(38 50% 82%);
+}
+
+.renaissance-dropdown [data-slot="dropdown-menu-label"] {
+  color: hsl(38 40% 60%);
+  font-family: var(--font-serif);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  font-size: 0.7rem;
+}
+
+.renaissance-dropdown [data-slot="dropdown-menu-separator"] {
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    hsl(38 30% 30% / 0.5) 20%,
+    hsl(38 35% 38% / 0.6) 50%,
+    hsl(38 30% 30% / 0.5) 80%,
+    transparent 100%
+  );
+}
+
+/* Ghost button override for table headers */
+.renaissance-ghost-btn {
+  color: hsl(38 35% 60%);
+  font-family: var(--font-serif);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  font-size: 0.7rem;
+  font-weight: 500;
+}
+
+.renaissance-ghost-btn:hover {
+  color: hsl(38 50% 78%);
+  background: hsl(34 20% 18% / 0.5);
+}
+
+/* Badge override */
+.renaissance-badge {
+  font-family: var(--font-serif);
+  letter-spacing: 0.04em;
+  font-size: 0.7rem;
+}
+
+/* Count text */
+.renaissance-count {
+  color: hsl(30 20% 55%);
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 0.8rem;
+}

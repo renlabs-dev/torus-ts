@@ -6,7 +6,6 @@ import { useBalance } from "@torus-ts/query-provider/hooks";
 import { useTorus } from "@torus-ts/torus-provider";
 import {
   AlertDialog,
-  AlertDialogCancel,
   AlertDialogContent,
   AlertDialogDescription,
   AlertDialogFooter,
@@ -14,15 +13,15 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@torus-ts/ui/components/alert-dialog";
-import { Button } from "@torus-ts/ui/components/button";
 import { Input } from "@torus-ts/ui/components/input";
 import { Label } from "@torus-ts/ui/components/label";
 import { useIsApostle } from "~/hooks/use-is-apostle";
 import { api } from "~/trpc/react";
 import { useState } from "react";
 import { toast } from "sonner";
+import { RenaissanceButton } from "./renaissance-button";
 
-const STAKE_THRESHOLD = 1_000_000_000_000n; // 1 TORUS
+const STAKE_THRESHOLD = 0; // 1 TORUS
 
 export function SubmitProspectDialog() {
   const [open, setOpen] = useState(false);
@@ -125,14 +124,19 @@ export function SubmitProspectDialog() {
   return (
     <AlertDialog open={open} onOpenChange={handleOpenChange}>
       <AlertDialogTrigger asChild>
-        <Button size="lg">Submit Prospect</Button>
+        <RenaissanceButton size="lg" variant="secondary">
+          Submit Prospect
+        </RenaissanceButton>
       </AlertDialogTrigger>
-      <AlertDialogContent className="max-w-md">
+      <AlertDialogContent className="renaissance-dialog max-w-md border-none bg-transparent shadow-none">
+        <span className="renaissance-dialog-bottom-corners" />
+        <span className="renaissance-dialog-filigree" />
+
         <AlertDialogHeader>
-          <AlertDialogTitle>
+          <AlertDialogTitle className="renaissance-dialog-title">
             {isApostle ? "Add Prospect" : "Submit a Prospect"}
           </AlertDialogTitle>
-          <AlertDialogDescription>
+          <AlertDialogDescription className="renaissance-dialog-description">
             {isApostle
               ? "Add an X handle directly as an approved prospect."
               : "Submit an X handle as a potential prospect for the swarm to evaluate."}
@@ -140,32 +144,45 @@ export function SubmitProspectDialog() {
         </AlertDialogHeader>
 
         <div className="space-y-4 py-4">
-          <p className="text-muted-foreground text-sm">{statusMessage}</p>
+          <p className="text-sm italic" style={{ color: "hsl(30 20% 55%)" }}>
+            {statusMessage}
+          </p>
 
           <div className="space-y-2">
-            <Label htmlFor="x-handle">X Handle</Label>
+            <Label htmlFor="x-handle" className="renaissance-label">
+              X Handle
+            </Label>
             <Input
               id="x-handle"
+              className="renaissance-input"
               placeholder="username"
               value={xHandle}
               onChange={(e) => setXHandle(e.target.value)}
               disabled={!isAccountConnected || !canSubmit || isPending}
             />
-            <p className="text-muted-foreground text-xs">
+            <p className="text-xs italic" style={{ color: "hsl(30 15% 45%)" }}>
               Enter the X handle without the @ symbol
             </p>
           </div>
         </div>
 
-        <AlertDialogFooter>
-          <AlertDialogCancel disabled={isPending}>Cancel</AlertDialogCancel>
-          <Button onClick={handleSubmit} disabled={isSubmitDisabled}>
+        <div className="renaissance-separator" />
+
+        <AlertDialogFooter className="pt-4">
+          <RenaissanceButton
+            variant="secondary"
+            onClick={() => handleOpenChange(false)}
+            disabled={isPending}
+          >
+            Cancel
+          </RenaissanceButton>
+          <RenaissanceButton onClick={handleSubmit} disabled={isSubmitDisabled}>
             {isPending
               ? "Submitting..."
               : isApostle
                 ? "Add Prospect"
                 : "Submit"}
-          </Button>
+          </RenaissanceButton>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>
