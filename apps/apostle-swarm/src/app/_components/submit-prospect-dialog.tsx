@@ -1,7 +1,10 @@
 "use client";
 
+import { zodResolver } from "@hookform/resolvers/zod";
 import type { SS58Address } from "@torus-network/sdk/types";
 import { formatToken } from "@torus-network/torus-utils/torus";
+import { tryAsync } from "@torus-network/torus-utils/try-catch";
+import { PROSPECT_SUBMIT_SCHEMA } from "@torus-ts/api/apostle-swarm-schemas";
 import { useBalance } from "@torus-ts/query-provider/hooks";
 import { useTorus } from "@torus-ts/torus-provider";
 import {
@@ -13,19 +16,27 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@torus-ts/ui/components/alert-dialog";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@torus-ts/ui/components/form";
 import { Input } from "@torus-ts/ui/components/input";
-import { Label } from "@torus-ts/ui/components/label";
 import { useIsApostle } from "~/hooks/use-is-apostle";
 import { api } from "~/trpc/react";
 import { useState } from "react";
+import { useForm } from "react-hook-form";
 import { toast } from "sonner";
+import type { z } from "zod";
 import { RenaissanceButton } from "./renaissance-button";
 
 const STAKE_THRESHOLD = 0; // 1 TORUS
 
 export function SubmitProspectDialog() {
   const [open, setOpen] = useState(false);
-  const [xHandle, setXHandle] = useState("");
 
   const { api: torusApi, selectedAccount, isAccountConnected } = useTorus();
   const { isApostle, isLoading: isApostleLoading } = useIsApostle();
@@ -38,57 +49,44 @@ export function SubmitProspectDialog() {
   const userStake = balanceQuery.data?.staked ?? 0n;
   const hasEnoughStake = userStake >= STAKE_THRESHOLD;
 
-  // Apostles use addManualProspect (auto-approved), community uses submitCommunityProspect (pending)
-  const communityMutation =
-    api.apostleSwarm.submitCommunityProspect.useMutation({
-      onSuccess: (data) => {
-        toast.success(`Prospect @${data.xHandle} submitted for review`);
-        setOpen(false);
-        setXHandle("");
-      },
-      onError: (error) => {
-        toast.error(error.message);
-      },
-    });
-
-  const apostleMutation = api.apostleSwarm.addManualProspect.useMutation({
-    onSuccess: (data) => {
-      toast.success(`Prospect @${data.xHandle} added and approved`);
-      setOpen(false);
-      setXHandle("");
-    },
-    onError: (error) => {
-      toast.error(error.message);
+  const form = useForm<z.infer<typeof PROSPECT_SUBMIT_SCHEMA>>({
+    resolver: zodResolver(PROSPECT_SUBMIT_SCHEMA),
+    defaultValues: {
+      xHandle: "",
     },
   });
 
+  const communityMutation =
+    api.apostleSwarm.submitCommunityProspect.useMutation();
+
+  const apostleMutation = api.apostleSwarm.addManualProspect.useMutation();
+
   const isPending = communityMutation.isPending || apostleMutation.isPending;
 
-  const handleSubmit = () => {
-    const trimmedHandle = xHandle.trim().replace(/^@/, "");
+  async function onSubmit(data: z.infer<typeof PROSPECT_SUBMIT_SCHEMA>) {
+    const mutation = isApostle
+      ? apostleMutation.mutateAsync(data)
+      : communityMutation.mutateAsync(data);
 
-    if (!trimmedHandle) {
-      toast.error("Please enter an X handle");
+    const [error, result] = await tryAsync(mutation);
+
+    if (error !== undefined) {
+      toast.error(error.message);
       return;
     }
 
-    if (!/^[a-zA-Z0-9_]+$/.test(trimmedHandle)) {
-      toast.error(
-        "Invalid X handle format. Use only letters, numbers, and underscores.",
-      );
-      return;
-    }
+    const message = isApostle
+      ? `Prospect @${result.xHandle} added and approved`
+      : `Prospect @${result.xHandle} submitted for review`;
 
-    if (isApostle) {
-      apostleMutation.mutate({ xHandle: trimmedHandle });
-    } else {
-      communityMutation.mutate({ xHandle: trimmedHandle });
-    }
-  };
+    toast.success(message);
+    form.reset();
+    setOpen(false);
+  }
 
   const handleOpenChange = (newOpen: boolean) => {
     if (!newOpen && !isPending) {
-      setXHandle("");
+      form.reset();
     }
     setOpen(newOpen);
   };
@@ -97,11 +95,7 @@ export function SubmitProspectDialog() {
   const canSubmit = isApostle || hasEnoughStake;
 
   const isSubmitDisabled =
-    !isAccountConnected ||
-    !canSubmit ||
-    !xHandle.trim() ||
-    isPending ||
-    isApostleLoading;
+    !isAccountConnected || !canSubmit || isPending || isApostleLoading;
 
   const getStatusMessage = () => {
     if (!isAccountConnected) {
@@ -143,47 +137,58 @@ export function SubmitProspectDialog() {
           </AlertDialogDescription>
         </AlertDialogHeader>
 
-        <div className="space-y-4 py-4">
-          <p className="text-sm italic" style={{ color: "hsl(30 20% 55%)" }}>
-            {statusMessage}
-          </p>
-
-          <div className="space-y-2">
-            <Label htmlFor="x-handle" className="renaissance-label">
-              X Handle
-            </Label>
-            <Input
-              id="x-handle"
-              className="renaissance-input"
-              placeholder="username"
-              value={xHandle}
-              onChange={(e) => setXHandle(e.target.value)}
-              disabled={!isAccountConnected || !canSubmit || isPending}
-            />
-            <p className="text-xs italic" style={{ color: "hsl(30 15% 45%)" }}>
-              Enter the X handle without the @ symbol
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            <p className="text-sm italic" style={{ color: "hsl(30 20% 55%)" }}>
+              {statusMessage}
             </p>
-          </div>
-        </div>
 
-        <div className="renaissance-separator" />
+            <FormField
+              control={form.control}
+              name="xHandle"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="renaissance-label">X Handle</FormLabel>
+                  <FormControl>
+                    <Input
+                      {...field}
+                      className="renaissance-input"
+                      placeholder="username"
+                      disabled={!isAccountConnected || !canSubmit || isPending}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                  <p
+                    className="text-xs italic"
+                    style={{ color: "hsl(30 15% 45%)" }}
+                  >
+                    Enter the X handle without the @ symbol
+                  </p>
+                </FormItem>
+              )}
+            />
 
-        <AlertDialogFooter className="pt-4">
-          <RenaissanceButton
-            variant="secondary"
-            onClick={() => handleOpenChange(false)}
-            disabled={isPending}
-          >
-            Cancel
-          </RenaissanceButton>
-          <RenaissanceButton onClick={handleSubmit} disabled={isSubmitDisabled}>
-            {isPending
-              ? "Submitting..."
-              : isApostle
-                ? "Add Prospect"
-                : "Submit"}
-          </RenaissanceButton>
-        </AlertDialogFooter>
+            <div className="renaissance-separator" />
+
+            <AlertDialogFooter className="pt-4">
+              <RenaissanceButton
+                type="button"
+                variant="secondary"
+                onClick={() => handleOpenChange(false)}
+                disabled={isPending}
+              >
+                Cancel
+              </RenaissanceButton>
+              <RenaissanceButton type="submit" disabled={isSubmitDisabled}>
+                {isPending
+                  ? "Submitting..."
+                  : isApostle
+                    ? "Add Prospect"
+                    : "Submit"}
+              </RenaissanceButton>
+            </AlertDialogFooter>
+          </form>
+        </Form>
       </AlertDialogContent>
     </AlertDialog>
   );

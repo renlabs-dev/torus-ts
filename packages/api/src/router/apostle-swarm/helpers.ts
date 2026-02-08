@@ -12,7 +12,7 @@ import { TRPCError } from "@trpc/server";
  * Stake threshold for community prospect submissions.
  * Users must have at least this amount staked to propose prospects.
  */
-export const PROPOSAL_STAKE_THRESHOLD = 1_000_000_000_000n; // TODO: refactor this later, 1 TORUS (12 decimals)
+export const PROPOSAL_STAKE_THRESHOLD = 0n;
 
 /**
  * Get apostle record by wallet address.
