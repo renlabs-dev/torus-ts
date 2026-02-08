@@ -15,11 +15,11 @@ import {
 } from "@torus-ts/ui/components/alert-dialog";
 import { Input } from "@torus-ts/ui/components/input";
 import { Label } from "@torus-ts/ui/components/label";
-import { RenaissanceButton } from "./renaissance-button";
 import { useIsApostle } from "~/hooks/use-is-apostle";
 import { api } from "~/trpc/react";
 import { useState } from "react";
 import { toast } from "sonner";
+import { RenaissanceButton } from "./renaissance-button";
 
 const STAKE_THRESHOLD = 1_000_000_000_000n; // 1 TORUS
 

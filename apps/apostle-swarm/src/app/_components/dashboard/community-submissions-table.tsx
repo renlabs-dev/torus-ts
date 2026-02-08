@@ -13,7 +13,6 @@ import { formatToken } from "@torus-network/torus-utils/torus";
 import type { Prospect } from "@torus-ts/db/schema";
 import { Badge } from "@torus-ts/ui/components/badge";
 import { Button } from "@torus-ts/ui/components/button";
-import { RenaissanceButton } from "../renaissance-button";
 import {
   Select,
   SelectContent,
@@ -33,6 +32,7 @@ import { useIsApostle } from "~/hooks/use-is-apostle";
 import { api } from "~/trpc/react";
 import { ArrowUpDown } from "lucide-react";
 import { useMemo, useState } from "react";
+import { RenaissanceButton } from "../renaissance-button";
 import { SubmissionActionsDropdown } from "./submission-actions-dropdown";
 
 type ApprovalStatusFilter = "all" | "PENDING" | "APPROVED" | "REJECTED";
@@ -118,7 +118,9 @@ const submissionColumns: ColumnDef<Prospect>[] = [
       const status = row.original.approvalStatus;
       const colorClass =
         approvalStatusColors[status] ?? approvalStatusColors.PENDING;
-      return <Badge className={`renaissance-badge ${colorClass}`}>{status}</Badge>;
+      return (
+        <Badge className={`renaissance-badge ${colorClass}`}>{status}</Badge>
+      );
     },
   },
   {

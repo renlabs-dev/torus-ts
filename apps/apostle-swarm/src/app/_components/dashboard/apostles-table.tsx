@@ -11,7 +11,6 @@ import {
 import type { Apostle } from "@torus-ts/db/schema";
 import { Badge } from "@torus-ts/ui/components/badge";
 import { Button } from "@torus-ts/ui/components/button";
-import { RenaissanceButton } from "../renaissance-button";
 import {
   Table,
   TableBody,
@@ -23,6 +22,7 @@ import {
 import { api } from "~/trpc/react";
 import { ArrowUpDown } from "lucide-react";
 import { useState } from "react";
+import { RenaissanceButton } from "../renaissance-button";
 
 function truncateAddress(address: string): string {
   return `${address.slice(0, 6)}...${address.slice(-4)}`;

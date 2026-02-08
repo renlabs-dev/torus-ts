@@ -19,7 +19,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@torus-ts/ui/components/select";
-import { RenaissanceButton } from "../renaissance-button";
 import {
   Table,
   TableBody,
@@ -32,6 +31,7 @@ import { useIsApostle } from "~/hooks/use-is-apostle";
 import { api } from "~/trpc/react";
 import { ArrowUpDown } from "lucide-react";
 import { useState } from "react";
+import { RenaissanceButton } from "../renaissance-button";
 import { ProspectActionsDropdown } from "./prospect-actions-dropdown";
 
 type ClaimStatusFilter =
@@ -100,7 +100,11 @@ const prospectColumns: ColumnDef<Prospect>[] = [
     cell: ({ row }) => {
       const tag = row.original.qualityTag;
       const colorClass = qualityTagColors[tag] ?? qualityTagColors.UNRATED;
-      return <Badge className={`renaissance-badge ${colorClass}`}>{tag.replace("_", " ")}</Badge>;
+      return (
+        <Badge className={`renaissance-badge ${colorClass}`}>
+          {tag.replace("_", " ")}
+        </Badge>
+      );
     },
   },
   {
@@ -110,7 +114,9 @@ const prospectColumns: ColumnDef<Prospect>[] = [
       const status = row.original.claimStatus;
       const colorClass =
         claimStatusColors[status] ?? claimStatusColors.UNCLAIMED;
-      return <Badge className={`renaissance-badge ${colorClass}`}>{status}</Badge>;
+      return (
+        <Badge className={`renaissance-badge ${colorClass}`}>{status}</Badge>
+      );
     },
   },
   {
