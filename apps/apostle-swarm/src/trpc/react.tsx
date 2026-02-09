@@ -7,7 +7,7 @@ import { useTorus } from "@torus-ts/torus-provider";
 import { httpBatchLink, loggerLink } from "@trpc/client";
 import { createTRPCReact } from "@trpc/react-query";
 import { env } from "~/env";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import SuperJSON from "superjson";
 
 const createQueryClient = () =>
@@ -39,11 +39,16 @@ const getBaseUrl = () => {
 // Create a singleton tRPC client outside React
 let trpcClientSingleton: ReturnType<typeof api.createClient> | undefined;
 
-function createTRPCClientInstance(
-  signHex: (
-    msgHex: `0x${string}`,
-  ) => Promise<{ signature: `0x${string}`; address: string }>,
-) {
+type SignHexFn = (
+  msgHex: `0x${string}`,
+) => Promise<{ signature: `0x${string}`; address: string }>;
+
+// Module-level reference to the latest signHex from the torus provider,
+// so the tRPC singleton always delegates to the current wallet context
+// instead of closing over the initial (null) selectedAccount.
+let latestSignHex: SignHexFn | null = null;
+
+function createTRPCClientInstance(signHex: SignHexFn) {
   const getStoredAuthorization = () => localStorage.getItem("authorization");
   const setStoredAuthorization = (authorization: string) =>
     localStorage.setItem("authorization", authorization);
@@ -84,15 +89,26 @@ export function TRPCReactProvider({ children }: { children: React.ReactNode }) {
   const queryClient = getQueryClient();
   const { signHex } = useTorus();
 
+  // Keep the module-level signHex in sync so the tRPC singleton always
+  // delegates to the latest wallet context (avoids stale closure).
+  useEffect(() => {
+    latestSignHex = signHex;
+  });
+
   // Use useState to ensure client is created only once per mount
   const [trpcClient] = useState(() => {
+    const stableSignHex: SignHexFn = (msgHex) => {
+      if (!latestSignHex) throw new Error("signHex not initialized");
+      return latestSignHex(msgHex);
+    };
+
     if (typeof window === "undefined") {
       // Server-side: create new instance each time
-      return createTRPCClientInstance(signHex);
+      return createTRPCClientInstance(stableSignHex);
     }
     // Client-side: use singleton
     if (!trpcClientSingleton) {
-      trpcClientSingleton = createTRPCClientInstance(signHex);
+      trpcClientSingleton = createTRPCClientInstance(stableSignHex);
     }
     return trpcClientSingleton;
   });
