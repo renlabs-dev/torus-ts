@@ -69,7 +69,7 @@ export const requirePermission =
     app
       .use(authPlugin)
       .onBeforeHandle(
-        { as: "global" },
+        { as: "scoped" },
         ({ permissionCache, userKey, status }) => {
           for (const path of namespacePaths) {
             const hasPermission = permissionCache.hasPermission(userKey, path);
