@@ -7,7 +7,6 @@ import {
   and,
   eq,
   getTableColumns,
-  gte,
   inArray,
   isNull,
   not,
@@ -380,38 +379,49 @@ export async function countCadreKeys(): Promise<number> {
 }
 
 export async function pendingPenalizations(threshold: number, n: number) {
-  const agentsWithUnexecutedVotes = db
-    .select({ agentKey: penalizeAgentVotesSchema.agentKey })
-    .from(penalizeAgentVotesSchema)
-    .where(not(penalizeAgentVotesSchema.executed));
-
-  const result = await db
-    .with(agentsWithUnexecutedVotes.as("agents_with_unexecuted_votes"))
+  const pendingVotes = await db
     .select({
       agentKey: penalizeAgentVotesSchema.agentKey,
-      nthBiggestPenaltyFactor: sql`
-        (
-          SELECT penalty_factor
-          FROM ${penalizeAgentVotesSchema} as inner_p
-          WHERE 
-            inner_p.agent_key = ${penalizeAgentVotesSchema.agentKey}
-          ORDER BY penalty_factor DESC
-          LIMIT 1 OFFSET ${n - 1}
-        )
-      `.as<number>(),
+      penaltyFactor: penalizeAgentVotesSchema.penaltyFactor,
     })
     .from(penalizeAgentVotesSchema)
     .where(
-      sql`${penalizeAgentVotesSchema.agentKey} in (select "agent_key" from agents_with_unexecuted_votes)`,
+      and(
+        isNull(penalizeAgentVotesSchema.deletedAt),
+        not(penalizeAgentVotesSchema.executed),
+      ),
     )
-    .groupBy(penalizeAgentVotesSchema.agentKey)
-    .having(gte(sql`count(*)`, threshold));
+    .execute();
 
-  const castedResult = result.map((row) => ({
-    agentKey: checkSS58(row.agentKey),
-    nthBiggestPenaltyFactor: row.nthBiggestPenaltyFactor,
-  }));
-  return castedResult;
+  const factorsByAgent = new Map<string, number[]>();
+  for (const vote of pendingVotes) {
+    const factors = getOrSetDefault(factorsByAgent, vote.agentKey, () => []);
+    factors.push(vote.penaltyFactor);
+  }
+
+  const result: {
+    agentKey: SS58Address;
+    nthBiggestPenaltyFactor: number;
+  }[] = [];
+
+  for (const [agentKey, factors] of factorsByAgent) {
+    if (factors.length < threshold) {
+      continue;
+    }
+
+    const sortedFactors = [...factors].sort((a, b) => b - a);
+    const selectedFactor = sortedFactors[Math.max(n - 1, 0)];
+    if (selectedFactor === undefined) {
+      continue;
+    }
+
+    result.push({
+      agentKey: checkSS58(agentKey),
+      nthBiggestPenaltyFactor: selectedFactor,
+    });
+  }
+
+  return result;
 }
 
 export async function getAgentKeysWithPenalties() {
@@ -421,7 +431,7 @@ export async function getAgentKeysWithPenalties() {
       count: sql`count(*)`.as<number>(),
     })
     .from(penalizeAgentVotesSchema)
-    .where(not(penalizeAgentVotesSchema.executed))
+    .where(isNull(penalizeAgentVotesSchema.deletedAt))
     .groupBy(penalizeAgentVotesSchema.agentKey)
     .execute();
 
