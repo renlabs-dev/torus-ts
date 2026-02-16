@@ -2,6 +2,8 @@ import type { ApiPromise } from "@polkadot/api";
 import { Keyring } from "@polkadot/api";
 import { encodeAddress } from "@polkadot/util-crypto";
 import { tryAsync, trySync } from "@torus-network/torus-utils/try-catch";
+import type { TxInBlockEvent } from "../../extrinsics.js";
+import { sendTxWithTracker } from "../../extrinsics.js";
 import type { SS58Address } from "../../types/index.js";
 import type { EmissionProposal } from "./governance-types.js";
 
@@ -227,7 +229,7 @@ export async function penalizeAgent(
     throw keypairError;
   }
 
-  const [sendError, extrinsic] = await tryAsync(tx.signAndSend(sudoKeypair));
+  const [sendError, tracker] = await sendTxWithTracker(api, tx, sudoKeypair);
 
   if (sendError !== undefined) {
     console.error(
@@ -237,7 +239,60 @@ export async function penalizeAgent(
     throw sendError;
   }
 
-  return extrinsic;
+  const [finalizeError, finalizedEvent] = await tryAsync(
+    new Promise<TxInBlockEvent & { kind: "Finalized" }>((resolve, reject) => {
+      const cleanup = () => {
+        tracker.off("finalized", onFinalized);
+        tracker.off("internalError", onInternalError);
+        tracker.off("invalid", onInvalid);
+        tracker.off("finalityTimeout", onFinalityTimeout);
+      };
+
+      const onFinalized = (event: TxInBlockEvent & { kind: "Finalized" }) => {
+        cleanup();
+        resolve(event);
+      };
+
+      const onInternalError = (event: { internalError: Error }) => {
+        cleanup();
+        reject(event.internalError);
+      };
+
+      const onInvalid = (event: { reason: Error }) => {
+        cleanup();
+        reject(event.reason);
+      };
+
+      const onFinalityTimeout = () => {
+        cleanup();
+        reject(new Error("Penalize agent transaction finalization timed out"));
+      };
+
+      tracker.on("finalized", onFinalized);
+      tracker.on("internalError", onInternalError);
+      tracker.on("invalid", onInvalid);
+      tracker.on("finalityTimeout", onFinalityTimeout);
+    }),
+  );
+
+  tracker.cancel();
+
+  if (finalizeError !== undefined) {
+    console.error(
+      "Error signing and sending penalize agent transaction:",
+      finalizeError,
+    );
+    throw finalizeError;
+  }
+
+  if ("Failed" in finalizedEvent.outcome) {
+    const { error } = finalizedEvent.outcome.Failed;
+    throw new Error(
+      `Penalize agent transaction failed: ${JSON.stringify(error)}`,
+    );
+  }
+
+  return finalizedEvent.blockHash;
 }
 
 export async function denyApplication(

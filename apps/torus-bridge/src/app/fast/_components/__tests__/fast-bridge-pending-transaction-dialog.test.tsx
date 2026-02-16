@@ -1,6 +1,6 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { PendingTransactionDialog } from "../fast-bridge-pending-transaction-dialog";
 import { SimpleBridgeStep } from "../fast-bridge-types";
 import type { FastBridgeTransactionHistoryItem } from "../fast-bridge-types";
