@@ -5,14 +5,14 @@ import {
   twitterScrapingJobsSchema,
   twitterUsersSchema,
 } from "@torus-ts/db/schema";
-import { authPlugin } from "../middleware/auth";
+import { requirePermission } from "../middleware/auth";
 import type { ContextApp } from "../middleware/context";
 import { getTweetsNextQuerySchema } from "../schemas/tweets";
 import { cursorSchema, encodeCursor } from "../utils/cursor";
 
 export const tweetsRouter = (app: ContextApp) =>
-  app.use(authPlugin).group("/v1", (app) =>
-    app.get(
+  app.group("/v1", (app) =>
+    app.use(requirePermission(["prediction.filter"])).get(
       "/getTweetsNext",
       async ({ query, db, userKey }) => {
         const fromData = cursorSchema.parse(query.from);

@@ -9,7 +9,6 @@ import { Marked } from "marked";
 import { zodToJsonSchema } from "zod-to-json-schema";
 import { createAppContext } from "./context";
 import { getEnv } from "./env";
-import { requirePermission } from "./middleware/auth";
 import { contextPlugin } from "./middleware/context";
 import { claimsRouter } from "./routes/claims";
 import { creditsRouter } from "./routes/credits";
@@ -199,7 +198,6 @@ export async function createServer() {
     .use(permissionRouter)
     .use(creditsRouter)
     .use(claimsRouter)
-    .use(requirePermission(["prediction.filter"]))
     .use(tweetsRouter)
     .use(predictionsRouter);
 }

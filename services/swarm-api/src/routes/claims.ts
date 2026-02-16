@@ -29,8 +29,9 @@ import type {
 import { HttpError } from "../utils/errors";
 
 export const claimsRouter = (app: ContextApp) =>
-  app.use(requirePermission(["prediction.verify"])).group("/v1", (app) =>
+  app.group("/v1", (app) =>
     app
+      .use(requirePermission(["prediction.verify"]))
       .get(
         "/predictions/claimable",
         async ({ query, db, userKey }) => {

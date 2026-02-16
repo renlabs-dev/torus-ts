@@ -8,7 +8,7 @@ import {
   scrapedTweetSchema,
 } from "@torus-ts/db/schema";
 import canonicalize from "canonicalize";
-import { authPlugin } from "../middleware/auth";
+import { requirePermission } from "../middleware/auth";
 import type { ContextApp } from "../middleware/context";
 import { storePredictionsInputSchema } from "../schemas/predictions";
 import { findCanonicalPrediction } from "../utils/dedup";
@@ -16,8 +16,8 @@ import type { ParsedPredictionForDedup } from "../utils/dedup";
 import { HttpError } from "../utils/errors";
 
 export const predictionsRouter = (app: ContextApp) =>
-  app.use(authPlugin).group("/v1", (app) =>
-    app.post(
+  app.group("/v1", (app) =>
+    app.use(requirePermission(["prediction.filter"])).post(
       "/storePredictions",
       async ({ body, db, serverSignHash, userKey }) => {
         const agentAddress = userKey;
