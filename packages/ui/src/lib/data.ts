@@ -39,7 +39,7 @@ export const getLinks = (chainEnv: ChainEnv) => {
     cadre: "/cadre",
 
     blog: "https://blog.torus.network/",
-    discord: "https://discord.gg/torus",
+    discord: "https://discord.gg/eAjVPebT",
     github: "https://github.com/renlabs-dev",
     telegram: "https://t.me/torusnetwork",
     x: "https://x.com/torus_network",
