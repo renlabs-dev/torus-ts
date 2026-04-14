@@ -1,24 +1,7 @@
 name: Atlas Migrations
 
 on:
-  pull_request:
-    branches:
-      - main
-      - dev
-    types:
-      - opened
-      - reopened
-      - synchronize
-  push:
-    branches:
-      - main
-      - dev
-      - feature/migrations
-    paths:
-      - "atlas/migrations/**"
-      - atlas.hcl
-      - ".github/workflows/atlas-migrations.yml"
-      - ".github/actions/import-db-secrets/**"
+  workflow_dispatch:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref_name }}
