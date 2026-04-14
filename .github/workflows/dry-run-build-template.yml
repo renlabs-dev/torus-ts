@@ -10,7 +10,7 @@ on:
       runner:
         required: false
         type: string
-        default: "ubicloud-standard-16"
+        default: "ubuntu-24.04"
       app_path:
         required: false
         description: "Path to app directory (apps or services)"
@@ -24,7 +24,7 @@ concurrency:
 jobs:
   check-pr:
     name: Check for existing PR
-    runs-on: ubicloud-standard-2
+    runs-on: ubuntu-24.04
     outputs:
       pr_exists: ${{ steps.findPr.outputs.number != '' }}
       pr_number: ${{ steps.findPr.outputs.number }}

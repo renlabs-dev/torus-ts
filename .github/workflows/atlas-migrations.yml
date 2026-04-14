@@ -125,7 +125,7 @@ jobs:
   restart-webapps:
     needs: apply-webapps
     if: github.event_name == 'push' && needs.apply-webapps.outputs.applied == 'true'
-    runs-on: ubicloud-standard-2
+    runs-on: ubuntu-24.04
     container:
       image: ghcr.io/renlabs-dev/devops-ci:latest
     env:

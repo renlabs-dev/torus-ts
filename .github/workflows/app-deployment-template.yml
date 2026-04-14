@@ -19,7 +19,7 @@ on:
       runner:
         required: false
         type: string
-        default: "ubicloud-standard-16"
+        default: "ubuntu-24.04"
     secrets:
       VAULT_ADDR:
         required: true
@@ -89,7 +89,7 @@ jobs:
             ghcr.io/renlabs-dev/${{ inputs.app_name }}:${{ env.SANITIZED_REF }}
 
   clean-stale:
-    runs-on: ubicloud-standard-2
+    runs-on: ubuntu-24.04
     container:
       image: ghcr.io/renlabs-dev/devops-ci:latest
 
@@ -116,7 +116,7 @@ jobs:
       always() &&
       (needs.clean-stale.result == 'success') &&
       (needs.docker-build.result == 'success' || needs.docker-build.result == 'skipped')
-    runs-on: ubicloud-standard-2
+    runs-on: ubuntu-24.04
     container:
       image: ghcr.io/renlabs-dev/devops-ci:latest
 

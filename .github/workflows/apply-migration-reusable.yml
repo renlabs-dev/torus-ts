@@ -21,7 +21,7 @@ on:
 
 jobs:
   apply:
-    runs-on: ubicloud-standard-2
+    runs-on: ubuntu-24.04
     outputs:
       applied: ${{ steps.apply-migrations.outcome == 'success' }}
     steps:
