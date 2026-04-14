@@ -74,6 +74,11 @@ jobs:
           echo "All apps in workspace:"
           echo "$all_apps" | jq '.'
 
+      - name: Get build json (Manual dispatch)
+        if: github.event_name == 'workflow_dispatch'
+        run: |
+          pnpm exec turbo run build --dry-run=json 2>/dev/null > build.json
+
       - name: Get build json (PR based)
         if: github.event_name == 'pull_request'
         run: |
