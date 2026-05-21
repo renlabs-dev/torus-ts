@@ -4,9 +4,7 @@ import reactConfig from "@torus-ts/eslint-config/react";
 
 /** @type {import('typescript-eslint').Config} */
 export default [
-  {
-    ignores: [".next/**"],
-  },
+  { ignores: [".next/**"] },
   ...baseConfig,
   ...reactConfig,
   ...nextjsConfig,

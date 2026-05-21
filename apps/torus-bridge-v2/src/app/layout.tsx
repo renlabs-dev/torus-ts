@@ -1,47 +1,48 @@
 import "@torus-ts/ui/globals.css";
-import { GoogleAnalytics } from "@next/third-parties/google";
-import { ReactQueryProvider } from "@torus-ts/query-provider";
-import { TorusProvider } from "@torus-ts/torus-provider";
+import "@rainbow-me/rainbowkit/styles.css";
 import { Layout } from "@torus-ts/ui/components/layout";
-import { Toaster } from "@torus-ts/ui/components/toaster";
-import { env, EnvScript } from "~/env";
-import type { Metadata } from "next";
+import { createSeoMetadata } from "@torus-ts/ui/components/seo";
+import { AppContextProvider } from "~/context/app-context-provider";
 import { Fira_Mono as FiraMono } from "next/font/google";
-import { BridgeHeader } from "./_components/header";
 
-const APP_NAME = "Prophet Finder";
-
-export const metadata: Metadata = {
-  robots: "all",
-  title: APP_NAME,
-  icons: [{ rel: "icon", url: "favicon.ico" }],
-  description: "The thermodynamic god's favorite Prophet Finder.",
-};
-
-export const firaMono = FiraMono({
+const firaMono = FiraMono({
   subsets: ["latin"],
   display: "swap",
   weight: "400",
 });
 
+export function generateMetadata() {
+  return createSeoMetadata({
+    title: "Torus Migration Claim",
+    description:
+      "Claim your TORUS migration allocation on TorusEVM. Verify your eligibility and receive your tokens directly to your connected wallet.",
+    keywords: [
+      "torus migration",
+      "claim tokens",
+      "merkle claim",
+      "token migration",
+    ],
+    ogSiteName: "Torus Migration Claim",
+    canonical: "/",
+    baseUrl: "https://claim.torus.network",
+  });
+}
+
 export default function RootLayout({
   children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+}: Readonly<{ children: React.ReactNode }>) {
   return (
-    <Layout font={firaMono} headScripts={[EnvScript]}>
-      <ReactQueryProvider>
-        <TorusProvider
-          wsEndpoint={env("NEXT_PUBLIC_TORUS_RPC_URL")}
-          torusCacheUrl={env("NEXT_PUBLIC_TORUS_CACHE_URL")}
-        >
-          <BridgeHeader torusCacheUrl={env("NEXT_PUBLIC_TORUS_CACHE_URL")} />
-          {children}
-          <Toaster />
-        </TorusProvider>
-        <GoogleAnalytics gaId="G-7YCMH64Q4J" />
-      </ReactQueryProvider>
+    <Layout font={firaMono}>
+      <nav className="border-border flex w-full items-center gap-6 border-b px-6 py-4">
+        <span className="text-foreground text-sm font-medium">Torus</span>
+        <div className="flex gap-4 text-sm">
+          <a href="/claim" className="text-foreground hover:text-foreground/80">
+            Claim
+          </a>
+          <span className="text-muted-foreground">Bridge</span>
+        </div>
+      </nav>
+      <AppContextProvider>{children}</AppContextProvider>
     </Layout>
   );
 }

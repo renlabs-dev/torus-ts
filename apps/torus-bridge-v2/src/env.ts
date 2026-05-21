@@ -1,34 +1,35 @@
-import { buildZodEnvScript } from "@torus-ts/env-validation";
-import { chainEnvSchema } from "@torus-ts/ui/lib/data";
 import { z } from "zod";
 
-const AUTH_ORIGIN_DEFAULT = "validator.torus.network";
+const envSchema = z.object({
+  NEXT_PUBLIC_WALLET_CONNECT_ID: z.string().default(""),
+  NEXT_PUBLIC_CLAIM_CONTRACT_ADDRESS: z
+    .string()
+    .regex(/^0x[0-9a-fA-F]{40}$/, "Must be a valid EVM address"),
+});
 
-const NodeEnvSchema = z
-  .enum(["development", "production", "test"])
-  .default("development");
-if (process?.env) {
-  // using Reflect to avoid inlining by Next  https://nextjs.org/docs/pages/building-your-application/configuring/environment-variables#bundling-environment-variables-for-the-browser
-  Reflect.set(process.env, "NEXT_PUBLIC_NODE_ENV", process.env.NODE_ENV);
+type EnvVars = z.infer<typeof envSchema>;
+
+let _cache: EnvVars | undefined;
+
+function getEnv(): EnvVars {
+  if (_cache !== undefined) return _cache;
+
+  const result = envSchema.safeParse({
+    NEXT_PUBLIC_WALLET_CONNECT_ID: process.env.NEXT_PUBLIC_WALLET_CONNECT_ID,
+    NEXT_PUBLIC_CLAIM_CONTRACT_ADDRESS:
+      process.env.NEXT_PUBLIC_CLAIM_CONTRACT_ADDRESS,
+  });
+
+  if (!result.success) {
+    throw new Error(
+      `Invalid environment variables:\n${JSON.stringify(result.error.format(), null, 2)}`,
+    );
+  }
+
+  _cache = result.data;
+  return _cache;
 }
 
-// warning: DO NOT expose any sensitive data on the schema default values!
-export const envSchema = {
-  NODE_ENV: NodeEnvSchema.default("development"),
-  PORT: z.string(),
-  /**
-   * Specify your client-side environment variables schema here.
-   * For them to be exposed to the client, prefix them with `NEXT_PUBLIC_`.
-   */
-  /** Origin URI used in the statement signed by the user to authenticate */
-  NEXT_PUBLIC_AUTH_ORIGIN: z.string().default(AUTH_ORIGIN_DEFAULT), // Origin URI used in the statement signed by the user to authenticate
-  NEXT_PUBLIC_TORUS_RPC_URL: z.string().url(),
-  NEXT_PUBLIC_TORUS_CACHE_URL: z.string().url(),
-  NEXT_PUBLIC_NODE_ENV: NodeEnvSchema,
-  NEXT_PUBLIC_TORUS_CHAIN_ENV: chainEnvSchema,
-};
-
-export const { EnvScript, env } = buildZodEnvScript(envSchema, {
-  skipValidation:
-    !!process?.env.CI || process?.env.npm_lifecycle_event === "lint",
-});
+export function env<K extends keyof EnvVars>(key: K): EnvVars[K] {
+  return getEnv()[key];
+}
