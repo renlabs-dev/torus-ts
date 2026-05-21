@@ -11,7 +11,7 @@
     "lint": "eslint --cache --cache-location .cache/.eslintcache",
     "lint-fix": "eslint --cache --cache-location .cache/.eslintcache --fix",
     "start": "next start",
-    "test": "vitest",
+    "test": "vitest run",
     "test:watch": "vitest --watch",
     "test:ui": "vitest --ui",
     "typecheck": "tsc --noEmit"
