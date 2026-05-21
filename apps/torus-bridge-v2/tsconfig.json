@@ -1,0 +1,16 @@
+{
+  "extends": "@torus-ts/tsconfig/app-next.json",
+  // We need these `baseUrl`, `paths`, `include` options in all Next apps
+  // tsconfig files because Next is dumb
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "~/*": ["./src/*"]
+    }
+  },
+  "include": [
+    "${configDir}",
+    "${configDir}/.next/types/**/*.ts",
+    ".next/types/**/*.ts"
+  ]
+}
