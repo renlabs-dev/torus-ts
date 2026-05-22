@@ -1,8 +1,8 @@
 {
-  "merkleRoot": "0x0000000000000000000000000000000000000000000000000000000000000000",
-  "totalAllocation": "0.00",
-  "totalAllocationRaw": "0",
-  "claimCount": 0,
-  "contractAddress": "0x0000000000000000000000000000000000000000",
+  "merkleRoot": "0xd1ea2bfc2ea592008cbf4a2c34e509694da8f8bbe1bf39775268c876a01f4b3b",
+  "totalAllocation": "17729469.396926929425124772",
+  "totalAllocationRaw": "17729469396926929425124772",
+  "claimCount": 1118,
+  "contractAddress": "0xBdB62c057E3Bae5f12296A1729BEBa9aEF0E8961",
   "chainId": 21000
 }
