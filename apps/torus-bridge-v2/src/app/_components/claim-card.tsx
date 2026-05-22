@@ -8,15 +8,23 @@ import {
   CardTitle,
 } from "@torus-ts/ui/components/card";
 import { Skeleton } from "@torus-ts/ui/components/skeleton";
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@torus-ts/ui/components/tabs";
 import { useClaimState } from "~/hooks/use-claim-state";
 import { useIsScw } from "~/hooks/use-is-scw";
 import { useMerkleRootCheck } from "~/hooks/use-merkle-root-check";
 import { useProof } from "~/hooks/use-proof";
 import { useAccount } from "wagmi";
+import { AddressChecker } from "./address-checker";
 import { AlreadyClaimedNotice } from "./already-claimed-notice";
 import { ClaimButton } from "./claim-button";
 import { MerkleRootErrorBanner } from "./merkle-root-error-banner";
 import { NotEligibleNotice } from "./not-eligible-notice";
+import { ScwFootnote } from "./scw-footnote";
 import { ScwNotice } from "./scw-notice";
 
 export function ClaimCard() {
@@ -49,50 +57,73 @@ export function ClaimCard() {
       )}
 
       <Card>
-        <CardHeader>
+        <CardHeader className="pb-0">
           <CardTitle>Migration Claim</CardTitle>
         </CardHeader>
-        <CardContent className="flex flex-col gap-4">
-          {claimState.type === "not-connected" && (
-            <div className="flex flex-col items-center gap-4 py-4">
-              <p className="text-muted-foreground text-sm">
-                Connect your wallet to check eligibility.
-              </p>
-              <ConnectButton />
-            </div>
-          )}
 
-          {claimState.type === "loading" && (
-            <div className="flex flex-col gap-2">
-              <Skeleton className="h-6 w-3/4" />
-              <Skeleton className="h-6 w-1/2" />
-              <Skeleton className="h-10 w-full" />
-            </div>
-          )}
+        <Tabs defaultValue="claim">
+          <TabsList
+            variant="underline"
+            className="border-border w-full justify-start rounded-none border-b bg-transparent px-6 pb-0"
+          >
+            <TabsTrigger variant="underline" value="check">
+              Check eligibility
+            </TabsTrigger>
+            <TabsTrigger variant="underline" value="claim">
+              Claim
+            </TabsTrigger>
+          </TabsList>
 
-          {claimState.type === "scw-detected" && <ScwNotice />}
+          <TabsContent value="check" className="px-6 pb-6 pt-4">
+            <AddressChecker />
+          </TabsContent>
 
-          {claimState.type === "not-eligible" && <NotEligibleNotice />}
+          <TabsContent value="claim">
+            <CardContent className="flex flex-col gap-4 pt-4">
+              {claimState.type === "not-connected" && (
+                <div className="flex flex-col items-center gap-4 py-4">
+                  <p className="text-muted-foreground text-sm">
+                    Connect your wallet to check eligibility and claim.
+                  </p>
+                  <ConnectButton />
+                </div>
+              )}
 
-          {claimState.type === "already-claimed" && (
-            <AlreadyClaimedNotice amount={claimState.amountFormatted} />
-          )}
+              {claimState.type === "loading" && (
+                <div className="flex flex-col gap-2">
+                  <Skeleton className="h-5 w-3/4" />
+                  <Skeleton className="h-5 w-1/2" />
+                  <Skeleton className="h-10 w-full" />
+                </div>
+              )}
 
-          {claimState.type === "eligible" && (
-            <ClaimButton
-              proof={claimState.proof}
-              amountFormatted={claimState.amountFormatted}
-              disabled={rootCheck.status !== "ok"}
-            />
-          )}
+              {claimState.type === "scw-detected" && <ScwNotice />}
 
-          {claimState.type === "error" && (
-            <p className="text-destructive text-sm">
-              Error loading claim data: {claimState.error.message}
-            </p>
-          )}
-        </CardContent>
+              {claimState.type === "not-eligible" && <NotEligibleNotice />}
+
+              {claimState.type === "already-claimed" && (
+                <AlreadyClaimedNotice amount={claimState.amountFormatted} />
+              )}
+
+              {claimState.type === "eligible" && (
+                <ClaimButton
+                  proof={claimState.proof}
+                  amountFormatted={claimState.amountFormatted}
+                  disabled={rootCheck.status !== "ok"}
+                />
+              )}
+
+              {claimState.type === "error" && (
+                <p className="text-destructive text-sm">
+                  Error loading claim data: {claimState.error.message}
+                </p>
+              )}
+            </CardContent>
+          </TabsContent>
+        </Tabs>
       </Card>
+
+      <ScwFootnote />
     </div>
   );
 }
