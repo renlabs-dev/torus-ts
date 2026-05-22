@@ -63,7 +63,7 @@ export function useClaimTx(proof: ProofData | undefined): {
     });
   };
 
-  if (writeError !== null && writeError !== undefined) {
+  if (writeError !== null) {
     return {
       state: { status: "error", error: decodeClaimError(writeError) },
       submit,

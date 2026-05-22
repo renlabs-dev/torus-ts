@@ -1,5 +1,6 @@
+import { useQuery } from "@tanstack/react-query";
 import { tryAsync } from "@torus-network/torus-utils/try-catch";
-import { useEffect, useState } from "react";
+import { assert } from "tsafe";
 
 export interface ProofData {
   index: number;
@@ -9,68 +10,36 @@ export interface ProofData {
   proof: `0x${string}`[];
 }
 
-export type ProofState =
-  | { status: "idle" }
-  | { status: "loading" }
-  | { status: "found"; data: ProofData }
-  | { status: "not-found" }
-  | { status: "error"; error: Error };
-
-export function useProof(address: `0x${string}` | undefined): ProofState {
-  const [state, setState] = useState<ProofState>({ status: "idle" });
-
-  useEffect(() => {
-    if (address === undefined) {
-      setState({ status: "idle" });
-      return;
-    }
-
-    setState({ status: "loading" });
-
-    const controller = new AbortController();
-
-    void (async () => {
+export function useProof(address: `0x${string}` | undefined) {
+  return useQuery({
+    queryKey: ["proof", address],
+    queryFn: async () => {
+      assert(
+        address !== undefined,
+        "address is required when proof query is enabled",
+      );
       const [fetchError, response] = await tryAsync(
-        fetch(`/proofs/${address.toLowerCase()}.json`, {
-          signal: controller.signal,
-        }),
+        fetch(`/proofs/${address.toLowerCase()}.json`),
       );
 
-      if (fetchError !== undefined) {
-        if ((fetchError as Error).name === "AbortError") return;
-        setState({ status: "error", error: fetchError });
-        return;
-      }
+      if (fetchError !== undefined) throw fetchError;
 
-      if (response.status === 404) {
-        setState({ status: "not-found" });
-        return;
-      }
+      if (response.status === 404) return null;
 
       if (!response.ok) {
-        setState({
-          status: "error",
-          error: new Error(`Proof fetch failed: HTTP ${response.status}`),
-        });
-        return;
+        throw new Error(`Proof fetch failed: HTTP ${response.status}`);
       }
 
       const [jsonError, data] = await tryAsync(
         response.json() as Promise<ProofData>,
       );
 
-      if (jsonError !== undefined) {
-        setState({ status: "error", error: jsonError });
-        return;
-      }
+      if (jsonError !== undefined) throw jsonError;
 
-      setState({ status: "found", data });
-    })();
-
-    return () => {
-      controller.abort();
-    };
-  }, [address]);
-
-  return state;
+      return data;
+    },
+    enabled: address !== undefined,
+    retry: false,
+    staleTime: Infinity,
+  });
 }

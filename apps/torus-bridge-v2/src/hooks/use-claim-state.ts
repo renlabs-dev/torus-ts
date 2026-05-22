@@ -1,5 +1,5 @@
+import type { UseQueryResult } from "@tanstack/react-query";
 import { env } from "~/env";
-import type { ScwState } from "~/hooks/use-is-scw";
 import type { ProofData } from "~/hooks/use-proof";
 import { torusMigrationClaimAbi } from "~/lib/contract";
 import { useReadContract } from "wagmi";
@@ -16,19 +16,19 @@ export type ClaimState =
 export function useClaimState({
   connected,
   address,
-  proofStatus,
-  proof,
-  scwState,
+  proofQuery,
+  scwQuery,
 }: {
   connected: boolean;
   address: `0x${string}` | undefined;
-  proofStatus: "idle" | "loading" | "found" | "not-found" | "error";
-  proof: ProofData | undefined;
-  scwState: ScwState;
+  proofQuery: UseQueryResult<ProofData | null, Error>;
+  scwQuery: UseQueryResult<boolean, Error>;
 }): ClaimState {
   const contractAddress = env(
     "NEXT_PUBLIC_CLAIM_CONTRACT_ADDRESS",
   ) as `0x${string}`;
+
+  const proof = proofQuery.data ?? undefined;
 
   const { data: isClaimed, isLoading: isClaimedLoading } = useReadContract({
     address: contractAddress,
@@ -37,9 +37,7 @@ export function useClaimState({
     args: proof !== undefined ? [BigInt(proof.index)] : undefined,
     query: {
       enabled:
-        proof !== undefined &&
-        address !== undefined &&
-        scwState.status === "eoa",
+        proof !== undefined && address !== undefined && scwQuery.data === false,
     },
   });
 
@@ -48,29 +46,27 @@ export function useClaimState({
   }
 
   if (
-    proofStatus === "loading" ||
-    proofStatus === "idle" ||
-    scwState.status === "loading" ||
-    scwState.status === "idle" ||
+    proofQuery.isPending ||
+    scwQuery.isPending ||
     (proof !== undefined && isClaimedLoading)
   ) {
     return { type: "loading" };
   }
 
-  if (scwState.status === "scw") {
+  if (scwQuery.data === true) {
     return { type: "scw-detected" };
   }
 
-  if (proofStatus === "not-found") {
+  if (proofQuery.data === null) {
     return { type: "not-eligible" };
   }
 
-  if (proofStatus === "error") {
-    return { type: "error", error: new Error("Failed to load proof data") };
+  if (proofQuery.isError) {
+    return { type: "error", error: proofQuery.error };
   }
 
-  if (scwState.status === "error") {
-    return { type: "error", error: scwState.error };
+  if (scwQuery.isError) {
+    return { type: "error", error: scwQuery.error };
   }
 
   if (proof === undefined) {

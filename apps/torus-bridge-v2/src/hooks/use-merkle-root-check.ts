@@ -64,14 +64,8 @@ export function useMerkleRootCheck(): RootCheckState {
     return { status: "error", error: metaError };
   }
 
-  if (contractError !== null && contractError !== undefined) {
-    return {
-      status: "error",
-      error:
-        contractError instanceof Error
-          ? contractError
-          : new Error(String(contractError)),
-    };
+  if (contractError !== null) {
+    return { status: "error", error: contractError };
   }
 
   if (metaRoot === undefined || contractLoading || contractRoot === undefined) {

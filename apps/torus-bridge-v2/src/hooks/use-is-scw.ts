@@ -1,44 +1,33 @@
+import { useQuery } from "@tanstack/react-query";
 import { tryAsync } from "@torus-network/torus-utils/try-catch";
 import { torusEvm } from "~/lib/chain";
-import { useEffect, useState } from "react";
+import { assert } from "tsafe";
 import { usePublicClient } from "wagmi";
 
-export type ScwState =
-  | { status: "idle" }
-  | { status: "loading" }
-  | { status: "eoa" }
-  | { status: "scw" }
-  | { status: "error"; error: Error };
-
-export function useIsScw(address: `0x${string}` | undefined): ScwState {
+export function useIsScw(address: `0x${string}` | undefined) {
   const publicClient = usePublicClient({ chainId: torusEvm.id });
-  const [state, setState] = useState<ScwState>({ status: "idle" });
 
-  useEffect(() => {
-    if (address === undefined || publicClient === undefined) {
-      setState({ status: "idle" });
-      return;
-    }
-
-    setState({ status: "loading" });
-
-    void (async () => {
+  return useQuery({
+    queryKey: ["isScw", address],
+    queryFn: async () => {
+      assert(
+        publicClient !== undefined,
+        "publicClient is required when scw query is enabled",
+      );
+      assert(
+        address !== undefined,
+        "address is required when scw query is enabled",
+      );
       const [error, bytecode] = await tryAsync(
         publicClient.getCode({ address }),
       );
 
-      if (error !== undefined) {
-        setState({ status: "error", error });
-        return;
-      }
+      if (error !== undefined) throw error;
 
-      if (bytecode !== undefined && bytecode !== "0x" && bytecode.length > 2) {
-        setState({ status: "scw" });
-      } else {
-        setState({ status: "eoa" });
-      }
-    })();
-  }, [address, publicClient]);
-
-  return state;
+      return bytecode !== undefined && bytecode !== "0x" && bytecode.length > 2;
+    },
+    enabled: address !== undefined && publicClient !== undefined,
+    retry: false,
+    staleTime: 1000 * 60 * 5,
+  });
 }

@@ -23,15 +23,14 @@ export function ClaimCard() {
   const { address, isConnected } = useAccount();
 
   const rootCheck = useMerkleRootCheck();
-  const proofState = useProof(address);
-  const scwState = useIsScw(address);
+  const proofQuery = useProof(address);
+  const scwQuery = useIsScw(address);
 
   const claimState = useClaimState({
     connected: isConnected,
     address,
-    proofStatus: proofState.status,
-    proof: proofState.status === "found" ? proofState.data : undefined,
-    scwState,
+    proofQuery,
+    scwQuery,
   });
 
   return (
