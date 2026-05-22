@@ -57,7 +57,7 @@ export function ClaimCard() {
       )}
 
       <Card>
-        <CardHeader className="pb-0">
+        <CardHeader>
           <CardTitle>Migration Claim</CardTitle>
         </CardHeader>
 
@@ -66,11 +66,11 @@ export function ClaimCard() {
             variant="underline"
             className="border-border w-full justify-start rounded-none border-b bg-transparent px-6 pb-0"
           >
-            <TabsTrigger variant="underline" value="check">
-              Check eligibility
-            </TabsTrigger>
             <TabsTrigger variant="underline" value="claim">
               Claim
+            </TabsTrigger>
+            <TabsTrigger variant="underline" value="check">
+              Check eligibility
             </TabsTrigger>
           </TabsList>
 
