@@ -12,7 +12,7 @@ import { torusEvm } from "~/lib/chain";
 import type { PropsWithChildren } from "react";
 import { useState } from "react";
 import { http } from "viem";
-import { WagmiProvider } from "wagmi";
+import { createConfig, WagmiProvider } from "wagmi";
 
 function makeWagmiConfig() {
   return getDefaultConfig({
@@ -20,8 +20,24 @@ function makeWagmiConfig() {
     projectId: env("NEXT_PUBLIC_WALLET_CONNECT_ID") || "dev-placeholder",
     chains: [torusEvm],
     transports: { [torusEvm.id]: http() },
-    ssr: false,
+    ssr: true,
   });
+}
+
+function makeSsrWagmiConfig() {
+  return createConfig({
+    chains: [torusEvm],
+    transports: { [torusEvm.id]: http() },
+    ssr: true,
+  });
+}
+
+function makeInitialWagmiConfig() {
+  if (typeof window === "undefined") {
+    return makeSsrWagmiConfig();
+  }
+
+  return makeWagmiConfig();
 }
 
 function makeQueryClient() {
@@ -38,7 +54,7 @@ function makeQueryClient() {
 }
 
 export function EvmWalletProvider({ children }: Readonly<PropsWithChildren>) {
-  const [wagmiConfig] = useState(makeWagmiConfig);
+  const [wagmiConfig] = useState(makeInitialWagmiConfig);
   const [queryClient] = useState(makeQueryClient);
 
   return (

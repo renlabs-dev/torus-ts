@@ -1,6 +1,6 @@
 import type { UseQueryResult } from "@tanstack/react-query";
 import { env } from "~/env";
-import type { ProofData } from "~/hooks/use-proof";
+import type { ProofData, ProofQuery } from "~/hooks/use-proof";
 import { torusMigrationClaimAbi } from "~/lib/contract";
 import { useReadContract } from "wagmi";
 
@@ -21,7 +21,7 @@ export function useClaimState({
 }: {
   connected: boolean;
   address: `0x${string}` | undefined;
-  proofQuery: UseQueryResult<ProofData | null, Error>;
+  proofQuery: ProofQuery;
   scwQuery: UseQueryResult<boolean, Error>;
 }): ClaimState {
   const contractAddress = env(
@@ -45,6 +45,17 @@ export function useClaimState({
     return { type: "not-connected" };
   }
 
+  if (proofQuery.isError) {
+    return {
+      type: "error",
+      error: proofQuery.error ?? new Error("Proof query failed"),
+    };
+  }
+
+  if (scwQuery.isError) {
+    return { type: "error", error: scwQuery.error };
+  }
+
   if (
     proofQuery.isPending ||
     scwQuery.isPending ||
@@ -59,14 +70,6 @@ export function useClaimState({
 
   if (proofQuery.data === null) {
     return { type: "not-eligible" };
-  }
-
-  if (proofQuery.isError) {
-    return { type: "error", error: proofQuery.error };
-  }
-
-  if (scwQuery.isError) {
-    return { type: "error", error: scwQuery.error };
   }
 
   if (proof === undefined) {

@@ -1,17 +1,8 @@
-import { tryAsync } from "@torus-network/torus-utils/try-catch";
 import { env } from "~/env";
+import { useClaimProofBundle } from "~/hooks/use-claim-proof-bundle";
+import { isSameEvmAddress } from "~/lib/claim-proof-bundle";
 import { torusMigrationClaimAbi } from "~/lib/contract";
-import { useEffect, useState } from "react";
 import { useReadContract } from "wagmi";
-
-interface MetaJson {
-  merkleRoot: `0x${string}`;
-  totalAllocation: string;
-  totalAllocationRaw: string;
-  claimCount: number;
-  contractAddress: string;
-  chainId: number;
-}
 
 export type RootCheckState =
   | { status: "loading" }
@@ -24,30 +15,11 @@ export function useMerkleRootCheck(): RootCheckState {
     "NEXT_PUBLIC_CLAIM_CONTRACT_ADDRESS",
   ) as `0x${string}`;
 
-  const [metaRoot, setMetaRoot] = useState<`0x${string}` | undefined>();
-  const [metaError, setMetaError] = useState<Error | undefined>();
-
-  useEffect(() => {
-    void (async () => {
-      const [fetchError, response] = await tryAsync(fetch("/meta.json"));
-
-      if (fetchError !== undefined) {
-        setMetaError(fetchError);
-        return;
-      }
-
-      const [jsonError, meta] = await tryAsync(
-        response.json() as Promise<MetaJson>,
-      );
-
-      if (jsonError !== undefined) {
-        setMetaError(jsonError);
-        return;
-      }
-
-      setMetaRoot(meta.merkleRoot);
-    })();
-  }, []);
+  const proofBundleQuery = useClaimProofBundle();
+  const proofBundle = proofBundleQuery.data;
+  const contractAddressMatches =
+    proofBundle === undefined ||
+    isSameEvmAddress(contractAddress, proofBundle.deployment.address);
 
   const {
     data: contractRoot,
@@ -57,28 +29,43 @@ export function useMerkleRootCheck(): RootCheckState {
     address: contractAddress,
     abi: torusMigrationClaimAbi,
     functionName: "merkleRoot",
-    query: { enabled: metaRoot !== undefined },
+    query: {
+      enabled: proofBundle !== undefined && contractAddressMatches,
+    },
   });
 
-  if (metaError !== undefined) {
-    return { status: "error", error: metaError };
+  if (proofBundleQuery.isError) {
+    return { status: "error", error: proofBundleQuery.error };
+  }
+
+  if (proofBundle !== undefined && !contractAddressMatches) {
+    return {
+      status: "error",
+      error: new Error(
+        `Claim proof bundle is for ${proofBundle.deployment.address}, but NEXT_PUBLIC_CLAIM_CONTRACT_ADDRESS is ${contractAddress}`,
+      ),
+    };
   }
 
   if (contractError !== null) {
     return { status: "error", error: contractError };
   }
 
-  if (metaRoot === undefined || contractLoading || contractRoot === undefined) {
+  if (
+    proofBundle === undefined ||
+    contractLoading ||
+    contractRoot === undefined
+  ) {
     return { status: "loading" };
   }
 
-  if (metaRoot !== contractRoot) {
+  if (proofBundle.merkleRoot !== contractRoot) {
     return {
       status: "mismatch",
-      localRoot: metaRoot,
+      localRoot: proofBundle.merkleRoot,
       contractRoot: contractRoot as string,
     };
   }
 
-  return { status: "ok", merkleRoot: metaRoot };
+  return { status: "ok", merkleRoot: proofBundle.merkleRoot };
 }

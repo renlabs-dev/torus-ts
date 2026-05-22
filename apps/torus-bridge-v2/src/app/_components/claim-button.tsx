@@ -3,7 +3,7 @@
 import { Badge } from "@torus-ts/ui/components/badge";
 import { Button } from "@torus-ts/ui/components/button";
 import { useClaimTx } from "~/hooks/use-claim-tx";
-import type { ProofData } from "~/hooks/use-proof";
+import type { ProofData } from "~/lib/claim-proof-bundle";
 import { AlertCircle, CheckCircle, ExternalLink, Loader2 } from "lucide-react";
 
 interface ClaimButtonProps {

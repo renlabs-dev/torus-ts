@@ -1,5 +1,5 @@
 import { env } from "~/env";
-import type { ProofData } from "~/hooks/use-proof";
+import type { ProofData } from "~/lib/claim-proof-bundle";
 import { torusMigrationClaimAbi } from "~/lib/contract";
 import { BaseError, ContractFunctionRevertedError } from "viem";
 import {
@@ -54,7 +54,7 @@ export function useClaimTx(proof: ProofData | undefined): {
       functionName: "claimTo",
       args: [
         BigInt(proof.index),
-        proof.account as `0x${string}`,
+        proof.account,
         address,
         BigInt(proof.amountRaw),
         proof.proof,

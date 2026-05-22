@@ -41,6 +41,12 @@ export function ClaimCard() {
           contractRoot={rootCheck.contractRoot}
         />
       )}
+      {rootCheck.status === "error" && (
+        <MerkleRootErrorBanner
+          title="Claim data unavailable"
+          description={rootCheck.error.message}
+        />
+      )}
 
       <Card>
         <CardHeader>
@@ -76,7 +82,7 @@ export function ClaimCard() {
             <ClaimButton
               proof={claimState.proof}
               amountFormatted={claimState.amountFormatted}
-              disabled={rootCheck.status === "mismatch"}
+              disabled={rootCheck.status !== "ok"}
             />
           )}
 
