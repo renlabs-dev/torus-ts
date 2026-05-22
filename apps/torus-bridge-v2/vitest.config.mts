@@ -19,5 +19,6 @@ export default defineConfig({
     setupFiles: ["./src/test/setup.ts"],
     reporters: ["verbose"],
     testTimeout: 40_000,
+    passWithNoTests: true,
   },
 });
