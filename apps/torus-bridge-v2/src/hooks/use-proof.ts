@@ -1,45 +1,26 @@
-import { useQuery } from "@tanstack/react-query";
-import { tryAsync } from "@torus-network/torus-utils/try-catch";
-import { assert } from "tsafe";
+import { useClaimProofBundle } from "~/hooks/use-claim-proof-bundle";
+import { getProofForAccount } from "~/lib/claim-proof-bundle";
+import type { ProofData } from "~/lib/claim-proof-bundle";
 
-export interface ProofData {
-  index: number;
-  account: string;
-  amount: string;
-  amountRaw: string;
-  proof: `0x${string}`[];
+export type { ProofData } from "~/lib/claim-proof-bundle";
+
+export interface ProofQuery {
+  data: ProofData | null | undefined;
+  isPending: boolean;
+  isError: boolean;
+  error: Error | null;
 }
 
-export function useProof(address: `0x${string}` | undefined) {
-  return useQuery({
-    queryKey: ["proof", address],
-    queryFn: async () => {
-      assert(
-        address !== undefined,
-        "address is required when proof query is enabled",
-      );
-      const [fetchError, response] = await tryAsync(
-        fetch(`/proofs/${address.toLowerCase()}.json`),
-      );
+export function useProof(address: `0x${string}` | undefined): ProofQuery {
+  const bundleQuery = useClaimProofBundle({ enabled: address !== undefined });
 
-      if (fetchError !== undefined) throw fetchError;
-
-      if (response.status === 404) return null;
-
-      if (!response.ok) {
-        throw new Error(`Proof fetch failed: HTTP ${response.status}`);
-      }
-
-      const [jsonError, data] = await tryAsync(
-        response.json() as Promise<ProofData>,
-      );
-
-      if (jsonError !== undefined) throw jsonError;
-
-      return data;
-    },
-    enabled: address !== undefined,
-    retry: false,
-    staleTime: Infinity,
-  });
+  return {
+    data:
+      address !== undefined && bundleQuery.data !== undefined
+        ? getProofForAccount(bundleQuery.data, address)
+        : undefined,
+    isPending: address !== undefined && bundleQuery.isPending,
+    isError: bundleQuery.isError,
+    error: bundleQuery.error,
+  };
 }
