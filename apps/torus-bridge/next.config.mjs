@@ -1,9 +1,18 @@
+import path from "node:path";
 import { fileURLToPath } from "url";
 import bundleAnalyzer from "@next/bundle-analyzer";
 
 const withBundleAnalyzer = bundleAnalyzer({
   enabled: process.env.ANALYZE === "true",
 });
+
+// Pin the workspace root to this monorepo (two levels up from this app), so Next
+// doesn't infer an unrelated outer directory when a parent lockfile exists.
+const workspaceRoot = path.resolve(
+  path.dirname(fileURLToPath(import.meta.url)),
+  "..",
+  "..",
+);
 
 /** @type {import("next").NextConfig} */
 const config = {
@@ -30,7 +39,7 @@ const config = {
   },
 
   // Use Turbopack for faster builds
-  turbopack: {},
+  turbopack: { root: workspaceRoot },
 
   transpilePackages: [
     "@torus-ts/api",

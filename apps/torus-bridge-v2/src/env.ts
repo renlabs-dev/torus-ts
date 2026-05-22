@@ -33,3 +33,13 @@ function getEnv(): EnvVars {
 export function env<K extends keyof EnvVars>(key: K): EnvVars[K] {
   return getEnv()[key];
 }
+
+/**
+ * Validate the full environment schema once, at app launch (called from the root
+ * layout). Surfaces a misconfigured deploy as a clear aggregated error -- and,
+ * because this is a statically-exported app, fails the build rather than letting
+ * a broken bundle ship and crash mid-render on the first `env()` call.
+ */
+export function validateEnv(): void {
+  getEnv();
+}
