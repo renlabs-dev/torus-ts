@@ -1,6 +1,6 @@
 import { Info } from "lucide-react";
 
-const DISCORD_URL = "https://discord.gg/PLACEHOLDER";
+const DISCORD_URL = "https://discord.gg/SS2kBerKZg";
 
 export function ScwNotice() {
   return (

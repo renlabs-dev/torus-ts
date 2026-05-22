@@ -1,4 +1,4 @@
-const DISCORD_URL = "https://discord.gg/PLACEHOLDER";
+const DISCORD_URL = "https://discord.gg/SS2kBerKZg";
 
 export function ScwFootnote() {
   return (

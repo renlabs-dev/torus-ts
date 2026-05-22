@@ -81,11 +81,21 @@ export function ClaimCard() {
           <TabsContent value="claim">
             <CardContent className="flex flex-col gap-4 pt-4">
               {claimState.type === "not-connected" && (
-                <div className="flex flex-col items-center gap-4 py-4">
-                  <p className="text-muted-foreground text-sm">
-                    Connect your wallet to check eligibility and claim.
-                  </p>
-                  <ConnectButton />
+                <div className="text-muted-foreground py-2 text-sm">
+                  <ConnectButton.Custom>
+                    {({ openConnectModal }) => (
+                      <p>
+                        <button
+                          type="button"
+                          onClick={openConnectModal}
+                          className="text-foreground hover:text-foreground/70 underline underline-offset-2 transition-colors"
+                        >
+                          Connect your wallet
+                        </button>{" "}
+                        to check eligibility and claim.
+                      </p>
+                    )}
+                  </ConnectButton.Custom>
                 </div>
               )}
 
