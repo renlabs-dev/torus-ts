@@ -7,6 +7,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@torus-ts/ui/components/card";
+import { Icons } from "@torus-ts/ui/components/icons";
 import { Skeleton } from "@torus-ts/ui/components/skeleton";
 import {
   Tabs,
@@ -58,7 +59,10 @@ export function ClaimCard() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Migration Claim</CardTitle>
+          <CardTitle className="flex items-center gap-2">
+            <Icons.Logo className="h-4 w-auto" />
+            Migration Claim
+          </CardTitle>
         </CardHeader>
 
         <Tabs defaultValue="claim">
