@@ -7,6 +7,11 @@ import {
   CardHeader,
   CardTitle,
 } from "@torus-ts/ui/components/card";
+import {
+  HoverCard,
+  HoverCardContent,
+  HoverCardTrigger,
+} from "@torus-ts/ui/components/hover-card";
 import { Icons } from "@torus-ts/ui/components/icons";
 import { Skeleton } from "@torus-ts/ui/components/skeleton";
 import {
@@ -19,6 +24,7 @@ import { useClaimState } from "~/hooks/use-claim-state";
 import { useIsScw } from "~/hooks/use-is-scw";
 import { useMerkleRootCheck } from "~/hooks/use-merkle-root-check";
 import { useProof } from "~/hooks/use-proof";
+import { Info } from "lucide-react";
 import { useAccount } from "wagmi";
 import { AddressChecker } from "./address-checker";
 import { AlreadyClaimedNotice } from "./already-claimed-notice";
@@ -58,11 +64,60 @@ export function ClaimCard() {
       )}
 
       <Card>
-        <CardHeader>
+        <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle className="flex items-center gap-2">
             <Icons.Logo className="h-4 w-auto" />
             Migration Claim
           </CardTitle>
+          <HoverCard>
+            <HoverCardTrigger asChild>
+              <button
+                type="button"
+                aria-label="How claiming works"
+                className="text-muted-foreground hover:text-foreground transition-colors"
+              >
+                <Info className="h-4 w-4" />
+              </button>
+            </HoverCardTrigger>
+            <HoverCardContent
+              side="left"
+              align="start"
+              className="w-72 text-xs"
+            >
+              <p className="mb-2 text-sm font-medium">How claiming works</p>
+              <ol className="text-muted-foreground flex list-none flex-col gap-1.5">
+                <li className="flex gap-2">
+                  <span className="text-foreground shrink-0 font-medium">
+                    1.
+                  </span>
+                  Connect your EVM wallet (MetaMask, SubWallet, etc.).
+                </li>
+                <li className="flex gap-2">
+                  <span className="text-foreground shrink-0 font-medium">
+                    2.
+                  </span>
+                  Your address is checked against a migration snapshot of Base
+                  TORUS holders.
+                </li>
+                <li className="flex gap-2">
+                  <span className="text-foreground shrink-0 font-medium">
+                    3.
+                  </span>
+                  If eligible, a Merkle proof verifies your allocation on-chain.
+                </li>
+                <li className="flex gap-2">
+                  <span className="text-foreground shrink-0 font-medium">
+                    4.
+                  </span>
+                  Confirm the transaction — TORUS is sent to your connected
+                  address on TorusEVM.
+                </li>
+              </ol>
+              <p className="text-muted-foreground mt-2">
+                This is a one-time claim. Each address can only claim once.
+              </p>
+            </HoverCardContent>
+          </HoverCard>
         </CardHeader>
 
         <Tabs defaultValue="claim">
