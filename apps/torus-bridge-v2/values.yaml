@@ -1,0 +1,6 @@
+deployment:
+  image:
+    repository: ghcr.io/renlabs-dev/torus-bridge-v2
+
+  podLabels:
+    app: torus-torus-bridge-v2
