@@ -24,15 +24,53 @@ import { useClaimState } from "~/hooks/use-claim-state";
 import { useIsScw } from "~/hooks/use-is-scw";
 import { useMerkleRootCheck } from "~/hooks/use-merkle-root-check";
 import { useProof } from "~/hooks/use-proof";
-import { Info } from "lucide-react";
+import { Check, Info } from "lucide-react";
 import { useAccount } from "wagmi";
 import { AddressChecker } from "./address-checker";
 import { AlreadyClaimedNotice } from "./already-claimed-notice";
-import { ClaimButton } from "./claim-button";
+import { ClaimStepOne } from "./claim-step-one";
+import { ClaimStepTwo } from "./claim-step-two";
 import { MerkleRootErrorBanner } from "./merkle-root-error-banner";
 import { NotEligibleNotice } from "./not-eligible-notice";
 import { ScwFootnote } from "./scw-footnote";
 import { ScwNotice } from "./scw-notice";
+
+function StepIndicator({
+  step1Done,
+  step2Active,
+}: Readonly<{ step1Done: boolean; step2Active: boolean }>) {
+  return (
+    <div className="text-muted-foreground border-border flex items-center gap-3 border-b pb-3 text-xs">
+      <span className="flex items-center gap-1.5">
+        <span
+          className={`flex h-4 w-4 items-center justify-center rounded-full border text-[10px] font-medium ${
+            step1Done
+              ? "border-green-500 bg-green-500/10 text-green-500"
+              : "border-foreground bg-foreground/10 text-foreground"
+          }`}
+        >
+          {step1Done ? <Check className="h-2.5 w-2.5" /> : "1"}
+        </span>
+        Claim to TorusEVM
+      </span>
+      <span className="text-border">→</span>
+      <span className="flex items-center gap-1.5">
+        <span
+          className={`flex h-4 w-4 items-center justify-center rounded-full border text-[10px] font-medium ${
+            step2Active
+              ? "border-foreground bg-foreground/10 text-foreground"
+              : "border-muted-foreground text-muted-foreground"
+          }`}
+        >
+          2
+        </span>
+        <span className={step2Active ? "text-foreground" : ""}>
+          Withdraw to native
+        </span>
+      </span>
+    </div>
+  );
+}
 
 export function ClaimCard() {
   const { address, isConnected } = useAccount();
@@ -47,6 +85,12 @@ export function ClaimCard() {
     proofQuery,
     scwQuery,
   });
+
+  const step1Done =
+    claimState.type === "step2-available" ||
+    claimState.type === "already-claimed";
+
+  const step2Active = claimState.type === "step2-available";
 
   return (
     <div className="w-full max-w-md">
@@ -69,55 +113,62 @@ export function ClaimCard() {
             <Icons.Logo className="h-4 w-auto" />
             Migration Claim
           </CardTitle>
-          <HoverCard>
-            <HoverCardTrigger asChild>
-              <button
-                type="button"
-                aria-label="How claiming works"
-                className="text-muted-foreground hover:text-foreground transition-colors"
+          <div className="flex items-center gap-2">
+            {isConnected && (
+              <ConnectButton.Custom>
+                {({ account, openAccountModal }) =>
+                  account ? (
+                    <button
+                      type="button"
+                      onClick={openAccountModal}
+                      className="text-muted-foreground hover:text-foreground border-border rounded border px-2 py-0.5 font-mono text-xs transition-colors"
+                    >
+                      {account.displayName}
+                    </button>
+                  ) : null
+                }
+              </ConnectButton.Custom>
+            )}
+            <HoverCard>
+              <HoverCardTrigger asChild>
+                <button
+                  type="button"
+                  aria-label="How claiming works"
+                  className="text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  <Info className="h-4 w-4" />
+                </button>
+              </HoverCardTrigger>
+              <HoverCardContent
+                side="left"
+                align="start"
+                className="w-72 text-xs"
               >
-                <Info className="h-4 w-4" />
-              </button>
-            </HoverCardTrigger>
-            <HoverCardContent
-              side="left"
-              align="start"
-              className="w-72 text-xs"
-            >
-              <p className="mb-2 text-sm font-medium">How claiming works</p>
-              <ol className="text-muted-foreground flex list-none flex-col gap-1.5">
-                <li className="flex gap-2">
-                  <span className="text-foreground shrink-0 font-medium">
-                    1.
-                  </span>
-                  Connect your EVM wallet (MetaMask, SubWallet, etc.).
-                </li>
-                <li className="flex gap-2">
-                  <span className="text-foreground shrink-0 font-medium">
-                    2.
-                  </span>
-                  Your address is checked against a migration snapshot of Base
-                  TORUS holders.
-                </li>
-                <li className="flex gap-2">
-                  <span className="text-foreground shrink-0 font-medium">
-                    3.
-                  </span>
-                  If eligible, a Merkle proof verifies your allocation on-chain.
-                </li>
-                <li className="flex gap-2">
-                  <span className="text-foreground shrink-0 font-medium">
-                    4.
-                  </span>
-                  Confirm the transaction — TORUS is sent to your connected
-                  address on TorusEVM.
-                </li>
-              </ol>
-              <p className="text-muted-foreground mt-2">
-                This is a one-time claim. Each address can only claim once.
-              </p>
-            </HoverCardContent>
-          </HoverCard>
+                <p className="mb-2 text-sm font-medium">How claiming works</p>
+                <ol className="text-muted-foreground flex list-none flex-col gap-1.5">
+                  <li className="flex gap-2">
+                    <span className="text-foreground shrink-0 font-medium">
+                      1.
+                    </span>
+                    Connect your EVM wallet. Sign an offline message — the
+                    relayer pays gas, so no TorusEVM balance is required.
+                  </li>
+                  <li className="flex gap-2">
+                    <span className="text-foreground shrink-0 font-medium">
+                      2.
+                    </span>
+                    TORUS lands in your TorusEVM address. Then enter your
+                    substrate address and withdraw to Torus mainnet in one more
+                    step.
+                  </li>
+                </ol>
+                <p className="text-muted-foreground mt-2">
+                  Each address can only claim once. The withdrawal uses a small
+                  amount of the just-claimed TORUS for gas.
+                </p>
+              </HoverCardContent>
+            </HoverCard>
+          </div>
         </CardHeader>
 
         <Tabs defaultValue="claim">
@@ -139,6 +190,16 @@ export function ClaimCard() {
 
           <TabsContent value="claim">
             <CardContent className="flex flex-col gap-4 pt-4">
+              {/* Step indicator — only shown when connected */}
+              {(claimState.type === "eligible" ||
+                claimState.type === "step2-available" ||
+                claimState.type === "already-claimed") && (
+                <StepIndicator
+                  step1Done={step1Done}
+                  step2Active={step2Active}
+                />
+              )}
+
               {claimState.type === "not-connected" && (
                 <div className="text-muted-foreground py-2 text-sm">
                   <ConnectButton.Custom>
@@ -175,11 +236,15 @@ export function ClaimCard() {
               )}
 
               {claimState.type === "eligible" && (
-                <ClaimButton
+                <ClaimStepOne
                   proof={claimState.proof}
                   amountFormatted={claimState.amountFormatted}
                   disabled={rootCheck.status !== "ok"}
                 />
+              )}
+
+              {claimState.type === "step2-available" && (
+                <ClaimStepTwo evmBalance={claimState.evmBalance} />
               )}
 
               {claimState.type === "error" && (
