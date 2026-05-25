@@ -125,7 +125,7 @@ export function ClaimStepTwo({ evmBalance }: Readonly<ClaimStepTwoProps>) {
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-3">
       <p className="text-muted-foreground text-sm">
-        Enter your substrate address to receive{" "}
+        Enter your torus native to receive{" "}
         <span className="text-foreground font-medium">
           {amountFormatted} TORUS
         </span>{" "}

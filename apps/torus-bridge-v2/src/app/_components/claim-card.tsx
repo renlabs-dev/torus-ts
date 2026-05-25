@@ -157,9 +157,8 @@ export function ClaimCard() {
                     <span className="text-foreground shrink-0 font-medium">
                       2.
                     </span>
-                    TORUS lands in your TorusEVM address. Then enter your
-                    substrate address and withdraw to Torus mainnet in one more
-                    step.
+                    TORUS lands in your TorusEVM address. Then enter your torus
+                    native and withdraw to Torus mainnet in one more step.
                   </li>
                 </ol>
                 <p className="text-muted-foreground mt-2">
