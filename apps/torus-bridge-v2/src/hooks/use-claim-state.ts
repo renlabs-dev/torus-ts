@@ -1,8 +1,11 @@
 import type { UseQueryResult } from "@tanstack/react-query";
 import { env } from "~/env";
+import { useEvmBalance } from "~/hooks/use-evm-balance";
 import type { ProofData, ProofQuery } from "~/hooks/use-proof";
 import { torusMigrationClaimAbi } from "~/lib/contract";
 import { useReadContract } from "wagmi";
+
+const DUST_THRESHOLD = 1_000_000_000_000_000n; // 0.001 TORUS — below this = fully done
 
 export type ClaimState =
   | { type: "not-connected" }
@@ -10,6 +13,7 @@ export type ClaimState =
   | { type: "scw-detected" }
   | { type: "not-eligible" }
   | { type: "eligible"; proof: ProofData; amountFormatted: string }
+  | { type: "step2-available"; amountFormatted: string; evmBalance: bigint }
   | { type: "already-claimed"; amountFormatted: string }
   | { type: "error"; error: Error };
 
@@ -38,8 +42,12 @@ export function useClaimState({
     query: {
       enabled:
         proof !== undefined && address !== undefined && scwQuery.data === false,
+      refetchInterval: 5_000,
     },
   });
+
+  const { balance: evmBalance, isLoading: isBalanceLoading } =
+    useEvmBalance(address);
 
   if (!connected || address === undefined) {
     return { type: "not-connected" };
@@ -59,7 +67,7 @@ export function useClaimState({
   if (
     proofQuery.isPending ||
     scwQuery.isPending ||
-    (proof !== undefined && isClaimedLoading)
+    (proof !== undefined && (isClaimedLoading || isBalanceLoading))
   ) {
     return { type: "loading" };
   }
@@ -77,6 +85,13 @@ export function useClaimState({
   }
 
   if (isClaimed === true) {
+    if (evmBalance !== undefined && evmBalance > DUST_THRESHOLD) {
+      return {
+        type: "step2-available",
+        amountFormatted: proof.amount,
+        evmBalance,
+      };
+    }
     return { type: "already-claimed", amountFormatted: proof.amount };
   }
 

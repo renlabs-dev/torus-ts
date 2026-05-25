@@ -20,9 +20,14 @@ validateEnv();
 const config: NextConfig = {
   turbopack: { root: workspaceRoot },
   reactStrictMode: true,
-  output: "export",
   reactCompiler: true,
-  transpilePackages: ["@torus-ts/ui", "@torus-network/torus-utils"],
+  transpilePackages: [
+    "@torus-ts/ui",
+    "@torus-network/torus-utils",
+    "@torus-network/sdk",
+    "@polkadot/extension-dapp",
+    "@polkadot/extension-inject",
+  ],
   typescript: { ignoreBuildErrors: true },
   productionBrowserSourceMaps: false,
   experimental: {
