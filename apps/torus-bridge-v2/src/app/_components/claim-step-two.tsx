@@ -23,6 +23,9 @@ interface ClaimStepTwoProps {
 
 const DISCORD_URL = "https://discord.gg/SS2kBerKZg";
 
+// Reserve gas for the withdraw transaction itself (baseFee 31.25 gwei × ~160k gas)
+const GAS_BUFFER = 10_000_000_000_000_000n; // 0.01 TORUS
+
 function validateSS58(value: string): boolean {
   const [error] = trySync(() => decodeAddress(value));
   return error === undefined;
@@ -36,7 +39,9 @@ export function ClaimStepTwo({ evmBalance }: Readonly<ClaimStepTwoProps>) {
   >([]);
   const [inputError, setInputError] = useState<string | undefined>();
   const { state, submit, reset } = useWithdraw();
-  const amountFormatted = formatEther(evmBalance);
+  const withdrawAmount =
+    evmBalance > GAS_BUFFER ? evmBalance - GAS_BUFFER : evmBalance;
+  const amountFormatted = formatEther(withdrawAmount);
 
   const handleConnectExtension = async () => {
     const { web3Enable, web3Accounts } =
@@ -71,7 +76,7 @@ export function ClaimStepTwo({ evmBalance }: Readonly<ClaimStepTwoProps>) {
       return;
     }
     setInputError(undefined);
-    void submit(ss58, evmBalance);
+    void submit(ss58, withdrawAmount);
   };
 
   if (state.status === "success") {
