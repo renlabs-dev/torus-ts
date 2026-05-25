@@ -24,7 +24,7 @@ export function generateMetadata() {
     ],
     ogSiteName: "Torus Migration Claim",
     canonical: "/",
-    baseUrl: "https://claim.torus.network",
+    baseUrl: "https://bridge.torus.network/claim",
   });
 }
 
