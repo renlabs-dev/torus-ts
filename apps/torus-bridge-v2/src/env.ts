@@ -8,10 +8,13 @@ const clientEnvSchema = z.object({
 });
 
 const serverEnvSchema = z.object({
-  RELAYER_PRIVATE_KEY: z
-    .string()
-    .regex(/^0x[0-9a-fA-F]{64}$/, "Must be a 0x-prefixed 32-byte hex key")
-    .optional(),
+  RELAYER_PRIVATE_KEY: z.preprocess(
+    (v) => (v === "" ? undefined : v),
+    z
+      .string()
+      .regex(/^0x[0-9a-fA-F]{64}$/, "Must be a 0x-prefixed 32-byte hex key")
+      .optional(),
+  ),
 });
 
 type ClientEnvVars = z.infer<typeof clientEnvSchema>;
