@@ -38,6 +38,9 @@ export function ClaimStepTwo({ evmBalance }: Readonly<ClaimStepTwoProps>) {
     { address: string; name?: string }[]
   >([]);
   const [inputError, setInputError] = useState<string | undefined>();
+  const [submittedAmountFormatted, setSubmittedAmountFormatted] = useState<
+    string | undefined
+  >();
   const { state, submit, reset } = useWithdraw();
   const withdrawAmount =
     evmBalance > GAS_BUFFER ? evmBalance - GAS_BUFFER : evmBalance;
@@ -76,6 +79,7 @@ export function ClaimStepTwo({ evmBalance }: Readonly<ClaimStepTwoProps>) {
       return;
     }
     setInputError(undefined);
+    setSubmittedAmountFormatted(amountFormatted);
     void submit(ss58, withdrawAmount);
   };
 
@@ -84,7 +88,8 @@ export function ClaimStepTwo({ evmBalance }: Readonly<ClaimStepTwoProps>) {
       <div className="flex flex-col items-center gap-3 py-2">
         <CheckCircle className="h-8 w-8 text-green-500" />
         <p className="text-sm font-medium">
-          Withdrawn {amountFormatted} TORUS to native
+          Withdrawn {submittedAmountFormatted ?? amountFormatted} TORUS to
+          native
         </p>
         <p className="text-muted-foreground text-xs">
           Your TORUS will appear in your substrate wallet shortly.
