@@ -1,6 +1,9 @@
 import { z } from "zod";
 
 const clientEnvSchema = z.object({
+  NEXT_PUBLIC_TORUS_CACHE_URL: z.string().default(""),
+  NEXT_PUBLIC_TORUS_CHAIN_ENV: z.string().default("mainnet"),
+  NEXT_PUBLIC_TORUS_RPC_URL: z.string().default(""),
   NEXT_PUBLIC_WALLET_CONNECT_ID: z.string().default(""),
   NEXT_PUBLIC_CLAIM_CONTRACT_ADDRESS: z
     .string()
@@ -29,6 +32,9 @@ function getClientEnv(): ClientEnvVars {
   if (_clientCache !== undefined) return _clientCache;
 
   const result = clientEnvSchema.safeParse({
+    NEXT_PUBLIC_TORUS_RPC_URL: process.env.NEXT_PUBLIC_TORUS_RPC_URL,
+    NEXT_PUBLIC_TORUS_CACHE_URL: process.env.NEXT_PUBLIC_TORUS_CACHE_URL,
+    NEXT_PUBLIC_TORUS_CHAIN_ENV: process.env.NEXT_PUBLIC_TORUS_CHAIN_ENV,
     NEXT_PUBLIC_WALLET_CONNECT_ID: process.env.NEXT_PUBLIC_WALLET_CONNECT_ID,
     NEXT_PUBLIC_CLAIM_CONTRACT_ADDRESS:
       process.env.NEXT_PUBLIC_CLAIM_CONTRACT_ADDRESS,
