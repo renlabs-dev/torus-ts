@@ -91,8 +91,8 @@ export function ClaimStepTwo({ evmBalance }: Readonly<ClaimStepTwoProps>) {
           Withdrawn {submittedAmountFormatted ?? amountFormatted} TORUS to
           native
         </p>
-        <p className="text-muted-foreground text-xs">
-          Your TORUS will appear in your substrate wallet shortly.
+        <p className="text-muted-foreground text-center text-xs">
+          Your TORUS will appear in your substrate wallet.
         </p>
         <a
           href={`https://evm.torus.network/tx/${state.txHash}`}

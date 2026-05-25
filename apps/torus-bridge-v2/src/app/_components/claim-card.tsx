@@ -40,7 +40,7 @@ function StepIndicator({
   step2Active,
 }: Readonly<{ step1Done: boolean; step2Active: boolean }>) {
   return (
-    <div className="text-muted-foreground border-border flex items-center gap-3 border-b pb-3 text-xs">
+    <div className="text-muted-foreground flex items-center justify-center gap-3 pb-3 text-xs">
       <span className="flex items-center gap-1.5">
         <span
           className={`flex h-4 w-4 items-center justify-center rounded-full border text-[10px] font-medium ${
