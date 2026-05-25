@@ -454,7 +454,7 @@ importers:
         version: 17.0.0(bufferutil@4.1.0)(pino-pretty@13.1.3)(typescript@5.9.3)(utf-8-validate@5.0.10)
       '@hyperlane-xyz/widgets':
         specifier: ^17.0.0
-        version: 17.0.0(patch_hash=f4fc99bb32fd094f9f2c8dc2479a322e5eef9d76d99e82f569c4fde2e0eb61c8)(cec8aa94343beecae18aa21a9ff5d7f7)
+        version: 17.0.0(patch_hash=f4fc99bb32fd094f9f2c8dc2479a322e5eef9d76d99e82f569c4fde2e0eb61c8)(092e814b79f470cfb75c67326b802ccd)
       '@tanstack/react-query':
         specifier: 'catalog:'
         version: 5.90.12(react@19.2.3)
@@ -558,12 +558,24 @@ importers:
 
   apps/torus-bridge-v2:
     dependencies:
+      '@polkadot/extension-dapp':
+        specifier: 'catalog:'
+        version: 0.52.3(@polkadot/api@14.3.1(bufferutil@4.1.0)(utf-8-validate@5.0.10))(@polkadot/util-crypto@13.5.9(@polkadot/util@13.5.9))(@polkadot/util@13.5.9)(bufferutil@4.1.0)(utf-8-validate@5.0.10)
+      '@polkadot/extension-inject':
+        specifier: 'catalog:'
+        version: 0.52.3(@polkadot/api@14.3.1(bufferutil@4.1.0)(utf-8-validate@5.0.10))(@polkadot/util@13.5.9)(bufferutil@4.1.0)(utf-8-validate@5.0.10)
+      '@polkadot/util-crypto':
+        specifier: 'catalog:'
+        version: 13.5.9(@polkadot/util@13.5.9)
       '@rainbow-me/rainbowkit':
         specifier: 'catalog:'
         version: 2.2.8(@tanstack/react-query@5.90.12(react@19.2.3))(@types/react@19.0.14)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(typescript@5.9.3)(viem@2.43.2(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@3.25.76))(wagmi@2.16.8(@react-native-async-storage/async-storage@1.24.0(react-native@0.83.1(@babel/core@7.28.5)(@react-native/metro-config@0.81.0(@babel/core@7.28.5))(@types/react@19.0.14)(bufferutil@4.1.0)(react@19.2.3)(utf-8-validate@5.0.10)))(@tanstack/query-core@5.90.12)(@tanstack/react-query@5.90.12(react@19.2.3))(@types/react@19.0.14)(bufferutil@4.1.0)(immer@10.2.0)(react@19.2.3)(typescript@5.9.3)(utf-8-validate@5.0.10)(viem@2.43.2(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@3.25.76))(zod@3.25.76))
       '@tanstack/react-query':
         specifier: 'catalog:'
         version: 5.90.12(react@19.2.3)
+      '@torus-network/sdk':
+        specifier: workspace:*
+        version: link:../../packages/torus-sdk-ts
       '@torus-network/torus-utils':
         specifier: workspace:*
         version: link:../../packages/torus-utils
@@ -12429,6 +12441,7 @@ packages:
   recharts@2.15.4:
     resolution: {integrity: sha512-UT/q6fwS3c1dHbXv2uFgYJ9BMFHu3fwnd7AYZaEQhXuYQ4hgsxLvsUXzGdKeZrW5xopzDCvuA2N41WJ88I7zIw==}
     engines: {node: '>=14'}
+    deprecated: 1.x and 2.x branches are no longer active. Bump to Recharts v3 to receive latest features and bugfixes. See https://github.com/recharts/recharts/wiki/3.0-migration-guide
     peerDependencies:
       react: ^19.0.0
       react-dom: ^19.0.0
@@ -16177,11 +16190,11 @@ snapshots:
       - uploadthing
       - utf-8-validate
 
-  '@cosmos-kit/react-lite@2.16.3(@cosmjs/amino@0.36.2)(@cosmjs/proto-signing@0.36.2)(@react-native-async-storage/async-storage@1.24.0(react-native@0.83.1(@babel/core@7.28.5)(@react-native/metro-config@0.81.0(@babel/core@7.28.5))(@types/react@19.0.14)(bufferutil@4.1.0)(react@19.2.3)(utf-8-validate@5.0.10)))(@types/react-dom@19.0.6(@types/react@19.0.14))(@types/react@19.0.14)(bufferutil@4.1.0)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(utf-8-validate@5.0.10)':
+  '@cosmos-kit/react-lite@2.16.3(@cosmjs/amino@0.32.4)(@cosmjs/proto-signing@0.32.4)(@react-native-async-storage/async-storage@1.24.0(react-native@0.83.1(@babel/core@7.28.5)(@react-native/metro-config@0.81.0(@babel/core@7.28.5))(@types/react@19.0.14)(bufferutil@4.1.0)(react@19.2.3)(utf-8-validate@5.0.10)))(@types/react-dom@19.0.6(@types/react@19.0.14))(@types/react@19.0.14)(bufferutil@4.1.0)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(utf-8-validate@5.0.10)':
     dependencies:
       '@chain-registry/types': 0.46.15
       '@cosmos-kit/core': 2.18.0(@react-native-async-storage/async-storage@1.24.0(react-native@0.83.1(@babel/core@7.28.5)(@react-native/metro-config@0.81.0(@babel/core@7.28.5))(@types/react@19.0.14)(bufferutil@4.1.0)(react@19.2.3)(utf-8-validate@5.0.10)))(bufferutil@4.1.0)(utf-8-validate@5.0.10)
-      '@dao-dao/cosmiframe': 1.0.0(@cosmjs/amino@0.36.2)(@cosmjs/proto-signing@0.36.2)
+      '@dao-dao/cosmiframe': 1.0.0(@cosmjs/amino@0.32.4)(@cosmjs/proto-signing@0.32.4)
       '@types/react': 19.0.14
       '@types/react-dom': 19.0.6(@types/react@19.0.14)
       react: 19.2.3
@@ -16213,11 +16226,11 @@ snapshots:
       - uploadthing
       - utf-8-validate
 
-  '@cosmos-kit/react@2.22.3(@cosmjs/amino@0.36.2)(@cosmjs/proto-signing@0.36.2)(@interchain-ui/react@1.26.3(@types/react@19.0.14)(react-dom@19.2.3(react@19.2.3))(react@19.2.3))(@react-native-async-storage/async-storage@1.24.0(react-native@0.83.1(@babel/core@7.28.5)(@react-native/metro-config@0.81.0(@babel/core@7.28.5))(@types/react@19.0.14)(bufferutil@4.1.0)(react@19.2.3)(utf-8-validate@5.0.10)))(@types/react-dom@19.0.6(@types/react@19.0.14))(@types/react@19.0.14)(bufferutil@4.1.0)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(utf-8-validate@5.0.10)':
+  '@cosmos-kit/react@2.22.3(@cosmjs/amino@0.32.4)(@cosmjs/proto-signing@0.32.4)(@interchain-ui/react@1.26.3(@types/react@19.0.14)(react-dom@19.2.3(react@19.2.3))(react@19.2.3))(@react-native-async-storage/async-storage@1.24.0(react-native@0.83.1(@babel/core@7.28.5)(@react-native/metro-config@0.81.0(@babel/core@7.28.5))(@types/react@19.0.14)(bufferutil@4.1.0)(react@19.2.3)(utf-8-validate@5.0.10)))(@types/react-dom@19.0.6(@types/react@19.0.14))(@types/react@19.0.14)(bufferutil@4.1.0)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(utf-8-validate@5.0.10)':
     dependencies:
       '@chain-registry/types': 0.46.15
       '@cosmos-kit/core': 2.16.3(@react-native-async-storage/async-storage@1.24.0(react-native@0.83.1(@babel/core@7.28.5)(@react-native/metro-config@0.81.0(@babel/core@7.28.5))(@types/react@19.0.14)(bufferutil@4.1.0)(react@19.2.3)(utf-8-validate@5.0.10)))(bufferutil@4.1.0)(utf-8-validate@5.0.10)
-      '@cosmos-kit/react-lite': 2.16.3(@cosmjs/amino@0.36.2)(@cosmjs/proto-signing@0.36.2)(@react-native-async-storage/async-storage@1.24.0(react-native@0.83.1(@babel/core@7.28.5)(@react-native/metro-config@0.81.0(@babel/core@7.28.5))(@types/react@19.0.14)(bufferutil@4.1.0)(react@19.2.3)(utf-8-validate@5.0.10)))(@types/react-dom@19.0.6(@types/react@19.0.14))(@types/react@19.0.14)(bufferutil@4.1.0)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(utf-8-validate@5.0.10)
+      '@cosmos-kit/react-lite': 2.16.3(@cosmjs/amino@0.32.4)(@cosmjs/proto-signing@0.32.4)(@react-native-async-storage/async-storage@1.24.0(react-native@0.83.1(@babel/core@7.28.5)(@react-native/metro-config@0.81.0(@babel/core@7.28.5))(@types/react@19.0.14)(bufferutil@4.1.0)(react@19.2.3)(utf-8-validate@5.0.10)))(@types/react-dom@19.0.6(@types/react@19.0.14))(@types/react@19.0.14)(bufferutil@4.1.0)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(utf-8-validate@5.0.10)
       '@interchain-ui/react': 1.26.3(@types/react@19.0.14)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
       '@react-icons/all-files': 4.1.0(react@19.2.3)
       '@types/react': 19.0.14
@@ -17230,10 +17243,10 @@ snapshots:
       - typescript
       - utf-8-validate
 
-  '@hyperlane-xyz/widgets@17.0.0(patch_hash=f4fc99bb32fd094f9f2c8dc2479a322e5eef9d76d99e82f569c4fde2e0eb61c8)(cec8aa94343beecae18aa21a9ff5d7f7)':
+  '@hyperlane-xyz/widgets@17.0.0(patch_hash=f4fc99bb32fd094f9f2c8dc2479a322e5eef9d76d99e82f569c4fde2e0eb61c8)(092e814b79f470cfb75c67326b802ccd)':
     dependencies:
       '@cosmjs/stargate': 0.32.4(bufferutil@4.1.0)(utf-8-validate@5.0.10)
-      '@cosmos-kit/react': 2.22.3(@cosmjs/amino@0.36.2)(@cosmjs/proto-signing@0.36.2)(@interchain-ui/react@1.26.3(@types/react@19.0.14)(react-dom@19.2.3(react@19.2.3))(react@19.2.3))(@react-native-async-storage/async-storage@1.24.0(react-native@0.83.1(@babel/core@7.28.5)(@react-native/metro-config@0.81.0(@babel/core@7.28.5))(@types/react@19.0.14)(bufferutil@4.1.0)(react@19.2.3)(utf-8-validate@5.0.10)))(@types/react-dom@19.0.6(@types/react@19.0.14))(@types/react@19.0.14)(bufferutil@4.1.0)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(utf-8-validate@5.0.10)
+      '@cosmos-kit/react': 2.22.3(@cosmjs/amino@0.32.4)(@cosmjs/proto-signing@0.32.4)(@interchain-ui/react@1.26.3(@types/react@19.0.14)(react-dom@19.2.3(react@19.2.3))(react@19.2.3))(@react-native-async-storage/async-storage@1.24.0(react-native@0.83.1(@babel/core@7.28.5)(@react-native/metro-config@0.81.0(@babel/core@7.28.5))(@types/react@19.0.14)(bufferutil@4.1.0)(react@19.2.3)(utf-8-validate@5.0.10)))(@types/react-dom@19.0.6(@types/react@19.0.14))(@types/react@19.0.14)(bufferutil@4.1.0)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(utf-8-validate@5.0.10)
       '@headlessui/react': 2.2.9(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
       '@hyperlane-xyz/cosmos-sdk': 17.0.0(bufferutil@4.1.0)(utf-8-validate@5.0.10)
       '@hyperlane-xyz/sdk': 17.0.0(@ethersproject/abi@5.8.0)(@ethersproject/providers@5.8.0(bufferutil@4.1.0)(utf-8-validate@5.0.10))(@nomicfoundation/hardhat-verify@2.1.3(hardhat@2.28.0(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)))(@types/node@20.19.27)(@types/sinon-chai@4.0.0)(bufferutil@4.1.0)(fastestsmallesttextencoderdecoder@1.0.22)(hardhat@2.28.0(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10))(pino-pretty@13.1.3)(typescript@5.9.3)(utf-8-validate@5.0.10)
@@ -18203,7 +18216,7 @@ snapshots:
       '@polkadot/api-augment': 14.3.1(bufferutil@4.1.0)(utf-8-validate@5.0.10)
       '@polkadot/api-base': 14.3.1(bufferutil@4.1.0)(utf-8-validate@5.0.10)
       '@polkadot/api-derive': 14.3.1(bufferutil@4.1.0)(utf-8-validate@5.0.10)
-      '@polkadot/keyring': 13.4.3(@polkadot/util-crypto@13.5.9(@polkadot/util@13.4.3))(@polkadot/util@13.4.3)
+      '@polkadot/keyring': 13.4.3(@polkadot/util-crypto@13.5.9(@polkadot/util@13.5.9))(@polkadot/util@13.4.3)
       '@polkadot/rpc-augment': 14.3.1(bufferutil@4.1.0)(utf-8-validate@5.0.10)
       '@polkadot/rpc-core': 14.3.1(bufferutil@4.1.0)(utf-8-validate@5.0.10)
       '@polkadot/rpc-provider': 14.3.1(bufferutil@4.1.0)(utf-8-validate@5.0.10)
@@ -18320,7 +18333,7 @@ snapshots:
 
   '@polkadot/rpc-provider@14.3.1(bufferutil@4.1.0)(utf-8-validate@5.0.10)':
     dependencies:
-      '@polkadot/keyring': 13.4.3(@polkadot/util-crypto@13.5.9(@polkadot/util@13.4.3))(@polkadot/util@13.4.3)
+      '@polkadot/keyring': 13.4.3(@polkadot/util-crypto@13.5.9(@polkadot/util@13.5.9))(@polkadot/util@13.4.3)
       '@polkadot/types': 14.3.1
       '@polkadot/types-support': 14.3.1
       '@polkadot/util': 13.4.3
@@ -18446,10 +18459,10 @@ snapshots:
       '@noble/hashes': 1.8.0
       '@polkadot/networks': 13.5.9
       '@polkadot/util': 13.4.3
-      '@polkadot/wasm-crypto': 7.5.4(@polkadot/util@13.4.3)(@polkadot/x-randomvalues@13.5.9(@polkadot/util@13.4.3)(@polkadot/wasm-util@7.5.4(@polkadot/util@13.4.3)))
+      '@polkadot/wasm-crypto': 7.5.4(@polkadot/util@13.4.3)(@polkadot/x-randomvalues@13.5.9(@polkadot/util@13.5.9)(@polkadot/wasm-util@7.5.4(@polkadot/util@13.5.9)))
       '@polkadot/wasm-util': 7.5.4(@polkadot/util@13.4.3)
       '@polkadot/x-bigint': 13.5.9
-      '@polkadot/x-randomvalues': 13.5.9(@polkadot/util@13.4.3)(@polkadot/wasm-util@7.5.4(@polkadot/util@13.4.3))
+      '@polkadot/x-randomvalues': 13.5.9(@polkadot/util@13.4.3)(@polkadot/wasm-util@7.5.4(@polkadot/util@13.5.9))
       '@scure/base': 1.2.6
       tslib: 2.8.1
 
@@ -18486,11 +18499,11 @@ snapshots:
       bn.js: 5.2.2
       tslib: 2.8.1
 
-  '@polkadot/wasm-bridge@7.5.4(@polkadot/util@13.4.3)(@polkadot/x-randomvalues@13.5.9(@polkadot/util@13.4.3)(@polkadot/wasm-util@7.5.4(@polkadot/util@13.4.3)))':
+  '@polkadot/wasm-bridge@7.5.4(@polkadot/util@13.4.3)(@polkadot/x-randomvalues@13.5.9(@polkadot/util@13.5.9)(@polkadot/wasm-util@7.5.4(@polkadot/util@13.5.9)))':
     dependencies:
       '@polkadot/util': 13.4.3
       '@polkadot/wasm-util': 7.5.4(@polkadot/util@13.4.3)
-      '@polkadot/x-randomvalues': 13.5.9(@polkadot/util@13.4.3)(@polkadot/wasm-util@7.5.4(@polkadot/util@13.4.3))
+      '@polkadot/x-randomvalues': 13.5.9(@polkadot/util@13.5.9)(@polkadot/wasm-util@7.5.4(@polkadot/util@13.5.9))
       tslib: 2.8.1
 
   '@polkadot/wasm-bridge@7.5.4(@polkadot/util@13.5.9)(@polkadot/x-randomvalues@13.5.9(@polkadot/util@13.5.9)(@polkadot/wasm-util@7.5.4(@polkadot/util@13.5.9)))':
@@ -18510,14 +18523,14 @@ snapshots:
       '@polkadot/util': 13.5.9
       tslib: 2.8.1
 
-  '@polkadot/wasm-crypto-init@7.5.4(@polkadot/util@13.4.3)(@polkadot/x-randomvalues@13.5.9(@polkadot/util@13.4.3)(@polkadot/wasm-util@7.5.4(@polkadot/util@13.4.3)))':
+  '@polkadot/wasm-crypto-init@7.5.4(@polkadot/util@13.4.3)(@polkadot/x-randomvalues@13.5.9(@polkadot/util@13.5.9)(@polkadot/wasm-util@7.5.4(@polkadot/util@13.5.9)))':
     dependencies:
       '@polkadot/util': 13.4.3
-      '@polkadot/wasm-bridge': 7.5.4(@polkadot/util@13.4.3)(@polkadot/x-randomvalues@13.5.9(@polkadot/util@13.4.3)(@polkadot/wasm-util@7.5.4(@polkadot/util@13.4.3)))
+      '@polkadot/wasm-bridge': 7.5.4(@polkadot/util@13.4.3)(@polkadot/x-randomvalues@13.5.9(@polkadot/util@13.5.9)(@polkadot/wasm-util@7.5.4(@polkadot/util@13.5.9)))
       '@polkadot/wasm-crypto-asmjs': 7.5.4(@polkadot/util@13.4.3)
       '@polkadot/wasm-crypto-wasm': 7.5.4(@polkadot/util@13.4.3)
       '@polkadot/wasm-util': 7.5.4(@polkadot/util@13.4.3)
-      '@polkadot/x-randomvalues': 13.5.9(@polkadot/util@13.4.3)(@polkadot/wasm-util@7.5.4(@polkadot/util@13.4.3))
+      '@polkadot/x-randomvalues': 13.5.9(@polkadot/util@13.5.9)(@polkadot/wasm-util@7.5.4(@polkadot/util@13.5.9))
       tslib: 2.8.1
 
   '@polkadot/wasm-crypto-init@7.5.4(@polkadot/util@13.5.9)(@polkadot/x-randomvalues@13.5.9(@polkadot/util@13.5.9)(@polkadot/wasm-util@7.5.4(@polkadot/util@13.5.9)))':
@@ -18542,15 +18555,15 @@ snapshots:
       '@polkadot/wasm-util': 7.5.4(@polkadot/util@13.5.9)
       tslib: 2.8.1
 
-  '@polkadot/wasm-crypto@7.5.4(@polkadot/util@13.4.3)(@polkadot/x-randomvalues@13.5.9(@polkadot/util@13.4.3)(@polkadot/wasm-util@7.5.4(@polkadot/util@13.4.3)))':
+  '@polkadot/wasm-crypto@7.5.4(@polkadot/util@13.4.3)(@polkadot/x-randomvalues@13.5.9(@polkadot/util@13.5.9)(@polkadot/wasm-util@7.5.4(@polkadot/util@13.5.9)))':
     dependencies:
       '@polkadot/util': 13.4.3
-      '@polkadot/wasm-bridge': 7.5.4(@polkadot/util@13.4.3)(@polkadot/x-randomvalues@13.5.9(@polkadot/util@13.4.3)(@polkadot/wasm-util@7.5.4(@polkadot/util@13.4.3)))
+      '@polkadot/wasm-bridge': 7.5.4(@polkadot/util@13.4.3)(@polkadot/x-randomvalues@13.5.9(@polkadot/util@13.5.9)(@polkadot/wasm-util@7.5.4(@polkadot/util@13.5.9)))
       '@polkadot/wasm-crypto-asmjs': 7.5.4(@polkadot/util@13.4.3)
-      '@polkadot/wasm-crypto-init': 7.5.4(@polkadot/util@13.4.3)(@polkadot/x-randomvalues@13.5.9(@polkadot/util@13.4.3)(@polkadot/wasm-util@7.5.4(@polkadot/util@13.4.3)))
+      '@polkadot/wasm-crypto-init': 7.5.4(@polkadot/util@13.4.3)(@polkadot/x-randomvalues@13.5.9(@polkadot/util@13.5.9)(@polkadot/wasm-util@7.5.4(@polkadot/util@13.5.9)))
       '@polkadot/wasm-crypto-wasm': 7.5.4(@polkadot/util@13.4.3)
       '@polkadot/wasm-util': 7.5.4(@polkadot/util@13.4.3)
-      '@polkadot/x-randomvalues': 13.5.9(@polkadot/util@13.4.3)(@polkadot/wasm-util@7.5.4(@polkadot/util@13.4.3))
+      '@polkadot/x-randomvalues': 13.5.9(@polkadot/util@13.5.9)(@polkadot/wasm-util@7.5.4(@polkadot/util@13.5.9))
       tslib: 2.8.1
 
   '@polkadot/wasm-crypto@7.5.4(@polkadot/util@13.5.9)(@polkadot/x-randomvalues@13.5.9(@polkadot/util@13.5.9)(@polkadot/wasm-util@7.5.4(@polkadot/util@13.5.9)))':
@@ -18598,10 +18611,10 @@ snapshots:
     dependencies:
       tslib: 2.8.1
 
-  '@polkadot/x-randomvalues@13.5.9(@polkadot/util@13.4.3)(@polkadot/wasm-util@7.5.4(@polkadot/util@13.4.3))':
+  '@polkadot/x-randomvalues@13.5.9(@polkadot/util@13.4.3)(@polkadot/wasm-util@7.5.4(@polkadot/util@13.5.9))':
     dependencies:
       '@polkadot/util': 13.4.3
-      '@polkadot/wasm-util': 7.5.4(@polkadot/util@13.4.3)
+      '@polkadot/wasm-util': 7.5.4(@polkadot/util@13.5.9)
       '@polkadot/x-global': 13.5.9
       tslib: 2.8.1
 

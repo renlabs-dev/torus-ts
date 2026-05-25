@@ -16,8 +16,12 @@
     "test:watch": "vitest --watch"
   },
   "dependencies": {
+    "@polkadot/extension-dapp": "catalog:",
+    "@polkadot/extension-inject": "catalog:",
+    "@polkadot/util-crypto": "catalog:",
     "@rainbow-me/rainbowkit": "catalog:",
     "@tanstack/react-query": "catalog:",
+    "@torus-network/sdk": "workspace:*",
     "@torus-network/torus-utils": "workspace:*",
     "@torus-ts/ui": "workspace:*",
     "lucide-react": "catalog:",

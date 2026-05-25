@@ -1,20 +1,27 @@
 import { z } from "zod";
 
-const envSchema = z.object({
+const clientEnvSchema = z.object({
   NEXT_PUBLIC_WALLET_CONNECT_ID: z.string().default(""),
   NEXT_PUBLIC_CLAIM_CONTRACT_ADDRESS: z
     .string()
     .regex(/^0x[0-9a-fA-F]{40}$/, "Must be a valid EVM address"),
 });
 
-type EnvVars = z.infer<typeof envSchema>;
+const serverEnvSchema = z.object({
+  RELAYER_PRIVATE_KEY: z
+    .string()
+    .regex(/^0x[0-9a-fA-F]{64}$/, "Must be a 0x-prefixed 32-byte hex key")
+    .optional(),
+});
 
-let _cache: EnvVars | undefined;
+type ClientEnvVars = z.infer<typeof clientEnvSchema>;
 
-function getEnv(): EnvVars {
-  if (_cache !== undefined) return _cache;
+let _clientCache: ClientEnvVars | undefined;
 
-  const result = envSchema.safeParse({
+function getClientEnv(): ClientEnvVars {
+  if (_clientCache !== undefined) return _clientCache;
+
+  const result = clientEnvSchema.safeParse({
     NEXT_PUBLIC_WALLET_CONNECT_ID: process.env.NEXT_PUBLIC_WALLET_CONNECT_ID,
     NEXT_PUBLIC_CLAIM_CONTRACT_ADDRESS:
       process.env.NEXT_PUBLIC_CLAIM_CONTRACT_ADDRESS,
@@ -26,20 +33,28 @@ function getEnv(): EnvVars {
     );
   }
 
-  _cache = result.data;
-  return _cache;
+  _clientCache = result.data;
+  return _clientCache;
 }
 
-export function env<K extends keyof EnvVars>(key: K): EnvVars[K] {
-  return getEnv()[key];
+export function env<K extends keyof ClientEnvVars>(key: K): ClientEnvVars[K] {
+  return getClientEnv()[key];
 }
 
-/**
- * Validate the full environment schema once, at app launch (called from the root
- * layout). Surfaces a misconfigured deploy as a clear aggregated error -- and,
- * because this is a statically-exported app, fails the build rather than letting
- * a broken bundle ship and crash mid-render on the first `env()` call.
- */
+export function serverEnv() {
+  const result = serverEnvSchema.safeParse({
+    RELAYER_PRIVATE_KEY: process.env.RELAYER_PRIVATE_KEY,
+  });
+
+  if (!result.success) {
+    throw new Error(
+      `Invalid server environment variables:\n${JSON.stringify(result.error.format(), null, 2)}`,
+    );
+  }
+
+  return result.data;
+}
+
 export function validateEnv(): void {
-  getEnv();
+  getClientEnv();
 }
