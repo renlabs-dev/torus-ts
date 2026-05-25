@@ -1,9 +1,13 @@
 import "@torus-ts/ui/globals.css";
 import "@rainbow-me/rainbowkit/styles.css";
+import { TorusProvider } from "@torus-ts/torus-provider";
+import { Footer } from "@torus-ts/ui/components/footer";
 import { Layout } from "@torus-ts/ui/components/layout";
 import { createSeoMetadata } from "@torus-ts/ui/components/seo";
 import { AppContextProvider } from "~/context/app-context-provider";
+import { env } from "~/env";
 import { Fira_Mono as FiraMono } from "next/font/google";
+import { WalletHeader } from "./_components/header";
 
 export const firaMono = FiraMono({
   subsets: ["latin"],
@@ -24,7 +28,7 @@ export function generateMetadata() {
     ],
     ogSiteName: "Torus Migration Claim",
     canonical: "/",
-    baseUrl: "https://claim.torus.network",
+    baseUrl: "https://bridge.torus.network/claim",
   });
 }
 
@@ -33,7 +37,16 @@ export default function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <Layout font={firaMono}>
-      <AppContextProvider>{children}</AppContextProvider>
+      <AppContextProvider>
+        <TorusProvider
+          wsEndpoint={env("NEXT_PUBLIC_TORUS_RPC_URL")}
+          torusCacheUrl={env("NEXT_PUBLIC_TORUS_CACHE_URL")}
+        >
+          <WalletHeader />
+          {children}
+          <Footer torusChainEnv={env("NEXT_PUBLIC_TORUS_CHAIN_ENV")} />
+        </TorusProvider>
+      </AppContextProvider>
     </Layout>
   );
 }
