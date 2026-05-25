@@ -9,10 +9,14 @@ const clientEnvSchema = z.object({
 
 const serverEnvSchema = z.object({
   RELAYER_PRIVATE_KEY: z.preprocess(
-    (v) => (v === "" ? undefined : v),
+    (v) => {
+      if (v === "" || v === undefined || v === null) return undefined;
+      if (typeof v !== "string") return v;
+      return v.startsWith("0x") ? v : `0x${v}`;
+    },
     z
       .string()
-      .regex(/^0x[0-9a-fA-F]{64}$/, "Must be a 0x-prefixed 32-byte hex key")
+      .regex(/^0x[0-9a-fA-F]{64}$/, "Must be a 64-char hex private key")
       .optional(),
   ),
 });
