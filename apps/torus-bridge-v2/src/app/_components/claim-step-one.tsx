@@ -133,7 +133,8 @@ export function ClaimStepOne({
               disabled={
                 disabled ||
                 direct.state.status === "signing" ||
-                direct.state.status === "pending"
+                direct.state.status === "pending" ||
+                direct.state.status === "success"
               }
               className="w-full"
             >
@@ -147,6 +148,12 @@ export function ClaimStepOne({
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   Transaction pending
+                </>
+              )}
+              {direct.state.status === "success" && (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Confirming…
                 </>
               )}
               {(direct.state.status === "idle" ||

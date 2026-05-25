@@ -8,15 +8,18 @@ import {
   parseClaimProofBundle,
 } from "~/lib/claim-proof-bundle";
 import { torusMigrationClaimAbi } from "~/lib/contract";
+import { CLAIM_EIP712_DOMAIN, CLAIM_EIP712_TYPES } from "~/lib/eip712";
 import {
   createPublicClient,
   createWalletClient,
   formatEther,
   http,
+  verifyTypedData,
 } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
 import { z } from "zod";
 
+// EIP-712 ECDSA signatures are exactly 65 bytes = 130 hex chars
 const relayBodySchema = z.object({
   index: z.number().int().nonnegative(),
   account: z.string().regex(/^0x[0-9a-fA-F]{40}$/) as z.ZodType<`0x${string}`>,
@@ -27,7 +30,9 @@ const relayBodySchema = z.object({
   proof: z.array(z.string().regex(/^0x[0-9a-fA-F]{64}$/)) as z.ZodType<
     `0x${string}`[]
   >,
-  signature: z.string().regex(/^0x[0-9a-fA-F]+$/) as z.ZodType<`0x${string}`>,
+  signature: z
+    .string()
+    .regex(/^0x[0-9a-fA-F]{130}$/) as z.ZodType<`0x${string}`>,
 });
 
 export type RelayBody = z.infer<typeof relayBodySchema>;
@@ -94,6 +99,25 @@ export async function submitRelayedClaim(
     };
   }
 
+  // Verify EIP-712 signature locally before spending any gas
+  const isValidSig = await verifyTypedData({
+    domain: { ...CLAIM_EIP712_DOMAIN, verifyingContract: contractAddress },
+    types: CLAIM_EIP712_TYPES,
+    primaryType: "Claim",
+    message: {
+      index: BigInt(body.index),
+      account: body.account,
+      recipient: body.recipient,
+      amount: BigInt(body.amountRaw),
+    },
+    signature: body.signature,
+    address: body.account,
+  });
+
+  if (!isValidSig) {
+    return { ok: false, status: 400, error: "invalid_signature" };
+  }
+
   const publicClient = createPublicClient({
     chain: torusEvm,
     transport: http(),
@@ -131,6 +155,7 @@ export async function submitRelayedClaim(
     transport: http(),
   });
 
+  // Use serverProof.proof — never trust the client-supplied proof bytes
   const txHash = await walletClient.writeContract({
     address: contractAddress,
     abi: torusMigrationClaimAbi,
@@ -140,7 +165,7 @@ export async function submitRelayedClaim(
       body.account,
       body.recipient,
       BigInt(body.amountRaw),
-      body.proof,
+      serverProof.proof,
       body.signature,
     ],
   });
