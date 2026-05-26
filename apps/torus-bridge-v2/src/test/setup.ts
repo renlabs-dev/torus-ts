@@ -38,6 +38,9 @@ vi.mock("wagmi", () => ({
     isLoading: false,
     isSuccess: false,
   }),
+  useDisconnect: () => ({
+    disconnect: vi.fn(),
+  }),
   usePublicClient: () => ({
     getCode: vi.fn().mockResolvedValue("0x"),
   }),
