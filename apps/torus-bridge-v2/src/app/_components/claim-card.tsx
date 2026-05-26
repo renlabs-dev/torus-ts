@@ -24,7 +24,9 @@ import { useClaimState } from "~/hooks/use-claim-state";
 import { useIsScw } from "~/hooks/use-is-scw";
 import { useMerkleRootCheck } from "~/hooks/use-merkle-root-check";
 import { useProof } from "~/hooks/use-proof";
-import { Check, Info } from "lucide-react";
+import { shouldOfferNativeWithdrawal } from "~/lib/claim-amounts";
+import { Check, Info, Loader2 } from "lucide-react";
+import { useState } from "react";
 import { useAccount } from "wagmi";
 import { AddressChecker } from "./address-checker";
 import { AlreadyClaimedNotice } from "./already-claimed-notice";
@@ -72,8 +74,27 @@ function StepIndicator({
   );
 }
 
+function AwaitingNativeWithdrawalNotice() {
+  return (
+    <div className="flex flex-col items-center gap-3 py-4 text-sm">
+      <Loader2 className="h-8 w-8 animate-spin text-green-500" />
+      <p className="font-medium">Claim confirmed</p>
+      <p className="text-muted-foreground text-center">
+        Waiting for the TorusEVM balance before the native withdrawal step
+        appears. Keep this wallet connected.
+      </p>
+    </div>
+  );
+}
+
 export function ClaimCard() {
   const { address, isConnected } = useAccount();
+  const [claimStartedAddress, setClaimStartedAddress] = useState<
+    `0x${string}` | null
+  >(null);
+  const [withdrawStartedAddress, setWithdrawStartedAddress] = useState<
+    `0x${string}` | null
+  >(null);
 
   const rootCheck = useMerkleRootCheck();
   const proofQuery = useProof(address);
@@ -91,6 +112,25 @@ export function ClaimCard() {
     claimState.type === "already-claimed";
 
   const step2Active = claimState.type === "step2-available";
+  const claimStarted = address !== undefined && claimStartedAddress === address;
+  const withdrawStarted =
+    address !== undefined && withdrawStartedAddress === address;
+  const awaitingNativeWithdrawal =
+    claimState.type === "already-claimed" &&
+    claimStarted &&
+    !withdrawStarted &&
+    shouldOfferNativeWithdrawal(claimState.amountRaw);
+
+  const handleClaimStarted = () => {
+    if (address === undefined) return;
+    setClaimStartedAddress(address);
+    setWithdrawStartedAddress(null);
+  };
+
+  const handleWithdrawStarted = () => {
+    if (address === undefined) return;
+    setWithdrawStartedAddress(address);
+  };
 
   return (
     <div className="w-full max-w-md">
@@ -157,8 +197,9 @@ export function ClaimCard() {
                     <span className="text-foreground shrink-0 font-medium">
                       2.
                     </span>
-                    TORUS lands in your TorusEVM address. Then enter your torus
-                    native and withdraw to Torus mainnet in one more step.
+                    TORUS lands in your TorusEVM address. Then enter your Torus
+                    native address and withdraw to Torus mainnet in one more
+                    step.
                   </li>
                 </ol>
                 <p className="text-muted-foreground mt-2">
@@ -231,7 +272,13 @@ export function ClaimCard() {
               {claimState.type === "not-eligible" && <NotEligibleNotice />}
 
               {claimState.type === "already-claimed" && (
-                <AlreadyClaimedNotice amount={claimState.amountFormatted} />
+                <>
+                  {awaitingNativeWithdrawal ? (
+                    <AwaitingNativeWithdrawalNotice />
+                  ) : (
+                    <AlreadyClaimedNotice amount={claimState.amountFormatted} />
+                  )}
+                </>
               )}
 
               {claimState.type === "eligible" && (
@@ -239,11 +286,15 @@ export function ClaimCard() {
                   proof={claimState.proof}
                   amountFormatted={claimState.amountFormatted}
                   disabled={rootCheck.status !== "ok"}
+                  onClaimStarted={handleClaimStarted}
                 />
               )}
 
               {claimState.type === "step2-available" && (
-                <ClaimStepTwo evmBalance={claimState.evmBalance} />
+                <ClaimStepTwo
+                  evmBalance={claimState.evmBalance}
+                  onWithdrawStarted={handleWithdrawStarted}
+                />
               )}
 
               {claimState.type === "error" && (

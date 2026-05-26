@@ -13,7 +13,7 @@ export type ClaimState =
   | { type: "not-eligible" }
   | { type: "eligible"; proof: ProofData; amountFormatted: string }
   | { type: "step2-available"; amountFormatted: string; evmBalance: bigint }
-  | { type: "already-claimed"; amountFormatted: string }
+  | { type: "already-claimed"; amountFormatted: string; amountRaw: bigint }
   | { type: "error"; error: Error };
 
 export function useClaimState({
@@ -91,7 +91,11 @@ export function useClaimState({
         evmBalance,
       };
     }
-    return { type: "already-claimed", amountFormatted: proof.amount };
+    return {
+      type: "already-claimed",
+      amountFormatted: proof.amount,
+      amountRaw: BigInt(proof.amountRaw),
+    };
   }
 
   return { type: "eligible", proof, amountFormatted: proof.amount };
