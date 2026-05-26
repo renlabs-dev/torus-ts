@@ -3,6 +3,11 @@
 import { decodeAddress } from "@polkadot/util-crypto";
 import { tryAsync, trySync } from "@torus-network/torus-utils/try-catch";
 import { Button } from "@torus-ts/ui/components/button";
+import {
+  HoverCard,
+  HoverCardContent,
+  HoverCardTrigger,
+} from "@torus-ts/ui/components/hover-card";
 import { Input } from "@torus-ts/ui/components/input";
 import { useWithdraw } from "~/hooks/use-withdraw";
 import { getNativeWithdrawAmount } from "~/lib/claim-amounts";
@@ -10,6 +15,7 @@ import {
   AlertCircle,
   AlertTriangle,
   CheckCircle,
+  CircleHelp,
   Loader2,
   Wallet,
 } from "lucide-react";
@@ -59,7 +65,7 @@ export function ClaimStepTwo({
     const [accountsError, accounts] = await tryAsync(web3Accounts());
     if (accountsError !== undefined || !accounts.length) {
       setInputError(
-        "No substrate accounts found. Make sure your extension is unlocked.",
+        "No Torus mainnet accounts found. Make sure your wallet extension is unlocked.",
       );
       return;
     }
@@ -77,7 +83,7 @@ export function ClaimStepTwo({
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
     if (!validateSS58(ss58)) {
-      setInputError("Invalid SS58 address. Check for typos.");
+      setInputError("Invalid Torus mainnet key address. Check for typos.");
       return;
     }
     setInputError(undefined);
@@ -95,7 +101,7 @@ export function ClaimStepTwo({
           native.
         </p>
         <p className="text-muted-foreground text-center text-xs">
-          Your TORUS will appear in your substrate wallet.
+          Your TORUS will appear in your mainnet wallet.
         </p>
       </div>
     );
@@ -119,16 +125,37 @@ export function ClaimStepTwo({
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-3">
-      <p className="text-muted-foreground text-sm">
-        Enter your Torus native address to receive{" "}
+      <div className="text-muted-foreground text-sm">
+        Enter your Torus mainnet key address to receive{" "}
         <span className="text-foreground font-medium">
           {amountFormatted} TORUS
         </span>{" "}
-        on Torus mainnet.
-      </p>
+        on Torus mainnet.{" "}
+        <HoverCard>
+          <HoverCardTrigger asChild>
+            <button
+              type="button"
+              aria-label="What is a Torus mainnet key address?"
+              className="text-muted-foreground hover:text-foreground focus-visible:ring-ring inline-flex rounded-sm align-text-bottom transition-colors focus-visible:outline-none focus-visible:ring-1"
+            >
+              <CircleHelp className="h-4 w-4" />
+            </button>
+          </HoverCardTrigger>
+          <HoverCardContent side="top" align="start" className="w-72 text-xs">
+            <p className="mb-2 text-sm font-medium">
+              Torus mainnet is not Base
+            </p>
+            <p className="text-muted-foreground">
+              Base/TorusEVM was used as a liquidity bridge for the migration
+              claim. The native TORUS token lives on Torus mainnet, which is
+              Substrate-based and does not use MetaMask or EVM addresses.
+            </p>
+          </HoverCardContent>
+        </HoverCard>
+      </div>
       <p className="text-muted-foreground text-xs">
-        Torus native means a Torus mainnet SS58 address from a Substrate wallet,
-        not your MetaMask, Base, or TorusEVM address.{" "}
+        This must be a Torus mainnet key address, not your MetaMask, Base, or
+        TorusEVM address.{" "}
         <a
           href={WALLET_SETUP_DOCS_URL}
           target="_blank"
@@ -149,9 +176,9 @@ export function ClaimStepTwo({
                 setSs58(e.target.value);
                 if (inputError) setInputError(undefined);
               }}
-              placeholder="5xxxxxx… (SS58 address)"
+              placeholder="Torus mainnet key address"
               className="pr-8 font-mono text-xs"
-              aria-label="Substrate SS58 destination address"
+              aria-label="Torus mainnet destination address"
             />
           </div>
 
@@ -219,7 +246,7 @@ export function ClaimStepTwo({
             className="text-muted-foreground hover:text-foreground flex items-center gap-1.5 self-start text-xs transition-colors"
           >
             <Wallet className="h-3.5 w-3.5" />
-            Connect Substrate wallet instead
+            Connect Torus mainnet wallet instead
           </button>
         )}
 
