@@ -17,7 +17,7 @@ export const firaMono = FiraMono({
 
 export function generateMetadata() {
   return createSeoMetadata({
-    title: "Torus Migration Claim",
+    title: "Torus Base Migration Claim",
     description:
       "Claim your TORUS migration allocation on TorusEVM. Verify your eligibility and receive your tokens directly to your connected wallet.",
     keywords: [
@@ -26,7 +26,7 @@ export function generateMetadata() {
       "merkle claim",
       "token migration",
     ],
-    ogSiteName: "Torus Migration Claim",
+    ogSiteName: "Torus Base Migration Claim",
     canonical: "/",
     baseUrl: "https://bridge.torus.network/claim",
   });

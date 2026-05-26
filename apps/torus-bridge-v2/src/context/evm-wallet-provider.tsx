@@ -16,7 +16,7 @@ import { createConfig, WagmiProvider } from "wagmi";
 
 function makeWagmiConfig() {
   return getDefaultConfig({
-    appName: "Torus Migration Claim",
+    appName: "Torus Base Migration Claim",
     projectId: env("NEXT_PUBLIC_WALLET_CONNECT_ID") || "dev-placeholder",
     chains: [torusEvm],
     transports: { [torusEvm.id]: http() },
