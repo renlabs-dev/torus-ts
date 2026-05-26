@@ -10,7 +10,6 @@ import {
   AlertCircle,
   AlertTriangle,
   CheckCircle,
-  ExternalLink,
   Loader2,
   Wallet,
 } from "lucide-react";
@@ -20,6 +19,7 @@ import { formatEther } from "viem";
 
 interface ClaimStepTwoProps {
   evmBalance: bigint;
+  onWithdrawStarted?: () => void;
 }
 
 const DISCORD_URL = "https://discord.gg/SS2kBerKZg";
@@ -29,7 +29,10 @@ function validateSS58(value: string): boolean {
   return error === undefined;
 }
 
-export function ClaimStepTwo({ evmBalance }: Readonly<ClaimStepTwoProps>) {
+export function ClaimStepTwo({
+  evmBalance,
+  onWithdrawStarted,
+}: Readonly<ClaimStepTwoProps>) {
   const [ss58, setSs58] = useState("");
   const [inputMode, setInputMode] = useState<"paste" | "extension">("paste");
   const [extensionAccounts, setExtensionAccounts] = useState<
@@ -77,6 +80,7 @@ export function ClaimStepTwo({ evmBalance }: Readonly<ClaimStepTwoProps>) {
     }
     setInputError(undefined);
     setSubmittedAmountFormatted(amountFormatted);
+    onWithdrawStarted?.();
     void submit(ss58, withdrawAmount);
   };
 
@@ -85,20 +89,12 @@ export function ClaimStepTwo({ evmBalance }: Readonly<ClaimStepTwoProps>) {
       <div className="flex flex-col items-center gap-3 py-2">
         <CheckCircle className="h-8 w-8 text-green-500" />
         <p className="text-sm font-medium">
-          Withdrawn {submittedAmountFormatted ?? amountFormatted} TORUS to
-          native
+          Withdrew {submittedAmountFormatted ?? amountFormatted} TORUS to
+          native.
         </p>
         <p className="text-muted-foreground text-center text-xs">
           Your TORUS will appear in your substrate wallet.
         </p>
-        <a
-          href={`https://evm.torus.network/tx/${state.txHash}`}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="text-muted-foreground flex items-center gap-1 text-xs underline underline-offset-2"
-        >
-          View transaction <ExternalLink className="h-3 w-3" />
-        </a>
       </div>
     );
   }
@@ -122,7 +118,7 @@ export function ClaimStepTwo({ evmBalance }: Readonly<ClaimStepTwoProps>) {
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-3">
       <p className="text-muted-foreground text-sm">
-        Enter your torus native to receive{" "}
+        Enter your Torus native address to receive{" "}
         <span className="text-foreground font-medium">
           {amountFormatted} TORUS
         </span>{" "}

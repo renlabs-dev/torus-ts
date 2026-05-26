@@ -12,12 +12,14 @@ interface ClaimStepOneProps {
   proof: ProofData;
   amountFormatted: string;
   disabled: boolean;
+  onClaimStarted?: () => void;
 }
 
 export function ClaimStepOne({
   proof,
   amountFormatted,
   disabled,
+  onClaimStarted,
 }: Readonly<ClaimStepOneProps>) {
   const { address } = useAccount();
   const relay = useRelayClaim(proof);
@@ -57,6 +59,7 @@ export function ClaimStepOne({
         <Button
           onClick={() => {
             if (address !== undefined) {
+              onClaimStarted?.();
               void relay.sign(address);
             }
           }}
@@ -129,7 +132,10 @@ export function ClaimStepOne({
             <Button
               variant="outline"
               size="sm"
-              onClick={direct.submit}
+              onClick={() => {
+                onClaimStarted?.();
+                direct.submit();
+              }}
               disabled={
                 disabled ||
                 direct.state.status === "signing" ||
