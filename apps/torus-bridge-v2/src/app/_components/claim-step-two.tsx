@@ -117,7 +117,7 @@ export function ClaimStepTwo({ evmBalance }: Readonly<ClaimStepTwoProps>) {
     );
   }
 
-  const isPending = state.status === "pending";
+  const isBusy = state.status === "signing" || state.status === "pending";
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-3">
@@ -214,13 +214,18 @@ export function ClaimStepTwo({ evmBalance }: Readonly<ClaimStepTwoProps>) {
 
         <Button
           type="submit"
-          disabled={isPending || !ss58 || !validateSS58(ss58)}
+          disabled={isBusy || !ss58 || !validateSS58(ss58)}
           className="w-full"
         >
-          {isPending ? (
+          {state.status === "signing" ? (
             <>
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Withdrawing…
+              Confirm in wallet
+            </>
+          ) : state.status === "pending" ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              Confirming withdrawal…
             </>
           ) : (
             `Withdraw ${amountFormatted} TORUS to native`
