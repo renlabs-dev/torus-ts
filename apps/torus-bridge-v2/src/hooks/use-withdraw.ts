@@ -5,11 +5,12 @@ import type { SS58Address } from "@torus-network/sdk/types";
 import { tryAsync } from "@torus-network/torus-utils/try-catch";
 import { torusEvm } from "~/lib/chain";
 import { useState } from "react";
-import { useWalletClient } from "wagmi";
+import { useWaitForTransactionReceipt, useWalletClient } from "wagmi";
 
 export type WithdrawState =
   | { status: "idle" }
-  | { status: "pending" }
+  | { status: "signing" }
+  | { status: "pending"; txHash: `0x${string}` }
   | { status: "success"; txHash: `0x${string}` }
   | { status: "error"; error: string };
 
@@ -19,15 +20,35 @@ export function useWithdraw(): {
   reset: () => void;
 } {
   const { data: walletClient } = useWalletClient({ chainId: torusEvm.id });
-  const [state, setState] = useState<WithdrawState>({ status: "idle" });
+  const [submissionState, setSubmissionState] = useState<WithdrawState>({
+    status: "idle",
+  });
+  const pendingTxHash =
+    submissionState.status === "pending" ? submissionState.txHash : undefined;
+
+  const { data: receipt, error: receiptError } = useWaitForTransactionReceipt({
+    chainId: torusEvm.id,
+    hash: pendingTxHash,
+    confirmations: 2,
+    query: { enabled: pendingTxHash !== undefined },
+  });
+
+  const state: WithdrawState =
+    pendingTxHash !== undefined && receiptError !== null
+      ? { status: "error", error: receiptError.message }
+      : pendingTxHash !== undefined && receipt?.status === "success"
+        ? { status: "success", txHash: pendingTxHash }
+        : pendingTxHash !== undefined && receipt?.status === "reverted"
+          ? { status: "error", error: "Withdrawal transaction reverted" }
+          : submissionState;
 
   const submit = async (ss58: string, amount: bigint) => {
     if (walletClient === undefined) {
-      setState({ status: "error", error: "Wallet not connected" });
+      setSubmissionState({ status: "error", error: "Wallet not connected" });
       return;
     }
 
-    setState({ status: "pending" });
+    setSubmissionState({ status: "signing" });
 
     const [error, txHash] = await tryAsync(
       withdrawFromTorusEvm(
@@ -40,14 +61,14 @@ export function useWithdraw(): {
     );
 
     if (error !== undefined) {
-      setState({ status: "error", error: error.message });
+      setSubmissionState({ status: "error", error: error.message });
       return;
     }
 
-    setState({ status: "success", txHash });
+    setSubmissionState({ status: "pending", txHash });
   };
 
-  const reset = () => setState({ status: "idle" });
+  const reset = () => setSubmissionState({ status: "idle" });
 
   return { state, submit, reset };
 }
