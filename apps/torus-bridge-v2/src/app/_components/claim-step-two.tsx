@@ -23,6 +23,8 @@ interface ClaimStepTwoProps {
 }
 
 const DISCORD_URL = "https://discord.gg/SS2kBerKZg";
+const WALLET_SETUP_DOCS_URL =
+  "https://docs.torus.network/how-to-guides/holders/setup-a-wallet/";
 
 function validateSS58(value: string): boolean {
   const [error] = trySync(() => decodeAddress(value));
@@ -123,6 +125,19 @@ export function ClaimStepTwo({
           {amountFormatted} TORUS
         </span>{" "}
         on Torus mainnet.
+      </p>
+      <p className="text-muted-foreground text-xs">
+        Torus native means a Torus mainnet SS58 address from a Substrate wallet,
+        not your MetaMask, Base, or TorusEVM address.{" "}
+        <a
+          href={WALLET_SETUP_DOCS_URL}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="hover:text-foreground underline underline-offset-2 transition-colors"
+        >
+          Set up a Torus mainnet wallet
+        </a>
+        .
       </p>
 
       {inputMode === "paste" ? (
