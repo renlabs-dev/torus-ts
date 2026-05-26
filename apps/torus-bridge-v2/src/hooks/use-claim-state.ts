@@ -2,10 +2,9 @@ import type { UseQueryResult } from "@tanstack/react-query";
 import { env } from "~/env";
 import { useEvmBalance } from "~/hooks/use-evm-balance";
 import type { ProofData, ProofQuery } from "~/hooks/use-proof";
+import { shouldOfferNativeWithdrawal } from "~/lib/claim-amounts";
 import { torusMigrationClaimAbi } from "~/lib/contract";
 import { useReadContract } from "wagmi";
-
-const DUST_THRESHOLD = 1_000_000_000_000_000n; // 0.001 TORUS — below this = fully done
 
 export type ClaimState =
   | { type: "not-connected" }
@@ -85,7 +84,7 @@ export function useClaimState({
   }
 
   if (isClaimed === true) {
-    if (evmBalance !== undefined && evmBalance > DUST_THRESHOLD) {
+    if (evmBalance !== undefined && shouldOfferNativeWithdrawal(evmBalance)) {
       return {
         type: "step2-available",
         amountFormatted: proof.amount,
