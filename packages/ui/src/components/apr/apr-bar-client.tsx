@@ -8,12 +8,13 @@ import { useRewardIntervalProgress } from "./use-reward-interval";
 
 interface APRBarClientProps {
   api?: ApiPromise | null;
+  showUsdPrice?: boolean;
 }
 
-export function APRBarClient({ api }: APRBarClientProps) {
+export function APRBarClient({ api, showUsdPrice = true }: APRBarClientProps) {
   const finalApi = api ?? null;
   const { apr, isLoading, totalStake, totalIssuance } = useAPR(finalApi);
-  const { data: usdPrice } = useGetTorusPrice();
+  const { data: usdPrice } = useGetTorusPrice({ enabled: showUsdPrice });
   const rewardIntervalProgress = useRewardIntervalProgress(finalApi);
 
   if (!apr) {
@@ -23,7 +24,8 @@ export function APRBarClient({ api }: APRBarClientProps) {
   return (
     <APRBar
       apr={apr}
-      usdPrice={usdPrice}
+      showUsdPrice={showUsdPrice}
+      usdPrice={showUsdPrice ? usdPrice : undefined}
       totalStake={totalStake}
       totalIssuance={totalIssuance}
       isLoading={isLoading}
