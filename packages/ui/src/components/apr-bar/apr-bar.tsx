@@ -14,6 +14,7 @@ interface APRInfo {
 
 interface APRBarProps {
   apr?: number;
+  showUsdPrice?: boolean;
   usdPrice?: number;
   totalStake?: bigint;
   totalIssuance?: bigint;
@@ -25,6 +26,7 @@ interface APRBarProps {
 
 export function APRBar({
   apr,
+  showUsdPrice = true,
   usdPrice,
   totalStake,
   totalIssuance,
@@ -38,8 +40,8 @@ export function APRBar({
     return (Number(percentage) / 100).toFixed(2);
   }, [totalStake, totalIssuance]);
 
-  const staticInfos = useMemo<APRInfo[]>(
-    () => [
+  const staticInfos = useMemo<APRInfo[]>(() => {
+    const infos: APRInfo[] = [
       {
         label: "APR",
         value: `${apr?.toFixed(2) ?? 0}%`,
@@ -53,13 +55,17 @@ export function APRBar({
         label: "STAKED RATIO",
         value: `${stakedPercentage}%`,
       },
-      {
+    ];
+
+    if (showUsdPrice) {
+      infos.push({
         label: "USD PRICE",
         value: `$${usdPrice?.toFixed(4) ?? 0}`,
-      },
-    ],
-    [apr, totalStake, stakedPercentage, usdPrice],
-  );
+      });
+    }
+
+    return infos;
+  }, [apr, totalStake, stakedPercentage, showUsdPrice, usdPrice]);
 
   const dynamicInfo: APRInfo = {
     label: "REWARD INTERVAL",
