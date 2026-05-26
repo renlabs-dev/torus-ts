@@ -57,7 +57,9 @@ export function ClaimStepTwo({
   const handleConnectExtension = async () => {
     const { web3Enable, web3Accounts } =
       await import("@polkadot/extension-dapp");
-    const [enableError] = await tryAsync(web3Enable("Torus Migration Claim"));
+    const [enableError] = await tryAsync(
+      web3Enable("Torus Base Migration Claim"),
+    );
     if (enableError !== undefined) {
       setInputError("Could not connect to wallet extension.");
       return;

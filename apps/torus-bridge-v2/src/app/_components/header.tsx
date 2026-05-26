@@ -30,7 +30,7 @@ export function WalletHeader() {
 
   return (
     <Header
-      appName="Migration Claim"
+      appName="Base Migration Claim"
       wallet={
         <WalletDropdown
           balance={accountFreeBalance.data}

@@ -151,7 +151,7 @@ export function ClaimCard() {
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle className="flex items-center gap-2">
             <Icons.Logo className="h-4 w-auto" />
-            Migration Claim
+            Base Migration Claim
           </CardTitle>
           <div className="flex items-center gap-2">
             {isConnected && (
