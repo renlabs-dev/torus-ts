@@ -26,6 +26,7 @@ import { useMerkleRootCheck } from "~/hooks/use-merkle-root-check";
 import { useProof } from "~/hooks/use-proof";
 import { shouldOfferNativeWithdrawal } from "~/lib/claim-amounts";
 import { Check, Info, Loader2 } from "lucide-react";
+import Script from "next/script";
 import { useState } from "react";
 import { useAccount } from "wagmi";
 import { AddressChecker } from "./address-checker";
@@ -36,6 +37,9 @@ import { MerkleRootErrorBanner } from "./merkle-root-error-banner";
 import { NotEligibleNotice } from "./not-eligible-notice";
 import { ScwFootnote } from "./scw-footnote";
 import { ScwNotice } from "./scw-notice";
+
+const BASE_MIGRATION_UPDATE_URL =
+  "https://x.com/torus_network/status/2059218385594974223";
 
 function StepIndicator({
   step1Done,
@@ -70,6 +74,42 @@ function StepIndicator({
           Withdraw to native
         </span>
       </span>
+    </div>
+  );
+}
+
+function BaseMigrationNotice() {
+  return (
+    <div className="border-border mx-6 mb-4 rounded border bg-white/[0.02] p-3 text-xs">
+      <p className="text-muted-foreground leading-relaxed">
+        <span className="text-foreground font-medium">
+          This is the Base migration claim.
+        </span>{" "}
+        After the Base bridge compromise, TORUS liquidity moved OTC on Torus
+        mainnet. If your TORUS was already on mainnet, no action is needed. For
+        further information, see the official update.
+      </p>
+
+      <details className="mt-2">
+        <summary className="text-muted-foreground hover:text-foreground cursor-pointer underline underline-offset-2 transition-colors">
+          Official update on X
+        </summary>
+        <div className="mt-2 overflow-hidden rounded border border-white/10 bg-black/20 p-2">
+          <blockquote
+            className="twitter-tweet"
+            data-cards="hidden"
+            data-conversation="none"
+            data-dnt="true"
+            data-theme="dark"
+          >
+            <a href={BASE_MIGRATION_UPDATE_URL}>Official Torus update on X</a>
+          </blockquote>
+        </div>
+      </details>
+      <Script
+        src="https://platform.twitter.com/widgets.js"
+        strategy="lazyOnload"
+      />
     </div>
   );
 }
@@ -210,6 +250,8 @@ export function ClaimCard() {
             </HoverCard>
           </div>
         </CardHeader>
+
+        <BaseMigrationNotice />
 
         <Tabs defaultValue="claim">
           <TabsList
