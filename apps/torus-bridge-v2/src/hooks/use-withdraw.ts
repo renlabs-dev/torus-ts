@@ -3,14 +3,14 @@
 import { withdrawFromTorusEvm } from "@torus-network/sdk/evm";
 import type { SS58Address } from "@torus-network/sdk/types";
 import { tryAsync } from "@torus-network/torus-utils/try-catch";
-import { torusEvm } from "~/lib/chain";
+import { TORUS_EVM_RPC_URL, torusEvm } from "~/lib/chain";
 import {
   getNativeWithdrawAmount,
   shouldOfferNativeWithdrawal,
 } from "~/lib/claim-amounts";
 import { useState } from "react";
-import type { Address, PublicClient } from "viem";
-import { formatEther, isAddressEqual } from "viem";
+import type { Address, PublicClient, WalletClient } from "viem";
+import { formatEther, hexToBigInt, isAddressEqual } from "viem";
 import {
   usePublicClient,
   useWaitForTransactionReceipt,
@@ -30,8 +30,23 @@ type LiveWithdrawAmount =
   | { type: "not-ready"; balance: bigint }
   | { type: "error"; error: string };
 
+type ChainSetupResult = { ok: true } | { ok: false; error: string };
+
+type WalletProviderBalance =
+  | { type: "ready"; balance: bigint }
+  | { type: "error"; error: string };
+
+interface WalletBalanceClient {
+  request: (args: {
+    method: "eth_getBalance";
+    params: [Address, "latest"];
+  }) => Promise<`0x${string}`>;
+}
+
 const LIVE_BALANCE_READ_ATTEMPTS = 6;
 const LIVE_BALANCE_READ_DELAY_MS = 2_000;
+const WALLET_BALANCE_READ_ATTEMPTS = 3;
+const WALLET_BALANCE_READ_DELAY_MS = 2_000;
 
 function delay(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -45,7 +60,21 @@ function notReadyMessage(balance: bigint): string {
   const balanceText =
     balance === 0n ? "no TORUS" : `${formatEther(balance)} TORUS`;
 
-  return `No withdrawable balance was found on this MetaMask account after waiting for TorusEVM to update. It currently has ${balanceText} on TorusEVM. Keep the account that received the claim connected and try again in a few seconds.`;
+  return `No withdrawable balance was found on this EVM wallet after waiting for TorusEVM to update. It currently has ${balanceText} on TorusEVM. Keep the account that received the claim connected and try again in a few seconds.`;
+}
+
+function chainSetupMessage(error: string): string {
+  return `Could not switch your EVM wallet to Torus EVM. Manually configure chain ID ${torusEvm.id} with RPC ${TORUS_EVM_RPC_URL} and symbol TORUS, then try again. ${error}`;
+}
+
+function walletNetworkMismatchMessage({
+  torusBalance,
+  walletBalance,
+}: {
+  torusBalance: bigint;
+  walletBalance: bigint;
+}): string {
+  return `Your EVM wallet is using the wrong network config for chain ${torusEvm.id}, likely Action/ACTN. Torus EVM RPC reports ${formatEther(torusBalance)} TORUS, but your wallet provider reports ${formatEther(walletBalance)}. Manually configure Torus EVM with RPC ${TORUS_EVM_RPC_URL} and symbol TORUS, or use MetaMask/Rabby.`;
 }
 
 async function readLiveWithdrawAmount(
@@ -79,6 +108,91 @@ async function readLiveWithdrawAmount(
   }
 
   return { type: "not-ready", balance: lastBalance };
+}
+
+async function switchWalletToTorusEvm(
+  walletClient: WalletClient,
+): Promise<ChainSetupResult> {
+  const [switchError] = await tryAsync(
+    walletClient.switchChain({ id: torusEvm.id }),
+  );
+
+  if (switchError === undefined) {
+    return { ok: true };
+  }
+
+  return requestWalletTorusEvmConfig(walletClient, switchError.message);
+}
+
+async function requestWalletTorusEvmConfig(
+  walletClient: WalletClient,
+  previousError?: string,
+): Promise<ChainSetupResult> {
+  const [addError] = await tryAsync(walletClient.addChain({ chain: torusEvm }));
+  const [switchError] = await tryAsync(
+    walletClient.switchChain({ id: torusEvm.id }),
+  );
+
+  if (switchError === undefined) {
+    return { ok: true };
+  }
+
+  const details = [previousError, addError?.message, switchError.message]
+    .filter((message) => message !== undefined && message.length > 0)
+    .join(" ");
+
+  return { ok: false, error: chainSetupMessage(details) };
+}
+
+async function readWalletProviderBalance(
+  walletClient: WalletClient,
+  address: Address,
+): Promise<WalletProviderBalance> {
+  const walletBalanceClient = walletClient as unknown as WalletBalanceClient;
+  const [balanceError, balanceHex] = await tryAsync(
+    walletBalanceClient.request({
+      method: "eth_getBalance",
+      params: [address, "latest"],
+    }),
+  );
+
+  if (balanceError !== undefined) {
+    return { type: "error", error: balanceError.message };
+  }
+
+  return { type: "ready", balance: hexToBigInt(balanceHex) };
+}
+
+async function waitForWalletProviderBalance({
+  walletClient,
+  address,
+  minimumBalance,
+}: {
+  walletClient: WalletClient;
+  address: Address;
+  minimumBalance: bigint;
+}): Promise<WalletProviderBalance> {
+  let lastBalance = 0n;
+
+  for (let attempt = 0; attempt < WALLET_BALANCE_READ_ATTEMPTS; attempt += 1) {
+    const balance = await readWalletProviderBalance(walletClient, address);
+
+    if (balance.type === "error") {
+      return balance;
+    }
+
+    lastBalance = balance.balance;
+
+    if (balance.balance >= minimumBalance) {
+      return balance;
+    }
+
+    if (attempt < WALLET_BALANCE_READ_ATTEMPTS - 1) {
+      await delay(WALLET_BALANCE_READ_DELAY_MS);
+    }
+  }
+
+  return { type: "ready", balance: lastBalance };
 }
 
 export function useWithdraw(): {
@@ -140,6 +254,13 @@ export function useWithdraw(): {
 
     setSubmissionState({ status: "checking" });
 
+    const chainSetup = await switchWalletToTorusEvm(walletClient);
+
+    if (!chainSetup.ok) {
+      setSubmissionState({ status: "error", error: chainSetup.error });
+      return;
+    }
+
     const liveWithdrawAmount = await readLiveWithdrawAmount(
       publicClient,
       walletAddress,
@@ -157,6 +278,46 @@ export function useWithdraw(): {
       setSubmissionState({
         status: "error",
         error: notReadyMessage(liveWithdrawAmount.balance),
+      });
+      return;
+    }
+
+    let walletProviderBalance = await waitForWalletProviderBalance({
+      walletClient,
+      address: walletAddress,
+      minimumBalance: liveWithdrawAmount.amount,
+    });
+
+    if (
+      walletProviderBalance.type === "ready" &&
+      walletProviderBalance.balance < liveWithdrawAmount.amount
+    ) {
+      const configRefresh = await requestWalletTorusEvmConfig(walletClient);
+
+      if (configRefresh.ok) {
+        walletProviderBalance = await waitForWalletProviderBalance({
+          walletClient,
+          address: walletAddress,
+          minimumBalance: liveWithdrawAmount.amount,
+        });
+      }
+    }
+
+    if (walletProviderBalance.type === "error") {
+      setSubmissionState({
+        status: "error",
+        error: walletProviderBalance.error,
+      });
+      return;
+    }
+
+    if (walletProviderBalance.balance < liveWithdrawAmount.amount) {
+      setSubmissionState({
+        status: "error",
+        error: walletNetworkMismatchMessage({
+          torusBalance: liveWithdrawAmount.balance,
+          walletBalance: walletProviderBalance.balance,
+        }),
       });
       return;
     }
