@@ -45,6 +45,7 @@ vi.mock("wagmi", () => ({
   }),
   usePublicClient: () => ({
     getCode: vi.fn().mockResolvedValue("0x"),
+    getBalance: vi.fn().mockResolvedValue(0n),
   }),
   WagmiProvider: ({ children }: { children: React.ReactNode }) =>
     createElement("div", {}, children),
