@@ -332,12 +332,14 @@ export function ClaimCard() {
                 />
               )}
 
-              {claimState.type === "step2-available" && (
-                <ClaimStepTwo
-                  evmBalance={claimState.evmBalance}
-                  onWithdrawStarted={handleWithdrawStarted}
-                />
-              )}
+              {claimState.type === "step2-available" &&
+                address !== undefined && (
+                  <ClaimStepTwo
+                    evmAddress={address}
+                    evmBalance={claimState.evmBalance}
+                    onWithdrawStarted={handleWithdrawStarted}
+                  />
+                )}
 
               {claimState.type === "error" && (
                 <p className="text-destructive text-sm">
