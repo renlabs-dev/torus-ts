@@ -21,9 +21,11 @@ import {
 } from "lucide-react";
 import type { FormEvent } from "react";
 import { useState } from "react";
+import type { Address } from "viem";
 import { formatEther } from "viem";
 
 interface ClaimStepTwoProps {
+  evmAddress: Address;
   evmBalance: bigint;
   onWithdrawStarted?: () => void;
 }
@@ -38,6 +40,7 @@ function validateSS58(value: string): boolean {
 }
 
 export function ClaimStepTwo({
+  evmAddress,
   evmBalance,
   onWithdrawStarted,
 }: Readonly<ClaimStepTwoProps>) {
@@ -47,9 +50,6 @@ export function ClaimStepTwo({
     { address: string; name?: string }[]
   >([]);
   const [inputError, setInputError] = useState<string | undefined>();
-  const [submittedAmountFormatted, setSubmittedAmountFormatted] = useState<
-    string | undefined
-  >();
   const { state, submit, reset } = useWithdraw();
   const withdrawAmount = getNativeWithdrawAmount(evmBalance);
   const amountFormatted = formatEther(withdrawAmount);
@@ -89,9 +89,8 @@ export function ClaimStepTwo({
       return;
     }
     setInputError(undefined);
-    setSubmittedAmountFormatted(amountFormatted);
     onWithdrawStarted?.();
-    void submit(ss58, withdrawAmount);
+    void submit(ss58, evmAddress);
   };
 
   if (state.status === "success") {
@@ -99,8 +98,7 @@ export function ClaimStepTwo({
       <div className="flex flex-col items-center gap-3 py-2">
         <CheckCircle className="h-8 w-8 text-green-500" />
         <p className="text-sm font-medium">
-          Withdrew {submittedAmountFormatted ?? amountFormatted} TORUS to
-          native.
+          Withdrew {formatEther(state.amount)} TORUS to native.
         </p>
         <p className="text-muted-foreground text-center text-xs">
           Your TORUS will appear in your mainnet wallet.
@@ -123,7 +121,10 @@ export function ClaimStepTwo({
     );
   }
 
-  const isBusy = state.status === "signing" || state.status === "pending";
+  const isBusy =
+    state.status === "checking" ||
+    state.status === "signing" ||
+    state.status === "pending";
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-3">
@@ -257,7 +258,12 @@ export function ClaimStepTwo({
           disabled={isBusy || !ss58 || !validateSS58(ss58)}
           className="w-full"
         >
-          {state.status === "signing" ? (
+          {state.status === "checking" ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              Checking TorusEVM balance…
+            </>
+          ) : state.status === "signing" ? (
             <>
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
               Confirm in wallet
