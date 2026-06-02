@@ -33,6 +33,7 @@ import { AddressChecker } from "./address-checker";
 import { AlreadyClaimedNotice } from "./already-claimed-notice";
 import { ClaimStepOne } from "./claim-step-one";
 import { ClaimStepTwo } from "./claim-step-two";
+import { ManualSignatureClaim } from "./manual-signature-claim";
 import { MerkleRootErrorBanner } from "./merkle-root-error-banner";
 import { NotEligibleNotice } from "./not-eligible-notice";
 import { ScwFootnote } from "./scw-footnote";
@@ -264,10 +265,17 @@ export function ClaimCard() {
             <TabsTrigger variant="underline" value="check">
               Check eligibility
             </TabsTrigger>
+            <TabsTrigger variant="underline" value="manual">
+              Manual claim
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="check" className="px-6 pb-6 pt-4">
             <AddressChecker />
+          </TabsContent>
+
+          <TabsContent value="manual" className="px-6 pb-6 pt-4">
+            <ManualSignatureClaim disabled={rootCheck.status !== "ok"} />
           </TabsContent>
 
           <TabsContent value="claim">
