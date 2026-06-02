@@ -3,7 +3,11 @@
 import { tryAsync } from "@torus-network/torus-utils/try-catch";
 import { env } from "~/env";
 import type { ProofData } from "~/lib/claim-proof-bundle";
-import { CLAIM_EIP712_DOMAIN, CLAIM_EIP712_TYPES } from "~/lib/eip712";
+import {
+  buildClaimTypedData,
+  buildRelayClaimRequest,
+  submitRelayClaimRequest,
+} from "~/lib/relay-claim";
 import { useState } from "react";
 import { useSignTypedData } from "wagmi";
 
@@ -33,15 +37,11 @@ export function useRelayClaim(proof: ProofData | undefined): {
 
     const [signError, signature] = await tryAsync(
       signTypedDataAsync({
-        domain: { ...CLAIM_EIP712_DOMAIN, verifyingContract: contractAddress },
-        types: CLAIM_EIP712_TYPES,
-        primaryType: "Claim",
-        message: {
-          index: BigInt(proof.index),
-          account: proof.account,
+        ...buildClaimTypedData({
+          proof,
           recipient,
-          amount: BigInt(proof.amountRaw),
-        },
+          contractAddress,
+        }),
       }),
     );
 
@@ -52,50 +52,19 @@ export function useRelayClaim(proof: ProofData | undefined): {
 
     setState({ status: "submitting" });
 
-    const body = {
-      index: proof.index,
-      account: proof.account,
+    const body = buildRelayClaimRequest({
+      proof,
       recipient,
-      amountRaw: proof.amountRaw,
-      proof: proof.proof,
       signature,
-    };
+    });
 
-    const [fetchError, response] = await tryAsync(
-      fetch("/api/relay", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body),
-      }),
-    );
-
-    if (fetchError !== undefined) {
-      setState({ status: "error", error: fetchError.message });
+    const result = await submitRelayClaimRequest(body);
+    if (!result.ok) {
+      setState({ status: "error", error: result.error });
       return;
     }
 
-    if (!response.ok) {
-      const [jsonError, data] = await tryAsync(
-        response.json() as Promise<{ error: string; detail?: string }>,
-      );
-      const msg =
-        jsonError !== undefined
-          ? `HTTP ${response.status}`
-          : (data.detail ?? data.error);
-      setState({ status: "error", error: msg });
-      return;
-    }
-
-    const [jsonError, data] = await tryAsync(
-      response.json() as Promise<{ txHash: `0x${string}` }>,
-    );
-
-    if (jsonError !== undefined) {
-      setState({ status: "error", error: "Invalid relay response" });
-      return;
-    }
-
-    setState({ status: "submitted", txHash: data.txHash });
+    setState({ status: "submitted", txHash: result.txHash });
   };
 
   const reset = () => setState({ status: "idle" });
