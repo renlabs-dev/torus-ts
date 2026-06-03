@@ -33,6 +33,7 @@ import { AddressChecker } from "./address-checker";
 import { AlreadyClaimedNotice } from "./already-claimed-notice";
 import { ClaimStepOne } from "./claim-step-one";
 import { ClaimStepTwo } from "./claim-step-two";
+import { ManualNativeWithdraw } from "./manual-native-withdraw";
 import { ManualSignatureClaim } from "./manual-signature-claim";
 import { MerkleRootErrorBanner } from "./merkle-root-error-banner";
 import { NotEligibleNotice } from "./not-eligible-notice";
@@ -231,8 +232,8 @@ export function ClaimCard() {
                     <span className="text-foreground shrink-0 font-medium">
                       1.
                     </span>
-                    Connect your EVM wallet. Sign an offline message — the
-                    relayer pays gas, so no TorusEVM balance is required.
+                    Claim TORUS to TorusEVM. The relayer pays gas, so no
+                    TorusEVM balance is required for this step.
                   </li>
                   <li className="flex gap-2">
                     <span className="text-foreground shrink-0 font-medium">
@@ -245,7 +246,8 @@ export function ClaimCard() {
                 </ol>
                 <p className="text-muted-foreground mt-2">
                   Each address can only claim once. The withdrawal uses a small
-                  amount of the just-claimed TORUS for gas.
+                  amount of the just-claimed TORUS for gas. The offline tab can
+                  do both steps without connecting a wallet to this page.
                 </p>
               </HoverCardContent>
             </HoverCard>
@@ -266,7 +268,7 @@ export function ClaimCard() {
               Check eligibility
             </TabsTrigger>
             <TabsTrigger variant="underline" value="manual">
-              Manual claim
+              Offline flow
             </TabsTrigger>
           </TabsList>
 
@@ -276,6 +278,7 @@ export function ClaimCard() {
 
           <TabsContent value="manual" className="px-6 pb-6 pt-4">
             <ManualSignatureClaim disabled={rootCheck.status !== "ok"} />
+            <ManualNativeWithdraw />
           </TabsContent>
 
           <TabsContent value="claim">
