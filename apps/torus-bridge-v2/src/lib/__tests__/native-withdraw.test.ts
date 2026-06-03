@@ -5,6 +5,7 @@ import { describe, expect, it } from "vitest";
 import {
   buildNativeWithdrawTransaction,
   formatUnsignedNativeWithdrawTransaction,
+  getNativeWithdrawGasEstimateValue,
   parseSignedRawTransaction,
   validateSignedNativeWithdrawTransaction,
 } from "../native-withdraw";
@@ -31,6 +32,18 @@ function signableTransaction(
 }
 
 describe("native withdraw raw transactions", () => {
+  it("uses a non-dust value when estimating gas", () => {
+    expect(getNativeWithdrawGasEstimateValue(510_000_000_000_000_000n)).toBe(
+      undefined,
+    );
+    expect(getNativeWithdrawGasEstimateValue(510_000_000_000_000_001n)).toBe(
+      500_000_000_000_000_001n,
+    );
+    expect(
+      getNativeWithdrawGasEstimateValue(2_692_522_515_833_183_802_269_924n),
+    ).toBe(500_000_000_000_000_001n);
+  });
+
   it("builds a legacy withdraw transaction with gas-aware value", () => {
     const quote = buildNativeWithdrawTransaction({
       from: account.address,
