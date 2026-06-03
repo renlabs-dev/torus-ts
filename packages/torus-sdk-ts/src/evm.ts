@@ -1,4 +1,4 @@
-import { hexToU8a, stringToU8a } from "@polkadot/util";
+import { hexToU8a, stringToU8a, u8aToHex } from "@polkadot/util";
 import {
   blake2AsU8a,
   decodeAddress,
@@ -44,10 +44,11 @@ export function convertH160ToSS58(
 // == Withdraw ==
 
 // Precompile contract address
-const CONTRACT_ADDRESS = "0x0000000000000000000000000000000000000800";
+export const TORUS_EVM_WITHDRAW_PRECOMPILE_ADDRESS =
+  "0x0000000000000000000000000000000000000800";
 
 // BalanceTransfer ABI
-const CONTRACT_ABI = [
+export const TORUS_EVM_WITHDRAW_ABI = [
   {
     inputs: [
       {
@@ -63,6 +64,31 @@ const CONTRACT_ABI = [
   },
 ] as const;
 
+export function encodeTorusEvmWithdrawData(destination: SS58Address) {
+  // Decode the address
+  const [decodeError, pubk] = trySync(() => decodeAddress(destination));
+  if (decodeError !== undefined) {
+    console.error("Error decoding destination address:", decodeError);
+    throw decodeError;
+  }
+
+  // Encode function data
+  const [encodeError, data] = trySync(() =>
+    encodeFunctionData({
+      abi: TORUS_EVM_WITHDRAW_ABI,
+      functionName: "transfer",
+      args: [u8aToHex(pubk)],
+    }),
+  );
+
+  if (encodeError !== undefined) {
+    console.error("Error encoding function data:", encodeError);
+    throw encodeError;
+  }
+
+  return data;
+}
+
 export async function withdrawFromTorusEvm(
   walletClient: WalletClient,
   chain: Chain,
@@ -75,41 +101,13 @@ export async function withdrawFromTorusEvm(
     throw new Error("Wallet client account is undefined");
   }
 
-  // Decode the address
-  const [decodeError, pubk] = trySync(() => decodeAddress(destination));
-  if (decodeError !== undefined) {
-    console.error("Error decoding destination address:", decodeError);
-    throw decodeError;
-  }
-
-  // Convert Uint8Array to hex string with 0x prefix
-  const [bufferError, pubkHex] = trySync(
-    () => `0x${Buffer.from(pubk).toString("hex")}`,
-  );
-  if (bufferError !== undefined) {
-    console.error("Error converting address to hex:", bufferError);
-    throw bufferError;
-  }
-
-  // Encode function data
-  const [encodeError, data] = trySync(() =>
-    encodeFunctionData({
-      abi: CONTRACT_ABI,
-      functionName: "transfer",
-      args: [pubkHex as `0x${string}`],
-    }),
-  );
-
-  if (encodeError !== undefined) {
-    console.error("Error encoding function data:", encodeError);
-    throw encodeError;
-  }
+  const data = encodeTorusEvmWithdrawData(destination);
 
   // Send transaction using walletClient
   const [txError, txHash] = await tryAsync(
     walletClient.sendTransaction({
       account: walletClient.account,
-      to: CONTRACT_ADDRESS,
+      to: TORUS_EVM_WITHDRAW_PRECOMPILE_ADDRESS,
       data,
       value,
       chain,

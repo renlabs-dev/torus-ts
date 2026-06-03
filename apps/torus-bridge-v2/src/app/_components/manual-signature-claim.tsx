@@ -119,10 +119,18 @@ export function ManualSignatureClaim({
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-4 py-2">
+      <div className="flex flex-col gap-1">
+        <p className="text-sm font-medium">1. Claim to TorusEVM</p>
+        <p className="text-muted-foreground text-xs leading-relaxed">
+          Use this if you do not want to connect the eligible wallet to this
+          app. Sign the typed data elsewhere with the eligible address, then
+          paste only the returned signature here.
+        </p>
+      </div>
       <p className="text-muted-foreground text-xs leading-relaxed">
-        Use this if you do not want to connect the eligible wallet to this app.
-        Sign the typed data elsewhere with the eligible address, then paste only
-        the returned signature here.
+        The recipient EVM address is where the claim lands on TorusEVM. Use an
+        address whose key you can also use to sign the offline withdraw
+        transaction below.
       </p>
 
       <div className="flex flex-col gap-2">
@@ -224,8 +232,8 @@ export function ManualSignatureClaim({
         <div className="flex items-start gap-2 text-xs">
           <CheckCircle className="mt-0.5 h-3.5 w-3.5 shrink-0 text-green-500" />
           <span>
-            Relayed claim submitted. Connect the recipient wallet in the Claim
-            tab to withdraw to Torus mainnet.
+            Relayed claim submitted. Once the recipient EVM address shows a
+            TorusEVM balance, prepare the offline withdraw below.
             <span className="text-muted-foreground mt-1 block truncate font-mono">
               tx: {state.txHash}
             </span>
