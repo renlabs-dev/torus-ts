@@ -169,9 +169,7 @@ export function ManualNativeWithdraw() {
   };
 
   return (
-    <div className="flex flex-col gap-5 border-t border-white/10 pt-5">
-      <OfflineTutorial />
-
+    <div className="flex flex-col gap-5">
       <form onSubmit={handlePrepare} className="flex flex-col gap-4">
         <div className="flex flex-col gap-1">
           <p className="text-sm font-medium">2. Prepare offline withdraw</p>
@@ -324,34 +322,6 @@ export function ManualNativeWithdraw() {
           </Button>
         </form>
       )}
-    </div>
-  );
-}
-
-function OfflineTutorial() {
-  return (
-    <div className="flex flex-col gap-2">
-      <p className="text-sm font-medium">Offline migration flow</p>
-      <ol className="text-muted-foreground flex list-none flex-col gap-1.5 text-xs leading-relaxed">
-        <li>
-          <span className="text-foreground font-medium">1.</span> Use the manual
-          claim above to send the allocation to an EVM address you control. The
-          relayer submits that claim; your wallet never connects to this page.
-        </li>
-        <li>
-          <span className="text-foreground font-medium">2.</span> Wait until
-          that EVM address has TORUS on TorusEVM.
-        </li>
-        <li>
-          <span className="text-foreground font-medium">3.</span> Prepare the
-          withdraw transaction below for your Torus mainnet key address.
-        </li>
-        <li>
-          <span className="text-foreground font-medium">4.</span> Sign the raw
-          EVM transaction elsewhere, paste only the signed transaction here, and
-          this app verifies then broadcasts it.
-        </li>
-      </ol>
     </div>
   );
 }
