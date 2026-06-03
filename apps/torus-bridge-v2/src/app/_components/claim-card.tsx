@@ -414,7 +414,7 @@ export function ClaimCard() {
               value="manual"
               className="h-11 rounded-none"
             >
-              Offline flow
+              Offline claim
             </TabsTrigger>
           </TabsList>
 
