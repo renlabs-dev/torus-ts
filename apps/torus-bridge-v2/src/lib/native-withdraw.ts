@@ -5,7 +5,10 @@ import {
 import type { SS58Address } from "@torus-network/sdk/types";
 import { tryAsync, trySync } from "@torus-network/torus-utils/try-catch";
 import { torusEvm } from "~/lib/chain";
-import { MIN_NATIVE_WITHDRAW_AMOUNT } from "~/lib/claim-amounts";
+import {
+  getNativeWithdrawAmount,
+  MIN_NATIVE_WITHDRAW_AMOUNT,
+} from "~/lib/claim-amounts";
 import type {
   Address,
   Hex,
@@ -61,6 +64,18 @@ function applyGasLimitMargin(gasEstimate: bigint): bigint {
       1n) /
     GAS_LIMIT_MARGIN_DENOMINATOR
   );
+}
+
+export function getNativeWithdrawGasEstimateValue(
+  balance: bigint,
+): bigint | undefined {
+  const bufferedAmount = getNativeWithdrawAmount(balance);
+  if (bufferedAmount <= MIN_NATIVE_WITHDRAW_AMOUNT) {
+    return undefined;
+  }
+
+  // The withdraw precompile rejects dust values during estimation.
+  return MIN_NATIVE_WITHDRAW_AMOUNT + 1n;
 }
 
 export function buildNativeWithdrawTransaction({
@@ -139,12 +154,20 @@ export async function prepareNativeWithdrawTransaction({
     };
   }
 
+  const gasEstimateValue = getNativeWithdrawGasEstimateValue(balance);
+  if (gasEstimateValue === undefined) {
+    return {
+      ok: false,
+      error: `No withdrawable balance found after gas. TorusEVM balance is ${formatEther(balance)} TORUS.`,
+    };
+  }
+
   const [gasEstimateError, gasEstimate] = await tryAsync(
     publicClient.estimateGas({
       account: from,
       to: TORUS_EVM_WITHDRAW_PRECOMPILE_ADDRESS,
       data,
-      value: 1n,
+      value: gasEstimateValue,
     }),
   );
   if (gasEstimateError !== undefined) {
