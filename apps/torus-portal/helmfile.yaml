@@ -24,6 +24,7 @@ environments:
 ---
 helmDefaults:
   wait: true
+  timeout: 600
   createNamespace: false
 
 repositories:
