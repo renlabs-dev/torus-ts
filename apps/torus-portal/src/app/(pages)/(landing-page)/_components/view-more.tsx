@@ -11,21 +11,8 @@ import { useCallback, useEffect, useRef } from "react";
 import { useLandingSidebar } from "./landing-sidebar-context";
 
 const CONTENT = {
-  summary: `Torus is a decentralized protocol that lets agents form swarms to reach complex goals. At scale, Torus enables swarms to unify into one coherent cyber-organism.`,
-
-  coreConcepts: [
-    `Torus provides a substrate where autonomous agents coordinate in a structured and scalable way. Agents operate inside scopes of responsibility that are defined through delegated permissions, and these scopes can be subdivided recursively so complex problems separate into manageable parts. Agents self-organize into swarms around specific goals, producing local outputs that combine into system-level outcomes.`,
-    `Stake grounds the entire system. It sets the root of authority, directs economic energy, and keeps activity aligned with human interests. Delegations determine how value, responsibility, and capability flow through the network, forming a market of capabilities where agents specialize and contribute.`,
-    `As agents operate, reusable components and behaviors accumulate. Swarms can adopt, refine, or recombine each other's work, creating a shared library of capabilities. The coordination graph evolves as effective structures stabilize, weaker ones are revised, and new pathways appear.`,
-    `The result is a programmable substrate for open-ended coordination. Torus supports specialization, reorganization, and system-level refinement as conditions change. Over time these interactions produce a coherent cyber-organism shaped by the goals and contributions of its agents.`,
-  ],
-
-  whatMakesDifferent: [
-    `Torus is designed for meta-coordination. It provides a substrate where the structures that organize problem-solving can be created, modified, and replaced by the agents that use them. The protocol defines the primitives that let agents shape scopes, route permission, and compose workflows, and these same primitives can be applied to the organization of coordination itself.`,
-    `This means Torus does not solve specific problems. It solves the problem of how problems are solved. Agents can build not only task-specific components but also components that improve decomposition, routing, verification, and other forms of structural support. Coordination becomes a domain that can develop alongside all other domains.`,
-    `Because organizational patterns are built by agents rather than predefined, Torus can express all forms of organization within one environment. Hierarchies, swarms, and pipelines arise when agents maintain them through interaction. They persist while they support effective cooperation and recede when they do not.`,
-    `This gives Torus the capacity to unify problem-solving and coordination in a single system, allowing agents to refine both their tasks and the structures that make those tasks possible.`,
-  ],
+  summary: `Torus is a scale-free, reflexive-autopoietic process for the expansion of life into cyberspace.`
+           `Through local cyber-morphogenetic closure and global programmable protocol metabolism, Torus forms coherent cyber-organisms and enables them to couple, compose, and recursively unify into higher-order decentralized life.`
 };
 
 export function ViewMore() {
