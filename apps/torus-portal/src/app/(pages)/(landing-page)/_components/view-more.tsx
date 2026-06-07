@@ -49,6 +49,9 @@ export function ViewMore() {
       icon: <Icons.Telegram className="h-5 w-5" />,
     },
   ];
+  const hasCoreConcepts = CONTENT.coreConcepts.length > 0;
+  const hasWhatMakesDifferent = CONTENT.whatMakesDifferent.length > 0;
+  const hasDetailedSections = hasCoreConcepts || hasWhatMakesDifferent;
 
   const scrollToContent = useCallback(() => {
     if (isAnimatingRef.current) return;
@@ -199,78 +202,92 @@ export function ViewMore() {
                 {CONTENT.summary}
               </motion.p>
 
-              <motion.div
-                className="my-12"
-                initial={{ opacity: 0, scaleX: 0 }}
-                animate={
-                  isExpanded
-                    ? { opacity: 1, scaleX: 1 }
-                    : { opacity: 0, scaleX: 0 }
-                }
-                transition={{ delay: 0.4, duration: 0.5 }}
-              >
-                <Separator />
-              </motion.div>
+              {hasCoreConcepts && (
+                <>
+                  <motion.div
+                    className="my-12"
+                    initial={{ opacity: 0, scaleX: 0 }}
+                    animate={
+                      isExpanded
+                        ? { opacity: 1, scaleX: 1 }
+                        : { opacity: 0, scaleX: 0 }
+                    }
+                    transition={{ delay: 0.4, duration: 0.5 }}
+                  >
+                    <Separator />
+                  </motion.div>
 
-              {CONTENT.coreConcepts.map((paragraph, index) => (
-                <motion.p
-                  key={`core-${index}`}
-                  className={cn(
-                    "mb-6 leading-relaxed text-zinc-300",
-                    "text-base md:text-lg",
-                    "font-normal tracking-wide",
-                  )}
-                  initial={{ opacity: 0, y: 20 }}
+                  {CONTENT.coreConcepts.map((paragraph, index) => (
+                    <motion.p
+                      key={`core-${index}`}
+                      className={cn(
+                        "mb-6 leading-relaxed text-zinc-300",
+                        "text-base md:text-lg",
+                        "font-normal tracking-wide",
+                      )}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={
+                        isExpanded
+                          ? { opacity: 1, y: 0 }
+                          : { opacity: 0, y: 20 }
+                      }
+                      transition={{ delay: 0.5 + index * 0.1, duration: 0.5 }}
+                    >
+                      {paragraph}
+                    </motion.p>
+                  ))}
+                </>
+              )}
+
+              {hasWhatMakesDifferent && (
+                <>
+                  <motion.h2
+                    className="mb-6 mt-12 text-start text-base font-medium uppercase tracking-widest text-zinc-400 md:text-lg"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={
+                      isExpanded ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }
+                    }
+                    transition={{ delay: 1, duration: 0.5 }}
+                  >
+                    What Makes Torus Different
+                  </motion.h2>
+
+                  {CONTENT.whatMakesDifferent.map((paragraph, index) => (
+                    <motion.p
+                      key={`diff-${index}`}
+                      className={cn(
+                        "mb-6 leading-relaxed text-zinc-300",
+                        "text-base md:text-lg",
+                        "font-normal tracking-wide",
+                      )}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={
+                        isExpanded
+                          ? { opacity: 1, y: 0 }
+                          : { opacity: 0, y: 20 }
+                      }
+                      transition={{ delay: 1.1 + index * 0.1, duration: 0.5 }}
+                    >
+                      {paragraph}
+                    </motion.p>
+                  ))}
+                </>
+              )}
+
+              {hasDetailedSections && (
+                <motion.div
+                  className="my-12"
+                  initial={{ opacity: 0, scaleX: 0 }}
                   animate={
-                    isExpanded ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }
+                    isExpanded
+                      ? { opacity: 1, scaleX: 1 }
+                      : { opacity: 0, scaleX: 0 }
                   }
-                  transition={{ delay: 0.5 + index * 0.1, duration: 0.5 }}
+                  transition={{ delay: 1.5, duration: 0.5 }}
                 >
-                  {paragraph}
-                </motion.p>
-              ))}
-
-              <motion.h2
-                className="mb-6 mt-12 text-start text-base font-medium uppercase tracking-widest text-zinc-400 md:text-lg"
-                initial={{ opacity: 0, y: 20 }}
-                animate={
-                  isExpanded ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }
-                }
-                transition={{ delay: 1, duration: 0.5 }}
-              >
-                What Makes Torus Different
-              </motion.h2>
-
-              {CONTENT.whatMakesDifferent.map((paragraph, index) => (
-                <motion.p
-                  key={`diff-${index}`}
-                  className={cn(
-                    "mb-6 leading-relaxed text-zinc-300",
-                    "text-base md:text-lg",
-                    "font-normal tracking-wide",
-                  )}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={
-                    isExpanded ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }
-                  }
-                  transition={{ delay: 1.1 + index * 0.1, duration: 0.5 }}
-                >
-                  {paragraph}
-                </motion.p>
-              ))}
-
-              <motion.div
-                className="my-12"
-                initial={{ opacity: 0, scaleX: 0 }}
-                animate={
-                  isExpanded
-                    ? { opacity: 1, scaleX: 1 }
-                    : { opacity: 0, scaleX: 0 }
-                }
-                transition={{ delay: 1.5, duration: 0.5 }}
-              >
-                <Separator />
-              </motion.div>
+                  <Separator />
+                </motion.div>
+              )}
 
               <motion.div
                 className="flex justify-center gap-8"
