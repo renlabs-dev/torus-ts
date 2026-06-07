@@ -197,6 +197,68 @@ jobs:
             exit 1
           fi
 
+      - name: Collect deployment diagnostics
+        if: failure() && (steps.deploy-new.outcome == 'failure' || steps.deploy-diff.outcome == 'failure')
+        working-directory: ${{ inputs.app_path }}/${{ inputs.app_name }}
+        run: |
+          set +e
+
+          echo "Collecting diagnostics for app=${APP_NAME} namespace=${NAMESPACE}"
+
+          RELEASE_NAME="$(helmfile -e "${ENV_NAME}" list --output json | jq -r '.[0].name // empty')"
+          if [ -z "${RELEASE_NAME}" ] || [ "${RELEASE_NAME}" = "null" ]; then
+            RELEASE_NAME="${APP_NAME}"
+          fi
+
+          APP_SELECTOR="app=${APP_NAME}"
+
+          echo "::group::Helm release"
+          echo "Release: ${RELEASE_NAME}"
+          helm status "${RELEASE_NAME}" -n "${NAMESPACE}" || true
+          helm history "${RELEASE_NAME}" -n "${NAMESPACE}" || true
+          helm get values "${RELEASE_NAME}" -n "${NAMESPACE}" || true
+          echo "::endgroup::"
+
+          echo "::group::Kubernetes resources"
+          kubectl get all,ingress,configmap,secret -n "${NAMESPACE}" -l "${APP_SELECTOR}" -o wide || true
+          kubectl get deployment -n "${NAMESPACE}" "${RELEASE_NAME}" -o wide || true
+          kubectl get rs,pods -n "${NAMESPACE}" -l "${APP_SELECTOR}" -o wide || true
+          echo "::endgroup::"
+
+          echo "::group::Rollout and deployment description"
+          kubectl rollout status -n "${NAMESPACE}" "deployment/${RELEASE_NAME}" --timeout=0s || true
+          kubectl describe deployment -n "${NAMESPACE}" "${RELEASE_NAME}" || true
+          echo "::endgroup::"
+
+          echo "::group::Pod descriptions"
+          PODS="$(kubectl get pods -n "${NAMESPACE}" -l "${APP_SELECTOR}" -o jsonpath='{range .items[*]}{.metadata.name}{"\n"}{end}' 2>/dev/null)"
+          if [ -z "${PODS}" ]; then
+            echo "No pods found for selector ${APP_SELECTOR}"
+          else
+            for POD in ${PODS}; do
+              echo "### ${POD}"
+              kubectl describe pod -n "${NAMESPACE}" "${POD}" || true
+            done
+          fi
+          echo "::endgroup::"
+
+          echo "::group::Recent pod logs"
+          if [ -z "${PODS}" ]; then
+            echo "No pods found for selector ${APP_SELECTOR}"
+          else
+            for POD in ${PODS}; do
+              echo "### ${POD} current logs"
+              kubectl logs -n "${NAMESPACE}" "${POD}" --all-containers=true --tail=100 || true
+              echo "### ${POD} previous logs"
+              kubectl logs -n "${NAMESPACE}" "${POD}" --all-containers=true --previous --tail=100 || true
+            done
+          fi
+          echo "::endgroup::"
+
+          echo "::group::Recent namespace events"
+          kubectl get events -n "${NAMESPACE}" --sort-by=.lastTimestamp | tail -n 80 || true
+          echo "::endgroup::"
+
       - name: Generate deployment summary
         if: always()
         run: |
