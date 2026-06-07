@@ -11,8 +11,13 @@ import { useCallback, useEffect, useRef } from "react";
 import { useLandingSidebar } from "./landing-sidebar-context";
 
 const CONTENT = {
-  summary: `Torus is a scale-free, reflexive-autopoietic process for the expansion of life into cyberspace.`
-           `Through local cyber-morphogenetic closure and global programmable protocol metabolism, Torus forms coherent cyber-organisms and enables them to couple, compose, and recursively unify into higher-order decentralized life.`
+  summary: `Torus is a scale-free, reflexive-autopoietic process for the expansion of life into cyberspace.
+
+Through local cyber-morphogenetic closure and global programmable protocol metabolism, Torus forms coherent cyber-organisms and enables them to couple, compose, and recursively unify into higher-order decentralized life.
+
+In R&D.`,
+  coreConcepts: [] as string[],
+  whatMakesDifferent: [] as string[],
 };
 
 export function ViewMore() {
