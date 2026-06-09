@@ -8,6 +8,10 @@ import {
   getNativeWithdrawAmount,
   shouldOfferNativeWithdrawal,
 } from "~/lib/claim-amounts";
+import {
+  ensureWalletOnTorusEvm,
+  requestWalletTorusEvmConfig,
+} from "~/lib/torus-evm-wallet";
 import { useState } from "react";
 import type { Address, PublicClient, WalletClient } from "viem";
 import { formatEther, hexToBigInt, isAddressEqual } from "viem";
@@ -29,8 +33,6 @@ type LiveWithdrawAmount =
   | { type: "ready"; balance: bigint; amount: bigint }
   | { type: "not-ready"; balance: bigint }
   | { type: "error"; error: string };
-
-type ChainSetupResult = { ok: true } | { ok: false; error: string };
 
 type WalletProviderBalance =
   | { type: "ready"; balance: bigint }
@@ -61,10 +63,6 @@ function notReadyMessage(balance: bigint): string {
     balance === 0n ? "no TORUS" : `${formatEther(balance)} TORUS`;
 
   return `No withdrawable balance was found on this EVM wallet after waiting for TorusEVM to update. It currently has ${balanceText} on TorusEVM. Keep the account that received the claim connected and try again in a few seconds.`;
-}
-
-function chainSetupMessage(error: string): string {
-  return `Could not switch your EVM wallet to Torus EVM. Manually configure chain ID ${torusEvm.id} with RPC ${TORUS_EVM_RPC_URL} and symbol TORUS, then try again. ${error}`;
 }
 
 function walletNetworkMismatchMessage({
@@ -108,40 +106,6 @@ async function readLiveWithdrawAmount(
   }
 
   return { type: "not-ready", balance: lastBalance };
-}
-
-async function switchWalletToTorusEvm(
-  walletClient: WalletClient,
-): Promise<ChainSetupResult> {
-  const [switchError] = await tryAsync(
-    walletClient.switchChain({ id: torusEvm.id }),
-  );
-
-  if (switchError === undefined) {
-    return { ok: true };
-  }
-
-  return requestWalletTorusEvmConfig(walletClient, switchError.message);
-}
-
-async function requestWalletTorusEvmConfig(
-  walletClient: WalletClient,
-  previousError?: string,
-): Promise<ChainSetupResult> {
-  const [addError] = await tryAsync(walletClient.addChain({ chain: torusEvm }));
-  const [switchError] = await tryAsync(
-    walletClient.switchChain({ id: torusEvm.id }),
-  );
-
-  if (switchError === undefined) {
-    return { ok: true };
-  }
-
-  const details = [previousError, addError?.message, switchError.message]
-    .filter((message) => message !== undefined && message.length > 0)
-    .join(" ");
-
-  return { ok: false, error: chainSetupMessage(details) };
 }
 
 async function readWalletProviderBalance(
@@ -254,7 +218,7 @@ export function useWithdraw(): {
 
     setSubmissionState({ status: "checking" });
 
-    const chainSetup = await switchWalletToTorusEvm(walletClient);
+    const chainSetup = await ensureWalletOnTorusEvm(walletClient);
 
     if (!chainSetup.ok) {
       setSubmissionState({ status: "error", error: chainSetup.error });
