@@ -8,8 +8,10 @@ import {
   buildRelayClaimRequest,
   submitRelayClaimRequest,
 } from "~/lib/relay-claim";
+import { ensureWalletOnTorusEvm } from "~/lib/torus-evm-wallet";
 import { useState } from "react";
-import { useSignTypedData } from "wagmi";
+import { useAccount, useConfig } from "wagmi";
+import { getWalletClient } from "wagmi/actions";
 
 export type RelayClaimState =
   | { status: "idle" }
@@ -28,21 +30,43 @@ export function useRelayClaim(proof: ProofData | undefined): {
   ) as `0x${string}`;
 
   const [state, setState] = useState<RelayClaimState>({ status: "idle" });
-  const { signTypedDataAsync } = useSignTypedData();
+  const config = useConfig();
+  const { connector } = useAccount();
 
   const sign = async (recipient: `0x${string}`) => {
     if (proof === undefined) return;
 
+    if (connector === undefined) {
+      setState({ status: "error", error: "Wallet not connected" });
+      return;
+    }
+
     setState({ status: "signing" });
 
+    const [walletClientError, walletClient] = await tryAsync(
+      getWalletClient(config, { account: recipient, connector }),
+    );
+
+    if (walletClientError !== undefined) {
+      setState({ status: "error", error: walletClientError.message });
+      return;
+    }
+
+    const chainSetup = await ensureWalletOnTorusEvm(walletClient);
+
+    if (!chainSetup.ok) {
+      setState({ status: "error", error: chainSetup.error });
+      return;
+    }
+
     const [signError, signature] = await tryAsync(
-      signTypedDataAsync({
-        ...buildClaimTypedData({
+      walletClient.signTypedData(
+        buildClaimTypedData({
           proof,
           recipient,
           contractAddress,
         }),
-      }),
+      ),
     );
 
     if (signError !== undefined) {
