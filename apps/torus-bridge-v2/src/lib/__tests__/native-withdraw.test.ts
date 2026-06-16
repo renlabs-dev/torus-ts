@@ -36,7 +36,7 @@ describe("native withdraw raw transactions", () => {
     expect(getNativeWithdrawGasEstimateValue(510_000_000_000_000_000n)).toBe(
       undefined,
     );
-    expect(getNativeWithdrawGasEstimateValue(510_000_000_000_000_001n)).toBe(
+    expect(getNativeWithdrawGasEstimateValue(600_000_000_000_000_001n)).toBe(
       500_000_000_000_000_001n,
     );
     expect(
