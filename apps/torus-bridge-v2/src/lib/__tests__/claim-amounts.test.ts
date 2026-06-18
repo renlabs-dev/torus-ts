@@ -7,6 +7,10 @@ import {
 import { describe, expect, it } from "vitest";
 
 describe("claim amounts", () => {
+  it("keeps a conservative gas reserve", () => {
+    expect(WITHDRAW_GAS_BUFFER).toBe(100_000_000_000_000_000n);
+  });
+
   it("reserves gas before computing the native withdrawal amount", () => {
     expect(getNativeWithdrawAmount(WITHDRAW_GAS_BUFFER)).toBe(0n);
     expect(getNativeWithdrawAmount(WITHDRAW_GAS_BUFFER + 1n)).toBe(1n);

@@ -45,8 +45,9 @@ interface WalletBalanceClient {
   }) => Promise<`0x${string}`>;
 }
 
-const LIVE_BALANCE_READ_ATTEMPTS = 6;
+const LIVE_BALANCE_READ_ATTEMPTS = 8;
 const LIVE_BALANCE_READ_DELAY_MS = 2_000;
+const LIVE_BALANCE_STABLE_READS = 2;
 const WALLET_BALANCE_READ_ATTEMPTS = 3;
 const WALLET_BALANCE_READ_DELAY_MS = 2_000;
 
@@ -62,7 +63,7 @@ function notReadyMessage(balance: bigint): string {
   const balanceText =
     balance === 0n ? "no TORUS" : `${formatEther(balance)} TORUS`;
 
-  return `No withdrawable balance was found on this EVM wallet after waiting for TorusEVM to update. It currently has ${balanceText} on TorusEVM. Keep the account that received the claim connected and try again in a few seconds.`;
+  return `No withdrawable balance was found on this EVM wallet after waiting for TorusEVM to settle. It currently has ${balanceText} on TorusEVM. Keep the account that received the claim connected and try again in a few seconds.`;
 }
 
 function walletNetworkMismatchMessage({
@@ -80,6 +81,8 @@ async function readLiveWithdrawAmount(
   address: Address,
 ): Promise<LiveWithdrawAmount> {
   let lastBalance = 0n;
+  let lastReadyBalance: bigint | undefined;
+  let stableReadyReads = 0;
 
   for (let attempt = 0; attempt < LIVE_BALANCE_READ_ATTEMPTS; attempt += 1) {
     const [balanceError, balance] = await tryAsync(
@@ -93,11 +96,20 @@ async function readLiveWithdrawAmount(
     lastBalance = balance;
 
     if (shouldOfferNativeWithdrawal(balance)) {
-      return {
-        type: "ready",
-        balance,
-        amount: getNativeWithdrawAmount(balance),
-      };
+      stableReadyReads =
+        lastReadyBalance === balance ? stableReadyReads + 1 : 1;
+      lastReadyBalance = balance;
+
+      if (stableReadyReads >= LIVE_BALANCE_STABLE_READS) {
+        return {
+          type: "ready",
+          balance,
+          amount: getNativeWithdrawAmount(balance),
+        };
+      }
+    } else {
+      lastReadyBalance = undefined;
+      stableReadyReads = 0;
     }
 
     if (attempt < LIVE_BALANCE_READ_ATTEMPTS - 1) {
@@ -283,6 +295,13 @@ export function useWithdraw(): {
           walletBalance: walletProviderBalance.balance,
         }),
       });
+      return;
+    }
+
+    const finalChainSetup = await ensureWalletOnTorusEvm(walletClient);
+
+    if (!finalChainSetup.ok) {
+      setSubmissionState({ status: "error", error: finalChainSetup.error });
       return;
     }
 
