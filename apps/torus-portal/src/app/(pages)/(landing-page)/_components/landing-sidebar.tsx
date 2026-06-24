@@ -13,10 +13,8 @@ import { cn } from "@torus-ts/ui/lib/utils";
 import { env } from "~/env";
 import {
   ArrowLeftRight,
-  BookOpen,
   BookText,
   Landmark,
-  Network,
   PanelLeftIcon,
   UserPlus,
   Wallet,
@@ -28,9 +26,14 @@ import { useLandingSidebar } from "./landing-sidebar-context";
 const links = getLinks(env("NEXT_PUBLIC_TORUS_CHAIN_ENV"));
 
 // Top-level navigation items (no group title)
-const navTop = [
-  { title: "Portal", url: "/portal", icon: Network, external: false },
-];
+// Portal link removed during chain hibernation (2026-06) — the portal app is
+// taken down (/portal redirects to the landing). Restore the entry to bring back.
+const navTop: {
+  title: string;
+  url: string;
+  icon: typeof PanelLeftIcon;
+  external: boolean;
+}[] = [];
 
 // Grouped navigation matching hover header structure
 const navGroups = [
@@ -51,7 +54,6 @@ const navGroups = [
     title: "Network",
     items: [
       { title: "Join", url: links.discord, icon: UserPlus, external: true },
-      { title: "Docs", url: links.docs, icon: BookOpen, external: true },
       { title: "DAO", url: links.governance, icon: Landmark, external: true },
     ],
   },

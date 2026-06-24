@@ -9,11 +9,33 @@ const workspaceRoot = path.resolve(
   "..",
 );
 
+// Portal app taken down during chain hibernation (2026-06): the agent /
+// permissions / allocator UI is removed from torus.network while the chain is
+// dormant. All portal routes 302 to the landing splash instead of serving.
+// Temporary — delete `removedPortalRoutes` + the `redirects()` below to restore.
+const removedPortalRoutes = [
+  "portal",
+  "capabilities",
+  "constraints",
+  "network-operations",
+  "permissions",
+  "playground",
+  "root-allocator",
+  "signals",
+];
+
 /** @type {import("next").NextConfig} */
 const config = {
   reactStrictMode: true,
 
   turbopack: { root: workspaceRoot },
+
+  async redirects() {
+    return removedPortalRoutes.flatMap((route) => [
+      { source: `/${route}`, destination: "/", permanent: false },
+      { source: `/${route}/:path*`, destination: "/", permanent: false },
+    ]);
+  },
 
   // Disabled: React Compiler breaks tRPC proxy-based APIs
   // See docs/TRPC_CLIENT_PATTERN.md

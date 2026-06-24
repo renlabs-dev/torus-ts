@@ -68,11 +68,12 @@ export const CONTENT = {
       },
     ],
     network: [
-      { text: "Docs", href: links.docs },
       { text: "Join", href: links.discord },
       { text: "DAO", href: links.governance },
     ],
-    common: [{ text: "Portal", href: "/portal" }],
+    // Portal removed during chain hibernation (2026-06) — see next.config.mjs.
+    // Typed empty array so the (now-empty) list keeps its element type for consumers.
+    common: [] as { text: string; href: string }[],
   },
   mobileButtons: [
     [
@@ -86,8 +87,6 @@ export const CONTENT = {
     [
       { text: "DAO", href: links.governance },
       { text: "Join", href: links.discord },
-      { text: "Docs", href: links.docs },
     ],
-    [{ text: "Portal", href: "/portal" }],
   ],
 };
