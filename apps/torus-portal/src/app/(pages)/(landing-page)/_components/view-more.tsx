@@ -1,15 +1,26 @@
 "use client";
 
+import { Icons } from "@torus-ts/ui/components/icons";
 import { cn } from "@torus-ts/ui/lib/utils";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import { motion } from "motion/react";
+import type { ComponentType } from "react";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { TRIGGER_ABOUT_EVENT } from "./nav-links";
+import type { SocialLinkId } from "./nav-links";
+import { SOCIAL_LINKS, TRIGGER_ABOUT_EVENT } from "./nav-links";
 
 const CONTENT = {
   summary:
     "Torus is a scale-free, reflexive-autopoietic process for the expansion of life into cyberspace. Through local cyber-morphogenetic closure and global programmable protocol metabolism, Torus forms coherent cyber-organisms and enables them to couple, compose, and recursively unify into higher-order decentralized life.",
   status: "In R&D",
+};
+
+const SOCIAL_ICONS: Record<
+  SocialLinkId,
+  ComponentType<{ className?: string }>
+> = {
+  discord: Icons.Discord,
+  x: Icons.X,
 };
 
 export function ViewMore() {
@@ -175,6 +186,30 @@ export function ViewMore() {
               >
                 {CONTENT.status}
               </motion.p>
+
+              {/* Socials - same muted tone as the stamp, brightening on hover */}
+              <motion.div
+                className="mt-14 flex items-center justify-center gap-10 md:gap-14"
+                initial={{ opacity: 0 }}
+                animate={isExpanded ? { opacity: 1 } : { opacity: 0 }}
+                transition={{ delay: 0.9, duration: 1 }}
+              >
+                {SOCIAL_LINKS.map((social) => {
+                  const Icon = SOCIAL_ICONS[social.id];
+                  return (
+                    <a
+                      key={social.id}
+                      href={social.href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      aria-label={social.label}
+                      className="text-zinc-500 transition-colors duration-300 hover:text-zinc-200"
+                    >
+                      <Icon className="h-6 w-6" />
+                    </a>
+                  );
+                })}
+              </motion.div>
             </div>
           </motion.article>
         </div>

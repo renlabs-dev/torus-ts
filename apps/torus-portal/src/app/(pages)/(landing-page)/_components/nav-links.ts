@@ -36,3 +36,12 @@ export const NAV_ENTRIES = [
   { id: "join", label: "Join", target: { kind: "link", href: links.discord } },
   { id: "blog", label: "Blog", target: { kind: "link", href: links.blog } },
 ] as const satisfies readonly NavEntry[];
+
+/** Social links rendered under the About summary, in display order. */
+export const SOCIAL_LINKS = [
+  { id: "discord", label: "Discord", href: links.discord },
+  { id: "x", label: "X", href: links.x },
+] as const;
+
+/** Union of social link ids - lets the icon lookup be total. */
+export type SocialLinkId = (typeof SOCIAL_LINKS)[number]["id"];
