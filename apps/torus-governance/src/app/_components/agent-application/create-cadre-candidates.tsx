@@ -334,7 +334,7 @@ export function CreateCadreCandidates() {
               with the ability to vote on whitelist applications and set
               penalties for agents. You must be part of the{" "}
               <a
-                href="https://discord.gg/invite/torus"
+                href="https://discord.gg/torus"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-blue-400 underline hover:text-blue-300"
@@ -363,7 +363,7 @@ export function CreateCadreCandidates() {
                       <div className="flex gap-1 text-xs text-red-400/60">
                         Please{" "}
                         <a
-                          href="https://discord.gg/invite/torus"
+                          href="https://discord.gg/torus"
                           target="_blank"
                           rel="noopener noreferrer"
                           className="text-blue-400 underline"
