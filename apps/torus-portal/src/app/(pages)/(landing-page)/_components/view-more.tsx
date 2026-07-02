@@ -20,6 +20,7 @@ const SOCIAL_ICONS: Record<
   ComponentType<{ className?: string }>
 > = {
   discord: Icons.Discord,
+  renlabs: Icons.LogoRenLabs,
   x: Icons.X,
 };
 

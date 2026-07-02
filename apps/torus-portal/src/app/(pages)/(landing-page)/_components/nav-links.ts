@@ -40,6 +40,7 @@ export const NAV_ENTRIES = [
 /** Social links rendered under the About summary, in display order. */
 export const SOCIAL_LINKS = [
   { id: "discord", label: "Discord", href: links.discord },
+  { id: "renlabs", label: "Renlabs", href: links.ren_labs },
   { id: "x", label: "X", href: links.x },
 ] as const;
 
