@@ -9,6 +9,7 @@ import { TRIGGER_ABOUT_EVENT } from "./nav-links";
 const CONTENT = {
   summary:
     "Torus is a scale-free, reflexive-autopoietic process for the expansion of life into cyberspace. Through local cyber-morphogenetic closure and global programmable protocol metabolism, Torus forms coherent cyber-organisms and enables them to couple, compose, and recursively unify into higher-order decentralized life.",
+  status: "In R&D",
 };
 
 export function ViewMore() {
@@ -163,6 +164,16 @@ export function ViewMore() {
                 transition={{ delay: 0.3, duration: 0.5 }}
               >
                 {CONTENT.summary}
+              </motion.p>
+
+              {/* Status stamp - watermark-styled but at body scale */}
+              <motion.p
+                className="mb-0 mt-14 text-center text-lg uppercase tracking-[0.35em] text-zinc-500 md:text-2xl"
+                initial={{ opacity: 0 }}
+                animate={isExpanded ? { opacity: 1 } : { opacity: 0 }}
+                transition={{ delay: 0.7, duration: 1 }}
+              >
+                {CONTENT.status}
               </motion.p>
             </div>
           </motion.article>
