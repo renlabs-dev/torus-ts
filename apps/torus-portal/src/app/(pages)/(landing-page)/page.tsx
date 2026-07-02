@@ -1,11 +1,20 @@
+import { createSeoMetadata } from "@torus-ts/ui/components/seo";
+import { env } from "~/env";
 import Image from "next/image";
 import * as React from "react";
 import { HoverHeader } from "./_components/hover-header";
 import { TorusAnimation } from "./_components/torus-animation";
 import { ViewMore } from "./_components/view-more";
 
-export async function generateMetadata() {
-  return import("../portal/layout").then((mod) => mod.generateMetadata());
+export function generateMetadata() {
+  return createSeoMetadata({
+    title: "Torus",
+    description:
+      "Torus is a scale-free, reflexive-autopoietic process for the expansion of life into cyberspace",
+    ogSiteName: "Torus",
+    canonical: "/",
+    baseUrl: env("BASE_URL"),
+  });
 }
 
 export default function Page() {
