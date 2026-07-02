@@ -46,8 +46,8 @@ export interface SeoMetadataConfig {
   canonical: string;
   baseUrl: string;
 
-  // Custom image (optional)
-  ogImagePath?: string;
+  // Custom image (optional); pass null to omit the share image entirely
+  ogImagePath?: string | null;
 }
 
 const DEFAULT_BLOCKCHAIN_KEYWORDS = [
@@ -91,9 +91,12 @@ export function createSeoMetadata({
 
   // Use relative URLs if baseUrl is not absolute, otherwise construct full URLs
   const canonicalUrl = isAbsoluteUrl ? joinUrl(baseUrl, canonical) : canonical;
-  const ogImageUrl = isAbsoluteUrl
-    ? joinUrl(baseUrl, ogImagePath)
-    : ogImagePath;
+  const ogImageUrl =
+    ogImagePath === null
+      ? null
+      : isAbsoluteUrl
+        ? joinUrl(baseUrl, ogImagePath)
+        : ogImagePath;
 
   // Build metadata object
   const metadata: Metadata = {
@@ -119,28 +122,36 @@ export function createSeoMetadata({
       siteName: ogSiteName,
       locale: "en_US",
       url: canonicalUrl,
-      images: [
-        {
-          url: ogImageUrl,
-          width: 1200,
-          height: 630,
-          alt: ogTitle ?? title,
-          type: "image/png",
-        },
-      ],
+      ...(ogImageUrl === null
+        ? {}
+        : {
+            images: [
+              {
+                url: ogImageUrl,
+                width: 1200,
+                height: 630,
+                alt: ogTitle ?? title,
+                type: "image/png",
+              },
+            ],
+          }),
     },
     twitter: {
-      card: "summary_large_image",
+      card: ogImageUrl === null ? "summary" : "summary_large_image",
       title: twitterTitle ?? ogTitle ?? title,
       description: twitterDescription ?? ogDescription ?? description,
       creator: "@torus_network",
       site: "@torus_network",
-      images: [
-        {
-          url: ogImageUrl,
-          alt: twitterTitle ?? ogTitle ?? title,
-        },
-      ],
+      ...(ogImageUrl === null
+        ? {}
+        : {
+            images: [
+              {
+                url: ogImageUrl,
+                alt: twitterTitle ?? ogTitle ?? title,
+              },
+            ],
+          }),
     },
     alternates: {
       canonical: canonicalUrl,

@@ -14,6 +14,8 @@ export function generateMetadata() {
     ogSiteName: "Torus",
     canonical: "/",
     baseUrl: env("BASE_URL"),
+    // No share image: link previews stay text-only for the landing page.
+    ogImagePath: null,
   });
 }
 
