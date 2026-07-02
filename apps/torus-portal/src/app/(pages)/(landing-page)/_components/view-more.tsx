@@ -1,72 +1,50 @@
 "use client";
 
 import { Icons } from "@torus-ts/ui/components/icons";
-import { Separator } from "@torus-ts/ui/components/separator";
-import { getLinks } from "@torus-ts/ui/lib/data";
 import { cn } from "@torus-ts/ui/lib/utils";
-import { env } from "~/env";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import { motion } from "motion/react";
-import { useCallback, useEffect, useRef } from "react";
-import { useLandingSidebar } from "./landing-sidebar-context";
+import type { ComponentType } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import type { SocialLinkId } from "./nav-links";
+import { SOCIAL_LINKS, TRIGGER_ABOUT_EVENT } from "./nav-links";
 
 const CONTENT = {
-  summary: `Torus is a scale-free, reflexive-autopoietic process for the expansion of life into cyberspace.
+  summary:
+    "Torus is a scale-free, reflexive-autopoietic process for the expansion of life into cyberspace. Through local cyber-morphogenetic closure and global programmable protocol metabolism, Torus forms coherent cyber-organisms and enables them to couple, compose, and recursively unify into higher-order decentralized life.",
+  status: "In R&D",
+};
 
-Through local cyber-morphogenetic closure and global programmable protocol metabolism, Torus forms coherent cyber-organisms and enables them to couple, compose, and recursively unify into higher-order decentralized life.
-
-In R&D.`,
-  coreConcepts: [] as string[],
-  whatMakesDifferent: [] as string[],
+const SOCIAL_ICONS: Record<
+  SocialLinkId,
+  ComponentType<{ className?: string }>
+> = {
+  discord: Icons.Discord,
+  x: Icons.X,
 };
 
 export function ViewMore() {
-  const { isExpanded, setIsExpanded } = useLandingSidebar();
+  const [isExpanded, setIsExpanded] = useState(false);
   const isAnimatingRef = useRef(false);
   const contentRef = useRef<HTMLDivElement>(null);
-
-  const links = getLinks(env("NEXT_PUBLIC_TORUS_CHAIN_ENV"));
-
-  const socialList = [
-    {
-      name: "Discord",
-      href: links.discord,
-      icon: <Icons.Discord className="h-5 w-5" />,
-    },
-    {
-      name: "X",
-      href: links.x,
-      icon: <Icons.X className="h-5 w-5" />,
-    },
-    {
-      name: "GitHub",
-      href: links.github,
-      icon: <Icons.Github className="h-5 w-5" />,
-    },
-    {
-      name: "Telegram",
-      href: links.telegram,
-      icon: <Icons.Telegram className="h-5 w-5" />,
-    },
-  ];
-  const hasCoreConcepts = CONTENT.coreConcepts.length > 0;
-  const hasWhatMakesDifferent = CONTENT.whatMakesDifferent.length > 0;
-  const hasDetailedSections = hasCoreConcepts || hasWhatMakesDifferent;
 
   const scrollToContent = useCallback(() => {
     if (isAnimatingRef.current) return;
     isAnimatingRef.current = true;
     setIsExpanded(true);
 
-    requestAnimationFrame(() => {
-      contentRef.current?.scrollIntoView({
+    setTimeout(() => {
+      const contentTop = contentRef.current?.offsetTop ?? 0;
+
+      window.scrollTo({
+        top: contentTop,
         behavior: "smooth",
-        block: "start",
       });
-      setTimeout(() => {
-        isAnimatingRef.current = false;
-      }, 800);
-    });
+    }, 0);
+
+    setTimeout(() => {
+      isAnimatingRef.current = false;
+    }, 800);
   }, [setIsExpanded]);
 
   const scrollToHero = useCallback(() => {
@@ -84,18 +62,15 @@ export function ViewMore() {
     }, 800);
   }, [setIsExpanded]);
 
-  // Listen for external trigger (from HoverHeader About button)
+  // Listen for external triggers (HoverHeader / sidebar About buttons).
+  // Always scroll: the section may be expanded but scrolled out of view.
   useEffect(() => {
-    const handleTriggerAbout = () => {
-      if (!isExpanded && !isAnimatingRef.current) {
-        scrollToContent();
-      }
-    };
+    const handleTriggerAbout = () => scrollToContent();
 
-    window.addEventListener("trigger-about-section", handleTriggerAbout);
+    window.addEventListener(TRIGGER_ABOUT_EVENT, handleTriggerAbout);
     return () =>
-      window.removeEventListener("trigger-about-section", handleTriggerAbout);
-  }, [isExpanded, scrollToContent]);
+      window.removeEventListener(TRIGGER_ABOUT_EVENT, handleTriggerAbout);
+  }, [scrollToContent]);
 
   useEffect(() => {
     let lastScrollY = window.scrollY;
@@ -179,9 +154,9 @@ export function ViewMore() {
       >
         <div className="to-background pointer-events-none absolute inset-x-0 -top-32 h-32 bg-gradient-to-b from-transparent" />
 
-        <div className="container mx-auto px-6 py-24 md:py-32">
+        <div className="container mx-auto flex min-h-screen items-center px-6 py-24 md:py-32">
           <motion.article
-            className="mx-auto max-w-2xl"
+            className="mx-auto max-w-3xl"
             initial={{ opacity: 0, y: 40 }}
             animate={isExpanded ? { opacity: 1, y: 0 } : { opacity: 0, y: 40 }}
             transition={{ delay: 0.2, duration: 0.6 }}
@@ -189,9 +164,9 @@ export function ViewMore() {
             <div className="prose prose-invert prose-zinc max-w-none">
               <motion.p
                 className={cn(
-                  "mb-6 leading-relaxed text-zinc-300",
-                  "text-base md:text-lg",
-                  "font-normal tracking-wide",
+                  "mx-auto mb-0 max-w-3xl text-center leading-relaxed text-zinc-200",
+                  "text-lg md:text-2xl",
+                  "font-normal",
                 )}
                 initial={{ opacity: 0, y: 20 }}
                 animate={
@@ -202,112 +177,38 @@ export function ViewMore() {
                 {CONTENT.summary}
               </motion.p>
 
-              {hasCoreConcepts && (
-                <>
-                  <motion.div
-                    className="my-12"
-                    initial={{ opacity: 0, scaleX: 0 }}
-                    animate={
-                      isExpanded
-                        ? { opacity: 1, scaleX: 1 }
-                        : { opacity: 0, scaleX: 0 }
-                    }
-                    transition={{ delay: 0.4, duration: 0.5 }}
-                  >
-                    <Separator />
-                  </motion.div>
-
-                  {CONTENT.coreConcepts.map((paragraph, index) => (
-                    <motion.p
-                      key={`core-${index}`}
-                      className={cn(
-                        "mb-6 leading-relaxed text-zinc-300",
-                        "text-base md:text-lg",
-                        "font-normal tracking-wide",
-                      )}
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={
-                        isExpanded
-                          ? { opacity: 1, y: 0 }
-                          : { opacity: 0, y: 20 }
-                      }
-                      transition={{ delay: 0.5 + index * 0.1, duration: 0.5 }}
-                    >
-                      {paragraph}
-                    </motion.p>
-                  ))}
-                </>
-              )}
-
-              {hasWhatMakesDifferent && (
-                <>
-                  <motion.h2
-                    className="mb-6 mt-12 text-start text-base font-medium uppercase tracking-widest text-zinc-400 md:text-lg"
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={
-                      isExpanded ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }
-                    }
-                    transition={{ delay: 1, duration: 0.5 }}
-                  >
-                    What Makes Torus Different
-                  </motion.h2>
-
-                  {CONTENT.whatMakesDifferent.map((paragraph, index) => (
-                    <motion.p
-                      key={`diff-${index}`}
-                      className={cn(
-                        "mb-6 leading-relaxed text-zinc-300",
-                        "text-base md:text-lg",
-                        "font-normal tracking-wide",
-                      )}
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={
-                        isExpanded
-                          ? { opacity: 1, y: 0 }
-                          : { opacity: 0, y: 20 }
-                      }
-                      transition={{ delay: 1.1 + index * 0.1, duration: 0.5 }}
-                    >
-                      {paragraph}
-                    </motion.p>
-                  ))}
-                </>
-              )}
-
-              {hasDetailedSections && (
-                <motion.div
-                  className="my-12"
-                  initial={{ opacity: 0, scaleX: 0 }}
-                  animate={
-                    isExpanded
-                      ? { opacity: 1, scaleX: 1 }
-                      : { opacity: 0, scaleX: 0 }
-                  }
-                  transition={{ delay: 1.5, duration: 0.5 }}
-                >
-                  <Separator />
-                </motion.div>
-              )}
-
-              <motion.div
-                className="flex justify-center gap-8"
-                initial={{ opacity: 0, y: 20 }}
-                animate={
-                  isExpanded ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }
-                }
-                transition={{ delay: 1.6, duration: 0.5 }}
+              {/* Status stamp - watermark-styled but at body scale */}
+              <motion.p
+                className="mb-0 mt-14 text-center text-lg uppercase tracking-[0.35em] text-zinc-500 md:text-2xl"
+                initial={{ opacity: 0 }}
+                animate={isExpanded ? { opacity: 1 } : { opacity: 0 }}
+                transition={{ delay: 0.7, duration: 1 }}
               >
-                {socialList.map((social) => (
-                  <a
-                    key={social.name}
-                    href={social.href}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-zinc-500 transition-colors hover:text-zinc-300"
-                  >
-                    {social.icon}
-                  </a>
-                ))}
+                {CONTENT.status}
+              </motion.p>
+
+              {/* Socials - same muted tone as the stamp, brightening on hover */}
+              <motion.div
+                className="mt-14 flex items-center justify-center gap-10 md:gap-14"
+                initial={{ opacity: 0 }}
+                animate={isExpanded ? { opacity: 1 } : { opacity: 0 }}
+                transition={{ delay: 0.9, duration: 1 }}
+              >
+                {SOCIAL_LINKS.map((social) => {
+                  const Icon = SOCIAL_ICONS[social.id];
+                  return (
+                    <a
+                      key={social.id}
+                      href={social.href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      aria-label={social.label}
+                      className="text-zinc-500 transition-colors duration-300 hover:text-zinc-200"
+                    >
+                      <Icon className="h-6 w-6" />
+                    </a>
+                  );
+                })}
               </motion.div>
             </div>
           </motion.article>

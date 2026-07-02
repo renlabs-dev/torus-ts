@@ -30,7 +30,7 @@ interface ClaimStepTwoProps {
   onWithdrawStarted?: () => void;
 }
 
-const DISCORD_URL = "https://discord.gg/SS2kBerKZg";
+const DISCORD_URL = "https://discord.gg/torus";
 const WALLET_SETUP_DOCS_URL =
   "https://docs.torus.network/how-to-guides/holders/setup-a-wallet/";
 
