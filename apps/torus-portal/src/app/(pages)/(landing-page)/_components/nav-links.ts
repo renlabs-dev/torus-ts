@@ -17,9 +17,9 @@ export interface NavEntry {
 const links = getLinks(env("NEXT_PUBLIC_TORUS_CHAIN_ENV"));
 
 /**
- * Canonical landing navigation, in display order. Single source of truth for
- * the logo nav tree and the landing sidebar - both render exactly this list,
- * which keeps the two surfaces symmetric by construction.
+ * Canonical landing navigation, in display order; the logo nav tree derives
+ * both of its layouts from this list. About sits in the middle so it lands
+ * directly under the logo on the trunk line.
  */
 export const NAV_ENTRIES = [
   {
@@ -32,10 +32,7 @@ export const NAV_ENTRIES = [
     label: "Bridge",
     target: { kind: "link", href: links.bridge },
   },
-  { id: "blog", label: "Blog", target: { kind: "link", href: links.blog } },
-  { id: "join", label: "Join", target: { kind: "link", href: links.discord } },
   { id: "about", label: "About", target: { kind: "about" } },
+  { id: "join", label: "Join", target: { kind: "link", href: links.discord } },
+  { id: "blog", label: "Blog", target: { kind: "link", href: links.blog } },
 ] as const satisfies readonly NavEntry[];
-
-/** Union of nav entry ids - lets per-surface lookups (e.g. icons) be total. */
-export type NavEntryId = (typeof NAV_ENTRIES)[number]["id"];

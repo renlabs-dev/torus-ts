@@ -3,8 +3,7 @@
 import { cn } from "@torus-ts/ui/lib/utils";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import { motion } from "motion/react";
-import { useCallback, useEffect, useRef } from "react";
-import { useLandingSidebar } from "./landing-sidebar-context";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { TRIGGER_ABOUT_EVENT } from "./nav-links";
 
 const CONTENT = {
@@ -13,7 +12,7 @@ const CONTENT = {
 };
 
 export function ViewMore() {
-  const { isExpanded, setIsExpanded } = useLandingSidebar();
+  const [isExpanded, setIsExpanded] = useState(false);
   const isAnimatingRef = useRef(false);
   const contentRef = useRef<HTMLDivElement>(null);
 
@@ -143,8 +142,7 @@ export function ViewMore() {
       >
         <div className="to-background pointer-events-none absolute inset-x-0 -top-32 h-32 bg-gradient-to-b from-transparent" />
 
-        {/* px-14 keeps the text clear of the fixed 3rem sidebar rail on phones */}
-        <div className="container mx-auto flex min-h-screen items-center px-14 py-24 md:px-6 md:py-32">
+        <div className="container mx-auto flex min-h-screen items-center px-6 py-24 md:py-32">
           <motion.article
             className="mx-auto max-w-3xl"
             initial={{ opacity: 0, y: 40 }}

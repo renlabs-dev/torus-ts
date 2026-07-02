@@ -3,8 +3,8 @@ import type { ReactNode } from "react";
 /**
  * Landing page layout.
  * The ConditionalSidebar in the parent layout handles excluding the standard
- * sidebar for this route. The landing page has its own custom sidebar
- * implementation that appears as an absolute overlay when the user scrolls down.
+ * sidebar for this route; the landing page navigates solely through the
+ * logo nav tree in the hover header.
  */
 export default function LandingLayout({ children }: { children: ReactNode }) {
   return <>{children}</>;
