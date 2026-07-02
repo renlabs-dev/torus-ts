@@ -4,6 +4,7 @@ import { Icons } from "@torus-ts/ui/components/icons";
 import { cn } from "@torus-ts/ui/lib/utils";
 import { AnimatePresence, motion } from "motion/react";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { TRIGGER_ABOUT_EVENT } from "../nav-links";
 import {
   DESKTOP_NAV_TREE,
   MOBILE_NAV_TREE,
@@ -22,7 +23,7 @@ export function HoverHeader() {
 
   const handleAboutClick = useCallback(() => {
     setIsOpen(false);
-    window.dispatchEvent(new CustomEvent("trigger-about-section"));
+    window.dispatchEvent(new CustomEvent(TRIGGER_ABOUT_EVENT));
   }, []);
 
   useEffect(() => {

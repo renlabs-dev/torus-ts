@@ -1,29 +1,20 @@
 "use client";
 
 import { Button } from "@torus-ts/ui/components/button";
-import { getLinks } from "@torus-ts/ui/lib/data";
 import { cn } from "@torus-ts/ui/lib/utils";
-import { env } from "~/env";
 import type { Variants } from "motion/react";
 import { motion } from "motion/react";
 import Link from "next/link";
 import { useMemo } from "react";
-
-/** What activating a node does. */
-type NavTarget =
-  | { kind: "link"; href: string }
-  | { kind: "about" }
-  | { kind: "label" };
+import type { NavEntry, NavTarget } from "../../nav-links";
+import { NAV_ENTRIES } from "../../nav-links";
 
 /**
- * A nav node authored in viewBox coordinates. Connector lines are derived
+ * A nav node positioned in viewBox coordinates. Connector lines are derived
  * from the parent-child structure, so buttons and lines share a single
  * source of truth and cannot drift out of alignment.
  */
-interface NavNodeSpec {
-  id: string;
-  label: string;
-  target: NavTarget;
+interface NavNodeSpec extends NavEntry {
   x: number;
   y: number;
   children?: NavNodeSpec[];
@@ -40,151 +31,74 @@ export interface NavTreeSpec {
   nodes: NavNodeSpec[];
 }
 
-const links = getLinks(env("NEXT_PUBLIC_TORUS_CHAIN_ENV"));
-
-export const DESKTOP_NAV_TREE: NavTreeSpec = {
+// Desktop: every entry fans out directly under the logo in one even row.
+const DESKTOP_LAYOUT = {
   width: 1000,
-  height: 300,
-  root: { x: 500, y: 0 },
-  nodes: [
-    {
-      id: "starter",
-      label: "Starter",
-      target: { kind: "label" },
-      x: 260,
-      y: 110,
-      children: [
-        {
-          id: "wallet",
-          label: "Wallet",
-          target: { kind: "link", href: links.wallet },
-          x: 85,
-          y: 240,
-        },
-        {
-          id: "bridge",
-          label: "Bridge",
-          target: { kind: "link", href: links.bridge },
-          x: 260,
-          y: 240,
-        },
-        {
-          id: "blog",
-          label: "Blog",
-          target: { kind: "link", href: links.blog },
-          x: 435,
-          y: 240,
-        },
-      ],
-    },
-    { id: "about", label: "About", target: { kind: "about" }, x: 500, y: 110 },
-    {
-      id: "network",
-      label: "Network",
-      target: { kind: "label" },
-      x: 740,
-      y: 110,
-      children: [
-        {
-          id: "join",
-          label: "Join",
-          target: { kind: "link", href: links.discord },
-          x: 652,
-          y: 240,
-        },
-        {
-          id: "dao",
-          label: "DAO",
-          target: { kind: "link", href: links.governance },
-          x: 828,
-          y: 240,
-        },
-      ],
-    },
-  ],
+  height: 170,
+  rootX: 500,
+  childY: 120,
+  firstX: 150,
+  lastX: 850,
 };
 
-// Mobile lays each group out as a vertical chain, so the connector of every
-// node starts at the node above it and the whole column reads as one line.
-export const MOBILE_NAV_TREE: NavTreeSpec = {
+function desktopNavTree(entries: readonly NavEntry[]): NavTreeSpec {
+  const { width, height, rootX, childY, firstX, lastX } = DESKTOP_LAYOUT;
+  const count = entries.length;
+  const step = count > 1 ? (lastX - firstX) / (count - 1) : 0;
+  return {
+    width,
+    height,
+    root: { x: rootX, y: 0 },
+    nodes: entries.map((entry, index) => ({
+      ...entry,
+      x: count > 1 ? firstX + step * index : rootX,
+      y: childY,
+    })),
+  };
+}
+
+// Mobile: one vertical chain down the center line, so the whole nav reads as
+// a single unfolding thread under the logo.
+const MOBILE_LAYOUT = {
   width: 400,
-  height: 530,
-  root: { x: 200, y: 0 },
-  nodes: [
-    {
-      id: "starter",
-      label: "Starter",
-      target: { kind: "label" },
-      x: 105,
-      y: 80,
-      children: [
-        {
-          id: "wallet",
-          label: "Wallet",
-          target: { kind: "link", href: links.wallet },
-          x: 105,
-          y: 170,
-          children: [
-            {
-              id: "bridge",
-              label: "Bridge",
-              target: { kind: "link", href: links.bridge },
-              x: 105,
-              y: 255,
-              children: [
-                {
-                  id: "blog",
-                  label: "Blog",
-                  target: { kind: "link", href: links.blog },
-                  x: 105,
-                  y: 340,
-                },
-              ],
-            },
-          ],
-        },
-      ],
-    },
-    {
-      id: "network",
-      label: "Network",
-      target: { kind: "label" },
-      x: 295,
-      y: 80,
-      children: [
-        {
-          id: "join",
-          label: "Join",
-          target: { kind: "link", href: links.discord },
-          x: 295,
-          y: 170,
-          children: [
-            {
-              id: "dao",
-              label: "DAO",
-              target: { kind: "link", href: links.governance },
-              x: 295,
-              y: 255,
-            },
-          ],
-        },
-      ],
-    },
-    { id: "about", label: "About", target: { kind: "about" }, x: 200, y: 455 },
-  ],
+  centerX: 200,
+  firstY: 90,
+  stepY: 85,
+  bottomPad: 45,
 };
+
+function mobileNavTree(entries: readonly NavEntry[]): NavTreeSpec {
+  const { width, centerX, firstY, stepY, bottomPad } = MOBILE_LAYOUT;
+  const nodes = entries.reduceRight<NavNodeSpec[]>(
+    (children, entry, index) => [
+      {
+        ...entry,
+        x: centerX,
+        y: firstY + index * stepY,
+        ...(children.length > 0 ? { children } : {}),
+      },
+    ],
+    [],
+  );
+  return {
+    width,
+    height: firstY + (entries.length - 1) * stepY + bottomPad,
+    root: { x: centerX, y: 0 },
+    nodes,
+  };
+}
+
+export const DESKTOP_NAV_TREE = desktopNavTree(NAV_ENTRIES);
+export const MOBILE_NAV_TREE = mobileNavTree(NAV_ENTRIES);
 
 /** Stagger timing (seconds) for the unfold choreography, keyed by tree depth. */
-const EDGE_DELAY_STEP = 0.15;
+const EDGE_DELAY_STEP = 0.1;
 const EDGE_DURATION = 0.45;
 const NODE_DELAY_BASE = 0.1;
-const NODE_DELAY_STEP = 0.15;
+const NODE_DELAY_STEP = 0.1;
 const NODE_SIBLING_STEP = 0.04;
 
-interface RenderNode {
-  id: string;
-  label: string;
-  target: NavTarget;
+interface RenderNode extends NavEntry {
   x: number;
   y: number;
   delay: number;
@@ -278,24 +192,21 @@ const nodeVariants: Variants = {
 };
 
 function NavPill({
-  node,
+  target,
+  label,
   onAboutClick,
-}: Readonly<{ node: RenderNode; onAboutClick: () => void }>) {
-  switch (node.target.kind) {
-    case "label":
-      return (
-        <span className="border-button-border bg-accent inline-flex h-9 items-center rounded-full border px-4 text-sm font-medium shadow-sm">
-          {node.label}
-        </span>
-      );
+}: Readonly<{
+  target: NavTarget;
+  label: string;
+  onAboutClick: () => void;
+}>) {
+  switch (target.kind) {
+    // About is the one in-page action; the light (primary) shade sets it
+    // apart from the outline link pills.
     case "about":
       return (
-        <Button
-          variant="outline"
-          className="bg-accent hover:bg-background rounded-full"
-          onClick={onAboutClick}
-        >
-          {node.label}
+        <Button size="lg" className="w-28" onClick={onAboutClick}>
+          {label}
         </Button>
       );
     case "link":
@@ -306,12 +217,8 @@ function NavPill({
           size="lg"
           className="bg-background w-28"
         >
-          <Link
-            href={node.target.href}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            {node.label}
+          <Link href={target.href} target="_blank" rel="noopener noreferrer">
+            {label}
           </Link>
         </Button>
       );
@@ -375,7 +282,11 @@ export function NavTree({
           }}
         >
           <motion.div variants={nodeVariants} custom={node.delay}>
-            <NavPill node={node} onAboutClick={onAboutClick} />
+            <NavPill
+              target={node.target}
+              label={node.label}
+              onAboutClick={onAboutClick}
+            />
           </motion.div>
         </div>
       ))}

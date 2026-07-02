@@ -5,6 +5,7 @@ import { ChevronDown, ChevronUp } from "lucide-react";
 import { motion } from "motion/react";
 import { useCallback, useEffect, useRef } from "react";
 import { useLandingSidebar } from "./landing-sidebar-context";
+import { TRIGGER_ABOUT_EVENT } from "./nav-links";
 
 const CONTENT = {
   summary:
@@ -50,18 +51,15 @@ export function ViewMore() {
     }, 800);
   }, [setIsExpanded]);
 
-  // Listen for external trigger (from HoverHeader About button)
+  // Listen for external triggers (HoverHeader / sidebar About buttons).
+  // Always scroll: the section may be expanded but scrolled out of view.
   useEffect(() => {
-    const handleTriggerAbout = () => {
-      if (!isExpanded && !isAnimatingRef.current) {
-        scrollToContent();
-      }
-    };
+    const handleTriggerAbout = () => scrollToContent();
 
-    window.addEventListener("trigger-about-section", handleTriggerAbout);
+    window.addEventListener(TRIGGER_ABOUT_EVENT, handleTriggerAbout);
     return () =>
-      window.removeEventListener("trigger-about-section", handleTriggerAbout);
-  }, [isExpanded, scrollToContent]);
+      window.removeEventListener(TRIGGER_ABOUT_EVENT, handleTriggerAbout);
+  }, [scrollToContent]);
 
   useEffect(() => {
     let lastScrollY = window.scrollY;
@@ -145,7 +143,8 @@ export function ViewMore() {
       >
         <div className="to-background pointer-events-none absolute inset-x-0 -top-32 h-32 bg-gradient-to-b from-transparent" />
 
-        <div className="container mx-auto flex min-h-screen items-center px-6 py-24 md:py-32">
+        {/* px-14 keeps the text clear of the fixed 3rem sidebar rail on phones */}
+        <div className="container mx-auto flex min-h-screen items-center px-14 py-24 md:px-6 md:py-32">
           <motion.article
             className="mx-auto max-w-3xl"
             initial={{ opacity: 0, y: 40 }}

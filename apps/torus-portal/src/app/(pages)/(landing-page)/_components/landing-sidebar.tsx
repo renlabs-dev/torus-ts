@@ -8,13 +8,12 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@torus-ts/ui/components/tooltip";
-import { getLinks } from "@torus-ts/ui/lib/data";
 import { cn } from "@torus-ts/ui/lib/utils";
-import { env } from "~/env";
+import type { LucideIcon } from "lucide-react";
 import {
   ArrowLeftRight,
   BookText,
-  Landmark,
+  Info,
   PanelLeftIcon,
   UserPlus,
   Wallet,
@@ -22,55 +21,29 @@ import {
 import { AnimatePresence, motion } from "motion/react";
 import Link from "next/link";
 import { useLandingSidebar } from "./landing-sidebar-context";
+import type { NavEntryId } from "./nav-links";
+import { NAV_ENTRIES, TRIGGER_ABOUT_EVENT } from "./nav-links";
 
-const links = getLinks(env("NEXT_PUBLIC_TORUS_CHAIN_ENV"));
-
-// Top-level navigation items (no group title)
-// Portal link removed during chain hibernation (2026-06) — the portal app is
-// taken down (/portal redirects to the landing). Restore the entry to bring back.
-const navTop: {
-  title: string;
-  url: string;
-  icon: typeof PanelLeftIcon;
-  external: boolean;
-}[] = [];
-
-// Grouped navigation matching hover header structure
-const navGroups = [
-  {
-    title: "Starter",
-    items: [
-      { title: "Blog", url: links.blog, icon: BookText, external: true },
-      { title: "Wallet", url: links.wallet, icon: Wallet, external: true },
-      {
-        title: "Bridge",
-        url: links.bridge,
-        icon: ArrowLeftRight,
-        external: true,
-      },
-    ],
-  },
-  {
-    title: "Network",
-    items: [
-      { title: "Join", url: links.discord, icon: UserPlus, external: true },
-      { title: "DAO", url: links.governance, icon: Landmark, external: true },
-    ],
-  },
-];
-
-const navSocials = [
-  { title: "GitHub", url: links.github, icon: Icons.Github },
-  { title: "Twitter", url: links.x, icon: Icons.X },
-  { title: "Discord", url: links.discord, icon: Icons.Discord },
-  { title: "Telegram", url: links.telegram, icon: Icons.Telegram },
-];
+// The sidebar renders exactly NAV_ENTRIES (same items, same order as the
+// logo nav tree); only the icons are sidebar-specific.
+const NAV_ICONS: Record<NavEntryId, LucideIcon> = {
+  wallet: Wallet,
+  bridge: ArrowLeftRight,
+  blog: BookText,
+  join: UserPlus,
+  about: Info,
+};
 
 const SIDEBAR_WIDTH = "16rem";
 const SIDEBAR_WIDTH_ICON = "3rem";
 
 export function LandingSidebar() {
   const { isExpanded, isSidebarOpen, toggleSidebar } = useLandingSidebar();
+
+  const itemClass = cn(
+    "hover:bg-sidebar-accent hover:text-sidebar-accent-foreground relative z-10 flex w-full items-center gap-2 rounded-md p-2 text-sm",
+    !isSidebarOpen && "justify-center",
+  );
 
   return (
     <AnimatePresence>
@@ -120,7 +93,6 @@ export function LandingSidebar() {
 
               {/* Content */}
               <div className="flex min-h-0 flex-1 flex-col gap-2 overflow-auto">
-                {/* Toggle button and top-level items */}
                 <div className="flex w-full flex-col p-2">
                   <ul className="flex w-full flex-col gap-1">
                     {/* Toggle/Unfold button */}
@@ -131,7 +103,8 @@ export function LandingSidebar() {
                             variant="ghost"
                             size="sm"
                             className={cn(
-                              "hover:bg-sidebar-accent hover:text-sidebar-accent-foreground relative z-10 flex w-full items-center justify-start gap-2 rounded-md p-2 text-sm font-normal",
+                              itemClass,
+                              "justify-start font-normal",
                               !isSidebarOpen && "justify-center",
                             )}
                             onClick={toggleSidebar}
@@ -147,127 +120,56 @@ export function LandingSidebar() {
                         )}
                       </Tooltip>
                     </li>
-                    {/* Portal link */}
-                    {navTop.map((item) => (
-                      <li key={item.title}>
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <Link
-                              href={item.url}
-                              className={cn(
-                                "hover:bg-sidebar-accent hover:text-sidebar-accent-foreground relative z-10 flex items-center gap-2 rounded-md p-2 text-sm",
-                                !isSidebarOpen && "justify-center",
-                              )}
-                            >
-                              <item.icon className="size-4 shrink-0" />
-                              {isSidebarOpen && (
-                                <span className="truncate">{item.title}</span>
-                              )}
-                            </Link>
-                          </TooltipTrigger>
-                          {!isSidebarOpen && (
-                            <TooltipContent side="right">
-                              {item.title}
-                            </TooltipContent>
-                          )}
-                        </Tooltip>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
 
-                {/* Grouped navigation (Starter, Network) */}
-                {navGroups.map((group) => (
-                  <div key={group.title} className="flex w-full flex-col p-2">
-                    {isSidebarOpen && (
-                      <div className="text-sidebar-foreground/70 flex h-8 items-center px-2 text-xs font-medium">
-                        {group.title}
-                      </div>
-                    )}
-                    <ul className="flex w-full flex-col gap-1">
-                      {group.items.map((item) => (
-                        <li key={item.title}>
+                    {/* Navigation - mirrors the logo nav tree exactly */}
+                    {NAV_ENTRIES.map((entry) => {
+                      const Icon = NAV_ICONS[entry.id];
+                      return (
+                        <li key={entry.id}>
                           <Tooltip>
                             <TooltipTrigger asChild>
-                              {item.external ? (
+                              {entry.target.kind === "link" ? (
                                 <a
-                                  href={item.url}
+                                  href={entry.target.href}
                                   target="_blank"
                                   rel="noopener noreferrer"
-                                  className={cn(
-                                    "hover:bg-sidebar-accent hover:text-sidebar-accent-foreground relative z-10 flex items-center gap-2 rounded-md p-2 text-sm",
-                                    !isSidebarOpen && "justify-center",
-                                  )}
+                                  className={itemClass}
                                 >
-                                  <item.icon className="size-4 shrink-0" />
+                                  <Icon className="size-4 shrink-0" />
                                   {isSidebarOpen && (
                                     <span className="truncate">
-                                      {item.title}
+                                      {entry.label}
                                     </span>
                                   )}
                                 </a>
                               ) : (
-                                <Link
-                                  href={item.url}
-                                  className={cn(
-                                    "hover:bg-sidebar-accent hover:text-sidebar-accent-foreground relative z-10 flex items-center gap-2 rounded-md p-2 text-sm",
-                                    !isSidebarOpen && "justify-center",
-                                  )}
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    window.dispatchEvent(
+                                      new CustomEvent(TRIGGER_ABOUT_EVENT),
+                                    )
+                                  }
+                                  className={itemClass}
                                 >
-                                  <item.icon className="size-4 shrink-0" />
+                                  <Icon className="size-4 shrink-0" />
                                   {isSidebarOpen && (
                                     <span className="truncate">
-                                      {item.title}
+                                      {entry.label}
                                     </span>
                                   )}
-                                </Link>
+                                </button>
                               )}
                             </TooltipTrigger>
                             {!isSidebarOpen && (
                               <TooltipContent side="right">
-                                {item.title}
+                                {entry.label}
                               </TooltipContent>
                             )}
                           </Tooltip>
                         </li>
-                      ))}
-                    </ul>
-                  </div>
-                ))}
-
-                {/* Socials */}
-                <div className="mt-auto p-2">
-                  <ul
-                    className={cn(
-                      "flex w-full",
-                      isSidebarOpen
-                        ? "flex-row justify-around px-2"
-                        : "flex-col gap-1",
-                    )}
-                  >
-                    {navSocials.map((item) => (
-                      <li key={item.title}>
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <a
-                              href={item.url}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className={cn(
-                                "hover:bg-sidebar-accent hover:text-sidebar-accent-foreground relative z-10 flex items-center justify-center rounded-md p-2",
-                              )}
-                            >
-                              <item.icon className="size-4" />
-                            </a>
-                          </TooltipTrigger>
-                          {!isSidebarOpen && (
-                            <TooltipContent side="right">
-                              {item.title}
-                            </TooltipContent>
-                          )}
-                        </Tooltip>
-                      </li>
-                    ))}
+                      );
+                    })}
                   </ul>
                 </div>
               </div>
