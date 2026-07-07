@@ -31,8 +31,9 @@ interface ClaimStepTwoProps {
 }
 
 const DISCORD_URL = "https://discord.gg/torus";
-const WALLET_SETUP_DOCS_URL =
-  "https://docs.torus.network/how-to-guides/holders/setup-a-wallet/";
+// Torus mainnet is Substrate-based; any Substrate wallet extension works.
+const SUBWALLET_URL = "https://www.subwallet.app/";
+const POLKADOT_EXTENSION_URL = "https://polkadot.js.org/extension/";
 
 function validateSS58(value: string): boolean {
   const [error] = trySync(() => decodeAddress(value));
@@ -158,16 +159,25 @@ export function ClaimStepTwo({
       </div>
       <p className="text-muted-foreground text-xs">
         This must be a Torus mainnet key address, not your MetaMask, Base, or
-        TorusEVM address.{" "}
+        TorusEVM address. Need a mainnet wallet? Create one with{" "}
         <a
-          href={WALLET_SETUP_DOCS_URL}
+          href={SUBWALLET_URL}
           target="_blank"
           rel="noopener noreferrer"
           className="hover:text-foreground underline underline-offset-2 transition-colors"
         >
-          Set up a Torus mainnet wallet
+          SubWallet
+        </a>{" "}
+        or the{" "}
+        <a
+          href={POLKADOT_EXTENSION_URL}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="hover:text-foreground underline underline-offset-2 transition-colors"
+        >
+          polkadot.js extension
         </a>
-        .
+        , then paste its address here or connect it below.
       </p>
 
       {inputMode === "paste" ? (
