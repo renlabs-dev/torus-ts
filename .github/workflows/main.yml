@@ -1,5 +1,8 @@
 name: Apps Deployment
 
+# 2026-07-08: k8s cluster (DO renlabs-cluster) decommissioned. Frontends ship
+# via Vercel (torus-portal, torus-wallet, torus-bridge-v2, torus-blog);
+# torus-cache runs on api-0. Pipeline kept for reference - manual trigger only.
 on:
   workflow_dispatch:
     inputs:
@@ -8,13 +11,6 @@ on:
         description: "Skip Docker Build"
         type: boolean
         default: false
-  push:
-  pull_request:
-    types:
-      - opened
-      - reopened
-      - closed
-      - synchronize
 
 permissions: write-all
 
