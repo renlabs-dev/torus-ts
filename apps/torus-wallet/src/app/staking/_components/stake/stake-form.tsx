@@ -11,7 +11,7 @@ import {
 } from "@torus-ts/ui/components/form";
 import type { UseFormReturn } from "react-hook-form";
 import { AllocatorSelector } from "../../../_components/allocator-selector";
-import { CurrencySwap } from "../../../_components/currency-swap";
+import { AmountInput } from "../../../_components/amount-input";
 import { FeeLabel } from "../../../_components/fee-label";
 import type { StakeFormValues } from "./stake-form-schema";
 
@@ -28,7 +28,6 @@ interface StakeFormProps {
   ) => Promise<void>;
   onReviewClick: () => Promise<void>;
   handleAmountChange: (newAmount: string) => Promise<void>;
-  usdPrice: number;
 }
 
 export function StakeForm({
@@ -42,7 +41,6 @@ export function StakeForm({
   handleSelectValidator,
   onReviewClick,
   handleAmountChange,
-  usdPrice,
 }: StakeFormProps) {
   return (
     <Card className="animate-fade w-full p-6">
@@ -75,9 +73,8 @@ export function StakeForm({
               <FormItem className="flex flex-col">
                 <FormLabel>Amount</FormLabel>
                 <FormControl>
-                  <CurrencySwap
+                  <AmountInput
                     amount={field.value}
-                    usdPrice={usdPrice}
                     disabled={!selectedAccount?.address}
                     availableFunds={maxTransferableAmount}
                     onAmountChangeAction={handleAmountChange}

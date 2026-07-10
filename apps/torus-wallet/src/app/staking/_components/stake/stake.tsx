@@ -10,7 +10,6 @@ import { tryAsync } from "@torus-network/torus-utils/try-catch";
 import { useTorus } from "@torus-ts/torus-provider";
 import { useSendTransaction } from "@torus-ts/torus-provider/use-send-transaction";
 import { useToast } from "@torus-ts/ui/hooks/use-toast";
-import { useUsdPrice } from "~/context/usd-price-provider";
 import { useWallet } from "~/context/wallet-provider";
 import { useTransactionsStore } from "~/store/transactions-store";
 import {
@@ -52,7 +51,6 @@ export function Stake() {
   );
 
   const { toast } = useToast();
-  const { usdPrice } = useUsdPrice();
 
   const minAllowedStakeData =
     minAllowedStake.data ?? MIN_ALLOWED_STAKE_SAFEGUARD;
@@ -127,9 +125,6 @@ export function Stake() {
       amount: formatToken(toNano(values.amount), 12), // Convert to nano and format
       fee: estimatedFee ? formatToken(estimatedFee, 12) : "Estimating...",
       status: "PENDING",
-      metadata: {
-        usdPrice: usdPrice,
-      },
     });
 
     currentTxIdRef.current = txId;
@@ -189,7 +184,6 @@ export function Stake() {
       <StakeForm
         form={form}
         selectedAccount={selectedAccount}
-        usdPrice={usdPrice}
         minAllowedStakeData={minAllowedStakeData}
         maxTransferableAmount={maxTransferableAmount}
         estimatedFee={estimatedFee}

@@ -10,7 +10,6 @@ import { useSendTransaction } from "@torus-ts/torus-provider/use-send-transactio
 import { useToast } from "@torus-ts/ui/hooks/use-toast";
 import type { ReviewTransactionDialogHandle } from "~/app/_components/review-transaction-dialog";
 import { ReviewTransactionDialog } from "~/app/_components/review-transaction-dialog";
-import { useUsdPrice } from "~/context/usd-price-provider";
 import { useWallet } from "~/context/wallet-provider";
 import { useTransactionsStore } from "~/store/transactions-store";
 import { MIN_ALLOWED_STAKE_SAFEGUARD } from "~/utils/constants";
@@ -46,7 +45,6 @@ export function Send() {
   );
 
   const { toast } = useToast();
-  const { usdPrice } = useUsdPrice();
 
   const minAllowedStakeData =
     minAllowedStake.data ?? MIN_ALLOWED_STAKE_SAFEGUARD;
@@ -107,9 +105,6 @@ export function Send() {
       amount: formatToken(toNano(values.amount), 12), // Convert to nano and format
       fee: estimatedFee ? formatToken(estimatedFee, 12) : "Estimating...",
       status: "PENDING",
-      metadata: {
-        usdPrice: usdPrice,
-      },
     });
 
     currentTxIdRef.current = txId;
@@ -169,7 +164,6 @@ export function Send() {
       <SendForm
         form={form}
         selectedAccount={selectedAccount}
-        usdPrice={usdPrice}
         maxTransferableAmount={maxTransferableAmount}
         estimatedFee={estimatedFee}
         onReviewClick={handleReviewClick}

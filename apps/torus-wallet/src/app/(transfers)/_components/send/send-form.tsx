@@ -9,7 +9,7 @@ import {
   FormMessage,
 } from "@torus-ts/ui/components/form";
 import { Input } from "@torus-ts/ui/components/input";
-import { CurrencySwap } from "~/app/_components/currency-swap";
+import { AmountInput } from "~/app/_components/amount-input";
 import { FeeLabel } from "~/app/_components/fee-label";
 import { useRef } from "react";
 import type { UseFormReturn } from "react-hook-form";
@@ -18,7 +18,6 @@ import type { SendFormValues } from "./send-form-schema";
 interface SendFormProps {
   form: UseFormReturn<SendFormValues>;
   selectedAccount: { address: string } | null;
-  usdPrice: number;
   maxTransferableAmount: string;
   estimatedFee: bigint | undefined;
   onReviewClick: () => Promise<void>;
@@ -31,7 +30,6 @@ interface SendFormProps {
 export function SendForm({
   form,
   selectedAccount,
-  usdPrice,
   maxTransferableAmount,
   estimatedFee,
   onReviewClick,
@@ -71,9 +69,8 @@ export function SendForm({
               <FormItem className="flex flex-col">
                 <FormLabel>Amount to send</FormLabel>
                 <FormControl>
-                  <CurrencySwap
+                  <AmountInput
                     amount={field.value}
-                    usdPrice={usdPrice}
                     disabled={!selectedAccount?.address}
                     availableFunds={maxTransferableAmount}
                     onAmountChangeAction={handleAmountChange}

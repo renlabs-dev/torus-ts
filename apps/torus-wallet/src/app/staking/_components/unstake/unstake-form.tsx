@@ -14,7 +14,7 @@ import {
 } from "@torus-ts/ui/components/form";
 import type { UseFormReturn } from "react-hook-form";
 import { AllocatorSelector } from "../../../_components/allocator-selector";
-import { CurrencySwap } from "../../../_components/currency-swap";
+import { AmountInput } from "../../../_components/amount-input";
 import { FeeLabel } from "../../../_components/fee-label";
 import type { UnstakeFormValues } from "./unstake-form-schema";
 
@@ -31,7 +31,6 @@ interface UnstakeFormProps {
   onReviewClick: () => Promise<void>;
   handleAmountChange: (amount: string) => Promise<void>;
   formRef: React.RefObject<HTMLFormElement | null>;
-  usdPrice: number;
   minAllowedStakeData: bigint;
 }
 
@@ -46,7 +45,6 @@ export function UnstakeForm({
   onReviewClick,
   handleAmountChange,
   formRef,
-  usdPrice,
   minAllowedStakeData,
 }: UnstakeFormProps) {
   return (
@@ -84,9 +82,8 @@ export function UnstakeForm({
               <FormItem className="flex flex-col">
                 <FormLabel>Amount</FormLabel>
                 <FormControl>
-                  <CurrencySwap
+                  <AmountInput
                     amount={field.value}
-                    usdPrice={usdPrice}
                     disabled={!selectedAccount?.address}
                     availableFunds={maxUnstakeAmount || "0"}
                     onAmountChangeAction={handleAmountChange}

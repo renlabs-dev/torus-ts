@@ -14,8 +14,6 @@ interface APRInfo {
 
 interface APRBarProps {
   apr?: number;
-  showUsdPrice?: boolean;
-  usdPrice?: number;
   totalStake?: bigint;
   totalIssuance?: bigint;
   isLoading?: boolean;
@@ -26,8 +24,6 @@ interface APRBarProps {
 
 export function APRBar({
   apr,
-  showUsdPrice = true,
-  usdPrice,
   totalStake,
   totalIssuance,
   isLoading = false,
@@ -57,15 +53,8 @@ export function APRBar({
       },
     ];
 
-    if (showUsdPrice) {
-      infos.push({
-        label: "USD PRICE",
-        value: `$${usdPrice?.toFixed(4) ?? 0}`,
-      });
-    }
-
     return infos;
-  }, [apr, totalStake, stakedPercentage, showUsdPrice, usdPrice]);
+  }, [apr, totalStake, stakedPercentage]);
 
   const dynamicInfo: APRInfo = {
     label: "REWARD INTERVAL",
