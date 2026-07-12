@@ -100,7 +100,6 @@ vi.mock("@torus-ts/query-provider/hooks", () => ({
       .fn()
       .mockResolvedValue({ status: "success", data: 1000n * 10n ** 18n }),
   }),
-  useGetTorusPrice: () => ({ data: 1.0 }),
 }));
 
 vi.mock("@torus-ts/torus-provider", () => ({

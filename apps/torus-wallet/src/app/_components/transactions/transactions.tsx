@@ -1,7 +1,6 @@
 "use client";
 
 import type { InjectedAccountWithMeta } from "@torus-ts/torus-provider";
-import { useUsdPrice } from "~/context/usd-price-provider";
 import { useTransactions } from "~/hooks/useTransactions";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { TransactionsEmptyDefault } from "./transactions-empty-state";
@@ -18,7 +17,6 @@ interface TransactionsProps {
 }
 
 export function Transactions({ selectedAccount }: TransactionsProps) {
-  const { usdPrice } = useUsdPrice();
   const scrollRef = useRef<HTMLDivElement>(null);
   const [filters, setFilters] = useState<TransactionsFilterValues>({
     orderBy: "createdAt.desc",
@@ -93,7 +91,6 @@ export function Transactions({ selectedAccount }: TransactionsProps) {
               <TransactionItem
                 key={`${tx.id}-${index}`}
                 transaction={tx}
-                usdPrice={usdPrice}
                 index={index}
               />
             ))}

@@ -14,7 +14,7 @@ import {
 } from "@torus-ts/ui/components/form";
 import type { UseFormReturn } from "react-hook-form";
 import { AllocatorSelector } from "../../../_components/allocator-selector";
-import { CurrencySwap } from "../../../_components/currency-swap";
+import { AmountInput } from "../../../_components/amount-input";
 import { FeeLabel } from "../../../_components/fee-label";
 import type { TransferStakeFormValues } from "./transfer-stake-form-schema";
 
@@ -35,7 +35,6 @@ interface TransferStakeFormProps {
   handleAmountChangeAction: (amount: string) => Promise<void>;
   formRef: React.RefObject<HTMLFormElement | null>;
   fromValidatorValue: string;
-  usdPrice: number;
   minAllowedStakeData: bigint;
 }
 
@@ -52,7 +51,6 @@ export function TransferStakeForm({
   handleAmountChangeAction,
   formRef,
   fromValidatorValue,
-  usdPrice,
   minAllowedStakeData,
 }: TransferStakeFormProps) {
   return (
@@ -110,9 +108,8 @@ export function TransferStakeForm({
               <FormItem className="flex flex-col">
                 <FormLabel>Amount</FormLabel>
                 <FormControl>
-                  <CurrencySwap
+                  <AmountInput
                     amount={field.value}
-                    usdPrice={usdPrice}
                     disabled={!selectedAccount?.address}
                     availableFunds={maxTransferStakeAmount || "0"}
                     onAmountChangeAction={handleAmountChangeAction}

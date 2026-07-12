@@ -35,7 +35,6 @@ function AgentStats({
   agentKey: string;
   percComputedWeight?: number | null;
   emissionData?: AccountEmissionData;
-  usdValue?: string;
   isLoading?: boolean;
   prePenaltyPercent?: number | null;
   penaltyFactor?: number | null;
