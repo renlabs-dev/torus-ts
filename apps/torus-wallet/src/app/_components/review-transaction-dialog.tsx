@@ -9,8 +9,6 @@ import {
   AlertDialogTitle,
 } from "@torus-ts/ui/components/alert-dialog";
 import { useToast } from "@torus-ts/ui/hooks/use-toast";
-import { useUsdPrice } from "~/context/usd-price-provider";
-import { convertTORUSToUSD } from "~/utils/helpers";
 import { forwardRef, useImperativeHandle, useMemo, useState } from "react";
 
 export interface ReviewTransactionDialogHandle {
@@ -51,7 +49,6 @@ export const ReviewTransactionDialog = forwardRef<
 >(({ from, to, amount, fee, onConfirm, onSuccess, onError }, ref) => {
   const [isOpen, setIsOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { usdPrice } = useUsdPrice();
   const { toast } = useToast();
 
   useImperativeHandle(ref, () => ({
@@ -77,20 +74,15 @@ export const ReviewTransactionDialog = forwardRef<
   };
 
   const details = useMemo(() => {
-    const amountUSD = convertTORUSToUSD(amount, usdPrice);
-    const feeUSD = convertTORUSToUSD(fee ?? "0", usdPrice, false);
-
     const transactionDetails: TransactionDetail[] = [
       { label: "From", value: from },
       { label: "To", value: to },
       { label: "Amount", value: amount, currency: "TORUS" },
-      { label: "Amount (USD)", value: amountUSD, currency: "$" },
       { label: "Network Fee", value: fee, currency: "TORUS" },
-      { label: "Network Fee (USD)", value: feeUSD, currency: "$" },
     ];
 
     return transactionDetails;
-  }, [amount, fee, from, to, usdPrice]);
+  }, [amount, fee, from, to]);
 
   return (
     <AlertDialog open={isOpen} onOpenChange={setIsOpen}>

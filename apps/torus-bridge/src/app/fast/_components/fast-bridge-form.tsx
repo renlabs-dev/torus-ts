@@ -3,12 +3,8 @@
 import type { SS58Address } from "@torus-network/sdk/types";
 import { formatToken } from "@torus-network/torus-utils/torus/token";
 import { tryAsync } from "@torus-network/torus-utils/try-catch";
-import {
-  useFreeBalance,
-  useGetTorusPrice,
-} from "@torus-ts/query-provider/hooks";
+import { useFreeBalance } from "@torus-ts/query-provider/hooks";
 import { useTorus } from "@torus-ts/torus-provider";
-import { TorusToUSD } from "@torus-ts/ui/components/apr/torus-to-usd";
 import { Badge } from "@torus-ts/ui/components/badge";
 import { Button } from "@torus-ts/ui/components/button";
 import { Card, CardContent } from "@torus-ts/ui/components/card";
@@ -133,8 +129,6 @@ export function FastBridgeForm() {
     selectedAccount?.address as SS58Address,
   );
   const nativeBalance = nativeBalanceQuery;
-
-  const { data: usdPrice } = useGetTorusPrice();
 
   const baseTorusAddress =
     contractAddresses.base[env("NEXT_PUBLIC_TORUS_CHAIN_ENV")].torusErc20;
@@ -893,24 +887,7 @@ export function FastBridgeForm() {
                 <div className="text-muted-foreground flex flex-col gap-1 text-xs">
                   <div>
                     Balance:{" "}
-                    <span className="font-bold">
-                      {fromChain.balance}
-                      {usdPrice && (
-                        <span className="text-muted-foreground ml-1 font-normal">
-                          (
-                          <TorusToUSD
-                            torusAmount={
-                              direction === "base-to-native"
-                                ? (baseBalance ?? 0n)
-                                : (nativeBalance.data ?? 0n)
-                            }
-                            usdPrice={usdPrice}
-                            decimals={2}
-                          />
-                          )
-                        </span>
-                      )}
-                    </span>
+                    <span className="font-bold">{fromChain.balance}</span>
                   </div>
                   <div>
                     Wallet:{" "}
@@ -940,24 +917,7 @@ export function FastBridgeForm() {
                 <div className="text-muted-foreground flex flex-col gap-1 text-xs">
                   <div>
                     Balance:{" "}
-                    <span className="font-bold">
-                      {toChain.balance}
-                      {usdPrice && (
-                        <span className="text-muted-foreground ml-1 font-normal">
-                          (
-                          <TorusToUSD
-                            torusAmount={
-                              direction === "base-to-native"
-                                ? (nativeBalance.data ?? 0n)
-                                : (baseBalance ?? 0n)
-                            }
-                            usdPrice={usdPrice}
-                            decimals={2}
-                          />
-                          )
-                        </span>
-                      )}
-                    </span>
+                    <span className="font-bold">{toChain.balance}</span>
                   </div>
                   <div>
                     Wallet: <span className="font-bold">{toChain.address}</span>

@@ -13,14 +13,10 @@ import { TransactionStatusBadge } from "./transactions-item-status-badge";
 
 interface TransactionItemProps {
   transaction: Transaction;
-  usdPrice: number | null;
   index?: number;
 }
 
-export function TransactionItem({
-  transaction,
-  usdPrice,
-}: TransactionItemProps) {
+export function TransactionItem({ transaction }: TransactionItemProps) {
   const formatDate = (date: string) =>
     DateTime.fromISO(date).toFormat("MMM dd, HH:mm");
 
@@ -40,10 +36,6 @@ export function TransactionItem({
       send: "Send",
       "transfer-stake": "Transfer Stake",
     })[type] || type;
-
-  const amountUSD = usdPrice
-    ? (Number(formatAmount(transaction.amount)) * usdPrice).toFixed(2)
-    : "";
 
   const explorerLink = getExplorerLink({
     wsEndpoint: env("NEXT_PUBLIC_TORUS_RPC_URL"),
@@ -70,9 +62,6 @@ export function TransactionItem({
             aria-label={`Amount: ${formatAmount(transaction.amount)}`}
           >
             {formatAmount(transaction.amount)}
-            {usdPrice && (
-              <span className="text-muted-foreground ml-1">({amountUSD})</span>
-            )}
           </div>
         </div>
         <div>
