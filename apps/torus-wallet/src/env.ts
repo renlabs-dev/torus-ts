@@ -34,7 +34,7 @@ const envSchema = {
   NEXT_PUBLIC_TORUS_CACHE_URL: z.string().url(),
   NEXT_PUBLIC_TORUS_ALLOCATOR_ADDRESS: z
     .string()
-    .default("5DoVVgN7R6vHw4mvPX8s4EkkR8fgN1UJ5TDfKzab8eW9z89b"),
+    .default("5GyLPVZr2vezWWwp4yLWEuKZ4uH5fYvU5GjuqmWV4PrAEVLy"),
   NEXT_PUBLIC_TORUS_GA_ID: z.string().default("G-7YCMH64Q4J"),
 };
 
